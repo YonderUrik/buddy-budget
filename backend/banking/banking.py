@@ -52,6 +52,49 @@ def add_bank():
 
     return {"message" : msg}, status
 
+@bp.route('/edit-bank', methods=["POST"])
+@jwt_required()
+def edit_bank():
+
+    request_json = dict(request.json)
+
+    cleaned_data, validation_errors = clean_and_validate_data(request_json)
+
+    if validation_errors:
+        logger.error(f"Validation errors: {validation_errors}")
+        return {"message": validation_errors}, 400
+    
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+
+    _cardName = cleaned_data['cardName']
+    _currentBalance = cleaned_data['balance']
+    _oldBank = cleaned_data['oldBank']
+
+    mongo = BankingMongo()
+    
+    if _cardName != _oldBank:
+        status, bankExists = mongo.get_bank_by_name(user_id=user_id, card_name=_cardName)
+
+        if status == False:
+            return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
+        
+        if bankExists:
+            return {"message" : "This bank name already exists"}, 400
+        
+    bank_doc = {
+        "cardName" : _cardName,
+        "balance" : _currentBalance,
+        "lastUpdate" : datetime.utcnow()
+    }
+
+    status, msg = mongo.edit_bank(user_id=user_id, oldBank=_oldBank, newValues=bank_doc)
+
+    return {"message" : msg}, status
+
 @bp.route('/get-banks', methods=["GET"])
 @jwt_required()
 def get_banks():
@@ -66,9 +109,22 @@ def get_banks():
     if status != 200:
         return {"message" : banks}, status
     
-    print(banks)
-    
     return json.dumps(banks, default=str)
+
+@bp.route('/delete-bank', methods=["POST"])
+@jwt_required()
+def delete_bank():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    cardName = str(request.json.get('cardName'))
+
+    mongo = BankingMongo()
+    status, msg = mongo.delete_bank(user_id=user_id,cardName=cardName)
+
+    return {"message" : msg}, status
 
 
 

@@ -72,13 +72,26 @@ def clean_and_validate_data(data):
             cardName = data['cardName']
 
             if len(cardName) < 3:
-                errors['cardName'] = 'Card name must be at least 8 characters long'
+                errors['cardName'] = 'Card name must be at least 3 characters long'
                 raise('cardName')
             if cardName == 'Total':
                 errors['cardName'] = 'Card name cannot be Total'
                 raise('cardName')
             else:
                 cleaned_data['cardName'] = cardName
+
+        # Field : "oldBank"
+        if 'oldBank' in data:
+            oldBank = data['oldBank']
+
+            if len(oldBank) < 3:
+                errors['oldBank'] = 'Card name must be at least 3 characters long'
+                raise('oldBank')
+            if oldBank == 'Total':
+                errors['oldBank'] = 'Card name cannot be Total'
+                raise('oldBank')
+            else:
+                cleaned_data['oldBank'] = oldBank
 
         # Field : "balance"
         if 'balance' in data:

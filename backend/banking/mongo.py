@@ -29,7 +29,6 @@ class BankingMongo(BaseMongo):
     def insert_new_bank(self,user_id=None, bank_doc=None):
 
         try:
-            print(user_id, bank_doc)
             if not bank_doc or not user_id:
                 raise "missing bank_doc or user_id"
             
@@ -54,7 +53,7 @@ class BankingMongo(BaseMongo):
                 },
                 {
                     '$group': {
-                        '_id': '$_id',
+                        '_id': '$cardName',
                         'lastDocument': {'$first': '$$ROOT'}
                     }
                 },
@@ -72,7 +71,27 @@ class BankingMongo(BaseMongo):
             result = list(collection.aggregate(pipeline))
 
             # Retrieve the "Total" data (sum of all balance and maximum lastUpdate)
-            total_pipeline = [
+            pipeline = [
+                {
+                    '$sort': {
+                        'cardName': 1,    # Sort by cardName ascending
+                        'lastUpdate': -1  # Then sort by lastUpdate descending
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$cardName',
+                        'lastDocument': {'$first': '$$ROOT'}
+                    }
+                },
+                {
+                    '$project': {
+                        '_id': 1,
+                        'cardName': '$lastDocument.cardName',
+                        'balance': '$lastDocument.balance',
+                        'lastUpdate': '$lastDocument.lastUpdate'
+                    }
+                },
                 {
                     '$group': {
                         '_id': None,
@@ -90,13 +109,41 @@ class BankingMongo(BaseMongo):
                 }
             ]
 
+
             # Use aggregation to compute "Total" data
-            total_result = list(collection.aggregate(total_pipeline))
+            total_result = list(collection.aggregate(pipeline))
+
+            print(total_result)
 
             # Combine the "Total" document with the last documents per cardName
             combined_result = total_result + result
 
             return 200, combined_result
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def delete_bank(self,user_id=None, cardName=None):
+        if not cardName or not user_id:
+            return 400, "Missing cardName or user_id"
+        
+        try:
+            self.client[user_id][MONGO_VARS.BANKS_COLLECTION].delete_many({"cardName" : cardName})
+            self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].delete_many({"cardName" : cardName})
+            return 200, "Bank deleted"
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def edit_bank(self, user_id=None, oldBank=None, newValues=None):
+        try:
+            if oldBank != newValues['cardName']:
+                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_many({"cardName" : oldBank}, {"$set" : {"cardName" : newValues['cardName']}})
+                self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].update_many({"cardName" : oldBank}, {"$set" : {"cardName" : newValues['cardName']}})
+
+            self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(newValues)
+
+            return 200, "Edited"
         except Exception as e:
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG

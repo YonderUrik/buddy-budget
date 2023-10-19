@@ -3,6 +3,7 @@ from mongo_base import BaseMongo
 import mongo_vars as MONGO_VARS
 import app_msgs as MSG
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 class BankingMongo(BaseMongo):
@@ -21,7 +22,7 @@ class BankingMongo(BaseMongo):
             if not card_name or not user_id:
                 raise("missing card_name or user_id")
             
-            return True, self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : card_name})
+            return True, self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : card_name}, sort=[("lastUpdate", -1)])
         except Exception as e:
             logger.error(e)
             return False, MSG.SOMETHING_GOES_WRONG_ENG
@@ -140,13 +141,80 @@ class BankingMongo(BaseMongo):
             if oldBank != newValues['cardName']:
                 self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_many({"cardName" : oldBank}, {"$set" : {"cardName" : newValues['cardName']}})
                 self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].update_many({"cardName" : oldBank}, {"$set" : {"cardName" : newValues['cardName']}})
+            else:
+                last_value_of_bank = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : oldBank}, sort=[("lastUpdate", -1)])
+
+                if last_value_of_bank['balance'] == newValues['balance']:
+                    return 400, "Nothing change"
 
             self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(newValues)
-
             return 200, "Edited"
         except Exception as e:
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def get_categories(self, user_id=None):
+        try:
+            return 200 , self.client[user_id][MONGO_VARS.SETTINGS_COLLECTION].find_one({"type" : "budgetting-categories"})
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def is_category_in_list(self, user_id=None, categoryId=None, operationType=None):
+        try:
+            result = self.client[user_id][MONGO_VARS.SETTINGS_COLLECTION].find_one({"type": "budgetting-categories"})
+
+            if result and operationType in result:
+                return categoryId in (cat["category_id"] for cat in result[operationType])
+
+        except Exception as e:
+            logger.error(e)
+
+        return False
+        
+    def is_subcategory_in_list(self, user_id=None, categoryId=None, subCategoryId=None, operationType=None):
+        try:
+            result = self.client[user_id][MONGO_VARS.SETTINGS_COLLECTION].find_one({"type": "budgetting-categories"})
+            
+            if result and operationType in result:
+                for category in result[operationType]:
+                    if category['category_id'] == categoryId:
+                        subcategories = category.get('subcategories', [])
+                        subcategory_ids = [subcat['subcategory_id'] for subcat in subcategories]
+                        return subCategoryId in subcategory_ids
+                    
+        except Exception as e:
+            logger.error(e)
+        return False
+    
+    def add_transaction(self, user_id=None, transaction_doc=None):
+        try:
+            status, last_bank_update = self.get_bank_by_name(user_id=user_id, card_name=transaction_doc['cardName'])
+
+            if status == False:
+                return status, MSG.SOMETHING_GOES_WRONG_ENG
+
+            last_balance = last_bank_update['balance']
+
+            if transaction_doc['type'] == 'in':
+                new_balance = last_balance + transaction_doc['amount']
+            else:
+                new_balance = last_balance - transaction_doc['amount']
+
+            new_bank_doc = {
+                "cardName" : transaction_doc['cardName'],
+                "balance" : new_balance,
+                "lastUpdate" : datetime.utcnow()
+            }
+
+            self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
+            self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].insert_one(transaction_doc)
+
+            return 200, "Transaction added"
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+
         
         
     

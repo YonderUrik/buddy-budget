@@ -126,6 +126,73 @@ def delete_bank():
 
     return {"message" : msg}, status
 
+@bp.route('/get-categories', methods=["GET"])
+@jwt_required()
+def get_categories():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    mongo = BankingMongo()
+    status, res = mongo.get_categories(user_id=user_id)
+
+    if status != 200:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
+    
+    return json.dumps(res, default=str)
+
+@bp.route('/add-transaction', methods=["POST"])
+@jwt_required()
+def add_transaction():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    request_json = dict(request.json)
+
+    transaction_doc = {
+        "type" : request_json['type'],
+        "cardName" : request_json['cardName'],
+        "amount" : request_json['amount'],
+        "categoryId" : request_json['category']['categoryId'],
+        "subCategoryId" : request_json['category']['value'],
+        "date" : request_json['date'],
+    }
+
+    cleaned_data, validation_errors = clean_and_validate_data(transaction_doc)
+
+    if validation_errors:
+        logger.error(f"Validation errors: {validation_errors}")
+        return {"message": validation_errors}, 400
+
+    #Check cardName in list
+    mongo = BankingMongo()
+    status, bankExists = mongo.get_bank_by_name(user_id=user_id, card_name=cleaned_data['cardName'])
+
+    if status == False:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
+    
+    if not bankExists:
+        return {"message" : "This bank name don't exists"}, 400
+    
+    #Check categoryID in list
+    is_category_correct = mongo.is_category_in_list(user_id=user_id, categoryId=cleaned_data['categoryId'], operationType=cleaned_data['type'])
+
+    if is_category_correct == False:
+        return {"message" : "Category not present"}, 400
+    
+    #Check subCategoryID in list
+    is_subcategory_correct = mongo.is_subcategory_in_list(user_id=user_id, categoryId=cleaned_data['categoryId'],subCategoryId=cleaned_data['subCategoryId'], operationType=cleaned_data['type'])
+
+    if is_subcategory_correct == False:
+        return {"message" : "Sub Category not present"}, 400
+    
+    status , msg = mongo.add_transaction(user_id=user_id, transaction_doc=cleaned_data)
+    
+    return {"message" : msg}, status
+
 
 
 

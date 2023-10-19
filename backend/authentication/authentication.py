@@ -95,9 +95,7 @@ def register():
         }
 
         status, msg = mongo.register_user(user_doc)
-
-        print(status, msg)
-
+        
         return {"message" : msg}, status
     except Exception as e:
         logger.error(e)

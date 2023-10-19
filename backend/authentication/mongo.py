@@ -56,7 +56,9 @@ class AuthMongo(BaseMongo):
             return 400, "Missing data"
         
         try:
-            self.client[MONGO_VARS.DB_NAME][MONGO_VARS.USERS_COLLECTION].insert_one(doc)
+            _id = self.client[MONGO_VARS.DB_NAME][MONGO_VARS.USERS_COLLECTION].insert_one(doc)
+
+            self.client[_id.inserted_id][MONGO_VARS.SETTINGS_COLLECTION].insert_one(MONGO_VARS.DEFAULT_CATEGORIE)
             return 200, MSG.USER_REGISTERED_ENG
         except Exception as e:
             logger.error(e)

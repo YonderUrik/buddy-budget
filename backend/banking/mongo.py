@@ -208,7 +208,7 @@ class BankingMongo(BaseMongo):
                     "cardName" : transaction_doc['cardName'],
                     "lastUpdate" : transaction_doc['date']
                 }
-                new_bank_doc['transactionID'] = result.inserted_id
+                new_bank_doc['transactionID'] = str(result.inserted_id)
 
                 # If there are historical data after the transaction date
                 bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
@@ -306,7 +306,6 @@ class BankingMongo(BaseMongo):
                 # Move to the next day
                 current_day += relativedelta(days=1)
 
-            print(data)
             return 200, data
         except Exception as e:
             logger.error(e)

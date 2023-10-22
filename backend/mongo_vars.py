@@ -10,15 +10,15 @@ DEFAULT_CATEGORIE = {
   "out": [
     {
       "category_id": 1,
-      "category_name": "Housing",
+      "category_name": "Home",
       "subcategories": [
         {
           "subcategory_id": 1,
-          "subcategory_name": "Rent"
+          "subcategory_name": "Mortgage/Rent"
         },
         {
           "subcategory_id": 2,
-          "subcategory_name": "Mortgage"
+          "subcategory_name": "Home Insurance"
         },
         {
           "subcategory_id": 3,
@@ -26,11 +26,53 @@ DEFAULT_CATEGORIE = {
         },
         {
           "subcategory_id": 4,
-          "subcategory_name": "Home Insurance"
+          "subcategory_name": "Home Updates/Repairs"
         },
         {
           "subcategory_id": 5,
-          "subcategory_name": "Utilities"
+          "subcategory_name": "Housing Association Fees"
+        },
+        {
+          "subcategory_id": 6,
+          "subcategory_name": "Utilities",
+          "subcategories": [
+            {
+              "subcategory_id": 1,
+              "subcategory_name": "Electricity"
+            },
+            {
+              "subcategory_id": 2,
+              "subcategory_name": "Water/Hot Water"
+            },
+            {
+              "subcategory_id": 3,
+              "subcategory_name": "Heat"
+            },
+            {
+              "subcategory_id": 4,
+              "subcategory_name": "Air Conditioning"
+            },
+            {
+              "subcategory_id": 5,
+              "subcategory_name": "Garbage Or Recycling"
+            },
+            {
+              "subcategory_id": 6,
+              "subcategory_name": "Cable TV"
+            },
+            {
+              "subcategory_id": 7,
+              "subcategory_name": "Internet"
+            },
+            {
+              "subcategory_id": 8,
+              "subcategory_name": "Cell Phone"
+            },
+            {
+              "subcategory_id": 9,
+              "subcategory_name": "Landline Phone"
+            }
+          ]
         }
       ]
     },
@@ -39,184 +81,352 @@ DEFAULT_CATEGORIE = {
       "category_name": "Transportation",
       "subcategories": [
         {
+          "subcategory_id": 1,
+          "subcategory_name": "Car Payment"
+        },
+        {
+          "subcategory_id": 2,
+          "subcategory_name": "Car Insurance"
+        },
+        {
+          "subcategory_id": 3,
+          "subcategory_name": "Gas"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Parking"
+        },
+        {
+          "subcategory_id": 5,
+          "subcategory_name": "Registration"
+        },
+        {
           "subcategory_id": 6,
-          "subcategory_name": "Gas and Fuel"
+          "subcategory_name": "Maintenance"
         },
         {
           "subcategory_id": 7,
-          "subcategory_name": "Public Transportation"
+          "subcategory_name": "Repairs"
         },
         {
           "subcategory_id": 8,
-          "subcategory_name": "Car Loan"
+          "subcategory_name": "Inspections"
         },
         {
           "subcategory_id": 9,
-          "subcategory_name": "Insurance"
+          "subcategory_name": "Roadside Assistance"
         },
         {
           "subcategory_id": 10,
-          "subcategory_name": "Maintenance"
+          "subcategory_name": "Taxi/Rideshare"
+        },
+        {
+          "subcategory_id": 11,
+          "subcategory_name": "Bus or Train"
+        },
+        {
+          "subcategory_id": 12,
+          "subcategory_name": "Tolls"
         }
       ]
     },
     {
       "category_id": 3,
-      "category_name": "Groceries",
+      "category_name": "Food",
       "subcategories": [
         {
-          "subcategory_id": 11,
-          "subcategory_name": "Food"
+          "subcategory_id": 1,
+          "subcategory_name": "Groceries"
         },
         {
-          "subcategory_id": 12,
-          "subcategory_name": "Beverages"
+          "subcategory_id": 2,
+          "subcategory_name": "Dining out"
         },
         {
-          "subcategory_id": 13,
-          "subcategory_name": "Household Supplies"
+          "subcategory_id": 3,
+          "subcategory_name": "Snacks"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Drinks"
         }
       ]
     },
     {
       "category_id": 4,
-      "category_name": "Utilities",
+      "category_name": "Medical",
       "subcategories": [
         {
-          "subcategory_id": 14,
-          "subcategory_name": "Electricity"
+          "subcategory_id": 1,
+          "subcategory_name": "Medications"
         },
         {
-          "subcategory_id": 15,
-          "subcategory_name": "Water"
+          "subcategory_id": 2,
+          "subcategory_name": "Dental Visits"
         },
         {
-          "subcategory_id": 16,
-          "subcategory_name": "Gas"
+          "subcategory_id": 3,
+          "subcategory_name": "Vision Care"
         },
         {
-          "subcategory_id": 17,
-          "subcategory_name": "Internet"
+          "subcategory_id": 4,
+          "subcategory_name": "Medical Equipment"
         },
         {
-          "subcategory_id": 18,
-          "subcategory_name": "Phone"
+          "subcategory_id": 5,
+          "subcategory_name": "Medical Insurance"
+        },
+        {
+          "subcategory_id": 6,
+          "subcategory_name": "Dental Insurance"
+        },
+        {
+          "subcategory_id": 7,
+          "subcategory_name": "Life Insurance"
+        },
+        {
+          "subcategory_id": 8,
+          "subcategory_name": "Paramedical Services"
         }
       ]
     },
     {
       "category_id": 5,
-      "category_name": "Health",
+      "category_name": "Personal",
       "subcategories": [
         {
-          "subcategory_id": 19,
-          "subcategory_name": "Health Insurance"
+          "subcategory_id": 1,
+          "subcategory_name": "Clothes"
         },
         {
-          "subcategory_id": 20,
-          "subcategory_name": "Medical Expenses"
+          "subcategory_id": 2,
+          "subcategory_name": "Shoes"
         },
         {
-          "subcategory_id": 21,
-          "subcategory_name": "Prescriptions"
+          "subcategory_id": 3,
+          "subcategory_name": "Furniture"
         },
         {
-          "subcategory_id": 22,
-          "subcategory_name": "Gym Memberships"
+          "subcategory_id": 4,
+          "subcategory_name": "Home Appliances"
+        },
+        {
+          "subcategory_id": 5,
+          "subcategory_name": "Home Décor"
+        },
+        {
+          "subcategory_id": 6,
+          "subcategory_name": "Cleaning Supplies"
+        },
+        {
+          "subcategory_id": 7,
+          "subcategory_name": "Personal Supplies"
+        },
+        {
+          "subcategory_id": 8,
+          "subcategory_name": "Hair Services"
+        },
+        {
+          "subcategory_id": 9,
+          "subcategory_name": "Nail Services"
+        },
+        {
+          "subcategory_id": 10,
+          "subcategory_name": "Cosmetics"
+        },
+        {
+          "subcategory_id": 11,
+          "subcategory_name": "Spa Services"
+        },
+        {
+          "subcategory_id": 12,
+          "subcategory_name": "Massage Therapy"
+        },
+        {
+          "subcategory_id": 13,
+          "subcategory_name": "Cigarettes"
         }
       ]
     },
     {
       "category_id": 6,
-      "category_name": "Education",
+      "category_name": "Entertainment",
       "subcategories": [
         {
-          "subcategory_id": 23,
-          "subcategory_name": "Tuition"
+          "subcategory_id": 1,
+          "subcategory_name": "Streaming Services"
         },
         {
-          "subcategory_id": 24,
-          "subcategory_name": "Books and Supplies"
+          "subcategory_id": 2,
+          "subcategory_name": "Subscriptions"
         },
         {
-          "subcategory_id": 25,
-          "subcategory_name": "Educational Tools"
+          "subcategory_id": 3,
+          "subcategory_name": "Memberships"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Outings"
+        },
+        {
+          "subcategory_id": 5,
+          "subcategory_name": "Hobbies"
+        },
+        {
+          "subcategory_id": 6,
+          "subcategory_name": "Sports"
+        },
+        {
+          "subcategory_id": 7,
+          "subcategory_name": "Vacations"
+        },
+        {
+          "subcategory_id": 8,
+          "subcategory_name": "Softwares"
         }
       ]
     },
     {
       "category_id": 7,
-      "category_name": "Entertainment",
+      "category_name": "Education",
       "subcategories": [
         {
-          "subcategory_id": 26,
-          "subcategory_name": "Dining Out"
+          "subcategory_id": 1,
+          "subcategory_name": "Tuition"
         },
         {
-          "subcategory_id": 27,
-          "subcategory_name": "Movies"
+          "subcategory_id": 2,
+          "subcategory_name": "Textbooks"
         },
         {
-          "subcategory_id": 28,
-          "subcategory_name": "Hobbies"
-        },
-        {
-          "subcategory_id": 29,
-          "subcategory_name": "Subscriptions"
+          "subcategory_id": 3,
+          "subcategory_name": "Supplies"
         }
       ]
     },
     {
       "category_id": 8,
-      "category_name": "Personal Care",
+      "category_name": "Gifts",
       "subcategories": [
         {
-          "subcategory_id": 30,
-          "subcategory_name": "Clothing"
+          "subcategory_id": 1,
+          "subcategory_name": "Birthdays"
         },
         {
-          "subcategory_id": 31,
-          "subcategory_name": "Haircuts"
+          "subcategory_id": 2,
+          "subcategory_name": "Holidays"
         },
         {
-          "subcategory_id": 32,
-          "subcategory_name": "Toiletries"
+          "subcategory_id": 3,
+          "subcategory_name": "Anniversaries"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Donations"
+        },
+        {
+          "subcategory_id": 5,
+          "subcategory_name": "Weddings"
+        },
+        {
+          "subcategory_id": 6,
+          "subcategory_name": "Baby Showers"
+        },
+        {
+          "subcategory_id": 7,
+          "subcategory_name": "Teacher Gifts"
         }
       ]
     },
     {
       "category_id": 9,
-      "category_name": "Savings",
+      "category_name": "Children",
       "subcategories": [
         {
-          "subcategory_id": 33,
-          "subcategory_name": "Emergency Fund"
+          "subcategory_id": 1,
+          "subcategory_name": "Daycare"
         },
         {
-          "subcategory_id": 34,
-          "subcategory_name": "Retirement"
+          "subcategory_id": 2,
+          "subcategory_name": "Babysitters"
         },
         {
-          "subcategory_id": 35,
-          "subcategory_name": "Investments"
+          "subcategory_id": 3,
+          "subcategory_name": "Activities"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Child Supplies"
+        },
+        {
+          "subcategory_id": 5,
+          "subcategory_name": "Alimony"
         }
       ]
     },
     {
       "category_id": 10,
+      "category_name": "Pets",
+      "subcategories": [
+        {
+          "subcategory_id": 1,
+          "subcategory_name": "Pet Food"
+        },
+        {
+          "subcategory_id": 2,
+          "subcategory_name": "Pet Insurance"
+        },
+        {
+          "subcategory_id": 3,
+          "subcategory_name": "Pet Supplies"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Vet Visits/Checkups"
+        },
+        {
+          "subcategory_id": 5,
+          "subcategory_name": "Training"
+        }
+      ]
+    },
+    {
+      "category_id": 11,
       "category_name": "Debt",
       "subcategories": [
         {
-          "subcategory_id": 36,
-          "subcategory_name": "Credit Card Payments"
+          "subcategory_id": 1,
+          "subcategory_name": "Credit Cards"
         },
         {
-          "subcategory_id": 37,
-          "subcategory_name": "Student Loan Payments"
+          "subcategory_id": 2,
+          "subcategory_name": "Lines Of Credit"
         },
         {
-          "subcategory_id": 38,
-          "subcategory_name": "Personal Loan Payments"
+          "subcategory_id": 3,
+          "subcategory_name": "Personal Loans"
+        },
+        {
+          "subcategory_id": 4,
+          "subcategory_name": "Student Loans"
+        }
+      ]
+    },
+    {
+      "category_id": 13,
+      "category_name": "Miscellaneous",
+      "subcategories": [
+        {
+          "subcategory_id": 1,
+          "subcategory_name": "Credit Card Fees"
+        },
+        {
+          "subcategory_id": 2,
+          "subcategory_name": "Bank Account Fees"
+        },
+        {
+          "subcategory_id": 3,
+          "subcategory_name": "Student Loan Fees"
         }
       ]
     }
@@ -228,7 +438,7 @@ DEFAULT_CATEGORIE = {
       "subcategories": [
         {
           "subcategory_id": 1,
-          "subcategory_name": "Salary"
+          "subcategory_name": "Full-Time Job"
         },
         {
           "subcategory_id": 2,
@@ -236,19 +446,19 @@ DEFAULT_CATEGORIE = {
         },
         {
           "subcategory_id": 3,
-          "subcategory_name": "Commissions"
+          "subcategory_name": "Part-Time Job"
         },
         {
           "subcategory_id": 4,
-          "subcategory_name": "Tips"
+          "subcategory_name": "Seasonal Job"
         },
         {
           "subcategory_id": 5,
-          "subcategory_name": "Freelance Income"
+          "subcategory_name": "Tax Refund"
         }
       ]
     },
-    {
+        {
       "category_id": 2,
       "category_name": "Investments",
       "subcategories": [

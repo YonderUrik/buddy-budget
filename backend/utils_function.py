@@ -53,6 +53,36 @@ def clean_and_validate_data(data):
             else:
                 errors['password'] = 'Password must be at least 8 characters long'
                 raise Exception("password")
+
+        # Field: "oldPassword"
+        if 'oldPassword' in data:
+            oldPassword = data['oldPassword']
+            # Add password validation rules (e.g., length, complexity)
+            if len(oldPassword) >= 8:
+                cleaned_data['oldPassword'] = oldPassword
+            else:
+                errors['oldPassword'] = 'oldPassword must be at least 8 characters long'
+                raise Exception("oldPassword")
+        
+        # Field: "confirmNewPassword"
+        if 'confirmNewPassword' in data:
+            confirmNewPassword = data['confirmNewPassword']
+            # Add password validation rules (e.g., length, complexity)
+            if len(confirmNewPassword) >= 8:
+                cleaned_data['confirmNewPassword'] = confirmNewPassword
+            else:
+                errors['confirmNewPassword'] = 'confirmNewPassword must be at least 8 characters long'
+                raise Exception("confirmNewPassword")
+            
+        # Field: "newPassword"
+        if 'newPassword' in data:
+            newPassword = data['newPassword']
+            # Add password validation rules (e.g., length, complexity)
+            if len(newPassword) >= 8:
+                cleaned_data['newPassword'] = newPassword
+            else:
+                errors['newPassword'] = 'newPassword must be at least 8 characters long'
+                raise Exception("newPassword")
         
         # Field: "code"
         if 'code' in data:

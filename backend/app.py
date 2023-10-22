@@ -72,6 +72,8 @@ import authentication.authentication as auth
 app.register_blueprint(auth.bp)
 import banking.banking as banking
 app.register_blueprint(banking.bp)
+import account.account as account
+app.register_blueprint(account.bp)
 
 if __name__ == "__main__":
     app.run(host=VARS.HOST_NAME,debug=True, port=VARS.APP_PORT)

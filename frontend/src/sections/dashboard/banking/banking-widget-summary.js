@@ -1,17 +1,13 @@
 import PropTypes from 'prop-types';
-
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
-
 import { fPercent, fCurrency } from 'src/utils/format-number';
-
 import { bgGradient } from 'src/theme/css';
-
 import Iconify from 'src/components/iconify';
 import Chart, { useChart } from 'src/components/chart';
-import { useEffect } from 'react';
+import EmptyContent from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
 
@@ -71,8 +67,8 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
       ...options,
     });
 
-    lastMonthIncome = series[0].data.reduce((total, income) => total + income, 0);;
-    lastMonthExpense = series[1].data.reduce((total, income) => total + income, 0);;
+    lastMonthIncome = series[0].data.reduce((total, income) => total + income, 0);
+    lastMonthExpense = series[1].data.reduce((total, income) => total + income, 0);
     savingRate = ((lastMonthIncome - lastMonthExpense) / lastMonthIncome) * 100;
 
     if (savingRate > 20) {
@@ -81,7 +77,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
     } else if (savingRate > 0) {
       color = 'warning';
       icon = 'fluent:emoji-meh-24-filled';
-    } else {
+    } else if (savingRate < 0) {
       icon = 'fluent:emoji-sad-20-filled';
       color = 'error';
     }
@@ -156,7 +152,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
           height={200}
         />
       ) : (
-        'No data'
+        <EmptyContent sx={{ mb: 2 }} title="No data" />
       )}
     </Stack>
   );

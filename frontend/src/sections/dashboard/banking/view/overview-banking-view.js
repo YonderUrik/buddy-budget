@@ -1,20 +1,13 @@
 'use client';
 
 import Stack from '@mui/material/Stack';
-import { useTheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
-
 import { useSettingsContext } from 'src/components/settings';
-
-import BankingContacts from '../banking-contacts';
 import BankingQuickTransaction from '../banking-quick-transaction';
-import BankingInviteFriends from '../banking-invite-friends';
 import BankingWidgetSummary from '../banking-widget-summary';
 import BankingCurrentBalance from '../banking-current-balance';
-import BankingBalanceStatistics from '../banking-balance-statistics';
 import BankingRecentTransitions from '../banking-recent-transitions';
-import BankingExpensesCategories from '../banking-expenses-categories';
 import { useCallback, useEffect, useState } from 'react';
 import { useSnackbar } from 'src/components/snackbar';
 import axios from 'src/utils/axios';

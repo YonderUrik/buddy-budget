@@ -8,7 +8,7 @@ def clean_and_validate_data(data):
     try:
         if type(data) != dict:
             errors['data'] = "invalid data type"
-            raise("data")
+            raise Exception("data")
         
         ######################### 
         # AUTHENTICATION FIELDS #
@@ -22,7 +22,7 @@ def clean_and_validate_data(data):
                 cleaned_data['email'] = email
             else:
                 errors['email'] = 'Invalid email address'
-                raise("email")
+                raise Exception("email")
 
         # Field: "firstName"
         if 'firstName' in data:
@@ -32,7 +32,7 @@ def clean_and_validate_data(data):
                 cleaned_data['firstName'] = first_name
             else:
                 errors['firstName'] = 'First name must be at least 2 characters long'
-                raise("firstName")
+                raise Exception("firstName")
 
         # Field: "lastName"
         if 'lastName' in data:
@@ -42,7 +42,7 @@ def clean_and_validate_data(data):
                 cleaned_data['lastName'] = last_name
             else:
                 errors['lastName'] = 'Last name must be at least 2 characters long'
-                raise("lastName")
+                raise Exception("lastName")
 
         # Field: "password"
         if 'password' in data:
@@ -52,7 +52,7 @@ def clean_and_validate_data(data):
                 cleaned_data['password'] = password
             else:
                 errors['password'] = 'Password must be at least 8 characters long'
-                raise("password")
+                raise Exception("password")
         
         # Field: "code"
         if 'code' in data:
@@ -62,7 +62,7 @@ def clean_and_validate_data(data):
                 cleaned_data['code'] = int(code)
             except:
                 errors['code'] = 'The code must consist of numbers only'
-                raise("code")
+                raise Exception("code")
         
         ######################### 
         # BANKING SECTION FIELDS #
@@ -74,10 +74,10 @@ def clean_and_validate_data(data):
 
             if len(cardName) < 3:
                 errors['cardName'] = 'Card name must be at least 3 characters long'
-                raise('cardName')
+                raise Exception('cardName')
             if cardName == 'Total':
                 errors['cardName'] = 'Card name cannot be Total'
-                raise('cardName')
+                raise Exception('cardName')
             else:
                 cleaned_data['cardName'] = cardName
 
@@ -87,10 +87,10 @@ def clean_and_validate_data(data):
 
             if len(oldBank) < 3:
                 errors['oldBank'] = 'Card name must be at least 3 characters long'
-                raise('oldBank')
+                raise Exception('oldBank')
             if oldBank == 'Total':
                 errors['oldBank'] = 'Card name cannot be Total'
-                raise('oldBank')
+                raise Exception('oldBank')
             else:
                 cleaned_data['oldBank'] = oldBank
 
@@ -101,7 +101,7 @@ def clean_and_validate_data(data):
                 cleaned_data['balance'] = float(balance)
             except:
                 errors['balance'] = 'The balance is not a valid data type'
-                raise("balance")
+                raise Exception("balance")
         
         # Field  : "type"
         if 'type' in data:
@@ -109,7 +109,7 @@ def clean_and_validate_data(data):
 
             if typeField not in ['in', 'out']:
                 errors['type'] = 'The type is invaid'
-                raise("type")
+                raise Exception("type")
             
             cleaned_data['type'] = typeField
             
@@ -120,7 +120,7 @@ def clean_and_validate_data(data):
                 cleaned_data['amount'] = float(amount)
             except:
                 errors['amount'] = 'The amount is not a valid data type'
-                raise("amount")
+                raise Exception("amount")
             
         # Field : "categoryId"
         if 'categoryId' in data:
@@ -129,7 +129,7 @@ def clean_and_validate_data(data):
                 cleaned_data['categoryId'] = int(categoryId)
             except:
                 errors['categoryId'] = 'The categoryId is not a valid data type'
-                raise("categoryId")
+                raise Exception("categoryId")
             
         # Field : "subCategoryId"
         if 'subCategoryId' in data:
@@ -138,7 +138,7 @@ def clean_and_validate_data(data):
                 cleaned_data['subCategoryId'] = int(subCategoryId)
             except:
                 errors['subCategoryId'] = 'The subCategoryId is not a valid data type'
-                raise("subCategoryId")
+                raise Exception("subCategoryId")
             
         # Field : "date"
         if 'date' in data:
@@ -151,12 +151,12 @@ def clean_and_validate_data(data):
                 cleaned_data['date'] = datetime.strptime(date, date_format)
             except:
                 errors['date'] = 'The date is not a valid data type'
-                raise("date")
+                raise Exception("date")
             
 
         if not cleaned_data:
             errors['nodata'] = "no correct data provided"
-            raise('nodata')
+            raise Exception('nodata')
             
         return cleaned_data, None  # If everything is valid, return the cleaned data and no errors
     except Exception as e:

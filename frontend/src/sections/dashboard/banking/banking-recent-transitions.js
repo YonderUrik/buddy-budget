@@ -17,14 +17,19 @@ import CardHeader from '@mui/material/CardHeader';
 import ListItemText from '@mui/material/ListItemText';
 import Badge, { badgeClasses } from '@mui/material/Badge';
 import TableContainer from '@mui/material/TableContainer';
-
 import { fCurrency } from 'src/utils/format-number';
-
+import { useSnackbar } from 'src/components/snackbar';
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { Stack, Typography } from '@mui/material';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import axios from 'src/utils/axios';
+import { useBoolean } from 'src/hooks/use-boolean';
+import { useState } from 'react';
+import { LoadingButton } from '@mui/lab';
 
 // ----------------------------------------------------------------------
 
@@ -33,6 +38,9 @@ export default function BankingRecentTransitions({
   subheader,
   tableLabels,
   tableData,
+  categories,
+  refreshBanks,
+  refreshTransactions,
   ...other
 }) {
   return (
@@ -46,7 +54,13 @@ export default function BankingRecentTransitions({
 
             <TableBody>
               {tableData.map((row) => (
-                <BankingRecentTransitionsRow key={row.id} row={row} />
+                <BankingRecentTransitionsRow
+                  refreshBanks={() => refreshBanks()}
+                  refreshTransactions={() => refreshTransactions()}
+                  categories={categories}
+                  key={row._id}
+                  row={row}
+                />
               ))}
             </TableBody>
           </Table>
@@ -54,16 +68,6 @@ export default function BankingRecentTransitions({
       </TableContainer>
 
       <Divider sx={{ borderStyle: 'dashed' }} />
-
-      <Box sx={{ p: 2, textAlign: 'right' }}>
-        <Button
-          size="small"
-          color="inherit"
-          endIcon={<Iconify icon="eva:arrow-ios-forward-fill" width={18} sx={{ ml: -0.5 }} />}
-        >
-          View All
-        </Button>
-      </Box>
     </Card>
   );
 }
@@ -71,115 +75,103 @@ export default function BankingRecentTransitions({
 BankingRecentTransitions.propTypes = {
   subheader: PropTypes.string,
   tableData: PropTypes.array,
+  categories: PropTypes.object,
   tableLabels: PropTypes.array,
+  refreshBanks: PropTypes.func,
+  refreshTransactions: PropTypes.func,
   title: PropTypes.string,
 };
 
 // ----------------------------------------------------------------------
 
-function BankingRecentTransitionsRow({ row }) {
-  const theme = useTheme();
+function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTransactions }) {
+  const { enqueueSnackbar } = useSnackbar();
+  const dialog = useBoolean();
 
-  const lightMode = theme.palette.mode === 'light';
-
+  const categoryObject = categories[row.type].find((item) => item.category_id === row.categoryId);
+  const subcategory = categoryObject.subcategories.find(
+    (sub) => sub.subcategory_id === row.subCategoryId
+  );
   const popover = usePopover();
-
-  const handleDownload = () => {
-    popover.onClose();
-    console.info('DOWNLOAD', row.id);
-  };
-
-  const handlePrint = () => {
-    popover.onClose();
-    console.info('PRINT', row.id);
-  };
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleShare = () => {
     popover.onClose();
     console.info('SHARE', row.id);
   };
 
-  const handleDelete = () => {
-    popover.onClose();
-    console.info('DELETE', row.id);
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await axios.post('/api/banking/delete-transaction', { id: row._id });
+      enqueueSnackbar('Transaction deleted');
+      refreshBanks();
+      refreshTransactions();
+      popover.onClose();
+    } catch (error) {
+      enqueueSnackbar(error.message || error, { variant: 'error' });
+    } finally {
+      setIsDeleting(false);
+    }
   };
-
-  const renderAvatar = (
-    <Box sx={{ position: 'relative', mr: 2 }}>
-      <Badge
-        overlap="circular"
-        color={row.type === 'Income' ? 'success' : 'error'}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        badgeContent={
-          <Iconify
-            icon={
-              row.type === 'Income'
-                ? 'eva:diagonal-arrow-left-down-fill'
-                : 'eva:diagonal-arrow-right-up-fill'
-            }
-            width={16}
-          />
-        }
-        sx={{
-          [`& .${badgeClasses.badge}`]: {
-            p: 0,
-            width: 20,
-          },
-        }}
-      >
-        <Avatar
-          src={row.avatarUrl || ''}
-          sx={{
-            width: 48,
-            height: 48,
-            color: 'text.secondary',
-            bgcolor: 'background.neutral',
-          }}
-        >
-          {row.category === 'Books' && <Iconify icon="eva:book-fill" width={24} />}
-          {row.category === 'Beauty & Health' && <Iconify icon="solar:heart-bold" width={24} />}
-        </Avatar>
-      </Badge>
-    </Box>
-  );
 
   return (
     <>
       <TableRow>
-        <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          {renderAvatar}
-          <ListItemText primary={row.message} secondary={row.category} />
+        {/* BANK ACCOUNT */}
+        <TableCell sx={{  py: 0 }}>
+          <ListItemText primary={row.cardName} />
         </TableCell>
 
-        <TableCell>
+        {/* DATE CELL */}
+        <TableCell sx={{ py: 0 }}>
           <ListItemText
-            primary={format(new Date(row.date), 'dd MMM yyyy')}
-            secondary={format(new Date(row.date), 'p')}
-            primaryTypographyProps={{ typography: 'body2' }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
+            primary={format(new Date(`${row.date} UTC`), 'dd MMM yyyy')}
           />
         </TableCell>
 
-        <TableCell>{fCurrency(row.amount)}</TableCell>
+        {/* AMOUNT CELL */}
+        <TableCell sx={{ py: 0 }}>{fCurrency(row.amount)}</TableCell>
 
-        <TableCell>
-          <Label
-            variant={lightMode ? 'soft' : 'filled'}
-            color={
-              (row.status === 'completed' && 'success') ||
-              (row.status === 'progress' && 'warning') ||
-              'error'
-            }
-          >
-            {row.status}
-          </Label>
+        {/* TYPE CELL */}
+        <TableCell sx={{ py: 0 }}>
+          <Stack alignContent="center" alignItems="center" direction="row">
+            <Badge
+              overlap="circular"
+              color={row.type === 'in' ? 'success' : 'error'}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+              badgeContent={
+                <Iconify
+                  icon={
+                    row.type === 'in'
+                      ? 'eva:diagonal-arrow-left-down-fill'
+                      : 'eva:diagonal-arrow-right-up-fill'
+                  }
+                  width={16}
+                />
+              }
+              sx={{
+                [`& .${badgeClasses.badge}`]: {
+                  p: 0,
+                  width: 20,
+                },
+              }}
+            />
+            <Typography sx={{ ml: 2 }} variant="subtitle2">
+              {row.type === 'in' ? 'Income' : 'Expense'}
+            </Typography>
+          </Stack>
         </TableCell>
 
-        <TableCell align="right" sx={{ pr: 1 }}>
+        {/* CATEGORY / SUBCATEGORY CELL */}
+        <TableCell sx={{ display: 'flex', alignItems: 'center', py: 0 }}>
+          <ListItemText
+            primary={categoryObject.category_name}
+            secondary={subcategory.subcategory_name}
+          />
+        </TableCell>
+
+        <TableCell align="right" sx={{ pr: 1, py: 0 }}>
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
@@ -192,32 +184,35 @@ function BankingRecentTransitionsRow({ row }) {
         arrow="right-top"
         sx={{ width: 160 }}
       >
-        <MenuItem onClick={handleDownload}>
-          <Iconify icon="eva:cloud-download-fill" />
-          Download
-        </MenuItem>
-
-        <MenuItem onClick={handlePrint}>
-          <Iconify icon="solar:printer-minimalistic-bold" />
-          Print
-        </MenuItem>
-
-        <MenuItem onClick={handleShare}>
-          <Iconify icon="solar:share-bold" />
-          Share
-        </MenuItem>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
-        <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={dialog.onTrue} sx={{ color: 'error.main' }}>
           <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
         </MenuItem>
       </CustomPopover>
+
+      <ConfirmDialog
+        open={dialog.value}
+        onClose={dialog.onFalse}
+        title={`Delete transaction`}
+        content="Are you sure want to delete this transaction?"
+        action={
+          <LoadingButton
+            loading={isDeleting}
+            variant="contained"
+            color="error"
+            onClick={handleDelete}
+          >
+            Delete
+          </LoadingButton>
+        }
+      />
     </>
   );
 }
 
 BankingRecentTransitionsRow.propTypes = {
   row: PropTypes.object,
+  categories: PropTypes.object,
+  refreshBanks: PropTypes.func,
+  refreshTransactions: PropTypes.func,
 };

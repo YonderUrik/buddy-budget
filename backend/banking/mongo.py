@@ -4,6 +4,9 @@ import mongo_vars as MONGO_VARS
 import app_msgs as MSG
 import logging
 from datetime import datetime
+from bson.objectid import ObjectId
+from dateutil.relativedelta import relativedelta
+
 
 logger = logging.getLogger(__name__)
 class BankingMongo(BaseMongo):
@@ -20,7 +23,7 @@ class BankingMongo(BaseMongo):
         
         try:
             if not card_name or not user_id:
-                raise("missing card_name or user_id")
+                raise Exception("missing card_name or user_id")
             
             return True, self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : card_name}, sort=[("lastUpdate", -1)])
         except Exception as e:
@@ -31,7 +34,7 @@ class BankingMongo(BaseMongo):
 
         try:
             if not bank_doc or not user_id:
-                raise "missing bank_doc or user_id"
+                raise Exception("missing bank_doc or user_id")
             
             self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(bank_doc)
             return 200, "bank added"
@@ -114,8 +117,6 @@ class BankingMongo(BaseMongo):
             # Use aggregation to compute "Total" data
             total_result = list(collection.aggregate(pipeline))
 
-            print(total_result)
-
             # Combine the "Total" document with the last documents per cardName
             combined_result = total_result + result
 
@@ -189,31 +190,177 @@ class BankingMongo(BaseMongo):
     
     def add_transaction(self, user_id=None, transaction_doc=None):
         try:
-            status, last_bank_update = self.get_bank_by_name(user_id=user_id, card_name=transaction_doc['cardName'])
+            if not user_id or not transaction_doc:
+                raise Exception("missing values")
+            
+            # Insert transaction
+            result = self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].insert_one(transaction_doc)
 
-            if status == False:
-                return status, MSG.SOMETHING_GOES_WRONG_ENG
 
-            last_balance = last_bank_update['balance']
+            # Now get the last bankBalance before the transaction date
+            last_bank_update = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardName'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
 
-            if transaction_doc['type'] == 'in':
-                new_balance = last_balance + transaction_doc['amount']
-            else:
-                new_balance = last_balance - transaction_doc['amount']
+            # If there are historical data before the transaction date
+            if last_bank_update:
+                # Get all bank documents where the lastUpdate is greater to the transaction date, 
+                # then update all their balance with the new transaction amount
+                new_bank_doc = {
+                    "cardName" : transaction_doc['cardName'],
+                    "lastUpdate" : transaction_doc['date']
+                }
+                new_bank_doc['transactionID'] = result.inserted_id
 
-            new_bank_doc = {
-                "cardName" : transaction_doc['cardName'],
-                "balance" : new_balance,
-                "lastUpdate" : datetime.utcnow()
-            }
+                # If there are historical data after the transaction date
+                bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
+                if bank_documents_to_edit:
+                    for elem in bank_documents_to_edit:
+                        if transaction_doc['type'] == 'in':
+                            new_amount = elem['balance'] + transaction_doc['amount']
+                        else:
+                            new_amount = elem['balance'] - transaction_doc['amount']
 
-            self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
-            self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].insert_one(transaction_doc)
+                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+
+                last_balance = last_bank_update['balance']
+
+                if transaction_doc['type'] == 'in':
+                    new_balance = last_balance + transaction_doc['amount']
+                else:
+                    new_balance = last_balance - transaction_doc['amount']
+
+                new_bank_doc['balance'] = new_balance
+
+                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
 
             return 200, "Transaction added"
         except Exception as e:
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    
+    def get_transactions(self, user_id = None):
+        try:    
+            if not user_id:
+                raise Exception("missing values")
+            
+            # Get the current date and time
+            current_date = datetime.now()
+
+            # Calculate the start and end dates of the current month
+            start_of_month = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            end_of_month = start_of_month + relativedelta(months=1, days=-1)
+            
+            result = list(self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].find({
+                "date": {"$gte": start_of_month, "$lte": end_of_month}
+            }).sort("date", -1))
+            return 200, result
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def get_summary_of_month_for_chart(self, user_id=None):
+        try:
+            if not user_id:
+                raise Exception("Missing user_id")
+
+            # Get the current date and time
+            current_date = datetime.now()
+
+            # Calculate the start date for the current month
+            start_of_month = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+            # Initialize the data structure
+            data = {
+                "labels": [],
+                "series": [
+                    {"name": "Income", "type": "area", "fill": "gradient", "data": []},
+                    {"name": "Expense", "type": "area", "fill": "gradient", "data": []},
+                ],
+            }
+
+            # Loop through each day of the current month and retrieve transactions
+            current_day = start_of_month
+            while current_day <= current_date:
+                # Calculate the start and end time for the current day
+                start_of_day = current_day
+                end_of_day = start_of_day + relativedelta(days=1, seconds=-1)
+
+                # Retrieve transactions for the current day
+                transactions = list(
+                    self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].find(
+                        {
+                            "date": {"$gte": start_of_day, "$lte": end_of_day}
+                        }
+                    )
+                )
+
+                # Calculate the total income and total expense for the day
+                total_income = sum(transaction["amount"] for transaction in transactions if transaction["type"] == "in")
+                total_expense = sum(transaction["amount"] for transaction in transactions if transaction["type"] == "out")
+
+                # Add the label and data to the data structure
+                data["labels"].append(current_day.strftime("%m/%d/%Y"))
+                data["series"][0]["data"].append(total_income)
+                data["series"][1]["data"].append(total_expense)
+
+                # Move to the next day
+                current_day += relativedelta(days=1)
+
+            print(data)
+            return 200, data
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+                
+    def get_single_transaction(self, user_id=None, transaction_id=None):
+        try:
+            if not user_id or not transaction_id:
+                raise Exception("missing values")
+
+            return 200, self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].find_one({"_id" : ObjectId(transaction_id)})
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def delete_transaction(self, user_id=None, transaction_id=None):
+        try:
+            if not user_id or not transaction_id:
+                raise Exception("missing values")
+
+            status, transaction_doc = self.get_single_transaction(user_id=user_id, transaction_id=transaction_id)
+            
+            if status != 200:
+                raise Exception("Error on get_single_transaction")
+
+            bank_document_start = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"transactionID" : ObjectId(transaction_id)})
+
+            if bank_document_start:
+
+                first_last_update = bank_document_start['lastUpdate']
+                cardName = transaction_doc['cardName']
+
+                bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : cardName , "lastUpdate" : {"$gt" : first_last_update}}))
+
+                if bank_documents_to_edit:
+                    for elem in bank_documents_to_edit:
+                        if transaction_doc['type'] == 'in':
+                            new_amount = elem['balance'] + transaction_doc['amount']
+                        else:
+                            new_amount = elem['balance'] - transaction_doc['amount']
+
+                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+                
+                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].delete_one({"transactionID" : ObjectId(transaction_id)})
+
+                
+            
+            self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].delete_one({"_id" : ObjectId(transaction_id)})
+
+            return 200, "Transaction deleted"
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+
 
         
         

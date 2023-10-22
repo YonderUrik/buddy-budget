@@ -33,7 +33,7 @@ import { LoadingButton } from '@mui/lab';
 
 // ----------------------------------------------------------------------
 
-const STEP = 1;
+const STEP = 0.01;
 
 const MIN_AMOUNT = 0;
 
@@ -48,6 +48,7 @@ export default function BankingQuickTransaction({
   bankOptions,
   categories,
   refreshBanks,
+  refreshTransactions,
   sx,
   ...other
 }) {
@@ -169,6 +170,7 @@ export default function BankingQuickTransaction({
       enqueueSnackbar('Transaction added');
       reset();
       refreshBanks();
+      refreshTransactions();
       setAmount(0);
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
@@ -270,6 +272,7 @@ BankingQuickTransaction.propTypes = {
   subheader: PropTypes.string,
   bankOptions: PropTypes.array,
   refreshBanks: PropTypes.func,
+  refreshTransactions: PropTypes.func,
   sx: PropTypes.object,
   categories: PropTypes.object,
   title: PropTypes.string,

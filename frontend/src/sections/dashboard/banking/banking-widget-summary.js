@@ -11,59 +11,81 @@ import { bgGradient } from 'src/theme/css';
 
 import Iconify from 'src/components/iconify';
 import Chart, { useChart } from 'src/components/chart';
+import { useEffect } from 'react';
 
 // ----------------------------------------------------------------------
 
-export default function BankingWidgetSummary({
-  title,
-  total,
-  icon,
-  percent,
-  color = 'primary',
-  chart,
-  sx,
-  ...other
-}) {
+export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
   const theme = useTheme();
 
-  const { series, options } = chart;
+  let series = [];
+  let chartOptions = {};
+  let lastMonthExpense = 0;
+  let lastMonthIncome = 0;
+  let savingRate = 0;
+  let color = 'info';
+  let icon = 'fluent-mdl2:unknown-solid';
 
-  const chartOptions = useChart({
-    colors: [theme.palette[color].dark],
-    chart: {
-      sparkline: {
-        enabled: true,
-      },
-    },
-    xaxis: {
-      labels: {
-        show: false,
-      },
-    },
-    yaxis: {
-      labels: {
-        show: false,
-      },
-    },
-    legend: {
-      show: false,
-    },
-    grid: {
-      show: false,
-    },
-    tooltip: {
-      marker: {
-        show: false,
-      },
-      y: {
-        formatter: (value) => fCurrency(value),
-        title: {
-          formatter: () => '',
+  if (chart) {
+    const { labels, options } = chart;
+    series = chart.series; // Set the series based on chart prop
+    chartOptions = useChart({
+      colors: [theme.palette.success.main, theme.palette.error.main],
+      chart: {
+        sparkline: {
+          enabled: true,
         },
       },
-    },
-    ...options,
-  });
+      plotOptions: {
+        bar: {
+          columnWidth: '16%',
+        },
+      },
+      fill: {
+        type: series.map((i) => i.fill),
+      },
+      labels,
+      xaxis: {
+        show: 'datetime',
+      },
+      yaxis: {
+        labels: {
+          show: false,
+        },
+      },
+      grid: {
+        show: false,
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: {
+          formatter: (value) => {
+            if (typeof value !== 'undefined') {
+              return `€ ${value.toFixed(0)}`;
+            }
+            return value;
+          },
+        },
+      },
+      ...options,
+    });
+
+    lastMonthIncome = series[0].data.reduce((total, income) => total + income, 0);;
+    lastMonthExpense = series[1].data.reduce((total, income) => total + income, 0);;
+    savingRate = ((lastMonthIncome - lastMonthExpense) / lastMonthIncome) * 100;
+
+    if (savingRate > 20) {
+      color = 'success';
+      icon = 'fluent:emoji-48-filled';
+    } else if (savingRate > 0) {
+      color = 'warning';
+      icon = 'fluent:emoji-meh-24-filled';
+    } else {
+      icon = 'fluent:emoji-sad-20-filled';
+      color = 'error';
+    }
+  }
 
   return (
     <Stack
@@ -89,8 +111,8 @@ export default function BankingWidgetSummary({
           p: 1.5,
           top: 24,
           right: 24,
-          width: 48,
-          height: 48,
+          width: 52,
+          height: 52,
           borderRadius: '50%',
           position: 'absolute',
           color: `${color}.lighter`,
@@ -101,7 +123,9 @@ export default function BankingWidgetSummary({
       <Stack spacing={1} sx={{ p: 3 }}>
         <Typography variant="subtitle2">{title}</Typography>
 
-        <Typography variant="h3">{fCurrency(total)}</Typography>
+        <Typography variant="h4">{`${fCurrency(lastMonthIncome)} / ${fCurrency(
+          lastMonthExpense
+        )}`}</Typography>
 
         <Stack
           spacing={0.5}
@@ -110,35 +134,36 @@ export default function BankingWidgetSummary({
           alignItems="center"
           sx={{ typography: 'body2' }}
         >
-          <Iconify icon={percent < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
+          <Iconify icon={savingRate < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
 
           <Box sx={{ typography: 'subtitle2' }}>
-            {percent > 0 && '+'}
-            {fPercent(percent)}
+            {savingRate > 0 && '+'}
+            {fPercent(savingRate)}
           </Box>
 
-          <Box sx={{ opacity: 0.8 }}>than last month</Box>
+          <Box sx={{ opacity: 0.8 }}>saving rate this month</Box>
         </Stack>
       </Stack>
 
-      <Chart
-        dir="ltr"
-        type="area"
-        series={[{ data: series }]}
-        options={chartOptions}
-        width="100%"
-        height={120}
-      />
+      {chart ? (
+        <Chart
+          sx={{ mx: 1 }}
+          dir="ltr"
+          type="line"
+          series={series}
+          options={chartOptions}
+          width="100%"
+          height={200}
+        />
+      ) : (
+        'No data'
+      )}
     </Stack>
   );
 }
 
 BankingWidgetSummary.propTypes = {
   chart: PropTypes.object,
-  color: PropTypes.string,
-  icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
-  percent: PropTypes.number,
   sx: PropTypes.object,
   title: PropTypes.string,
-  total: PropTypes.number,
 };

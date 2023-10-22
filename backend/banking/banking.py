@@ -142,6 +142,46 @@ def get_categories():
     
     return json.dumps(res, default=str)
 
+@bp.route('/get-transactions', methods=["GET"])
+@jwt_required()
+def get_transactions():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    mongo = BankingMongo()
+
+    status, transactions = mongo.get_transactions(user_id=user_id)
+
+    if status == False:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
+    
+    return json.dumps(transactions, default=str)
+
+@bp.route('/delete-transaction', methods=["POST"])
+@jwt_required()
+def delete_transaction():
+    _id = request.json.get("id")
+
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    mongo = BankingMongo()
+    status, transactionExists = mongo.get_single_transaction(user_id=user_id, transaction_id=_id)
+
+    if status != 200:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
+
+    if not transactionExists:
+        return {"message" : "Transaction not found"}, 400
+    
+    status, msg = mongo.delete_transaction(user_id=user_id, transaction_id=_id)
+
+    return {"message" : msg}, status
+    
 @bp.route('/add-transaction', methods=["POST"])
 @jwt_required()
 def add_transaction():
@@ -193,6 +233,21 @@ def add_transaction():
     
     return {"message" : msg}, status
 
+@bp.route('/get-summary-chart', methods=["GET"])
+@jwt_required()
+def get_summary_chart():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    mongo = BankingMongo()
+    status, summary = mongo.get_summary_of_month_for_chart(user_id=user_id)
+
+    if status != 200:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
+    
+    return json.dumps(summary, default=str)
 
 
 

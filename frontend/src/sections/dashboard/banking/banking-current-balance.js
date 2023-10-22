@@ -9,7 +9,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { fCurrency } from 'src/utils/format-number';
 import { bgGradient } from 'src/theme/css';
-import { enqueueSnackbar, useSnackbar } from 'src/components/snackbar';
+import { useSnackbar } from 'src/components/snackbar';
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Carousel, { useCarousel, CarouselDots } from 'src/components/carousel';
@@ -48,7 +48,7 @@ export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
           color: alpha(theme.palette.grey[900], 0.6),
           imgUrl: '/assets/background/overlay_bank_account.jpg',
         }),
-        height: 262,
+        height: '100%',
         borderRadius: 2,
         position: 'relative',
         color: 'common.white',
@@ -194,7 +194,7 @@ function NewEditBank({ currentBank, refreshBanks }) {
 
 function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
   const { _id, balance, cardName, lastUpdate } = card;
-
+  const { enqueueSnackbar } = useSnackbar();
   const popover = usePopover();
   const confirmDelete = useBoolean();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -214,9 +214,7 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
     }
   }, [_id, popover, enqueueSnackbar]);
 
-  const handleEdit = useCallback(() => {
-    popover.onClose();
-  }, [_id, popover]);
+
 
   return (
     <>

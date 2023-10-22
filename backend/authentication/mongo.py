@@ -24,7 +24,7 @@ class AuthMongo(BaseMongo):
             return user_info
         except Exception as e:
             logger.error(e)
-            raise(str(e))
+            raise Exception(str(e))
 
     def set_user_code(self, email=None, code=None):
 

@@ -111,6 +111,19 @@ def clean_and_validate_data(data):
             else:
                 cleaned_data['cardName'] = cardName
 
+        # Field : "cardNameTo"
+        if 'cardNameTo' in data:
+            cardNameTo = data['cardNameTo']
+
+            if len(cardNameTo) < 3:
+                errors['cardNameTo'] = 'Card name must be at least 3 characters long'
+                raise Exception('cardNameTo')
+            if cardNameTo == 'Total':
+                errors['cardNameTo'] = 'Card name cannot be Total'
+                raise Exception('cardNameTo')
+            else:
+                cleaned_data['cardNameTo'] = cardNameTo
+
         # Field : "oldBank"
         if 'oldBank' in data:
             oldBank = data['oldBank']
@@ -137,7 +150,7 @@ def clean_and_validate_data(data):
         if 'type' in data:
             typeField = data['type']
 
-            if typeField not in ['in', 'out']:
+            if typeField not in ['in', 'out', 'transfer']:
                 errors['type'] = 'The type is invaid'
                 raise Exception("type")
             

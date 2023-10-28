@@ -21,6 +21,7 @@ export const paths = {
   app: {
     root: ROOTS.HOME,
     banking : `${ROOTS.HOME}/banking`,
+    account : `${ROOTS.HOME}/account`,
     assets : `${ROOTS.HOME}/assets`
   },
 };

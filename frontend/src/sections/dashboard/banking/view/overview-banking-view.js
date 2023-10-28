@@ -57,7 +57,6 @@ export default function OverviewBankingView() {
     try {
       const response = await axios.get('/api/banking/get-summary-chart');
       const { data } = response;
-      console.log(data);
       setSummaryChart(data);
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
@@ -82,6 +81,7 @@ export default function OverviewBankingView() {
 
   const refreshBanks = () => {
     getBankList();
+    getTransactions();
   };
 
   const refreshTransactions = () => {
@@ -94,10 +94,7 @@ export default function OverviewBankingView() {
       <Grid container spacing={3}>
         <Grid xs={12} md={6}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-            <BankingWidgetSummary
-              title="Income/Expense of this month"
-              chart={summaryChart}
-            />
+            <BankingWidgetSummary title="Income/Expense of this month" chart={summaryChart} />
           </Stack>
         </Grid>
 

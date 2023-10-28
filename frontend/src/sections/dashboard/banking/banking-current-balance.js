@@ -79,7 +79,7 @@ export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
       <Carousel {...carousel.carouselSettings}>
         {list.map((card) => (
           <CardItem
-            key={card._id}
+            key={card.cardName}
             card={card}
             currencyBool={currency.value}
             currenyToggle={currency.onToggle}
@@ -213,8 +213,6 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
       setIsDeleting(false);
     }
   }, [_id, popover, enqueueSnackbar]);
-
-
 
   return (
     <>

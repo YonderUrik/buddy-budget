@@ -192,14 +192,26 @@ def add_transaction():
 
     request_json = dict(request.json)
 
-    transaction_doc = {
-        "type" : request_json['type'],
-        "cardName" : request_json['cardName'],
-        "amount" : request_json['amount'],
-        "categoryId" : request_json['category']['categoryId'],
-        "subCategoryId" : request_json['category']['value'],
-        "date" : request_json['date'],
-    }
+    transactionType = request_json['type']
+
+    if transactionType == 'transfer':
+        transaction_doc = {
+            "type" : request_json['type'],
+            "cardName" : request_json['cardName'],
+            "cardNameTo" : request_json['cardNameTo'],
+            "amount" : request_json['amount'],
+            "date" : request_json['date'],
+        }
+
+    else:
+        transaction_doc = {
+            "type" : request_json['type'],
+            "cardName" : request_json['cardName'],
+            "amount" : request_json['amount'],
+            "categoryId" : request_json['category']['categoryId'],
+            "subCategoryId" : request_json['category']['value'],
+            "date" : request_json['date'],
+        }
 
     cleaned_data, validation_errors = clean_and_validate_data(transaction_doc)
 
@@ -214,21 +226,41 @@ def add_transaction():
     if status == False:
         return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
     
-    if not bankExists:
+    if not bankExists and cleaned_data['cardName'] != 'Out the wallet':
         return {"message" : "This bank name don't exists"}, 400
     
-    #Check categoryID in list
-    is_category_correct = mongo.is_category_in_list(user_id=user_id, categoryId=cleaned_data['categoryId'], operationType=cleaned_data['type'])
+    if transactionType == 'transfer':
+        
+        status, bankExists = mongo.get_bank_by_name(user_id=user_id, card_name=cleaned_data['cardNameTo'])
 
-    if is_category_correct == False:
-        return {"message" : "Category not present"}, 400
-    
-    #Check subCategoryID in list
-    is_subcategory_correct = mongo.is_subcategory_in_list(user_id=user_id, categoryId=cleaned_data['categoryId'],subCategoryId=cleaned_data['subCategoryId'], operationType=cleaned_data['type'])
+        if status == False:
+            return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
+        
+        if not bankExists and cleaned_data['cardNameTo'] != 'Out the wallet':
+            return {"message" : "This destination card name don't exists"}, 400
 
-    if is_subcategory_correct == False:
-        return {"message" : "Sub Category not present"}, 400
-    
+        # If is a transfer do some controls
+        if cleaned_data['cardName'] == cleaned_data['cardNameTo']:
+            return {"message" : "Cannot transfer to the same bank account"}, 400
+        
+        if cleaned_data['cardName'] == 'Out the wallet' and cleaned_data['cardName'] == cleaned_data['cardNameTo']:
+            return {"message" : "Only a bank can be Out the wallet"}, 400
+        
+    else:
+        # Else do other controlos
+        
+        #Check categoryID in list
+        is_category_correct = mongo.is_category_in_list(user_id=user_id, categoryId=cleaned_data['categoryId'], operationType=cleaned_data['type'])
+
+        if is_category_correct == False:
+            return {"message" : "Category not present"}, 400
+        
+        #Check subCategoryID in list
+        is_subcategory_correct = mongo.is_subcategory_in_list(user_id=user_id, categoryId=cleaned_data['categoryId'],subCategoryId=cleaned_data['subCategoryId'], operationType=cleaned_data['type'])
+
+        if is_subcategory_correct == False:
+            return {"message" : "Sub Category not present"}, 400
+        
     status , msg = mongo.add_transaction(user_id=user_id, transaction_doc=cleaned_data)
     
     return {"message" : msg}, status

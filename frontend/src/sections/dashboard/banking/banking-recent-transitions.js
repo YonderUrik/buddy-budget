@@ -24,6 +24,7 @@ import axios from 'src/utils/axios';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useState } from 'react';
 import { LoadingButton } from '@mui/lab';
+import EmptyContent from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
 
@@ -56,6 +57,12 @@ export default function BankingRecentTransitions({
                   row={row}
                 />
               ))}
+
+              {tableData.length === 0 && (
+                <TableRow>
+                  <EmptyContent sx={{ mb: 2 }} title="No data" />
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </Scrollbar>
@@ -82,17 +89,17 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
   const { enqueueSnackbar } = useSnackbar();
   const dialog = useBoolean();
 
-  const categoryObject = categories[row.type].find((item) => item.category_id === row.categoryId);
-  const subcategory = categoryObject.subcategories.find(
-    (sub) => sub.subcategory_id === row.subCategoryId
-  );
+  let categoryObject = {};
+  let subcategory = {};
+
+  if (row.type !== 'transfer') {
+    categoryObject = categories[row.type].find((item) => item.category_id === row.categoryId);
+    subcategory = categoryObject.subcategories.find(
+      (sub) => sub.subcategory_id === row.subCategoryId
+    );
+  }
   const popover = usePopover();
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const handleShare = () => {
-    popover.onClose();
-    console.info('SHARE', row.id);
-  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -109,53 +116,63 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
     }
   };
 
+  const renderTypeCell = () => {
+    let color = '';
+    let icon = '';
+    let text = '';
+    if (row.type == 'in') {
+      color = 'success';
+      icon = 'solar:arrow-left-down-line-duotone';
+      text = 'Income';
+    } else if (row.type == 'out') {
+      color = 'error';
+      icon = 'solar:arrow-right-up-line-duotone';
+      text = 'Expense';
+    } else {
+      color = 'info';
+      icon = 'solar:transfer-vertical-bold-duotone';
+      text = 'Transfer';
+    }
+
+    return (
+      <Stack alignContent="center" alignItems="center" direction="row">
+        <Badge
+          overlap="circular"
+          color={color}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          badgeContent={<Iconify icon={icon} width={16} />}
+          sx={{
+            [`& .${badgeClasses.badge}`]: {
+              p: 0,
+              width: 20,
+            },
+          }}
+        />
+        <Typography sx={{ ml: 2 }} variant="subtitle2">
+          {text}
+        </Typography>
+      </Stack>
+    );
+  };
+
   return (
     <>
       <TableRow>
         {/* BANK ACCOUNT */}
-        <TableCell sx={{  py: 0 }}>
-          <ListItemText primary={row.cardName} />
+        <TableCell sx={{ py: 0 }}>
+          <ListItemText primary={row.cardName} secondary={row?.cardNameTo} />
         </TableCell>
 
         {/* DATE CELL */}
         <TableCell sx={{ py: 0 }}>
-          <ListItemText
-            primary={format(new Date(`${row.date} UTC`), 'dd MMM yyyy')}
-          />
+          <ListItemText primary={format(new Date(`${row.date} UTC`), 'dd MMM yyyy')} />
         </TableCell>
 
         {/* AMOUNT CELL */}
         <TableCell sx={{ py: 0 }}>{fCurrency(row.amount)}</TableCell>
 
         {/* TYPE CELL */}
-        <TableCell sx={{ py: 0 }}>
-          <Stack alignContent="center" alignItems="center" direction="row">
-            <Badge
-              overlap="circular"
-              color={row.type === 'in' ? 'success' : 'error'}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-              badgeContent={
-                <Iconify
-                  icon={
-                    row.type === 'in'
-                      ? 'eva:diagonal-arrow-left-down-fill'
-                      : 'eva:diagonal-arrow-right-up-fill'
-                  }
-                  width={16}
-                />
-              }
-              sx={{
-                [`& .${badgeClasses.badge}`]: {
-                  p: 0,
-                  width: 20,
-                },
-              }}
-            />
-            <Typography sx={{ ml: 2 }} variant="subtitle2">
-              {row.type === 'in' ? 'Income' : 'Expense'}
-            </Typography>
-          </Stack>
-        </TableCell>
+        <TableCell sx={{ py: 0 }}>{renderTypeCell()}</TableCell>
 
         {/* CATEGORY / SUBCATEGORY CELL */}
         <TableCell sx={{ display: 'flex', alignItems: 'center', py: 0 }}>

@@ -192,46 +192,151 @@ class BankingMongo(BaseMongo):
         try:
             if not user_id or not transaction_doc:
                 raise Exception("missing values")
+
+            if transaction_doc['type'] == 'transfer':
+                is_transfer = True
+            else:
+                is_transfer = False
             
             # Insert transaction
             result = self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].insert_one(transaction_doc)
 
+            if not is_transfer:
+                # Now get the last bankBalance before the transaction date
+                last_bank_update = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardName'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
 
-            # Now get the last bankBalance before the transaction date
-            last_bank_update = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardName'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
+                # If there are historical data before the transaction date
+                if last_bank_update:
+                    # Get all bank documents where the lastUpdate is greater to the transaction date, 
+                    # then update all their balance with the new transaction amount
+                    new_bank_doc = {
+                        "cardName" : transaction_doc['cardName'],
+                        "lastUpdate" : transaction_doc['date']
+                    }
+                    new_bank_doc['transactionID'] = str(result.inserted_id)
 
-            # If there are historical data before the transaction date
-            if last_bank_update:
-                # Get all bank documents where the lastUpdate is greater to the transaction date, 
-                # then update all their balance with the new transaction amount
-                new_bank_doc = {
-                    "cardName" : transaction_doc['cardName'],
-                    "lastUpdate" : transaction_doc['date']
-                }
-                new_bank_doc['transactionID'] = str(result.inserted_id)
+                    # If there are historical data after the transaction date
+                    bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
+                    if bank_documents_to_edit:
+                        for elem in bank_documents_to_edit:
+                            if transaction_doc['type'] == 'in':
+                                new_amount = elem['balance'] + transaction_doc['amount']
+                            else:
+                                new_amount = elem['balance'] - transaction_doc['amount']
 
-                # If there are historical data after the transaction date
-                bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
-                if bank_documents_to_edit:
-                    for elem in bank_documents_to_edit:
-                        if transaction_doc['type'] == 'in':
-                            new_amount = elem['balance'] + transaction_doc['amount']
-                        else:
-                            new_amount = elem['balance'] - transaction_doc['amount']
+                            self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
 
-                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+                    last_balance = last_bank_update['balance']
 
-                last_balance = last_bank_update['balance']
+                    if transaction_doc['type'] == 'in':
+                        new_balance = last_balance + transaction_doc['amount']
+                    else:
+                        new_balance = last_balance - transaction_doc['amount']
 
-                if transaction_doc['type'] == 'in':
-                    new_balance = last_balance + transaction_doc['amount']
+                    new_bank_doc['balance'] = new_balance
+
+                    self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
+            else:
+                if transaction_doc['cardName'] == 'Out the wallet':
+
+                    # In this case the transaction is like an income
+
+                    last_bank_update = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardNameTo'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
+
+                    if last_bank_update:
+                        new_bank_doc = {
+                            "cardName" : transaction_doc['cardNameTo'],
+                            "lastUpdate" : transaction_doc['date']
+                        }
+                        new_bank_doc['transactionID'] = str(result.inserted_id)
+                        # If there are historical data after the transaction date
+                        bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
+                        if bank_documents_to_edit:
+                            for elem in bank_documents_to_edit:
+                                new_amount = elem['balance'] + transaction_doc['amount']
+                                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+                        
+                        last_balance = last_bank_update['balance']
+                        new_balance = last_balance + transaction_doc['amount']
+                        new_bank_doc['balance'] = new_balance
+                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
+                elif transaction_doc['cardNameTo'] == 'Out the wallet':
+                    # In this case the transaction is like an expense
+                    last_bank_update = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardName'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
+
+                    if last_bank_update:
+                        new_bank_doc = {
+                            "cardName" : transaction_doc['cardName'],
+                            "lastUpdate" : transaction_doc['date']
+                        }
+                        new_bank_doc['transactionID'] = str(result.inserted_id)
+
+                        # If there are historical data after the transaction date
+                        bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
+                        if bank_documents_to_edit:
+                            for elem in bank_documents_to_edit:
+                                new_amount = elem['balance'] - transaction_doc['amount']
+
+                                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+
+                        last_balance = last_bank_update['balance']
+
+                        new_balance = last_balance - transaction_doc['amount']
+
+                        new_bank_doc['balance'] = new_balance
+
+                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
+                
                 else:
-                    new_balance = last_balance - transaction_doc['amount']
+                    # In this case the transaction is like an transfer from a bank accoun to another
+                    last_bank_update_from = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardName'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
+                    last_bank_update_to = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardNameTo'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
 
-                new_bank_doc['balance'] = new_balance
+                    if last_bank_update_from:
+                        new_bank_doc = {
+                            "cardName" : transaction_doc['cardName'],
+                            "lastUpdate" : transaction_doc['date']
+                        }
+                        new_bank_doc['transactionID'] = str(result.inserted_id)
 
-                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
+                        # If there are historical data after the transaction date
+                        bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
+                        if bank_documents_to_edit:
+                            for elem in bank_documents_to_edit:
+                                new_amount = elem['balance'] - transaction_doc['amount']
 
+                                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+
+                        last_balance = last_bank_update_from['balance']
+
+                        new_balance = last_balance - transaction_doc['amount']
+
+                        new_bank_doc['balance'] = new_balance
+
+                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
+
+                    if last_bank_update_to:
+                        new_bank_doc = {
+                            "cardName" : transaction_doc['cardNameTo'],
+                            "lastUpdate" : transaction_doc['date']
+                        }
+                        new_bank_doc['transactionID'] = str(result.inserted_id)
+
+                        # If there are historical data after the transaction date
+                        bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : new_bank_doc['cardName'] , "lastUpdate" : {"$gt" : new_bank_doc['lastUpdate']}}))
+                        if bank_documents_to_edit:
+                            for elem in bank_documents_to_edit:
+                                new_amount = elem['balance'] + transaction_doc['amount']
+
+                                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+
+                        last_balance = last_bank_update_to['balance']
+
+                        new_balance = last_balance + transaction_doc['amount']
+
+                        new_bank_doc['balance'] = new_balance
+
+                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
             return 200, "Transaction added"
         except Exception as e:
             logger.error(e)

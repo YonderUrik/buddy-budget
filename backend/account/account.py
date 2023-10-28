@@ -21,7 +21,6 @@ def change_password():
     _user_email = get_jwt_identity()['email']
     user_details = mongo.get_user_by_email(_user_email)
 
-    print(request.json)
     request_json = dict(request.json)
 
     cleaned_data, validation_errors = clean_and_validate_data(request_json)

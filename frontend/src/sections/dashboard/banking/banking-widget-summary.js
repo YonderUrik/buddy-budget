@@ -21,10 +21,10 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
   let savingRate = 0;
   let color = 'info';
   let icon = 'fluent-mdl2:unknown-solid';
-
   if (chart) {
     const { labels, options } = chart;
-    series = chart.series; // Set the series based on chart prop
+    series = chart.series; // Set the series based on the chart prop
+
     chartOptions = useChart({
       colors: [theme.palette.success.main, theme.palette.error.main],
       chart: {
@@ -32,10 +32,28 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
           enabled: true,
         },
       },
-      plotOptions: {
-        bar: {
-          columnWidth: '16%',
+      dataLabels: {
+        enabled: true,
+        position : 'inside',
+        style: {
+          colors: ['secondary'],
         },
+        background: {
+          enabled: true,
+          // foreColor: '#fff',
+          // borderRadius: 2,
+          // padding: 4,
+          // opacity: 0.9,
+          // borderWidth: 1,
+          // borderColor: '#fff'
+        },
+        formatter: function (val, opt) {
+          if (val === 0) {
+            return '';
+          }
+          return `€ ${val}`;
+        },
+        offsetY: 10,
       },
       fill: {
         type: series.map((i) => i.fill),
@@ -50,7 +68,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         },
       },
       grid: {
-        show: false,
+        show: true,
       },
       tooltip: {
         shared: true,
@@ -85,6 +103,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
 
   return (
     <Stack
+      spacing={2}
       sx={{
         ...bgGradient({
           direction: '135deg',
@@ -143,9 +162,9 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
 
       {chart ? (
         <Chart
-          sx={{ mx: 1 }}
+          sx={{ m: 1, pt: 1 }}
           dir="ltr"
-          type="line"
+          type="bar"
           series={series}
           options={chartOptions}
           width="100%"

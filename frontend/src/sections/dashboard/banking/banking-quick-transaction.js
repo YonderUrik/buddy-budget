@@ -43,17 +43,21 @@ export default function BankingQuickTransaction({
   const [transactionType, setTransactionType] = useState('out');
   const [amount, setAmount] = useState(0);
   const { enqueueSnackbar } = useSnackbar();
-  const subcategories = categories[transactionType].reduce((acc, category) => {
-    const categoryLabel = category.category_name;
-    const categoryId = category.category_id;
-    const subcategoryOptions = category.subcategories.map((subcategory) => ({
-      label: subcategory.subcategory_name,
-      value: subcategory.subcategory_id,
-      category: categoryLabel,
-      categoryId,
-    }));
-    return [...acc, ...subcategoryOptions];
-  }, []);
+
+  let subcategories = [];
+  if (transactionType !== 'transfer') {
+    subcategories = categories[transactionType].reduce((acc, category) => {
+      const categoryLabel = category.category_name;
+      const categoryId = category.category_id;
+      const subcategoryOptions = category.subcategories.map((subcategory) => ({
+        label: subcategory.subcategory_name,
+        value: subcategory.subcategory_id,
+        category: categoryLabel,
+        categoryId,
+      }));
+      return [...acc, ...subcategoryOptions];
+    }, []);
+  }
 
   useEffect(() => {
     if (amount) {
@@ -84,19 +88,38 @@ export default function BankingQuickTransaction({
     }
   }, [amount]);
 
-  const transactionSchema = Yup.object().shape({
-    cardName: Yup.string().required('Bank account required'),
-    category: Yup.object().required('Category required'),
-    date: Yup.mixed().nullable().required('Date is required'),
-  });
+  let transactionSchema = null;
+  let defaultValues = {};
 
-  const defaultValues = {
-    type: transactionType,
-    cardName: '',
-    amount: 0,
-    category: null,
-    date: new Date(),
-  };
+  if (transactionType === 'transfer') {
+    transactionSchema = Yup.object().shape({
+      cardName: Yup.string().required('Origin bank account required'),
+      cardNameTo: Yup.string().required('Destination bank account required'),
+      date: Yup.mixed().nullable().required('Date is required'),
+    });
+
+    defaultValues = {
+      type: transactionType,
+      cardName: '',
+      cardNameTo: '',
+      amount: 0,
+      date: new Date(),
+    };
+  } else {
+    transactionSchema = Yup.object().shape({
+      cardName: Yup.string().required('Bank account required'),
+      category: Yup.object().required('Category required'),
+      date: Yup.mixed().nullable().required('Date is required'),
+    });
+
+    defaultValues = {
+      type: transactionType,
+      cardName: '',
+      amount: 0,
+      category: null,
+      date: new Date(),
+    };
+  }
 
   const methods = useForm({
     resolver: yupResolver(transactionSchema),
@@ -153,12 +176,23 @@ export default function BankingQuickTransaction({
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      const currentDate = new Date();
+      const dataDate = data.date;
+      if (
+        dataDate.getFullYear() === currentDate.getFullYear() &&
+        dataDate.getMonth() === currentDate.getMonth() &&
+        dataDate.getDate() === currentDate.getDate()
+      ) {
+        // Set the "date" field to the current date
+        methods.setValue('date', currentDate);
+      }
       await axios.post('/api/banking/add-transaction', data);
       enqueueSnackbar('Transaction added');
       reset();
       refreshBanks();
       refreshTransactions();
       setAmount(0);
+      methods.setValue('type', transactionType);
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
@@ -191,18 +225,22 @@ export default function BankingQuickTransaction({
               onChange={handleTransactionType}
             >
               <ToggleButton color="success" value="in">
-                <Iconify icon="eva:diagonal-arrow-left-down-fill" />
+                <Iconify icon="solar:arrow-left-down-line-duotone" />
                 Income
               </ToggleButton>
               <ToggleButton color="error" value="out">
-                <Iconify icon="eva:diagonal-arrow-right-up-fill" />
+                <Iconify icon="solar:arrow-right-up-line-duotone" />
                 Expense
+              </ToggleButton>
+              <ToggleButton color="info" value="transfer">
+                <Iconify icon="solar:transfer-vertical-bold-duotone" />
+                Transfer
               </ToggleButton>
             </ToggleButtonGroup>
           </Stack>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Typography variant="overline" sx={{ color: 'text.secondary' }}>
-              Select Bank and category
+              {transactionType === 'transfer' ? 'Select Banks' : 'Select Bank and category'}
             </Typography>
           </Stack>
           <FormProvider methods={methods} onSubmit={onSubmit}>
@@ -231,20 +269,32 @@ export default function BankingQuickTransaction({
               sx={{ my: 1 }}
               size="small"
               name="cardName"
-              options={bankOptions}
-              label="Bank"
+              options={
+                transactionType === 'transfer' ? [...bankOptions, 'Out the wallet'] : bankOptions
+              }
+              label="From"
             />
 
-            <RHFAutocomplete
-              sx={{ my: 1 }}
-              label="Category"
-              size="small"
-              name="category"
-              isOptionEqualToValue={(option, value) => option.value === value.value}
-              options={subcategories}
-              groupBy={(option) => option.category}
-              getOptionLabel={(option) => option.label}
-            />
+            {transactionType === 'transfer' ? (
+              <RHFAutocomplete
+                sx={{ my: 1 }}
+                size="small"
+                name="cardNameTo"
+                options={[...bankOptions, 'Out the wallet']}
+                label="To"
+              />
+            ) : (
+              <RHFAutocomplete
+                sx={{ my: 1 }}
+                label="Category"
+                size="small"
+                name="category"
+                isOptionEqualToValue={(option, value) => option.value === value.value}
+                options={subcategories}
+                groupBy={(option) => option.category}
+                getOptionLabel={(option) => option.label}
+              />
+            )}
 
             {renderInput}
           </FormProvider>

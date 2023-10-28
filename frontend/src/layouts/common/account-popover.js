@@ -14,6 +14,7 @@ import { useAuthContext } from 'src/auth/hooks';
 
 import { varHover } from 'src/components/animate';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { paths } from 'src/routes/paths';
 
 // ----------------------------------------------------------------------
 
@@ -23,12 +24,8 @@ const OPTIONS = [
     linkTo: '/',
   },
   {
-    label: 'Profile',
-    linkTo: '/#1',
-  },
-  {
     label: 'Settings',
-    linkTo: '/#2',
+    linkTo: paths.app.account,
   },
 ];
 

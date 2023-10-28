@@ -46,6 +46,7 @@ export default function BankingQuickTransaction({
 
   let subcategories = [];
   if (transactionType !== 'transfer') {
+    console.log(transactionType);
     subcategories = categories[transactionType].reduce((acc, category) => {
       const categoryLabel = category.category_name;
       const categoryId = category.category_id;
@@ -199,9 +200,12 @@ export default function BankingQuickTransaction({
   });
 
   const handleTransactionType = (event, newType) => {
-    methods.setValue('type', newType);
-    methods.setValue('category', null);
-    setTransactionType(newType);
+    console.log("newType", newType)
+    if (newType !== null) {
+      methods.setValue('type', newType);
+      methods.setValue('category', null);
+      setTransactionType(newType);
+    }
   };
 
   return (

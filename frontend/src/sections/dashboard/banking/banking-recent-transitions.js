@@ -42,7 +42,7 @@ export default function BankingRecentTransitions({
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} sx={{ mb: 3 }} />
 
-      <TableContainer sx={{ overflow: 'unset' }}>
+      <TableContainer sx={{ overflow: 'unset', height: '100%' }}>
         <Scrollbar>
           <Table sx={{ minWidth: 720 }}>
             <TableHeadCustom headLabel={tableLabels} />

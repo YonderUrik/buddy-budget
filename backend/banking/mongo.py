@@ -436,29 +436,35 @@ class BankingMongo(BaseMongo):
             if status != 200:
                 raise Exception("Error on get_single_transaction")
 
-            bank_document_start = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"transactionID" : ObjectId(transaction_id)})
+            bank_documents_start = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"transactionID" : transaction_id}))
 
-            if bank_document_start:
+            if bank_documents_start:
+                for document in bank_documents_start:
 
-                first_last_update = bank_document_start['lastUpdate']
-                cardName = transaction_doc['cardName']
+                    first_last_update = document['lastUpdate']
+                    cardName = document['cardName']
 
-                bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : cardName , "lastUpdate" : {"$gt" : first_last_update}}))
+                    bank_documents_to_edit = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find({"cardName" : cardName , "lastUpdate" : {"$gt" : first_last_update}}))
 
-                if bank_documents_to_edit:
-                    for elem in bank_documents_to_edit:
-                        if transaction_doc['type'] == 'in':
-                            new_amount = elem['balance'] + transaction_doc['amount']
-                        else:
-                            new_amount = elem['balance'] - transaction_doc['amount']
+                    if bank_documents_to_edit:
+                        for elem in bank_documents_to_edit:
+                            if transaction_doc['type'] == 'in':
+                                new_amount = elem['balance'] + transaction_doc['amount']
+                            elif transaction_doc['type'] == 'out':
+                                new_amount = elem['balance'] - transaction_doc['amount']
+                            elif transaction_doc['type'] ==  'transfer':
+                                if transaction_doc['cardName'] == cardName:
+                                    # This is the bank from, so i need to add amount to this account
+                                    new_amount = elem['balance'] + transaction_doc['amount']
+                                elif transaction_doc['cardNameTo'] == cardName:
+                                    # This is the bank to
+                                    new_amount = elem['balance'] - transaction_doc['amount']
 
-                        self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
-                
-                self.client[user_id][MONGO_VARS.BANKS_COLLECTION].delete_one({"transactionID" : ObjectId(transaction_id)})
+                            self.client[user_id][MONGO_VARS.BANKS_COLLECTION].update_one({"_id" : ObjectId(elem['_id'])}, {"$set" : {"balance" : new_amount}})
+                    
+                    self.client[user_id][MONGO_VARS.BANKS_COLLECTION].delete_one({"transactionID" : transaction_id})
 
-                
-            
-            self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].delete_one({"_id" : ObjectId(transaction_id)})
+            self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].delete_many({"_id" : ObjectId(transaction_id)})
 
             return 200, "Transaction deleted"
         except Exception as e:

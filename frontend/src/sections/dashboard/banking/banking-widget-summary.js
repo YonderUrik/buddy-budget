@@ -34,18 +34,12 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
       },
       dataLabels: {
         enabled: true,
-        position : 'inside',
+        position: 'inside',
         style: {
           colors: ['secondary'],
         },
         background: {
           enabled: true,
-          // foreColor: '#fff',
-          // borderRadius: 2,
-          // padding: 4,
-          // opacity: 0.9,
-          // borderWidth: 1,
-          // borderColor: '#fff'
         },
         formatter: function (val, opt) {
           if (val === 0) {
@@ -138,9 +132,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
       <Stack spacing={1} sx={{ p: 3 }}>
         <Typography variant="subtitle2">{title}</Typography>
 
-        <Typography variant="h4">{`${fCurrency(lastMonthIncome)} / ${fCurrency(
-          lastMonthExpense
-        )}`}</Typography>
+        <Typography variant="h4">{fCurrency(lastMonthIncome - lastMonthExpense)}</Typography>
 
         <Stack
           spacing={0.5}

@@ -109,7 +109,7 @@ function NewEditBank({ currentBank, refreshBanks }) {
 
   const bankSchema = Yup.object().shape({
     cardName: Yup.string().required('Bank name required'),
-    balance: Yup.number().required('Current balance required'),
+    balance: Yup.number().min(0).required('Current balance required'),
   });
 
   const defaultValues = {

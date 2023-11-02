@@ -1,5 +1,5 @@
-import { JwtRegisterView } from 'src/sections/auth/jwt';
 import { APP_NAME } from 'src/config-global';
+import { JwtRegisterView } from 'src/sections/auth/jwt';
 
 // ----------------------------------------------------------------------
 

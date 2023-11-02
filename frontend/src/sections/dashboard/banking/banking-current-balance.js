@@ -212,7 +212,7 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
     } finally {
       setIsDeleting(false);
     }
-  }, [_id, popover, enqueueSnackbar]);
+  }, [popover, enqueueSnackbar, cardName, confirmDelete, refreshBanks]);
 
   return (
     <>

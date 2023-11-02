@@ -32,9 +32,9 @@ axiosInstance.interceptors.request.use(
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      return config;
     }
+
+    return config;
   },
   (error) => Promise.reject(error)
 );
@@ -73,6 +73,6 @@ export const endpoints = {
     logout: '/api/auth/logout',
     forgotPassword: '/api/auth/forgot-password',
     resetPassword: '/api/auth/reset-password',
-    checkUserReset: '/api/auth/check-user-reset'
+    checkUserReset: '/api/auth/check-user-reset',
   },
 };

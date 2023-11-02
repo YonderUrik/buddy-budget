@@ -75,19 +75,19 @@ export default function BankingQuickTransaction({
   const handleChangeSlider = useCallback((event, newValue) => {
     setAmount(newValue);
     methods.setValue('amount', newValue);
-  }, []);
+  }, [methods]);
 
   const handleChangeInput = useCallback((event) => {
     setAmount(Number(event.target.value));
     methods.setValue('amount', Number(event.target.value));
-  }, []);
+  }, [methods]);
 
   const handleBlur = useCallback(() => {
     if (amount < 0) {
       setAmount(0);
       methods.setValue('amount', 0);
     }
-  }, [amount]);
+  }, [amount, methods]);
 
   let transactionSchema = null;
   let defaultValues = {};

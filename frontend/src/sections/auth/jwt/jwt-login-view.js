@@ -20,8 +20,7 @@ import axios, { endpoints } from 'src/utils/axios';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { useAuthContext } from 'src/auth/hooks';
-import { PATH_AFTER_LOGIN } from 'src/config-global';
-import { APP_NAME } from 'src/config-global';
+import { PATH_AFTER_LOGIN, APP_NAME } from 'src/config-global';
 import Iconify from 'src/components/iconify';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 
@@ -71,14 +70,14 @@ export default function JwtLoginView() {
           await axios.post(endpoints.auth.forgotPassword, {
             email: data.email,
           });
-          const searchParams = new URLSearchParams({
+          const newSearch = new URLSearchParams({
             email: data.email,
           }).toString();
 
-          const href = `${paths.auth.jwt.resetPassword}?${searchParams}`;
+          const href = `${paths.auth.jwt.resetPassword}?${newSearch}`;
           router.push(href);
-        } catch (error) {
-          setErrorMsg(typeof error === 'string' ? error : error.message);
+        } catch (errortwo) {
+          setErrorMsg(typeof error === 'string' ? errortwo : errortwo.message);
         }
       } else {
         setErrorMsg(typeof error === 'string' ? error : error.message);

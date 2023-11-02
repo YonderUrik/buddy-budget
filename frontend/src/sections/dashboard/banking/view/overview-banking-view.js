@@ -3,15 +3,14 @@
 import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Unstable_Grid2';
+import { useCallback, useEffect, useState } from 'react';
 import { useSettingsContext } from 'src/components/settings';
+import { useSnackbar } from 'src/components/snackbar';
+import axios from 'src/utils/axios';
 import BankingQuickTransaction from '../banking-quick-transaction';
 import BankingWidgetSummary from '../banking-widget-summary';
 import BankingCurrentBalance from '../banking-current-balance';
 import BankingRecentTransitions from '../banking-recent-transitions';
-import { useCallback, useEffect, useState } from 'react';
-import { useSnackbar } from 'src/components/snackbar';
-import axios from 'src/utils/axios';
-import YearMonthSelection from '../year-month-selection';
 
 // ----------------------------------------------------------------------
 
@@ -32,7 +31,7 @@ export default function OverviewBankingView() {
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, []);
+  }, [enqueueSnackbar]);
 
   const getBankList = useCallback(async () => {
     try {
@@ -42,7 +41,7 @@ export default function OverviewBankingView() {
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, []);
+  }, [enqueueSnackbar]);
 
   const getCategories = useCallback(async () => {
     try {
@@ -52,7 +51,7 @@ export default function OverviewBankingView() {
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, []);
+  }, [enqueueSnackbar]);
 
   const getSummaryChart = useCallback(async () => {
     try {
@@ -62,7 +61,7 @@ export default function OverviewBankingView() {
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, []);
+  }, [enqueueSnackbar]);
 
   useEffect(() => {
     getBankList();
@@ -97,11 +96,11 @@ export default function OverviewBankingView() {
       </Stack> */}
 
       <Grid container spacing={3}>
-        <Grid xs={12} md={6}>
+        {/* <Grid xs={12} md={6}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
             <BankingWidgetSummary title="Income/Expense of this month" chart={summaryChart} />
           </Stack>
-        </Grid>
+        </Grid> */}
 
         <Grid xs={12} md={6}>
           <BankingCurrentBalance

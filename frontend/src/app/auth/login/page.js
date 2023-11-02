@@ -1,5 +1,5 @@
-import { JwtLoginView } from 'src/sections/auth/jwt';
 import { APP_NAME } from 'src/config-global';
+import { JwtLoginView } from 'src/sections/auth/jwt';
 // ----------------------------------------------------------------------
 
 export const metadata = {

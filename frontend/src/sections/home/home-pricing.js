@@ -16,8 +16,6 @@ import { paths } from 'src/routes/paths';
 
 import { useResponsive } from 'src/hooks/use-responsive';
 
-import { _homePlans } from 'src/_mock';
-
 import Iconify from 'src/components/iconify';
 import { varFade, MotionViewport } from 'src/components/animate';
 
@@ -65,7 +63,7 @@ export default function HomePricing() {
             border: (theme) => `dashed 1px ${theme.palette.divider}`,
           }}
         >
-          {_homePlans.map((plan) => (
+          {[].map((plan) => (
             <m.div key={plan.license} variants={varFade().in}>
               <PlanCard key={plan.license} plan={plan} />
             </m.div>
@@ -75,7 +73,7 @@ export default function HomePricing() {
         <>
           <Stack alignItems="center" sx={{ mb: 5 }}>
             <Tabs value={currentTab} onChange={handleChangeTab}>
-              {_homePlans.map((tab) => (
+              {[].map((tab) => (
                 <Tab key={tab.license} value={tab.license} label={tab.license} />
               ))}
             </Tabs>
@@ -87,7 +85,7 @@ export default function HomePricing() {
               border: (theme) => `dashed 1px ${theme.palette.divider}`,
             }}
           >
-            {_homePlans.map(
+            {[].map(
               (tab) =>
                 tab.license === currentTab && (
                   <PlanCard

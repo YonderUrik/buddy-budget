@@ -104,7 +104,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, []);
+  }, [enqueueSnackbar]);
 
   // ----------------------------------------------------------------------
 

@@ -12,6 +12,7 @@ import CardHeader from '@mui/material/CardHeader';
 import ListItemText from '@mui/material/ListItemText';
 import Badge, { badgeClasses } from '@mui/material/Badge';
 import TableContainer from '@mui/material/TableContainer';
+import { LoadingButton } from '@mui/lab';
 import { fCurrency } from 'src/utils/format-number';
 import { useSnackbar } from 'src/components/snackbar';
 import Iconify from 'src/components/iconify';
@@ -23,7 +24,6 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import axios from 'src/utils/axios';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useState } from 'react';
-import { LoadingButton } from '@mui/lab';
 import EmptyContent from 'src/components/empty-content';
 
 // ----------------------------------------------------------------------
@@ -120,11 +120,11 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
     let color = '';
     let icon = '';
     let text = '';
-    if (row.type == 'in') {
+    if (row.type === 'in') {
       color = 'success';
       icon = 'solar:arrow-left-down-line-duotone';
       text = 'Income';
-    } else if (row.type == 'out') {
+    } else if (row.type === 'out') {
       color = 'error';
       icon = 'solar:arrow-right-up-line-duotone';
       text = 'Expense';
@@ -204,7 +204,7 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
       <ConfirmDialog
         open={dialog.value}
         onClose={dialog.onFalse}
-        title={`Delete transaction`}
+        title='Delete transaction'
         content="Are you sure want to delete this transaction?"
         action={
           <LoadingButton

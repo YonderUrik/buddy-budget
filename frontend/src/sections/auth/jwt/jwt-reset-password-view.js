@@ -13,9 +13,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
-import { useSearchParams } from 'src/routes/hooks';
+import { useSearchParams, useRouter } from 'src/routes/hooks';
 import { useBoolean } from 'src/hooks/use-boolean';
-import { useRouter } from 'src/routes/hooks';
 import { SentIcon } from 'src/assets/icons';
 import axios, { endpoints } from 'src/utils/axios';
 
@@ -67,7 +66,7 @@ export default function JwtResetPasswordView() {
 
   const defaultValues = {
     code: '',
-    email: email,
+    email,
     password: '',
     confirmPassword: '',
   };
@@ -113,7 +112,7 @@ export default function JwtResetPasswordView() {
     } catch (error) {
       router.push(paths.auth.jwt.login);
     }
-  }, [email]);
+  }, [email, router]);
 
   useEffect(() => {
     checkUserReset();

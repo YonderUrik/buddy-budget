@@ -1,0 +1,44 @@
+version: '3.7'
+
+networks:
+  subsidia-network:
+    external: true
+    driver: overlay
+
+secrets:
+  mongodb-root-username:
+    external: true
+  mongodb-root-password:
+    external: true
+
+services:
+  # mongodb:
+  #   image: mongo:latest
+  #   ports:
+  #     - "7334:27017"
+  #   volumes:
+  #     - /mnt/mongodb:/data/db
+  #   networks:
+  #     - subsidia-network
+  #   secrets:
+  #     - mongodb-root-username
+  #     - mongodb-root-password
+  #   command: mongod --auth
+
+  backend:
+    secrets:
+      - mongodb-root-username
+      - mongodb-root-password
+    image: bb_backend:0.0.1
+    ports:
+      - "8317:5555"
+    environment:
+      - MONGO_HOST=mongodb:27017
+      - mongodb_username=/run/secrets/mongodb-root-username
+      - mongodb_password=/run/secrets/mongodb-root-password
+    deploy:
+      replicas: 5
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - subsidia-network

@@ -96,11 +96,13 @@ export default function OverviewBankingView() {
       </Stack> */}
 
       <Grid container spacing={3}>
-        {/* <Grid xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
-            <BankingWidgetSummary title="Income/Expense of this month" chart={summaryChart} />
+            {summaryChart && (
+              <BankingWidgetSummary title="Income/Expense of this month" chart={summaryChart} />
+            )}
           </Stack>
-        </Grid> */}
+        </Grid>
 
         <Grid xs={12} md={6}>
           <BankingCurrentBalance

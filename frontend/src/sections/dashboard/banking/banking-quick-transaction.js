@@ -72,15 +72,36 @@ export default function BankingQuickTransaction({
     setAutoWidth(getNumberLength * 24);
   }, [amount]);
 
-  const handleChangeSlider = useCallback((event, newValue) => {
-    setAmount(newValue);
-    methods.setValue('amount', newValue);
-  }, [methods]);
+  let transactionSchema = null;
+  let defaultValues = {};
 
-  const handleChangeInput = useCallback((event) => {
-    setAmount(Number(event.target.value));
-    methods.setValue('amount', Number(event.target.value));
-  }, [methods]);
+  const methods = useForm({
+    resolver: yupResolver(transactionSchema),
+    defaultValues,
+  });
+
+  const {
+    handleSubmit,
+    reset,
+    control,
+    formState: { isSubmitting },
+  } = methods;
+
+  const handleChangeSlider = useCallback(
+    (event, newValue) => {
+      setAmount(newValue);
+      methods.setValue('amount', newValue);
+    },
+    [methods]
+  );
+
+  const handleChangeInput = useCallback(
+    (event) => {
+      setAmount(Number(event.target.value));
+      methods.setValue('amount', Number(event.target.value));
+    },
+    [methods]
+  );
 
   const handleBlur = useCallback(() => {
     if (amount < 0) {
@@ -89,8 +110,6 @@ export default function BankingQuickTransaction({
     }
   }, [amount, methods]);
 
-  let transactionSchema = null;
-  let defaultValues = {};
 
   if (transactionType === 'transfer') {
     transactionSchema = Yup.object().shape({
@@ -121,18 +140,6 @@ export default function BankingQuickTransaction({
       date: new Date(),
     };
   }
-
-  const methods = useForm({
-    resolver: yupResolver(transactionSchema),
-    defaultValues,
-  });
-
-  const {
-    handleSubmit,
-    reset,
-    control,
-    formState: { isSubmitting },
-  } = methods;
 
   const renderInput = (
     <Stack spacing={3}>
@@ -200,7 +207,7 @@ export default function BankingQuickTransaction({
   });
 
   const handleTransactionType = (event, newType) => {
-    console.log("newType", newType)
+    console.log('newType', newType);
     if (newType !== null) {
       methods.setValue('type', newType);
       methods.setValue('category', null);

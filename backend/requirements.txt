@@ -4,3 +4,4 @@ python-dotenv==1.0.0
 flask==3.0.0
 pymongo==4.5.0
 o365==2.0.26
+uwsgi

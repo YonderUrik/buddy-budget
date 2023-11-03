@@ -50,7 +50,7 @@ export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
     <Box
       sx={{
         ...bgGradient({
-          color: alpha(theme.palette.grey[900], 0.6),
+          color: alpha(theme.palette.grey[800], 0.8),
           imgUrl: '/assets/background/overlay_bank_account.jpg',
         }),
         height: '100%',

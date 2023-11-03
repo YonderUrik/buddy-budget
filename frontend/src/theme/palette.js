@@ -15,6 +15,7 @@ export const grey = {
   700: '#454F5B',
   800: '#212B36',
   900: '#161C24',
+  1000 : '#0B1019',
 };
 
 export const primary = {
@@ -63,11 +64,11 @@ export const warning = {
 };
 
 export const error = {
-  lighter: '#FFE6E2',
-  light: '#FFAAAF',
-  main: '#FF7295',
-  dark: '#B73971',
-  darker: '#7A1555',
+  lighter: '#FDE6D6',
+  light: '#F6A084',
+  main: '#E34234',
+  dark: '#A31A25',
+  darker: '#6C0922',
   contrastText: '#FFFFFF',
 };
 
@@ -130,8 +131,8 @@ export function palette(mode) {
       disabled: grey[600],
     },
     background: {
-      paper: grey[800],
-      default: grey[900],
+      paper: grey[900],
+      default: grey[1000],
       neutral: alpha(grey[500], 0.12),
     },
     action: {

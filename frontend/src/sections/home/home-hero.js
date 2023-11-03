@@ -22,6 +22,7 @@ import { bgBlur, bgGradient, textGradient } from 'src/theme/css';
 
 import Iconify from 'src/components/iconify';
 import { varFade, MotionContainer } from 'src/components/animate';
+import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 
@@ -189,7 +190,7 @@ export default function HomeHero() {
       </m.div>
 
       <m.div variants={varFade().in}>
-        <StyledTextGradient
+        {/* <StyledTextGradient
           animate={{ backgroundPosition: '200% center' }}
           transition={{
             repeatType: 'reverse',
@@ -199,17 +200,18 @@ export default function HomeHero() {
           }}
         >
           {APP_NAME}
-        </StyledTextGradient>
+        </StyledTextGradient> */}
+        <Logo vertical />
       </m.div>
 
       <m.div variants={varFade().in}>
         <Stack spacing={1.5} direction={{ xs: 'column-reverse', sm: 'row' }} sx={{ mb: 5 }}>
           <Stack alignItems="center" spacing={2}>
             <Button
+              sx={{ mt: 2 }}
               component={RouterLink}
               href={paths.auth.jwt.login}
               color="inherit"
-              size="large"
               variant="contained"
               startIcon={<Iconify icon="solar:login-3-bold-duotone" width={24} />}
             >

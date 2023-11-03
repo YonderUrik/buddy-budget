@@ -101,17 +101,17 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
     <Stack
       spacing={2}
       sx={{
-        ...bgGradient({
-          direction: '135deg',
-          startColor: alpha(theme.palette[color].light, 0.2),
-          endColor: alpha(theme.palette[color].main, 0.2),
-        }),
+        // ...bgGradient({
+        //   direction: '135deg',
+        //   startColor: alpha(theme.palette[color].light, 0.2),
+        //   endColor: alpha(theme.palette[color].main, 0.2),
+        // }),
         width: 1,
         borderRadius: 2,
         overflow: 'hidden',
         position: 'relative',
-        color: `${color}.darker`,
-        backgroundColor: 'common.white',
+        // color: `${color}.main`,
+        backgroundColor: alpha(theme.palette.grey[400], 0.5),
         ...sx,
       }}
       {...other}
@@ -127,25 +127,28 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
           borderRadius: '50%',
           position: 'absolute',
           color: `${color}.lighter`,
-          bgcolor: `${color}.dark`,
+          bgcolor: `${color}.main`,
         }}
       />
 
       <Stack spacing={1} sx={{ p: 3 }}>
         <Typography variant="subtitle2">{title}</Typography>
 
-        <Typography variant="h4">{fCurrency(lastMonthIncome - lastMonthExpense)}</Typography>
+        <Typography color={`${color}.main`} variant="h4">
+          {fCurrency(lastMonthIncome - lastMonthExpense)}
+        </Typography>
 
         <Stack
           spacing={0.5}
           direction="row"
           flexWrap="wrap"
           alignItems="center"
+          color={`${color}.main`}
           sx={{ typography: 'body2' }}
         >
           <Iconify icon={savingRate < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
 
-          <Box sx={{ typography: 'subtitle2' }}>
+          <Box  sx={{ typography: 'subtitle2' }}>
             {savingRate > 0 && '+'}
             {fPercent(savingRate)}
           </Box>

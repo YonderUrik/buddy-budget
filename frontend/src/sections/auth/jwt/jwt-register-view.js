@@ -1,7 +1,7 @@
 'use client';
 
 import * as Yup from 'yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -164,26 +164,63 @@ export default function JwtRegisterView() {
 }
 
 function PrivacyPolicyComponent() {
-  const htmlContent = `
-    <a href="https://www.iubenda.com/privacy-policy/84137518" class="iubenda-black iubenda-noiframe iubenda-embed iubenda-noiframe " title="Privacy Policy ">Privacy Policy</a>
-    <script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
-  `;
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.iubenda.com/iubenda.js';
+    script.async = true;
+    script.onload = () => {
+      // The Iubenda script has loaded, you can perform any additional logic here
+    };
+    document.body.appendChild(script);
+  }, []);
 
-  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  return (
+    <a
+      href="https://www.iubenda.com/privacy-policy/84137518"
+      className="iubenda-black iubenda-noiframe iubenda-embed iubenda-noiframe"
+      title="Privacy Policy"
+    >
+      Privacy Policy
+    </a>
+  );
+}
+
+function ExternalLinkWithScript({ linkUrl, linkTitle }) {
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.iubenda.com/iubenda.js';
+    script.async = true;
+    script.onload = () => {
+      // The Iubenda script has loaded, you can perform any additional logic here
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  return (
+    <a
+      href={linkUrl}
+      className="iubenda-black iubenda-noiframe iubenda-embed iubenda-noiframe"
+      title={linkTitle}
+    >
+      {linkTitle}
+    </a>
+  );
 }
 
 function CookiePolicyComponent() {
-  const htmlContent = `
-  <a href="https://www.iubenda.com/privacy-policy/84137518/cookie-policy" class="iubenda-black iubenda-noiframe iubenda-embed iubenda-noiframe " title="Cookie Policy ">Cookie Policy</a><script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
-  `;
-
-  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  return (
+    <ExternalLinkWithScript
+      linkUrl="https://www.iubenda.com/privacy-policy/84137518/cookie-policy"
+      linkTitle="Cookie Policy"
+    />
+  );
 }
 
 function Terms() {
-  const htmlContent = `
-  <a href="https://www.iubenda.com/terms-and-conditions/84137518" class="iubenda-black iubenda-noiframe iubenda-embed iubenda-noiframe " title="Terms and Conditions ">Terms and Conditions</a><script type="text/javascript">(function (w,d) {var loader = function () {var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0]; s.src="https://cdn.iubenda.com/iubenda.js"; tag.parentNode.insertBefore(s,tag);}; if(w.addEventListener){w.addEventListener("load", loader, false);}else if(w.attachEvent){w.attachEvent("onload", loader);}else{w.onload = loader;}})(window, document);</script>
-  `;
-
-  return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  return (
+    <ExternalLinkWithScript
+      linkUrl="https://www.iubenda.com/terms-and-conditions/84137518"
+      linkTitle="Terms and Conditions"
+    />
+  );
 }

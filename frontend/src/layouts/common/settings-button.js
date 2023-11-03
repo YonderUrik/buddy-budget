@@ -50,7 +50,7 @@ export default function SettingsButton({ sx }) {
             height: 40,
           }}
         >
-          <Iconify icon="dashicons:admin-appearance" width={24} />
+          <Iconify icon="solar:palette-round-bold-duotone" width={24} />
         </IconButton>
       </Box>
     </Badge>

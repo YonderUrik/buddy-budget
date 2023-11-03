@@ -159,6 +159,19 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
     );
   };
 
+  function formatDate(dateString) {
+    try {
+      const date = new Date(`${dateString} UTC`);
+      if (Number.isNaN(date.getTime())) {
+        // If 'date' is invalid, isNaN will return true
+        throw new Error('Invalid date');
+      }
+      return format(date, 'dd MMM yyyy');
+    } catch (error) {
+      return null; // Handle the error by returning null or any other appropriate value
+    }
+  }
+
   return (
     <>
       <TableRow>
@@ -169,7 +182,7 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
 
         {/* DATE CELL */}
         <TableCell sx={{ py: 0 }}>
-          <ListItemText primary={format(new Date(`${row.date} UTC`), 'dd MMM yyyy')} />
+          <ListItemText primary={formatDate(row.date) || row.date} />
         </TableCell>
 
         {/* AMOUNT CELL */}
@@ -208,7 +221,7 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
       <ConfirmDialog
         open={dialog.value}
         onClose={dialog.onFalse}
-        title='Delete transaction'
+        title="Delete transaction"
         content="Are you sure want to delete this transaction?"
         action={
           <LoadingButton

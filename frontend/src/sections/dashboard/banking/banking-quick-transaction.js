@@ -77,6 +77,36 @@ export default function BankingQuickTransaction({
   let transactionSchema = null;
   let defaultValues = {};
 
+  if (transactionType === 'transfer') {
+    transactionSchema = Yup.object().shape({
+      cardName: Yup.string().required('Origin bank account required'),
+      cardNameTo: Yup.string().required('Destination bank account required'),
+      date: Yup.mixed().nullable().required('Date is required'),
+    });
+
+    defaultValues = {
+      type: transactionType,
+      cardName: '',
+      cardNameTo: '',
+      amount: 0,
+      date: new Date(),
+    };
+  } else {
+    transactionSchema = Yup.object().shape({
+      cardName: Yup.string().required('Bank account required'),
+      category: Yup.object().required('Category required'),
+      date: Yup.mixed().nullable().required('Date is required'),
+    });
+
+    defaultValues = {
+      type: transactionType,
+      cardName: '',
+      amount: 0,
+      category: null,
+      date: new Date(),
+    };
+  }
+
   const methods = useForm({
     resolver: yupResolver(transactionSchema),
     defaultValues,
@@ -111,36 +141,6 @@ export default function BankingQuickTransaction({
       methods.setValue('amount', 0);
     }
   }, [amount, methods]);
-
-  if (transactionType === 'transfer') {
-    transactionSchema = Yup.object().shape({
-      cardName: Yup.string().required('Origin bank account required'),
-      cardNameTo: Yup.string().required('Destination bank account required'),
-      date: Yup.mixed().nullable().required('Date is required'),
-    });
-
-    defaultValues = {
-      type: transactionType,
-      cardName: '',
-      cardNameTo: '',
-      amount: 0,
-      date: new Date(),
-    };
-  } else {
-    transactionSchema = Yup.object().shape({
-      cardName: Yup.string().required('Bank account required'),
-      category: Yup.object().required('Category required'),
-      date: Yup.mixed().nullable().required('Date is required'),
-    });
-
-    defaultValues = {
-      type: transactionType,
-      cardName: '',
-      amount: 0,
-      category: null,
-      date: new Date(),
-    };
-  }
 
   const renderInput = (
     <Stack spacing={3}>

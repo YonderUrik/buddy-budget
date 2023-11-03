@@ -20,9 +20,9 @@ import { APP_NAME } from 'src/config-global';
 import { HEADER } from 'src/layouts/config-layout';
 import { bgBlur, bgGradient, textGradient } from 'src/theme/css';
 
+import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
 import { varFade, MotionContainer } from 'src/components/animate';
-import Logo from 'src/components/logo';
 
 // ----------------------------------------------------------------------
 

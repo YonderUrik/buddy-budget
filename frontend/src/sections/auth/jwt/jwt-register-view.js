@@ -1,8 +1,9 @@
 'use client';
 
 import * as Yup from 'yup';
-import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import Link from '@mui/material/Link';
@@ -184,6 +185,11 @@ function PrivacyPolicyComponent() {
     </a>
   );
 }
+
+ExternalLinkWithScript.propTypes = {
+  linkUrl: PropTypes.string.isRequired,
+  linkTitle: PropTypes.string.isRequired,
+};
 
 function ExternalLinkWithScript({ linkUrl, linkTitle }) {
   useEffect(() => {

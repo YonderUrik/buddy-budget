@@ -16,11 +16,14 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 import { useRouter, useSearchParams } from 'src/routes/hooks';
-import axios, { endpoints } from 'src/utils/axios';
+
 import { useBoolean } from 'src/hooks/use-boolean';
+
+import axios, { endpoints } from 'src/utils/axios';
 
 import { useAuthContext } from 'src/auth/hooks';
 import { PATH_AFTER_LOGIN, APP_NAME } from 'src/config-global';
+
 import Iconify from 'src/components/iconify';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 

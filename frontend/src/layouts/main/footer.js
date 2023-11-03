@@ -12,10 +12,10 @@ import { paths } from 'src/routes/paths';
 import { usePathname } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 
+import { APP_NAME } from 'src/config-global';
 
 import Logo from 'src/components/logo';
 import Iconify from 'src/components/iconify';
-import { APP_NAME } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 

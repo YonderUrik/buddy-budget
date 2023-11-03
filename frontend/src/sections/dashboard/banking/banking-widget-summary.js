@@ -1,10 +1,14 @@
 import PropTypes from 'prop-types';
+
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
+
 import { fPercent, fCurrency } from 'src/utils/format-number';
+
 import { bgGradient } from 'src/theme/css';
+
 import Iconify from 'src/components/iconify';
 import Chart, { useChart } from 'src/components/chart';
 import EmptyContent from 'src/components/empty-content';

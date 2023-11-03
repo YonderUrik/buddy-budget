@@ -6,8 +6,10 @@ import Stack from '@mui/material/Stack';
 import { alpha } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-import { varFade, MotionViewport } from 'src/components/animate';
+
 import { APP_NAME } from 'src/config-global';
+
+import { varFade, MotionViewport } from 'src/components/animate';
 
 // ----------------------------------------------------------------------
 

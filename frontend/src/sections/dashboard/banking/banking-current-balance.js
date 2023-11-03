@@ -1,27 +1,32 @@
+import * as Yup from 'yup';
 import PropTypes from 'prop-types';
+import { useForm } from 'react-hook-form';
 import { useCallback, useState } from 'react';
+import { yupResolver } from '@hookform/resolvers/yup';
+
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import { LoadingButton } from '@mui/lab';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { fCurrency } from 'src/utils/format-number';
-import { bgGradient } from 'src/theme/css';
-import { useSnackbar } from 'src/components/snackbar';
-import Iconify from 'src/components/iconify';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import Carousel, { useCarousel, CarouselDots } from 'src/components/carousel';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import * as Yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
-import { useForm } from 'react-hook-form';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+
 import axios from 'src/utils/axios';
 import { fToNow } from 'src/utils/format-time';
+import { fCurrency } from 'src/utils/format-number';
+
+import { bgGradient } from 'src/theme/css';
+
+import Iconify from 'src/components/iconify';
+import { useSnackbar } from 'src/components/snackbar';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import Carousel, { useCarousel, CarouselDots } from 'src/components/carousel';
 // ----------------------------------------------------------------------
 
 export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
@@ -268,7 +273,7 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
             <Stack spacing={1}>
               <Typography sx={{ typography: 'caption', opacity: 0.48 }}>Last Update</Typography>
               <Typography sx={{ typography: 'subtitle1' }}>
-                {fToNow(`${lastUpdate} UTC`)}
+                {fToNow(`${lastUpdate} UTC`) || lastUpdate}
               </Typography>
             </Stack>
           </Stack>

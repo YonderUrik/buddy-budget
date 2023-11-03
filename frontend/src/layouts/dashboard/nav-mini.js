@@ -1,9 +1,8 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 
-import { useAuthContext } from 'src/auth/hooks';
-
 import { hideScroll } from 'src/theme/css';
+import { useAuthContext } from 'src/auth/hooks';
 
 import Logo from 'src/components/logo';
 import { NavSectionMini } from 'src/components/nav-section';

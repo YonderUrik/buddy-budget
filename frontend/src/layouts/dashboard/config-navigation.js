@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 
 import { paths } from 'src/routes/paths';
-import Iconify from 'src/components/iconify';
+
 import { APP_NAME } from 'src/config-global';
+
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 

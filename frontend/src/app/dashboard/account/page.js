@@ -1,4 +1,5 @@
 import { APP_NAME } from 'src/config-global';
+
 import { AccountView } from 'src/sections/dashboard/account/view';
 // ----------------------------------------------------------------------
 

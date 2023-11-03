@@ -1,22 +1,25 @@
+import * as Yup from 'yup';
 import PropTypes from 'prop-types';
-import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as Yup from 'yup';
+import { useState, useEffect, useCallback } from 'react';
+
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import { LoadingButton } from '@mui/lab';
 import Slider from '@mui/material/Slider';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import Input, { inputClasses } from '@mui/material/Input';
-import axios from 'src/utils/axios';
-import { useSnackbar } from 'src/components/snackbar';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { fCurrency } from 'src/utils/format-number';
-import Iconify from 'src/components/iconify';
-import FormProvider, { RHFAutocomplete } from 'src/components/hook-form';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
+
+import axios from 'src/utils/axios';
+import { fCurrency } from 'src/utils/format-number';
+
+import Iconify from 'src/components/iconify';
+import { useSnackbar } from 'src/components/snackbar';
+import FormProvider, { RHFAutocomplete } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
@@ -46,7 +49,6 @@ export default function BankingQuickTransaction({
 
   let subcategories = [];
   if (transactionType !== 'transfer') {
-    console.log(transactionType);
     subcategories = categories[transactionType].reduce((acc, category) => {
       const categoryLabel = category.category_name;
       const categoryId = category.category_id;
@@ -109,7 +111,6 @@ export default function BankingQuickTransaction({
       methods.setValue('amount', 0);
     }
   }, [amount, methods]);
-
 
   if (transactionType === 'transfer') {
     transactionSchema = Yup.object().shape({
@@ -207,7 +208,6 @@ export default function BankingQuickTransaction({
   });
 
   const handleTransactionType = (event, newType) => {
-    console.log('newType', newType);
     if (newType !== null) {
       methods.setValue('type', newType);
       methods.setValue('category', null);

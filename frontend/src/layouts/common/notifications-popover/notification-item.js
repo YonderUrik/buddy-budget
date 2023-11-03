@@ -68,7 +68,7 @@ export default function NotificationItem({ notification }) {
             />
           }
         >
-          {fToNow(notification.createdAt)}
+          {fToNow(notification.createdAt) || notification.createdAt}
           {notification.category}
         </Stack>
       }

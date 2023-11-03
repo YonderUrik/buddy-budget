@@ -4,9 +4,8 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import { useTheme } from '@mui/material/styles';
 
-import { useAuthContext } from 'src/auth/hooks';
-
 import { bgBlur } from 'src/theme/css';
+import { useAuthContext } from 'src/auth/hooks';
 
 import Scrollbar from 'src/components/scrollbar';
 import { NavSectionHorizontal } from 'src/components/nav-section';

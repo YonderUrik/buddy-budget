@@ -1,4 +1,5 @@
 import { APP_NAME } from 'src/config-global';
+
 import { OverviewBankingView } from 'src/sections/dashboard/banking/view';
 // ----------------------------------------------------------------------
 

@@ -48,7 +48,7 @@ export default function NavVertical({ openNav, onCloseNav }) {
         },
       }}
     >
-      <Logo sx={{ mt: 3, ml: 4, mb: 1 }} />
+      <Logo vertical sx={{ mt: 3, mb: 1 }} />
 
       <NavSectionVertical
         data={navData}
@@ -58,7 +58,6 @@ export default function NavVertical({ openNav, onCloseNav }) {
       />
 
       <Box sx={{ flexGrow: 1 }} />
-
     </Scrollbar>
   );
 

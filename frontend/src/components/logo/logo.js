@@ -9,7 +9,7 @@ import { RouterLink } from 'src/routes/components';
 
 // ----------------------------------------------------------------------
 
-const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
+const Logo = forwardRef(({ vertical = false, disabledLink = false, sx, ...other }, ref) => {
   const theme = useTheme();
 
   const PRIMARY_LIGHT = theme.palette.primary.light;
@@ -18,23 +18,25 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
 
   const PRIMARY_DARK = theme.palette.primary.dark;
 
-  // OR using local (public folder)
-  // -------------------------------------------------------
-  // const logo = (
-  //   <Box
-  //     component="img"
-  //     src="/logo/logo_single.svg" => your path
-  //     sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
-  //   />
-  // );
+  let logo = null;
 
-  const logo = (
-    <Box
-      component="img"
-      src="/logo/logo_single.png"
-      sx={{ width: 52, height: 52, cursor: 'pointer', ...sx }}
-    />
-  );
+  if (vertical) {
+    logo = (
+      <Box
+        component="img"
+        src="/logo/logo_complete.png"
+        sx={{ height: 50, cursor: 'pointer', ...sx }}
+      />
+    );
+  } else {
+    logo = (
+      <Box
+        component="img"
+        src="/logo/logo_single.png"
+        sx={{ width: 40, height: 40, cursor: 'pointer', ...sx }}
+      />
+    );
+  }
 
   if (disabledLink) {
     return logo;
@@ -49,6 +51,7 @@ const Logo = forwardRef(({ disabledLink = false, sx, ...other }, ref) => {
 
 Logo.propTypes = {
   disabledLink: PropTypes.bool,
+  vertical: PropTypes.bool,
   sx: PropTypes.object,
 };
 

@@ -18,56 +18,56 @@ export const grey = {
 };
 
 export const primary = {
-  lighter: '#EC7F6E',
-  light: '#DA4F48',
-  main: '#C2151C',
-  dark: '#A60F22',
-  darker: '#8B0A26',
+  lighter: '#FDF4D7',
+  light: '#F7D186',
+  main: '#E69C37',
+  dark: '#A55F1B',
+  darker: '#6E330A',
   contrastText: '#FFFFFF',
 };
 
 export const secondary = {
-  lighter: '#D6E4FF',
-  light: '#84A9FF',
-  main: '#3366FF',
-  dark: '#1939B7',
-  darker: '#091A7A',
+  lighter: '#D3D4F8',
+  light: '#787BDA',
+  main: '#222485',
+  dark: '#11125F',
+  darker: '#06073F',
   contrastText: '#FFFFFF',
 };
 
 export const info = {
-  lighter: '#5CE5E7',
-  light: '#33C1CF',
-  main: '#0092AF',
-  dark: '#007296',
-  darker: '#00557D',
+  lighter: '#D8F6FE',
+  light: '#89D8FE',
+  main: '#3CA9FC',
+  dark: '#1E63B5',
+  darker: '#0B3178',
   contrastText: '#FFFFFF',
 };
 
 export const success = {
-  lighter: '#58D883',
-  light: '#2EB268',
-  main: '#027F45',
-  dark: '#016D45',
-  darker: '#015B43',
+  lighter: '#EDFDDF',
+  light: '#B8F49F',
+  main: '#6EDD5D',
+  dark: '#2E9F31',
+  darker: '#116A21',
   contrastText: '#FFFFFF',
 };
 
 export const warning = {
-  lighter: '#FBDB64',
-  light: '#F8CB3E',
-  main: '#F4B300',
-  dark: '#D19400',
-  darker: '#AF7700',
+  lighter: '#FFF9CD',
+  light: '#FFE969',
+  main: '#FFD105',
+  dark: '#B78F02',
+  darker: '#7A5A00',
   contrastText: grey[800],
 };
 
 export const error = {
-  lighter: '#F1897A',
-  light: '#E35C57',
-  main: '#D1252E',
-  dark: '#B31B30',
-  darker: '#961231',
+  lighter: '#FFE6E2',
+  light: '#FFAAAF',
+  main: '#FF7295',
+  dark: '#B73971',
+  darker: '#7A1555',
   contrastText: '#FFFFFF',
 };
 

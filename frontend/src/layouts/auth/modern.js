@@ -52,7 +52,7 @@ export default function AuthModernLayout({ children, image }) {
         sx={{
           top: 16,
           left: 16,
-          opacity: 0.18,
+          opacity: 0.5,
           objectFit: 'cover',
           position: 'absolute',
           width: 'calc(100% - 32px)',

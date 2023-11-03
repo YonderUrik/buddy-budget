@@ -1,10 +1,10 @@
 {
-  "name": "change-me",
-  "short_name": "change-me",
+  "name": "BuddyBudget",
+  "short_name": "Saving money has never been so easy",
   "display": "standalone",
   "start_url": "/",
-  "theme_color": "#000000",
-  "background_color": "#ffffff",
+  "theme_color": "#E69C37",
+  "background_color": "#E69C37",
   "icons": [
     {
       "src": "favicon/android-chrome-192x192.png",

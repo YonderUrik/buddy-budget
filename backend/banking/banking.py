@@ -281,6 +281,23 @@ def get_summary_chart():
     
     return json.dumps(summary, default=str)
 
+@bp.route('/get-expenses-category-chart', methods=["POST"])
+@jwt_required()
+def get_expenses_category_chart():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    mongo = BankingMongo()
+    status, summary = mongo.get_expenses_category_chart(user_id=user_id)
+
+    if status != 200:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
+        
+    return json.dumps(summary, default=str)
+
+
 
 
 

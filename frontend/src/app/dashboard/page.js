@@ -4,7 +4,7 @@ import HomeView from 'src/sections/dashboard/view';
 // ----------------------------------------------------------------------
 
 export const metadata = {
-  title: `${APP_NAME}: Home`,
+  title: `${APP_NAME}: NetWorth`,
 };
 
 export default function Page() {

@@ -7,6 +7,20 @@ from datetime import datetime
 from bson.objectid import ObjectId
 from dateutil.relativedelta import relativedelta
 
+def explode_categories(categories, parent_category_name='', parent_category_id=None):
+    exploded_categories = []
+
+    for category in categories:
+        category_name = parent_category_name + ' - ' + category['subcategory_name'] if parent_category_name else category['category_name']
+
+        if parent_category_id is not None:
+            exploded_categories.append({'subcategory_id': category.get('subcategory_id'), 'subcategory_name': category_name})
+        
+        if 'subcategories' in category:
+            subcategory_id = category.get('subcategory_id', None)
+            exploded_categories.extend(explode_categories(category['subcategories'], category_name, subcategory_id))
+
+    return exploded_categories
 
 logger = logging.getLogger(__name__)
 class BankingMongo(BaseMongo):
@@ -18,6 +32,85 @@ class BankingMongo(BaseMongo):
         Init BankingMongo -> Extend BaseMongo 
         """
         super(BankingMongo, self).__init__()
+        
+    def get_expenses_category_chart(self, user_id=None):
+        try:
+            # Define the aggregation pipeline
+            # Define the aggregation pipeline
+            pipeline = [
+                {
+                    "$match": {
+                        "type": "out"
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": {
+                            "categoryId": "$categoryId",
+                            "subCategoryId": "$subCategoryId"
+                        },
+                        "totalAmount": {
+                            "$sum": "$amount"
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$_id.categoryId",
+                        "data": {
+                            "$push": {
+                                "x": "$_id.subCategoryId",
+                                "y": "$totalAmount"
+                            }
+                        },
+                        "mainTotalAmount": {
+                            "$sum": "$totalAmount"
+                        }
+                    }
+                },
+                {
+                    "$project": {
+                        "name": "$_id",
+                        "data": 1,
+                        "mainTotalAmount": 1,
+                        "_id": 0
+                    }
+                },
+                {
+                    "$sort" : {
+                        "mainTotalAmount" : -1
+                    }
+                }
+            ]
+
+            # Execute the aggregation query
+            result = list(self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].aggregate(pipeline))
+
+            status, categories = self.get_categories(user_id=user_id)
+            categories = categories['out']
+
+
+            for document in result:
+                categoryId = document['name']
+
+                for category in categories:
+                    if category['category_id'] == categoryId:
+                        document['name'] = category['category_name']
+
+                        for doc_subCat in document['data']:
+                            subCategoryId = doc_subCat['x']
+                            for subcategories in category['subcategories']:
+                                if subcategories['subcategory_id'] == subCategoryId:
+                                    doc_subCat['x'] = subcategories['subcategory_name']
+                                    break
+                        break
+
+            return 200, result
+
+        except Exception as e:
+            logger.error(e)
+            return 500, str(e)
+
 
     def get_bank_by_name(self,user_id=None, card_name=None):
         
@@ -341,8 +434,7 @@ class BankingMongo(BaseMongo):
             return 200, "Transaction added"
         except Exception as e:
             logger.error(e)
-            return 500, MSG.SOMETHING_GOES_WRONG_ENG
-        
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG  
     
     def get_transactions(self, user_id = None):
         try:    

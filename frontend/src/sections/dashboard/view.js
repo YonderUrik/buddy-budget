@@ -1,31 +1,49 @@
 'use client';
 
+import { useCallback, useEffect, useState } from 'react';
+
 import Box from '@mui/material/Box';
-import { alpha } from '@mui/material/styles';
+import { Grid } from '@mui/material';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { alpha, useTheme } from '@mui/material/styles';
+
+import axios from 'src/utils/axios';
 
 import { useSettingsContext } from 'src/components/settings';
+
+import BankingExpensesCategories from './banking/banking-expenses-categories';
 
 // ----------------------------------------------------------------------
 
 export default function HomeView() {
   const settings = useSettingsContext();
 
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+
+  const getCategories = useCallback(async () => {
+    try {
+      const response = await axios.post('/api/banking/get-expenses-category-chart', {});
+      const { data } = response;
+      setCategories(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+  useEffect(() => {
+    getCategories();
+  }, [getCategories]);
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Typography variant="h4"> Home </Typography>
+      <Typography variant="h4"> NetWorth </Typography>
 
-      <Box
-        sx={{
-          mt: 5,
-          width: 1,
-          height: 320,
-          borderRadius: 2,
-          bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
-          border: (theme) => `dashed 1px ${theme.palette.divider}`,
-        }}
-      />
+      <Grid sx={{ mt: 2 }} container spacing={2}>
+        <Grid item xs={12} md={12}>
+          <BankingExpensesCategories title="Expenses Categories" chart={{ series: categories }} />
+        </Grid>
+      </Grid>
     </Container>
   );
 }

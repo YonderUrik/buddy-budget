@@ -35,6 +35,11 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={primaryFont.className}>
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441"
+        crossOrigin="anonymous"
+      ></script>
       <body>
         <AuthProvider>
           <LocalizationProvider>

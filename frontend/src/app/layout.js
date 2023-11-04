@@ -2,7 +2,7 @@
 import 'src/global.css';
 
 // ----------------------------------------------------------------------
-
+import Head from 'next/head';
 import PropTypes from 'prop-types';
 import SnackbarProvider from 'src/components/snackbar/snackbar-provider';
 import { LocalizationProvider } from 'src/locales';
@@ -35,11 +35,43 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={primaryFont.className}>
-      <script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441"
-        crossOrigin="anonymous"
-      />
+      <Head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441"
+          crossOrigin="anonymous"
+        />
+        <script
+          async
+          src="https://fundingchoicesmessages.google.com/i/pub-7935286005444441?ers=1"
+          nonce="jS6YVAgsuGlYDk9b9i97Vw"
+        />
+        <script
+          async
+          src="https://fundingchoicesmessages.google.com/i/pub-7935286005444441?ers=1"
+          nonce="jS6YVAgsuGlYDk9b9i97Vw"
+        >
+          {`
+            (function() {
+              function signalGooglefcPresent() {
+                if (!window.frames['googlefcPresent']) {
+                  if (document.body) {
+                    const iframe = document.createElement('iframe');
+                    iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';
+                    iframe.style.display = 'none';
+                    iframe.name = 'googlefcPresent';
+                    document.body.appendChild(iframe);
+                  } else {
+                    setTimeout(signalGooglefcPresent, 0);
+                  }
+                }
+              }
+              signalGooglefcPresent();
+            })();
+          `}
+        </script>
+      </Head>
+
       <body>
         <AuthProvider>
           <LocalizationProvider>

@@ -39,7 +39,7 @@ def add_bank():
     if status == False:
         return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
     
-    if bankExists:
+    if bankExists or _cardName == 'External wallet':
         return {"message" : "This bank name already exists"}, 400
     
     bank_doc = {
@@ -226,7 +226,7 @@ def add_transaction():
     if status == False:
         return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
     
-    if not bankExists and cleaned_data['cardName'] != 'Out the wallet':
+    if not bankExists and cleaned_data['cardName'] != 'External wallet':
         return {"message" : "This bank name don't exists"}, 400
     
     if transactionType == 'transfer':
@@ -236,15 +236,15 @@ def add_transaction():
         if status == False:
             return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, 500
         
-        if not bankExists and cleaned_data['cardNameTo'] != 'Out the wallet':
+        if not bankExists and cleaned_data['cardNameTo'] != 'External wallet':
             return {"message" : "This destination card name don't exists"}, 400
 
         # If is a transfer do some controls
         if cleaned_data['cardName'] == cleaned_data['cardNameTo']:
             return {"message" : "Cannot transfer to the same bank account"}, 400
         
-        if cleaned_data['cardName'] == 'Out the wallet' and cleaned_data['cardName'] == cleaned_data['cardNameTo']:
-            return {"message" : "Only a bank can be Out the wallet"}, 400
+        if cleaned_data['cardName'] == 'External wallet' and cleaned_data['cardName'] == cleaned_data['cardNameTo']:
+            return {"message" : "Only a bank can be External wallet"}, 400
         
     else:
         # Else do other controlos

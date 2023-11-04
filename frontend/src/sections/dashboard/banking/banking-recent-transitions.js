@@ -29,6 +29,7 @@ import { TableHeadCustom } from 'src/components/table';
 import EmptyContent from 'src/components/empty-content';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { fDate } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 
@@ -159,18 +160,6 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
     );
   };
 
-  function formatDate(dateString) {
-    try {
-      const date = new Date(`${dateString} UTC`);
-      if (Number.isNaN(date.getTime())) {
-        // If 'date' is invalid, isNaN will return true
-        throw new Error('Invalid date');
-      }
-      return format(date, 'dd MMM yyyy');
-    } catch (error) {
-      return null; // Handle the error by returning null or any other appropriate value
-    }
-  }
 
   return (
     <>
@@ -182,7 +171,7 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
 
         {/* DATE CELL */}
         <TableCell sx={{ py: 0 }}>
-          <ListItemText primary={formatDate(row.date) || row.date} />
+          <ListItemText primary={fDate(row.date) || row.date} />
         </TableCell>
 
         {/* AMOUNT CELL */}

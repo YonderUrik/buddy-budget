@@ -280,10 +280,8 @@ export default function BankingQuickTransaction({
               sx={{ my: 1 }}
               size="small"
               name="cardName"
-              options={
-                transactionType === 'transfer' ? [...bankOptions, 'Out the wallet'] : bankOptions
-              }
-              label="From"
+              options={[...bankOptions, 'External wallet']}
+              label={transactionType === 'transfer' ? 'From' : 'Bank'}
             />
 
             {transactionType === 'transfer' ? (
@@ -291,7 +289,7 @@ export default function BankingQuickTransaction({
                 sx={{ my: 1 }}
                 size="small"
                 name="cardNameTo"
-                options={[...bankOptions, 'Out the wallet']}
+                options={[...bankOptions, 'External wallet']}
                 label="To"
               />
             ) : (

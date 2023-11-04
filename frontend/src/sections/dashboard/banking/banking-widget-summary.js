@@ -30,19 +30,15 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
 
   chartOptions = useChart({
     colors: [theme.palette.success.main, theme.palette.error.main],
-    chart: {
-      sparkline: {
-        enabled: true,
-      },
-    },
     dataLabels: {
       enabled: true,
       position: 'inside',
       style: {
-        colors: ['secondary'],
+        colors: [theme.palette.grey[300]],
       },
       background: {
         enabled: true,
+        foreColor : theme.palette.primary.main,
       },
       formatter(val, opt) {
         if (val === 0) {
@@ -50,7 +46,6 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         }
         return `€ ${val}`;
       },
-      offsetY: 10,
     },
     fill: {
       type: series.map((i) => i.fill),
@@ -99,7 +94,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
 
   return (
     <Stack
-      spacing={2}
+      spacing={0}
       sx={{
         // ...bgGradient({
         //   direction: '135deg',
@@ -111,7 +106,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         overflow: 'hidden',
         position: 'relative',
         // color: `${color}.main`,
-        backgroundColor: alpha(theme.palette.grey[400], 0.5),
+        backgroundColor: 'background.neutral',
         ...sx,
       }}
       {...other}
@@ -131,7 +126,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         }}
       />
 
-      <Stack spacing={1} sx={{ p: 3 }}>
+      <Stack spacing={1} sx={{ p: 2 }}>
         <Typography variant="subtitle2">{title}</Typography>
 
         <Typography color={`${color}.main`} variant="h4">
@@ -148,7 +143,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         >
           <Iconify icon={savingRate < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
 
-          <Box  sx={{ typography: 'subtitle2' }}>
+          <Box sx={{ typography: 'subtitle2' }}>
             {savingRate > 0 && '+'}
             {fPercent(savingRate)}
           </Box>
@@ -159,7 +154,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
 
       {chart ? (
         <Chart
-          sx={{ m: 1, pt: 1 }}
+          sx={{ m: 1 }}
           dir="ltr"
           type="bar"
           series={series}

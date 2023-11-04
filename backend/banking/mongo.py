@@ -189,6 +189,7 @@ class BankingMongo(BaseMongo):
         return False
     
     def add_transaction(self, user_id=None, transaction_doc=None):
+        # TODO: Optimize this function. A lot of parts are repeated
         try:
             if not user_id or not transaction_doc:
                 raise Exception("missing values")
@@ -237,7 +238,7 @@ class BankingMongo(BaseMongo):
 
                     self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
             else:
-                if transaction_doc['cardName'] == 'Out the wallet':
+                if transaction_doc['cardName'] == 'External wallet':
 
                     # In this case the transaction is like an income
 
@@ -260,7 +261,7 @@ class BankingMongo(BaseMongo):
                         new_balance = last_balance + transaction_doc['amount']
                         new_bank_doc['balance'] = new_balance
                         self.client[user_id][MONGO_VARS.BANKS_COLLECTION].insert_one(new_bank_doc)
-                elif transaction_doc['cardNameTo'] == 'Out the wallet':
+                elif transaction_doc['cardNameTo'] == 'External wallet':
                     # In this case the transaction is like an expense
                     last_bank_update = self.client[user_id][MONGO_VARS.BANKS_COLLECTION].find_one({"cardName" : transaction_doc['cardName'], "lastUpdate" : {"$lt" : transaction_doc['date']}}, sort=[("_id", -1)])
 

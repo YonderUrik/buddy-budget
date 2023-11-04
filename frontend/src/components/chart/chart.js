@@ -10,6 +10,7 @@ import { bgBlur } from 'src/theme/css';
 const ApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const Chart = styled(ApexChart)(({ theme }) => ({
+  margin: '46px',
   '& .apexcharts-canvas': {
     // Tooltip
     '& .apexcharts-tooltip': {

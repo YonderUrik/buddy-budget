@@ -273,7 +273,7 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
             <Stack spacing={1}>
               <Typography sx={{ typography: 'caption', opacity: 0.48 }}>Last Update</Typography>
               <Typography sx={{ typography: 'subtitle1' }}>
-                {fToNow(`${lastUpdate} UTC`) || lastUpdate}
+                {fToNow(`${lastUpdate}Z`)}
               </Typography>
             </Stack>
           </Stack>

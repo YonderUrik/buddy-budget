@@ -20,12 +20,14 @@ export function fTimestamp(date) {
 
 export function fToNow(date) {
   try {
+    console.log(date)
     return date
       ? formatDistanceToNow(new Date(date), {
           addSuffix: true,
         })
       : '';
   } catch (error) {
+    console.error(error);
     return date;
   }
 }

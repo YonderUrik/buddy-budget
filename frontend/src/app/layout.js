@@ -39,7 +39,7 @@ export default function RootLayout({ children }) {
         async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441"
         crossOrigin="anonymous"
-      ></script>
+      />
       <body>
         <AuthProvider>
           <LocalizationProvider>

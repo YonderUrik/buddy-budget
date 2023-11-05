@@ -3,7 +3,7 @@ from mongo_base import BaseMongo
 import mongo_vars as MONGO_VARS
 import app_msgs as MSG
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 from dateutil.relativedelta import relativedelta
 
@@ -443,6 +443,115 @@ class BankingMongo(BaseMongo):
             
             result = list(self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].find({"date": {"$gte": startDate, "$lte": endDate}}).sort("date", -1))
             return 200, result
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+        
+    def get_summary_net_worth(self, user_id=None):
+        try:
+            # Create an aggregation pipeline to group data by CardName and date
+            pipeline = [
+                {
+                    "$sort": {
+                        "cardName": 1,
+                        "lastUpdate": 1
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": {
+                            "cardName": "$cardName",
+                            "date": {
+                                "$dateToString": {
+                                    "format": "%Y-%m-%d",
+                                    "date": "$lastUpdate"
+                                }
+                            }
+                        },
+                        "balance": {"$last": "$balance"}
+                    }
+                },
+                {
+                    "$project": {
+                        "name": "$_id.cardName",
+                        "date": "$_id.date",
+                        "balance": 1,
+                        "lastUpdate": 1
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$name",
+                        "data": {
+                            "$push": {
+                                "x": "$date",
+                                "y": "$balance",
+                            }
+                        }
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "name": "$_id",
+                        "data": {
+                            "$map": {
+                                "input": "$data",
+                                "as": "datum",
+                                "in": {
+                                    "x": "$$datum.x",
+                                    "y": {
+                                        "$ifNull": ["$$datum.y", { "$first": "$$datum.y" }]
+                                    },
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+            result = list(self.client[user_id][MONGO_VARS.BANKS_COLLECTION].aggregate(pipeline))
+
+           # Assuming you have the result in the 'result' variable
+            # Find the maximum date across all elements
+            max_date = max(max(item['data'], key=lambda x: x['x'])['x'] for item in result)
+            max_date_datetime = datetime.strptime(max(max(item['data'], key=lambda x: x['x'])['x'] for item in result),'%Y-%m-%d').replace(hour=23, minute=59, second=59)
+
+            for item in result:
+                
+                data = sorted(item['data'], key=lambda item: item['x'])
+                if len(data) > 0:
+                    filled_data = []
+                    current_date = datetime.strptime(min(data[0]['x'], max_date), '%Y-%m-%d')
+                    for point in data:
+                        while current_date < datetime.strptime(point['x'], '%Y-%m-%d'):
+                            # Fill missing dates with the value of the previous date
+                            filled_data.append({'x': current_date.strftime('%Y-%m-%d'), 'y': filled_data[-1]['y']})
+                            current_date += timedelta(days=1)
+                        filled_data.append({'x': point['x'], 'y': point['y']})
+                        current_date += timedelta(days=1)
+                    # Fill any remaining dates up to the max_date
+                    while current_date <= max_date_datetime:
+                        filled_data.append({'x': current_date.strftime('%Y-%m-%d'), 'y': filled_data[-1]['y']})
+                        current_date += timedelta(days=1)
+                    item['data'] = filled_data
+
+            # Create a dictionary to store the sums for each 'x' value
+            totals = {}
+
+            for item in result:
+                for entry in item['data']:
+                    x_value = entry['x']
+                    y_value = entry['y']
+                    if x_value in totals:
+                        totals[x_value] += y_value
+                    else:
+                        totals[x_value] = y_value
+
+            # Create the 'Total' document with the aggregated values
+            total_document = {'name': 'Total', 'data': [{'x': x, 'y': total} for x, total in totals.items()]}
+
+            return 200, [total_document]
+
         except Exception as e:
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG

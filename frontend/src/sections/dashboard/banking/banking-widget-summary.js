@@ -29,7 +29,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
   series = chart.series; // Set the series based on the chart prop
 
   chartOptions = useChart({
-    colors: [theme.palette.success.main, theme.palette.error.main],
+    colors: [theme.palette.error.main],
     dataLabels: {
       enabled: true,
       position: 'inside',
@@ -38,7 +38,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
       },
       background: {
         enabled: true,
-        foreColor : theme.palette.primary.main,
+        foreColor: theme.palette.primary.main,
       },
       formatter(val, opt) {
         if (val === 0) {
@@ -157,7 +157,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
           sx={{ m: 1 }}
           dir="ltr"
           type="bar"
-          series={series}
+          series={[series[1]] || []}
           options={chartOptions}
           width="100%"
           height={200}

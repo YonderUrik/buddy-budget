@@ -15,6 +15,15 @@ import BankingWidgetSummary from '../banking-widget-summary';
 import BankingCurrentBalance from '../banking-current-balance';
 import BankingQuickTransaction from '../banking-quick-transaction';
 import BankingRecentTransitions from '../banking-recent-transitions';
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
+import { DateRangePicker } from 'react-date-range';
+import { Button, Popover } from '@mui/material';
+import subMonths from 'date-fns/subMonths';
+import startOfMonth from 'date-fns/startOfMonth';
+import endOfMonth from 'date-fns/endOfMonth';
+import format from 'date-fns/format';
+import { formatRange } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 
@@ -24,18 +33,25 @@ export default function OverviewBankingView() {
   const [categories, setCategories] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [summaryChart, setSummaryChart] = useState(null);
-
+  const [selection, setSelection] = useState({
+    startDate: startOfMonth(new Date()),
+    endDate: new Date(),
+    key: 'selection',
+  });
   const settings = useSettingsContext();
 
   const getTransactions = useCallback(async () => {
     try {
-      const response = await axios.get('/api/banking/get-transactions');
+      const response = await axios.post('/api/banking/get-transactions', {
+        startDate: selection.startDate,
+        endDate: selection.endDate,
+      });
       const { data } = response;
       setTransactions(data);
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, [enqueueSnackbar]);
+  }, [enqueueSnackbar, selection]);
 
   const getBankList = useCallback(async () => {
     try {
@@ -59,13 +75,16 @@ export default function OverviewBankingView() {
 
   const getSummaryChart = useCallback(async () => {
     try {
-      const response = await axios.get('/api/banking/get-summary-chart');
+      const response = await axios.post('/api/banking/get-summary-chart', {
+        startDate: selection.startDate,
+        endDate: selection.endDate,
+      });
       const { data } = response;
       setSummaryChart(data);
     } catch (error) {
       enqueueSnackbar(error.message || error, { variant: 'error' });
     }
-  }, [enqueueSnackbar]);
+  }, [enqueueSnackbar, selection]);
 
   useEffect(() => {
     getBankList();
@@ -93,17 +112,52 @@ export default function OverviewBankingView() {
     getSummaryChart();
   };
 
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleSelect = (ranges) => {
+    setSelection(ranges.selection);
+  };
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'date-range-popover' : undefined;
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      {/* <Stack>
-        <YearMonthSelection />
-      </Stack> */}
+      <Stack sx={{ my: 1, width: 300 }}>
+        <Button aria-describedby={id} variant="outlined" onClick={handleClick}>
+          {formatRange(selection.startDate, selection.endDate)}
+        </Button>
+        <Popover
+          id={id}
+          open={open}
+          anchorEl={anchorEl}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+        >
+          <DateRangePicker ranges={[selection]} onChange={handleSelect} />
+        </Popover>
+      </Stack>
 
       <Grid container spacing={3}>
         <Grid xs={12} md={6}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
             {summaryChart && (
-              <BankingWidgetSummary title="Income/Expense of this month" chart={summaryChart} />
+              <BankingWidgetSummary title="Income/Expense" chart={summaryChart} />
             )}
           </Stack>
         </Grid>

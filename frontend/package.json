@@ -42,6 +42,7 @@
     "react-adsense": "^0.1.0",
     "react-apexcharts": "^1.4.1",
     "react-apple-emojis": "^2.2.1",
+    "react-date-range": "^1.4.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.47.0",
     "react-lazy-load-image-component": "^1.6.0",

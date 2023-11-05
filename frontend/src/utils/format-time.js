@@ -1,4 +1,4 @@
-import { format, getTime, formatDistanceToNow } from 'date-fns';
+import { format, getTime, formatDistanceToNow, formatDistance } from 'date-fns';
 
 // ----------------------------------------------------------------------
 
@@ -30,3 +30,12 @@ export function fToNow(date) {
     return date;
   }
 }
+
+export function formatRange(startDate, endDate) {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  const startFormatted = startDate.toLocaleDateString(undefined, options);
+  const endFormatted = endDate.toLocaleDateString(undefined, options);
+  
+  return `from ${startFormatted} to ${endFormatted}`;
+}
+

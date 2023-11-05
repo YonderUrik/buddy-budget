@@ -35,23 +35,22 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={primaryFont.className}>
-      <Head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441"
-          crossOrigin="anonymous"
-        />
-        <script
-          async
-          src="https://fundingchoicesmessages.google.com/i/pub-7935286005444441?ers=1"
-          nonce="jS6YVAgsuGlYDk9b9i97Vw"
-        />
-        <script
-          async
-          src="https://fundingchoicesmessages.google.com/i/pub-7935286005444441?ers=1"
-          nonce="jS6YVAgsuGlYDk9b9i97Vw"
-        >
-          {`
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7935286005444441"
+        crossOrigin="anonymous"
+      />
+      <script
+        async
+        src="https://fundingchoicesmessages.google.com/i/pub-7935286005444441?ers=1"
+        nonce="jS6YVAgsuGlYDk9b9i97Vw"
+      />
+      <script
+        async
+        src="https://fundingchoicesmessages.google.com/i/pub-7935286005444441?ers=1"
+        nonce="jS6YVAgsuGlYDk9b9i97Vw"
+      >
+        {`
             (function() {
               function signalGooglefcPresent() {
                 if (!window.frames['googlefcPresent']) {
@@ -69,9 +68,7 @@ export default function RootLayout({ children }) {
               signalGooglefcPresent();
             })();
           `}
-        </script>
-      </Head>
-
+      </script>
       <body>
         <AuthProvider>
           <LocalizationProvider>

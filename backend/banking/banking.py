@@ -142,7 +142,7 @@ def get_categories():
     
     return json.dumps(res, default=str)
 
-@bp.route('/get-transactions', methods=["GET"])
+@bp.route('/get-transactions', methods=["POST"])
 @jwt_required()
 def get_transactions():
     mongo = AuthMongo()
@@ -150,9 +150,13 @@ def get_transactions():
     user_details = mongo.get_user_by_email(_user_email)
     user_id = str(user_details['_id'])
 
+    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    startDate = datetime.strptime(request.json.get("startDate"), date_format)
+    endDate = datetime.strptime(request.json.get("endDate"), date_format)
+
     mongo = BankingMongo()
 
-    status, transactions = mongo.get_transactions(user_id=user_id)
+    status, transactions = mongo.get_transactions(user_id=user_id, startDate=startDate, endDate=endDate)
 
     if status == False:
         return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
@@ -265,7 +269,7 @@ def add_transaction():
     
     return {"message" : msg}, status
 
-@bp.route('/get-summary-chart', methods=["GET"])
+@bp.route('/get-summary-chart', methods=["POST"])
 @jwt_required()
 def get_summary_chart():
     mongo = AuthMongo()
@@ -273,8 +277,12 @@ def get_summary_chart():
     user_details = mongo.get_user_by_email(_user_email)
     user_id = str(user_details['_id'])
 
+    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+    startDate = datetime.strptime(request.json.get("startDate"), date_format)
+    endDate = datetime.strptime(request.json.get("endDate"), date_format)
+
     mongo = BankingMongo()
-    status, summary = mongo.get_summary_of_month_for_chart(user_id=user_id)
+    status, summary = mongo.get_summary_of_month_for_chart(user_id=user_id, startDate=startDate, endDate=endDate)
 
     if status != 200:
         return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status

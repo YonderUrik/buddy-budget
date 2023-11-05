@@ -436,37 +436,24 @@ class BankingMongo(BaseMongo):
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG  
     
-    def get_transactions(self, user_id = None):
+    def get_transactions(self, user_id = None, startDate=None, endDate=None):
         try:    
             if not user_id:
                 raise Exception("missing values")
             
-            # Get the current date and time
-            current_date = datetime.now()
-
-            # Calculate the start and end dates of the current month
-            start_of_month = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            end_of_month = start_of_month + relativedelta(months=1, days=-1)
-            
-            result = list(self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].find({
-                "date": {"$gte": start_of_month, "$lte": end_of_month}
-            }).sort("date", -1))
+            result = list(self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION].find({"date": {"$gte": startDate, "$lte": endDate}}).sort("date", -1))
             return 200, result
         except Exception as e:
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG
         
-    def get_summary_of_month_for_chart(self, user_id=None):
+    def get_summary_of_month_for_chart(self, user_id=None, startDate=None, endDate=None):
         try:
             if not user_id:
                 raise Exception("Missing user_id")
 
             # Get the current date and time
             current_date = datetime.now()
-
-            # Calculate the start date for the current month
-            start_of_month = current_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
             # Initialize the data structure
             data = {
                 "labels": [],
@@ -477,8 +464,8 @@ class BankingMongo(BaseMongo):
             }
 
             # Loop through each day of the current month and retrieve transactions
-            current_day = start_of_month
-            while current_day <= current_date:
+            current_day = startDate
+            while current_day <= endDate:
                 # Calculate the start and end time for the current day
                 start_of_day = current_day
                 end_of_day = start_of_day + relativedelta(days=1, seconds=-1)
@@ -497,7 +484,7 @@ class BankingMongo(BaseMongo):
                 total_expense = sum(transaction["amount"] for transaction in transactions if transaction["type"] == "out")
 
                 # Add the label and data to the data structure
-                data["labels"].append(current_day.strftime("%m/%d/%Y"))
+                data["labels"].append(end_of_day.strftime("%m/%d/%Y"))
                 data["series"][0]["data"].append(total_income)
                 data["series"][1]["data"].append(total_expense)
 

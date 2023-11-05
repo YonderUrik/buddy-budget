@@ -1,5 +1,7 @@
 'use client';
 
+import 'react-date-range/dist/styles.css';
+import 'react-date-range/dist/theme/default.css';
 import { useCallback, useEffect, useState } from 'react';
 
 import Stack from '@mui/material/Stack';
@@ -9,21 +11,21 @@ import Grid from '@mui/material/Unstable_Grid2';
 import axios from 'src/utils/axios';
 
 import { useSnackbar } from 'src/components/snackbar';
-import { useSettingsContext } from 'src/components/settings';
+import { useSettingsContext } from 'src/components/settings'; // theme css file
+import format from 'date-fns/format';
+import subMonths from 'date-fns/subMonths';
+import endOfMonth from 'date-fns/endOfMonth';
+import startOfMonth from 'date-fns/startOfMonth';
+import { DateRangePicker } from 'react-date-range';
 
+import { Button, Popover } from '@mui/material';
+
+import { formatRange } from 'src/utils/format-time';
+
+import BankingRecentTransitions from '../banking-recent-transitions'; // main style file
 import BankingWidgetSummary from '../banking-widget-summary';
 import BankingCurrentBalance from '../banking-current-balance';
 import BankingQuickTransaction from '../banking-quick-transaction';
-import BankingRecentTransitions from '../banking-recent-transitions';
-import 'react-date-range/dist/styles.css'; // main style file
-import 'react-date-range/dist/theme/default.css'; // theme css file
-import { DateRangePicker } from 'react-date-range';
-import { Button, Popover } from '@mui/material';
-import subMonths from 'date-fns/subMonths';
-import startOfMonth from 'date-fns/startOfMonth';
-import endOfMonth from 'date-fns/endOfMonth';
-import format from 'date-fns/format';
-import { formatRange } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 

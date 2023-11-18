@@ -11,7 +11,14 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -29,7 +36,7 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Carousel, { useCarousel, CarouselDots } from 'src/components/carousel';
 // ----------------------------------------------------------------------
 
-export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
+export default function BankingCurrentBalance({ isLoading, list, refreshBanks, sx }) {
   const theme = useTheme();
   const currency = useBoolean();
 
@@ -65,7 +72,7 @@ export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
           mx: 2.5,
           right: 0,
           zIndex: -2,
-          height: 200,
+          height: 120,
           bottom: -16,
           content: "''",
           opacity: 0.16,
@@ -78,25 +85,35 @@ export default function BankingCurrentBalance({ list, refreshBanks, sx }) {
           bottom: -8,
           opacity: 0.24,
         },
+        ...(isLoading && {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }),
         ...sx,
       }}
     >
-      <Carousel {...carousel.carouselSettings}>
-        {list.map((card) => (
-          <CardItem
-            key={card.cardName}
-            card={card}
-            currencyBool={currency.value}
-            currenyToggle={currency.onToggle}
-            refreshBanks={() => refreshBanks()}
-          />
-        ))}
-      </Carousel>
+      {isLoading ? (
+        <CircularProgress />
+      ) : (
+        <Carousel {...carousel.carouselSettings}>
+          {list.map((card) => (
+            <CardItem
+              key={card.cardName}
+              card={card}
+              currencyBool={currency.value}
+              currenyToggle={currency.onToggle}
+              refreshBanks={() => refreshBanks()}
+            />
+          ))}
+        </Carousel>
+      )}
     </Box>
   );
 }
 
 BankingCurrentBalance.propTypes = {
+  isLoading: PropTypes.bool,
   list: PropTypes.array,
   refreshBanks: PropTypes.func,
   sx: PropTypes.object,
@@ -272,9 +289,7 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
           <Stack direction="row" spacing={5}>
             <Stack spacing={1}>
               <Typography sx={{ typography: 'caption', opacity: 0.48 }}>Last Update</Typography>
-              <Typography sx={{ typography: 'subtitle1' }}>
-                {fToNow(`${lastUpdate}Z`)}
-              </Typography>
+              <Typography sx={{ typography: 'subtitle1' }}>{fToNow(`${lastUpdate}Z`)}</Typography>
             </Stack>
           </Stack>
         )}

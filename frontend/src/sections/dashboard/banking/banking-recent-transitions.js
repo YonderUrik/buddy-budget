@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { format } from 'date-fns';
+import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
+import isEqual from 'lodash/isEqual';
 
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -12,7 +12,23 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import IconButton from '@mui/material/IconButton';
 import CardHeader from '@mui/material/CardHeader';
-import { Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  FormControl,
+  InputAdornment,
+  InputLabel,
+  LinearProgress,
+  OutlinedInput,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import ListItemText from '@mui/material/ListItemText';
 import Badge, { badgeClasses } from '@mui/material/Badge';
 import TableContainer from '@mui/material/TableContainer';
@@ -26,7 +42,7 @@ import { fCurrency } from 'src/utils/format-number';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { useSnackbar } from 'src/components/snackbar';
-import { TableHeadCustom } from 'src/components/table';
+import { TableHeadCustom, useTable, getComparator } from 'src/components/table';
 import EmptyContent from 'src/components/empty-content';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
@@ -38,6 +54,7 @@ export default function BankingRecentTransitions({
   subheader,
   tableLabels,
   tableData,
+  isLoading,
   categories,
   refreshBanks,
   refreshTransactions,
@@ -47,26 +64,33 @@ export default function BankingRecentTransitions({
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} sx={{ mb: 3 }} />
 
-      <TableContainer sx={{ overflow: 'unset', height: '100%' }}>
+      <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>
           <Table sx={{ minWidth: 720 }}>
             <TableHeadCustom headLabel={tableLabels} />
-
-            <TableBody>
-              {tableData.map((row) => (
-                <BankingRecentTransitionsRow
-                  refreshBanks={() => refreshBanks()}
-                  refreshTransactions={() => refreshTransactions()}
-                  categories={categories}
-                  key={row._id}
-                  row={row}
-                />
-              ))}
-
-              {tableData.length === 0 && (
+            <TableBody sx={{ maxHeight: 800 }}>
+              {isLoading || !categories ? (
                 <TableRow>
-                  <EmptyContent sx={{ mb: 2 }} title="No data" />
+                  <LinearProgress />
                 </TableRow>
+              ) : (
+                <>
+                  {tableData.map((row) => (
+                    <BankingRecentTransitionsRow
+                      refreshBanks={() => refreshBanks()}
+                      refreshTransactions={() => refreshTransactions()}
+                      categories={categories}
+                      key={row._id}
+                      row={row}
+                    />
+                  ))}
+
+                  {tableData.length === 0 && (
+                    <TableRow>
+                      <EmptyContent sx={{ mb: 2 }} title="No data" />
+                    </TableRow>
+                  )}
+                </>
               )}
             </TableBody>
           </Table>
@@ -81,6 +105,7 @@ export default function BankingRecentTransitions({
 BankingRecentTransitions.propTypes = {
   subheader: PropTypes.string,
   tableData: PropTypes.array,
+  isLoading: PropTypes.bool,
   categories: PropTypes.object,
   tableLabels: PropTypes.array,
   refreshBanks: PropTypes.func,
@@ -159,7 +184,6 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
       </Stack>
     );
   };
-
 
   return (
     <>

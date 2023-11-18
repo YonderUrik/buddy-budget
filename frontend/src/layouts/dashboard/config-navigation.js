@@ -23,17 +23,17 @@ export function useNavData() {
           {
             title: 'Net Worth',
             path: paths.app.root,
-            icon: icon('noto:bar-chart'),
+            icon: icon('mingcute:chart-vertical-line'),
           },
           {
             title: 'Banking',
             path: paths.app.banking,
-            icon: icon('noto:bank'),
+            icon: icon('mingcute:bank-card-fill'),
           },
           {
             title: 'Assets',
             path: paths.app.assets,
-            icon: icon('noto:money-bag'),
+            icon: icon('mingcute:pig-money-fill'),
           },
         ],
       },

@@ -46,11 +46,11 @@ export const info = {
 };
 
 export const success = {
-  lighter: '#EDFDDF',
-  light: '#B8F49F',
-  main: '#6EDD5D',
-  dark: '#2E9F31',
-  darker: '#116A21',
+  lighter: '#D3FCD2',
+  light: '#77ED8B',
+  main: '#22C55E',
+  dark: '#118D57',
+  darker: '#065E49',
   contrastText: '#FFFFFF',
 };
 

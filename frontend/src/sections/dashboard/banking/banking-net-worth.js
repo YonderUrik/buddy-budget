@@ -27,14 +27,13 @@ export default function BankingNetWorth({ title, subheader, chart, ...other }) {
       thema.palette.error.main,
     ],
     dataLabels: {
-      enabled: true,
+      enabled: false,
     },
     stroke: {
       curve: 'smooth',
     },
     tooltip: {
       enabled: true, // Ensure tooltips are enabled
-      shared: true, // Display all data labels on the tooltip
       x: {
         format: 'dd MMM yyyy',
       },
@@ -49,6 +48,9 @@ export default function BankingNetWorth({ title, subheader, chart, ...other }) {
     },
     xaxis: {
       type: 'datetime',
+    },
+    yaxis: {
+      type: 'numeric',
     },
     ...options,
   });

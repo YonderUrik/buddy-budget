@@ -28,55 +28,6 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
   const { labels, options } = chart;
   series = chart.series; // Set the series based on the chart prop
 
-  chartOptions = useChart({
-    colors: [theme.palette.error.main],
-    dataLabels: {
-      enabled: true,
-      position: 'inside',
-      style: {
-        colors: [theme.palette.grey[300]],
-      },
-      background: {
-        enabled: true,
-        foreColor: theme.palette.primary.main,
-      },
-      formatter(val, opt) {
-        if (val === 0) {
-          return '';
-        }
-        return `€ ${val}`;
-      },
-    },
-    fill: {
-      type: series.map((i) => i.fill),
-    },
-    labels,
-    xaxis: {
-      show: 'datetime',
-    },
-    yaxis: {
-      labels: {
-        show: false,
-      },
-    },
-    grid: {
-      show: true,
-    },
-    tooltip: {
-      shared: true,
-      intersect: false,
-      y: {
-        formatter: (value) => {
-          if (typeof value !== 'undefined') {
-            return `€ ${value.toFixed(0)}`;
-          }
-          return value;
-        },
-      },
-    },
-    ...options,
-  });
-
   lastMonthIncome = series[0].data.reduce((total, income) => total + income, 0);
   lastMonthExpense = series[1].data.reduce((total, income) => total + income, 0);
   savingRate = ((lastMonthIncome - lastMonthExpense) / lastMonthIncome) * 100;
@@ -92,21 +43,75 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
     color = 'error';
   }
 
+  chartOptions = useChart({
+    colors: [theme.palette[color].dark],
+    labels,
+    chart: {
+      sparkline: {
+        enabled: true,
+      },
+    },
+    xaxis: {
+      labels: {
+        show: false,
+      },
+    },
+    yaxis: {
+      labels: {
+        show: false,
+      },
+    },
+    legend: {
+      show: false,
+    },
+    grid: {
+      show: false,
+    },
+    tooltip: {
+      marker: {
+        show: false,
+      },
+      y: {
+        formatter: (value) => fCurrency(value),
+        title: {
+          formatter: () => '',
+        },
+      },
+    },
+    // dataLabels: {
+    //   enabled: true,
+    //   position: 'inside',
+    //   style: {
+    //     colors: [theme.palette.grey[300]],
+    //   },
+    //   background: {
+    //     enabled: true,
+    //     foreColor: theme.palette.primary.main,
+    //   },
+    //   formatter(val, opt) {
+    //     if (val === 0) {
+    //       return '';
+    //     }
+    //     return `€ ${val}`;
+    //   },
+    // },
+    ...options,
+  });
+
   return (
     <Stack
-      spacing={0}
       sx={{
-        // ...bgGradient({
-        //   direction: '135deg',
-        //   startColor: alpha(theme.palette[color].light, 0.2),
-        //   endColor: alpha(theme.palette[color].main, 0.2),
-        // }),
+        ...bgGradient({
+          direction: '135deg',
+          startColor: alpha(theme.palette[color].main, 0.2),
+          endColor: alpha(theme.palette[color].darker, 0.2),
+        }),
         width: 1,
         borderRadius: 2,
         overflow: 'hidden',
         position: 'relative',
-        // color: `${color}.main`,
-        backgroundColor: 'background.neutral',
+        color: `${color}.darker`,
+        backgroundColor: 'common.white',
         ...sx,
       }}
       {...other}
@@ -126,10 +131,12 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         }}
       />
 
-      <Stack spacing={1} sx={{ p: 2 }}>
+      <Stack spacing={1} sx={{ p: 3 }}>
         <Typography variant="subtitle2">{title}</Typography>
 
-        <Typography color={`${color}.main`} variant="h4">
+        <Typography variant="h3">
+          {' '}
+          {savingRate > 0 && '+'}
           {fCurrency(lastMonthIncome - lastMonthExpense)}
         </Typography>
 
@@ -138,7 +145,6 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
           direction="row"
           flexWrap="wrap"
           alignItems="center"
-          color={`${color}.main`}
           sx={{ typography: 'body2' }}
         >
           <Iconify icon={savingRate < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
@@ -148,23 +154,21 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
             {fPercent(savingRate)}
           </Box>
 
-          <Box sx={{ opacity: 0.8 }}>saving rate this month</Box>
+          <Box sx={{ opacity: 0.8 }}>saving rate</Box>
         </Stack>
       </Stack>
 
       {chart ? (
         <Chart
-          sx={{ m: 1 }}
+          sx={{ m: 0, p: 0 }}
           dir="ltr"
-          type="bar"
+          type="area"
           series={[series[1]] || []}
           options={chartOptions}
           width="100%"
-          height={200}
+          height={120}
         />
-      ) : (
-        <EmptyContent sx={{ mb: 2 }} title="No data" />
-      )}
+      ) : null}
     </Stack>
   );
 }

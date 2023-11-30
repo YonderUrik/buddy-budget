@@ -74,6 +74,8 @@ import banking.banking as banking
 app.register_blueprint(banking.bp)
 import account.account as account
 app.register_blueprint(account.bp)
+import assets.assets as assets
+app.register_blueprint(assets.bp)
 
 if __name__ == "__main__":
     app.run(host=VARS.HOST_NAME,debug=True, port=VARS.APP_PORT)

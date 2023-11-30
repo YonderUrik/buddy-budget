@@ -25,7 +25,6 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
             borderRadius: 2,
             bgcolor: 'unset',
             cursor: 'pointer',
-            textAlign: 'center',
             '&:hover': {
               bgcolor: 'background.paper',
               boxShadow: (theme) => theme.customShadows.z20,

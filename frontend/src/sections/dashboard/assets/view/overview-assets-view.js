@@ -1,6 +1,7 @@
 'use client';
 
 import { Grid } from '@mui/material';
+
 import AnalyticsAssets from '../assets-analytics';
 
 export default function OverviewAssetsView() {

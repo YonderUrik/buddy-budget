@@ -111,7 +111,6 @@ class BankingMongo(BaseMongo):
             logger.error(e)
             return 500, str(e)
 
-
     def get_bank_by_name(self,user_id=None, card_name=None):
         
         try:
@@ -550,7 +549,21 @@ class BankingMongo(BaseMongo):
             # Create the 'Total' document with the aggregated values
             total_document = {'name': 'Total', 'data': [{'x': x, 'y': total} for x, total in totals.items()]}
 
-            return 200, [total_document]
+            # Sort the data by 'x' date
+            sorted_data = sorted(total_document['data'], key=lambda x: x['x'])
+
+            # Round 'y' values to two decimals
+            for item in sorted_data:
+                item['y'] = round(item['y'], 2)
+
+            # Updated sorted data
+            sorted_data_with_rounded_y = {
+                'name': total_document['name'],
+                'data': sorted_data
+            }
+
+            print(sorted_data_with_rounded_y)
+            return 200, [sorted_data_with_rounded_y]
 
         except Exception as e:
             logger.error(e)

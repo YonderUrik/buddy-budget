@@ -6,6 +6,8 @@ import logging
 from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 from dateutil.relativedelta import relativedelta
+import calendar
+
 
 def explode_categories(categories, parent_category_name='', parent_category_id=None):
     exploded_categories = []
@@ -33,14 +35,26 @@ class BankingMongo(BaseMongo):
         """
         super(BankingMongo, self).__init__()
         
-    def get_expenses_category_chart(self, user_id=None):
+    def get_expenses_category_chart(self, user_id=None, month=None, year=None):
         try:
+            if month == -1:
+                startDate =  datetime(year, 1, 1)
+                endDate = datetime(year, 12, 31)
+            else:
+                last_day = calendar.monthrange(year, month)[1]
+                startDate =  datetime(year, month, 1)
+                endDate = datetime(year, month, last_day)
+
             # Define the aggregation pipeline
             # Define the aggregation pipeline
             pipeline = [
                 {
                     "$match": {
-                        "type": "out"
+                        "type": "out",
+                        "date": {
+                            "$gte": startDate,
+                            "$lte": endDate
+                        }
                     }
                 },
                 {
@@ -110,7 +124,6 @@ class BankingMongo(BaseMongo):
         except Exception as e:
             logger.error(e)
             return 500, str(e)
-
 
     def get_bank_by_name(self,user_id=None, card_name=None):
         
@@ -659,6 +672,45 @@ class BankingMongo(BaseMongo):
         except Exception as e:
             logger.error(e)
             return 500, MSG.SOMETHING_GOES_WRONG_ENG
+
+    def get_distinct_user_data_year(self, user_id=None):
+        try:
+            if not user_id:
+                raise Exception("missing user_id")
+            
+            collection = self.client[user_id][MONGO_VARS.TRANSACTION_COLLECTION]
+
+            # Aggregation pipeline to get distinct ISO dates by year
+            pipeline = [
+                {
+                    "$group": {
+                        "_id": {
+                            "year": {"$year": "$date"}
+                        }
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "year": "$_id.year"
+                    }
+                },
+                {
+                    "$sort": {"year": 1}
+                }
+            ]
+
+            distinct_years = [doc['year'] for doc in list(collection.aggregate(pipeline))]
+
+            if datetime.now().year not in distinct_years:
+                distinct_years.append(datetime.now().year)
+
+            
+            return 200, distinct_years
+        except Exception as e:
+            logger.error(e)
+            return 500, MSG.SOMETHING_GOES_WRONG_ENG
+
 
 
         

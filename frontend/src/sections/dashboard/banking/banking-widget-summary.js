@@ -32,6 +32,7 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
   lastMonthExpense = series[1].data.reduce((total, income) => total + income, 0);
   savingRate = ((lastMonthIncome - lastMonthExpense) / lastMonthIncome) * 100;
 
+
   if (savingRate > 20) {
     color = 'success';
     icon = 'fluent:emoji-48-filled';
@@ -78,23 +79,6 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
         },
       },
     },
-    // dataLabels: {
-    //   enabled: true,
-    //   position: 'inside',
-    //   style: {
-    //     colors: [theme.palette.grey[300]],
-    //   },
-    //   background: {
-    //     enabled: true,
-    //     foreColor: theme.palette.primary.main,
-    //   },
-    //   formatter(val, opt) {
-    //     if (val === 0) {
-    //       return '';
-    //     }
-    //     return `€ ${val}`;
-    //   },
-    // },
     ...options,
   });
 
@@ -140,22 +124,24 @@ export default function BankingWidgetSummary({ title, chart, sx, ...other }) {
           {fCurrency(lastMonthIncome - lastMonthExpense)}
         </Typography>
 
-        <Stack
-          spacing={0.5}
-          direction="row"
-          flexWrap="wrap"
-          alignItems="center"
-          sx={{ typography: 'body2' }}
-        >
-          <Iconify icon={savingRate < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
+        {savingRate >= -100 && (
+          <Stack
+            spacing={0.5}
+            direction="row"
+            flexWrap="wrap"
+            alignItems="center"
+            sx={{ typography: 'body2' }}
+          >
+            <Iconify icon={savingRate < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
 
-          <Box sx={{ typography: 'subtitle2' }}>
-            {savingRate > 0 && '+'}
-            {fPercent(savingRate)}
-          </Box>
+            <Box sx={{ typography: 'subtitle2' }}>
+              {savingRate > 0 && '+'}
+              {fPercent(savingRate)}
+            </Box>
 
-          <Box sx={{ opacity: 0.8 }}>saving rate</Box>
-        </Stack>
+            <Box sx={{ opacity: 0.8 }}>saving rate</Box>
+          </Stack>
+        )}
       </Stack>
 
       {chart ? (

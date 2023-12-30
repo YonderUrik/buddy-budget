@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import Box from '@mui/material/Box';
@@ -18,6 +18,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tooltip,
 } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -34,11 +35,24 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Carousel, { useCarousel, CarouselDots } from 'src/components/carousel';
+import { useLocalStorage } from 'src/hooks/use-local-storage';
 // ----------------------------------------------------------------------
 
 export default function BankingCurrentBalance({ isLoading, list, refreshBanks, sx }) {
   const theme = useTheme();
-  const currency = useBoolean();
+  // const currency = useBoolean();
+
+  const { state, update } = useLocalStorage('balanceView', true);
+  const [currency, setCurrency] = useState(state.balanceView);
+
+  useEffect(() => {
+    setCurrency(state.balanceView);
+  }, [state]);
+
+  const onChangeCurrency = () => {
+    setCurrency(!state.balanceView);
+    update('balanceView', !state.balanceView);
+  };
 
   const carousel = useCarousel({
     fade: true,
@@ -101,8 +115,8 @@ export default function BankingCurrentBalance({ isLoading, list, refreshBanks, s
             <CardItem
               key={card.cardName}
               card={card}
-              currencyBool={currency.value}
-              currenyToggle={currency.onToggle}
+              currencyBool={currency}
+              currenyToggle={onChangeCurrency}
               refreshBanks={() => refreshBanks()}
             />
           ))}
@@ -125,6 +139,7 @@ NewEditBank.propTypes = {
   refreshBanks: PropTypes.func,
   currentBank: PropTypes.object,
 };
+
 function NewEditBank({ currentBank, refreshBanks }) {
   const dialog = useBoolean();
   const { enqueueSnackbar } = useSnackbar();
@@ -239,22 +254,27 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
   return (
     <>
       <Stack justifyContent="space-between" sx={{ height: 1, p: 3 }}>
-        <IconButton
-          color="inherit"
-          onClick={popover.onOpen}
+        <Stack
           sx={{
             top: 8,
-            right: 8,
+            right: 16,
             zIndex: 9,
-            opacity: 0.48,
             position: 'absolute',
             ...(popover.open && {
               opacity: 1,
             }),
           }}
+          direction="row"
         >
-          <Iconify icon="eva:more-vertical-fill" />
-        </IconButton>
+          <IconButton color="inherit" onClick={popover.onOpen}>
+            <Iconify icon="eva:more-vertical-fill" />
+          </IconButton>
+          <Tooltip title={!currencyBool ? 'Hide balance' : 'Show balance'}>
+            <IconButton color="inherit" onClick={currenyToggle} sx={{ opacity: 1 }}>
+              <Iconify icon={currencyBool ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
 
         <div>
           <Typography sx={{ mb: 2, typography: 'subtitle2', opacity: 0.48 }}>
@@ -265,10 +285,6 @@ function CardItem({ card, refreshBanks, currencyBool, currenyToggle }) {
             <Typography sx={{ typography: 'h3' }}>
               {currencyBool ? '********' : fCurrency(balance)}
             </Typography>
-
-            <IconButton color="inherit" onClick={currenyToggle} sx={{ opacity: 1 }}>
-              <Iconify icon={currencyBool ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
-            </IconButton>
           </Stack>
         </div>
 

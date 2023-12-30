@@ -30,6 +30,7 @@
     "autosuggest-highlight": "^3.3.4",
     "axios": "^1.5.1",
     "date-fns": "^2.30.0",
+    "dayjs": "^1.11.10",
     "framer-motion": "^10.16.4",
     "lodash": "^4.17.21",
     "mui-one-time-password-input": "^2.0.0",

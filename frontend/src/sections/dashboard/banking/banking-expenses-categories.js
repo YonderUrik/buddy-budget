@@ -1,23 +1,24 @@
 import PropTypes from 'prop-types';
 import 'react-date-range/dist/styles.css';
 import 'react-date-range/dist/theme/default.css';
+import startOfMonth from 'date-fns/startOfMonth';
+import { DateRangePicker } from 'react-date-range';
+import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
 import { useTheme } from '@mui/material/styles';
-import startOfMonth from 'date-fns/startOfMonth';
+import CardHeader from '@mui/material/CardHeader';
+import { Button, ButtonBase, IconButton, MenuItem, Popover, Tooltip } from '@mui/material';
 
 import { useResponsive } from 'src/hooks/use-responsive';
 
-import Chart, { useChart } from 'src/components/chart';
-import { Button, ButtonBase, IconButton, MenuItem, Popover, Tooltip } from '@mui/material';
+import axios from 'src/utils/axios';
+
 import Iconify from 'src/components/iconify';
-import { useCallback, useEffect, useState } from 'react';
-import { DateRangePicker } from 'react-date-range';
+import Chart, { useChart } from 'src/components/chart';
 import { usePopover } from 'src/components/custom-popover';
 import CustomPopover from 'src/components/custom-popover/custom-popover';
-import axios from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -63,7 +64,7 @@ export default function BankingExpensesCategories({
       thema.palette.error.main,
     ],
     legend: {
-      show: smUp ? true : false,
+      show: !!smUp,
       formatter(seriesName, opts) {
         const total = opts.w.globals.series[opts.seriesIndex].reduce((acc, val) => acc + val, 0);
         return `${seriesName} : €${total.toFixed(2)}`;
@@ -83,7 +84,7 @@ export default function BankingExpensesCategories({
         show: false,
       },
       y: {
-        formatter: function (value, { series, seriesIndex, dataPointIndex, w }) {
+        formatter (value, { seriesIndex, dataPointIndex, w }) {
           return `€${value.toFixed(2)}`;
         },
       },

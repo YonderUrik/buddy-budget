@@ -1,17 +1,11 @@
 import PropTypes from 'prop-types';
+import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Paper from '@mui/material/Paper';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-
-import { fShortenNumber } from 'src/utils/format-number';
-
-import Iconify from 'src/components/iconify';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { useSnackbar } from 'src/components/snackbar';
-
 import {
   Autocomplete,
   Button,
@@ -25,10 +19,16 @@ import {
   Stack,
   TextField,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+
 import axios from 'src/utils/axios';
-import Scrollbar from 'src/components/scrollbar';
+import { fShortenNumber } from 'src/utils/format-number';
+
 import Label from 'src/components/label';
+import Iconify from 'src/components/iconify';
+import Scrollbar from 'src/components/scrollbar';
+import { useSnackbar } from 'src/components/snackbar';
 
 export default function AnalyticsAssets({ title, subheader, list, ...other }) {
   const newDialog = useBoolean();

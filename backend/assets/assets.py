@@ -25,28 +25,23 @@ logger = logging.getLogger(__name__)
 @bp.route('/get-keyword-suggestion', methods=["POST"])
 @jwt_required()
 def get_keyword_suggestion():
-    keyword = request.json.get("keyword")
+    query = request.json.get("keyword")
 
-    # TODO: 
-    # Checks if the keyword is already included in the list of the 
-    # ticker previously extracted
+    if query.strip() == '':
+        return {"message" : "Please insert an asset name"}, 400
 
-    url = f'https://api.polygon.io/v3/reference/tickers?search={keyword}&apiKey={POLYGON_API_KEY}'
+    api_key = "63966f4347bb2ddcf23b45e25a7389cc25e25623"
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization' : f'Token {api_key}'
+    }
+    requestResponse = requests.get(f"https://api.tiingo.com/tiingo/utilities/search?query={query}", headers=headers)
+    if requestResponse.status_code == 200:
+        return json.dumps(requestResponse.json(), default=str)
+    else:
+        print(requestResponse)
+        return {"message" : "Something went wrong, please retry in a few minutes"}, 500
 
-    req = requests.get(url)
-
-    if req.status_code != 200:
-        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, req.status_code
-    
-    json_request = req.json()
-    
-    if 'results' in json_request and len(json_request['results']) > 0:
-        print("AGGIUNTO TICKER")
-        pass
-    
-
-    
-    return json.dumps(json_request, default=str)
     
 
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
-import { Grid } from '@mui/material';
+import { Grid, LinearProgress } from '@mui/material';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -23,15 +23,27 @@ export default function HomeView() {
   const [categories, setCategories] = useState([]);
   const [netWorth, setNetWorth] = useState([]);
 
+  const todayDate = new Date();
+  const [categoryMonthSelected, setCategoryMonthSelected] = useState(-1);
+  const [categoryYearSelected, setYearMonthSelected] = useState(todayDate.getFullYear());
+
+  const [categoryChartLoading, setCategoryChartLoading] = useState(false);
+
   const getCategories = useCallback(async () => {
+    setCategoryChartLoading(true);
     try {
-      const response = await axios.post('/api/banking/get-expenses-category-chart', {});
+      const response = await axios.post('/api/banking/get-expenses-category-chart', {
+        categoryMonthSelected,
+        categoryYearSelected,
+      });
       const { data } = response;
       setCategories(data);
     } catch (error) {
       console.error(error);
+    } finally {
+      setCategoryChartLoading(false);
     }
-  }, []);
+  }, [categoryMonthSelected, categoryYearSelected]);
 
   const getNetWorth = useCallback(async () => {
     try {
@@ -48,13 +60,28 @@ export default function HomeView() {
     getNetWorth();
   }, [getCategories, getNetWorth]);
 
+  const handleChangeCategoryMonth = (newValue) => {
+    setCategoryMonthSelected(newValue);
+  };
+
+  const handleChangeCategoryYear = (newValue) => {
+    setYearMonthSelected(newValue);
+  };
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <Typography variant="h4"> NetWorth </Typography>
 
       <Grid sx={{ mt: 2 }} container spacing={2}>
         <Grid item xs={12} md={12}>
-          <BankingExpensesCategories title="Expenses Categories" chart={{ series: categories }} />
+          {categoryChartLoading && <LinearProgress />}
+          <BankingExpensesCategories
+            chart={{ series: categories }}
+            categoryMonthSelected={categoryMonthSelected}
+            categoryYearSelected={categoryYearSelected}
+            handleChangeMonth={handleChangeCategoryMonth}
+            handleChangeYear={handleChangeCategoryYear}
+          />
         </Grid>
         <Grid item xs={12} md={12}>
           <BankingNetWorth

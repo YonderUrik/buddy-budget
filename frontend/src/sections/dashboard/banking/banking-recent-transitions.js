@@ -152,15 +152,15 @@ function BankingRecentTransitionsRow({ row, categories, refreshBanks, refreshTra
     let text = '';
     if (row.type === 'in') {
       color = 'success';
-      icon = 'solar:arrow-left-down-line-duotone';
+      icon = 'mdi:cash-plus';
       text = 'Income';
     } else if (row.type === 'out') {
       color = 'error';
-      icon = 'solar:arrow-right-up-line-duotone';
+      icon = 'mdi:cash-minus';
       text = 'Expense';
     } else {
       color = 'info';
-      icon = 'solar:transfer-vertical-bold-duotone';
+      icon = 'solar:card-transfer-bold';
       text = 'Transfer';
     }
 

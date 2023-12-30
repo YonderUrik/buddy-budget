@@ -297,13 +297,34 @@ def get_expenses_category_chart():
     user_details = mongo.get_user_by_email(_user_email)
     user_id = str(user_details['_id'])
 
+    categoryMonthSelected = int(request.json.get('categoryMonthSelected'))
+    categoryYearSelected = int(request.json.get('categoryYearSelected'))
+
     mongo = BankingMongo()
-    status, summary = mongo.get_expenses_category_chart(user_id=user_id)
+    status, summary = mongo.get_expenses_category_chart(user_id=user_id, month=categoryMonthSelected, year=categoryYearSelected)
 
     if status != 200:
         return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
         
     return json.dumps(summary, default=str)
+
+@bp.route('/get-distinct-user-data-year', methods=["POST"])
+@jwt_required()
+def get_distinct_user_data_year():
+    mongo = AuthMongo()
+    _user_email = get_jwt_identity()['email']
+    user_details = mongo.get_user_by_email(_user_email)
+    user_id = str(user_details['_id'])
+
+    mongo = BankingMongo()
+
+    status, distinct_years = mongo.get_distinct_user_data_year(user_id=user_id)
+
+    if status != 200:
+        return {"message" : MSG.SOMETHING_GOES_WRONG_ENG}, status
+        
+    print(distinct_years)
+    return json.dumps(distinct_years, default=str)
 
 @bp.route('/get-summary-net-worth', methods=["POST"])
 @jwt_required()

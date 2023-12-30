@@ -30,8 +30,11 @@ except Exception:
         "token_path" : 'change.me'#change-me
     }
 
-mongodb_username = os.getenv("mongodb_username")
-mongodb_password = os.getenv("mongodb_password")
+
+POLYGON_API_KEY = os.environ.get("POLYGON_API_KEY", 'cange-me')
+
+mongodb_username = os.getenv("mongodb_username", "change-me")
+mongodb_password = os.getenv("mongodb_password", "change-me")
 
 MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost:27017')
 TLSCAFILE = os.getenv("TLSCAFILE", '/ssl/ca-chain.cert.pem')

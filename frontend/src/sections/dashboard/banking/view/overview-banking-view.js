@@ -13,14 +13,10 @@ import axios from 'src/utils/axios';
 
 import { useSnackbar } from 'src/components/snackbar';
 import { useSettingsContext } from 'src/components/settings'; // theme css file
-import format from 'date-fns/format';
-import subMonths from 'date-fns/subMonths';
-import endOfMonth from 'date-fns/endOfMonth';
 import startOfMonth from 'date-fns/startOfMonth';
 import { DateRangePicker } from 'react-date-range';
 
 import {
-  Backdrop,
   Button,
   ButtonGroup,
   CircularProgress,
@@ -223,8 +219,18 @@ export default function OverviewBankingView() {
               vertical: 'top',
               horizontal: 'left',
             }}
+            style={{
+              // Define default styles for the Popover
+              width: '100%', // Adjust width as needed
+              maxWidth: '100%', // Maximum width of the Popover
+            }}
           >
-            <DateRangePicker ranges={[selection]} onChange={handleSelect} />
+            <DateRangePicker
+              rangeColors={[theme.palette.primary.main]}
+              maxDate={new Date()}
+              ranges={[selection]}
+              onChange={handleSelect}
+            />
           </Popover>
         </Stack>
       </Stack>
@@ -237,8 +243,8 @@ export default function OverviewBankingView() {
                 sx={{
                   ...bgGradient({
                     direction: '135deg',
-                    startColor: alpha(theme.palette.background.neutral, 1),
-                    endColor: alpha(theme.palette.background.neutral, 1),
+                    startColor: alpha(theme.palette.background.default, 1),
+                    endColor: alpha(theme.palette.background.default, 1),
                   }),
                   width: 1,
                   height: 280,

@@ -236,15 +236,15 @@ export default function BankingQuickTransaction({
               onChange={handleTransactionType}
             >
               <ToggleButton color="success" value="in">
-                <Iconify icon="solar:arrow-left-down-line-duotone" />
+                <Iconify icon="mdi:cash-plus" />
                 Income
               </ToggleButton>
               <ToggleButton color="error" value="out">
-                <Iconify icon="solar:arrow-right-up-line-duotone" />
+                <Iconify icon="mdi:cash-minus" />
                 Expense
               </ToggleButton>
               <ToggleButton color="info" value="transfer">
-                <Iconify icon="solar:transfer-vertical-bold-duotone" />
+                <Iconify icon="solar:card-transfer-bold" />
                 Transfer
               </ToggleButton>
             </ToggleButtonGroup>

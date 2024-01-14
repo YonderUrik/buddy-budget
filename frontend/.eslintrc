@@ -6,7 +6,7 @@
   },
   "plugins": [
     "perfectionist",
-    // "unused-imports",
+    "unused-imports",
     "prettier"
   ],
   "extends": [

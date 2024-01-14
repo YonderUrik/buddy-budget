@@ -5,6 +5,10 @@ USERS_COLLECTION = 'users'
 BANKS_COLLECTION = 'banks'
 TRANSACTION_COLLECTION = 'transactions'
 SETTINGS_COLLECTION = 'settings'
+ASSETS_TRANSACTIONS_COLLECTION = 'assets_transactions'
+ASSETS_INFO_COLLECTION = 'assets_info'
+ASSETS_HISTORICAL_DATE = 'assets_historical_date'
+
 
 DEFAULT_CATEGORIE = {
   "out": [

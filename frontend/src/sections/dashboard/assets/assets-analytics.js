@@ -7,8 +7,11 @@ import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
+import { bgGradient } from 'src/theme/css';
+import { useRouter, useSearchParams } from 'src/routes/hooks';
+import orderBy from 'lodash/orderBy';
 
-import { fShortenNumber } from 'src/utils/format-number';
+import { fPercent, fShortenNumber } from 'src/utils/format-number';
 
 import Iconify from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -22,24 +25,41 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
   IconButton,
   InputAdornment,
   LinearProgress,
+  ListItemText,
+  MenuItem,
   Stack,
   Step,
   StepLabel,
   Stepper,
   TextField,
+  Tooltip,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import axios from 'src/utils/axios';
 import Scrollbar from 'src/components/scrollbar';
 import Label from 'src/components/label';
 import { DateCalendar } from '@mui/x-date-pickers';
+import { fDate, fToNow } from 'src/utils/format-time';
+import { paths } from 'src/routes/paths';
+import TextMaxLine from 'src/components/text-max-line';
+import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 const steps = ['Select asset', 'Insert buy info', 'Confirm'];
 
-export default function AnalyticsAssets({ title, subheader, list, ...other }) {
+const sortOptions = [
+  { value: 'current_value', label: 'Value asc', sort_type: 'asc' },
+  { value: 'current_value', label: 'Value desc', sort_type: 'desc' },
+  { value: 'percentage', label: 'Performance asc', sort_type: 'asc' },
+  { value: 'percentage', label: 'Performance desc', sort_type: 'desc' },
+  { value: 'longName', label: 'Name asc', sort_type: 'asc' },
+  { value: 'longName', label: 'Name desc', sort_type: 'desc' },
+];
+
+export default function AnalyticsAssets({ title, subheader, list, refreshAssetsList, ...other }) {
   const newDialog = useBoolean();
   const [activeStep, setActiveStep] = useState(0);
   const [keywordSelected, setKeywordSelected] = useState('');
@@ -48,36 +68,41 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
     amount: null,
     price_in: null,
     quantity: null,
+    fee: 0,
   });
-  const [assetsOptions, setAssetsOptions] = useState([]);
+  const [assetsOptions, setAssetsOptions] = useState({});
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
 
   const handleBuyInfo = (key, value) => {
     const currentBuyInfo = { ...buyInfo };
-    currentBuyInfo[key] = value;
+    if (key === 'date') {
+      currentBuyInfo[key] = value;
+    } else {
+      currentBuyInfo[key] = parseFloat(value);
+    }
 
     if (key === 'amount') {
-      if (currentBuyInfo.price_in !== null) {
+      if (currentBuyInfo.price_in) {
         currentBuyInfo.quantity = value / currentBuyInfo.price_in;
-      } else if (currentBuyInfo.quantity !== null) {
+      } else if (currentBuyInfo.quantity) {
         currentBuyInfo.price_in = value / currentBuyInfo.quantity;
       }
     }
 
     if (key === 'quantity') {
-      if (currentBuyInfo.price_in !== null) {
+      if (currentBuyInfo.price_in) {
         currentBuyInfo.amount = value * currentBuyInfo.price_in;
-      } else if (currentBuyInfo.amount !== null) {
+      } else if (currentBuyInfo.amount) {
         currentBuyInfo.price_in = currentBuyInfo.amount / value;
       }
     }
 
     if (key === 'price_in') {
-      if (currentBuyInfo.quantity !== null) {
+      if (currentBuyInfo.quantity) {
         currentBuyInfo.amount = value * currentBuyInfo.quantity;
-      } else if (currentBuyInfo.amount !== null) {
+      } else if (currentBuyInfo.amount) {
         currentBuyInfo.quantity = currentBuyInfo.amount / value;
       }
     }
@@ -87,7 +112,7 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
 
   const getKeywordSuggestion = async () => {
     setIsSuggesting(true);
-    setAssetsOptions([]);
+    setAssetsOptions({});
     setSelectedAsset(null);
     setBuyInfo({
       date: new Date(),
@@ -116,18 +141,116 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
+  const handleConfirm = async () => {
+    try {
+      await axios.post('/api/assets/add-new-asset', {
+        selectedAsset,
+        buyInfo,
+      });
+      enqueueSnackbar('Asset added successfully');
+      resetSteps();
+      refreshAssetsList();
+    } catch (error) {
+      enqueueSnackbar(error.message || error, { variant: 'error' });
+    }
+  };
+
+  const resetSteps = () => {
+    newDialog.onFalse();
+    setActiveStep(0);
+    setKeywordSelected('');
+    setSelectedAsset(null);
+    setAssetsOptions({});
+    setBuyInfo({
+      date: new Date(),
+      amount: null,
+      price_in: null,
+      quantity: null,
+      fee: 0,
+    });
+  };
+
+  const sortPopover = usePopover();
+  const [sortBy, setSortBy] = useState({ value: 'current_value', sort_type: 'desc' });
+
+  const dataFiltered = applyFilter({
+    inputData: list,
+    sortBy,
+  });
+
   return (
     <Card {...other}>
-      <CardHeader title={title} subheader={subheader} />
+      <CardHeader
+        title={title}
+        subheader={subheader}
+        action={
+          <>
+            <Button
+              disableRipple
+              color="inherit"
+              onClick={sortPopover.onOpen}
+              endIcon={
+                <Iconify
+                  icon={
+                    sortPopover.open ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'
+                  }
+                />
+              }
+              sx={{ fontWeight: 'fontWeightSemiBold' }}
+            >
+              Sort By:
+              <Box
+                component="span"
+                sx={{
+                  ml: 0.5,
+                  fontWeight: 'fontWeightBold',
+                  textTransform: 'capitalize',
+                }}
+              >
+                {
+                  sortOptions.find(
+                    (item) => item.value === sortBy.value && item.sort_type === sortBy.sort_type
+                  ).label
+                }
+              </Box>
+            </Button>
 
-      <Box display="grid" gap={2} gridTemplateColumns="repeat(5, 1fr)" sx={{ p: 3 }}>
+            <CustomPopover
+              open={sortPopover.open}
+              onClose={sortPopover.onClose}
+              sx={{ width: 140 }}
+            >
+              {sortOptions.map((option) => (
+                <MenuItem
+                  key={`${option.value}-${option.sort_type}`}
+                  selected={option.value === sortBy.value && option.sort_type === sortBy.sort_type}
+                  onClick={() => {
+                    sortPopover.onClose();
+                    setSortBy(option);
+                  }}
+                >
+                  {option.label}
+                </MenuItem>
+              ))}
+            </CustomPopover>
+          </>
+        }
+      />
+
+      <Box
+        gap={2}
+        sx={{
+          p: 3,
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(5, 1fr)' },
+        }}
+      >
         <Paper
           onClick={newDialog.onTrue}
           variant="outlined"
           sx={{
             py: 2.5,
             textAlign: 'center',
-            p: 3,
             borderRadius: 2,
             bgcolor: 'unset',
             cursor: 'pointer',
@@ -144,7 +267,11 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
             Add new
           </Typography>
         </Paper>
+        {dataFiltered.map((assetInfo) => (
+          <AssetInfo asset={assetInfo} />
+        ))}
       </Box>
+
       <Dialog maxWidth="sm" fullWidth open={newDialog.value} onClose={newDialog.onFalse}>
         <DialogTitle>Add new asset</DialogTitle>
         <DialogContent>
@@ -161,7 +288,7 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
             })}
           </Stepper>
 
-          {activeStep === steps.length ? (
+          {activeStep === steps.length - 1 ? (
             // LAST STEP
             <>
               <Paper
@@ -172,7 +299,33 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
                   bgcolor: (theme) => alpha(theme.palette.grey[500], 0.12),
                 }}
               >
-                <Typography sx={{ my: 1 }}>All steps completed - you&apos;re finished</Typography>
+                <Typography sx={{ my: 1 }}>All steps completed</Typography>
+                <Typography sx={{ my: 1 }}>
+                  You are adding {<b>{buyInfo?.quantity}</b>} stock of{' '}
+                  {<b>{selectedAsset?.longName}</b>} bought on {<b>{fDate(buyInfo?.date)}</b>} at a
+                  price of{' '}
+                  {
+                    <b>
+                      {buyInfo?.price_in}
+                      {selectedAsset?.currency}
+                    </b>
+                  }{' '}
+                  for a total of{' '}
+                  {
+                    <b>
+                      {buyInfo?.amount}
+                      {selectedAsset?.currency}
+                    </b>
+                  }
+                  plus{' '}
+                  {
+                    <b>
+                      {buyInfo?.fee}
+                      {selectedAsset?.currency}
+                    </b>
+                  }{' '}
+                  of fees
+                </Typography>
               </Paper>
             </>
           ) : (
@@ -190,12 +343,12 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
                   <TextField
                     variant="filled"
                     fullWidth
-                    helperText="Insert asset name"
+                    helperText="Insert asset symbol"
                     value={keywordSelected}
                     onChange={(event) => {
                       setKeywordSelected(event.target.value);
                     }}
-                    label="Asset Names"
+                    label="Asset symbol"
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
@@ -210,19 +363,19 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
 
                   <Scrollbar>
                     <Stack spacing={3} sx={{ p: 3, minWidth: 360 }}>
-                      {assetsOptions.map((app) => (
+                      {Object.keys(assetsOptions).length > 0 && (
                         <BestMatchesItems
-                          app={app}
+                          app={assetsOptions}
                           selectedStock={selectedAsset}
                           handleSelectStock={(asset) => {
-                            if (asset.permaTicker === selectedAsset?.permaTicker) {
+                            if (asset.symbol === selectedAsset?.symbol) {
                               setSelectedAsset(null);
                             } else {
                               setSelectedAsset(asset);
                             }
                           }}
                         />
-                      ))}
+                      )}
                     </Stack>
                   </Scrollbar>
                 </Paper>
@@ -249,13 +402,17 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
                       variant="filled"
                       fullWidth
                       type="number"
-                      value={buyInfo.price_info}
+                      value={buyInfo.price_in}
                       onChange={(event) => {
                         handleBuyInfo('price_in', event.target.value);
                       }}
                       label="Price in"
                       InputProps={{
-                        startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            {selectedAsset?.currency}
+                          </InputAdornment>
+                        ),
                       }}
                     />
                     <TextField
@@ -278,7 +435,28 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
                       }}
                       label="Amount"
                       InputProps={{
-                        startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            {selectedAsset?.currency}
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <TextField
+                      variant="filled"
+                      fullWidth
+                      type="number"
+                      value={buyInfo.fee}
+                      onChange={(event) => {
+                        handleBuyInfo('fee', event.target.value);
+                      }}
+                      label="Fee"
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            {selectedAsset?.currency}
+                          </InputAdornment>
+                        ),
                       }}
                     />
                   </Stack>
@@ -299,9 +477,11 @@ export default function AnalyticsAssets({ title, subheader, list, ...other }) {
                 (activeStep === 1 && Object.values(buyInfo).includes(null))
               }
               variant="contained"
-              onClick={handleNext}
+              onClick={() => {
+                activeStep === steps.length - 1 ? handleConfirm() : handleNext();
+              }}
             >
-              {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+              {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
             </Button>
           </Box>
         </DialogActions>
@@ -314,24 +494,152 @@ AnalyticsAssets.propTypes = {
   subheader: PropTypes.string,
   title: PropTypes.string,
   selectedStock: PropTypes.object,
+  refreshAssetsList: PropTypes.func,
   handleSelectStock: PropTypes.func,
 };
+
+AssetInfo.propTypes = {
+  asset: PropTypes.object,
+};
+function AssetInfo({ asset }) {
+  const {
+    symbol,
+    longName,
+    quantity,
+    current_value,
+    total_invested,
+    pmc,
+    percentage,
+    Date,
+    currency,
+    quoteType,
+  } = asset;
+
+  const router = useRouter();
+  return (
+    <Stack
+      component={Paper}
+      variant="outlined"
+      onClick={() => router.push(paths.app.single_asset(symbol))}
+      spacing={1}
+      alignItems="flex-start"
+      sx={{
+        p: 2.5,
+        maxWidth: 500,
+        borderRadius: 2,
+        bgcolor: 'unset',
+        cursor: 'pointer',
+        position: 'relative',
+        '&:hover': {
+          boxShadow: (theme) => theme.customShadows.z20,
+        },
+      }}
+    >
+      {/* ACTIONS */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        sx={{
+          top: 8,
+          right: 8,
+          position: 'absolute',
+        }}
+      >
+        {/* <IconButton>
+          <Iconify icon="eva:more-vertical-fill" />
+        </IconButton> */}
+      </Stack>
+
+      {/* INFO */}
+
+      <Tooltip title={longName}>
+        <TextMaxLine persistent line={1} variant="subtitle2" sx={{ width: 1, mb: 0.5 }}>
+          {longName}
+        </TextMaxLine>
+      </Tooltip>
+
+      <ListItemText
+        primary={
+          <Tooltip title="Current value">{`${currency} ${fShortenNumber(current_value)}`}</Tooltip>
+        }
+        secondary={
+          <>
+            {/* Percentage */}
+            <Stack direction="row">
+              <Iconify
+                color={percentage < 0 ? 'error.main' : 'success.main'}
+                icon={percentage < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'}
+              />
+
+              <Box
+                color={percentage < 0 ? 'error.main' : 'success.main'}
+                // sx={{ typography: 'subtitle2' }}
+              >
+                {percentage > 0 && '+'}
+                {fPercent(percentage * 100)}
+              </Box>
+            </Stack>
+            <Box
+              component="span"
+              sx={{
+                mx: 0.75,
+                width: 2,
+                height: 2,
+                borderRadius: '50%',
+                bgcolor: 'currentColor',
+              }}
+            />
+            {/* Quantity */}
+            <Stack direction="row">
+              Qt.
+              <Box>{fShortenNumber(quantity)}</Box>
+            </Stack>
+            <Box
+              component="span"
+              sx={{
+                mx: 0.75,
+                width: 2,
+                height: 2,
+                borderRadius: '50%',
+                bgcolor: 'currentColor',
+              }}
+            />
+            {/* PMC */}
+            <Stack direction="row">
+              <Box>{quoteType}</Box>
+            </Stack>
+            {/* {folder.totalFiles} files */}
+          </>
+        }
+        secondaryTypographyProps={{
+          mt: 0.5,
+          component: 'span',
+          alignItems: 'center',
+          typography: 'caption',
+          color: 'text.disabled',
+          display: 'inline-flex',
+        }}
+      />
+    </Stack>
+    // </Paper>
+  );
+}
 
 // ----------------------------------------------------------------------
 
 function BestMatchesItems({ app, selectedStock, handleSelectStock }) {
-  const { name, ticker, assetType, countryCode, permaTicker } = app;
+  const { symbol, longName, quoteType, currency, exchange, sector } = app;
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
       <Checkbox
-        checked={selectedStock?.permaTicker === permaTicker}
+        checked={selectedStock?.symbol === symbol}
         onChange={() => handleSelectStock(app)}
         inputProps={{ 'aria-label': 'controlled' }}
       />
       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
         <Typography variant="subtitle2" noWrap>
-          {`${name}`}
+          {`${longName}`}
         </Typography>
 
         <Stack
@@ -340,9 +648,9 @@ function BestMatchesItems({ app, selectedStock, handleSelectStock }) {
           alignItems="center"
           sx={{ mt: 0.5, color: 'text.secondary' }}
         >
-          <Label>{`${countryCode}`}</Label>
-          <Label>{`${ticker}`}</Label>
-          <Label>{`${assetType}`}</Label>
+          <Label>{`${quoteType}`}</Label>
+          <Label>{`${currency}`}</Label>
+          <Label>{`${exchange}`}</Label>
         </Stack>
       </Box>
     </Stack>
@@ -351,4 +659,10 @@ function BestMatchesItems({ app, selectedStock, handleSelectStock }) {
 
 BestMatchesItems.propTypes = {
   app: PropTypes.object,
+};
+
+const applyFilter = ({ inputData, sortBy }) => {
+  // SORT BY
+  inputData = orderBy(inputData, [sortBy.value], [sortBy.sort_type]);
+  return inputData;
 };

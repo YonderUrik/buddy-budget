@@ -22,6 +22,7 @@ export const paths = {
     root: ROOTS.HOME,
     banking : `${ROOTS.HOME}/banking`,
     account : `${ROOTS.HOME}/account`,
-    assets : `${ROOTS.HOME}/assets`
+    assets : `${ROOTS.HOME}/assets`,
+    single_asset : (symbol) => `${ROOTS.HOME}/assets/${symbol}`,
   },
 };

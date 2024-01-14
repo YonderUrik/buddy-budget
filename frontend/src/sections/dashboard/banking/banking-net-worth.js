@@ -42,7 +42,7 @@ export default function BankingNetWorth({ title, subheader, chart, ...other }) {
       },
     },
     legend: {
-      show:false,
+      show: false,
       position: 'top',
       horizontalAlign: 'left',
     },
@@ -51,6 +51,10 @@ export default function BankingNetWorth({ title, subheader, chart, ...other }) {
     },
     yaxis: {
       type: 'numeric',
+    },
+    title: {
+      text: title,
+      align: 'center',
     },
     ...options,
   });
@@ -65,8 +69,6 @@ export default function BankingNetWorth({ title, subheader, chart, ...other }) {
       }}
       {...other}
     >
-      <CardHeader title={title} subheader={subheader} />
-
       <Box
         sx={{
           p: 0,

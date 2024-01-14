@@ -5,7 +5,7 @@ import 'react-date-range/dist/theme/default.css';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
-import { useTheme } from '@mui/material/styles';
+import { useTheme, alpha } from '@mui/material/styles';
 import startOfMonth from 'date-fns/startOfMonth';
 
 import { useResponsive } from 'src/hooks/use-responsive';
@@ -119,7 +119,9 @@ export default function BankingExpensesCategories({
   return (
     <Card
       sx={{
-        borderRadius: 1,
+        width: 1,
+        borderRadius: 2,
+        bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
         border: (theme) => `dashed 1px ${theme.palette.divider}`,
       }}
       {...other}

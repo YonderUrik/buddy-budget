@@ -14,6 +14,7 @@ import { useSettingsContext } from 'src/components/settings';
 
 import BankingNetWorth from './banking/banking-net-worth';
 import BankingExpensesCategories from './banking/banking-expenses-categories';
+import AnalyticsWidgetSummary from './analytics-widget-summary';
 
 // ----------------------------------------------------------------------
 
@@ -28,6 +29,8 @@ export default function HomeView() {
   const [categoryYearSelected, setYearMonthSelected] = useState(todayDate.getFullYear());
 
   const [categoryChartLoading, setCategoryChartLoading] = useState(false);
+
+  const [generalInfos, setGeneralInfos] = useState({});
 
   const getCategories = useCallback(async () => {
     setCategoryChartLoading(true);
@@ -55,10 +58,21 @@ export default function HomeView() {
     }
   }, []);
 
+  const getSavingRate = useCallback(async () => {
+    try {
+      const response = await axios.post('/api/banking/get-general-infos');
+      const { data } = response;
+      setGeneralInfos(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
   useEffect(() => {
     getCategories();
     getNetWorth();
-  }, [getCategories, getNetWorth]);
+    getSavingRate();
+  }, [getCategories, getNetWorth, getSavingRate]);
 
   const handleChangeCategoryMonth = (newValue) => {
     setCategoryMonthSelected(newValue);
@@ -70,9 +84,29 @@ export default function HomeView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Typography variant="h4"> NetWorth </Typography>
-
-      <Grid sx={{ mt: 2 }} container spacing={2}>
+      <Grid item xs={12} md={12}>
+        <BankingNetWorth
+          title="Net Worth"
+          chart={{
+            series: netWorth,
+          }}
+        />
+      </Grid>
+      <Grid sx={{ mt: 1 }} container  spacing={2}>
+        <Grid item xs={12} sm={6} md={4}>
+          <AnalyticsWidgetSummary title="Saving Rate" total={generalInfos?.savingRate || 0} />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <AnalyticsWidgetSummary
+            title="Average Monthly Consumption"
+            total={generalInfos?.meanExpenseByMonth || 0}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <AnalyticsWidgetSummary title="25x Fire Rule" total={generalInfos?.FIRE || 0} />
+        </Grid>
+      </Grid>
+      <Grid sx={{ mt: 1 }} container spacing={2}>
         <Grid item xs={12} md={12}>
           {categoryChartLoading && <LinearProgress />}
           <BankingExpensesCategories
@@ -81,14 +115,6 @@ export default function HomeView() {
             categoryYearSelected={categoryYearSelected}
             handleChangeMonth={handleChangeCategoryMonth}
             handleChangeYear={handleChangeCategoryYear}
-          />
-        </Grid>
-        <Grid item xs={12} md={12}>
-          <BankingNetWorth
-            title="Net Worth"
-            chart={{
-              series: netWorth,
-            }}
           />
         </Grid>
       </Grid>

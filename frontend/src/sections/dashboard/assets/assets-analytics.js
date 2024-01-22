@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import orderBy from 'lodash/orderBy';
 import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
@@ -8,8 +7,6 @@ import Paper from '@mui/material/Paper';
 import { alpha } from '@mui/material/styles';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import { DateCalendar } from '@mui/x-date-pickers';
-import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
 import {
   Autocomplete,
   Button,
@@ -32,21 +29,15 @@ import {
   Tooltip,
 } from '@mui/material';
 
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
-
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import axios from 'src/utils/axios';
-import { fDate } from 'src/utils/format-time';
-import { fPercent, fShortenNumber } from 'src/utils/format-number';
+import { fShortenNumber } from 'src/utils/format-number';
 
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { useSnackbar } from 'src/components/snackbar';
-import TextMaxLine from 'src/components/text-max-line';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 const steps = ['Select asset', 'Insert buy info', 'Confirm'];
 

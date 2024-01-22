@@ -1,14 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-
-import { alpha } from '@mui/material/styles';
-import { Card, Container, Divider, Grid, LinearProgress, Stack } from '@mui/material';
-
-import axios from 'src/utils/axios';
-
-import Scrollbar from 'src/components/scrollbar';
-import { useSettingsContext } from 'src/components/settings';
+import { Grid } from '@mui/material';
 
 import AnalyticsAssets from '../assets-analytics';
 import TotalByCurrency from '../total-by-currencty-analytic'; // theme css file

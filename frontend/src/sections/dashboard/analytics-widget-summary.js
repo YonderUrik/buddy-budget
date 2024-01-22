@@ -77,7 +77,7 @@ export default function AnalyticsWidgetSummary({
                 },
                 value: {
                   formatter (val) {
-                    return parseInt(val);
+                    return parseInt(val, 10);
                   },
                   color: themeSetting.palette.primary.main,
                   fontSize: '36px',

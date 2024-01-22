@@ -120,7 +120,9 @@ export default function BankingExpensesCategories({
   return (
     <Card
       sx={{
-        borderRadius: 1,
+        width: 1,
+        borderRadius: 2,
+        bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
         border: (theme) => `dashed 1px ${theme.palette.divider}`,
       }}
       {...other}

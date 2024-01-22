@@ -29,7 +29,7 @@ services:
     secrets:
       - mongodb-root-username
       - mongodb-root-password
-    image: bb_backend:0.0.1
+    image: bb_backend:0.0.2
     ports:
       - "8317:5555"
     environment:

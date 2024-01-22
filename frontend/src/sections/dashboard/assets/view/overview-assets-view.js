@@ -1,9 +1,16 @@
 'use client';
 
-import { Grid } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 
-import AnalyticsAssets from '../assets-analytics';
+import { Card, Container, Divider, Grid, LinearProgress, Stack, alpha } from '@mui/material';
+
+import axios from 'src/utils/axios';
+
+import Scrollbar from 'src/components/scrollbar';
+import { useSettingsContext } from 'src/components/settings';
+
 import TotalByCurrency from '../total-by-currencty-analytic'; // theme css file
+import AnalyticsAssets from '../assets-analytics';
 
 export default function OverviewAssetsView() {
   const [assetsList, setAssetsList] = useState([]);

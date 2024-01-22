@@ -1,8 +1,8 @@
 import * as Yup from 'yup';
 import PropTypes from 'prop-types';
 import { useForm } from 'react-hook-form';
-import { useCallback, useEffect, useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 
 import { useBoolean } from 'src/hooks/use-boolean';
+import { useLocalStorage } from 'src/hooks/use-local-storage';
 
 import axios from 'src/utils/axios';
 import { fToNow } from 'src/utils/format-time';
@@ -35,7 +36,6 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Carousel, { useCarousel, CarouselDots } from 'src/components/carousel';
-import { useLocalStorage } from 'src/hooks/use-local-storage';
 // ----------------------------------------------------------------------
 
 export default function BankingCurrentBalance({ isLoading, list, refreshBanks, sx }) {

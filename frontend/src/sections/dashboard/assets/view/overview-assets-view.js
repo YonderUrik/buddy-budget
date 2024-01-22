@@ -1,14 +1,17 @@
 'use client';
 
-import { Card, Container, Divider, Grid, LinearProgress, Stack } from '@mui/material';
-import { useTheme, alpha } from '@mui/material/styles';
-import AnalyticsAssets from '../assets-analytics';
 import { useCallback, useEffect, useState } from 'react';
-import axios from 'src/utils/axios';
-import TotalByCurrency from '../total-by-currencty-analytic';
 
-import { useSettingsContext } from 'src/components/settings'; // theme css file
+import { alpha } from '@mui/material/styles';
+import { Card, Container, Divider, Grid, LinearProgress, Stack } from '@mui/material';
+
+import axios from 'src/utils/axios';
+
 import Scrollbar from 'src/components/scrollbar';
+import { useSettingsContext } from 'src/components/settings';
+
+import AnalyticsAssets from '../assets-analytics';
+import TotalByCurrency from '../total-by-currencty-analytic'; // theme css file
 
 export default function OverviewAssetsView() {
   const [assetsList, setAssetsList] = useState([]);

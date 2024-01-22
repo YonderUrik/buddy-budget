@@ -15,7 +15,6 @@ import { useSnackbar } from 'src/components/snackbar';
 import { useSettingsContext } from 'src/components/settings'; // theme css file
 import startOfMonth from 'date-fns/startOfMonth';
 import { DateRangePicker } from 'react-date-range';
-import { bgGradient } from 'src/theme/css';
 
 import {
   Button,
@@ -26,15 +25,20 @@ import {
   Tooltip,
 } from '@mui/material';
 
+import { useBoolean } from 'src/hooks/use-boolean';
+
 import { formatRange } from 'src/utils/format-time';
+import { fCurrency } from 'src/utils/format-number';
+
+import { bgGradient } from 'src/theme/css';
+
+import Iconify from 'src/components/iconify';
 
 import BankingRecentTransitions from '../banking-recent-transitions'; // main style file
+
 import BankingWidgetSummary from '../banking-widget-summary';
 import BankingCurrentBalance from '../banking-current-balance';
 import BankingQuickTransaction from '../banking-quick-transaction';
-import Iconify from 'src/components/iconify';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { fCurrency } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 

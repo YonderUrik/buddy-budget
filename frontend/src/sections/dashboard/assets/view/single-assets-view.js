@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { useCallback, useEffect, useState } from 'react';
+
 import { useResponsive } from 'src/hooks/use-responsive';
+
 import { useSettingsContext } from 'src/components/settings'; // theme css file
 
-import { useSnackbar } from 'src/components/snackbar';
-import axios from 'src/utils/axios';
 import {
   Card,
   LinearProgress,
@@ -22,12 +22,16 @@ import {
   Typography,
   Avatar,
 } from '@mui/material';
-import Chart from 'src/components/chart';
+
+import axios from 'src/utils/axios';
+import { fDate } from 'src/utils/format-time';
 import { fNumber, fPercent } from 'src/utils/format-number';
+
+import Chart from 'src/components/chart';
+import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import { fDate } from 'src/utils/format-time';
-import Label from 'src/components/label';
+import { useSnackbar } from 'src/components/snackbar';
 
 export default function SingleAssetView({ symbol }) {
   const [symbolInfo, setSymbolinfo] = useState({});
@@ -42,7 +46,7 @@ export default function SingleAssetView({ symbol }) {
   const settings = useSettingsContext();
   const { enqueueSnackbar } = useSnackbar();
 
-  const theme = useTheme();
+  const themeSettings = useTheme();
 
   const smUp = useResponsive('up', 'sm');
 
@@ -93,22 +97,18 @@ export default function SingleAssetView({ symbol }) {
     getTransactionHistory();
   }, [getSymbolHistory, getTransactionHistory, getSymbolInfo]);
 
-  const last_percentage = (symbolInfo?.ask - symbolInfo?.open) / symbolInfo?.open;
+  const last_percentage = symbolInfo?.open && symbolInfo?.ask ? (symbolInfo.ask - symbolInfo.open) / symbolInfo.open : 0;
 
   // Format data for Candlestick Chart
-  const formattedData = symbolHistory.map((item) => {
-    return {
-      x: new Date(item.Date).getTime(),
-      y: [item.Open.toFixed(2), item.High.toFixed(2), item.Low.toFixed(2), item.Close.toFixed(2)],
-    };
-  });
+  const formattedData = symbolHistory.map((item) => ({
+    x: new Date(item.Date).getTime(),
+    y: [item.Open.toFixed(2), item.High.toFixed(2), item.Low.toFixed(2), item.Close.toFixed(2)],
+  }));
 
-  const buyPoints = transactionHistory.map((transaction) => {
-    return {
-      x: new Date(transaction.date).getTime(),
-      y: transaction.price_in,
-    };
-  });
+  const buyPoints = transactionHistory.map((transaction) => ({
+    x: new Date(transaction.date).getTime(),
+    y: transaction.price_in,
+  }));
 
   // ApexCharts options and series
   const chartOptions = {
@@ -116,8 +116,8 @@ export default function SingleAssetView({ symbol }) {
       toolbar: { show: true },
       zoom: { enabled: true },
       animations: { enabled: true },
-      foreColor: theme.palette.text.disabled,
-      fontFamily: theme.typography.fontFamily,
+      foreColor: themeSettings.palette.text.disabled,
+      fontFamily: themeSettings.typography.fontFamily,
     },
     states: {
       hover: {
@@ -146,7 +146,7 @@ export default function SingleAssetView({ symbol }) {
     // Grid
     grid: {
       strokeDashArray: 3,
-      borderColor: theme.palette.divider,
+      borderColor: themeSettings.palette.divider,
       xaxis: {
         lines: {
           show: false,
@@ -160,7 +160,7 @@ export default function SingleAssetView({ symbol }) {
     },
     markers: {
       size: 0,
-      strokeColors: theme.palette.background.paper,
+      strokeColors: themeSettings.palette.background.paper,
     },
     title: {
       text: symbolInfo?.longName,
@@ -169,14 +169,14 @@ export default function SingleAssetView({ symbol }) {
     responsive: [
       {
         // sm
-        breakpoint: theme.breakpoints.values.sm,
+        breakpoint: themeSettings.breakpoints.values.sm,
         options: {
           plotOptions: { bar: { columnWidth: '40%' } },
         },
       },
       {
         // md
-        breakpoint: theme.breakpoints.values.md,
+        breakpoint: themeSettings.breakpoints.values.md,
         options: {
           plotOptions: { bar: { columnWidth: '32%' } },
         },

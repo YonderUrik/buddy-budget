@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
-import { Grid, LinearProgress } from '@mui/material';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
+import { Grid, LinearProgress } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 
 import axios from 'src/utils/axios';
@@ -13,8 +13,8 @@ import axios from 'src/utils/axios';
 import { useSettingsContext } from 'src/components/settings';
 
 import BankingNetWorth from './banking/banking-net-worth';
-import BankingExpensesCategories from './banking/banking-expenses-categories';
 import AnalyticsWidgetSummary from './analytics-widget-summary';
+import BankingExpensesCategories from './banking/banking-expenses-categories';
 
 // ----------------------------------------------------------------------
 

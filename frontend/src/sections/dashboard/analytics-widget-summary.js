@@ -1,15 +1,8 @@
 import PropTypes from 'prop-types';
-
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { alpha, useTheme } from '@mui/material/styles';
-
-import { fShortenNumber } from 'src/utils/format-number';
-import Chart, { useChart } from 'src/components/chart';
-
-import { bgGradient } from 'src/theme/css';
 import ReactApexChart from 'react-apexcharts';
+
+import Stack from '@mui/material/Stack';
+import { alpha, useTheme } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
 
@@ -25,13 +18,11 @@ export default function AnalyticsWidgetSummary({
 
   return (
     <Stack
-      // alignItems="center"
       sx={{
         bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
         border: (theme) => `dashed 1px ${theme.palette.divider}`,
         // py: 5,
         borderRadius: 2,
-        // textAlign: 'center',
         ...sx,
       }}
       {...other}
@@ -85,7 +76,7 @@ export default function AnalyticsWidgetSummary({
                   fontSize: '17px',
                 },
                 value: {
-                  formatter: function (val) {
+                  formatter (val) {
                     return parseInt(val);
                   },
                   color: themeSetting.palette.primary.main,
@@ -107,13 +98,6 @@ export default function AnalyticsWidgetSummary({
         type="radialBar"
         width="100%"
       />
-      {/* {icon && <Box sx={{ width: 64, height: 64, mb: 1 }}>{icon}</Box>}
-
-      <Typography variant="h3">{fShortenNumber(total)}</Typography>
-
-      <Typography variant="subtitle2" sx={{ opacity: 0.64 }}>
-        {title}
-      </Typography> */}
     </Stack>
   );
 }

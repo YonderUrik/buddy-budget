@@ -1,22 +1,15 @@
 import PropTypes from 'prop-types';
+import orderBy from 'lodash/orderBy';
+import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Paper from '@mui/material/Paper';
+import { alpha } from '@mui/material/styles';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
+import { DateCalendar } from '@mui/x-date-pickers';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
-import { bgGradient } from 'src/theme/css';
-import { useRouter, useSearchParams } from 'src/routes/hooks';
-import orderBy from 'lodash/orderBy';
-
-import { fPercent, fShortenNumber } from 'src/utils/format-number';
-
-import Iconify from 'src/components/iconify';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { useSnackbar } from 'src/components/snackbar';
-
 import {
   Autocomplete,
   Button,
@@ -38,13 +31,20 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material';
-import { useCallback, useEffect, useState } from 'react';
-import axios from 'src/utils/axios';
-import Scrollbar from 'src/components/scrollbar';
-import Label from 'src/components/label';
-import { DateCalendar } from '@mui/x-date-pickers';
-import { fDate, fToNow } from 'src/utils/format-time';
+
 import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+
+import axios from 'src/utils/axios';
+import { fDate } from 'src/utils/format-time';
+import { fPercent, fShortenNumber } from 'src/utils/format-number';
+
+import Label from 'src/components/label';
+import Iconify from 'src/components/iconify';
+import Scrollbar from 'src/components/scrollbar';
+import { useSnackbar } from 'src/components/snackbar';
 import TextMaxLine from 'src/components/text-max-line';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
@@ -254,7 +254,6 @@ export default function AnalyticsAssets({ title, subheader, list, refreshAssetsL
             borderRadius: 2,
             bgcolor: 'unset',
             cursor: 'pointer',
-            textAlign: 'center',
             '&:hover': {
               bgcolor: 'background.paper',
               boxShadow: (theme) => theme.customShadows.z20,
@@ -301,8 +300,8 @@ export default function AnalyticsAssets({ title, subheader, list, refreshAssetsL
               >
                 <Typography sx={{ my: 1 }}>All steps completed</Typography>
                 <Typography sx={{ my: 1 }}>
-                  You are adding {<b>{buyInfo?.quantity}</b>} stock of{' '}
-                  {<b>{selectedAsset?.longName}</b>} bought on {<b>{fDate(buyInfo?.date)}</b>} at a
+                  You are adding <b>{buyInfo?.quantity}</b> stock of{' '}
+                  <b>{selectedAsset?.longName}</b> bought on <b>{fDate(buyInfo?.date)}</b> at a
                   price of{' '}
                   {
                     <b>
@@ -311,12 +310,10 @@ export default function AnalyticsAssets({ title, subheader, list, refreshAssetsL
                     </b>
                   }{' '}
                   for a total of{' '}
-                  {
-                    <b>
-                      {buyInfo?.amount}
-                      {selectedAsset?.currency}
-                    </b>
-                  }
+                  <b>
+                    {buyInfo?.amount}
+                    {selectedAsset?.currency}
+                  </b>
                   plus{' '}
                   {
                     <b>
@@ -477,9 +474,7 @@ export default function AnalyticsAssets({ title, subheader, list, refreshAssetsL
                 (activeStep === 1 && Object.values(buyInfo).includes(null))
               }
               variant="contained"
-              onClick={() => {
-                activeStep === steps.length - 1 ? handleConfirm() : handleNext();
-              }}
+              onClick={activeStep === steps.length - 1 ? handleConfirm : handleNext}
             >
               {activeStep === steps.length - 1 ? 'Confirm' : 'Next'}
             </Button>
@@ -494,6 +489,7 @@ AnalyticsAssets.propTypes = {
   subheader: PropTypes.string,
   title: PropTypes.string,
   selectedStock: PropTypes.object,
+  list: PropTypes.array,
   refreshAssetsList: PropTypes.func,
   handleSelectStock: PropTypes.func,
 };
@@ -659,6 +655,8 @@ function BestMatchesItems({ app, selectedStock, handleSelectStock }) {
 
 BestMatchesItems.propTypes = {
   app: PropTypes.object,
+  selectedStock: PropTypes.object,
+  handleSelectStock: PropTypes.func,
 };
 
 const applyFilter = ({ inputData, sortBy }) => {

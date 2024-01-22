@@ -1,6 +1,6 @@
 #!/bin/bash
 IMAGE_TYPE=$1
-VERSION=0.0.1
+VERSION=0.0.2
 
 echo "Building bb_backend image. You have 5 seconds to stop the script"
 sleep 5

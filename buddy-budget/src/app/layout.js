@@ -1,5 +1,5 @@
 import "../styles/globals.css";
-import AuthProvider from "../providers/auth-provider";
+import { AuthProvider } from "../contexts/auth-context";
 import I18nProvider from "../providers/i18n-provider";
 import "../i18n/config"
 import { ThemeProvider } from "@/providers/theme-provider";
@@ -23,6 +23,7 @@ export default function RootLayout({ children }) {
             <I18nProvider>
               <div className="flex min-h-screen flex-col">
                 <div className="flex-1">{children}</div>
+                {/* TODO: Add footer (Only for dashboard) */}
                 {/* <Footer /> */}
               </div>
             </I18nProvider>

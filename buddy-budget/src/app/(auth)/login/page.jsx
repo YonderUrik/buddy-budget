@@ -11,33 +11,59 @@ import { LineChartIcon as ChartLineUp, PiggyBank, Wallet, PieChartIcon as ChartP
 import { signIn, useSession } from "next-auth/react"
 import { config } from "@/lib/config"
 import { ModeToggle } from "@/components/theme-toggle"
-
+import { paths } from "@/lib/paths"
+import { oauthProviders } from "@/providers/oauth-providers"
 export default function LoginPage() {
   const { t } = useTranslation()
-  const { data: session, status, signOut, update, error, loading } = useSession()
+  const { data: session, status, loading } = useSession()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [mounted, setMounted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loginError, setLoginError] = useState(() => {
+    // Get error from URL params if present
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const error = params.get('error');
+      return error ? t(`errors.${error}`, { defaultValue: t('errors.loginFailed') }) : "";
+    }
+    return "";
+  })
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated") {
+      if (session?.user?.hasCompletedOnboarding) {
+        window.location.href = paths.dashboard
+      } else {
+        window.location.href = paths.onboarding
+      }
+    }
+  }, [status, session])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    try {
-      await signIn("credentials", { email, password })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+    setLoginError("")
 
-  const handleDemoLogin = async () => {
-    setIsSubmitting(true)
     try {
-      await signIn("credentials", { email: "demo@example.com", password: "demopassword" })
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+
+      console.log("result", result)
+
+      if (result.error) {
+        setLoginError(t(`errors.${result.error}`, { defaultValue: t('errors.loginFailed') }))
+      } else if (result.url) {
+        window.location.href = result.url
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -129,7 +155,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder="name@domain.com"
                     required
                     className="transition-all focus-visible:ring-primary"
                   />
@@ -137,7 +163,7 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password" className="text-sm font-medium">{t("common.password")}</Label>
-                    <Link href="/forgot-password" className="text-sm text-primary hover:underline transition-all hover:text-primary/80">
+                    <Link href={paths.forgotPassword} className="text-sm text-primary hover:underline transition-all hover:text-primary/80">
                       {t("common.forgotPassword")}
                     </Link>
                   </div>
@@ -150,7 +176,7 @@ export default function LoginPage() {
                     className="transition-all focus-visible:ring-primary"
                   />
                 </div>
-                {error && <p className="text-destructive text-sm animate-shake">{error}</p>}
+                {loginError && <p className="text-destructive text-sm animate-shake">{loginError}</p>}
                 <Button
                   type="submit"
                   className="w-full transition-all hover:shadow-md relative"
@@ -166,7 +192,6 @@ export default function LoginPage() {
                   )}
                 </Button>
 
-                {/* Demo Login Button */}
                 <div className="relative my-4">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -176,38 +201,38 @@ export default function LoginPage() {
                   </div>
                 </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full transition-all hover:bg-primary/10 border-primary/20 hover:shadow-sm relative"
-                  onClick={handleDemoLogin}
-                  disabled={isSubmitting || loading}
-                >
-                  <span className={isSubmitting || loading ? "opacity-0" : "opacity-100"}>
-                    {t("common.tryDemoAccount")}
-                  </span>
-                  {(isSubmitting || loading) && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
-                </Button>
+                {oauthProviders.map((provider) =>
+                  <Button
+                    key={provider.id}
+                    type="button"
+                    variant="outline"
+                    className="w-full dark:bg-background dark:text-foreground dark:border-foreground/20 flex items-center justify-center gap-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                    onClick={() => signIn(provider.id)}
+                    disabled={isSubmitting || loading || !provider.enabled}
+                  >
+                    {provider.icon}
+                    {t("common.continueWith")} {provider.name}
+                  </Button>
+                )}
+
+
+
               </form>
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
               <p className="text-sm text-muted-foreground">
                 {t("common.noAccount")}{" "}
-                <Link href="/register" className="text-primary hover:underline transition-colors hover:text-primary/80">
+                <Link href={paths.register} className="text-primary hover:underline transition-colors hover:text-primary/80">
                   {t("common.signUp")}
                 </Link>
               </p>
               <div className="text-xs text-muted-foreground text-center w-full">
                 {t("common.agreeToTerms")}
-                <Link href="/terms" className="text-primary hover:underline transition-colors hover:text-primary/80">
+                <Link href={paths.terms} className="text-primary hover:underline transition-colors hover:text-primary/80">
                   {t("common.termsOfService")}
                 </Link>{" "}
                 {t("common.and")}{" "}
-                <Link href="/privacy" className="text-primary hover:underline transition-colors hover:text-primary/80">
+                <Link href={paths.privacy} className="text-primary hover:underline transition-colors hover:text-primary/80">
                   {t("common.privacyPolicy")}
                 </Link>
               </div>

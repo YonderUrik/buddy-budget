@@ -17,11 +17,11 @@ import { config } from "@/lib/config"
 import { ModeToggle } from "@/components/theme-toggle"
 import { z } from "zod"
 import axios from "axios"
+import { paths } from "@/lib/paths"
 
 export default function SupportPage() {
    const { t } = useTranslation()
    const [activeTab, setActiveTab] = useState("contact")
-   const [name, setName] = useState("")
    const [email, setEmail] = useState("")
    const [subject, setSubject] = useState("")
    const [message, setMessage] = useState("")
@@ -91,7 +91,7 @@ export default function SupportPage() {
       <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
          <header className="border-b bg-background/60 backdrop-blur sticky top-0 z-10 shadow-sm">
             <div className="container flex h-12 items-center justify-between px-4 md:px-6">
-               <Link href="/" className="transition-transform hover:scale-105">
+               <Link href={paths.root} className="transition-transform hover:scale-105">
                   <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{config.appName}</h1>
                </Link>
                <div className="ml-auto">
@@ -103,7 +103,7 @@ export default function SupportPage() {
 
             <div className={`flex items-center mb-6 w-full max-w-4xl mx-auto ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
                <Button variant="outline" size="sm" asChild className="mr-2 transition-all hover:shadow-md">
-                  <Link href="/">
+                  <Link href={paths.root}>
                      <ChevronLeft className="mr-2 h-4 w-4" />
                      {t("common.back")}
                   </Link>
@@ -239,65 +239,29 @@ export default function SupportPage() {
                         </TabsContent>
 
                         {/* FAQ TAB */}
-                        {/* <TabsContent value="faq" className="px-6 pb-6">
+                        <TabsContent value="faq" className="px-6 pb-6">
                            <div className={`transition-all duration-300 hover:bg-muted/50 p-4 rounded-md ${mounted ? 'animate-fadeIn animate-delay-100' : 'opacity-0'}`}>
-                              <h2 className="text-xl font-semibold mb-4 text-primary">{t("support.frequentlyAskedQuestions", "Frequently Asked Questions")}</h2>
+                              <h2 className="text-xl font-semibold mb-4 text-primary">{t("support.frequentlyAskedQuestions")}</h2>
                               <p className="text-muted-foreground mb-6">
-                                 {t("support.faqDesc", "Find answers to the most common questions about BuddyBudget.")}
+                                 {t("support.faqDesc", { appName: config.appName })}
                               </p>
                               <Accordion type="single" collapsible className="w-full">
-                                 <AccordionItem value="item-1">
-                                    <AccordionTrigger>{t("support.faq1", "How do I add a new account?")}</AccordionTrigger>
-                                    <AccordionContent>
-                                       {t(
-                                          "support.faq1Answer",
-                                          "To add a new account, go to the Accounts page and click on the 'New Account' button. Fill in the required information and click 'Create Account'.",
-                                       )}
-                                    </AccordionContent>
-                                 </AccordionItem>
-                                 <AccordionItem value="item-2">
-                                    <AccordionTrigger>{t("support.faq2", "How do I track my expenses?")}</AccordionTrigger>
-                                    <AccordionContent>
-                                       {t(
-                                          "support.faq2Answer",
-                                          "You can track your expenses by adding transactions. Go to the Transactions page and click on 'New Transaction'. Select 'Expense' as the transaction type, fill in the details, and click 'Add Transaction'.",
-                                       )}
-                                    </AccordionContent>
-                                 </AccordionItem>
-                                 <AccordionItem value="item-3">
-                                    <AccordionTrigger>{t("support.faq3", "How do I create a budget?")}</AccordionTrigger>
-                                    <AccordionContent>
-                                       {t(
-                                          "support.faq3Answer",
-                                          "To create a budget, go to the Budgets page and click on 'New Budget'. Enter a name for your budget, set the amount, select a category, and choose a period. Then click 'Create Budget'.",
-                                       )}
-                                    </AccordionContent>
-                                 </AccordionItem>
-                                 <AccordionItem value="item-4">
-                                    <AccordionTrigger>
-                                       {t("support.faq4", "How do I transfer money between accounts?")}
-                                    </AccordionTrigger>
-                                    <AccordionContent>
-                                       {t(
-                                          "support.faq4Answer",
-                                          "To transfer money between accounts, go to the Transactions page and click on 'New Transaction'. Select 'Transfer' as the transaction type, choose the source and destination accounts, enter the amount, and click 'Add Transaction'.",
-                                       )}
-                                    </AccordionContent>
-                                 </AccordionItem>
-                                 <AccordionItem value="item-5">
-                                    <AccordionTrigger>{t("support.faq5", "Is my financial data secure?")}</AccordionTrigger>
-                                    <AccordionContent>
-                                       {t(
-                                          "support.faq5Answer",
-                                          "Yes, we take security very seriously. All your data is encrypted both in transit and at rest. We use industry-standard security measures to protect your information. For more details, please see our Privacy Policy.",
-                                       )}
-                                    </AccordionContent>
-                                 </AccordionItem>
+                                 {[...Array(5)].map((_, i) => (
+                                    <AccordionItem key={`item-${i}`} value={`item-${i}`}>
+                                       <AccordionTrigger>
+                                          {t(`support.faq${i + 1}`, { appName: config.appName })}
+                                       </AccordionTrigger>
+                                       <AccordionContent>
+                                          {t(`support.faq${i + 1}Answer`, { appName: config.appName })}
+                                       </AccordionContent>
+                                    </AccordionItem>
+                                 ))}
                               </Accordion>
                            </div>
-                        </TabsContent> */}
+                        </TabsContent>
 
                         {/* HELP CENTER TAB */}
+                        {/* TODO: Add help center content */}
                         {/* <TabsContent value="help" className="px-6 pb-6">
                            <div className={`transition-all duration-300 hover:bg-muted/50 p-4 rounded-md ${mounted ? 'animate-fadeIn animate-delay-100' : 'opacity-0'}`}>
                               <h2 className="text-xl font-semibold mb-4 text-primary">{t("support.helpCenter", "Help Center")}</h2>

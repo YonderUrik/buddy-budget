@@ -27,6 +27,7 @@ model User {
   name                   String
   email                  String                  @unique
   password               String 
+  image                  String?
   primaryCurrency        String                  @default("EUR")
   dateFormat             String                  @default("MM/DD/YYYY")
   isOnline               Boolean                 @default(false)

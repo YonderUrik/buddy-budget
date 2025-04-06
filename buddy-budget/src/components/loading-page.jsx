@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
 
 export default function LoadingPage() {
-   const { t, i18n } = useTranslation()
+   const { t} = useTranslation()
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center ">

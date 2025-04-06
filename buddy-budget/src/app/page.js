@@ -2,23 +2,28 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
 import LoadingPage from "@/components/loading-page"
+import { paths } from "@/lib/paths"
+import { useSession } from "next-auth/react"
+
 export default function HomePage() {
   const router = useRouter()
   const { data: session, status } = useSession()
 
   useEffect(() => {
+    if (status === "loading") {
+      return
+    }
     if (status === "authenticated") {
       if (session?.user?.hasCompletedOnboarding) {
-        router.push("/dashboard");
+        router.push(paths.dashboard)
       } else {
-        router.push("/onboarding");
+        router.push(paths.onboarding)
       }
-    } else if (status === "unauthenticated") {
-      router.push("/auth/login");
+    } else {
+      router.push(paths.login)
     }
-  }, [status, session, router]);
+  }, [status, session, router])
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">

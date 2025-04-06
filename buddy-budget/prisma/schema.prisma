@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model SupportTicket {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  customerEmail String
+  customerId String?
+  subject String
+  category String
+  message String
+  dateReceived DateTime @default(now())
+  status String @default("Open")
+  dateResolved DateTime?
+  dateClosed DateTime?
+  dateUpdated DateTime @updatedAt
+} 
+
+// Modelli di Dati
+model User {
+  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name                   String
+  email                  String                  @unique
+  password               String 
+  primaryCurrency        String                  @default("EUR")
+  dateFormat             String                  @default("MM/DD/YYYY")
+  isOnline               Boolean                 @default(false)
+  isActive               Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  hasCompletedOnboarding Boolean                 @default(false)
+}

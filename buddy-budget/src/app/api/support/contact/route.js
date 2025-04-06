@@ -5,43 +5,44 @@ import { SupportTicketEmail } from "@/emails/SupportTicketEmail";
 import { prisma } from "@/lib/prisma";
 import { ObjectId } from "bson";
 import { config } from "@/lib/config";
-
-// TODO : Cercare di utilizzare i18n per le traduzioni
+import fs from 'fs';
+import path from 'path';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Load translations from i18n directory for server-side use
+const loadTranslations = (locale) => {
+  try {
+    const filePath = path.resolve(process.cwd(), `src/i18n/locales/${locale}.json`);
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(fileContent);
+    }
+    // Fallback to English if locale not found
+    const enFilePath = path.resolve(process.cwd(), 'src/i18n/locales/en.json');
+    const fileContent = fs.readFileSync(enFilePath, 'utf8');
+    return JSON.parse(fileContent);
+  } catch (error) {
+    console.error(`Error loading translations for ${locale}:`, error);
+    return null;
+  }
+};
 
-const createContactFormSchema = (messages = {}) => z.object({
+const createContactFormSchema = (translations = {}) => z.object({
   email: z.string().email({ 
-    message: messages.invalidEmail || "Please enter a valid email address" 
+    message: translations?.validation?.invalidEmail || "Please enter a valid email address" 
   }),
   subject: z.string().min(3, { 
-    message: messages.subjectTooShort || "Subject must be at least 3 characters" 
+    message: translations?.validation?.subjectTooShort || "Subject must be at least 3 characters" 
   }),
   category: z.string().min(1, { 
-    message: messages.categoryRequired || "Please select a category" 
+    message: translations?.validation?.categoryRequired || "Please select a category" 
   }),
   message: z.string().min(10, { 
-    message: messages.messageTooShort || "Message must be at least 10 characters"
+    message: translations?.validation?.messageTooShort || "Message must be at least 10 characters"
   }),
   name: z.string().optional(),
 });
-
-// Default schema with English messages
-const contactFormSchema = createContactFormSchema();
-
-// For a complete implementation, we would load these from the server's i18n system
-// This is a simplified example with hardcoded messages
-const serverMessages = {
-  en: {
-    success: "Your message has been received. We'll get back to you soon.",
-    invalidForm: "Invalid form data",
-    processingError: "Failed to process your request. Please try again later.",
-    emailError: "Failed to send email notification. Your request has been logged.",
-    dbError: "Failed to save your request. Please try again later."
-  }
-  // Add other languages as needed
-};
 
 // Generate a unique ticket ID
 const generateTicketId = () => {
@@ -59,9 +60,12 @@ export async function POST(request) {
     // Get language from Accept-Language header, defaulting to English
     const acceptLanguage = request.headers.get("Accept-Language") || "en";
     const lang = acceptLanguage.split(",")[0].split("-")[0];
-    const messages = serverMessages[lang] || serverMessages.en;
     
-    // Validate the request data
+    // Load translations for the requested language
+    const translations = loadTranslations(lang);
+    
+    // Validate the request data using translations
+    const contactFormSchema = createContactFormSchema(translations);
     const validatedData = contactFormSchema.parse(body);
     
     // Generate a ticket ID and format date
@@ -132,7 +136,7 @@ export async function POST(request) {
     // Return success response with translated message and ticket ID
     return NextResponse.json({ 
       success: true, 
-      message: messages.success,
+      message: translations?.support?.messageSent || "Your message has been received. We'll get back to you soon.",
       ticketId: displayTicketId,
       supportTicketId: supportTicket.id
     });
@@ -143,12 +147,12 @@ export async function POST(request) {
     // Get language from Accept-Language header, defaulting to English
     const acceptLanguage = request.headers.get("Accept-Language") || "en";
     const lang = acceptLanguage.split(",")[0].split("-")[0];
-    const messages = serverMessages[lang] || serverMessages.en;
+    const translations = loadTranslations(lang);
     
     // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, message: messages.invalidForm, errors: error.errors },
+        { success: false, message: translations?.errors?.failedSubmission || "Invalid form data", errors: error.errors },
         { status: 400 }
       );
     }
@@ -156,14 +160,14 @@ export async function POST(request) {
     // Handle database errors separately
     if (error.code === 'P2002' || error.name === 'PrismaClientKnownRequestError') {
       return NextResponse.json(
-        { success: false, message: messages.dbError },
+        { success: false, message: translations?.errors?.unexpectedError || "Failed to save your request. Please try again later." },
         { status: 500 }
       );
     }
     
     // Handle other errors
     return NextResponse.json(
-      { success: false, message: messages.processingError },
+      { success: false, message: translations?.errors?.unexpectedError || "Failed to process your request. Please try again later." },
       { status: 500 }
     );
   }

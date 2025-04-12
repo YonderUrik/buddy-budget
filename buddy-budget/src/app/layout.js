@@ -4,6 +4,7 @@ import I18nProvider from "../providers/i18n-provider";
 import "../i18n/config"
 import { ThemeProvider } from "@/providers/theme-provider";
 import { config } from "@/lib/config";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata = {
   title: config.appName,
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
+          <Toaster />
           <AuthProvider>
             <I18nProvider>
               <div className="flex min-h-screen flex-col">

@@ -3,7 +3,6 @@ import { z } from "zod";
 import { Resend } from "resend";
 import { SupportTicketEmail } from "@/emails/SupportTicketEmail";
 import { prisma } from "@/lib/prisma";
-import { ObjectId } from "bson";
 import { config } from "@/lib/config";
 import fs from 'fs';
 import path from 'path';
@@ -114,6 +113,7 @@ export async function POST(request) {
     try {
       // Send email using Resend
       const emailResult = await resend.emails.send({
+        // TODO : Insert a correct name for the sender
         from: config.supportEmail,
         to: ['roccafortedaniele28@gmail.com'],
         subject: `New Support Request: ${validatedData.subject}`,

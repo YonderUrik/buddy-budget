@@ -20,7 +20,8 @@
       "signUp": "Sign Up",
       "login": "Login",
       "or": "Or",
-      "back": "Back"
+      "back": "Back",
+      "seconds" : "seconds"
    },
    "auth": {
       "loginTitle": "Login to your account",
@@ -72,7 +73,10 @@
       "passwordRequired": "Password is required",
       "demoAccountNotAvailable": "Demo account is not available. Please try again later.",
       "registrationFailed": "Registration failed. Please try again.",
-      "emailAlreadyInUse": "Email already in use"
+      "emailAlreadyInUse": "Email already in use",
+      "invalidCode" : "Invalid Code",
+      "tokenFailed" : "Unable to verify token, try again",
+      "resendCodeFailed" : "Unable to send a new code, try again"
    },
    "legal": {
       "termsTitle": "Terms of Service",
@@ -149,5 +153,18 @@
       "faq4Answer": "We welcome contributions from everyone! You can contribute by reporting bugs, suggesting features, improving documentation, or submitting code changes. Visit our GitHub repository to get started.",
       "faq5": "Is my data secure with {{appName}}?",
       "faq5Answer": "Security is our top priority. We use MongoDB Atlas with multiple layers of encryption: TLS for data in transit, AES-256 encryption for data at rest, and advanced encryption capabilities for data in use. Our open-source nature means our security practices are transparent and continuously reviewed by the community."
+   },
+   "verification_code" : {
+      "title" : "Verification Code",
+      "description" : "Enter the 6-digit code we sent to your e-mail",
+      "success" : "Verification successful!",
+      "redirect" : "You will be redirected shortly",
+      "resend_code_in" : "Resend code in",
+      "resend_code" : "Resend verification code",
+      "verifying" : "Verifying...",
+      "verified" : "Verified",
+      "verify" : "Verify",
+      "newCodeSent" : "A new code has been sent"
+
    }
 }

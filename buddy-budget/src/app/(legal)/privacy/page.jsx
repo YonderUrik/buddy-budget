@@ -9,6 +9,8 @@ import { config } from "@/lib/config"
 import { useEffect, useState } from "react"
 import { ModeToggle } from "@/components/theme-toggle"
 import { paths } from "@/lib/paths"
+import { LogoHorizontal } from "@/components/logo/logo-horizontal"
+
 export default function PrivacyPage() {
    const { t, i18n } = useTranslation()
    const [mounted, setMounted] = useState(false)
@@ -22,12 +24,12 @@ export default function PrivacyPage() {
    const lastUpdated = today.toLocaleDateString(localeLanguage || 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
    return (
-      <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
+      <div className="min-h-screen bg-gradient-to-b from-background to-background/80 flex flex-col">
          {/* Header */}
-         <header className="border-b bg-background/60 backdrop-blur sticky top-0 z-10 shadow-sm">
+         <header className="border-b bg-background/60 backdrop-blur sticky top-0 z-10 shadow-sm w-full">
             <div className="container flex h-12 items-center justify-between px-4 md:px-6">
                <Link href={paths.root} className="transition-transform hover:scale-105">
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{config.appName}</h1>
+                  <LogoHorizontal />
                </Link>
                <div className="ml-auto">
                   <ModeToggle />
@@ -36,7 +38,7 @@ export default function PrivacyPage() {
          </header>
 
          {/* Main content */}
-         <main className="container flex flex-col items-center justify-center py-8 px-4 md:px-6">
+         <main className="container mx-auto flex flex-col items-center justify-center py-8 px-4 md:px-6 flex-1">
             {/* Back button */}
             <div className={`flex items-center mb-6 w-full max-w-3xl ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
                <Button variant="outline" size="sm" asChild className="mr-2 transition-all hover:shadow-md">

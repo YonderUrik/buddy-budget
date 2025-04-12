@@ -8,5 +8,6 @@ export const paths = {
    terms: "/terms",
    privacy: "/privacy",
    onboarding: "/onboarding",
+   verifyCode: (type, user_id) => `/verify?type=${type}&id=${user_id}`,
    forgotPassword: "/forgot-password",
 }

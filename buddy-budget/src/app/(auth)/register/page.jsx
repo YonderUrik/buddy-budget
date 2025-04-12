@@ -10,9 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { paths } from "@/lib/paths"
 import { config } from "@/lib/config"
-import { Check, X } from "lucide-react"
+import { Check, X, Eye, EyeOff } from "lucide-react"
 import { useSession } from "next-auth/react"
 import { registerUser } from "@/lib/client/auth"
+import { LogoHorizontal } from "@/components/logo/logo-horizontal"
 
 export default function RegisterPage() {
    const { t } = useTranslation()
@@ -22,6 +23,8 @@ export default function RegisterPage() {
    const [email, setEmail] = useState("")
    const [password, setPassword] = useState("")
    const [confirmPassword, setConfirmPassword] = useState("")
+   const [showPassword, setShowPassword] = useState(false)
+   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
    const [loading, setLoading] = useState(false)
    const [error, setError] = useState(null)
    const [validationErrors, setValidationErrors] = useState({})
@@ -121,7 +124,7 @@ export default function RegisterPage() {
       try {
          const result = await registerUser(name, email, password)
          if (result.success) {
-            router.push(paths.onboarding)
+            router.push(paths.verifyCode(result.type, result.userId))
          } else {
             setError(result.message)
          }
@@ -137,8 +140,10 @@ export default function RegisterPage() {
       <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
          <Card className="w-full max-w-md">
             <CardHeader>
+               <div className="flex justify-center mb-2">
+                  <LogoHorizontal />
+               </div>
                <CardTitle>{t("auth.registerTitle")}</CardTitle>
-               <CardDescription>{t("common.welcome", { appName: config.appName })}</CardDescription>
             </CardHeader>
             <CardContent>
                <form onSubmit={handleSubmit} className="space-y-4">
@@ -162,7 +167,23 @@ export default function RegisterPage() {
 
                   <div className="space-y-2">
                      <Label htmlFor="password">{t("common.password")}</Label>
-                     <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                     <div className="relative">
+                        <Input 
+                           id="password" 
+                           type={showPassword ? "text" : "password"} 
+                           value={password} 
+                           onChange={(e) => setPassword(e.target.value)} 
+                        />
+                        <Button
+                           type="button"
+                           variant="ghost"
+                           size="sm"
+                           className="absolute right-0 top-0 h-full px-3"
+                           onClick={() => setShowPassword(!showPassword)}
+                        >
+                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                     </div>
                      <div className="mt-2 space-y-3">
                         <div className="space-y-1">
                            <p className={`text-sm text-${strengthColor}-500`}>{strengthText}</p>
@@ -211,12 +232,23 @@ export default function RegisterPage() {
 
                   <div className="space-y-2">
                      <Label htmlFor="confirmPassword">{t("common.confirmPassword")}</Label>
-                     <Input
-                        id="confirmPassword"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                     />
+                     <div className="relative">
+                        <Input
+                           id="confirmPassword"
+                           type={showConfirmPassword ? "text" : "password"}
+                           value={confirmPassword}
+                           onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                        <Button
+                           type="button"
+                           variant="ghost"
+                           size="sm"
+                           className="absolute right-0 top-0 h-full px-3"
+                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                           {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                     </div>
                      {validationErrors.confirmPassword && (
                         <p className="text-destructive text-sm">{validationErrors.confirmPassword}</p>
                      )}
@@ -241,4 +273,3 @@ export default function RegisterPage() {
       </div>
    )
 }
-

@@ -145,7 +145,6 @@ export default function LoginPage() {
               <div className="flex justify-center mb-2">
                 <LogoHorizontal />
               </div>
-              <CardTitle className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{t("auth.loginTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
@@ -205,14 +204,13 @@ export default function LoginPage() {
                 {oauthProviders.map((provider) =>
                   <Button
                     key={provider.id}
-                    type="button"
                     variant="outline"
-                    className="w-full dark:bg-background dark:text-foreground dark:border-foreground/20 flex items-center justify-center gap-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50 text-xs sm:text-sm"
+                    className="w-full"
                     onClick={() => signIn(provider.id)}
-                    disabled={isSubmitting || loading || !provider.enabled}
+                    disabled={!provider.enabled || isSubmitting}
                   >
                     {provider.icon}
-                    {t("common.continueWith")} {provider.name}
+                    <span className="ml-2">{t("common.continueWith")} {provider.name}</span>
                   </Button>
                 )}
 

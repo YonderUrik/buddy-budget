@@ -45,6 +45,10 @@ export const authOptions = {
             throw new Error("accountNotFound");
           }
 
+          if (!user.isActive){
+            throw new Error("userNotEnabled")
+          }
+
           const isPasswordValid = await compare(credentials.password, user.password);
 
           if (!isPasswordValid) {

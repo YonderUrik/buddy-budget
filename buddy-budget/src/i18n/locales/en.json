@@ -76,7 +76,8 @@
       "emailAlreadyInUse": "Email already in use",
       "invalidCode" : "Invalid Code",
       "tokenFailed" : "Unable to verify token, try again",
-      "resendCodeFailed" : "Unable to send a new code, try again"
+      "resendCodeFailed" : "Unable to send a new code, try again",
+      "userNotEnabled": "User is not yet enabled"
    },
    "legal": {
       "termsTitle": "Terms of Service",

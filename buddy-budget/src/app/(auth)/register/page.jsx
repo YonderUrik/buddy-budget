@@ -143,7 +143,6 @@ export default function RegisterPage() {
                <div className="flex justify-center mb-2">
                   <LogoHorizontal />
                </div>
-               <CardTitle>{t("auth.registerTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
                <form onSubmit={handleSubmit} className="space-y-4">

@@ -30,8 +30,6 @@ export async function POST(request) {
         }
       });
 
-      console.log("USER", user)
-
       if (!user) {
         throw new Error("User not found");
       }
@@ -62,6 +60,7 @@ export async function POST(request) {
       // Send email
       const emailResult = await resend.emails.send({
          // TODO : Insert a correct name for the sender
+         // TODO : Add multi-language on email
         from: config.authenticationEmail,
         to: user.email,
         subject: `Your verification code is: ${verificationCode}`,

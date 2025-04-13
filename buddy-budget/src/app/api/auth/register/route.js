@@ -83,6 +83,7 @@ export async function POST(request) {
 
       const emailResult = await resend.emails.send({
         // TODO : Insert a correct name for the sender
+        // TODO : Add multi-language on email
         from: config.authenticationEmail,
         to: [email],
         subject: `Your verification code is: ${verificationCode}`,

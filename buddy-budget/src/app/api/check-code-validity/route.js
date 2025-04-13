@@ -6,10 +6,11 @@ export async function GET(request) {
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
+    const token = searchParams.get('token')
     const userId = searchParams.get("id");
 
     // Validate required parameters
-    if (!type || !userId) {
+    if (!type || (!userId && !token)) {
       return NextResponse.json({
         success: false,
         message: "errors.tokenFailed",
@@ -18,12 +19,23 @@ export async function GET(request) {
     }
 
     // Find first non-expired verification code
-    const verificationCode = await prisma.userAuthenticationCodes.findFirst({
-      where: {
-        userId: userId,
-        type: type,
-      }
-    });
+    let verificationCode;
+    if (userId) {
+      verificationCode = await prisma.userAuthenticationCodes.findFirst({
+        where: {
+          userId: userId,
+          type: type,
+        }
+      });
+    } else {
+      verificationCode = await prisma.userAuthenticationCodes.findFirst({
+        where: {
+          code: token,
+          type: type,
+        }
+      });
+
+    }
 
     // If no code found
     if (!verificationCode) {

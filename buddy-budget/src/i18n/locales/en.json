@@ -21,7 +21,9 @@
       "login": "Login",
       "or": "Or",
       "back": "Back",
-      "seconds" : "seconds"
+      "seconds": "seconds",
+      "backToSignIn": "Back to Sign In",
+      "updating" : "Updating..."
    },
    "auth": {
       "loginTitle": "Login to your account",
@@ -74,10 +76,12 @@
       "demoAccountNotAvailable": "Demo account is not available. Please try again later.",
       "registrationFailed": "Registration failed. Please try again.",
       "emailAlreadyInUse": "Email already in use",
-      "invalidCode" : "Invalid Code",
-      "tokenFailed" : "Unable to verify token, try again",
-      "resendCodeFailed" : "Unable to send a new code, try again",
-      "userNotEnabled": "User is not yet enabled"
+      "invalidCode": "Invalid Code",
+      "tokenFailed": "Unable to verify token, try again",
+      "resendCodeFailed": "Unable to send a new code, try again",
+      "userNotEnabled": "User is not yet enabled",
+      "emptyEmail": "Please enter your email address",
+      "internalServerError" : "Internal Server Error, try again."
    },
    "legal": {
       "termsTitle": "Terms of Service",
@@ -155,17 +159,29 @@
       "faq5": "Is my data secure with {{appName}}?",
       "faq5Answer": "Security is our top priority. We use MongoDB Atlas with multiple layers of encryption: TLS for data in transit, AES-256 encryption for data at rest, and advanced encryption capabilities for data in use. Our open-source nature means our security practices are transparent and continuously reviewed by the community."
    },
-   "verification_code" : {
-      "title" : "Verification Code",
-      "description" : "Enter the 6-digit code we sent to your e-mail",
-      "success" : "Verification successful!",
-      "redirect" : "You will be redirected shortly",
-      "resend_code_in" : "Resend code in",
-      "resend_code" : "Resend verification code",
-      "verifying" : "Verifying...",
-      "verified" : "Verified",
-      "verify" : "Verify",
-      "newCodeSent" : "A new code has been sent"
-
+   "verification_code": {
+      "title": "Verification Code",
+      "description": "Enter the 6-digit code we sent to your e-mail",
+      "success": "Verification successful!",
+      "redirect": "You will be redirected shortly",
+      "resend_code_in": "Resend code in",
+      "resend_code": "Resend verification code",
+      "verifying": "Verifying...",
+      "verified": "Verified",
+      "verify": "Verify",
+      "newCodeSent": "A new code has been sent"
+   },
+   "forgotPassword": {
+      "description": "Enter your email address and we'll send you a link to reset your password.",
+      "linkSent": "Reset link sent! Check your email inbox.",
+      "send": "Send"
+   },
+   "resetPassword" : {
+      "invalidLinkTitle" : "Invalid or Expired Link",
+      "invalidLinkDescription" : "This password reset link is invalid or has expired. Please request a new password reset link.",
+      "title" : "Reset Password",
+      "description" : "Enter your new password below.",
+      "newPassword" : "New Password",
+      "confirmNewPassword" : "Confirm New Password"
    }
 }

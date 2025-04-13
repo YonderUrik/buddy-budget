@@ -114,6 +114,7 @@ export async function POST(request) {
       // Send email using Resend
       const emailResult = await resend.emails.send({
         // TODO : Insert a correct name for the sender
+        // TODO : Add multi-language on email
         from: config.supportEmail,
         to: ['roccafortedaniele28@gmail.com'],
         subject: `New Support Request: ${validatedData.subject}`,

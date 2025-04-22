@@ -9,3 +9,11 @@ export const config = {
     supportEmail : `${SUPPORT_EMAIL_NAME}@${APP_DOMAIN_NAME}`,
     authenticationEmail : `${AUTH_EMAIL_NAME}@${APP_DOMAIN_NAME}`
 }
+
+export const currencies = [
+    {code : "USD", name : "United States Dollar ($)"}
+]
+
+export const dateFormats = [
+    {value : "MM/DD/YYYY" , label : "MM/DD/YYYY"}
+]

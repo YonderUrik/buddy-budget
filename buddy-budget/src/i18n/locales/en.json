@@ -1,6 +1,7 @@
 {
    "common": {
       "loading": "Loading...",
+      "loginToContinue": "Login to continue",
       "welcome": "Welcome to {{appName}}",
       "email": "Email",
       "name": "Name",
@@ -84,6 +85,9 @@
       "internalServerError" : "Internal Server Error, try again."
    },
    "legal": {
+      "tableOfContents": "Table of Contents",
+      "viewTermsOfService": "View Terms of Service",
+      "viewPrivacyPolicy": "View Privacy Policy",
       "termsTitle": "Terms of Service",
       "privacyTitle": "Privacy Policy",
       "lastUpdated": "Last Updated",

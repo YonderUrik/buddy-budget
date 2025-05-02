@@ -11,12 +11,23 @@ import Link from "next/link"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export default function ForgotPasswordPage() {
    const [email, setEmail] = useState("")
    const { t } = useTranslation()
    const [isLoading, setIsLoading] = useState(false)
    const [isSuccess, setIsSuccess] = useState(false)
+   const { data: session, status } = useSession()
+   const router = useRouter()
+   
+   useEffect(() => {
+      if (status === "authenticated" && session.isValid === true) {
+         router.push(paths.dashboard)
+      }
+   }, [status, session, router])
 
    const handleSubmit = async (e) => {
       e.preventDefault()

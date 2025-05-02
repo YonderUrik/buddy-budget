@@ -25,8 +25,6 @@ export default function RootLayout({ children }) {
             <I18nProvider>
               <div className="flex min-h-screen flex-col">
                 <div className="flex-1">{children}</div>
-                {/* TODO: Add footer (Only for dashboard) */}
-                {/* <Footer /> */}
               </div>
             </I18nProvider>
           </AuthProvider>

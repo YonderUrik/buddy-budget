@@ -18,7 +18,7 @@ import { LogoHorizontal } from "@/components/logo/logo-horizontal"
 export default function RegisterPage() {
    const { t } = useTranslation()
    const router = useRouter()
-   const { status } = useSession()
+   const { status, data: session } = useSession()
    const [name, setName] = useState("")
    const [email, setEmail] = useState("")
    const [password, setPassword] = useState("")
@@ -40,10 +40,10 @@ export default function RegisterPage() {
 
    // Redirect if already logged in
    useEffect(() => {
-      if (status === "authenticated") {
-         router.push(paths.root)
+      if (status === "authenticated" && session.isValid === true) {
+         router.push(paths.dashboard)
       }
-   }, [status, router])
+   }, [status, session, router])
 
    useEffect(() => {
       if (!password) {

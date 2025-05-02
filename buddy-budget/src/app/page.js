@@ -14,12 +14,9 @@ export default function HomePage() {
     if (status === "loading") {
       return
     }
-    if (status === "authenticated") {
-      if (session?.user?.hasCompletedOnboarding) {
-        router.push(paths.dashboard)
-      } else {
-        router.push(paths.onboarding)
-      }
+
+    if (status === "authenticated" && session.isValid === true) {
+      router.push(paths.dashboard)
     } else {
       router.push(paths.login)
     }

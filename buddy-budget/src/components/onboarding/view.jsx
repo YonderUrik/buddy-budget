@@ -26,11 +26,10 @@ export function OnboardingView() {
       if (status === "loading") {
          return
       }
-      if (status === "authenticated") {
+
+      if (status === "authenticated" && session.isValid === true) {
          if (session?.user?.hasCompletedOnboarding) {
             router.push(paths.dashboard)
-         } else {
-            router.push(paths.onboarding)
          }
       } else {
          router.push(paths.login)

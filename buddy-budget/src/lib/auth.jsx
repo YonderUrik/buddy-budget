@@ -143,6 +143,7 @@ export const authOptions = {
         token.primaryCurrency = user.primaryCurrency;
         token.dateFormat = user.dateFormat;
         token.image = user.image;
+        token.isValid = true;
         
         // Store OAuth provider information
         if (account) {
@@ -197,7 +198,7 @@ export const authOptions = {
     async session({ session, token }) {
       // If token is marked as invalid, return empty session but not null
       if (token.isValid === false) {
-        return { expires: session.expires };
+        return { isValid: false };
       }
 
       if (token && session.user) {
@@ -210,6 +211,7 @@ export const authOptions = {
         if (token.email) session.user.email = token.email;
         if (token.image) session.user.image = token.image;
       }
+      session.isValid = token.isValid;
       return session;
     },
   },

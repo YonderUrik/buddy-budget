@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { Check, X, Eye, EyeOff } from "lucide-react"
 import axios from "axios"
 import { paths } from "@/lib/paths"
+import { useSession } from "next-auth/react"
 
 export default function ResetPasswordPage() {
    const { t } = useTranslation()
@@ -31,9 +32,15 @@ export default function ResetPasswordPage() {
       special: false
    })
    const router = useRouter()
-
+   const { status, data: session } = useSession()
    const searchParams = useSearchParams()
    const token = searchParams.get('token')
+
+   useEffect(() => {
+      if (status === "authenticated" && session.isValid === true) {
+         router.push(paths.dashboard)
+      }
+   }, [status, session, router])
 
    useEffect(() => {
       const checkSession = async () => {

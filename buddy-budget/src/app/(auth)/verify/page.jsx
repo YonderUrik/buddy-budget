@@ -11,7 +11,7 @@ import { Check, Clock, Loader2, Mail, RefreshCw } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-
+import { useSession } from "next-auth/react"
 const available_types = ["registration"]
 
 const RESEND_SECONDS = 60
@@ -23,6 +23,14 @@ export default function VerificationPage() {
    const [error, setError] = useState("")
    const type = searchParams.get("type")
    const id = searchParams.get("id")
+
+   const { status, data: session } = useSession()
+
+   useEffect(() => {
+      if (status === "authenticated" && session.isValid === true) {
+         router.push(paths.dashboard)
+      }
+   }, [status, session, router])
 
    const checkValidity = useCallback(async () => {
       setError("")

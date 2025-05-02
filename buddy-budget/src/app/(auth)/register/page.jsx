@@ -130,7 +130,6 @@ export default function RegisterPage() {
          }
       } catch (err) {
          setError("errors.unexpectedError")
-         console.error(err)
       } finally {
          setLoading(false)
       }

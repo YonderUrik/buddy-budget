@@ -58,9 +58,8 @@ export async function POST(req) {
 
          // Send email
          const emailResult = await resend.emails.send({
-            // TODO : Insert a correct name for the sender
             // TODO : Add multi-language on email
-            from: config.authenticationEmail,
+            from: `"${config.appName}" <${config.authenticationEmail}>`,
             to: [user.email],
             subject: "Reset Your Password",
             react: PasswordResetEmail({
@@ -76,7 +75,6 @@ export async function POST(req) {
       return NextResponse.json({ success: true })
 
    } catch (error) {
-      console.error("Password reset error:", error)
       return NextResponse.json(
          { error: "errors.internalServerError" },
          { status: 500 }

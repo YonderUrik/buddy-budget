@@ -55,7 +55,6 @@ export async function POST(request) {
       });
 
    } catch (error) {
-      console.error("Code verification error:", error);
       return NextResponse.json({
          success: false,
          message: "Error verifying code"

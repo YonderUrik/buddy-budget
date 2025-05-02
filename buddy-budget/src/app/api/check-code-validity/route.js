@@ -53,7 +53,6 @@ export async function GET(request) {
     });
 
   } catch (error) {
-    console.error("Verification check error:", error);
     return NextResponse.json({
       success: false,
       isValid: false,

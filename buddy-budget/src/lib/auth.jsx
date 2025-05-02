@@ -65,7 +65,6 @@ export const authOptions = {
             dateFormat: user.dateFormat,
           };
         } catch (error) {
-          console.error("Error during authentication:", error);
           if (error.message === "accountNotFound" ||
             error.message === "invalidCredentials" ||
             error.message === "emailRequired" ||
@@ -90,7 +89,6 @@ export const authOptions = {
       try {
         // For OAuth providers, we identify users by email
         if (!user.email) {
-          console.error("OAuth provider did not return an email");
           return false;
         }
 
@@ -133,7 +131,6 @@ export const authOptions = {
 
         return true;
       } catch (error) {
-        console.error("Error in signIn callback:", error);
         return false;
       }
     },

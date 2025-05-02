@@ -23,7 +23,6 @@ export const registerUser = async (name, email, password) => {
       ...data,
     };
   } catch (error) {
-    console.error("Registration error:", error);
     return {
       success: false,
       message: "errors.unexpectedError"

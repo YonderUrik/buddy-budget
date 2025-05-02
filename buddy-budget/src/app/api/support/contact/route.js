@@ -22,7 +22,6 @@ const loadTranslations = (locale) => {
     const fileContent = fs.readFileSync(enFilePath, 'utf8');
     return JSON.parse(fileContent);
   } catch (error) {
-    console.error(`Error loading translations for ${locale}:`, error);
     return null;
   }
 };
@@ -113,9 +112,8 @@ export async function POST(request) {
     try {
       // Send email using Resend
       const emailResult = await resend.emails.send({
-        // TODO : Insert a correct name for the sender
         // TODO : Add multi-language on email
-        from: config.supportEmail,
+        from: `"${config.appName}" <${config.supportEmail}>`,
         to: ['roccafortedaniele28@gmail.com'],
         subject: `New Support Request: ${validatedData.subject}`,
         react: SupportTicketEmail({
@@ -123,11 +121,6 @@ export async function POST(request) {
           ticketId: displayTicketId
         }),
       });
-      
-      if (!emailResult || emailResult.error) {
-        console.error("Email sending error:", emailResult?.error);
-        // Continue processing even if email fails
-      }
 
     } catch (emailError) {
       console.error("Failed to send email:", emailError);
@@ -143,7 +136,6 @@ export async function POST(request) {
     });
     
   } catch (error) {
-    console.error("Support form error:", error);
     
     // Get language from Accept-Language header, defaulting to English
     const acceptLanguage = request.headers.get("Accept-Language") || "en";

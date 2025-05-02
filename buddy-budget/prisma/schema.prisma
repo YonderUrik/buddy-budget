@@ -8,42 +8,76 @@ datasource db {
 }
 
 model SupportTicket {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   customerEmail String
-  customerId String?
-  subject String
-  category String
-  message String
-  dateReceived DateTime @default(now())
-  status String @default("Open")
-  dateResolved DateTime?
-  dateClosed DateTime?
-  dateUpdated DateTime @updatedAt
-} 
+  customerId    String?
+  subject       String
+  category      String
+  message       String
+  dateReceived  DateTime  @default(now())
+  status        String    @default("Open")
+  dateResolved  DateTime?
+  dateClosed    DateTime?
+  dateUpdated   DateTime  @updatedAt
+}
 
 // Modelli di Dati
 model User {
-  id                     String                  @id @default(auto()) @map("_id") @db.ObjectId
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
   name                   String
-  email                  String                  @unique
-  password               String 
+  email                  String   @unique
+  password               String
   image                  String?
-  primaryCurrency        String                  @default("EUR")
-  dateFormat             String                  @default("MM/DD/YYYY")
-  isOnline               Boolean                 @default(false)
-  isActive               Boolean                 @default(true)
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  hasCompletedOnboarding Boolean                 @default(false)
-  authCodes             UserAuthenticationCodes[]
+  primaryCurrency        String   @default("EUR")
+  dateFormat             String   @default("MM/DD/YYYY")
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  hasCompletedOnboarding Boolean  @default(false)
+
+  accounts   Account[]
+  authCodes  UserAuthenticationCodes[]
+  categories Category[]
+  wealthSnapshots WealthSnapshot[]
+}
+
+model Category {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  type   String // income or expense
+  icon   String
+  color  String
+}
+
+model Account {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String @db.ObjectId
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  value    Float
+  name     String
+  currency String
+  type     String
+  icon     String
+  color    String
+}
+
+model WealthSnapshot {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  liquidityAccounts Json[]
+  totalValue Float
 }
 
 model UserAuthenticationCodes {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  userId String @db.ObjectId
-  code String
-  type String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  code      String
+  type      String
   expiresAt DateTime
   createdAt DateTime @default(now())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

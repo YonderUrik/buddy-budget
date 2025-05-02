@@ -76,7 +76,6 @@ export async function POST(request) {
          success: resultTransaction?.success
       })
    } catch (error) {
-      console.error("Reset Password error:", error);
       return NextResponse.json({
          success: false,
          message: "errors.internalServerError"

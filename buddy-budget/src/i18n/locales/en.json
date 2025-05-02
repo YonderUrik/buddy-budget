@@ -45,7 +45,10 @@
       "category": "Category",
       "balance": "Balance",
       "totalBalance": "Total Balance",
-      "startUsing": "Start Using"
+      "startUsing": "Start Using",
+      "success": "Success",
+      "error": "Something went wrong",
+      "processing": "Processing..."
    },
    "auth": {
       "loginTitle": "Login to your account",
@@ -285,7 +288,14 @@
       "awards_bonuses": "Awards & Bonuses",
       "support_donations": "Support & Donations",
       "royalties": "Royalties",
-      "content_creation": "Content Creation"
+      "content_creation": "Content Creation",
+      "editCategory": "Edit Category",
+      "editCategoryDesc": "Update the name, icon, or color of this category.",
+      "updateCategory": "Update Category",
+      "categoryAdded": "Category added successfully",
+      "categoryUpdated": "Category updated successfully",
+      "categoryDeleted": "Category deleted successfully",
+      "noCategories": "No {{type}} categories yet"
    },
    "completion": {
       "title": "You're all set!",
@@ -299,5 +309,14 @@
       "noAccountsAdded": "No accounts added yet",
       "noCategoriesAdded": "No categories added yet",
       "exchangeRateUnavailable": "Exchange rate unavailable"
+   },
+   "sidebar" : {
+      "sections" : "Sections",
+      "accounts" : "Accounts",
+      "support" : "Support",
+      "logout" : "Logout",
+      "categories" : "Categories",
+      "account" : "Account",
+      "toggleTheme" : "Toggle Theme"
    }
 }

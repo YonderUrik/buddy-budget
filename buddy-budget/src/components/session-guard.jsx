@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation"
  * - The session has expired
  */
 export function SessionGuard({ children }) {
-   const { data: session } = useSession()
+   const { data: session, status } = useSession()
    console.log("session", session)
    const pathname = usePathname()
    const { t } = useTranslation()
@@ -23,35 +23,50 @@ export function SessionGuard({ children }) {
 
    // Public paths that don't require authentication
    const isPublicPath =
-   pathname?.startsWith(paths.forgotPassword) ||
+      pathname?.startsWith(paths.forgotPassword) ||
       pathname?.startsWith(paths.login) ||
       pathname?.startsWith(paths.register) ||
       pathname?.startsWith(paths.resetPassword) ||
-      pathname?.startsWith(paths.privacy) ||
-      pathname?.startsWith(paths.terms) ||
-      pathname?.startsWith(paths.support) ||
       pathname?.startsWith('/verify') ||
       pathname?.startsWith('/api/')
 
-   console.log("isPublicPath", isPublicPath)
+   const whitelist = [
+      paths.privacy,
+      paths.terms,
+      paths.support,
+   ]
 
    useEffect(() => {
+
+      if (status === "loading") return
+
+      if (pathname === paths.root) {
+         console.log("PATHNAME ROOT", pathname)
+         router.push(paths.login)
+      }
+
+      if (whitelist.includes(pathname)) return
+
       // Skip check on public paths
       if (isPublicPath && !session) return
 
       // Check if session is invalid or missing
       if (session && session.isValid === false && !hasLoggedOut.current) {
+         console.log("SESSION EXPIRED")
          hasLoggedOut.current = true
          toast.error(t('errors.sessionExpired', { defaultValue: "La tua sessione è scaduta. Effettua nuovamente l'accesso." }))
          signOut({ callbackUrl: paths.login })
-      }else{
-         if(session?.user?.hasCompletedOnboarding){
-            router.push(paths.dashboard)
-         }else{
+      } else {
+         if (!session?.user?.hasCompletedOnboarding) {
+            console.log("session.user.hasCompletedOnboarding", session?.user?.hasCompletedOnboarding)
             router.push(paths.onboarding)
+         } else if (pathname === paths.onboarding) {
+            console.log("PATHNAME ONBOARDING", pathname)
+            router.push(paths.dashboard)
          }
+         console.log("KEEP GOING")
       }
-   }, [session, isPublicPath, t, router])
+   }, [session, isPublicPath, t, router, status])
 
    return children
 } 

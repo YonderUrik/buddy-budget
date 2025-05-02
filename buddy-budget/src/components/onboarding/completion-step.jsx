@@ -60,6 +60,7 @@ export function CompletionStep({ userPreferences, accounts, categories, onComple
 
             const convertedCurrencyTotals = currenciesToConvert.map((currencyTotal, index) => {
                const exchangeRate = exchangeRateResponses[index].data.exchangeRate
+               console.log("exchangeRate", exchangeRate)
                return {
                   currency: currencyTotal.currency,
                   amount: currencyTotal.amount,
@@ -133,49 +134,49 @@ export function CompletionStep({ userPreferences, accounts, categories, onComple
             </p>
          </motion.div>
 
-         <motion.div className="space-y-4 pt-4" variants={containerVariants} initial="hidden" animate="visible">
-            <motion.div className="bg-muted p-5 rounded-lg border" variants={itemVariants}>
-               <h3 className="font-medium mb-3 flex items-center gap-2">
-                  <Globe className="h-4 w-4 text-primary" />
+         <motion.div className="space-y-6 pt-4" variants={containerVariants} initial="hidden" animate="visible">
+            <motion.div className="bg-card p-6 rounded-xl shadow-sm border border-border/40 hover:border-border/80 transition-colors" variants={itemVariants}>
+               <h3 className="font-semibold mb-4 flex items-center gap-2 text-lg">
+                  <Globe className="h-5 w-5 text-primary" />
                   {t("completion.basicInformation")}
                </h3>
-               <div className="grid grid-cols-2 gap-3 text-sm">
+               <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="text-muted-foreground flex items-center gap-2">
-                     <DollarSign className="h-3 w-3" />
+                     <DollarSign className="h-4 w-4" />
                      {t("completion.primaryCurrency")}:
                   </div>
-                  <div>{userPreferences.primaryCurrency}</div>
+                  <div className="font-medium">{userPreferences.primaryCurrency}</div>
                   <div className="text-muted-foreground flex items-center gap-2">
-                     <Calendar className="h-3 w-3" />
+                     <Calendar className="h-4 w-4" />
                      {t("completion.dateFormat")}:
                   </div>
-                  <div>{userPreferences.dateFormat}</div>
+                  <div className="font-medium">{userPreferences.dateFormat}</div>
                </div>
             </motion.div>
 
-            <motion.div className="bg-muted p-5 rounded-lg border" variants={itemVariants}>
-               <h3 className="font-medium mb-3 flex items-center gap-2">
-                  <Wallet className="h-4 w-4 text-primary" />
+            <motion.div className="bg-card p-6 rounded-xl shadow-sm border border-border/40 hover:border-border/80 transition-colors" variants={itemVariants}>
+               <h3 className="font-semibold mb-4 flex items-center gap-2 text-lg">
+                  <Wallet className="h-5 w-5 text-primary" />
                   {t("completion.accounts")} ({accounts.length})
                </h3>
                {accounts.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                      {isClient ? (
                         <>
                            {convertedTotals.length > 0 ? (
-                              <div className="space-y-2 text-sm border-b pb-3 mb-3">
+                              <div className="space-y-3 text-sm border-b border-border/60 pb-4 mb-4">
                                  {convertedTotals.map(({ currency, amount, convertedAmount, exchangeRate }) => (
-                                    <div key={currency} className="grid grid-cols-2 gap-x-3">
+                                    <div key={currency} className="grid grid-cols-2 gap-x-4">
                                        <div className="text-muted-foreground truncate">
                                           {currency} {t("common.balance")}:
                                        </div>
                                        <div className="text-right font-medium">
                                           {formatCurrency(amount, currency, i18n.language)}
                                           {currency !== userPreferences.primaryCurrency && (
-                                             <span className="text-xs text-muted-foreground ml-1">
+                                             <span className="text-xs text-muted-foreground ml-2">
                                                 (
-                                                {exchangeRate === -1
-                                                   ? "N/A"
+                                                {!exchangeRate || exchangeRate === -1
+                                                   ? <span className="text-red-500">{t("completion.exchangeRateUnavailable")}</span>
                                                    : `~${formatCurrency(convertedAmount, userPreferences.primaryCurrency, i18n.language)} @ ${exchangeRate.toFixed(4)}`
                                                 }
                                                 )
@@ -186,14 +187,14 @@ export function CompletionStep({ userPreferences, accounts, categories, onComple
                                  ))}
                               </div>
                            ) : (
-                              <div className="space-y-2 text-sm border-b pb-3 mb-3">
-                                 <Skeleton className="h-4 w-full" />
-                                 <Skeleton className="h-4 w-2/3" />
+                              <div className="space-y-3 text-sm border-b border-border/60 pb-4 mb-4">
+                                 <Skeleton className="h-5 w-full" />
+                                 <Skeleton className="h-5 w-2/3" />
                               </div>
                            )}
-                           <div className="grid grid-cols-2 gap-x-3 text-sm font-medium">
-                              <div className="text-muted-foreground">{t("common.totalBalance")} ({userPreferences.primaryCurrency}):</div>
-                              <div className="text-right text-primary">
+                           <div className="grid grid-cols-2 gap-x-4 text-sm">
+                              <div className="text-muted-foreground font-medium">{t("common.totalBalance")} ({userPreferences.primaryCurrency}):</div>
+                              <div className="text-right text-primary font-semibold text-base">
                                  {formatCurrency(
                                     convertedTotals.reduce((sum, item) => sum + (item.convertedAmount || 0), 0),
                                     userPreferences.primaryCurrency || 'USD',
@@ -204,19 +205,19 @@ export function CompletionStep({ userPreferences, accounts, categories, onComple
                         </>
                      ) : (
                         <>
-                           <div className="space-y-2 text-sm border-b pb-3 mb-3">
-                              <Skeleton className="h-4 w-full" />
-                              <Skeleton className="h-4 w-2/3" />
+                           <div className="space-y-3 text-sm border-b border-border/60 pb-4 mb-4">
+                              <Skeleton className="h-5 w-full" />
+                              <Skeleton className="h-5 w-2/3" />
                            </div>
-                            <div className="grid grid-cols-2 gap-x-3 text-sm font-medium">
-                               <div className="text-muted-foreground">{t("common.totalBalance")} ({userPreferences.primaryCurrency}):</div>
+                            <div className="grid grid-cols-2 gap-x-4 text-sm">
+                               <div className="text-muted-foreground font-medium">{t("common.totalBalance")} ({userPreferences.primaryCurrency}):</div>
                                <div className="text-right text-primary">
-                                  <Skeleton className="h-5 w-20 inline-block" />
+                                  <Skeleton className="h-6 w-24 inline-block" />
                                </div>
                             </div>
                         </>
                      )}
-                     <div className="text-sm text-muted-foreground pt-3 border-t">
+                     <div className="text-sm text-muted-foreground pt-4 border-t border-border/60">
                         {t("completion.accountsAdded", { count: accounts.length })}
                      </div>
                   </div>
@@ -225,23 +226,23 @@ export function CompletionStep({ userPreferences, accounts, categories, onComple
                )}
             </motion.div>
 
-            <motion.div className="bg-muted p-5 rounded-lg border" variants={itemVariants}>
-               <h3 className="font-medium mb-3 flex items-center gap-2">
-                  <Tag className="h-4 w-4 text-primary" />
+            <motion.div className="bg-card p-6 rounded-xl shadow-sm border border-border/40 hover:border-border/80 transition-colors" variants={itemVariants}>
+               <h3 className="font-semibold mb-4 flex items-center gap-2 text-lg">
+                  <Tag className="h-5 w-5 text-primary" />
                   {t("completion.categories")} ({categories.length})
                </h3>
                {categories.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
                      <div className="text-muted-foreground flex items-center gap-2">
-                        <ArrowRight className="h-3 w-3 text-primary" />
+                        <ArrowRight className="h-4 w-4 text-primary" />
                         {t("common.incomeCategories")}:
                      </div>
-                     <div>{categories.filter((c) => c.type === "income").length}</div>
+                     <div className="font-medium">{categories.filter((c) => c.type === "income").length}</div>
                      <div className="text-muted-foreground flex items-center gap-2">
-                        <ArrowRight className="h-3 w-3 text-destructive" />
+                        <ArrowRight className="h-4 w-4 text-destructive" />
                         {t("common.expenseCategories")}:
                      </div>
-                     <div>{categories.filter((c) => c.type === "expense").length}</div>
+                     <div className="font-medium">{categories.filter((c) => c.type === "expense").length}</div>
                   </div>
                ) : (
                   <p className="text-sm text-muted-foreground">{t("completion.noCategoriesAdded")}</p>

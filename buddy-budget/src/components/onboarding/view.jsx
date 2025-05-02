@@ -22,37 +22,14 @@ export function OnboardingView() {
 
    const { t } = useTranslation()
 
-   const [currentStep, setCurrentStep] = useState(3)
+   const [currentStep, setCurrentStep] = useState(0)
    const [userPreferences, setUserPreferences] = useState({
       primaryCurrency: session?.user?.primaryCurrency || currencies[0].code,
       dateFormat: session?.user?.dateFormat || dateFormats[0].value,
    })
 
-   const [accounts, setAccounts] = useState([{
-      id: 1,
-      name: "Account 1",
-      value: 1000,
-      currency: "EUR",
-      type: "checking",
-      icon: "bank",
-      color: "#000000",
-   }, {
-      id: 1,
-      name: "Account 2",
-      value: 2000,
-      currency: "GBP",
-      type: "checking",
-      icon: "bank",
-      color: "#000000",
-   }])
-   const [categories, setCategories] = useState([...defaultExpenseCategories.map(category => ({
-      ...category,
-      id: `${category.type}-${category.name}`,
-      name: category.name,
-      type: "expense",
-      icon: category.icon,
-      color: category.color,
-   }))])
+   const [accounts, setAccounts] = useState([])
+   const [categories, setCategories] = useState([])
 
    const steps = [t("onboarding.preferences"), t("onboarding.accounts"), t("onboarding.categories"), t("onboarding.complete")]
 

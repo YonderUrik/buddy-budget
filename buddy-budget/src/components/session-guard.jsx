@@ -27,6 +27,9 @@ export function SessionGuard({ children }) {
       pathname?.startsWith(paths.login) ||
       pathname?.startsWith(paths.register) ||
       pathname?.startsWith(paths.resetPassword) ||
+      pathname?.startsWith(paths.privacy) ||
+      pathname?.startsWith(paths.terms) ||
+      pathname?.startsWith(paths.support) ||
       pathname?.startsWith('/verify') ||
       pathname?.startsWith('/api/')
 

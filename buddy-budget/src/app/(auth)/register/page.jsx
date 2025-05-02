@@ -9,16 +9,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { paths } from "@/lib/paths"
-import { config } from "@/lib/config"
 import { Check, X, Eye, EyeOff } from "lucide-react"
-import { useSession } from "next-auth/react"
 import { registerUser } from "@/lib/client/auth"
 import { LogoHorizontal } from "@/components/logo/logo-horizontal"
 
 export default function RegisterPage() {
    const { t } = useTranslation()
    const router = useRouter()
-   const { status, data: session } = useSession()
    const [name, setName] = useState("")
    const [email, setEmail] = useState("")
    const [password, setPassword] = useState("")
@@ -28,7 +25,6 @@ export default function RegisterPage() {
    const [loading, setLoading] = useState(false)
    const [error, setError] = useState(null)
    const [validationErrors, setValidationErrors] = useState({})
-   const [passwordStrength, setPasswordStrength] = useState(0)
    const [strengthText, setStrengthText] = useState("")
    const [strengthColor, setStrengthColor] = useState("red")
    const [passwordCriteria, setPasswordCriteria] = useState({
@@ -38,16 +34,9 @@ export default function RegisterPage() {
       special: false
    })
 
-   // Redirect if already logged in
-   useEffect(() => {
-      if (status === "authenticated" && session.isValid === true) {
-         router.push(paths.dashboard)
-      }
-   }, [status, session, router])
 
    useEffect(() => {
       if (!password) {
-         setPasswordStrength(0)
          setStrengthText("")
          setStrengthColor("red")
          setPasswordCriteria({
@@ -78,7 +67,6 @@ export default function RegisterPage() {
       if (criteria.uppercase) strength += 25
       if (criteria.special) strength += 25
 
-      setPasswordStrength(strength)
 
       // Set text and color based on strength
       if (strength <= 25) {

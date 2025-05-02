@@ -103,7 +103,8 @@
       "resendCodeFailed": "Unable to send a new code, try again",
       "userNotEnabled": "User is not yet enabled",
       "emptyEmail": "Please enter your email address",
-      "internalServerError" : "Internal Server Error, try again."
+      "internalServerError" : "Internal Server Error, try again.",
+      "sessionExpired": "Your session has expired. Please sign in again."
    },
    "legal": {
       "tableOfContents": "Table of Contents",

@@ -3,9 +3,9 @@
 import { paths } from "@/lib/paths"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { config, currencies, dateFormats, defaultExpenseCategories } from "@/lib/config"
+import { currencies, dateFormats, defaultExpenseCategories } from "@/lib/config"
 import { LogoHorizontal } from "../logo/logo-horizontal"
 import { StepIndicator } from "./step-indicator"
 import { BasicInfoStep } from "./basic-info-step"
@@ -18,23 +18,9 @@ import axios from "axios"
 
 export function OnboardingView() {
    const router = useRouter()
-   const { data: session, status, update } = useSession()
+   const { data: session, update } = useSession()
 
    const { t } = useTranslation()
-
-   useEffect(() => {
-      if (status === "loading") {
-         return
-      }
-
-      if (status === "authenticated" && session.isValid === true) {
-         if (session?.user?.hasCompletedOnboarding) {
-            router.push(paths.dashboard)
-         }
-      } else {
-         router.push(paths.login)
-      }
-   }, [status, session, router])
 
    const [currentStep, setCurrentStep] = useState(3)
    const [userPreferences, setUserPreferences] = useState({

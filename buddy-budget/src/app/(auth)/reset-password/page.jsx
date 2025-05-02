@@ -12,7 +12,6 @@ import { toast } from "sonner"
 import { Check, X, Eye, EyeOff } from "lucide-react"
 import axios from "axios"
 import { paths } from "@/lib/paths"
-import { useSession } from "next-auth/react"
 
 export default function ResetPasswordPage() {
    const { t } = useTranslation()
@@ -22,7 +21,6 @@ export default function ResetPasswordPage() {
    const [hasSession, setHasSession] = useState(false)
    const [showPassword, setShowPassword] = useState(false)
    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-   const [passwordStrength, setPasswordStrength] = useState(0)
    const [strengthText, setStrengthText] = useState("")
    const [strengthColor, setStrengthColor] = useState("red")
    const [passwordCriteria, setPasswordCriteria] = useState({
@@ -32,15 +30,9 @@ export default function ResetPasswordPage() {
       special: false
    })
    const router = useRouter()
-   const { status, data: session } = useSession()
    const searchParams = useSearchParams()
    const token = searchParams.get('token')
 
-   useEffect(() => {
-      if (status === "authenticated" && session.isValid === true) {
-         router.push(paths.dashboard)
-      }
-   }, [status, session, router])
 
    useEffect(() => {
       const checkSession = async () => {
@@ -58,7 +50,6 @@ export default function ResetPasswordPage() {
 
    useEffect(() => {
       if (!password) {
-         setPasswordStrength(0)
          setStrengthText("")
          setStrengthColor("red")
          setPasswordCriteria({
@@ -88,8 +79,6 @@ export default function ResetPasswordPage() {
       if (criteria.lowercase) strength += 25
       if (criteria.uppercase) strength += 25
       if (criteria.special) strength += 25
-
-      setPasswordStrength(strength)
 
       // Set text and color based on strength
       if (strength <= 25) {

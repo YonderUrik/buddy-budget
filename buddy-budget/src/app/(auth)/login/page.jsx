@@ -8,12 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LineChartIcon as ChartLineUp, PiggyBank, Wallet, PieChartIcon as ChartPie, Globe } from "lucide-react"
 import { signIn, useSession } from "next-auth/react"
-import { config } from "@/lib/config"
 import { ModeToggle } from "@/components/theme-toggle"
 import { paths } from "@/lib/paths"
 import { oauthProviders } from "@/providers/oauth-providers"
 import { LogoHorizontal } from "@/components/logo/logo-horizontal"
-import { useRouter } from "next/navigation"
+
 export default function LoginPage() {
   const { t } = useTranslation()
   const { data: session, status, loading } = useSession()
@@ -22,14 +21,6 @@ export default function LoginPage() {
   const [mounted, setMounted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loginError, setLoginError] = useState("")
-
-  const router = useRouter()
-
-  useEffect(() => {
-    if (status === "authenticated" && session.isValid === true) {
-      router.push(paths.dashboard)
-    }
-  }, [status, session, router])
 
   const features = [
     {

@@ -5,6 +5,7 @@ import "../i18n/config"
 import { ThemeProvider } from "@/providers/theme-provider";
 import { config } from "@/lib/config";
 import { Toaster } from "@/components/ui/toaster";
+import { SessionGuard } from "@/components/session-guard";
 
 export const metadata = {
   title: config.appName,
@@ -23,9 +24,11 @@ export default function RootLayout({ children }) {
           <Toaster />
           <AuthProvider>
             <I18nProvider>
-              <div className="flex min-h-screen flex-col">
-                <div className="flex-1">{children}</div>
-              </div>
+              <SessionGuard>
+                <div className="flex min-h-screen flex-col">
+                  <div className="flex-1">{children}</div>
+                </div>
+              </SessionGuard>
             </I18nProvider>
           </AuthProvider>
         </ThemeProvider>

@@ -309,6 +309,21 @@ export default function CategoriesPage() {
             </p>
          </motion.div>
 
+         <motion.div
+            className="mt-6 flex justify-end mb-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+         >
+            <Button
+               onClick={() => setIsAddDialogOpen(true)}
+               className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+               <Plus className="h-4 w-4 mr-2" />
+               {t("onboarding_categories.addCategory")}
+            </Button>
+         </motion.div>
+
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
                <TabsTrigger
@@ -327,6 +342,8 @@ export default function CategoriesPage() {
                </TabsTrigger>
             </TabsList>
 
+
+
             <AnimatePresence mode="wait">
                <TabsContent
                   value={activeTab}
@@ -338,20 +355,7 @@ export default function CategoriesPage() {
             </AnimatePresence>
          </Tabs>
 
-         <motion.div
-            className="mt-6 flex justify-end"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-         >
-            <Button
-               onClick={() => setIsAddDialogOpen(true)}
-               className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-               <Plus className="h-4 w-4 mr-2" />
-               {t("onboarding_categories.addCategory")}
-            </Button>
-         </motion.div>
+
 
          {/* Add Category Dialog */}
          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>

@@ -48,7 +48,14 @@
       "startUsing": "Start Using",
       "success": "Success",
       "error": "Something went wrong",
-      "processing": "Processing..."
+      "processing": "Processing...",
+      "errorDeletingAccount": "Error deleting account. Please try again.",
+      "errorResettingAccount": "Error resetting account. Please try again.",
+      "home": "Home",
+      "allRightsReserved": "All rights reserved",
+      "passwordUpdated": "Password updated successfully",
+      "passwordUpdateFailed": "Failed to update password",
+      "currentPasswordIncorrect": "Current password is incorrect"
    },
    "auth": {
       "loginTitle": "Login to your account",
@@ -69,6 +76,45 @@
       "accountNotFound": "Account not found",
       "loginFailed": "Login failed. Please try again.",
       "registerTitle": "Create an account"
+   },
+   "profile": {
+      "personalInfo": "Personal Information",
+      "personalInfoDesc": "Update your personal information and how you want to be represented",
+      "security": "Security",
+      "accountManagement": "Account Management",
+      "emailChangeNotice": "Email cannot be changed. Contact support if needed.",
+      "currencyChangeNotice": "Currency settings can only be changed by an administrator.",
+      "updateProfile": "Update Profile",
+      "preferences": "Preferences",
+      "preferencesDesc": "Customize your experience with your preferred settings",
+      "updatePreferences": "Update Preferences",
+      "changePassword": "Change Password",
+      "changePasswordDesc": "Update your password to maintain account security",
+      "currentPassword": "Current Password",
+      "updatePassword": "Update Password",
+      "twoFactor": "Two-Factor Authentication",
+      "twoFactorDesc": "Add an extra layer of security to your account with 2FA",
+      "enable2FA": "Enable 2FA",
+      "exportData": "Export Your Data",
+      "exportDataDesc": "Download your financial data in various formats",
+      "exportTransactions": "Export Transactions",
+      "exportAllData": "Export All Data",
+      "dangerZone": "Danger Zone",
+      "dangerZoneDesc": "Permanent actions that affect your account",
+      "deleteAccount": "Delete Account",
+      "deleteAccountDesc": "Once you delete your account, there is no going back. Please be certain.",
+      "confirmDelete": "Are you sure?",
+      "confirmDeleteDesc": "This action cannot be undone. This will permanently delete your account and remove all your data from our servers.",
+      "typeToConfirm": "Type DELETE to confirm",
+      "permanentlyDelete": "Permanently Delete",
+      "preferencesUpdated": "Preferences updated successfully",
+      "accountDeleted": "Account deleted successfully",
+      "resetAccount": "Reset Account",
+      "resetAccountDesc": "Keep your account but delete all your financial data including accounts, transactions, and snapshots.",
+      "confirmReset": "Reset your account data?",
+      "confirmResetDesc": "This action cannot be undone. All your financial data will be permanently removed, but your user account will remain.",
+      "resetData": "Reset Data",
+      "accountReset": "Account data reset successfully"
    },
    "features": {
       "title": "Track Your Wealth, Grow Your Future.",
@@ -107,7 +153,8 @@
       "userNotEnabled": "User is not yet enabled",
       "emptyEmail": "Please enter your email address",
       "internalServerError": "Internal Server Error, try again.",
-      "sessionExpired": "Your session has expired. Please sign in again."
+      "sessionExpired": "Your session has expired. Please sign in again.",
+      "errorUpdatingPreferences": "Error updating preferences. Please try again."
    },
    "legal": {
       "tableOfContents": "Table of Contents",
@@ -155,7 +202,9 @@
       "privacySection9": "9. Changes to This Privacy Policy",
       "privacySection9Desc": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.",
       "privacySection10": "10. Contact Us",
-      "privacySection10Desc": "If you have any questions about this Privacy Policy, please contact us at {{contactEmail}}."
+      "privacySection10Desc": "If you have any questions about this Privacy Policy, please contact us at {{contactEmail}}.",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service"
    },
    "support": {
       "title": "Support",
@@ -316,7 +365,7 @@
       "support" : "Support",
       "logout" : "Logout",
       "categories" : "Categories",
-      "account" : "Account",
+      "profile" : "Profile",
       "toggleTheme" : "Toggle Theme"
    }
 }

@@ -5,6 +5,7 @@ import {
   ChevronsUpDown,
   LogOut,
   Tags,
+  UserPen,
 } from "lucide-react"
 
 import {
@@ -79,9 +80,9 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                {t("sidebar.account")}
+              <DropdownMenuItem onClick={() => router.push(paths.profile)}>
+                <UserPen />
+                {t("sidebar.profile")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push(paths.categories)}>
                 <Tags />

@@ -142,7 +142,7 @@ export default function TermsPage() {
                 </Link>
               </Button>
             </div>
-            <p className="text-muted-foreground text-sm">{t("legal.lastUpdated")}: {lastUpdated}</p>
+            <p className="text-muted-foreground text-sm" suppressHydrationWarning>{t("legal.lastUpdated")}: {lastUpdated}</p>
           </motion.div>
 
           <motion.div 

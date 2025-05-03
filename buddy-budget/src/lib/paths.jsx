@@ -10,6 +10,7 @@ export const paths = {
    terms: "/terms",
    privacy: "/privacy",
    onboarding: "/onboarding",
+   profile: "/dashboard/profile",
    verifyCode: (type, user_id) => `/verify?type=${type}&id=${user_id}`,
    forgotPassword: "/forgot-password",
 }

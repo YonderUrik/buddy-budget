@@ -6,6 +6,7 @@ import {
   Bot,
   Command,
   Frame,
+  HandCoins,
   LifeBuoy,
   Map,
   PieChart,
@@ -33,12 +34,20 @@ import { config } from "@/lib/config"
 import { AppIcon } from "../logo/app-icon"
 import { useTranslation } from "react-i18next"
 import { useSession } from "next-auth/react"
-
+import { useWealth } from "@/providers/wealth-provider"
 export function AppSidebar({
   ...props
 }) {
   const { t } = useTranslation()
   const { data: session } = useSession()
+  const { wealthSnapshots } = useWealth()
+
+  console.log(wealthSnapshots)
+
+  const lastWealthSnapshot = wealthSnapshots[wealthSnapshots.length - 1]
+  const liquidityAccounts = lastWealthSnapshot?.liquidityAccounts || []
+
+  const totalValue = lastWealthSnapshot?.totalValue || 0
 
   const data = {
     user: {
@@ -47,26 +56,15 @@ export function AppSidebar({
       avatar: session?.user?.image,
     },
     navMain: [
-      // {
-      //   title: "Playground",
-      //   url: "#",
-      //   icon: SquareTerminal,
-      //   isActive: true,
-      //   items: [
-      //     {
-      //       title: "History",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Starred",
-      //       url: "#",
-      //     },
-      //     {
-      //       title: "Settings",
-      //       url: "#",
-      //     },
-      //   ],
-      // },
+      {
+        title: t("sidebar.liquidity"),
+        url: "#",
+        icon: HandCoins,
+        isActive: true,
+        items: [
+          ...liquidityAccounts
+        ],
+      },
     ],
 
     sections: [
@@ -106,7 +104,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavSections sections={data.sections} />
-        {/* <NavMain items={data.navMain} /> */}
+        <NavMain items={data.navMain} totalValue={totalValue} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

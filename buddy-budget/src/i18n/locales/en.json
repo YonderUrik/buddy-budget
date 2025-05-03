@@ -359,13 +359,15 @@
       "noCategoriesAdded": "No categories added yet",
       "exchangeRateUnavailable": "Exchange rate unavailable"
    },
-   "sidebar" : {
-      "sections" : "Sections",
-      "accounts" : "Accounts",
-      "support" : "Support",
-      "logout" : "Logout",
-      "categories" : "Categories",
-      "profile" : "Profile",
-      "toggleTheme" : "Toggle Theme"
+   "sidebar": {
+      "sections": "Sections",
+      "accounts": "Accounts",
+      "support": "Support",
+      "logout": "Logout",
+      "categories": "Categories",
+      "profile": "Profile",
+      "toggleTheme": "Toggle Theme",
+      "wealth": "Wealth",
+      "liquidity": "Cash"
    }
 }

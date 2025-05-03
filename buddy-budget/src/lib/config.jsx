@@ -163,16 +163,36 @@ const getDayOfYear = (date) => {
 }
 
 export const formatCurrency = (amount, currency, language) => {
-    // Add specific fixed options while preserving language support
     try {
+        if (Math.abs(amount) >= 1000000) {
+            // For values >= 1M, format as 1.23M
+            const millions = amount / 1000000;
+            return new Intl.NumberFormat(language || 'en-US', {
+                style: 'currency',
+                currency,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(millions) + 'M';
+        } else if (Math.abs(amount) >= 1000) {
+            // For values >= 1K, format as 1.23K
+            const thousands = amount / 1000;
+            return new Intl.NumberFormat(language || 'en-US', {
+                style: 'currency',
+                currency,
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            }).format(thousands) + 'K';
+        }
+
+        // For smaller values, use regular formatting
         return new Intl.NumberFormat(language || 'en-US', {
             style: 'currency',
             currency,
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
-        }).format(amount)
+        }).format(amount);
     } catch (error) {
-        return "0.00"
+        return "0.00";
     }
 }
 

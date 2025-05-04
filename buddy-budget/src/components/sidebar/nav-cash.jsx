@@ -28,16 +28,16 @@ import { useTranslation } from "react-i18next"
 import { useSession } from "next-auth/react"
 import { accountIcons, formatCurrency } from "@/lib/config";
 
-export function NavMain({
+export function NavCash({
   items,
   totalValue
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { data: session } = useSession()
 
-  const getIconComponent = (iconName) => {
+  const getIconComponent = (iconName, color) => {
     const icon = accountIcons.find((i) => i.value === iconName)
-    return icon ? icon.icon : <Wallet className="size-2 text-white" />
+    return icon ? icon.icon : <Wallet className="size-2 text-white bg-[color]" style={{ backgroundColor: color }} />
   }
 
   return (
@@ -45,7 +45,7 @@ export function NavMain({
       <SidebarGroupLabel>
         {t("sidebar.wealth")}
         <span className="ml-2 text-muted-foreground">
-          {formatCurrency(totalValue, session?.user?.primaryCurrency)}
+          {formatCurrency(totalValue, session?.user?.primaryCurrency, i18n.language)}
         </span>
       </SidebarGroupLabel>
       <SidebarMenu>
@@ -74,21 +74,21 @@ export function NavMain({
                                 <SidebarMenuSubButton>
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
                                     <div
-                                      style={{ backgroundColor: subItem?.accountDetails?.color }}
-                                      className="flex shrink-0  p-1 size-5 items-center justify-center rounded-md"
+                                      style={{ color: subItem?.accountDetails?.color }}
+                                      className="flex shrink-0  size-4 items-center justify-center rounded-md"
                                     >
-                                      {getIconComponent(subItem?.accountDetails?.icon)}
+                                      {getIconComponent(subItem?.accountDetails?.icon, subItem?.accountDetails?.color)}
                                     </div>
-                                    <span className="truncate text-sm">{subItem?.accountDetails?.name}</span>
+                                    <span className="truncate text-xs">{subItem?.accountDetails?.name}</span>
                                   </div>
                                   <div className="flex flex-col items-end text-xs shrink-0">
                                     {session?.user?.primaryCurrency === subItem?.accountDetails?.currency ? (
-                                      <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency)}</span>
+                                      <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
                                     ) : (
                                       <>
-                                        <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency)}</span>
+                                        <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
                                         <span className="text-muted-foreground">
-                                          {formatCurrency(subItem.value, subItem?.accountDetails?.currency)}
+                                          {formatCurrency(subItem.value, subItem?.accountDetails?.currency, i18n.language)}
                                         </span>
                                       </>
                                     )}

@@ -60,7 +60,6 @@ export function CompletionStep({ userPreferences, accounts, categories, onComple
 
             const convertedCurrencyTotals = currenciesToConvert.map((currencyTotal, index) => {
                const exchangeRate = exchangeRateResponses[index].data.exchangeRate
-               console.log("exchangeRate", exchangeRate)
                return {
                   currency: currencyTotal.currency,
                   amount: currencyTotal.amount,

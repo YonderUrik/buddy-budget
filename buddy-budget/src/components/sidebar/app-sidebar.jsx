@@ -16,7 +16,7 @@ import {
   Wallet,
 } from "lucide-react"
 
-import { NavMain } from "@/components/sidebar/nav-main"
+import { NavCash } from "@/components/sidebar/nav-cash"
 import { NavSections } from "@/components/sidebar/nav-sections"
 import { NavSecondary } from "@/components/sidebar/nav-secondary"
 import { NavUser } from "@/components/sidebar/nav-user"
@@ -42,9 +42,7 @@ export function AppSidebar({
   const { data: session } = useSession()
   const { wealthSnapshots } = useWealth()
 
-  console.log(wealthSnapshots)
-
-  const lastWealthSnapshot = wealthSnapshots[wealthSnapshots.length - 1]
+  const lastWealthSnapshot = wealthSnapshots[0] || {}
   const liquidityAccounts = lastWealthSnapshot?.liquidityAccounts || []
 
   const totalValue = lastWealthSnapshot?.totalValue || 0
@@ -58,7 +56,6 @@ export function AppSidebar({
     navMain: [
       {
         title: t("sidebar.liquidity"),
-        url: "#",
         icon: HandCoins,
         isActive: true,
         items: [
@@ -104,7 +101,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavSections sections={data.sections} />
-        <NavMain items={data.navMain} totalValue={totalValue} />
+        <NavCash items={data.navMain} totalValue={totalValue} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

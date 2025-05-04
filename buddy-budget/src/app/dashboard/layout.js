@@ -4,12 +4,15 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CategoriesProvider } from "@/providers/categories-provider";
 import { WealthProvider } from "@/providers/wealth-provider";
+import { AccountsProvider } from "@/providers/accounts-provider";
+
 export default function DashboardLayout({ children }) {
    return (
       <SidebarProvider>
-         <WealthProvider>
-            <CategoriesProvider>
-               <AppSidebar />
+         <AccountsProvider>
+            <WealthProvider>
+               <CategoriesProvider>
+                  <AppSidebar />
                <SidebarInset>
                <header className="sticky top-0 flex h-12 shrink-0 items-center gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <div className="flex items-center gap-2 px-4">
@@ -20,8 +23,9 @@ export default function DashboardLayout({ children }) {
                   {children}
                </div>
                </SidebarInset>
-            </CategoriesProvider>
-         </WealthProvider>
+               </CategoriesProvider>
+            </WealthProvider>
+         </AccountsProvider>
       </SidebarProvider>
    )
 }

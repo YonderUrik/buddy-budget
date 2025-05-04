@@ -17,7 +17,7 @@ export function WealthProvider({ children }) {
    const [limit, setLimit] = useState(2)
    const [skip, setSkip] = useState(0)
    const [sortBy, setSortBy] = useState('timestamp')
-   const [sortOrder, setSortOrder] = useState('asc')
+   const [sortOrder, setSortOrder] = useState('desc')
    const [fromDate, setFromDate] = useState(null)
    const [toDate, setToDate] = useState(null)
 

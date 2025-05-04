@@ -198,7 +198,6 @@ export default function ProfilePage() {
    const onDeleteSubmit = async () => {
       try {
          const response = await axios.delete("/api/profile");
-         console.log("response", response);
          if (response.status === 200) {
             toast.success(t("profile.accountDeleted"));
             await signOut({ callbackUrl: paths.login });

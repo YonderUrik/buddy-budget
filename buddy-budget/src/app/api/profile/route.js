@@ -16,27 +16,8 @@ export async function DELETE(req) {
          await tx.user.delete({
             where: { id: userId },
          });
-
-         await tx.account.deleteMany({
-            where: { userId },
-         });
-
-         await tx.category.deleteMany({
-            where: { userId },
-         });
-
-         await tx.wealthSnapshot.deleteMany({
-            where: { userId },
-         });
-
-         await tx.userAuthenticationCodes.deleteMany({
-            where: { userId },
-         });
-
          return { success: true, message: "User deleted successfully" };
       });
-
-      console.log("result", result);
 
       if (result.success) {
          return NextResponse.json({ message: "User deleted successfully" }, { status: 200 });

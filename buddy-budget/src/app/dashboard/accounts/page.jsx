@@ -194,7 +194,7 @@ export default function AccountsPage() {
    return (
       <div className="container max-w-4xl mx-auto p-6">
          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">{t("sidebar.accounts")}</h1>
+            <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400" >{t("sidebar.accounts")}</h1>
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                <DialogTrigger asChild>
                   <Button

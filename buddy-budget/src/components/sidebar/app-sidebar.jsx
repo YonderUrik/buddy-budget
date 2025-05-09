@@ -47,38 +47,40 @@ export function AppSidebar({
 
   const totalValue = lastWealthSnapshot?.totalValue || 0
 
-  const data = {
-    user: {
-      name: session?.user?.name,
-      email: session?.user?.email,
-      avatar: session?.user?.image,
-    },
-    navMain: [
-      {
-        title: t("sidebar.liquidity"),
-        icon: HandCoins,
-        isActive: true,
-        items: [
-          ...liquidityAccounts
-        ],
+  const data = React.useMemo(() => {
+    return {
+      user: {
+        name: session?.user?.name,
+        email: session?.user?.email,
+        avatar: session?.user?.image,
       },
-    ],
+      navMain: [
+        {
+          title: t("sidebar.liquidity"),
+          icon: HandCoins,
+          isActive: true,
+          items: [
+            ...liquidityAccounts
+          ],
+        },
+      ],
 
-    sections: [
-      {
-        name: t("sidebar.accounts"),
-        url: paths.accounts,
-        icon: Wallet,
-      },
-    ],
-    navSecondary: [
-      {
-        title: t("sidebar.support"),
-        url: paths.support,
-        icon: LifeBuoy,
-      },
-    ],
-  }
+      sections: [
+        {
+          name: t("sidebar.accounts"),
+          url: paths.accounts,
+          icon: Wallet,
+        },
+      ],
+      navSecondary: [
+        {
+          title: t("sidebar.support"),
+          url: paths.support,
+          icon: LifeBuoy,
+        },
+      ],
+    }
+  }, [t, session, liquidityAccounts, totalValue])
 
   return (
     <Sidebar variant="inset" {...props}>
@@ -101,7 +103,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavSections sections={data.sections} />
-        <NavCash items={data.navMain} totalValue={totalValue} />
+        <NavCash  items={data.navMain} totalValue={totalValue} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

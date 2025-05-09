@@ -5,10 +5,13 @@ import LanguageDetector from "i18next-browser-languagedetector"
 import { initReactI18next } from "react-i18next"
 // Import translations
 import enTranslation from "./locales/en.json"
-
+import itTranslation from "./locales/it.json"
 const resources = {
   en: {
     translation: enTranslation,
+  },
+  it: {
+    translation: itTranslation,
   },
 }
 
@@ -21,7 +24,7 @@ const i18nInstance = i18n
 if (!i18n.isInitialized) {
   i18nInstance.init({
     resources,
-    fallbackLng: "en",
+    // fallbackLng: "en",
     interpolation: {
       escapeValue: false, // React already escapes values
     },

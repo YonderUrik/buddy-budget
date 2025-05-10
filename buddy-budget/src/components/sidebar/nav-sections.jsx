@@ -27,14 +27,14 @@ export function NavSections({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel suppressHydrationWarning>{t("sidebar.sections")}</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("sidebar.sections")}</SidebarGroupLabel>
       <SidebarMenu>
         {sections.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
                 <item.icon />
-                <span suppressHydrationWarning>{item.name}</span>
+                <span>{item.name}</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>

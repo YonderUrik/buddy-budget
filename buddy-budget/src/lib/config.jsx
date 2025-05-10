@@ -86,6 +86,11 @@ export const incomeIcons = [
     { value: "youtube", icon: <Youtube className="h-4 w-4" />, label: "Content" }
 ]
 
+export const categoryIcons = [
+    ...expenseIcons,
+    ...incomeIcons
+]
+
 // Default categories with icons
 export const defaultExpenseCategories = [
     { name: "food_dining", color: "#2563eb", icon: "utensils" },
@@ -173,6 +178,22 @@ export const formatCurrency = (amount, currency, language) => {
         }).format(amount);
     } catch (error) {
         return "0.00";
+    }
+}
+
+export const getCurrencySymbol = (currency) => {
+    try {
+        return new Intl.NumberFormat('en-US', { 
+            style: 'currency', 
+            currency: currency,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        })
+        .format(0)
+        .replace(/[0-9]/g, '')
+        .trim();
+    } catch (error) {
+        return currency;
     }
 }
 

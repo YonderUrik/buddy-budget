@@ -21,7 +21,7 @@ export function NavSecondary({
               <SidebarMenuButton asChild size="sm">
                 <a href={item.url}>
                   <item.icon />
-                  <span suppressHydrationWarning>{item.title}</span>
+                  <span >{item.title}</span>
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

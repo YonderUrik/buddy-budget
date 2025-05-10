@@ -42,7 +42,7 @@ export function NavCash({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel suppressHydrationWarning>
+      <SidebarGroupLabel>
         {t("sidebar.wealth")}
         <span className="ml-2 text-muted-foreground">
           {formatCurrency(totalValue, session?.user?.primaryCurrency, i18n.language)}
@@ -54,7 +54,7 @@ export function NavCash({
             <SidebarMenuItem>
               <SidebarMenuButton tooltip={item.title}>
                 <item.icon className="size-4" />
-                <span suppressHydrationWarning>{item.title}</span>
+                <span >{item.title}</span>
               </SidebarMenuButton>
               {item.items?.length > 0 && (
                 <>
@@ -74,15 +74,15 @@ export function NavCash({
                                 <SidebarMenuSubButton>
                                   <div className="flex items-center gap-2 flex-1 min-w-0">
                                     <div
-                                      suppressHydrationWarning
+
                                       style={{ color: subItem?.accountDetails?.color }}
                                       className="flex shrink-0  size-4 items-center justify-center rounded-md"
                                     >
                                       {getIconComponent(subItem?.accountDetails?.icon, subItem?.accountDetails?.color)}
                                     </div>
-                                    <span suppressHydrationWarning className="truncate text-xs">{subItem?.accountDetails?.name}</span>
+                                    <span className="truncate text-xs">{subItem?.accountDetails?.name}</span>
                                   </div>
-                                  <div suppressHydrationWarning className="flex flex-col items-end text-xs shrink-0">
+                                  <div className="flex flex-col items-end text-xs shrink-0">
                                     {session?.user?.primaryCurrency === subItem?.accountDetails?.currency ? (
                                       <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
                                     ) : (
@@ -97,7 +97,7 @@ export function NavCash({
                                 </SidebarMenuSubButton>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p suppressHydrationWarning>{subItem?.accountDetails?.name}</p>
+                                <p >{subItem?.accountDetails?.name}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>

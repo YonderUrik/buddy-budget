@@ -36,6 +36,7 @@ model User {
   hasCompletedOnboarding Boolean  @default(false)
 
   accounts   Account[]
+  transactions Transaction[]
   authCodes  UserAuthenticationCodes[]
   categories Category[]
   wealthSnapshots WealthSnapshot[]
@@ -49,6 +50,8 @@ model Category {
   type   String // income or expense
   icon   String
   color  String
+
+  transactions Transaction[]
 }
 
 model Account {
@@ -61,6 +64,9 @@ model Account {
   type     String
   icon     String
   color    String
+
+  transactionsAsSource      Transaction[] @relation("SourceTransactions")
+  transactionsAsDestination Transaction[] @relation("DestinationTransactions")
 }
 
 model WealthSnapshot {
@@ -87,4 +93,32 @@ model UserAuthenticationCodes {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime
+  description String
+  type        String // "income", "expense", or "transfer"
+
+  amount      Float
+  convertedSourceAmount Float
+  convertedDestinationAmount Float?
+
+  // Fields for income/expense
+  categoryId  String?   @db.ObjectId
+  category    Category? @relation(fields: [categoryId], references: [id])
+
+  sourceAccountId      String  @db.ObjectId
+  // TODO : Understand if the onDelete: Cascade is needed
+  sourceAccount        Account @relation("SourceTransactions", fields: [sourceAccountId], references: [id], onDelete: Cascade)
+
+  destinationAccountId String?  @db.ObjectId
+  // TODO : Understand if the onDelete: Cascade is needed
+  destinationAccount   Account? @relation("DestinationTransactions", fields: [destinationAccountId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -2,9 +2,11 @@
 
 import * as React from "react"
 import {
+  ArrowLeftRight,
   BookOpen,
   Bot,
   Command,
+  FileText,
   Frame,
   HandCoins,
   LifeBuoy,
@@ -71,6 +73,11 @@ export function AppSidebar({
           url: paths.accounts,
           icon: Wallet,
         },
+        {
+          name : t('sidebar.transactions'),
+          url: paths.transactions,
+          icon: ArrowLeftRight,
+        }
       ],
       navSecondary: [
         {

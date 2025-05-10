@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 
 export default function TransactionTable({ transactions, totalDays, totalPages, daysOnThisPage }) {
-  console.log("totalDays", totalDays);
   const { t } = useTranslation();
   const { page, setPage, daysPerPage, setDaysPerPage, isLoading } = useTransactions();
   

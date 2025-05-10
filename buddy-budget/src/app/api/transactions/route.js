@@ -29,22 +29,22 @@ export async function GET(request) {
   try {
     // Build match conditions for search and filters
     const matchConditions = { userId: { $oid: userId } };
-    
+
     // Add type filter
     if (types.length > 0) {
       matchConditions.type = { $in: types };
     }
-    
+
     // Add category filter
     if (categoryIds.length > 0) {
       matchConditions.categoryId = { $in: categoryIds.map(id => ({ $oid: id })) };
     }
-    
+
     // Add source account filter
     if (sourceAccountIds.length > 0) {
       matchConditions.sourceAccountId = { $in: sourceAccountIds.map(id => ({ $oid: id })) };
     }
-    
+
     // Add date range filter
     if (dateFrom || dateTo) {
       matchConditions.date = {};
@@ -55,7 +55,7 @@ export async function GET(request) {
         matchConditions.date.$lte = { $date: dateTo.toISOString() };
       }
     }
-    
+
     // Add search term condition
     if (searchTerm) {
       // Search in description (case insensitive)
@@ -155,8 +155,6 @@ export async function GET(request) {
         };
       })
     );
-
-    console.log("totalCount", totalCount)
 
     return NextResponse.json({
       groupedTransactions: enrichedGroups,
@@ -279,20 +277,17 @@ export async function POST(request) {
       // Convert the amount of source account to primary currency
       let txConvertedSourceAmount = numericAmount;
       if (sourceAccount && sourceAccount.currency !== primaryCurrency) {
-        console.log("Converting source amount to primary currency", sourceAccount.currency, primaryCurrency, transactionDate)
         const rate = await getCachedExchangeRate(sourceAccount.currency, primaryCurrency, transactionDate);
         txConvertedSourceAmount = numericAmount * rate;
       }
-     
+
       let txConvertedDestinationAmount = null;
       // Convert the amount to the destination account to source account currency and then to primary currency
       if (type === 'transfer' && sourceAccount && destinationAccount) {
-        console.log("Converting source amount to destination currency amount", sourceAccount.currency, destinationAccount.currency, transactionDate)
         const rateSourceToDest = await getCachedExchangeRate(sourceAccount.currency, destinationAccount.currency, transactionDate);
         txConvertedDestinationAmount = numericAmount * rateSourceToDest;
-        
-        
-        console.log("Converting destination currency amount to primary currency", destinationAccount.currency, primaryCurrency, transactionDate)
+
+
         if (destinationAccount.currency !== primaryCurrency) {
           const rateDestToPrimary = await getCachedExchangeRate(destinationAccount.currency, primaryCurrency, transactionDate);
           txConvertedDestinationAmount = txConvertedDestinationAmount * rateDestToPrimary;
@@ -324,7 +319,7 @@ export async function POST(request) {
           totalValue: true,
         },
       });
-      
+
       const baseSnapshotForCurrentUpdate = lastWealthSnapshot || {
         userId,
         timestamp: new Date(0), // Effectively a new state if no previous snapshot
@@ -364,13 +359,13 @@ export async function POST(request) {
         // Transaction is "current" or "future" relative to the last snapshot, or it's the first snapshot.
         // We create a new snapshot entry reflecting the state *after* this transaction.
         let newTotalValue = baseSnapshotForCurrentUpdate.totalValue;
-        let updatedLiquidityAccounts = [...baseSnapshotForCurrentUpdate.liquidityAccounts.map(acc => ({...acc}))]; // Deep copy
+        let updatedLiquidityAccounts = [...baseSnapshotForCurrentUpdate.liquidityAccounts.map(acc => ({ ...acc }))]; // Deep copy
 
         if (type === 'expense') {
           const rateSourceToPrimary = await getCachedExchangeRate(sourceAccount.currency, primaryCurrency, transactionDate);
           const changeInPrimary = numericAmount * rateSourceToPrimary;
           newTotalValue -= changeInPrimary;
-          
+
           const accIndex = updatedLiquidityAccounts.findIndex(a => a.id === sourceAccountId);
           if (accIndex > -1) {
             updatedLiquidityAccounts[accIndex].value -= numericAmount;
@@ -378,10 +373,10 @@ export async function POST(request) {
           } else {
             // If account not in snapshot, add it (simplified: assumes account details are available)
             // This part might need more robust handling based on how accounts are added to snapshots initially
-             updatedLiquidityAccounts.push({ 
-                id: sourceAccountId, 
-                value: -numericAmount, // This assumes initial value was 0 before this tx if not found
-                convertedValue: -changeInPrimary,
+            updatedLiquidityAccounts.push({
+              id: sourceAccountId,
+              value: -numericAmount, // This assumes initial value was 0 before this tx if not found
+              convertedValue: -changeInPrimary,
             });
           }
 
@@ -395,10 +390,10 @@ export async function POST(request) {
             updatedLiquidityAccounts[accIndex].value += numericAmount;
             updatedLiquidityAccounts[accIndex].convertedValue += changeInPrimary;
           } else {
-             updatedLiquidityAccounts.push({ 
-                id: sourceAccountId, 
-                value: numericAmount,
-                convertedValue: changeInPrimary 
+            updatedLiquidityAccounts.push({
+              id: sourceAccountId,
+              value: numericAmount,
+              convertedValue: changeInPrimary
             });
           }
 
@@ -411,7 +406,7 @@ export async function POST(request) {
 
           const sourceChangeInPrimary = numericAmount * rateSourceToPrimary;
           const destChangeInPrimary = amountInDestinationCurrency * rateDestToPrimary;
-          
+
           newTotalValue = newTotalValue - sourceChangeInPrimary + destChangeInPrimary;
 
           // Source Account
@@ -420,27 +415,27 @@ export async function POST(request) {
             updatedLiquidityAccounts[sourceAccIndex].value -= numericAmount;
             updatedLiquidityAccounts[sourceAccIndex].convertedValue -= sourceChangeInPrimary;
           } else {
-            updatedLiquidityAccounts.push({ 
-                id: sourceAccountId, 
-                value: -numericAmount, 
-                convertedValue: -sourceChangeInPrimary 
+            updatedLiquidityAccounts.push({
+              id: sourceAccountId,
+              value: -numericAmount,
+              convertedValue: -sourceChangeInPrimary
             });
           }
-          
+
           // Destination Account
           const destAccIndex = updatedLiquidityAccounts.findIndex(a => a.id === destinationAccountId);
           if (destAccIndex > -1) {
             updatedLiquidityAccounts[destAccIndex].value += amountInDestinationCurrency;
             updatedLiquidityAccounts[destAccIndex].convertedValue += destChangeInPrimary;
           } else {
-            updatedLiquidityAccounts.push({ 
-                id: destinationAccountId, 
-                value: amountInDestinationCurrency, 
-                convertedValue: destChangeInPrimary 
+            updatedLiquidityAccounts.push({
+              id: destinationAccountId,
+              value: amountInDestinationCurrency,
+              convertedValue: destChangeInPrimary
             });
           }
         }
-        
+
         await tx.wealthSnapshot.create({
           data: {
             userId,
@@ -475,13 +470,13 @@ export async function POST(request) {
           console.error("Could not find next snapshot for a past transaction. Snapshot may be inaccurate.");
           // Potentially throw error or return, as calculation will be problematic.
         }
-        
+
         // Fallback if nextSnapshot is null, to prevent crash, though data will be incomplete/potentially wrong
         const baseForPastSnapshot = nextSnapshot || { liquidityAccounts: [], totalValue: 0, userId };
 
 
         let historicalTotalValue = baseForPastSnapshot.totalValue;
-        let historicalLiquidityAccounts = [...baseForPastSnapshot.liquidityAccounts.map(acc => ({...acc}))]; // Deep copy
+        let historicalLiquidityAccounts = [...baseForPastSnapshot.liquidityAccounts.map(acc => ({ ...acc }))]; // Deep copy
 
 
         if (type === 'expense' && sourceAccount) {
@@ -489,16 +484,16 @@ export async function POST(request) {
           const changeInPrimary = numericAmount * rateSourceToPrimary;
           // To get state *before* this expense (from nextSnapshot's perspective), add back
           historicalTotalValue += changeInPrimary;
-          
+
           const accIndex = historicalLiquidityAccounts.findIndex(a => a.id === sourceAccountId);
           if (accIndex > -1) {
             historicalLiquidityAccounts[accIndex].value += numericAmount;
             historicalLiquidityAccounts[accIndex].convertedValue += changeInPrimary;
           } else {
-             historicalLiquidityAccounts.push({ 
-                id: sourceAccountId, 
-                value: numericAmount, // Value *before* this expense was numericAmount higher
-                convertedValue: changeInPrimary,
+            historicalLiquidityAccounts.push({
+              id: sourceAccountId,
+              value: numericAmount, // Value *before* this expense was numericAmount higher
+              convertedValue: changeInPrimary,
             });
           }
 
@@ -513,10 +508,10 @@ export async function POST(request) {
             historicalLiquidityAccounts[accIndex].value -= numericAmount;
             historicalLiquidityAccounts[accIndex].convertedValue -= changeInPrimary;
           } else {
-            historicalLiquidityAccounts.push({ 
-                id: sourceAccountId, 
-                value: -numericAmount, 
-                convertedValue: -changeInPrimary,
+            historicalLiquidityAccounts.push({
+              id: sourceAccountId,
+              value: -numericAmount,
+              convertedValue: -changeInPrimary,
             });
           }
 
@@ -524,7 +519,7 @@ export async function POST(request) {
           const rateSourceToPrimary = await getCachedExchangeRate(sourceAccount.currency, primaryCurrency, transactionDate);
           const rateDestToPrimary = await getCachedExchangeRate(destinationAccount.currency, primaryCurrency, transactionDate);
           const rateSourceToDest = await getCachedExchangeRate(sourceAccount.currency, destinationAccount.currency, transactionDate);
-          
+
           const amountInDestinationCurrency = numericAmount * rateSourceToDest;
           const sourceChangeInPrimary = numericAmount * rateSourceToPrimary;
           const destChangeInPrimary = amountInDestinationCurrency * rateDestToPrimary;
@@ -539,37 +534,37 @@ export async function POST(request) {
             historicalLiquidityAccounts[sourceAccIndex].value += numericAmount;
             historicalLiquidityAccounts[sourceAccIndex].convertedValue += sourceChangeInPrimary;
           } else {
-             historicalLiquidityAccounts.push({ 
-                id: sourceAccountId, 
-                value: numericAmount, 
-                convertedValue: sourceChangeInPrimary,
+            historicalLiquidityAccounts.push({
+              id: sourceAccountId,
+              value: numericAmount,
+              convertedValue: sourceChangeInPrimary,
             });
           }
-          
+
           // Destination Account (was lower before transfer)
           const destAccIndex = historicalLiquidityAccounts.findIndex(a => a.id === destinationAccountId);
           if (destAccIndex > -1) {
             historicalLiquidityAccounts[destAccIndex].value -= amountInDestinationCurrency;
             historicalLiquidityAccounts[destAccIndex].convertedValue -= destChangeInPrimary;
           } else {
-             historicalLiquidityAccounts.push({ 
-                id: destinationAccountId, 
-                value: -amountInDestinationCurrency, 
-                convertedValue: -destChangeInPrimary,
+            historicalLiquidityAccounts.push({
+              id: destinationAccountId,
+              value: -amountInDestinationCurrency,
+              convertedValue: -destChangeInPrimary,
             });
           }
         }
-        
+
         // Create the new historical snapshot
         if (nextSnapshot) { // Only create if we had a valid base
-            await tx.wealthSnapshot.create({
-              data: {
-                userId,
-                timestamp: transactionDate,
-                liquidityAccounts: historicalLiquidityAccounts,
-                totalValue: historicalTotalValue,
-              }
-            });
+          await tx.wealthSnapshot.create({
+            data: {
+              userId,
+              timestamp: transactionDate,
+              liquidityAccounts: historicalLiquidityAccounts,
+              totalValue: historicalTotalValue,
+            }
+          });
         }
       }
       return { success: true, data: transaction };

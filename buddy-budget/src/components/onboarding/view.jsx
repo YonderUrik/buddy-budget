@@ -1,7 +1,7 @@
 'use client'
 
 import { paths } from "@/lib/paths"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -15,7 +15,7 @@ import { CategoriesStep } from "./categories-step"
 import { CompletionStep } from "./completion-step"
 import { toast } from "sonner"
 import axios from "axios"
-import { HelpCircle, ArrowRight } from "lucide-react"
+import { HelpCircle, ArrowRight, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { TransactionGuide } from "./transaction-guide"
 import {
@@ -86,6 +86,10 @@ export function OnboardingView() {
       // Scroll to top for mobile users
       window.scrollTo(0, 0)
    }
+   
+   const handleLogout = async () => {
+      await signOut({ redirect: true, callbackUrl: paths.login })
+   }
 
    const handleComplete = async () => {
       try {
@@ -126,10 +130,19 @@ export function OnboardingView() {
             <div className="p-4 sm:p-6 md:p-8">
                {/* HEADER */}
                <div className="flex flex-col gap-4 mb-6 sm:mb-8">
-                  <div className="flex items-center justify-center">
+                  <div className="flex items-center justify-between">
                      <div className="font-bold text-xl sm:text-2xl tracking-tight text-blue-600 dark:text-blue-400">
                         <LogoHorizontal />
                      </div>
+                     <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleLogout}
+                        className="text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
+                     >
+                        <LogOut className="h-4 w-4 mr-1" />
+                        <span className="text-sm">{t("sidebar.logout")}</span>
+                     </Button>
                   </div>
                   
                   <div className="flex justify-center">

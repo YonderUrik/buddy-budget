@@ -30,6 +30,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { paths } from "@/lib/paths"
 import { config } from "@/lib/config"
@@ -37,7 +38,11 @@ import { AppIcon } from "../logo/app-icon"
 import { useTranslation } from "react-i18next"
 import { useSession } from "next-auth/react"
 import { useWealth } from "@/providers/wealth-provider"
+import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
+
 export function AppSidebar({
+  className,
   ...props
 }) {
   const { t } = useTranslation()
@@ -90,30 +95,44 @@ export function AppSidebar({
   }, [t, session, liquidityAccounts, totalValue])
 
   return (
-    <Sidebar variant="inset" {...props}>
-      <SidebarHeader>
+    <Sidebar 
+      variant="inset" 
+      className={cn("backdrop-blur-sm shadow-md", className)}
+      {...props}
+    >
+      <SidebarHeader className="py-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <a href={paths.dashboard}>
+            <SidebarMenuButton 
+              size="lg" 
+              asChild
+              className="transition-all duration-200 hover:scale-105"
+            >
+              <a href={paths.dashboard} className="flex items-center gap-3">
                 <div
-                  className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center">
-                  <AppIcon />
+                  className="text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center bg-white from-primary/80 to-primary rounded-md shadow-sm"
+                >
+                  <AppIcon className="size-6" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{config.appName}</span>
+                <div className="grid flex-1 text-left leading-tight">
+                  <span className="truncate font-medium text-base">{config.appName}</span>
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      
+      <SidebarSeparator className="opacity-70" />
+      
+      <SidebarContent className="py-2 space-y-6">
         <NavSections sections={data.sections} />
-        <NavCash  items={data.navMain} totalValue={totalValue} />
+        <NavCash items={data.navMain} totalValue={totalValue} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
+      
+      <SidebarFooter className="pt-2">
+        <SidebarSeparator className="opacity-70 mb-2" />
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>

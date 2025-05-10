@@ -27,10 +27,12 @@ import {
 import { useTranslation } from "react-i18next"
 import { useSession } from "next-auth/react"
 import { accountIcons, formatCurrency } from "@/lib/config";
+import { cn } from "@/lib/utils";
 
 export function NavCash({
   items,
-  totalValue
+  totalValue,
+  className
 }) {
   const { t, i18n } = useTranslation()
   const { data: session } = useSession()
@@ -41,10 +43,10 @@ export function NavCash({
   }
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel>
-        {t("sidebar.wealth")}
-        <span className="ml-2 text-muted-foreground">
+    <SidebarGroup className={className}>
+      <SidebarGroupLabel className="flex justify-between items-center">
+        <span className="font-medium">{t("sidebar.wealth")}</span>
+        <span className="text-primary-foreground bg-primary/90 text-xs rounded-full px-2.5 py-1 font-medium">
           {formatCurrency(totalValue, session?.user?.primaryCurrency, i18n.language)}
         </span>
       </SidebarGroupLabel>
@@ -52,27 +54,27 @@ export function NavCash({
         {items.map((item) => (
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip={item.title}>
+              <SidebarMenuButton tooltip={item.title} className="hover:bg-accent/50 transition-colors">
                 <item.icon className="size-4" />
-                <span >{item.title}</span>
+                <span>{item.title}</span>
               </SidebarMenuButton>
               {item.items?.length > 0 && (
                 <>
                   <CollapsibleTrigger asChild>
-                    <SidebarMenuAction className="data-[state=open]:rotate-90">
+                    <SidebarMenuAction className="data-[state=open]:rotate-90 transition-transform duration-200">
                       <ChevronRight className="size-4" />
                       <span className="sr-only">Toggle</span>
                     </SidebarMenuAction>
                   </CollapsibleTrigger>
-                  <CollapsibleContent>
+                  <CollapsibleContent className="transition-all">
                     <SidebarMenuSub>
                       {item.items.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.id}>
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <SidebarMenuSubButton>
-                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <SidebarMenuSubButton className="hover:bg-accent/30 focus:bg-accent/50 transition-all duration-200 rounded-md overflow-hidden">
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div
 
                                       style={{ color: subItem?.accountDetails?.color }}
@@ -80,15 +82,15 @@ export function NavCash({
                                     >
                                       {getIconComponent(subItem?.accountDetails?.icon, subItem?.accountDetails?.color)}
                                     </div>
-                                    <span className="truncate text-xs">{subItem?.accountDetails?.name}</span>
+                                    <span className="truncate font-medium">{subItem?.accountDetails?.name}</span>
                                   </div>
                                   <div className="flex flex-col items-end text-xs shrink-0">
                                     {session?.user?.primaryCurrency === subItem?.accountDetails?.currency ? (
-                                      <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
+                                      <span className="font-semibold">{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
                                     ) : (
                                       <>
-                                        <span>{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
-                                        <span className="text-muted-foreground">
+                                        <span className="font-semibold">{formatCurrency(subItem.convertedValue, session?.user?.primaryCurrency, i18n.language)}</span>
+                                        <span className="text-muted-foreground text-[10px]">
                                           {formatCurrency(subItem.value, subItem?.accountDetails?.currency, i18n.language)}
                                         </span>
                                       </>
@@ -97,7 +99,10 @@ export function NavCash({
                                 </SidebarMenuSubButton>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p >{subItem?.accountDetails?.name}</p>
+                                <div className="flex flex-col">
+                                  <p className="font-medium">{subItem?.accountDetails?.name}</p>
+                                  <p className="text-xs text-muted-foreground">{subItem?.accountDetails?.institution}</p>
+                                </div>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>

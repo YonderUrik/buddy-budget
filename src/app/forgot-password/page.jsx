@@ -27,7 +27,7 @@ function ForgotPasswordPage() {
           </div>
         </div>
       </div>
-      <div className="bg-muted relative hidden lg:block">
+      <div className="bg-muted/10 relative hidden lg:block">
         <FlickeringGrid
           className="relative inset-0 z-0 [mask-image:radial-gradient(400px_circle_at_center,white,transparent)]"
           squareSize={4}

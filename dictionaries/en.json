@@ -60,6 +60,14 @@
   "auth": {
     "welcomeBack": "Welcome Back",
     "loginToContinue": "Log in to your account to continue",
-    "continueWith": "Continue with"
+    "continueWith": "Continue with",
+    "errorCallback": "Authentication failed. Please try again.",
+    "errorOAuthSignin": "Could not start sign-in.",
+    "errorOAuthCallback": "Provider callback failed.",
+    "errorAccountNotLinked": "This email is already linked to another provider.",
+    "errorCreateAccount": "Could not create account.",
+    "errorAccessDenied": "Access denied.",
+    "errorVerification": "Invalid or expired verification.",
+    "errorDefault": "Something went wrong. Please try again."
   }
 }

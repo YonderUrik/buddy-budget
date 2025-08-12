@@ -60,6 +60,14 @@
   "auth": {
     "welcomeBack": "Bentornato",
     "loginToContinue": "Accedi al tuo account per continuare",
-    "continueWith": "Continua con"
+    "continueWith": "Continua con",
+    "errorCallback": "Autenticazione fallita. Per favore, riprova.",
+    "errorOAuthSignin": "Impossibile avviare l'accesso.",
+    "errorOAuthCallback": "Callback OAuth fallito.",
+    "errorAccountNotLinked": "Questo indirizzo email è già collegato a un altro provider.",
+    "errorCreateAccount": "Impossibile creare l'account.",
+    "errorAccessDenied": "Accesso negato.",
+    "errorVerification": "Verifica non valida o scaduta.",
+    "errorDefault": "Qualcosa è andato storto. Per favore, riprova."
   }
 }

@@ -1,0 +1,65 @@
+{
+  "navigation": {
+    "login": "Login",
+    "features": "Features",
+    "howItWorks": "How it works",
+    "faq": "FAQ"
+  },
+  "landing": {
+    "hero": {
+      "titleBefore": "All your money in one place with",
+      "description": "Track expenses, budgets, recurring bills, and investments (stocks & crypto) with clear insights and real-time prices.",
+      "primaryCta": "Create your free account"
+    },
+    "features": {
+      "kicker": "Why Buddy Budget",
+      "heading": "Everything you need to manage money—beautifully",
+      "description": "From daily spending to long-term investing, stay in control with one simple app.",
+      "items": [
+        { "title": "Recurring bills & subscriptions", "desc": "Never miss a payment with automatic tracking and reminders." },
+        { "title": "Investment tracking", "desc": "Monitor stocks and crypto with live prices and performance." },
+        { "title": "Net worth & accounts", "desc": "A unified view across cash, cards, brokerage, and wallets." },
+        { "title": "Smart budgeting", "desc": "Monthly limits, rollover rules, and category targets that guide decisions." },
+        { "title": "Auto-categorization", "desc": "Rules and suggestions that get smarter over time." },
+        { "title": "Multi-currency", "desc": "Track accounts across currencies with automatic conversions." },
+        { "title": "Secure & private", "desc": "Your data stays yours. Export anytime." }
+      ]
+    },
+    "cta": {
+      "heading": "Ready to take control of your money?",
+      "description": "Simple setup, instant clarity, and one place for everything—spending, bills, and investments.",
+      "primary": "Create your free account"
+    },
+    "howItWorks": {
+      "kicker": "How it works",
+      "heading": "Get set up in minutes",
+      "steps": [
+        { "title": "Connect or import", "desc": "Link banks/brokerages where available, or import CSVs and crypto wallets." },
+        { "title": "Categorize & set goals", "desc": "Automatic suggestions, custom categories, and monthly targets." },
+        { "title": "Track & grow", "desc": "Stay on budget, monitor investments, and optimize." }
+      ]
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "heading": "Frequently asked questions",
+      "items": [
+        { "q": "Is Buddy Budget free?", "a": "Yes. You can start on the Free plan and upgrade anytime." },
+        { "q": "Do you support bank and brokerage connections?", "a": "In select regions. Otherwise you can import CSVs and add transactions manually." },
+        { "q": "How are stock and crypto prices updated?", "a": "We fetch regular price updates from reliable market data providers." },
+        { "q": "How do you handle security and privacy?", "a": "We follow industry best practices. Your data is encrypted and exportable anytime." }
+      ]
+    },
+    "metrics": {
+      "items": [
+        { "label": "5-minute setup" },
+        { "label": "100% data export" },
+        { "label": "Multi-currency" }
+      ]
+    }
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "loginToContinue": "Log in to your account to continue",
+    "continueWith": "Continue with"
+  }
+}

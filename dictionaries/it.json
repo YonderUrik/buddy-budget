@@ -1,0 +1,65 @@
+{
+  "navigation": {
+    "login": "Accedi",
+    "features": "Funzionalità",
+    "howItWorks": "Come funziona",
+    "faq": "FAQ"
+  },
+  "landing": {
+    "hero": {
+      "titleBefore": "Tutte le tue finanze in un unico posto con",
+      "description": "Traccia spese, budget, abbonamenti ricorrenti e investimenti (azioni e crypto) con insight chiari e prezzi in tempo reale.",
+      "primaryCta": "Crea il tuo account gratuito"
+    },
+    "features": {
+      "kicker": "Perché Buddy Budget",
+      "heading": "Tutto ciò che ti serve per gestire il denaro — in modo impeccabile",
+      "description": "Dalla spesa quotidiana agli investimenti, tutto in un'unica app semplice.",
+      "items": [
+        { "title": "Abbonamenti e bollette ricorrenti", "desc": "Non perdere più una scadenza con tracciamento automatico e promemoria." },
+        { "title": "Monitoraggio investimenti", "desc": "Segui azioni e crypto con prezzi live e performance." },
+        { "title": "Patrimonio e conti", "desc": "Una vista unificata tra conti, carte, broker e wallet." },
+        { "title": "Budget intelligente", "desc": "Limiti mensili, regole di rollover e obiettivi per categoria." },
+        { "title": "Auto-categorizzazione", "desc": "Regole e suggerimenti che migliorano nel tempo." },
+        { "title": "Multi-valuta", "desc": "Monitora conti in diverse valute con conversioni automatiche." },
+        { "title": "Sicuro e privato", "desc": "I tuoi dati restano tuoi. Esporta quando vuoi." }
+      ]
+    },
+    "cta": {
+      "heading": "Pronto a prendere il controllo del tuo denaro?",
+      "description": "Setup semplice, chiarezza immediata e un unico posto per spese, bollette e investimenti.",
+      "primary": "Crea il tuo account gratuito"
+    },
+    "howItWorks": {
+      "kicker": "Come funziona",
+      "heading": "Impostalo in pochi minuti",
+      "steps": [
+        { "title": "Collega o importa", "desc": "Collega banche/broker dove disponibile, oppure importa CSV e wallet crypto." },
+        { "title": "Categoria e obiettivi", "desc": "Suggerimenti automatici, categorie personalizzate e obiettivi mensili." },
+        { "title": "Monitora e cresci", "desc": "Resta nel budget, monitora investimenti e ottimizza." }
+      ]
+    },
+    "faq": {
+      "kicker": "FAQ",
+      "heading": "Domande frequenti",
+      "items": [
+        { "q": "Buddy Budget è gratuito?", "a": "Sì. Puoi iniziare con il piano Gratis e passare a Pro quando vuoi." },
+        { "q": "Supportate collegamenti bancari e di broker?", "a": "In alcune regioni. In alternativa puoi importare CSV e aggiungere transazioni manualmente." },
+        { "q": "Come aggiornate i prezzi di azioni e crypto?", "a": "Recuperiamo aggiornamenti regolari da fornitori affidabili di dati di mercato." },
+        { "q": "Come gestite sicurezza e privacy?", "a": "Seguiamo le best practice del settore. I tuoi dati sono cifrati ed esportabili in qualsiasi momento." }
+      ]
+    },
+    "metrics": {
+      "items": [
+        { "label": "Setup in 5 minuti" },
+        { "label": "Dati sempre esportabili" },
+        { "label": "Multi-valuta" }
+      ]
+    }
+  },
+  "auth": {
+    "welcomeBack": "Bentornato",
+    "loginToContinue": "Accedi al tuo account per continuare",
+    "continueWith": "Continua con"
+  }
+}

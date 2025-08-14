@@ -51,6 +51,13 @@ export function Footer({ dict, locale }: { dict?: Dictionary; locale?: string })
                 >
                   {dict.legal.nav.privacy}
                 </Link>
+                <span className="text-default-300">·</span>
+                <Link
+                  href={`/${locale ?? "en"}/legal/cookies`}
+                  className="text-foreground-500 hover:text-foreground"
+                >
+                  {dict.legal.nav.cookies ?? "Cookie Policy"}
+                </Link>
               </div>
             )}
           </div>

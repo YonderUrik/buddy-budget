@@ -100,9 +100,17 @@ export interface Dictionary {
     nav: {
       terms: string;
       privacy: string;
+      cookies?: string;
     };
     lastUpdatedLabel: string;
     questions: string;
+    cookieBanner?: {
+      title: string;
+      description: string;
+      policy: string;
+      accept: string;
+      reject: string;
+    };
     terms: {
       title: string;
       sections: Array<{
@@ -111,6 +119,13 @@ export interface Dictionary {
       }>;
     };
     privacy: {
+      title: string;
+      sections: Array<{
+        title: string;
+        body: string[];
+      }>;
+    };
+    cookies?: {
       title: string;
       sections: Array<{
         title: string;

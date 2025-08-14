@@ -73,10 +73,87 @@
   "legal": {
     "nav": {
       "terms": "Termini di Servizio",
-      "privacy": "Informativa sulla Privacy"
+      "privacy": "Informativa sulla Privacy",
+      "cookies": "Cookie Policy"
     },
     "lastUpdatedLabel": "Ultimo aggiornamento",
     "questions": "Domande? Contattaci all'indirizzo",
+    "cookieBanner": {
+      "title": "Utilizziamo i cookie",
+      "description": "Usiamo cookie essenziali per il funzionamento del sito e cookie analitici per comprenderne l'uso.",
+      "policy": "Cookie Policy",
+      "accept": "Accetta tutto",
+      "reject": "Rifiuta"
+    },
+    "cookies": {
+      "title": "Cookie Policy – buddyBudget",
+      "sections": [
+        {
+          "title": "1. Cosa sono i cookie",
+          "body": [
+            "I cookie sono piccoli file di testo che i siti web o le applicazioni inviano al dispositivo dell’utente, dove vengono memorizzati per essere poi ritrasmessi agli stessi siti/app in occasione di visite successive. Servono per migliorare l’esperienza d’uso, analizzare l’andamento del servizio e, in alcuni casi, offrire contenuti personalizzati."
+          ]
+        },
+        {
+          "title": "2. Tipologie di cookie utilizzati",
+          "body": [
+            "Cookie tecnici (necessari)",
+            "Questi cookie sono essenziali per il corretto funzionamento dell’app e non richiedono il consenso dell’utente.",
+            "Esempi: autenticazione, salvataggio preferenze, sicurezza.",
+            "",
+            "Cookie analitici (opzionali)",
+            "Raccolgono informazioni anonime e aggregate sull’uso dell’app, ad esempio quante persone la utilizzano e come interagiscono con le funzionalità.",
+            "Servono a migliorare i servizi offerti.",
+            "",
+            "Cookie di profilazione/marketing (opzionali, se usati)",
+            "Servono a creare profili relativi all’utente e mostrare contenuti o annunci personalizzati.",
+            "buddyBudget non utilizza al momento cookie di profilazione diretta. In caso di introduzione futura, verrà richiesto il consenso esplicito."
+          ]
+        },
+        {
+          "title": "3. Durata dei cookie",
+          "body": [
+            "Cookie di sessione: cancellati automaticamente alla chiusura dell’app o del browser.",
+            "Cookie persistenti: rimangono memorizzati sul dispositivo fino alla loro scadenza o cancellazione manuale da parte dell’utente."
+          ]
+        },
+        {
+          "title": "4. Gestione del consenso",
+          "body": [
+            "Al primo accesso, viene mostrato un banner per consentire o rifiutare l’uso dei cookie non essenziali.",
+            "L’utente può in qualsiasi momento modificare le proprie preferenze dai settaggi dell’app o cancellare i cookie dal proprio browser/dispositivo."
+          ]
+        },
+        {
+          "title": "5. Cookie di terze parti",
+          "body": [
+            "Alcune funzionalità possono utilizzare servizi esterni (es. Google Analytics, servizi di hosting, integrazioni open banking). Questi fornitori possono impostare cookie propri. Per maggiori informazioni, si invita a consultare le informative dei rispettivi provider."
+          ]
+        },
+        {
+          "title": "6. Come gestire i cookie dal browser",
+          "body": [
+            "L’utente può configurare il proprio browser per rifiutare o cancellare i cookie, secondo le modalità fornite dai diversi produttori:",
+            "Chrome: https://support.google.com/accounts/answer/61416?hl=it",
+            "Safari: https://support.apple.com/it-it/guide/safari/sfri11471/mac",
+            "Firefox: https://support.mozilla.org/it/kb/gestione-dei-cookie",
+            "Edge: https://support.microsoft.com/it-it/help/4027947/microsoft-edge-delete-cookies"
+          ]
+        },
+        {
+          "title": "7. Aggiornamenti della Cookie Policy",
+          "body": [
+            "Ci riserviamo il diritto di aggiornare questa Cookie Policy per riflettere modifiche ai cookie utilizzati o ad obblighi normativi. Le modifiche saranno comunicate tramite app o sito."
+          ]
+        },
+        {
+          "title": "8. Contatti",
+          "body": [
+            "Per domande relative all’uso dei cookie: support@buddybudget.app"
+          ]
+        }
+      ]
+    },
     "terms": {
       "title": "Termini di Servizio – buddyBudget",
       "sections": [

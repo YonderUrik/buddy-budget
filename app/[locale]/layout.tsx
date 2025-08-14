@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { getDictionary, Locale } from "@/lib/dictionaries";
+import { CookieConsentBanner } from "@/components/cookie-consent";
 
 const locales = ['en', 'it'];
 
@@ -17,5 +19,10 @@ export default async function LocaleLayout({
 
   if (!locales.includes(locale as any)) notFound();
 
-  return <>{children}</>;
+  const dict = await getDictionary(locale as Locale);
+
+  return <>
+    {children}
+    <CookieConsentBanner dict={dict} locale={locale} />
+  </>;
 }

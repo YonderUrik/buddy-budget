@@ -19,7 +19,7 @@ const config = {
   plugins: [
     heroui({
       // See: https://www.heroui.com/docs/customization/theme
-      defaultTheme: "light",
+      defaultTheme: "dark",
       themes: {
         light: {
           colors: {

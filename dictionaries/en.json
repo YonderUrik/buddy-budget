@@ -73,10 +73,87 @@
   "legal": {
     "nav": {
       "terms": "Terms of Service",
-      "privacy": "Privacy Policy"
+      "privacy": "Privacy Policy",
+      "cookies": "Cookie Policy"
     },
     "lastUpdatedLabel": "Last updated",
     "questions": "Questions? Contact us at",
+    "cookieBanner": {
+      "title": "We use cookies",
+      "description": "We use essential cookies to make this site work and analytics cookies to understand usage.",
+      "policy": "Cookie Policy",
+      "accept": "Accept all",
+      "reject": "Reject"
+    },
+    "cookies": {
+      "title": "Cookie Policy – buddyBudget",
+      "sections": [
+        {
+          "title": "1. What are cookies",
+          "body": [
+            "Cookies are small text files that websites or apps send to a user’s device, where they are stored and later sent back to the same sites/apps upon subsequent visits. They help improve the experience, analyze service performance, and in some cases offer personalized content."
+          ]
+        },
+        {
+          "title": "2. Types of cookies used",
+          "body": [
+            "Technical (necessary) cookies",
+            "These cookies are essential for the proper operation of the app and do not require user consent.",
+            "Examples: authentication, preference storage, security.",
+            "",
+            "Analytics (optional) cookies",
+            "Collect anonymous, aggregated information about app usage, e.g., how many users and which features are used.",
+            "Used to improve the services offered.",
+            "",
+            "Profiling/marketing (optional, if used) cookies",
+            "Used to build user profiles and show personalized content or ads.",
+            "buddyBudget does not currently use direct profiling cookies. If introduced in the future, explicit consent will be requested."
+          ]
+        },
+        {
+          "title": "3. Cookie duration",
+          "body": [
+            "Session cookies: automatically deleted when the app or browser is closed.",
+            "Persistent cookies: remain on the device until their expiration or manual deletion by the user."
+          ]
+        },
+        {
+          "title": "4. Consent management",
+          "body": [
+            "On first access, a banner is shown to allow the user to accept or reject non-essential cookies.",
+            "The user can change preferences at any time from the app settings or delete cookies from their browser/device."
+          ]
+        },
+        {
+          "title": "5. Third-party cookies",
+          "body": [
+            "Some features may use external services (e.g., Google Analytics, hosting, open banking integrations). These providers may set their own cookies. For more information, refer to the providers’ policies."
+          ]
+        },
+        {
+          "title": "6. Managing cookies in your browser",
+          "body": [
+            "You can configure your browser to refuse or delete cookies, following the guidance provided by vendors:",
+            "Chrome: https://support.google.com/accounts/answer/61416?hl=en",
+            "Safari: https://support.apple.com/en-us/HT201265",
+            "Firefox: https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer",
+            "Edge: https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
+          ]
+        },
+        {
+          "title": "7. Updates to this Cookie Policy",
+          "body": [
+            "We reserve the right to update this Cookie Policy to reflect changes to cookies used or regulatory obligations. Changes will be communicated via the app or website."
+          ]
+        },
+        {
+          "title": "8. Contact",
+          "body": [
+            "For questions about the use of cookies: support@buddybudget.app"
+          ]
+        }
+      ]
+    },
     "terms": {
       "title": "Terms of Service – buddyBudget",
       "sections": [

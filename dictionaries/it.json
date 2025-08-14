@@ -69,5 +69,207 @@
     "errorAccessDenied": "Accesso negato.",
     "errorVerification": "Verifica non valida o scaduta.",
     "errorDefault": "Qualcosa è andato storto. Per favore, riprova."
+  },
+  "legal": {
+    "nav": {
+      "terms": "Termini di Servizio",
+      "privacy": "Informativa sulla Privacy"
+    },
+    "lastUpdatedLabel": "Ultimo aggiornamento",
+    "questions": "Domande? Contattaci all'indirizzo",
+    "terms": {
+      "title": "Termini di Servizio – buddyBudget",
+      "sections": [
+        {
+          "title": "1. Introduzione",
+          "body": [
+            "Benvenuto su buddyBudget, l’applicazione che ti aiuta a monitorare spese, conti e investimenti personali.",
+            "Utilizzando buddyBudget, accetti i presenti Termini di Servizio (\"Termini\"). Se non sei d’accordo con una qualsiasi parte, ti invitiamo a non utilizzare l’app."
+          ]
+        },
+        {
+          "title": "2. Definizioni",
+          "body": [
+            "\"Servizio\": l’app buddyBudget e tutte le sue funzionalità.",
+            "\"Utente\": la persona che utilizza l’app.",
+            "\"Contenuti\": dati, informazioni e materiali caricati o generati dall’utente tramite l’app."
+          ]
+        },
+        {
+          "title": "3. Uso consentito",
+          "body": [
+            "L’app è destinata esclusivamente a utenti maggiorenni (18+).",
+            "È vietato utilizzare buddyBudget per scopi illegali o in modo da compromettere il funzionamento del Servizio.",
+            "L’Utente si impegna a fornire dati accurati e a non condividere il proprio account con terzi."
+          ]
+        },
+        {
+          "title": "4. Registrazione e account",
+          "body": [
+            "Per utilizzare tutte le funzionalità può essere richiesta la creazione di un account.",
+            "L’Utente è responsabile della riservatezza delle proprie credenziali e di tutte le attività svolte tramite il proprio account.",
+            "buddyBudget può sospendere o chiudere un account in caso di violazioni dei Termini."
+          ]
+        },
+        {
+          "title": "5. Servizi offerti",
+          "body": [
+            "buddyBudget offre strumenti per la registrazione e visualizzazione di spese, guadagni, conti e investimenti personali.",
+            "Il Servizio ha finalità puramente informative e gestionali.",
+            "buddyBudget non è una banca, un intermediario finanziario o un consulente autorizzato. Le analisi e i calcoli proposti hanno valore meramente indicativo e non costituiscono consulenza finanziaria, legale o fiscale."
+          ]
+        },
+        {
+          "title": "6. Proprietà intellettuale",
+          "body": [
+            "buddyBudget e i suoi contenuti (codice, design, marchio) sono di proprietà esclusiva di [tua azienda/nome].",
+            "L’Utente ottiene una licenza limitata, non esclusiva e revocabile per l’utilizzo personale dell’app."
+          ]
+        },
+        {
+          "title": "7. Contenuti degli utenti",
+          "body": [
+            "I dati inseriti dagli Utenti restano di loro proprietà.",
+            "L’Utente concede a buddyBudget una licenza limitata per trattare i dati esclusivamente al fine di fornire il Servizio.",
+            "È responsabilità dell’Utente assicurarsi della correttezza dei dati inseriti."
+          ]
+        },
+        {
+          "title": "8. Limitazioni di responsabilità",
+          "body": [
+            "Il Servizio è fornito \"così com'è\" e \"come disponibile\".",
+            "buddyBudget non garantisce l’assenza di errori o interruzioni.",
+            "buddyBudget non è responsabile per decisioni finanziarie, perdite o danni derivanti dall’uso delle informazioni generate dall’app."
+          ]
+        },
+        {
+          "title": "9. Privacy e protezione dei dati",
+          "body": [
+            "Il trattamento dei dati personali avviene in conformità alla nostra Privacy Policy, disponibile all’interno dell’app/sito.",
+            "buddyBudget adotta misure di sicurezza per proteggere i dati, ma l’Utente riconosce che nessun sistema è totalmente sicuro."
+          ]
+        },
+        {
+          "title": "10. Modifiche ai Termini",
+          "body": [
+            "buddyBudget si riserva il diritto di modificare i Termini in qualsiasi momento.",
+            "Le modifiche saranno comunicate agli Utenti attraverso l’app o il sito.",
+            "Continuando a utilizzare il Servizio dopo la pubblicazione delle modifiche, l’Utente accetta i nuovi Termini."
+          ]
+        },
+        {
+          "title": "11. Durata e cessazione",
+          "body": [
+            "I Termini restano in vigore fino alla chiusura dell’account da parte dell’Utente o di buddyBudget.",
+            "buddyBudget può sospendere o terminare il Servizio in caso di abuso o violazione dei Termini."
+          ]
+        },
+        {
+          "title": "12. Legge applicabile e foro competente",
+          "body": [
+            "I presenti Termini sono disciplinati dalla legge italiana.",
+            "Per ogni controversia sarà competente il foro del luogo di residenza o domicilio del consumatore."
+          ]
+        },
+        {
+          "title": "13. Contatti",
+          "body": [
+            "Per domande sui Termini di Servizio puoi contattarci tramite l’indirizzo email ufficiale indicato nell’app o sul sito."
+          ]
+        }
+      ]
+    },
+    "privacy": {
+      "title": "Informativa sulla Privacy – buddyBudget",
+      "sections": [
+        {
+          "title": "1. Chi siamo",
+          "body": [
+            "La presente informativa descrive come buddyBudget (gestito da Daniele Roccaforte) raccoglie, utilizza e protegge i dati personali degli utenti."
+          ]
+        },
+        {
+          "title": "2. Quali dati raccogliamo",
+          "body": [
+            "Utilizzando buddyBudget, possiamo raccogliere le seguenti categorie di dati:",
+            "Dati di registrazione: nome, email, credenziali di accesso.",
+            "Dati finanziari inseriti dall’utente: spese, guadagni, investimenti, conti bancari solo se inseriti manualmente dall’utente.",
+            "Dati tecnici: informazioni sul dispositivo, indirizzo IP, log di utilizzo dell’app.",
+            "Dati di supporto: messaggi inviati al nostro servizio clienti.",
+            "Nota importante: buddyBudget non ha accesso diretto ai conti bancari dell’utente, a meno che non venga esplicitamente attivata una funzione di collegamento con provider terzi (es. open banking)."
+          ]
+        },
+        {
+          "title": "3. Finalità e basi giuridiche del trattamento",
+          "body": [
+            "I dati personali vengono trattati per le seguenti finalità:",
+            "Fornire e migliorare il Servizio (base giuridica: esecuzione del contratto).",
+            "Permettere all’utente di tracciare spese, guadagni e investimenti (base giuridica: esecuzione del contratto).",
+            "Gestire richieste di supporto (base giuridica: esecuzione del contratto).",
+            "Inviare comunicazioni relative al Servizio (base giuridica: legittimo interesse).",
+            "Adempiere a obblighi legali (base giuridica: obbligo di legge)."
+          ]
+        },
+        {
+          "title": "4. Conservazione dei dati",
+          "body": [
+            "I dati vengono conservati finché l’account resta attivo.",
+            "In caso di cancellazione dell’account, i dati vengono eliminati o anonimizzati entro [X mesi].",
+            "Alcuni dati possono essere conservati più a lungo se richiesto da obblighi legali."
+          ]
+        },
+        {
+          "title": "5. Condivisione dei dati",
+          "body": [
+            "Non vendiamo né cediamo i dati personali a terzi. I dati possono essere condivisi con:",
+            "Fornitori di servizi (hosting, cloud, analisi tecniche).",
+            "Autorità competenti, se richiesto per legge."
+          ]
+        },
+        {
+          "title": "6. Sicurezza dei dati",
+          "body": [
+            "Adottiamo misure tecniche e organizzative per proteggere i dati (es. crittografia, backup, accessi controllati). Tuttavia, nessun sistema è completamente sicuro."
+          ]
+        },
+        {
+          "title": "7. Diritti degli utenti",
+          "body": [
+            "Ai sensi del GDPR, l’utente ha diritto a:",
+            "Accedere ai propri dati.",
+            "Rettificare i dati inesatti.",
+            "Richiedere la cancellazione (\"diritto all’oblio\").",
+            "Limitare il trattamento.",
+            "Richiedere la portabilità dei dati.",
+            "Opporsi al trattamento.",
+            "Le richieste possono essere inviate tramite l’email ufficiale indicata nell’app o sul sito."
+          ]
+        },
+        {
+          "title": "8. Trasferimenti internazionali",
+          "body": [
+            "Se i dati vengono trattati fuori dallo Spazio Economico Europeo (es. server cloud), garantiamo che siano adottate adeguate misure di protezione (es. Clausole Contrattuali Standard)."
+          ]
+        },
+        {
+          "title": "9. Minori",
+          "body": [
+            "Il Servizio non è destinato a persone di età inferiore a 18 anni. Non raccogliamo consapevolmente dati di minori."
+          ]
+        },
+        {
+          "title": "10. Modifiche alla Privacy Policy",
+          "body": [
+            "Ci riserviamo il diritto di aggiornare la presente informativa. In tal caso, informeremo gli utenti tramite app o sito."
+          ]
+        },
+        {
+          "title": "11. Contatti",
+          "body": [
+            "Per qualsiasi domanda o per esercitare i tuoi diritti puoi contattarci tramite l’email ufficiale e l’indirizzo indicati nell’app o sul sito."
+          ]
+        }
+      ]
+    }
   }
 }

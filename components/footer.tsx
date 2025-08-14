@@ -3,8 +3,9 @@ import { Link } from "@heroui/link";
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon, Logo } from "@/components/icons";
+import type { Dictionary } from "@/types/dictionary";
 
-export function Footer() {
+export function Footer({ dict, locale }: { dict?: Dictionary; locale?: string }) {
   const year = new Date().getFullYear();
 
   return (
@@ -35,6 +36,23 @@ export function Footer() {
             >
               <GithubIcon size={18} />
             </Link>
+            {dict?.legal && (
+              <div className="flex items-center gap-3 ml-2 text-sm">
+                <Link
+                  href={`/${locale ?? "en"}/legal/terms`}
+                  className="text-foreground-500 hover:text-foreground"
+                >
+                  {dict.legal.nav.terms}
+                </Link>
+                <span className="text-default-300">·</span>
+                <Link
+                  href={`/${locale ?? "en"}/legal/privacy`}
+                  className="text-foreground-500 hover:text-foreground"
+                >
+                  {dict.legal.nav.privacy}
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -44,22 +44,13 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
         {/* Left Content */}
         <NavbarBrand>
           <div className="bg-default-foreground text-background rounded-full">
-            <Logo size={34} />
+            <Logo clickable path="/" size={34} />
           </div>
           <span className="text-small text-default-foreground ml-2 font-medium">{siteConfig.name}</span>
         </NavbarBrand>
 
         {/* Right Content */}
         <NavbarContent className="hidden md:flex" justify="end">
-          <NavbarItem>
-            <Link href="#features" className="text-foreground-500 hover:text-foreground">{dict.navigation.features}</Link>
-          </NavbarItem>
-          <NavbarItem>
-            <Link href="#how-it-works" className="text-foreground-500 hover:text-foreground">{dict.navigation.howItWorks}</Link>
-          </NavbarItem>
-          <NavbarItem>
-            <Link href="#faq" className="text-foreground-500 hover:text-foreground">{dict.navigation.faq}</Link>
-          </NavbarItem>
           <NavbarItem className="ml-2 flex! gap-2">
             <Button
               as={Link}

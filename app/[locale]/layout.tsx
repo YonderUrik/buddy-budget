@@ -1,4 +1,3 @@
-import { Footer } from "@/components/footer";
 import { notFound } from "next/navigation";
 
 const locales = ['en', 'it'];

@@ -20,7 +20,7 @@ export default async function SiteLayout({
         {children}
       </main>
       <ScrollToTop />
-      <Footer />
+      <Footer dict={dict} locale={locale} />
     </div>
   );
 }

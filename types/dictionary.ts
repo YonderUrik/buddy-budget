@@ -96,4 +96,26 @@ export interface Dictionary {
     loginToContinue: string;
     continueWith: string;
   };
+  legal?: {
+    nav: {
+      terms: string;
+      privacy: string;
+    };
+    lastUpdatedLabel: string;
+    questions: string;
+    terms: {
+      title: string;
+      sections: Array<{
+        title: string;
+        body: string[];
+      }>;
+    };
+    privacy: {
+      title: string;
+      sections: Array<{
+        title: string;
+        body: string[];
+      }>;
+    };
+  };
 }

@@ -3,6 +3,7 @@ export type SiteConfig = typeof siteConfig;
 export const siteConfig = {
   name: "Buddy Budget",
   description: "Take control of your financial future with Buddy Budget - the intuitive app that makes budgeting simple and smart.",
+  supportEmail: "support@buddybudget.app",
   links: {
     github: "https://github.com/YonderUrik/buddy-budget",
   },

@@ -70,6 +70,103 @@
     "errorVerification": "Verifica non valida o scaduta.",
     "errorDefault": "Qualcosa è andato storto. Per favore, riprova."
   },
+  "onboarding": {
+    "selected": "Selezionato",
+    "hello": "Ciao",
+    "titleBefore": "Benvenuto in",
+    "description": "Un breve setup per adattare Buddy Budget alle tue esigenze (circa 2 minuti).",
+    "mobileKicker": "Pensato per il mobile",
+    "whatTitle": "Cosa imposteremo",
+    "whatItems": [
+      "Quanti anni hai?",
+      "Dove vivi?",
+      "Come ci hai conosciuto?",
+      "Quanta esperienza hai con risparmio, budgeting o investimenti?",
+      "Qual è il tuo obiettivo finanziario principale?",
+      "Patrimonio",
+      "Aspettative"
+    ],
+    "fieldDescriptions": [
+      "La tua età ci aiuta a personalizzare i suggerimenti.",
+      "Il tuo paese abilita valuta e funzionalità locali.",
+      "Attraverso quale canale ti sei imbattuto in Buddy Budget.",
+      "Seleziona l'opzione che ti rappresenta per aiutarci a personalizzare l'esperienza.",
+      "Cosa vuoi ottenere per prima cosa.",
+      "Una stima di ciò che possiedi meno ciò che devi.",
+      "Cosa ti aspetti da Buddy Budget?"
+    ],
+    "options": {
+      "countries": [
+        "Francia",
+        "Stati Uniti",
+        "Svizzera",
+        "Belgio",
+        "Regno Unito",
+        "Germania",
+        "Spagna",
+        "Italia",
+        "Canada",
+        "Australia",
+        "Paesi Bassi",
+        "Svezia",
+        "Norvegia",
+        "Danimarca",
+        "Austria",
+        "Portogallo",
+        "Irlanda",
+        "Polonia",
+        "Grecia",
+        "India",
+        "Giappone",
+        "Cina",
+        "Brasile",
+        "Messico",
+        "Argentina",
+        "Sudafrica",
+        "Emirati Arabi Uniti",
+        "Singapore",
+        "Hong Kong",
+        "Nuova Zelanda",
+        "Altro"
+      ],
+      "discovery": [
+        "Youtube",
+        "Blog o articolo",
+        "Motore di ricerca",
+        "Amici o Famiglia",
+        "LinkedIn",
+        "Facebook o Instagram",
+        "TikTok",
+        "X",
+        "Altro"
+      ],
+      "experience": [
+        "Sono totalmente un pivello",
+        "Ho una conoscenza di base",
+        "Traccio spese da un po' di tempo",
+        "Sono un esperto"
+      ],
+      "goals": [
+        "Far crescere il mio patrimonio",
+        "Raggiungere la libertà finanziaria",
+        "Pianificare il patrimonio",
+        "Risparmiare per un grande acquisto",
+        "Prepararmi alla pensione",
+        "Valutare la mia situazione",
+        "Altro"
+      ]
+    },
+    "searchPlaceholder": "Cerca paese...",
+    "currencyLabel": "Valuta principale",
+    "netWorthLabels": {
+      "lessThan": "Meno di {amount}",
+      "between": "Tra {min} e {max}",
+      "moreThan": "Più di {amount}"
+    },
+    "back": "Indietro",
+    "next": "Continua",
+    "primaryCta": "Completa setup"
+  },
   "legal": {
     "nav": {
       "terms": "Termini di Servizio",

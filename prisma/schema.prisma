@@ -38,6 +38,16 @@ model User {
   role             Role      @default(USER)
   stripeCustomerId String?
 
+  // Onboarding details
+  age              Int?
+  country          String?
+  primaryCurrency  String?
+  discovery        String?
+  experienceLevel  String?
+  primaryGoal      String?
+  netWorth         Float?
+  expectations     String?
+
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }

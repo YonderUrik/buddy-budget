@@ -91,6 +91,34 @@ export interface Dictionary {
       }>;
     };
   };
+  onboarding?: {
+    selected: string;
+    hello: string;
+    titleBefore: string;
+    description: string;
+    mobileKicker?: string;
+    mobilePoints?: Array<string>;
+    whatTitle: string;
+    whatItems: Array<string>;
+    fieldDescriptions?: Array<string>;
+    options?: {
+      countries?: Array<string>;
+      currencies?: Array<string>;
+      discovery?: Array<string>;
+      experience?: Array<string>;
+      goals?: Array<string>;
+    };
+    searchPlaceholder?: string;
+    currencyLabel?: string;
+    netWorthLabels?: {
+      lessThan: string;
+      between: string;
+      moreThan: string;
+    };
+    back?: string;
+    next?: string;
+    primaryCta: string;
+  };
   auth: {
     welcomeBack: string;
     loginToContinue: string;

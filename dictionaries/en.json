@@ -70,6 +70,103 @@
     "errorVerification": "Invalid or expired verification.",
     "errorDefault": "Something went wrong. Please try again."
   },
+  "onboarding": {
+    "selected": "Selected",
+    "hello": "Hello",
+    "titleBefore": "Welcome to",
+    "description": "This quick onboarding tailors Buddy Budget to your needs (about 2 minutes).",
+    "mobileKicker": "Made for mobile",
+    "whatTitle": "What we'll set up",
+    "whatItems": [
+      "How old are you?",
+      "Where do you live?",
+      "How did you hear about us?",
+      "How familiar are you with saving, budgeting or investing?",
+      "What is your main financial goal?",
+      "Net worth",
+      "Expectations"
+    ],
+    "fieldDescriptions": [
+      "Your age helps personalize suggestions.",
+      "Your country enables localized currency and features.",
+      "Through which channel did you hear about us?",
+      "Select the option that applies to you to help us tailor your experience.",
+      "What you want to achieve first.",
+      "An approximate total of what you own minus what you owe.",
+      "What do you expect from Buddy Budget?"
+    ],
+    "options": {
+      "countries": [
+        "France",
+        "United States",
+        "Switzerland",
+        "Belgium",
+        "United Kingdom",
+        "Germany",
+        "Spain",
+        "Italy",
+        "Canada",
+        "Australia",
+        "Netherlands",
+        "Sweden",
+        "Norway",
+        "Denmark",
+        "Austria",
+        "Portugal",
+        "Ireland",
+        "Poland",
+        "Greece",
+        "India",
+        "Japan",
+        "China",
+        "Brazil",
+        "Mexico",
+        "Argentina",
+        "South Africa",
+        "United Arab Emirates",
+        "Singapore",
+        "Hong Kong",
+        "New Zealand",
+        "Other"
+      ],
+      "discovery": [
+        "Youtube",
+        "Blog or article",
+        "Search Engine",
+        "Friends or Family",
+        "LinkedIn",
+        "Facebook or Instagram",
+        "TikTok",
+        "X",
+        "Other"
+      ],
+      "experience": [
+        "I'm totally new",
+        "I have a basic understanding",
+        "I've been tracking expenses for a while",
+        "I'm an expert"
+      ],
+      "goals": [
+        "Grow my wealth",
+        "Achieve financial freedom",
+        "Plan my estate",
+        "Save for a major purchase",
+        "Prepare for retirement",
+        "Assess my situation",
+        "Other"
+      ]
+    },
+    "searchPlaceholder": "Search country...",
+    "currencyLabel": "Primary currency",
+    "netWorthLabels": {
+      "lessThan": "Less than {amount}",
+      "between": "Between {min} and {max}",
+      "moreThan": "More than {amount}"
+    },
+    "back": "Previous",
+    "next": "Continue",
+    "primaryCta": "Finish setup"
+  },
   "legal": {
     "nav": {
       "terms": "Terms of Service",

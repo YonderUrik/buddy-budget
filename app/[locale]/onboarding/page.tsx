@@ -1,32 +1,90 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getDictionary, Locale } from "@/lib/dictionaries";
+import { siteConfig } from "@/config/site";
+import { Button } from "@heroui/button";
+import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
+import { OnboardingStepperForm } from "@/components/onboarding/stepper-form";
 
 export default async function OnboardingPage({ params }: { params: { locale: string } }) {
   const session = await getSession();
-  const {locale} = await params;
+  const { locale } = await params;
   if (!session?.user) redirect(`/${locale}/auth`);
   const user = session.user as any;
   if (user.onboarded) redirect(`/${locale}/dashboard`);
 
-  async function completeOnboarding() {
+  const dict = await getDictionary(locale as Locale);
+
+  async function completeOnboarding(formData: FormData) {
     "use server";
     const s = await getSession();
-    if (!s?.user?.id) return;
-    await prisma.user.update({ where: { id: s.user.id as string }, data: { onboarded: true } });
+    const su = s?.user as any;
+    if (!su?.id) return;
+    const ageRaw = (formData.get("age") as string) || "";
+    const country = (formData.get("country") as string) || undefined;
+    const primaryCurrency = (formData.get("primaryCurrency") as string) || undefined;
+    const discovery = (formData.get("discovery") as string) || undefined;
+    const experienceLevel = (formData.get("experienceLevel") as string) || undefined;
+    const primaryGoal = (formData.get("primaryGoal") as string) || undefined;
+    const netWorthRaw = (formData.get("netWorth") as string) || "";
+    const expectations = (formData.get("expectations") as string) || undefined;
+
+    const age = ageRaw ? parseInt(ageRaw, 10) : undefined;
+    const netWorth = netWorthRaw ? parseFloat(netWorthRaw) : undefined;
+
+    await prisma.user.update({
+      where: { id: su.id as string },
+      data: {
+        onboarded: true,
+        age,
+        country,
+        primaryCurrency,
+        discovery,
+        experienceLevel,
+        primaryGoal,
+        netWorth,
+        expectations,
+      },
+    });
     redirect(`/${locale}/dashboard`);
   }
 
   return (
-    <div className="container mx-auto max-w-xl py-10">
-      <h1 className="text-2xl font-semibold mb-4">Welcome to Buddy Budget</h1>
-      <p className="text-default-600 mb-8">Let's set up your account to get started.</p>
-      <form action={completeOnboarding}>
-        <button className="px-4 py-2 rounded-medium bg-foreground text-background" type="submit">
-          Complete onboarding
-        </button>
-      </form>
-    </div>
+    <section className="relative min-h-dvh w-full overflow-y-auto bg-background px-4 py-10">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-70 blur-3xl"
+        style={{
+          background:
+            "radial-gradient(900px 300px at 85% 0%, hsl(var(--heroui-primary)) 0%, transparent 60%), radial-gradient(1000px 500px at 10% 10%, hsl(var(--heroui-secondary)) 0%, transparent 60%)",
+        }}
+      />
+      <div className="mx-auto max-w-xl">
+        <Card className="w-full border border-default-200/60 bg-background/60 backdrop-blur-xl shadow-large">
+          <CardHeader className="flex flex-col items-start gap-2 px-5 pt-5 sm:px-6 sm:pt-6">
+            <p className="text-xs font-medium uppercase tracking-widest text-primary">
+            {dict.onboarding?.titleBefore} {siteConfig.name}
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {dict.onboarding?.hello}
+              <span className="ml-2 bg-gradient-to-tr from-primary to-secondary bg-clip-text text-transparent">
+                {user?.name?.split(" ")[0]}
+              </span>
+            </h1>
+            <p className="text-foreground-500">
+              {dict.onboarding?.description}
+            </p>
+          </CardHeader>
+
+          <CardBody className="px-5 pb-2 pt-0 sm:px-6">
+            <OnboardingStepperForm dict={dict as any} onSubmit={completeOnboarding} />
+          </CardBody>
+
+          <CardFooter className="flex flex-col items-stretch gap-3 px-5 pb-5 pt-2 sm:px-6 sm:pb-6" />
+        </Card>
+      </div>
+    </section>
   );
 }
 

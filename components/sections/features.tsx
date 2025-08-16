@@ -1,54 +1,102 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Icon } from "@iconify/react";
 import { Dictionary } from "@/types/dictionary";
+import { cn } from "@heroui/theme";
+
+
 
 export function FeaturesSection({ dict }: { dict: Dictionary }) {
+  const classNames = [
+    "col-span-1 lg:col-span-4 border-b lg:border-r border-neutral-200/60 dark:border-neutral-800/60",
+    "col-span-1 lg:col-span-2 border-b border-neutral-200/60 dark:border-neutral-800/60",
+    "col-span-1 lg:col-span-3 lg:border-r border-neutral-200/60 dark:border-neutral-800/60",
+    "col-span-1 lg:col-span-3 border-b lg:border-none border-neutral-200/60 dark:border-neutral-800/60",
+  ];
+  
   return (
-    <section id="features" className="scroll-mt-20 py-14 md:py-20">
-      <div className="container mx-auto max-w-7xl px-6">
-        <motion.div
-          className="mx-auto mb-10 max-w-2xl text-center"
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <span className="inline-flex items-center rounded-full border border-default-200 bg-background/60 px-3 py-1 text-xs text-secondary-500">
-            {dict.landing.features.kicker}
-          </span>
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">{dict.landing.features.heading}</h2>
-          <p className="mt-3 text-foreground-500">{dict.landing.features.description}</p>
-        </motion.div>
+    <div className="relative z-20 py-10 lg:py-40 max-w-7xl mx-auto">
+      <div className="px-8">
+        <h4 className="text-3xl lg:text-5xl lg:leading-tight max-w-5xl mx-auto text-center tracking-tight font-medium text-black dark:text-white">
+          {dict.landing.features.heading}
+        </h4>
 
-        <motion.div
-          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-        >
-          {dict.landing.features.items.map((f, idx) => (
-            <motion.div
-              key={f.title}
-              className="rounded-large border border-default-100/60 bg-background/70 p-5 backdrop-blur-sm"
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, ease: "easeOut" }}
-            >
-              <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Icon icon={idx % 2 === 0 ? "solar:chart-2-linear" : "solar:wallet-linear"} width={20} height={20} />
-              </div>
-              <h3 className="pb-2 text-lg font-semibold">{f.title}</h3>
-              <p className="text-sm text-foreground-500">{f.desc}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+        <p className="text-sm lg:text-base  max-w-2xl  my-4 mx-auto text-neutral-500 text-center font-normal dark:text-neutral-300">
+          {dict.landing.features.description}
+        </p>
       </div>
-    </section>
+
+      <div className="relative ">
+        <div className="grid grid-cols-1 lg:grid-cols-6 mt-12 rounded-2xl xl:ring-1 xl:ring-inset xl:ring-neutral-200/60 dark:xl:ring-neutral-800/60">
+          {dict.landing.features.items.map((feature, idx) => (
+            <FeatureCard key={feature.title} className={classNames[idx % classNames.length]}>
+              <FeatureTitle>{feature.title}</FeatureTitle>
+              <FeatureDescription>{feature.desc}</FeatureDescription>
+              <div className=" h-full w-full"><SkeletonOne image="/hero-illustration.svg" /></div>
+            </FeatureCard>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
+const FeatureCard = ({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) => {
+  return (
+    <div className={cn(`p-4 sm:p-8 relative overflow-hidden`, className)}>
+      {children}
+    </div>
+  );
+};
+
+const FeatureTitle = ({ children }: { children?: React.ReactNode }) => {
+  return (
+    <p className=" max-w-5xl mx-auto text-left tracking-tight text-black dark:text-white text-xl md:text-2xl md:leading-snug">
+      {children}
+    </p>
+  );
+};
+
+const FeatureDescription = ({ children }: { children?: React.ReactNode }) => {
+  return (
+    <p
+      className={cn(
+        "text-sm md:text-base  max-w-4xl text-left mx-auto",
+        "text-neutral-500 text-center font-normal dark:text-neutral-300",
+        "text-left max-w-sm mx-0 md:text-sm my-2"
+      )}
+    >
+      {children}
+    </p>
+  );
+};
+
+export const SkeletonOne = ({ image }: { image: string }) => {
+  return (
+    <div className="relative flex py-8 px-2 gap-10 h-full">
+      <div className="w-full  p-5  mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full">
+        <div className="flex flex-1 w-full h-full flex-col space-y-2  ">
+          {/* TODO */}
+          <img
+            src={image}
+            alt="header"
+            width={800}
+            height={800}
+            className="h-full w-full object-cover object-left-top rounded-sm"
+          />
+        </div>
+      </div>
+
+      <div className="absolute bottom-0 z-40 inset-x-0 h-60 bg-gradient-to-t from-white dark:from-black via-white dark:via-black to-transparent w-full pointer-events-none" />
+      <div className="absolute top-0 z-40 inset-x-0 h-60 bg-gradient-to-b from-white dark:from-black via-transparent to-transparent w-full pointer-events-none" />
+    </div>
+  );
+};
+
+
 
 

@@ -21,8 +21,7 @@
         { "title": "Patrimonio e conti", "desc": "Una vista unificata tra conti, carte, broker e wallet." },
         { "title": "Budget intelligente", "desc": "Limiti mensili, regole di rollover e obiettivi per categoria." },
         { "title": "Auto-categorizzazione", "desc": "Regole e suggerimenti che migliorano nel tempo." },
-        { "title": "Multi-valuta", "desc": "Monitora conti in diverse valute con conversioni automatiche." },
-        { "title": "Sicuro e privato", "desc": "I tuoi dati restano tuoi. Esporta quando vuoi." }
+        { "title": "Multi-valuta", "desc": "Monitora conti in diverse valute con conversioni automatiche." }
       ]
     },
     "cta": {

@@ -20,8 +20,9 @@ import {
 } from "@/components/icons";
 import { cn } from "@heroui/theme";
 import { Button } from "@heroui/button";
+import { Dictionary } from "@/types/dictionary";
 
-export const Navbar = React.forwardRef<HTMLElement, NavbarProps>(
+export const Navbar = React.forwardRef<HTMLElement, NavbarProps & { dict: Dictionary }>(
   ({ classNames = {}, dict = {}, ...props }, ref) => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 

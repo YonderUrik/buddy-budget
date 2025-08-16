@@ -21,8 +21,7 @@
         { "title": "Net worth & accounts", "desc": "A unified view across cash, cards, brokerage, and wallets." },
         { "title": "Smart budgeting", "desc": "Monthly limits, rollover rules, and category targets that guide decisions." },
         { "title": "Auto-categorization", "desc": "Rules and suggestions that get smarter over time." },
-        { "title": "Multi-currency", "desc": "Track accounts across currencies with automatic conversions." },
-        { "title": "Secure & private", "desc": "Your data stays yours. Export anytime." }
+        { "title": "Multi-currency", "desc": "Track accounts across currencies with automatic conversions." }
       ]
     },
     "cta": {

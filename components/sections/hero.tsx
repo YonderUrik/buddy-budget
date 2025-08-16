@@ -5,99 +5,100 @@ import { Button } from "@heroui/button";
 import { Link } from "@heroui/link";
 import { siteConfig } from "@/config/site";
 import { Dictionary } from "@/types/dictionary";
+import { CometCard } from "../ui/comet-card";
 
 export function HeroSection({ dict }: { dict: Dictionary }) {
   return (
-    <section id="home" className="relative scroll-mt-20 overflow-hidden py-16 md:py-24">
-      {/* Background gradient blob */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-60 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(1200px 600px at 50% -10%, hsl(var(--heroui-secondary)) 0%, transparent 60%), radial-gradient(800px 300px at 90% 10%, hsl(var(--heroui-primary)) 0%, transparent 60%)",
-        }}
-      />
-
-      <div className="container mx-auto max-w-7xl px-6">
-        <motion.div
-          className="mx-auto max-w-5xl text-center"
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-            {dict.landing.hero.titleBefore}
-            <span className="ml-2 bg-gradient-to-tr from-primary to-secondary bg-clip-text text-transparent">
-              {siteConfig.name}
-            </span>
-          </h1>
-          <motion.p
-            className="mt-6 text-base text-foreground-500 md:text-lg"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ delay: 0.15, duration: 0.6 }}
-          >
-            {dict.landing.hero.description}
-          </motion.p>
-
-          <motion.div
-            className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row"
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
-            <Button
-              as={Link}
-              href="/auth"
-              color="primary"
-              radius="full"
-              variant="shadow"
-              className="px-6"
-            >
-              {dict.landing.hero.primaryCta}
-            </Button>
-
-           
-          </motion.div>
-
-          <motion.ul
-            className="mt-4 flex flex-wrap items-center justify-center gap-2 text-foreground-500"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, amount: 0.6 }}
-            transition={{ delay: 0.25, duration: 0.6 }}
-          >
-            {dict?.landing?.metrics?.items?.slice(0, 3)?.map((m) => (
-              <li key={m.label} className="rounded-full border border-default-200 bg-background/60 px-3 py-1 text-xs">
-                {m.label}
-              </li>
+    <div className="relative mx-auto my-10 flex max-w-7xl flex-col items-center justify-center">
+      <div className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-neutral-200/60 dark:ring-neutral-800/60" />
+      <div className="px-4 py-10 md:py-20">
+        <h1 className="relative z-10 mx-auto max-w-4xl text-center text-2xl font-bold text-slate-700 md:text-4xl lg:text-7xl dark:text-slate-300">
+          {`${dict.landing.hero.titleBefore} ${siteConfig.name}`
+            .split(" ")
+            .map((word, index) => (
+              <motion.span
+                key={index}
+                initial={{ opacity: 0, filter: "blur(4px)", y: 10 }}
+                animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+                transition={{
+                  duration: 0.3,
+                  delay: index * 0.1,
+                  ease: "easeInOut",
+                }}
+                className="mr-2 inline-block"
+              >
+                {word}
+              </motion.span>
             ))}
-          </motion.ul>
-
-          <motion.div
-            className="pointer-events-none relative mx-auto mt-12 max-w-4xl"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.4 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+        </h1>
+        <motion.p
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            duration: 0.3,
+            delay: 0.8,
+          }}
+          className="relative z-10 mx-auto max-w-xl py-4 text-center text-lg font-normal text-neutral-600 dark:text-neutral-400"
+        >
+          {dict.landing.hero.description}
+        </motion.p>
+        <motion.div
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
+          transition={{
+            duration: 0.3,
+            delay: 1,
+          }}
+          className="relative z-10 mt-8 flex flex-wrap items-center justify-center gap-4"
+        >
+          <Button
+            as={Link}
+            href="/auth"
+            color="primary"
+            radius="full"
+            variant="shadow"
+            className="px-6 mb-10"
           >
-            <div className="absolute inset-0 -z-10 blur-3xl" style={{
-              background:
-                "radial-gradient(700px 200px at 50% 0%, hsl(var(--heroui-primary)) 0%, transparent 70%)",
-            }} />
-            <img
-              src="/hero-illustration.svg"
-              alt="App preview"
-              className="mx-auto w-full rounded-2xl border border-default-100/70 bg-background/50 shadow-large"
-            />
-          </motion.div>
+            {dict.landing.hero.primaryCta}
+          </Button>
+        </motion.div>
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 10,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
+          transition={{
+            duration: 0.3,
+            delay: 1.2,
+          }}
+          // className="relative z-10 mt-20 rounded-3xl ring-1 ring-neutral-200/60 bg-neutral-100 p-4 shadow-md dark:ring-neutral-800/60 dark:bg-neutral-900"
+        >
+          <CometCard>
+            <div className="w-full overflow-hidden rounded-xl">
+              <img
+                src="/hero-illustration.svg"
+                alt="Landing page preview"
+                className="aspect-[16/9] h-auto w-full object-cover"
+                height={1000}
+                width={1000}
+              />
+            </div>
+          </CometCard>
         </motion.div>
       </div>
-    </section>
+    </div>
   );
 }
 

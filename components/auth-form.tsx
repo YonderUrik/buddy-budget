@@ -49,6 +49,7 @@ export function AuthForm({ dict }: { dict: Dictionary }) {
               key={provider.id}
               startContent={<Icon icon={provider.icon} width={24} />}
               variant="bordered"
+              className={!provider.active ? "opacity-50 cursor-not-allowed bg-default-100" : ""}
               onPress={() => {
                 const callbackUrl = `/${params?.locale ?? "en"}/dashboard`;
                 if (provider.active) signIn(provider.id, { callbackUrl });

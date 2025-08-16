@@ -18,13 +18,13 @@ export const siteConfig = {
       id : "apple",
       name: "Apple",
       icon: "ic:baseline-apple",
-      active: true,
+      active: false,
     },
     {
       id : "facebook",
       name : "Facebook",
       icon: "logos:facebook",
-      active: true,
+      active: false,
     }
   ]
 };

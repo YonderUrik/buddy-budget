@@ -444,5 +444,20 @@
         }
       ]
     }
+  },
+  "dashboard": {
+    "dock": {
+      "home": "Home",
+      "accounts": "Accounts",
+      "transactions": "Transactions",
+      "investments": "Investments",
+      "reports": "Reports",
+      "profile": "Profile",
+      "settings": "Settings",
+      "categories": "Categories",
+      "logout": "Logout",
+      "support": "Support",
+      "upgrade": "Upgrade to Pro"
+    }
   }
 }

@@ -161,4 +161,19 @@ export interface Dictionary {
       }>;
     };
   };
+  dashboard: {
+    dock: {
+      home: string;
+      accounts: string;
+      transactions: string;
+      investments: string;
+      reports: string;
+      profile: string;
+      settings?: string;
+      categories?: string;
+      logout?: string;
+      support?: string;
+      upgrade?: string;
+    }
+  }
 }

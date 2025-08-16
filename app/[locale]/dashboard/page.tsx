@@ -1,12 +1,8 @@
 import { getSession } from "@/lib/auth";
-import { redirect } from "next/navigation";
 
-export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function DashboardPage() {
   const session = await getSession();
-  const {locale} = await params;
-  if (!session?.user) redirect(`/${locale}/auth`);
-  const user = session.user as any;
-  if (!user.onboarded) redirect(`/${locale}/onboarding`);
+  const user = session?.user as any;
 
   return (
     <div className="container mx-auto max-w-5xl py-10">

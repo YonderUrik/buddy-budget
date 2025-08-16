@@ -49,23 +49,23 @@ const config = {
         dark: {
           colors: {
             primary: {
-              DEFAULT: "#34d399", // emerald-400
-              foreground: "#041a12",
+              DEFAULT: "#059669", // unified to light primary
+              foreground: "#ffffff",
             },
             secondary: {
-              DEFAULT: "#2dd4bf", // teal-400
-              foreground: "#06201d",
+              DEFAULT: "#14b8a6", // unified to light secondary
+              foreground: "#ffffff",
             },
             success: {
-              DEFAULT: "#22c55e", // green-500
-              foreground: "#041a12",
+              DEFAULT: "#16a34a", // unified to light success
+              foreground: "#06240f",
             },
             warning: {
-              DEFAULT: "#fbbf24", // amber-400
+              DEFAULT: "#f59e0b", // unified to light warning
               foreground: "#281a02",
             },
             danger: {
-              DEFAULT: "#f87171", // red-400
+              DEFAULT: "#ef4444", // unified to light danger
               foreground: "#2a0606",
             },
           },

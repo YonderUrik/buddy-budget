@@ -444,5 +444,20 @@
         }
       ]
     }
+  },
+  "dashboard": {
+    "dock": {
+      "home": "Home",
+      "accounts": "Conti",
+      "transactions": "Transazioni",
+      "investments": "Investimenti",
+      "reports": "Analisi",
+      "profile": "Profilo",
+      "settings": "Impostazioni",
+      "categories": "Categorie",
+      "logout": "Esci",
+      "support": "Supporto",
+      "upgrade": "Passa a Pro"
+    }
   }
 }

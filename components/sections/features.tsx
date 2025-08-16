@@ -80,7 +80,7 @@ export const SkeletonOne = ({ image }: { image: string }) => {
     <div className="relative flex py-8 px-2 gap-10 h-full">
       <div className="w-full  p-5  mx-auto bg-white dark:bg-neutral-900 shadow-2xl group h-full">
         <div className="flex flex-1 w-full h-full flex-col space-y-2  ">
-          {/* TODO */}
+          {/* TODO : Cambiare l'immagine quando avremo il logo */}
           <img
             src={image}
             alt="header"

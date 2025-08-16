@@ -458,6 +458,81 @@
       "logout": "Esci",
       "support": "Supporto",
       "upgrade": "Passa a Pro"
+    },
+    "categoriesPage": {
+      "filters": {
+        "all": "Tutte",
+        "expense": "Spese",
+        "income": "Entrate",
+        "transfer": "Trasferimenti"
+      },
+      "actions": {
+        "new": "Nuova",
+        "edit": "Modifica",
+        "save": "Salva",
+        "create": "Crea",
+        "cancel": "Annulla",
+        "delete": "Elimina"
+      },
+      "fields": {
+        "name": "Nome",
+        "type": "Tipo",
+        "icon": "Icona",
+        "color": "Colore",
+        "searchPlaceholder": "Cerca categoria..."
+      },
+      "modal": {
+        "titleNew": "Nuova categoria",
+        "titleEdit": "Modifica categoria",
+        "deleteConfirmTitle": "Eliminare la categoria?",
+        "deleteConfirmDesc": "Questo rimuoverà la categoria dall’elenco."
+      },
+      "states": {
+        "loading": "Caricamento",
+        "loadingDesc": "Ci siamo quasi...",
+        "empty": "Nessuna categoria. Crea la prima.",
+        "errorLoad": "Impossibile caricare le categorie",
+        "errorGeneric": "Qualcosa è andato storto"
+      },
+      "types": {
+        "expense": { "title": "Spese", "desc": "Denaro in uscita" },
+        "income": { "title": "Entrate", "desc": "Denaro in entrata" },
+        "transfer": { "title": "Trasferimento", "desc": "Tra conti" }
+      }
     }
+  },
+  "categories": {
+    "salary": "Stipendio",
+    "bonuses": "Bonus",
+    "investments": "Investimenti",
+    "rental_income": "Affitto",
+    "interest_income": "Interessi",
+    "gift_income": "Regali",
+    "other_income": "Altro",
+    "rent_mortgage": "Affitto/Mutuo",
+    "utilities": "Bollette",
+    "internet_phone_tv": "Internet/Telefono/TV",
+    "groceries": "Spesa",
+    "clothing": "Abbigliamento",
+    "dining_out": "Ristorante / Aperitivi",
+    "self_care": "Cura Personale",
+    "car_maintenance": "Manutenzione Auto",
+    "fuel": "Benzina",
+    "car_insurance": "Assicurazione Auto",
+    "car_taxes": "Tasse Auto",
+    "public_transport": "Trasporto Pubblico",
+    "parking": "Parcheggio",
+    "health_insurance": "Assicurazione Sanitaria",
+    "medical_bills": "Bollette Sanitarie",
+    "pharmacy": "Farmacia",
+    "fitness": "Fitness",
+    "book_courses": "Libri/Corsi",
+    "streaming_services": "Servizi Streaming",
+    "hobbies": "Hobbies",
+    "vacations": "Vacanze",
+    "taxes": "Tasse",
+    "gifts_donations": "Regali/Donazioni",
+    "bank_transfer": "Trasferimento Bancario",
+    "cash_withdrawal": "Prelievo"
   }
 }

@@ -458,6 +458,81 @@
       "logout": "Logout",
       "support": "Support",
       "upgrade": "Upgrade to Pro"
+    },
+    "categoriesPage": {
+      "filters": {
+        "all": "All",
+        "expense": "Expense",
+        "income": "Income",
+        "transfer": "Transfer"
+      },
+      "actions": {
+        "new": "New",
+        "edit": "Edit",
+        "save": "Save",
+        "create": "Create",
+        "cancel": "Cancel",
+        "delete": "Delete"
+      },
+      "fields": {
+        "name": "Name",
+        "type": "Type",
+        "icon": "Icon",
+        "color": "Color",
+        "searchPlaceholder": "Search category..."
+      },
+      "modal": {
+        "titleNew": "New category",
+        "titleEdit": "Edit category",
+        "deleteConfirmTitle": "Delete category?",
+        "deleteConfirmDesc": "This will delete the category from the list."
+      },
+      "states": {
+        "loading": "Loading",
+        "loadingDesc": "Almost there…",
+        "empty": "No categories yet. Create your first one.",
+        "errorLoad": "Failed to load categories",
+        "errorGeneric": "Something went wrong"
+      },
+      "types": {
+        "expense": { "title": "Expense", "desc": "Money going out" },
+        "income": { "title": "Income", "desc": "Money coming in" },
+        "transfer": { "title": "Transfer", "desc": "Between accounts" }
+      }
     }
+  },
+  "categories": {
+    "salary": "Salary",
+    "bonuses": "Bonus",
+    "investments": "Investments",
+    "rental_income": "Rental Income",
+    "interest_income": "Interest Income",
+    "gift_income": "Gift Income",
+    "other_income": "Other Income",
+    "rent_mortgage": "Rent/Mortgage",
+    "utilities": "Utilities",
+    "internet_phone_tv": "Internet/Phone/TV",
+    "groceries": "Groceries",
+    "clothing": "Clothing",
+    "dining_out": "Dining Out",
+    "self_care": "Self Care",
+    "car_maintenance": "Car Maintenance",
+    "fuel": "Fuel",
+    "car_insurance": "Car Insurance",
+    "car_taxes": "Car Taxes",
+    "public_transport": "Public Transport",
+    "parking": "Parking",
+    "health_insurance": "Health Insurance",
+    "medical_bills": "Medical Bills",
+    "pharmacy": "Pharmacy",
+    "fitness": "Fitness",
+    "book_courses": "Books/Courses",
+    "streaming_services": "Streaming Services",
+    "hobbies": "Hobbies",
+    "vacations": "Vacations",
+    "taxes": "Taxes",
+    "gifts_donations": "Gifts/Donations",
+    "bank_transfer": "Bank Transfer",
+    "cash_withdrawal": "Cash Withdrawal"
   }
 }

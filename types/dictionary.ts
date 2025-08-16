@@ -175,5 +175,78 @@ export interface Dictionary {
       support?: string;
       upgrade?: string;
     }
+    categoriesPage?: {
+      filters?: {
+        all?: string;
+        expense?: string;
+        income?: string;
+        transfer?: string;
+      };
+      actions?: {
+        new?: string;
+        edit?: string;
+        save?: string;
+        create?: string;
+        cancel?: string;
+        delete?: string;
+      };
+      fields?: {
+        name?: string;
+        type?: string;
+        icon?: string;
+        color?: string;
+        searchPlaceholder?: string;
+      };
+      modal?: {
+        titleNew?: string;
+        titleEdit?: string;
+        deleteConfirmTitle?: string;
+        deleteConfirmDesc?: string;
+      };
+      states?: {
+        loading?: string;
+        empty?: string;
+        errorLoad?: string;
+        errorGeneric?: string;
+      };
+      types?: {
+        expense?: { title?: string; desc?: string };
+        income?: { title?: string; desc?: string };
+        transfer?: { title?: string; desc?: string };
+      };
+    };
+  },
+  categories: {
+    salary: string;
+    bonuses: string;
+    investments: string;
+    rental_income: string;
+    interest_income: string;
+    gift_income: string;
+    other_income: string;
+    rent_mortgage: string;
+    utilities: string;
+    internet_phone_tv: string;
+    groceries: string;
+    clothing: string;
+    dining_out: string;
+    car_maintenance: string;
+    fuel: string;
+    car_insurance: string;
+    car_taxes: string;
+    public_transport: string;
+    parking: string;
+    health_insurance: string;
+    medical_bills: string;
+    pharmacy: string;
+    fitness: string;
+    book_courses: string;
+    streaming_services: string;
+    hobbies: string;
+    vacations: string;
+    taxes: string;
+    gifts_donations: string;
+    bank_transfer: string;
+    cash_withdrawal: string;
   }
 }

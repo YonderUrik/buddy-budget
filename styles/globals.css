@@ -1,3 +1,155 @@
 @import "tailwindcss";
 
-@config "../tailwind.config.js"
+@config "../tailwind.config.js";
+
+/* Empty-state overlay: Wallet & Cards */
+.wallet-container {
+  background: transparent;
+  border-radius: 24px;
+  padding: 60px 40px;
+  text-align: center;
+  min-width: 400px;
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 2s ease-out;
+}
+
+.dark .wallet-container {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+@keyframes pulse-bg {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* optional entrance */
+@keyframes slideUp {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.wallet-container .wallet-icon {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.wallet-container .wallet {
+  width: 100px;
+  height: 70px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 12px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
+  animation: wallet-open 3s ease-in-out infinite;
+}
+
+@keyframes wallet-open {
+  0%, 100% { transform: translate(-50%, -50%) rotateX(0deg); }
+  50% { transform: translate(-50%, -50%) rotateX(20deg); }
+}
+
+.wallet-container .card {
+  position: absolute;
+  width: 80px;
+  height: 50px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  animation: card-slide 3s ease-in-out infinite;
+}
+
+.wallet-container .card::before {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  top: 15px;
+  left: 10px;
+  border-radius: 2px;
+}
+
+.wallet-container .card::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  top: 25px;
+  left: 10px;
+  border-radius: 2px;
+}
+
+.wallet-container .card:nth-child(2) {
+   /* TODO : Cambiare i colori quando avremo il logo */
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  animation-delay: 0.2s;
+  z-index: -1;
+}
+
+.wallet-container .card:nth-child(3) {
+  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+  animation-delay: 0.4s;
+  z-index: -2;
+}
+
+@keyframes card-slide {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-20px); }
+}
+
+.wallet-container .wallet-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wallet-container .wallet-title {
+    color: #9ca3af;
+  }
+}
+
+.wallet-container .wallet-message {
+  font-size: 16px;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  line-height: 1.6;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.wallet-container .wallet-button {
+  display: inline-block;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 1) 0%, rgba(0, 242, 254, 1) 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.35);
+}
+
+.wallet-container .wallet-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(79, 172, 254, 0.5);
+}

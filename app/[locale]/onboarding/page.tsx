@@ -2,8 +2,7 @@ import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getDictionary, Locale } from "@/lib/dictionaries";
-import { siteConfig } from "@/config/site";
-import { Button } from "@heroui/button";
+import { siteConfig, defaultCategories } from "@/config/site";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { OnboardingStepperForm } from "@/components/onboarding/stepper-form";
 
@@ -33,19 +32,44 @@ export default async function OnboardingPage({ params }: { params: { locale: str
     const age = ageRaw ? parseInt(ageRaw, 10) : undefined;
     const netWorth = netWorthRaw ? parseFloat(netWorthRaw) : undefined;
 
-    await prisma.user.update({
-      where: { id: su.id as string },
-      data: {
-        onboarded: true,
-        age,
-        country,
-        primaryCurrency,
-        discovery,
-        experienceLevel,
-        primaryGoal,
-        netWorth,
-        expectations,
-      },
+    // Precompute localized category payloads
+    const dictForCategories = await getDictionary(locale as Locale);
+    const localizedCategoryData = defaultCategories.map((c) => ({
+      name: ((dictForCategories as any)?.categories && (dictForCategories as any).categories[c.name]) || c.name,
+      icon: c.icon,
+      color: c.color,
+      type: c.type,
+    }));
+
+    // Single atomic transaction: update user and insert missing default categories
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: su.id as string },
+        data: {
+          onboarded: true,
+          age,
+          country,
+          primaryCurrency,
+          discovery,
+          experienceLevel,
+          primaryGoal,
+          netWorth,
+          expectations,
+        },
+      });
+
+      const existing = await (tx as any).category.findMany({
+        where: { userId: su.id as string },
+        select: { name: true },
+      });
+      const existingNames = new Set<string>(existing.map((e: any) => e.name));
+      const toCreate = localizedCategoryData
+        .filter((c) => !existingNames.has(c.name))
+        .map((c) => ({ ...c, userId: su.id as string }));
+
+      if (toCreate.length > 0) {
+        await (tx as any).category.createMany({ data: toCreate });
+      }
     });
     redirect(`/${locale}/dashboard`);
   }

@@ -12,7 +12,7 @@ import {
 } from "@heroui/navbar";
 import { Link } from "@heroui/link";
 import React from "react";
-import {Icon} from "@iconify/react";
+import { Icon } from "@iconify/react";
 
 import { siteConfig } from "@/config/site";
 import {
@@ -44,10 +44,10 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps & { dict: Dictio
       >
         {/* Left Content */}
         <NavbarBrand>
-          <div className="bg-default-foreground text-background rounded-full">
+          <div className="">
             <Logo clickable path="/" size={34} />
           </div>
-          <span className="text-small text-default-foreground ml-2 font-medium">{siteConfig.name}</span>
+          <span className="text-default-foreground ml-2 font-medium">{siteConfig.name}</span>
         </NavbarBrand>
 
         {/* Right Content */}
@@ -56,11 +56,10 @@ export const Navbar = React.forwardRef<HTMLElement, NavbarProps & { dict: Dictio
             <Button
               as={Link}
               href="/auth"
-              className="bg-default-foreground text-background font-medium"
-              color="secondary"
+              color="primary"
               endContent={<Icon icon="solar:alt-arrow-right-linear" />}
               radius="full"
-              variant="flat"
+              // variant="flat"
             >
               {dict.navigation.login}
             </Button>

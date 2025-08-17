@@ -7,7 +7,6 @@ import { Dictionary } from "@/types/dictionary";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Alert, Select, SelectItem, Popover, PopoverTrigger, PopoverContent, Chip } from "@heroui/react";
-import { Switch } from "@heroui/switch";
 import { LoaderOne } from "./ui/loader";
 
 type Category = {
@@ -274,10 +273,15 @@ export default function Categories({ dict }: { dict: Dictionary }) {
                      <h2 className="text-xl font-semibold">{headerTitle}</h2>
                      <div className="flex items-center gap-2">
                         <Select
+                           isRequired
                            aria-label="Type filter"
                            className="w-36"
                            selectedKeys={[typeFilter]}
-                           onSelectionChange={(keys) => setTypeFilter(Array.from(keys)[0] as any)}
+                           onSelectionChange={(keys) => {
+                              const key = Array.from(keys)[0] as any;
+                              if (!key) return;
+                              setTypeFilter(key as any);
+                           }}
                            renderValue={() => (
                               <span className="flex items-center gap-2 text-sm">
                                  {typeFilter === "all" && <Icon icon="mdi:filter" className="text-default-500" />}
@@ -408,8 +412,10 @@ export default function Categories({ dict }: { dict: Dictionary }) {
                                        <Select
                                           label={fieldLabels.type}
                                           selectedKeys={[type]}
+                                          isRequired
                                           onSelectionChange={(keys) => {
                                              const selectedType = Array.from(keys)[0] as "income" | "expense" | "transfer";
+                                             if (!selectedType) return;
                                              setType(selectedType);
                                           }}
                                           variant="flat"
@@ -565,7 +571,7 @@ export default function Categories({ dict }: { dict: Dictionary }) {
                                     <motion.div layoutId={`button-${editing ? editing.id : "new"}-${id}`}>
                                        <Button
                                           type="submit"
-                                          color="success"
+                                          color="primary"
                                           startContent={<Icon icon="mdi:content-save-outline" className="text-base" />}
                                        >
                                           {editing ? actionLabels.save : actionLabels.create}
@@ -615,60 +621,60 @@ export default function Categories({ dict }: { dict: Dictionary }) {
                         </div>
                      ) : (
                         filtered.map((cat) => (
-                     <motion.div
-                        layoutId={`card-${cat.id}-${id}`}
-                        key={`card-${cat.id}-${id}`}
-                        onClick={() => openEditModal(cat)}
-                        className="p-4 bg-content1 hover:bg-content2 rounded-large cursor-pointer ring-1 ring-primary/20 transition-colors"
-                     >
-                        <div className="flex items-center justify-between gap-4">
-                           <div className="flex items-center gap-4">
-                              <motion.div layoutId={`image-${cat.id}-${id}`}>
-                                 <div
-                                    className="h-12 w-12 rounded-medium flex items-center justify-center"
-                                    style={{ backgroundColor: cat.color }}
-                                 >
-                                    <Icon icon={cat.icon || "mdi:tag"} className="text-white text-2xl" />
+                           <motion.div
+                              layoutId={`card-${cat.id}-${id}`}
+                              key={`card-${cat.id}-${id}`}
+                              onClick={() => openEditModal(cat)}
+                              className="p-4 bg-content1 hover:bg-content2 rounded-large cursor-pointer ring-1 ring-primary/20 transition-colors"
+                           >
+                              <div className="flex items-center justify-between gap-4">
+                                 <div className="flex items-center gap-4">
+                                    <motion.div layoutId={`image-${cat.id}-${id}`}>
+                                       <div
+                                          className="h-12 w-12 rounded-medium flex items-center justify-center"
+                                          style={{ backgroundColor: cat.color }}
+                                       >
+                                          <Icon icon={cat.icon || "mdi:tag"} className="text-white text-2xl" />
+                                       </div>
+                                    </motion.div>
+                                    <div className="flex flex-col">
+                                       <motion.h3 layoutId={`title-${cat.id}-${id}`} className="text-foreground font-medium">
+                                          {cat.name}
+                                       </motion.h3>
+                                       <div className="flex items-center gap-2">
+                                          <Icon
+                                             icon={TYPE_ICON[cat.type as keyof typeof TYPE_ICON]}
+                                             className={`text-sm ${cat.type === "expense" ? "text-red-500" :
+                                                cat.type === "income" ? "text-green-500" :
+                                                   cat.type === "transfer" ? "text-blue-500" : "text-gray-500"
+                                                }`}
+                                          />
+                                          <span className={`text-xs font-medium capitalize ${cat.type === "expense" ? "text-red-600" :
+                                             cat.type === "income" ? "text-green-600" :
+                                                cat.type === "transfer" ? "text-blue-600" : "text-gray-600"
+                                             }`}>
+                                             {typeInfo[cat.type as keyof typeof typeInfo]?.title || cat.type}
+                                          </span>
+                                       </div>
+                                    </div>
                                  </div>
-                              </motion.div>
-                              <div className="flex flex-col">
-                                 <motion.h3 layoutId={`title-${cat.id}-${id}`} className="text-foreground font-medium">
-                                    {cat.name}
-                                 </motion.h3>
-                                 <div className="flex items-center gap-2">
-                                    <Icon
-                                       icon={TYPE_ICON[cat.type as keyof typeof TYPE_ICON]}
-                                       className={`text-sm ${cat.type === "expense" ? "text-red-500" :
-                                             cat.type === "income" ? "text-green-500" :
-                                                cat.type === "transfer" ? "text-blue-500" : "text-gray-500"
-                                          }`}
-                                    />
-                                    <span className={`text-xs font-medium capitalize ${cat.type === "expense" ? "text-red-600" :
-                                          cat.type === "income" ? "text-green-600" :
-                                             cat.type === "transfer" ? "text-blue-600" : "text-gray-600"
-                                       }`}>
-                                       {typeInfo[cat.type as keyof typeof typeInfo]?.title || cat.type}
-                                    </span>
-                                 </div>
+                                 <motion.div layoutId={`button-${cat.id}-${id}`}>
+                                    <Button
+                                       onPress={() => openEditModal(cat)}
+                                       size="sm"
+                                       variant="flat"
+                                       color="default"
+                                       className="font-medium"
+                                    >
+                                       <span className="flex items-center gap-2">
+                                          <Icon icon="mdi:pencil-outline" />
+                                          <span>{actionLabels.edit}</span>
+                                       </span>
+                                    </Button>
+                                 </motion.div>
                               </div>
-                           </div>
-                           <motion.div layoutId={`button-${cat.id}-${id}`}>
-                              <Button
-                                 onPress={() => openEditModal(cat)}
-                                 size="sm"
-                                 variant="flat"
-                                 color="default"
-                                 className="font-medium"
-                              >
-                                 <span className="flex items-center gap-2">
-                                    <Icon icon="mdi:pencil-outline" />
-                                    <span>{actionLabels.edit}</span>
-                                 </span>
-                              </Button>
                            </motion.div>
-                        </div>
-                     </motion.div>
-                     ))
+                        ))
                      )}
                   </div>
                </div>

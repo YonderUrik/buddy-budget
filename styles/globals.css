@@ -2,6 +2,46 @@
 
 @config "../tailwind.config.js";
 
+/* Branded wallet style: budget app colors, shadows, gradients, motion */
+:root {
+  --wallet-primary: #F4BA41; /* golden yellow */
+  --wallet-secondary: #4D9CB9; /* teal blue */
+  --wallet-surface: #ffffff;
+  --wallet-surface-2: #f8fafc;
+  --wallet-text-muted: #6b7280;
+  --wallet-shadow-sm: 0 1px 2px rgba(0,0,0,0.06), 0 1px 1px rgba(0,0,0,0.04);
+  --wallet-shadow-md: 0 8px 20px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06);
+  --wallet-shadow-lg: 0 20px 50px rgba(0,0,0,0.12);
+  
+  /* Branded gradients - more vibrant for recognition */
+  --wallet-main-bg: linear-gradient(145deg, #F4BA41 0%, #E5A634 50%, #4D9CB9 100%);
+  --wallet-card-bg: linear-gradient(135deg, rgba(244, 186, 65, 0.9) 0%, rgba(77, 156, 185, 0.9) 100%);
+  --wallet-glow: rgba(244, 186, 65, 0.3);
+  
+  /* Button uses strong brand colors */
+  --wallet-button-bg: linear-gradient(135deg, #4D9CB9 0%, #F4BA41 100%);
+  --wallet-button-text: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wallet-surface: #0b1220;
+    --wallet-surface-2: #0e1726;
+    --wallet-text-muted: #9ca3af;
+    --wallet-shadow-sm: 0 1px 1px rgba(0,0,0,0.4);
+    --wallet-shadow-md: 0 8px 20px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3);
+    --wallet-shadow-lg: 0 20px 50px rgba(0,0,0,0.5);
+    
+    /* Stronger brand presence in dark mode */
+    --wallet-main-bg: linear-gradient(145deg, #F4BA41 0%, #E5A634 30%, #4D9CB9 100%);
+    --wallet-card-bg: linear-gradient(135deg, rgba(244, 186, 65, 0.85) 0%, rgba(77, 156, 185, 0.85) 100%);
+    --wallet-glow: rgba(244, 186, 65, 0.4);
+    
+    --wallet-button-bg: linear-gradient(135deg, #4D9CB9 0%, #F4BA41 100%);
+    --wallet-button-text: #0b1220;
+  }
+}
+
 /* Empty-state overlay: Wallet & Cards */
 .wallet-container {
   background: transparent;
@@ -11,11 +51,22 @@
   min-width: 400px;
   position: relative;
   overflow: hidden;
-  animation: slideUp 2s ease-out;
+  animation: slideUp 720ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark .wallet-container {
   border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* branded radial glow */
+.wallet-container::before {
+  content: "";
+  position: absolute;
+  inset: -30% -20% auto -20%;
+  height: 120%;
+  filter: blur(30px);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 @keyframes pulse-bg {
@@ -38,80 +89,130 @@
 }
 
 .wallet-container .wallet {
-  width: 100px;
-  height: 70px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 12px;
+  width: 110px;
+  height: 75px;
+  background: var(--wallet-main-bg);
+  border-radius: 16px;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
-  animation: wallet-open 3s ease-in-out infinite;
+  box-shadow: var(--wallet-shadow-lg), 
+              inset 0 1px 2px rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.3);
+  animation: wallet-float 3000ms ease-in-out infinite;
+  will-change: transform;
+  /* Add wallet details */
+  position: relative;
 }
 
-@keyframes wallet-open {
-  0%, 100% { transform: translate(-50%, -50%) rotateX(0deg); }
-  50% { transform: translate(-50%, -50%) rotateX(20deg); }
+.wallet-container .wallet::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 35px;
+  height: 4px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 2px;
+  box-shadow: 0 8px 0 rgba(255,255,255,0.4),
+              0 16px 0 rgba(255,255,255,0.3);
+}
+
+.wallet-container .wallet::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background-image: url('/favicon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+@keyframes wallet-float {
+  0%, 100% { 
+    transform: translate(-50%, -50%) translateY(0px) rotateY(0deg);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: translate(-50%, -50%) translateY(-6px) rotateY(5deg);
+    filter: brightness(1.1);
+  }
 }
 
 .wallet-container .card {
   position: absolute;
-  width: 80px;
-  height: 50px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px;
-  top: 40%;
+  width: 85px;
+  height: 55px;
+  background: var(--wallet-card-bg);
+  border-radius: 12px;
+  top: 35%;
   left: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-  animation: card-slide 3s ease-in-out infinite;
+  box-shadow: var(--wallet-shadow-md), 
+              inset 0 1px 1px rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.2);
+  animation: card-float 3200ms ease-in-out infinite;
+  will-change: transform;
 }
 
 .wallet-container .card::before {
   content: '';
   position: absolute;
-  width: 30px;
+  width: 35px;
   height: 3px;
-  background: rgba(255, 255, 255, 0.3);
-  top: 15px;
-  left: 10px;
+  background: rgba(255,255,255,0.7);
+  top: 12px;
+  left: 12px;
   border-radius: 2px;
+  box-shadow: 0 6px 0 rgba(255,255,255,0.5),
+              0 12px 0 rgba(255,255,255,0.4);
 }
 
 .wallet-container .card::after {
-  content: '';
+  content: '$';
   position: absolute;
-  width: 20px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.3);
-  top: 25px;
-  left: 10px;
-  border-radius: 2px;
+  top: 8px;
+  right: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
 .wallet-container .card:nth-child(2) {
-   /* TODO : Cambiare i colori quando avremo il logo */
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  animation-delay: 0.2s;
+  background: var(--wallet-card-bg);
+  animation: card-float 3200ms ease-in-out infinite 0.3s;
   z-index: -1;
+  opacity: 0.8;
+  transform: translate(-45%, -45%) scale(0.95);
 }
 
 .wallet-container .card:nth-child(3) {
-  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-  animation-delay: 0.4s;
+  background: var(--wallet-card-bg);
+  animation: card-float 3200ms ease-in-out infinite 0.6s;
   z-index: -2;
+  opacity: 0.6;
+  transform: translate(-40%, -40%) scale(0.9);
 }
 
-@keyframes card-slide {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-  50% { transform: translate(-50%, -50%) translateY(-20px); }
+@keyframes card-float {
+  0%, 100% { 
+    transform: translate(-50%, -50%) translateY(0px) rotateX(0deg);
+  }
+  50% { 
+    transform: translate(-50%, -50%) translateY(-4px) rotateX(5deg);
+  }
 }
 
 .wallet-container .wallet-title {
   font-size: 28px;
   font-weight: 700;
-  color: #6b7280;
+  color: var(--wallet-text-muted);
   margin-bottom: 12px;
   position: relative;
   z-index: 1;
@@ -119,7 +220,7 @@
 
 @media (prefers-color-scheme: dark) {
   .wallet-container .wallet-title {
-    color: #9ca3af;
+    color: var(--wallet-text-muted);
   }
 }
 
@@ -134,22 +235,34 @@
 
 .wallet-container .wallet-button {
   display: inline-block;
-  padding: 14px 32px;
-  background: linear-gradient(135deg, rgba(79, 172, 254, 1) 0%, rgba(0, 242, 254, 1) 100%);
-  color: white;
+  padding: 16px 40px;
+  background: var(--wallet-button-bg);
+  color: var(--wallet-button-text);
   text-decoration: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  transition: all 0.3s ease;
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 300ms cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   z-index: 1;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.35);
+  box-shadow: var(--wallet-shadow-lg), 
+              inset 0 1px 2px rgba(255,255,255,0.2);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .wallet-container .wallet-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(79, 172, 254, 0.5);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.2), 
+              inset 0 1px 2px rgba(255,255,255,0.3);
+  filter: brightness(1.1);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .wallet-container { animation: none; }
+  .wallet-container .wallet { animation: none; }
+  .wallet-container .card { animation: none; }
 }

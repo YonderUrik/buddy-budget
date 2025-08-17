@@ -20,6 +20,7 @@ import {
 } from "framer-motion";
 
 import { useEffect, useRef, useState } from "react";
+import { ThemeSwitch } from "../theme-switch";
 
 const ProBadge = ({ show, className = "" }: { show?: boolean; className?: string }) => {
    if (!show) return null;
@@ -28,7 +29,7 @@ const ProBadge = ({ show, className = "" }: { show?: boolean; className?: string
          className={cn(
             "pointer-events-none select-none absolute -top-2 -right-3 rounded px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-white",
             "bg-gradient-to-r from-secondary via-secondary/80 to-secondary",
-            "ring-1 ring-white/80 shadow-[0_0_12px_rgba(5,150,105,0.45)]",
+            "ring-1 ring-white/80 shadow-[0_0_12px_rgba(77,156,185,0.45)]",
             "dark:ring-neutral-900/80",
             'z-100',
             className,
@@ -66,6 +67,7 @@ export const FloatingDock = ({
    return (
       <div className="relative">
          {children}
+         <ThemeSwitch />
          <FloatingDockDesktop
             items={items}
             logoutRedirect={logoutRedirect}
@@ -75,15 +77,6 @@ export const FloatingDock = ({
                desktopClassName,
             )}
          />
-         {/* <FloatingDockMobile
-            items={items}
-            logoutRedirect={logoutRedirect}
-            userPlan={normalizedUserPlan as "FREE" | "PRO"}
-            className={cn(
-               "fixed bottom-6 left-1/2 -translate-x-1/2 z-50",
-               mobileClassName,
-            )}
-         /> */}
       </div>
    );
 };
@@ -153,7 +146,10 @@ const FloatingDockDesktop = ({
             padding: `12px ${dimensions.padding}px`
          }}
          className={cn(
-            "mx-auto hidden h-16 items-end rounded-2xl flex bg-white/70 dark:bg-neutral-900/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 ring-1 ring-primary/20 shadow-lg shadow-primary/10",
+            "mx-auto hidden h-16 items-end rounded-2xl flex",
+            "bg-white/95 dark:bg-neutral-900/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-neutral-900/80",
+            "ring-1 ring-black/10 dark:ring-white/10 shadow-xl shadow-black/10 dark:shadow-black/20",
+            "border border-black/5 dark:border-white/10",
             dimensions.needsScroll ? "overflow-x-auto scrollbar-none" : "justify-center",
             className,
          )}
@@ -234,40 +230,44 @@ function IconContainer({
       return val - bounds.x - bounds.width / 2;
    });
 
-   // Use dynamic sizing based on passed itemSize
-   const hoverScale = 1.25;
+   // macOS-style scaling with neighbors effect
+   const hoverScale = 1.2; // More subtle like macOS
+   const neighborScale = 1.1; // Slight scale for adjacent items
    const baseSize = itemSize;
-   const hoverSize = Math.min(itemSize * hoverScale, itemSize + 12); // Cap the hover growth
+   const hoverSize = itemSize * hoverScale;
+   const neighborSize = itemSize * neighborScale;
    const iconSize = Math.floor(itemSize * 0.45);
    const iconHoverSize = Math.floor(hoverSize * 0.45);
+   const iconNeighborSize = Math.floor(neighborSize * 0.45);
 
-   let widthTransform = useTransform(distance, [-150, 0, 150], [baseSize, hoverSize, baseSize]);
-   let heightTransform = useTransform(distance, [-150, 0, 150], [baseSize, hoverSize, baseSize]);
+   // macOS-style curve with neighbor scaling
+   let widthTransform = useTransform(
+      distance, 
+      [-80, -40, 0, 40, 80], 
+      [baseSize, neighborSize, hoverSize, neighborSize, baseSize]
+   );
+   let heightTransform = useTransform(
+      distance, 
+      [-80, -40, 0, 40, 80], 
+      [baseSize, neighborSize, hoverSize, neighborSize, baseSize]
+   );
 
-   let widthTransformIcon = useTransform(distance, [-150, 0, 150], [iconSize, iconHoverSize, iconSize]);
-   let heightTransformIcon = useTransform(distance, [-150, 0, 150], [iconSize, iconHoverSize, iconSize]);
+   let widthTransformIcon = useTransform(
+      distance, 
+      [-80, -40, 0, 40, 80], 
+      [iconSize, iconNeighborSize, iconHoverSize, iconNeighborSize, iconSize]
+   );
+   let heightTransformIcon = useTransform(
+      distance, 
+      [-80, -40, 0, 40, 80], 
+      [iconSize, iconNeighborSize, iconHoverSize, iconNeighborSize, iconSize]
+   );
 
-   let width = useSpring(widthTransform, {
-      mass: 0.1,
-      stiffness: 150,
-      damping: 12,
-   });
-   let height = useSpring(heightTransform, {
-      mass: 0.1,
-      stiffness: 150,
-      damping: 12,
-   });
-
-   let widthIcon = useSpring(widthTransformIcon, {
-      mass: 0.1,
-      stiffness: 150,
-      damping: 12,
-   });
-   let heightIcon = useSpring(heightTransformIcon, {
-      mass: 0.1,
-      stiffness: 150,
-      damping: 12,
-   });
+   // Direct transforms without spring for immediate response like macOS
+   let width = widthTransform;
+   let height = heightTransform;
+   let widthIcon = widthTransformIcon;
+   let heightIcon = heightTransformIcon;
 
    const [hovered, setHovered] = useState(false);
    const [childrenOpen, setChildrenOpen] = useState(false);
@@ -297,18 +297,35 @@ function IconContainer({
          }}
       >
          {children && children.length > 0 ? (
-            <button
-               type="button"
-               onClick={() => {
-                  setChildrenOpen((v) => {
-                     const next = !v;
-                     onOpenChange?.(next);
-                     if (next) mouseX.set(Infinity);
-                     return next;
-                  });
-               }}
-               aria-expanded={childrenOpen}
-            >
+                           <button
+                  type="button"
+                  onClick={() => {
+                     setChildrenOpen((v) => {
+                        const next = !v;
+                        onOpenChange?.(next);
+                        if (next) mouseX.set(Infinity);
+                        return next;
+                     });
+                  }}
+                  onKeyDown={(e) => {
+                     if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setChildrenOpen((v) => {
+                           const next = !v;
+                           onOpenChange?.(next);
+                           if (next) mouseX.set(Infinity);
+                           return next;
+                        });
+                     }
+                     if (e.key === 'Escape' && childrenOpen) {
+                        setChildrenOpen(false);
+                        onOpenChange?.(false);
+                     }
+                  }}
+                  aria-expanded={childrenOpen}
+                  aria-haspopup="menu"
+                  aria-label={`${title}${children?.length ? ` menu with ${children.length} options` : ''}`}
+               >
                <motion.div
                   ref={ref}
                   style={{ width, height }}
@@ -322,10 +339,11 @@ function IconContainer({
                   }}
                   onMouseLeave={() => { setHovered(false) }}
                   className={cn(
-                     "relative flex aspect-square items-center justify-center rounded-full ring-1 transition-colors",
+                     "relative flex aspect-square items-center justify-center rounded-full transition-all",
+                     "ring-1 ring-inset",
                      (isActiveHref(href) || (children?.some((c) => isActiveHref(c.href)) ?? false))
-                        ? "bg-primary/20 ring-primary/40"
-                        : "bg-gray-200 ring-primary/20 dark:bg-neutral-800 hover:bg-primary/20 hover:ring-primary/40",
+                        ? "bg-primary/20 ring-primary/40 shadow-lg shadow-primary/20"
+                        : "bg-white/80 ring-black/10 dark:bg-neutral-800/80 dark:ring-white/10 hover:bg-primary/15 hover:ring-primary/30 hover:shadow-md hover:shadow-primary/10",
                   )}
                >
                   <AnimatePresence>
@@ -346,24 +364,32 @@ function IconContainer({
                   >
                      {icon}
                      <ProBadge show={userPlan !== "PRO" && ((plan === "PRO") || (children?.some((c) => c.plan === "PRO") ?? false))} />
-                     <span className="absolute -bottom-0.5 -right-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-white ring-1 ring-white dark:ring-neutral-900">
-                        <IconGridDots className="h-2.5 w-2.5" />
-                     </span>
+                     {children && children.length > 0 && (
+                        <span 
+                           className="absolute -bottom-0.5 -right-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-primary/80"
+                           aria-hidden="true"
+                        />
+                     )}
                   </motion.div>
                </motion.div>
             </button>
-         ) : (
-            <a href={href}>
+                                 ) : (
+            <a 
+               href={href}
+               aria-label={title}
+               className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900 rounded-full"
+            >
                <motion.div
                   ref={ref}
                   style={{ width, height }}
                   onMouseEnter={() => setHovered(true)}
                   onMouseLeave={() => setHovered(false)}
                   className={cn(
-                     "relative flex aspect-square items-center justify-center rounded-full ring-1 transition-colors",
+                     "relative flex aspect-square items-center justify-center rounded-full transition-all",
+                     "ring-1 ring-inset",
                      isActiveHref(href)
-                        ? "bg-primary/20 ring-primary/40"
-                        : "bg-gray-200 ring-primary/20 dark:bg-neutral-800 hover:bg-primary/20 hover:ring-primary/40",
+                        ? "bg-primary/20 ring-primary/40 shadow-lg shadow-primary/20"
+                        : "bg-white/80 ring-black/10 dark:bg-neutral-800/80 dark:ring-white/10 hover:bg-primary/15 hover:ring-primary/30 hover:shadow-md hover:shadow-primary/10",
                   )}
                >
                   <AnimatePresence>
@@ -401,7 +427,7 @@ function IconContainer({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute bottom-full left-1/2 z-[60] -translate-x-1/2 rounded-2xl border border-primary/20 bg-white/90 p-2 sm:p-3 shadow-lg backdrop-blur dark:border-primary/30 dark:bg-neutral-900/90 w-max max-w-[95vw] sm:max-w-[90vw] mb-3"
+                  className="absolute bottom-full left-1/2 z-[60] -translate-x-1/2 rounded-2xl bg-white/95 dark:bg-neutral-900/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-neutral-900/80 ring-1 ring-black/10 dark:ring-white/10 shadow-xl shadow-black/10 dark:shadow-black/20 border border-black/5 dark:border-white/10 p-3 w-max max-w-[95vw] sm:max-w-[90vw] mb-3"
                >
                   <div className="flex flex-col gap-1 sm:gap-2">
                      {children.map((child) =>
@@ -410,8 +436,8 @@ function IconContainer({
                               key={`${title}-${child.title}`}
                               onClick={() => signOut({ callbackUrl: logoutRedirect })}
                               className={cn(
-                                 "group relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full ring-1 transition-colors cursor-pointer",
-                                 "bg-gray-200 ring-primary/20 dark:bg-neutral-800 hover:bg-primary/20"
+                                 "group relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full ring-1 ring-inset transition-all duration-200 cursor-pointer",
+                                 "bg-white/80 ring-black/10 dark:bg-neutral-800/80 dark:ring-white/10 hover:bg-primary/15 hover:ring-primary/30 hover:shadow-md hover:shadow-primary/10"
                               )}
                            >
                               <div className="h-4 w-4 sm:h-6 sm:w-6">{child.icon}</div>
@@ -424,12 +450,12 @@ function IconContainer({
                               key={`${title}-${child.title}`}
                               href={child.href}
                               className={cn(
-                                 "group relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full ring-1 transition-colors",
+                                 "group relative flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full ring-1 ring-inset transition-all duration-200",
                                  isUpgradeItem(child)
-                                    ? "ring-2 ring-secondary/60 bg-gradient-to-r from-secondary/30 via-secondary/20 to-secondary/30 shadow-[0_0_20px_rgba(5,150,105,0.35)]"
+                                    ? "ring-2 ring-secondary/60 bg-gradient-to-r from-secondary/30 via-secondary/20 to-secondary/30 shadow-[0_0_20px_rgba(77,156,185,0.35)]"
                                     : isActiveHref(child.href)
-                                       ? "bg-primary/20 ring-primary/40"
-                                       : "bg-gray-200 ring-primary/20 dark:bg-neutral-800 hover:bg-primary/20"
+                                       ? "bg-primary/20 ring-primary/40 shadow-lg shadow-primary/20"
+                                       : "bg-white/80 ring-black/10 dark:bg-neutral-800/80 dark:ring-white/10 hover:bg-primary/15 hover:ring-primary/30 hover:shadow-md hover:shadow-primary/10"
                               )}
                            >
                               <div className="h-4 w-4 sm:h-6 sm:w-6">{child.icon}</div>

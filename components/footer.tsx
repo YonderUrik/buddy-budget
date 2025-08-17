@@ -14,9 +14,7 @@ export function Footer({ dict, locale }: { dict?: Dictionary; locale?: string })
         <div className="flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:items-center md:justify-between">
           {/* Brand + tagline */}
           <div className="flex items-center gap-3">
-            <div className="bg-default-foreground text-background rounded-full">
-              <Logo size={30} />
-            </div>
+            <Logo size={30} />
             <div className="flex flex-col text-center md:text-left">
               <span className="text-xs text-foreground-500">
                 © {year} {siteConfig.name}

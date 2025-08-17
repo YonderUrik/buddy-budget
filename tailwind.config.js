@@ -25,11 +25,11 @@ const config = {
           colors: {
             // Money-first palette: emerald primary, teal secondary
             primary: {
-              DEFAULT: "#059669", // emerald-600
-              foreground: "#ffffff",
+              DEFAULT: "#F4BA41",
+              foreground: "#1a1a1a",
             },
             secondary: {
-              DEFAULT: "#14b8a6", // teal-500
+              DEFAULT: "#4D9CB9",
               foreground: "#ffffff",
             },
             success: {
@@ -49,11 +49,11 @@ const config = {
         dark: {
           colors: {
             primary: {
-              DEFAULT: "#059669", // unified to light primary
-              foreground: "#ffffff",
+              DEFAULT: "#F4BA41",
+              foreground: "#1a1a1a",
             },
             secondary: {
-              DEFAULT: "#14b8a6", // unified to light secondary
+              DEFAULT: "#4D9CB9",
               foreground: "#ffffff",
             },
             success: {

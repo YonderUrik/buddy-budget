@@ -33,6 +33,8 @@ model User {
   categories       Category[]
   accounts         Account[]
   sessions         Session[]
+  financialAccounts FinancialAccount[]
+  bankConnections  BankConnection[]
 
   // Freemium + onboarding
   plan             PlanTier  @default(FREE)
@@ -90,6 +92,50 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+enum FinancialAccountType {
+  CASH
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  INVESTMENT
+}
+
+model FinancialAccount {
+  id                 String                @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String                @db.ObjectId
+  name               String
+  type               FinancialAccountType
+  currency           String
+  balance            Float                 @default(0)
+  institutionName    String?
+  provider           String                @default("manual") // manual | gocardless
+  externalAccountId  String?
+  connectionId       String?
+  isArchived         Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isArchived])
+}
+
+model BankConnection {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @db.ObjectId
+  provider         String   @default("gocardless")
+  requisitionId    String
+  status           String   @default("PENDING")
+  institutionId    String
+  institutionName  String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Session {

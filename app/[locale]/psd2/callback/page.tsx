@@ -1,36 +1,15 @@
-"use client";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import Psd2CallbackClient from "./client";
 
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+export default async function Psd2CallbackPage({ params }: { params: { locale: string } }) {
+  const { locale } = await params;
+  const session = await getSession();
+  if (!session?.user) redirect(`/${locale}/auth`);
+  const user = session.user as any;
+  if (!user.onboarded) redirect(`/${locale}/onboarding`);
 
-export default function Psd2CallbackPage() {
-  const router = useRouter();
-  const search = useSearchParams();
-
-  useEffect(() => {
-    const requisitionId = search.get("r") || search.get("ref") || search.get("requisition_id") || search.get("requisitionId");
-    if (!requisitionId) {
-      router.replace("/dashboard/accounts");
-      return;
-    }
-    (async () => {
-      try {
-        await fetch("/api/bank-link/complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ requisitionId }),
-        });
-      } catch {
-        // ignore
-      } finally {
-        router.replace("/dashboard/accounts");
-      }
-    })();
-  }, [router, search]);
-
-  return (
-    <div className="p-6">Finalizing bank connection…</div>
-  );
+  return <Psd2CallbackClient locale={locale} />;
 }
 
 

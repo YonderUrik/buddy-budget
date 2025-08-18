@@ -10,6 +10,7 @@ import {
    IconHelpCircle,
 } from "@tabler/icons-react";
 import { redirect } from "next/navigation";
+import DashboardSync from "@/components/dashboard-sync";
 
 export default async function DashboardLayout({
    children,
@@ -109,6 +110,7 @@ export default async function DashboardLayout({
          <div className="flex items-center justify-center h-[7rem] w-full">
             <FloatingDock items={links} logoutRedirect={`/${locale}/auth`} userPlan={(user?.plan || "FREE") as "FREE" | "PRO"} />
          </div>
+         <DashboardSync />
       </main>
    );
 }

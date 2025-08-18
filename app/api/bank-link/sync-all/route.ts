@@ -1,0 +1,328 @@
+import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getAccountsDueForSync } from "@/lib/sync-manager";
+import { gcGetAccountTransactions, GoCardlessTransaction } from "@/lib/gocardless";
+import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
+
+export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = (session.user as any).id as string;
+  const body = await request.json().catch(() => ({}));
+  const { force = false, background = false } = body ?? {};
+
+  try {
+    // Get accounts that need syncing
+    const accountsDue = await getAccountsDueForSync(userId);
+    
+    if (accountsDue.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "No accounts need syncing",
+        syncResults: [],
+        summary: {
+          totalAccounts: 0,
+          synced: 0,
+          skipped: 0,
+          errors: 0
+        }
+      });
+    }
+
+    const syncResults = [];
+    let totalTransactions = 0;
+    let totalErrors = 0;
+
+    // Sync accounts sequentially to respect rate limits
+    for (const account of accountsDue.slice(0, 10)) { // Limit to 10 accounts at once
+      try {
+        console.log(`Auto-syncing account: ${account.name} (${account.id})`);
+        
+        // Check if account can sync (unless forced)
+        if (!force) {
+          const syncStatus = await checkAccountSyncStatus(account.id);
+          if (!syncStatus.canSync) {
+            syncResults.push({
+              accountId: account.id,
+              accountName: account.name,
+              success: false,
+              reason: syncStatus.reason,
+              transactionsCreated: 0,
+              skipped: true
+            });
+            continue;
+          }
+        }
+
+        // Perform sync
+        const syncResult = await syncAccount(account, userId);
+        syncResults.push({
+          accountId: account.id,
+          accountName: account.name,
+          success: syncResult.success,
+          transactionsCreated: syncResult.transactionsCreated,
+          transactionsSkipped: syncResult.transactionsSkipped,
+          errors: syncResult.errors,
+          apiCallsUsed: syncResult.apiCallsUsed
+        });
+
+        totalTransactions += syncResult.transactionsCreated;
+        if (syncResult.errors.length > 0) {
+          totalErrors += syncResult.errors.length;
+        }
+
+      } catch (error: any) {
+        console.error(`Failed to sync account ${account.name}:`, error);
+        syncResults.push({
+          accountId: account.id,
+          accountName: account.name,
+          success: false,
+          reason: error.message,
+          transactionsCreated: 0,
+          errors: [error.message]
+        });
+        totalErrors++;
+      }
+    }
+
+    const summary = {
+      totalAccounts: accountsDue.length,
+      processed: syncResults.length,
+      synced: syncResults.filter(r => r.success).length,
+      skipped: syncResults.filter(r => r.skipped).length,
+      errors: totalErrors,
+      totalTransactions
+    };
+
+    return NextResponse.json({
+      success: true,
+      message: `Synced ${summary.synced} of ${summary.totalAccounts} accounts`,
+      syncResults,
+      summary
+    });
+
+  } catch (error: any) {
+    console.error("Bulk sync error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  const session = await getSession();
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = (session.user as any).id as string;
+
+  try {
+    // Get accounts that need syncing
+    const accountsDue = await getAccountsDueForSync(userId);
+    
+    // Get all GoCardless accounts for comparison
+    const allAccounts = await (prisma as any).financialAccount.findMany({
+      where: {
+        userId,
+        provider: "gocardless",
+        linked: true,
+        isArchived: false
+      },
+      select: {
+        id: true,
+        name: true,
+        lastSyncedAt: true,
+        apiCallsToday: true
+      }
+    });
+
+    return NextResponse.json({
+      accountsDue: accountsDue.length,
+      totalAccounts: allAccounts.length,
+      accounts: accountsDue.map(account => ({
+        id: account.id,
+        name: account.name,
+        lastSyncedAt: account.lastSyncedAt,
+        apiCallsUsed: account.apiCallsToday || 0
+      }))
+    });
+
+  } catch (error: any) {
+    console.error("Sync status error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+async function syncAccount(account: any, userId: string) {
+  const startTime = Date.now();
+  let apiCallsUsed = 0;
+  
+  try {
+    // Determine date range based on last transaction date
+    let dateFrom: Date;
+    
+    // Get the most recent transaction for this account
+    const lastTransaction = await (prisma as any).transaction.findFirst({
+      where: {
+        accountId: account.id,
+        provider: 'gocardless'
+      },
+      orderBy: {
+        date: 'desc'
+      },
+      select: {
+        date: true
+      }
+    });
+
+    if (lastTransaction && lastTransaction.date) {
+      // Start from the last transaction date with a small buffer
+      dateFrom = new Date(lastTransaction.date);
+      dateFrom.setHours(dateFrom.getHours() - 1);
+    } else {
+      // For accounts with no transactions, fetch last 30 days (smaller range for bulk sync)
+      dateFrom = new Date();
+      dateFrom.setDate(dateFrom.getDate() - 30);
+    }
+
+    // Limit how far back we go for performance
+    const maxDateBack = new Date();
+    maxDateBack.setDate(maxDateBack.getDate() - 90);
+    if (dateFrom < maxDateBack) {
+      dateFrom = maxDateBack;
+    }
+
+    const dateFromStr = dateFrom.toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+    
+    console.log(`Bulk syncing ${account.name} from ${dateFromStr} to ${today}`);
+
+    // Record API call
+    await recordApiCall(account.id, false);
+    apiCallsUsed++;
+
+    try {
+      // Fetch transactions
+      const transactionData = await gcGetAccountTransactions(account.externalAccountId, dateFromStr, today);
+      const transactions: GoCardlessTransaction[] = transactionData?.transactions?.booked || [];
+      
+      // Mark API call as successful
+      await recordApiCall(account.id, true);
+
+      if (!Array.isArray(transactions) || transactions.length === 0) {
+        return {
+          success: true,
+          transactionsCreated: 0,
+          transactionsSkipped: 0,
+          errors: [],
+          apiCallsUsed
+        };
+      }
+
+      // Get existing transaction IDs
+      const existingTransactionIds = await (prisma as any).transaction.findMany({
+        where: {
+          externalTransactionId: {
+            in: transactions.map((t: GoCardlessTransaction) => t.transactionId).filter(Boolean)
+          },
+          provider: 'gocardless'
+        },
+        select: { externalTransactionId: true }
+      });
+
+      const existingIds = new Set(existingTransactionIds.map((t: { externalTransactionId: string }) => t.externalTransactionId));
+      const transactionsToCreate = [];
+      const errors = [];
+      let skippedCount = 0;
+
+      for (const transaction of transactions) {
+        try {
+          if (existingIds.has(transaction.transactionId)) {
+            skippedCount++;
+            continue;
+          }
+
+          const amount = parseFloat(transaction.transactionAmount?.amount || '0');
+          const currency = transaction.transactionAmount?.currency || 'EUR';
+          const bookingDate = new Date(transaction.bookingDate);
+          const valueDate = transaction.valueDate ? new Date(transaction.valueDate) : null;
+
+          const description = 
+            transaction.remittanceInformationUnstructured ||
+            transaction.remittanceInformationStructured ||
+            transaction.creditorName ||
+            transaction.debtorName ||
+            'Bank Transaction';
+
+          transactionsToCreate.push({
+            userId: userId,
+            accountId: account.id,
+            externalTransactionId: transaction.transactionId,
+            amount,
+            currency,
+            description,
+            merchantName: transaction.creditorName || transaction.debtorName || null,
+            categoryCode: transaction.merchantCategoryCode || null,
+            date: bookingDate,
+            bookingDate,
+            valueDate,
+            provider: 'gocardless',
+            raw: transaction as any,
+          });
+
+        } catch (transactionError: any) {
+          console.error(`Failed to prepare transaction ${transaction.transactionId}:`, transactionError);
+          errors.push(`Transaction ${transaction.transactionId}: ${transactionError.message}`);
+        }
+      }
+
+      // Bulk create transactions
+      let createdCount = 0;
+      if (transactionsToCreate.length > 0) {
+        try {
+          const createdTransactions = await (prisma as any).transaction.createMany({
+            data: transactionsToCreate,
+          });
+          createdCount = createdTransactions.count || 0;
+        } catch (bulkError: any) {
+          console.error(`Failed to bulk create transactions:`, bulkError);
+          errors.push(`Bulk create failed: ${bulkError.message}`);
+        }
+      }
+
+      const syncDuration = Date.now() - startTime;
+      console.log(`Bulk sync completed for ${account.name} in ${syncDuration}ms: ${createdCount} created, ${skippedCount} skipped`);
+
+      return {
+        success: true,
+        transactionsCreated: createdCount,
+        transactionsSkipped: skippedCount,
+        errors,
+        apiCallsUsed
+      };
+
+    } catch (apiError: any) {
+      console.error(`API error during bulk sync for ${account.name}:`, apiError);
+      return {
+        success: false,
+        transactionsCreated: 0,
+        transactionsSkipped: 0,
+        errors: [`API error: ${apiError.message}`],
+        apiCallsUsed
+      };
+    }
+
+  } catch (error: any) {
+    console.error(`Bulk sync failed for account ${account.name}:`, error);
+    return {
+      success: false,
+      transactionsCreated: 0,
+      transactionsSkipped: 0,
+      errors: [`Sync failed: ${error.message}`],
+      apiCallsUsed
+    };
+  }
+}

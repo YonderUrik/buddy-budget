@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 import { Dictionary } from "@/types/dictionary";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
-import { Alert, Select, SelectItem, Popover, PopoverTrigger, PopoverContent, Chip } from "@heroui/react";
+import { Alert, Select, SelectItem, Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
 import { LoaderOne } from "./ui/loader";
 
 type Category = {
@@ -89,8 +89,6 @@ export default function Categories({ dict }: { dict: Dictionary }) {
    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
    const [editing, setEditing] = useState<Category | null>(null);
    const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
-   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-   const [mutatingId, setMutatingId] = useState<string | null>(null);
 
    const [name, setName] = useState<string>("");
    const [type, setType] = useState<"income" | "expense" | "transfer">("expense");
@@ -183,10 +181,8 @@ export default function Categories({ dict }: { dict: Dictionary }) {
    async function handleSubmit(e: React.FormEvent) {
       e.preventDefault();
       setErrorMessage(null);
-      setIsSubmitting(true);
       try {
          const payload = { name, type, icon, color, isActive };
-         if (editing) setMutatingId(editing.id);
          const res = await fetch(editing ? `/api/categories/${editing.id}` : "/api/categories", {
             method: editing ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },
@@ -205,16 +201,12 @@ export default function Categories({ dict }: { dict: Dictionary }) {
          setIsModalOpen(false);
       } catch (err: any) {
          setErrorMessage(err?.message || stateLabels.errorGeneric);
-      } finally {
-         setIsSubmitting(false);
-         setMutatingId(null);
-      }
+      }  
    }
 
    async function handleDelete() {
       if (!editing) return;
       try {
-         setMutatingId(editing.id);
          const res = await fetch(`/api/categories/${editing.id}`, { method: "DELETE" });
          if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -224,9 +216,7 @@ export default function Categories({ dict }: { dict: Dictionary }) {
          setIsModalOpen(false);
       } catch (err: any) {
          setErrorMessage(err?.message || stateLabels.errorGeneric);
-      } finally {
-         setMutatingId(null);
-      }
+      } 
    }
 
    useEffect(() => {
@@ -262,7 +252,7 @@ export default function Categories({ dict }: { dict: Dictionary }) {
 
    return (
       <>
-         {loading ? (
+        provider {loading ? (
             <div className="text-sm text-neutral-500 flex items-center justify-center h-full">
                <LoaderOne title={stateLabels.loading} subtitle={stateLabels.loadingDesc} />
             </div>

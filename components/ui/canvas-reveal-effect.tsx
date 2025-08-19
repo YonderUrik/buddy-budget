@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import React, { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { AnimatePresence, motion } from "framer-motion";
+import { Card } from "@heroui/react";
 
 export const CanvasRevealEffect = ({
   animationSpeed = 0.4,
@@ -345,19 +346,15 @@ export const RevealCard = ({
  }) => {
    const [hovered, setHovered] = React.useState(false);
    return (
-     <div
+     <Card
        onMouseEnter={() => setHovered(true)}
        onMouseLeave={() => setHovered(false)}
        className={cn(
-         "border border-black/[0.08] group/canvas-card flex items-center justify-center dark:border-white/[0.12] w-full mx-auto p-4 relative h-[28rem] md:h-[30rem]",
+         "border border-black/[0.08] group/canvas-card flex items-center justify-center dark:border-white/[0.12] w-full mx-auto p-4 relative h-[28rem] md:h-[30rem] rounded-2xl",
          className
        )}
      >
-       <Icon className="absolute h-6 w-6 -top-3 -left-3 dark:text-white text-black" />
-       <Icon className="absolute h-6 w-6 -bottom-3 -left-3 dark:text-white text-black" />
-       <Icon className="absolute h-6 w-6 -top-3 -right-3 dark:text-white text-black" />
-       <Icon className="absolute h-6 w-6 -bottom-3 -right-3 dark:text-white text-black" />
-
+       
        <AnimatePresence>
          {hovered && (
            <motion.div
@@ -378,6 +375,6 @@ export const RevealCard = ({
            {title}
          </h2>
        </div>
-     </div>
+     </Card>
    );
  };

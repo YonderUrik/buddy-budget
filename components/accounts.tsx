@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { CanvasRevealEffect, RevealCard } from "./ui/canvas-reveal-effect";
 import { LoaderOne } from "./ui/loader";
+import { CometCard } from "./ui/comet-card";
 
 // Memoized institution card component for better performance
 const InstitutionCard = React.memo(({ institution, index, onClick }: {
@@ -533,161 +534,167 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
 
                         <div className={`relative flex-1 flex flex-col min-h-0 ${modalStep === 'method' ? 'py-6 px-4 sm:py-10 sm:px-10 overflow-y-auto sm:overflow-visible' : 'p-0'}`}>
                            {modalStep === 'method' ? (
-                              <div className="flex flex-col xl:flex-row items-stretch justify-center w-full gap-6 mx-auto max-w-none">
+                              <div className="flex flex-col lg:flex-row items-stretch justify-center w-full gap-8 mx-auto max-w-5xl">
                                  <div
                                     onClick={() => {
                                        addDisclosure.onClose();
                                        setShowManualForm(true);
                                     }}
-                                    className="cursor-pointer flex-1 min-w-0"
+                                    className="cursor-pointer flex-1 min-w-0 group"
                                  >
-                                    <RevealCard
-                                       title="Create Manually"
-                                       icon={<IconWallet size={48} className="text-primary" />}
-                                    >
-                                       <CanvasRevealEffect
-                                          animationSpeed={3}
-                                          containerClassName="bg-primary/20"
-                                          colors={[
-                                             [244, 186, 65],
-                                             [234, 176, 45],
-                                             [224, 166, 25],
-                                          ]}
-                                          opacities={[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
-                                          dotSize={6}
-                                       />
-                                       <div className="absolute inset-0 flex flex-col items-center justify-center p-0">
-                                          <Card className="rounded-none backdrop-blur-sm bg-white/60 dark:bg-black/40 w-full h-full max-w-sm shadow-2xl border border-white/20 dark:border-gray-700/30">
-                                             <CardHeader className="flex flex-col items-center pb-3 pt-4">
-                                                <Chip variant="flat" size="sm" className="mb-2 bg-primary/15 text-primary font-medium">
-                                                   💸 Manual Entry
-                                                </Chip>
-                                                <h3 className="text-lg font-bold text-foreground text-center leading-tight">
-                                                   Create Account Manually
-                                                </h3>
-                                                <p className="text-default-500 text-xs text-center mt-1">
-                                                   Perfect for cash, crypto, or offline accounts
-                                                </p>
-                                             </CardHeader>
-                                             <CardBody className="pt-0 pb-4 px-4">
-                                                <div className="space-y-2.5 mb-4">
-                                                   <div className="flex items-center gap-3">
-                                                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                                         <div className="w-2 h-2 rounded-full bg-primary"></div>
+                                    <CometCard>
+                                       <RevealCard
+                                          title="Create Manually"
+                                          icon={<IconWallet size={52} className="text-primary group-hover:scale-110 transition-transform duration-300" />}
+                                       >
+                                          <CanvasRevealEffect
+                                             animationSpeed={3}
+                                             containerClassName="bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30"
+                                             colors={[
+                                                [244, 186, 65],
+                                                [234, 176, 45],
+                                                [224, 166, 25],
+                                             ]}
+                                             opacities={[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
+                                             dotSize={5}
+                                          />
+                                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                                             <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
+                                                <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
+                                                   <Chip 
+                                                      variant="flat" 
+                                                      size="sm" 
+                                                      className="mb-3 bg-primary/15 text-primary font-semibold px-3 py-1 border border-primary/20"
+                                                   >
+                                                      ✨ Quick & Easy
+                                                   </Chip>
+                                                   <h3 className="text-xl font-bold text-foreground text-center leading-tight">
+                                                      Manual Account
+                                                   </h3>
+                                                   <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
+                                                      Perfect for cash, crypto, or any offline accounts
+                                                   </p>
+                                                </CardHeader>
+                                                <CardBody className="pt-2 pb-6 px-6 space-y-4">
+                                                   <div className="space-y-3">
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:lightning-bolt" className="text-primary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Quick Setup</div>
+                                                            <div className="text-default-500 text-xs">Ready in under a minute</div>
+                                                         </div>
                                                       </div>
-                                                      <div className="text-xs">
-                                                         <div className="font-medium text-foreground">Quick Setup</div>
-                                                         <div className="text-default-500">Ready in 30 seconds</div>
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:shield-check" className="text-primary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Complete Privacy</div>
+                                                            <div className="text-default-500 text-xs">Your data stays local</div>
+                                                         </div>
+                                                      </div>
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:tune-variant" className="text-primary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Full Flexibility</div>
+                                                            <div className="text-default-500 text-xs">Any account type supported</div>
+                                                         </div>
                                                       </div>
                                                    </div>
-                                                   <div className="flex items-center gap-3">
-                                                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                                         <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                                      </div>
-                                                      <div className="text-xs">
-                                                         <div className="font-medium text-foreground">Full Control</div>
-                                                         <div className="text-default-500">Your data, your way</div>
-                                                      </div>
-                                                   </div>
-                                                   <div className="flex items-center gap-3">
-                                                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                                                         <div className="w-2 h-2 rounded-full bg-primary"></div>
-                                                      </div>
-                                                      <div className="text-xs">
-                                                         <div className="font-medium text-foreground">All Account Types</div>
-                                                         <div className="text-default-500">Cash, savings, crypto, etc.</div>
-                                                      </div>
-                                                   </div>
-                                                </div>
-                                                <div className="bg-white-50/50 dark:bg-black/10 backdrop-blur-sm rounded-lg p-3">
-                                                   <div className="text-xs font-medium text-foreground mb-1">You'll need:</div>
-                                                   <div className="text-xs text-default-600 space-y-0.5">
-                                                      <div>• Account name & type</div>
-                                                      <div>• Currency & current balance</div>
-                                                   </div>
-                                                </div>
-                                             </CardBody>
-                                          </Card>
-                                       </div>
-                                    </RevealCard>
+                                                </CardBody>
+                                             </Card>
+                                          </div>
+                                       </RevealCard>
+                                    </CometCard>
                                  </div>
                                  <div
                                     onClick={() => {
                                        setModalStep('institutions');
-                                       // Always fetch institutions when switching to institutions view
                                        fetchInstitutionsForCountry(country);
                                     }}
-                                    className="cursor-pointer flex-1 min-w-0"
+                                    className="cursor-pointer flex-1 min-w-0 group"
                                  >
-                                    <RevealCard
-                                       title="Connect Bank"
-                                       icon={<IconLink size={48} className="text-secondary" />}
-                                    >
-                                       <CanvasRevealEffect
-                                          animationSpeed={3}
-                                          containerClassName="bg-secondary/20"
-                                          colors={[
-                                             [77, 156, 185],
-                                             [77, 156, 185],
-                                             [77, 156, 185],
-                                          ]}
-                                          opacities={[0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1]}
-                                          dotSize={6}
-                                       />
-                                       <div className="absolute inset-0 flex flex-col items-center justify-center p-0">
-                                          <Card className="rounded-none backdrop-blur-sm bg-white/60 dark:bg-black/40 w-full h-full max-w-sm shadow-2xl border border-white/20 dark:border-gray-700/30">
-                                             <CardHeader className="flex flex-col items-center pb-3 pt-4">
-                                                <Chip variant="flat" size="sm" className="mb-2 bg-secondary/15 text-secondary font-medium">
-                                                   🔒 PSD2 Secure
-                                                </Chip>
-                                                <h3 className="text-lg font-bold text-foreground text-center leading-tight">
-                                                   Connect Your Bank
-                                                </h3>
-                                                <p className="text-default-500 text-xs text-center mt-1">
-                                                   Automatic sync via Open Banking
-                                                </p>
-                                             </CardHeader>
-                                             <CardBody className="pt-0 pb-4 px-4">
-                                                <div className="space-y-2.5 mb-4">
-                                                   <div className="flex items-center gap-3">
-                                                      <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                                         <div className="w-2 h-2 rounded-full bg-secondary"></div>
+                                    <CometCard>
+                                       <RevealCard
+                                          title="Connect Bank"
+                                          icon={<IconLink size={52} className="text-secondary group-hover:scale-110 transition-transform duration-300" />}
+                                       >
+                                          <CanvasRevealEffect
+                                             animationSpeed={3}
+                                             containerClassName="bg-gradient-to-br from-secondary/10 via-secondary/20 to-secondary/30"
+                                             colors={[
+                                                [67, 146, 175],
+                                                [77, 156, 185],
+                                                [87, 166, 195],
+                                             ]}
+                                             opacities={[0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1]}
+                                             dotSize={5}
+                                          />
+                                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 rounded-3xl">
+                                             <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
+                                                <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
+                                                   <Chip 
+                                                      variant="flat" 
+                                                      size="sm" 
+                                                      className="mb-3 bg-secondary/15 text-secondary font-semibold px-3 py-1 border border-secondary/20"
+                                                   >
+                                                      🔒 Bank Grade Security
+                                                   </Chip>
+                                                   <h3 className="text-xl font-bold text-foreground text-center leading-tight">
+                                                      Bank Connection
+                                                   </h3>
+                                                   <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
+                                                      Automatic sync via secure Open Banking
+                                                   </p>
+                                                </CardHeader>
+                                                <CardBody className="pt-2 pb-6 px-6 space-y-4">
+                                                   <div className="space-y-3">
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:sync" className="text-secondary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Real-time Sync</div>
+                                                            <div className="text-default-500 text-xs">Transactions updated automatically</div>
+                                                         </div>
                                                       </div>
-                                                      <div className="text-xs">
-                                                         <div className="font-medium text-foreground">Real-time Sync</div>
-                                                         <div className="text-default-500">Instant transaction updates</div>
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:bank" className="text-secondary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Enterprise Security</div>
+                                                            <div className="text-default-500 text-xs">Military-grade encryption</div>
+                                                         </div>
+                                                      </div>
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:brain" className="text-secondary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Smart Insights</div>
+                                                            <div className="text-default-500 text-xs">AI-powered categorization</div>
+                                                         </div>
+                                                      </div>
+                                                      <div className="flex items-start gap-3">
+                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                            <Icon icon="mdi:bank" className="text-secondary w-3 h-3" />
+                                                         </div>
+                                                         <div className="text-sm">
+                                                            <div className="font-semibold text-foreground">Powered by GoCardless</div>
+                                                            <div className="text-default-500 text-xs">3000+ banks supported</div>
+                                                         </div>
                                                       </div>
                                                    </div>
-                                                   <div className="flex items-center gap-3">
-                                                      <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                                         <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                                                      </div>
-                                                      <div className="text-xs">
-                                                         <div className="font-medium text-foreground">Bank Security</div>
-                                                         <div className="text-default-500">Military-grade encryption</div>
-                                                      </div>
-                                                   </div>
-                                                   <div className="flex items-center gap-3">
-                                                      <div className="w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                                         <div className="w-2 h-2 rounded-full bg-secondary"></div>
-                                                      </div>
-                                                      <div className="text-xs">
-                                                         <div className="font-medium text-foreground">Smart Categories</div>
-                                                         <div className="text-default-500">Auto-categorize expenses</div>
-                                                      </div>
-                                                   </div>
-                                                </div>
-                                                <div className="bg-default-50/50 dark:bg-black/10 backdrop-blur-sm rounded-lg p-3">
-                                                   <div className="text-xs font-medium text-foreground mb-1">Coverage:</div>
-                                                   <div className="text-xs text-default-600 space-y-0.5">
-                                                      <div>• 3000+ European banks</div>
-                                                      <div>• Powered by GoCardless</div>
-                                                   </div>
-                                                </div>
-                                             </CardBody>
-                                          </Card>
-                                       </div>
-                                    </RevealCard>
+                                                </CardBody>
+                                             </Card>
+                                          </div>
+                                       </RevealCard>
+                                    </CometCard>
                                  </div>
                               </div>
                            ) : (

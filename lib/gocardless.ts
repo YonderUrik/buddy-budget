@@ -24,7 +24,6 @@ export async function gcGetAccessToken(): Promise<string> {
     throw new Error(`Failed to obtain GoCardless token: ${res.status} ${text}`);
   }
   const data = (await res.json()) as GoCardlessTokenResponse;
-  console.log("TOKEN", data.access);
   return data.access;
 }
 
@@ -54,39 +53,6 @@ export async function gcGetInstitution(institutionId: string) {
   return res.json();
 }
 
-export async function gcCreateAgreement(institutionId: string, accessValidForDays: number = 90) {
-  const token = await gcGetAccessToken();
-
-  // Fetch institution to determine allowed historical days window
-  const institutionRes = await fetch(`${GC_BASE_URL}/institutions/${encodeURIComponent(institutionId)}/`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
-  if (!institutionRes.ok) {
-    const text = await institutionRes.text();
-    throw new Error(`Failed to get institution: ${institutionRes.status} ${text}`);
-  }
-  const institution = await institutionRes.json();
-  const transactionTotalDays: number = typeof institution?.transaction_total_days === "number" ? institution.transaction_total_days : 90;
-  const maxHistoricalDays = Math.min(transactionTotalDays, 90);
-
-  const res = await fetch(`${GC_BASE_URL}/agreements/enduser/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({
-      institution_id: institutionId,
-      max_historical_days: maxHistoricalDays,
-      access_valid_for_days: accessValidForDays,
-      access_scope: ["balances", "details", "transactions"],
-    }),
-  });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Failed to create agreement: ${res.status} ${text}`);
-  }
-  return res.json();
-}
-
 export async function gcCreateRequisition(params: { redirect: string; institutionId: string; reference?: string; agreement?: string }) {
   const token = await gcGetAccessToken();
   const res = await fetch(`${GC_BASE_URL}/requisitions/`, {
@@ -95,29 +61,31 @@ export async function gcCreateRequisition(params: { redirect: string; institutio
     body: JSON.stringify({
       redirect: params.redirect,
       institution_id: params.institutionId,
-      user_language: "en",
       reference: params.reference ?? undefined,
       agreement: params.agreement ?? undefined,
     }),
   });
+  
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Failed to create requisition: ${res.status} ${text}`);
   }
+
   return res.json();
 }
 
 export async function gcGetRequisition(requisitionId: string) {
   const token = await gcGetAccessToken();
-  
   const res = await fetch(`${GC_BASE_URL}/requisitions/${encodeURIComponent(requisitionId)}/`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Failed to get requisition: ${res.status} ${text}`);
   }
+
   return res.json();
 }
 
@@ -139,5 +107,108 @@ export async function gcGetAccountDetails(accountId: string) {
   const balances = await balancesRes.json();
   return { details, balances };
 }
+
+export async function gcGetAccountTransactions(accountId: string, dateFrom?: string, dateTo?: string) {
+  const token = await gcGetAccessToken();
+  
+  // Build query parameters
+  const params = new URLSearchParams();
+  if (dateFrom) params.append('date_from', dateFrom);
+  if (dateTo) params.append('date_to', dateTo);
+  
+  const queryString = params.toString() ? `?${params.toString()}` : '';
+  const url = `${GC_BASE_URL}/accounts/${encodeURIComponent(accountId)}/transactions/${queryString}`;
+  
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to get account transactions: ${res.status} ${text}`);
+  }
+
+  const result = await res.json();
+  return result;
+}
+
+export async function gcListRequisitions() {
+  const token = await gcGetAccessToken();
+  const res = await fetch(`${GC_BASE_URL}/requisitions/`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to list requisitions: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function gcDeleteRequisition(requisitionId: string) {
+  const token = await gcGetAccessToken();
+  const res = await fetch(`${GC_BASE_URL}/requisitions/${encodeURIComponent(requisitionId)}/`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to delete requisition: ${res.status} ${text}`);
+  }
+
+  return res.status === 204; // Successful deletion returns 204 No Content
+}
+
+export async function gcListAgreements() {
+  const token = await gcGetAccessToken();
+  const res = await fetch(`${GC_BASE_URL}/agreements/`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to list agreements: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function gcDeleteAgreement(agreementId: string) {
+  const token = await gcGetAccessToken();
+  const res = await fetch(`${GC_BASE_URL}/agreements/${encodeURIComponent(agreementId)}/`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to delete agreement: ${res.status} ${text}`);
+  }
+
+  return res.status === 204; // Successful deletion returns 204 No Content
+}
+
+export type GoCardlessTransaction = {
+  transactionId: string;
+  entryReference?: string;
+  bookingDate: string;
+  valueDate?: string;
+  transactionAmount: {
+    amount: string;
+    currency: string;
+  };
+  creditorName?: string;
+  debtorName?: string;
+  remittanceInformationUnstructured?: string;
+  remittanceInformationStructured?: string;
+  merchantCategoryCode?: string;
+  proprietaryBankTransactionCode?: string;
+  internalTransactionId?: string;
+};
 
 

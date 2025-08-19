@@ -2,13 +2,11 @@
 
 import { Dictionary } from "@/types/dictionary";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { Modal, ModalBody, ModalContent, ModalHeader, useDisclosure, Button, Divider, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem } from "@heroui/react";
-import { GlareCard } from "@/components/ui/glare-card";
+import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert } from "@heroui/react";
 import { IconWallet, IconLink } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@iconify/react";
 import { CanvasRevealEffect, RevealCard } from "./ui/canvas-reveal-effect";
-import { Logo } from "./icons";
 import { LoaderOne } from "./ui/loader";
 
 // Memoized institution card component for better performance
@@ -35,7 +33,7 @@ const InstitutionCard = React.memo(({ institution, index, onClick }: {
                />
             ) : (
                <div className="w-16 h-16 mx-auto rounded-lg bg-default-200 flex items-center justify-center">
-                  <Icon icon="solar:bank-bold" className="w-8 h-8 text-default-400" />
+                  <Icon icon="proicons:bank" className="w-8 h-8 text-default-400" />
                </div>
             )}
          </motion.div>
@@ -63,14 +61,25 @@ InstitutionCard.displayName = 'InstitutionCard';
 
 export default function Accounts({ dict }: { dict: Dictionary }) {
    const [accounts, setAccounts] = useState<any[]>([]);
-   const [loading, setLoading] = useState(false);
+   const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
+
+   // Modal-specific states
+   const [modalLoading, setModalLoading] = useState(false);
+   const [modalError, setModalError] = useState<string | null>(null);
 
    const [showManualForm, setShowManualForm] = useState(false);
    const [manualForm, setManualForm] = useState({ name: "", type: "CASH", currency: "EUR", balance: 0 });
 
    const [modalStep, setModalStep] = useState<'method' | 'institutions'>('method');
-   const addDisclosure = useDisclosure();
+   const addDisclosure = useDisclosure({
+      onClose: () => {
+         // Reset modal states when closing
+         setModalStep('method');
+         setModalError(null);
+         setModalLoading(false);
+      }
+   });
    const [institutions, setInstitutions] = useState<any[]>([]);
    const [institutionsLoading, setInstitutionsLoading] = useState(false);
    const [institutionQuery, setInstitutionQuery] = useState("");
@@ -98,6 +107,7 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
          if (!res.ok) throw new Error("Failed to load accounts");
          const data = await res.json();
          setAccounts(data);
+
       } catch (e: any) {
          setError(e.message);
       } finally {
@@ -140,8 +150,8 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
    }
 
    async function startPsd2LinkForInstitution(institutionId: string) {
-      setLoading(true);
-      setError(null);
+      setModalLoading(true);
+      setModalError(null);
       try {
          const pathParts = typeof window !== "undefined" ? window.location.pathname.split("/") : [];
          const locale = pathParts[1] || "en";
@@ -151,13 +161,16 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ institutionId, redirectUrl }),
          });
-         if (!res.ok) throw new Error("Failed to start bank link");
+         if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || "Failed to start bank link");
+         }
          const data = await res.json();
          window.location.href = data.link as string;
       } catch (e: any) {
-         setError(e.message);
+         setModalError(e.message);
       } finally {
-         setLoading(false);
+         setModalLoading(false);
       }
    }
 
@@ -243,9 +256,13 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
 
    async function fetchInstitutionsForCountry(selectedCountry: string) {
       setInstitutionsLoading(true);
+      setModalError(null); // Clear modal errors when fetching new institutions
       try {
          const res = await fetch(`/api/bank-link?action=institutions&country=${encodeURIComponent(selectedCountry)}`);
-         if (!res.ok) throw new Error("Failed to load institutions");
+         if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || "Failed to load institutions");
+         }
          const data = await res.json();
          const list = Array.isArray(data?.results) ? data.results : data;
          setInstitutions(Array.isArray(list) ? list : []);
@@ -253,7 +270,7 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
          setLoadedItemsCount(40);
          setIsLoadingMore(false);
       } catch (e: any) {
-         setError(e.message);
+         setModalError(e.message);
          setInstitutions([]);
       } finally {
          setInstitutionsLoading(false);
@@ -261,8 +278,8 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
    }
 
    return (
-      <div className="space-y-6">
-         <div className="flex items-center justify-between">
+      <div className="max-w-2xl mx-auto w-full ">
+         <div className="flex items-center justify-between mb-6">
             <h1 className="text-xl font-semibold">Accounts</h1>
             <motion.div layoutId={`card-new-accounts`} className="inline-block">
                <motion.div layoutId={`button-new-accounts`} className="inline-block">
@@ -281,24 +298,93 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
             </motion.div>
          </div>
 
-         {error && <div className="text-sm text-red-600">{error}</div>}
+         {error && (
+            <Alert color="danger" variant="flat">
+               {error}
+            </Alert>
+         )}
 
-         {loading && <div className="text-default-500">Loading...</div>}
+         {loading && <LoaderOne title="Loading accounts..." />}
 
-         <ul className="divide-y divide-default-200 rounded border border-default-200 bg-content1">
-            {accounts.map((a) => (
-               <li key={a.id} className="p-3 flex items-center justify-between">
-                  <div>
-                     <div className="font-medium">{a.name}</div>
-                     <div className="text-xs text-default-500">{a.type} • {a.currency}</div>
+
+         <div className="w-full flex flex-col gap-3">
+            {accounts.map((a, index) => (
+               <motion.div
+                  layoutId={`card-${a.id}-${a.id}`}
+                  key={`card-${a.id}-${a.id}`}
+                  // onClick={() => openEditModal(a)}
+                  className="p-4 bg-content1 hover:bg-content2 rounded-large cursor-pointer ring-1 ring-primary/20 transition-colors"
+               >
+                  <div className="flex items-center justify-between gap-4">
+                     <div className="flex items-center gap-4">
+                        <motion.div layoutId={`image-${a.id}-${a.id}`} className="relative">
+                           {a.institutionLogo ? (
+                              <img
+                                 width={48}
+                                 height={48}
+                                 src={a.institutionLogo}
+                                 alt={a.name}
+                                 className="w-12 h-12 rounded-medium object-contain bg-white p-1"
+                              />
+                           ) : (
+                              <div
+                                 className="h-12 w-12 rounded-medium flex items-center justify-center"
+                                 style={{ backgroundColor: a.color }}
+                              >
+                                 <Icon icon={a.icon || "proicons:bank"} className="text-white text-2xl" />
+                              </div>
+                           )}
+                           {a.provider === 'gocardless' && (
+                              <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
+                                 <Icon icon="mdi:link-variant" className="text-white text-xs" />
+                              </div>
+                           )}
+                        </motion.div>
+                        <div className="flex flex-col">
+                           <motion.h3 layoutId={`title-${a.id}-${a.id}`} className="text-foreground font-medium">
+                              {a.name}
+                           </motion.h3>
+                           <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium capitalize">
+                                 {a.institutionName}
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <motion.div layoutId={`button-${a.id}-${a.id}`}>
+                           <div className="text-right">
+                              <div className="text-lg font-semibold tabular-nums">
+                                 {new Intl.NumberFormat(undefined, {
+                                    style: 'currency',
+                                    currency: a.currency || 'EUR',
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                 }).format(a.balance || 0)}
+                              </div>
+                           </div>
+                        </motion.div>
+                     </div>
                   </div>
-                  <div className="tabular-nums">{a.balance.toFixed(2)}</div>
-               </li>
+               </motion.div>
             ))}
             {accounts.length === 0 && !loading && (
-               <li className="p-3 text-sm text-default-500">No accounts yet</li>
+               <div className="text-center text-sm text-default-500">
+                  <div className="w-full flex items-center justify-center py-10">
+                     <div className="wallet-container">
+                        <div className="wallet-bg"></div>
+                        <div className="wallet-icon">
+                           <div className="wallet"></div>
+                           <div className="card"></div>
+                           <div className="card"></div>
+                        </div>
+                        <h2 className="wallet-title">No accounts found</h2>
+                     </div>
+                  </div>
+               </div>
             )}
-         </ul>
+         </div>
+
 
          {showManualForm && (
             <form onSubmit={createManualAccount} className="p-4 rounded border border-default-200 bg-content1 space-y-3">
@@ -343,8 +429,6 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
             </form>
          )}
 
-
-
          {/* Choose account method Modal */}
          <AnimatePresence>
             {addDisclosure.isOpen ? (
@@ -354,9 +438,21 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                      animate={{ opacity: 1 }}
                      exit={{ opacity: 0 }}
                      className="fixed inset-0 bg-black/20 h-full w-full z-10"
-                     onClick={() => addDisclosure.onClose()}
+                     onClick={() => {
+                        if (!modalLoading && !institutionsLoading) {
+                           addDisclosure.onClose();
+                           setModalStep('method');
+                           setModalError(null);
+                        }
+                     }}
                   />
-                  <div className="fixed inset-0 grid place-items-center z-[100] overflow-hidden" onClick={() => addDisclosure.onClose()}>
+                  <div className="fixed inset-0 grid place-items-center z-[100] overflow-hidden" onClick={() => {
+                     if (!modalLoading && !institutionsLoading) {
+                        addDisclosure.onClose();
+                        setModalStep('method');
+                        setModalError(null);
+                     }
+                  }}>
                      <motion.div
                         layoutId="card-new-accounts"
                         className="w-full max-w-[700px] h-[100dvh] md:h-[90vh] flex flex-col bg-content1 sm:rounded-3xl overflow-hidden"
@@ -367,10 +463,16 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                            <div className="flex items-center gap-3">
                               {modalStep === 'institutions' && (
                                  <Button
-                                    onClick={() => setModalStep('method')}
+                                    onClick={() => {
+                                       if (!modalLoading) {
+                                          setModalStep('method');
+                                          setModalError(null);
+                                       }
+                                    }}
                                     variant="light"
                                     size="md"
                                     isIconOnly
+                                    isDisabled={modalLoading}
                                     className="mr-2"
                                  >
                                     <Icon icon="mdi:arrow-left" width={20} height={20} />
@@ -391,17 +493,44 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                            <div className="flex items-center gap-2">
                               <Button
                                  onClick={() => {
-                                    addDisclosure.onClose();
-                                    setModalStep('method');
+                                    if (!modalLoading && !institutionsLoading) {
+                                       addDisclosure.onClose();
+                                       setModalStep('method');
+                                       setModalError(null);
+                                    }
                                  }}
                                  variant="light"
                                  size="md"
                                  isIconOnly
+                                 isDisabled={modalLoading || institutionsLoading}
                               >
                                  <Icon icon="mdi:close" width={20} height={20} />
                               </Button>
                            </div>
                         </div>
+
+                        {/* Modal Error Display */}
+                        {modalError && (
+                           <div className="px-4 py-3 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
+                              <div className="flex items-start gap-3">
+                                 <Icon icon="mdi:alert-circle" className="text-red-500 mt-0.5 flex-shrink-0" width={20} height={20} />
+                                 <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-red-700 dark:text-red-200 font-medium">Connection Failed</p>
+                                    <p className="text-xs text-red-600 dark:text-red-300 mt-1">{modalError}</p>
+                                 </div>
+                                 <Button
+                                    onClick={() => setModalError(null)}
+                                    variant="light"
+                                    size="sm"
+                                    isIconOnly
+                                    className="text-red-500 hover:text-red-700 flex-shrink-0"
+                                 >
+                                    <Icon icon="mdi:close" width={16} height={16} />
+                                 </Button>
+                              </div>
+                           </div>
+                        )}
+
                         <div className={`relative flex-1 flex flex-col min-h-0 ${modalStep === 'method' ? 'py-6 px-4 sm:py-10 sm:px-10 overflow-y-auto sm:overflow-visible' : 'p-0'}`}>
                            {modalStep === 'method' ? (
                               <div className="flex flex-col xl:flex-row items-stretch justify-center w-full gap-6 mx-auto max-w-none">
@@ -747,15 +876,31 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                                           </div>
                                        </div>
                                     ) : (
-                                       <div className="space-y-4">
-                                          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                                             {displayedInstitutions.map((institution, index) => (
-                                                <InstitutionCard
-                                                   key={institution.id}
-                                                   institution={institution}
-                                                   index={index}
-                                                   onClick={() => handleInstitutionClick(institution.id)}
-                                                />
+                                       <div className="space-y-4 relative">
+                                          {/* Loading overlay for institution connection */}
+                                          {modalLoading && (
+                                             <div className="absolute inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg">
+                                                <div className="bg-content1 p-6 rounded-xl shadow-lg border border-divider">
+                                                   <div className="flex flex-col items-center gap-3">
+                                                      <LoaderOne size="md" />
+                                                      <div className="text-center">
+                                                         <p className="text-sm font-medium text-foreground">Connecting to your bank...</p>
+                                                         <p className="text-xs text-default-500 mt-1">This may take a few moments</p>
+                                                      </div>
+                                                   </div>
+                                                </div>
+                                             </div>
+                                          )}
+
+                                          <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                             {[{ id: "SANDBOXFINANCE_SFIN0000", name: "Test", }, ...displayedInstitutions].map((institution, index) => (
+                                                <div key={institution.id} className={modalLoading ? 'pointer-events-none opacity-60' : ''}>
+                                                   <InstitutionCard
+                                                      institution={institution}
+                                                      index={index}
+                                                      onClick={() => handleInstitutionClick(institution.id)}
+                                                   />
+                                                </div>
                                              ))}
                                           </div>
 

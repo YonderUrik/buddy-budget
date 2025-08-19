@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAccountsDueForSync } from "@/lib/sync-manager";
-import { gcGetAccountTransactions, GoCardlessTransaction } from "@/lib/gocardless";
+import { gcGetAccountTransactions, gcGetAccountDetails, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
 
 export async function POST(request: Request) {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     let totalErrors = 0;
 
     // Sync accounts sequentially to respect rate limits
-    for (const account of accountsDue.slice(0, 10)) { // Limit to 10 accounts at once
+    for (const account of accountsDue) {
       try {
         console.log(`Auto-syncing account: ${account.name} (${account.id})`);
         
@@ -67,7 +67,9 @@ export async function POST(request: Request) {
           transactionsCreated: syncResult.transactionsCreated,
           transactionsSkipped: syncResult.transactionsSkipped,
           errors: syncResult.errors,
-          apiCallsUsed: syncResult.apiCallsUsed
+          apiCallsUsed: syncResult.apiCallsUsed,
+          balanceUpdated: syncResult.balanceUpdated,
+          newBalance: syncResult.newBalance
         });
 
         totalTransactions += syncResult.transactionsCreated;
@@ -156,7 +158,7 @@ export async function GET() {
   }
 }
 
-async function syncAccount(account: any, userId: string) {
+export async function syncAccount(account: any, userId: string) {
   const startTime = Date.now();
   let apiCallsUsed = 0;
   
@@ -218,7 +220,8 @@ async function syncAccount(account: any, userId: string) {
           transactionsCreated: 0,
           transactionsSkipped: 0,
           errors: [],
-          apiCallsUsed
+          apiCallsUsed,
+          balanceUpdated: false
         };
       }
 
@@ -293,15 +296,48 @@ async function syncAccount(account: any, userId: string) {
         }
       }
 
+      // After syncing transactions, also update account balance if it has changed
+      let balanceUpdated = false;
+      let newBalance: number | undefined = undefined;
+      
+      try {
+        // Fetch current account details to get updated balance
+        console.log(`Fetching updated balance for account: ${account.name}`);
+        const { balances } = await gcGetAccountDetails(account.externalAccountId);
+        
+        const amountRaw = balances?.balances?.[0]?.balanceAmount?.amount;
+        const currentBalance = typeof amountRaw === "string" ? parseFloat(amountRaw) : (typeof amountRaw === "number" ? amountRaw : 0);
+        
+        // Check if balance has changed (with small tolerance for floating point precision)
+        const balanceDifference = Math.abs(currentBalance - (account.balance || 0));
+        if (balanceDifference > 0.01) {
+          // Update account balance in database
+          await (prisma as any).financialAccount.update({
+            where: { id: account.id },
+            data: { balance: currentBalance }
+          });
+          
+          balanceUpdated = true;
+          newBalance = currentBalance;
+          console.log(`Updated balance for ${account.name}: ${account.balance || 0} → ${currentBalance}`);
+        }
+        
+      } catch (balanceError: any) {
+        console.error(`Failed to update balance for ${account.name}:`, balanceError);
+        errors.push(`Balance update failed: ${balanceError.message}`);
+      }
+
       const syncDuration = Date.now() - startTime;
-      console.log(`Bulk sync completed for ${account.name} in ${syncDuration}ms: ${createdCount} created, ${skippedCount} skipped`);
+      console.log(`Bulk sync completed for ${account.name} in ${syncDuration}ms: ${createdCount} created, ${skippedCount} skipped, balance updated: ${balanceUpdated}`);
 
       return {
         success: true,
         transactionsCreated: createdCount,
         transactionsSkipped: skippedCount,
         errors,
-        apiCallsUsed
+        apiCallsUsed,
+        balanceUpdated,
+        newBalance
       };
 
     } catch (apiError: any) {
@@ -311,7 +347,8 @@ async function syncAccount(account: any, userId: string) {
         transactionsCreated: 0,
         transactionsSkipped: 0,
         errors: [`API error: ${apiError.message}`],
-        apiCallsUsed
+        apiCallsUsed,
+        balanceUpdated: false
       };
     }
 
@@ -322,7 +359,8 @@ async function syncAccount(account: any, userId: string) {
       transactionsCreated: 0,
       transactionsSkipped: 0,
       errors: [`Sync failed: ${error.message}`],
-      apiCallsUsed
+      apiCallsUsed,
+      balanceUpdated: false
     };
   }
 }

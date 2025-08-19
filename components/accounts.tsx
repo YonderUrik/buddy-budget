@@ -1,7 +1,7 @@
 "use client";
 
 import { Dictionary } from "@/types/dictionary";
-import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef, useId } from "react";
 import { currencyOptions } from "@/components/onboarding/stepper-form";
 import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert, Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
 import { IconWallet, IconLink } from "@tabler/icons-react";
@@ -10,6 +10,21 @@ import { Icon } from "@iconify/react";
 import { CanvasRevealEffect, RevealCard } from "./ui/canvas-reveal-effect";
 import { LoaderOne } from "./ui/loader";
 import { CometCard } from "./ui/comet-card";
+
+type Account = {
+   id: string;
+   name: string;
+   type: string;
+   icon: string;
+   color: string;
+   isActive: boolean;
+   provider?: string;
+   linked?: boolean;
+   currency?: string;
+   balance?: number;
+   institutionName?: string;
+   institutionLogo?: string;
+};
 
 // Memoized institution card component for better performance
 const InstitutionCard = React.memo(({ institution, index, onClick }: {
@@ -61,7 +76,7 @@ const InstitutionCard = React.memo(({ institution, index, onClick }: {
 
 InstitutionCard.displayName = 'InstitutionCard';
 
-export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Dictionary; userCurrency?: string }) {
+export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; userCurrency?: string }) {
    const [accounts, setAccounts] = useState<any[]>([]);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
@@ -70,11 +85,28 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
    const [modalLoading, setModalLoading] = useState(false);
    const [modalError, setModalError] = useState<string | null>(null);
 
-   const [manualForm, setManualForm] = useState({ 
-      name: "", 
-      type: "CASH", 
-      currency: userCurrency, 
-      balance: 0, 
+   // Edit modal states
+   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+   const [confirmOpen, setConfirmOpen] = useState<boolean>(false);
+   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+   const [editForm, setEditForm] = useState({
+      name: "",
+      type: "CASH",
+      currency: userCurrency,
+      balance: 0,
+      institutionName: "",
+      icon: "mdi:wallet-outline",
+      color: "#3b82f6"
+   });
+
+   const id = useId();
+   const ref = useRef<HTMLDivElement>(null);
+
+   const [manualForm, setManualForm] = useState({
+      name: "",
+      type: "CASH",
+      currency: userCurrency,
+      balance: 0,
       institutionName: "",
       icon: "mdi:wallet-outline",
       color: "#3b82f6"
@@ -101,11 +133,11 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
    const accountTypes = useMemo(() => [
-      { value: "CASH", label: "Cash" },
-      { value: "CHECKING", label: "Checking" },
-      { value: "SAVINGS", label: "Savings" },
-      { value: "CREDIT_CARD", label: "Credit Card" },
-      { value: "INVESTMENT", label: "Investment" },
+      { value: "CASH", label: "Cash", icon: "mdi:wallet-outline" },
+      { value: "CHECKING", label: "Checking", icon: "mdi:bank-outline" },
+      { value: "SAVINGS", label: "Savings", icon: "mdi:piggy-bank" },
+      { value: "CREDIT_CARD", label: "Credit Card", icon: "mdi:credit-card-outline" },
+      { value: "INVESTMENT", label: "Investment", icon: "mdi:chart-line" },
    ], []);
 
    const ACCOUNT_ICON_SET = useMemo(() => [
@@ -176,6 +208,21 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
       fetchAccounts();
    }, []);
 
+   useEffect(() => {
+      function onKeyDown(event: KeyboardEvent) {
+         if (event.key === "Escape") {
+            setIsEditModalOpen(false);
+         }
+      }
+      if (isEditModalOpen) {
+         document.body.style.overflow = "hidden";
+      } else {
+         document.body.style.overflow = "auto";
+      }
+      window.addEventListener("keydown", onKeyDown);
+      return () => window.removeEventListener("keydown", onKeyDown);
+   }, [isEditModalOpen]);
+
    async function createManualAccount(e: React.FormEvent) {
       e.preventDefault();
       setModalLoading(true);
@@ -189,10 +236,10 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
          if (!res.ok) throw new Error("Failed to create account");
          addDisclosure.onClose();
          setModalStep('method');
-         setManualForm({ 
-            name: "", 
-            type: "CASH", 
-            currency: userCurrency, 
+         setManualForm({
+            name: "",
+            type: "CASH",
+            currency: userCurrency,
             balance: 0,
             institutionName: "",
             icon: "mdi:wallet-outline",
@@ -334,6 +381,75 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
       }
    }
 
+   function openEditModal(account: Account) {
+      setEditingAccount(account);
+      setEditForm({
+         name: account.name || "",
+         type: account.type || "CASH",
+         currency: account.currency || userCurrency,
+         balance: account.balance || 0,
+         institutionName: account.institutionName || "",
+         icon: account.icon || "mdi:wallet-outline",
+         color: account.color || "#3b82f6"
+      });
+      setIsEditModalOpen(true);
+   }
+
+   async function handleEditSubmit(e: React.FormEvent) {
+      e.preventDefault();
+      if (!editingAccount) return;
+
+      setModalLoading(true);
+      setModalError(null);
+
+      try {
+         const isLinkedAccount = editingAccount.provider !== 'manual';
+
+         // For linked accounts, only send name
+         const payload = isLinkedAccount
+            ? { name: editForm.name }
+            : editForm;
+
+         const res = await fetch(`/api/accounts/${editingAccount.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+         });
+
+         if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err?.error || "Failed to update account");
+         }
+
+         const updated = await res.json();
+         setAccounts((prev) => prev.map((a) => (a.id === updated.id ? { ...a, ...updated } : a)));
+         setIsEditModalOpen(false);
+         setEditingAccount(null);
+      } catch (err: any) {
+         setModalError(err?.message || "Failed to update account");
+      } finally {
+         setModalLoading(false);
+      }
+   }
+
+   async function handleDeleteAccount() {
+      if (!editingAccount) return;
+
+      try {
+         const res = await fetch(`/api/accounts/${editingAccount.id}`, { method: "DELETE" });
+         if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err?.error || "Failed to delete account");
+         }
+
+         setAccounts((prev) => prev.filter((a) => a.id !== editingAccount.id));
+         setIsEditModalOpen(false);
+         setEditingAccount(null);
+      } catch (err: any) {
+         setModalError(err?.message || "Failed to delete account");
+      }
+   }
+
    return (
       <div className="max-w-2xl mx-auto w-full ">
          <div className="flex items-center justify-between mb-6">
@@ -365,16 +481,16 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
 
 
          <div className="w-full flex flex-col gap-3">
-            {accounts.map((a, index) => (
+            {accounts.map((a) => (
                <motion.div
-                  layoutId={`card-${a.id}-${a.id}`}
-                  key={`card-${a.id}-${a.id}`}
-                  // onClick={() => openEditModal(a)}
+                  layoutId={`card-${a.id}-${id}`}
+                  key={`card-${a.id}-${id}`}
+                  onClick={() => openEditModal(a)}
                   className="p-4 bg-content1 hover:bg-content2 rounded-large cursor-pointer ring-1 ring-primary/20 transition-colors"
                >
                   <div className="flex items-center justify-between gap-4">
                      <div className="flex items-center gap-4">
-                        <motion.div layoutId={`image-${a.id}-${a.id}`} className="relative">
+                        <motion.div layoutId={`image-${a.id}-${id}`} className="relative">
                            {a.institutionLogo ? (
                               <img
                                  width={48}
@@ -398,7 +514,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                            )}
                         </motion.div>
                         <div className="flex flex-col">
-                           <motion.h3 layoutId={`title-${a.id}-${a.id}`} className="text-foreground font-medium">
+                           <motion.h3 layoutId={`title-${a.id}-${id}`} className="text-foreground font-medium">
                               {a.name}
                            </motion.h3>
                            <div className="flex items-center gap-2">
@@ -409,18 +525,32 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                         </div>
                      </div>
                      <div className="flex items-center gap-2">
-                        <motion.div layoutId={`button-${a.id}-${a.id}`}>
-                           <div className="text-right">
-                              <div className="text-lg font-semibold tabular-nums">
-                                 {new Intl.NumberFormat(undefined, {
-                                    style: 'currency',
-                                    currency: a.currency || 'EUR',
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                 }).format(a.balance || 0)}
-                              </div>
+                        <div className="text-right">
+                           <div className="text-lg font-semibold tabular-nums">
+                              {(() => {
+                                 const balance = a.balance || 0;
+                                 const absBalance = Math.abs(balance);
+
+                                 if (absBalance >= 1000000) {
+                                    return new Intl.NumberFormat(undefined, {
+                                       style: 'currency',
+                                       currency: a.currency || 'EUR',
+                                       minimumFractionDigits: 1,
+                                       maximumFractionDigits: 1,
+                                       notation: 'compact',
+                                       compactDisplay: 'short'
+                                    }).format(balance);
+                                 } else {
+                                    return new Intl.NumberFormat(undefined, {
+                                       style: 'currency',
+                                       currency: a.currency || 'EUR',
+                                       minimumFractionDigits: 2,
+                                       maximumFractionDigits: 2
+                                    }).format(balance);
+                                 }
+                              })()}
                            </div>
-                        </motion.div>
+                        </div>
                      </div>
                   </div>
                </motion.div>
@@ -478,7 +608,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                            <div className="flex items-center gap-3">
                               {(modalStep === 'institutions' || modalStep === 'manual') && (
                                  <Button
-                                    onClick={() => {
+                                    onPress={() => {
                                        if (!modalLoading) {
                                           setModalStep('method');
                                           setModalError(null);
@@ -495,22 +625,22 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                               )}
                               <div>
                                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                                    {modalStep === 'method' ? 'Add Account' : 
-                                     modalStep === 'manual' ? 'Create Manual Account' : 'Choose Your Bank'}
+                                    {modalStep === 'method' ? 'Add Account' :
+                                       modalStep === 'manual' ? 'Create Manual Account' : 'Choose Your Bank'}
                                  </h2>
                                  <p className="text-default-600 text-sm">
                                     {modalStep === 'method'
                                        ? 'Choose your preferred setup method'
                                        : modalStep === 'manual'
-                                       ? 'Set up a manual account with custom details'
-                                       : 'Securely connect your bank to import balances and transactions'
+                                          ? 'Set up a manual account with custom details'
+                                          : 'Securely connect your bank to import balances and transactions'
                                     }
                                  </p>
                               </div>
                            </div>
                            <div className="flex items-center gap-2">
                               <Button
-                                 onClick={() => {
+                                 onPress={() => {
                                     if (!modalLoading && !institutionsLoading) {
                                        addDisclosure.onClose();
                                        setModalStep('method');
@@ -537,7 +667,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                     <p className="text-xs text-red-600 dark:text-red-300 mt-1">{modalError}</p>
                                  </div>
                                  <Button
-                                    onClick={() => setModalError(null)}
+                                    onPress={() => setModalError(null)}
                                     variant="light"
                                     size="sm"
                                     isIconOnly
@@ -577,9 +707,9 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                           <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
                                              <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
                                                 <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
-                                                   <Chip 
-                                                      variant="flat" 
-                                                      size="sm" 
+                                                   <Chip
+                                                      variant="flat"
+                                                      size="sm"
                                                       className="mb-3 bg-primary/15 text-primary font-semibold px-3 py-1 border border-primary/20"
                                                    >
                                                       ✨ Quick & Easy
@@ -588,7 +718,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                                       Manual Account
                                                    </h3>
                                                    <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
-                                                      Perfect for cash, crypto, or any offline accounts
+                                                      Perfect for cash and liquid assets
                                                    </p>
                                                 </CardHeader>
                                                 <CardBody className="pt-2 pb-6 px-6 space-y-4">
@@ -598,8 +728,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                                             <Icon icon="mdi:lightning-bolt" className="text-primary w-3 h-3" />
                                                          </div>
                                                          <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Quick Setup</div>
-                                                            <div className="text-default-500 text-xs">Ready in under a minute</div>
+                                                            <div className="font-semibold text-foreground">Instant Setup</div>
+                                                            <div className="text-default-500 text-xs">No bank connection required</div>
                                                          </div>
                                                       </div>
                                                       <div className="flex items-start gap-3">
@@ -607,8 +737,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                                             <Icon icon="mdi:shield-check" className="text-primary w-3 h-3" />
                                                          </div>
                                                          <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Complete Privacy</div>
-                                                            <div className="text-default-500 text-xs">Your data stays local</div>
+                                                            <div className="font-semibold text-foreground">Your Control</div>
+                                                            <div className="text-default-500 text-xs">Manually track transactions</div>
                                                          </div>
                                                       </div>
                                                       <div className="flex items-start gap-3">
@@ -616,8 +746,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                                             <Icon icon="mdi:tune-variant" className="text-primary w-3 h-3" />
                                                          </div>
                                                          <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Full Flexibility</div>
-                                                            <div className="text-default-500 text-xs">Any account type supported</div>
+                                                            <div className="font-semibold text-foreground">Liquid Assets</div>
+                                                            <div className="text-default-500 text-xs">Cash, savings & liquid accounts</div>
                                                          </div>
                                                       </div>
                                                    </div>
@@ -653,9 +783,9 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                           <div className="absolute inset-0 flex flex-col items-center justify-center p-4 rounded-3xl">
                                              <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
                                                 <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
-                                                   <Chip 
-                                                      variant="flat" 
-                                                      size="sm" 
+                                                   <Chip
+                                                      variant="flat"
+                                                      size="sm"
                                                       className="mb-3 bg-secondary/15 text-secondary font-semibold px-3 py-1 border border-secondary/20"
                                                    >
                                                       🔒 Bank Grade Security
@@ -726,7 +856,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                           variant="flat"
                                           className="col-span-1 sm:col-span-2"
                                        />
-                                       
+
                                        <Select
                                           label="Account Type"
                                           selectedKeys={[manualForm.type]}
@@ -743,7 +873,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                              return (
                                                 <span className="flex items-center gap-2">
                                                    <div className="h-5 w-5 rounded-lg flex items-center justify-center" style={{ backgroundColor: manualForm.color, opacity: 0.8 }}>
-                                                      <Icon icon={manualForm.icon} className="text-white text-sm" />
+                                                      <Icon icon={type?.icon || "mdi:wallet-outline"} className="text-white text-sm" />
                                                    </div>
                                                    <span className="font-medium">{type?.label}</span>
                                                 </span>
@@ -754,7 +884,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                              <SelectItem key={type.value} textValue={type.label}>
                                                 <span className="flex items-center gap-3">
                                                    <div className="h-6 w-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: manualForm.color, opacity: 0.8 }}>
-                                                      <Icon icon={manualForm.icon} className="text-white text-sm" />
+                                                      <Icon icon={type?.icon} className="text-white text-sm" />
                                                    </div>
                                                    <span className="font-medium">{type.label}</span>
                                                 </span>
@@ -824,12 +954,12 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                           <label className="text-small text-foreground font-medium">Icon</label>
                                           <Popover placement="bottom-start">
                                              <PopoverTrigger>
-                                                <button 
-                                                   type="button" 
+                                                <button
+                                                   type="button"
                                                    className="flex items-center justify-center px-3 py-3 rounded-medium bg-default-100 hover:bg-default-200 transition-colors"
                                                 >
-                                                   <div 
-                                                      className="h-8 w-8 rounded-small flex items-center justify-center" 
+                                                   <div
+                                                      className="h-8 w-8 rounded-small flex items-center justify-center"
                                                       style={{ backgroundColor: manualForm.color }}
                                                    >
                                                       <Icon icon={manualForm.icon || "mdi:wallet-outline"} className="text-white text-xl" />
@@ -843,9 +973,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                                          key={ic}
                                                          type="button"
                                                          onClick={() => setManualForm((s) => ({ ...s, icon: ic }))}
-                                                         className={`h-10 w-10 rounded-medium flex items-center justify-center border border-default-200 hover:bg-default-100 transition-colors ${
-                                                            manualForm.icon === ic ? "ring-2 ring-primary" : ""
-                                                         }`}
+                                                         className={`h-10 w-10 rounded-medium flex items-center justify-center border border-default-200 hover:bg-default-100 transition-colors ${manualForm.icon === ic ? "ring-2 ring-primary" : ""
+                                                            }`}
                                                       >
                                                          <Icon icon={ic} className="text-xl text-foreground" />
                                                       </button>
@@ -859,8 +988,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                           <label className="text-small text-foreground font-medium">Color</label>
                                           <Popover placement="bottom-start">
                                              <PopoverTrigger>
-                                                <button 
-                                                   type="button" 
+                                                <button
+                                                   type="button"
                                                    className="flex items-center gap-3 px-3 py-3 rounded-medium bg-default-100 hover:bg-default-200 transition-colors"
                                                 >
                                                    <div className="h-7 w-7 rounded-small" style={{ backgroundColor: manualForm.color }} />
@@ -874,9 +1003,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                                                          key={c}
                                                          type="button"
                                                          onClick={() => setManualForm((s) => ({ ...s, color: c }))}
-                                                         className={`h-8 w-8 rounded-small border border-default-200 transition-all ${
-                                                            manualForm.color === c ? "ring-2 ring-primary scale-110" : "hover:scale-105"
-                                                         }`}
+                                                         className={`h-8 w-8 rounded-small border border-default-200 transition-all ${manualForm.color === c ? "ring-2 ring-primary scale-110" : "hover:scale-105"
+                                                            }`}
                                                          style={{ backgroundColor: c }}
                                                       />
                                                    ))}
@@ -1167,6 +1295,303 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Diction
                </>
             ) : null}
          </AnimatePresence>
+
+         {/* Edit Account Modal */}
+         <AnimatePresence>
+            {isEditModalOpen && (
+               <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/20 h-full w-full z-10"
+                  onClick={() => setIsEditModalOpen(false)}
+               />
+            )}
+         </AnimatePresence>
+
+         <AnimatePresence>
+            {isEditModalOpen ? (
+               <div className="fixed inset-0 grid place-items-center z-[100]" onClick={() => setIsEditModalOpen(false)}>
+                  <motion.div
+                     layoutId={`card-${editingAccount?.id}-${id}`}
+                     ref={ref}
+                     className="w-full max-w-[500px] h-[100dvh] md:h-fit md:max-h-[90vh] flex flex-col bg-content1 sm:rounded-3xl overflow-hidden"
+                     onClick={(e) => e.stopPropagation()}
+                     onMouseDown={(e) => e.stopPropagation()}
+                  >
+                     <div className="flex justify-between items-start p-4 border-b border-divider">
+                        <div className="flex items-center gap-3">
+                           <div className="h-10 w-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: editForm.color }}>
+                              <Icon icon={editForm.icon || "mdi:wallet-outline"} className="text-xl" />
+                           </div>
+                           <div className="flex flex-col">
+                              <motion.h3 layoutId={`title-${editingAccount?.id}-${id}`} className="font-bold text-foreground">
+                                 Edit Account
+                              </motion.h3>
+                              <div className="flex items-center gap-2 text-default-500 text-small">
+                                 {editingAccount?.provider !== 'manual' && (
+                                    <Icon icon="mdi:link-variant" className="text-xs" />
+                                 )}
+                                 <span className="capitalize">{editingAccount?.type || 'Account'}</span>
+                              </div>
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           {editingAccount && (
+                              <Button
+                                 onPress={() => {
+                                    setConfirmOpen(true);
+                                 }}
+                                 color="danger"
+                                 variant="light"
+                                 size="md"
+                                 isIconOnly
+                              >
+                                 <Icon icon="mdi:trash-can-outline" className="text-base" width={20} height={20} />
+                              </Button>
+                           )}
+                           <Button
+                              onPress={() => setIsEditModalOpen(false)}
+                              variant="light"
+                              size="md"
+                              isIconOnly
+                           >
+                              <Icon icon="mdi:close" width={20} height={20} />
+                           </Button>
+                        </div>
+                     </div>
+
+                     {modalError && (
+                        <Alert color="danger" className="mx-4 mt-4">
+                           {modalError}
+                        </Alert>
+                     )}
+
+                     <div className="pt-1 relative px-4 flex-1 flex flex-col min-h-0 mt-5">
+                        <motion.form
+                           layout
+                           initial={{ opacity: 0 }}
+                           animate={{ opacity: 1 }}
+                           exit={{ opacity: 0 }}
+                           onSubmit={handleEditSubmit}
+                           className="text-foreground text-sm flex-1 pb-6 flex flex-col gap-5 overflow-auto md:overflow-visible"
+                        >
+                           <div className="grid grid-cols-1 gap-4">
+                              <Input
+                                 label="Account Name"
+                                 value={editForm.name}
+                                 onChange={(e) => setEditForm((s) => ({ ...s, name: e.target.value }))}
+                                 isRequired
+                                 placeholder="e.g. Main Savings"
+                                 variant="flat"
+                              />
+
+                              {editingAccount?.provider === 'manual' && (
+                                 <>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                       <Select
+                                          label="Account Type"
+                                          selectedKeys={[editForm.type]}
+                                          isRequired
+                                          onSelectionChange={(keys) => {
+                                             const selectedType = Array.from(keys)[0] as string;
+                                             if (selectedType) {
+                                                setEditForm((s) => ({ ...s, type: selectedType }));
+                                             }
+                                          }}
+                                          variant="flat"
+                                       >
+                                          {accountTypes.map((type) => (
+                                             <SelectItem key={type.value} textValue={type.label}>
+                                                <span className="flex items-center gap-3">
+                                                   <div className="h-6 w-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: editForm.color, opacity: 0.8 }}>
+                                                      <Icon icon={type.icon} className="text-white text-sm" />
+                                                   </div>
+                                                   <span className="font-medium">{type.label}</span>
+                                                </span>
+                                             </SelectItem>
+                                          ))}
+                                       </Select>
+
+                                       <Select
+                                          label="Currency"
+                                          selectedKeys={[editForm.currency]}
+                                          isRequired
+                                          onSelectionChange={(keys) => {
+                                             const selectedCurrency = Array.from(keys)[0] as string;
+                                             if (selectedCurrency) {
+                                                setEditForm((s) => ({ ...s, currency: selectedCurrency }));
+                                             }
+                                          }}
+                                          variant="flat"
+                                       >
+                                          {currencyOptions.map((currency) => (
+                                             <SelectItem key={currency.code} textValue={`${currency.code} - ${currency.name}`}>
+                                                <span className="flex items-center justify-between w-full">
+                                                   <span>{currency.name}</span>
+                                                   <span className="text-sm text-default-500">{currency.symbol}</span>
+                                                </span>
+                                             </SelectItem>
+                                          ))}
+                                       </Select>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                       <Input
+                                          label="Balance"
+                                          placeholder="0.00"
+                                          type="number"
+                                          step="0.01"
+                                          value={editForm.balance.toString()}
+                                          onChange={(e) => setEditForm((s) => ({ ...s, balance: parseFloat(e.target.value) || 0 }))}
+                                          variant="flat"
+                                          startContent={
+                                             <div className="pointer-events-none flex items-center">
+                                                <span className="text-default-400 text-small">{editForm.currency}</span>
+                                             </div>
+                                          }
+                                       />
+
+                                       <Input
+                                          label="Institution Name (Optional)"
+                                          placeholder="e.g. Personal Cash"
+                                          value={editForm.institutionName}
+                                          onChange={(e) => setEditForm((s) => ({ ...s, institutionName: e.target.value }))}
+                                          variant="flat"
+                                       />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                       <div className="flex flex-col gap-2">
+                                          <label className="text-small text-foreground">Icon</label>
+                                          <Popover placement="bottom-start">
+                                             <PopoverTrigger>
+                                                <button type="button" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} className="flex items-center justify-center px-3 py-2 rounded-medium bg-default-100 hover:bg-default-200">
+                                                   <div className="h-7 w-7 rounded-small flex items-center justify-center" style={{ backgroundColor: editForm.color }}>
+                                                      <Icon icon={editForm.icon} className="text-white text-lg" />
+                                                   </div>
+                                                </button>
+                                             </PopoverTrigger>
+                                             <PopoverContent className="p-3 max-w-xs" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                                                <div className="grid grid-cols-6 gap-2">
+                                                   {ACCOUNT_ICON_SET.map((ic) => (
+                                                      <button
+                                                         key={ic}
+                                                         type="button"
+                                                         onClick={() => setEditForm((s) => ({ ...s, icon: ic }))}
+                                                         className={`h-10 w-10 rounded-medium flex items-center justify-center border border-default-200 hover:bg-default-100 ${editForm.icon === ic ? "ring-2 ring-primary" : ""}`}
+                                                      >
+                                                         <Icon icon={ic} className="text-xl text-foreground" />
+                                                      </button>
+                                                   ))}
+                                                </div>
+                                             </PopoverContent>
+                                          </Popover>
+                                       </div>
+
+                                       <div className="flex flex-col gap-2">
+                                          <label className="text-small text-foreground">Color</label>
+                                          <Popover placement="bottom-start">
+                                             <PopoverTrigger>
+                                                <button type="button" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()} className="flex items-center gap-3 px-3 py-2 rounded-medium bg-default-100 hover:bg-default-200">
+                                                   <div className="h-7 w-7 rounded-small" style={{ backgroundColor: editForm.color }} />
+                                                   <span className="text-sm text-default-700">{editForm.color}</span>
+                                                </button>
+                                             </PopoverTrigger>
+                                             <PopoverContent className="p-3 max-w-xs" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
+                                                <div className="grid grid-cols-7 gap-2">
+                                                   {COLOR_SWATCHES.map((c) => (
+                                                      <button
+                                                         key={c}
+                                                         type="button"
+                                                         onClick={() => setEditForm((s) => ({ ...s, color: c }))}
+                                                         className={`h-8 w-8 rounded-small border border-default-200 ${editForm.color === c ? "ring-2 ring-primary" : ""}`}
+                                                         style={{ backgroundColor: c }}
+                                                      />
+                                                   ))}
+                                                </div>
+                                                <div className="mt-3">
+                                                   <Input
+                                                      size="sm"
+                                                      placeholder="#3b82f6"
+                                                      value={editForm.color}
+                                                      onChange={(e) => setEditForm((s) => ({ ...s, color: e.target.value }))}
+                                                   />
+                                                </div>
+                                             </PopoverContent>
+                                          </Popover>
+                                       </div>
+                                    </div>
+                                 </>
+                              )}
+
+                              {editingAccount?.provider !== 'manual' && (
+                                 <Alert color="warning" variant="flat">
+                                    <div className="flex items-start gap-3">
+                                       <Icon icon="mdi:link-variant" className="text-warning flex-shrink-0 mt-0.5" />
+                                       <div>
+                                          <p className="font-medium">Linked Account</p>
+                                          <p className="text-sm">Only the name can be edited for linked accounts. Other details are managed by your bank.</p>
+                                       </div>
+                                    </div>
+                                 </Alert>
+                              )}
+                           </div>
+
+                           <div className="flex items-center justify-end gap-2 mt-2">
+                              <Button
+                                 type="button"
+                                 onPress={() => setIsEditModalOpen(false)}
+                                 variant="flat"
+                                 color="default"
+                                 startContent={<Icon icon="mdi:close" className="text-base" />}
+                              >
+                                 Cancel
+                              </Button>
+                              <motion.div layoutId={`button-${editingAccount?.id}-${id}`}>
+                                 <Button
+                                    type="submit"
+                                    color="primary"
+                                    isLoading={modalLoading}
+                                    startContent={!modalLoading && <Icon icon="mdi:content-save-outline" className="text-base" />}
+                                 >
+                                    Save Changes
+                                 </Button>
+                              </motion.div>
+                           </div>
+                        </motion.form>
+                     </div>
+
+                     {confirmOpen && (
+                        <div className="absolute inset-0 flex items-end md:items-center justify-center z-[110]" onClick={() => setConfirmOpen(false)}>
+                           <div className="fixed inset-0 bg-black/30" />
+                           <div className="relative m-4 w-full max-w-sm rounded-large bg-content1 p-4 shadow-large" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-start gap-3">
+                                 <div className="h-10 w-10 rounded-full bg-danger/20 text-danger flex items-center justify-center">
+                                    <Icon icon="mdi:trash-can-outline" />
+                                 </div>
+                                 <div className="flex-1">
+                                    <h4 className="font-semibold text-foreground mb-1">Delete Account?</h4>
+                                    <p className="text-small text-default-500">
+                                       {editingAccount?.provider !== 'manual'
+                                          ? "This will archive the account and preserve transaction history."
+                                          : "This will permanently delete the account and all its transactions."
+                                       }
+                                    </p>
+                                 </div>
+                              </div>
+                              <div className="mt-4 flex items-center justify-end gap-2">
+                                 <Button variant="flat" onPress={() => setConfirmOpen(false)}>Cancel</Button>
+                                 <Button color="danger" onPress={async () => { await handleDeleteAccount(); setConfirmOpen(false); }}>Delete</Button>
+                              </div>
+                           </div>
+                        </div>
+                     )}
+                  </motion.div>
+               </div>
+            ) : null}
+         </AnimatePresence>
+
       </div >
    );
 }

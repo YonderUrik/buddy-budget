@@ -12,7 +12,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 
   const userId = (session.user as any).id as string;
-  const { id: accountId } = await params;
+  const { id: accountId } = params;
 
   try {
     // First, check if account exists and belongs to user
@@ -89,14 +89,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
   const session = await getSession();
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userId = (session.user as any).id as string;
-  const { id: accountId } = await params;
+  const { id: accountId } = params;
 
   try {
     // Check if account exists and belongs to user

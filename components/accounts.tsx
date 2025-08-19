@@ -10,6 +10,7 @@ import { Icon } from "@iconify/react";
 import { CanvasRevealEffect, RevealCard } from "./ui/canvas-reveal-effect";
 import { LoaderOne } from "./ui/loader";
 import { CometCard } from "./ui/comet-card";
+import { AccountLineChart } from "./ui/account-line-chart";
 
 type Account = {
    id: string;
@@ -24,6 +25,10 @@ type Account = {
    balance?: number;
    institutionName?: string;
    institutionLogo?: string;
+   chartData?: Array<{
+      date: string;
+      balance: number;
+   }>;
 };
 
 // Memoized institution card component for better performance
@@ -488,70 +493,111 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                   onClick={() => openEditModal(a)}
                   className="p-4 bg-content1 hover:bg-content2 rounded-large cursor-pointer ring-1 ring-primary/20 transition-colors"
                >
-                  <div className="flex items-center justify-between gap-4">
-                     <div className="flex items-center gap-4">
-                        <motion.div layoutId={`image-${a.id}-${id}`} className="relative">
-                           {a.institutionLogo ? (
-                              <img
-                                 width={48}
-                                 height={48}
-                                 src={a.institutionLogo}
-                                 alt={a.name}
-                                 className="w-12 h-12 rounded-medium object-contain bg-white p-1"
-                              />
-                           ) : (
-                              <div
-                                 className="h-12 w-12 rounded-medium flex items-center justify-center"
-                                 style={{ backgroundColor: a.color || "#3b82f6" }}
-                              >
-                                 <Icon icon={a.icon || "mdi:wallet-outline"} className="text-white text-2xl" />
+                  <div className="flex flex-col gap-3">
+                     <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                           <motion.div layoutId={`image-${a.id}-${id}`} className="relative">
+                              {a.institutionLogo ? (
+                                 <img
+                                    width={48}
+                                    height={48}
+                                    src={a.institutionLogo}
+                                    alt={a.name}
+                                    className="w-12 h-12 rounded-medium object-contain bg-white p-1"
+                                 />
+                              ) : (
+                                 <div
+                                    className="h-12 w-12 rounded-medium flex items-center justify-center"
+                                    style={{ backgroundColor: a.color || "#3b82f6" }}
+                                 >
+                                    <Icon icon={a.icon || "mdi:wallet-outline"} className="text-white text-2xl" />
+                                 </div>
+                              )}
+                              {a.provider === 'gocardless' && (
+                                 <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
+                                    <Icon icon="mdi:link-variant" className="text-white text-xs" />
+                                 </div>
+                              )}
+                           </motion.div>
+                           <div className="flex flex-col">
+                              <motion.h3 layoutId={`title-${a.id}-${id}`} className="text-foreground font-medium">
+                                 {a.name}
+                              </motion.h3>
+                              <div className="flex items-center gap-2">
+                                 <span className="text-xs font-medium capitalize">
+                                    {a.institutionName}
+                                 </span>
                               </div>
-                           )}
-                           {a.provider === 'gocardless' && (
-                              <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
-                                 <Icon icon="mdi:link-variant" className="text-white text-xs" />
-                              </div>
-                           )}
-                        </motion.div>
-                        <div className="flex flex-col">
-                           <motion.h3 layoutId={`title-${a.id}-${id}`} className="text-foreground font-medium">
-                              {a.name}
-                           </motion.h3>
-                           <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium capitalize">
-                                 {a.institutionName}
-                              </span>
                            </div>
                         </div>
-                     </div>
-                     <div className="flex items-center gap-2">
-                        <div className="text-right">
-                           <div className="text-lg font-semibold tabular-nums">
-                              {(() => {
-                                 const balance = a.balance || 0;
-                                 const absBalance = Math.abs(balance);
+                        <div className="flex items-center gap-2">
+                           <div className="text-right">
+                              <div className="text-lg font-semibold tabular-nums">
+                                 {(() => {
+                                    const balance = a.balance || 0;
+                                    const absBalance = Math.abs(balance);
 
-                                 if (absBalance >= 1000000) {
-                                    return new Intl.NumberFormat(undefined, {
-                                       style: 'currency',
-                                       currency: a.currency || 'EUR',
-                                       minimumFractionDigits: 1,
-                                       maximumFractionDigits: 1,
-                                       notation: 'compact',
-                                       compactDisplay: 'short'
-                                    }).format(balance);
-                                 } else {
-                                    return new Intl.NumberFormat(undefined, {
-                                       style: 'currency',
-                                       currency: a.currency || 'EUR',
-                                       minimumFractionDigits: 2,
-                                       maximumFractionDigits: 2
-                                    }).format(balance);
-                                 }
-                              })()}
+                                    if (absBalance >= 1000000) {
+                                       return new Intl.NumberFormat(undefined, {
+                                          style: 'currency',
+                                          currency: a.currency || 'EUR',
+                                          minimumFractionDigits: 1,
+                                          maximumFractionDigits: 1,
+                                          notation: 'compact',
+                                          compactDisplay: 'short'
+                                       }).format(balance);
+                                    } else {
+                                       return new Intl.NumberFormat(undefined, {
+                                          style: 'currency',
+                                          currency: a.currency || 'EUR',
+                                          minimumFractionDigits: 2,
+                                          maximumFractionDigits: 2
+                                       }).format(balance);
+                                    }
+                                 })()}
+                              </div>
                            </div>
                         </div>
                      </div>
+                     
+                     {/* Line Chart for Last 90 Days */}
+                     {a.chartData && a.chartData.length > 0 && (
+                        <div className="flex items-center gap-3 pt-2 border-t border-divider/50">
+                           <div className="flex-1">
+                              <AccountLineChart
+                                 data={a.chartData}
+                                 currency={a.currency || 'EUR'}
+                                 color={a.color || "#4D9CB9"}
+                                 height={50}
+                              />
+                           </div>
+                           <div className="flex flex-col items-end gap-1">
+                              <span className="text-xs text-default-500">Last 90 days</span>
+                              <div className="flex items-center gap-1">
+                                 {(() => {
+                                    if (a.chartData.length < 2) return null;
+                                    const firstBalance = a.chartData[0].balance;
+                                    const lastBalance = a.chartData[a.chartData.length - 1].balance;
+                                    const change = lastBalance - firstBalance;
+                                    const changePercent = firstBalance !== 0 ? (change / Math.abs(firstBalance)) * 100 : 0;
+                                    const isPositive = change >= 0;
+                                    
+                                    return (
+                                       <>
+                                          <Icon 
+                                             icon={isPositive ? "mdi:trending-up" : "mdi:trending-down"} 
+                                             className={`text-xs ${isPositive ? "text-success" : "text-danger"}`} 
+                                          />
+                                          <span className={`text-xs font-medium ${isPositive ? "text-success" : "text-danger"}`}>
+                                             {isPositive ? "+" : ""}{changePercent.toFixed(1)}%
+                                          </span>
+                                       </>
+                                    );
+                                 })()}
+                              </div>
+                           </div>
+                        </div>
+                     )}
                   </div>
                </motion.div>
             ))}
@@ -1025,7 +1071,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                     <div className="flex items-center justify-end gap-3 mt-auto pt-4">
                                        <Button
                                           type="button"
-                                          onClick={() => setModalStep('method')}
+                                          onPress={() => setModalStep('method')}
                                           variant="flat"
                                           color="default"
                                           startContent={<Icon icon="mdi:arrow-left" className="text-base" />}

@@ -1528,7 +1528,6 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                               {editingAccount?.provider !== 'manual' && (
                                  <Alert color="warning" variant="flat">
                                     <div className="flex items-start gap-3">
-                                       <Icon icon="mdi:link-variant" className="text-warning flex-shrink-0 mt-0.5" />
                                        <div>
                                           <p className="font-medium">Linked Account</p>
                                           <p className="text-sm">Only the name can be edited for linked accounts. Other details are managed by your bank.</p>

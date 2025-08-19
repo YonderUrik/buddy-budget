@@ -2,7 +2,8 @@
 
 import { Dictionary } from "@/types/dictionary";
 import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert } from "@heroui/react";
+import { currencyOptions } from "@/components/onboarding/stepper-form";
+import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert, Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
 import { IconWallet, IconLink } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@iconify/react";
@@ -60,7 +61,7 @@ const InstitutionCard = React.memo(({ institution, index, onClick }: {
 
 InstitutionCard.displayName = 'InstitutionCard';
 
-export default function Accounts({ dict }: { dict: Dictionary }) {
+export default function Accounts({ dict, userCurrency = "EUR" }: { dict: Dictionary; userCurrency?: string }) {
    const [accounts, setAccounts] = useState<any[]>([]);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
@@ -69,10 +70,17 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
    const [modalLoading, setModalLoading] = useState(false);
    const [modalError, setModalError] = useState<string | null>(null);
 
-   const [showManualForm, setShowManualForm] = useState(false);
-   const [manualForm, setManualForm] = useState({ name: "", type: "CASH", currency: "EUR", balance: 0 });
+   const [manualForm, setManualForm] = useState({ 
+      name: "", 
+      type: "CASH", 
+      currency: userCurrency, 
+      balance: 0, 
+      institutionName: "",
+      icon: "mdi:wallet-outline",
+      color: "#3b82f6"
+   });
 
-   const [modalStep, setModalStep] = useState<'method' | 'institutions'>('method');
+   const [modalStep, setModalStep] = useState<'method' | 'institutions' | 'manual'>('method');
    const addDisclosure = useDisclosure({
       onClose: () => {
          // Reset modal states when closing
@@ -98,6 +106,45 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
       { value: "SAVINGS", label: "Savings" },
       { value: "CREDIT_CARD", label: "Credit Card" },
       { value: "INVESTMENT", label: "Investment" },
+   ], []);
+
+   const ACCOUNT_ICON_SET = useMemo(() => [
+      "mdi:wallet-outline",
+      "mdi:bank-outline",
+      "mdi:credit-card-outline",
+      "mdi:cash-multiple",
+      "mdi:piggy-bank",
+      "mdi:chart-line",
+      "mdi:safe",
+      "mdi:account-cash-outline",
+      "mdi:card-account-details-outline",
+      "mdi:currency-usd",
+      "mdi:currency-eur",
+      "mdi:currency-gbp",
+      "mdi:bitcoin",
+      "mdi:ethereum",
+      "proicons:bank",
+      "mdi:treasure-chest",
+      "mdi:briefcase-outline",
+      "mdi:account-balance-wallet-outline",
+   ], []);
+
+   const COLOR_SWATCHES = useMemo(() => [
+      "#ef4444", // red-500
+      "#f97316", // orange-500
+      "#f59e0b", // amber-500
+      "#84cc16", // lime-500
+      "#22c55e", // green-500
+      "#10b981", // emerald-500
+      "#14b8a6", // teal-500
+      "#06b6d4", // cyan-500
+      "#3b82f6", // blue-500
+      "#6366f1", // indigo-500
+      "#8b5cf6", // violet-500
+      "#a855f7", // purple-500
+      "#ec4899", // pink-500
+      "#f43f5e", // rose-500
+      "#64748b", // slate-500
    ], []);
 
    async function fetchAccounts() {
@@ -131,8 +178,8 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
 
    async function createManualAccount(e: React.FormEvent) {
       e.preventDefault();
-      setLoading(true);
-      setError(null);
+      setModalLoading(true);
+      setModalError(null);
       try {
          const res = await fetch("/api/accounts", {
             method: "POST",
@@ -140,13 +187,22 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
             body: JSON.stringify(manualForm),
          });
          if (!res.ok) throw new Error("Failed to create account");
-         setShowManualForm(false);
-         setManualForm({ name: "", type: "CASH", currency: "EUR", balance: 0 });
+         addDisclosure.onClose();
+         setModalStep('method');
+         setManualForm({ 
+            name: "", 
+            type: "CASH", 
+            currency: userCurrency, 
+            balance: 0,
+            institutionName: "",
+            icon: "mdi:wallet-outline",
+            color: "#3b82f6"
+         });
          fetchAccounts();
       } catch (e: any) {
-         setError(e.message);
+         setModalError(e.message);
       } finally {
-         setLoading(false);
+         setModalLoading(false);
       }
    }
 
@@ -330,9 +386,9 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                            ) : (
                               <div
                                  className="h-12 w-12 rounded-medium flex items-center justify-center"
-                                 style={{ backgroundColor: a.color }}
+                                 style={{ backgroundColor: a.color || "#3b82f6" }}
                               >
-                                 <Icon icon={a.icon || "proicons:bank"} className="text-white text-2xl" />
+                                 <Icon icon={a.icon || "mdi:wallet-outline"} className="text-white text-2xl" />
                               </div>
                            )}
                            {a.provider === 'gocardless' && (
@@ -387,48 +443,6 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
          </div>
 
 
-         {showManualForm && (
-            <form onSubmit={createManualAccount} className="p-4 rounded border border-default-200 bg-content1 space-y-3">
-               <div className="font-medium">Create manual account</div>
-               <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <input
-                     className="border border-default-200 bg-content1 text-foreground placeholder-default-500 rounded px-2 py-1"
-                     placeholder="Name"
-                     value={manualForm.name}
-                     onChange={(e) => setManualForm((s) => ({ ...s, name: e.target.value }))}
-                     required
-                  />
-                  <select
-                     className="border border-default-200 bg-content1 text-foreground rounded px-2 py-1"
-                     value={manualForm.type}
-                     onChange={(e) => setManualForm((s) => ({ ...s, type: e.target.value }))}
-                  >
-                     {accountTypes.map((t) => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
-                     ))}
-                  </select>
-                  <input
-                     className="border border-default-200 bg-content1 text-foreground placeholder-default-500 rounded px-2 py-1"
-                     placeholder="Currency"
-                     value={manualForm.currency}
-                     onChange={(e) => setManualForm((s) => ({ ...s, currency: e.target.value }))}
-                     required
-                  />
-                  <input
-                     className="border border-default-200 bg-content1 text-foreground placeholder-default-500 rounded px-2 py-1"
-                     placeholder="Initial balance"
-                     type="number"
-                     step="0.01"
-                     value={manualForm.balance}
-                     onChange={(e) => setManualForm((s) => ({ ...s, balance: parseFloat(e.target.value) || 0 }))}
-                  />
-               </div>
-               <div className="flex items-center gap-2">
-                  <button type="submit" className="px-3 py-1.5 rounded bg-emerald-600 text-white">Create</button>
-                  <button type="button" onClick={() => setShowManualForm(false)} className="px-3 py-1.5 rounded border border-default-200">Cancel</button>
-               </div>
-            </form>
-         )}
 
          {/* Choose account method Modal */}
          <AnimatePresence>
@@ -462,7 +476,7 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                      >
                         <div className="flex justify-between items-start p-4 border-b border-divider">
                            <div className="flex items-center gap-3">
-                              {modalStep === 'institutions' && (
+                              {(modalStep === 'institutions' || modalStep === 'manual') && (
                                  <Button
                                     onClick={() => {
                                        if (!modalLoading) {
@@ -481,11 +495,14 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                               )}
                               <div>
                                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                                    {modalStep === 'method' ? 'Add Account' : 'Choose Your Bank'}
+                                    {modalStep === 'method' ? 'Add Account' : 
+                                     modalStep === 'manual' ? 'Create Manual Account' : 'Choose Your Bank'}
                                  </h2>
                                  <p className="text-default-600 text-sm">
                                     {modalStep === 'method'
                                        ? 'Choose your preferred setup method'
+                                       : modalStep === 'manual'
+                                       ? 'Set up a manual account with custom details'
                                        : 'Securely connect your bank to import balances and transactions'
                                     }
                                  </p>
@@ -537,8 +554,7 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                               <div className="flex flex-col lg:flex-row items-stretch justify-center w-full gap-8 mx-auto max-w-5xl">
                                  <div
                                     onClick={() => {
-                                       addDisclosure.onClose();
-                                       setShowManualForm(true);
+                                       setModalStep('manual');
                                     }}
                                     className="cursor-pointer flex-1 min-w-0 group"
                                  >
@@ -696,6 +712,208 @@ export default function Accounts({ dict }: { dict: Dictionary }) {
                                        </RevealCard>
                                     </CometCard>
                                  </div>
+                              </div>
+                           ) : modalStep === 'manual' ? (
+                              <div className="flex-1 flex flex-col min-h-0 p-4 overflow-y-auto">
+                                 <form onSubmit={createManualAccount} className="flex-1 flex flex-col gap-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                       <Input
+                                          label="Account Name"
+                                          placeholder="e.g. Main Wallet"
+                                          value={manualForm.name}
+                                          onChange={(e) => setManualForm((s) => ({ ...s, name: e.target.value }))}
+                                          isRequired
+                                          variant="flat"
+                                          className="col-span-1 sm:col-span-2"
+                                       />
+                                       
+                                       <Select
+                                          label="Account Type"
+                                          selectedKeys={[manualForm.type]}
+                                          isRequired
+                                          onSelectionChange={(keys) => {
+                                             const selectedType = Array.from(keys)[0] as string;
+                                             if (selectedType) {
+                                                setManualForm((s) => ({ ...s, type: selectedType }));
+                                             }
+                                          }}
+                                          variant="flat"
+                                          renderValue={() => {
+                                             const type = accountTypes.find(t => t.value === manualForm.type);
+                                             return (
+                                                <span className="flex items-center gap-2">
+                                                   <div className="h-5 w-5 rounded-lg flex items-center justify-center" style={{ backgroundColor: manualForm.color, opacity: 0.8 }}>
+                                                      <Icon icon={manualForm.icon} className="text-white text-sm" />
+                                                   </div>
+                                                   <span className="font-medium">{type?.label}</span>
+                                                </span>
+                                             );
+                                          }}
+                                       >
+                                          {accountTypes.map((type) => (
+                                             <SelectItem key={type.value} textValue={type.label}>
+                                                <span className="flex items-center gap-3">
+                                                   <div className="h-6 w-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: manualForm.color, opacity: 0.8 }}>
+                                                      <Icon icon={manualForm.icon} className="text-white text-sm" />
+                                                   </div>
+                                                   <span className="font-medium">{type.label}</span>
+                                                </span>
+                                             </SelectItem>
+                                          ))}
+                                       </Select>
+
+                                       <Select
+                                          label="Currency"
+                                          selectedKeys={[manualForm.currency]}
+                                          isRequired
+                                          onSelectionChange={(keys) => {
+                                             const selectedCurrency = Array.from(keys)[0] as string;
+                                             if (selectedCurrency) {
+                                                setManualForm((s) => ({ ...s, currency: selectedCurrency }));
+                                             }
+                                          }}
+                                          variant="flat"
+                                          renderValue={() => {
+                                             const currency = currencyOptions.find(c => c.code === manualForm.currency);
+                                             return (
+                                                <span className="flex items-center gap-2">
+                                                   <span className="font-medium">{currency?.name || manualForm.currency}</span>
+                                                   <span className="text-sm text-default-500">({currency?.symbol || manualForm.currency})</span>
+                                                </span>
+                                             );
+                                          }}
+                                       >
+                                          {currencyOptions.map((currency) => (
+                                             <SelectItem key={currency.code} textValue={`${currency.code} - ${currency.name}`}>
+                                                <span className="flex items-center justify-between w-full">
+                                                   <span>{currency.name}</span>
+                                                   <span className="text-sm text-default-500">{currency.symbol}</span>
+                                                </span>
+                                             </SelectItem>
+                                          ))}
+                                       </Select>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                       <Input
+                                          label="Initial Balance"
+                                          placeholder="0.00"
+                                          type="number"
+                                          step="0.01"
+                                          value={manualForm.balance.toString()}
+                                          onChange={(e) => setManualForm((s) => ({ ...s, balance: parseFloat(e.target.value) || 0 }))}
+                                          variant="flat"
+                                          startContent={
+                                             <div className="pointer-events-none flex items-center">
+                                                <span className="text-default-400 text-small">{manualForm.currency}</span>
+                                             </div>
+                                          }
+                                       />
+
+                                       <Input
+                                          label="Institution Name (Optional)"
+                                          placeholder="e.g. Personal Cash"
+                                          value={manualForm.institutionName}
+                                          onChange={(e) => setManualForm((s) => ({ ...s, institutionName: e.target.value }))}
+                                          variant="flat"
+                                       />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                       <div className="flex flex-col gap-2">
+                                          <label className="text-small text-foreground font-medium">Icon</label>
+                                          <Popover placement="bottom-start">
+                                             <PopoverTrigger>
+                                                <button 
+                                                   type="button" 
+                                                   className="flex items-center justify-center px-3 py-3 rounded-medium bg-default-100 hover:bg-default-200 transition-colors"
+                                                >
+                                                   <div 
+                                                      className="h-8 w-8 rounded-small flex items-center justify-center" 
+                                                      style={{ backgroundColor: manualForm.color }}
+                                                   >
+                                                      <Icon icon={manualForm.icon || "mdi:wallet-outline"} className="text-white text-xl" />
+                                                   </div>
+                                                </button>
+                                             </PopoverTrigger>
+                                             <PopoverContent className="p-3 max-w-xs">
+                                                <div className="grid grid-cols-6 gap-2">
+                                                   {ACCOUNT_ICON_SET.map((ic) => (
+                                                      <button
+                                                         key={ic}
+                                                         type="button"
+                                                         onClick={() => setManualForm((s) => ({ ...s, icon: ic }))}
+                                                         className={`h-10 w-10 rounded-medium flex items-center justify-center border border-default-200 hover:bg-default-100 transition-colors ${
+                                                            manualForm.icon === ic ? "ring-2 ring-primary" : ""
+                                                         }`}
+                                                      >
+                                                         <Icon icon={ic} className="text-xl text-foreground" />
+                                                      </button>
+                                                   ))}
+                                                </div>
+                                             </PopoverContent>
+                                          </Popover>
+                                       </div>
+
+                                       <div className="flex flex-col gap-2">
+                                          <label className="text-small text-foreground font-medium">Color</label>
+                                          <Popover placement="bottom-start">
+                                             <PopoverTrigger>
+                                                <button 
+                                                   type="button" 
+                                                   className="flex items-center gap-3 px-3 py-3 rounded-medium bg-default-100 hover:bg-default-200 transition-colors"
+                                                >
+                                                   <div className="h-7 w-7 rounded-small" style={{ backgroundColor: manualForm.color }} />
+                                                   <span className="text-sm text-default-700">{manualForm.color}</span>
+                                                </button>
+                                             </PopoverTrigger>
+                                             <PopoverContent className="p-3 max-w-xs">
+                                                <div className="grid grid-cols-7 gap-2">
+                                                   {COLOR_SWATCHES.map((c) => (
+                                                      <button
+                                                         key={c}
+                                                         type="button"
+                                                         onClick={() => setManualForm((s) => ({ ...s, color: c }))}
+                                                         className={`h-8 w-8 rounded-small border border-default-200 transition-all ${
+                                                            manualForm.color === c ? "ring-2 ring-primary scale-110" : "hover:scale-105"
+                                                         }`}
+                                                         style={{ backgroundColor: c }}
+                                                      />
+                                                   ))}
+                                                </div>
+                                                <div className="mt-3">
+                                                   <Input
+                                                      size="sm"
+                                                      placeholder="#3b82f6"
+                                                      value={manualForm.color}
+                                                      onChange={(e) => setManualForm((s) => ({ ...s, color: e.target.value }))}
+                                                   />
+                                                </div>
+                                             </PopoverContent>
+                                          </Popover>
+                                       </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-3 mt-auto pt-4">
+                                       <Button
+                                          type="button"
+                                          onClick={() => setModalStep('method')}
+                                          variant="flat"
+                                          color="default"
+                                          startContent={<Icon icon="mdi:arrow-left" className="text-base" />}
+                                       >
+                                          Back
+                                       </Button>
+                                       <Button
+                                          type="submit"
+                                          color="primary"
+                                          isLoading={modalLoading}
+                                          startContent={!modalLoading && <Icon icon="mdi:plus" className="text-base" />}
+                                       >
+                                          Create Account
+                                       </Button>
+                                    </div>
+                                 </form>
                               </div>
                            ) : (
                               <div className="flex-1 flex flex-col min-h-0">

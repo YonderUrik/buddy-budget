@@ -44,6 +44,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).plan = (user as any).plan;
         (session.user as any).onboarded = (user as any).onboarded;
         (session.user as any).role = (user as any).role;
+        (session.user as any).primaryCurrency = (user as any).primaryCurrency;
       }
       return session;
     },

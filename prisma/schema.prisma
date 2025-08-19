@@ -112,6 +112,8 @@ model FinancialAccount {
   balance            Float                 @default(0)
   institutionName    String?
   institutionLogo    String?
+  icon               String?               // Custom icon for manual accounts
+  color              String?               // Custom color for manual accounts  
   provider           String                @default("manual") // manual | gocardless
   externalAccountId  String?
   connectionId       String?

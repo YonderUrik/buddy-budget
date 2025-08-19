@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   }
   const userId = (session.user as any).id as string;
   const body = await request.json().catch(() => ({}));
-  const { name, type, currency, balance } = body ?? {};
+  const { name, type, currency, balance, institutionName, icon, color } = body ?? {};
 
   if (!name || !type || !currency) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -44,6 +44,9 @@ export async function POST(request: Request) {
         type: type as any,
         currency,
         balance: initialBalance,
+        institutionName: institutionName || null,
+        icon: icon || null,
+        color: color || null,
         provider: "manual",
       },
     });

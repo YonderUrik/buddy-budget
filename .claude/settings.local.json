@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:developer.gocardless.com)",
+      "Bash(npm run lint)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

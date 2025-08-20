@@ -248,5 +248,89 @@ export interface Dictionary {
     gifts_donations: string;
     bank_transfer: string;
     cash_withdrawal: string;
+  },
+  accounts: {
+    title: string;
+    CASH: string;
+    CHECKING: string;
+    SAVINGS: string;
+    CREDIT_CARD: string;
+    INVESTMENT: string;
+    failedToLoad: string;
+    failedToCreate: string;
+    failedToStartBankLink: string;
+    failedToLoadInstitutions: string;
+    failedToUpdate: string;
+    failedToDelete: string;
+    addAccount: string;
+    loading: string;
+    last90Days: string;
+    noAccounts: string;
+    createManualAccount: string;
+    createBankAccount: string;
+    chooseMethod: string;
+    manualAccountDescription: string;
+    bankAccountDescription: string;
+    connectionFailed: string;
+    manually : {
+      title: string;
+      description: string;
+      primaryCta: string;
+      secondaryCta: string;
+      features : Array<{
+        icon: string;
+        title: string;
+        desc: string;
+      }>;
+    },
+    bank: {
+      title: string;
+      description: string;
+      primaryCta: string;
+      secondaryCta: string;
+      features : Array<{
+        icon: string;
+        title: string;
+        desc: string;
+      }>;
+    },
+    form: {
+      accountName: string;
+      accountNamePlaceholder: string;
+      accountType: string;
+      currency: string;
+      initialBalance: string;
+      institutionName: string;
+      institutionNamePlaceholder: string;
+      icon: string;
+      color: string;
+      back: string;
+      createAccount: string;
+      editAccount: string;
+      searchInstitutions: string;
+      noInstitutions: string;
+      connectingInstitution: string;
+      connectingInstitutionDescription: string;
+      loadingInstitutions: string;
+      linkedAccount: string;
+      linkedAccountDescription: string;
+      cancel: string;
+      save: string;
+      deleteAccount: string;
+      deleteAccountDescription: string;
+      confirmDeleteAccount: string;
+    },
+    psd2: {
+      steps: Array<{
+        text: string;
+        icon: string;
+      }>;
+      connectionFailed: string;
+      tryAgain: string;
+      backToAccounts: string;
+      success: string;
+      successDescription: string;
+      goToAccounts: string;
+    }
   }
 }

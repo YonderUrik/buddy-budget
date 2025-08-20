@@ -33,6 +33,9 @@ model User {
   categories       Category[]
   accounts         Account[]
   sessions         Session[]
+  financialAccounts FinancialAccount[]
+  bankConnections  BankConnection[]
+  transactions     Transaction[]
 
   // Freemium + onboarding
   plan             PlanTier  @default(FREE)
@@ -90,6 +93,91 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+enum FinancialAccountType {
+  CASH
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  INVESTMENT
+}
+
+model FinancialAccount {
+  id                 String                @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String                @db.ObjectId
+  name               String
+  type               FinancialAccountType
+  currency           String
+  balance            Float                 @default(0)
+  institutionName    String?
+  institutionLogo    String?
+  icon               String?               // Custom icon for manual accounts
+  color              String?               // Custom color for manual accounts  
+  provider           String                @default("manual") // manual | gocardless
+  externalAccountId  String?
+  connectionId       String?
+  isArchived         Boolean               @default(false)
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  linked             Boolean               @default(false)
+  
+  // API rate limiting and sync tracking fields
+  apiCallsToday      Int                   @default(0)
+  lastApiCallAt      DateTime?
+  lastSyncedAt       DateTime?
+  nextSyncAvailableAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId, isArchived])
+  @@index([lastApiCallAt])
+  @@index([nextSyncAvailableAt])
+}
+
+model Transaction {
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String            @db.ObjectId
+  accountId             String            @db.ObjectId
+  externalTransactionId String?           // GoCardless transaction ID
+  amount                Float
+  currency              String
+  description           String?
+  type                  String?
+  categoryId            String?
+  merchantName          String?
+  date                  DateTime
+  bookingDate           DateTime?
+  valueDate             DateTime?
+  provider              String            @default("manual") // manual | gocardless
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([userId, accountId])
+  @@index([userId, date])
+  @@unique([externalTransactionId, provider])
+}
+
+model BankConnection {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String   @db.ObjectId
+  provider              String   @default("gocardless")
+  requisitionId         String
+  status                String   @default("PENDING")
+  institutionId         String
+  institutionName       String?
+  transactionTotalDays  Int?     // Maximum days of transaction history available from this institution
+  reference             String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Session {

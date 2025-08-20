@@ -534,5 +534,156 @@
     "gifts_donations": "Gifts/Donations",
     "bank_transfer": "Bank Transfer",
     "cash_withdrawal": "Cash Withdrawal"
+  },
+  "accounts": {
+    "title": "Accounts",
+    "CASH": "Cash",
+    "CHECKING": "Checking",
+    "SAVINGS": "Savings",
+    "CREDIT_CARD": "Credit Card",
+    "INVESTMENT": "Investment",
+    "failedToLoad": "Failed to load accounts",
+    "failedToCreate": "Failed to create account",
+    "failedToStartBankLink": "Failed to start bank link",
+    "failedToLoadInstitutions": "Failed to load institutions",
+    "failedToUpdate": "Failed to update account",
+    "failedToDelete": "Failed to delete account",
+    "addAccount": "Add account",
+    "loading": "Loading accounts...",
+    "last90Days": "Last 90 days",
+    "noAccounts": "No accounts found",
+    "createManualAccount": "Add Manual Account",
+    "createBankAccount": "Choose Your Bank",
+    "chooseMethod": "Choose your preferred setup method",
+    "manualAccountDescription": "Set up a manual account with custom details",
+    "bankAccountDescription": "Securely connect your bank to import balances and transactions",
+    "connectionFailed": "Connection failed",
+    "manually": {
+      "title": "Create Manually",
+      "description": "✨ Quick & Easy",
+      "primaryCta": "Manual Account",
+      "secondaryCta": "Perfect for cash and liquid assets",
+      "features": [
+        {
+          "icon": "mdi:lightning-bolt",
+          "title": "Instant Setup",
+          "desc": "No bank connection required"
+        },
+        {
+          "icon": "mdi:shield-check",
+          "title": "Your Control",
+          "desc": "Manually track transactions"
+        },
+        {
+          "icon": "mdi:tune-variant",
+          "title": "Liquid Assets",
+          "desc": "Cash, savings & liquid accounts"
+        }
+      ]
+    },
+    "bank": {
+      "title": "Connect Your Bank",
+      "description": "🔒 Bank Grade Security",
+      "primaryCta": "Bank Connection",
+      "secondaryCta": "Automatic sync via secure Open Banking",
+      "features": [
+        {
+          "icon": "mdi:sync",
+          "title": "Real-time Sync",
+          "desc": "Transactions updated automatically"
+        },
+        {
+          "icon": "mdi:bank",
+          "title": "Enterprise Security",
+          "desc": "Military-grade encryption"
+        },
+        {
+          "icon": "mdi:brain",
+          "title": "Smart Insights",
+          "desc": "AI-powered categorization"
+        },
+        {
+          "icon": "mdi:bank",
+          "title": "Powered by GoCardless",
+          "desc": "3000+ banks supported"
+        }
+      ]
+    },
+    "form": {
+      "accountName": "Account Name",
+      "accountNamePlaceholder": "e.g. Main Wallet",
+      "accountType": "Account Type",
+      "currency": "Currency",
+      "initialBalance": "Initial Balance",
+      "institutionName": "Institution Name",
+      "institutionNamePlaceholder": "e.g. Personal Cash",
+      "icon": "Icon",
+      "color": "Color",
+      "back": "Back",
+      "createAccount": "Create Account",
+      "editAccount": "Edit Account",
+      "searchInstitutions": "Search Institutions",
+      "noInstitutions": "No institutions found",
+      "connectingInstitution": "Connecting to your bank...",
+      "connectingInstitutionDescription": "This may take a few moments",
+      "loadingInstitutions": "Loading institutions...",
+      "linkedAccount": "Linked Account",
+      "linkedAccountDescription": "Only the name can be edited for linked accounts. Other details are managed by your bank.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "deleteAccount": "Delete Account",
+      "deleteAccountDescription": "This will permanently delete the account and all its transactions.",
+      "confirmDeleteAccount": "Delete Account?"
+    },
+    "psd2": {
+      "steps": [
+        {
+          "text": "Initiating secure connection...",
+          "icon": "🔐"
+        },
+        {
+          "text": "Authenticating with your bank...",
+          "icon": "🏦"
+        },
+        {
+          "text": "Verifying your credentials...",
+          "icon": "✅"
+        },
+        {
+          "text": "Establishing encrypted tunnel...",
+          "icon": "🔒"
+        },
+        {
+          "text": "Syncing account information...",
+          "icon": "🔄"
+        },
+        {
+          "text": "Downloading account details...",
+          "icon": "📊"
+        },
+        {
+          "text": "Importing transaction history...",
+          "icon": "📈"
+        },
+        {
+          "text": "Processing financial data...",
+          "icon": "⚡"
+        },
+        {
+          "text": "Organizing your accounts...",
+          "icon": "🗂️"
+        },
+        {
+          "text": "Finalizing setup...",
+          "icon": "🎯"
+        }
+      ],
+      "connectionFailed": "Connection failed",
+      "tryAgain": "Try Again",
+      "backToAccounts": "Back to Accounts",
+      "success": "Success!",
+      "successDescription": "Your bank account has been successfully connected and your recent transactions have been imported. You'll be redirected to your accounts in a moment.",
+      "goToAccounts": "Go to Accounts"
+    }
   }
 }

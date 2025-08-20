@@ -8,14 +8,12 @@
 
 import { cn } from "@heroui/theme";
 import { usePathname } from "next/navigation";
-import { IconPlus, IconGridDots } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
 import {
    AnimatePresence,
    MotionValue,
    motion,
    useMotionValue,
-   useSpring,
    useTransform,
 } from "framer-motion";
 
@@ -147,9 +145,9 @@ const FloatingDockDesktop = ({
          }}
          className={cn(
             "mx-auto hidden h-16 items-end rounded-2xl flex",
-            "bg-white/95 dark:bg-neutral-900/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-neutral-900/80",
-            "ring-1 ring-black/10 dark:ring-white/10 shadow-xl shadow-black/10 dark:shadow-black/20",
-            "border border-black/5 dark:border-white/10",
+            "bg-white/10 dark:bg-neutral-900/10 backdrop-blur-xl supports-[backdrop-filter]:bg-white/5 dark:supports-[backdrop-filter]:bg-neutral-900/5",
+            "ring-1 ring-black/10 dark:ring-white/10 shadow-xl shadow-black/20 dark:shadow-black/40",
+            "border border-white/10 dark:border-white/5",
             dimensions.needsScroll ? "overflow-x-auto scrollbar-none" : "justify-center",
             className,
          )}
@@ -427,7 +425,7 @@ function IconContainer({
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute bottom-full left-1/2 z-[60] -translate-x-1/2 rounded-2xl bg-white/95 dark:bg-neutral-900/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 dark:supports-[backdrop-filter]:bg-neutral-900/80 ring-1 ring-black/10 dark:ring-white/10 shadow-xl shadow-black/10 dark:shadow-black/20 border border-black/5 dark:border-white/10 p-3 w-max max-w-[95vw] sm:max-w-[90vw] mb-3"
+                  className="absolute bottom-full left-1/2 z-[60] -translate-x-1/2 rounded-2xl bg-white/10 dark:bg-neutral-900/10 backdrop-blur-xl supports-[backdrop-filter]:bg-white/5 dark:supports-[backdrop-filter]:bg-neutral-900/5 ring-1 ring-black/10 dark:ring-white/10 shadow-xl shadow-black/20 dark:shadow-black/40 border border-white/10 dark:border-white/5 p-3 w-max max-w-[95vw] sm:max-w-[90vw] mb-3"
                >
                   <div className="flex flex-col gap-1 sm:gap-2">
                      {children.map((child) =>

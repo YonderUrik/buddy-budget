@@ -39,3 +39,4 @@ yarn.lock
 package-lock.json
 bun.lockb
 /generated/prisma
+delete_all_gocardless.py

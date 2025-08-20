@@ -25,6 +25,7 @@
     "@prisma/client": "^6.14.0",
     "@react-aria/ssr": "3.9.10",
     "@react-aria/visually-hidden": "3.8.26",
+    "@react-three/fiber": "^9.3.0",
     "@tabler/icons-react": "^3.34.1",
     "clsx": "^2.1.1",
     "cookies-next": "^6.1.0",
@@ -39,7 +40,9 @@
     "react-dom": "18.3.1",
     "recharts": "^3.1.2",
     "server-only": "^0.0.1",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
+    "three": "^0.179.1",
     "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {

@@ -25,46 +25,67 @@ const createDateRange = (start: Date, end: Date): string[] => {
   return dates;
 };
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await getSession();
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   try {
     const userId = (session.user as any).id;
+    const { searchParams } = new URL(request.url);
+    const includeTransactions = searchParams.get('includeTransactions') !== 'false';
 
-    // Calculate date range for last 90 days
-    const nowDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 90);
+    let accounts;
 
-    const accounts = await (prisma as any).financialAccount.findMany({
-      where: { userId, isArchived: false },
-      orderBy: { createdAt: "desc" },
-      include: {
-        transactions: {
-          where: {
-            date: {
-              gte: startDate,
+    if (includeTransactions) {
+      // Calculate date range for last 90 days
+      const nowDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 90);
+
+      accounts = await (prisma as any).financialAccount.findMany({
+        where: { userId, isArchived: false },
+        orderBy: { createdAt: "desc" },
+        include: {
+          transactions: {
+            where: {
+              date: {
+                gte: startDate,
+              }
+            },
+            select: {
+              amount: true,
+              date: true
+            },
+            orderBy: {
+              date: "asc"
             }
-          },
-          select: {
-            amount: true,
-            date: true
-          },
-          orderBy: {
-            date: "asc"
           }
         }
-      }
-    });
+      });
+    } else {
+      accounts = await (prisma as any).financialAccount.findMany({
+        where: { userId, isArchived: false },
+        orderBy: { createdAt: "desc" }
+      });
+    }
 
-    // Process accounts to include chart data
+    // Process accounts to include chart data only if transactions are included
     const accountsWithChartData = accounts.map((account: any) => {
+      if (!includeTransactions) {
+        return {
+          ...account,
+          chartData: undefined
+        };
+      }
 
       /// Create a map to store daily transaction totals
       const dailyTransactions = new Map<string, number>();
 
+      // Calculate date range for last 90 days
+      const nowDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 90);
 
       // Initialize all days in the range with 0 values
       const dateRange = createDateRange(new Date(startDate), new Date(nowDate));
@@ -95,7 +116,6 @@ export async function GET() {
       const sortedDailyData = Array.from(dailyTransactions.entries())
         .map(([date, amount]) => ({ date, amount }))
         .sort((a, b) => a.date.localeCompare(b.date));
-
 
       // Calculate running balance working backwards from current balance
       const chartData: any[] = [];
@@ -138,7 +158,6 @@ export async function GET() {
         transactions: undefined, // Remove transactions to reduce payload
         chartData
       };
-
     });
 
     return NextResponse.json(accountsWithChartData);

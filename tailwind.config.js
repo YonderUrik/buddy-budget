@@ -1,4 +1,4 @@
-import {heroui} from "@heroui/theme"
+import { heroui } from "@heroui/theme"
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -23,50 +23,66 @@ const config = {
       themes: {
         light: {
           colors: {
-            // Money-first palette: emerald primary, teal secondary
+            // Money-first palette: golden primary, teal secondary
             primary: {
+              100: "#FEF7D9",
+              200: "#FDEDB3",
+              300: "#FBDF8C",
+              400: "#F8D06F",
+              500: "#F4BA41",
+              600: "#D1972F",
+              700: "#AF7720",
+              800: "#AF7720",
+              900: "#8D5A14",
+              1000: "#6B3E0A",
               DEFAULT: "#F4BA41",
               foreground: "#1a1a1a",
             },
             secondary: {
+              100: "#DEFBFB",
+              200: "#BEF4F8",
+              300: "#98DFEA",
+              400: "#77C2D5",
+              500: "#4D9CB9",
+              600: "#387C9F",
+              700: "#265E85",
+              800: "#18436B",
+              900: "#0E3058",
+              1000: "#061E47",
               DEFAULT: "#4D9CB9",
               foreground: "#ffffff",
-            },
-            success: {
-              DEFAULT: "#16a34a", // green-600
-              foreground: "#06240f",
-            },
-            warning: {
-              DEFAULT: "#f59e0b", // amber-500
-              foreground: "#281a02",
-            },
-            danger: {
-              DEFAULT: "#ef4444", // red-500
-              foreground: "#2a0606",
             },
           },
         },
         dark: {
           colors: {
             primary: {
+              100: "#FEF7D9",
+              200: "#FDEDB3",
+              300: "#FBDF8C",
+              400: "#F8D06F",
+              500: "#F4BA41",
+              600: "#D1972F",
+              700: "#AF7720",
+              800: "#AF7720",
+              900: "#8D5A14",
+              1000: "#6B3E0A",
               DEFAULT: "#F4BA41",
               foreground: "#1a1a1a",
             },
             secondary: {
+              100: "#DEFBFB",
+              200: "#BEF4F8",
+              300: "#98DFEA",
+              400: "#77C2D5",
+              500: "#4D9CB9",
+              600: "#387C9F",
+              700: "#265E85",
+              800: "#18436B",
+              900: "#0E3058",
+              1000: "#061E47",
               DEFAULT: "#4D9CB9",
               foreground: "#ffffff",
-            },
-            success: {
-              DEFAULT: "#16a34a", // unified to light success
-              foreground: "#06240f",
-            },
-            warning: {
-              DEFAULT: "#f59e0b", // unified to light warning
-              foreground: "#281a02",
-            },
-            danger: {
-              DEFAULT: "#ef4444", // unified to light danger
-              foreground: "#2a0606",
             },
           },
         },

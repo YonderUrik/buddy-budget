@@ -534,5 +534,149 @@
     "gifts_donations": "Regali/Donazioni",
     "bank_transfer": "Trasferimento Bancario",
     "cash_withdrawal": "Prelievo"
+  },
+  "accounts": {
+    "title": "Conti",
+    "CASH": "Contante",
+    "CHECKING": "Conto Corrente",
+    "SAVINGS": "Conto Risparmio",
+    "CREDIT_CARD": "Carta di Credito",
+    "INVESTMENT": "Investimenti",
+    "failedToLoad": "Impossibile caricare i conti",
+    "failedToCreate": "Impossibile creare il conto",
+    "failedToStartBankLink": "Impossibile avviare il collegamento con il provider",
+    "failedToLoadInstitutions": "Impossibile caricare le istituzioni",
+    "failedToUpdate": "Impossibile aggiornare il conto",
+    "failedToDelete": "Impossibile eliminare il conto",
+    "addAccount": "Aggiungi conto",
+    "loading": "Caricamento conti...",
+    "last90Days": "Ultimi 90 giorni",
+    "noAccounts": "Nessun conto trovato",
+    "createManualAccount": "Aggiungi conto manuale",
+    "createBankAccount": "Scegli la tua banca",
+    "chooseMethod": "Scegli il metodo preferito per impostare il conto",
+    "manualAccountDescription": "Imposta un conto manuale con dettagli personalizzati",
+    "bankAccountDescription": "Collega il tuo conto bancario per importare automaticamente le transazioni",
+    "connectionFailed": "Connessione fallita",
+    "manually": {
+      "title": "Crea manualmente",
+      "description": "✨ Veloce e facile",
+      "primaryCta": "Conto manuale",
+      "secondaryCta": "Per contanti e asset liquidi",
+      "features": [
+        {
+          "icon": "mdi:lightning-bolt",
+          "title": "Setup Istantaneo",
+          "desc": "Nessuna connessione bancaria richiesta"
+        },
+        {
+          "icon": "mdi:shield-check",
+          "title": "Il Tuo Controllo",
+          "desc": "Traccia manualmente le transazioni"
+        },
+        {
+          "icon": "mdi:tune-variant",
+          "title": "Asset Liquidi",
+          "desc": "Contanti, risparmi e conti liquidi"
+        }
+      ]
+    },
+  "bank": {
+      "title": "Collega la Tua Banca",
+      "description": "🔒 Sicurezza di Livello Bancario",
+      "primaryCta": "Connessione Bancaria",
+      "secondaryCta": "Sincronizzazione automatica tramite Open Banking sicuro",
+      "features": [
+        {
+          "icon": "mdi:sync",
+          "title": "Sincronizzazione in Tempo Reale",
+          "desc": "Transazioni aggiornate automaticamente"
+        },
+        {
+          "icon": "mdi:bank",
+          "title": "Sicurezza Aziendale",
+          "desc": "Crittografia di livello militare"
+        },
+        {
+          "icon": "mdi:brain",
+          "title": "Informazioni Intelligenti",
+          "desc": "Categorizzazione basata sull'IA"
+        },
+        {
+          "icon": "mdi:bank",
+          "title": "Powered by GoCardless",
+          "desc": "Oltre 3000 banche supportate"
+        }
+      ]
+    },
+    "form": {
+      "accountName": "Nome del conto",
+      "accountNamePlaceholder": "es. Conto principale",
+      "accountType": "Tipo di conto",
+      "currency": "Valuta",
+      "initialBalance": "Saldo iniziale",
+      "institutionName": "Nome istituto",
+      "institutionNamePlaceholder": "es. UniCredit",
+      "icon": "Icona",
+      "color": "Colore",
+      "back": "Indietro",
+      "createAccount": "Crea conto",
+      "searchInstitutions": "Cerca Banca",
+      "noInstitutions": "Nessuna banca trovata",
+      "connectingInstitution": "Connessione alla tua banca...",
+      "connectingInstitutionDescription": "Questo può richiedere alcuni momenti",
+      "loadingInstitutions": "Caricamento banche..."
+    },
+  "psd2": {
+      "steps": [
+        {
+          "text": "Avvio connessione sicura...",
+          "icon": "🔐"
+        },
+        {
+          "text": "Autenticazione con la tua banca...",
+          "icon": "🏦"
+        },
+        {
+          "text": "Verifica delle credenziali...",
+          "icon": "✅"
+        },
+        {
+          "text": "Creazione tunnel crittografato...",
+          "icon": "🔒"
+        },
+        {
+          "text": "Sincronizzazione informazioni conto...",
+          "icon": "🔄"
+        },
+        {
+          "text": "Download dettagli conto...",
+          "icon": "📊"
+        },
+        {
+          "text": "Importazione storico transazioni...",
+          "icon": "📈"
+        },
+        {
+          "text": "Elaborazione dati finanziari...",
+          "icon": "⚡"
+        },
+        {
+          "text": "Organizzazione dei tuoi conti...",
+          "icon": "🗂️"
+        },
+        {
+          "text": "Finalizzazione configurazione...",
+          "icon": "🎯"
+        }
+      ],
+      "connectionFailed": "Connessione fallita",
+      "tryAgain": "Riprova",
+      "backToAccounts": "Torna ai conti",
+      "success": "Connessione riuscita",
+      "successDescription": "Il tuo conto bancario è stato collegato e le tue transazioni recenti sono state importate. Ti verrai reindirizzato ai conti in un momento.",
+      "goToAccounts": "Vai ai conti"
+    }
+
   }
 }

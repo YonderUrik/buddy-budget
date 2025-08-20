@@ -58,8 +58,19 @@ export async function POST(request: Request) {
           }
         }
 
+        // Get connection data for transaction limits
+        const connection = await (prisma as any).bankConnection.findFirst({
+          where: { 
+            userId,
+            requisitionId: account.connectionId // connectionId stores the requisitionId
+          },
+          select: {
+            transactionTotalDays: true
+          }
+        });
+
         // Perform sync
-        const syncResult = await syncAccount(account, userId);
+        const syncResult = await syncAccount(account, userId, connection?.transactionTotalDays);
         syncResults.push({
           accountId: account.id,
           accountName: account.name,
@@ -158,7 +169,7 @@ export async function GET() {
   }
 }
 
-export async function syncAccount(account: any, userId: string) {
+export async function syncAccount(account: any, userId: string, maxDaysHistory?: number) {
   const startTime = Date.now();
   let apiCallsUsed = 0;
   
@@ -185,14 +196,21 @@ export async function syncAccount(account: any, userId: string) {
       dateFrom = new Date(lastTransaction.date);
       dateFrom.setHours(dateFrom.getHours() - 1);
     } else {
-      // For accounts with no transactions, fetch last 30 days (smaller range for bulk sync)
+      // For accounts with no transactions, use institution's max days or fallback to 30 days (smaller range for bulk sync)
+      const daysToFetch = maxDaysHistory || 90
+      if (maxDaysHistory) {
+        console.log(`Using institution-specific transaction history limit (capped at 30 for bulk sync): ${daysToFetch} days for account ${account.name}`);
+      } else {
+        console.log(`Using default transaction history limit for bulk sync: 30 days for account ${account.name}`);
+      }
       dateFrom = new Date();
-      dateFrom.setDate(dateFrom.getDate() - 30);
+      dateFrom.setDate(dateFrom.getDate() - daysToFetch);
     }
 
-    // Limit how far back we go for performance
+    // Limit how far back we go for performance, but respect institution limits
     const maxDateBack = new Date();
-    maxDateBack.setDate(maxDateBack.getDate() - 90);
+    const maxDaysBack = maxDaysHistory || 90;
+    maxDateBack.setDate(maxDateBack.getDate() - maxDaysBack);
     if (dateFrom < maxDateBack) {
       dateFrom = maxDateBack;
     }

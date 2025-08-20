@@ -2,61 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MultiStepLoader, LoadingState } from "@/components/ui/multi-step-loader";
+import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { motion } from "framer-motion";
 import { Button } from "@heroui/react";
 import { Icon } from "@iconify/react";
+import { Dictionary } from "@/types/dictionary";
 
-export default function Psd2CallbackClient({ locale }: { locale: string }) {
+export default function Psd2CallbackClient({ locale, dict }: { locale: string, dict: Dictionary }) {
    const router = useRouter();
    const search = useSearchParams();
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
    const [success, setSuccess] = useState(false);
 
-   // Funny and engaging loading steps
-   const loadingStates: LoadingState[] = [
-      {
-         text: "Initiating secure connection...",
-         icon: "🔐"
-      },
-      {
-         text: "Authenticating with your bank...",
-         icon: "🏦"
-      },
-      {
-         text: "Verifying your credentials...",
-         icon: "✅"
-      },
-      {
-         text: "Establishing encrypted tunnel...",
-         icon: "🔒"
-      },
-      {
-         text: "Syncing account information...",
-         icon: "🔄"
-      },
-      {
-         text: "Downloading account details...",
-         icon: "📊"
-      },
-      {
-         text: "Importing transaction history...",
-         icon: "📈"
-      },
-      {
-         text: "Processing financial data...",
-         icon: "⚡"
-      },
-      {
-         text: "Organizing your accounts...",
-         icon: "🗂️"
-      },
-      {
-         text: "Finalizing setup...",
-         icon: "🎯"
-      },
-   ];
 
    useEffect(() => {
       const requisitionId = search.get("r") || search.get("ref") || search.get("requisition_id") || search.get("requisitionId");
@@ -78,7 +36,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
 
             if (!response.ok) {
                const errorData = await response.json().catch(() => ({}));
-               throw new Error(errorData.error || "Failed to complete bank connection");
+               throw new Error(errorData.error || dict?.accounts.psd2.connectionFailed);
             }
 
             const data = await response.json();
@@ -91,7 +49,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
 
          } catch (e: any) {
             console.error("Bank connection error:", e);
-            setError(e.message || "An unexpected error occurred while connecting your bank");
+            setError(e.message || dict?.accounts.psd2.connectionFailed);
             setLoading(false);
          }
       };
@@ -139,7 +97,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
                   transition={{ delay: 0.3 }}
                   className="text-2xl font-bold text-foreground mb-4"
                >
-                  Connection Failed
+                  {dict?.accounts.psd2.connectionFailed}
                </motion.h1>
 
                <motion.p
@@ -164,7 +122,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
                      className="flex-1"
                      startContent={<Icon icon="mdi:refresh" />}
                   >
-                     Try Again
+                     {dict?.accounts.psd2.tryAgain}
                   </Button>
                   <Button
                      onPress={goToDashboard}
@@ -173,7 +131,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
                      className="flex-1"
                      startContent={<Icon icon="mdi:arrow-left" />}
                   >
-                     Back to Accounts
+                     {dict?.accounts.psd2.backToAccounts}
                   </Button>
                </motion.div>
             </motion.div>
@@ -204,7 +162,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
                   transition={{ delay: 0.3 }}
                   className="text-2xl font-bold text-foreground mb-4"
                >
-                  Success! 🎉
+                  {dict?.accounts.psd2.success} 🎉
                </motion.h1>
 
                <motion.p
@@ -213,7 +171,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
                   transition={{ delay: 0.4 }}
                   className="text-default-600 mb-6"
                >
-                  Your bank account has been successfully connected and your recent transactions have been imported. You'll be redirected to your accounts in a moment.
+                  {dict?.accounts.psd2.successDescription}
                </motion.p>
 
                <motion.div
@@ -228,7 +186,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
                      className="w-full"
                      startContent={<Icon icon="mdi:arrow-right" />}
                   >
-                     Go to Accounts
+                     {dict?.accounts.psd2.goToAccounts}
                   </Button>
                </motion.div>
             </motion.div>
@@ -239,7 +197,7 @@ export default function Psd2CallbackClient({ locale }: { locale: string }) {
    return (
       <div className="min-h-screen bg-gradient-to-br from-primary via-background to-secondary dark:from-primary-950/20 dark:via-background dark:to-secondary-950/20">
          <MultiStepLoader
-            loadingStates={loadingStates}
+            loadingStates={dict?.accounts.psd2.steps}
             loading={loading}
             duration={1200}
             loop={true}

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { gcGetAccountDetails, gcGetInstitution, gcGetRequisition, gcGetAccountTransactions, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
 
-async function createTransactionsForAccount(userId: string, accountId: string, externalAccountId: string, lastSyncedAt?: Date) {
+async function createTransactionsForAccount(userId: string, accountId: string, externalAccountId: string, lastSyncedAt?: Date, maxDaysHistory?: number) {
   try {
     // Check if we can make API calls for this account
     const syncStatus = await checkAccountSyncStatus(accountId);
@@ -24,9 +24,15 @@ async function createTransactionsForAccount(userId: string, accountId: string, e
       dateFrom = new Date(lastSyncedAt);
       dateFrom.setHours(dateFrom.getHours() - 1); // Add 1 hour buffer
     } else {
-      // For new accounts, fetch last 90 days
+      // For new accounts, use institution's maximum days or fallback to 90 days
+      const daysToFetch = maxDaysHistory || 90;
+      if (maxDaysHistory) {
+        console.log(`Using institution-specific transaction history limit: ${maxDaysHistory} days for account ${externalAccountId}`);
+      } else {
+        console.log(`Using default transaction history limit: 90 days for account ${externalAccountId}`);
+      }
       dateFrom = new Date();
-      dateFrom.setDate(dateFrom.getDate() - 90);
+      dateFrom.setDate(dateFrom.getDate() - daysToFetch);
     }
     
     const dateFromStr = dateFrom.toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -66,6 +72,7 @@ async function createTransactionsForAccount(userId: string, accountId: string, e
         externalTransactionId: {
           in: transactions.map((t: GoCardlessTransaction) => t.transactionId).filter(Boolean)
         },
+        accountId,
         provider: 'gocardless'
       },
       select: { externalTransactionId: true }
@@ -177,7 +184,14 @@ export async function POST(request: Request) {
     // Fetch requisition and connection data in parallel
     const [requisition, connection] = await Promise.all([
       gcGetRequisition(requisitionId),
-      (prisma as any).bankConnection.findFirst({ where: { userId, requisitionId } })
+      (prisma as any).bankConnection.findFirst({ 
+        where: { userId, requisitionId },
+        select: {
+          institutionId: true,
+          institutionName: true,
+          transactionTotalDays: true
+        }
+      })
     ]);
 
     // Validate requisition status - only process successfully linked requisitions
@@ -307,7 +321,8 @@ export async function POST(request: Request) {
           userId, 
           record.id, 
           externalAccountId, 
-          existing?.lastSyncedAt
+          existing?.lastSyncedAt,
+          connection?.transactionTotalDays
         );
         
         if (transactionResult.apiCallsUsed) {

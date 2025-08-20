@@ -12,7 +12,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 
   const userId = (session.user as any).id as string;
-  const { id: accountId } = params;
+  const { id: accountId } = await params;
 
   try {
     // First, check if account exists and belongs to user
@@ -96,7 +96,7 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
   }
 
   const userId = (session.user as any).id as string;
-  const { id: accountId } = params;
+  const { id: accountId } = await params;
 
   try {
     // Check if account exists and belongs to user

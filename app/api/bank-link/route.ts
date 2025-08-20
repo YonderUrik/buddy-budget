@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { gcCreateRequisition, gcGetRequisition, gcGetInstitution, gcListInstitutions } from "@/lib/gocardless";
+import { gcCreateRequisition, gcGetRequisition, gcGetInstitution, gcListInstitutions, gcCreateAgreement } from "@/lib/gocardless";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -116,18 +116,46 @@ export async function POST(request: Request) {
       console.log(`Cleaned up ${staleConnections.length} stale connections for institution ${institutionId}`);
     }
 
+    let institutionName: string | undefined = undefined;
+    let transactionTotalDays: number | undefined = undefined;
+    let maxHistoricalDays: number = 90;
+    let accessValidForDays: number = 90;
+
+    // Get institution details to determine agreement parameters
+    try {
+      const institution = await gcGetInstitution(institutionId);
+      
+      institutionName = institution?.name ?? undefined;
+      transactionTotalDays = parseInt(institution?.transaction_total_days?.toString() ?? '90');
+      
+      // Use institution's transaction_total_days as max_historical_days if available
+      // This ensures we can access the maximum historical data supported by the institution
+      maxHistoricalDays = transactionTotalDays || 90;
+      
+      // Set access_valid_for_days based on institution capabilities or use a longer period
+      // You can customize this logic based on your needs
+      accessValidForDays = 180; // Extended access period
+      
+    } catch (error) {
+      console.log("Failed to get institution details:", error);
+    }
+
+    // Create custom user agreement with institution-specific parameters
+    const agreement = await gcCreateAgreement({
+      institutionId,
+      maxHistoricalDays,
+      accessValidForDays,
+      accessScope: ["balances", "details", "transactions"]
+    });
+
+
     const uniqueReference = `${userId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
     const requisition = await gcCreateRequisition({
       redirect: redirectUrl,
       institutionId,
       reference: uniqueReference,
+      agreement: agreement.id,
     });
-
-    let institutionName: string | undefined = undefined;
-    try {
-      const institution = await gcGetInstitution(institutionId);
-      institutionName = institution?.name ?? undefined;
-    } catch {}
 
     await prisma.bankConnection.create({
       data: {
@@ -137,6 +165,7 @@ export async function POST(request: Request) {
         status: requisition.status,
         institutionId,
         institutionName,
+        transactionTotalDays,
         reference: requisition.reference,
       },
     });

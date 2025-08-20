@@ -163,16 +163,17 @@ model Transaction {
 }
 
 model BankConnection {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String   @db.ObjectId
-  provider         String   @default("gocardless")
-  requisitionId    String
-  status           String   @default("PENDING")
-  institutionId    String
-  institutionName  String?
-  reference        String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String   @db.ObjectId
+  provider              String   @default("gocardless")
+  requisitionId         String
+  status                String   @default("PENDING")
+  institutionId         String
+  institutionName       String?
+  transactionTotalDays  Int?     // Maximum days of transaction history available from this institution
+  reference             String
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

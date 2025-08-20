@@ -163,6 +163,32 @@ export async function gcDeleteRequisition(requisitionId: string) {
   return res.status === 204; // Successful deletion returns 204 No Content
 }
 
+export async function gcCreateAgreement(params: {
+  institutionId: string;
+  maxHistoricalDays?: number;
+  accessValidForDays?: number;
+  accessScope?: string[];
+}) {
+  const token = await gcGetAccessToken();
+  const res = await fetch(`${GC_BASE_URL}/agreements/enduser/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      institution_id: params.institutionId,
+      max_historical_days: params.maxHistoricalDays ?? 90,
+      access_valid_for_days: params.accessValidForDays ?? 90,
+      access_scope: params.accessScope ?? ["balances", "details", "transactions"],
+    }),
+  });
+  
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to create agreement: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
 export async function gcListAgreements() {
   const token = await gcGetAccessToken();
   const res = await fetch(`${GC_BASE_URL}/agreements/`, {

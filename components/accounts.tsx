@@ -11,6 +11,7 @@ import { CanvasRevealEffect, RevealCard } from "./ui/canvas-reveal-effect";
 import { LoaderOne } from "./ui/loader";
 import { CometCard } from "./ui/comet-card";
 import { AccountLineChart } from "./ui/account-line-chart";
+import { formatCurrency } from "@/lib/format";
 
 type Account = {
    id: string;
@@ -81,7 +82,7 @@ const InstitutionCard = React.memo(({ institution, index, onClick }: {
 
 InstitutionCard.displayName = 'InstitutionCard';
 
-export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; userCurrency?: string }) {
+export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictionary; userCurrency?: string }) {
    const [accounts, setAccounts] = useState<any[]>([]);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
@@ -138,12 +139,12 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
    const accountTypes = useMemo(() => [
-      { value: "CASH", label: "Cash", icon: "mdi:wallet-outline" },
-      { value: "CHECKING", label: "Checking", icon: "mdi:bank-outline" },
-      { value: "SAVINGS", label: "Savings", icon: "mdi:piggy-bank" },
-      { value: "CREDIT_CARD", label: "Credit Card", icon: "mdi:credit-card-outline" },
-      { value: "INVESTMENT", label: "Investment", icon: "mdi:chart-line" },
-   ], []);
+      { value: "CASH", label: dict?.accounts.CASH || "Cash", icon: "mdi:wallet-outline" },
+      { value: "CHECKING", label: dict?.accounts.CHECKING || "Checking", icon: "mdi:bank-outline" },
+      { value: "SAVINGS", label: dict?.accounts.SAVINGS || "Savings", icon: "mdi:piggy-bank" },
+      { value: "CREDIT_CARD", label: dict?.accounts.CREDIT_CARD || "Credit Card", icon: "mdi:credit-card-outline" },
+      { value: "INVESTMENT", label: dict?.accounts.INVESTMENT || "Investment", icon: "mdi:chart-line" },
+   ], [dict]);
 
    const ACCOUNT_ICON_SET = useMemo(() => [
       "mdi:wallet-outline",
@@ -189,7 +190,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
       setError(null);
       try {
          const res = await fetch("/api/accounts", { cache: "no-store" });
-         if (!res.ok) throw new Error("Failed to load accounts");
+         if (!res.ok) throw new Error(dict?.accounts.failedToLoad);
          const data = await res.json();
          setAccounts(data);
 
@@ -238,7 +239,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(manualForm),
          });
-         if (!res.ok) throw new Error("Failed to create account");
+         if (!res.ok) throw new Error(dict?.accounts.failedToCreate);
          addDisclosure.onClose();
          setModalStep('method');
          setManualForm({
@@ -272,7 +273,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
          });
          if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.error || "Failed to start bank link");
+            throw new Error(errorData.error || dict?.accounts.failedToStartBankLink);
          }
          const data = await res.json();
          window.location.href = data.link as string;
@@ -370,7 +371,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
          const res = await fetch(`/api/bank-link?action=institutions&country=${encodeURIComponent(selectedCountry)}`);
          if (!res.ok) {
             const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.error || "Failed to load institutions");
+            throw new Error(errorData.error || dict?.accounts.failedToLoadInstitutions);
          }
          const data = await res.json();
          const list = Array.isArray(data?.results) ? data.results : data;
@@ -423,7 +424,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
 
          if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err?.error || "Failed to update account");
+            throw new Error(err?.error || dict?.accounts.failedToUpdate);
          }
 
          const updated = await res.json();
@@ -431,7 +432,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
          setIsEditModalOpen(false);
          setEditingAccount(null);
       } catch (err: any) {
-         setModalError(err?.message || "Failed to update account");
+         setModalError(err?.message || dict?.accounts.failedToUpdate);
       } finally {
          setModalLoading(false);
       }
@@ -444,21 +445,21 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
          const res = await fetch(`/api/accounts/${editingAccount.id}`, { method: "DELETE" });
          if (!res.ok) {
             const err = await res.json().catch(() => ({}));
-            throw new Error(err?.error || "Failed to delete account");
+            throw new Error(err?.error || dict?.accounts.failedToDelete);
          }
 
          setAccounts((prev) => prev.filter((a) => a.id !== editingAccount.id));
          setIsEditModalOpen(false);
          setEditingAccount(null);
       } catch (err: any) {
-         setModalError(err?.message || "Failed to delete account");
+         setModalError(err?.message || dict?.accounts.failedToDelete);
       }
    }
 
    return (
       <div className="max-w-2xl mx-auto w-full ">
          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-xl font-semibold">Accounts</h1>
+            <h1 className="text-xl font-semibold">{dict?.accounts.title}</h1>
             <motion.div layoutId={`card-new-accounts`} className="inline-block">
                <motion.div layoutId={`button-new-accounts`} className="inline-block">
                   <Button
@@ -470,7 +471,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                      size="md"
                      className="rounded-full"
                   >
-                     + Add account
+                     + {dict?.accounts.addAccount}
                   </Button>
                </motion.div>
             </motion.div>
@@ -482,7 +483,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
             </Alert>
          )}
 
-         {loading && <LoaderOne title="Loading accounts..." />}
+         {loading && <LoaderOne title={dict?.accounts.loading} />}
 
 
          <div className="w-full flex flex-col gap-3">
@@ -535,31 +536,14 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                               <div className="text-lg font-semibold tabular-nums">
                                  {(() => {
                                     const balance = a.balance || 0;
-                                    const absBalance = Math.abs(balance);
 
-                                    if (absBalance >= 1000000) {
-                                       return new Intl.NumberFormat(undefined, {
-                                          style: 'currency',
-                                          currency: a.currency || 'EUR',
-                                          minimumFractionDigits: 1,
-                                          maximumFractionDigits: 1,
-                                          notation: 'compact',
-                                          compactDisplay: 'short'
-                                       }).format(balance);
-                                    } else {
-                                       return new Intl.NumberFormat(undefined, {
-                                          style: 'currency',
-                                          currency: a.currency || 'EUR',
-                                          minimumFractionDigits: 2,
-                                          maximumFractionDigits: 2
-                                       }).format(balance);
-                                    }
+                                    return formatCurrency(balance, a.currency || 'EUR');
                                  })()}
                               </div>
                            </div>
                         </div>
                      </div>
-                     
+
                      {/* Line Chart for Last 90 Days */}
                      {a.chartData && a.chartData.length > 0 && (
                         <div className="flex items-center gap-3 pt-2 border-t border-divider/50">
@@ -572,7 +556,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                               />
                            </div>
                            <div className="flex flex-col items-end gap-1">
-                              <span className="text-xs text-default-500">Last 90 days</span>
+                              <span className="text-xs text-default-500">{dict?.accounts.last90Days}</span>
                               <div className="flex items-center gap-1">
                                  {(() => {
                                     if (a.chartData.length < 2) return null;
@@ -581,12 +565,12 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                     const change = lastBalance - firstBalance;
                                     const changePercent = firstBalance !== 0 ? (change / Math.abs(firstBalance)) * 100 : 0;
                                     const isPositive = change >= 0;
-                                    
+
                                     return (
                                        <>
-                                          <Icon 
-                                             icon={isPositive ? "mdi:trending-up" : "mdi:trending-down"} 
-                                             className={`text-xs ${isPositive ? "text-success" : "text-danger"}`} 
+                                          <Icon
+                                             icon={isPositive ? "mdi:trending-up" : "mdi:trending-down"}
+                                             className={`text-xs ${isPositive ? "text-success" : "text-danger"}`}
                                           />
                                           <span className={`text-xs font-medium ${isPositive ? "text-success" : "text-danger"}`}>
                                              {isPositive ? "+" : ""}{changePercent.toFixed(1)}%
@@ -611,7 +595,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                            <div className="card"></div>
                            <div className="card"></div>
                         </div>
-                        <h2 className="wallet-title">No accounts found</h2>
+                        <h2 className="wallet-title">{dict?.accounts.noAccounts}</h2>
                      </div>
                   </div>
                </div>
@@ -671,15 +655,15 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                               )}
                               <div>
                                  <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-                                    {modalStep === 'method' ? 'Add Account' :
-                                       modalStep === 'manual' ? 'Create Manual Account' : 'Choose Your Bank'}
+                                    {modalStep === 'method' ? dict?.accounts.addAccount :
+                                       modalStep === 'manual' ? dict?.accounts.createManualAccount : dict?.accounts.createBankAccount}
                                  </h2>
                                  <p className="text-default-600 text-sm">
                                     {modalStep === 'method'
-                                       ? 'Choose your preferred setup method'
+                                       ? dict?.accounts.chooseMethod
                                        : modalStep === 'manual'
-                                          ? 'Set up a manual account with custom details'
-                                          : 'Securely connect your bank to import balances and transactions'
+                                          ? dict?.accounts.manualAccountDescription
+                                          : dict?.accounts.bankAccountDescription
                                     }
                                  </p>
                               </div>
@@ -709,7 +693,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                               <div className="flex items-start gap-3">
                                  <Icon icon="mdi:alert-circle" className="text-red-500 mt-0.5 flex-shrink-0" width={20} height={20} />
                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-red-700 dark:text-red-200 font-medium">Connection Failed</p>
+                                    <p className="text-sm text-red-700 dark:text-red-200 font-medium">{dict?.accounts.connectionFailed}</p>
                                     <p className="text-xs text-red-600 dark:text-red-300 mt-1">{modalError}</p>
                                  </div>
                                  <Button
@@ -736,7 +720,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                  >
                                     <CometCard>
                                        <RevealCard
-                                          title="Create Manually"
+                                          title={dict?.accounts.manually.title || ''}
                                           icon={<IconWallet size={52} className="text-primary group-hover:scale-110 transition-transform duration-300" />}
                                        >
                                           <CanvasRevealEffect
@@ -758,44 +742,28 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                                       size="sm"
                                                       className="mb-3 bg-primary/15 text-primary font-semibold px-3 py-1 border border-primary/20"
                                                    >
-                                                      ✨ Quick & Easy
+                                                      {dict?.accounts.manually.description}
                                                    </Chip>
                                                    <h3 className="text-xl font-bold text-foreground text-center leading-tight">
-                                                      Manual Account
+                                                      {dict?.accounts.manually.primaryCta}
                                                    </h3>
                                                    <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
-                                                      Perfect for cash and liquid assets
+                                                      {dict?.accounts.manually.secondaryCta}
                                                    </p>
                                                 </CardHeader>
                                                 <CardBody className="pt-2 pb-6 px-6 space-y-4">
                                                    <div className="space-y-3">
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:lightning-bolt" className="text-primary w-3 h-3" />
+                                                      {dict?.accounts.manually.features.map((feature) => (
+                                                         <div key={feature.title} className="flex items-start gap-3">
+                                                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                               <Icon icon={feature.icon} className="text-primary w-3 h-3" />
+                                                            </div>
+                                                            <div className="text-sm">
+                                                               <div className="font-semibold text-foreground">{feature.title}</div>
+                                                               <div className="text-default-500 text-xs">{feature.desc}</div>
+                                                            </div>
                                                          </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Instant Setup</div>
-                                                            <div className="text-default-500 text-xs">No bank connection required</div>
-                                                         </div>
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:shield-check" className="text-primary w-3 h-3" />
-                                                         </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Your Control</div>
-                                                            <div className="text-default-500 text-xs">Manually track transactions</div>
-                                                         </div>
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:tune-variant" className="text-primary w-3 h-3" />
-                                                         </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Liquid Assets</div>
-                                                            <div className="text-default-500 text-xs">Cash, savings & liquid accounts</div>
-                                                         </div>
-                                                      </div>
+                                                      ))}
                                                    </div>
                                                 </CardBody>
                                              </Card>
@@ -812,7 +780,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                  >
                                     <CometCard>
                                        <RevealCard
-                                          title="Connect Bank"
+                                          title={dict?.accounts.bank.title || ''}
                                           icon={<IconLink size={52} className="text-secondary group-hover:scale-110 transition-transform duration-300" />}
                                        >
                                           <CanvasRevealEffect
@@ -834,53 +802,28 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                                       size="sm"
                                                       className="mb-3 bg-secondary/15 text-secondary font-semibold px-3 py-1 border border-secondary/20"
                                                    >
-                                                      🔒 Bank Grade Security
+                                                      {dict?.accounts.bank.description}
                                                    </Chip>
                                                    <h3 className="text-xl font-bold text-foreground text-center leading-tight">
-                                                      Bank Connection
+                                                      {dict?.accounts.bank.primaryCta}
                                                    </h3>
                                                    <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
-                                                      Automatic sync via secure Open Banking
+                                                      {dict?.accounts.bank.secondaryCta}
                                                    </p>
                                                 </CardHeader>
                                                 <CardBody className="pt-2 pb-6 px-6 space-y-4">
                                                    <div className="space-y-3">
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:sync" className="text-secondary w-3 h-3" />
+                                                      {dict?.accounts.bank.features.map((feature) => (
+                                                         <div key={feature.title} className="flex items-start gap-3">
+                                                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                               <Icon icon={feature.icon} className="text-secondary w-3 h-3" />
+                                                            </div>
+                                                            <div className="text-sm">
+                                                               <div className="font-semibold text-foreground">{feature.title}</div>
+                                                               <div className="text-default-500 text-xs">{feature.desc}</div>
+                                                            </div>
                                                          </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Real-time Sync</div>
-                                                            <div className="text-default-500 text-xs">Transactions updated automatically</div>
-                                                         </div>
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:bank" className="text-secondary w-3 h-3" />
-                                                         </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Enterprise Security</div>
-                                                            <div className="text-default-500 text-xs">Military-grade encryption</div>
-                                                         </div>
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:brain" className="text-secondary w-3 h-3" />
-                                                         </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Smart Insights</div>
-                                                            <div className="text-default-500 text-xs">AI-powered categorization</div>
-                                                         </div>
-                                                      </div>
-                                                      <div className="flex items-start gap-3">
-                                                         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                            <Icon icon="mdi:bank" className="text-secondary w-3 h-3" />
-                                                         </div>
-                                                         <div className="text-sm">
-                                                            <div className="font-semibold text-foreground">Powered by GoCardless</div>
-                                                            <div className="text-default-500 text-xs">3000+ banks supported</div>
-                                                         </div>
-                                                      </div>
+                                                      ))}
                                                    </div>
                                                 </CardBody>
                                              </Card>
@@ -894,8 +837,8 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                  <form onSubmit={createManualAccount} className="flex-1 flex flex-col gap-6">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                        <Input
-                                          label="Account Name"
-                                          placeholder="e.g. Main Wallet"
+                                          label={dict?.accounts.form.accountName}
+                                          placeholder={dict?.accounts.form.accountNamePlaceholder}
                                           value={manualForm.name}
                                           onChange={(e) => setManualForm((s) => ({ ...s, name: e.target.value }))}
                                           isRequired
@@ -904,7 +847,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                        />
 
                                        <Select
-                                          label="Account Type"
+                                          label={dict?.accounts.form.accountType}
                                           selectedKeys={[manualForm.type]}
                                           isRequired
                                           onSelectionChange={(keys) => {
@@ -939,7 +882,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                        </Select>
 
                                        <Select
-                                          label="Currency"
+                                          label={dict?.accounts.form.currency}
                                           selectedKeys={[manualForm.currency]}
                                           isRequired
                                           onSelectionChange={(keys) => {
@@ -972,7 +915,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                        <Input
-                                          label="Initial Balance"
+                                          label={dict?.accounts.form.initialBalance}
                                           placeholder="0.00"
                                           type="number"
                                           step="0.01"
@@ -987,8 +930,8 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                        />
 
                                        <Input
-                                          label="Institution Name (Optional)"
-                                          placeholder="e.g. Personal Cash"
+                                          label={dict?.accounts.form.institutionName}
+                                          placeholder={dict?.accounts.form.institutionNamePlaceholder}
                                           value={manualForm.institutionName}
                                           onChange={(e) => setManualForm((s) => ({ ...s, institutionName: e.target.value }))}
                                           variant="flat"
@@ -997,7 +940,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
 
                                     <div className="grid grid-cols-2 gap-4">
                                        <div className="flex flex-col gap-2">
-                                          <label className="text-small text-foreground font-medium">Icon</label>
+                                          <label className="text-small text-foreground font-medium">{dict?.accounts.form.icon}</label>
                                           <Popover placement="bottom-start">
                                              <PopoverTrigger>
                                                 <button
@@ -1031,7 +974,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                        </div>
 
                                        <div className="flex flex-col gap-2">
-                                          <label className="text-small text-foreground font-medium">Color</label>
+                                          <label className="text-small text-foreground font-medium">{dict?.accounts.form.color}</label>
                                           <Popover placement="bottom-start">
                                              <PopoverTrigger>
                                                 <button
@@ -1076,7 +1019,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                           color="default"
                                           startContent={<Icon icon="mdi:arrow-left" className="text-base" />}
                                        >
-                                          Back
+                                          {dict?.accounts.form.back}
                                        </Button>
                                        <Button
                                           type="submit"
@@ -1084,7 +1027,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                           isLoading={modalLoading}
                                           startContent={!modalLoading && <Icon icon="mdi:plus" className="text-base" />}
                                        >
-                                          Create Account
+                                          {dict?.accounts.form.createAccount}
                                        </Button>
                                     </div>
                                  </form>
@@ -1096,7 +1039,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                        <Input
                                           value={institutionQuery}
                                           onChange={handleInputChange}
-                                          placeholder="Search institutions"
+                                          placeholder={dict?.accounts.form.searchInstitutions}
                                           className="flex-1"
                                           size="md"
                                           variant="flat"
@@ -1109,7 +1052,6 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                        />
                                        <Select
                                           isRequired
-                                          aria-label="Country filter"
                                           className="w-full sm:w-32"
                                           selectedKeys={[country]}
                                           onSelectionChange={(keys) => {
@@ -1258,7 +1200,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                  >
                                     {institutionsLoading ? (
                                        <div className="flex-1 flex items-center justify-center">
-                                          <LoaderOne size="md" title="Loading institutions..." />
+                                          <LoaderOne size="md" title={dict?.accounts.form.loadingInstitutions} />
                                        </div>
                                     ) : filteredInstitutions.length === 0 ? (
                                        <div className="text-center text-sm text-default-500">
@@ -1270,7 +1212,7 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                                    <div className="card"></div>
                                                    <div className="card"></div>
                                                 </div>
-                                                <h2 className="wallet-title">No institutions found</h2>
+                                                <h2 className="wallet-title">{dict?.accounts.form.noInstitutions}</h2>
                                              </div>
                                           </div>
                                        </div>
@@ -1283,8 +1225,8 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                                    <div className="flex flex-col items-center gap-3">
                                                       <LoaderOne size="md" />
                                                       <div className="text-center">
-                                                         <p className="text-sm font-medium text-foreground">Connecting to your bank...</p>
-                                                         <p className="text-xs text-default-500 mt-1">This may take a few moments</p>
+                                                         <p className="text-sm font-medium text-foreground">{dict?.accounts.form.connectingInstitution}</p>
+                                                         <p className="text-xs text-default-500 mt-1">{dict?.accounts.form.connectingInstitutionDescription}</p>
                                                       </div>
                                                    </div>
                                                 </div>
@@ -1302,34 +1244,6 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                                                 </div>
                                              ))}
                                           </div>
-
-                                          {/* Loading more indicator */}
-                                          {isLoadingMore && (
-                                             <div className="flex items-center justify-center py-4">
-                                                <LoaderOne size="sm" title="Loading more..." />
-                                             </div>
-                                          )}
-
-                                          {/* Show progress indicator */}
-                                          {hasMoreItems && !isLoadingMore && (
-                                             <div className="text-center py-4">
-                                                <div className="text-sm text-default-500">
-                                                   Showing {displayedInstitutions.length} of {filteredInstitutions.length} institutions
-                                                </div>
-                                                <div className="text-xs text-default-400 mt-1">
-                                                   Scroll down to load more
-                                                </div>
-                                             </div>
-                                          )}
-
-                                          {/* All loaded indicator */}
-                                          {!hasMoreItems && filteredInstitutions.length > 40 && (
-                                             <div className="text-center py-4">
-                                                <div className="text-sm text-default-500">
-                                                   All {filteredInstitutions.length} institutions loaded
-                                                </div>
-                                             </div>
-                                          )}
                                        </div>
                                     )}
                                  </div>
@@ -1367,19 +1281,21 @@ export default function Accounts({ userCurrency = "EUR" }: { dict?: Dictionary; 
                   >
                      <div className="flex justify-between items-start p-4 border-b border-divider">
                         <div className="flex items-center gap-3">
-                           <div className="h-10 w-10 rounded-xl flex items-center justify-center text-white" style={{ backgroundColor: editForm.color }}>
-                              <Icon icon={editForm.icon || "mdi:wallet-outline"} className="text-xl" />
+                           <div className="h-10 w-10 rounded-xl flex items-center justify-center text-white overflow-hidden" style={{ backgroundColor: editForm.color }}>
+                              {editingAccount?.institutionLogo ? (
+                                 <img
+                                    src={editingAccount.institutionLogo}
+                                    alt={editingAccount.institutionName || editingAccount.name}
+                                    className="w-full h-full object-contain"
+                                 />
+                              ) : (
+                                 <Icon icon={editForm.icon || "mdi:wallet-outline"} className="text-xl" />
+                              )}
                            </div>
                            <div className="flex flex-col">
                               <motion.h3 layoutId={`title-${editingAccount?.id}-${id}`} className="font-bold text-foreground">
                                  Edit Account
                               </motion.h3>
-                              <div className="flex items-center gap-2 text-default-500 text-small">
-                                 {editingAccount?.provider !== 'manual' && (
-                                    <Icon icon="mdi:link-variant" className="text-xs" />
-                                 )}
-                                 <span className="capitalize">{editingAccount?.type || 'Account'}</span>
-                              </div>
                            </div>
                         </div>
                         <div className="flex items-center gap-2">

@@ -7,7 +7,7 @@ async function getAccounts(userId: string) {
   try {
     const accounts = await (prisma as any).financialAccount.findMany({
       where: { userId, isArchived: false },
-      orderBy: { createdAt: "desc" },
+      orderBy: { name: "asc",  },
       select: {
         id: true,
         name: true,
@@ -66,9 +66,8 @@ export default async function DashboardPage({ params }: { params: { locale: stri
   return (
     <div className="container mx-auto max-w-5xl py-10">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="text-default-500 mt-2">Plan: {user.plan}</p>
 
-      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-2 mt-5">
         <AccountsPieChart {...data} />
       </div>
     </div>

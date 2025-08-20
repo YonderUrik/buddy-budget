@@ -621,11 +621,19 @@
       "color": "Color",
       "back": "Back",
       "createAccount": "Create Account",
+      "editAccount": "Edit Account",
       "searchInstitutions": "Search Institutions",
       "noInstitutions": "No institutions found",
       "connectingInstitution": "Connecting to your bank...",
       "connectingInstitutionDescription": "This may take a few moments",
-      "loadingInstitutions": "Loading institutions..."
+      "loadingInstitutions": "Loading institutions...",
+      "linkedAccount": "Linked Account",
+      "linkedAccountDescription": "Only the name can be edited for linked accounts. Other details are managed by your bank.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "deleteAccount": "Delete Account",
+      "deleteAccountDescription": "This will permanently delete the account and all its transactions.",
+      "confirmDeleteAccount": "Delete Account?"
     },
     "psd2": {
       "steps": [

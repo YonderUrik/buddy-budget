@@ -306,11 +306,19 @@ export interface Dictionary {
       color: string;
       back: string;
       createAccount: string;
+      editAccount: string;
       searchInstitutions: string;
       noInstitutions: string;
       connectingInstitution: string;
       connectingInstitutionDescription: string;
       loadingInstitutions: string;
+      linkedAccount: string;
+      linkedAccountDescription: string;
+      cancel: string;
+      save: string;
+      deleteAccount: string;
+      deleteAccountDescription: string;
+      confirmDeleteAccount: string;
     },
     psd2: {
       steps: Array<{

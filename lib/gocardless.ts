@@ -232,7 +232,6 @@ export type GoCardlessTransaction = {
   debtorName?: string;
   remittanceInformationUnstructured?: string;
   remittanceInformationStructured?: string;
-  merchantCategoryCode?: string;
   proprietaryBankTransactionCode?: string;
   internalTransactionId?: string;
 };

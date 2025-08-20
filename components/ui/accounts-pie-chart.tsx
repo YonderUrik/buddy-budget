@@ -80,7 +80,7 @@ export const AccountsPieChart = React.forwardRef<
                               const name = p.name;
                               const value = p.value;
                               const category = categories.find((c) => c.toLowerCase() === name) ?? name;
-                              
+
                               // Find the corresponding chart data item to get custom color
                               const chartItem = chartData.find(item => item.name === name);
                               const tooltipColor = chartItem?.color || `hsl(var(--heroui-${color}-${(index + 1) * 200}))`;
@@ -130,7 +130,7 @@ export const AccountsPieChart = React.forwardRef<
                      nameKey="name"
                      paddingAngle={-20}
                      strokeWidth={0}
-                     cornerRadius={10} 
+                     cornerRadius={10}
                   >
                      {chartData.map((item, index) => {
                         const fillColor = item.color || `hsl(var(--heroui-${color}-${(index + 1) * 200}))`;
@@ -148,6 +148,7 @@ export const AccountsPieChart = React.forwardRef<
             <div className="text-tiny text-default-500 flex w-full flex-col justify-center gap-4 p-4 lg:p-0">
                {chartData.map((item, index) => {
                   const itemColor = item.color || `hsl(var(--heroui-${color}-${(index + 1) * 200}))`;
+                  const percentage = totalValue > 0 ? ((item.value as number) / totalValue * 100).toFixed(1) : "0.0";
                   return (
                      <div key={index} className="flex items-center gap-2">
                         <div className="flex items-center gap-2 flex-shrink-0">
@@ -172,10 +173,15 @@ export const AccountsPieChart = React.forwardRef<
                            )}
                         </div>
                         <div className="flex items-center justify-between w-full min-w-0 gap-2 mr-5">
-                           <span className="capitalize truncate text-xs">{item.name}</span>
-                           <span className="capitalize truncate text-xs font-medium">
-                              {isClient ? formatCurrency(item.value as number, item.currency || 'EUR') : `€${(item.value as number).toFixed(2)}`}
-                           </span>
+                           <span className="text-default-700 capitalize truncate text-md">{item.name}</span>
+                           <div className="flex flex-col items-end">
+                              <span className="capitalize truncate text-xs font-medium">
+                                 {isClient ? formatCurrency(item.value as number, item.currency || 'EUR') : `€${(item.value as number).toFixed(2)}`}
+                                 <span className="text-default-400 text-[10px]">
+                                    {" "} ({percentage}%)
+                                 </span>
+                              </span>
+                           </div>
                         </div>
                      </div>
                   );

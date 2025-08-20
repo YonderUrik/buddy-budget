@@ -4,6 +4,31 @@ import { prisma } from "@/lib/prisma";
 import { gcGetAccountDetails, gcGetInstitution, gcGetRequisition, gcGetAccountTransactions, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
 
+export async function findCategoryByMerchantName(merchantName: string | null): Promise<string | null> {
+  if (!merchantName) return null;
+  
+  try {
+    // Look for existing transactions with the same merchantName that have a categoryId
+    const existingTransaction = await (prisma as any).transaction.findFirst({
+      where: {
+        merchantName,
+        categoryId: { not: null }
+      },
+      select: {
+        categoryId: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    
+    return existingTransaction?.categoryId || null;
+  } catch (error) {
+    console.error('Error finding category by merchant name:', error);
+    return null;
+  }
+}
+
 async function createTransactionsForAccount(userId: string, accountId: string, externalAccountId: string, lastSyncedAt?: Date, maxDaysHistory?: number) {
   try {
     // Check if we can make API calls for this account
@@ -105,6 +130,10 @@ async function createTransactionsForAccount(userId: string, accountId: string, e
           transaction.debtorName ||
           'Bank Transaction';
 
+        // Extract merchant name and find matching category
+        const merchantName = transaction.creditorName || transaction.debtorName || null;
+        const categoryId = await findCategoryByMerchantName(merchantName);
+
         transactionsToCreate.push({
           userId,
           accountId,
@@ -112,13 +141,13 @@ async function createTransactionsForAccount(userId: string, accountId: string, e
           amount,
           currency,
           description,
-          merchantName: transaction.creditorName || transaction.debtorName || null,
-          categoryCode: transaction.merchantCategoryCode || null,
+          merchantName,
+          categoryId,
           date: bookingDate,
           bookingDate,
           valueDate,
           provider: 'gocardless',
-          raw: transaction as any,
+          type: amount < 0 ? 'expense' : 'income'
         });
         
       } catch (transactionError: any) {
@@ -238,7 +267,7 @@ export async function POST(request: Request) {
     // Update bank connection status
     await (prisma as any).bankConnection.updateMany({
       where: { userId, requisitionId },
-      data: { status: requisition.status ?? "LINKED" },
+      data: { status: requisition.status ?? "LN" },
     });
 
     // Process accounts sequentially to avoid hitting rate limits too fast

@@ -252,7 +252,7 @@ export default function Categories({ dict }: { dict: Dictionary }) {
 
    return (
       <>
-        provider {loading ? (
+        {loading ? (
             <div className="text-sm text-neutral-500 flex items-center justify-center h-full">
                <LoaderOne title={stateLabels.loading} subtitle={stateLabels.loadingDesc} />
             </div>

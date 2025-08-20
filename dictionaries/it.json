@@ -621,11 +621,19 @@
       "color": "Colore",
       "back": "Indietro",
       "createAccount": "Crea conto",
+      "editAccount": "Modifica conto",
       "searchInstitutions": "Cerca Banca",
       "noInstitutions": "Nessuna banca trovata",
       "connectingInstitution": "Connessione alla tua banca...",
       "connectingInstitutionDescription": "Questo può richiedere alcuni momenti",
-      "loadingInstitutions": "Caricamento banche..."
+      "loadingInstitutions": "Caricamento banche...",
+      "linkedAccount": "Conto collegato",
+      "linkedAccountDescription": "Solo il nome può essere modificato per i conti collegati. Tutti gli altri dettagli sono gestiti dalla tua banca.",
+      "cancel": "Annulla",
+      "save": "Salva",
+      "deleteAccount": "Elimina conto",
+      "deleteAccountDescription": "Questo eliminerà il conto e tutte le sue transazioni.",
+      "confirmDeleteAccount": "Eliminare il conto?"
     },
   "psd2": {
       "steps": [

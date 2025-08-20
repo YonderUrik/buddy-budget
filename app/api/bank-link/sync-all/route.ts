@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAccountsDueForSync } from "@/lib/sync-manager";
 import { gcGetAccountTransactions, gcGetAccountDetails, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
+import { findCategoryByMerchantName } from "../complete/route";
 
 export async function POST(request: Request) {
   const session = await getSession();
@@ -278,6 +279,9 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
             transaction.debtorName ||
             'Bank Transaction';
 
+          const merchantName = transaction.creditorName || transaction.debtorName || null;
+          const categoryId = await findCategoryByMerchantName(merchantName);
+
           transactionsToCreate.push({
             userId: userId,
             accountId: account.id,
@@ -285,13 +289,13 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
             amount,
             currency,
             description,
-            merchantName: transaction.creditorName || transaction.debtorName || null,
-            categoryCode: transaction.merchantCategoryCode || null,
+            merchantName: merchantName,
+            categoryId: categoryId,
             date: bookingDate,
             bookingDate,
             valueDate,
             provider: 'gocardless',
-            raw: transaction as any,
+            type: amount < 0 ? 'expense' : 'income'
           });
 
         } catch (transactionError: any) {

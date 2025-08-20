@@ -1294,7 +1294,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
                            </div>
                            <div className="flex flex-col">
                               <motion.h3 layoutId={`title-${editingAccount?.id}-${id}`} className="font-bold text-foreground">
-                                 Edit Account
+                                 {dict?.accounts.form.editAccount}
                               </motion.h3>
                            </div>
                         </div>
@@ -1340,7 +1340,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
                         >
                            <div className="grid grid-cols-1 gap-4">
                               <Input
-                                 label="Account Name"
+                                 label={dict?.accounts.form.accountName}
                                  value={editForm.name}
                                  onChange={(e) => setEditForm((s) => ({ ...s, name: e.target.value }))}
                                  isRequired
@@ -1491,8 +1491,8 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
                                  <Alert color="warning" variant="flat">
                                     <div className="flex items-start gap-3">
                                        <div>
-                                          <p className="font-medium">Linked Account</p>
-                                          <p className="text-sm">Only the name can be edited for linked accounts. Other details are managed by your bank.</p>
+                                          <p className="font-medium">{dict?.accounts.form.linkedAccount}</p>
+                                          <p className="text-sm">{dict?.accounts.form.linkedAccountDescription}</p>
                                        </div>
                                     </div>
                                  </Alert>
@@ -1507,7 +1507,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
                                  color="default"
                                  startContent={<Icon icon="mdi:close" className="text-base" />}
                               >
-                                 Cancel
+                                 {dict?.accounts.form.cancel}
                               </Button>
                               <motion.div layoutId={`button-${editingAccount?.id}-${id}`}>
                                  <Button
@@ -1516,7 +1516,7 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
                                     isLoading={modalLoading}
                                     startContent={!modalLoading && <Icon icon="mdi:content-save-outline" className="text-base" />}
                                  >
-                                    Save Changes
+                                    {dict?.accounts.form.save}
                                  </Button>
                               </motion.div>
                            </div>
@@ -1532,18 +1532,15 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
                                     <Icon icon="mdi:trash-can-outline" />
                                  </div>
                                  <div className="flex-1">
-                                    <h4 className="font-semibold text-foreground mb-1">Delete Account?</h4>
+                                    <h4 className="font-semibold text-foreground mb-1">{dict?.accounts.form.confirmDeleteAccount}</h4>
                                     <p className="text-small text-default-500">
-                                       {editingAccount?.provider !== 'manual'
-                                          ? "This will archive the account and preserve transaction history."
-                                          : "This will permanently delete the account and all its transactions."
-                                       }
+                                       {dict?.accounts.form.deleteAccountDescription}
                                     </p>
                                  </div>
                               </div>
                               <div className="mt-4 flex items-center justify-end gap-2">
-                                 <Button variant="flat" onPress={() => setConfirmOpen(false)}>Cancel</Button>
-                                 <Button color="danger" onPress={async () => { await handleDeleteAccount(); setConfirmOpen(false); }}>Delete</Button>
+                                 <Button variant="flat" onPress={() => setConfirmOpen(false)}>{dict?.accounts.form.cancel}</Button>
+                                 <Button color="danger" onPress={async () => { await handleDeleteAccount(); setConfirmOpen(false); }}>{dict?.accounts.form.deleteAccount}</Button>
                               </div>
                            </div>
                         </div>

@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Psd2CallbackClient from "./client";
-import { getDictionary } from "@/lib/get-dictionary";
+import { getDictionary } from "@/lib/dictionaries";
 
 export default async function Psd2CallbackPage({ params }: { params: { locale: string } }) {
   const { locale } = await params;

@@ -39,6 +39,7 @@ export const AccountsPieChart = React.forwardRef<
    HTMLDivElement,
    Omit<CardProps, "children"> & CircleChartProps
 >(({ className, title, categories, color, chartData, ...props }, ref) => {
+   // TODO : Gestire casistica con nesusn valore
    const [isClient, setIsClient] = useState(false);
 
    useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardBody, CardFooter, CardHeader, user } from "@heroui/react";
+import { Card, CardBody, user } from "@heroui/react";
 import { Button } from "@heroui/react";
 import { Switch } from "@heroui/react";
 import { Chip } from "@heroui/react";
@@ -122,170 +122,165 @@ export function PricingSection({ dict, showButtons = false, showFreePlan = true,
           </Chip>
         </div>
 
-        {/* Pricing Cards */}
-        <div className={`grid gap-6 max-w-5xl mx-auto ${showFreePlan ? 'md:grid-cols-3' : 'md:grid-cols-2 justify-items-center'}`}>
+        {/* Pricing Comparison Table */}
+        <div className="max-w-7xl mx-auto">
+          <Card className="overflow-hidden" isBlurred>
+            <CardBody className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  {/* Header Row */}
+                  <thead>
+                    <tr className="border-b border-divider">
+                      <th className="text-left p-6 w-1/4">
+                        <div className="text-lg font-semibold text-foreground-600">Features</div>
+                      </th>
+                      
+                      {showFreePlan && (
+                        <th className="text-center p-6 w-1/4">
+                          <div className="space-y-2">
+                            <h3 className="text-xl font-bold">{dict.pricing.plans.free.name}</h3>
+                            <div className="text-3xl font-bold text-primary">{dict.pricing.plans.free.title}</div>
+                            <p className="text-sm text-foreground-600">{dict.pricing.plans.free.description}</p>
+                            {showButtons && (
+                              <Button className="w-full mt-4" variant="bordered" color="primary">
+                                {dict.pricing.getStarted}
+                              </Button>
+                            )}
+                          </div>
+                        </th>
+                      )}
+                      
+                      <th className={`text-center p-6 w-1/4 ${currentPlan === "PRO" ? "bg-success/10 relative" : "bg-primary/10 relative"}`}>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-center gap-2">
+                            <h3 className="text-xl font-bold">{dict.pricing.plans.pro.name}</h3>
+                            {currentPlan === "PRO" ? (
+                              <Chip color="success" size="sm">
+                                {dict.pricing.currentPlan}
+                              </Chip>
+                            ) : (
+                              <Chip color="primary" size="sm">
+                                {dict.pricing.mostPopular}
+                              </Chip>
+                            )}
+                          </div>
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-3xl font-bold text-primary">
+                              €{isYearly ? plans.find(p => p.id === "growth")?.yearlyPrice : plans.find(p => p.id === "growth")?.monthlyPrice}
+                            </span>
+                            <span className="text-sm text-foreground-600">
+                              /{isYearly ? 'year' : 'month'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground-600">{dict.pricing.plans.pro.description}</p>
+                          {showButtons && (
+                            <Button
+                              onPress={() => {
+                                if (currentPlan === "PRO") return;
+                                if (currentPlan === "FREE") {
+                                  handleCheckout("growth");
+                                } else {
+                                  handleUpgrade("growth");
+                                }
+                              }}
+                              className="w-full mt-4"
+                              color={currentPlan === "PRO" ? "success" : "primary"}
+                              isDisabled={currentPlan === "PRO"}
+                              isLoading={loading === "growth"}
+                            >
+                              {currentPlan === "PRO" ? dict.pricing.currentPlan : dict.pricing.choosePlan}
+                            </Button>
+                          )}
+                        </div>
+                      </th>
+                      
+                      <th className={`text-center p-6 w-1/4 ${currentPlan === "LEGACY" ? "bg-success/10" : ""}`}>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-center gap-2">
+                            <h3 className="text-xl font-bold">{dict.pricing.plans.premium.name}</h3>
+                            {currentPlan === "LEGACY" && (
+                              <Chip color="success" size="sm">
+                                {dict.pricing.currentPlan}
+                              </Chip>
+                            )}
+                          </div>
+                          <div className="flex items-baseline justify-center gap-1">
+                            <span className="text-3xl font-bold text-primary">
+                              €{isYearly ? plans.find(p => p.id === "legacy")?.yearlyPrice : plans.find(p => p.id === "legacy")?.monthlyPrice}
+                            </span>
+                            <span className="text-sm text-foreground-600">
+                              /{isYearly ? 'year' : 'month'}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground-600">{dict.pricing.plans.premium.description}</p>
+                          {showButtons && (
+                            <Button
+                              className="w-full mt-4"
+                              color={currentPlan === "LEGACY" ? "success" : "primary"}
+                              variant={currentPlan === "LEGACY" ? "solid" : "bordered"}
+                              isDisabled={currentPlan === "LEGACY"}
+                              isLoading={loading === "legacy"}
+                              onPress={() => {
+                                if (currentPlan === "LEGACY") return;
+                                if (currentPlan === "FREE") {
+                                  handleCheckout("legacy");
+                                } else {
+                                  handleUpgrade("legacy");
+                                }
+                              }}
+                            >
+                              {currentPlan === "LEGACY" ? dict.pricing.currentPlan : dict.pricing.choosePlan}
+                            </Button>
+                          )}
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  
+                  <tbody>
+                    {/* Feature Rows */}
+                    {dict.pricing.comparison.features.map((feature, index) => {
+                      const renderValue = (value: string | boolean) => {
+                        if (typeof value === 'boolean') {
+                          return value ? (
+                            <IconCheck className="w-5 h-5 text-success mx-auto" />
+                          ) : (
+                            <span className="text-foreground-400">—</span>
+                          );
+                        }
+                        return <span className="text-sm font-medium">{value}</span>;
+                      };
 
-          {showFreePlan && (
-            /* Free Plan */
-            <Card className="relative" isBlurred>
-              <CardHeader className="pb-2">
-                <div className="w-full">
-                  <h3 className="text-xl font-bold mb-1">
-                    {dict.pricing.plans.free.name}
-                  </h3>
-                  <div className="flex items-baseline gap-1 mb-2">
-                    <span className="text-4xl font-bold">{dict.pricing.plans.free.title}</span>
-                  </div>
-                  <p className="text-sm text-foreground-600">
-                    {dict.pricing.plans.free.description}
-                  </p>
-                </div>
-              </CardHeader>
-              <CardBody className="pt-0">
-                <ul className="space-y-3">
-                  {dict.pricing.plans.free.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <IconCheck className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardBody>
-              {showButtons && (
-                <CardFooter>
-                  <Button className="w-full" variant="bordered" color="primary">
-                    {dict.pricing.getStarted}
-                  </Button>
-                </CardFooter>
-              )}
-            </Card>
-          )}
-
-          {/* Pro Plan */}
-          <Card className={`relative w-full max-w-sm ${currentPlan === "PRO" ? "border-2 border-success/50 bg-success/5" : "border-2 border-primary/50"}`} isBlurred>
-            <CardHeader className="pb-2">
-              <div className="w-full">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xl font-bold">
-                    {dict.pricing.plans.pro.name}
-                  </h3>
-                  {currentPlan === "PRO" ? (
-                    <Chip color="success" size="sm">
-                      {dict.pricing.currentPlan}
-                    </Chip>
-                  ) : (
-                    <Chip color="primary" size="sm">
-                      {dict.pricing.mostPopular}
-                    </Chip>
-                  )}
-                </div>
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-4xl font-bold">
-                    €{isYearly ? plans.find(p => p.id === "growth")?.yearlyPrice : plans.find(p => p.id === "growth")?.monthlyPrice}
-                  </span>
-                  {isYearly && (
-                    <span className="text-xs text-foreground-400 line-through ml-2">
-                      €{((plans.find(p => p.id === "growth")?.yearlyPrice ?? 0) / 12).toFixed(2)}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-foreground-600">
-                  {dict.pricing.plans.pro.description}
-                </p>
+                      return (
+                        <tr key={index} className={`border-b border-divider ${index % 2 === 0 ? 'bg-default-50/50' : ''}`}>
+                          <td className="p-4 text-sm font-medium">{feature.name}</td>
+                          
+                          {showFreePlan && (
+                            <td className="p-4 text-center">
+                              <div className="flex justify-center">
+                                {renderValue(feature.free)}
+                              </div>
+                            </td>
+                          )}
+                          
+                          <td className={`p-4 text-center ${currentPlan === "PRO" ? "bg-success/5" : "bg-primary/5"}`}>
+                            <div className="flex justify-center">
+                              {renderValue(feature.pro)}
+                            </div>
+                          </td>
+                          
+                          <td className={`p-4 text-center ${currentPlan === "LEGACY" ? "bg-success/5" : ""}`}>
+                            <div className="flex justify-center">
+                              {renderValue(feature.premium)}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-            </CardHeader>
-            <CardBody className="pt-0">
-              <ul className="space-y-3">
-                {dict.pricing.plans.pro.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <IconCheck className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
             </CardBody>
-            {showButtons && (
-              <CardFooter>
-                <Button
-                  onPress={() => {
-                    if (currentPlan === "PRO") return;
-                    if (currentPlan === "FREE") {
-                      handleCheckout("growth");
-                    } else {
-                      handleUpgrade("growth");
-                    }
-                  }}
-                  className="w-full"
-                  color={currentPlan === "PRO" ? "success" : "primary"}
-                  isDisabled={currentPlan === "PRO"}
-                  isLoading={loading === "growth"}
-                >
-                  {currentPlan === "PRO" ? dict.pricing.currentPlan : dict.pricing.choosePlan}
-                </Button>
-              </CardFooter>
-            )}
-          </Card>
-
-          {/* Premium Plan */}
-          <Card className="relative w-full max-w-sm" isBlurred>
-            <CardHeader className="pb-2">
-              <div className="w-full">
-                <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-xl font-bold">
-                    {dict.pricing.plans.premium.name}
-                  </h3>
-                  {currentPlan === "LEGACY" && (
-                    <Chip color="success" size="sm">
-                      {dict.pricing.currentPlan}
-                    </Chip>
-                  )}
-                </div>
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-4xl font-bold">
-                    €{isYearly ? plans.find(p => p.id === "legacy")?.yearlyPrice : plans.find(p => p.id === "legacy")?.monthlyPrice}
-                  </span>
-                  {isYearly && (
-                    <span className="text-xs text-foreground-400 line-through ml-2">
-                      €{((plans.find(p => p.id === "legacy")?.yearlyPrice ?? 0) / 12).toFixed(2)}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-foreground-600">
-                  {dict.pricing.plans.premium.description}
-                </p>
-              </div>
-            </CardHeader>
-            <CardBody className="pt-0">
-              <ul className="space-y-3">
-                {dict.pricing.plans.premium.features.map((feature, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <IconCheck className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardBody>
-            {showButtons && (
-              <CardFooter>
-                <Button
-                  className="w-full"
-                  color={currentPlan === "LEGACY" ? "success" : "primary"}
-                  variant={currentPlan === "LEGACY" ? "solid" : "bordered"}
-                  isDisabled={currentPlan === "LEGACY"}
-                  isLoading={loading === "legacy"}
-                  onPress={() => {
-                    if (currentPlan === "LEGACY") return;
-                    if (currentPlan === "FREE") {
-                      handleCheckout("legacy");
-                    } else {
-                      handleUpgrade("legacy");
-                    }
-                  }}
-                >
-                  {currentPlan === "LEGACY" ? dict.pricing.currentPlan : dict.pricing.choosePlan}
-                </Button>
-              </CardFooter>
-            )}
           </Card>
         </div>
 

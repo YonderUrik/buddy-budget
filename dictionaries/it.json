@@ -736,6 +736,88 @@
         ]
       }
     },
+    "comparison": {
+      "features": [
+        {
+          "name": "Connessioni bancarie",
+          "free": "0",
+          "pro": "1",
+          "premium": "Illimitate"
+        },
+        {
+          "name": "Asset Finanziari",
+          "free": "0", 
+          "pro": "3",
+          "premium": "Illimitati"
+        },
+        {
+          "name": "Conti manuali",
+          "free": "Illimitati",
+          "pro": "Illimitati", 
+          "premium": "Illimitati"
+        },
+        {
+          "name": "Transazioni",
+          "free": "Illimitate",
+          "pro": "Illimitate",
+          "premium": "Illimitate"
+        },
+        {
+          "name": "Transazioni ricorrenti",
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Budget intelligente", 
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Categorie personalizzate",
+          "free": true,
+          "pro": true, 
+          "premium": true
+        },
+        {
+          "name": "Supporto Multi-Valuta",
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Categorizzazione automatica",
+          "free": false,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Report e insight avanzati",
+          "free": false,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Analisi e previsioni avanzate", 
+          "free": false,
+          "pro": false,
+          "premium": true
+        },
+        {
+          "name": "Tracciamento dividenti",
+          "free": false,
+          "pro": false,
+          "premium": true
+        },
+        {
+          "name": "News e aggiornamenti finanziari",
+          "free": false,
+          "pro": false,
+          "premium": true
+        }
+      ]
+    },
     "faq": {
       "heading": "Domande frequenti",
       "items": [

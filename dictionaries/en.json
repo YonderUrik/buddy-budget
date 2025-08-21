@@ -729,12 +729,94 @@
         "features": [
           "Everything in Growth",
           "Advanced analytics & forecasting",
-          "The most popular chip is not entirely visible, but it appears to be behind it. bank connections",
+          "Unlimited bank connections",
           "Unlimited financial assets",
           "Dividend tracking",
           "Financial news & updates"
         ]
       }
+    },
+    "comparison": {
+      "features": [
+        {
+          "name": "Bank connections",
+          "free": "0",
+          "pro": "1",
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Financial assets",
+          "free": "0", 
+          "pro": "3",
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Manual accounts",
+          "free": "Unlimited",
+          "pro": "Unlimited", 
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Transactions",
+          "free": "Unlimited",
+          "pro": "Unlimited",
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Recurring transactions",
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Smart budgeting", 
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Custom categories",
+          "free": true,
+          "pro": true, 
+          "premium": true
+        },
+        {
+          "name": "Multi-currency support",
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Automatic categorization",
+          "free": false,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Advanced reports & insights",
+          "free": false,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Advanced analytics & forecasting", 
+          "free": false,
+          "pro": false,
+          "premium": true
+        },
+        {
+          "name": "Dividend tracking",
+          "free": false,
+          "pro": false,
+          "premium": true
+        },
+        {
+          "name": "Financial news & updates",
+          "free": false,
+          "pro": false,
+          "premium": true
+        }
+      ]
     },
     "faq": {
       "heading": "Frequently asked questions",

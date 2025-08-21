@@ -367,6 +367,14 @@ export interface Dictionary {
         features: string[];
       };
     };
+    comparison: {
+      features: Array<{
+        name: string;
+        free: string | boolean;
+        pro: string | boolean;
+        premium: string | boolean;
+      }>;
+    };
     faq: {
       heading: string;
       items: Array<{

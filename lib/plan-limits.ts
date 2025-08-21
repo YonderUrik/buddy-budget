@@ -25,8 +25,6 @@ export function getPlanLimits(planTier: PlanTier): PlanLimits {
 
 export function canCreateLinkedAccount(planTier: PlanTier, currentLinkedAccounts: number): boolean {
   const limits = getPlanLimits(planTier);
-  console.log('limits', limits);
-  console.log('currentLinkedAccounts', currentLinkedAccounts);
   if (limits.linkedAccounts === 'unlimited' || limits.linkedAccounts >= 999999) {
     return true;
   }

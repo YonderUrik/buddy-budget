@@ -48,9 +48,6 @@ export async function POST(request: NextRequest) {
          if (customerEmail && lineItems && lineItems.length > 0) {
             try {
 
-               console.log("lineItems", lineItems);
-               console.log("session metadata", session.metadata);
-
                let planTier: 'PRO' | 'LEGACY' = 'PRO';
 
                // First try to get plan tier from metadata (for new checkout sessions)
@@ -62,7 +59,6 @@ export async function POST(request: NextRequest) {
                } else {
                   // Fallback to product ID method (for old payment links)
                   const productId = lineItems[0].price?.product;
-                  console.log("PRODUCT ID", productId);
                   
                   if (typeof productId === 'string') {
                      const determinedTier = getPlanTierFromProductId(productId);
@@ -72,11 +68,6 @@ export async function POST(request: NextRequest) {
                   }
                }
 
-               console.log("CUSTOMER EMAIL", customerEmail);
-               console.log("PLAN TIER", planTier);
-               console.log("CUSTOMER ID", customerId);
-               console.log("NEW SUBSCRIPTION ID", subscriptionId);
-
                let finalCustomerId = customerId;
 
                // Check if customer with this email already exists in Stripe
@@ -85,12 +76,9 @@ export async function POST(request: NextRequest) {
                   limit: 1
                });
 
-               console.log("EXISTING CUSTOMERS", existingCustomers);
-
                // If there's already a customer with this email, use that customer ID
                if (existingCustomers.data.length > 0) {
                   finalCustomerId = existingCustomers.data[0].id;
-                  console.log(`Using customer ${finalCustomerId} for email ${customerEmail}`);
                }
 
                // Cancel all OTHER active subscriptions for this customer
@@ -107,7 +95,7 @@ export async function POST(request: NextRequest) {
                      // Don't cancel the subscription that was just created
                      if (subscription.id !== subscriptionId) {
                         await stripe.subscriptions.cancel(subscription.id);
-                        console.log(`Cancelled existing subscription ${subscription.id} for customer ${finalCustomerId}`);
+                        console.log(`Cancelled existing subscription ${subscription.id} for customer ${finalCustomerId}`); 
                      }
                   }
                }
@@ -133,8 +121,6 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.deleted':
          const subscription = event.data.object as Stripe.Subscription;
          const subscriptionCustomerId = subscription.customer;
-
-         console.log("SUBSCRIPTION CUSTOMER ID", subscriptionCustomerId);
 
          if (typeof subscriptionCustomerId === 'string') {
             try {
@@ -170,9 +156,6 @@ export async function POST(request: NextRequest) {
          const updatedSubscription = event.data.object as Stripe.Subscription;
          const updatedCustomerId = updatedSubscription.customer;
 
-         console.log("SUBSCRIPTION UPDATED - CUSTOMER ID", updatedCustomerId);
-         console.log("SUBSCRIPTION STATUS", updatedSubscription.status);
-
          if (typeof updatedCustomerId === 'string' && updatedSubscription.status === 'active') {
             try {
                // Get the product ID from the subscription items
@@ -180,7 +163,6 @@ export async function POST(request: NextRequest) {
                
                if (subscriptionItems.length > 0) {
                   const productId = subscriptionItems[0].price?.product;
-                  console.log("UPDATED PRODUCT ID", productId);
                   
                   let planTier: 'PRO' | 'LEGACY' = 'PRO';
                   
@@ -190,8 +172,6 @@ export async function POST(request: NextRequest) {
                         planTier = determinedTier;
                      }
                   }
-
-                  console.log("UPDATED PLAN TIER", planTier);
 
                   // Update user plan in database
                   await prisma.user.updateMany({

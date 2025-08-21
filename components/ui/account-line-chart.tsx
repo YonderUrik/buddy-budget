@@ -67,7 +67,6 @@ export function AccountLineChart({
           <Tooltip
             content={({ active, payload, label }) => {
               if (active && payload && payload.length) {
-                console.log("payload[0]", payload[0]);
                 return (
                   <div className="bg-background/20 backdrop-blur-md px-2 py-1 rounded-md shadow-sm border border-white/10">
                     <p className="text-xs text-foreground/80">

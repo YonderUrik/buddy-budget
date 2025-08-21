@@ -3,7 +3,8 @@
     "login": "Accedi",
     "features": "Funzionalità",
     "howItWorks": "Come funziona",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "pricing": "Prezzi"
   },
   "landing": {
     "hero": {
@@ -685,6 +686,108 @@
       "successDescription": "Il tuo conto bancario è stato collegato e le tue transazioni recenti sono state importate. Ti verrai reindirizzato ai conti in un momento.",
       "goToAccounts": "Vai ai conti"
     }
-
+  },
+  "pricing": {
+    "kicker": "Prezzi",
+    "heading": "Prezzi semplici e trasparenti",
+    "description": "Scegli il piano più adatto a te. Tutti i piani includono le nostre funzionalità principali con diversi limiti e capacità avanzate.",
+    "monthlyToggle": "Mensile",
+    "yearlyToggle": "Annuale",
+    "yearlyDiscount": "Risparmia 15%",
+    "mostPopular": "Più popolare",
+    "getStarted": "Inizia",
+    "choosePlan": "Scegli piano",
+    "currentPlan": "Piano attuale",
+    "plans": {
+      "free": {
+        "name": "Basic",
+        "title": "Gratis",
+        "description": "Perfetto per iniziare con il tracciamento base delle spese",
+        "features": [
+          "Conti manuali illimitati",
+          "Transazioni illimitate",
+          "Transazioni ricorrenti",
+          "Budget intelligente",
+          "Categorie personalizzate",
+          "Supporto Multi-Valuta"
+        ]
+      },
+      "pro": {
+        "name": "Growth",
+        "description": "Funzioni avanzate per una gestione finanziaria completa",
+        "features": [
+          "Tutto in Basic",
+          "1 Connessione bancaria (Open Banking)",
+          "Categorizzazione automatica",
+          "3 Asset Finanziari (Azioni, Crypto, ETF)",
+          "Report e insight avanzati"
+        ]
+      },
+      "premium": {
+        "name": "Legacy",
+        "description": "Controllo finanziario completo con analisi avanzate",
+        "features": [
+          "Tutto in Growth",
+          "Analisi e previsioni avanzate",
+          "Connessioni bancarie illimitate",
+          "Asset Finanziari illimitati",
+          "Tracciamento dividenti",
+          "News e aggiornamenti finanziari"
+        ]
+      }
+    },
+    "faq": {
+      "heading": "Domande frequenti",
+      "items": [
+        {
+          "q": "Posso cambiare piano in qualsiasi momento?",
+          "a": "Sì, puoi aggiornare o ridurre il tuo piano in qualsiasi momento. I cambiamenti hanno effetto immediato e la fatturazione è proporzionale."
+        },
+        {
+          "q": "C'è una prova gratuita?",
+          "a": "Sì, tutti i piani a pagamento includono una prova gratuita di 14 giorni. Non è richiesta carta di credito per iniziare."
+        },
+        {
+          "q": "Quali metodi di pagamento accettate?",
+          "a": "Accettiamo tutte le principali carte di credito, PayPal e bonifici bancari per i piani annuali."
+        },
+        {
+          "q": "Offrite rimborsi?",
+          "a": "Sì, offriamo una garanzia di rimborso di 30 giorni per tutti i piani a pagamento. Contatta il supporto per assistenza."
+        }
+      ]
+    }
+  },
+  "upgrade": {
+    "badge": "Gestione Abbonamento",
+    "title": "Migliora la Tua",
+    "titleAccent": "Esperienza",
+    "description": "Sblocca funzionalità premium e porta la tua produttività al livello successivo con i nostri piani di abbonamento flessibili.",
+    "currentSubscription": {
+      "title": "Abbonamento Attivo",
+      "description": "Gestisci fatturazione, pagamenti e impostazioni abbonamento",
+      "manageButton": "Gestisci Abbonamento"
+    },
+    "choosePlan": {
+      "title": "Scegli il Tuo Piano",
+      "description": "Inizia il tuo viaggio con il piano perfetto per le tue esigenze"
+    },
+    "helpCards": {
+      "paymentMethods": {
+        "title": "Metodi di Pagamento",
+        "description": "Gestisci in sicurezza le tue carte di credito e informazioni di fatturazione tramite il portale Stripe."
+      },
+      "subscriptionSettings": {
+        "title": "Impostazioni Abbonamento",
+        "description": "Cancella, sospendi o modifica le tue preferenze di abbonamento con pieno controllo."
+      },
+      "premiumFeatures": {
+        "title": "Funzionalità Premium",
+        "description": "Goditi l'accesso illimitato a tutte le funzionalità premium e supporto prioritario."
+      }
+    },
+    "security": {
+      "badge": "Protetto da Stripe"
+    }
   }
 }

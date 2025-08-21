@@ -16,6 +16,7 @@ datasource db {
 enum PlanTier {
   FREE
   PRO
+  LEGACY
 }
 
 enum Role {

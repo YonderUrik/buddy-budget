@@ -332,5 +332,79 @@ export interface Dictionary {
       successDescription: string;
       goToAccounts: string;
     }
+  },
+  pricing: {
+    kicker: string;
+    heading: string;
+    description: string;
+    monthlyToggle: string;
+    yearlyToggle: string;
+    yearlyDiscount: string;
+    mostPopular: string;
+    getStarted: string;
+    choosePlan: string;
+    currentPlan: string;
+    plans: {
+      free: {
+        name: string;
+        title: string;
+        price: string;
+        description: string;
+        features: string[];
+      };
+      pro: {
+        name: string;
+        price: string;
+        yearlyPrice: string;
+        description: string;
+        features: string[];
+      };
+      premium: {
+        name: string;
+        price: string;
+        yearlyPrice: string;
+        description: string;
+        features: string[];
+      };
+    };
+    faq: {
+      heading: string;
+      items: Array<{
+        q: string;
+        a: string;
+      }>;
+    };
+  },
+  upgrade: {
+    badge: string;
+    title: string;
+    titleAccent: string;
+    description: string;
+    currentSubscription: {
+      title: string;
+      description: string;
+      manageButton: string;
+    };
+    choosePlan: {
+      title: string;
+      description: string;
+    };
+    helpCards: {
+      paymentMethods: {
+        title: string;
+        description: string;
+      };
+      subscriptionSettings: {
+        title: string;
+        description: string;
+      };
+      premiumFeatures: {
+        title: string;
+        description: string;
+      };
+    };
+    security: {
+      badge: string;
+    };
   }
 }

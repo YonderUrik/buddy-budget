@@ -3,7 +3,7 @@
 import { Dictionary } from "@/types/dictionary";
 import React, { useEffect, useMemo, useState, useCallback, useRef, useId } from "react";
 import { currencyOptions } from "@/components/onboarding/stepper-form";
-import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert, Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
+import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert, Popover, PopoverTrigger, PopoverContent, Tooltip } from "@heroui/react";
 import { IconWallet, IconLink } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@iconify/react";
@@ -61,12 +61,14 @@ const InstitutionCard = React.memo(({ institution, index, onClick }: {
             )}
          </motion.div>
          <div className="flex flex-col items-center text-center w-full min-h-0">
-            <motion.h3
-               layoutId={`title-${institution.id}-${index}`}
-               className="font-medium text-foreground text-sm leading-tight line-clamp-2 w-full"
-            >
-               {institution.name || institution.id}
-            </motion.h3>
+            <Tooltip content={institution.name || institution.id} delay={500} placement="top">
+               <motion.h3
+                  layoutId={`title-${institution.id}-${index}`}
+                  className="font-medium text-foreground text-sm leading-tight line-clamp-2 w-full cursor-default"
+               >
+                  {institution.name || institution.id}
+               </motion.h3>
+            </Tooltip>
             {institution.bic && (
                <motion.p
                   layoutId={`description-${institution.id}-${index}`}

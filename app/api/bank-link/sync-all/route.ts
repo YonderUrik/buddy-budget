@@ -5,6 +5,8 @@ import { getAccountsDueForSync } from "@/lib/sync-manager";
 import { gcGetAccountTransactions, gcGetAccountDetails, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
 import { findCategoryByMerchantName } from "../complete/route";
+import { canCreateLinkedAccount } from "@/lib/plan-limits";
+import { PlanTier } from "@prisma/client";
 
 export async function POST(request: Request) {
   const session = await getSession();
@@ -15,6 +17,22 @@ export async function POST(request: Request) {
   const userId = (session.user as any).id as string;
   const body = await request.json().catch(() => ({}));
   const { force = false, background = false } = body ?? {};
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true }
+  });
+  const userPlan = user?.plan || "FREE";
+
+  const existingLinkedAccounts = await prisma.financialAccount.count({
+    where: { userId, linked: true, isArchived: false }
+  });
+
+  if (!canCreateLinkedAccount(userPlan as PlanTier, existingLinkedAccounts)) {
+    return NextResponse.json({ 
+      error: "Plan limit reached. Upgrade your plan to connect more bank accounts." 
+    }, { status: 403 });
+  }
 
   try {
     // Get accounts that need syncing

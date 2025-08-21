@@ -562,25 +562,7 @@ function IconContainer({
                                        whileHover={{ scale: 1.1 }}
                                     >
                                        {/* Settings gear with success styling */}
-                                       <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-success">
-                                          <motion.path
-                                             d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
-                                             fill="currentColor"
-                                             animate={{
-                                                rotate: [0, 360]
-                                             }}
-                                             transition={{
-                                                duration: 8,
-                                                repeat: Infinity,
-                                                ease: "linear"
-                                             }}
-                                          />
-                                          <path
-                                             d="M12 1L15.09 8.26L22 9L17 14L18.18 21L12 17.77L5.82 21L7 14L2 9L8.91 8.26L12 1Z"
-                                             fill="currentColor"
-                                             opacity="0.6"
-                                          />
-                                       </svg>
+                                       <Icon icon="streamline:diamond-2" className="w-full h-full text-success" />
                                        
                                        {/* Success badge */}
                                        <motion.div

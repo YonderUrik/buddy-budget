@@ -26,6 +26,7 @@ export function PricingSection({ dict, showButtons = false, showFreePlan = true,
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
 
+  // TODO RENDERE VISUALIZZAZIONE PIU' RESPONSIVE PER MOBILES
   const handleCheckout = async (planId: string) => {
     setLoading(planId);
     try {

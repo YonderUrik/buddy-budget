@@ -262,6 +262,11 @@ export interface Dictionary {
     failedToLoadInstitutions: string;
     failedToUpdate: string;
     failedToDelete: string;
+    planLimitReached: string;
+    upgradeToConnectMore: string;
+    accountLimits: string;
+    linkedBankAccounts: string;
+    upgradeToConnect: string;
     addAccount: string;
     loading: string;
     last90Days: string;

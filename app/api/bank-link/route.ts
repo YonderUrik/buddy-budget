@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { gcCreateRequisition, gcGetRequisition, gcGetInstitution, gcListInstitutions, gcCreateAgreement } from "@/lib/gocardless";
+import { canCreateLinkedAccount, type PlanTier } from "@/lib/plan-limits";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -46,6 +47,28 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Get user's current plan from database to ensure we have the latest plan
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { plan: true }
+    });
+    
+    const userPlan = user?.plan || "FREE";
+
+    // Check plan limits for linked accounts
+    const existingLinkedAccounts = await prisma.financialAccount.count({
+      where: {
+        userId,
+        linked: true,
+        isArchived: false
+      }
+    });
+
+    if (!canCreateLinkedAccount(userPlan as PlanTier, existingLinkedAccounts)) {
+      return NextResponse.json({ 
+        error: "Plan limit reached. Upgrade your plan to connect more bank accounts." 
+      }, { status: 403 });
+    }
     // Check for existing active connections with this institution
     // CR=Created, ID=Linked, LN=Linked, GA=Giving Access, SA=Selecting Accounts  
     const existingConnections = await prisma.bankConnection.findMany({

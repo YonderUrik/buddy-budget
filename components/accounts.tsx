@@ -3,7 +3,7 @@
 import { Dictionary } from "@/types/dictionary";
 import React, { useEffect, useMemo, useState, useCallback, useRef, useId } from "react";
 import { currencyOptions } from "@/components/onboarding/stepper-form";
-import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert, Popover, PopoverTrigger, PopoverContent, Tooltip } from "@heroui/react";
+import { useDisclosure, Button, Card, CardBody, CardHeader, Chip, Input, Select, SelectItem, Alert, Popover, PopoverTrigger, PopoverContent, Tooltip, Progress } from "@heroui/react";
 import { IconWallet, IconLink } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Icon } from "@iconify/react";
@@ -12,6 +12,7 @@ import { LoaderOne } from "./ui/loader";
 import { CometCard } from "./ui/comet-card";
 import { AccountLineChart } from "./ui/account-line-chart";
 import { formatCurrency } from "@/lib/format";
+import { canCreateLinkedAccount, getRemainingLinkedAccounts, type PlanTier } from "@/lib/plan-limits";
 
 type Account = {
    id: string;
@@ -84,7 +85,14 @@ const InstitutionCard = React.memo(({ institution, index, onClick }: {
 
 InstitutionCard.displayName = 'InstitutionCard';
 
-export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictionary; userCurrency?: string }) {
+interface AccountsProps {
+   dict?: Dictionary;
+   userCurrency?: string;
+   userPlan?: string;
+   user?: any;
+}
+
+export default function Accounts({ dict, userCurrency = "EUR", userPlan = "FREE", user }: AccountsProps) {
    const [accounts, setAccounts] = useState<any[]>([]);
    const [loading, setLoading] = useState(true);
    const [error, setError] = useState<string | null>(null);
@@ -262,6 +270,18 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
    }
 
    async function startPsd2LinkForInstitution(institutionId: string) {
+      // Check plan limits before starting bank connection
+      const linkedAccounts = accounts.filter(account => account.linked === true);
+      const canCreateLinked = canCreateLinkedAccount(userPlan as PlanTier, linkedAccounts.length);
+
+      if (!canCreateLinked) {
+         const remaining = getRemainingLinkedAccounts(userPlan as PlanTier, linkedAccounts.length);
+         const planName = userPlan === 'FREE' ? 'Basic' : userPlan === 'PRO' ? 'Growth' : 'Legacy';
+         const message = `${dict?.accounts.planLimitReached}. ${planName} plan allows ${remaining === 'unlimited' ? 'unlimited' : remaining} linked accounts. ${dict?.accounts.upgradeToConnectMore}`;
+         setModalError(message);
+         return;
+      }
+
       setModalLoading(true);
       setModalError(null);
       try {
@@ -713,127 +733,160 @@ export default function Accounts({ dict, userCurrency = "EUR" }: { dict?: Dictio
 
                         <div className={`relative flex-1 flex flex-col min-h-0 ${modalStep === 'method' ? 'py-6 px-4 sm:py-10 sm:px-10 overflow-y-auto sm:overflow-visible' : 'p-0'}`}>
                            {modalStep === 'method' ? (
-                              <div className="flex flex-col lg:flex-row items-stretch justify-center w-full gap-8 mx-auto max-w-5xl">
-                                 <div
-                                    onClick={() => {
-                                       setModalStep('manual');
-                                    }}
-                                    className="cursor-pointer flex-1 min-w-0 group"
-                                 >
-                                    <CometCard>
-                                       <RevealCard
-                                          title={dict?.accounts.manually.title || ''}
-                                          icon={<IconWallet size={52} className="text-primary group-hover:scale-110 transition-transform duration-300" />}
-                                       >
-                                          <CanvasRevealEffect
-                                             animationSpeed={3}
-                                             containerClassName="bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30"
-                                             colors={[
-                                                [244, 186, 65],
-                                                [234, 176, 45],
-                                                [224, 166, 25],
-                                             ]}
-                                             opacities={[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
-                                             dotSize={5}
-                                          />
-                                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                                             <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
-                                                <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
-                                                   <Chip
-                                                      variant="flat"
-                                                      size="sm"
-                                                      className="mb-3 bg-primary/15 text-primary font-semibold px-3 py-1 border border-primary/20"
-                                                   >
-                                                      {dict?.accounts.manually.description}
-                                                   </Chip>
-                                                   <h3 className="text-xl font-bold text-foreground text-center leading-tight">
-                                                      {dict?.accounts.manually.primaryCta}
-                                                   </h3>
-                                                   <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
-                                                      {dict?.accounts.manually.secondaryCta}
-                                                   </p>
-                                                </CardHeader>
-                                                <CardBody className="pt-2 pb-6 px-6 space-y-4">
-                                                   <div className="space-y-3">
-                                                      {dict?.accounts.manually.features.map((feature) => (
-                                                         <div key={feature.title} className="flex items-start gap-3">
-                                                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                               <Icon icon={feature.icon} className="text-primary w-3 h-3" />
+                              <>
+                                 <div className="flex flex-col lg:flex-row items-stretch justify-center w-full gap-8 mx-auto max-w-5xl">
+                                    <div
+                                       onClick={() => {
+                                          setModalStep('manual');
+                                       }}
+                                       className="cursor-pointer flex-1 min-w-0 group"
+                                    >
+                                       <CometCard>
+                                          <RevealCard
+                                             title={dict?.accounts.manually.title || ''}
+                                             icon={<IconWallet size={52} className="text-primary group-hover:scale-110 transition-transform duration-300" />}
+                                          >
+                                             <CanvasRevealEffect
+                                                animationSpeed={3}
+                                                containerClassName="bg-gradient-to-br from-primary/10 via-primary/20 to-primary/30"
+                                                colors={[
+                                                   [244, 186, 65],
+                                                   [234, 176, 45],
+                                                   [224, 166, 25],
+                                                ]}
+                                                opacities={[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]}
+                                                dotSize={5}
+                                             />
+                                             <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                                                <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
+                                                   <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
+                                                      <Chip
+                                                         variant="flat"
+                                                         size="sm"
+                                                         className="mb-3 bg-primary/15 text-primary font-semibold px-3 py-1 border border-primary/20"
+                                                      >
+                                                         {dict?.accounts.manually.description}
+                                                      </Chip>
+                                                      <h3 className="text-xl font-bold text-foreground text-center leading-tight">
+                                                         {dict?.accounts.manually.primaryCta}
+                                                      </h3>
+                                                      <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
+                                                         {dict?.accounts.manually.secondaryCta}
+                                                      </p>
+                                                   </CardHeader>
+                                                   <CardBody className="pt-2 pb-6 px-6 space-y-4">
+                                                      <div className="space-y-3">
+                                                         {dict?.accounts.manually.features.map((feature) => (
+                                                            <div key={feature.title} className="flex items-start gap-3">
+                                                               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                                  <Icon icon={feature.icon} className="text-primary w-3 h-3" />
+                                                               </div>
+                                                               <div className="text-sm">
+                                                                  <div className="font-semibold text-foreground">{feature.title}</div>
+                                                                  <div className="text-default-500 text-xs">{feature.desc}</div>
+                                                               </div>
                                                             </div>
-                                                            <div className="text-sm">
-                                                               <div className="font-semibold text-foreground">{feature.title}</div>
-                                                               <div className="text-default-500 text-xs">{feature.desc}</div>
+                                                         ))}
+                                                      </div>
+                                                   </CardBody>
+                                                </Card>
+                                             </div>
+                                          </RevealCard>
+                                       </CometCard>
+                                    </div>
+                                    <div
+                                       onClick={() => {
+                                          setModalStep('institutions');
+                                          fetchInstitutionsForCountry(country);
+                                       }}
+                                       className="cursor-pointer flex-1 min-w-0 group"
+                                    >
+                                       <CometCard>
+                                          <RevealCard
+                                             title={dict?.accounts.bank.title || ''}
+                                             icon={<IconLink size={52} className="text-secondary group-hover:scale-110 transition-transform duration-300" />}
+                                          >
+                                             <CanvasRevealEffect
+                                                animationSpeed={3}
+                                                containerClassName="bg-gradient-to-br from-secondary/10 via-secondary/20 to-secondary/30"
+                                                colors={[
+                                                   [67, 146, 175],
+                                                   [77, 156, 185],
+                                                   [87, 166, 195],
+                                                ]}
+                                                opacities={[0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1]}
+                                                dotSize={5}
+                                             />
+                                             <div className="absolute inset-0 flex flex-col items-center justify-center p-4 rounded-3xl">
+                                                <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
+                                                   <CardHeader className="flex flex-col items-center pb-4 pt-4 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
+                                                      {/* Account Limits Info - Minimal Design */}
+                                                      <div className="z-10 w-full max-w-xs mx-auto mb-2">
+                                                         <Card className=" border border-white/20 dark:border-gray-500/20">
+                                                            <CardBody className="">
+                                                               <div className="flex items-center justify-between">
+                                                                  <span className="text-xs font-medium text-white/90">Linked</span>
+                                                                  <Progress
+                                                                     value={
+                                                                        userPlan === 'FREE' ? 100 :
+                                                                        userPlan === 'PRO' ? Math.min((accounts.filter(acc => acc.linked).length / 1) * 100, 100) :
+                                                                           100
+                                                                     }
+                                                                     className="mx-6"
+                                                                     classNames={{
+                                                                        indicator: `transition-all duration-300 ${
+                                                                           userPlan === 'FREE' ? 'bg-yellow-400' :
+                                                                           userPlan === 'PRO' ? (accounts.filter(acc => acc.linked).length >= 1 ? 'bg-red-400' : 'bg-blue-400') :
+                                                                              'bg-blue-400'
+                                                                        }`,
+                                                                        track: "bg-white/20"
+                                                                     }}
+                                                                     size="sm"
+                                                                  />
+                                                                  <span className="text-xs font-semibold text-white">
+                                                                     {userPlan === 'LEGACY' ? '∞' : 
+                                                                        `${accounts.filter(acc => acc.linked).length}/${
+                                                                           userPlan === 'FREE' ? '0' :
+                                                                              userPlan === 'PRO' ? '1' :
+                                                                                 '∞'
+                                                                        }`
+                                                                     }
+                                                                  </span>
+                                                               </div>
+
+                                                            </CardBody>
+                                                         </Card>
+                                                      </div>
+                                                      <h3 className="text-xl font-bold text-foreground text-center leading-tight">
+                                                         {dict?.accounts.bank.primaryCta}
+                                                      </h3>
+                                                      <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
+                                                         {dict?.accounts.bank.secondaryCta}
+                                                      </p>
+
+                                                   </CardHeader>
+                                                   <CardBody className="pt-2 pb-6 px-6 space-y-4">
+                                                      <div className="space-y-3">
+                                                         {dict?.accounts.bank.features.map((feature) => (
+                                                            <div key={feature.title} className="flex items-start gap-3">
+                                                               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                                  <Icon icon={feature.icon} className="text-secondary w-3 h-3" />
+                                                               </div>
+                                                               <div className="text-sm">
+                                                                  <div className="font-semibold text-foreground">{feature.title}</div>
+                                                                  <div className="text-default-500 text-xs">{feature.desc}</div>
+                                                               </div>
                                                             </div>
-                                                         </div>
-                                                      ))}
-                                                   </div>
-                                                </CardBody>
-                                             </Card>
-                                          </div>
-                                       </RevealCard>
-                                    </CometCard>
+                                                         ))}
+                                                      </div>
+                                                   </CardBody>
+                                                </Card>
+                                             </div>
+                                          </RevealCard>
+                                       </CometCard>
+                                    </div>
                                  </div>
-                                 <div
-                                    onClick={() => {
-                                       setModalStep('institutions');
-                                       fetchInstitutionsForCountry(country);
-                                    }}
-                                    className="cursor-pointer flex-1 min-w-0 group"
-                                 >
-                                    <CometCard>
-                                       <RevealCard
-                                          title={dict?.accounts.bank.title || ''}
-                                          icon={<IconLink size={52} className="text-secondary group-hover:scale-110 transition-transform duration-300" />}
-                                       >
-                                          <CanvasRevealEffect
-                                             animationSpeed={3}
-                                             containerClassName="bg-gradient-to-br from-secondary/10 via-secondary/20 to-secondary/30"
-                                             colors={[
-                                                [67, 146, 175],
-                                                [77, 156, 185],
-                                                [87, 166, 195],
-                                             ]}
-                                             opacities={[0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1]}
-                                             dotSize={5}
-                                          />
-                                          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 rounded-3xl">
-                                             <Card className="backdrop-blur-md bg-white/80 dark:bg-black/60 w-full h-full max-w-sm shadow-2xl border border-white/30 dark:border-gray-600/40 rounded-2xl overflow-hidden">
-                                                <CardHeader className="flex flex-col items-center pb-4 pt-6 bg-gradient-to-b from-white/50 to-transparent dark:from-white/5">
-                                                   <Chip
-                                                      variant="flat"
-                                                      size="sm"
-                                                      className="mb-3 bg-secondary/15 text-secondary font-semibold px-3 py-1 border border-secondary/20"
-                                                   >
-                                                      {dict?.accounts.bank.description}
-                                                   </Chip>
-                                                   <h3 className="text-xl font-bold text-foreground text-center leading-tight">
-                                                      {dict?.accounts.bank.primaryCta}
-                                                   </h3>
-                                                   <p className="text-default-500 text-sm text-center mt-2 leading-relaxed">
-                                                      {dict?.accounts.bank.secondaryCta}
-                                                   </p>
-                                                </CardHeader>
-                                                <CardBody className="pt-2 pb-6 px-6 space-y-4">
-                                                   <div className="space-y-3">
-                                                      {dict?.accounts.bank.features.map((feature) => (
-                                                         <div key={feature.title} className="flex items-start gap-3">
-                                                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                                               <Icon icon={feature.icon} className="text-secondary w-3 h-3" />
-                                                            </div>
-                                                            <div className="text-sm">
-                                                               <div className="font-semibold text-foreground">{feature.title}</div>
-                                                               <div className="text-default-500 text-xs">{feature.desc}</div>
-                                                            </div>
-                                                         </div>
-                                                      ))}
-                                                   </div>
-                                                </CardBody>
-                                             </Card>
-                                          </div>
-                                       </RevealCard>
-                                    </CometCard>
-                                 </div>
-                              </div>
+                              </>
                            ) : modalStep === 'manual' ? (
                               <div className="flex-1 flex flex-col min-h-0 p-4 overflow-y-auto">
                                  <form onSubmit={createManualAccount} className="flex-1 flex flex-col gap-6">

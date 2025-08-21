@@ -165,6 +165,52 @@ export async function POST(request: NextRequest) {
             }
          }
          break;
+
+      case 'customer.subscription.updated':
+         const updatedSubscription = event.data.object as Stripe.Subscription;
+         const updatedCustomerId = updatedSubscription.customer;
+
+         console.log("SUBSCRIPTION UPDATED - CUSTOMER ID", updatedCustomerId);
+         console.log("SUBSCRIPTION STATUS", updatedSubscription.status);
+
+         if (typeof updatedCustomerId === 'string' && updatedSubscription.status === 'active') {
+            try {
+               // Get the product ID from the subscription items
+               const subscriptionItems = updatedSubscription.items.data;
+               
+               if (subscriptionItems.length > 0) {
+                  const productId = subscriptionItems[0].price?.product;
+                  console.log("UPDATED PRODUCT ID", productId);
+                  
+                  let planTier: 'PRO' | 'LEGACY' = 'PRO';
+                  
+                  if (typeof productId === 'string') {
+                     const determinedTier = getPlanTierFromProductId(productId);
+                     if (determinedTier) {
+                        planTier = determinedTier;
+                     }
+                  }
+
+                  console.log("UPDATED PLAN TIER", planTier);
+
+                  // Update user plan in database
+                  await prisma.user.updateMany({
+                     where: {
+                        stripeCustomerId: updatedCustomerId
+                     },
+                     data: {
+                        plan: planTier
+                     }
+                  });
+
+                  console.log(`Updated user with customer ID ${updatedCustomerId} to ${planTier} plan`);
+               }
+            } catch (error) {
+               console.error('Error updating user plan from subscription update:', error);
+            }
+         }
+         break;
+
       default:
          console.log(`Unhandled event type ${event.type}`);
    }

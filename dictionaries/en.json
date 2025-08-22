@@ -3,7 +3,8 @@
     "login": "Login",
     "features": "Features",
     "howItWorks": "How it works",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "pricing": "Pricing"
   },
   "landing": {
     "hero": {
@@ -548,6 +549,11 @@
     "failedToLoadInstitutions": "Failed to load institutions",
     "failedToUpdate": "Failed to update account",
     "failedToDelete": "Failed to delete account",
+    "planLimitReached": "Plan limit reached",
+    "upgradeToConnectMore": "Upgrade your plan to connect more bank accounts",
+    "accountLimits": "Account Limits",
+    "linkedBankAccounts": "Linked Bank Accounts",
+    "upgradeToConnect": "Upgrade to connect bank accounts automatically",
     "addAccount": "Add account",
     "loading": "Loading accounts...",
     "last90Days": "Last 90 days",
@@ -684,6 +690,191 @@
       "success": "Success!",
       "successDescription": "Your bank account has been successfully connected and your recent transactions have been imported. You'll be redirected to your accounts in a moment.",
       "goToAccounts": "Go to Accounts"
+    }
+  },
+  "pricing": {
+    "kicker": "Pricing",
+    "heading": "Simple, transparent pricing",
+    "description": "Choose the plan that's right for you. All plans include our core features with different limits and advanced capabilities.",
+    "monthlyToggle": "Monthly",
+    "yearlyToggle": "Yearly",
+    "yearlyDiscount": "Save 15%",
+    "mostPopular": "Most Popular",
+    "getStarted": "Get Started",
+    "choosePlan": "Choose Plan",
+    "currentPlan": "Current Plan",
+    "plans": {
+      "free": {
+        "name": "Basic",
+        "title": "Free",
+        "description": "Perfect for getting started with basic expense tracking",
+        "features": [
+          "Unlimited manual accounts",
+          "Unlimited transactions",
+          "Recurring transactions",
+          "Smart budgeting",
+          "Custom categories",
+          "Multi-currency support"
+        ]
+      },
+      "pro": {
+        "name": "Growth",
+        "description": "Advanced features for comprehensive financial management",
+        "features": [
+          "Everything in Basic",
+          "1 Bank connection (Open Banking)",
+          "Automatic categorization",
+          "3 Financial assets (Stocks, Crypto, ETFs)",
+          "Advanced reports & insights"
+        ]
+      },
+      "premium": {
+        "name": "Pro",
+        "description": "Complete financial control with advanced analytics",
+        "features": [
+          "Everything in Growth",
+          "Advanced analytics & forecasting",
+          "Unlimited bank connections",
+          "Unlimited financial assets",
+          "Dividend tracking",
+          "Financial news & updates"
+        ]
+      }
+    },
+    "comparison": {
+      "features": [
+        {
+          "name": "Bank connections",
+          "free": "0",
+          "pro": "1",
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Financial assets",
+          "free": "0", 
+          "pro": "3",
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Manual accounts",
+          "free": "Unlimited",
+          "pro": "Unlimited", 
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Transactions",
+          "free": "Unlimited",
+          "pro": "Unlimited",
+          "premium": "Unlimited"
+        },
+        {
+          "name": "Recurring transactions",
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Smart budgeting", 
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Custom categories",
+          "free": true,
+          "pro": true, 
+          "premium": true
+        },
+        {
+          "name": "Multi-currency support",
+          "free": true,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Automatic categorization",
+          "free": false,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Advanced reports & insights",
+          "free": false,
+          "pro": true,
+          "premium": true
+        },
+        {
+          "name": "Advanced analytics & forecasting", 
+          "free": false,
+          "pro": false,
+          "premium": true
+        },
+        {
+          "name": "Dividend tracking",
+          "free": false,
+          "pro": false,
+          "premium": true
+        },
+        {
+          "name": "Financial news & updates",
+          "free": false,
+          "pro": false,
+          "premium": true
+        }
+      ]
+    },
+    "faq": {
+      "heading": "Frequently asked questions",
+      "items": [
+        {
+          "q": "Can I change my plan anytime?", 
+          "a": "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated."
+        },
+        {
+          "q": "Is there a free trial?",
+          "a": "Yes, all paid plans come with a 14-day free trial. No credit card required to start."
+        },
+        {
+          "q": "What payment methods do you accept?",
+          "a": "We accept all major credit cards, PayPal, and bank transfers for annual plans."
+        },
+        {
+          "q": "Do you offer refunds?",
+          "a": "Yes, we offer a 30-day money-back guarantee for all paid plans. Contact support for assistance."
+        }
+      ]
+    }
+  },
+  "upgrade": {
+    "badge": "Subscription Management",
+    "title": "Upgrade Your",
+    "titleAccent": "Experience",
+    "description": "Unlock premium features and take your productivity to the next level with our flexible subscription plans.",
+    "currentSubscription": {
+      "title": "Active Subscription",
+      "description": "Manage billing, payments, and subscription settings",
+      "manageButton": "Manage Subscription"
+    },
+    "choosePlan": {
+      "title": "Choose Your Plan",
+      "description": "Start your journey with the perfect plan for your needs"
+    },
+    "helpCards": {
+      "paymentMethods": {
+        "title": "Payment Methods",
+        "description": "Securely manage your credit cards and billing information through Stripe's portal."
+      },
+      "subscriptionSettings": {
+        "title": "Subscription Settings", 
+        "description": "Cancel, pause, or modify your subscription preferences with full control."
+      },
+      "premiumFeatures": {
+        "title": "Premium Features",
+        "description": "Enjoy unlimited access to all premium features and priority support."
+      }
+    },
+    "security": {
+      "badge": "Secured by Stripe"
     }
   }
 }

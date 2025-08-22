@@ -5,6 +5,7 @@ import { CTASection } from "@/components/sections/cta";
 import { HowItWorksSection } from "@/components/sections/how-it-works";
 import { FAQSection } from "@/components/sections/faq";
 import { TrustedBySection } from "@/components/sections/trusted";
+import { PricingSection } from "@/components/sections/pricing";
 
 export default async function Home({
   params,
@@ -21,6 +22,7 @@ export default async function Home({
       <FeaturesSection dict={dict} />
       <TrustedBySection />
       <HowItWorksSection dict={dict} />
+      <PricingSection dict={dict} />
       <FAQSection dict={dict} />
       <CTASection dict={dict} />
     </>

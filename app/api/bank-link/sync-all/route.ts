@@ -5,6 +5,8 @@ import { getAccountsDueForSync } from "@/lib/sync-manager";
 import { gcGetAccountTransactions, gcGetAccountDetails, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
 import { findCategoryByMerchantName } from "../complete/route";
+import { canCreateLinkedAccount } from "@/lib/plan-limits";
+import { PlanTier } from "@prisma/client";
 
 export async function POST(request: Request) {
   const session = await getSession();
@@ -16,9 +18,29 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const { force = false, background = false } = body ?? {};
 
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true }
+  });
+  const userPlan = user?.plan || "FREE";
+
+  const existingLinkedAccounts = await prisma.financialAccount.count({
+    where: { userId, linked: true, isArchived: false }
+  });
+
+  console.log("Number of linked accounts", existingLinkedAccounts.length);
+
+  if (!canCreateLinkedAccount(userPlan as PlanTier, existingLinkedAccounts)) {
+    return NextResponse.json({ 
+      error: "Plan limit reached. Upgrade your plan to connect more bank accounts." 
+    }, { status: 403 });
+  }
+
   try {
     // Get accounts that need syncing
     const accountsDue = await getAccountsDueForSync(userId);
+
+    console.log("Nr of accounts due for sync", accountsDue.length);
     
     if (accountsDue.length === 0) {
       return NextResponse.json({
@@ -192,6 +214,8 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
       }
     });
 
+    console.log("Last Transaction Date", lastTransaction?.date);
+
     if (lastTransaction && lastTransaction.date) {
       // Start from the last transaction date with a small buffer
       dateFrom = new Date(lastTransaction.date);
@@ -229,6 +253,8 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
       // Fetch transactions
       const transactionData = await gcGetAccountTransactions(account.externalAccountId, dateFromStr, today);
       const transactions: GoCardlessTransaction[] = transactionData?.transactions?.booked || [];
+
+      console.log("Nr of new transactions", transactions.length);
       
       // Mark API call as successful
       await recordApiCall(account.id, true);

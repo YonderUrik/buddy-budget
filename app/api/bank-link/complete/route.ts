@@ -3,6 +3,8 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { gcGetAccountDetails, gcGetInstitution, gcGetRequisition, gcGetAccountTransactions, GoCardlessTransaction } from "@/lib/gocardless";
 import { checkAccountSyncStatus, recordApiCall } from "@/lib/sync-manager";
+import { canCreateLinkedAccount } from "@/lib/plan-limits";
+import { PlanTier } from "@prisma/client";
 
 export async function findCategoryByMerchantName(merchantName: string | null): Promise<string | null> {
   if (!merchantName) return null;
@@ -201,6 +203,23 @@ export async function POST(request: Request) {
   if (!requisitionId) {
     return NextResponse.json({ error: "Missing requisitionId" }, { status: 400 });
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { plan: true }
+  });
+  const userPlan = user?.plan || "FREE";
+
+  const existingLinkedAccounts = await prisma.financialAccount.count({
+    where: { userId, linked: true, isArchived: false }
+  });
+
+  if (!canCreateLinkedAccount(userPlan as PlanTier, existingLinkedAccounts)) {
+    return NextResponse.json({ 
+      error: "Plan limit reached. Upgrade your plan to connect more bank accounts." 
+    }, { status: 403 });
+  }
+
 
   try {
     const referenceDbDoc = await (prisma as any).bankConnection.findFirst({ where: { userId, reference: requisitionId } });

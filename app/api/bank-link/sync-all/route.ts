@@ -28,6 +28,8 @@ export async function POST(request: Request) {
     where: { userId, linked: true, isArchived: false }
   });
 
+  console.log("Number of linked accounts", existingLinkedAccounts.length);
+
   if (!canCreateLinkedAccount(userPlan as PlanTier, existingLinkedAccounts)) {
     return NextResponse.json({ 
       error: "Plan limit reached. Upgrade your plan to connect more bank accounts." 
@@ -37,6 +39,8 @@ export async function POST(request: Request) {
   try {
     // Get accounts that need syncing
     const accountsDue = await getAccountsDueForSync(userId);
+
+    console.log("Nr of accounts due for sync", accountsDue.length);
     
     if (accountsDue.length === 0) {
       return NextResponse.json({
@@ -210,6 +214,8 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
       }
     });
 
+    console.log("Last Transaction Date", lastTransaction?.date);
+
     if (lastTransaction && lastTransaction.date) {
       // Start from the last transaction date with a small buffer
       dateFrom = new Date(lastTransaction.date);
@@ -247,6 +253,8 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
       // Fetch transactions
       const transactionData = await gcGetAccountTransactions(account.externalAccountId, dateFromStr, today);
       const transactions: GoCardlessTransaction[] = transactionData?.transactions?.booked || [];
+
+      console.log("Nr of new transactions", transactions.length);
       
       // Mark API call as successful
       await recordApiCall(account.id, true);

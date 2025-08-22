@@ -14,11 +14,15 @@ import {
    Input,
    Select,
    SelectItem,
-   DateRangePicker
+   DateRangePicker,
+   useDisclosure
+   , Drawer, DrawerContent, DrawerHeader, DrawerBody
 } from "@heroui/react";
 import { Icon } from "@iconify/react";
 import clsx from "clsx";
 import { today, getLocalTimeZone } from "@internationalized/date";
+import { I18nProvider } from "@react-aria/i18n";
+import AddTransaction from "./add-transaction";
 
 interface Transaction {
    id: string;
@@ -62,7 +66,7 @@ interface DateRange {
 
 interface Filters {
    dateRange?: DateRange;
-   type?: 'all' | 'income' | 'expense';
+   type?: 'all' | 'income' | 'expense' | 'transfer';
    search?: string;
    accountId?: string;
 }
@@ -73,6 +77,35 @@ interface Account {
    type: string;
    institutionName?: string;
 }
+
+export const transactionTypes = [
+   {
+      value: 'all',
+      label: 'All Types',
+      icon: 'mdi:wallet-outline',
+      color: 'gray'
+   },
+   {
+      value: 'income',
+      label: 'Income',
+      icon: 'mdi:arrow-up',
+      color: 'success'
+   },
+
+   {
+      value: 'expense',
+      label: 'Expense',
+      icon: 'mdi:arrow-down',
+      color: 'danger'
+   },
+
+   {
+      value: 'transfer',
+      label: 'Transfer',
+      icon: 'mdi:swap-horizontal',
+      color: 'warning'
+   },
+];
 
 export default function Transactions({ dict }: { dict?: Dictionary }) {
    const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -86,11 +119,13 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
       currentPage: 1
    });
    const [filters, setFilters] = useState<Filters>({
-      type: 'all'
+      type: 'all',
+      accountId: 'all'
    });
    const [searchTerm, setSearchTerm] = useState('');
    const [selectedDateRange, setSelectedDateRange] = useState<any>(null);
    const [accounts, setAccounts] = useState<Account[]>([]);
+   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
    const fetchTransactions = async (skip = 0, limit = 20, currentFilters = filters) => {
       setLoading(true);
@@ -169,7 +204,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
    const getDateRangePreset = (preset: 'week' | 'month' | 'year') => {
       const todayDate = today(getLocalTimeZone());
       let startDate;
-      
+
       switch (preset) {
          case 'week':
             startDate = todayDate.subtract({ days: 7 });
@@ -181,9 +216,9 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
             startDate = todayDate.subtract({ years: 1 });
             break;
       }
-      
-      return { 
-         start: startDate, 
+
+      return {
+         start: startDate,
          end: todayDate,
          // Also return JavaScript dates for API calls
          startJs: new Date(startDate.year, startDate.month - 1, startDate.day),
@@ -193,11 +228,11 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
 
    const applyDateRangePreset = (preset: 'week' | 'month' | 'year') => {
       const dateRange = getDateRangePreset(preset);
-      setFilters(prev => ({ 
-         ...prev, 
-         dateRange: { 
-            start: dateRange.startJs, 
-            end: dateRange.endJs 
+      setFilters(prev => ({
+         ...prev,
+         dateRange: {
+            start: dateRange.startJs,
+            end: dateRange.endJs
          }
       }));
       setSelectedDateRange({
@@ -211,17 +246,21 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
       setSelectedDateRange(null);
    };
 
+   // Debounce search term updates
+   useEffect(() => {
+      const timeoutId = setTimeout(() => {
+         setFilters(prev => ({ ...prev, search: searchTerm || undefined }));
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+   }, [searchTerm]);
+
    const handleSearchChange = (value: string) => {
       setSearchTerm(value);
-      const timeoutId = setTimeout(() => {
-         setFilters(prev => ({ ...prev, search: value }));
-      }, 500);
-      
-      return () => clearTimeout(timeoutId);
    };
 
    const handleTypeChange = (value: string) => {
-      setFilters(prev => ({ ...prev, type: value as 'all' | 'income' | 'expense' }));
+      setFilters(prev => ({ ...prev, type: value as 'all' | 'income' | 'expense' | 'transfer' }));
    };
 
    const handleDateRangeChange = (range: any) => {
@@ -230,12 +269,12 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
          // Convert CalendarDate to JavaScript Date for API calls
          const startJs = new Date(range.start.year, range.start.month - 1, range.start.day);
          const endJs = new Date(range.end.year, range.end.month - 1, range.end.day);
-         
-         setFilters(prev => ({ 
-            ...prev, 
-            dateRange: { 
-               start: startJs, 
-               end: endJs 
+
+         setFilters(prev => ({
+            ...prev,
+            dateRange: {
+               start: startJs,
+               end: endJs
             }
          }));
       } else {
@@ -244,14 +283,15 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
    };
 
    const handleAccountChange = (value: string) => {
-      setFilters(prev => ({ 
-         ...prev, 
-         accountId: value === 'all' ? undefined : value 
+      setFilters(prev => ({
+         ...prev,
+         accountId: value
       }));
    };
 
    const formatAmount = (amount: number, currency: string) => {
-      return new Intl.NumberFormat('en-US', {
+      const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
+      return new Intl.NumberFormat(locale, {
          style: 'currency',
          currency: currency || 'USD'
       }).format(amount);
@@ -259,23 +299,41 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
 
    const formatDateHeader = (dateString: string) => {
       const date = new Date(dateString);
+      const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
       const today = new Date();
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
-      return date.toLocaleDateString(undefined, {
+      return date.toLocaleDateString(locale, {
          year: 'numeric',
          month: 'long',
          day: 'numeric'
       });
    };
 
+   const formatDateRange = (startDate: Date, endDate: Date) => {
+      // Use browser locale for consistent date formatting
+      const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
+      const options: Intl.DateTimeFormatOptions = {
+         year: 'numeric',
+         month: 'short',
+         day: 'numeric'
+      };
+
+      const start = startDate.toLocaleDateString(locale, options);
+      const end = endDate.toLocaleDateString(locale, options);
+
+      return `${start} - ${end}`;
+   };
+
    const formatExactDate = (dateString: string) => {
       const date = new Date(dateString);
-      return date.toLocaleString(undefined, {
+      const locale = typeof navigator !== 'undefined' ? navigator.language : 'en-US';
+      // Use browser locale for time formatting
+      return date.toLocaleTimeString(locale, {
          hour: '2-digit',
          minute: '2-digit',
-         hour12: false
+         hour12: undefined // Let browser decide 12/24 hour format based on locale
       });
    };
 
@@ -304,11 +362,17 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
 
    return (
       <div className="max-w-4xl mx-auto w-full p-2 sm:p-4">
-         <Card className="mb-4 sm:mb-6">
-            <CardHeader className="pb-2 sm:pb-4">
-               <h1 className="text-xl sm:text-2xl font-bold">Transactions</h1>
-            </CardHeader>
-         </Card>
+         <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold">Transactions</h1>
+            <Button
+               color="primary"
+               onPress={onOpen}
+               startContent={<Icon icon="mdi:plus" className="w-5 h-5" />}
+            >
+               Add Transaction
+            </Button>
+
+         </div>
 
          {/* Filters */}
          <Card className="mb-4 sm:mb-6">
@@ -319,89 +383,123 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                   value={searchTerm}
                   onValueChange={handleSearchChange}
                   startContent={<Icon icon="mdi:magnify" className="text-default-400" />}
-                  isClearable
+                  isClearable={true}
                   onClear={() => {
                      setSearchTerm('');
                      setFilters(prev => ({ ...prev, search: undefined }));
                   }}
                   size="sm"
                />
-               
+
                {/* Filters Grid */}
                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Select
-                     placeholder="Transaction Type"
-                     selectedKeys={[filters.type || 'all']}
+                     label="Transaction Type"
+                     selectedKeys={filters.type ? [filters.type] : []}
                      onSelectionChange={(keys) => {
-                        const value = Array.from(keys)[0] as string;
+                        const selectedKeys = Array.from(keys);
+                        const value = selectedKeys[0] as string;
+                        if (!value) {
+                           setFilters(prev => ({ ...prev, type: 'all' }));
+                           return;
+                        }
                         handleTypeChange(value);
                      }}
                      size="sm"
                      className="w-full"
+                     renderValue={() => {
+                        const type = transactionTypes.find(t => t.value === filters.type);
+                        return (
+                           <span className="flex items-center gap-2">
+                              <Icon icon={type?.icon || "mdi:wallet-outline"} className={`text-${type?.color} text-sm`} />
+                              <span className="font-medium">{type?.label}</span>
+                           </span>
+                        );
+                     }}
                   >
-                     <SelectItem key="all">All Types</SelectItem>
-                     <SelectItem key="income">Income</SelectItem>
-                     <SelectItem key="expense">Expenses</SelectItem>
+                     {transactionTypes.map((type) => (
+                        <SelectItem key={type.value}>
+                           <div className="flex items-center gap-2">
+                              <Icon icon={type.icon} className={`w-4 h-4 text-${type.color}`} />
+                              {type.label}
+                           </div>
+                        </SelectItem>
+                     ))}
+
+
                   </Select>
-                  
+
                   <Select
-                     placeholder="All Accounts"
-                     selectedKeys={[filters.accountId || 'all']}
+                     label="Account"
+                     selectedKeys={filters.accountId ? [filters.accountId] : ['all']}
                      onSelectionChange={(keys) => {
                         const value = Array.from(keys)[0] as string;
+                        if (!value) {
+                           setFilters(prev => ({ ...prev, accountId: 'all' }));
+                           return;
+                        }
                         handleAccountChange(value);
                      }}
                      size="sm"
                      className="w-full"
                   >
                      <SelectItem key="all">All Accounts</SelectItem>
-                     {accounts.map((account) => 
+                     {accounts.map((account) =>
                         <SelectItem key={account.id}>
                            {account.name}
                         </SelectItem>
                      )}
                   </Select>
-                  
-                  <DateRangePicker
-                     label="Date Range"
-                     value={selectedDateRange}
-                     onChange={handleDateRangeChange}
-                     size="sm"
-                     className="w-full"
-                  />
+
+                  <I18nProvider locale={typeof navigator !== 'undefined' ? navigator.language : 'en-US'}>
+                     <DateRangePicker
+                        label="Date Range"
+                        value={selectedDateRange}
+                        onChange={handleDateRangeChange}
+                        size="sm"
+                        className="w-full"
+                        showMonthAndYearPickers
+                        calendarProps={{
+                           classNames: {
+                              base: "bg-content1",
+                              content: "text-foreground bg-content1"
+                           }
+                        }}
+                     />
+                  </I18nProvider>
                </div>
-               
+
                {/* Quick Date Filters */}
                <div className="space-y-2">
                   <span className="text-small text-default-500">Quick filters:</span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                     <Button 
+                     <Button
                         onPress={() => applyDateRangePreset('week')}
-                        size="sm" 
+                        size="sm"
                         variant="flat"
                         className="w-full"
                      >
                         Last Week
                      </Button>
-                     <Button 
+                     <Button
                         onPress={() => applyDateRangePreset('month')}
-                        size="sm" 
+                        size="sm"
                         variant="flat"
                         className="w-full"
                      >
                         Last Month
                      </Button>
-                     <Button 
+                     <Button
                         onPress={() => applyDateRangePreset('year')}
-                        size="sm" 
+                        size="sm"
                         variant="flat"
                         className="w-full"
                      >
                         Last Year
                      </Button>
-                     <Button 
-                        onPress={clearDateRange} 
-                        color="danger" 
+                     <Button
+                        onPress={clearDateRange}
+                        color="danger"
                         variant="light"
                         size="sm"
                         className="w-full"
@@ -411,7 +509,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                      </Button>
                   </div>
                </div>
-               
+
                {/* Active Filters Display */}
                {(filters.dateRange || filters.type !== 'all' || filters.search) && (
                   <div className="space-y-2 pt-2 border-t border-divider">
@@ -426,7 +524,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                               className="max-w-full"
                            >
                               <span className="truncate">
-                                 {filters.dateRange.start.toLocaleDateString()} - {filters.dateRange.end.toLocaleDateString()}
+                                 {formatDateRange(filters.dateRange.start, filters.dateRange.end)}
                               </span>
                            </Chip>
                         )}
@@ -437,10 +535,10 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                               color="secondary"
                               onClose={() => handleTypeChange('all')}
                            >
-                              {filters.type === 'income' ? 'Income' : 'Expenses'}
+                              {filters.type === 'income' ? 'Income' : filters.type === 'expense' ? 'Expenses' : 'Transfers'}
                            </Chip>
                         )}
-                        {filters.accountId && (
+                        {filters.accountId && filters.accountId !== 'all' && (
                            <Chip
                               size="sm"
                               variant="flat"
@@ -498,22 +596,24 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
 
                   return (
                      <Card key={dateKey} className="w-full">
-                        <CardHeader className="flex justify-between items-center py-3 sm:py-4">
-                           <h2 className="text-base sm:text-lg font-semibold">
+                        <CardHeader className="flex justify-between items-center py-3 sm:py-4 px-4 sm:px-6">
+                           <h2 className="text-base sm:text-lg font-semibold text-foreground">
                               {formatDateHeader(dateKey)}
                            </h2>
-                           <span
-                              className={`font-semibold text-sm sm:text-lg flex-shrink-0 ${dayTotal >= 0
-                                    ? 'text-success'
-                                    : 'text-danger'
-                                 }`}
-                           >
-                              {dayTotal >= 0 ? '+' : ''}
-                              {formatAmount(dayTotal, dayTransactions[0]?.currency || 'USD')}
-                           </span>
+                           <div className="flex items-center gap-2">
+                              <span
+                                 className={`font-semibold text-sm sm:text-base px-2 py-1 rounded-full ${dayTotal >= 0
+                                    ? 'text-success bg-success/10 border border-success/20'
+                                    : 'text-danger bg-danger/10 border border-danger/20'
+                                    }`}
+                              >
+                                 {dayTotal >= 0 ? '+' : ''}
+                                 {formatAmount(dayTotal, dayTransactions[0]?.currency || 'USD')}
+                              </span>
+                           </div>
                         </CardHeader>
-                        <Divider />
-                        <CardBody className="gap-2 sm:gap-3 p-3 sm:p-6">
+                        <Divider className="dark:bg-default-700" />
+                        <CardBody className="gap-2 sm:gap-3 p-2 sm:p-4">
                            {dayTransactions.map((transaction) => {
                               const isAutoTransaction = transaction.provider === 'gocardless';
 
@@ -521,23 +621,24 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                                  <Card
                                     key={transaction.id}
                                     className={clsx(
-                                       "transition-all duration-200",
-                                       !transaction.category && "border-warning-200 bg-warning-50/50 dark:border-warning-800 dark:bg-warning-900/10"
+                                       "transition-all duration-200 hover:border-primary/40 hover:bg-content2",
+                                       !transaction.category && "border-warning-200 bg-warning-50/50 dark:border-warning-800 dark:bg-warning-900/10",
+                                       "border-default-200 dark:border-default-700 bg-content1 border"
                                     )}
-                                    shadow="sm"
+                                    shadow="none"
                                     isPressable
                                  >
                                     <CardBody className="p-3 sm:p-4">
-                                       <div className="flex justify-between items-start gap-2 sm:gap-4">
-                                          <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                                       <div className="flex justify-between items-start gap-3 sm:gap-4">
+                                          <div className="flex items-start gap-3 flex-1 min-w-0">
                                              <div className="relative">
                                                 <Avatar
                                                    size="sm"
-                                                   className="flex-shrink-0 mt-0.5 sm:mt-0"
+                                                   className="flex-shrink-0 shadow-sm"
                                                    classNames={{
                                                       base: transaction.category
                                                          ? ""
-                                                         : "bg-default-200 dark:bg-default-700"
+                                                         : "bg-default-200 dark:bg-default-700 border-2 border-default-300 dark:border-default-600"
                                                    }}
                                                    style={transaction.category ? {
                                                       backgroundColor: transaction.category.color
@@ -546,7 +647,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                                                       transaction.category ? (
                                                          <Icon
                                                             icon={transaction.category.icon}
-                                                            className="w-4 h-4 text-white"
+                                                            className="w-4 h-4 text-white drop-shadow-sm"
                                                          />
                                                       ) : (
                                                          <Icon
@@ -556,74 +657,120 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                                                       )
                                                    }
                                                 />
+                                                {isAutoTransaction && (
+                                                   <div
+                                                      className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-sm"
+                                                      title="Auto transaction from linked account"
+                                                   >
+                                                      <Icon
+                                                         icon="mdi:link"
+                                                         className="text-white w-2.5 h-2.5"
+                                                      />
+                                                   </div>
+                                                )}
                                              </div>
                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between gap-2 mb-1 sm:mb-2">
-                                                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                      <p className="font-medium text-foreground text-xs sm:text-sm truncate">
+                                                <div className="flex items-start justify-between gap-2 mb-2">
+                                                   <div className="flex-1 min-w-0">
+                                                      <h3 className="font-semibold text-foreground text-sm sm:text-base truncate leading-tight">
                                                          {transaction.merchantName || transaction.description || 'Transaction'}
+                                                      </h3>
+                                                      <p className="text-xs sm:text-sm text-default-500 truncate mt-0.5">
+                                                         {transaction.account.name}
                                                       </p>
-                                                      {isAutoTransaction && (
-                                                         <div title="Auto transaction from linked account">
-                                                            <Icon
-                                                               icon="mdi:link"
-                                                               className="text-primary w-4 h-4 flex-shrink-0"
-                                                            />
-                                                         </div>
-                                                      )}
                                                    </div>
-                                                   <span
-                                                      className={`font-semibold text-xs sm:text-sm flex-shrink-0 sm:hidden ${transaction.amount >= 0
+                                                   <div className="text-right flex-shrink-0 sm:hidden">
+                                                      <span
+                                                         className={`font-bold text-sm ${transaction.amount >= 0
                                                             ? 'text-success'
                                                             : 'text-danger'
-                                                         }`}
-                                                   >
-                                                      {transaction.amount >= 0 ? '+' : ''}
-                                                      {formatAmount(transaction.amount, transaction.currency)}
-                                                   </span>
+                                                            }`}
+                                                      >
+                                                         {transaction.amount >= 0 ? '+' : ''}
+                                                         {formatAmount(transaction.amount, transaction.currency)}
+                                                      </span>
+                                                      <p className="text-xs text-default-400 mt-0.5">
+                                                         {formatExactDate(transaction.date)}
+                                                      </p>
+                                                   </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between gap-2 mb-2">
-                                                   <p className="text-xs text-default-500 truncate">
-                                                      {transaction.account.name}
-                                                   </p>
-                                                   <span className="text-xs text-default-400 flex-shrink-0">
-                                                      {formatExactDate(transaction.date)}
-                                                   </span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 flex-wrap">
+                                                <div className="flex items-center justify-between gap-2 sm:hidden">
                                                    {transaction.category ? (
                                                       <Chip
                                                          size="sm"
                                                          variant="flat"
                                                          style={{
-                                                            backgroundColor: `${transaction.category.color}20`,
+                                                            backgroundColor: `${transaction.category.color}15`,
                                                             color: transaction.category.color,
-                                                            borderColor: `${transaction.category.color}40`
+                                                            borderColor: `${transaction.category.color}30`
                                                          }}
-                                                         className="border text-xs"
+                                                         className="border text-xs font-medium"
                                                       >
-                                                         <div className="flex items-center gap-1">
+                                                         <div className="flex items-center gap-1.5">
                                                             <span
-                                                               className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full flex-shrink-0"
+                                                               className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                                                                style={{ backgroundColor: transaction.category.color }}
                                                             />
                                                             {transaction.category.name}
                                                          </div>
                                                       </Chip>
                                                    ) : (
-                                                      null
+                                                      <Chip
+                                                         size="sm"
+                                                         variant="flat"
+                                                         color="warning"
+                                                         className="text-xs"
+                                                      >
+                                                         Uncategorized
+                                                      </Chip>
                                                    )}
+                                                </div>
+
+                                                <div className="hidden sm:flex items-center justify-between gap-3 mt-2">
+                                                   <div className="flex items-center gap-2">
+                                                      {transaction.category ? (
+                                                         <Chip
+                                                            size="sm"
+                                                            variant="flat"
+                                                            style={{
+                                                               backgroundColor: `${transaction.category.color}15`,
+                                                               color: transaction.category.color,
+                                                               borderColor: `${transaction.category.color}30`
+                                                            }}
+                                                            className="border text-xs font-medium"
+                                                         >
+                                                            <div className="flex items-center gap-1.5">
+                                                               <span
+                                                                  className="w-2 h-2 rounded-full flex-shrink-0"
+                                                                  style={{ backgroundColor: transaction.category.color }}
+                                                               />
+                                                               {transaction.category.name}
+                                                            </div>
+                                                         </Chip>
+                                                      ) : (
+                                                         <Chip
+                                                            size="sm"
+                                                            variant="flat"
+                                                            color="warning"
+                                                            className="text-xs"
+                                                         >
+                                                            Uncategorized
+                                                         </Chip>
+                                                      )}
+                                                   </div>
+                                                   <span className="text-xs text-default-400">
+                                                      {formatExactDate(transaction.date)}
+                                                   </span>
                                                 </div>
                                              </div>
                                           </div>
 
                                           <div className="text-right flex-shrink-0 hidden sm:block">
                                              <span
-                                                className={`font-semibold text-sm ${transaction.amount >= 0
-                                                      ? 'text-success'
-                                                      : 'text-danger'
+                                                className={`font-bold text-base ${transaction.amount >= 0
+                                                   ? 'text-success'
+                                                   : 'text-danger'
                                                    }`}
                                              >
                                                 {transaction.amount >= 0 ? '+' : ''}
@@ -677,6 +824,38 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                </CardBody>
             </Card>
          )}
+
+         {/* Add Transaction Drawer */}
+         <Drawer
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            size="lg"
+            placement="right"
+            isDismissable={true}
+            isKeyboardDismissDisabled={false}
+         >
+            <DrawerContent>
+               {(onClose) => (
+                  <>
+                     <DrawerHeader className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                           <Icon icon="mdi:plus-circle" className="w-6 h-6 text-primary" />
+                           <h2 className="text-xl font-bold">Add New Transaction</h2>
+                        </div>
+                     </DrawerHeader>
+                     <DrawerBody className="pb-6">
+                        <AddTransaction
+                           onSuccess={() => {
+                              onClose();
+                              // Refresh transactions
+                              fetchTransactions(0, 20, filters);
+                           }}
+                        />
+                     </DrawerBody>
+                  </>
+               )}
+            </DrawerContent>
+         </Drawer>
       </div>
    );
 }

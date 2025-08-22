@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     // Build where clause
     const whereClause: any = { userId };
     
-    if (accountId) {
+    if (accountId && accountId !== 'all') {
       whereClause.accountId = accountId;
     }
     
@@ -48,11 +48,15 @@ export async function GET(request: Request) {
       }
     }
     
-    // Filter by transaction type (income/expense)
+    // Filter by transaction type (income/expense/transfer)
     if (type === 'income') {
       whereClause.amount = { gt: 0 };
+      whereClause.type = { not: 'transfer' };
     } else if (type === 'expense') {
       whereClause.amount = { lt: 0 };
+      whereClause.type = { not: 'transfer' };
+    } else if (type === 'transfer') {
+      whereClause.type = 'transfer';
     }
     
     // Search filter for merchant name or description
@@ -119,6 +123,117 @@ export async function GET(request: Request) {
     console.error('Failed to fetch transactions:', error);
     return NextResponse.json(
       { error: "Failed to fetch transactions" }, 
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session || !session.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const userId = (session.user as any).id;
+    const body = await request.json();
+    
+    const {
+      amount,
+      currency,
+      accountId,
+      description,
+      merchantName,
+      categoryId,
+      date,
+      type,
+      provider = 'manual'
+    } = body;
+
+    // Validate required fields
+    if (typeof amount !== 'number' || amount === 0) {
+      return NextResponse.json({ error: "Amount is required and must be a non-zero number" }, { status: 400 });
+    }
+    if (!accountId) {
+      return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+    }
+    if (!date) {
+      return NextResponse.json({ error: "Date is required" }, { status: 400 });
+    }
+    if (!description && !merchantName) {
+      return NextResponse.json({ error: "Either description or merchant name is required" }, { status: 400 });
+    }
+
+    // Verify the account belongs to the user and is manual
+    const account = await prisma.financialAccount.findFirst({
+      where: {
+        id: accountId,
+        userId: userId,
+        provider: 'manual'
+      }
+    });
+
+    if (!account) {
+      return NextResponse.json({ error: "Account not found or not a manual account" }, { status: 404 });
+    }
+
+    // Verify category belongs to user if provided
+    if (categoryId) {
+      const category = await prisma.category.findFirst({
+        where: {
+          id: categoryId,
+          userId: userId
+        }
+      });
+      
+      if (!category) {
+        return NextResponse.json({ error: "Category not found" }, { status: 404 });
+      }
+    }
+
+    // Create transaction
+    const transaction = await prisma.transaction.create({
+      data: {
+        userId,
+        accountId,
+        amount,
+        currency: currency || account.currency,
+        description: description || null,
+        merchantName: merchantName || null,
+        categoryId: categoryId || null,
+        date: new Date(date),
+        type: type || null,
+        provider
+      },
+      include: {
+        account: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            institutionName: true
+          }
+        },
+        category: true
+      }
+    });
+
+    // Update account balance
+    await prisma.financialAccount.update({
+      where: { id: accountId },
+      data: {
+        balance: {
+          increment: amount
+        }
+      }
+    });
+
+    return NextResponse.json(transaction, { status: 201 });
+
+  } catch (error) {
+    console.error('Failed to create transaction:', error);
+    return NextResponse.json(
+      { error: "Failed to create transaction" }, 
       { status: 500 }
     );
   }

@@ -87,6 +87,10 @@ export default function AddTransaction({ onSuccess }: { onSuccess?: () => void }
             // Filter only manual (non-linked) accounts
             const manualAccounts = data.filter((account: Account) => account.provider === 'manual');
             setAccounts(manualAccounts);
+
+            if (manualAccounts.length === 1) {
+               handleInputChange('accountId', manualAccounts[0].id);
+            }
          }
       } catch (error) {
          console.error('Failed to fetch accounts:', error);
@@ -121,6 +125,9 @@ export default function AddTransaction({ onSuccess }: { onSuccess?: () => void }
       }
       if (!formData.accountId) {
          return 'Please select an account';
+      }
+      if (formData.type !== 'transfer' && !formData.categoryId) {
+         return 'Please select a category';
       }
       if (!formData.description && !formData.merchantName) {
          return 'Please provide either a description or merchant name';
@@ -369,7 +376,7 @@ export default function AddTransaction({ onSuccess }: { onSuccess?: () => void }
          {/* Category */}
          <Select
             label="Category"
-            placeholder={formData.type === 'transfer' ? 'Categories not available for transfers' : 'Select a category (optional)'}
+            placeholder={formData.type === 'transfer' ? 'Categories not available for transfers' : 'Select a category'}
             selectedKeys={formData.categoryId ? [formData.categoryId] : []}
             onSelectionChange={(keys) => {
                const value = Array.from(keys)[0] as string;
@@ -377,7 +384,7 @@ export default function AddTransaction({ onSuccess }: { onSuccess?: () => void }
             }}
             size="md"
             isDisabled={formData.type === 'transfer'}
-            required
+            isRequired={formData.type !== 'transfer'}
             renderValue={() => {
                const category = categories.find(c => c.id === formData.categoryId);
                return (
@@ -396,7 +403,7 @@ export default function AddTransaction({ onSuccess }: { onSuccess?: () => void }
                      {category.name}
                   </div>
                </SelectItem>
-            )}
+            ) as any}
          </Select>
 
          {/* Date */}

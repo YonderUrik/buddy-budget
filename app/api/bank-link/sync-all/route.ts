@@ -296,7 +296,6 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
           const amount = parseFloat(transaction.transactionAmount?.amount || '0');
           const currency = transaction.transactionAmount?.currency || 'EUR';
           const bookingDate = new Date(transaction.bookingDate);
-          const valueDate = transaction.valueDate ? new Date(transaction.valueDate) : null;
 
           const description = 
             transaction.remittanceInformationUnstructured ||
@@ -318,8 +317,6 @@ export async function syncAccount(account: any, userId: string, maxDaysHistory?:
             merchantName: merchantName,
             categoryId: categoryId,
             date: bookingDate,
-            bookingDate,
-            valueDate,
             provider: 'gocardless',
             type: amount < 0 ? 'expense' : 'income'
           });

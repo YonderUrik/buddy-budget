@@ -223,7 +223,6 @@ export type GoCardlessTransaction = {
   transactionId: string;
   entryReference?: string;
   bookingDate: string;
-  valueDate?: string;
   transactionAmount: {
     amount: string;
     currency: string;

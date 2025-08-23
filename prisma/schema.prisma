@@ -142,16 +142,18 @@ model Transaction {
   id                    String    @id @default(auto()) @map("_id") @db.ObjectId
   userId                String    @db.ObjectId
   accountId             String    @db.ObjectId
-  externalTransactionId String? // GoCardless transaction ID
+  externalTransactionId String? // GoCardless or any provider transaction ID
+  
   amount                Float
+  
   currency              String
   description           String?
   type                  String?
+  
   categoryId            String?   @db.ObjectId
   merchantName          String?
   date                  DateTime
-  bookingDate           DateTime?
-  valueDate             DateTime?
+
   provider              String    @default("manual") // manual | gocardless
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

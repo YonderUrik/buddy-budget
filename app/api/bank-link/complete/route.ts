@@ -122,7 +122,6 @@ async function createTransactionsForAccount(userId: string, accountId: string, e
         const amount = parseFloat(transaction.transactionAmount?.amount || '0');
         const currency = transaction.transactionAmount?.currency || 'EUR';
         const bookingDate = new Date(transaction.bookingDate);
-        const valueDate = transaction.valueDate ? new Date(transaction.valueDate) : null;
         
         // Create description from available information
         const description = 
@@ -146,8 +145,6 @@ async function createTransactionsForAccount(userId: string, accountId: string, e
           merchantName,
           categoryId,
           date: bookingDate,
-          bookingDate,
-          valueDate,
           provider: 'gocardless',
           type: amount < 0 ? 'expense' : 'income'
         });

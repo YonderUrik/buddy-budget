@@ -23,6 +23,7 @@ import clsx from "clsx";
 import { today, getLocalTimeZone } from "@internationalized/date";
 import { I18nProvider } from "@react-aria/i18n";
 import AddTransaction from "./add-transaction";
+import { LoaderOne } from './ui/loader';
 
 interface Transaction {
    id: string;
@@ -69,6 +70,7 @@ interface Filters {
    type?: 'all' | 'income' | 'expense' | 'transfer';
    search?: string;
    accountId?: string;
+   categoryId?: string;
 }
 
 interface Account {
@@ -76,6 +78,14 @@ interface Account {
    name: string;
    type: string;
    institutionName?: string;
+}
+
+interface Category {
+   id: string;
+   name: string;
+   icon: string;
+   color: string;
+   type: string;
 }
 
 export const transactionTypes = [
@@ -120,11 +130,14 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
    });
    const [filters, setFilters] = useState<Filters>({
       type: 'all',
-      accountId: 'all'
+      accountId: 'all',
+      categoryId: 'all'
    });
    const [searchTerm, setSearchTerm] = useState('');
    const [selectedDateRange, setSelectedDateRange] = useState<any>(null);
    const [accounts, setAccounts] = useState<Account[]>([]);
+   const [categories, setCategories] = useState<Category[]>([]);
+   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
    const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
    const fetchTransactions = async (skip = 0, limit = 20, currentFilters = filters) => {
@@ -150,6 +163,9 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
          }
          if (currentFilters.accountId) {
             params.append('accountId', currentFilters.accountId);
+         }
+         if (currentFilters.categoryId && currentFilters.categoryId !== 'all') {
+            params.append('categoryId', currentFilters.categoryId);
          }
 
          const response = await fetch(`/api/transactions?${params}`);
@@ -177,6 +193,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
    useEffect(() => {
       fetchTransactions();
       fetchAccounts();
+      fetchCategories();
    }, []);
 
    const fetchAccounts = async () => {
@@ -188,6 +205,18 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
          }
       } catch (error) {
          console.error('Failed to fetch accounts:', error);
+      }
+   };
+
+   const fetchCategories = async () => {
+      try {
+         const response = await fetch('/api/categories');
+         if (response.ok) {
+            const categoriesData = await response.json();
+            setCategories(categoriesData || []);
+         }
+      } catch (error) {
+         console.error('Failed to fetch categories:', error);
       }
    };
 
@@ -286,6 +315,13 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
       setFilters(prev => ({
          ...prev,
          accountId: value
+      }));
+   };
+
+   const handleCategoryChange = (value: string) => {
+      setFilters(prev => ({
+         ...prev,
+         categoryId: value
       }));
    };
 
@@ -391,8 +427,22 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                   size="sm"
                />
 
+               {/* Mobile: Filter Toggle Button */}
+               <div className="sm:hidden">
+                  <Button
+                     onPress={() => setIsFiltersOpen(!isFiltersOpen)}
+                     variant="flat"
+                     size="sm"
+                     className="w-full"
+                     startContent={<Icon icon="mdi:filter-variant" className="w-4 h-4" />}
+                     endContent={<Icon icon={isFiltersOpen ? "mdi:chevron-up" : "mdi:chevron-down"} className="w-4 h-4" />}
+                  >
+                     {isFiltersOpen ? 'Hide Filters' : 'Show Filters'}
+                  </Button>
+               </div>
+
                {/* Filters Grid */}
-               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+               <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 ${!isFiltersOpen ? 'hidden sm:grid' : ''}`}>
                   <Select
                      label="Transaction Type"
                      selectedKeys={filters.type ? [filters.type] : []}
@@ -444,13 +494,77 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                      className="w-full"
                   >
                      <SelectItem key="all">All Accounts</SelectItem>
-                     {accounts.map((account) =>
+                     {accounts.map((account) => (
                         <SelectItem key={account.id}>
                            {account.name}
                         </SelectItem>
-                     )}
+                     )) as any}
                   </Select>
 
+                  <Select
+                     label="Category"
+                     selectedKeys={filters.categoryId ? [filters.categoryId] : ['all']}
+                     onSelectionChange={(keys) => {
+                        const value = Array.from(keys)[0] as string;
+                        if (!value) {
+                           setFilters(prev => ({ ...prev, categoryId: 'all' }));
+                           return;
+                        }
+                        handleCategoryChange(value);
+                     }}
+                     size="sm"
+                     className="w-full"
+                     renderValue={() => {
+                        if (filters.categoryId === 'all') {
+                           return (
+                              <span className="flex items-center gap-2">
+                                 <Icon icon="mdi:tag-multiple" className="text-default-500 text-sm" />
+                                 <span className="font-medium">All Categories</span>
+                              </span>
+                           );
+                        }
+                        if (filters.categoryId === 'uncategorized') {
+                           return (
+                              <span className="flex items-center gap-2">
+                                 <Icon icon="mdi:help" className="text-warning text-sm" />
+                                 <span className="font-medium">Uncategorized</span>
+                              </span>
+                           );
+                        }
+                        const category = categories.find(c => c.id === filters.categoryId);
+                        return (
+                           <span className="flex items-center gap-2">
+                              <Icon icon={category?.icon || "mdi:tag"} className="text-sm" style={{ color: category?.color }} />
+                              <span className="font-medium">{category?.name}</span>
+                           </span>
+                        );
+                     }}
+                  >
+                     <SelectItem key="all">
+                        <div className="flex items-center gap-2">
+                           <Icon icon="mdi:tag-multiple" className="w-4 h-4 text-default-500" />
+                           All Categories
+                        </div>
+                     </SelectItem>
+                     <SelectItem key="uncategorized">
+                        <div className="flex items-center gap-2">
+                           <Icon icon="mdi:help" className="w-4 h-4 text-warning" />
+                           Uncategorized
+                        </div>
+                     </SelectItem>
+                     {categories.map((category) => (
+                        <SelectItem key={category.id}>
+                           <div className="flex items-center gap-2">
+                              <Icon icon={category.icon} className="w-4 h-4" style={{ color: category.color }} />
+                              {category.name}
+                           </div>
+                        </SelectItem>
+                     )) as any}
+                  </Select>
+               </div>
+
+               {/* Quick Date Filters */}
+               <div className={`space-y-2 ${!isFiltersOpen ? 'hidden sm:block' : ''}`}>
                   <I18nProvider locale={typeof navigator !== 'undefined' ? navigator.language : 'en-US'}>
                      <DateRangePicker
                         label="Date Range"
@@ -467,11 +581,6 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                         }}
                      />
                   </I18nProvider>
-               </div>
-
-               {/* Quick Date Filters */}
-               <div className="space-y-2">
-                  <span className="text-small text-default-500">Quick filters:</span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                      <Button
                         onPress={() => applyDateRangePreset('week')}
@@ -497,21 +606,11 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                      >
                         Last Year
                      </Button>
-                     <Button
-                        onPress={clearDateRange}
-                        color="danger"
-                        variant="light"
-                        size="sm"
-                        className="w-full"
-                        startContent={<Icon icon="mdi:close" className="w-3 h-3" />}
-                     >
-                        Clear
-                     </Button>
                   </div>
                </div>
 
                {/* Active Filters Display */}
-               {(filters.dateRange || filters.type !== 'all' || filters.search) && (
+               {(filters.dateRange || filters.type !== 'all' || filters.search || (filters.accountId && filters.accountId !== 'all') || (filters.categoryId && filters.categoryId !== 'all')) && (
                   <div className="space-y-2 pt-2 border-t border-divider">
                      <span className="text-small text-default-500">Active filters:</span>
                      <div className="flex flex-wrap gap-2">
@@ -546,6 +645,16 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                               onClose={() => handleAccountChange('all')}
                            >
                               Account: {accounts.find(a => a.id === filters.accountId)?.name || 'Unknown'}
+                           </Chip>
+                        )}
+                        {filters.categoryId && filters.categoryId !== 'all' && (
+                           <Chip
+                              size="sm"
+                              variant="flat"
+                              color="default"
+                              onClose={() => handleCategoryChange('all')}
+                           >
+                              {filters.categoryId === 'uncategorized' ? 'Uncategorized' : `Category: ${categories.find(c => c.id === filters.categoryId)?.name || 'Unknown'}`}
                            </Chip>
                         )}
                         {filters.search && (
@@ -623,7 +732,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                                     className={clsx(
                                        "transition-all duration-200 hover:border-primary/40 hover:bg-content2",
                                        !transaction.category && "border-warning-200 bg-warning-50/50 dark:border-warning-800 dark:bg-warning-900/10",
-                                       "border-default-200 dark:border-default-700 bg-content1 border"
+                                       "border-default-200 dark:border-default-200 bg-content1 border"
                                     )}
                                     shadow="none"
                                     isPressable
@@ -659,7 +768,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
                                                 />
                                                 {isAutoTransaction && (
                                                    <div
-                                                      className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center shadow-sm"
+                                                      className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center shadow-sm border border-white dark:border-gray-800"
                                                       title="Auto transaction from linked account"
                                                    >
                                                       <Icon
@@ -805,14 +914,7 @@ export default function Transactions({ dict }: { dict?: Dictionary }) {
          )}
 
          {loading && transactions.length === 0 && (
-            <Card>
-               <CardBody>
-                  <div className="text-center py-8">
-                     <Spinner size="lg" color="primary" />
-                     <p className="mt-4 text-default-500">Loading transactions...</p>
-                  </div>
-               </CardBody>
-            </Card>
+            <LoaderOne size="sm" title="Loading transactions..." />
          )}
 
          {transactions.length > 0 && (

@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     const endDate = searchParams.get('endDate');
     const type = searchParams.get('type'); // 'income' or 'expense'
     const search = searchParams.get('search');
+    const categoryId = searchParams.get('categoryId');
 
     // Validate pagination parameters
     if (skip < 0 || limit < 1 || limit > 500) {
@@ -76,6 +77,15 @@ export async function GET(request: Request) {
           }
         }
       ];
+    }
+    
+    // Category filter
+    if (categoryId && categoryId !== 'all') {
+      if (categoryId === 'uncategorized') {
+        whereClause.categoryId = null;
+      } else {
+        whereClause.categoryId = categoryId;
+      }
     }
 
     // Get transactions with pagination

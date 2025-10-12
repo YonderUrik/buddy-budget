@@ -53,7 +53,7 @@ export default function Home() {
         </Snippet>
       </div>
 
-      <NetWorthPredictor />
+      <NetWorthPredictor currency="EUR" />
 
     </section>
   );

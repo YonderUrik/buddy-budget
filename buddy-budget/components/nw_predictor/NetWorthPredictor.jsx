@@ -283,7 +283,6 @@ export default function NetWorthPredictor({ currency }) {
     </UITooltip>
   );
 
-
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6 will-change-transform">
       {/* Header with title and "How it Works" button */}

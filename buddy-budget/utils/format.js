@@ -8,9 +8,8 @@
  * @returns {string} Locale string (e.g., 'en-US', 'de-DE')
  */
 export function getDefaultLocale() {
-  if (typeof navigator !== 'undefined' && navigator.language) {
-    return navigator.language;
-  }
+  // Always use en-US to ensure consistent formatting between server and client
+  // This prevents hydration mismatches in SSR applications
   return 'en-US';
 }
 
@@ -38,7 +37,7 @@ export function formatCurrency(amount, options = {}) {
     currency = 'USD',
     locale = getDefaultLocale(),
     decimals,
-    notation = 'compact',
+    notation = 'standard',
     showCents = false
   } = options;
 
@@ -191,6 +190,35 @@ export function formatWithUnit(value, unit, options = {}) {
 }
 
 /**
+ * Format a date as a readable string
+ *
+ * @param {Date} date - The date to format
+ * @param {Object} options - Formatting options
+ * @param {string} [options.locale] - Locale for formatting (defaults to browser locale)
+ * @param {string} [options.dateStyle='medium'] - 'full', 'long', 'medium', or 'short'
+ */
+export function formatDate(date, locale = null, options = {}) {
+  if (!date) return '';
+
+  try {
+    const dateObject = new Date(date);
+    const finalLocale = locale || getDefaultLocale();
+    const {
+      dateStyle = 'medium',
+      ...restOptions
+    } = options;
+
+    return new Intl.DateTimeFormat(finalLocale, {
+      dateStyle,
+      ...restOptions
+    }).format(dateObject);
+  } catch (error) {
+    return '';
+  }
+
+
+}
+/**
  * Format a date range as a readable string
  *
  * @param {Date} startDate - Start date
@@ -272,6 +300,7 @@ export default {
   getCurrencySymbol,
   formatWithUnit,
   formatDateRange,
+  formatDate,
   abbreviateNumber,
   getDefaultLocale,
   COMMON_CURRENCIES

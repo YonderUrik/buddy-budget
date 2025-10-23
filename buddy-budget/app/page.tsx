@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { Link } from "@heroui/link";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
-import { Badge } from "@heroui/badge";
 import { button as buttonStyles } from "@heroui/theme";
 import { title, subtitle } from "@/components/primitives";
 import { siteConfig } from "@/config/site";
@@ -28,10 +27,10 @@ export default function Home() {
       title: "Net Worth Predictor",
       description: "Monte Carlo simulations to predict your future net worth with statistical accuracy.",
       icon: <ChartIcon size={20} className="text-primary" />,
-      badge: <Chip size="sm" color="success" variant="flat">Available</Chip>,
+      badge: <Chip size="sm" color="primary" variant="flat">Available</Chip>,
       className: "md:col-span-2",
       header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 dark:from-violet-500/10 dark:to-purple-500/10 border border-violet-500/20 items-center justify-center">
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-blue-400/20 to-brand-blue-600/20 dark:from-brand-blue-400/10 dark:to-brand-blue-600/10 border border-brand-blue-500/20 items-center justify-center">
           <div className="text-4xl">📊</div>
         </div>
       ),
@@ -39,10 +38,10 @@ export default function Home() {
     {
       title: "Finance Tracking",
       description: "Real-time stock tracking powered by Yahoo Finance with interactive charts and analytics.",
-      icon: <TrendingIcon size={20} className="text-success" />,
-      badge: <Chip size="sm" color="success" variant="flat">Available</Chip>,
+      icon: <TrendingIcon size={20} className="text-secondary" />,
+      badge: <Chip size="sm" color="primary" variant="flat">Available</Chip>,
       header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-500/20 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-500/20 items-center justify-center">
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-gold-400/20 to-brand-gold-600/20 dark:from-brand-gold-400/10 dark:to-brand-gold-600/10 border border-brand-gold-500/20 items-center justify-center">
           <div className="text-4xl">📈</div>
         </div>
       ),
@@ -50,10 +49,10 @@ export default function Home() {
     {
       title: "Expense Tracking",
       description: "Track every expense effortlessly with smart categorization and insights.",
-      icon: <ReceiptIcon size={20} className="text-warning" />,
+      icon: <ReceiptIcon size={20} className="text-secondary" />,
       badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
       header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-orange-500/20 to-amber-500/20 dark:from-orange-500/10 dark:to-amber-500/10 border border-orange-500/20 items-center justify-center">
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-gold-300/20 to-brand-gold-500/20 dark:from-brand-gold-300/10 dark:to-brand-gold-500/10 border border-brand-gold-400/20 items-center justify-center">
           <div className="text-4xl">🧾</div>
         </div>
       ),
@@ -64,7 +63,7 @@ export default function Home() {
       icon: <WalletIcon size={20} className="text-secondary" />,
       badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
       header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-pink-500/20 to-rose-500/20 dark:from-pink-500/10 dark:to-rose-500/10 border border-pink-500/20 items-center justify-center">
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-blue-300/20 to-brand-blue-500/20 dark:from-brand-blue-300/10 dark:to-brand-blue-500/10 border border-brand-blue-400/20 items-center justify-center">
           <div className="text-4xl">💰</div>
         </div>
       ),
@@ -75,7 +74,7 @@ export default function Home() {
       icon: <TargetIcon size={20} className="text-primary" />,
       badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
       header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-blue-500/20 to-cyan-500/20 dark:from-blue-500/10 dark:to-cyan-500/10 border border-blue-500/20 items-center justify-center">
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-blue-400/20 to-brand-blue-700/20 dark:from-brand-blue-400/10 dark:to-brand-blue-700/10 border border-brand-blue-500/20 items-center justify-center">
           <div className="text-4xl">🎯</div>
         </div>
       ),
@@ -83,10 +82,10 @@ export default function Home() {
     {
       title: "Savings Goals",
       description: "Set financial goals and track your progress with visual milestones.",
-      icon: <PiggyBankIcon size={20} className="text-danger" />,
+      icon: <PiggyBankIcon size={20} className="text-secondary" />,
       badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
       header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-red-500/20 to-pink-500/20 dark:from-red-500/10 dark:to-pink-500/10 border border-red-500/20 items-center justify-center">
+        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-gold-400/20 to-brand-gold-700/20 dark:from-brand-gold-400/10 dark:to-brand-gold-700/10 border border-brand-gold-500/20 items-center justify-center">
           <div className="text-4xl">🐷</div>
         </div>
       ),
@@ -122,7 +121,7 @@ export default function Home() {
           <Link
             isExternal
             href={siteConfig.links.github}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-default-100 dark:bg-default-50 hover:bg-default-200 dark:hover:bg-default-100 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-brand-blue-500/10 to-brand-gold-500/10 border border-brand-blue-500/20 hover:border-brand-blue-500/40 transition-all"
           >
             <GithubIcon size={20} />
             <span className="text-sm font-medium">Star us on GitHub</span>
@@ -132,7 +131,9 @@ export default function Home() {
         <div className="inline-block max-w-4xl relative">
           <TextReveal delay={0.1}>
             <h1 className={title({ size: "lg" })}>
-              <span className={title({ color: "violet" })}>Buddy Budget</span>
+              <span className="bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 bg-clip-text text-transparent">
+                Buddy Budget
+              </span>
             </h1>
           </TextReveal>
 
@@ -176,8 +177,8 @@ export default function Home() {
                 as={Link}
                 isExternal
                 href={siteConfig.links.github}
-                variant="flat"
-                color="success"
+                variant="bordered"
+                color="secondary"
                 radius="full"
                 size="lg"
                 startContent={<GithubIcon size={20} />}
@@ -194,9 +195,9 @@ export default function Home() {
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <div className="w-6 h-10 border-2 border-default-300 rounded-full flex items-start justify-center p-2">
+          <div className="w-6 h-10 border-2 border-brand-blue-400/40 rounded-full flex items-start justify-center p-2">
             <motion.div
-              className="w-1.5 h-1.5 bg-default-400 rounded-full"
+              className="w-1.5 h-1.5 bg-gradient-to-b from-brand-blue-500 to-brand-gold-500 rounded-full"
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
@@ -214,7 +215,7 @@ export default function Home() {
           className="text-center max-w-2xl"
         >
           <h2 className={title({ size: "md" })}>
-            Powerful <span className={title({ color: "green", size: "md" })}>Features</span>
+            Powerful <span className="bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 bg-clip-text text-transparent">Features</span>
           </h2>
           <p className={subtitle({ class: "mt-2" })}>
             Everything you need to manage your personal finances in one place
@@ -280,7 +281,7 @@ export default function Home() {
           className="text-center max-w-3xl"
         >
           <h2 className={title({ size: "md" })}>
-            Built with <span className={title({ color: "green", size: "md" })}>Transparency</span>
+            Built with <span className={title({ color: "yellow", size: "md" })}>Transparency</span>
           </h2>
           <p className={subtitle({ class: "mt-4" })}>
             Buddy Budget is 100% open source. Your financial data stays yours, and you can verify exactly how it works.
@@ -296,7 +297,7 @@ export default function Home() {
               isExternal
               href={siteConfig.links.github}
               size="lg"
-              color="success"
+              color="secondary"
               variant="shadow"
               radius="full"
               startContent={<GithubIcon size={20} />}
@@ -316,21 +317,21 @@ export default function Home() {
               title: "Smart",
               subtitle: "Financial Predictions",
               description: "Advanced algorithms for accurate financial forecasting",
-              color: "primary",
+              gradient: "from-brand-blue-500 to-brand-blue-600",
               delay: 0,
             },
             {
               title: "Real-time",
               subtitle: "Market Data",
               description: "Stay updated with live stock prices and trends",
-              color: "success",
+              gradient: "from-brand-gold-500 to-brand-gold-600",
               delay: 0.1,
             },
             {
               title: "Open",
               subtitle: "Source & Transparent",
               description: "Community-driven development you can trust",
-              color: "secondary",
+              gradient: "from-brand-blue-500 to-brand-gold-500",
               delay: 0.2,
             },
           ].map((stat, i) => (
@@ -343,9 +344,9 @@ export default function Home() {
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
               className="group"
             >
-              <div className="relative flex flex-col items-center p-8 rounded-2xl border border-default-200 dark:border-default-100 bg-gradient-to-br from-default-50 to-transparent dark:from-default-50/5 dark:to-transparent backdrop-blur-sm hover:border-default-300 dark:hover:border-default-200 transition-all duration-300 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className={`text-5xl font-bold text-${stat.color} mb-3 relative z-10`}>
+              <div className="relative flex flex-col items-center p-8 rounded-2xl border border-brand-blue-500/20 dark:border-brand-blue-400/20 bg-gradient-to-br from-default-50 to-transparent dark:from-default-50/5 dark:to-transparent backdrop-blur-sm hover:border-brand-blue-500/40 dark:hover:border-brand-blue-400/40 transition-all duration-300 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue-500/5 via-transparent to-brand-gold-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className={`text-5xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-3 relative z-10`}>
                   {stat.title}
                 </div>
                 <div className="text-xl font-semibold mb-2 relative z-10">{stat.subtitle}</div>
@@ -360,7 +361,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="relative flex flex-col items-center gap-6 text-center px-4 py-20 my-8">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary-50/10 to-transparent dark:via-primary-50/5 rounded-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand-blue-500/10 to-transparent dark:via-brand-blue-500/5 rounded-3xl" />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -399,6 +400,7 @@ export default function Home() {
                 href={siteConfig.links.github}
                 size="lg"
                 variant="bordered"
+                color="secondary"
                 radius="full"
                 className="text-lg px-10 font-semibold"
                 startContent={<GithubIcon size={20} />}

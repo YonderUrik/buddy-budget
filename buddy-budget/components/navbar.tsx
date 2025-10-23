@@ -32,7 +32,7 @@ export const Navbar = () => {
         }}
         className="relative"
       >
-        <div className="bg-background/20 backdrop-blur-lg border border-default-200 dark:border-default-100 rounded-2xl shadow-lg">
+        <div className="bg-background/80 backdrop-blur-lg border border-brand-blue-500/20 dark:border-brand-blue-400/20 rounded-2xl shadow-lg shadow-brand-blue-500/5">
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center justify-between px-6 py-3">
             {/* Logo */}
@@ -67,9 +67,10 @@ export const Navbar = () => {
                 <NextLink
                   key={item.href}
                   href={item.href}
-                  className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors relative group"
                 >
                   {item.label}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 transition-all group-hover:w-full"></span>
                 </NextLink>
               ))}
             </div>
@@ -152,7 +153,7 @@ export const Navbar = () => {
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="overflow-hidden border-t border-default-200 dark:border-default-100"
+                  className="overflow-hidden border-t border-brand-blue-500/20 dark:border-brand-blue-400/20"
                 >
                   <div className="px-4 py-4 space-y-3">
                     {siteConfig.navItems.map((item) => (
@@ -160,7 +161,7 @@ export const Navbar = () => {
                         key={item.href}
                         href={item.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="block text-sm font-medium text-foreground/80 hover:text-foreground transition-colors py-2"
+                        className="block text-sm font-medium text-foreground/80 hover:text-primary transition-colors py-2"
                       >
                         {item.label}
                       </NextLink>

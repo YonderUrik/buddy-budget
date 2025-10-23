@@ -2,23 +2,23 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "Buddy Budget",
-  description: "Make beautiful websites regardless of your design experience.",
+  description: "Your AI-Powered Personal Finance Companion. Take control of your finances with powerful tools for expense tracking, budgeting, investment monitoring, and AI-powered predictions.",
   navItems: [
     {
       label: "Home",
       href: "/",
     },
     {
-      label: "Docs",
-      href: "/docs",
+      label: "Features",
+      href: "/#features",
     },
     {
-      label: "Pricing",
-      href: "/pricing",
+      label: "Net Worth Predictor",
+      href: "/net-worth",
     },
     {
-      label: "Blog",
-      href: "/blog",
+      label: "Finance Tracker",
+      href: "/finance",
     },
     {
       label: "About",
@@ -27,43 +27,38 @@ export const siteConfig = {
   ],
   navMenuItems: [
     {
-      label: "Profile",
-      href: "/profile",
+      label: "Home",
+      href: "/",
+    },
+    {
+      label: "Features",
+      href: "/#features",
+    },
+    {
+      label: "Net Worth Predictor",
+      href: "/net-worth",
+    },
+    {
+      label: "Finance Tracker",
+      href: "/finance",
     },
     {
       label: "Dashboard",
       href: "/dashboard",
     },
     {
-      label: "Projects",
-      href: "/projects",
-    },
-    {
-      label: "Team",
-      href: "/team",
-    },
-    {
-      label: "Calendar",
-      href: "/calendar",
-    },
-    {
       label: "Settings",
       href: "/settings",
     },
     {
-      label: "Help & Feedback",
-      href: "/help-feedback",
-    },
-    {
-      label: "Logout",
-      href: "/logout",
+      label: "About",
+      href: "/about",
     },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    twitter: "https://twitter.com/hero_ui",
-    docs: "https://heroui.com",
-    discord: "https://discord.gg/9b6yyZKmH4",
-    sponsor: "https://patreon.com/jrgarciadev",
+    github: "https://github.com/YonderUrik/buddy-budget",
+    docs: "https://github.com/daniele-roccaforte/buddy-budget#readme",
+    sponsor: "https://github.com/sponsors/YonderUrik",
+    license: "https://github.com/YonderUrik/buddy-budget/blob/main/LICENSE"
   },
 };

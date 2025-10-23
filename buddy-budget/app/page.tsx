@@ -26,7 +26,7 @@ export default function Home() {
   const featureCards = [
     {
       title: "Net Worth Predictor",
-      description: "AI-powered Monte Carlo simulations to predict your future net worth with statistical accuracy.",
+      description: "Monte Carlo simulations to predict your future net worth with statistical accuracy.",
       icon: <ChartIcon size={20} className="text-primary" />,
       badge: <Chip size="sm" color="success" variant="flat">Available</Chip>,
       className: "md:col-span-2",
@@ -138,14 +138,14 @@ export default function Home() {
 
           <TextReveal delay={0.2}>
             <h2 className={title({ size: "sm", class: "mt-4" })}>
-              Your AI-Powered Personal Finance Companion
+              Your Personal Finance Buddy
             </h2>
           </TextReveal>
 
           <TextReveal delay={0.3}>
             <p className={subtitle({ class: "mt-6 max-w-2xl mx-auto" })}>
               Take control of your finances with powerful tools for expense tracking,
-              budgeting, investment monitoring, and AI-powered predictions. Built with transparency in mind.
+              budgeting, investment monitoring, and financial predictions. Built with transparency in mind.
             </p>
           </TextReveal>
         </div>
@@ -314,7 +314,7 @@ export default function Home() {
           {[
             {
               title: "Smart",
-              subtitle: "AI-Powered Predictions",
+              subtitle: "Financial Predictions",
               description: "Advanced algorithms for accurate financial forecasting",
               color: "primary",
               delay: 0,

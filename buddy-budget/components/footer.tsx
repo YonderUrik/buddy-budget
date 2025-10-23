@@ -14,13 +14,13 @@ export const Footer = () => {
               <span className="font-bold text-lg">Buddy Budget</span>
             </div>
             <p className="text-sm text-default-600 dark:text-default-400 max-w-md mb-4">
-              Your AI-Powered Personal Finance Companion. 100% open source and built with transparency in mind.
+              Your Personal Finance Buddy. 100% open source and built with transparency in mind.
               Take control of your finances today.
             </p>
             <div className="flex items-center gap-4">
               <Link
                 isExternal
-                href="https://github.com/yourusername/buddy-budget"
+                href={siteConfig.links.github}
                 className="text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
               >
                 <GithubIcon size={24} />
@@ -84,7 +84,7 @@ export const Footer = () => {
               <li>
                 <Link
                   isExternal
-                  href="https://github.com/yourusername/buddy-budget/blob/main/CONTRIBUTING.md"
+                  href={siteConfig.links.contributing}
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
                 >
                   Contributing

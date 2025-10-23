@@ -57,7 +57,7 @@ export const siteConfig = {
   ],
   links: {
     github: "https://github.com/YonderUrik/buddy-budget",
-    docs: "https://github.com/daniele-roccaforte/buddy-budget#readme",
+    contributing: "https://github.com/YonderUrik/buddy-budget/blob/main/CONTRIBUTING.md",
     sponsor: "https://github.com/sponsors/YonderUrik",
     license: "https://github.com/YonderUrik/buddy-budget/blob/main/LICENSE"
   },

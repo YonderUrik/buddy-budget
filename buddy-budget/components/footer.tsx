@@ -1,17 +1,28 @@
+"use client";
+
 import { Link } from "@heroui/link";
-import { GithubIcon, Logo } from "@/components/icons";
+import { GithubIcon } from "@/components/icons";
 import { siteConfig } from "@/config/site";
+import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export const Footer = () => {
+  const { theme } = useTheme();
+
   return (
     <footer className="w-full border-t border-default-200 dark:border-default-100 bg-default-50/50 dark:bg-default-50/5 backdrop-blur-lg mt-20">
       <div className="container mx-auto max-w-7xl px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <Logo />
-              <span className="font-bold text-lg">Buddy Budget</span>
+            <div className="flex items-center mb-4">
+              <Image
+                src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
+                alt="Buddy Budget Logo"
+                width={9064}
+                height={1933}
+                className="h-10 w-auto"
+              />
             </div>
             <p className="text-sm text-default-600 dark:text-default-400 max-w-md mb-4">
               Your Personal Finance Buddy. 100% open source and built with transparency in mind.

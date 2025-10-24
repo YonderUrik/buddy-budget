@@ -74,6 +74,7 @@
     "yahoo-finance2": "^2.13.3"
   },
   "devDependencies": {
+    "@eslint/compat": "^1.4.0",
     "@next/eslint-plugin-next": "15.3.4",
     "@react-types/shared": "3.32.1",
     "@tailwindcss/postcss": "4.1.11",

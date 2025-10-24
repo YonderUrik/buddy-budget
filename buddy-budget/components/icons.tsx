@@ -193,25 +193,25 @@ export const ChartIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M3 3v18h18"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
     <path
       d="M7 16l4-4 3 3 5-5"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -223,27 +223,27 @@ export const WalletIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M19 7H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
     <path
       d="M3 7V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
-    <circle cx="16" cy="13" r="1" fill="currentColor" />
+    <circle cx="16" cy="13" fill="currentColor" r="1" />
   </svg>
 );
 
@@ -254,10 +254,10 @@ export const TargetIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <circle
@@ -265,27 +265,27 @@ export const TargetIcon = ({
       cy="12"
       r="10"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
     <circle
       cx="12"
       cy="12"
       r="6"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
     <circle
       cx="12"
       cy="12"
       r="2"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -297,25 +297,25 @@ export const TrendingIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M23 6l-9.5 9.5-5-5L1 18"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
     <path
       d="M17 6h6v6"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -327,25 +327,25 @@ export const ReceiptIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
     <path
       d="M8 7h8M8 11h8M8 15h4"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -357,21 +357,21 @@ export const PiggyBankIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h6v2h4v-4.5c1-.6 2-1.5 2-3.5 0-1.5 0-3-2-4V5h-2z"
+      fill="none"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      fill="none"
+      strokeWidth="2"
     />
-    <circle cx="13" cy="11" r="1" fill="currentColor" />
+    <circle cx="13" cy="11" fill="currentColor" r="1" />
   </svg>
 );
 
@@ -382,28 +382,28 @@ export const DiceIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <rect
-      x="3"
-      y="3"
-      width="18"
       height="18"
       rx="2"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
+      width="18"
+      x="3"
+      y="3"
     />
-    <circle cx="8" cy="8" r="1.5" fill="currentColor" />
-    <circle cx="16" cy="8" r="1.5" fill="currentColor" />
-    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-    <circle cx="8" cy="16" r="1.5" fill="currentColor" />
-    <circle cx="16" cy="16" r="1.5" fill="currentColor" />
+    <circle cx="8" cy="8" fill="currentColor" r="1.5" />
+    <circle cx="16" cy="8" fill="currentColor" r="1.5" />
+    <circle cx="12" cy="12" fill="currentColor" r="1.5" />
+    <circle cx="8" cy="16" fill="currentColor" r="1.5" />
+    <circle cx="16" cy="16" fill="currentColor" r="1.5" />
   </svg>
 );
 
@@ -414,18 +414,18 @@ export const BarChartIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M18 20V10M12 20V4M6 20v-6"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -437,18 +437,18 @@ export const DollarIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -460,18 +460,18 @@ export const ActivityIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M22 12h-4l-3 9L9 3l-3 9H2"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );
@@ -483,21 +483,36 @@ export const AlertIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
-    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="currentColor" strokeWidth="1" />
+    <line
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="2"
+      x1="12"
+      x2="12"
+      y1="9"
+      y2="13"
+    />
+    <circle
+      cx="12"
+      cy="17"
+      fill="currentColor"
+      r="0.5"
+      stroke="currentColor"
+      strokeWidth="1"
+    />
   </svg>
 );
 
@@ -508,18 +523,18 @@ export const LightbulbIcon = ({
   ...props
 }: IconSvgProps) => (
   <svg
+    fill="none"
     height={size || height}
     viewBox="0 0 24 24"
     width={size || width}
-    fill="none"
     {...props}
   >
     <path
       d="M9 18h6M10 22h4M15 7.5c0-1.66-1.34-3-3-3s-3 1.34-3 3c0 .8.31 1.53.82 2.06C9.94 9.7 10 9.85 10 10v2c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-2c0-.15.06-.3.18-.44.51-.53.82-1.26.82-2.06zM12 4.5V3M5.5 7.5L4 6M18.5 7.5L20 6"
       stroke="currentColor"
-      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      strokeWidth="2"
     />
   </svg>
 );

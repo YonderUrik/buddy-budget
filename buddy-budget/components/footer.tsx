@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "@heroui/link";
-import { GithubIcon } from "@/components/icons";
-import { siteConfig } from "@/config/site";
 import Image from "next/image";
 import { useTheme } from "next-themes";
+
+import { GithubIcon } from "@/components/icons";
+import { siteConfig } from "@/config/site";
 
 export const Footer = () => {
   const { theme } = useTheme();
@@ -24,23 +25,27 @@ export const Footer = () => {
             <div className="flex items-center mb-4">
               {mounted && (
                 <Image
-                  src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
                   alt="Buddy Budget Logo"
-                  width={9064}
-                  height={1933}
                   className="h-10 w-auto"
+                  height={1933}
+                  src={
+                    theme === "dark"
+                      ? "/logo/logo-text-dark.png"
+                      : "/logo/logo-text-light.png"
+                  }
+                  width={9064}
                 />
               )}
             </div>
             <p className="text-sm text-default-600 dark:text-default-400 max-w-md mb-4">
-              Your Personal Finance Buddy. 100% open source and built with transparency in mind.
-              Take control of your finances today.
+              Your Personal Finance Buddy. 100% open source and built with
+              transparency in mind. Take control of your finances today.
             </p>
             <div className="flex items-center gap-4">
               <Link
                 isExternal
-                href={siteConfig.links.github}
                 className="text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                href={siteConfig.links.github}
               >
                 <GithubIcon size={24} />
               </Link>
@@ -53,24 +58,24 @@ export const Footer = () => {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/net-worth"
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href="/net-worth"
                 >
                   Net Worth Predictor
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/finance"
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href="/finance"
                 >
                   Finance Tracker
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/#features"
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href="/#features"
                 >
                   All Features
                 </Link>
@@ -85,8 +90,8 @@ export const Footer = () => {
               <li>
                 <Link
                   isExternal
-                  href={siteConfig.links.github}
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href={siteConfig.links.github}
                 >
                   GitHub
                 </Link>
@@ -94,8 +99,8 @@ export const Footer = () => {
               <li>
                 <Link
                   isExternal
-                  href={siteConfig.links.license}
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href={siteConfig.links.license}
                 >
                   License
                 </Link>
@@ -103,16 +108,16 @@ export const Footer = () => {
               <li>
                 <Link
                   isExternal
-                  href={siteConfig.links.contributing}
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href={siteConfig.links.contributing}
                 >
                   Contributing
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/about"
                   className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href="/about"
                 >
                   About
                 </Link>
@@ -124,7 +129,8 @@ export const Footer = () => {
         {/* Bottom Section */}
         <div className="border-t border-default-200 dark:border-default-100 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-default-600 dark:text-default-400">
-            © {new Date().getFullYear()} Buddy Budget. Open source under MIT License.
+            © {new Date().getFullYear()} Buddy Budget. Open source under MIT
+            License.
           </p>
           <div className="flex items-center gap-2">
             <span className="text-sm text-default-600 dark:text-default-400">

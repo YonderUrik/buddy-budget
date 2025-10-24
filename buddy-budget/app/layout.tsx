@@ -46,12 +46,12 @@ export default function RootLayout({
           <div className="relative flex flex-col min-h-screen">
             <Vortex
               backgroundColor="transparent"
-              rangeY={120}
-              particleCount={1000}
               baseHue={60}
-              rangeRadius={2}
-              containerClassName="absolute inset-0 w-full min-h-screen"
               className="flex flex-col w-full min-h-screen"
+              containerClassName="absolute inset-0 w-full min-h-screen"
+              particleCount={1000}
+              rangeRadius={2}
+              rangeY={120}
             >
               <Navbar />
               <main className="container mx-auto pt-24 px-6 flex-grow">

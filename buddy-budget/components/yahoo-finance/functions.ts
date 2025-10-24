@@ -7,7 +7,7 @@
  * Note: This library cannot run in browsers due to CORS. Use it in API routes or server components.
  */
 
-import yahooFinance from 'yahoo-finance2';
+import yahooFinance from "yahoo-finance2";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -77,6 +77,7 @@ export interface PortfolioStock {
 export async function getStockQuote(symbol: string): Promise<StockQuote> {
   try {
     const quote = await yahooFinance.quote(symbol);
+
     return quote as StockQuote;
   } catch (error) {
     console.error(`Error fetching quote for ${symbol}:`, error);
@@ -88,14 +89,17 @@ export async function getStockQuote(symbol: string): Promise<StockQuote> {
  * Get quotes for multiple stocks at once
  * @param symbols - Array of stock ticker symbols
  */
-export async function getMultipleQuotes(symbols: string[]): Promise<StockQuote[]> {
+export async function getMultipleQuotes(
+  symbols: string[],
+): Promise<StockQuote[]> {
   try {
     const quotes = await Promise.all(
-      symbols.map(symbol => yahooFinance.quote(symbol))
+      symbols.map((symbol) => yahooFinance.quote(symbol)),
     );
+
     return quotes as StockQuote[];
   } catch (error) {
-    console.error('Error fetching multiple quotes:', error);
+    console.error("Error fetching multiple quotes:", error);
     throw error;
   }
 }
@@ -111,10 +115,11 @@ export async function getMultipleQuotes(symbols: string[]): Promise<StockQuote[]
 export async function searchStocks(query: string): Promise<SearchResult[]> {
   try {
     const results = await yahooFinance.search(query);
+
     return results.quotes.filter((result) => {
       // Type guard to check if result has quoteType property
-      if ('quoteType' in result) {
-        return result.quoteType !== 'INDEX' && result.quoteType !== 'FUTURE';
+      if ("quoteType" in result) {
+        return result.quoteType !== "INDEX" && result.quoteType !== "FUTURE";
       }
 
       return true; // Include results without quoteType
@@ -140,7 +145,7 @@ export async function getHistoricalData(
   symbol: string,
   period1: Date,
   period2: Date = new Date(),
-  interval: '1d' | '1wk' | '1mo' = '1d'
+  interval: "1d" | "1wk" | "1mo" = "1d",
 ): Promise<HistoricalDataPoint[]> {
   try {
     const result = await yahooFinance.historical(symbol, {
@@ -148,6 +153,7 @@ export async function getHistoricalData(
       period2,
       interval,
     });
+
     return result as HistoricalDataPoint[];
   } catch (error) {
     console.error(`Error fetching historical data for ${symbol}:`, error);
@@ -162,12 +168,23 @@ export async function getHistoricalData(
  */
 export async function getHistoricalDataByRange(
   symbol: string,
-  range: '1d' | '5d' | '1mo' | '3mo' | '6mo' | '1y' | '2y' | '5y' | 'ytd' | 'max'
+  range:
+    | "1d"
+    | "5d"
+    | "1mo"
+    | "3mo"
+    | "6mo"
+    | "1y"
+    | "2y"
+    | "5y"
+    | "ytd"
+    | "max",
 ): Promise<HistoricalDataPoint[]> {
   try {
     const result = await yahooFinance.chart(symbol, {
       period1: range,
     });
+
     return result.quotes as HistoricalDataPoint[];
   } catch (error) {
     console.error(`Error fetching historical data for ${symbol}:`, error);
@@ -186,10 +203,18 @@ export async function getHistoricalDataByRange(
  */
 export async function getStockDetails(
   symbol: string,
-  modules: string[] = ['price', 'summaryDetail', 'assetProfile', 'financialData']
+  modules: string[] = [
+    "price",
+    "summaryDetail",
+    "assetProfile",
+    "financialData",
+  ],
 ) {
   try {
-    const summary = await yahooFinance.quoteSummary(symbol, { modules: modules as any });
+    const summary = await yahooFinance.quoteSummary(symbol, {
+      modules: modules as any,
+    });
+
     return summary;
   } catch (error) {
     console.error(`Error fetching details for ${symbol}:`, error);
@@ -204,8 +229,9 @@ export async function getStockDetails(
 export async function getCompanyProfile(symbol: string) {
   try {
     const result = await yahooFinance.quoteSummary(symbol, {
-      modules: ['assetProfile', 'summaryProfile']
+      modules: ["assetProfile", "summaryProfile"],
     });
+
     return result;
   } catch (error) {
     console.error(`Error fetching company profile for ${symbol}:`, error);
@@ -220,8 +246,9 @@ export async function getCompanyProfile(symbol: string) {
 export async function getFinancialData(symbol: string) {
   try {
     const result = await yahooFinance.quoteSummary(symbol, {
-      modules: ['financialData', 'defaultKeyStatistics', 'earnings']
+      modules: ["financialData", "defaultKeyStatistics", "earnings"],
     });
+
     return result;
   } catch (error) {
     console.error(`Error fetching financial data for ${symbol}:`, error);
@@ -237,12 +264,13 @@ export async function getFinancialData(symbol: string) {
  * Get currently trending stocks
  * @param region - Region code (default: 'US')
  */
-export async function getTrendingStocks(region: string = 'US') {
+export async function getTrendingStocks(region: string = "US") {
   try {
     const trending = await yahooFinance.trendingSymbols(region);
+
     return trending;
   } catch (error) {
-    console.error('Error fetching trending stocks:', error);
+    console.error("Error fetching trending stocks:", error);
     throw error;
   }
 }
@@ -257,7 +285,7 @@ export async function getTrendingStocks(region: string = 'US') {
  */
 export async function calculatePortfolioValue(portfolio: PortfolioStock[]) {
   try {
-    const symbols = portfolio.map(stock => stock.symbol);
+    const symbols = portfolio.map((stock) => stock.symbol);
     const quotes = await getMultipleQuotes(symbols);
 
     const portfolioData = portfolio.map((stock, index) => {
@@ -280,8 +308,14 @@ export async function calculatePortfolioValue(portfolio: PortfolioStock[]) {
       };
     });
 
-    const totalValue = portfolioData.reduce((sum, item) => sum + item.currentValue, 0);
-    const totalCost = portfolioData.reduce((sum, item) => sum + item.costBasis, 0);
+    const totalValue = portfolioData.reduce(
+      (sum, item) => sum + item.currentValue,
+      0,
+    );
+    const totalCost = portfolioData.reduce(
+      (sum, item) => sum + item.costBasis,
+      0,
+    );
     const totalGain = totalValue - totalCost;
     const totalGainPercent = (totalGain / totalCost) * 100;
 
@@ -293,7 +327,7 @@ export async function calculatePortfolioValue(portfolio: PortfolioStock[]) {
       totalGainPercent,
     };
   } catch (error) {
-    console.error('Error calculating portfolio value:', error);
+    console.error("Error calculating portfolio value:", error);
     throw error;
   }
 }
@@ -307,12 +341,13 @@ export async function getStockPerformance(symbol: string, days: number = 30) {
   try {
     const endDate = new Date();
     const startDate = new Date();
+
     startDate.setDate(startDate.getDate() - days);
 
     const historicalData = await getHistoricalData(symbol, startDate, endDate);
 
     if (historicalData.length === 0) {
-      throw new Error('No historical data available');
+      throw new Error("No historical data available");
     }
 
     const firstPrice = historicalData[0].close;
@@ -348,12 +383,12 @@ export async function getStockPerformance(symbol: string, days: number = 30) {
 export async function compareStocks(symbols: string[], days: number = 30) {
   try {
     const performances = await Promise.all(
-      symbols.map(symbol => getStockPerformance(symbol, days))
+      symbols.map((symbol) => getStockPerformance(symbol, days)),
     );
 
     return performances.sort((a, b) => b.changePercent - a.changePercent);
   } catch (error) {
-    console.error('Error comparing stocks:', error);
+    console.error("Error comparing stocks:", error);
     throw error;
   }
 }
@@ -388,53 +423,66 @@ export async function get52WeekPerformance(symbol: string) {
   }
 }
 
-export async function getStockLogo(symbol: string, shortName: string, quoteType: string, longName: string): Promise<string | null> {
+export async function getStockLogo(
+  symbol: string,
+  shortName: string,
+  quoteType: string,
+  longName: string,
+): Promise<string | null> {
   try {
     let name = shortName
       .toLowerCase()
-      .replace(/[,.\s']+/g, '-')
-      .replace(/inc-?/g, '')
-      .replace(/[^a-z0-9-]/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
+      .replace(/[,.\s']+/g, "-")
+      .replace(/inc-?/g, "")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
 
     let logoUrls = [];
-    if (quoteType === 'ETF' || quoteType === 'MUTUALFUND') {
-      name = (longName || shortName).toLowerCase().split(' ')[0];
+
+    if (quoteType === "ETF" || quoteType === "MUTUALFUND") {
+      name = (longName || shortName).toLowerCase().split(" ")[0];
       logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}.svg`);
       logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}-group.svg`);
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}-shares.svg`);
+      logoUrls.push(
+        `https://s3-symbol-logo.tradingview.com/${name}-shares.svg`,
+      );
       logoUrls.push(`https://s3-symbol-logo.tradingview.com/rex-${name}.svg`);
-    } else if (quoteType === 'CRYPTOCURRENCY') {
-      name = `XTVC${symbol.split('-')[0]}`
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/crypto/${name}.svg`)
-    } else if (quoteType === 'EQUITY') {
-      logoUrls.push(`https://financialmodelingprep.com/image-stock/${symbol.split('.')[0]}.png`);
+    } else if (quoteType === "CRYPTOCURRENCY") {
+      name = `XTVC${symbol.split("-")[0]}`;
+      logoUrls.push(
+        `https://s3-symbol-logo.tradingview.com/crypto/${name}.svg`,
+      );
+    } else if (quoteType === "EQUITY") {
+      logoUrls.push(
+        `https://financialmodelingprep.com/image-stock/${symbol.split(".")[0]}.png`,
+      );
       logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}.svg`);
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name.split('-')[0]}.svg`);
+      logoUrls.push(
+        `https://s3-symbol-logo.tradingview.com/${name.split("-")[0]}.svg`,
+      );
     }
 
-
     if (!logoUrls.length) {
-      return null
+      return null;
     }
 
     // Check if the logo exists by fetching it
     for (const logoUrl of logoUrls) {
-      const response = await fetch(logoUrl, { method: 'HEAD' });
+      const response = await fetch(logoUrl, { method: "HEAD" });
+
       if (response.ok) {
         return logoUrl;
       }
     }
 
-
     return null;
   } catch (error) {
     console.error(`Error fetching logo for ${symbol}:`, error);
+
     return null;
   }
 }
-
 
 // ============================================================================
 // EXPORT ALL

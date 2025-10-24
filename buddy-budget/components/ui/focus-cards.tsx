@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 export type Card = {
@@ -27,16 +28,16 @@ export const FocusCard = React.memo(
     const content = (
       <>
         <Image
-          src={card.src}
-          alt={card.title}
           fill
+          alt={card.title}
           className="object-cover"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          src={card.src}
         />
         <div
           className={cn(
             "absolute inset-0 bg-black/50 flex items-end py-8 px-4 transition-opacity duration-300",
-            hovered === index ? "opacity-100" : "opacity-0"
+            hovered === index ? "opacity-100" : "opacity-0",
           )}
         >
           <div className="flex flex-col gap-2">
@@ -56,16 +57,16 @@ export const FocusCard = React.memo(
     const className = cn(
       "rounded-lg relative bg-gray-100 dark:bg-neutral-900 overflow-hidden h-60 md:h-96 w-full transition-all duration-300 ease-out",
       hovered !== null && hovered !== index && "blur-sm scale-[0.98]",
-      card.href && "cursor-pointer hover:scale-[1.02]"
+      card.href && "cursor-pointer hover:scale-[1.02]",
     );
 
     if (card.href) {
       return (
         <Link
+          className={className}
           href={card.href}
           onMouseEnter={() => setHovered(index)}
           onMouseLeave={() => setHovered(null)}
-          className={className}
         >
           {content}
         </Link>
@@ -74,14 +75,14 @@ export const FocusCard = React.memo(
 
     return (
       <div
+        className={className}
         onMouseEnter={() => setHovered(index)}
         onMouseLeave={() => setHovered(null)}
-        className={className}
       >
         {content}
       </div>
     );
-  }
+  },
 );
 
 FocusCard.displayName = "FocusCard";
@@ -95,8 +96,8 @@ export function FocusCards({ cards }: { cards: Card[] }) {
         <FocusCard
           key={card.title}
           card={card}
-          index={index}
           hovered={hovered}
+          index={index}
           setHovered={setHovered}
         />
       ))}

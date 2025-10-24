@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+
 import { cn } from "@/lib/utils";
 
 export const FeatureSection = ({
@@ -14,7 +15,7 @@ export const FeatureSection = ({
     <div
       className={cn(
         "grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-6xl mx-auto",
-        className
+        className,
       )}
     >
       {children}
@@ -39,12 +40,12 @@ export const FeatureCard = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ y: -5 }}
       className={cn("relative group", className)}
+      initial={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -5 }}
+      whileInView={{ opacity: 1, y: 0 }}
     >
       <div className="relative h-full p-8 rounded-2xl border border-brand-blue-500/20 dark:border-brand-blue-400/20 bg-gradient-to-br from-default-50 to-transparent dark:from-default-50/5 dark:to-transparent overflow-hidden backdrop-blur-sm hover:border-brand-blue-500/40 dark:hover:border-brand-blue-400/40 transition-all duration-300">
         {/* Gradient overlay on hover */}
@@ -52,7 +53,7 @@ export const FeatureCard = ({
           className={cn(
             "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300",
             gradient ||
-              "bg-gradient-to-br from-brand-blue-500/5 via-transparent to-brand-gold-500/5"
+              "bg-gradient-to-br from-brand-blue-500/5 via-transparent to-brand-gold-500/5",
           )}
         />
 
@@ -91,11 +92,11 @@ export const LargeFeatureCard = ({
 }) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
       className={cn("lg:col-span-3", className)}
+      initial={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+      whileInView={{ opacity: 1, y: 0 }}
     >
       <div className="relative h-full p-8 md:p-12 rounded-2xl border border-brand-blue-500/20 dark:border-brand-blue-400/20 bg-gradient-to-br from-default-50 to-transparent dark:from-default-50/5 dark:to-transparent overflow-hidden backdrop-blur-sm">
         {/* Background gradient */}
@@ -116,7 +117,9 @@ export const LargeFeatureCard = ({
               {description}
             </p>
           </div>
-          {image && <div className="flex items-center justify-center">{image}</div>}
+          {image && (
+            <div className="flex items-center justify-center">{image}</div>
+          )}
         </div>
       </div>
     </motion.div>

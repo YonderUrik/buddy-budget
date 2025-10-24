@@ -1,9 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from "react";
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
   XAxis,
@@ -11,16 +9,17 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';
-import { Button } from '@heroui/button';
-import { ButtonGroup } from '@heroui/button';
-import { Card, CardBody, CardHeader } from '@heroui/card';
-import { Spinner } from '@heroui/spinner';
-import { Tabs, Tab } from '@heroui/tabs';
-import { DatePicker } from '@heroui/date-picker';
-import { parseDate } from '@internationalized/date';
-import { HistoricalDataPoint, SearchResult } from './functions';
-import { formatCurrency, formatPercentage } from '@/utils/format';
+} from "recharts";
+import { Button } from "@heroui/button";
+import { ButtonGroup } from "@heroui/button";
+import { Card, CardBody, CardHeader } from "@heroui/card";
+import { Spinner } from "@heroui/spinner";
+import { DatePicker } from "@heroui/date-picker";
+import { parseDate } from "@internationalized/date";
+
+import { HistoricalDataPoint } from "./functions";
+
+import { formatCurrency, formatPercentage } from "@/utils/format";
 
 // useDebounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -52,78 +51,79 @@ function useIsMobile(breakpoint: number = 640): boolean {
     checkMobile();
 
     // Add event listener
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
 
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, [breakpoint]);
 
   return isMobile;
 }
 
-type ChartType = 'area';
-type Interval = '1d' | '1wk' | '1mo';
-type QuickRange = '1M' | '3M' | '6M' | '1Y' | '2Y' | '5Y' | 'YTD' | 'MAX';
+// type ChartType = "area";
+type Interval = "1d" | "1wk" | "1mo";
+type QuickRange = "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "YTD" | "MAX";
 
 interface StockChartProps {
   symbol: string;
   onSymbolChange?: (symbol: string) => void;
 }
 
-
-
 // Format date based on interval (for X-axis labels)
 const formatDate = (date: Date, interval: Interval): string => {
   const d = new Date(date);
-  if (interval === '1d') {
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  } else if (interval === '1wk') {
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  if (interval === "1d") {
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  } else if (interval === "1wk") {
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   } else {
-    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
   }
 };
 
 // Format date with year (for tooltips)
 const formatDateWithYear = (date: Date): string => {
   const d = new Date(date);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
+
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 };
 
-
 // Calculate date range based on quick range
-const getDateRangeFromQuickRange = (range: QuickRange): { start: Date; end: Date } => {
+const getDateRangeFromQuickRange = (
+  range: QuickRange,
+): { start: Date; end: Date } => {
   const end = new Date();
   const start = new Date();
 
   switch (range) {
-    case '1M':
+    case "1M":
       start.setMonth(start.getMonth() - 1);
       break;
-    case '3M':
+    case "3M":
       start.setMonth(start.getMonth() - 3);
       break;
-    case '6M':
+    case "6M":
       start.setMonth(start.getMonth() - 6);
       break;
-    case '1Y':
+    case "1Y":
       start.setFullYear(start.getFullYear() - 1);
       break;
-    case '2Y':
+    case "2Y":
       start.setFullYear(start.getFullYear() - 2);
       break;
-    case '5Y':
+    case "5Y":
       start.setFullYear(start.getFullYear() - 5);
       break;
-    case 'YTD':
+    case "YTD":
       start.setMonth(0);
       start.setDate(1);
       break;
-    case 'MAX':
+    case "MAX":
       start.setFullYear(start.getFullYear() - 20);
       break;
   }
@@ -131,19 +131,22 @@ const getDateRangeFromQuickRange = (range: QuickRange): { start: Date; end: Date
   return { start, end };
 };
 
-export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
-  const [interval, setInterval] = useState<Interval>('1d');
+export function StockChart({ symbol }: StockChartProps) {
+  const [interval, setInterval] = useState<Interval>("1d");
   const [startDate, setStartDate] = useState<Date>(() => {
     const date = new Date();
+
     date.setMonth(date.getMonth() - 3);
+
     return date;
   });
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [data, setData] = useState<HistoricalDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedQuickRange, setSelectedQuickRange] = useState<QuickRange | null>('3M');
-  const [currency, setCurrency] = useState<string>('USD');
+  const [selectedQuickRange, setSelectedQuickRange] =
+    useState<QuickRange | null>("3M");
+  const [currency, setCurrency] = useState<string>("USD");
 
   // Debounce the symbol
   const debouncedSymbol = useDebounce(symbol, 300);
@@ -157,14 +160,21 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
       if (!debouncedSymbol) return;
 
       try {
-        const response = await fetch(`/api/stocks/details?symbol=${encodeURIComponent(debouncedSymbol)}`);
+        const response = await fetch(
+          `/api/stocks/details?symbol=${encodeURIComponent(debouncedSymbol)}`,
+        );
+
         if (response.ok) {
           const result = await response.json();
-          const detectedCurrency = result.details?.price?.currency || result.details?.summaryDetail?.currency || 'USD';
+          const detectedCurrency =
+            result.details?.price?.currency ||
+            result.details?.summaryDetail?.currency ||
+            "USD";
+
           setCurrency(detectedCurrency);
         }
       } catch (err) {
-        console.error('Error fetching currency:', err);
+        console.error("Error fetching currency:", err);
         // Keep default USD if error
       }
     };
@@ -177,6 +187,7 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
     const fetchData = async () => {
       if (!debouncedSymbol) {
         setData([]);
+
         return;
       }
 
@@ -194,14 +205,15 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
         const response = await fetch(`/api/stocks/historical?${params}`);
 
         if (!response.ok) {
-          throw new Error('Failed to fetch historical data');
+          throw new Error("Failed to fetch historical data");
         }
 
         const result = await response.json();
+
         setData(result.data || []);
       } catch (err) {
-        console.error('Error fetching historical data:', err);
-        setError('Failed to load chart data. Please try again.');
+        console.error("Error fetching historical data:", err);
+        setError("Failed to load chart data. Please try again.");
         setData([]);
       } finally {
         setIsLoading(false);
@@ -214,6 +226,7 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
   // Handle quick range selection
   const handleQuickRange = (range: QuickRange) => {
     const { start, end } = getDateRangeFromQuickRange(range);
+
     setStartDate(start);
     setEndDate(end);
     setSelectedQuickRange(range);
@@ -245,8 +258,8 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
     const priceChangePercent = (priceChange / firstPrice) * 100;
 
     // Find high and low in the period
-    const high = Math.max(...chartData.map(d => d.high));
-    const low = Math.min(...chartData.map(d => d.low));
+    const high = Math.max(...chartData.map((d) => d.high));
+    const low = Math.min(...chartData.map((d) => d.low));
 
     return {
       firstPrice,
@@ -264,6 +277,7 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
+
       return (
         <Card className="p-3">
           <div className="space-y-1">
@@ -278,6 +292,7 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
         </Card>
       );
     }
+
     return null;
   };
 
@@ -291,28 +306,55 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
                   <span className="text-xl sm:text-2xl font-bold">
-                    {formatCurrency(statistics.lastPrice, { currency, showCents: true })}
+                    {formatCurrency(statistics.lastPrice, {
+                      currency,
+                      showCents: true,
+                    })}
                   </span>
                   <span
-                    className={`text-xs sm:text-sm font-semibold ${statistics.priceChange >= 0 ? 'text-success' : 'text-danger'
-                      }`}
+                    className={`text-xs sm:text-sm font-semibold ${
+                      statistics.priceChange >= 0
+                        ? "text-success"
+                        : "text-danger"
+                    }`}
                   >
-                    {statistics.priceChange >= 0 ? '+' : ''}
-                    {formatCurrency(Math.abs(statistics.priceChange), { currency, showCents: true })}
-                    {' '}
-                    ({statistics.priceChange >= 0 ? '+' : '-'}
-                    {formatPercentage(Math.abs(statistics.priceChangePercent), { multiply: true, decimals: 2 })})
+                    {statistics.priceChange >= 0 ? "+" : ""}
+                    {formatCurrency(Math.abs(statistics.priceChange), {
+                      currency,
+                      showCents: true,
+                    })}{" "}
+                    ({statistics.priceChange >= 0 ? "+" : "-"}
+                    {formatPercentage(Math.abs(statistics.priceChangePercent), {
+                      multiply: true,
+                      decimals: 2,
+                    })}
+                    )
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 sm:gap-4 text-xs text-default-500">
                   <span>
-                    High: <span className="font-semibold">{formatCurrency(statistics.high, { currency, showCents: true })}</span>
+                    High:{" "}
+                    <span className="font-semibold">
+                      {formatCurrency(statistics.high, {
+                        currency,
+                        showCents: true,
+                      })}
+                    </span>
                   </span>
                   <span>
-                    Low: <span className="font-semibold">{formatCurrency(statistics.low, { currency, showCents: true })}</span>
+                    Low:{" "}
+                    <span className="font-semibold">
+                      {formatCurrency(statistics.low, {
+                        currency,
+                        showCents: true,
+                      })}
+                    </span>
                   </span>
                   <span className="col-span-2 sm:col-span-1">
-                    Period: <span className="font-semibold">{statistics.firstDate} - {statistics.lastDate}</span>
+                    Period:{" "}
+                    <span className="font-semibold">
+                      {statistics.firstDate} - {statistics.lastDate}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -323,25 +365,25 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
         {/* Interval Selector */}
         <div className="w-full overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
           <div className="flex gap-2 min-w-max sm:min-w-0">
-            <ButtonGroup size="sm" variant="flat" className="flex-shrink-0">
+            <ButtonGroup className="flex-shrink-0" size="sm" variant="flat">
               <Button
-                onPress={() => setInterval('1d')}
-                color={interval === '1d' ? 'primary' : 'default'}
                 className="min-w-[70px]"
+                color={interval === "1d" ? "primary" : "default"}
+                onPress={() => setInterval("1d")}
               >
                 Daily
               </Button>
               <Button
-                onPress={() => setInterval('1wk')}
-                color={interval === '1wk' ? 'primary' : 'default'}
                 className="min-w-[70px]"
+                color={interval === "1wk" ? "primary" : "default"}
+                onPress={() => setInterval("1wk")}
               >
                 Weekly
               </Button>
               <Button
-                onPress={() => setInterval('1mo')}
-                color={interval === '1mo' ? 'primary' : 'default'}
                 className="min-w-[70px]"
+                color={interval === "1mo" ? "primary" : "default"}
+                onPress={() => setInterval("1mo")}
               >
                 Monthly
               </Button>
@@ -352,14 +394,16 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
         {/* Quick Range Buttons */}
         <div className="w-full overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
           <div className="flex gap-2 min-w-max sm:min-w-0 sm:flex-wrap">
-            {(['1M', '3M', '6M', '1Y', '2Y', '5Y', 'YTD', 'MAX'] as QuickRange[]).map((range) => (
+            {(
+              ["1M", "3M", "6M", "1Y", "2Y", "5Y", "YTD", "MAX"] as QuickRange[]
+            ).map((range) => (
               <Button
                 key={range}
-                size="sm"
-                variant={selectedQuickRange === range ? 'solid' : 'bordered'}
-                color={selectedQuickRange === range ? 'primary' : 'default'}
-                onPress={() => handleQuickRange(range)}
                 className="min-w-[50px] flex-shrink-0"
+                color={selectedQuickRange === range ? "primary" : "default"}
+                size="sm"
+                variant={selectedQuickRange === range ? "solid" : "bordered"}
+                onPress={() => handleQuickRange(range)}
               >
                 {range}
               </Button>
@@ -370,28 +414,28 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
         {/* Date Range Pickers */}
         <div className="flex flex-col sm:flex-row gap-2 w-full">
           <DatePicker
+            className="flex-1"
             label="Start Date"
-            value={parseDate(startDate.toISOString().split('T')[0])}
+            size="sm"
+            value={parseDate(startDate.toISOString().split("T")[0])}
             onChange={(date) => {
               if (date) {
                 setStartDate(new Date(date.year, date.month - 1, date.day));
                 setSelectedQuickRange(null);
               }
             }}
-            size="sm"
-            className="flex-1"
           />
           <DatePicker
+            className="flex-1"
             label="End Date"
-            value={parseDate(endDate.toISOString().split('T')[0])}
+            size="sm"
+            value={parseDate(endDate.toISOString().split("T")[0])}
             onChange={(date) => {
               if (date) {
                 setEndDate(new Date(date.year, date.month - 1, date.day));
                 setSelectedQuickRange(null);
               }
             }}
-            size="sm"
-            className="flex-1"
           />
         </div>
       </CardHeader>
@@ -410,41 +454,41 @@ export function StockChart({ symbol, onSymbolChange }: StockChartProps) {
             <p className="text-default-400 text-sm">No data available</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+          <ResponsiveContainer height={isMobile ? 300 : 400} width="100%">
             <AreaChart
               data={chartData}
               margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
             >
               <defs>
-                <linearGradient id="colorClose" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorClose" x1="0" x2="0" y1="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
                   <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+              <CartesianGrid opacity={0.3} strokeDasharray="3 3" />
               <XAxis
-                dataKey="dateStrWithYear"
-                tick={{ fontSize: isMobile ? 10 : 12 }}
-                minTickGap={isMobile ? 50 : 30}
                 angle={isMobile ? -45 : 0}
-                textAnchor={isMobile ? 'end' : 'middle'}
+                dataKey="dateStrWithYear"
                 height={isMobile ? 60 : 30}
+                minTickGap={isMobile ? 50 : 30}
+                textAnchor={isMobile ? "end" : "middle"}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
               />
               <YAxis
-                domain={['auto', 'auto']}
+                domain={["auto", "auto"]}
                 tick={{ fontSize: isMobile ? 10 : 12 }}
                 tickFormatter={(value) => formatCurrency(value, { currency })}
                 width={isMobile ? 60 : 80}
               />
               <Tooltip content={<CustomTooltip />} />
               <Area
-                type="monotone"
+                activeDot={{ r: isMobile ? 6 : 8 }}
                 dataKey="close"
+                fill="url(#colorClose)"
+                fillOpacity={1}
                 stroke="#3b82f6"
                 strokeWidth={isMobile ? 1.5 : 2}
-                fillOpacity={1}
-                fill="url(#colorClose)"
-                activeDot={{ r: isMobile ? 6 : 8 }}
+                type="monotone"
               />
             </AreaChart>
           </ResponsiveContainer>

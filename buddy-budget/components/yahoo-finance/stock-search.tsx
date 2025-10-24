@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { Autocomplete, AutocompleteItem } from '@heroui/autocomplete';
-import { SearchResult } from './functions';
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
+import Image from "next/image";
+
+import { SearchResult } from "./functions";
 
 interface StockSearchProps {
   onSelect?: (stock: SearchResult) => void;
@@ -13,11 +15,11 @@ interface StockSearchProps {
 
 export function StockSearch({
   onSelect,
-  label = 'Search Stocks',
-  placeholder = 'Enter stock symbol or company name...',
+  label = "Search Stocks",
+  placeholder = "Enter stock symbol or company name...",
   className,
 }: StockSearchProps) {
-  const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +29,7 @@ export function StockSearch({
   const searchStocks = useCallback(async (query: string) => {
     if (!query || query.trim().length < 2) {
       setResults([]);
+
       return;
     }
 
@@ -34,17 +37,20 @@ export function StockSearch({
     setError(null);
 
     try {
-      const response = await fetch(`/api/stocks/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(
+        `/api/stocks/search?q=${encodeURIComponent(query)}`,
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to search stocks');
+        throw new Error("Failed to search stocks");
       }
 
       const data = await response.json();
+
       setResults(data.results || []);
     } catch (err) {
-      console.error('Search error:', err);
-      setError('Failed to search stocks. Please try again.');
+      console.error("Search error:", err);
+      setError("Failed to search stocks. Please try again.");
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -81,23 +87,22 @@ export function StockSearch({
     (key: React.Key | null) => {
       if (key && onSelect) {
         const selectedStock = results.find((stock) => stock.symbol === key);
+
         if (selectedStock) {
           onSelect(selectedStock);
         }
       }
     },
-    [results, onSelect]
+    [results, onSelect],
   );
-
 
   return (
     <Autocomplete
-      label={label}
-      placeholder={placeholder}
       className={className}
+      errorMessage={error}
       inputValue={searchValue}
-      onInputChange={handleInputChange}
-      onSelectionChange={handleSelectionChange}
+      isInvalid={!!error}
+      isLoading={isLoading}
       items={results.map((result) => ({
         key: result.symbol,
         symbol: result.symbol,
@@ -109,13 +114,17 @@ export function StockSearch({
         quoteType: result.quoteType,
         logoUrl: result.logoUrl,
       }))}
-      isLoading={isLoading}
-      errorMessage={error}
-      isInvalid={!!error}
-      variant="bordered"
+      label={label}
       listboxProps={{
-        emptyContent: searchValue.length >= 2 ? 'No stocks found' : 'Start typing to search...',
+        emptyContent:
+          searchValue.length >= 2
+            ? "No stocks found"
+            : "Start typing to search...",
       }}
+      placeholder={placeholder}
+      variant="bordered"
+      onInputChange={handleInputChange}
+      onSelectionChange={handleSelectionChange}
     >
       {(item) => (
         <AutocompleteItem key={item.key} textValue={item.symbol}>
@@ -123,22 +132,26 @@ export function StockSearch({
             {/* Stock Logo */}
             <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-default-100 overflow-hidden">
               {item.logoUrl ? (
-                <img
-                  src={item.logoUrl}
+                <Image
                   alt={item.symbol}
                   className="w-8 h-8 object-contain"
+                  height={32}
+                  src={item.logoUrl}
+                  width={32}
                   onError={(e) => {
                     // Fallback to symbol text if image fails to load
-                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.style.display = "none";
                     if (e.currentTarget.nextElementSibling) {
-                      (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                      (
+                        e.currentTarget.nextElementSibling as HTMLElement
+                      ).style.display = "flex";
                     }
                   }}
                 />
               ) : null}
               <span
                 className="text-xs font-bold text-default-600"
-                style={{ display: item.logoUrl ? 'none' : 'flex' }}
+                style={{ display: item.logoUrl ? "none" : "flex" }}
               >
                 {item.symbol.substring(0, 2)}
               </span>

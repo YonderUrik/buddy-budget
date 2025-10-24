@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,7 @@ export type Card = {
   title: string;
   src: string;
   description?: string;
+  href?: string;
 };
 
 export const FocusCard = React.memo(
@@ -22,15 +24,8 @@ export const FocusCard = React.memo(
     hovered: number | null;
     setHovered: React.Dispatch<React.SetStateAction<number | null>>;
   }) => {
-    return (
-      <div
-        onMouseEnter={() => setHovered(index)}
-        onMouseLeave={() => setHovered(null)}
-        className={cn(
-          "rounded-lg relative bg-gray-100 dark:bg-neutral-900 overflow-hidden h-60 md:h-96 w-full transition-all duration-300 ease-out",
-          hovered !== null && hovered !== index && "blur-sm scale-[0.98]"
-        )}
-      >
+    const content = (
+      <>
         <Image
           src={card.src}
           alt={card.title}
@@ -55,6 +50,35 @@ export const FocusCard = React.memo(
             )}
           </div>
         </div>
+      </>
+    );
+
+    const className = cn(
+      "rounded-lg relative bg-gray-100 dark:bg-neutral-900 overflow-hidden h-60 md:h-96 w-full transition-all duration-300 ease-out",
+      hovered !== null && hovered !== index && "blur-sm scale-[0.98]",
+      card.href && "cursor-pointer hover:scale-[1.02]"
+    );
+
+    if (card.href) {
+      return (
+        <Link
+          href={card.href}
+          onMouseEnter={() => setHovered(index)}
+          onMouseLeave={() => setHovered(null)}
+          className={className}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <div
+        onMouseEnter={() => setHovered(index)}
+        onMouseLeave={() => setHovered(null)}
+        className={className}
+      >
+        {content}
       </div>
     );
   }

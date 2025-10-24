@@ -88,8 +88,6 @@ export function StockInfo({ symbol }: StockInfoProps) {
 
   if (!data) return null;
 
-  console.log("data", data);
-
   const profile = data.assetProfile || {};
 
   // Check if asset profile has meaningful data (more than just maxAge/empty arrays)

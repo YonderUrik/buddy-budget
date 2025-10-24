@@ -187,7 +187,7 @@ export async function getHistoricalDataByRange(
 
     return result.quotes as HistoricalDataPoint[];
   } catch (error) {
-    console.error(`Error fetching historical data for ${symbol}:`, error);
+    console.error("Error fetching historical data for %s:", symbol, error);
     throw error;
   }
 }
@@ -217,7 +217,7 @@ export async function getStockDetails(
 
     return summary;
   } catch (error) {
-    console.error(`Error fetching details for ${symbol}:`, error);
+    console.error("Error fetching details for %s:", symbol, error);
     throw error;
   }
 }
@@ -234,7 +234,7 @@ export async function getCompanyProfile(symbol: string) {
 
     return result;
   } catch (error) {
-    console.error(`Error fetching company profile for ${symbol}:`, error);
+    console.error("Error fetching company profile for %s:", symbol, error);
     throw error;
   }
 }

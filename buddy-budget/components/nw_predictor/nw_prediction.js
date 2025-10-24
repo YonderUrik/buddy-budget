@@ -68,7 +68,7 @@ export function predictNetWorth(
             inflationAdjustedInvestments: initialInvestments,
             totalInvested: 0,
             total: initialLiquidity + initialInvestments,
-            totalInflationAdjusted: initialLiquidity + initialInvestments
+            inflationAdjustedTotal: initialLiquidity + initialInvestments
          }
       ];
 
@@ -77,7 +77,6 @@ export function predictNetWorth(
 
          const newDateMonth = new Date(previousMonth.dateMonth.getFullYear(), previousMonth.dateMonth.getMonth() + 1, 1);
          const newLiquidity = previousMonth.liquidity;
-
          // Apply random monthly return using normal distribution
          // This simulates market volatility - some months up, some down, based on historical patterns
          const randomReturn = normalRandom(monthlyGrowthRate, monthlyVolatility);
@@ -86,8 +85,10 @@ export function predictNetWorth(
          const newTotal = newLiquidity + newInvestments;
 
          // Apply inflation adjustment (real purchasing power)
-         const inflationAdjustedLiquidity = previousMonth.inflationAdjustedLiquidity / monthlyInflationRate;
-         const inflationAdjustedInvestments = newInvestments / monthlyInflationRate;
+         // Inflation compounds over time, so we need to divide by the cumulative inflation factor
+         const cumulativeInflationFactor = Math.pow(monthlyInflationRate, i);
+         const inflationAdjustedLiquidity = newLiquidity / cumulativeInflationFactor;
+         const inflationAdjustedInvestments = newInvestments / cumulativeInflationFactor;
          const inflationAdjustedTotal = inflationAdjustedLiquidity + inflationAdjustedInvestments;
 
          resultValues.push({
@@ -163,13 +164,9 @@ export function predictNetWorth(
    }
 
    // Run multiple simulations
-   console.log(`Running ${simulations} Monte Carlo simulations...`);
    const allSimulations = [];
 
    for (let sim = 0; sim < simulations; sim++) {
-      if (sim % 100 === 0) {
-         console.log(`Simulation ${sim}/${simulations}`);
-      }
       allSimulations.push(runSingleSimulation());
    }
 

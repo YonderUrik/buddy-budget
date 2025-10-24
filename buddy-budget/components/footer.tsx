@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Link } from "@heroui/link";
 import { GithubIcon } from "@/components/icons";
 import { siteConfig } from "@/config/site";
@@ -8,6 +9,11 @@ import { useTheme } from "next-themes";
 
 export const Footer = () => {
   const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <footer className="w-full border-t border-default-200 dark:border-default-100 bg-default-50/50 dark:bg-default-50/5 backdrop-blur-lg mt-20">
@@ -16,13 +22,15 @@ export const Footer = () => {
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
-              <Image
-                src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
-                alt="Buddy Budget Logo"
-                width={9064}
-                height={1933}
-                className="h-10 w-auto"
-              />
+              {mounted && (
+                <Image
+                  src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
+                  alt="Buddy Budget Logo"
+                  width={9064}
+                  height={1933}
+                  className="h-10 w-auto"
+                />
+              )}
             </div>
             <p className="text-sm text-default-600 dark:text-default-400 max-w-md mb-4">
               Your Personal Finance Buddy. 100% open source and built with transparency in mind.

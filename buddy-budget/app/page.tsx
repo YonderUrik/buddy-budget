@@ -1,9 +1,9 @@
 'use client';
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "@heroui/link";
 import { Button } from "@heroui/button";
-import { Chip } from "@heroui/chip";
 import { button as buttonStyles } from "@heroui/theme";
 import { title, subtitle } from "@/components/primitives";
 import { siteConfig } from "@/config/site";
@@ -16,104 +16,42 @@ import {
   PiggyBankIcon,
   GithubIcon
 } from "@/components/icons";
-import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
 import { FocusCards } from "@/components/ui/focus-cards";
-import { FloatingOrbs } from "@/components/ui/floating-orbs";
 import { TextReveal } from "@/components/ui/text-reveal";
+import { FeatureSection, FeatureCard, LargeFeatureCard } from "@/components/ui/feature-section";
+import { useTheme } from "next-themes";
 
 export default function Home() {
-  const featureCards = [
-    {
-      title: "Net Worth Predictor",
-      description: "Monte Carlo simulations to predict your future net worth with statistical accuracy.",
-      icon: <ChartIcon size={20} className="text-primary" />,
-      badge: <Chip size="sm" color="primary" variant="flat">Available</Chip>,
-      className: "md:col-span-2",
-      header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-blue-400/20 to-brand-blue-600/20 dark:from-brand-blue-400/10 dark:to-brand-blue-600/10 border border-brand-blue-500/20 items-center justify-center">
-          <div className="text-4xl">📊</div>
-        </div>
-      ),
-    },
-    {
-      title: "Finance Tracking",
-      description: "Real-time stock tracking powered by Yahoo Finance with interactive charts and analytics.",
-      icon: <TrendingIcon size={20} className="text-secondary" />,
-      badge: <Chip size="sm" color="primary" variant="flat">Available</Chip>,
-      header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-gold-400/20 to-brand-gold-600/20 dark:from-brand-gold-400/10 dark:to-brand-gold-600/10 border border-brand-gold-500/20 items-center justify-center">
-          <div className="text-4xl">📈</div>
-        </div>
-      ),
-    },
-    {
-      title: "Expense Tracking",
-      description: "Track every expense effortlessly with smart categorization and insights.",
-      icon: <ReceiptIcon size={20} className="text-secondary" />,
-      badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
-      header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-gold-300/20 to-brand-gold-500/20 dark:from-brand-gold-300/10 dark:to-brand-gold-500/10 border border-brand-gold-400/20 items-center justify-center">
-          <div className="text-4xl">🧾</div>
-        </div>
-      ),
-    },
-    {
-      title: "Smart Budgeting",
-      description: "Create and manage budgets that adapt to your spending patterns.",
-      icon: <WalletIcon size={20} className="text-secondary" />,
-      badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
-      header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-blue-300/20 to-brand-blue-500/20 dark:from-brand-blue-300/10 dark:to-brand-blue-500/10 border border-brand-blue-400/20 items-center justify-center">
-          <div className="text-4xl">💰</div>
-        </div>
-      ),
-    },
-    {
-      title: "Investment Portfolio",
-      description: "Monitor and optimize your investment portfolio with advanced analytics.",
-      icon: <TargetIcon size={20} className="text-primary" />,
-      badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
-      header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-blue-400/20 to-brand-blue-700/20 dark:from-brand-blue-400/10 dark:to-brand-blue-700/10 border border-brand-blue-500/20 items-center justify-center">
-          <div className="text-4xl">🎯</div>
-        </div>
-      ),
-    },
-    {
-      title: "Savings Goals",
-      description: "Set financial goals and track your progress with visual milestones.",
-      icon: <PiggyBankIcon size={20} className="text-secondary" />,
-      badge: <Chip size="sm" variant="flat">Coming Soon</Chip>,
-      header: (
-        <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-brand-gold-400/20 to-brand-gold-700/20 dark:from-brand-gold-400/10 dark:to-brand-gold-700/10 border border-brand-gold-500/20 items-center justify-center">
-          <div className="text-4xl">🐷</div>
-        </div>
-      ),
-    },
-  ];
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const previewCards = [
     {
       title: "Net Worth Predictor",
-      src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+      src: mounted && theme === "dark" ? "/previews/nw_dark.png" : "/previews/nw_light.png",
       description: "Monte Carlo simulations for financial forecasting",
+      href: "/net-worth",
     },
     {
       title: "Stock Market Analysis",
       src: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80",
       description: "Real-time market data and charts",
+      href: "#features",
     },
     {
       title: "Budget Dashboard",
       src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80",
       description: "Track expenses and manage budgets",
+      href: "#features",
     },
   ];
 
   return (
     <div className="flex flex-col gap-20 py-8 md:py-12 relative overflow-hidden">
-      {/* Floating Background Orbs */}
-      <FloatingOrbs />
 
       {/* Hero Section */}
       <section className="relative flex flex-col items-center justify-center gap-8 text-center px-4 min-h-[80vh] -mt-8">
@@ -131,7 +69,7 @@ export default function Home() {
         <div className="inline-block max-w-4xl relative">
           <TextReveal delay={0.1}>
             <h1 className={title({ size: "lg" })}>
-              <span className="bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-gold-500 to-brand-gold-500 bg-clip-text text-transparent">
                 Buddy Budget
               </span>
             </h1>
@@ -169,23 +107,6 @@ export default function Home() {
                 Explore Features
               </Link>
             </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                as={Link}
-                isExternal
-                href={siteConfig.links.github}
-                variant="bordered"
-                color="secondary"
-                radius="full"
-                size="lg"
-                startContent={<GithubIcon size={20} />}
-              >
-                View Source
-              </Button>
-            </motion.div>
           </div>
         </TextReveal>
 
@@ -218,30 +139,133 @@ export default function Home() {
             Powerful <span className="bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 bg-clip-text text-transparent">Features</span>
           </h2>
           <p className={subtitle({ class: "mt-2" })}>
-            Everything you need to manage your personal finances in one place
+            Everything you need to track and grow your net worth
           </p>
         </motion.div>
 
-        <BentoGrid>
-          {featureCards.map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <BentoGridItem
-                title={item.title}
-                description={item.description}
-                header={item.header}
-                icon={item.icon}
-                badge={item.badge}
-                className={item.className}
-              />
-            </motion.div>
-          ))}
-        </BentoGrid>
+        <FeatureSection className="w-full">
+          {/* Large Feature - Net Worth Predictor */}
+          <LargeFeatureCard
+            title="Net Worth Predictor"
+            description="Predict your financial future with Monte Carlo simulations. Run thousands of scenarios based on your income, expenses, and investment returns to see the best case, worst case, and most likely outcomes for your net worth trajectory. Make informed decisions with statistical precision."
+            icon={<ChartIcon size={40} className="text-brand-blue-500" />}
+            image={
+              <div className="relative w-full h-64 rounded-xl overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/net-worth-predictor.png" alt="Net Worth Predictor Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80"
+                  alt="Net Worth Predictor Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            }
+          />
+
+          {/* Regular Features */}
+          <FeatureCard
+            title="Finance Tracking"
+            description="Real-time stock tracking powered by Yahoo Finance with interactive charts and analytics. Monitor your portfolio with live market data."
+            icon={<TrendingIcon size={32} className="text-brand-gold-500" />}
+            image={
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/finance-tracking.png" alt="Finance Tracking Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80"
+                  alt="Finance Tracking Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            }
+          />
+
+          <FeatureCard
+            title="Investment Portfolio"
+            description="Monitor and optimize your investment portfolio with advanced analytics. View asset allocation, historical returns, and risk metrics."
+            icon={<TargetIcon size={32} className="text-brand-blue-500" />}
+            image={
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/portfolio-analytics.png" alt="Portfolio Analytics Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80"
+                  alt="Portfolio Analytics Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            }
+          />
+
+          <FeatureCard
+            title="Net Worth Dashboard"
+            description="Visualize your complete financial picture. Track assets, liabilities, and net worth over time with beautiful charts and visualizations."
+            icon={<WalletIcon size={32} className="text-brand-gold-500" />}
+            image={
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/net-worth-dashboard.png" alt="Net Worth Dashboard Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=800&q=80"
+                  alt="Net Worth Dashboard Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            }
+          />
+
+          {/* Coming Soon Features */}
+          <FeatureCard
+            title="Expense Tracking"
+            description="Track every expense effortlessly with smart categorization and insights. Coming soon to help you understand where your money goes."
+            icon={<ReceiptIcon size={32} className="text-brand-blue-400" />}
+            image={
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/expense-tracking.png" alt="Expense Tracking Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1554224311-beee460ae6ba?w=800&q=80"
+                  alt="Expense Tracking Preview"
+                  className="w-full h-full object-cover opacity-70"
+                />
+              </div>
+            }
+          />
+
+          <FeatureCard
+            title="Smart Budgeting"
+            description="Create and manage budgets that adapt to your spending patterns. Coming soon to help you stay on track with your financial goals."
+            icon={<WalletIcon size={32} className="text-brand-gold-400" />}
+            image={
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/smart-budgeting.png" alt="Smart Budgeting Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&q=80"
+                  alt="Smart Budgeting Preview"
+                  className="w-full h-full object-cover opacity-70"
+                />
+              </div>
+            }
+          />
+
+          <FeatureCard
+            title="Savings Goals"
+            description="Set financial goals and track your progress with visual milestones. Coming soon to help you achieve your dreams."
+            icon={<PiggyBankIcon size={32} className="text-brand-blue-400" />}
+            image={
+              <div className="relative w-full h-40 rounded-lg overflow-hidden">
+                {/* TODO: Replace with actual screenshot */}
+                {/* <img src="/images/savings-goals.png" alt="Savings Goals Screenshot" className="w-full h-full object-cover" /> */}
+                <img
+                  src="https://images.unsplash.com/photo-1579621970795-87facc2f976d?w=800&q=80"
+                  alt="Savings Goals Preview"
+                  className="w-full h-full object-cover opacity-70"
+                />
+              </div>
+            }
+          />
+        </FeatureSection>
       </section>
 
       {/* Preview Section */}
@@ -254,7 +278,7 @@ export default function Home() {
           className="text-center max-w-2xl"
         >
           <h2 className={title({ size: "md" })}>
-            See it in <span className={title({ color: "blue", size: "md" })}>Action</span>
+            See it in <span className="bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 bg-clip-text text-transparent">Action</span>
           </h2>
           <p className={subtitle({ class: "mt-2" })}>
             Get a glimpse of what Buddy Budget can do for you

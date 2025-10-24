@@ -427,14 +427,6 @@ export async function getStockLogo(symbol: string, shortName: string, quoteType:
       }
     }
 
-    console.log("no logo found");
-    console.log("quoteType", quoteType);
-    console.log("symbol", symbol);
-    console.log("longName", longName);
-    console.log("shortName", shortName);
-    console.log("logoUrls", logoUrls);
-    console.log("\n")
-
 
     return null;
   } catch (error) {

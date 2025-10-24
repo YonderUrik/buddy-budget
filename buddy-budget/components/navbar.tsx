@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import NextLink from "next/link";
 import Image from "next/image";
@@ -14,6 +14,11 @@ import { GithubIcon, HeartFilledIcon } from "@/components/icons";
 export const Navbar = () => {
   const { theme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
@@ -50,14 +55,16 @@ export const Navbar = () => {
                   damping: 30,
                 }}
               >
-                <Image
-                  src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
-                  alt="Buddy Budget Logo"
-                  width={9064}
-                  height={1933}
-                  className="h-8 w-auto"
-                  priority
-                />
+                {mounted && (
+                  <Image
+                    src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
+                    alt="Buddy Budget Logo"
+                    width={9064}
+                    height={1933}
+                    className="h-8 w-auto"
+                    priority
+                  />
+                )}
               </motion.div>
             </NextLink>
 
@@ -104,14 +111,16 @@ export const Navbar = () => {
             <div className="flex items-center justify-between px-4 py-3">
               {/* Mobile Logo */}
               <NextLink href="/" className="flex items-center">
-                <Image
-                  src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
-                  alt="Buddy Budget Logo"
-                  width={9064}
-                  height={1933}
-                  className="h-7 w-auto"
-                  priority
-                />
+                {mounted && (
+                  <Image
+                    src={theme === "dark" ? "/logo/logo-text-dark.png" : "/logo/logo-text-light.png"}
+                    alt="Buddy Budget Logo"
+                    width={9064}
+                    height={1933}
+                    className="h-7 w-auto"
+                    priority
+                  />
+                )}
               </NextLink>
 
               {/* Mobile Right Side */}

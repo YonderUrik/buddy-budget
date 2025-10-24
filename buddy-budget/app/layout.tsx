@@ -8,6 +8,7 @@ import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { Vortex } from "@/components/ui/vortex";
 
 export const metadata: Metadata = {
   title: {
@@ -43,11 +44,21 @@ export default function RootLayout({
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <div className="relative flex flex-col min-h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-24 px-6 flex-grow">
-              {children}
-            </main>
-            <Footer />
+            <Vortex
+              backgroundColor="transparent"
+              rangeY={120}
+              particleCount={1000}
+              baseHue={60}
+              rangeRadius={2}
+              containerClassName="absolute inset-0 w-full min-h-screen"
+              className="flex flex-col w-full min-h-screen"
+            >
+              <Navbar />
+              <main className="container mx-auto pt-24 px-6 flex-grow">
+                {children}
+              </main>
+              <Footer />
+            </Vortex>
           </div>
         </Providers>
       </body>

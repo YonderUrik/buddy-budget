@@ -5,6 +5,7 @@
 ### Your Personal Finance Companion
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-15.3-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -148,6 +149,21 @@ bun run lint
 bun run lint --fix
 ```
 
+### Testing
+
+```bash
+# Run all tests
+bun test
+
+# Run tests in watch mode (great for development)
+bun run test:watch
+
+# Run tests with coverage report
+bun run test:coverage
+```
+
+See [Testing Documentation](buddy-budget/components/nw_predictor/TESTING.md) for detailed information.
+
 ---
 
 ## Project Structure
@@ -190,7 +206,7 @@ Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started.
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Run tests and linting (`bun run lint`)
+4. Run tests and linting (`bun test && bun run lint`)
 5. Commit your changes (`git commit -m 'feat: add amazing feature'`)
 6. Push to your fork (`git push origin feature/amazing-feature`)
 7. Open a Pull Request

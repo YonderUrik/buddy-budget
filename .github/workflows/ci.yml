@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Test and Lint
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'bun'
+          cache-dependency-path: buddy-budget/bun.lock
+
+      - name: Install dependencies
+        working-directory: buddy-budget
+        run: bun install --frozen-lockfile
+
+      - name: Run linter
+        working-directory: buddy-budget
+        run: bun run lint
+
+      - name: Run tests
+        working-directory: buddy-budget
+        run: bun test
+
+      - name: Run tests with coverage
+        working-directory: buddy-budget
+        run: bun run test:coverage
+
+      - name: Upload coverage reports
+        if: matrix.node-version == '20.x'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./buddy-budget/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Archive coverage report
+        if: matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: buddy-budget/coverage/
+          retention-days: 7
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'bun'
+          cache-dependency-path: buddy-budget/bun.lock
+
+      - name: Install dependencies
+        working-directory: buddy-budget
+        run: bun install --frozen-lockfile
+
+      - name: Build application
+        working-directory: buddy-budget
+        run: bun run build
+        env:
+          NODE_ENV: production
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: buddy-budget/.next/
+          retention-days: 7

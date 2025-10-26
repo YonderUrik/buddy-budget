@@ -164,7 +164,7 @@ export default function NetWorthPage() {
                   today&apos;s purchasing power. A million dollars in 30 years
                   isn&apos;t worth a million dollars today!
                 </p>
-                <div className="bg-default-100 rounded-lg p-3 mt-2">
+                <div className="rounded-lg p-3 mt-2">
                   <p className="text-sm">
                     <strong>Example:</strong> At 2% inflation, $100,000 in 20
                     years will only buy what $67,297 buys today. We account for
@@ -186,7 +186,7 @@ export default function NetWorthPage() {
                   means more uncertainty— bigger swings up and down. Stocks
                   typically have 15-20% volatility, bonds 5-10%.
                 </p>
-                <div className="bg-default-100 rounded-lg p-3 mt-2">
+                <div className=" rounded-lg p-3 mt-2">
                   <p className="text-sm font-semibold mb-2">Rule of thumb:</p>
                   <ul className="text-xs space-y-1 ml-4 list-disc">
                     <li>5-8%: Conservative (mostly bonds)</li>

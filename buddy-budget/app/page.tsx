@@ -49,7 +49,7 @@ export default function Home() {
       title: "Stock Market Analysis",
       src: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80",
       description: "Real-time market data and charts",
-      href: "#features",
+      href: "/finance",
     },
     {
       title: "Budget Dashboard",

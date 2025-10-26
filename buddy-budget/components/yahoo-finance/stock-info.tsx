@@ -7,11 +7,15 @@ import { Accordion, AccordionItem } from "@heroui/accordion";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
 import { Tooltip } from "@heroui/tooltip";
+import Image from "next/image";
 
 import { formatCurrency, formatPercentage, formatDate } from "@/utils/format";
+import { getStockLogo } from "./functions";
 
 interface StockInfoProps {
   symbol: string;
+  logoUrl?: string | null;
+  longName?: string;
 }
 
 // Format large numbers (for market cap, revenue, etc.)
@@ -27,10 +31,14 @@ const formatLargeNumber = (value: number, currency: string): string => {
   return formatCurrency(value, { currency });
 };
 
-export function StockInfo({ symbol }: StockInfoProps) {
+export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName }: StockInfoProps) {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
+
+  // Use prop values if provided, otherwise use fetched values
+  const logoUrl = propLogoUrl !== undefined ? propLogoUrl : fetchedLogoUrl;
 
   // Get currency from quote data
   const currency = useMemo(() => {
@@ -38,6 +46,19 @@ export function StockInfo({ symbol }: StockInfoProps) {
 
     return data.price?.currency || data.summaryDetail?.currency || "USD";
   }, [data]);
+
+  // Get long name from prop or data
+  const longName = useMemo(() => {
+    if (propLongName !== undefined) return propLongName;
+    if (!data) return "";
+
+    return (
+      data.price?.longName ||
+      data.price?.shortName ||
+      data.quoteType?.longName ||
+      ""
+    );
+  }, [data, propLongName]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +79,21 @@ export function StockInfo({ symbol }: StockInfoProps) {
         const result = await response.json();
 
         setData(result.details);
+
+        // Only fetch logo if not provided as prop
+        if (propLogoUrl === undefined) {
+          const shortName = result.details?.price?.shortName || "";
+          const quoteType = result.details?.quoteType?.quoteType || "EQUITY";
+
+          try {
+            const logo = await getStockLogo(symbol, shortName, quoteType);
+
+            setFetchedLogoUrl(logo);
+          } catch (logoErr) {
+            console.error("Error fetching logo:", logoErr);
+            setFetchedLogoUrl(null);
+          }
+        }
       } catch (err) {
         console.error("Error fetching stock details:", err);
         setError("Failed to load stock information");
@@ -68,11 +104,11 @@ export function StockInfo({ symbol }: StockInfoProps) {
     };
 
     fetchData();
-  }, [symbol]);
+  }, [symbol, propLogoUrl]);
 
   if (isLoading) {
     return (
-      <Card className="w-full bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+      <Card className="w-full bg-white dark:bg-black">
         <CardBody className="flex justify-center items-center h-64">
           <Spinner size="lg" />
         </CardBody>
@@ -82,7 +118,7 @@ export function StockInfo({ symbol }: StockInfoProps) {
 
   if (error) {
     return (
-      <Card className="w-full bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+      <Card className="w-full bg-white dark:bg-black">
         <CardBody className="flex justify-center items-center h-64">
           <p className="text-danger">{error}</p>
         </CardBody>
@@ -108,11 +144,45 @@ export function StockInfo({ symbol }: StockInfoProps) {
     <div className="w-full space-y-4">
       {/* Asset Profile */}
       {Object.keys(profile).length > 0 && (
-        <Card className="bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+        <Card className="bg-white dark:bg-black">
           <CardHeader className="flex gap-3">
+            {/* Stock Logo */}
+            <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-lg bg-default-100 overflow-hidden">
+              {logoUrl ? (
+                <Image
+                  alt={symbol}
+                  className="w-10 h-10 object-contain"
+                  height={40}
+                  src={logoUrl}
+                  width={40}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    if (e.currentTarget.nextElementSibling) {
+                      (
+                        e.currentTarget.nextElementSibling as HTMLElement
+                      ).style.display = "flex";
+                    }
+                  }}
+                />
+              ) : null}
+              <span
+                className="text-sm font-bold text-default-600"
+                style={{ display: logoUrl ? "none" : "flex" }}
+              >
+                {symbol.substring(0, 2)}
+              </span>
+            </div>
+
             <div className="flex flex-col">
-              <h3 className="text-lg font-bold">Asset Profile</h3>
-              {symbol && <p className="text-xs text-default-500">{symbol}</p>}
+              <h3 className="text-lg font-bold">
+                {symbol}
+                {longName && (
+                  <span className="text-sm font-normal text-default-500 ml-2">
+                    {longName}
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-default-400">Asset Profile</p>
             </div>
           </CardHeader>
           <CardBody className="space-y-4">
@@ -418,7 +488,7 @@ export function StockInfo({ symbol }: StockInfoProps) {
       {data.calendarEvents &&
         (data.calendarEvents.earnings ||
           data.calendarEvents.exDividendDate) && (
-          <Card className="bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+          <Card className="bg-white dark:bg-black">
             <CardHeader>
               <h3 className="text-lg font-bold">Upcoming Events</h3>
             </CardHeader>
@@ -646,7 +716,7 @@ export function StockInfo({ symbol }: StockInfoProps) {
       {/* Earnings */}
       {data.earnings &&
         (data.earnings.earningsChart || data.earnings.financialsChart) && (
-          <Card className="bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+          <Card className="bg-white dark:bg-black">
             <CardHeader>
               <h3 className="text-lg font-bold">Earnings</h3>
             </CardHeader>
@@ -957,7 +1027,7 @@ export function StockInfo({ symbol }: StockInfoProps) {
 
       {/* Financial Data */}
       {data.financialData && Object.keys(data.financialData).length > 0 && (
-        <Card className="bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+        <Card className="bg-white dark:bg-black">
           <CardHeader>
             <h3 className="text-lg font-bold">Financial Data</h3>
           </CardHeader>
@@ -1632,7 +1702,7 @@ export function StockInfo({ symbol }: StockInfoProps) {
       {data.institutionOwnership &&
         data.institutionOwnership.ownershipList &&
         data.institutionOwnership.ownershipList.length > 0 && (
-          <Card className="bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+          <Card className="bg-white dark:bg-black">
             <CardHeader>
               <h3 className="text-lg font-bold">Institutional Ownership</h3>
             </CardHeader>
@@ -1824,7 +1894,7 @@ export function StockInfo({ symbol }: StockInfoProps) {
       {/* Key Statistics */}
       {data.defaultKeyStatistics &&
         Object.keys(data.defaultKeyStatistics).length > 0 && (
-          <Card className="bg-gradient-to-br from-green-50/50 via-white to-blue-50/50 dark:from-green-950/20 dark:via-default-100/10 dark:to-blue-950/20">
+          <Card className="bg-white dark:bg-black">
             <CardHeader>
               <h3 className="text-lg font-bold">Key Statistics</h3>
             </CardHeader>

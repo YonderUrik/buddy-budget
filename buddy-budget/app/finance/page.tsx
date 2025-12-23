@@ -67,7 +67,10 @@ export default function FinancePage() {
               <span className="font-semibold text-brand-blue-500">
                 {selectedStock.symbol}
               </span>{" "}
-              - {selectedStock.longname || selectedStock.shortname || selectedStock.name}
+              -{" "}
+              {selectedStock.longname ||
+                selectedStock.shortname ||
+                selectedStock.name}
             </motion.p>
           )}
         </motion.div>
@@ -84,18 +87,26 @@ export default function FinancePage() {
           {/* Stock Chart */}
           <div className="w-full max-w-7xl mx-auto">
             <StockChart
-              symbol={selectedStock.symbol}
               logoUrl={selectedStock.logoUrl}
-              longName={selectedStock.longname || selectedStock.shortname || selectedStock.name}
+              longName={
+                selectedStock.longname ||
+                selectedStock.shortname ||
+                selectedStock.name
+              }
+              symbol={selectedStock.symbol}
             />
           </div>
 
           {/* Stock Information */}
           <div className="w-full max-w-7xl mx-auto">
             <StockInfo
-              symbol={selectedStock.symbol}
               logoUrl={selectedStock.logoUrl}
-              longName={selectedStock.longname || selectedStock.shortname || selectedStock.name}
+              longName={
+                selectedStock.longname ||
+                selectedStock.shortname ||
+                selectedStock.name
+              }
+              symbol={selectedStock.symbol}
             />
           </div>
         </motion.section>
@@ -108,7 +119,10 @@ export default function FinancePage() {
         >
           <div className="relative flex flex-col items-center gap-4 p-12 rounded-2xl border-2 border-dashed border-brand-blue-500/30 dark:border-brand-blue-400/30 bg-gradient-to-br from-brand-blue-50/30 via-transparent to-brand-gold-50/30 dark:from-brand-blue-950/20 dark:via-transparent dark:to-brand-gold-950/20 max-w-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-brand-blue-500/5 via-transparent to-brand-gold-500/5 rounded-2xl" />
-            <TrendingIcon className="text-brand-blue-400 relative z-10" size={64} />
+            <TrendingIcon
+              className="text-brand-blue-400 relative z-10"
+              size={64}
+            />
             <div className="text-center relative z-10">
               <h3 className="text-xl font-bold mb-2">No Stock Selected</h3>
               <p className="text-default-500 max-w-md">
@@ -118,33 +132,35 @@ export default function FinancePage() {
               </p>
             </div>
             <div className="flex flex-wrap justify-center gap-2 mt-4 relative z-10">
-              {["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN", "NVDA"].map((symbol) => (
-                <button
-                  key={symbol}
-                  className="px-4 py-2 text-sm font-medium rounded-lg bg-brand-blue-100 dark:bg-brand-blue-900/30 text-brand-blue-700 dark:text-brand-blue-300 hover:bg-brand-blue-200 dark:hover:bg-brand-blue-900/50 transition-colors"
-                  onClick={async () => {
-                    // Fetch stock data to populate selectedStock
-                    try {
-                      const response = await fetch(
-                        `/api/stocks/search?q=${symbol}`,
-                      );
-                      const data = await response.json();
-                      const stock = data.results?.find(
-                        (r: SearchResult) =>
-                          r.symbol.toUpperCase() === symbol.toUpperCase(),
-                      );
+              {["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN", "NVDA"].map(
+                (symbol) => (
+                  <button
+                    key={symbol}
+                    className="px-4 py-2 text-sm font-medium rounded-lg bg-brand-blue-100 dark:bg-brand-blue-900/30 text-brand-blue-700 dark:text-brand-blue-300 hover:bg-brand-blue-200 dark:hover:bg-brand-blue-900/50 transition-colors"
+                    onClick={async () => {
+                      // Fetch stock data to populate selectedStock
+                      try {
+                        const response = await fetch(
+                          `/api/stocks/search?q=${symbol}`,
+                        );
+                        const data = await response.json();
+                        const stock = data.results?.find(
+                          (r: SearchResult) =>
+                            r.symbol.toUpperCase() === symbol.toUpperCase(),
+                        );
 
-                      if (stock) {
-                        setSelectedStock(stock);
+                        if (stock) {
+                          setSelectedStock(stock);
+                        }
+                      } catch (err) {
+                        console.error("Error fetching stock:", err);
                       }
-                    } catch (err) {
-                      console.error("Error fetching stock:", err);
-                    }
-                  }}
-                >
-                  {symbol}
-                </button>
-              ))}
+                    }}
+                  >
+                    {symbol}
+                  </button>
+                ),
+              )}
             </div>
           </div>
         </motion.section>

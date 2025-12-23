@@ -9,8 +9,9 @@ import { Divider } from "@heroui/divider";
 import { Tooltip } from "@heroui/tooltip";
 import Image from "next/image";
 
-import { formatCurrency, formatPercentage, formatDate } from "@/utils/format";
 import { getStockLogo } from "./functions";
+
+import { formatCurrency, formatPercentage, formatDate } from "@/utils/format";
 
 interface StockInfoProps {
   symbol: string;
@@ -31,7 +32,11 @@ const formatLargeNumber = (value: number, currency: string): string => {
   return formatCurrency(value, { currency });
 };
 
-export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName }: StockInfoProps) {
+export function StockInfo({
+  symbol,
+  logoUrl: propLogoUrl,
+  longName: propLongName,
+}: StockInfoProps) {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -198,7 +203,8 @@ export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName
                   </Tooltip>
                   <div className="text-2xl font-bold bg-gradient-to-r from-brand-blue-600 to-brand-gold-600 bg-clip-text text-transparent">
                     {formatCurrency(data.financialData.currentPrice, {
-                      currency: data.financialData.financialCurrency || currency,
+                      currency:
+                        data.financialData.financialCurrency || currency,
                       showCents: true,
                     })}
                   </div>
@@ -214,7 +220,10 @@ export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName
                     </div>
                   </Tooltip>
                   <div className="text-xl font-bold text-default-900 dark:text-default-100">
-                    {formatLargeNumber(data.defaultKeyStatistics.marketCap, currency)}
+                    {formatLargeNumber(
+                      data.defaultKeyStatistics.marketCap,
+                      currency,
+                    )}
                   </div>
                 </div>
               )}
@@ -293,34 +302,43 @@ export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName
               )}
 
               {/* Target Price Upside */}
-              {data.financialData?.targetMeanPrice && data.financialData?.currentPrice && (
-                <div className="space-y-1">
-                  <Tooltip content="Potential upside/downside to analyst target price">
-                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                      Target Upside
-                    </div>
-                  </Tooltip>
-                  <Chip
-                    color={
-                      ((data.financialData.targetMeanPrice - data.financialData.currentPrice) /
-                        data.financialData.currentPrice) * 100 > 0
-                        ? "success"
-                        : "danger"
-                    }
-                    size="lg"
-                    variant="flat"
-                  >
-                    {((data.financialData.targetMeanPrice - data.financialData.currentPrice) /
-                      data.financialData.currentPrice) * 100 > 0
-                      ? "+"
-                      : ""}
-                    {formatPercentage(
-                      ((data.financialData.targetMeanPrice - data.financialData.currentPrice) /
-                        data.financialData.currentPrice) * 100,
-                    )}
-                  </Chip>
-                </div>
-              )}
+              {data.financialData?.targetMeanPrice &&
+                data.financialData?.currentPrice && (
+                  <div className="space-y-1">
+                    <Tooltip content="Potential upside/downside to analyst target price">
+                      <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                        Target Upside
+                      </div>
+                    </Tooltip>
+                    <Chip
+                      color={
+                        ((data.financialData.targetMeanPrice -
+                          data.financialData.currentPrice) /
+                          data.financialData.currentPrice) *
+                          100 >
+                        0
+                          ? "success"
+                          : "danger"
+                      }
+                      size="lg"
+                      variant="flat"
+                    >
+                      {((data.financialData.targetMeanPrice -
+                        data.financialData.currentPrice) /
+                        data.financialData.currentPrice) *
+                        100 >
+                      0
+                        ? "+"
+                        : ""}
+                      {formatPercentage(
+                        ((data.financialData.targetMeanPrice -
+                          data.financialData.currentPrice) /
+                          data.financialData.currentPrice) *
+                          100,
+                      )}
+                    </Chip>
+                  </div>
+                )}
             </div>
           </CardBody>
         </Card>
@@ -1214,7 +1232,9 @@ export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName
         <Card className="bg-white dark:bg-black">
           <CardHeader>
             <h3 className="text-lg font-bold">Financial Details</h3>
-            <p className="text-xs text-default-400">In-depth financial metrics and analyst targets</p>
+            <p className="text-xs text-default-400">
+              In-depth financial metrics and analyst targets
+            </p>
           </CardHeader>
           <CardBody>
             <Accordion variant="bordered">

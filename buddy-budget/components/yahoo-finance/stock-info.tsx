@@ -89,9 +89,15 @@ export function StockInfo({
         if (propLogoUrl === undefined) {
           const shortName = result.details?.price?.shortName || "";
           const quoteType = result.details?.quoteType?.quoteType || "EQUITY";
+          const longName = result.details?.price?.longName || "";
 
           try {
-            const logo = await getStockLogo(symbol, shortName, quoteType);
+            const logo = await getStockLogo(
+              symbol,
+              shortName,
+              quoteType,
+              longName,
+            );
 
             setFetchedLogoUrl(logo);
           } catch (logoErr) {

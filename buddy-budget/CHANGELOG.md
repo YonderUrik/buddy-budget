@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/YonderUrik/buddy-budget/compare/v1.1.0...v1.1.1) (2025-12-23)
+
+### Bug Fixes
+
+* Update Vercel deployment commands to use --cwd option ([86aaf93](https://github.com/YonderUrik/buddy-budget/commit/86aaf93cad5bac252e5452030979e9e4ef44f961))
+
 ## [1.1.0](https://github.com/YonderUrik/buddy-budget/compare/v1.0.0...v1.1.0) (2025-12-23)
 
 ### Features

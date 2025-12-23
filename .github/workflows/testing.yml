@@ -43,6 +43,10 @@ jobs:
         working-directory: buddy-budget
         run: bun run test:coverage
 
+      - name: Build
+        working-directory: buddy-budget
+        run: bun run build
+
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
         with:

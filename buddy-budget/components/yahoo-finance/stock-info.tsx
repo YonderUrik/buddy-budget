@@ -142,6 +142,190 @@ export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName
 
   return (
     <div className="w-full space-y-4">
+      {/* Quick Stats Summary - Top Priority Metrics */}
+      {(data.financialData || data.defaultKeyStatistics) && (
+        <Card className="bg-white dark:bg-black border-2 border-brand-blue-500/20">
+          <CardHeader className="flex gap-3 pb-2">
+            {/* Stock Logo */}
+            <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-lg bg-gradient-to-br from-brand-blue-100 to-brand-gold-100 dark:from-brand-blue-900/30 dark:to-brand-gold-900/30 overflow-hidden">
+              {logoUrl ? (
+                <Image
+                  alt={symbol}
+                  className="w-12 h-12 object-contain"
+                  height={48}
+                  src={logoUrl}
+                  width={48}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    if (e.currentTarget.nextElementSibling) {
+                      (
+                        e.currentTarget.nextElementSibling as HTMLElement
+                      ).style.display = "flex";
+                    }
+                  }}
+                />
+              ) : null}
+              <span
+                className="text-lg font-bold bg-gradient-to-r from-brand-blue-600 to-brand-gold-600 bg-clip-text text-transparent"
+                style={{ display: logoUrl ? "none" : "flex" }}
+              >
+                {symbol.substring(0, 2)}
+              </span>
+            </div>
+
+            <div className="flex flex-col flex-1">
+              <h3 className="text-xl font-bold">
+                {symbol}
+                {longName && (
+                  <span className="text-sm font-normal text-default-500 ml-2">
+                    {longName}
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-default-400">Key Statistics Summary</p>
+            </div>
+          </CardHeader>
+          <CardBody className="pt-2">
+            {/* Grid of Key Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* Current Price */}
+              {data.financialData?.currentPrice && (
+                <div className="space-y-1">
+                  <Tooltip content="Current trading price of the stock">
+                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                      Current Price
+                    </div>
+                  </Tooltip>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-brand-blue-600 to-brand-gold-600 bg-clip-text text-transparent">
+                    {formatCurrency(data.financialData.currentPrice, {
+                      currency: data.financialData.financialCurrency || currency,
+                      showCents: true,
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Market Cap */}
+              {data.defaultKeyStatistics?.marketCap && (
+                <div className="space-y-1">
+                  <Tooltip content="Total market value of all outstanding shares">
+                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                      Market Cap
+                    </div>
+                  </Tooltip>
+                  <div className="text-xl font-bold text-default-900 dark:text-default-100">
+                    {formatLargeNumber(data.defaultKeyStatistics.marketCap, currency)}
+                  </div>
+                </div>
+              )}
+
+              {/* P/E Ratio */}
+              {data.defaultKeyStatistics?.forwardPE && (
+                <div className="space-y-1">
+                  <Tooltip content="Price-to-Earnings ratio - lower may indicate better value">
+                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                      P/E Ratio
+                    </div>
+                  </Tooltip>
+                  <div className="text-xl font-bold text-default-900 dark:text-default-100">
+                    {data.defaultKeyStatistics.forwardPE.toFixed(2)}
+                  </div>
+                </div>
+              )}
+
+              {/* Beta (Volatility) */}
+              {data.defaultKeyStatistics?.beta && (
+                <div className="space-y-1">
+                  <Tooltip content="Volatility relative to market. >1 = more volatile, <1 = less volatile">
+                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                      Beta
+                    </div>
+                  </Tooltip>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-default-900 dark:text-default-100">
+                      {data.defaultKeyStatistics.beta.toFixed(3)}
+                    </span>
+                    <Chip
+                      color={
+                        data.defaultKeyStatistics.beta > 1.2
+                          ? "danger"
+                          : data.defaultKeyStatistics.beta > 0.8
+                            ? "warning"
+                            : "success"
+                      }
+                      size="sm"
+                      variant="flat"
+                    >
+                      {data.defaultKeyStatistics.beta > 1.2
+                        ? "High"
+                        : data.defaultKeyStatistics.beta > 0.8
+                          ? "Med"
+                          : "Low"}
+                    </Chip>
+                  </div>
+                </div>
+              )}
+
+              {/* Recommendation */}
+              {data.financialData?.recommendationKey && (
+                <div className="space-y-1">
+                  <Tooltip content="Analyst recommendation consensus">
+                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                      Recommendation
+                    </div>
+                  </Tooltip>
+                  <Chip
+                    color={
+                      data.financialData.recommendationMean <= 2
+                        ? "success"
+                        : data.financialData.recommendationMean <= 3
+                          ? "primary"
+                          : data.financialData.recommendationMean <= 4
+                            ? "warning"
+                            : "danger"
+                    }
+                    size="lg"
+                    variant="flat"
+                  >
+                    {data.financialData.recommendationKey.toUpperCase()}
+                  </Chip>
+                </div>
+              )}
+
+              {/* Target Price Upside */}
+              {data.financialData?.targetMeanPrice && data.financialData?.currentPrice && (
+                <div className="space-y-1">
+                  <Tooltip content="Potential upside/downside to analyst target price">
+                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
+                      Target Upside
+                    </div>
+                  </Tooltip>
+                  <Chip
+                    color={
+                      ((data.financialData.targetMeanPrice - data.financialData.currentPrice) /
+                        data.financialData.currentPrice) * 100 > 0
+                        ? "success"
+                        : "danger"
+                    }
+                    size="lg"
+                    variant="flat"
+                  >
+                    {((data.financialData.targetMeanPrice - data.financialData.currentPrice) /
+                      data.financialData.currentPrice) * 100 > 0
+                      ? "+"
+                      : ""}
+                    {formatPercentage(
+                      ((data.financialData.targetMeanPrice - data.financialData.currentPrice) /
+                        data.financialData.currentPrice) * 100,
+                    )}
+                  </Chip>
+                </div>
+              )}
+            </div>
+          </CardBody>
+        </Card>
+      )}
+
       {/* Asset Profile */}
       {Object.keys(profile).length > 0 && (
         <Card className="bg-white dark:bg-black">
@@ -1025,120 +1209,15 @@ export function StockInfo({ symbol, logoUrl: propLogoUrl, longName: propLongName
           </Card>
         )}
 
-      {/* Financial Data */}
+      {/* Financial Data - Detailed Metrics */}
       {data.financialData && Object.keys(data.financialData).length > 0 && (
         <Card className="bg-white dark:bg-black">
           <CardHeader>
-            <h3 className="text-lg font-bold">Financial Data</h3>
+            <h3 className="text-lg font-bold">Financial Details</h3>
+            <p className="text-xs text-default-400">In-depth financial metrics and analyst targets</p>
           </CardHeader>
           <CardBody>
-            {/* Current Price & Target */}
-            {(data.financialData.currentPrice ||
-              data.financialData.targetMeanPrice) && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-3 bg-default-100 rounded-lg mb-4">
-                  {data.financialData.currentPrice && (
-                    <div>
-                      <Tooltip content="Current trading price of the stock">
-                        <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                          Current Price
-                        </div>
-                      </Tooltip>
-                      <div className="text-2xl font-bold mt-1">
-                        {formatCurrency(data.financialData.currentPrice, {
-                          currency:
-                            data.financialData.financialCurrency || currency,
-                        })}
-                      </div>
-                    </div>
-                  )}
-                  {data.financialData.targetMeanPrice && (
-                    <div>
-                      <Tooltip content="Average analyst price target">
-                        <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                          Target Mean Price
-                        </div>
-                      </Tooltip>
-                      <div className="text-2xl font-bold mt-1">
-                        {formatCurrency(data.financialData.targetMeanPrice, {
-                          currency:
-                            data.financialData.financialCurrency || currency,
-                        })}
-                      </div>
-                      {data.financialData.currentPrice && (
-                        <Chip
-                          className="mt-1"
-                          color={
-                            ((data.financialData.targetMeanPrice -
-                              data.financialData.currentPrice) /
-                              data.financialData.currentPrice) *
-                              100 >
-                            0
-                              ? "success"
-                              : "danger"
-                          }
-                          size="sm"
-                          variant="flat"
-                        >
-                          {(
-                            ((data.financialData.targetMeanPrice -
-                              data.financialData.currentPrice) /
-                              data.financialData.currentPrice) *
-                            100
-                          ).toFixed(1)}
-                          % upside
-                        </Chip>
-                      )}
-                    </div>
-                  )}
-                  {(data.financialData.recommendationKey ||
-                    data.financialData.recommendationMean) && (
-                    <div>
-                      <Tooltip content="Analyst recommendation consensus (1=Strong Buy, 5=Sell)">
-                        <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                          Recommendation
-                        </div>
-                      </Tooltip>
-                      <div className="mt-1">
-                        {data.financialData.recommendationKey && (
-                          <Chip
-                            color={
-                              data.financialData.recommendationMean <= 2
-                                ? "success"
-                                : data.financialData.recommendationMean <= 3
-                                  ? "primary"
-                                  : data.financialData.recommendationMean <= 4
-                                    ? "warning"
-                                    : "danger"
-                            }
-                            size="lg"
-                            variant="flat"
-                          >
-                            {data.financialData.recommendationKey.toUpperCase()}
-                          </Chip>
-                        )}
-                        {data.financialData.recommendationMean && (
-                          <div className="text-xs text-default-500 mt-1">
-                            Score:{" "}
-                            {data.financialData.recommendationMean.toFixed(2)} /
-                            5.0
-                          </div>
-                        )}
-                        {data.financialData.numberOfAnalystOpinions && (
-                          <div className="text-xs text-default-400 mt-1">
-                            {data.financialData.numberOfAnalystOpinions}{" "}
-                            analysts
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <Divider />
-              </>
-            )}
-
-            <Accordion className="mt-4" variant="bordered">
+            <Accordion variant="bordered">
               {/* Price Targets */}
               {(data.financialData.targetHighPrice ||
                 data.financialData.targetLowPrice ||

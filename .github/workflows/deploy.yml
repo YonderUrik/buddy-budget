@@ -12,6 +12,9 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: buddy-budget
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,10 +28,10 @@ jobs:
         run: bun install --global vercel@latest
 
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }} --cwd=buddy-budget
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build project
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd=buddy-budget
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }} --cwd=buddy-budget
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

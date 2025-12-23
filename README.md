@@ -7,6 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Testing](https://github.com/YonderUrik/buddy-budget/actions/workflows/testing.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/testing.yml)
 [![Release](https://github.com/YonderUrik/buddy-budget/actions/workflows/release.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/release.yml)
+[![Deploy](https://github.com/YonderUrik/buddy-budget/actions/workflows/deploy.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/deploy.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-15.3-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -168,6 +169,39 @@ bun run test:coverage
 ```
 
 See [Testing Documentation](buddy-budget/components/nw_predictor/TESTING.md) for detailed information.
+
+---
+
+## Deployment
+
+### Automated Deployment to Vercel
+
+This project uses automated deployments to [Vercel](https://vercel.com) triggered by releases:
+
+- **Pull Requests** → Testing workflow validates code
+- **Merge to main** → Semantic-release creates a new version and GitHub release
+- **New Release** → Automatically deploys to production on Vercel
+
+The deployment workflow is configured to:
+- Deploy only on new releases (not on every commit)
+- Use semantic versioning for release management
+- Maintain production stability with automated testing
+
+### Manual Deployment
+
+To deploy manually:
+
+1. Link your Vercel project:
+   ```bash
+   vercel link
+   ```
+
+2. Deploy to production:
+   ```bash
+   vercel --prod
+   ```
+
+For continuous deployment setup, see [.github/workflows/deploy.yml](.github/workflows/deploy.yml).
 
 ---
 

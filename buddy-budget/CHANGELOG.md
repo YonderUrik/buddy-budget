@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/YonderUrik/buddy-budget/compare/v1.0.0...v1.1.0) (2025-12-23)
+
+### Features
+
+* Add automated deployment workflow to Vercel and update README ([4d6f65c](https://github.com/YonderUrik/buddy-budget/commit/4d6f65cae9ac9fcb3a7fdd3d4844988e56ac5d32))
+
 ## 1.0.0 (2025-12-23)
 
 ### Documentation

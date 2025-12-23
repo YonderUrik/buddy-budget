@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/YonderUrik/buddy-budget/compare/v1.1.1...v2.0.0) (2025-12-23)
+
+### ⚠ BREAKING CHANGES
+
+* Set default working directory for deployment steps in GitHub Actions
+
+### chore
+
+* Set default working directory for deployment steps in GitHub Actions ([f753d2a](https://github.com/YonderUrik/buddy-budget/commit/f753d2a813346bdce46899293e42c088e8b6b2d6))
+
 ## [1.1.1](https://github.com/YonderUrik/buddy-budget/compare/v1.1.0...v1.1.1) (2025-12-23)
 
 ### Bug Fixes

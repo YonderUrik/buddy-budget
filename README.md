@@ -5,7 +5,8 @@
 ### Your Personal Finance Companion
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![CI](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml)
+[![Testing](https://github.com/YonderUrik/buddy-budget/actions/workflows/testing.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/testing.yml)
+[![Release](https://github.com/YonderUrik/buddy-budget/actions/workflows/release.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/release.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-15.3-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -67,7 +68,11 @@ Real-time stock market tracking and analysis:
 
 ## Demo
 
-> Add screenshots or GIFs of your application here
+🚀 **[Live Demo: buddybudget.io](https://buddybudget.io)**
+
+Try out Buddy Budget at [buddybudget.io](https://buddybudget.io) to see all features in action!
+
+### Local Development
 
 ```bash
 # Quick preview

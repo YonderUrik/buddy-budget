@@ -27,15 +27,19 @@ jobs:
           bun-version: latest
 
       - name: Install dependencies
+        working-directory: buddy-budget
         run: bun install --frozen-lockfile
 
       - name: Run tests
+        working-directory: buddy-budget
         run: bun test
 
       - name: Build
+        working-directory: buddy-budget
         run: bun run build
 
       - name: Release
+        working-directory: buddy-budget
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bunx semantic-release

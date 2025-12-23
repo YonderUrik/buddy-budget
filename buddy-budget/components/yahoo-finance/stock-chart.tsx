@@ -134,7 +134,11 @@ const getDateRangeFromQuickRange = (
   return { start, end };
 };
 
-export function StockChart({ symbol, logoUrl: propLogoUrl, longName: propLongName }: StockChartProps) {
+export function StockChart({
+  symbol,
+  logoUrl: propLogoUrl,
+  longName: propLongName,
+}: StockChartProps) {
   const [interval, setInterval] = useState<Interval>("1d");
   const [startDate, setStartDate] = useState<Date>(() => {
     const date = new Date();
@@ -196,14 +200,15 @@ export function StockChart({ symbol, logoUrl: propLogoUrl, longName: propLongNam
           // Only fetch logo if not provided as prop
           if (propLogoUrl === undefined) {
             const shortName = result.details?.price?.shortName || "";
-            const quoteType =
-              result.details?.quoteType?.quoteType || "EQUITY";
+            const quoteType = result.details?.quoteType?.quoteType || "EQUITY";
+            const longName = result.details?.price?.longName || "";
 
             try {
               const logo = await getStockLogo(
                 debouncedSymbol,
                 shortName,
                 quoteType,
+                longName,
               );
 
               setFetchedLogoUrl(logo);

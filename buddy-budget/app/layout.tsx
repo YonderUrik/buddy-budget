@@ -46,9 +46,9 @@ export default function RootLayout({
           <div className="relative flex flex-col min-h-screen">
             <Vortex
               backgroundColor="transparent"
-              baseHue={60}
               className="flex flex-col w-full min-h-screen"
               containerClassName="absolute inset-0 w-full min-h-screen"
+              hueValues={[195, 45]}
               particleCount={1000}
               rangeRadius={2}
               rangeY={120}

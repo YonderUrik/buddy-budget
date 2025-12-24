@@ -20,50 +20,20 @@ import { parseDate } from "@internationalized/date";
 import { HistoricalDataPoint, getStockLogo } from "./functions";
 import { StockLogo } from "./stock-logo";
 
-import { formatCurrency, formatPercentage } from "@/lib/format";
+import {
+  formatCurrency,
+  formatPercentage,
+  formatDateWithYear,
+  formatDateByInterval,
+} from "@/lib/format";
+import { useDebounce, useIsMobile } from "@/lib/hooks";
+import {
+  getDateRangeFromQuickRange,
+  type QuickDateRange,
+} from "@/lib/date-utils";
 
-// useDebounce hook
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-// useIsMobile hook
-function useIsMobile(breakpoint: number = 640): boolean {
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Initial check
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < breakpoint);
-    };
-
-    checkMobile();
-
-    // Add event listener
-    window.addEventListener("resize", checkMobile);
-
-    // Cleanup
-    return () => window.removeEventListener("resize", checkMobile);
-  }, [breakpoint]);
-
-  return isMobile;
-}
-
-// type ChartType = "area";
 type Interval = "1d" | "1wk" | "1mo";
-type QuickRange = "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "YTD" | "MAX";
+type QuickRange = QuickDateRange;
 
 interface StockChartProps {
   symbol: string;
@@ -71,68 +41,6 @@ interface StockChartProps {
   logoUrl?: string | null;
   longName?: string;
 }
-
-// Format date based on interval (for X-axis labels)
-const formatDate = (date: Date, interval: Interval): string => {
-  const d = new Date(date);
-
-  if (interval === "1d") {
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  } else if (interval === "1wk") {
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  } else {
-    return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-  }
-};
-
-// Format date with year (for tooltips)
-const formatDateWithYear = (date: Date): string => {
-  const d = new Date(date);
-
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-// Calculate date range based on quick range
-const getDateRangeFromQuickRange = (
-  range: QuickRange,
-): { start: Date; end: Date } => {
-  const end = new Date();
-  const start = new Date();
-
-  switch (range) {
-    case "1M":
-      start.setMonth(start.getMonth() - 1);
-      break;
-    case "3M":
-      start.setMonth(start.getMonth() - 3);
-      break;
-    case "6M":
-      start.setMonth(start.getMonth() - 6);
-      break;
-    case "1Y":
-      start.setFullYear(start.getFullYear() - 1);
-      break;
-    case "2Y":
-      start.setFullYear(start.getFullYear() - 2);
-      break;
-    case "5Y":
-      start.setFullYear(start.getFullYear() - 5);
-      break;
-    case "YTD":
-      start.setMonth(0);
-      start.setDate(1);
-      break;
-    case "MAX":
-      start.setFullYear(start.getFullYear() - 20);
-      break;
-  }
-
-  return { start, end };
-};
 
 export function StockChart({
   symbol,
@@ -281,7 +189,7 @@ export function StockChart({
   const chartData = useMemo(() => {
     return data.map((point) => ({
       date: new Date(point.date).getTime(),
-      dateStr: formatDate(new Date(point.date), interval),
+      dateStr: formatDateByInterval(new Date(point.date), interval),
       dateStrWithYear: formatDateWithYear(new Date(point.date)),
       open: point.open,
       high: point.high,

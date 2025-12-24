@@ -29,8 +29,9 @@ export function StockLogo({
             // Fallback to symbol text if image fails to load
             e.currentTarget.style.display = "none";
             if (e.currentTarget.nextElementSibling) {
-              (e.currentTarget.nextElementSibling as HTMLElement).style.display =
-                "flex";
+              (
+                e.currentTarget.nextElementSibling as HTMLElement
+              ).style.display = "flex";
             }
           }}
         />

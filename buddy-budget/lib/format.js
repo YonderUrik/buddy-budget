@@ -245,6 +245,106 @@ export function formatDateRange(startDate, endDate, options = {}) {
 }
 
 /**
+ * Format a date with short month and day (e.g., "Jan 15")
+ *
+ * @param {Date} date - The date to format
+ * @param {string} [locale] - Locale for formatting (defaults to browser locale)
+ *
+ * @returns {string} Formatted date
+ *
+ * @example
+ * formatDateShort(new Date('2024-01-15')) // "Jan 15"
+ */
+export function formatDateShort(date, locale = getDefaultLocale()) {
+  if (!date) return '';
+
+  try {
+    const dateObject = new Date(date);
+    return dateObject.toLocaleDateString(locale, {
+      month: 'short',
+      day: 'numeric'
+    });
+  } catch (error) {
+    return '';
+  }
+}
+
+/**
+ * Format a date with short month, day, and year (e.g., "Jan 15, 2024")
+ *
+ * @param {Date} date - The date to format
+ * @param {string} [locale] - Locale for formatting (defaults to browser locale)
+ *
+ * @returns {string} Formatted date
+ *
+ * @example
+ * formatDateWithYear(new Date('2024-01-15')) // "Jan 15, 2024"
+ */
+export function formatDateWithYear(date, locale = getDefaultLocale()) {
+  if (!date) return '';
+
+  try {
+    const dateObject = new Date(date);
+    return dateObject.toLocaleDateString(locale, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  } catch (error) {
+    return '';
+  }
+}
+
+/**
+ * Format a date with short month and year (e.g., "Jan 2024")
+ *
+ * @param {Date} date - The date to format
+ * @param {string} [locale] - Locale for formatting (defaults to browser locale)
+ *
+ * @returns {string} Formatted date
+ *
+ * @example
+ * formatDateMonthYear(new Date('2024-01-15')) // "Jan 2024"
+ */
+export function formatDateMonthYear(date, locale = getDefaultLocale()) {
+  if (!date) return '';
+
+  try {
+    const dateObject = new Date(date);
+    return dateObject.toLocaleDateString(locale, {
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch (error) {
+    return '';
+  }
+}
+
+/**
+ * Format a date based on a time interval
+ * Useful for chart axes where different intervals need different formats
+ *
+ * @param {Date} date - The date to format
+ * @param {string} interval - The interval type ('1d', '1wk', '1mo')
+ * @param {string} [locale] - Locale for formatting (defaults to browser locale)
+ *
+ * @returns {string} Formatted date
+ *
+ * @example
+ * formatDateByInterval(new Date('2024-01-15'), '1d') // "Jan 15"
+ * formatDateByInterval(new Date('2024-01-15'), '1mo') // "Jan 2024"
+ */
+export function formatDateByInterval(date, interval, locale = getDefaultLocale()) {
+  if (!date) return '';
+
+  if (interval === '1d' || interval === '1wk') {
+    return formatDateShort(date, locale);
+  } else {
+    return formatDateMonthYear(date, locale);
+  }
+}
+
+/**
  * Abbreviate large numbers with suffixes (K, M, B, T)
  * More control than compact notation
  *
@@ -313,6 +413,10 @@ export default {
   formatWithUnit,
   formatDateRange,
   formatDate,
+  formatDateShort,
+  formatDateWithYear,
+  formatDateMonthYear,
+  formatDateByInterval,
   abbreviateNumber,
   getDefaultLocale,
   COMMON_CURRENCIES,

@@ -12,6 +12,8 @@ on:
 jobs:
   deploy-production:
     name: Deploy to Production
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

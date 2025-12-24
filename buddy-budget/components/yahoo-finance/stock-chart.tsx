@@ -16,11 +16,11 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { DatePicker } from "@heroui/date-picker";
 import { parseDate } from "@internationalized/date";
-import Image from "next/image";
 
 import { HistoricalDataPoint, getStockLogo } from "./functions";
+import { StockLogo } from "./stock-logo";
 
-import { formatCurrency, formatPercentage } from "@/utils/format";
+import { formatCurrency, formatPercentage } from "@/lib/format";
 
 // useDebounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -348,31 +348,7 @@ export function StockChart({
           {/* Logo and Title Row */}
           <div className="flex items-center gap-3">
             {/* Stock Logo */}
-            <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-lg bg-default-100 overflow-hidden">
-              {logoUrl ? (
-                <Image
-                  alt={symbol}
-                  className="w-10 h-10 object-contain"
-                  height={40}
-                  src={logoUrl}
-                  width={40}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    if (e.currentTarget.nextElementSibling) {
-                      (
-                        e.currentTarget.nextElementSibling as HTMLElement
-                      ).style.display = "flex";
-                    }
-                  }}
-                />
-              ) : null}
-              <span
-                className="text-sm font-bold text-default-600"
-                style={{ display: logoUrl ? "none" : "flex" }}
-              >
-                {symbol.substring(0, 2)}
-              </span>
-            </div>
+            <StockLogo logoUrl={logoUrl} size={48} symbol={symbol} />
 
             {/* Symbol and Long Name */}
             <div className="flex flex-col">

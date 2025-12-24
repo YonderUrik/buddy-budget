@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
-import Image from "next/image";
 
 import { SearchResult } from "./functions";
+import { StockLogo } from "./stock-logo";
 
 interface StockSearchProps {
   onSelect?: (stock: SearchResult) => void;
@@ -130,32 +130,7 @@ export function StockSearch({
         <AutocompleteItem key={item.key} textValue={item.symbol}>
           <div className="flex items-start gap-3">
             {/* Stock Logo */}
-            <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-default-100 overflow-hidden">
-              {item.logoUrl ? (
-                <Image
-                  alt={item.symbol}
-                  className="w-8 h-8 object-contain"
-                  height={32}
-                  src={item.logoUrl}
-                  width={32}
-                  onError={(e) => {
-                    // Fallback to symbol text if image fails to load
-                    e.currentTarget.style.display = "none";
-                    if (e.currentTarget.nextElementSibling) {
-                      (
-                        e.currentTarget.nextElementSibling as HTMLElement
-                      ).style.display = "flex";
-                    }
-                  }}
-                />
-              ) : null}
-              <span
-                className="text-xs font-bold text-default-600"
-                style={{ display: item.logoUrl ? "none" : "flex" }}
-              >
-                {item.symbol.substring(0, 2)}
-              </span>
-            </div>
+            <StockLogo logoUrl={item.logoUrl} symbol={item.symbol} />
 
             {/* Stock Info */}
             <div className="flex flex-col gap-0.5 flex-1 min-w-0">

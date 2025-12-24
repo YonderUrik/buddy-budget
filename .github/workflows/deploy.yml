@@ -12,9 +12,6 @@ jobs:
   deploy-production:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: buddy-budget
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

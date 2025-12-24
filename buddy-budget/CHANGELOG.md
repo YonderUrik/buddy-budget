@@ -1,3 +1,27 @@
+## [1.0.1](https://github.com/YonderUrik/buddy-budget/compare/v1.0.0...v1.0.1) (2025-12-24)
+
+### Documentation
+
+* Update contributing guidelines and enhance README with security and privacy sections ([6d561fc](https://github.com/YonderUrik/buddy-budget/commit/6d561fc025baafbe19bfd72f6e04b1ae846ed0b4))
+
+### Styles
+
+* Add z-index to error component for improved layering ([fa2d88a](https://github.com/YonderUrik/buddy-budget/commit/fa2d88a62cb5d718102e622f5ace9b205368b777))
+* Update StockSearch component background color ([6fcbacf](https://github.com/YonderUrik/buddy-budget/commit/6fcbacfbe29e4c6c96d597a3c45b15fe3757bd73))
+
+### Code Refactoring
+
+* Consolidate formatting utilities and enhance Stock components ([7a57642](https://github.com/YonderUrik/buddy-budget/commit/7a57642c2bf6c1b6a6324e3d1b040426b54c3b04))
+* Enhance Stock components with utility functions and hooks ([73becfb](https://github.com/YonderUrik/buddy-budget/commit/73becfb635ee483cc9d3368c255cf4f2f0f610d5))
+* Enhance Vortex component with theme-based color handling and hue customization ([f2c5e90](https://github.com/YonderUrik/buddy-budget/commit/f2c5e90e594206e0deebd8e38748bfa770ec979e))
+* Implement theme-based color handling in StockChart component ([f5fbc07](https://github.com/YonderUrik/buddy-budget/commit/f5fbc07ca5a110afd712c7bcb79ab45fab46e262))
+* Rearrange Net Worth Page layout and enhance Net Worth Predictor data handling ([a14120f](https://github.com/YonderUrik/buddy-budget/commit/a14120f3cfb44f41f45b2a7c9b020518c7e130d4))
+* Remove unused no-stock selected section from FinancePage ([89d491b](https://github.com/YonderUrik/buddy-budget/commit/89d491b91c84f1b1b7eee23252a3380605bfb984))
+
+### Tests
+
+* Enhance Net Worth Predictor tests with edge cases and comprehensive coverage ([06743ca](https://github.com/YonderUrik/buddy-budget/commit/06743caa4be4261b212278d1fbae0260d866074c))
+
 ## 1.0.0 (2025-12-24)
 
 ### ⚠ BREAKING CHANGES

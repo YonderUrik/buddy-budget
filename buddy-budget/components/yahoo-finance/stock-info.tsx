@@ -7,30 +7,22 @@ import { Accordion, AccordionItem } from "@heroui/accordion";
 import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
 import { Tooltip } from "@heroui/tooltip";
-import Image from "next/image";
 
 import { getStockLogo } from "./functions";
+import { StockLogo } from "./stock-logo";
 
-import { formatCurrency, formatPercentage, formatDate } from "@/utils/format";
+import {
+  formatLargeNumber,
+  formatCurrency,
+  formatPercentage,
+  formatDate,
+} from "@/lib/format";
 
 interface StockInfoProps {
   symbol: string;
   logoUrl?: string | null;
   longName?: string;
 }
-
-// Format large numbers (for market cap, revenue, etc.)
-const formatLargeNumber = (value: number, currency: string): string => {
-  if (value >= 1e12) {
-    return `${formatCurrency(value / 1e12, { currency })}T`;
-  } else if (value >= 1e9) {
-    return `${formatCurrency(value / 1e9, { currency })}B`;
-  } else if (value >= 1e6) {
-    return `${formatCurrency(value / 1e6, { currency })}M`;
-  }
-
-  return formatCurrency(value, { currency });
-};
 
 export function StockInfo({
   symbol,
@@ -158,31 +150,12 @@ export function StockInfo({
         <Card className="bg-white dark:bg-black border-2 border-brand-blue-500/20">
           <CardHeader className="flex gap-3 pb-2">
             {/* Stock Logo */}
-            <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-lg bg-gradient-to-br from-brand-blue-100 to-brand-gold-100 dark:from-brand-blue-900/30 dark:to-brand-gold-900/30 overflow-hidden">
-              {logoUrl ? (
-                <Image
-                  alt={symbol}
-                  className="w-12 h-12 object-contain"
-                  height={48}
-                  src={logoUrl}
-                  width={48}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    if (e.currentTarget.nextElementSibling) {
-                      (
-                        e.currentTarget.nextElementSibling as HTMLElement
-                      ).style.display = "flex";
-                    }
-                  }}
-                />
-              ) : null}
-              <span
-                className="text-lg font-bold bg-gradient-to-r from-brand-blue-600 to-brand-gold-600 bg-clip-text text-transparent"
-                style={{ display: logoUrl ? "none" : "flex" }}
-              >
-                {symbol.substring(0, 2)}
-              </span>
-            </div>
+            <StockLogo
+              className="bg-gradient-to-br from-brand-blue-100 to-brand-gold-100 dark:from-brand-blue-900/30 dark:to-brand-gold-900/30"
+              logoUrl={logoUrl}
+              size={56}
+              symbol={symbol}
+            />
 
             <div className="flex flex-col flex-1">
               <h3 className="text-xl font-bold">
@@ -242,7 +215,7 @@ export function StockInfo({
                       P/E Ratio
                     </div>
                   </Tooltip>
-                  <div className="text-xl font-bold text-default-900 dark:text-default-100">
+                  <div className="text-xl font-bold text-default-600 dark:text-default-300">
                     {data.defaultKeyStatistics.forwardPE.toFixed(2)}
                   </div>
                 </div>
@@ -257,7 +230,7 @@ export function StockInfo({
                     </div>
                   </Tooltip>
                   <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-default-900 dark:text-default-100">
+                    <span className="text-xl font-bold text-default-600 dark:text-default-300">
                       {data.defaultKeyStatistics.beta.toFixed(3)}
                     </span>
                     <Chip
@@ -280,71 +253,6 @@ export function StockInfo({
                   </div>
                 </div>
               )}
-
-              {/* Recommendation */}
-              {data.financialData?.recommendationKey && (
-                <div className="space-y-1">
-                  <Tooltip content="Analyst recommendation consensus">
-                    <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                      Recommendation
-                    </div>
-                  </Tooltip>
-                  <Chip
-                    color={
-                      data.financialData.recommendationMean <= 2
-                        ? "success"
-                        : data.financialData.recommendationMean <= 3
-                          ? "primary"
-                          : data.financialData.recommendationMean <= 4
-                            ? "warning"
-                            : "danger"
-                    }
-                    size="lg"
-                    variant="flat"
-                  >
-                    {data.financialData.recommendationKey.toUpperCase()}
-                  </Chip>
-                </div>
-              )}
-
-              {/* Target Price Upside */}
-              {data.financialData?.targetMeanPrice &&
-                data.financialData?.currentPrice && (
-                  <div className="space-y-1">
-                    <Tooltip content="Potential upside/downside to analyst target price">
-                      <div className="text-xs text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                        Target Upside
-                      </div>
-                    </Tooltip>
-                    <Chip
-                      color={
-                        ((data.financialData.targetMeanPrice -
-                          data.financialData.currentPrice) /
-                          data.financialData.currentPrice) *
-                          100 >
-                        0
-                          ? "success"
-                          : "danger"
-                      }
-                      size="lg"
-                      variant="flat"
-                    >
-                      {((data.financialData.targetMeanPrice -
-                        data.financialData.currentPrice) /
-                        data.financialData.currentPrice) *
-                        100 >
-                      0
-                        ? "+"
-                        : ""}
-                      {formatPercentage(
-                        ((data.financialData.targetMeanPrice -
-                          data.financialData.currentPrice) /
-                          data.financialData.currentPrice) *
-                          100,
-                      )}
-                    </Chip>
-                  </div>
-                )}
             </div>
           </CardBody>
         </Card>
@@ -355,31 +263,7 @@ export function StockInfo({
         <Card className="bg-white dark:bg-black">
           <CardHeader className="flex gap-3">
             {/* Stock Logo */}
-            <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-lg bg-default-100 overflow-hidden">
-              {logoUrl ? (
-                <Image
-                  alt={symbol}
-                  className="w-10 h-10 object-contain"
-                  height={40}
-                  src={logoUrl}
-                  width={40}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    if (e.currentTarget.nextElementSibling) {
-                      (
-                        e.currentTarget.nextElementSibling as HTMLElement
-                      ).style.display = "flex";
-                    }
-                  }}
-                />
-              ) : null}
-              <span
-                className="text-sm font-bold text-default-600"
-                style={{ display: logoUrl ? "none" : "flex" }}
-              >
-                {symbol.substring(0, 2)}
-              </span>
-            </div>
+            <StockLogo logoUrl={logoUrl} size={48} symbol={symbol} />
 
             <div className="flex flex-col">
               <h3 className="text-lg font-bold">
@@ -1051,69 +935,6 @@ export function StockInfo({
                                     {formatCurrency(
                                       parseFloat(quarter.difference),
                                       { currency, showCents: true },
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    </AccordionItem>
-                  )}
-
-                {/* Quarterly Financials */}
-                {data.earnings.financialsChart?.quarterly &&
-                  data.earnings.financialsChart.quarterly.length > 0 && (
-                    <AccordionItem
-                      key="quarterly-financials"
-                      title={
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold">
-                            Quarterly Revenue & Earnings
-                          </span>
-                          <Chip color="secondary" size="sm" variant="flat">
-                            {data.earnings.financialCurrency || currency}
-                          </Chip>
-                        </div>
-                      }
-                    >
-                      <div className="space-y-3 pb-4">
-                        {data.earnings.financialsChart.quarterly.map(
-                          (quarter: any, index: number) => (
-                            <div
-                              key={index}
-                              className="border border-default-200 rounded-lg p-3"
-                            >
-                              <div className="font-semibold text-sm mb-2">
-                                {quarter.date}
-                              </div>
-                              <div className="grid grid-cols-2 gap-3 text-xs">
-                                <div>
-                                  <Tooltip content="Total revenue for the quarter">
-                                    <div className="text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                                      Revenue
-                                    </div>
-                                  </Tooltip>
-                                  <div className="font-semibold text-sm mt-1">
-                                    {formatLargeNumber(
-                                      quarter.revenue,
-                                      data.earnings.financialCurrency ||
-                                        currency,
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <Tooltip content="Net earnings for the quarter">
-                                    <div className="text-default-500 cursor-help border-b border-dotted border-default-400 inline-block">
-                                      Earnings
-                                    </div>
-                                  </Tooltip>
-                                  <div className="font-semibold text-sm mt-1">
-                                    {formatLargeNumber(
-                                      quarter.earnings,
-                                      data.earnings.financialCurrency ||
-                                        currency,
                                     )}
                                   </div>
                                 </div>

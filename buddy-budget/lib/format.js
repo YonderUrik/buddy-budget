@@ -290,6 +290,18 @@ export const COMMON_CURRENCIES = {
   BRL: { symbol: 'R$', name: 'Brazilian Real' }
 };
 
+// Format large numbers (for market cap, revenue, etc.)
+export function formatLargeNumber(value, currency) {
+  if (value >= 1e12) {
+    return `${formatCurrency(value / 1e12, { currency })}T`;
+  } else if (value >= 1e9) {
+    return `${formatCurrency(value / 1e9, { currency })}B`;
+  } else if (value >= 1e6) {
+    return `${formatCurrency(value / 1e6, { currency })}M`;
+  }
+  return formatCurrency(value, { currency });
+}
+
 /**
  * Default export with all formatting functions
  */
@@ -303,5 +315,6 @@ export default {
   formatDate,
   abbreviateNumber,
   getDefaultLocale,
-  COMMON_CURRENCIES
+  COMMON_CURRENCIES,
+  formatLargeNumber
 };

@@ -5,7 +5,7 @@ import { useTheme } from 'next-themes';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { Button, Card, CardBody, CardHeader, Spinner, NumberInput, Tabs, Tab, Progress, Tooltip as UITooltip, Chip, Accordion, AccordionItem, Select, SelectItem } from '@heroui/react';
 import { predictNetWorth } from './nw_prediction';
-import { formatCurrency, formatNumber, formatPercentage, getCurrencySymbol, getDefaultLocale, COMMON_CURRENCIES } from '../../utils/format';
+import { formatCurrency, formatNumber, formatPercentage, getCurrencySymbol, getDefaultLocale, COMMON_CURRENCIES } from '../../lib/format';
 import { TargetIcon, AlertIcon, BarChartIcon, DollarIcon, ChartIcon, LightbulbIcon } from '../icons';
 
 export default function NetWorthPredictor({ currency: propCurrency }) {

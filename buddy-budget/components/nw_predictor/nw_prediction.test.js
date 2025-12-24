@@ -361,6 +361,29 @@ describe('Net Worth Prediction Tests', () => {
   // ============================================================================
 
   describe('Edge Cases', () => {
+    test('should use default parameter values when not provided', () => {
+      // Call with only required parameters to test defaults:
+      // annualInflationRate = 0.02, volatility = 0.15, simulations = 1000
+      const result = predictNetWorth(
+        10000,    // initialLiquidity
+        50000,    // initialInvestments
+        0.07,     // annualGrowthRate
+        5,        // years
+        1000      // monthlyContributions
+        // Omitting annualInflationRate, volatility, and simulations to test defaults
+      );
+
+      // Verify it produces valid results with defaults
+      expect(result.scenarios.pessimistic).toBeDefined();
+      expect(result.scenarios.realistic).toBeDefined();
+      expect(result.scenarios.optimistic).toBeDefined();
+      expect(result.scenarios.realistic.length).toBe(60); // 5 years * 12 months
+
+      // Verify inflation adjustment is applied (default 0.02)
+      const lastMonth = result.scenarios.realistic[59];
+      expect(lastMonth.inflationAdjustedTotal).toBeLessThan(lastMonth.total);
+    });
+
     test('should handle zero initial values', () => {
       const result = predictNetWorth(0, 0, 0.07, 1, 1000, 0.02, 0, 1);
 
@@ -485,6 +508,128 @@ describe('Net Worth Prediction Tests', () => {
 
       // With positive real returns, chance of loss should be relatively low
       expect(result.probabilityAnalysis.chanceOfLoss).toBeLessThan(0.5);
+    });
+  });
+
+  // ============================================================================
+  // NORMAL DISTRIBUTION EDGE CASES
+  // ============================================================================
+
+  describe('Normal Distribution Edge Cases', () => {
+    test('should handle Math.random returning 0 in normalRandom function', () => {
+      const originalRandom = Math.random;
+      let callCount = 0;
+
+      // First two calls return 0, then normal values
+      Math.random = () => {
+        callCount++;
+        if (callCount <= 2) return 0;
+        return 0.5;
+      };
+
+      // This should trigger the while loops in normalRandom
+      const result = predictNetWorth(10000, 50000, 0.07, 1, 1000, 0.02, 0.15, 1);
+
+      Math.random = originalRandom;
+
+      // Should still produce valid results despite Math.random() returning 0
+      expect(result.scenarios.realistic).toBeDefined();
+      expect(result.scenarios.realistic.length).toBe(12);
+    });
+
+    test('should trigger scenario ordering validation warning', () => {
+      // Spy on console.warn to verify it's called
+      const originalWarn = console.warn;
+      const warnSpy = jest.fn();
+      console.warn = warnSpy;
+
+      // Save original Array.prototype.sort
+      const originalSort = Array.prototype.sort;
+
+      // Mock sort to intentionally return incorrectly ordered array
+      // This simulates a scenario where the defensive check would catch an ordering issue
+      Array.prototype.sort = function(compareFn) {
+        // Call original sort
+        originalSort.call(this, compareFn);
+        // Then reverse it to create incorrect ordering
+        this.reverse();
+        return this;
+      };
+
+      try {
+        // Run prediction - the mocked sort will cause ordering validation to fail
+        predictNetWorth(10000, 50000, 0.07, 1, 1000, 0.02, 0.15, 10);
+
+        // Verify console.warn was called
+        expect(warnSpy).toHaveBeenCalled();
+        expect(warnSpy).toHaveBeenCalledWith(
+          'Scenario ordering validation failed:',
+          expect.objectContaining({
+            pessimistic: expect.any(Number),
+            realistic: expect.any(Number),
+            optimistic: expect.any(Number)
+          })
+        );
+      } finally {
+        // Restore original functions
+        Array.prototype.sort = originalSort;
+        console.warn = originalWarn;
+      }
+    });
+  });
+
+  // ============================================================================
+  // COMPREHENSIVE COVERAGE TESTS
+  // ============================================================================
+
+  describe('Comprehensive Coverage Tests', () => {
+    test('should handle all branches in scenario selection', () => {
+      // Test with different simulation counts to cover all percentile calculations
+      const result1 = predictNetWorth(10000, 50000, 0.07, 1, 1000, 0.02, 0.15, 10);
+      const result2 = predictNetWorth(10000, 50000, 0.07, 1, 1000, 0.02, 0.15, 100);
+      const result3 = predictNetWorth(10000, 50000, 0.07, 1, 1000, 0.02, 0.15, 1000);
+
+      // All should produce valid scenarios
+      expect(result1.scenarios.pessimistic).toBeDefined();
+      expect(result1.scenarios.realistic).toBeDefined();
+      expect(result1.scenarios.optimistic).toBeDefined();
+
+      expect(result2.scenarios.pessimistic).toBeDefined();
+      expect(result2.scenarios.realistic).toBeDefined();
+      expect(result2.scenarios.optimistic).toBeDefined();
+
+      expect(result3.scenarios.pessimistic).toBeDefined();
+      expect(result3.scenarios.realistic).toBeDefined();
+      expect(result3.scenarios.optimistic).toBeDefined();
+    });
+
+    test('should handle extreme negative growth with high volatility', () => {
+      const result = predictNetWorth(10000, 50000, -0.20, 5, 500, 0.02, 0.40, 100);
+
+      // Should still produce valid results even with extreme parameters
+      expect(result.scenarios.pessimistic).toBeDefined();
+      expect(result.finalValues.min).toBeLessThanOrEqual(result.finalValues.max);
+    });
+
+    test('should verify probability analysis with loss scenario', () => {
+      // Negative growth with no contributions should likely result in loss
+      const result = predictNetWorth(10000, 50000, -0.15, 10, 0, 0.05, 0.10, 1000);
+
+      // With high inflation and negative growth, chance of loss should be high
+      expect(result.probabilityAnalysis.chanceOfLoss).toBeGreaterThan(0);
+    });
+
+    test('should verify probability analysis counts correct scenarios', () => {
+      // Test that probability calculations are counting correctly
+      const result = predictNetWorth(10000, 50000, 0.07, 5, 1000, 0.02, 0.15, 1000);
+
+      // Verify that chanceOfLoss and chanceOfDoubling are properly calculated fractions
+      expect(typeof result.probabilityAnalysis.chanceOfLoss).toBe('number');
+      expect(typeof result.probabilityAnalysis.chanceOfDoubling).toBe('number');
+      expect(result.probabilityAnalysis.chanceOfLoss).toBeGreaterThanOrEqual(0);
+      expect(result.probabilityAnalysis.chanceOfLoss).toBeLessThanOrEqual(1);
+      expect(result.probabilityAnalysis.chanceOfDoubling).toBeGreaterThanOrEqual(0);
+      expect(result.probabilityAnalysis.chanceOfDoubling).toBeLessThanOrEqual(1);
     });
   });
 });

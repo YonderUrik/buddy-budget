@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 
 import { SearchResult } from "./functions";
 import { StockLogo } from "./stock-logo";
+
+import { useDebounce } from "@/lib/hooks";
 
 interface StockSearchProps {
   onSelect?: (stock: SearchResult) => void;
@@ -23,7 +25,9 @@ export function StockSearch({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce the search value
+  const debouncedSearchValue = useDebounce(searchValue, 300);
 
   // Search stocks function
   const searchStocks = useCallback(async (query: string) => {
@@ -57,25 +61,10 @@ export function StockSearch({
     }
   }, []);
 
-  // Debounced search effect
+  // Trigger search when debounced value changes
   useEffect(() => {
-    // Clear previous timeout
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Set new timeout
-    debounceTimerRef.current = setTimeout(() => {
-      searchStocks(searchValue);
-    }, 300);
-
-    // Cleanup
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [searchValue, searchStocks]);
+    searchStocks(debouncedSearchValue);
+  }, [debouncedSearchValue, searchStocks]);
 
   // Handle input change
   const handleInputChange = useCallback((value: string) => {

@@ -196,6 +196,35 @@ export default function NetWorthPredictor({ currency: propCurrency }) {
     const selectedData = selectedScenario === 'pessimistic' ? pessimistic :
       selectedScenario === 'optimistic' ? optimistic : realistic;
 
+    // If more than 10 years, aggregate to yearly data
+    if (formData.years > 10) {
+      const yearlyData = [];
+      for (let year = 0; year < formData.years; year++) {
+        // Get the last month of each year (or last available month)
+        const monthIndex = Math.min((year + 1) * 12 - 1, selectedData.length - 1);
+        const item = selectedData[monthIndex];
+
+        yearlyData.push({
+          month: year + 1,
+          monthLabel: `Year ${year + 1}`,
+          date: item.dateMonth.toLocaleDateString('en-US', { year: 'numeric' }),
+
+          // Inflation-adjusted values for true purchasing power
+          liquidity: Math.round(item.inflationAdjustedLiquidity || 0),
+          investments: Math.round(item.inflationAdjustedInvestments || 0),
+          totalInvested: Math.round(item.totalInvested || 0),
+
+          // Total for reference
+          total: Math.round(item.inflationAdjustedTotal || 0),
+
+          // Contribution baseline (total amount invested)
+          contributionBaseline: Math.round((formData.initialLiquidity + formData.initialInvestments + item.totalInvested) || 0)
+        });
+      }
+      return yearlyData;
+    }
+
+    // Otherwise return monthly data
     return selectedData.map((item, index) => ({
       month: index + 1,
       monthLabel: `Month ${index + 1}`,
@@ -221,6 +250,26 @@ export default function NetWorthPredictor({ currency: propCurrency }) {
     const { pessimistic, realistic, optimistic } = results.scenarios;
     const length = Math.min(pessimistic.length, realistic.length, optimistic.length);
 
+    // If more than 10 years, aggregate to yearly data
+    if (formData.years > 10) {
+      const yearlyData = [];
+      for (let year = 0; year < formData.years; year++) {
+        // Get the last month of each year (or last available month)
+        const monthIndex = Math.min((year + 1) * 12 - 1, length - 1);
+
+        yearlyData.push({
+          month: year + 1,
+          date: realistic[monthIndex].dateMonth.toLocaleDateString('en-US', { year: 'numeric' }),
+          pessimistic: Math.round(pessimistic[monthIndex].inflationAdjustedTotal || 0),
+          realistic: Math.round(realistic[monthIndex].inflationAdjustedTotal || 0),
+          optimistic: Math.round(optimistic[monthIndex].inflationAdjustedTotal || 0),
+          contributionBaseline: Math.round((formData.initialLiquidity + formData.initialInvestments + realistic[monthIndex].totalInvested) || 0)
+        });
+      }
+      return yearlyData;
+    }
+
+    // Otherwise return monthly data
     return Array.from({ length }, (_, index) => ({
       month: index + 1,
       date: realistic[index].dateMonth.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
@@ -780,7 +829,7 @@ export default function NetWorthPredictor({ currency: propCurrency }) {
                           angle={-45}
                           textAnchor="end"
                           height={60}
-                          interval={Math.max(1, Math.floor(formData.years * 12 / 12))}
+                          interval={formData.years > 10 ? Math.max(0, Math.floor(formData.years / 10)) : Math.max(1, Math.floor(formData.years * 12 / 12))}
                           tick={{ fill: getThemeColors().text, fontSize: 12 }}
                           axisLine={{ stroke: getThemeColors().axis }}
                           tickLine={{ stroke: getThemeColors().axis }}
@@ -840,7 +889,7 @@ export default function NetWorthPredictor({ currency: propCurrency }) {
                           angle={-45}
                           textAnchor="end"
                           height={60}
-                          interval={Math.max(1, Math.floor(formData.years * 12 / 12))}
+                          interval={formData.years > 10 ? Math.max(0, Math.floor(formData.years / 10)) : Math.max(1, Math.floor(formData.years * 12 / 12))}
                           tick={{ fill: getThemeColors().text, fontSize: 12 }}
                           axisLine={{ stroke: getThemeColors().axis }}
                           tickLine={{ stroke: getThemeColors().axis }}

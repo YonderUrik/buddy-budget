@@ -38,21 +38,8 @@ export default function NetWorthPage() {
         </TextReveal>
       </section>
 
-      {/* Net Worth Predictor Component */}
-      <section className="relative flex flex-col items-center gap-8 px-4">
-        <motion.div
-          className="w-full max-w-7xl"
-          initial={{ opacity: 0, y: 20 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          whileInView={{ opacity: 1, y: 0 }}
-        >
-          <NetWorthPredictor currency={null} />
-        </motion.div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="relative flex flex-col items-center gap-12 px-4">
+       {/* How It Works Section */}
+       <section className="relative flex flex-col items-center gap-12 px-4">
         <motion.div
           className="text-center"
           initial={{ opacity: 0, y: 20 }}
@@ -66,9 +53,6 @@ export default function NetWorthPage() {
               Works
             </span>
           </h2>
-          <p className={subtitle({ class: "mt-2 max-w-3xl mx-auto" })}>
-            Understanding Monte Carlo simulation and financial projections
-          </p>
         </motion.div>
 
         <FeatureSection className="w-full">
@@ -225,6 +209,19 @@ export default function NetWorthPage() {
             title="Important Limitations"
           />
         </FeatureSection>
+      </section>
+
+      {/* Net Worth Predictor Component */}
+      <section className="relative flex flex-col items-center gap-8 px-4">
+        <motion.div
+          className="w-full max-w-7xl"
+          initial={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          whileInView={{ opacity: 1, y: 0 }}
+        >
+          <NetWorthPredictor currency={null} />
+        </motion.div>
       </section>
     </div>
   );

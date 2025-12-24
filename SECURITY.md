@@ -10,9 +10,9 @@ We currently support the following versions with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.0.x   | :white_check_mark: |
+| 1.x.x   | :white_check_mark: |
 
-As we're in early development, we recommend always using the latest version from the `main` branch.
+**Note:** We follow semantic versioning. As we're in active development, we recommend always using the latest stable release. Security patches are prioritized for the current major version (1.x.x).
 
 ## Reporting a Vulnerability
 
@@ -29,6 +29,20 @@ If you discover a security vulnerability, please report it privately using one o
    - Steps to reproduce
    - Potential impact
    - Suggested fix (if known)
+
+### Alternative Method: Email
+
+For security issues that cannot be reported via GitHub:
+
+- **Email**: [roccafortedaniele28@gmail.com](mailto:roccafortedaniele28@gmail.com)
+- **Subject**: `[SECURITY] Buddy Budget - [Brief Description]`
+
+Please include:
+- Detailed description of the vulnerability
+- Steps to reproduce
+- Affected versions
+- Potential impact assessment
+- Proof of concept (if applicable)
 
 
 ### What to Expect
@@ -80,48 +94,73 @@ If you discover a security vulnerability, please report it privately using one o
    - Implement proper session management
    - Use HTTPS for all authentication flows
 
-## API Security
-
-### Yahoo Finance Integration
-
-Buddy Budget integrates with Yahoo Finance for real-time stock data:
-
-- **Read-only access** - We only fetch publicly available market data
-- **Rate limiting** - Implement responsible API usage to avoid abuse
-- **Error handling** - Gracefully handle API failures
-- **No personal data** - Stock searches don't include personal information
-
-**API Endpoints:**
-- `/api/stocks/search` - Stock symbol search
-- `/api/stocks/details` - Stock information
-- `/api/stocks/historical` - Historical price data
-
-All API routes validate inputs and handle errors securely.
-
 ## Data Privacy
 
-### What Data We Collect
+### Data Storage Models
 
-**In the current version**: None. All data stays in your browser's local storage.
+Buddy Budget offers two deployment options with different data storage approaches:
 
-**Future considerations** (if implemented):
-- **Cloud sync** (optional) - Encrypted user data with explicit opt-in
-- **Analytics** (optional) - Anonymous usage statistics with opt-in
-- **Crash reports** (optional) - Anonymous error logs with opt-in
+#### Hosted Version (buddybudget.io)
 
-### Data Storage
-
-- **Local Storage**: Browser's localStorage API (unencrypted by browser)
-- **Session Data**: Temporary session storage cleared on exit
-- **No Cookies**: We don't use tracking cookies
+When using the hosted version:
+- **Server-Side Storage**: Financial data is stored on our infrastructure
+- **HTTPS Encryption**: All data transmitted over encrypted connections
+- **Data Sovereignty**: We recommend self-hosting for complete data control
+- **Privacy-Focused**: We do not sell or share your data with third parties
 - **No Third-Party Tracking**: No analytics or tracking scripts
 
-### Your Rights
+**What We Store**:
+- Financial data you input (budgets, goals, tracked stocks)
+- User preferences and settings
+- Session information
 
-- **Export**: Export all your data in JSON format
-- **Delete**: Clear all local data with one click
-- **Control**: Full control over your financial data
-- **Transparency**: Open-source code for full visibility
+**What We DON'T Store**:
+- Bank account credentials (when integration is added)
+- Unnecessary personal information
+- Third-party cookies or tracking data
+
+#### Self-Hosted Version
+
+When self-hosting:
+- **Full Control**: You own and control all your data
+- **Your Infrastructure**: Choose your own hosting provider
+- **Custom Security**: Configure security settings to your requirements
+- **Data Privacy**: Your data never touches our servers
+- **Complete Transparency**: Audit the entire codebase
+
+See the [Self-Hosting Security](#self-hosting-security) section below.
+
+---
+
+## Self-Hosting Security
+
+When deploying your own instance of Buddy Budget, follow these security best practices:
+
+### Infrastructure Security
+
+**Hosting Environment**:
+- Use reputable hosting providers (Vercel, AWS, DigitalOcean, etc.)
+- Enable HTTPS/TLS for all traffic (Let's Encrypt is free)
+- Keep server OS and software updated
+- Configure firewall rules to limit exposed ports
+- Use strong passwords and SSH keys
+
+**Database Security** (when applicable):
+- Use managed database services with automatic backups
+- Enable encryption at rest
+- Restrict database access to application only
+- Use strong, unique database passwords
+- Regular automated backups with encryption
+
+### Self-Hosted Support
+
+For self-hosting security questions:
+- Check our [Deployment Guide](README.md#deployment)
+- Join [GitHub Discussions](https://github.com/YonderUrik/buddy-budget/discussions)
+- Review [Security Best Practices](#security-best-practices)
+
+
+---
 
 ## Vulnerability Disclosure Policy
 
@@ -143,18 +182,6 @@ We follow coordinated disclosure principles:
 - **Medium/Low severity**: 90 days
 
 We may request an extension if the fix is complex or requires extensive testing.
-
-## Security Features
-
-### Current Implementation
-
-- **TypeScript** - Type safety to prevent common vulnerabilities
-- **ESLint** - Static analysis to catch security issues
-- **Next.js Security** - Built-in security features from Next.js
-- **CSP** - Content Security Policy headers (when deployed)
-- **HTTPS** - Enforced HTTPS in production
-- **Dependency Scanning** - Automated via GitHub Dependabot
-
 
 ## Dependency Management
 
@@ -207,61 +234,124 @@ bun outdated
 - **Dependency audit** - Pre-deployment vulnerability check
 - **Environment variables** - Secrets never in source code
 
-
-## Security Tools & Resources
-
-### Recommended Tools
-
-- **GitHub Security** - Dependabot, Secret Scanning, Code Scanning
-- **npm audit / bun audit** - Dependency vulnerability scanning
-- **Snyk** - Open-source security platform
-- **OWASP ZAP** - Web application security scanner
-- **Lighthouse** - Security audits for web apps
-
-### Security Resources
-
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Next.js Security](https://nextjs.org/docs/app/building-your-application/security)
-- [React Security Best Practices](https://reactjs.org/docs/dom-elements.html#dangerouslysetinnerhtml)
-- [TypeScript Security](https://www.typescriptlang.org/docs/handbook/type-checking-javascript-files.html)
-
-## Incident Response
-
-In the event of a security incident:
-
-1. **Immediate response** - Assess and contain the threat
-2. **User notification** - Inform affected users if applicable
-3. **Fix deployment** - Deploy patches as quickly as possible
-4. **Post-mortem** - Analyze what happened and how to prevent it
-5. **Transparency** - Publish incident report (when safe to do so)
-
-## Security Hall of Fame
-
-We recognize and thank security researchers who responsibly disclose vulnerabilities:
-
-<!-- List of contributors will be added here -->
-
-*Be the first to help make Buddy Budget more secure!*
-
-## Questions?
-
-If you have questions about this security policy:
-
-- **General inquiries**: Open a [GitHub Discussion](https://github.com/YonderUrik/buddy-budget/discussions)
-- **Security concerns**: Use private reporting methods above
-
-## Updates to This Policy
-
-This security policy may be updated periodically. Significant changes will be announced via:
-
-- GitHub Security Advisories
-- Repository README
-- Release notes
-
 ---
 
-**Last Updated**: 2025-10-24
+## Data Breach Response Plan
 
-**Version**: 1.0
+### For Hosted Version (buddybudget.io)
+
+In the unlikely event of a data breach on our hosted platform:
+
+#### Immediate Actions (0-24 hours)
+
+1. **Detection & Containment**
+   - Identify the scope and nature of the breach
+   - Isolate affected systems immediately
+   - Preserve evidence for forensic analysis
+   - Engage security incident response team
+
+2. **Initial Assessment**
+   - Determine what data was accessed or compromised
+   - Identify affected users
+   - Assess the severity level (Critical, High, Medium, Low)
+   - Document timeline of events
+
+3. **Emergency Response**
+   - Patch vulnerabilities immediately
+   - Rotate all secrets, API keys, and credentials
+   - Enable additional monitoring and logging
+   - Prepare communication plan
+
+#### Short-term Response (24-72 hours)
+
+4. **User Notification**
+   - Email all affected users within 72 hours
+   - Provide clear, honest details about what happened
+   - Explain what data was compromised
+   - Offer actionable steps users should take
+   - Set up dedicated support channel
+
+5. **Public Disclosure**
+   - Publish security advisory on GitHub
+   - Update website with incident details
+   - Notify relevant authorities if legally required
+   - Issue press release if breach is significant
+
+6. **Mitigation Support**
+   - Force password resets for all affected accounts
+   - Offer credit monitoring if financial data exposed
+   - Provide step-by-step security guidance
+   - Set up dedicated incident FAQ
+
+#### Long-term Response (1-4 weeks)
+
+7. **Forensic Investigation**
+   - Complete detailed forensic analysis
+   - Identify root cause and attack vector
+   - Document all findings
+   - Engage third-party security audit if needed
+
+8. **System Hardening**
+   - Implement additional security controls
+   - Conduct comprehensive security audit
+   - Update security policies and procedures
+   - Train team on lessons learned
+
+9. **Transparency Report**
+   - Publish detailed incident report
+   - Share lessons learned with community
+   - Document improvements implemented
+   - Provide timeline and impact assessment
+
+### User Communication Template
+
+Users will receive communications in this format:
+
+```
+Subject: [URGENT] Security Incident Notification - Buddy Budget
+
+Dear Buddy Budget User,
+
+We are writing to inform you of a security incident that may have
+affected your account.
+
+WHAT HAPPENED:
+[Clear description of the incident]
+
+WHAT DATA WAS AFFECTED:
+[Specific data types compromised]
+
+WHAT WE'RE DOING:
+[Actions we've taken]
+
+WHAT YOU SHOULD DO:
+1. [Specific action item]
+2. [Specific action item]
+3. [Specific action item]
+
+We sincerely apologize for this incident and are committed to
+preventing future occurrences.
+
+For questions: security@yonderurik.dev
+```
+
+### For Self-Hosted Deployments
+
+If you're running a self-hosted instance:
+
+- **You are responsible** for security monitoring and incident response
+- Follow your organization's incident response procedures
+- We recommend having a plan before deploying
+- Contact us if the breach is related to application code vulnerabilities
+
+**Recommended Steps**:
+1. Take affected systems offline immediately
+2. Assess the breach scope
+3. Contact your hosting provider
+4. Review application and server logs
+5. Report vulnerabilities to us via security@yonderurik.dev
+6. Restore from clean backups after patching
+
+---
 
 Thank you for helping keep Buddy Budget and its users safe!

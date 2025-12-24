@@ -8,8 +8,6 @@
 [![Testing](https://github.com/YonderUrik/buddy-budget/actions/workflows/testing.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/testing.yml)
 [![Release](https://github.com/YonderUrik/buddy-budget/actions/workflows/release.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/release.yml)
 [![Deploy](https://github.com/YonderUrik/buddy-budget/actions/workflows/deploy.yml/badge.svg)](https://github.com/YonderUrik/buddy-budget/actions/workflows/deploy.yml)
-[![Next.js](https://img.shields.io/badge/Next.js-15.3-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 [Features](#features) • [Demo](#demo) • [Tech Stack](#tech-stack) • [Getting Started](#getting-started) • [Contributing](CONTRIBUTING.md) • [License](#license)
@@ -28,8 +26,39 @@ Whether you're tracking expenses, monitoring investments, or planning for retire
 
 - **100% Open Source** - Complete transparency and community-driven development
 - **Real-Time Market Data** - Integration with Yahoo Finance for live stock tracking
-- **Privacy-First** - Your financial data stays with you
+- **Privacy-First** - Self-host to keep your financial data under your control
 - **Modern UX** - Beautiful, responsive design with dark mode support
+
+---
+
+## Security & Privacy
+
+### Data Storage
+
+Buddy Budget is designed with flexibility in mind:
+
+- **Hosted Version** - Use our hosted instance at [buddybudget.io](https://buddybudget.io) for quick access
+- **Self-Hosted** - Deploy your own instance to maintain complete control over your financial data
+- **No Vendor Lock-in** - Your data, your choice
+
+### Security Features
+
+- **Open Source Transparency** - Audit the entire codebase yourself
+- **HTTPS Encryption** - All data transmitted over secure connections
+- **Direct API Integration** - Connects directly to Yahoo Finance without intermediary proxies
+- **Regular Updates** - Continuous security patches and dependency updates
+- **Modern Security Practices** - Built with Next.js security best practices
+
+### Self-Hosting Benefits
+
+When you self-host Buddy Budget:
+- Full control over your financial data
+- Choose your own hosting provider
+- Set your own data retention policies
+- Complete privacy and data sovereignty
+- Customize security settings to your requirements
+
+See [Deployment](#deployment) section for self-hosting instructions.
 
 ---
 
@@ -73,6 +102,28 @@ Real-time stock market tracking and analysis:
 
 Try out Buddy Budget at [buddybudget.io](https://buddybudget.io) to see all features in action!
 
+### Screenshots
+
+#### Net Worth Predictor
+Monte Carlo simulation for long-term financial planning with percentile analysis and inflation adjustments.
+
+![Net Worth Predictor](docs/images/net-worth-predictor.png)
+*Advanced Monte Carlo simulations showing 10th, 50th, and 90th percentile outcomes*
+
+#### Stock Tracker
+Real-time stock market data with interactive charts and comprehensive financial metrics.
+
+![Stock Tracker](docs/images/stock-tracker.png)
+*Live stock tracking with Yahoo Finance integration and multiple timeframes*
+
+#### Portfolio Dashboard
+Monitor your investments and track market trends in one unified dashboard.
+
+![Dashboard](docs/images/dashboard.png)
+*Clean, intuitive interface with dark mode support*
+
+> **Note:** Screenshots represent the latest development version. UI may vary slightly.
+
 ### Local Development
 
 ```bash
@@ -83,27 +134,6 @@ bun dev
 
 ---
 
-## Tech Stack
-
-### Frontend
-- **[Next.js 15.3](https://nextjs.org/)** - React framework with App Router
-- **[React 18.3](https://react.dev/)** - UI library
-- **[TypeScript 5.6](https://www.typescriptlang.org/)** - Type safety
-- **[Tailwind CSS 4.1](https://tailwindcss.com/)** - Utility-first styling
-- **[HeroUI 2.8](https://www.heroui.com/)** - Comprehensive UI components
-- **[Framer Motion](https://www.framer.com/motion/)** - Smooth animations
-
-### Data & APIs
-- **[Yahoo Finance2](https://www.npmjs.com/package/yahoo-finance2)** - Real-time stock market data
-- **[Recharts](https://recharts.org/)** - Interactive data visualizations
-
-### Development
-- **[Turbopack](https://turbo.build/)** - Lightning-fast bundler
-- **[ESLint](https://eslint.org/)** - Code quality
-- **[Prettier](https://prettier.io/)** - Code formatting
-- **[Bun](https://bun.sh/)** - Fast package manager and runtime
-
----
 
 ## Getting Started
 
@@ -112,6 +142,14 @@ bun dev
 - **Node.js** 18.0 or higher
 - **Bun** (recommended) or npm/yarn
 - **Git**
+
+#### Browser Support
+
+Buddy Budget works on all modern browsers:
+- Chrome/Edge 90+
+- Firefox 88+
+- Safari 14+
+- Opera 76+
 
 ### Installation
 
@@ -134,6 +172,12 @@ bun dev
 4. **Open your browser**
 
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Environment Configuration
+
+Buddy Budget works out of the box without configuration. For advanced setups, create a `.env.local` file following the `.env.example` file:
+
+**Note:** No API keys are required for basic functionality. Yahoo Finance integration works without authentication.
 
 ### Build for Production
 
@@ -205,35 +249,6 @@ For continuous deployment setup, see [.github/workflows/deploy.yml](.github/work
 
 ---
 
-## Project Structure
-
-```
-buddy-budget/
-├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   │   └── stocks/        # Stock data endpoints
-│   ├── layout.tsx         # Root layout
-│   ├── page.tsx           # Home page
-│   └── providers.tsx      # App providers
-│
-├── components/            # React components
-│   ├── ui/               # UI primitives & animations
-│   ├── yahoo-finance/    # Stock tracking components
-│   ├── nw_predictor/     # Net Worth Predictor
-│   ├── navbar.tsx        # Navigation
-│   └── footer.tsx        # Footer
-│
-├── config/               # Configuration
-│   ├── site.ts          # Site metadata
-│   └── fonts.ts         # Font configuration
-│
-├── lib/                  # Utilities
-├── styles/              # Global styles
-└── types/               # TypeScript types
-```
-
----
-
 ## Contributing
 
 We welcome contributions from the community! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
@@ -251,21 +266,6 @@ Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started.
 7. Open a Pull Request
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
----
-
-## Roadmap
-
-- [ ] Expense tracking with smart categorization
-- [ ] Budget management with AI insights
-- [ ] Investment portfolio tracking
-- [ ] Savings goals with milestones
-- [ ] Mobile app (React Native)
-- [ ] Cloud sync and backup
-- [ ] Multi-user support
-- [ ] API for third-party integrations
-- [ ] Bank account integration (Plaid)
-- [ ] Cryptocurrency tracking
 
 ---
 

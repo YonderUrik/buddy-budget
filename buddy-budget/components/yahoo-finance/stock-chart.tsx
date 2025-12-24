@@ -16,6 +16,7 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Spinner } from "@heroui/spinner";
 import { DatePicker } from "@heroui/date-picker";
 import { parseDate } from "@internationalized/date";
+import { useTheme } from "next-themes";
 
 import { HistoricalDataPoint, getStockLogo } from "./functions";
 import { StockLogo } from "./stock-logo";
@@ -74,6 +75,12 @@ export function StockChart({
 
   // Check if mobile
   const isMobile = useIsMobile();
+
+  // Get theme to use appropriate colors
+  const { theme } = useTheme();
+
+  // Define chart colors based on theme
+  const chartColor = theme === "dark" ? "#52b3d3" : "#4d9cba"; // primary color
 
   // Fetch currency, logo, and long name from stock details (only if not provided as props)
   useEffect(() => {
@@ -431,8 +438,8 @@ export function StockChart({
             >
               <defs>
                 <linearGradient id="colorClose" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.8} />
+                  <stop offset="95%" stopColor={chartColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid opacity={0.3} strokeDasharray="3 3" />
@@ -456,7 +463,7 @@ export function StockChart({
                 dataKey="close"
                 fill="url(#colorClose)"
                 fillOpacity={1}
-                stroke="#3b82f6"
+                stroke={chartColor}
                 strokeWidth={isMobile ? 1.5 : 2}
                 type="monotone"
               />

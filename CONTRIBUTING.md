@@ -39,7 +39,7 @@ By participating in this project, you agree to maintain a respectful and inclusi
 
 1. Clone your fork of the repository:
 ```bash
-git clone https://github.com/YOUR-USERNAME/buddy-budget.git
+git clone https://github.com/YonderUrik/buddy-budget.git
 cd buddy-budget/buddy-budget
 ```
 

@@ -51,7 +51,7 @@ export default function FinancePage() {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <StockSearch
-            className="w-full"
+            className="w-full bg-white dark:bg-black"
             label="Search Stocks"
             placeholder="Enter stock symbol or company name (e.g., AAPL, Tesla, Microsoft)..."
             onSelect={handleStockSelect}

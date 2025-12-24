@@ -156,7 +156,7 @@ export async function getHistoricalData(
 
     return result as HistoricalDataPoint[];
   } catch (error) {
-    console.error(`Error fetching historical data for ${symbol}:`, error);
+    console.error("Error fetching historical data for %s:", symbol, error);
     throw error;
   }
 }

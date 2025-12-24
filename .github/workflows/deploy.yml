@@ -7,6 +7,7 @@ env:
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 jobs:
   deploy-production:
@@ -20,6 +21,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest

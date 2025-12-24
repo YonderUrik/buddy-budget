@@ -49,7 +49,7 @@ export default function Error({
   }, [konami]);
 
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden bg-background dark:bg-black text-foreground">
+    <div className="fixed inset-0 w-full h-full overflow-hidden bg-background dark:bg-black text-foreground z-[100]">
       <BackgroundGradientAnimation>
         {/* Animated mesh gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/50 via-background dark:via-black to-secondary/5" />

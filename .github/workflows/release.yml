@@ -33,7 +33,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: buddy-budget
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Release
         working-directory: buddy-budget

@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: buddy-budget
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Run linter
         working-directory: buddy-budget

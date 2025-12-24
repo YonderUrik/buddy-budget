@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import { createNoise3D } from "simplex-noise";
 import { motion } from "motion/react";
+import { useTheme } from "next-themes";
 
 import { cn } from "@/lib/utils";
 
@@ -18,12 +19,14 @@ interface VortexProps {
   baseRadius?: number;
   rangeRadius?: number;
   backgroundColor?: string;
+  hueValues?: number[];
 }
 
 export const Vortex = (props: VortexProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef(null);
   const animationFrameId = useRef<number>();
+  const { theme } = useTheme();
   const particleCount = props.particleCount || 700;
   const particlePropCount = 9;
   const particlePropsLength = particleCount * particlePropCount;
@@ -36,11 +39,13 @@ export const Vortex = (props: VortexProps) => {
   const rangeRadius = props.rangeRadius || 2;
   const baseHue = props.baseHue || 220;
   const rangeHue = 100;
+  const hueValues = props.hueValues;
   const noiseSteps = 3;
   const xOff = 0.00125;
   const yOff = 0.00125;
   const zOff = 0.0005;
-  const backgroundColor = props.backgroundColor || "#000000";
+  const backgroundColor =
+    props.backgroundColor || (theme === "light" ? "#ffffff" : "#000000");
   let tick = 0;
   const noise3D = createNoise3D();
   let particleProps = new Float32Array(particlePropsLength);
@@ -99,7 +104,15 @@ export const Vortex = (props: VortexProps) => {
     ttl = baseTTL + rand(rangeTTL);
     speed = baseSpeed + rand(rangeSpeed);
     radius = baseRadius + rand(rangeRadius);
-    hue = baseHue + rand(rangeHue);
+
+    // Use discrete hue values if provided, otherwise use range
+    if (hueValues && hueValues.length > 0) {
+      const randomIndex = Math.floor(Math.random() * hueValues.length);
+
+      hue = hueValues[randomIndex];
+    } else {
+      hue = baseHue + rand(rangeHue);
+    }
 
     particleProps.set([x, y, vx, vy, life, ttl, speed, radius, hue], i);
   };
@@ -182,7 +195,13 @@ export const Vortex = (props: VortexProps) => {
     ctx.save();
     ctx.lineCap = "round";
     ctx.lineWidth = radius;
-    ctx.strokeStyle = `hsla(${hue},100%,60%,${fadeInOut(life, ttl)})`;
+
+    // Use different colors based on theme
+    const isLightMode = theme === "light";
+    const saturation = isLightMode ? "80%" : "100%";
+    const lightness = isLightMode ? "35%" : "60%";
+
+    ctx.strokeStyle = `hsla(${hue},${saturation},${lightness},${fadeInOut(life, ttl)})`;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x2, y2);
@@ -254,7 +273,7 @@ export const Vortex = (props: VortexProps) => {
         cancelAnimationFrame(animationFrameId.current);
       }
     };
-  }, []);
+  }, [theme]);
 
   return (
     <div className={cn("relative h-full w-full", props.containerClassName)}>

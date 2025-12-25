@@ -1,3 +1,13 @@
+## [2.0.0](https://github.com/YonderUrik/buddy-budget/compare/v1.0.0...v2.0.0) (2025-12-25)
+
+### ⚠ BREAKING CHANGES
+
+* Add manual trigger support to release workflow
+
+### chore
+
+* Add manual trigger support to release workflow ([c432632](https://github.com/YonderUrik/buddy-budget/commit/c432632d82454fbef9711ef78c2de20e996a30bf))
+
 ## 1.0.0 (2025-12-25)
 
 ### ⚠ BREAKING CHANGES

@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/YonderUrik/buddy-budget/compare/v2.0.0...v2.1.0) (2025-12-25)
+
+### Features
+
+* Add Privacy Policy and Terms of Service pages ([82ca8bd](https://github.com/YonderUrik/buddy-budget/commit/82ca8bd8acedcf399e8d4ae05dacad9ac8219267))
+
 ## [2.0.0](https://github.com/YonderUrik/buddy-budget/compare/v1.0.0...v2.0.0) (2025-12-25)
 
 ### ⚠ BREAKING CHANGES

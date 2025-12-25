@@ -62,5 +62,7 @@ export const siteConfig = {
       "https://github.com/YonderUrik/buddy-budget/blob/main/CONTRIBUTING.md",
     sponsor: "https://github.com/sponsors/YonderUrik",
     license: "https://github.com/YonderUrik/buddy-budget/blob/main/LICENSE",
+    privacy: "/privacy",
+    terms: "/terms",
   },
 };

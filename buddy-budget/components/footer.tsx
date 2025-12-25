@@ -19,7 +19,7 @@ export const Footer = () => {
   return (
     <footer className="w-full border-t border-default-200 dark:border-default-100 bg-default-50/50 dark:bg-default-50/5 backdrop-blur-lg mt-20">
       <div className="container mx-auto max-w-7xl px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center mb-4">
@@ -120,6 +120,29 @@ export const Footer = () => {
                   href="/about"
                 >
                   About
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div>
+            <h3 className="font-semibold text-sm mb-4">Legal</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href="/privacy"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="text-sm text-default-600 hover:text-default-900 dark:text-default-400 dark:hover:text-default-100 transition-colors"
+                  href="/terms"
+                >
+                  Terms of Service
                 </Link>
               </li>
             </ul>

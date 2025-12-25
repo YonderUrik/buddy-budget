@@ -40,7 +40,7 @@ export const cookieConsentConfig: CookieConsentConfig = {
           acceptNecessaryBtn: "Reject all",
           showPreferencesBtn: "Manage preferences",
           footer:
-            '<a href="#link">Privacy Policy</a>\n<a href="#link">Terms and conditions</a>',
+            '<a href="/privacy">Privacy Policy</a>\n<a href="/terms">Terms and conditions</a>',
         },
         preferencesModal: {
           title: "Consent Preferences Center",
@@ -83,7 +83,7 @@ export const cookieConsentConfig: CookieConsentConfig = {
             {
               title: "More information",
               description:
-                'For any query in relation to our policy on cookies and your choices, please <a class="cc__link" href="#yourdomain.com">contact us</a>.',
+                'For any query in relation to our policy on cookies and your choices, please <a class="cc__link" href="https://github.com/YonderUrik/buddy-budget/issues">contact us</a>.',
             },
           ],
         },

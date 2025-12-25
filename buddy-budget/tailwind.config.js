@@ -117,6 +117,7 @@ const config = {
         },
       },
     }),
+    require('@tailwindcss/typography'),
   ],
 }
 

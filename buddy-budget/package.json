@@ -10,7 +10,11 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@developer-hub/liquid-glass": "^1.2.3",
@@ -83,6 +87,7 @@
   "devDependencies": {
     "@eslint/compat": "^1.4.0",
     "@next/eslint-plugin-next": "15.3.4",
+    "@prisma/client": "^7.2.0",
     "@react-types/shared": "3.32.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
@@ -97,6 +102,7 @@
     "@typescript-eslint/eslint-plugin": "8.34.1",
     "@typescript-eslint/parser": "8.34.1",
     "conventional-changelog-conventionalcommits": "^9.1.0",
+    "dotenv": "^17.2.3",
     "eslint": "9.25.1",
     "eslint-config-next": "15.3.4",
     "eslint-config-prettier": "9.1.0",
@@ -112,6 +118,7 @@
     "jest-environment-jsdom": "^30.2.0",
     "postcss": "8.5.6",
     "prettier": "3.5.3",
+    "prisma": "^7.2.0",
     "semantic-release": "^25.0.2",
     "tailwind-variants": "3.1.1",
     "tailwindcss": "4.1.11",

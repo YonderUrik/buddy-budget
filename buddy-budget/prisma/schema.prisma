@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mongodb"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  FREE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  TRIAL
+  NONE
+}
+
+enum OnboardingStep {
+  NOT_STARTED
+  PROFILE_SETUP
+  FINANCIAL_GOALS
+  INITIAL_NET_WORTH
+  PREFERENCES
+  COMPLETED
+}
+
+enum AuthProvider {
+  GOOGLE
+  GITHUB
+  APPLE
+  MICROSOFT
+}
+
+enum Currency {
+  USD // US Dollar
+  EUR // Euro
+  GBP // British Pound
+  JPY // Japanese Yen
+  CAD // Canadian Dollar
+  AUD // Australian Dollar
+  CHF // Swiss Franc
+  CNY // Chinese Yuan
+  INR // Indian Rupee
+  BRL // Brazilian Real
+  MXN // Mexican Peso
+  KRW // South Korean Won
+  SGD // Singapore Dollar
+  HKD // Hong Kong Dollar
+  NZD // New Zealand Dollar
+}
+
+enum FiscalYearStart {
+  JANUARY
+  FEBRUARY
+  MARCH
+  APRIL
+  MAY
+  JUNE
+  JULY
+  AUGUST
+  SEPTEMBER
+  OCTOBER
+  NOVEMBER
+  DECEMBER
+}
+
+enum AppTheme {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+// ============================================================================
+// USER MODEL
+// ============================================================================
+
+model User {
+  // Primary Identifier
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Auth0 Authentication Fields
+  auth0Id       String  @unique @map("auth0_id")
+  email         String  @unique
+  emailVerified Boolean @default(false) @map("email_verified")
+
+  // OAuth Provider Information
+  provider   AuthProvider
+  providerId String?      @map("provider_id") // Provider-specific user ID
+
+  // Profile Information
+  name           String? // Full name from OAuth
+  displayName    String? @map("display_name") // Preferred display name
+  firstName      String? @map("first_name")
+  lastName       String? @map("last_name")
+  profilePicture String? @map("profile_picture") // Auth0 profile picture URL
+  locale         String? @default("en-US") // User's locale preference
+
+  // User Role & Subscription
+  role               UserRole           @default(FREE)
+  subscriptionStatus SubscriptionStatus @default(NONE) @map("subscription_status")
+  subscriptionExpiry DateTime?          @map("subscription_expiry")
+  trialStartedAt     DateTime?          @map("trial_started_at")
+  trialEndsAt        DateTime?          @map("trial_ends_at")
+
+  // Onboarding State
+  onboardingCompleted   Boolean        @default(false) @map("onboarding_completed")
+  onboardingStep        OnboardingStep @default(NOT_STARTED) @map("onboarding_step")
+  onboardingStartedAt   DateTime?      @map("onboarding_started_at")
+  onboardingCompletedAt DateTime?      @map("onboarding_completed_at")
+
+  // Financial Goals (set during onboarding)
+  financialGoals      Json?     @map("financial_goals") // Array of goal objects
+  initialNetWorth     Float?    @map("initial_net_worth")
+  initialNetWorthDate DateTime? @map("initial_net_worth_date")
+  targetNetWorth      Float?    @map("target_net_worth")
+  targetNetWorthDate  DateTime? @map("target_net_worth_date")
+
+  // User Preferences
+  defaultCurrency Currency        @default(USD) @map("default_currency")
+  timezone        String          @default("UTC")
+  fiscalYearStart FiscalYearStart @default(JANUARY) @map("fiscal_year_start")
+  appTheme        AppTheme        @default(SYSTEM) @map("app_theme")
+
+  // Application Settings
+  settings Json @default("{}") // Application settings
+  // Structure: {
+  //   dateFormat: "MM/DD/YYYY",
+  //   numberFormat: "en-US",
+  //   showDecimalPlaces: 2,
+  //   weekStartsOn: "monday",
+  //   dashboardLayout: {...},
+  //   notifications: { email: true, push: false, inApp: true }
+  // }
+
+  // Privacy & Security
+  cookieConsent Json? @map("cookie_consent") // Consent tracking
+  // Structure: { necessary: true, analytics: true, marketing: false, timestamp: "..." }
+
+  // Metadata
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+  lastActiveAt DateTime? @map("last_active_at")
+  deletedAt    DateTime? @map("deleted_at") // Soft delete support
+
+  // Relations (to be implemented in future)
+  // budgets      Budget[]
+  // expenses     Expense[]
+  // goals        Goal[]
+  // portfolios   Portfolio[]
+  // transactions Transaction[]
+
+  // Indexes (auth0Id and email already indexed via @unique)
+  @@unique([email, provider])
+  @@index([role, subscriptionStatus])
+  @@index([onboardingCompleted])
+  @@index([createdAt])
+  @@index([lastActiveAt])
+  @@map("users")
+}

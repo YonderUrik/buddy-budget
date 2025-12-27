@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
           providerId: accountProviderId,
           lastLoginAt: new Date(),
           onboardingCompleted: false,
-          onboardingStep: "FINANCIAL_GOALS", // Skip profile setup, go directly to financial goals
+          onboardingStep: "WELCOME", // Start with welcome screen
         },
         select: {
           id: true,

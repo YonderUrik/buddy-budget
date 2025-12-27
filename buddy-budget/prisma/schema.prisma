@@ -30,11 +30,33 @@ enum SubscriptionStatus {
 
 enum OnboardingStep {
   NOT_STARTED
-  PROFILE_SETUP
+  WELCOME
+  USER_PROFILE
   FINANCIAL_GOALS
   INITIAL_NET_WORTH
   PREFERENCES
   COMPLETED
+}
+
+enum FinanceExperience {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum AccountingExperience {
+  NONE
+  BASIC
+  INTERMEDIATE
+  PROFESSIONAL
+}
+
+enum SavingHabits {
+  NO_SAVINGS
+  OCCASIONAL
+  MONTHLY
+  AUTOMATED
 }
 
 enum AuthProvider {
@@ -105,6 +127,16 @@ model User {
   firstName      String? @map("first_name")
   lastName       String? @map("last_name")
   locale         String? @default("en-US") // User's locale preference
+
+  // User Background (collected during onboarding)
+  occupation            String?              @map("occupation")
+  country               String?              @map("country") // ISO country code
+  dateOfBirth           DateTime?            @map("date_of_birth")
+  financeExperience     FinanceExperience?   @map("finance_experience")
+  accountingExperience  AccountingExperience? @map("accounting_experience")
+  savingHabits          SavingHabits?        @map("saving_habits")
+  monthlyIncomeRange    String?              @map("monthly_income_range") // e.g., "0-2000", "2000-5000"
+  primaryGoals          String[]             @default([]) @map("primary_goals") // Array of goal categories
 
   // User Role & Subscription
   role               UserRole           @default(FREE)

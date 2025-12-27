@@ -16,8 +16,9 @@ const PUBLIC_ROUTES = [
 
 // Map onboarding steps to routes
 const ONBOARDING_STEP_ROUTES: Record<OnboardingStep, string> = {
-  [OnboardingStep.NOT_STARTED]: "/onboarding/financial-goals",
-  [OnboardingStep.PROFILE_SETUP]: "/onboarding/financial-goals", // Skip profile setup
+  [OnboardingStep.NOT_STARTED]: "/onboarding/welcome",
+  [OnboardingStep.WELCOME]: "/onboarding/welcome",
+  [OnboardingStep.USER_PROFILE]: "/onboarding/user-profile",
   [OnboardingStep.FINANCIAL_GOALS]: "/onboarding/financial-goals",
   [OnboardingStep.INITIAL_NET_WORTH]: "/onboarding/initial-net-worth",
   [OnboardingStep.PREFERENCES]: "/onboarding/preferences",

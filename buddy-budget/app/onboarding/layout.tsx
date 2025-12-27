@@ -6,10 +6,11 @@ import { OnboardingStep } from "@/lib/auth";
 
 const STEP_PROGRESS = {
   [OnboardingStep.NOT_STARTED]: 0,
-  [OnboardingStep.PROFILE_SETUP]: 25,
-  [OnboardingStep.FINANCIAL_GOALS]: 50,
-  [OnboardingStep.INITIAL_NET_WORTH]: 75,
-  [OnboardingStep.PREFERENCES]: 100,
+  [OnboardingStep.WELCOME]: 0,
+  [OnboardingStep.USER_PROFILE]: 20,
+  [OnboardingStep.FINANCIAL_GOALS]: 40,
+  [OnboardingStep.INITIAL_NET_WORTH]: 60,
+  [OnboardingStep.PREFERENCES]: 80,
   [OnboardingStep.COMPLETED]: 100,
 };
 

@@ -6,7 +6,8 @@ import Apple from "next-auth/providers/apple";
 // Define types locally to avoid Prisma imports
 export enum OnboardingStep {
   NOT_STARTED = "NOT_STARTED",
-  PROFILE_SETUP = "PROFILE_SETUP",
+  WELCOME = "WELCOME",
+  USER_PROFILE = "USER_PROFILE",
   FINANCIAL_GOALS = "FINANCIAL_GOALS",
   INITIAL_NET_WORTH = "INITIAL_NET_WORTH",
   PREFERENCES = "PREFERENCES",
@@ -71,7 +72,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/signin",
     error: "/signin",
-    newUser: "/onboarding/financial-goals", // Redirect new users to financial goals (skip profile setup)
+    newUser: "/onboarding/welcome", // Redirect new users to welcome screen
   },
   providers: [
     Google({

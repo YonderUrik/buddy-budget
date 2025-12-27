@@ -33,8 +33,9 @@ export default function SignInPage() {
       } else {
         // Redirect to appropriate onboarding step
         const onboardingRoutes: Record<OnboardingStep, string> = {
-          [OnboardingStep.NOT_STARTED]: "/onboarding/financial-goals",
-          [OnboardingStep.PROFILE_SETUP]: "/onboarding/financial-goals",
+          [OnboardingStep.NOT_STARTED]: "/onboarding/welcome",
+          [OnboardingStep.WELCOME]: "/onboarding/welcome",
+          [OnboardingStep.USER_PROFILE]: "/onboarding/user-profile",
           [OnboardingStep.FINANCIAL_GOALS]: "/onboarding/financial-goals",
           [OnboardingStep.INITIAL_NET_WORTH]: "/onboarding/initial-net-worth",
           [OnboardingStep.PREFERENCES]: "/onboarding/preferences",

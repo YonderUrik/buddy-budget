@@ -7,6 +7,9 @@ import {
   Currency,
   FiscalYearStart,
   AppTheme,
+  FinanceExperience,
+  AccountingExperience,
+  SavingHabits,
 } from "@prisma/client";
 
 // ============================================================================
@@ -123,6 +126,14 @@ export interface UpdateOnboardingInput {
   firstName?: string;
   lastName?: string;
   displayName?: string;
+  occupation?: string;
+  country?: string;
+  dateOfBirth?: Date;
+  financeExperience?: FinanceExperience;
+  accountingExperience?: AccountingExperience;
+  savingHabits?: SavingHabits;
+  monthlyIncomeRange?: string;
+  primaryGoals?: string[];
   financialGoals?: FinancialGoal[];
   initialNetWorth?: number;
   initialNetWorthDate?: Date;
@@ -157,6 +168,9 @@ export {
   Currency,
   FiscalYearStart,
   AppTheme,
+  FinanceExperience,
+  AccountingExperience,
+  SavingHabits,
 };
 
 // ============================================================================

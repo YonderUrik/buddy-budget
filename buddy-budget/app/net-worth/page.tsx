@@ -38,8 +38,8 @@ export default function NetWorthPage() {
         </TextReveal>
       </section>
 
-       {/* How It Works Section */}
-       <section className="relative flex flex-col items-center gap-12 px-4">
+      {/* How It Works Section */}
+      <section className="relative flex flex-col items-center gap-12 px-4">
         <motion.div
           className="text-center"
           initial={{ opacity: 0, y: 20 }}

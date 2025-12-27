@@ -55,7 +55,7 @@ export default function Home() {
       title: "Budget Dashboard",
       src: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80",
       description: "Track expenses and manage budgets",
-      href: "#features",
+      href: "/signin",
     },
   ];
 
@@ -108,9 +108,9 @@ export default function Home() {
                   variant: "shadow",
                   size: "lg",
                 })}
-                href="#features"
+                href="/signin"
               >
-                Explore Features
+                Get Started
               </Link>
             </motion.div>
           </div>
@@ -444,8 +444,10 @@ export default function Home() {
           <div className="flex gap-4 flex-wrap justify-center">
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
+                as={Link}
                 className="text-lg px-10 font-semibold"
                 color="primary"
+                href="/signin"
                 radius="full"
                 size="lg"
                 variant="shadow"

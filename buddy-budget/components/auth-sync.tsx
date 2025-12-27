@@ -1,0 +1,50 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
+
+/**
+ * AuthSync component
+ * Syncs user data with the database after OAuth sign-in
+ * This ensures users are created/updated in the database even with pure JWT sessions
+ */
+export function AuthSync() {
+  const { data: session, status } = useSession();
+  const hasSynced = useRef(false);
+
+  useEffect(() => {
+    async function syncUser() {
+      // Only sync once per session and when authenticated
+      if (status !== "authenticated" || !session?.user || hasSynced.current) {
+        return;
+      }
+
+      try {
+        hasSynced.current = true;
+
+        // Call the sync endpoint to ensure user exists in database
+        const response = await fetch("/api/auth/sync", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            accountProvider: session.user.accountProvider,
+            accountProviderId: session.user.accountProviderId,
+          }),
+        });
+
+        if (!response.ok) {
+          console.error("Failed to sync user data");
+        }
+      } catch (error) {
+        console.error("Error syncing user:", error);
+      }
+    }
+
+    syncUser();
+  }, [session, status]);
+
+  // This component doesn't render anything
+  return null;
+}

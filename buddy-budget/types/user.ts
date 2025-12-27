@@ -79,14 +79,13 @@ export type TypedUser = Omit<
 // ============================================================================
 
 export interface CreateUserInput {
-  auth0Id: string;
   email: string;
   provider: AuthProvider;
-  emailVerified?: boolean;
+  emailVerified?: Date;
   name?: string;
   firstName?: string;
   lastName?: string;
-  profilePicture?: string;
+  image?: string;
   locale?: string;
 }
 
@@ -95,7 +94,7 @@ export interface CreateUserInput {
 // ============================================================================
 
 export type UpdateUserInput = Partial<
-  Omit<User, "id" | "auth0Id" | "createdAt" | "updatedAt">
+  Omit<User, "id" | "createdAt" | "updatedAt">
 >;
 
 // ============================================================================
@@ -117,9 +116,13 @@ export interface UpdateUserProfileInput {
 // ============================================================================
 
 export interface UpdateOnboardingInput {
-  onboardingStep: OnboardingStep;
+  onboardingStep?: OnboardingStep;
+  onboardingCompleted?: boolean;
   onboardingStartedAt?: Date;
   onboardingCompletedAt?: Date;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
   financialGoals?: FinancialGoal[];
   initialNetWorth?: number;
   initialNetWorthDate?: Date;

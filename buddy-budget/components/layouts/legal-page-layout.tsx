@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
 
 import { title, subtitle } from "@/components/primitives";
 import { TextReveal } from "@/components/ui/text-reveal";

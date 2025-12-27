@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================================================
@@ -40,7 +41,6 @@ enum AuthProvider {
   GOOGLE
   GITHUB
   APPLE
-  MICROSOFT
 }
 
 enum Currency {
@@ -90,21 +90,20 @@ model User {
   // Primary Identifier
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  // Auth0 Authentication Fields
-  auth0Id       String  @unique @map("auth0_id")
-  email         String  @unique
-  emailVerified Boolean @default(false) @map("email_verified")
+  // NextAuth Authentication Fields
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
 
   // OAuth Provider Information
-  provider   AuthProvider
-  providerId String?      @map("provider_id") // Provider-specific user ID
+  provider   AuthProvider?
+  providerId String? @unique @map("provider_id") // Provider-specific user ID
 
   // Profile Information
   name           String? // Full name from OAuth
+  image          String? // Profile picture URL (NextAuth standard)
   displayName    String? @map("display_name") // Preferred display name
   firstName      String? @map("first_name")
   lastName       String? @map("last_name")
-  profilePicture String? @map("profile_picture") // Auth0 profile picture URL
   locale         String? @default("en-US") // User's locale preference
 
   // User Role & Subscription
@@ -155,6 +154,10 @@ model User {
   lastActiveAt DateTime? @map("last_active_at")
   deletedAt    DateTime? @map("deleted_at") // Soft delete support
 
+  // NextAuth Relations
+  accounts Account[]
+  sessions Session[]
+
   // Relations (to be implemented in future)
   // budgets      Budget[]
   // expenses     Expense[]
@@ -162,11 +165,55 @@ model User {
   // portfolios   Portfolio[]
   // transactions Transaction[]
 
-  // Indexes (auth0Id and email already indexed via @unique)
+  // Indexes (email already indexed via @unique)
   @@unique([email, provider])
   @@index([role, subscriptionStatus])
   @@index([onboardingCompleted])
   @@index([createdAt])
   @@index([lastActiveAt])
   @@map("users")
+}
+
+// ============================================================================
+// NEXTAUTH MODELS
+// ============================================================================
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @map("user_id") @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }

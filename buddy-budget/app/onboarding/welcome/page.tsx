@@ -81,14 +81,12 @@ export default function WelcomePage() {
         transition={{ duration: 0.5 }}
       >
         <h1 className={title({ size: "lg" })}>
-          Welcome to{" "}
+          Welcome to
+          <br />
           <span className="bg-gradient-to-r from-brand-blue-500 to-brand-gold-500 bg-clip-text text-transparent">
             Buddy Budget
           </span>
         </h1>
-        <p className={subtitle({ class: "mt-4 text-lg" })}>
-          Let&apos;s set up your financial companion in just a few minutes
-        </p>
       </motion.div>
 
       {/* What is Onboarding Section */}

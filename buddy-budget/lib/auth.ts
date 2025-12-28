@@ -37,12 +37,6 @@ export enum Currency {
   NZD = "NZD",
 }
 
-export enum AppTheme {
-  LIGHT = "LIGHT",
-  DARK = "DARK",
-  SYSTEM = "SYSTEM",
-}
-
 // Extend NextAuth session types
 declare module "next-auth" {
   interface Session {

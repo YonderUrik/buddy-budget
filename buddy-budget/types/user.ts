@@ -6,7 +6,6 @@ import {
   AuthProvider,
   Currency,
   FiscalYearStart,
-  AppTheme,
   FinancialExperienceLevel,
 } from "@prisma/client";
 
@@ -109,7 +108,6 @@ export interface UpdateUserProfileInput {
   locale?: string;
   timezone?: string;
   defaultCurrency?: Currency;
-  appTheme?: AppTheme;
 }
 
 // ============================================================================
@@ -137,7 +135,8 @@ export interface UpdateOnboardingInput {
   targetNetWorthDate?: Date;
   defaultCurrency?: Currency;
   timezone?: string;
-  appTheme?: AppTheme;
+  locale?: string;
+  settings?: UserSettings;
 }
 
 // ============================================================================
@@ -163,7 +162,6 @@ export {
   AuthProvider,
   Currency,
   FiscalYearStart,
-  AppTheme,
   FinancialExperienceLevel,
 };
 

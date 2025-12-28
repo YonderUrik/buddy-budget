@@ -84,12 +84,6 @@ enum FiscalYearStart {
   DECEMBER
 }
 
-enum AppTheme {
-  LIGHT
-  DARK
-  SYSTEM
-}
-
 // ============================================================================
 // USER MODEL
 // ============================================================================
@@ -146,7 +140,6 @@ model User {
   defaultCurrency Currency        @default(USD) @map("default_currency")
   timezone        String          @default("UTC")
   fiscalYearStart FiscalYearStart @default(JANUARY) @map("fiscal_year_start")
-  appTheme        AppTheme        @default(SYSTEM) @map("app_theme")
 
   // Application Settings
   settings Json @default("{}") // Application settings

@@ -14,6 +14,12 @@ export async function PATCH(request: NextRequest) {
 
     const body: UpdateOnboardingInput = await request.json();
 
+    // Get current user to merge settings
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { settings: true },
+    });
+
     // Prepare update data with proper type conversions
     const updateData: any = {
       ...body,
@@ -23,6 +29,19 @@ export async function PATCH(request: NextRequest) {
     // Convert financialGoals array to JSON if present
     if (body.financialGoals) {
       updateData.financialGoals = body.financialGoals as any;
+    }
+
+    // Merge settings instead of overwriting
+    if (body.settings) {
+      const existingSettings =
+        typeof currentUser?.settings === "object" && currentUser?.settings
+          ? currentUser.settings
+          : {};
+
+      updateData.settings = {
+        ...existingSettings,
+        ...body.settings,
+      };
     }
 
     // Update user in database using email as the identifier

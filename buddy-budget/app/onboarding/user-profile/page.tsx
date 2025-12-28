@@ -13,58 +13,7 @@ import { motion } from "framer-motion";
 import { title, subtitle } from "@/components/primitives";
 import { OnboardingStep } from "@/lib/auth";
 import { FinancialExperienceLevel } from "@/types/user";
-
-const COUNTRIES = [
-  { code: "AR", name: "Argentina", flag: "🇦🇷" },
-  { code: "AU", name: "Australia", flag: "🇦🇺" },
-  { code: "AT", name: "Austria", flag: "🇦🇹" },
-  { code: "BE", name: "Belgium", flag: "🇧🇪" },
-  { code: "BR", name: "Brazil", flag: "🇧🇷" },
-  { code: "CA", name: "Canada", flag: "🇨🇦" },
-  { code: "CN", name: "China", flag: "🇨🇳" },
-  { code: "DK", name: "Denmark", flag: "🇩🇰" },
-  { code: "FI", name: "Finland", flag: "🇫🇮" },
-  { code: "FR", name: "France", flag: "🇫🇷" },
-  { code: "DE", name: "Germany", flag: "🇩🇪" },
-  { code: "IN", name: "India", flag: "🇮🇳" },
-  { code: "IE", name: "Ireland", flag: "🇮🇪" },
-  { code: "IT", name: "Italy", flag: "🇮🇹" },
-  { code: "JP", name: "Japan", flag: "🇯🇵" },
-  { code: "MX", name: "Mexico", flag: "🇲🇽" },
-  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
-  { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
-  { code: "NO", name: "Norway", flag: "🇳🇴" },
-  { code: "PL", name: "Poland", flag: "🇵🇱" },
-  { code: "PT", name: "Portugal", flag: "🇵🇹" },
-  { code: "SG", name: "Singapore", flag: "🇸🇬" },
-  { code: "ZA", name: "South Africa", flag: "🇿🇦" },
-  { code: "KR", name: "South Korea", flag: "🇰🇷" },
-  { code: "ES", name: "Spain", flag: "🇪🇸" },
-  { code: "SE", name: "Sweden", flag: "🇸🇪" },
-  { code: "CH", name: "Switzerland", flag: "🇨🇭" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-  { code: "US", name: "United States", flag: "🇺🇸" },
-];
-
-const INCOME_RANGES = [
-  { value: "0-2000", label: "$0 - $2,000" },
-  { value: "2000-4000", label: "$2,000 - $4,000" },
-  { value: "4000-6000", label: "$4,000 - $6,000" },
-  { value: "6000-8000", label: "$6,000 - $8,000" },
-  { value: "8000-10000", label: "$8,000 - $10,000" },
-  { value: "10000+", label: "$10,000+" },
-];
-
-const PRIMARY_GOALS = [
-  { value: "save_money", label: "Save Money" },
-  { value: "reduce_debt", label: "Reduce Debt" },
-  { value: "invest", label: "Invest for Future" },
-  { value: "track_expenses", label: "Track Expenses" },
-  { value: "budget", label: "Create Budget" },
-  { value: "retirement", label: "Retirement Planning" },
-  { value: "buy_home", label: "Buy a Home" },
-  { value: "emergency_fund", label: "Build Emergency Fund" },
-];
+import { COUNTRIES, INCOME_RANGES, PRIMARY_GOALS } from "@/lib/constants";
 
 export default function UserProfilePage() {
   const { data: session, update } = useSession();

@@ -5,7 +5,8 @@ import { useTheme } from 'next-themes';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { Button, Card, CardBody, CardHeader, Spinner, NumberInput, Tabs, Tab, Progress, Tooltip as UITooltip, Chip, Accordion, AccordionItem, Select, SelectItem } from '@heroui/react';
 import { predictNetWorth } from './nw_prediction';
-import { formatCurrency, formatNumber, formatPercentage, getCurrencySymbol, getDefaultLocale, COMMON_CURRENCIES } from '../../lib/format';
+import { formatCurrency, formatNumber, formatPercentage, getCurrencySymbol, getDefaultLocale } from '../../lib/format';
+import { CURRENCIES } from '../../lib/constants';
 import { TargetIcon, AlertIcon, BarChartIcon, DollarIcon, ChartIcon, LightbulbIcon } from '../icons';
 
 export default function NetWorthPredictor({ currency: propCurrency }) {
@@ -360,7 +361,7 @@ export default function NetWorthPredictor({ currency: propCurrency }) {
                   }}
                   startContent={<span className="text-lg">{getCurrencySymbol(selectedCurrency)}</span>}
                 >
-                  {Object.entries(COMMON_CURRENCIES).map(([code, { symbol, name }]) => (
+                  {Object.entries(CURRENCIES).map(([code, { symbol, name }]) => (
                     <SelectItem key={code} value={code} textValue={`${code} - ${name}`}>
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-semibold">{symbol}</span>

@@ -12,42 +12,38 @@ import { motion } from "framer-motion";
 
 import { title, subtitle } from "@/components/primitives";
 import { OnboardingStep } from "@/lib/auth";
-import {
-  FinanceExperience,
-  AccountingExperience,
-  SavingHabits,
-} from "@/types/user";
+import { FinancialExperienceLevel } from "@/types/user";
 
 const COUNTRIES = [
-  { code: "US", name: "United States" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "CA", name: "Canada" },
-  { code: "AU", name: "Australia" },
-  { code: "DE", name: "Germany" },
-  { code: "FR", name: "France" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "NL", name: "Netherlands" },
-  { code: "BE", name: "Belgium" },
-  { code: "CH", name: "Switzerland" },
-  { code: "AT", name: "Austria" },
-  { code: "IE", name: "Ireland" },
-  { code: "PT", name: "Portugal" },
-  { code: "SE", name: "Sweden" },
-  { code: "DK", name: "Denmark" },
-  { code: "NO", name: "Norway" },
-  { code: "FI", name: "Finland" },
-  { code: "PL", name: "Poland" },
-  { code: "IN", name: "India" },
-  { code: "CN", name: "China" },
-  { code: "JP", name: "Japan" },
-  { code: "KR", name: "South Korea" },
-  { code: "BR", name: "Brazil" },
-  { code: "MX", name: "Mexico" },
-  { code: "AR", name: "Argentina" },
-  { code: "ZA", name: "South Africa" },
-  { code: "SG", name: "Singapore" },
-  { code: "NZ", name: "New Zealand" },
+  { code: "AR", name: "Argentina", flag: "🇦🇷" },
+  { code: "AU", name: "Australia", flag: "🇦🇺" },
+  { code: "AT", name: "Austria", flag: "🇦🇹" },
+  { code: "BE", name: "Belgium", flag: "🇧🇪" },
+  { code: "BR", name: "Brazil", flag: "🇧🇷" },
+  { code: "CA", name: "Canada", flag: "🇨🇦" },
+  { code: "CN", name: "China", flag: "🇨🇳" },
+  { code: "DK", name: "Denmark", flag: "🇩🇰" },
+  { code: "FI", name: "Finland", flag: "🇫🇮" },
+  { code: "FR", name: "France", flag: "🇫🇷" },
+  { code: "DE", name: "Germany", flag: "🇩🇪" },
+  { code: "IN", name: "India", flag: "🇮🇳" },
+  { code: "IE", name: "Ireland", flag: "🇮🇪" },
+  { code: "IT", name: "Italy", flag: "🇮🇹" },
+  { code: "JP", name: "Japan", flag: "🇯🇵" },
+  { code: "MX", name: "Mexico", flag: "🇲🇽" },
+  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
+  { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
+  { code: "NO", name: "Norway", flag: "🇳🇴" },
+  { code: "PL", name: "Poland", flag: "🇵🇱" },
+  { code: "PT", name: "Portugal", flag: "🇵🇹" },
+  { code: "SG", name: "Singapore", flag: "🇸🇬" },
+  { code: "ZA", name: "South Africa", flag: "🇿🇦" },
+  { code: "KR", name: "South Korea", flag: "🇰🇷" },
+  { code: "ES", name: "Spain", flag: "🇪🇸" },
+  { code: "SE", name: "Sweden", flag: "🇸🇪" },
+  { code: "CH", name: "Switzerland", flag: "🇨🇭" },
+  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
+  { code: "US", name: "United States", flag: "🇺🇸" },
 ];
 
 const INCOME_RANGES = [
@@ -77,9 +73,7 @@ export default function UserProfilePage() {
   const [formData, setFormData] = useState({
     occupation: "",
     country: "",
-    financeExperience: "" as FinanceExperience | "",
-    accountingExperience: "" as AccountingExperience | "",
-    savingHabits: "" as SavingHabits | "",
+    financialExperienceLevel: "" as FinancialExperienceLevel | "",
     monthlyIncomeRange: "",
     primaryGoals: [] as string[],
   });
@@ -94,10 +88,8 @@ export default function UserProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          financeExperience: formData.financeExperience || null,
-          accountingExperience: formData.accountingExperience || null,
-          savingHabits: formData.savingHabits || null,
-          onboardingStep: OnboardingStep.FINANCIAL_GOALS,
+          financialExperienceLevel: formData.financialExperienceLevel || null,
+          onboardingStep: OnboardingStep.INITIAL_NET_WORTH,
           onboardingStartedAt: new Date(),
         }),
       });
@@ -105,10 +97,10 @@ export default function UserProfilePage() {
       if (!response.ok) throw new Error("Failed to update profile");
 
       await update({
-        onboardingStep: OnboardingStep.FINANCIAL_GOALS,
+        onboardingStep: OnboardingStep.INITIAL_NET_WORTH,
       });
 
-      router.push("/onboarding/financial-goals");
+      router.push("/onboarding/initial-net-worth");
     } catch (error) {
       console.error("Error updating profile:", error);
     } finally {
@@ -163,98 +155,49 @@ export default function UserProfilePage() {
                 }
               >
                 {COUNTRIES.map((country) => (
-                  <SelectItem key={country.code}>{country.name}</SelectItem>
+                  <SelectItem key={country.code} textValue={country.name}>
+                    {country.flag} {country.name}
+                  </SelectItem>
                 ))}
               </Select>
 
-              {/* Finance Experience */}
+              {/* Financial Experience Level */}
               <Select
                 required
-                description="How comfortable are you with personal finance?"
-                label="Finance Experience"
+                description="How would you describe your overall financial experience?"
+                label="Financial Experience Level"
                 placeholder="Select your experience level"
                 selectedKeys={
-                  formData.financeExperience ? [formData.financeExperience] : []
-                }
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    financeExperience: e.target.value as FinanceExperience,
-                  })
-                }
-              >
-                <SelectItem key="BEGINNER">
-                  Beginner - Just starting out
-                </SelectItem>
-                <SelectItem key="INTERMEDIATE">
-                  Intermediate - Have some knowledge
-                </SelectItem>
-                <SelectItem key="ADVANCED">
-                  Advanced - Very comfortable
-                </SelectItem>
-                <SelectItem key="EXPERT">
-                  Expert - Professional level
-                </SelectItem>
-              </Select>
-
-              {/* Accounting Experience */}
-              <Select
-                required
-                description="Do you have accounting or bookkeeping experience?"
-                label="Accounting Experience"
-                placeholder="Select your experience level"
-                selectedKeys={
-                  formData.accountingExperience
-                    ? [formData.accountingExperience]
+                  formData.financialExperienceLevel
+                    ? [formData.financialExperienceLevel]
                     : []
                 }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    accountingExperience: e.target
-                      .value as AccountingExperience,
+                    financialExperienceLevel: e.target
+                      .value as FinancialExperienceLevel,
                   })
                 }
               >
-                <SelectItem key="NONE">None - No experience</SelectItem>
-                <SelectItem key="BASIC">
-                  Basic - Can track simple transactions
+                <SelectItem key="BEGINNER">
+                  Beginner - New to managing finances, little experience with
+                  budgeting or saving
+                </SelectItem>
+                <SelectItem key="DEVELOPING">
+                  Developing - Learning the basics, building financial habits
                 </SelectItem>
                 <SelectItem key="INTERMEDIATE">
-                  Intermediate - Comfortable with reconciliation
+                  Intermediate - Comfortable with budgeting, regular saving
+                  habits
                 </SelectItem>
-                <SelectItem key="PROFESSIONAL">
-                  Professional - Certified or professional level
+                <SelectItem key="ADVANCED">
+                  Advanced - Strong financial management skills, good accounting
+                  knowledge
                 </SelectItem>
-              </Select>
-
-              {/* Saving Habits */}
-              <Select
-                required
-                description="How often do you save money?"
-                label="Saving Habits"
-                placeholder="Select your saving pattern"
-                selectedKeys={
-                  formData.savingHabits ? [formData.savingHabits] : []
-                }
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    savingHabits: e.target.value as SavingHabits,
-                  })
-                }
-              >
-                <SelectItem key="NO_SAVINGS">
-                  No Savings - Living paycheck to paycheck
-                </SelectItem>
-                <SelectItem key="OCCASIONAL">
-                  Occasional - Save when possible
-                </SelectItem>
-                <SelectItem key="MONTHLY">
-                  Monthly - Save a fixed amount regularly
-                </SelectItem>
-                <SelectItem key="AUTOMATED">
-                  Automated - Automatic transfers to savings
+                <SelectItem key="EXPERT">
+                  Expert - Professional or extensive financial/accounting
+                  experience
                 </SelectItem>
               </Select>
 
@@ -316,7 +259,7 @@ export default function UserProfilePage() {
                 size="lg"
                 type="submit"
               >
-                Continue to Financial Goals
+                Continue
               </Button>
             </form>
           </CardBody>

@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/YonderUrik/buddy-budget/compare/v3.0.0...v3.0.1) (2025-12-29)
+
+### Bug Fixes
+
+* Implement user status API fixed authentication flow after onboarding ([9a9479f](https://github.com/YonderUrik/buddy-budget/commit/9a9479f324d54a216f5a628334247ef88a580b16))
+
 ## [3.0.0](https://github.com/YonderUrik/buddy-budget/compare/v2.2.1...v3.0.0) (2025-12-29)
 
 ### ⚠ BREAKING CHANGES

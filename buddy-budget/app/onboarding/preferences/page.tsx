@@ -102,50 +102,48 @@ export default function PreferencesPage() {
           <CardBody className="p-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm text-default-500 mb-2">
-                  Example account
-                </p>
+                <p className="text-sm text-default-500 mb-2">Example account</p>
                 <h2 className="text-4xl font-bold mb-2">
                   {formatCurrencyWithLocale(
                     2325.25,
                     formData.defaultCurrency,
-                    formData.numberFormat || "en-US"
+                    formData.numberFormat || "en-US",
                   )}
                 </h2>
                 <p className="text-sm text-success">
                   {formatChangeWithLocale(
                     78.9,
                     formData.defaultCurrency,
-                    formData.numberFormat || "en-US"
+                    formData.numberFormat || "en-US",
                   )}{" "}
                   (
                   {formatPercentWithLocale(
                     0.0639,
-                    formData.numberFormat || "en-US"
+                    formData.numberFormat || "en-US",
                   )}
                   ) as of{" "}
                   {formatDateByPattern(
                     new Date(2024, 9, 23),
-                    formData.dateFormat
+                    formData.dateFormat,
                   )}
                 </p>
               </div>
               <div className="hidden sm:block ml-4">
                 <svg
-                  width="140"
+                  fill="none"
                   height="70"
                   viewBox="0 0 140 70"
-                  fill="none"
+                  width="140"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M 0 55 L 10 52 Q 15 50 20 48 L 25 50 Q 30 52 35 48 L 40 45 Q 45 42 50 44 L 55 46 Q 60 48 65 45 L 70 42 Q 75 38 80 35 L 85 33 Q 90 30 95 28 L 100 25 Q 105 22 110 20 L 115 18 Q 120 15 125 12 L 130 10 L 140 8"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    fill="none"
                     className="text-success"
+                    d="M 0 55 L 10 52 Q 15 50 20 48 L 25 50 Q 30 52 35 48 L 40 45 Q 45 42 50 44 L 55 46 Q 60 48 65 45 L 70 42 Q 75 38 80 35 L 85 33 Q 90 30 95 28 L 100 25 Q 105 22 110 20 L 115 18 Q 120 15 125 12 L 130 10 L 140 8"
+                    fill="none"
+                    stroke="currentColor"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    strokeWidth="2.5"
                   />
                 </svg>
               </div>
@@ -160,107 +158,112 @@ export default function PreferencesPage() {
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         <Card className="bg-default-50/10 dark:bg-default-50/10 backdrop-blur-md border border-brand-blue-500/20 shadow-xl">
-        <CardBody className="p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            {/* Default Currency */}
-            <Select
-              required
-              label="Default Currency"
-              selectedKeys={[formData.defaultCurrency]}
-              onChange={(e) =>
-                setFormData({ ...formData, defaultCurrency: e.target.value })
-              }
-            >
-              {Object.values(Currency).map((currency) => (
-                <SelectItem key={currency}>{currency}</SelectItem>
-              ))}
-            </Select>
-
-            {/* Date Format */}
-            <Select
-              required
-              description="How dates will be displayed throughout the app"
-              label="Date Format"
-              selectedKeys={[formData.dateFormat]}
-              onChange={(e) =>
-                setFormData({ ...formData, dateFormat: e.target.value })
-              }
-            >
-              {DATE_FORMATS.map((format) => (
-                <SelectItem key={format.value} textValue={format.label}>
-                  {format.label} - {format.example}
-                </SelectItem>
-              ))}
-            </Select>
-
-            {/* Number Format */}
-            <Select
-              required
-              description="How numbers and currencies will be formatted"
-              label="Number Format"
-              selectedKeys={formData.numberFormat ? [formData.numberFormat] : []}
-              onChange={(e) =>
-                setFormData({ ...formData, numberFormat: e.target.value })
-              }
-            >
-              {NUMBER_FORMATS.map((format) => (
-                <SelectItem key={format.value} textValue={format.label}>
-                  {format.flag} {format.label}
-                </SelectItem>
-              ))}
-            </Select>
-
-            {/* Locale */}
-            <Select
-              required
-              description="Your preferred language and region"
-              label="Locale"
-              selectedKeys={formData.locale ? [formData.locale] : []}
-              onChange={(e) =>
-                setFormData({ ...formData, locale: e.target.value })
-              }
-            >
-              {LOCALES.map((locale) => (
-                <SelectItem key={locale.value} textValue={locale.label}>
-                  {locale.flag} {locale.label}
-                </SelectItem>
-              ))}
-            </Select>
-
-            {/* Timezone */}
-            <Select
-              required
-              description="Detected from your browser"
-              isDisabled
-              label="Timezone"
-              selectedKeys={formData.timezone ? [formData.timezone] : []}
-            >
-              <SelectItem key={formData.timezone} textValue={formData.timezone}>
-                {formData.timezone}
-              </SelectItem>
-            </Select>
-
-            <div className="flex gap-4">
-              <Button
-                className="flex-1"
-                type="button"
-                variant="flat"
-                onPress={() => router.push("/onboarding/initial-net-worth")}
+          <CardBody className="p-8">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {/* Default Currency */}
+              <Select
+                required
+                label="Default Currency"
+                selectedKeys={[formData.defaultCurrency]}
+                onChange={(e) =>
+                  setFormData({ ...formData, defaultCurrency: e.target.value })
+                }
               >
-                Back
-              </Button>
-              <Button
-                className="flex-1"
-                color="primary"
-                isLoading={loading}
-                type="submit"
+                {Object.values(Currency).map((currency) => (
+                  <SelectItem key={currency}>{currency}</SelectItem>
+                ))}
+              </Select>
+
+              {/* Date Format */}
+              <Select
+                required
+                description="How dates will be displayed throughout the app"
+                label="Date Format"
+                selectedKeys={[formData.dateFormat]}
+                onChange={(e) =>
+                  setFormData({ ...formData, dateFormat: e.target.value })
+                }
               >
-                Complete Setup
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
+                {DATE_FORMATS.map((format) => (
+                  <SelectItem key={format.value} textValue={format.label}>
+                    {format.label} - {format.example}
+                  </SelectItem>
+                ))}
+              </Select>
+
+              {/* Number Format */}
+              <Select
+                required
+                description="How numbers and currencies will be formatted"
+                label="Number Format"
+                selectedKeys={
+                  formData.numberFormat ? [formData.numberFormat] : []
+                }
+                onChange={(e) =>
+                  setFormData({ ...formData, numberFormat: e.target.value })
+                }
+              >
+                {NUMBER_FORMATS.map((format) => (
+                  <SelectItem key={format.value} textValue={format.label}>
+                    {format.flag} {format.label}
+                  </SelectItem>
+                ))}
+              </Select>
+
+              {/* Locale */}
+              <Select
+                required
+                description="Your preferred language and region"
+                label="Locale"
+                selectedKeys={formData.locale ? [formData.locale] : []}
+                onChange={(e) =>
+                  setFormData({ ...formData, locale: e.target.value })
+                }
+              >
+                {LOCALES.map((locale) => (
+                  <SelectItem key={locale.value} textValue={locale.label}>
+                    {locale.flag} {locale.label}
+                  </SelectItem>
+                ))}
+              </Select>
+
+              {/* Timezone */}
+              <Select
+                isDisabled
+                required
+                description="Detected from your browser"
+                label="Timezone"
+                selectedKeys={formData.timezone ? [formData.timezone] : []}
+              >
+                <SelectItem
+                  key={formData.timezone}
+                  textValue={formData.timezone}
+                >
+                  {formData.timezone}
+                </SelectItem>
+              </Select>
+
+              <div className="flex gap-4">
+                <Button
+                  className="flex-1"
+                  type="button"
+                  variant="flat"
+                  onPress={() => router.push("/onboarding/initial-net-worth")}
+                >
+                  Back
+                </Button>
+                <Button
+                  className="flex-1"
+                  color="primary"
+                  isLoading={loading}
+                  type="submit"
+                >
+                  Complete Setup
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       </motion.div>
     </div>
   );

@@ -1,3 +1,35 @@
+## [2.2.0](https://github.com/YonderUrik/buddy-budget/compare/v2.1.0...v2.2.0) (2025-12-29)
+
+### Features
+
+* Add Prisma schema and user types for database integration ([85d4411](https://github.com/YonderUrik/buddy-budget/commit/85d44118f557d6fb99e804f0efd92fb2505f3ca3))
+* Enhance onboarding process with user settings and improved UI ([680fe96](https://github.com/YonderUrik/buddy-budget/commit/680fe96d645ba31ebda10249f08499c0c5351272))
+* Implement user authentication and onboarding flow ([7def7d8](https://github.com/YonderUrik/buddy-budget/commit/7def7d891703e40a5f2015ba48faf93bb32a6fda))
+* Integrate Prisma for database management ([6bde5ed](https://github.com/YonderUrik/buddy-budget/commit/6bde5ed35b0b94baf7b7abe5be937ae85229a495))
+* Revamp onboarding flow and introduce user profile page ([800ba47](https://github.com/YonderUrik/buddy-budget/commit/800ba47fedb19d9b97785660f73135d30f35a03a))
+
+### Bug Fixes
+
+* Update welcome page layout for improved readability ([5c9346e](https://github.com/YonderUrik/buddy-budget/commit/5c9346e7501fcb063e20a4841956ecabd5bc0502))
+
+### Code Refactoring
+
+* Clean up PreferencesPage layout and improve code readability ([912456e](https://github.com/YonderUrik/buddy-budget/commit/912456e161bf8ec035d6a15ccfabbe7c4917ec50))
+* Enhance SignInPage structure with Suspense for improved loading experience ([05e4ac6](https://github.com/YonderUrik/buddy-budget/commit/05e4ac6d6417632a4dc663fadbf070098effa7ca))
+* Remove financial goals step from onboarding process ([32cd71f](https://github.com/YonderUrik/buddy-budget/commit/32cd71f384e662db1811b8f57f22974286714ab6))
+
+### Tests
+
+* Enhance auth mocks in route tests for improved clarity and structure ([0f2fde6](https://github.com/YonderUrik/buddy-budget/commit/0f2fde64ee085c88b352c88312f5a24aafe4089a))
+* Enhance testing framework and improve Jest configuration ([cb6badc](https://github.com/YonderUrik/buddy-budget/commit/cb6badce25a60a268914f0fa7ebc0f8a5aca42be))
+* Improve test readability and structure across multiple files ([6d9e5df](https://github.com/YonderUrik/buddy-budget/commit/6d9e5dfcd2767ce5ddf69dace0e82dd6aef14448))
+* Update Prisma mock implementation for improved type safety and clarity ([6f61161](https://github.com/YonderUrik/buddy-budget/commit/6f6116187eefc8050370e8fdfd6d0d2b3a88dacc))
+
+### Continuous Integration
+
+* Update GitHub Actions workflow to use npm instead of Bun ([2395b2f](https://github.com/YonderUrik/buddy-budget/commit/2395b2ff7a9044e680bc5f6f15fe7ded3105ef34))
+* Update npm command in GitHub Actions workflow for dependency installation ([58a0a23](https://github.com/YonderUrik/buddy-budget/commit/58a0a235c85e60c9ff131914084ce3433038e29f))
+
 ## [2.1.0](https://github.com/YonderUrik/buddy-budget/compare/v2.0.0...v2.1.0) (2025-12-25)
 
 ### Features

@@ -18,35 +18,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: buddy-budget/package-lock.json
 
       - name: Install dependencies
         working-directory: buddy-budget
-        run: bun install
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate Prisma Client
+        working-directory: buddy-budget
+        run: npx prisma generate
 
       - name: Run linter
         working-directory: buddy-budget
-        run: bun run lint
-
-      - name: Run tests
-        working-directory: buddy-budget
-        run: bun test
+        run: npm run lint
 
       - name: Run tests with coverage
         working-directory: buddy-budget
-        run: bun run test:coverage
+        run: npm run test:coverage
 
       - name: Build
         working-directory: buddy-budget
-        run: bun run build
+        run: npm run build
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4

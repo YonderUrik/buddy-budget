@@ -3,7 +3,7 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Apple from "next-auth/providers/apple";
 
-// Define types locally to avoid Prisma imports
+// Define types locally to avoid Prisma imports in Edge runtime
 export enum OnboardingStep {
   NOT_STARTED = "NOT_STARTED",
   WELCOME = "WELCOME",
@@ -106,10 +106,63 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.email = user.email;
         token.name = user.name;
         token.picture = user.image; // NextAuth uses 'picture' for the image in JWT
-        token.onboardingCompleted = user.onboardingCompleted ?? false;
-        token.onboardingStep =
-          user.onboardingStep ?? OnboardingStep.NOT_STARTED;
-        token.provider = user.provider ?? null;
+
+        // Check database for existing user to get actual onboarding status
+        // We use fetch instead of direct Prisma access because this callback
+        // runs in Edge runtime when called from middleware
+        if (user.email && typeof window === "undefined") {
+          try {
+            // Construct the absolute URL for the API endpoint
+            const protocol = process.env.NEXTAUTH_URL?.startsWith("https")
+              ? "https"
+              : "http";
+            const host =
+              process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, "") ||
+              "localhost:3000";
+            const baseUrl = `${protocol}://${host}`;
+
+            const response = await fetch(`${baseUrl}/api/user/status`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: user.email }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+
+              if (data.exists) {
+                // Use actual database values for existing users
+                token.onboardingCompleted = data.onboardingCompleted;
+                token.onboardingStep = data.onboardingStep as OnboardingStep;
+                token.provider = data.provider as AuthProvider | null;
+              } else {
+                // New user - use defaults
+                token.onboardingCompleted = false;
+                token.onboardingStep = OnboardingStep.NOT_STARTED;
+                token.provider = user.provider ?? null;
+              }
+            } else {
+              // API call failed - use defaults
+              token.onboardingCompleted = user.onboardingCompleted ?? false;
+              token.onboardingStep =
+                user.onboardingStep ?? OnboardingStep.NOT_STARTED;
+              token.provider = user.provider ?? null;
+            }
+          } catch (error) {
+            console.error("Error fetching user status:", error);
+            // Fallback to defaults on error
+            token.onboardingCompleted = user.onboardingCompleted ?? false;
+            token.onboardingStep =
+              user.onboardingStep ?? OnboardingStep.NOT_STARTED;
+            token.provider = user.provider ?? null;
+          }
+        } else {
+          // No email or client-side - use defaults
+          token.onboardingCompleted = user.onboardingCompleted ?? false;
+          token.onboardingStep =
+            user.onboardingStep ?? OnboardingStep.NOT_STARTED;
+          token.provider = user.provider ?? null;
+        }
 
         // Store account info for database sync
         if (account) {

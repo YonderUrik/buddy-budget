@@ -9,7 +9,7 @@ import { useSession } from "next-auth/react";
  * This ensures users are created/updated in the database even with pure JWT sessions
  */
 export function AuthSync() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const hasSynced = useRef(false);
 
   useEffect(() => {
@@ -36,6 +36,18 @@ export function AuthSync() {
 
         if (!response.ok) {
           console.error("Failed to sync user data");
+
+          return;
+        }
+
+        // Update session with the latest user data from database
+        const data = await response.json();
+
+        if (data.success && data.user) {
+          await update({
+            onboardingCompleted: data.user.onboardingCompleted,
+            onboardingStep: data.user.onboardingStep,
+          });
         }
       } catch (error) {
         console.error("Error syncing user:", error);
@@ -43,7 +55,7 @@ export function AuthSync() {
     }
 
     syncUser();
-  }, [session, status]);
+  }, [session, status, update]);
 
   // This component doesn't render anything
   return null;

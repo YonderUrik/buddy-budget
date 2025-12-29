@@ -24,6 +24,7 @@ function extractNames(fullName: string | null | undefined): {
 
   const parts = fullName.trim().split(/\s+/);
 
+  // istanbul ignore next - Defensive check: split() always returns at least one element
   if (parts.length === 0) {
     return { firstName: null, lastName: null };
   }

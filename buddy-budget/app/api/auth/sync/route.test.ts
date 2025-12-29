@@ -26,11 +26,8 @@ jest.mock("next-auth/providers/apple", () => ({
 
 // Mock Prisma before imports
 import { AuthProvider as PrismaAuthProvider } from "@prisma/client";
-
-import { POST } from "./route";
-
-// eslint-disable-next-line import/order
 import { prismaMock } from "@/app/api/__tests__/mocks/prisma.mock";
+
 jest.mock("@/lib/db", () => ({
   __esModule: true,
   prisma: prismaMock,
@@ -41,6 +38,8 @@ jest.mock("@/lib/db", () => ({
 // Mock auth
 jest.mock("@/lib/auth");
 
+// eslint-disable-next-line import/order
+import { POST } from "./route";
 import { auth } from "@/lib/auth";
 import { RequestBuilder } from "@/app/api/__tests__/utils/requestBuilder";
 import {

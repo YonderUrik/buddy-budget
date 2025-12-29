@@ -1,21 +1,49 @@
 import { PrismaClient, AuthProvider } from "@prisma/client";
-import { mockDeep, mockReset, DeepMockProxy } from "jest-mock-extended";
 
 /**
- * Type-safe mock of Prisma Client
+ * Type-safe mock of Prisma Client using plain Jest mocks
  */
-export type MockPrismaClient = DeepMockProxy<PrismaClient>;
+export type MockPrismaClient = {
+  [K in keyof PrismaClient]: PrismaClient[K] extends object
+    ? {
+        [M in keyof PrismaClient[K]]: jest.Mock;
+      }
+    : jest.Mock;
+};
+
+/**
+ * Create a mock Prisma client instance
+ */
+function createMockPrismaClient(): MockPrismaClient {
+  return {
+    user: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      upsert: jest.fn(),
+      count: jest.fn(),
+    },
+  } as any;
+}
 
 /**
  * Global Prisma mock instance
  */
-export const prismaMock = mockDeep<PrismaClient>();
+export const prismaMock = createMockPrismaClient();
 
 /**
  * Reset the Prisma mock - call this in beforeEach()
  */
 export function resetPrismaMock() {
-  mockReset(prismaMock);
+  // Reset all mocks in the user object
+  Object.values(prismaMock.user).forEach((mock) => {
+    if (typeof mock === "function" && "mockClear" in mock) {
+      mock.mockClear();
+    }
+  });
 }
 
 /**

@@ -20,6 +20,7 @@ export class RequestBuilder {
     Object.entries(params).forEach(([key, value]) => {
       this.url.searchParams.set(key, value);
     });
+
     return this;
   }
 
@@ -28,6 +29,7 @@ export class RequestBuilder {
    */
   body(data: any): this {
     this.bodyData = data;
+
     return this;
   }
 
@@ -36,6 +38,7 @@ export class RequestBuilder {
    */
   headers(headers: Record<string, string>): this {
     this.headersData = { ...this.headersData, ...headers };
+
     return this;
   }
 
@@ -44,6 +47,7 @@ export class RequestBuilder {
    */
   setMethod(method: string): this {
     this.method = method;
+
     return this;
   }
 

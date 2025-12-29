@@ -1,5 +1,5 @@
-import { NextRequest } from "next/server";
 import { GET } from "./route";
+
 import { getStockDetails } from "@/components/yahoo-finance/functions";
 import { RequestBuilder } from "@/app/api/__tests__/utils/requestBuilder";
 import {
@@ -75,7 +75,10 @@ describe("GET /api/stocks/details", () => {
 
       await GET(request);
 
-      expect(mockGetStockDetails).toHaveBeenCalledWith("GOOGL", expect.any(Array));
+      expect(mockGetStockDetails).toHaveBeenCalledWith(
+        "GOOGL",
+        expect.any(Array),
+      );
     });
 
     it("should request correct Yahoo Finance modules", async () => {
@@ -139,7 +142,10 @@ describe("GET /api/stocks/details", () => {
 
       await GET(request);
 
-      expect(mockGetStockDetails).toHaveBeenCalledWith("BRK.B", expect.any(Array));
+      expect(mockGetStockDetails).toHaveBeenCalledWith(
+        "BRK.B",
+        expect.any(Array),
+      );
     });
 
     it("should handle international symbols", async () => {
@@ -149,7 +155,10 @@ describe("GET /api/stocks/details", () => {
 
       await GET(request);
 
-      expect(mockGetStockDetails).toHaveBeenCalledWith("ASML.AS", expect.any(Array));
+      expect(mockGetStockDetails).toHaveBeenCalledWith(
+        "ASML.AS",
+        expect.any(Array),
+      );
     });
 
     it("should handle lowercase symbols", async () => {
@@ -159,7 +168,10 @@ describe("GET /api/stocks/details", () => {
 
       await GET(request);
 
-      expect(mockGetStockDetails).toHaveBeenCalledWith("aapl", expect.any(Array));
+      expect(mockGetStockDetails).toHaveBeenCalledWith(
+        "aapl",
+        expect.any(Array),
+      );
     });
   });
 });

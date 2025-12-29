@@ -11,16 +11,12 @@ interface LegalPageLayoutProps {
   pageTitle: string;
   description: string;
   content: string;
-  lastUpdated?: string;
-  effectiveDate?: string;
 }
 
 export function LegalPageLayout({
   pageTitle,
   description,
   content,
-  lastUpdated,
-  effectiveDate,
 }: LegalPageLayoutProps) {
   return (
     <div className="flex flex-col gap-16 py-8 md:py-12 relative overflow-hidden">

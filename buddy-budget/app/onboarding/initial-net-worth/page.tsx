@@ -70,59 +70,62 @@ export default function InitialNetWorthPage() {
         transition={{ duration: 0.5, delay: 0.2 }}
       >
         <Card className="bg-default-50/10 dark:bg-default-50/10 backdrop-blur-md border border-brand-blue-500/20 shadow-xl">
-        <CardBody className="p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <Input
-                required
-                description="Total assets minus total liabilities"
-                label="Current Net Worth"
-                placeholder="0"
-                startContent={<span className="text-default-400">$</span>}
-                type="number"
-                value={formData.initialNetWorth}
-                onChange={(e) =>
-                  setFormData({ ...formData, initialNetWorth: e.target.value })
-                }
-              />
-            </div>
+          <CardBody className="p-8">
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              <div>
+                <Input
+                  required
+                  description="Total assets minus total liabilities"
+                  label="Current Net Worth"
+                  placeholder="0"
+                  startContent={<span className="text-default-400">$</span>}
+                  type="number"
+                  value={formData.initialNetWorth}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      initialNetWorth: e.target.value,
+                    })
+                  }
+                />
+              </div>
 
-            <div>
-              <Input
-                required
-                description="What's your long-term net worth goal?"
-                label="Target Net Worth"
-                placeholder="0"
-                startContent={<span className="text-default-400">$</span>}
-                type="number"
-                value={formData.targetNetWorth}
-                onChange={(e) =>
-                  setFormData({ ...formData, targetNetWorth: e.target.value })
-                }
-              />
-            </div>
+              <div>
+                <Input
+                  required
+                  description="What's your long-term net worth goal?"
+                  label="Target Net Worth"
+                  placeholder="0"
+                  startContent={<span className="text-default-400">$</span>}
+                  type="number"
+                  value={formData.targetNetWorth}
+                  onChange={(e) =>
+                    setFormData({ ...formData, targetNetWorth: e.target.value })
+                  }
+                />
+              </div>
 
-            <div className="flex gap-4">
-              <Button
-                className="flex-1"
-                type="button"
-                variant="flat"
-                onPress={() => router.push("/onboarding/user-profile")}
-              >
-                Back
-              </Button>
-              <Button
-                className="flex-1"
-                color="primary"
-                isLoading={loading}
-                type="submit"
-              >
-                Continue
-              </Button>
-            </div>
-          </form>
-        </CardBody>
-      </Card>
+              <div className="flex gap-4">
+                <Button
+                  className="flex-1"
+                  type="button"
+                  variant="flat"
+                  onPress={() => router.push("/onboarding/user-profile")}
+                >
+                  Back
+                </Button>
+                <Button
+                  className="flex-1"
+                  color="primary"
+                  isLoading={loading}
+                  type="submit"
+                >
+                  Continue
+                </Button>
+              </div>
+            </form>
+          </CardBody>
+        </Card>
       </motion.div>
     </div>
   );

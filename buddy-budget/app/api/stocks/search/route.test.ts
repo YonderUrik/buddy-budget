@@ -1,5 +1,6 @@
-import { NextRequest } from "next/server";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { GET } from "./route";
+
 import {
   searchStocks,
   getStockLogo,
@@ -142,7 +143,12 @@ describe("GET /api/stocks/search", () => {
       const data = await expectJsonResponse(response, 200);
 
       expect(data.results).toHaveLength(1);
-      expect(mockGetStockLogo).toHaveBeenCalledWith("TEST", "Test Company", "", "");
+      expect(mockGetStockLogo).toHaveBeenCalledWith(
+        "TEST",
+        "Test Company",
+        "",
+        "",
+      );
     });
 
     it("should handle results with all optional fields present", async () => {
@@ -151,7 +157,7 @@ describe("GET /api/stocks/search", () => {
           symbol: "TEST",
           shortname: "Test Co",
           quoteType: "EQUITY",
-          longname: "Test Company Inc"
+          longname: "Test Company Inc",
         } as any,
       ]);
 
@@ -165,7 +171,7 @@ describe("GET /api/stocks/search", () => {
         "TEST",
         "Test Co",
         "EQUITY",
-        "Test Company Inc"
+        "Test Company Inc",
       );
     });
 
@@ -175,7 +181,7 @@ describe("GET /api/stocks/search", () => {
           symbol: "TEST",
           shortname: null,
           quoteType: undefined,
-          longname: null
+          longname: null,
         } as any,
       ]);
 

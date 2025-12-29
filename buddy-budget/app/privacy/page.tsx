@@ -20,8 +20,6 @@ export default function PrivacyPage() {
     <LegalPageLayout
       content={document.content}
       description="Your privacy is important to us. Learn how we handle your data and protect your information."
-      effectiveDate={document.frontmatter.effectiveDate}
-      lastUpdated={document.frontmatter.lastUpdated}
       pageTitle={document.frontmatter.title}
     />
   );

@@ -1,5 +1,5 @@
-import { NextRequest } from "next/server";
 import { GET } from "./route";
+
 import { getHistoricalData } from "@/components/yahoo-finance/functions";
 import { RequestBuilder } from "@/app/api/__tests__/utils/requestBuilder";
 import {
@@ -129,6 +129,7 @@ describe("GET /api/stocks/historical", () => {
       await GET(request);
 
       const [, , endDate] = mockGetHistoricalData.mock.calls[0];
+
       expect(endDate).toBeInstanceOf(Date);
       expect(endDate.getTime()).toBeLessThanOrEqual(new Date().getTime());
     });
@@ -258,7 +259,11 @@ describe("GET /api/stocks/historical", () => {
 
       const response = await GET(request);
 
-      await expectErrorResponse(response, 500, "Failed to fetch historical data");
+      await expectErrorResponse(
+        response,
+        500,
+        "Failed to fetch historical data",
+      );
     });
 
     it("should return 500 for invalid stock symbols", async () => {
@@ -270,7 +275,11 @@ describe("GET /api/stocks/historical", () => {
 
       const response = await GET(request);
 
-      await expectErrorResponse(response, 500, "Failed to fetch historical data");
+      await expectErrorResponse(
+        response,
+        500,
+        "Failed to fetch historical data",
+      );
     });
   });
 

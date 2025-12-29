@@ -32,6 +32,7 @@ export async function expectErrorResponse(
   expect(response.status).toBe(expectedStatus);
 
   const data = await response.json();
+
   expect(data).toHaveProperty("error");
 
   if (expectedErrorMessage) {

@@ -37,8 +37,9 @@ jest.mock("@/lib/db", () => ({
 // Mock auth
 jest.mock("@/lib/auth");
 
-import { NextRequest } from "next/server";
+// eslint-disable-next-line import/order
 import { PATCH } from "./route";
+
 import { auth } from "@/lib/auth";
 import { RequestBuilder } from "@/app/api/__tests__/utils/requestBuilder";
 import {
@@ -79,6 +80,7 @@ describe("PATCH /api/user/onboarding", () => {
 
     it("should return 401 when session has no email", async () => {
       const sessionWithoutEmail = createMockSession({ email: undefined });
+
       mockAuth.mockResolvedValue(sessionWithoutEmail);
 
       const request = new RequestBuilder("/api/user/onboarding")
@@ -181,6 +183,7 @@ describe("PATCH /api/user/onboarding", () => {
 
     it("should return success with updated user", async () => {
       const updatedUser = { ...mockUser, firstName: "Updated" };
+
       prismaMock.user.update.mockResolvedValue(updatedUser);
 
       const request = new RequestBuilder("/api/user/onboarding")
@@ -353,7 +356,9 @@ describe("PATCH /api/user/onboarding", () => {
     });
 
     it("should return 500 when user findUnique fails", async () => {
-      prismaMock.user.findUnique.mockRejectedValue(new Error("DB connection error"));
+      prismaMock.user.findUnique.mockRejectedValue(
+        new Error("DB connection error"),
+      );
 
       const request = new RequestBuilder("/api/user/onboarding")
         .setMethod("PATCH")

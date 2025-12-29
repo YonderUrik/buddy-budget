@@ -25,8 +25,12 @@ jest.mock("next-auth/providers/apple", () => ({
 }));
 
 // Mock Prisma before imports
-import { prismaMock } from "@/app/api/__tests__/mocks/prisma.mock";
+import { AuthProvider as PrismaAuthProvider } from "@prisma/client";
 
+import { POST } from "./route";
+
+// eslint-disable-next-line import/order
+import { prismaMock } from "@/app/api/__tests__/mocks/prisma.mock";
 jest.mock("@/lib/db", () => ({
   __esModule: true,
   prisma: prismaMock,
@@ -37,10 +41,7 @@ jest.mock("@/lib/db", () => ({
 // Mock auth
 jest.mock("@/lib/auth");
 
-import { NextRequest } from "next/server";
-import { POST } from "./route";
 import { auth } from "@/lib/auth";
-import { AuthProvider as PrismaAuthProvider } from "@prisma/client";
 import { RequestBuilder } from "@/app/api/__tests__/utils/requestBuilder";
 import {
   expectJsonResponse,
@@ -80,6 +81,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should return 401 when session has no email", async () => {
       const sessionWithoutEmail = createMockSession({ email: undefined });
+
       mockAuth.mockResolvedValue(sessionWithoutEmail);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -131,11 +133,13 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       expect(updateCall.data.lastLoginAt).toBeInstanceOf(Date);
     });
 
     it("should update name when changed from provider", async () => {
       const sessionWithNewName = createMockSession({ name: "New Name" });
+
       mockAuth.mockResolvedValue(sessionWithNewName);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -146,6 +150,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       expect(updateCall.data).toMatchObject({
         name: "New Name",
       });
@@ -155,6 +160,7 @@ describe("POST /api/auth/sync", () => {
       const sessionWithNewImage = createMockSession({
         image: "https://new-image.com/avatar.jpg",
       });
+
       mockAuth.mockResolvedValue(sessionWithNewImage);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -165,6 +171,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       expect(updateCall.data).toMatchObject({
         image: "https://new-image.com/avatar.jpg",
       });
@@ -179,6 +186,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       // Name should not be updated when it's the same
       expect(updateCall.data.name).toBeUndefined();
     });
@@ -188,9 +196,11 @@ describe("POST /api/auth/sync", () => {
         firstName: null,
         lastName: null,
       });
+
       prismaMock.user.findUnique.mockResolvedValue(userWithoutNames);
 
       const sessionWithName = createMockSession({ name: "John Doe" });
+
       mockAuth.mockResolvedValue(sessionWithName);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -201,6 +211,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       expect(updateCall.data).toMatchObject({
         firstName: "John",
         lastName: "Doe",
@@ -216,6 +227,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       // firstName and lastName should not be in update data when already set
       expect(updateCall.data.firstName).toBeUndefined();
       expect(updateCall.data.lastName).toBeUndefined();
@@ -223,6 +235,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should set provider if not already set", async () => {
       const userWithoutProvider = createMockUser({ provider: null });
+
       prismaMock.user.findUnique.mockResolvedValue(userWithoutProvider);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -233,6 +246,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       expect(updateCall.data).toMatchObject({
         provider: PrismaAuthProvider.GITHUB,
         providerId: "github-456",
@@ -248,6 +262,7 @@ describe("POST /api/auth/sync", () => {
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       // Provider and providerId should not be in update data when already set
       expect(updateCall.data.provider).toBeUndefined();
       expect(updateCall.data.providerId).toBeUndefined();
@@ -255,16 +270,21 @@ describe("POST /api/auth/sync", () => {
 
     it("should not set provider for invalid provider mapping when user has no provider", async () => {
       const userWithoutProvider = createMockUser({ provider: null });
+
       prismaMock.user.findUnique.mockResolvedValue(userWithoutProvider);
 
       const request = new RequestBuilder("/api/auth/sync")
         .setMethod("POST")
-        .body({ accountProvider: "invalid-provider", accountProviderId: "invalid-123" })
+        .body({
+          accountProvider: "invalid-provider",
+          accountProviderId: "invalid-123",
+        })
         .build();
 
       await POST(request);
 
       const updateCall = prismaMock.user.update.mock.calls[0][0];
+
       // Invalid provider should not set provider or providerId
       expect(updateCall.data.provider).toBeUndefined();
       expect(updateCall.data.providerId).toBeUndefined();
@@ -279,6 +299,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should create new user with correct data", async () => {
       const newUser = createMockUser();
+
       prismaMock.user.create.mockResolvedValue(newUser);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -287,7 +308,10 @@ describe("POST /api/auth/sync", () => {
         .build();
 
       const response = await POST(request);
-      const data = await expectJsonResponse(response, 200, { success: true, isNew: true });
+      const data = await expectJsonResponse(response, 200, {
+        success: true,
+        isNew: true,
+      });
 
       expect(data.user).toBeDefined();
       expect(prismaMock.user.create).toHaveBeenCalled();
@@ -295,6 +319,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should set default onboarding step to WELCOME", async () => {
       const newUser = createMockUser();
+
       prismaMock.user.create.mockResolvedValue(newUser);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -314,6 +339,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should set onboardingCompleted to false", async () => {
       const newUser = createMockUser();
+
       prismaMock.user.create.mockResolvedValue(newUser);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -333,9 +359,11 @@ describe("POST /api/auth/sync", () => {
 
     it("should extract firstName/lastName from name", async () => {
       const sessionWithName = createMockSession({ name: "Alice Johnson" });
+
       mockAuth.mockResolvedValue(sessionWithName);
 
       const newUser = createMockUser();
+
       prismaMock.user.create.mockResolvedValue(newUser);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -356,9 +384,11 @@ describe("POST /api/auth/sync", () => {
 
     it("should set displayName to firstName if available", async () => {
       const sessionWithName = createMockSession({ name: "Bob Smith" });
+
       mockAuth.mockResolvedValue(sessionWithName);
 
       const newUser = createMockUser();
+
       prismaMock.user.create.mockResolvedValue(newUser);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -378,9 +408,11 @@ describe("POST /api/auth/sync", () => {
 
     it("should handle single-word names correctly", async () => {
       const sessionWithName = createMockSession({ name: "Madonna" });
+
       mockAuth.mockResolvedValue(sessionWithName);
 
       const newUser = createMockUser();
+
       prismaMock.user.create.mockResolvedValue(newUser);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -408,6 +440,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should handle null/undefined name", async () => {
       const sessionWithoutName = createMockSession({ name: null });
+
       mockAuth.mockResolvedValue(sessionWithoutName);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -428,6 +461,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should handle empty string name", async () => {
       const sessionWithEmptyName = createMockSession({ name: "" });
+
       mockAuth.mockResolvedValue(sessionWithEmptyName);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -448,6 +482,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should handle multi-part last names", async () => {
       const sessionWithName = createMockSession({ name: "John von Neumann" });
+
       mockAuth.mockResolvedValue(sessionWithName);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -468,6 +503,7 @@ describe("POST /api/auth/sync", () => {
 
     it("should handle extra whitespace", async () => {
       const sessionWithName = createMockSession({ name: "  Jane   Doe  " });
+
       mockAuth.mockResolvedValue(sessionWithName);
 
       const request = new RequestBuilder("/api/auth/sync")
@@ -554,6 +590,7 @@ describe("POST /api/auth/sync", () => {
 
       expect(response.status).toBe(200);
       const createCall = prismaMock.user.create.mock.calls[0][0];
+
       // Invalid provider should result in undefined (which becomes null in DB)
       expect(createCall.data.provider).toBeUndefined();
     });

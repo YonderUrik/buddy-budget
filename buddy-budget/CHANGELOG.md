@@ -1,3 +1,9 @@
+## [2.2.1](https://github.com/YonderUrik/buddy-budget/compare/v2.2.0...v2.2.1) (2025-12-29)
+
+### Continuous Integration
+
+* Update deployment workflow to use npm instead of Bun ([343fa1d](https://github.com/YonderUrik/buddy-budget/commit/343fa1da9750771bcda876409ef96193873bc911))
+
 ## [2.2.0](https://github.com/YonderUrik/buddy-budget/compare/v2.1.0...v2.2.0) (2025-12-29)
 
 ### Features

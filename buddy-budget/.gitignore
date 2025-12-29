@@ -38,5 +38,5 @@ next-env.d.ts
 pnpm-lock.yaml
 yarn.lock
 package-lock.json
-bun.lockb
+bun.lock
 /lib/generated/prisma

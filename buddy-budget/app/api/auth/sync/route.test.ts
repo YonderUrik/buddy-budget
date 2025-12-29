@@ -36,7 +36,40 @@ jest.mock("@/lib/db", () => ({
 }));
 
 // Mock auth
-jest.mock("@/lib/auth");
+jest.mock("@/lib/auth", () => ({
+  __esModule: true,
+  auth: jest.fn(),
+  OnboardingStep: {
+    NOT_STARTED: "NOT_STARTED",
+    WELCOME: "WELCOME",
+    USER_PROFILE: "USER_PROFILE",
+    INITIAL_NET_WORTH: "INITIAL_NET_WORTH",
+    PREFERENCES: "PREFERENCES",
+    COMPLETED: "COMPLETED",
+  },
+  AuthProvider: {
+    GOOGLE: "GOOGLE",
+    GITHUB: "GITHUB",
+    APPLE: "APPLE",
+  },
+  Currency: {
+    USD: "USD",
+    EUR: "EUR",
+    GBP: "GBP",
+    JPY: "JPY",
+    CAD: "CAD",
+    AUD: "AUD",
+    CHF: "CHF",
+    CNY: "CNY",
+    INR: "INR",
+    BRL: "BRL",
+    MXN: "MXN",
+    KRW: "KRW",
+    SGD: "SGD",
+    HKD: "HKD",
+    NZD: "NZD",
+  },
+}));
 
 // eslint-disable-next-line import/order
 import { POST } from "./route";

@@ -1,0 +1,228 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  FREE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  TRIAL
+  NONE
+}
+
+enum OnboardingStep {
+  NOT_STARTED
+  WELCOME
+  USER_PROFILE
+  INITIAL_NET_WORTH
+  PREFERENCES
+  COMPLETED
+}
+
+enum FinancialExperienceLevel {
+  BEGINNER       // New to managing finances, little experience with budgeting or saving
+  DEVELOPING     // Learning the basics, building financial habits
+  INTERMEDIATE   // Comfortable with budgeting, regular saving habits
+  ADVANCED       // Strong financial management skills, good accounting knowledge
+  EXPERT         // Professional or extensive financial/accounting experience
+}
+
+enum AuthProvider {
+  GOOGLE
+  GITHUB
+  APPLE
+}
+
+enum Currency {
+  USD // US Dollar
+  EUR // Euro
+  GBP // British Pound
+  JPY // Japanese Yen
+  CAD // Canadian Dollar
+  AUD // Australian Dollar
+  CHF // Swiss Franc
+  CNY // Chinese Yuan
+  INR // Indian Rupee
+  BRL // Brazilian Real
+  MXN // Mexican Peso
+  KRW // South Korean Won
+  SGD // Singapore Dollar
+  HKD // Hong Kong Dollar
+  NZD // New Zealand Dollar
+}
+
+enum FiscalYearStart {
+  JANUARY
+  FEBRUARY
+  MARCH
+  APRIL
+  MAY
+  JUNE
+  JULY
+  AUGUST
+  SEPTEMBER
+  OCTOBER
+  NOVEMBER
+  DECEMBER
+}
+
+// ============================================================================
+// USER MODEL
+// ============================================================================
+
+model User {
+  // Primary Identifier
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // NextAuth Authentication Fields
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
+
+  // OAuth Provider Information
+  provider   AuthProvider?
+  providerId String? @unique @map("provider_id") // Provider-specific user ID
+
+  // Profile Information
+  name           String? // Full name from OAuth
+  image          String? // Profile picture URL (NextAuth standard)
+  displayName    String? @map("display_name") // Preferred display name
+  firstName      String? @map("first_name")
+  lastName       String? @map("last_name")
+  locale         String? @default("en-US") // User's locale preference
+
+  // User Background (collected during onboarding)
+  occupation               String?                    @map("occupation")
+  country                  String?                    @map("country") // ISO country code
+  dateOfBirth              DateTime?                  @map("date_of_birth")
+  financialExperienceLevel FinancialExperienceLevel?  @map("financial_experience_level")
+  monthlyIncomeRange       String?                    @map("monthly_income_range") // e.g., "0-2000", "2000-5000"
+  primaryGoals             String[]                   @default([]) @map("primary_goals") // Array of goal categories
+
+  // User Role & Subscription
+  role               UserRole           @default(FREE)
+  subscriptionStatus SubscriptionStatus @default(NONE) @map("subscription_status")
+  subscriptionExpiry DateTime?          @map("subscription_expiry")
+  trialStartedAt     DateTime?          @map("trial_started_at")
+  trialEndsAt        DateTime?          @map("trial_ends_at")
+
+  // Onboarding State
+  onboardingCompleted   Boolean        @default(false) @map("onboarding_completed")
+  onboardingStep        OnboardingStep @default(NOT_STARTED) @map("onboarding_step")
+  onboardingStartedAt   DateTime?      @map("onboarding_started_at")
+  onboardingCompletedAt DateTime?      @map("onboarding_completed_at")
+
+  // Financial Goals (set during onboarding)
+  financialGoals      Json?     @map("financial_goals") // Array of goal objects
+  initialNetWorth     Float?    @map("initial_net_worth")
+  initialNetWorthDate DateTime? @map("initial_net_worth_date")
+  targetNetWorth      Float?    @map("target_net_worth")
+  targetNetWorthDate  DateTime? @map("target_net_worth_date")
+
+  // User Preferences
+  defaultCurrency Currency        @default(USD) @map("default_currency")
+  timezone        String          @default("UTC")
+  fiscalYearStart FiscalYearStart @default(JANUARY) @map("fiscal_year_start")
+
+  // Application Settings
+  settings Json @default("{}") // Application settings
+  // Structure: {
+  //   dateFormat: "MM/DD/YYYY",
+  //   numberFormat: "en-US",
+  //   showDecimalPlaces: 2,
+  //   weekStartsOn: "monday",
+  //   dashboardLayout: {...},
+  //   notifications: { email: true, push: false, inApp: true }
+  // }
+
+  // Privacy & Security
+  cookieConsent Json? @map("cookie_consent") // Consent tracking
+  // Structure: { necessary: true, analytics: true, marketing: false, timestamp: "..." }
+
+  // Metadata
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  lastLoginAt  DateTime? @map("last_login_at")
+  lastActiveAt DateTime? @map("last_active_at")
+  deletedAt    DateTime? @map("deleted_at") // Soft delete support
+
+  // NextAuth Relations
+  accounts Account[]
+  sessions Session[]
+
+  // Relations (to be implemented in future)
+  // budgets      Budget[]
+  // expenses     Expense[]
+  // goals        Goal[]
+  // portfolios   Portfolio[]
+  // transactions Transaction[]
+
+  // Indexes (email already indexed via @unique)
+  @@unique([email, provider])
+  @@index([role, subscriptionStatus])
+  @@index([onboardingCompleted])
+  @@index([createdAt])
+  @@index([lastActiveAt])
+  @@map("users")
+}
+
+// ============================================================================
+// NEXTAUTH MODELS
+// ============================================================================
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @map("user_id") @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id") @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}

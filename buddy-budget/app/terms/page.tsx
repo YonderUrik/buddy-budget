@@ -20,8 +20,6 @@ export default function TermsPage() {
     <LegalPageLayout
       content={document.content}
       description="Please read these terms carefully before using Buddy Budget. By using our service, you agree to these terms."
-      effectiveDate={document.frontmatter.effectiveDate}
-      lastUpdated={document.frontmatter.lastUpdated}
       pageTitle={document.frontmatter.title}
     />
   );

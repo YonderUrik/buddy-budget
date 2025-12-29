@@ -2,7 +2,15 @@
  * Date utility functions for common date operations
  */
 
-export type QuickDateRange = "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "YTD" | "MAX";
+export type QuickDateRange =
+  | "1M"
+  | "3M"
+  | "6M"
+  | "1Y"
+  | "2Y"
+  | "5Y"
+  | "YTD"
+  | "MAX";
 
 /**
  * Calculate date range based on quick range selection
@@ -14,9 +22,10 @@ export type QuickDateRange = "1M" | "3M" | "6M" | "1Y" | "2Y" | "5Y" | "YTD" | "
  * getDateRangeFromQuickRange("3M") // { start: 3 months ago, end: now }
  * getDateRangeFromQuickRange("YTD") // { start: Jan 1 this year, end: now }
  */
-export function getDateRangeFromQuickRange(
-  range: QuickDateRange,
-): { start: Date; end: Date } {
+export function getDateRangeFromQuickRange(range: QuickDateRange): {
+  start: Date;
+  end: Date;
+} {
   const end = new Date();
   const start = new Date();
 
@@ -60,7 +69,9 @@ export function getDateRangeFromQuickRange(
  */
 export function addDays(date: Date, days: number): Date {
   const result = new Date(date);
+
   result.setDate(result.getDate() + days);
+
   return result;
 }
 
@@ -73,7 +84,9 @@ export function addDays(date: Date, days: number): Date {
  */
 export function addMonths(date: Date, months: number): Date {
   const result = new Date(date);
+
   result.setMonth(result.getMonth() + months);
+
   return result;
 }
 
@@ -86,7 +99,9 @@ export function addMonths(date: Date, months: number): Date {
  */
 export function addYears(date: Date, years: number): Date {
   const result = new Date(date);
+
   result.setFullYear(result.getFullYear() + years);
+
   return result;
 }
 
@@ -98,7 +113,9 @@ export function addYears(date: Date, years: number): Date {
  */
 export function startOfDay(date: Date): Date {
   const result = new Date(date);
+
   result.setHours(0, 0, 0, 0);
+
   return result;
 }
 
@@ -110,7 +127,9 @@ export function startOfDay(date: Date): Date {
  */
 export function endOfDay(date: Date): Date {
   const result = new Date(date);
+
   result.setHours(23, 59, 59, 999);
+
   return result;
 }
 
@@ -122,8 +141,10 @@ export function endOfDay(date: Date): Date {
  */
 export function startOfMonth(date: Date): Date {
   const result = new Date(date);
+
   result.setDate(1);
   result.setHours(0, 0, 0, 0);
+
   return result;
 }
 
@@ -135,9 +156,11 @@ export function startOfMonth(date: Date): Date {
  */
 export function startOfYear(date: Date): Date {
   const result = new Date(date);
+
   result.setMonth(0);
   result.setDate(1);
   result.setHours(0, 0, 0, 0);
+
   return result;
 }
 
@@ -150,6 +173,7 @@ export function startOfYear(date: Date): Date {
  */
 export function daysBetween(date1: Date, date2: Date): number {
   const oneDay = 24 * 60 * 60 * 1000;
+
   return Math.round((date2.getTime() - date1.getTime()) / oneDay);
 }
 
@@ -161,6 +185,7 @@ export function daysBetween(date1: Date, date2: Date): number {
  */
 export function isToday(date: Date): boolean {
   const today = new Date();
+
   return (
     date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&

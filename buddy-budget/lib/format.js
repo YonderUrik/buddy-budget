@@ -3,6 +3,8 @@
  * Supports multiple currencies, locales, and formatting options
  */
 
+import { CURRENCIES } from './constants';
+
 /**
  * Get the user's browser locale or fallback to en-US
  * @returns {string} Locale string (e.g., 'en-US', 'de-DE')
@@ -376,19 +378,9 @@ export function abbreviateNumber(value, decimals = 1) {
 
 /**
  * Common currency codes for reference
+ * @deprecated Use CURRENCIES from '@/lib/constants' instead
  */
-export const COMMON_CURRENCIES = {
-  USD: { symbol: '$', name: 'US Dollar' },
-  EUR: { symbol: '€', name: 'Euro' },
-  GBP: { symbol: '£', name: 'British Pound' },
-  JPY: { symbol: '¥', name: 'Japanese Yen' },
-  CHF: { symbol: 'CHF', name: 'Swiss Franc' },
-  CAD: { symbol: 'CA$', name: 'Canadian Dollar' },
-  AUD: { symbol: 'A$', name: 'Australian Dollar' },
-  CNY: { symbol: '¥', name: 'Chinese Yuan' },
-  INR: { symbol: '₹', name: 'Indian Rupee' },
-  BRL: { symbol: 'R$', name: 'Brazilian Real' }
-};
+export const COMMON_CURRENCIES = CURRENCIES;
 
 // Format large numbers (for market cap, revenue, etc.)
 export function formatLargeNumber(value, currency) {
@@ -400,6 +392,126 @@ export function formatLargeNumber(value, currency) {
     return `${formatCurrency(value / 1e6, { currency })}M`;
   }
   return formatCurrency(value, { currency });
+}
+
+/**
+ * Format currency with custom locale and currency
+ *
+ * @param {number} amount - The amount to format
+ * @param {string} currency - Currency code (USD, EUR, GBP, etc.)
+ * @param {string} locale - Locale for formatting (e.g., 'en-US', 'de-DE')
+ *
+ * @returns {string} Formatted currency string
+ *
+ * @example
+ * formatCurrencyWithLocale(2325.25, 'USD', 'en-US') // "$2,325.25"
+ * formatCurrencyWithLocale(2325.25, 'EUR', 'de-DE') // "2.325,25 €"
+ */
+export function formatCurrencyWithLocale(amount, currency = 'USD', locale = 'en-US') {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch (error) {
+    // Fallback to basic format
+    return `${getCurrencySymbol(currency, locale)}${amount.toFixed(2)}`;
+  }
+}
+
+/**
+ * Format number with sign display (for showing changes)
+ *
+ * @param {number} value - The value to format
+ * @param {string} currency - Currency code (USD, EUR, GBP, etc.)
+ * @param {string} locale - Locale for formatting
+ *
+ * @returns {string} Formatted number with sign
+ *
+ * @example
+ * formatChangeWithLocale(78.9, 'USD', 'en-US') // "+$78.90"
+ * formatChangeWithLocale(-50, 'EUR', 'de-DE') // "-50,00 €"
+ */
+export function formatChangeWithLocale(value, currency = 'USD', locale = 'en-US') {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      signDisplay: 'always',
+    }).format(value);
+  } catch (error) {
+    const sign = value >= 0 ? '+' : '';
+    return `${sign}${getCurrencySymbol(currency, locale)}${Math.abs(value).toFixed(2)}`;
+  }
+}
+
+/**
+ * Format percentage with sign display
+ *
+ * @param {number} value - The decimal value to format (0.0639 for 6.39%)
+ * @param {string} locale - Locale for formatting
+ *
+ * @returns {string} Formatted percentage with sign
+ *
+ * @example
+ * formatPercentWithLocale(0.0639, 'en-US') // "+6.39%"
+ * formatPercentWithLocale(-0.05, 'de-DE') // "-5,00%"
+ */
+export function formatPercentWithLocale(value, locale = 'en-US') {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+      signDisplay: 'always',
+    }).format(value);
+  } catch (error) {
+    const sign = value >= 0 ? '+' : '';
+    return `${sign}${(value * 100).toFixed(2)}%`;
+  }
+}
+
+/**
+ * Format date according to specified format pattern
+ *
+ * @param {Date} date - The date to format
+ * @param {string} format - Format pattern ('MM/DD/YYYY', 'DD/MM/YYYY', 'YYYY-MM-DD', 'DD.MM.YYYY')
+ *
+ * @returns {string} Formatted date string
+ *
+ * @example
+ * formatDateByPattern(new Date(2024, 9, 23), 'MM/DD/YYYY') // "10/23/2024"
+ * formatDateByPattern(new Date(2024, 9, 23), 'DD/MM/YYYY') // "23/10/2024"
+ * formatDateByPattern(new Date(2024, 9, 23), 'YYYY-MM-DD') // "2024-10-23"
+ */
+export function formatDateByPattern(date, format = 'MM/DD/YYYY') {
+  if (!date) return '';
+
+  try {
+    const dateObj = new Date(date);
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const year = dateObj.getFullYear();
+
+    switch (format) {
+      case 'MM/DD/YYYY':
+        return `${month}/${day}/${year}`;
+      case 'DD/MM/YYYY':
+        return `${day}/${month}/${year}`;
+      case 'YYYY-MM-DD':
+        return `${year}-${month}-${day}`;
+      case 'DD.MM.YYYY':
+        return `${day}.${month}.${year}`;
+      default:
+        return `${month}/${day}/${year}`;
+    }
+  } catch (error) {
+    return '';
+  }
 }
 
 /**
@@ -419,6 +531,9 @@ export default {
   formatDateByInterval,
   abbreviateNumber,
   getDefaultLocale,
-  COMMON_CURRENCIES,
-  formatLargeNumber
+  formatLargeNumber,
+  formatCurrencyWithLocale,
+  formatChangeWithLocale,
+  formatPercentWithLocale,
+  formatDateByPattern
 };

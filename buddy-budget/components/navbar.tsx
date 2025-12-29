@@ -5,20 +5,57 @@ import { motion, AnimatePresence } from "framer-motion";
 import NextLink from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import { Avatar } from "@heroui/avatar";
+import { Button } from "@heroui/button";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/dropdown";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon, HeartFilledIcon } from "@/components/icons";
+import { OnboardingStep } from "@/lib/auth";
 
 export const Navbar = () => {
   const { theme } = useTheme();
+  const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const getProtectedRoute = () => {
+    if (!session?.user) return "/dashboard";
+
+    const { onboardingCompleted, onboardingStep } = session.user;
+
+    if (onboardingCompleted) {
+      return "/dashboard";
+    }
+
+    // Map to appropriate onboarding route
+    const onboardingRoutes: Record<OnboardingStep, string> = {
+      [OnboardingStep.NOT_STARTED]: "/onboarding/welcome",
+      [OnboardingStep.WELCOME]: "/onboarding/welcome",
+      [OnboardingStep.USER_PROFILE]: "/onboarding/user-profile",
+      [OnboardingStep.INITIAL_NET_WORTH]: "/onboarding/initial-net-worth",
+      [OnboardingStep.PREFERENCES]: "/onboarding/preferences",
+      [OnboardingStep.COMPLETED]: "/dashboard",
+    };
+
+    return onboardingRoutes[onboardingStep];
+  };
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/signin" });
+  };
 
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4">
@@ -107,6 +144,66 @@ export const Navbar = () => {
                 <HeartFilledIcon size={20} />
               </a>
               <ThemeSwitch />
+
+              {/* User Avatar Dropdown */}
+              {status === "authenticated" && session?.user && (
+                <Dropdown placement="bottom-end">
+                  <DropdownTrigger>
+                    <Avatar
+                      showFallback
+                      as="button"
+                      className="transition-transform cursor-pointer"
+                      name={session.user.name || session.user.email || "User"}
+                      size="sm"
+                      src={session.user.image || undefined}
+                    />
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label="User actions">
+                    <DropdownItem
+                      key="profile"
+                      className="h-14 gap-2"
+                      textValue="Profile"
+                    >
+                      <p className="font-semibold">Signed in as</p>
+                      <p className="font-semibold text-default-500">
+                        {session.user.email}
+                      </p>
+                    </DropdownItem>
+                    <DropdownItem
+                      key="dashboard"
+                      href={getProtectedRoute()}
+                      startContent={<LayoutDashboard size={16} />}
+                      textValue="Go to Dashboard"
+                    >
+                      {session.user.onboardingCompleted
+                        ? "Go to Dashboard"
+                        : "Continue Onboarding"}
+                    </DropdownItem>
+                    <DropdownItem
+                      key="logout"
+                      color="danger"
+                      startContent={<LogOut size={16} />}
+                      textValue="Sign Out"
+                      onPress={handleSignOut}
+                    >
+                      Sign Out
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              )}
+
+              {/* Sign In Button (when not authenticated) */}
+              {status !== "authenticated" && status !== "loading" && (
+                <Button
+                  as={NextLink}
+                  className="border-brand-blue-500/30 hover:border-brand-blue-500/50 hover:bg-brand-blue-500/5 transition-all"
+                  href="/signin"
+                  size="sm"
+                  variant="bordered"
+                >
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
 
@@ -152,6 +249,54 @@ export const Navbar = () => {
                   <HeartFilledIcon size={20} />
                 </a>
                 <ThemeSwitch />
+
+                {/* Mobile User Avatar Dropdown */}
+                {status === "authenticated" && session?.user && (
+                  <Dropdown placement="bottom-end">
+                    <DropdownTrigger>
+                      <Avatar
+                        showFallback
+                        as="button"
+                        className="transition-transform cursor-pointer"
+                        name={session.user.name || session.user.email || "User"}
+                        size="sm"
+                        src={session.user.image || undefined}
+                      />
+                    </DropdownTrigger>
+                    <DropdownMenu aria-label="User actions">
+                      <DropdownItem
+                        key="profile"
+                        className="h-14 gap-2"
+                        textValue="Profile"
+                      >
+                        <p className="font-semibold">Signed in as</p>
+                        <p className="font-semibold text-default-500">
+                          {session.user.email}
+                        </p>
+                      </DropdownItem>
+                      <DropdownItem
+                        key="dashboard"
+                        href={getProtectedRoute()}
+                        startContent={<LayoutDashboard size={16} />}
+                        textValue="Go to Dashboard"
+                      >
+                        {session.user.onboardingCompleted
+                          ? "Go to Dashboard"
+                          : "Continue Onboarding"}
+                      </DropdownItem>
+                      <DropdownItem
+                        key="logout"
+                        color="danger"
+                        startContent={<LogOut size={16} />}
+                        textValue="Sign Out"
+                        onPress={handleSignOut}
+                      >
+                        Sign Out
+                      </DropdownItem>
+                    </DropdownMenu>
+                  </Dropdown>
+                )}
+
                 <button
                   aria-label="Toggle menu"
                   className="p-2 text-foreground hover:bg-default-100 rounded-lg transition-colors"
@@ -183,6 +328,19 @@ export const Navbar = () => {
                         {item.label}
                       </NextLink>
                     ))}
+
+                    {/* Sign In Button for Mobile (when not authenticated) */}
+                    {status !== "authenticated" && status !== "loading" && (
+                      <Button
+                        as={NextLink}
+                        className="w-full border-brand-blue-500/30 hover:border-brand-blue-500/50 hover:bg-brand-blue-500/5 transition-all mt-4"
+                        href="/signin"
+                        variant="bordered"
+                        onPress={() => setIsMobileMenuOpen(false)}
+                      >
+                        Sign In
+                      </Button>
+                    )}
                   </div>
                 </motion.div>
               )}

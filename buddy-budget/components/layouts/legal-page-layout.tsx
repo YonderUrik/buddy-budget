@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Card, CardBody } from "@heroui/card";
-import { Chip } from "@heroui/chip";
 
 import { title, subtitle } from "@/components/primitives";
 import { TextReveal } from "@/components/ui/text-reveal";
@@ -12,16 +11,12 @@ interface LegalPageLayoutProps {
   pageTitle: string;
   description: string;
   content: string;
-  lastUpdated?: string;
-  effectiveDate?: string;
 }
 
 export function LegalPageLayout({
   pageTitle,
   description,
   content,
-  lastUpdated,
-  effectiveDate,
 }: LegalPageLayoutProps) {
   return (
     <div className="flex flex-col gap-16 py-8 md:py-12 relative overflow-hidden">

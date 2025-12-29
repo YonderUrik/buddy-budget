@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget",
-  "version": "2.2.1",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

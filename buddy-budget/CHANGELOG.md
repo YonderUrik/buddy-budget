@@ -1,3 +1,13 @@
+## [3.0.0](https://github.com/YonderUrik/buddy-budget/compare/v2.2.1...v3.0.0) (2025-12-29)
+
+### ⚠ BREAKING CHANGES
+
+* Update build script to include Prisma generation
+
+### chore
+
+* Update build script to include Prisma generation ([fc1174a](https://github.com/YonderUrik/buddy-budget/commit/fc1174a5103fe08b5964a923274cbc4b6084e0ca))
+
 ## [2.2.1](https://github.com/YonderUrik/buddy-budget/compare/v2.2.0...v2.2.1) (2025-12-29)
 
 ### Continuous Integration

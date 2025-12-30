@@ -10,6 +10,8 @@ import { title, subtitle } from "@/components/primitives";
 export default function DashboardPage() {
   const { data: session } = useSession();
 
+  throw new Error("Test error frontend");
+
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 space-y-8">
       <div className="text-center">

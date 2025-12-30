@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 import {
   searchStocks,
@@ -42,6 +43,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ results: resultsWithLogos });
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        api_route: "/api/stocks/search",
+        method: "GET",
+      },
+    });
     console.error("Error searching stocks:", error);
 
     return NextResponse.json(

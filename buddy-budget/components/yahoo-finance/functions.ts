@@ -1,3 +1,5 @@
+"use server";
+
 /**
  * Yahoo Finance API Functions for Stock & Investment Tracking
  *
@@ -7,63 +9,66 @@
  * Note: This library cannot run in browsers due to CORS. Use it in API routes or server components.
  */
 
-import yahooFinance from "yahoo-finance2";
+import YahooFinance from "yahoo-finance2";
+
+import {
+  StockQuote,
+  HistoricalDataPoint,
+  SearchResult,
+  PortfolioStock,
+} from "./types";
+
+// Initialize the YahooFinance instance (v3 requirement)
+const yahooFinance = new YahooFinance();
 
 // ============================================================================
-// TYPES & INTERFACES
+// RATE LIMITING & ERROR HANDLING
 // ============================================================================
 
-export interface StockQuote {
-  symbol: string;
-  shortName?: string;
-  regularMarketPrice?: number;
-  regularMarketChange?: number;
-  regularMarketChangePercent?: number;
-  regularMarketTime?: Date;
-  regularMarketDayHigh?: number;
-  regularMarketDayLow?: number;
-  regularMarketVolume?: number;
-  regularMarketPreviousClose?: number;
-  regularMarketOpen?: number;
-  fiftyTwoWeekLow?: number;
-  fiftyTwoWeekHigh?: number;
-  currency?: string;
-  marketCap?: number;
-}
+/**
+ * Helper function to handle rate limiting errors with exponential backoff retry
+ * @param fn - Function to execute
+ * @param maxRetries - Maximum number of retry attempts
+ * @param initialDelay - Initial delay in milliseconds
+ */
+async function withRateLimitRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000,
+): Promise<T> {
+  let lastError: Error | undefined;
 
-export interface HistoricalDataPoint {
-  date: Date;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  adjClose: number;
-  volume: number;
-}
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
 
-export interface SearchResult {
-  symbol: string;
-  shortname?: string;
-  longname?: string;
-  exchange?: string;
-  exchDisp?: string;
-  quoteType?: string;
-  typeDisp?: string;
-  score?: number;
-  index?: string;
-  isYahooFinance?: boolean;
-  logoUrl?: string | null;
-  // Legacy fields (may vary by result)
-  name?: string;
-  exch?: string;
-  type?: string;
-}
+      // Check if it's a rate limiting error
+      const isRateLimitError =
+        error?.message?.includes("Too Many Requests") ||
+        error?.message?.includes("429") ||
+        error?.name === "HTTPError" ||
+        (typeof error === "object" &&
+          error !== null &&
+          "statusCode" in error &&
+          error.statusCode === 429);
 
-export interface PortfolioStock {
-  symbol: string;
-  shares: number;
-  purchasePrice: number;
-  purchaseDate: Date;
+      if (!isRateLimitError || attempt === maxRetries) {
+        throw error;
+      }
+
+      // Exponential backoff: wait longer with each retry
+      const delay = initialDelay * Math.pow(2, attempt);
+
+      console.warn(
+        `Rate limit hit, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
 }
 
 // ============================================================================
@@ -76,7 +81,7 @@ export interface PortfolioStock {
  */
 export async function getStockQuote(symbol: string): Promise<StockQuote> {
   try {
-    const quote = await yahooFinance.quote(symbol);
+    const quote = await withRateLimitRetry(() => yahooFinance.quote(symbol));
 
     return quote as StockQuote;
   } catch (error) {
@@ -114,7 +119,7 @@ export async function getMultipleQuotes(
  */
 export async function searchStocks(query: string): Promise<SearchResult[]> {
   try {
-    const results = await yahooFinance.search(query);
+    const results = await withRateLimitRetry(() => yahooFinance.search(query));
 
     return results.quotes.filter((result) => {
       // Type guard to check if result has quoteType property
@@ -148,11 +153,13 @@ export async function getHistoricalData(
   interval: "1d" | "1wk" | "1mo" = "1d",
 ): Promise<HistoricalDataPoint[]> {
   try {
-    const result = await yahooFinance.historical(symbol, {
-      period1,
-      period2,
-      interval,
-    });
+    const result = await withRateLimitRetry(() =>
+      yahooFinance.historical(symbol, {
+        period1,
+        period2,
+        interval,
+      }),
+    );
 
     return result as HistoricalDataPoint[];
   } catch (error) {
@@ -181,11 +188,13 @@ export async function getHistoricalDataByRange(
     | "max",
 ): Promise<HistoricalDataPoint[]> {
   try {
-    const result = await yahooFinance.chart(symbol, {
-      period1: range,
-    });
+    const result = await withRateLimitRetry(() =>
+      yahooFinance.chart(symbol, {
+        period1: range,
+      }),
+    );
 
-    return result.quotes as HistoricalDataPoint[];
+    return result.quotes as unknown as HistoricalDataPoint[];
   } catch (error) {
     console.error("Error fetching historical data for %s:", symbol, error);
     throw error;
@@ -211,9 +220,11 @@ export async function getStockDetails(
   ],
 ) {
   try {
-    const summary = await yahooFinance.quoteSummary(symbol, {
-      modules: modules as any,
-    });
+    const summary = await withRateLimitRetry(() =>
+      yahooFinance.quoteSummary(symbol, {
+        modules: modules as any,
+      }),
+    );
 
     return summary;
   } catch (error) {
@@ -228,9 +239,11 @@ export async function getStockDetails(
  */
 export async function getCompanyProfile(symbol: string) {
   try {
-    const result = await yahooFinance.quoteSummary(symbol, {
-      modules: ["assetProfile", "summaryProfile"],
-    });
+    const result = await withRateLimitRetry(() =>
+      yahooFinance.quoteSummary(symbol, {
+        modules: ["assetProfile", "summaryProfile"],
+      }),
+    );
 
     return result;
   } catch (error) {
@@ -245,9 +258,11 @@ export async function getCompanyProfile(symbol: string) {
  */
 export async function getFinancialData(symbol: string) {
   try {
-    const result = await yahooFinance.quoteSummary(symbol, {
-      modules: ["financialData", "defaultKeyStatistics", "earnings"],
-    });
+    const result = await withRateLimitRetry(() =>
+      yahooFinance.quoteSummary(symbol, {
+        modules: ["financialData", "defaultKeyStatistics", "earnings"],
+      }),
+    );
 
     return result;
   } catch (error) {
@@ -266,7 +281,9 @@ export async function getFinancialData(symbol: string) {
  */
 export async function getTrendingStocks(region: string = "US") {
   try {
-    const trending = await yahooFinance.trendingSymbols(region);
+    const trending = await withRateLimitRetry(() =>
+      yahooFinance.trendingSymbols(region),
+    );
 
     return trending;
   } catch (error) {
@@ -422,100 +439,3 @@ export async function get52WeekPerformance(symbol: string) {
     throw error;
   }
 }
-
-export async function getStockLogo(
-  symbol: string,
-  shortName: string,
-  quoteType: string,
-  longName: string,
-): Promise<string | null> {
-  try {
-    let name = shortName
-      .toLowerCase()
-      .replace(/[,.\s']+/g, "-")
-      .replace(/inc-?/g, "")
-      .replace(/[^a-z0-9-]/g, "")
-      .replace(/-+/g, "-")
-      .replace(/^-|-$/g, "");
-
-    let logoUrls = [];
-
-    if (quoteType === "ETF" || quoteType === "MUTUALFUND") {
-      name = (longName || shortName).toLowerCase().split(" ")[0];
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}.svg`);
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}-group.svg`);
-      logoUrls.push(
-        `https://s3-symbol-logo.tradingview.com/${name}-shares.svg`,
-      );
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/rex-${name}.svg`);
-    } else if (quoteType === "CRYPTOCURRENCY") {
-      name = `XTVC${symbol.split("-")[0]}`;
-      logoUrls.push(
-        `https://s3-symbol-logo.tradingview.com/crypto/${name}.svg`,
-      );
-    } else if (quoteType === "EQUITY") {
-      logoUrls.push(
-        `https://financialmodelingprep.com/image-stock/${symbol.split(".")[0]}.png`,
-      );
-      logoUrls.push(`https://s3-symbol-logo.tradingview.com/${name}.svg`);
-      logoUrls.push(
-        `https://s3-symbol-logo.tradingview.com/${name.split("-")[0]}.svg`,
-      );
-    }
-
-    if (!logoUrls.length) {
-      return null;
-    }
-
-    // Check if the logo exists by fetching it
-    for (const logoUrl of logoUrls) {
-      const response = await fetch(logoUrl, { method: "HEAD" });
-
-      if (response.ok) {
-        return logoUrl;
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error(`Error fetching logo for ${symbol}:`, error);
-
-    return null;
-  }
-}
-
-// ============================================================================
-// EXPORT ALL
-// ============================================================================
-
-export default {
-  // Quotes
-  getStockQuote,
-  getMultipleQuotes,
-
-  // Search
-  searchStocks,
-
-  // Historical
-  getHistoricalData,
-  getHistoricalDataByRange,
-
-  // Details
-  getStockDetails,
-  getCompanyProfile,
-  getFinancialData,
-
-  // Trending
-  getTrendingStocks,
-
-  // Portfolio
-  calculatePortfolioValue,
-  getStockPerformance,
-
-  // Analysis
-  compareStocks,
-  get52WeekPerformance,
-
-  // Logo
-  getStockLogo,
-};

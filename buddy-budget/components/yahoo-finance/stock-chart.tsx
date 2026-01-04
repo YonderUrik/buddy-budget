@@ -18,7 +18,8 @@ import { DatePicker } from "@heroui/date-picker";
 import { parseDate } from "@internationalized/date";
 import { useTheme } from "next-themes";
 
-import { HistoricalDataPoint, getStockLogo } from "./functions";
+import { getStockLogo } from "./types";
+import { HistoricalDataPoint } from "./types";
 import { StockLogo } from "./stock-logo";
 
 import {

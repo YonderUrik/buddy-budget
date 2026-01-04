@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { Autocomplete, AutocompleteItem } from "@heroui/autocomplete";
 
-import { SearchResult } from "./functions";
+import { SearchResult } from "./types";
 import { StockLogo } from "./stock-logo";
 
 import { useDebounce } from "@/lib/hooks";

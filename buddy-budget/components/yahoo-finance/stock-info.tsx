@@ -8,7 +8,7 @@ import { Chip } from "@heroui/chip";
 import { Divider } from "@heroui/divider";
 import { Tooltip } from "@heroui/tooltip";
 
-import { getStockLogo } from "./functions";
+import { getStockLogo } from "./types";
 import { StockLogo } from "./stock-logo";
 
 import {
@@ -24,7 +24,7 @@ interface StockInfoProps {
   longName?: string;
 }
 
-export function StockInfo({
+export  function StockInfo({
   symbol,
   logoUrl: propLogoUrl,
   longName: propLongName,

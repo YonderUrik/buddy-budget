@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 
-import {
-  searchStocks,
-  getStockLogo,
-} from "@/components/yahoo-finance/functions";
+import { searchStocks } from "@/components/yahoo-finance/functions";
+import { getStockLogo } from "@/components/yahoo-finance/types";
 
 export async function GET(request: NextRequest) {
   try {

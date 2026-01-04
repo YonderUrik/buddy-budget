@@ -1,4 +1,18 @@
-import yahooFinance from "yahoo-finance2";
+// Mock yahoo-finance2 with instance methods
+jest.mock("yahoo-finance2", () => {
+  const mockInstance = {
+    quote: jest.fn(),
+    search: jest.fn(),
+    historical: jest.fn(),
+    chart: jest.fn(),
+    quoteSummary: jest.fn(),
+    trendingSymbols: jest.fn(),
+  };
+
+  return jest.fn().mockImplementation(() => mockInstance);
+});
+
+import YahooFinance from "yahoo-finance2";
 
 import {
   getStockQuote,
@@ -14,16 +28,15 @@ import {
   getStockPerformance,
   compareStocks,
   get52WeekPerformance,
-  getStockLogo,
 } from "./functions";
-
-// Mock yahoo-finance2
-jest.mock("yahoo-finance2");
+import { getStockLogo } from "./types";
 
 // Mock fetch for logo fetching
 global.fetch = jest.fn();
 
-const mockYahooFinance = yahooFinance as jest.Mocked<typeof yahooFinance>;
+// Get reference to the mocked instance
+const MockedYahooFinance = YahooFinance as jest.MockedClass<typeof YahooFinance>;
+const mockYahooFinance = new MockedYahooFinance() as any;
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 describe("Yahoo Finance Functions", () => {

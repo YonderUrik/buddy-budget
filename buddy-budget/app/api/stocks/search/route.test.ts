@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { GET } from "./route";
 
-import {
-  searchStocks,
-  getStockLogo,
-} from "@/components/yahoo-finance/functions";
+import { searchStocks } from "@/components/yahoo-finance/functions";
+import { getStockLogo } from "@/components/yahoo-finance/types";
 import { RequestBuilder } from "@/app/api/__tests__/utils/requestBuilder";
 import {
   expectJsonResponse,
@@ -13,6 +11,9 @@ import {
 
 // Mock Yahoo Finance functions
 jest.mock("@/components/yahoo-finance/functions");
+jest.mock("@/components/yahoo-finance/types", () => ({
+  getStockLogo: jest.fn(() => Promise.resolve("https://example.com/logo.png")),
+}));
 
 const mockSearchStocks = searchStocks as jest.MockedFunction<
   typeof searchStocks

@@ -7,7 +7,7 @@ import { title, subtitle } from "@/components/primitives";
 import { StockSearch } from "@/components/yahoo-finance/stock-search";
 import { StockChart } from "@/components/yahoo-finance/stock-chart";
 import { StockInfo } from "@/components/yahoo-finance/stock-info";
-import { SearchResult } from "@/components/yahoo-finance/functions";
+import { SearchResult } from "@/components/yahoo-finance/types";
 import { TrendingIcon } from "@/components/icons";
 
 export default function FinancePage() {

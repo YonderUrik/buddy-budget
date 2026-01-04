@@ -167,7 +167,7 @@ const code = "example";
       expect(result.content).toContain("## Heading 2");
       expect(result.content).toContain("- List item 1");
       expect(result.content).toContain("**Bold text**");
-      expect(result.content).toContain("const code = \"example\";");
+      expect(result.content).toContain('const code = "example";');
       expect(result.content).toContain("[Link](https://example.com)");
     });
 

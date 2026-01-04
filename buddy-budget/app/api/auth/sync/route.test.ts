@@ -26,6 +26,7 @@ jest.mock("next-auth/providers/apple", () => ({
 
 // Mock Prisma before imports
 import { AuthProvider as PrismaAuthProvider } from "@prisma/client";
+
 import { prismaMock } from "@/app/api/__tests__/mocks/prisma.mock";
 
 jest.mock("@/lib/db", () => ({

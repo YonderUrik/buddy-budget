@@ -24,7 +24,7 @@ interface StockInfoProps {
   longName?: string;
 }
 
-export  function StockInfo({
+export function StockInfo({
   symbol,
   logoUrl: propLogoUrl,
   longName: propLongName,

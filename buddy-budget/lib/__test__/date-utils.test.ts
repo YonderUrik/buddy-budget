@@ -28,7 +28,9 @@ describe("date-utils", () => {
     it("should calculate 1M range correctly", () => {
       const range = getDateRangeFromQuickRange("1M");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getMonth()).toBe(4); // May (0-indexed)
       expect(range.start.getFullYear()).toBe(2024);
     });
@@ -36,7 +38,9 @@ describe("date-utils", () => {
     it("should calculate 3M range correctly", () => {
       const range = getDateRangeFromQuickRange("3M");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getMonth()).toBe(2); // March (0-indexed)
       expect(range.start.getFullYear()).toBe(2024);
     });
@@ -44,7 +48,9 @@ describe("date-utils", () => {
     it("should calculate 6M range correctly", () => {
       const range = getDateRangeFromQuickRange("6M");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getMonth()).toBe(11); // December (0-indexed)
       expect(range.start.getFullYear()).toBe(2023);
     });
@@ -52,7 +58,9 @@ describe("date-utils", () => {
     it("should calculate 1Y range correctly", () => {
       const range = getDateRangeFromQuickRange("1Y");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getFullYear()).toBe(2023);
       expect(range.start.getMonth()).toBe(5); // June (0-indexed)
     });
@@ -60,21 +68,27 @@ describe("date-utils", () => {
     it("should calculate 2Y range correctly", () => {
       const range = getDateRangeFromQuickRange("2Y");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getFullYear()).toBe(2022);
     });
 
     it("should calculate 5Y range correctly", () => {
       const range = getDateRangeFromQuickRange("5Y");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getFullYear()).toBe(2019);
     });
 
     it("should calculate YTD range correctly", () => {
       const range = getDateRangeFromQuickRange("YTD");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getMonth()).toBe(0); // January
       expect(range.start.getDate()).toBe(1);
       expect(range.start.getFullYear()).toBe(2024);
@@ -83,7 +97,9 @@ describe("date-utils", () => {
     it("should calculate MAX range correctly", () => {
       const range = getDateRangeFromQuickRange("MAX");
 
-      expect(range.end.toISOString()).toBe(new Date("2024-06-15T12:00:00Z").toISOString());
+      expect(range.end.toISOString()).toBe(
+        new Date("2024-06-15T12:00:00Z").toISOString(),
+      );
       expect(range.start.getFullYear()).toBe(2004); // 20 years ago
     });
 

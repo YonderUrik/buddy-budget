@@ -1,5 +1,3 @@
-import { PrismaClient } from "@prisma/client";
-
 // Mock PrismaClient before importing db module
 const mockPrismaClient = {
   $connect: jest.fn(),

@@ -11,6 +11,7 @@ jest.mock("next-auth", () => {
   return jest.fn((config: any) => {
     // Store config for testing in global
     global.__authConfig = config;
+
     return {
       handlers: { GET: jest.fn(), POST: jest.fn() },
       signIn: jest.fn(),
@@ -21,9 +22,15 @@ jest.mock("next-auth", () => {
 });
 
 // Mock next-auth providers
-jest.mock("next-auth/providers/google", () => jest.fn((config) => ({ ...config, id: 'google' })));
-jest.mock("next-auth/providers/github", () => jest.fn((config) => ({ ...config, id: 'github' })));
-jest.mock("next-auth/providers/apple", () => jest.fn((config) => ({ ...config, id: 'apple' })));
+jest.mock("next-auth/providers/google", () =>
+  jest.fn((config) => ({ ...config, id: "google" })),
+);
+jest.mock("next-auth/providers/github", () =>
+  jest.fn((config) => ({ ...config, id: "github" })),
+);
+jest.mock("next-auth/providers/apple", () =>
+  jest.fn((config) => ({ ...config, id: "apple" })),
+);
 
 // Set up environment variables before importing
 process.env.GOOGLE_CLIENT_ID = "test-google-id";
@@ -148,6 +155,7 @@ describe("auth", () => {
 
     it("should fetch user status from API on sign in", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
+
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: true,
@@ -177,6 +185,7 @@ describe("auth", () => {
 
     it("should use defaults for new users from API", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
+
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: true,
@@ -204,6 +213,7 @@ describe("auth", () => {
 
     it("should handle API failure gracefully", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
+
       global.fetch = jest.fn(() =>
         Promise.resolve({
           ok: false,
@@ -232,6 +242,7 @@ describe("auth", () => {
       const consoleErrorSpy = jest
         .spyOn(console, "error")
         .mockImplementation(() => {});
+
       global.fetch = jest.fn(() =>
         Promise.reject(new Error("Network error")),
       ) as any;
@@ -329,6 +340,7 @@ describe("auth", () => {
     it("should construct correct API URL with HTTPS", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
       const originalUrl = process.env.NEXTAUTH_URL;
+
       process.env.NEXTAUTH_URL = "https://example.com";
 
       global.fetch = jest.fn(() =>
@@ -354,6 +366,7 @@ describe("auth", () => {
     it("should construct correct API URL with HTTP", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
       const originalUrl = process.env.NEXTAUTH_URL;
+
       process.env.NEXTAUTH_URL = "http://localhost:3000";
 
       global.fetch = jest.fn(() =>
@@ -379,6 +392,7 @@ describe("auth", () => {
     it("should use default localhost when NEXTAUTH_URL not set", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
       const originalUrl = process.env.NEXTAUTH_URL;
+
       delete process.env.NEXTAUTH_URL;
 
       global.fetch = jest.fn(() =>
@@ -404,6 +418,7 @@ describe("auth", () => {
     it("should skip API call in browser (window defined)", async () => {
       const jwtCallback = authConfig.callbacks.jwt;
       const originalWindow = (global as any).window;
+
       (global as any).window = {};
 
       const token = {};

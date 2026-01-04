@@ -150,12 +150,12 @@ export const Navbar = () => {
                 <Dropdown placement="bottom-end">
                   <DropdownTrigger>
                     <UserAvatar
+                      showFallback
                       as="button"
                       className="transition-transform cursor-pointer"
                       email={session.user.email}
                       image={session.user.image}
                       name={session.user.name}
-                      showFallback
                       size="sm"
                     />
                   </DropdownTrigger>
@@ -256,12 +256,12 @@ export const Navbar = () => {
                   <Dropdown placement="bottom-end">
                     <DropdownTrigger>
                       <UserAvatar
+                        showFallback
                         as="button"
                         className="transition-transform cursor-pointer"
                         email={session.user.email}
                         image={session.user.image}
                         name={session.user.name}
-                        showFallback
                         size="sm"
                       />
                     </DropdownTrigger>

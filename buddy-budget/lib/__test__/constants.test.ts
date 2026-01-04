@@ -54,6 +54,7 @@ describe("constants", () => {
 
     it("should have unique symbols for different currencies", () => {
       const symbols = Object.values(CURRENCIES).map((c) => c.symbol);
+
       // Note: Some currencies share symbols (USD/MXN both use $, JPY/CNY both use ¥)
       expect(symbols.length).toBeGreaterThan(0);
     });

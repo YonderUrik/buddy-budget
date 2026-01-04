@@ -35,7 +35,9 @@ import { getStockLogo } from "./types";
 global.fetch = jest.fn();
 
 // Get reference to the mocked instance
-const MockedYahooFinance = YahooFinance as jest.MockedClass<typeof YahooFinance>;
+const MockedYahooFinance = YahooFinance as jest.MockedClass<
+  typeof YahooFinance
+>;
 const mockYahooFinance = new MockedYahooFinance() as any;
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 

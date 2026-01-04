@@ -1,8 +1,4 @@
-import {
-  commonIgnoreErrors,
-  shouldIgnoreError,
-  isUserError,
-} from "./filters";
+import { commonIgnoreErrors, shouldIgnoreError, isUserError } from "./filters";
 
 describe("Sentry Filters", () => {
   describe("commonIgnoreErrors", () => {

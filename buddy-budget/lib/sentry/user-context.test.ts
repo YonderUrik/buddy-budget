@@ -4,8 +4,9 @@ jest.mock("@sentry/nextjs", () => ({
   setContext: jest.fn(),
 }));
 
-import * as Sentry from "@sentry/nextjs";
 import type { Session } from "next-auth";
+
+import * as Sentry from "@sentry/nextjs";
 
 import {
   setSentryUser,
@@ -14,7 +15,9 @@ import {
 } from "./user-context";
 
 // Type assertions for mocked functions
-const mockSetUser = Sentry.setUser as jest.MockedFunction<typeof Sentry.setUser>;
+const mockSetUser = Sentry.setUser as jest.MockedFunction<
+  typeof Sentry.setUser
+>;
 const mockSetContext = Sentry.setContext as jest.MockedFunction<
   typeof Sentry.setContext
 >;

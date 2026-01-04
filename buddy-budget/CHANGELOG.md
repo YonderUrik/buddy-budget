@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/YonderUrik/buddy-budget/compare/v3.1.0...v3.1.1) (2026-01-04)
+
+### Code Refactoring
+
+* Update Yahoo Finance integration and improve type management ([52d8dc5](https://github.com/YonderUrik/buddy-budget/commit/52d8dc5c851d77e68ae3b8f0cd3e416c563c92f6))
+
 ## [3.1.0](https://github.com/YonderUrik/buddy-budget/compare/v3.0.1...v3.1.0) (2026-01-04)
 
 ### Features

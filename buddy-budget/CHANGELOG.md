@@ -1,3 +1,18 @@
+## [3.1.0](https://github.com/YonderUrik/buddy-budget/compare/v3.0.1...v3.1.0) (2026-01-04)
+
+### Features
+
+* Integrate Sentry for error tracking and performance monitoring ([74a11b0](https://github.com/YonderUrik/buddy-budget/commit/74a11b00e3d3a6c62a65f774a6dcdd96527ca57f))
+
+### Bug Fixes
+
+* Enhance image caching and user avatar handling ([4f11edc](https://github.com/YonderUrik/buddy-budget/commit/4f11edca28a42f6637881d2ae9fe07608c233978))
+
+### Tests
+
+* Add comprehensive tests for authentication, constants, date utilities, and formatting ([90ebe8a](https://github.com/YonderUrik/buddy-budget/commit/90ebe8a7c01a4d905edf403cfa253427180d55bd))
+* Enhance Sentry integration and add tests for error handling ([0da7a42](https://github.com/YonderUrik/buddy-budget/commit/0da7a421ad56610193b319bfe93a7e8ba5c3b978))
+
 ## [3.0.1](https://github.com/YonderUrik/buddy-budget/compare/v3.0.0...v3.0.1) (2025-12-29)
 
 ### Bug Fixes

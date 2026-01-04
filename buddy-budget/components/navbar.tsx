@@ -7,7 +7,6 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
 import {
   Dropdown,
@@ -20,6 +19,7 @@ import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
 import { GithubIcon, HeartFilledIcon } from "@/components/icons";
 import { OnboardingStep } from "@/lib/auth";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Navbar = () => {
   const { theme } = useTheme();
@@ -149,13 +149,14 @@ export const Navbar = () => {
               {status === "authenticated" && session?.user && (
                 <Dropdown placement="bottom-end">
                   <DropdownTrigger>
-                    <Avatar
-                      showFallback
+                    <UserAvatar
                       as="button"
                       className="transition-transform cursor-pointer"
-                      name={session.user.name || session.user.email || "User"}
+                      email={session.user.email}
+                      image={session.user.image}
+                      name={session.user.name}
+                      showFallback
                       size="sm"
-                      src={session.user.image || undefined}
                     />
                   </DropdownTrigger>
                   <DropdownMenu aria-label="User actions">
@@ -254,13 +255,14 @@ export const Navbar = () => {
                 {status === "authenticated" && session?.user && (
                   <Dropdown placement="bottom-end">
                     <DropdownTrigger>
-                      <Avatar
-                        showFallback
+                      <UserAvatar
                         as="button"
                         className="transition-transform cursor-pointer"
-                        name={session.user.name || session.user.email || "User"}
+                        email={session.user.email}
+                        image={session.user.image}
+                        name={session.user.name}
+                        showFallback
                         size="sm"
-                        src={session.user.image || undefined}
                       />
                     </DropdownTrigger>
                     <DropdownMenu aria-label="User actions">

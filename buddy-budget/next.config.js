@@ -41,6 +41,8 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    // Cache optimized images for longer to reduce requests to external CDNs
+    minimumCacheTTL: 86400, // 24 hours in seconds
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

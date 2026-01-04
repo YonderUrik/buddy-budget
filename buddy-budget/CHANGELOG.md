@@ -1,3 +1,9 @@
+## [3.1.2](https://github.com/YonderUrik/buddy-budget/compare/v3.1.1...v3.1.2) (2026-01-04)
+
+### Tests
+
+* moved lib tests to folder ([099abfc](https://github.com/YonderUrik/buddy-budget/commit/099abfc88f97b6bb915ce918fced9beca88554bd))
+
 ## [3.1.1](https://github.com/YonderUrik/buddy-budget/compare/v3.1.0...v3.1.1) (2026-01-04)
 
 ### Code Refactoring

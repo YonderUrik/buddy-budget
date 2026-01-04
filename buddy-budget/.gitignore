@@ -40,3 +40,8 @@ yarn.lock
 package-lock.json
 bun.lock
 /lib/generated/prisma
+
+# sentry
+.sentryclirc
+sentry-symbols/
+.sentry-*

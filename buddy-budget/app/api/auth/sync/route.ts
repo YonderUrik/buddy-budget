@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthProvider as PrismaAuthProvider } from "@prisma/client";
+import * as Sentry from "@sentry/nextjs";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -154,6 +155,12 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        api_route: "/api/auth/sync",
+        method: "POST",
+      },
+    });
     console.error("Error syncing user:", error);
 
     return NextResponse.json(

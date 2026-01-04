@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@heroui/button";
+import * as Sentry from "@sentry/nextjs";
 
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 
@@ -17,7 +18,9 @@ export default function Error({
   const [showSecret, setShowSecret] = useState(false);
 
   useEffect(() => {
-    console.error(error);
+    // Send error to Sentry
+    Sentry.captureException(error);
+    console.error(error); // Keep for local dev
 
     // Initial glitch effect
     const glitchTimer = setTimeout(() => setGlitchActive(true), 100);

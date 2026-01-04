@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 import { prisma } from "@/lib/db";
 
@@ -40,6 +41,12 @@ export async function POST(request: NextRequest) {
       });
     }
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        api_route: "/api/user/status",
+        method: "POST",
+      },
+    });
     console.error("Error checking user status:", error);
 
     return NextResponse.json(

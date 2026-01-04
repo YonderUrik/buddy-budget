@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -52,6 +53,12 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ success: true, user: updatedUser });
   } catch (error) {
+    Sentry.captureException(error, {
+      tags: {
+        api_route: "/api/user/onboarding",
+        method: "PATCH",
+      },
+    });
     console.error("Error updating onboarding:", error);
 
     return NextResponse.json(

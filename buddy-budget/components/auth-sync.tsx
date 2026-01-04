@@ -3,6 +3,12 @@
 import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
+import {
+  setSentryUser,
+  setSentryContext,
+  clearSentryUser,
+} from "@/lib/sentry/user-context";
+
 /**
  * AuthSync component
  * Syncs user data with the database after OAuth sign-in
@@ -48,6 +54,14 @@ export function AuthSync() {
             onboardingCompleted: data.user.onboardingCompleted,
             onboardingStep: data.user.onboardingStep,
           });
+
+          // Set Sentry user context after successful sync
+          setSentryUser(session);
+          setSentryContext({
+            onboardingCompleted: data.user.onboardingCompleted,
+            onboardingStep: data.user.onboardingStep,
+            provider: session.user.provider || undefined,
+          });
         }
       } catch (error) {
         console.error("Error syncing user:", error);
@@ -56,6 +70,20 @@ export function AuthSync() {
 
     syncUser();
   }, [session, status, update]);
+
+  // Update Sentry context on session change
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      setSentryUser(session);
+      setSentryContext({
+        onboardingCompleted: session.user.onboardingCompleted,
+        onboardingStep: session.user.onboardingStep,
+        provider: session.user.provider || undefined,
+      });
+    } else if (status === "unauthenticated") {
+      clearSentryUser();
+    }
+  }, [session, status]);
 
   // This component doesn't render anything
   return null;

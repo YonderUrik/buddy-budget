@@ -31,14 +31,14 @@ describe("db", () => {
 
   describe("prisma instance", () => {
     it("should export a prisma instance", async () => {
-      const { prisma } = await import("./db");
+      const { prisma } = await import("../db");
 
       expect(prisma).toBeDefined();
       expect(prisma).toBe(mockPrismaClient);
     });
 
     it("should export prisma as default export", async () => {
-      const dbModule = await import("./db");
+      const dbModule = await import("../db");
 
       expect(dbModule.default).toBeDefined();
       expect(dbModule.default).toBe(dbModule.prisma);
@@ -46,7 +46,7 @@ describe("db", () => {
 
     it("should use PrismaClient with appropriate log config", async () => {
       // Since the module is already imported, we just verify the instance exists
-      const { prisma } = await import("./db");
+      const { prisma } = await import("../db");
 
       expect(prisma).toHaveProperty("$connect");
       expect(prisma).toHaveProperty("$disconnect");
@@ -79,7 +79,7 @@ describe("db", () => {
   describe("connectDB", () => {
     it("should connect to the database successfully", async () => {
       mockPrismaClient.$connect.mockResolvedValue(undefined);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await connectDB();
 
@@ -93,7 +93,7 @@ describe("db", () => {
       const error = new Error("Connection failed");
 
       mockPrismaClient.$connect.mockRejectedValue(error);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await expect(connectDB()).rejects.toThrow("Connection failed");
 
@@ -107,7 +107,7 @@ describe("db", () => {
       const networkError = new Error("ECONNREFUSED");
 
       mockPrismaClient.$connect.mockRejectedValue(networkError);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await expect(connectDB()).rejects.toThrow("ECONNREFUSED");
     });
@@ -116,7 +116,7 @@ describe("db", () => {
       const authError = new Error("Authentication failed");
 
       mockPrismaClient.$connect.mockRejectedValue(authError);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await expect(connectDB()).rejects.toThrow("Authentication failed");
     });
@@ -125,7 +125,7 @@ describe("db", () => {
   describe("disconnectDB", () => {
     it("should disconnect from the database successfully", async () => {
       mockPrismaClient.$disconnect.mockResolvedValue(undefined);
-      const { disconnectDB } = await import("./db");
+      const { disconnectDB } = await import("../db");
 
       await disconnectDB();
 
@@ -139,7 +139,7 @@ describe("db", () => {
       const error = new Error("Disconnection failed");
 
       mockPrismaClient.$disconnect.mockRejectedValue(error);
-      const { disconnectDB } = await import("./db");
+      const { disconnectDB } = await import("../db");
 
       await expect(disconnectDB()).rejects.toThrow("Disconnection failed");
 
@@ -153,7 +153,7 @@ describe("db", () => {
       const unexpectedError = new Error("Unexpected error");
 
       mockPrismaClient.$disconnect.mockRejectedValue(unexpectedError);
-      const { disconnectDB } = await import("./db");
+      const { disconnectDB } = await import("../db");
 
       await expect(disconnectDB()).rejects.toThrow("Unexpected error");
     });
@@ -163,7 +163,7 @@ describe("db", () => {
     it("should support connect -> disconnect sequence", async () => {
       mockPrismaClient.$connect.mockResolvedValue(undefined);
       mockPrismaClient.$disconnect.mockResolvedValue(undefined);
-      const { connectDB, disconnectDB } = await import("./db");
+      const { connectDB, disconnectDB } = await import("../db");
 
       await connectDB();
       expect(mockPrismaClient.$connect).toHaveBeenCalled();
@@ -174,7 +174,7 @@ describe("db", () => {
 
     it("should handle multiple connect calls", async () => {
       mockPrismaClient.$connect.mockResolvedValue(undefined);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await connectDB();
       await connectDB();
@@ -184,7 +184,7 @@ describe("db", () => {
 
     it("should handle multiple disconnect calls", async () => {
       mockPrismaClient.$disconnect.mockResolvedValue(undefined);
-      const { disconnectDB } = await import("./db");
+      const { disconnectDB } = await import("../db");
 
       await disconnectDB();
       await disconnectDB();
@@ -198,7 +198,7 @@ describe("db", () => {
       const timeoutError = new Error("Connection timeout");
 
       mockPrismaClient.$connect.mockRejectedValue(timeoutError);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await expect(connectDB()).rejects.toThrow("Connection timeout");
     });
@@ -207,7 +207,7 @@ describe("db", () => {
       const disconnectError = new Error("Failed to close connection");
 
       mockPrismaClient.$disconnect.mockRejectedValue(disconnectError);
-      const { disconnectDB } = await import("./db");
+      const { disconnectDB } = await import("../db");
 
       await expect(disconnectDB()).rejects.toThrow(
         "Failed to close connection",
@@ -216,7 +216,7 @@ describe("db", () => {
 
     it("should handle undefined errors", async () => {
       mockPrismaClient.$connect.mockRejectedValue(undefined);
-      const { connectDB } = await import("./db");
+      const { connectDB } = await import("../db");
 
       await expect(connectDB()).rejects.toBeUndefined();
     });

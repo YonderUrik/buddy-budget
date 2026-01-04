@@ -18,7 +18,7 @@ import {
   formatPercentWithLocale,
   formatDateByPattern,
   COMMON_CURRENCIES,
-} from './format';
+} from '../format';
 
 describe('format utilities', () => {
   describe('getDefaultLocale', () => {
@@ -702,7 +702,7 @@ describe('format utilities', () => {
 
   describe('default export', () => {
     it('should export all functions in default object', async () => {
-      const defaultExport = (await import('./format')).default;
+      const defaultExport = (await import('../format')).default;
       expect(defaultExport).toHaveProperty('formatCurrency');
       expect(defaultExport).toHaveProperty('formatNumber');
       expect(defaultExport).toHaveProperty('formatPercentage');

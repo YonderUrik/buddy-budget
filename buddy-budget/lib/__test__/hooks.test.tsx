@@ -3,7 +3,7 @@
  */
 import { renderHook, act, waitFor } from "@testing-library/react";
 
-import { useDebounce, useIsMobile } from "./hooks";
+import { useDebounce, useIsMobile } from "../hooks";
 
 describe("hooks", () => {
   describe("useDebounce", () => {

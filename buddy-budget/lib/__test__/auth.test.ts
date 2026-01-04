@@ -35,7 +35,7 @@ process.env.APPLE_CLIENT_SECRET = "test-apple-secret";
 process.env.NODE_ENV = "test";
 
 // Import after mocks and env are set
-import { OnboardingStep, AuthProvider, Currency } from "./auth";
+import { OnboardingStep, AuthProvider, Currency } from "../auth";
 
 describe("auth", () => {
   let authConfig: any;

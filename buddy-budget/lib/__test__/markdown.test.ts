@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-import { getLegalDocument, getAllLegalDocuments } from "./markdown";
+import { getLegalDocument, getAllLegalDocuments } from "../markdown";
 
 jest.mock("fs");
 

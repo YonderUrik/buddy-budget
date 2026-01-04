@@ -13,7 +13,7 @@ import {
   type LocaleValue,
   type IncomeRangeValue,
   type PrimaryGoalValue,
-} from "./constants";
+} from "../constants";
 
 describe("constants", () => {
   describe("CURRENCIES", () => {

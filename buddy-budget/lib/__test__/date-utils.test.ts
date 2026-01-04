@@ -12,7 +12,7 @@ import {
   isPast,
   isFuture,
   type QuickDateRange,
-} from "./date-utils";
+} from "../date-utils";
 
 describe("date-utils", () => {
   describe("getDateRangeFromQuickRange", () => {

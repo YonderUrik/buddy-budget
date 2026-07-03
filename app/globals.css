@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-hanken);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-space-grotesk);
+  --color-pos: var(--pos);
+  --color-pos-soft: var(--pos-soft);
+  --color-neg: var(--neg);
+  --color-neg-soft: var(--neg-soft);
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 11px;
+  --radius-xl: 16px;
+  --radius-2xl: 18px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+}
+
+:root {
+  /* Design token estratti da docs/design-reference/mock-up.html (palette light) */
+  --background: #f4f2ec;
+  --foreground: #262420;
+  --text-2: #6f6a60;
+  --text-3: #9d9789;
+  --card: #fffdf9;
+  --card-foreground: #262420;
+  --popover: #fffdf9;
+  --popover-foreground: #262420;
+  --primary: #1f5141;
+  --primary-foreground: #fffdf9;
+  --secondary: #eceae3;
+  --secondary-foreground: #262420;
+  --muted: #eceae3;
+  --muted-foreground: #6f6a60;
+  --accent: rgba(31, 81, 65, 0.09);
+  --accent-foreground: #1f5141;
+  --destructive: #b0473b;
+  --border: #e4e0d6;
+  --input: #e4e0d6;
+  --ring: #1f5141;
+  --pos: #2f7d57;
+  --pos-soft: rgba(47, 125, 87, 0.1);
+  --neg: #b0473b;
+  --neg-soft: rgba(176, 71, 59, 0.09);
+  --chart-1: #1f5141;
+  --chart-2: #2f7d57;
+  --chart-3: #41705f;
+  --chart-4: #739688;
+  --chart-5: #b6c4bc;
+  --radius: 11px;
+  --sidebar: #fffdf9;
+  --sidebar-foreground: #262420;
+  --sidebar-primary: #1f5141;
+  --sidebar-primary-foreground: #fffdf9;
+  --sidebar-accent: #eceae3;
+  --sidebar-accent-foreground: #262420;
+  --sidebar-border: #e4e0d6;
+  --sidebar-ring: #1f5141;
+}
+
+.dark {
+  /* Design token estratti da docs/design-reference/mock-up.html (palette dark) */
+  --background: #1a1916;
+  --foreground: #ece8e1;
+  --text-2: #a39d92;
+  --text-3: #7a746a;
+  --card: #221f1b;
+  --card-foreground: #ece8e1;
+  --popover: #2c2924;
+  --popover-foreground: #ece8e1;
+  --primary: #5fb98a;
+  --primary-foreground: #1a1916;
+  --secondary: #2c2924;
+  --secondary-foreground: #ece8e1;
+  --muted: #2c2924;
+  --muted-foreground: #a39d92;
+  --accent: rgba(95, 185, 138, 0.12);
+  --accent-foreground: #7bb79b;
+  --destructive: #d2887b;
+  --border: #332f29;
+  --input: #332f29;
+  --ring: #5fb98a;
+  --pos: #7bb79b;
+  --pos-soft: rgba(123, 183, 155, 0.14);
+  --neg: #d2887b;
+  --neg-soft: rgba(210, 136, 123, 0.14);
+  --chart-1: #7bb79b;
+  --chart-2: #5fb98a;
+  --chart-3: #5b9280;
+  --chart-4: #427060;
+  --chart-5: #2f4940;
+  --sidebar: #221f1b;
+  --sidebar-foreground: #ece8e1;
+  --sidebar-primary: #5fb98a;
+  --sidebar-primary-foreground: #1a1916;
+  --sidebar-accent: #2c2924;
+  --sidebar-accent-foreground: #ece8e1;
+  --sidebar-border: #332f29;
+  --sidebar-ring: #5fb98a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

@@ -1,0 +1,264 @@
+"use client";
+
+/**
+ * AppSidebar
+ *
+ * Barra di navigazione laterale principale dell'applicazione.
+ *
+ * Comportamento responsive:
+ * - Desktop (≥1024px): espansa con logo, label voci, card utente.
+ *   L'utente può collassarla manualmente → icon-only (stato in localStorage).
+ * - Tablet (768–1023px): entra automaticamente in icon-only al caricamento.
+ * - Mobile (<768px): non renderizzata qui; il drawer mobile viene gestito
+ *   da `AppShell` tramite questo stesso componente con `forceExpanded={true}`.
+ *
+ * Props:
+ * - `forceExpanded`: usata dal drawer mobile per forzare la modalità espansa
+ *   indipendentemente dallo stato `collapsed` del context.
+ *
+ * Riusabilità: la lista voci è definita nell'array `NAV_ITEMS` e può essere
+ * sovrascritta via prop `items` per adattare la sidebar ad altri contesti.
+ */
+
+import Link from "next/link";
+import {
+  LayoutDashboard,
+  Landmark,
+  ShoppingCart,
+  ArrowLeftRight,
+  TrendingUp,
+  Umbrella,
+  CreditCard,
+  Target,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useSidebar } from "@/components/layout/sidebar-context";
+import { cn } from "@/lib/utils";
+
+// ---------------------------------------------------------------------------
+// Dati di navigazione
+// ---------------------------------------------------------------------------
+
+export interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ElementType;
+}
+
+/**
+ * Le 9 voci di navigazione dell'applicazione.
+ * Esportata per permettere override o test unitari senza montare il componente.
+ */
+export const NAV_ITEMS: NavItem[] = [
+  { label: "Panoramica", href: "/panoramica", icon: LayoutDashboard },
+  { label: "Conti", href: "/conti", icon: Landmark },
+  { label: "Spese", href: "/spese", icon: ShoppingCart },
+  { label: "Cash flow", href: "/cash-flow", icon: ArrowLeftRight },
+  { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
+  { label: "Pensione", href: "/pensione", icon: Umbrella },
+  { label: "Debiti", href: "/debiti", icon: CreditCard },
+  { label: "Pianifica", href: "/pianifica", icon: Target },
+  { label: "Analitiche", href: "/analitiche", icon: BarChart3 },
+];
+
+// ---------------------------------------------------------------------------
+// Sotto-componenti interni
+// ---------------------------------------------------------------------------
+
+/** Singola voce di navigazione con gestione collapsed/expanded. */
+function NavLink({
+  item,
+  collapsed,
+  active = false,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  active?: boolean;
+}) {
+  const Icon = item.icon;
+
+  return (
+    <Link
+      href={item.href}
+      title={collapsed ? item.label : undefined}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+        "transition-colors duration-150",
+        "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        active && "bg-sidebar-accent text-sidebar-accent-foreground",
+        collapsed && "justify-center px-2"
+      )}
+    >
+      <Icon
+        className={cn(
+          "shrink-0 transition-transform duration-150",
+          collapsed ? "size-5" : "size-4",
+          active && "text-sidebar-primary"
+        )}
+        aria-hidden="true"
+      />
+      {!collapsed && (
+        <span className="truncate leading-none">{item.label}</span>
+      )}
+    </Link>
+  );
+}
+
+/** Avatar con le iniziali dell'utente. */
+function UserAvatar({ initials }: { initials: string }) {
+  return (
+    <div
+      className={cn(
+        "flex size-8 shrink-0 items-center justify-center rounded-full",
+        "bg-sidebar-primary text-sidebar-primary-foreground",
+        "text-xs font-semibold tracking-wide"
+      )}
+      aria-hidden="true"
+    >
+      {initials}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Componente principale
+// ---------------------------------------------------------------------------
+
+interface AppSidebarProps {
+  /** Se true, ignora lo stato collapsed del context e mostra sempre la versione espansa. */
+  forceExpanded?: boolean;
+  /** Lista voci di navigazione. Default: NAV_ITEMS. */
+  items?: NavItem[];
+  /** Href della voce attualmente attiva. */
+  activeHref?: string;
+  /** Callback opzionale alla chiusura (usata dal drawer mobile). */
+  onClose?: () => void;
+}
+
+export function AppSidebar({
+  forceExpanded = false,
+  items = NAV_ITEMS,
+  activeHref,
+  onClose,
+}: AppSidebarProps) {
+  const { collapsed, toggleCollapsed } = useSidebar();
+
+  // In modalità forceExpanded (drawer mobile) la sidebar è sempre espansa.
+  const isCollapsed = forceExpanded ? false : collapsed;
+
+  return (
+    <aside
+      className={cn(
+        "flex h-full flex-col bg-sidebar border-r border-sidebar-border",
+        "transition-[width] duration-300 ease-in-out overflow-hidden",
+        isCollapsed ? "w-[64px]" : "w-[240px]"
+      )}
+      aria-label="Navigazione principale"
+    >
+      {/* ── Header: Logo / Brand ── */}
+      <div
+        className={cn(
+          "flex h-16 shrink-0 items-center border-b border-sidebar-border",
+          isCollapsed ? "justify-center px-2" : "px-5"
+        )}
+      >
+        {isCollapsed ? (
+          /* Monogramma quando collapsed */
+          <span
+            className="font-heading text-lg font-bold text-sidebar-primary"
+            aria-label="BuddyBudget"
+          >
+            B
+          </span>
+        ) : (
+          <span className="font-heading text-base font-bold text-sidebar-foreground truncate">
+            Patrimonio
+          </span>
+        )}
+      </div>
+
+      {/* ── Navigazione ── */}
+      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
+        <ul className="flex flex-col gap-0.5" role="list">
+          {items.map((item) => (
+            <li key={item.href}>
+              <NavLink
+                item={item}
+                collapsed={isCollapsed}
+                active={activeHref === item.href}
+              />
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* ── Footer: card utente + toggle tema + collapse button ── */}
+      <div
+        className={cn(
+          "shrink-0 border-t border-sidebar-border",
+          isCollapsed ? "px-2 py-3" : "px-4 py-3"
+        )}
+      >
+        {/* Card utente */}
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-lg p-2 mb-3",
+            "bg-sidebar-accent/50"
+          )}
+          aria-label="Utente corrente"
+        >
+          <UserAvatar initials="MR" />
+          {!isCollapsed && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">
+                Marco Rossi
+              </p>
+              <p className="truncate text-xs text-sidebar-foreground/50 leading-tight mt-0.5">
+                Piano personale
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Toggle tema */}
+        <div
+          className={cn(
+            "flex mb-2",
+            isCollapsed ? "justify-center" : "justify-start px-1"
+          )}
+        >
+          <ThemeToggle compact={isCollapsed} />
+        </div>
+
+        {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
+        {!forceExpanded && (
+          <button
+            onClick={toggleCollapsed}
+            className={cn(
+              "flex w-full items-center rounded-lg px-2 py-1.5",
+              "text-xs text-sidebar-foreground/40 hover:text-sidebar-foreground/70",
+              "hover:bg-sidebar-accent transition-colors duration-150",
+              isCollapsed ? "justify-center" : "gap-2"
+            )}
+            aria-label={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
+            title={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
+          >
+            {isCollapsed ? (
+              <ChevronRight className="size-4" aria-hidden="true" />
+            ) : (
+              <>
+                <ChevronLeft className="size-4" aria-hidden="true" />
+                <span>Comprimi</span>
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    </aside>
+  );
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Space_Grotesk, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AppShell } from "@/components/layout";
 import "./globals.css";
 
 const hankenGrotesk = Hanken_Grotesk({
@@ -20,7 +21,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "BuddyBudget",
-  description: "Design system e componenti UI di BuddyBudget",
+  description: "Gestione finanziaria personale — patrimonio, spese, investimenti.",
 };
 
 export default function RootLayout({
@@ -34,9 +35,18 @@ export default function RootLayout({
       className={`${hankenGrotesk.variable} ${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
+      <body className="h-full bg-background text-foreground font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          {/*
+           * AppShell gestisce il layout responsive:
+           * - Mobile  (<768px): topbar con hamburger + drawer
+           * - Tablet  (768–1023px): sidebar icon-only
+           * - Desktop (≥1024px): sidebar espansa, collassabile manualmente
+           *
+           * `activeHref` sarà passato dalle singole pagine tramite un
+           * wrapper di layout quando le route saranno implementate.
+           */}
+          <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>
     </html>

@@ -57,6 +57,18 @@ I componenti sono organizzati in 3 layer con dipendenze unidirezionali (i layer 
 - Tailwind CSS v4 + shadcn/ui (stile `base-nova`, componenti su `@base-ui/react`, icone `lucide-react`)
 - `next-themes` per il tema chiaro/scuro
 
+Livello applicativo (deciso in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`, non ancora implementato):
+
+- **Database**: Postgres self-hosted (container in cluster) + **Drizzle ORM**
+- **Autenticazione**: better-auth (magic link + Google OAuth), email transazionali via Resend
+- **API**: Next.js Route Handlers, consumate lato client con **TanStack Query**
+- **State management**: React Context per stato UI locale, TanStack Query per stato server; Zustand solo se emerge un bisogno concreto
+- **Cache**: Redis (rate limiting auth + cache calcoli derivati costosi)
+- **Charts**: Recharts via componente `Chart` di shadcn/ui
+- **Osservabilità**: Prometheus + Loki + Grafana
+- **Deployment**: cluster k3s single-VPS, namespace `production` unico
+- **CI/CD**: GitHub Actions → build immagine → push GHCR → deploy su merge a `main`
+
 ## Comandi
 
 ```
@@ -119,6 +131,8 @@ Fase di **inizializzazione del design system + layout shell**: token, tipografia
 ## Log delle decisioni
 
 Voci in ordine cronologico. Aggiungine una nuova (in cima o in fondo, basta essere coerenti) ogni volta che si prende una decisione degna di nota, invece di lasciare che si perda nella cronologia della chat.
+
+- **2026-07-03** — Definita l'architettura tecnica del livello applicativo (finora assente: solo design system + layout shell erano pronti), documentata in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`. Decisioni principali: hosting self-hosted su cluster k3s single-VPS (namespace unico `production`, niente staging per ora); Postgres + Drizzle ORM per i dati; autenticazione multi-utente con better-auth (magic link + Google OAuth, email via Resend — unico servizio non self-hosted); API come Next.js Route Handlers consumate con TanStack Query lato client (deviazione consapevole da Server Actions, per familiarità e per lasciare aperta la strada a consumer futuri come un'app mobile); nessuna libreria di stato globale introdotta preventivamente (React Context + TanStack Query bastano, Zustand solo se necessario); Redis con ruolo scoped a rate limiting auth e cache di calcoli derivati costosi; Recharts via componente `Chart` di shadcn/ui per i grafici; osservabilità completa da subito (Prometheus + Loki + Grafana); CI/CD con GitHub Actions → GHCR → deploy su merge a `main`. Il modello dati di dominio e la sequenza di implementazione delle schermate restano da definire in un piano successivo.
 
 - **2026-07-03** — Inizializzato il progetto Next.js (App Router, TypeScript, pnpm) a partire dal mockup `docs/design-reference/mock-up.html`. Scelte fatte: Tailwind CSS + shadcn/ui come stack di styling, dark mode con `next-themes`, scope della fase 1 limitato a design system + style guide (nessuna schermata reale ancora). Documentata anche la visione di prodotto in `docs/product-vision.md`.
 - **2026-07-03** — Eseguito e testato interattivamente il mockup (servito via HTTP locale, cliccando ogni bottone/slider/campo di tutte le schermate) perché la sintesi iniziale in `product-vision.md` era incompleta: il mockup ha **9 aree** (Panoramica, Conti, Spese, Cash flow, Investimenti, Pensione, Debiti, Pianifica, Analitiche), non le 7 elencate inizialmente ("Entrate"/"Budget"/"Risparmi"/"Categorie" non esistono come sezioni a sé, sostituite/ampliate da Cash flow e Pianifica). Prodotto `docs/functional-spec.md` come fonte di verità dettagliata su cosa è realmente funzionante nel mockup (es. simulatori what-if in Pensione/Debiti/Pianifica, editing inline in Conti/Investimenti/Debiti) e cosa è solo scenografia statica (es. tutti i bottoni "+ Aggiungi"/"+ Registra" sono stub tranne "+ Aggiungi conto" in Conti; "Vedi tutti" in Panoramica non fa nulla; il filtro periodo in Spese non filtra la lista transazioni). `product-vision.md` aggiornato con l'elenco corretto delle 9 aree e rimando al nuovo documento.

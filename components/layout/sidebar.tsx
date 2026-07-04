@@ -20,6 +20,7 @@
  * sovrascritta via prop `items` per adattare la sidebar ad altri contesti.
  */
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -119,8 +120,20 @@ function NavLink({
   );
 }
 
-/** Avatar con le iniziali dell'utente. */
-function UserAvatar({ initials }: { initials: string }) {
+/** Avatar utente: immagine profilo se disponibile, altrimenti iniziali. */
+function UserAvatar({ initials, image }: { initials: string; image?: string | null }) {
+  if (image) {
+    return (
+      <Image
+        src={image}
+        alt=""
+        width={32}
+        height={32}
+        className="size-8 shrink-0 rounded-full object-cover"
+        aria-hidden="true"
+      />
+    );
+  }
   return (
     <div
       className={cn(
@@ -161,6 +174,7 @@ export function AppSidebar({
   const { data: session } = authClient.useSession();
 
   const userName = session?.user.name ?? "Utente";
+  const userImage = session?.user.image ?? null;
   const userInitials = userName
     .split(" ")
     .map((w) => w[0])
@@ -240,7 +254,7 @@ export function AppSidebar({
             )}
             aria-label="Opzioni utente"
           >
-            <UserAvatar initials={userInitials} />
+            <UserAvatar initials={userInitials} image={userImage} />
             {!isCollapsed && (
               <div className="min-w-0 flex-1 text-left">
                 <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">

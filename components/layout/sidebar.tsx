@@ -44,7 +44,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -254,10 +253,10 @@ export function AppSidebar({
             )}
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" className="w-56">
-            <DropdownMenuLabel className="font-normal">
+            <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{userName}</p>
               <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
-            </DropdownMenuLabel>
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
               <LogOut className="mr-2 size-4" aria-hidden="true" />

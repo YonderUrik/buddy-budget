@@ -20,6 +20,9 @@ export async function middleware(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session) {
+    if (pathname.startsWith("/api/")) {
+      return new NextResponse(null, { status: 401 });
+    }
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
@@ -27,7 +30,7 @@ export async function middleware(request: NextRequest) {
 
   const { onboardingCompleted } = session.user;
 
-  if (!onboardingCompleted && pathname !== "/onboarding") {
+  if (!onboardingCompleted && pathname !== "/onboarding" && !pathname.startsWith("/api/")) {
     return NextResponse.redirect(new URL("/onboarding", request.url));
   }
 

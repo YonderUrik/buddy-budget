@@ -30,20 +30,28 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currency, setCurrency] = useState("EUR");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
-    const response = await fetch("/api/user/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currency }),
-    });
+    try {
+      const response = await fetch("/api/user/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currency }),
+      });
 
-    if (response.ok) {
-      router.push("/");
-    } else {
+      if (response.ok) {
+        router.push("/");
+      } else {
+        setError("Errore durante il salvataggio. Riprova.");
+        setLoading(false);
+      }
+    } catch {
+      setError("Errore di rete. Riprova.");
       setLoading(false);
     }
   }
@@ -74,6 +82,9 @@ export default function OnboardingPage() {
                 </SelectContent>
               </Select>
             </div>
+            {error && (
+              <p className="text-sm text-neg">{error}</p>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Salvataggio…" : "Inizia"}
             </Button>

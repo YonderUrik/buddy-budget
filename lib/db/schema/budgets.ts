@@ -1,14 +1,14 @@
-import { numeric, pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { categories } from "./categories";
-import { users } from "./users";
+import { authUser } from "./auth";
 
 export const budgets = pgTable(
   "budgets",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => authUser.id, { onDelete: "cascade" }),
     categoryId: uuid("category_id")
       .notNull()
       .references(() => categories.id),

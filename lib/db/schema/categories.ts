@@ -1,13 +1,13 @@
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { users } from "./users";
+import { authUser } from "./auth";
 
 export const categoryTypeEnum = pgEnum("category_type", ["fissa", "variabile"]);
 
 export const categories = pgTable("categories", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+  userId: text("user_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => authUser.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   type: categoryTypeEnum("type").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

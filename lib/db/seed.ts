@@ -1,9 +1,25 @@
+import { eq } from "drizzle-orm";
 import { client, db } from "./client";
+import { authUser } from "./schema/auth";
 import { categories, DEFAULT_CATEGORIES } from "./schema/categories";
-import { users } from "./schema/users";
+
+const DEV_USER_ID = "dev-seed-user";
 
 async function seed() {
-  const [user] = await db.insert(users).values({}).returning();
+  await db.delete(categories).where(eq(categories.userId, DEV_USER_ID));
+  await db.delete(authUser).where(eq(authUser.id, DEV_USER_ID));
+
+  const [user] = await db
+    .insert(authUser)
+    .values({
+      id: DEV_USER_ID,
+      name: "Dev User",
+      email: "dev@buddybudget.local",
+      emailVerified: true,
+      currency: "EUR",
+      onboardingCompleted: true,
+    })
+    .returning();
 
   const insertedCategories = await db
     .insert(categories)

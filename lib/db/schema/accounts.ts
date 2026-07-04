@@ -1,12 +1,12 @@
 import { numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { dataSourceEnum } from "./shared";
-import { users } from "./users";
+import { authUser } from "./auth";
 
 export const accounts = pgTable("accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+  userId: text("user_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => authUser.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   institution: text("institution"),
   type: text("type").notNull(),

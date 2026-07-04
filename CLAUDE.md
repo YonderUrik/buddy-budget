@@ -4,9 +4,10 @@ App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e val
 
 ## Regole per Claude
 
-- **Non eseguire mai operazioni git** in questa repo (`status`, `add`, `commit`, `push`, `mv`, ecc., incluse le versioni "dry-run" o di sola lettura): è compito esclusivo dell'utente.
+- **Non eseguire mai operazioni git** in questa repo (`status`, `add`, `commit`, `push`, `mv`, ecc., incluse le versioni "dry-run" o di sola lettura): è compito esclusivo dell'utente. **Eccezione unica** (decisa il 2026-07-03): dentro un workflow di esecuzione piano automatizzato con subagent (es. `superpowers:subagent-driven-development`), subagent e controller possono eseguire `git add`/`commit`/`diff` **in locale** — mai `push`, mai comandi che riscrivono la cronologia (`rebase`, `reset --hard`, ecc.) — per permettere il meccanismo di commit-per-task e le review basate su diff. Fuori da quel contesto specifico, la regola resta assoluta.
 - **Fai domande di approfondimento solo quando la richiesta è ambigua o ha un impatto rilevante** (scelte architetturali, comportamento non specificato, più interpretazioni plausibili). Per richieste chiare o di portata limitata, procedi direttamente senza chiedere conferma: l'obiettivo è non rallentare il lavoro con domande superflue.
 - **Mantieni questo file aggiornato.** Ogni volta che viene presa una decisione di progetto, cambiata una scelta tecnica, o completata una fase di lavoro rilevante, aggiungi una voce nella sezione [Log delle decisioni](#log-delle-decisioni) e aggiorna "Stato del progetto" se cambia lo stato generale. L'obiettivo è che una nuova chat possa leggere questo file e avere subito il contesto, senza dover richiedere all'utente di ripetere spiegazioni già date.
+- **Tieni sempre traccia esplicita di tre cose, in "Stato del progetto" e/o nei documenti di spec/piano collegati**: (1) cosa si sta facendo adesso, (2) cosa si è deciso consapevolmente di saltare/rimandare e perché, (3) cosa è previsto in futuro e quando tornarci. Non lasciare che uno scope tagliato o un piano messo in pausa si perda nella conversazione: se un piano viene sospeso (es. per cambiare priorità), aggiorna il suo stato nel file stesso invece di lasciarlo silenziosamente incompleto.
 
 ## Principi di architettura
 

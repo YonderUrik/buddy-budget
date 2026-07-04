@@ -64,9 +64,9 @@ export function AccountRow({ account, currency }: AccountRowProps) {
   const [type, setType] = React.useState(account.type);
   const [balanceText, setBalanceText] = React.useState(account.balance);
   const [dialogOpen, setDialogOpen] = React.useState(false);
-
-  const isCustomType = !ACCOUNT_TYPE_OPTIONS.includes(
-    type as (typeof ACCOUNT_TYPE_OPTIONS)[number]
+  const [isCustomType, setIsCustomType] = React.useState(
+    () =>
+      !ACCOUNT_TYPE_OPTIONS.includes(account.type as (typeof ACCOUNT_TYPE_OPTIONS)[number])
   );
 
   function commitField(field: "name" | "institution" | "type" | "balance", rawValue: string) {
@@ -127,7 +127,12 @@ export function AccountRow({ account, currency }: AccountRowProps) {
               <Select
                 value={isCustomType ? CUSTOM_TYPE_VALUE : type}
                 onValueChange={(value) => {
-                  if (value === null || value === CUSTOM_TYPE_VALUE) return;
+                  if (value === null) return;
+                  if (value === CUSTOM_TYPE_VALUE) {
+                    setIsCustomType(true);
+                    return;
+                  }
+                  setIsCustomType(false);
                   setType(value);
                   commitField("type", value);
                 }}

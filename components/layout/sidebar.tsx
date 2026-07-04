@@ -21,6 +21,7 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Landmark,
@@ -33,10 +34,12 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
+import { authClient } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -147,6 +150,21 @@ export function AppSidebar({
   onClose,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+
+  const userName = session?.user.name ?? "Utente";
+  const userInitials = userName
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  async function handleSignOut() {
+    await authClient.signOut();
+    router.push("/login");
+  }
 
   // In modalità forceExpanded (drawer mobile) la sidebar è sempre espansa.
   const isCollapsed = forceExpanded ? false : collapsed;
@@ -212,14 +230,14 @@ export function AppSidebar({
           )}
           aria-label="Utente corrente"
         >
-          <UserAvatar initials="MR" />
+          <UserAvatar initials={userInitials} />
           {!isCollapsed && (
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">
-                Marco Rossi
+                {userName}
               </p>
               <p className="truncate text-xs text-sidebar-foreground/50 leading-tight mt-0.5">
-                Piano personale
+                {session?.user.email ?? ""}
               </p>
             </div>
           )}
@@ -234,6 +252,22 @@ export function AppSidebar({
         >
           <ThemeToggle compact={isCollapsed} />
         </div>
+
+        {/* Logout */}
+        <button
+          onClick={handleSignOut}
+          className={cn(
+            "flex w-full items-center rounded-lg px-2 py-1.5 mb-1",
+            "text-xs text-sidebar-foreground/40 hover:text-neg",
+            "hover:bg-sidebar-accent transition-colors duration-150",
+            isCollapsed ? "justify-center" : "gap-2"
+          )}
+          aria-label="Esci"
+          title="Esci"
+        >
+          <LogOut className="size-4 shrink-0" aria-hidden="true" />
+          {!isCollapsed && <span>Esci</span>}
+        </button>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
         {!forceExpanded && (

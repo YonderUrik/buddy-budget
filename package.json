@@ -9,8 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx lib/db/migrate.ts",
-    "db:seed": "tsx lib/db/seed.ts"
+    "db:migrate": "tsx --env-file=.env.local lib/db/migrate.ts",
+    "db:seed": "tsx --env-file=.env.local lib/db/seed.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

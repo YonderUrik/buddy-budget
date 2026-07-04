@@ -1,7 +1,8 @@
+import 'server-only';
+
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { magicLink } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";

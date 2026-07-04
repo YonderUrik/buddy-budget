@@ -49,6 +49,7 @@ next-env.d.ts
 
 # claude code (impostazioni locali, non condivise)
 .claude/settings.local.json
+.claude/worktrees/
 
 # playwright (screenshot/report generati durante la verifica manuale)
 .playwright-mcp/

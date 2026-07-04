@@ -103,7 +103,7 @@ Vincolo di unicità su `(user_id, category_id)`: un solo budget *corrente* per c
 - **Storicizzazione del budget per mese**: nessuna richiesta esplicita in `functional-spec.md`; si aggiunge un'entità/colonna dedicata se e quando servirà davvero confrontare budget di mesi diversi.
 - **Categorie personalizzabili dall'utente** (rinominare/aggiungerne): nessuna evidenza che serva oggi; la seed per-utente lascia comunque la porta aperta.
 - **Multi-valuta per conto/transazione**: la valuta è un'unica impostazione per utente (onboarding), non per riga; se in futuro servirà un conto in valuta estera sarà un'estensione esplicita.
-- **Autenticazione vera** (tabella `users` è uno stub): rimandata al piano infra/auth, oggi in pausa.
+- **Autenticazione vera** (tabella `users` è uno stub): rimandata al piano infra/auth, oggi in pausa. [completato in 2026-07-04 auth plan]
 - **Enforcement lato DB del vincolo `|excluded_amount| ≤ |amount|`**: nello schema resta un vincolo documentato/applicativo per ora; se emergono bug di dati incoerenti si valuterà un CHECK constraint Postgres nel piano di implementazione.
 
 **Cosa è previsto in futuro, e quando tornarci**:

@@ -1,24 +1,34 @@
 import { eq } from "drizzle-orm";
 import { afterAll, describe, expect, it } from "vitest";
 import { client, db } from "./client";
+import { authUser } from "./schema/auth";
 import { accounts } from "./schema/accounts";
 import { budgets } from "./schema/budgets";
 import { categories } from "./schema/categories";
 import { isValidExcludedAmount, transactions } from "./schema/transactions";
-import { users } from "./schema/users";
 
 describe("modello dati base — round trip end-to-end", () => {
   let userId: string;
 
   afterAll(async () => {
     if (userId) {
-      await db.delete(users).where(eq(users.id, userId));
+      await db.delete(authUser).where(eq(authUser.id, userId));
     }
     await client.end();
   });
 
   it("crea utente, categoria, conto, transazione con Dividi e budget, e li rilegge correttamente", async () => {
-    const [user] = await db.insert(users).values({ currency: "EUR" }).returning();
+    const testId = `test-${crypto.randomUUID()}`;
+    const [user] = await db
+      .insert(authUser)
+      .values({
+        id: testId,
+        name: "Test User",
+        email: `test-${Date.now()}@example.com`,
+        emailVerified: false,
+        currency: "EUR",
+      })
+      .returning();
     userId = user.id;
     expect(user.currency).toBe("EUR");
 
@@ -64,7 +74,17 @@ describe("modello dati base — round trip end-to-end", () => {
   });
 
   it("cancellando l'utente cancella a cascata categorie, conti, transazioni e budget", async () => {
-    const [user] = await db.insert(users).values({ currency: "EUR" }).returning();
+    const testId = `test-cascade-${crypto.randomUUID()}`;
+    const [user] = await db
+      .insert(authUser)
+      .values({
+        id: testId,
+        name: "Cascade Test User",
+        email: `cascade-${Date.now()}@example.com`,
+        emailVerified: false,
+        currency: "EUR",
+      })
+      .returning();
 
     const [category] = await db
       .insert(categories)
@@ -84,7 +104,7 @@ describe("modello dati base — round trip end-to-end", () => {
     });
     await db.insert(budgets).values({ userId: user.id, categoryId: category.id, monthlyAmount: "50.00" });
 
-    await db.delete(users).where(eq(users.id, user.id));
+    await db.delete(authUser).where(eq(authUser.id, user.id));
 
     const remainingCategories = await db.select().from(categories).where(eq(categories.userId, user.id));
     const remainingAccounts = await db.select().from(accounts).where(eq(accounts.userId, user.id));

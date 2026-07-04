@@ -2,15 +2,15 @@ import { date, index, numeric, pgTable, text, timestamp, uuid } from "drizzle-or
 import { accounts } from "./accounts";
 import { categories } from "./categories";
 import { dataSourceEnum } from "./shared";
-import { users } from "./users";
+import { authUser } from "./auth";
 
 export const transactions = pgTable(
   "transactions",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => authUser.id, { onDelete: "cascade" }),
     accountId: uuid("account_id")
       .notNull()
       .references(() => accounts.id),

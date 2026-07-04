@@ -1,5 +1,5 @@
 export * from "./shared";
-export * from "./users";
+export * from "./auth";
 export * from "./categories";
 export * from "./accounts";
 export * from "./transactions";

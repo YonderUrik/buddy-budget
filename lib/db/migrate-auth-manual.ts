@@ -259,7 +259,7 @@ async function run() {
     WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
     ORDER BY table_name
   `;
-  const tableNames = tables.map((t: { table_name: string }) => t.table_name);
+  const tableNames = (tables as unknown as { table_name: string }[]).map((t) => t.table_name);
   console.log("   Tabelle trovate:", tableNames.join(", "));
 
   const authTables = ["auth_user", "auth_session", "auth_account", "auth_verification"];

@@ -40,6 +40,14 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { authClient } from "@/lib/auth/client";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -222,26 +230,41 @@ export function AppSidebar({
           isCollapsed ? "px-2 py-3" : "px-4 py-3"
         )}
       >
-        {/* Card utente */}
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-lg p-2 mb-3",
-            "bg-sidebar-accent/50"
-          )}
-          aria-label="Utente corrente"
-        >
-          <UserAvatar initials={userInitials} />
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">
-                {userName}
-              </p>
-              <p className="truncate text-xs text-sidebar-foreground/50 leading-tight mt-0.5">
-                {session?.user.email ?? ""}
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Card utente — apre dropdown con logout */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(
+              "flex w-full items-center gap-3 rounded-lg p-2 mb-3",
+              "bg-sidebar-accent/50 hover:bg-sidebar-accent",
+              "transition-colors duration-150 cursor-pointer",
+              isCollapsed && "justify-center"
+            )}
+            aria-label="Opzioni utente"
+          >
+            <UserAvatar initials={userInitials} />
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">
+                  {userName}
+                </p>
+                <p className="truncate text-xs text-sidebar-foreground/50 leading-tight mt-0.5">
+                  {session?.user.email ?? ""}
+                </p>
+              </div>
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <p className="text-sm font-medium">{userName}</p>
+              <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
+              <LogOut className="mr-2 size-4" aria-hidden="true" />
+              Esci
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Toggle tema */}
         <div
@@ -252,22 +275,6 @@ export function AppSidebar({
         >
           <ThemeToggle compact={isCollapsed} />
         </div>
-
-        {/* Logout */}
-        <button
-          onClick={handleSignOut}
-          className={cn(
-            "flex w-full items-center rounded-lg px-2 py-1.5 mb-1",
-            "text-xs text-sidebar-foreground/40 hover:text-neg",
-            "hover:bg-sidebar-accent transition-colors duration-150",
-            isCollapsed ? "justify-center" : "gap-2"
-          )}
-          aria-label="Esci"
-          title="Esci"
-        >
-          <LogOut className="size-4 shrink-0" aria-hidden="true" />
-          {!isCollapsed && <span>Esci</span>}
-        </button>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
         {!forceExpanded && (

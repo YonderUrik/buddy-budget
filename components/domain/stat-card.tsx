@@ -11,19 +11,8 @@
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-// ---------------------------------------------------------------------------
-// Helper
-// ---------------------------------------------------------------------------
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat("it-IT", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 // ---------------------------------------------------------------------------
 // Tipi
@@ -32,8 +21,10 @@ function formatAmount(value: number): string {
 export interface StatCardProps {
   /** Etichetta descrittiva dell'importo (es. "Liquidità totale"). */
   label: string;
-  /** Valore numerico in EUR. Negativo → rosso; positivo/zero → verde. */
+  /** Valore numerico nella valuta indicata da `currency`. Negativo → rosso; positivo/zero → verde. */
   value: number;
+  /** Codice valuta ISO 4217 (es. "EUR", "USD"). Default: "EUR". */
+  currency?: string;
   /** Testo secondario opzionale sotto il valore (es. "Aggiornato oggi"). */
   subtitle?: string;
   /** Classi CSS aggiuntive per la Card esterna. */
@@ -44,7 +35,7 @@ export interface StatCardProps {
 // Componente
 // ---------------------------------------------------------------------------
 
-export function StatCard({ label, value, subtitle, className }: StatCardProps) {
+export function StatCard({ label, value, currency = "EUR", subtitle, className }: StatCardProps) {
   const isNegative = value < 0;
 
   return (
@@ -61,7 +52,7 @@ export function StatCard({ label, value, subtitle, className }: StatCardProps) {
             isNegative ? "text-neg" : "text-pos"
           )}
         >
-          {formatAmount(value)}
+          {formatCurrency(value, currency, { maximumFractionDigits: 0 })}
         </p>
         {subtitle ? (
           <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>

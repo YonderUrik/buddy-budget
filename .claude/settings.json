@@ -10,7 +10,27 @@
       "Bash(git stash *)",
       "Bash(git checkout *)",
       "Bash(pnpm add *)",
-      "Bash(openssl rand *)"
+      "Bash(openssl rand *)",
+      "Bash(gh pr create --title 'feat\\(auth\\): auth system with magic link, Google OAuth, onboarding' --body ' *)",
+      "Bash(gh pr create --head worktree-auth --base main --title 'feat\\(auth\\): auth system with magic link, Google OAuth, onboarding' --body ' *)",
+      "Bash(git fetch *)",
+      "Bash(pnpm build *)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__plugin_context7_context7__query-docs",
+      "Bash(rm middleware.ts)",
+      "Bash(git rm *)",
+      "Bash(git -C \".claude/worktrees/conti-screen\" log --oneline -5)",
+      "Bash(git -C \"C:\\\\Users\\\\Daniele\\\\Desktop\\\\buddy-budget\\\\.claude\\\\worktrees\\\\conti-screen\" push origin worktree-conti-screen)",
+      "Bash(gh pr create --head worktree-conti-screen --base main --title 'feat\\(conti\\): add Conti screen with account management' --body ' *)",
+      "Bash(git pull *)",
+      "Bash(git worktree *)",
+      "Bash(git branch *)",
+      "PowerShell(git -C \"C:\\\\Users\\\\Daniele\\\\Desktop\\\\buddy-budget\" worktree prune)",
+      "PowerShell(git -C \"C:\\\\Users\\\\Daniele\\\\Desktop\\\\buddy-budget\" branch -d worktree-conti-screen)",
+      "PowerShell(git -C \"C:\\\\Users\\\\Daniele\\\\Desktop\\\\buddy-budget\" fetch --prune)",
+      "PowerShell(git -C \"C:\\\\Users\\\\Daniele\\\\Desktop\\\\buddy-budget\" branch -r)",
+      "Bash(pnpm db:push)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const f=fs.readFileSync\\('lib/format.test.ts','utf8'\\);const lines=f.split\\('\\\\n'\\).filter\\(l=>l.includes\\('toBe'\\)\\);lines.forEach\\(l=>{const codes=[];for\\(let i=0;i<l.length;i++\\)codes.push\\(l.charCodeAt\\(i\\).toString\\(16\\)\\);console.log\\(l.trim\\(\\)\\);console.log\\(codes.slice\\(codes.indexOf\\('22'\\),codes.indexOf\\('22'\\)+20\\).join\\(' '\\)\\)}\\)\")"
     ]
   }
 }

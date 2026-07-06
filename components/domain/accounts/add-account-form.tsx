@@ -1,6 +1,6 @@
 "use client";
 
-/** Form "+ Aggiungi conto": crea un nuovo conto manuale. */
+/** Form "+ Aggiungi conto": crea un nuovo conto manuale con colore, icona e saldo formattato. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ACCOUNT_TYPE_OPTIONS, parseAmount } from "@/lib/validation/accounts";
+import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
+import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import { useCreateAccountMutation } from "@/lib/queries/accounts";
+import { AccountAvatar } from "./account-avatar";
+import { AccountIconColorPicker } from "./account-icon-color-picker";
+import { CurrencyInput } from "./currency-input";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
 
-export function AddAccountForm() {
+const DEFAULT_COLOR: AccountColor = "slate";
+const DEFAULT_ICON: AccountIcon = "wallet";
+
+export interface AddAccountFormProps {
+  /** Valuta dell'utente (ISO 4217), usata per CurrencyInput. */
+  currency: string;
+}
+
+export function AddAccountForm({ currency }: AddAccountFormProps) {
   const createMutation = useCreateAccountMutation();
 
   const [name, setName] = React.useState("");
-  const [institution, setInstitution] = React.useState("");
   const [type, setType] = React.useState<string>(ACCOUNT_TYPE_OPTIONS[0]);
   const [isCustomType, setIsCustomType] = React.useState(false);
-  const [balanceText, setBalanceText] = React.useState("0");
+  const [balanceValue, setBalanceValue] = React.useState<number | null>(0);
+  const [color, setColor] = React.useState<AccountColor>(DEFAULT_COLOR);
+  const [icon, setIcon] = React.useState<AccountIcon>(DEFAULT_ICON);
   const [error, setError] = React.useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
@@ -35,8 +48,7 @@ export function AddAccountForm() {
       setError("Nome e tipo sono obbligatori");
       return;
     }
-    const balance = parseAmount(balanceText);
-    if (balance === null) {
+    if (balanceValue === null) {
       setError("Il saldo iniziale non è un numero valido");
       return;
     }
@@ -44,17 +56,19 @@ export function AddAccountForm() {
     createMutation.mutate(
       {
         name: name.trim(),
-        institution: institution.trim() === "" ? undefined : institution.trim(),
         type: type.trim(),
-        balance,
+        balance: balanceValue,
+        color,
+        icon,
       },
       {
         onSuccess: () => {
           setName("");
-          setInstitution("");
           setType(ACCOUNT_TYPE_OPTIONS[0]);
           setIsCustomType(false);
-          setBalanceText("0");
+          setBalanceValue(0);
+          setColor(DEFAULT_COLOR);
+          setIcon(DEFAULT_ICON);
         },
         onError: (mutationError) => setError(mutationError.message),
       }
@@ -63,23 +77,23 @@ export function AddAccountForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
+      <div className="flex items-end gap-2">
+        <AccountIconColorPicker
+          value={{ color, icon }}
+          onChange={({ color: c, icon: i }) => {
+            setColor(c);
+            setIcon(i);
+          }}
+        >
+          <AccountAvatar color={color} icon={icon} />
+        </AccountIconColorPicker>
+      </div>
+
       <div className="flex flex-col gap-1">
         <label className="text-xs text-muted-foreground" htmlFor="new-account-name">
           Nome
         </label>
         <Input id="new-account-name" value={name} onChange={(e) => setName(e.target.value)} className="w-40" />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-muted-foreground" htmlFor="new-account-institution">
-          Istituto
-        </label>
-        <Input
-          id="new-account-institution"
-          value={institution}
-          onChange={(e) => setInstitution(e.target.value)}
-          className="w-40"
-        />
       </div>
 
       <div className="flex flex-col gap-1">
@@ -122,12 +136,12 @@ export function AddAccountForm() {
         <label className="text-xs text-muted-foreground" htmlFor="new-account-balance">
           Saldo iniziale
         </label>
-        <Input
-          id="new-account-balance"
-          value={balanceText}
-          onChange={(e) => setBalanceText(e.target.value)}
+        <CurrencyInput
+          value={balanceValue}
+          onChange={setBalanceValue}
+          currency={currency}
           className="w-28"
-          inputMode="decimal"
+          aria-label="Saldo iniziale"
         />
       </div>
 

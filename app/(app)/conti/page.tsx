@@ -45,7 +45,7 @@ export default function ContiPage() {
             <AccountRow key={account.id} account={account} currency={currency} />
           ))
         )}
-        <AddAccountForm />
+        <AddAccountForm currency={currency} />
       </Card>
     </div>
   );

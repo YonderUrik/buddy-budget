@@ -8,9 +8,10 @@ export const accounts = pgTable("accounts", {
     .notNull()
     .references(() => authUser.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  institution: text("institution"),
   type: text("type").notNull(),
   balance: numeric("balance", { precision: 12, scale: 2 }).notNull().default("0"),
+  color: text("color").notNull().default("slate"),
+  icon: text("icon").notNull().default("wallet"),
   source: dataSourceEnum("source").notNull().default("manuale"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

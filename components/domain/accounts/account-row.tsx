@@ -31,22 +31,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/format";
-import { ACCOUNT_TYPE_OPTIONS, parseAmount } from "@/lib/validation/accounts";
+import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
 import type { UpdateAccountInput } from "@/lib/validation/accounts";
+import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import type { Account } from "@/lib/db/schema/accounts";
 import { cn } from "@/lib/utils";
+import { AccountAvatar } from "./account-avatar";
+import { AccountIconColorPicker } from "./account-icon-color-picker";
+import { CurrencyInput } from "./currency-input";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
-
-function initialsFor(text: string): string {
-  return text
-    .split(" ")
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 export interface AccountRowProps {
   account: Account;
@@ -60,25 +55,37 @@ export function AccountRow({ account, currency }: AccountRowProps) {
   const deleteMutation = useDeleteAccountMutation();
 
   const [name, setName] = React.useState(account.name);
-  const [institution, setInstitution] = React.useState(account.institution ?? "");
   const [type, setType] = React.useState(account.type);
-  const [balanceText, setBalanceText] = React.useState(account.balance);
+  const [balanceValue, setBalanceValue] = React.useState<number | null>(Number(account.balance));
+  const [color, setColor] = React.useState<AccountColor>(account.color as AccountColor);
+  const [icon, setIcon] = React.useState<AccountIcon>(account.icon as AccountIcon);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [isCustomType, setIsCustomType] = React.useState(
     () =>
       !ACCOUNT_TYPE_OPTIONS.includes(account.type as (typeof ACCOUNT_TYPE_OPTIONS)[number])
   );
 
-  function commitField(field: "name" | "institution" | "type" | "balance", rawValue: string) {
+  function commitField(field: keyof UpdateAccountInput, value: string | number | null) {
     if (field === "balance") {
-      const parsed = parseAmount(rawValue);
-      if (parsed === null || parsed === Number(account.balance)) return;
-      updateMutation.mutate({ id: account.id, input: { balance: parsed } });
+      const num = typeof value === "number" ? value : null;
+      if (num === null || num === Number(account.balance)) return;
+      updateMutation.mutate({ id: account.id, input: { balance: num } });
       return;
     }
-    if (rawValue === (account[field] ?? "")) return;
-    const input: UpdateAccountInput = { [field]: rawValue } as UpdateAccountInput;
+    if (typeof value === "string" && value === (account[field as "name" | "type"] ?? "")) return;
+    const input: UpdateAccountInput = { [field]: value } as UpdateAccountInput;
     updateMutation.mutate({ id: account.id, input });
+  }
+
+  function handleAppearanceChange(next: { color: AccountColor; icon: AccountIcon }) {
+    if (next.color !== color) {
+      setColor(next.color);
+      updateMutation.mutate({ id: account.id, input: { color: next.color } });
+    }
+    if (next.icon !== icon) {
+      setIcon(next.icon);
+      updateMutation.mutate({ id: account.id, input: { icon: next.icon } });
+    }
   }
 
   function handleDeleteConfirm() {
@@ -86,14 +93,20 @@ export function AccountRow({ account, currency }: AccountRowProps) {
     setDialogOpen(false);
   }
 
+  const avatar = <AccountAvatar color={color} icon={icon} />;
+
   return (
     <div className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0">
-      <div
-        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground"
-        aria-hidden="true"
-      >
-        {initialsFor(account.institution || account.name)}
-      </div>
+      {isAuto ? (
+        avatar
+      ) : (
+        <AccountIconColorPicker
+          value={{ color, icon }}
+          onChange={handleAppearanceChange}
+        >
+          {avatar}
+        </AccountIconColorPicker>
+      )}
 
       <div className="min-w-0 flex-1 space-y-1">
         {isAuto ? (
@@ -110,20 +123,9 @@ export function AccountRow({ account, currency }: AccountRowProps) {
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {isAuto ? (
-            <span>
-              {account.institution ? `${account.institution} · ` : ""}
-              {account.type}
-            </span>
+            <span>{account.type}</span>
           ) : (
             <>
-              <Input
-                value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
-                onBlur={() => commitField("institution", institution)}
-                placeholder="Istituto"
-                className="h-6 w-32 text-xs"
-                aria-label="Istituto"
-              />
               <Select
                 value={isCustomType ? CUSTOM_TYPE_VALUE : type}
                 onValueChange={(value) => {
@@ -171,11 +173,12 @@ export function AccountRow({ account, currency }: AccountRowProps) {
           {formatCurrency(Number(account.balance), currency)}
         </p>
       ) : (
-        <Input
-          value={balanceText}
-          onChange={(e) => setBalanceText(e.target.value)}
-          onBlur={() => commitField("balance", balanceText)}
-          className="h-7 w-28 text-right text-sm font-medium tabular-nums"
+        <CurrencyInput
+          value={balanceValue}
+          onChange={setBalanceValue}
+          onBlur={() => commitField("balance", balanceValue)}
+          currency={currency}
+          className="w-28 text-right"
           aria-label="Saldo"
         />
       )}

@@ -37,10 +37,11 @@ export async function POST(request: NextRequest) {
     .values({
       userId: session.user.id,
       name: parsed.data.name,
-      institution: parsed.data.institution ?? null,
       type: parsed.data.type,
       balance: parsed.data.balance.toFixed(2),
       source: "manuale",
+      ...(parsed.data.color ? { color: parsed.data.color } : {}),
+      ...(parsed.data.icon ? { icon: parsed.data.icon } : {}),
     })
     .returning();
 

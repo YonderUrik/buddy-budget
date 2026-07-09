@@ -25,4 +25,5 @@ export const DEFAULT_CATEGORIES: { name: string; type: "fissa" | "variabile" }[]
   { name: "Altro", type: "variabile" },
   { name: "Svago", type: "variabile" },
   { name: "Trasporti", type: "variabile" },
+  { name: "Da categorizzare", type: "variabile" },
 ];

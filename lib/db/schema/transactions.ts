@@ -1,4 +1,4 @@
-import { date, index, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { accounts } from "./accounts";
 import { categories } from "./categories";
 import { dataSourceEnum } from "./shared";
@@ -22,10 +22,16 @@ export const transactions = pgTable(
     excludedAmount: numeric("excluded_amount", { precision: 12, scale: 2 }).notNull().default("0"),
     date: date("date").notNull(),
     source: dataSourceEnum("source").notNull().default("manuale"),
+    // Id della transazione lato GoCardless — nullable (le transazioni manuali non ce l'hanno),
+    // usato per l'idempotenza dei sync periodici (nessun duplicato a ogni run del cron).
+    externalId: text("external_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index("transactions_user_date_idx").on(table.userId, table.date)]
+  (table) => [
+    index("transactions_user_date_idx").on(table.userId, table.date),
+    unique("transactions_account_external_id_unique").on(table.accountId, table.externalId),
+  ]
 );
 
 export type Transaction = typeof transactions.$inferSelect;

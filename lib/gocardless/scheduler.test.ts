@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
@@ -46,8 +46,13 @@ describe("scheduler", () => {
     vi.mocked(syncAccountLink).mockReset().mockResolvedValue(undefined);
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
+    // Ogni test crea link globali (non filtrati per utente, come findDueLinks in produzione):
+    // vanno ripuliti dopo ogni test, non solo alla fine, per non inquinare le assertion sui conteggi.
     await db.delete(authUser).where(eq(authUser.id, userId));
+  });
+
+  afterAll(async () => {
     await client.end();
   });
 

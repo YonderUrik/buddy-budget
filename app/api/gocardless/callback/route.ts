@@ -11,17 +11,24 @@ export async function GET(request: NextRequest) {
     return Response.redirect(`${appUrl}/conti?bankError=missing_ref`, 302);
   }
 
-  const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.id, ref));
-  if (!connection || !connection.requisitionId) {
-    return Response.redirect(`${appUrl}/conti?bankError=not_found`, 302);
-  }
+  try {
+    const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.id, ref));
+    if (!connection || !connection.requisitionId) {
+      return Response.redirect(`${appUrl}/conti?bankError=not_found`, 302);
+    }
 
-  const requisition = await getRequisition(connection.requisitionId);
-  if (requisition.status !== "LN") {
-    await db.update(bankConnections).set({ status: "error" }).where(eq(bankConnections.id, connection.id));
-    return Response.redirect(`${appUrl}/conti?bankError=consent_failed`, 302);
-  }
+    const requisition = await getRequisition(connection.requisitionId);
+    if (requisition.status !== "LN") {
+      await db.update(bankConnections).set({ status: "error" }).where(eq(bankConnections.id, connection.id));
+      return Response.redirect(`${appUrl}/conti?bankError=consent_failed`, 302);
+    }
 
-  await db.update(bankConnections).set({ status: "linked" }).where(eq(bankConnections.id, connection.id));
-  return Response.redirect(`${appUrl}/conti/collega/${connection.id}`, 302);
+    await db.update(bankConnections).set({ status: "linked" }).where(eq(bankConnections.id, connection.id));
+    return Response.redirect(`${appUrl}/conti/collega/${connection.id}`, 302);
+  } catch {
+    // Copre sia un ref malformato (uuid non valido → Postgres lancia) sia un fallimento
+    // di GoCardless (getRequisition): l'utente torna qui dal browser della banca, quindi
+    // deve sempre atterrare su un redirect leggibile, mai su una pagina di errore grezza.
+    return Response.redirect(`${appUrl}/conti?bankError=gocardless_unavailable`, 302);
+  }
 }

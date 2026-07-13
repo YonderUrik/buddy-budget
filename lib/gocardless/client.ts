@@ -83,6 +83,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<GoCardl
   return { data: (await response.json()) as T, rateLimit };
 }
 
+/** Valida che un id esterno (requisition/conto) non contenga separatori di path prima di finire in un URL. */
+function assertSafePathSegment(value: string): void {
+  if (value.includes("/") || value.includes("..") || value.includes("%2F") || value.includes("%2f")) {
+    throw new Error(`Valore non valido per un segmento di path GoCardless: ${value}`);
+  }
+}
+
 export interface Institution {
   id: string;
   name: string;
@@ -91,7 +98,10 @@ export interface Institution {
 
 /** Elenca gli istituti bancari GoCardless disponibili in un paese (codice ISO 3166-1 alpha-2). */
 export async function listInstitutions(country: string): Promise<Institution[]> {
-  const { data } = await request<Institution[]>(`/institutions/?country=${country}`);
+  if (!/^[A-Z]{2}$/.test(country)) {
+    throw new Error(`Codice paese non valido (atteso ISO 3166-1 alpha-2): ${country}`);
+  }
+  const { data } = await request<Institution[]>(`/institutions/?country=${encodeURIComponent(country)}`);
   return data;
 }
 
@@ -135,7 +145,8 @@ export async function createRequisition(params: {
 
 /** Stato aggiornato di una requisition (`accounts` è popolato solo dopo il consenso dell'utente). */
 export async function getRequisition(requisitionId: string): Promise<Requisition> {
-  const { data } = await request<Requisition>(`/requisitions/${requisitionId}/`);
+  assertSafePathSegment(requisitionId);
+  const { data } = await request<Requisition>(`/requisitions/${encodeURIComponent(requisitionId)}/`);
   return data;
 }
 
@@ -147,7 +158,10 @@ export interface AccountDetails {
 
 /** Dettagli identificativi di un conto esterno (nome/IBAN), usati nella UI di selezione. */
 export async function getAccountDetails(externalAccountId: string): Promise<AccountDetails> {
-  const { data } = await request<{ account: AccountDetails }>(`/accounts/${externalAccountId}/details/`);
+  assertSafePathSegment(externalAccountId);
+  const { data } = await request<{ account: AccountDetails }>(
+    `/accounts/${encodeURIComponent(externalAccountId)}/details/`
+  );
   return data.account;
 }
 
@@ -160,7 +174,10 @@ export interface Balance {
 export async function getAccountBalances(
   externalAccountId: string
 ): Promise<{ balance: Balance; rateLimit: RateLimitInfo | null }> {
-  const { data, rateLimit } = await request<{ balances: Balance[] }>(`/accounts/${externalAccountId}/balances/`);
+  assertSafePathSegment(externalAccountId);
+  const { data, rateLimit } = await request<{ balances: Balance[] }>(
+    `/accounts/${encodeURIComponent(externalAccountId)}/balances/`
+  );
   const balance = data.balances.find((b) => b.balanceType === "interimAvailable") ?? data.balances[0];
   return { balance, rateLimit };
 }
@@ -177,8 +194,9 @@ export interface BankTransaction {
 export async function getAccountTransactions(
   externalAccountId: string
 ): Promise<{ transactions: BankTransaction[]; rateLimit: RateLimitInfo | null }> {
+  assertSafePathSegment(externalAccountId);
   const { data, rateLimit } = await request<{
     transactions: { booked: BankTransaction[]; pending: BankTransaction[] };
-  }>(`/accounts/${externalAccountId}/transactions/`);
+  }>(`/accounts/${encodeURIComponent(externalAccountId)}/transactions/`);
   return { transactions: data.transactions.booked, rateLimit };
 }

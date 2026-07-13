@@ -9,14 +9,10 @@ export default defineConfig({
       "**/node_modules/**",
       "**/.claude/worktrees/**",
     ],
-    // Provide server-only context for tests to recognize server modules
-    globals: true,
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname),
     },
-    // Use react-server export condition so server-only resolves to empty.js
-    conditions: ["react-server", "node"],
   },
 });

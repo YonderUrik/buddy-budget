@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
-import { listInstitutions } from "@/lib/gocardless/client";
+import { GoCardlessError, listInstitutions } from "@/lib/gocardless/client";
+
+const COUNTRY_FORMAT = /^[A-Z]{2}$/;
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -10,11 +12,17 @@ export async function GET(request: NextRequest) {
   if (!country) {
     return Response.json({ error: "Parametro country obbligatorio" }, { status: 400 });
   }
+  if (!COUNTRY_FORMAT.test(country)) {
+    return Response.json({ error: "Formato country non valido" }, { status: 400 });
+  }
 
   try {
     const institutions = await listInstitutions(country);
     return Response.json(institutions);
-  } catch {
-    return Response.json({ error: "Formato country non valido" }, { status: 400 });
+  } catch (error) {
+    if (error instanceof GoCardlessError) {
+      return Response.json({ error: "Impossibile recuperare gli istituti bancari" }, { status: 502 });
+    }
+    throw error;
   }
 }

@@ -25,10 +25,11 @@ export async function GET(request: NextRequest) {
 
     await db.update(bankConnections).set({ status: "linked" }).where(eq(bankConnections.id, connection.id));
     return Response.redirect(`${appUrl}/conti/collega/${connection.id}`, 302);
-  } catch {
+  } catch (error) {
     // Copre sia un ref malformato (uuid non valido → Postgres lancia) sia un fallimento
     // di GoCardless (getRequisition): l'utente torna qui dal browser della banca, quindi
     // deve sempre atterrare su un redirect leggibile, mai su una pagina di errore grezza.
+    console.error(`Callback GoCardless fallito per ref ${ref}`, error);
     return Response.redirect(`${appUrl}/conti?bankError=gocardless_unavailable`, 302);
   }
 }

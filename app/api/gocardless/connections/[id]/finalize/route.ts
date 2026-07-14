@@ -32,6 +32,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       if (!selection.existingAccountId) {
         return Response.json({ error: "existingAccountId richiesto per mode 'existing'" }, { status: 400 });
       }
+
+      // L'account selezionato deve appartenere all'utente della sessione, altrimenti un utente
+      // potrebbe ricollegare (e quindi dirottare il sync) il conto "auto" di un altro utente.
+      const [ownedAccount] = await db
+        .select({ id: accounts.id })
+        .from(accounts)
+        .where(
+          and(
+            eq(accounts.id, selection.existingAccountId),
+            eq(accounts.userId, session.user.id),
+            eq(accounts.source, "auto")
+          )
+        );
+      if (!ownedAccount) {
+        return Response.json({ error: "Conto non trovato" }, { status: 404 });
+      }
+
       const [updatedLink] = await db
         .update(bankAccountLinks)
         .set({ connectionId: connection.id, externalAccountId: selection.externalAccountId })

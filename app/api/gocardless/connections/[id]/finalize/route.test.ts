@@ -123,6 +123,51 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
     expect(response.status).toBe(400);
   });
 
+  it("risponde 404 se existingAccountId appartiene a un altro utente", async () => {
+    const otherUserId = `test-finalize-other-${crypto.randomUUID()}`;
+    const [otherUser] = await db
+      .insert(authUser)
+      .values({
+        id: otherUserId,
+        name: "Altro Utente",
+        email: `test-finalize-other-${Date.now()}@example.com`,
+        emailVerified: false,
+        currency: "EUR",
+      })
+      .returning();
+    const [otherAccount] = await db
+      .insert(accounts)
+      .values({ userId: otherUser.id, name: "Conto Altrui", type: "Conto corrente", balance: "0", source: "auto" })
+      .returning();
+
+    try {
+      const response = await POST(
+        new NextRequest(`http://localhost/api/gocardless/connections/${connectionId}/finalize`, {
+          method: "POST",
+          body: JSON.stringify({
+            selections: [
+              {
+                externalAccountId: "ext-hijack",
+                name: "Conto Corrente",
+                type: "Conto corrente",
+                mode: "existing",
+                existingAccountId: otherAccount.id,
+              },
+            ],
+          }),
+        }),
+        { params: Promise.resolve({ id: connectionId }) }
+      );
+      expect(response.status).toBe(404);
+      expect(syncAccountLink).not.toHaveBeenCalled();
+
+      const links = await db.select().from(bankAccountLinks).where(eq(bankAccountLinks.accountId, otherAccount.id));
+      expect(links).toHaveLength(0);
+    } finally {
+      await db.delete(authUser).where(eq(authUser.id, otherUser.id));
+    }
+  });
+
   it("risponde 404 se la connessione non è dell'utente", async () => {
     mockedGetSession.mockResolvedValueOnce({ user: { id: "altro-utente" } } as never);
     const response = await POST(

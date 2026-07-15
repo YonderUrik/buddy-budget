@@ -179,6 +179,9 @@ export async function getAccountBalances(
     `/accounts/${encodeURIComponent(externalAccountId)}/balances/`
   );
   const balance = data.balances.find((b) => b.balanceType === "interimAvailable") ?? data.balances[0];
+  if (!balance) {
+    throw new Error(`Nessun saldo disponibile per il conto ${externalAccountId}`);
+  }
   return { balance, rateLimit };
 }
 

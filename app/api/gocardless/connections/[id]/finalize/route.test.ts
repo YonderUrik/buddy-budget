@@ -123,6 +123,25 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
     expect(response.status).toBe(400);
   });
 
+  it("risponde comunque 201 se il sync iniziale fallisce (l'account resta creato)", async () => {
+    vi.mocked(syncAccountLink).mockRejectedValueOnce(new Error("GoCardless down"));
+
+    const response = await POST(
+      new NextRequest(`http://localhost/api/gocardless/connections/${connectionId}/finalize`, {
+        method: "POST",
+        body: JSON.stringify({
+          selections: [{ externalAccountId: "ext-fail", name: "Conto Corrente", type: "Conto corrente", mode: "new" }],
+        }),
+      }),
+      { params: Promise.resolve({ id: connectionId }) }
+    );
+
+    expect(response.status).toBe(201);
+
+    const [createdAccount] = await db.select().from(accounts).where(eq(accounts.userId, userId));
+    expect(createdAccount.source).toBe("auto");
+  });
+
   it("risponde 404 se existingAccountId appartiene a un altro utente", async () => {
     const otherUserId = `test-finalize-other-${crypto.randomUUID()}`;
     const [otherUser] = await db

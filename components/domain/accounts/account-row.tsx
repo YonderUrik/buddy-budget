@@ -47,9 +47,13 @@ export interface AccountRowProps {
   account: Account;
   /** Valuta dell'utente (ISO 4217), usata per formattare il saldo. */
   currency: string;
+  /** True se il consenso bancario collegato a questo conto è scaduto/in errore. */
+  needsReconnect?: boolean;
+  /** Chiamato quando l'utente clicca "Riconnetti". */
+  onReconnect?: () => void;
 }
 
-export function AccountRow({ account, currency }: AccountRowProps) {
+export function AccountRow({ account, currency, needsReconnect, onReconnect }: AccountRowProps) {
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
   const deleteMutation = useDeleteAccountMutation();
@@ -167,6 +171,16 @@ export function AccountRow({ account, currency }: AccountRowProps) {
       </div>
 
       <Badge variant={isAuto ? "secondary" : "outline"}>{isAuto ? "Auto" : "Manuale"}</Badge>
+
+      {needsReconnect && (
+        <button
+          type="button"
+          onClick={onReconnect}
+          className="shrink-0 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
+        >
+          Riconnetti
+        </button>
+      )}
 
       {isAuto ? (
         <p className="w-28 shrink-0 text-right text-sm font-medium tabular-nums">

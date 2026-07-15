@@ -2,15 +2,25 @@
 
 /** Pagina Conti: orchestra fetch, KPI, lista conti e form di creazione. Nessuna logica di business qui. */
 
+import * as React from "react";
 import { AccountsKpi, AccountRow, AddAccountForm } from "@/components/domain/accounts";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
 import { useAccountsQuery } from "@/lib/queries/accounts";
+import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 
 export default function ContiPage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
+  const { data: connectionStatuses } = useBankConnectionsStatusQuery();
+  const [reconnectTrigger, setReconnectTrigger] = React.useState(0);
+
+  const reconnectAccountIds = new Set(
+    (connectionStatuses ?? [])
+      .filter((status) => status.status === "expired" || status.status === "error")
+      .map((status) => status.accountId)
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
@@ -42,10 +52,20 @@ export default function ContiPage() {
           !isLoading &&
           !isError &&
           (accounts ?? []).map((account) => (
-            <AccountRow key={account.id} account={account} currency={currency} />
+            <AccountRow
+              key={account.id}
+              account={account}
+              currency={currency}
+              needsReconnect={reconnectAccountIds.has(account.id)}
+              onReconnect={() => setReconnectTrigger((n) => n + 1)}
+            />
           ))
         )}
-        <AddAccountForm currency={currency} />
+        <AddAccountForm
+          key={reconnectTrigger}
+          currency={currency}
+          mode={reconnectTrigger > 0 ? "collega-banca" : undefined}
+        />
       </Card>
     </div>
   );

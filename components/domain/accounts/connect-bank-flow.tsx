@@ -117,12 +117,12 @@ export function ConnectBankFlow() {
               key={institution.id}
               type="button"
               variant="outline"
-              className="justify-start gap-2"
+              className="justify-start gap-2 h-auto whitespace-normal py-2.5 text-left w-full items-center"
               disabled={createConnection.isPending}
               onClick={() => handleSelect(institution.id, institution.name, institution.transaction_total_days)}
             >
               <InstitutionLogo institution={institution} />
-              {institution.name}
+              <span className="flex-1 min-w-0 break-words">{institution.name}</span>
             </Button>
           ))}
         </div>

@@ -36,13 +36,12 @@ export interface AddAccountFormProps {
   currency: string;
   /** Forza il tab iniziale (usato dal bottone "Riconnetti" in AccountRow); di default "manuale". */
   mode?: "manuale" | "collega-banca";
+  /** Callback richiamata alla creazione con successo del conto. */
+  onSuccess?: () => void;
 }
 
-export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps) {
+export function AddAccountForm({ currency, mode: modeProp, onSuccess }: AddAccountFormProps) {
   const [mode, setMode] = React.useState<"manuale" | "collega-banca">(modeProp ?? "manuale");
-  React.useEffect(() => {
-    if (modeProp) setMode(modeProp);
-  }, [modeProp]);
 
   const createMutation = useCreateAccountMutation();
 
@@ -83,6 +82,7 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
           setBalanceValue(0);
           setColor(DEFAULT_COLOR);
           setIcon(DEFAULT_ICON);
+          onSuccess?.();
         },
         onError: (mutationError) => setError(mutationError.message),
       }
@@ -91,7 +91,7 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
 
   return (
     <div className="flex flex-col">
-      <div className="mx-4 mt-3 inline-flex w-fit items-center gap-1 self-start rounded-lg bg-muted p-1">
+      <div className="mx-4 my-3 inline-flex w-fit items-center gap-1 self-start rounded-lg bg-muted p-1">
         {MODE_OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -99,7 +99,7 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
             onClick={() => setMode(option.value)}
             aria-pressed={mode === option.value}
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
               mode === option.value
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -113,8 +113,8 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
       {mode === "collega-banca" ? (
         <ConnectBankFlow />
       ) : (
-        <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
-          <div className="flex items-end gap-2">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 border-t border-border p-4">
+          <div className="flex items-center gap-3">
             <AccountIconColorPicker
               value={{ color, icon }}
               onChange={({ color: c, icon: i }) => {
@@ -122,24 +122,31 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
                 setIcon(i);
               }}
             >
-              <AccountAvatar color={color} icon={icon} />
+              <div className="hover:scale-105 transition-transform">
+                <AccountAvatar color={color} icon={icon} size={20} className="size-10 shadow-sm" />
+              </div>
             </AccountIconColorPicker>
+            <div className="space-y-0.5">
+              <p className="text-xs font-semibold text-foreground">Icona e Colore</p>
+              <p className="text-[10px] text-muted-foreground">Clicca l&apos;icona per personalizzarla</p>
+            </div>
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground" htmlFor="new-account-name">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="new-account-name">
               Nome
             </label>
             <Input
               id="new-account-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full sm:w-40"
+              placeholder="Es. Intesa Sanpaolo"
+              className="w-full"
             />
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground">Tipo</label>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-foreground">Tipo</label>
             <Select
               value={isCustomType ? CUSTOM_TYPE_VALUE : type}
               onValueChange={(value) => {
@@ -152,8 +159,8 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
                 setType(value as string);
               }}
             >
-              <SelectTrigger className="w-full sm:w-40">
-                <SelectValue placeholder="Tipo conto" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Seleziona tipo conto" />
               </SelectTrigger>
               <SelectContent>
                 {ACCOUNT_TYPE_OPTIONS.map((option) => (
@@ -168,27 +175,27 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
               <Input
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                placeholder="Tipo personalizzato"
-                className="w-full sm:w-40"
+                placeholder="Es. Cassa, Wallet Crypto"
+                className="w-full mt-1.5"
               />
             )}
           </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
-            <label className="text-xs text-muted-foreground" htmlFor="new-account-balance">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-foreground" htmlFor="new-account-balance">
               Saldo iniziale
             </label>
             <CurrencyInput
               value={balanceValue}
               onChange={setBalanceValue}
               currency={currency}
-              className="w-full sm:w-28"
+              className="w-full"
               aria-label="Saldo iniziale"
             />
           </div>
 
-          <Button type="submit" disabled={createMutation.isPending} className="w-full sm:w-auto">
-            + Aggiungi conto
+          <Button type="submit" disabled={createMutation.isPending} className="w-full mt-2 cursor-pointer">
+            {createMutation.isPending ? "Aggiunta in corso..." : "Aggiungi conto"}
           </Button>
 
           {error && <p className="w-full text-sm text-destructive">{error}</p>}

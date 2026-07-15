@@ -54,6 +54,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         .set({ connectionId: connection.id, externalAccountId: selection.externalAccountId })
         .where(eq(bankAccountLinks.accountId, selection.existingAccountId))
         .returning();
+      if (!updatedLink) {
+        return Response.json({ error: "Conto non trovato" }, { status: 404 });
+      }
       linksToSync.push({
         linkId: updatedLink.id,
         connectionId: connection.id,
@@ -80,8 +83,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
   }
 
+  // Best-effort: gli account/link sono già creati/aggiornati a questo punto. Un fallimento del
+  // sync iniziale non deve far fallire la richiesta (altrimenti un retry duplicherebbe gli
+  // account "new" appena creati) — nextSyncEligibleAt è già "ora", quindi lo scheduler (Task 7)
+  // recupera comunque il conto al giro successivo.
   for (const link of linksToSync) {
-    await syncAccountLink(link, redisRateLimitStore);
+    try {
+      await syncAccountLink(link, redisRateLimitStore);
+    } catch (error) {
+      console.error(`Sync iniziale fallito per il conto ${link.accountId}`, error);
+    }
   }
 
   return Response.json({ ok: true }, { status: 201 });

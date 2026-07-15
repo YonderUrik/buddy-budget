@@ -1,8 +1,12 @@
 "use client";
 
-/** Flusso "Collega banca": selezione paese, ricerca istituto, redirect al consenso GoCardless. */
+/**
+ * Flusso "Collega banca": selezione paese (con bandiera), ricerca istituto
+ * (con logo, se GoCardless lo fornisce), redirect al consenso GoCardless.
+ */
 
 import * as React from "react";
+import { Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries/gocardless";
+import type { Institution } from "@/lib/queries/gocardless";
 
 const COUNTRY_OPTIONS = [
   { code: "IT", label: "Italia" },
@@ -21,6 +26,36 @@ const COUNTRY_OPTIONS = [
   { code: "ES", label: "Spagna" },
   { code: "GB", label: "Regno Unito" },
 ] as const;
+
+/** Converte un codice paese ISO 3166-1 alpha-2 nella bandiera emoji corrispondente. */
+function countryFlag(code: string): string {
+  return code
+    .toUpperCase()
+    .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+}
+
+/** Logo dell'istituto se disponibile, altrimenti un'icona generica di fallback. */
+function InstitutionLogo({ institution }: { institution: Institution }) {
+  const [errored, setErrored] = React.useState(false);
+
+  if (!institution.logo || errored) {
+    return (
+      <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <Building2 size={14} />
+      </div>
+    );
+  }
+
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- logo di dominio esterno GoCardless
+    <img
+      src={institution.logo}
+      alt=""
+      className="size-6 shrink-0 rounded-full bg-white object-contain"
+      onError={() => setErrored(true)}
+    />
+  );
+}
 
 export function ConnectBankFlow() {
   const [country, setCountry] = React.useState<string>(COUNTRY_OPTIONS[0].code);
@@ -58,7 +93,7 @@ export function ConnectBankFlow() {
             <SelectContent>
               {COUNTRY_OPTIONS.map((option) => (
                 <SelectItem key={option.code} value={option.code}>
-                  {option.label}
+                  {countryFlag(option.code)} {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -82,10 +117,11 @@ export function ConnectBankFlow() {
               key={institution.id}
               type="button"
               variant="outline"
-              className="justify-start"
+              className="justify-start gap-2"
               disabled={createConnection.isPending}
               onClick={() => handleSelect(institution.id, institution.name, institution.transaction_total_days)}
             >
+              <InstitutionLogo institution={institution} />
               {institution.name}
             </Button>
           ))}

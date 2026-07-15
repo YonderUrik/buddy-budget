@@ -15,7 +15,11 @@ async function getOwnedAccount(userId: string, accountId: string) {
   return account ?? null;
 }
 
-/** Aggiorna un conto manuale del proprio utente; 403 se auto, 404 se non proprio. */
+/**
+ * Aggiorna un conto del proprio utente; 404 se non proprio. Per un conto
+ * "auto" sono modificabili solo nome/colore/icona (tipo e saldo arrivano
+ * dalla banca collegata): un tentativo di cambiarli risponde 403.
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -30,17 +34,18 @@ export async function PATCH(
   if (!account) {
     return new Response(null, { status: 404 });
   }
-  if (account.source === "auto") {
-    return Response.json(
-      { error: "Un conto collegato automaticamente non può essere modificato" },
-      { status: 403 }
-    );
-  }
 
   const body = await request.json();
   const parsed = updateAccountSchema.safeParse(body);
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  if (account.source === "auto" && ("type" in parsed.data || "balance" in parsed.data)) {
+    return Response.json(
+      { error: "Per un conto collegato automaticamente tipo e saldo non sono modificabili" },
+      { status: 403 }
+    );
   }
 
   const { balance, ...rest } = parsed.data;

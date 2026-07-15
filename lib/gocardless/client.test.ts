@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client as dbClient, db } from "@/lib/db/client";
 import { gocardlessToken } from "@/lib/db/schema/bank-connections";
-import { getAccessToken, listInstitutions } from "./client";
+import { getAccessToken, getAccountBalances, listInstitutions } from "./client";
 
 describe("gocardless client", () => {
   beforeEach(async () => {
@@ -59,5 +59,16 @@ describe("gocardless client", () => {
     const institutions = await listInstitutions("IT");
     expect(institutions).toEqual([{ id: "INST_1", name: "Banca Test", transaction_total_days: "90" }]);
     expect(vi.mocked(fetch).mock.calls[0][0]).toContain("/institutions/?country=IT");
+  });
+
+  it("getAccountBalances lancia un errore chiaro se l'array balances è vuoto", async () => {
+    await db.insert(gocardlessToken).values({
+      id: "singleton",
+      accessToken: "cached-token",
+      expiresAt: new Date(Date.now() + 3600_000),
+    });
+    vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ balances: [] }), { status: 200 }));
+
+    await expect(getAccountBalances("ext-1")).rejects.toThrow("Nessun saldo disponibile");
   });
 });

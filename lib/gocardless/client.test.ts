@@ -15,6 +15,10 @@ describe("gocardless client", () => {
   });
 
   afterAll(async () => {
+    // Senza questo, l'ultimo test lascia un token finto in cache nel DB reale condiviso
+    // (stesso DATABASE_URL usato da `pnpm dev`): l'app dev userebbe quel token verso
+    // GoCardless fino alla sua scadenza, fallendo con 401/502 sulle chiamate reali.
+    await db.delete(gocardlessToken);
     await dbClient.end();
   });
 

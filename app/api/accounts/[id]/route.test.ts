@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
+import { categories } from "@/lib/db/schema/categories";
+import { transactions } from "@/lib/db/schema/transactions";
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
@@ -125,5 +127,42 @@ describe("PATCH/DELETE /api/accounts/[id]", () => {
 
     const remaining = await db.select().from(accounts).where(eq(accounts.id, account.id));
     expect(remaining).toHaveLength(0);
+  });
+
+  it("elimina un conto 'auto' anche se ha transazioni sincronizzate", async () => {
+    const [account] = await db
+      .insert(accounts)
+      .values({ userId, name: "Conto Auto", type: "Conto corrente", balance: "50.00", source: "auto" })
+      .returning();
+    const [category] = await db
+      .insert(categories)
+      .values({ userId, name: "Da categorizzare", type: "variabile" })
+      .returning();
+    await db.insert(transactions).values({
+      userId,
+      accountId: account.id,
+      categoryId: category.id,
+      description: "Movimento sincronizzato",
+      amount: "-20.00",
+      date: "2026-07-01",
+      source: "auto",
+      externalId: "ext-1",
+    });
+
+    const response = await DELETE(
+      new NextRequest(`http://localhost/api/accounts/${account.id}`, { method: "DELETE" }),
+      { params: Promise.resolve({ id: account.id }) }
+    );
+
+    expect(response.status).toBe(204);
+
+    const remainingAccounts = await db.select().from(accounts).where(eq(accounts.id, account.id));
+    expect(remainingAccounts).toHaveLength(0);
+
+    const remainingTransactions = await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.accountId, account.id));
+    expect(remainingTransactions).toHaveLength(0);
   });
 });

@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
+import { transactions } from "@/lib/db/schema/transactions";
 import { updateAccountSchema } from "@/lib/validation/accounts";
 
 /** Recupera un conto solo se appartiene all'utente indicato, altrimenti null. */
@@ -72,6 +73,12 @@ export async function DELETE(
     return new Response(null, { status: 404 });
   }
 
-  await db.delete(accounts).where(eq(accounts.id, id));
+  // transactions.account_id non ha ON DELETE cascade (a differenza di bank_account_links):
+  // un conto "auto" con transazioni sincronizzate violerebbe altrimenti il vincolo FK.
+  await db.transaction(async (tx) => {
+    await tx.delete(transactions).where(eq(transactions.accountId, id));
+    await tx.delete(accounts).where(eq(accounts.id, id));
+  });
+
   return new Response(null, { status: 204 });
 }

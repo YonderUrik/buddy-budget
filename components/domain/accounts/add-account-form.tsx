@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import { useCreateAccountMutation } from "@/lib/queries/accounts";
@@ -21,6 +22,11 @@ import { CurrencyInput } from "./currency-input";
 import { ConnectBankFlow } from "./connect-bank-flow";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
+
+const MODE_OPTIONS = [
+  { value: "manuale", label: "Manuale" },
+  { value: "collega-banca", label: "Collega banca" },
+] as const;
 
 const DEFAULT_COLOR: AccountColor = "slate";
 const DEFAULT_ICON: AccountIcon = "wallet";
@@ -85,18 +91,23 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
 
   return (
     <div className="flex flex-col">
-      <div className="flex gap-2 px-4 pt-3">
-        <Button type="button" size="sm" variant={mode === "manuale" ? "default" : "outline"} onClick={() => setMode("manuale")}>
-          Manuale
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant={mode === "collega-banca" ? "default" : "outline"}
-          onClick={() => setMode("collega-banca")}
-        >
-          Collega banca
-        </Button>
+      <div className="mx-4 mt-3 inline-flex w-fit items-center gap-1 self-start rounded-lg bg-muted p-1">
+        {MODE_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => setMode(option.value)}
+            aria-pressed={mode === option.value}
+            className={cn(
+              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              mode === option.value
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
 
       {mode === "collega-banca" ? (
@@ -115,14 +126,19 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
             </AccountIconColorPicker>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground" htmlFor="new-account-name">
               Nome
             </label>
-            <Input id="new-account-name" value={name} onChange={(e) => setName(e.target.value)} className="w-40" />
+            <Input
+              id="new-account-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full sm:w-40"
+            />
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground">Tipo</label>
             <Select
               value={isCustomType ? CUSTOM_TYPE_VALUE : type}
@@ -136,7 +152,7 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
                 setType(value as string);
               }}
             >
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Tipo conto" />
               </SelectTrigger>
               <SelectContent>
@@ -153,12 +169,12 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 placeholder="Tipo personalizzato"
-                className="w-40"
+                className="w-full sm:w-40"
               />
             )}
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
             <label className="text-xs text-muted-foreground" htmlFor="new-account-balance">
               Saldo iniziale
             </label>
@@ -166,12 +182,12 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
               value={balanceValue}
               onChange={setBalanceValue}
               currency={currency}
-              className="w-28"
+              className="w-full sm:w-28"
               aria-label="Saldo iniziale"
             />
           </div>
 
-          <Button type="submit" disabled={createMutation.isPending}>
+          <Button type="submit" disabled={createMutation.isPending} className="w-full sm:w-auto">
             + Aggiungi conto
           </Button>
 

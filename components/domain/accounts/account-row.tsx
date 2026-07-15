@@ -3,10 +3,11 @@
 /**
  * AccountRow
  *
- * Riga singola nella lista Conti. Conti manuali: nome/istituto/tipo/saldo
- * editabili inline (salvataggio on-blur) + eliminazione con conferma. Conti
- * auto: campi in sola lettura + azione "Scollega" con conferma (nessuna
- * integrazione bancaria reale dietro per ora — vedi spec).
+ * Riga singola nella lista Conti. Nome, icona e colore sono editabili inline
+ * (salvataggio on-blur/on-change) per qualsiasi conto, anche quelli "auto".
+ * Tipo e saldo restano editabili solo per i conti manuali: per un conto auto
+ * derivano dalla banca collegata, quindi sono in sola lettura + azione
+ * "Scollega" con conferma al posto di "Elimina".
  */
 
 import * as React from "react";
@@ -100,30 +101,19 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect }: A
   const avatar = <AccountAvatar color={color} icon={icon} />;
 
   return (
-    <div className="flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0">
-      {isAuto ? (
-        avatar
-      ) : (
-        <AccountIconColorPicker
-          value={{ color, icon }}
-          onChange={handleAppearanceChange}
-        >
-          {avatar}
-        </AccountIconColorPicker>
-      )}
+    <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 last:border-b-0">
+      <AccountIconColorPicker value={{ color, icon }} onChange={handleAppearanceChange}>
+        {avatar}
+      </AccountIconColorPicker>
 
       <div className="min-w-0 flex-1 space-y-1">
-        {isAuto ? (
-          <p className="truncate text-sm font-medium text-foreground">{account.name}</p>
-        ) : (
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => commitField("name", name)}
-            className="h-7 text-sm font-medium"
-            aria-label="Nome conto"
-          />
-        )}
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => commitField("name", name)}
+          className="h-7 text-sm font-medium"
+          aria-label="Nome conto"
+        />
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {isAuto ? (
@@ -170,62 +160,66 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect }: A
         </div>
       </div>
 
-      <Badge variant={isAuto ? "secondary" : "outline"}>{isAuto ? "Auto" : "Manuale"}</Badge>
+      <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+        <Badge variant={isAuto ? "secondary" : "outline"} className="shrink-0">
+          {isAuto ? "Auto" : "Manuale"}
+        </Badge>
 
-      {needsReconnect && (
-        <button
-          type="button"
-          onClick={onReconnect}
-          className="shrink-0 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
-        >
-          Riconnetti
-        </button>
-      )}
+        {needsReconnect && (
+          <button
+            type="button"
+            onClick={onReconnect}
+            className="shrink-0 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
+          >
+            Riconnetti
+          </button>
+        )}
 
-      {isAuto ? (
-        <p className="w-28 shrink-0 text-right text-sm font-medium tabular-nums">
-          {formatCurrency(Number(account.balance), currency)}
-        </p>
-      ) : (
-        <CurrencyInput
-          value={balanceValue}
-          onChange={setBalanceValue}
-          onBlur={() => commitField("balance", balanceValue)}
-          currency={currency}
-          className="w-28 text-right"
-          aria-label="Saldo"
-        />
-      )}
+        {isAuto ? (
+          <p className="w-24 shrink-0 text-right text-sm font-medium tabular-nums sm:w-28">
+            {formatCurrency(Number(account.balance), currency)}
+          </p>
+        ) : (
+          <CurrencyInput
+            value={balanceValue}
+            onChange={setBalanceValue}
+            onBlur={() => commitField("balance", balanceValue)}
+            currency={currency}
+            className="w-24 text-right sm:w-28"
+            aria-label="Saldo"
+          />
+        )}
 
-      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <AlertDialogTrigger
-          className={cn(
-            "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
-            "hover:bg-destructive/10 hover:text-destructive"
-          )}
-          aria-label={isAuto ? "Scollega conto" : "Rimuovi conto"}
-        >
-          ✕
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isAuto ? "Scollegare questo conto?" : "Eliminare questo conto?"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {isAuto
-                ? `"${account.name}" verrà scollegato. L'azione non è reversibile.`
-                : `"${account.name}" verrà eliminato definitivamente, insieme al suo saldo registrato.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm}>
-              {isAuto ? "Scollega" : "Elimina"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <AlertDialogTrigger
+            className={cn(
+              "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
+              "hover:bg-destructive/10 hover:text-destructive"
+            )}
+            aria-label={isAuto ? "Scollega conto" : "Rimuovi conto"}
+          >
+            ✕
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {isAuto ? "Scollegare questo conto?" : "Eliminare questo conto?"}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {isAuto
+                  ? `"${account.name}" verrà scollegato. L'azione non è reversibile.`
+                  : `"${account.name}" verrà eliminato definitivamente, insieme al suo saldo registrato.`}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annulla</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirm}>
+                {isAuto ? "Scollega" : "Elimina"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   );
 }

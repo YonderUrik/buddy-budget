@@ -78,7 +78,7 @@ describe("PATCH/DELETE /api/accounts/[id]", () => {
     expect(updated.balance).toBe("250.00");
   });
 
-  it("risponde 403 se il conto è auto", async () => {
+  it("risponde 403 se si tenta di cambiare saldo o tipo di un conto auto", async () => {
     const [account] = await db
       .insert(accounts)
       .values({ userId, name: "Conto auto", type: "Conto corrente", balance: "100.00", source: "auto" })
@@ -93,6 +93,27 @@ describe("PATCH/DELETE /api/accounts/[id]", () => {
     );
 
     expect(response.status).toBe(403);
+  });
+
+  it("aggiorna nome/colore/icona di un conto auto", async () => {
+    const [account] = await db
+      .insert(accounts)
+      .values({ userId, name: "Conto auto", type: "Conto corrente", balance: "100.00", source: "auto" })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/accounts/${account.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: "Conto Revolut", color: "blue", icon: "credit-card" }),
+      }),
+      { params: Promise.resolve({ id: account.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.name).toBe("Conto Revolut");
+    expect(updated.color).toBe("blue");
+    expect(updated.icon).toBe("credit-card");
   });
 
   it("risponde 404 su un conto di un altro utente", async () => {

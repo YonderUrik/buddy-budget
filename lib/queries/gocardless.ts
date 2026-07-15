@@ -7,6 +7,7 @@ export interface Institution {
   id: string;
   name: string;
   transaction_total_days: string;
+  logo?: string;
 }
 
 export interface BankConnectionStatus {

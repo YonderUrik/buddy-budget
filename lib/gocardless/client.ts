@@ -94,6 +94,7 @@ export interface Institution {
   id: string;
   name: string;
   transaction_total_days: string;
+  logo?: string;
 }
 
 /** Elenca gli istituti bancari GoCardless disponibili in un paese (codice ISO 3166-1 alpha-2). */

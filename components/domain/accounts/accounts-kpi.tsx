@@ -7,8 +7,8 @@
  * e conteggio conti collegati.
  */
 
-import { StatCard } from "@/components/domain/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import { computeAccountsKpi } from "./accounts-kpi.utils";
 import type { Account } from "@/lib/db/schema/accounts";
 
@@ -20,26 +20,30 @@ export interface AccountsKpiProps {
 
 export function AccountsKpi({ accounts, currency }: AccountsKpiProps) {
   const { totalLiquidity, linkedAccountsCount } = computeAccountsKpi(accounts);
+  const isNegative = totalLiquidity < 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <StatCard label="Liquidità totale" value={totalLiquidity} currency={currency} />
-      <StatCard
-        label="Patrimonio netto (solo liquidità)"
-        value={totalLiquidity}
-        currency={currency}
-        subtitle="Non include ancora investimenti, debiti o immobili"
-      />
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Conti collegati
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="font-heading text-3xl font-medium tabular-nums">{linkedAccountsCount}</p>
-        </CardContent>
-      </Card>
+    <div className="flex flex-col gap-0.5 px-1">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        Liquidità totale
+      </p>
+      <div className="flex flex-wrap items-baseline gap-2">
+        <span
+          className={cn(
+            "font-heading text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums",
+            isNegative ? "text-neg" : "text-pos"
+          )}
+        >
+          {formatCurrency(totalLiquidity, currency)}
+        </span>
+        <span className="text-xs text-muted-foreground font-normal">
+          {linkedAccountsCount === 0
+            ? "• nessun conto collegato"
+            : linkedAccountsCount === 1
+            ? "• su 1 conto attivo"
+            : `• su ${linkedAccountsCount} conti attivi`}
+        </span>
+      </div>
     </div>
   );
 }

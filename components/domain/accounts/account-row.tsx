@@ -29,15 +29,21 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Trash2, Link2Off, RefreshCw } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
 import type { UpdateAccountInput } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import type { Account } from "@/lib/db/schema/accounts";
-import { cn } from "@/lib/utils";
 import { AccountAvatar } from "./account-avatar";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
@@ -64,7 +70,7 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect }: A
   const [balanceValue, setBalanceValue] = React.useState<number | null>(Number(account.balance));
   const [color, setColor] = React.useState<AccountColor>(account.color as AccountColor);
   const [icon, setIcon] = React.useState<AccountIcon>(account.icon as AccountIcon);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
   const [isCustomType, setIsCustomType] = React.useState(
     () =>
       !ACCOUNT_TYPE_OPTIONS.includes(account.type as (typeof ACCOUNT_TYPE_OPTIONS)[number])
@@ -95,111 +101,135 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect }: A
 
   function handleDeleteConfirm() {
     deleteMutation.mutate(account.id);
-    setDialogOpen(false);
+    setConfirmDialogOpen(false);
   }
 
   const avatar = <AccountAvatar color={color} icon={icon} />;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 last:border-b-0">
-      <AccountIconColorPicker value={{ color, icon }} onChange={handleAppearanceChange}>
-        {avatar}
-      </AccountIconColorPicker>
+    <div className="group relative flex items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0 hover:bg-muted/10 transition-colors">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <AccountIconColorPicker value={{ color, icon }} onChange={handleAppearanceChange}>
+          {avatar}
+        </AccountIconColorPicker>
 
-      <div className="min-w-0 flex-1 space-y-1">
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => commitField("name", name)}
-          className="h-7 text-sm font-medium"
-          aria-label="Nome conto"
-        />
+        <div className="min-w-0 flex-1 space-y-1">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => commitField("name", name)}
+            className="h-7 w-full border-0 bg-transparent p-0 font-medium shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:bg-background px-1.5 -mx-1.5 text-sm"
+            aria-label="Nome conto"
+          />
 
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          {isAuto ? (
-            <span>{account.type}</span>
-          ) : (
-            <>
-              <Select
-                value={isCustomType ? CUSTOM_TYPE_VALUE : type}
-                onValueChange={(value) => {
-                  if (value === null) return;
-                  if (value === CUSTOM_TYPE_VALUE) {
-                    setIsCustomType(true);
-                    return;
-                  }
-                  setIsCustomType(false);
-                  setType(value);
-                  commitField("type", value);
-                }}
-              >
-                <SelectTrigger size="sm" className="h-6 text-xs">
-                  <SelectValue placeholder="Tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
-                </SelectContent>
-              </Select>
-              {isCustomType && (
-                <Input
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  onBlur={() => commitField("type", type)}
-                  placeholder="Tipo personalizzato"
-                  className="h-6 w-32 text-xs"
-                  aria-label="Tipo personalizzato"
-                />
-              )}
-            </>
-          )}
+          <div className="flex items-center gap-2">
+            {isAuto ? (
+              <span className="text-xs text-muted-foreground pl-0.5">{account.type}</span>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <Select
+                  value={isCustomType ? CUSTOM_TYPE_VALUE : type}
+                  onValueChange={(value) => {
+                    if (value === null) return;
+                    if (value === CUSTOM_TYPE_VALUE) {
+                      setIsCustomType(true);
+                      return;
+                    }
+                    setIsCustomType(false);
+                    setType(value);
+                    commitField("type", value);
+                  }}
+                >
+                  <SelectTrigger size="sm" className="h-6 border-0 bg-transparent p-0 pr-1 pl-0.5 shadow-none focus-visible:ring-1 focus-visible:ring-ring text-xs text-muted-foreground font-normal hover:bg-accent/40 w-fit">
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCOUNT_TYPE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
+                  </SelectContent>
+                </Select>
+                {isCustomType && (
+                  <Input
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    onBlur={() => commitField("type", type)}
+                    placeholder="Tipo personalizzato"
+                    className="h-6 w-28 border-0 bg-transparent p-0 px-1.5 -mx-1.5 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:bg-background text-xs text-muted-foreground"
+                    aria-label="Tipo personalizzato"
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
-        <Badge variant={isAuto ? "secondary" : "outline"} className="shrink-0">
-          {isAuto ? "Auto" : "Manuale"}
-        </Badge>
+      <div className="flex items-center gap-4 shrink-0">
+        <div className="flex flex-col items-end gap-1">
+          {isAuto ? (
+            <p className="h-7 text-right text-sm font-semibold tabular-nums flex items-center pr-1.5 text-foreground">
+              {formatCurrency(Number(account.balance), currency)}
+            </p>
+          ) : (
+            <CurrencyInput
+              value={balanceValue}
+              onChange={setBalanceValue}
+              onBlur={() => commitField("balance", balanceValue)}
+              currency={currency}
+              className="w-24 text-right text-sm font-semibold sm:w-28 border-0 bg-transparent p-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:bg-background pr-1.5"
+              aria-label="Saldo"
+            />
+          )}
 
-        {needsReconnect && (
-          <button
-            type="button"
-            onClick={onReconnect}
-            className="shrink-0 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/20"
-          >
-            Riconnetti
-          </button>
-        )}
-
-        {isAuto ? (
-          <p className="w-24 shrink-0 text-right text-sm font-medium tabular-nums sm:w-28">
-            {formatCurrency(Number(account.balance), currency)}
-          </p>
-        ) : (
-          <CurrencyInput
-            value={balanceValue}
-            onChange={setBalanceValue}
-            onBlur={() => commitField("balance", balanceValue)}
-            currency={currency}
-            className="w-24 text-right sm:w-28"
-            aria-label="Saldo"
-          />
-        )}
-
-        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <AlertDialogTrigger
-            className={cn(
-              "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground",
-              "hover:bg-destructive/10 hover:text-destructive"
+          <div className="flex items-center gap-2">
+            {needsReconnect && (
+              <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive uppercase">
+                Riconnetti
+              </span>
             )}
-            aria-label={isAuto ? "Scollega conto" : "Rimuovi conto"}
-          >
-            ✕
-          </AlertDialogTrigger>
+            <Badge variant={isAuto ? "secondary" : "outline"} className="text-[10px] py-0 px-1.5 h-4 font-normal">
+              {isAuto ? "Auto" : "Manuale"}
+            </Badge>
+          </div>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
+            <MoreVertical size={16} />
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent align="end" className="w-36">
+              {needsReconnect && (
+                <DropdownMenuItem onClick={onReconnect}>
+                  <RefreshCw size={14} className="mr-2" />
+                  Riconnetti
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setConfirmDialogOpen(true)}
+              >
+                {isAuto ? (
+                  <>
+                    <Link2Off size={14} className="mr-2" />
+                    Scollega
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} className="mr-2" />
+                    Elimina
+                  </>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenu>
+
+        <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>

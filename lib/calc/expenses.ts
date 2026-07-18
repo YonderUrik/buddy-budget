@@ -190,16 +190,16 @@ export function computeCategoryBreakdown(
   const today = startOfDay(referenceDate);
   const elapsedRange: DateRange = { from: range.from, to: today.getTime() < range.to.getTime() ? today : range.to };
 
-  const inRange = transactions.filter((t) => isExpense(t) && isWithinRange(parseDateOnly(t.date), elapsedRange));
-
-  return categories.map((category) => ({
-    categoryId: category.id,
-    name: category.name,
-    type: category.type,
-    amount: inRange
-      .filter((t) => t.categoryId === category.id)
-      .reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0),
-  }));
+  return categories.map((category) => {
+    const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
+    const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
+    return {
+      categoryId: category.id,
+      name: category.name,
+      type: category.type,
+      amount: speseEffettive,
+    };
+  });
 }
 
 export interface FixedVsVariable {

@@ -21,6 +21,9 @@ describe("GET/POST /api/transactions", () => {
   let manualAccountId: string;
   let autoAccountId: string;
   let categoryId: string;
+  let otherUserId: string;
+  let otherAccountId: string;
+  let otherCategoryId: string;
 
   beforeEach(async () => {
     const testId = `test-transactions-${crypto.randomUUID()}`;
@@ -54,10 +57,36 @@ describe("GET/POST /api/transactions", () => {
       .values({ userId, name: "Spesa alimentare", type: "variabile" })
       .returning();
     categoryId = category.id;
+
+    const otherTestId = `test-transactions-other-${crypto.randomUUID()}`;
+    const [otherUser] = await db
+      .insert(authUser)
+      .values({
+        id: otherTestId,
+        name: "Other Test User",
+        email: `test-transactions-other-${Date.now()}@example.com`,
+        emailVerified: false,
+        currency: "EUR",
+      })
+      .returning();
+    otherUserId = otherUser.id;
+
+    const [otherAccount] = await db
+      .insert(accounts)
+      .values({ userId: otherUserId, name: "Contanti Altro", type: "Contanti", balance: "0.00" })
+      .returning();
+    otherAccountId = otherAccount.id;
+
+    const [otherCategory] = await db
+      .insert(categories)
+      .values({ userId: otherUserId, name: "Spesa altro utente", type: "variabile" })
+      .returning();
+    otherCategoryId = otherCategory.id;
   });
 
   afterEach(async () => {
     await db.delete(authUser).where(eq(authUser.id, userId));
+    await db.delete(authUser).where(eq(authUser.id, otherUserId));
   });
 
   afterAll(async () => {
@@ -123,6 +152,47 @@ describe("GET/POST /api/transactions", () => {
         }),
       })
     );
+    expect(response.status).toBe(400);
+  });
+
+  it("risponde 400 se accountId appartiene a un altro utente", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/transactions", {
+        method: "POST",
+        body: JSON.stringify({
+          accountId: otherAccountId,
+          description: "Spesa",
+          categoryId,
+          amount: 10,
+          date: "2026-02-10",
+        }),
+      })
+    );
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toBe("Conto non valido");
+  });
+
+  it("risponde 400 se categoryId appartiene a un altro utente", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/transactions", {
+        method: "POST",
+        body: JSON.stringify({
+          accountId: manualAccountId,
+          description: "Spesa",
+          categoryId: otherCategoryId,
+          amount: 10,
+          date: "2026-02-10",
+        }),
+      })
+    );
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toBe("Categoria non valida");
+  });
+
+  it("risponde 400 se from o to hanno formato non valido", async () => {
+    const response = await GET(new NextRequest("http://localhost/api/transactions?from=abc&to=2026-12-31"));
     expect(response.status).toBe(400);
   });
 });

@@ -80,7 +80,7 @@ export function ExpenseCharts({ fixedVsVariable, monthlyTrend, currency }: Expen
               <CartesianGrid vertical={false} />
               <XAxis dataKey="label" tickLine={false} axisLine={false} />
               <ChartTooltip content={<ChartTooltipContent formatter={formatTooltipValue} />} />
-              <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+              <Bar dataKey="total" name={TREND_CONFIG.total.label} fill="var(--color-total)" radius={4} />
             </BarChart>
           </ChartContainer>
         </CardContent>

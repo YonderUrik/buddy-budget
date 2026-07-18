@@ -8,9 +8,13 @@ import {
   isExpense,
   parseDateOnly,
   scaleBudgetForPeriod,
+  computeCategoryBreakdown,
+  computeFixedVsVariable,
+  compute6MonthTrend,
 } from "./expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
+import type { Category } from "@/lib/db/schema/categories";
 
 function makeTransaction(overrides: Partial<Transaction>): Transaction {
   return {
@@ -38,6 +42,17 @@ function makeBudget(overrides: Partial<Budget>): Budget {
     monthlyAmount: "0.00",
     createdAt: new Date(),
     updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function makeCategory(overrides: Partial<Category>): Category {
+  return {
+    id: "category-1",
+    userId: "user-1",
+    name: "Categoria",
+    type: "variabile",
+    createdAt: new Date(),
     ...overrides,
   };
 }
@@ -150,5 +165,56 @@ describe("computeKpis", () => {
     expect(kpis.giorniRimasti).toBe(13);
     expect(kpis.mediaGiornaliera).toBeCloseTo(400 / 15, 5);
     expect(kpis.mediaGiornalieraPeriodoPrecedente).toBe(10);
+  });
+});
+
+describe("computeCategoryBreakdown", () => {
+  it("somma la spesa effettiva per ciascuna categoria dell'utente, incluse quelle senza transazioni", () => {
+    const categories = [
+      makeCategory({ id: "cat-a", name: "Spesa alimentare", type: "variabile" }),
+      makeCategory({ id: "cat-b", name: "Affitto", type: "fissa" }),
+    ];
+    const transactions = [
+      makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
+      makeTransaction({ categoryId: "cat-a", date: "2026-02-06", amount: "-40.00", excludedAmount: "-10.00" }),
+    ];
+    const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15));
+
+    expect(breakdown).toEqual([
+      { categoryId: "cat-a", name: "Spesa alimentare", type: "variabile", amount: 90 },
+      { categoryId: "cat-b", name: "Affitto", type: "fissa", amount: 0 },
+    ]);
+  });
+});
+
+describe("computeFixedVsVariable", () => {
+  it("raggruppa la spesa effettiva del periodo per tipo categoria", () => {
+    const categories = [
+      makeCategory({ id: "cat-a", type: "variabile" }),
+      makeCategory({ id: "cat-b", type: "fissa" }),
+    ];
+    const transactions = [
+      makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
+      makeTransaction({ categoryId: "cat-b", date: "2026-02-06", amount: "-500.00" }),
+    ];
+    const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15));
+    expect(result).toEqual({ fissa: 500, variabile: 60 });
+  });
+});
+
+describe("compute6MonthTrend", () => {
+  it("ritorna 6 mesi calendariali fino a quello corrente, ignorando dati fuori finestra", () => {
+    const referenceDate = new Date(2026, 6, 15); // luglio 2026
+    const transactions = [
+      makeTransaction({ date: "2026-01-10", amount: "-999.00" }), // fuori finestra (gennaio)
+      makeTransaction({ date: "2026-02-10", amount: "-100.00" }),
+      makeTransaction({ date: "2026-07-05", amount: "-50.00" }),
+    ];
+    const trend = compute6MonthTrend(transactions, referenceDate);
+
+    expect(trend).toHaveLength(6);
+    expect(trend[0]).toEqual({ year: 2026, month: 1, label: "Feb", total: 100 });
+    expect(trend[5]).toEqual({ year: 2026, month: 6, label: "Lug", total: 50 });
+    expect(trend.reduce((sum, m) => sum + m.total, 0)).toBe(150);
   });
 });

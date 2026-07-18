@@ -70,7 +70,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<GoCardl
   });
 
   if (!response.ok) {
-    throw new GoCardlessError(`GoCardless ${path} ha risposto ${response.status}`, response.status);
+    throw new GoCardlessError(`GoCardless ${path} ha risposto ${response.status} ${response.text}`, response.status);
   }
 
   const remainingHeader = response.headers.get("x-ratelimit-remaining");

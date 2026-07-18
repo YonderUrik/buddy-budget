@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { categories } from "@/lib/db/schema/categories";
+import { budgets } from "@/lib/db/schema/budgets";
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
@@ -17,6 +18,8 @@ const mockedGetSession = vi.mocked(auth.api.getSession);
 describe("PUT /api/budgets/[categoryId]", () => {
   let userId: string;
   let categoryId: string;
+  let otherUserId: string;
+  let otherUserCategoryId: string;
 
   beforeEach(async () => {
     const testId = `test-budget-id-${crypto.randomUUID()}`;
@@ -38,9 +41,29 @@ describe("PUT /api/budgets/[categoryId]", () => {
       .values({ userId, name: "Affitto", type: "fissa" })
       .returning();
     categoryId = category.id;
+
+    const otherId = `test-budget-id-other-${crypto.randomUUID()}`;
+    const [otherUser] = await db
+      .insert(authUser)
+      .values({
+        id: otherId,
+        name: "Other User",
+        email: `test-budget-id-other-${Date.now()}@example.com`,
+        emailVerified: false,
+        currency: "EUR",
+      })
+      .returning();
+    otherUserId = otherUser.id;
+
+    const [otherUserCategory] = await db
+      .insert(categories)
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .returning();
+    otherUserCategoryId = otherUserCategory.id;
   });
 
   afterEach(async () => {
+    await db.delete(authUser).where(eq(authUser.id, otherUserId));
     await db.delete(authUser).where(eq(authUser.id, userId));
   });
 
@@ -91,5 +114,22 @@ describe("PUT /api/budgets/[categoryId]", () => {
       { params: Promise.resolve({ categoryId: crypto.randomUUID() }) }
     );
     expect(response.status).toBe(404);
+  });
+
+  it("risponde 404 se si tenta di impostare il budget di una categoria di un altro utente", async () => {
+    const response = await PUT(
+      new NextRequest(`http://localhost/api/budgets/${otherUserCategoryId}`, {
+        method: "PUT",
+        body: JSON.stringify({ monthlyAmount: 100 }),
+      }),
+      { params: Promise.resolve({ categoryId: otherUserCategoryId }) }
+    );
+    expect(response.status).toBe(404);
+
+    const [budget] = await db
+      .select()
+      .from(budgets)
+      .where(eq(budgets.categoryId, otherUserCategoryId));
+    expect(budget).toBeUndefined();
   });
 });

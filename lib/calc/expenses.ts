@@ -1,5 +1,6 @@
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
+import type { Category } from "@/lib/db/schema/categories";
 
 /** Periodo selezionabile nella schermata Spese. */
 export type ExpensePeriod = "settimana" | "mese" | "3mesi" | "anno";
@@ -169,4 +170,82 @@ export function computeKpis(
   const mediaGiornalieraPeriodoPrecedente = prevSpeso / previousDays;
 
   return { speso, budgetTotale, budgetRimanente, giorniRimasti, mediaGiornaliera, mediaGiornalieraPeriodoPrecedente };
+}
+
+export interface CategoryAmount {
+  categoryId: string;
+  name: string;
+  type: "fissa" | "variabile";
+  amount: number;
+}
+
+/** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria dell'utente. */
+export function computeCategoryBreakdown(
+  transactions: Transaction[],
+  categories: Category[],
+  period: ExpensePeriod,
+  referenceDate: Date
+): CategoryAmount[] {
+  const range = getPeriodRange(period, referenceDate);
+  const today = startOfDay(referenceDate);
+  const elapsedRange: DateRange = { from: range.from, to: today.getTime() < range.to.getTime() ? today : range.to };
+
+  const inRange = transactions.filter((t) => isExpense(t) && isWithinRange(parseDateOnly(t.date), elapsedRange));
+
+  return categories.map((category) => ({
+    categoryId: category.id,
+    name: category.name,
+    type: category.type,
+    amount: inRange
+      .filter((t) => t.categoryId === category.id)
+      .reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0),
+  }));
+}
+
+export interface FixedVsVariable {
+  fissa: number;
+  variabile: number;
+}
+
+/** Somma spesa effettiva del periodo, raggruppata per tipo categoria (fissa/variabile). */
+export function computeFixedVsVariable(
+  transactions: Transaction[],
+  categories: Category[],
+  period: ExpensePeriod,
+  referenceDate: Date
+): FixedVsVariable {
+  const breakdown = computeCategoryBreakdown(transactions, categories, period, referenceDate);
+  return breakdown.reduce(
+    (totals, entry) => {
+      totals[entry.type] += entry.amount;
+      return totals;
+    },
+    { fissa: 0, variabile: 0 }
+  );
+}
+
+export interface MonthlyTotal {
+  year: number;
+  month: number;
+  label: string;
+  total: number;
+}
+
+const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+
+/** Spesa effettiva totale per ciascuno degli ultimi 6 mesi calendariali (incluso quello corrente), indipendente dal periodo selezionato. */
+export function compute6MonthTrend(transactions: Transaction[], referenceDate: Date): MonthlyTotal[] {
+  const months: MonthlyTotal[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = addMonths(referenceDate, -i);
+    const range: DateRange = { from: startOfMonth(monthDate), to: endOfMonth(monthDate) };
+    const { speseEffettive } = computeSummary(transactions, range);
+    months.push({
+      year: monthDate.getFullYear(),
+      month: monthDate.getMonth(),
+      label: MONTH_LABELS[monthDate.getMonth()],
+      total: speseEffettive,
+    });
+  }
+  return months;
 }

@@ -62,8 +62,9 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   }
 
   function handleDeleteConfirm() {
-    deleteMutation.mutate(transaction.id);
-    setDialogOpen(false);
+    deleteMutation.mutate(transaction.id, {
+      onSuccess: () => setDialogOpen(false),
+    });
   }
 
   return (
@@ -161,10 +162,13 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
                     &quot;{transaction.description}&quot; verrà eliminata definitivamente.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                {deleteMutation.isError && (
+                  <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>
+                )}
                 <AlertDialogFooter>
                   <AlertDialogCancel>Annulla</AlertDialogCancel>
                   <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
-                    Elimina
+                    {deleteMutation.isPending ? "Eliminazione..." : "Elimina"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

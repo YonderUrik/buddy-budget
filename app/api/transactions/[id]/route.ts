@@ -64,7 +64,16 @@ export async function PATCH(
   let newExcludedAmount: number | undefined;
   if (parsed.data.excludedAmount !== undefined) {
     newExcludedAmount = -Math.abs(parsed.data.excludedAmount);
-    if (!isValidExcludedAmount(newAmount, newExcludedAmount)) {
+  }
+
+  // Se amount e/o excludedAmount cambiano, rivalida l'invariante |excludedAmount| ≤ |amount| contro
+  // l'importo che risulterà DOPO l'update: l'excludedAmount appena inviato se presente in questa stessa
+  // PATCH, altrimenti quello già salvato sulla transazione (che altrimenti resterebbe non ricontrollato
+  // se si modifica solo amount — vedi finding di review finale).
+  if (parsed.data.amount !== undefined || parsed.data.excludedAmount !== undefined) {
+    const excludedAmountToValidate =
+      newExcludedAmount !== undefined ? newExcludedAmount : Number(transaction.excludedAmount);
+    if (!isValidExcludedAmount(newAmount, excludedAmountToValidate)) {
       return Response.json({ error: "Quota esclusa non valida" }, { status: 400 });
     }
   }

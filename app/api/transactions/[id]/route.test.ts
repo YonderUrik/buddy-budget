@@ -198,6 +198,61 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
     expect(response.status).toBe(400);
   });
 
+  it("risponde 400 se modificare solo amount rende invalido l'excludedAmount già salvato", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId,
+        description: "Spesa con quota esclusa",
+        amount: "-100.00",
+        excludedAmount: "-30.00",
+        date: "2026-02-10",
+        source: "manuale",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ amount: 20 }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("permette di modificare amount se resta compatibile con l'excludedAmount già salvato", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId,
+        description: "Spesa con quota esclusa",
+        amount: "-100.00",
+        excludedAmount: "-30.00",
+        date: "2026-02-10",
+        source: "manuale",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ amount: 50 }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.amount).toBe("-50.00");
+    expect(updated.excludedAmount).toBe("-30.00");
+  });
+
   it("risponde 400 se categoryId appartiene a un altro utente", async () => {
     const [transaction] = await db
       .insert(transactions)

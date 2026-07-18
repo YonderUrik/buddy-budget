@@ -1,8 +1,6 @@
 /** Riga di KPI per la schermata Spese: Speso nel periodo, Budget rimanente, Media giornaliera. */
 
 import { StatCard } from "@/components/domain/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/format";
 import { computeKpis, type ExpensePeriod } from "@/lib/calc/expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
@@ -38,19 +36,12 @@ export function ExpensesKpiCards({
         currency={currency}
         subtitle={`${kpis.giorniRimasti} giorni rimasti`}
       />
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Media giornaliera
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="font-heading text-3xl font-medium tabular-nums">
-            {formatCurrency(kpis.mediaGiornaliera, currency)}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">{trendLabel}</p>
-        </CardContent>
-      </Card>
+      <StatCard
+        label="Media giornaliera"
+        value={-kpis.mediaGiornaliera}
+        currency={currency}
+        subtitle={trendLabel}
+      />
     </div>
   );
 }

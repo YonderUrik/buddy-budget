@@ -22,6 +22,7 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
   let accountId: string;
   let categoryId: string;
   let otherCategoryId: string;
+  let otherUserCategoryId: string;
 
   beforeEach(async () => {
     const testId = `test-transaction-id-${crypto.randomUUID()}`;
@@ -69,6 +70,12 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
       .values({ userId, name: "Svago", type: "variabile" })
       .returning();
     otherCategoryId = otherCategory.id;
+
+    const [otherUserCategory] = await db
+      .insert(categories)
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .returning();
+    otherUserCategoryId = otherUserCategory.id;
   });
 
   afterEach(async () => {
@@ -184,6 +191,31 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
       new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
         method: "PATCH",
         body: JSON.stringify({ excludedAmount: 60 }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("risponde 400 se categoryId appartiene a un altro utente", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId,
+        description: "Spesa",
+        amount: "-50.00",
+        date: "2026-02-10",
+        source: "manuale",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ categoryId: otherUserCategoryId }),
       }),
       { params: Promise.resolve({ id: transaction.id }) }
     );

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
+import { categories } from "@/lib/db/schema/categories";
 import { isValidExcludedAmount, transactions } from "@/lib/db/schema/transactions";
 import { updateTransactionSchema } from "@/lib/validation/transactions";
 
@@ -47,6 +48,16 @@ export async function PATCH(
       { error: 'Per una transazione automatica sono modificabili solo categoria e "Dividi"' },
       { status: 403 }
     );
+  }
+
+  if (parsed.data.categoryId !== undefined) {
+    const [category] = await db
+      .select()
+      .from(categories)
+      .where(and(eq(categories.id, parsed.data.categoryId), eq(categories.userId, session.user.id)));
+    if (!category) {
+      return Response.json({ error: "Categoria non valida" }, { status: 400 });
+    }
   }
 
   const newAmount = parsed.data.amount !== undefined ? -parsed.data.amount : Number(transaction.amount);

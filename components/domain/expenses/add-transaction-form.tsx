@@ -81,7 +81,10 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
         <label className="text-xs text-muted-foreground">Conto</label>
         <Select
           value={accountId}
-          onValueChange={(value) => setAccountIdOverride(value ?? "")}
+          onValueChange={(value) => {
+            if (value === null) return;
+            setAccountIdOverride(value);
+          }}
           disabled={manualAccounts.length === 0}
         >
           <SelectTrigger className="w-full sm:w-40">
@@ -113,7 +116,10 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
         <label className="text-xs text-muted-foreground">Categoria</label>
         <Select
           value={categoryId}
-          onValueChange={(value) => setCategoryIdOverride(value ?? "")}
+          onValueChange={(value) => {
+            if (value === null) return;
+            setCategoryIdOverride(value);
+          }}
           disabled={categories.length === 0}
         >
           <SelectTrigger className="w-full sm:w-40">
@@ -162,6 +168,12 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
       {manualAccounts.length === 0 && (
         <p className="w-full text-sm text-muted-foreground">
           Serve almeno un conto manuale per registrare una spesa: aggiungine uno dalla schermata Conti.
+        </p>
+      )}
+
+      {categories.length === 0 && (
+        <p className="w-full text-sm text-muted-foreground">
+          Nessuna categoria disponibile: aggiungine una prima di registrare una spesa.
         </p>
       )}
 

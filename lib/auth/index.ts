@@ -68,6 +68,9 @@ export const auth = betterAuth({
               userId: user.id,
               name: cat.name,
               type: cat.type,
+              color: cat.color,
+              icon: cat.icon,
+              isFallback: cat.isFallback ?? false,
             }))
           );
         },

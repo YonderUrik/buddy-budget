@@ -41,6 +41,11 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [splitOpen, setSplitOpen] = React.useState(false);
 
+  const excludedAmount = Math.abs(Number(transaction.excludedAmount));
+  const fullAmount = Math.abs(Number(transaction.amount));
+  const netAmount = fullAmount - excludedAmount;
+  const isSplit = excludedAmount > 0;
+
   function commitCategory(categoryId: string | null) {
     if (categoryId === null || categoryId === transaction.categoryId) return;
     updateMutation.mutate({ id: transaction.id, input: { categoryId } });
@@ -125,19 +130,39 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             {isAuto ? "Auto" : "Manuale"}
           </Badge>
 
+          {isSplit && (
+            <Badge variant="ghost" className="shrink-0">
+              Diviso
+            </Badge>
+          )}
+
           {isAuto ? (
-            <p className="w-24 shrink-0 text-right text-sm font-medium tabular-nums sm:w-28">
-              {formatCurrency(Math.abs(Number(transaction.amount)), currency)}
-            </p>
+            <div className="w-24 shrink-0 text-right sm:w-28">
+              <p className="text-sm font-medium tabular-nums">
+                {formatCurrency(isSplit ? netAmount : fullAmount, currency)}
+              </p>
+              {isSplit && (
+                <p className="text-xs text-muted-foreground line-through">
+                  {formatCurrency(fullAmount, currency)}
+                </p>
+              )}
+            </div>
           ) : (
-            <CurrencyInput
-              value={amountValue}
-              onChange={setAmountValue}
-              onBlur={commitAmount}
-              currency={currency}
-              className="w-24 text-right sm:w-28"
-              aria-label="Importo"
-            />
+            <div className="w-24 shrink-0 sm:w-28">
+              <CurrencyInput
+                value={amountValue}
+                onChange={setAmountValue}
+                onBlur={commitAmount}
+                currency={currency}
+                className="w-full text-right"
+                aria-label="Importo"
+              />
+              {isSplit && (
+                <p className="mt-0.5 text-right text-xs text-muted-foreground">
+                  Netto: {formatCurrency(netAmount, currency)}
+                </p>
+              )}
+            </div>
           )}
 
           <button

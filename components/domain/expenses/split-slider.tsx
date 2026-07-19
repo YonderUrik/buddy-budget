@@ -35,7 +35,7 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
         max={totalAmount}
         step={0.01}
         disabled={updateMutation.isPending}
-        onValueChange={([value]) => setExcluded(value)}
+        onValueChange={(value) => setExcluded(Array.isArray(value) ? value[0] : value)}
         onValueCommitted={commit}
       />
       <div className="flex justify-between text-xs text-muted-foreground">

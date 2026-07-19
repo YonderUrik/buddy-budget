@@ -37,6 +37,10 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
   }
 
   function commitSpentInput() {
+    if (spentInput.trim() === "") {
+      setSpentInput((totalAmount - excluded).toFixed(2));
+      return;
+    }
     const spent = clampExcluded(Number(spentInput), totalAmount);
     const value = clampExcluded(totalAmount - spent, totalAmount);
     setSpentInput((totalAmount - value).toFixed(2));
@@ -98,7 +102,7 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
           setExcluded(next);
           setSpentInput((totalAmount - next).toFixed(2));
         }}
-        onValueCommitted={() => commit(excluded)}
+        onValueCommitted={(value) => commit(clampExcluded(Array.isArray(value) ? value[0] : value, totalAmount))}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>Spesa effettiva: {formatCurrency(totalAmount - excluded, currency)}</span>

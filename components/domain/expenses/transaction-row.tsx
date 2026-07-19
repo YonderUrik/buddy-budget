@@ -99,7 +99,9 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             <span>·</span>
             <Select value={transaction.categoryId} onValueChange={commitCategory}>
               <SelectTrigger size="sm" className="h-6 text-xs">
-                <SelectValue />
+                <SelectValue>
+                  {(value: string | null) => categories.find((c) => c.id === value)?.name ?? ""}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (

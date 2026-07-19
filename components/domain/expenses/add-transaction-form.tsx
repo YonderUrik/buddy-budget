@@ -88,7 +88,9 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           disabled={manualAccounts.length === 0}
         >
           <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Conto" />
+            <SelectValue placeholder="Conto">
+              {(value: string | null) => manualAccounts.find((a) => a.id === value)?.name ?? ""}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {manualAccounts.map((account) => (
@@ -123,7 +125,9 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           disabled={categories.length === 0}
         >
           <SelectTrigger className="w-full sm:w-40">
-            <SelectValue placeholder="Categoria" />
+            <SelectValue placeholder="Categoria">
+              {(value: string | null) => categories.find((c) => c.id === value)?.name ?? ""}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {categories.map((category) => (

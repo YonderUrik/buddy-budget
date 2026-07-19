@@ -8,17 +8,7 @@ import { cn } from "@/lib/utils";
 import { ACCOUNT_COLORS, ACCOUNT_ICONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import { ICON_MAP } from "./account-avatar";
-
-const COLOR_DOT: Record<AccountColor, string> = {
-  slate: "bg-slate-400",
-  blue: "bg-blue-500",
-  green: "bg-green-500",
-  yellow: "bg-yellow-400",
-  purple: "bg-purple-500",
-  orange: "bg-orange-500",
-  red: "bg-red-500",
-  teal: "bg-teal-500",
-};
+import { COLOR_DOT } from "@/components/domain/shared/color-swatches";
 
 export interface AccountIconColorPickerProps {
   value: { color: AccountColor; icon: AccountIcon };

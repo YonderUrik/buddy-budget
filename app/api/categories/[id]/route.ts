@@ -25,7 +25,11 @@ async function getFallbackCategory(userId: string) {
   return fallback ?? null;
 }
 
-/** Aggiorna nome/tipo/icona/colore di una categoria del proprio utente; 404 se non propria, 409 se nome duplicato. */
+/**
+ * Aggiorna nome/tipo/icona/colore di una categoria del proprio utente; 404 se non propria,
+ * 409 se nome duplicato o se si tenta di rinominare la categoria fallback (icona/colore/tipo
+ * restano modificabili anche per la fallback).
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -45,6 +49,13 @@ export async function PATCH(
   const parsed = updateCategorySchema.safeParse(body);
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  if (category.isFallback && parsed.data.name && parsed.data.name !== category.name) {
+    return Response.json(
+      { error: "Il nome della categoria di fallback non può essere modificato" },
+      { status: 409 }
+    );
   }
 
   if (parsed.data.name && parsed.data.name !== category.name) {

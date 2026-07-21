@@ -23,6 +23,8 @@ import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/li
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Category } from "@/lib/db/schema/categories";
 import { SplitSlider } from "./split-slider";
+import { CategoryAvatar } from "@/components/domain/categories";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 
 export interface TransactionRowProps {
   transaction: Transaction;
@@ -105,7 +107,21 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             <Select value={transaction.categoryId} onValueChange={commitCategory}>
               <SelectTrigger size="sm" className="h-6 text-xs">
                 <SelectValue>
-                  {(value: string | null) => categories.find((c) => c.id === value)?.name ?? ""}
+                  {(value: string | null) => {
+                    const selected = categories.find((c) => c.id === value);
+                    if (!selected) return "";
+                    return (
+                      <span className="flex items-center gap-1.5">
+                        <CategoryAvatar
+                          color={selected.color as CategoryColor}
+                          icon={selected.icon as CategoryIcon}
+                          size={10}
+                          className="size-4"
+                        />
+                        {selected.name}
+                      </span>
+                    );
+                  }}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>

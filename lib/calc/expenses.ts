@@ -177,6 +177,8 @@ export interface CategoryAmount {
   name: string;
   type: "fissa" | "variabile";
   amount: number;
+  color: string;
+  icon: string;
 }
 
 /** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria dell'utente. */
@@ -198,6 +200,8 @@ export function computeCategoryBreakdown(
       name: category.name,
       type: category.type,
       amount: speseEffettive,
+      color: category.color,
+      icon: category.icon,
     };
   });
 }

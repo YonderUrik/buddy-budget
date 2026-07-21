@@ -141,6 +141,36 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
     expect(response.status).toBe(404);
   });
 
+  it("risponde 409 rinominando la categoria fallback", async () => {
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/categories/${fallbackCategoryId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: "Varie" }),
+      }),
+      { params: Promise.resolve({ id: fallbackCategoryId }) }
+    );
+
+    expect(response.status).toBe(409);
+    const [remaining] = await db.select().from(categories).where(eq(categories.id, fallbackCategoryId));
+    expect(remaining.name).toBe("Da categorizzare");
+  });
+
+  it("aggiorna icona/colore della categoria fallback senza toccarne il nome", async () => {
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/categories/${fallbackCategoryId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ icon: "package", color: "teal" }),
+      }),
+      { params: Promise.resolve({ id: fallbackCategoryId }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.icon).toBe("package");
+    expect(updated.color).toBe("teal");
+    expect(updated.name).toBe("Da categorizzare");
+  });
+
   it("elimina una categoria senza transazioni collegate", async () => {
     const [category] = await db
       .insert(categories)

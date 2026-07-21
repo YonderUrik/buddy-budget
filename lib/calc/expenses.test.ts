@@ -52,6 +52,9 @@ function makeCategory(overrides: Partial<Category>): Category {
     userId: "user-1",
     name: "Categoria",
     type: "variabile",
+    color: "slate",
+    icon: "package",
+    isFallback: false,
     createdAt: new Date(),
     ...overrides,
   };
@@ -181,8 +184,8 @@ describe("computeCategoryBreakdown", () => {
     const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15));
 
     expect(breakdown).toEqual([
-      { categoryId: "cat-a", name: "Spesa alimentare", type: "variabile", amount: 90 },
-      { categoryId: "cat-b", name: "Affitto", type: "fissa", amount: 0 },
+      { categoryId: "cat-a", name: "Spesa alimentare", type: "variabile", amount: 90, color: "slate", icon: "package" },
+      { categoryId: "cat-b", name: "Affitto", type: "fissa", amount: 0, color: "slate", icon: "package" },
     ]);
   });
 });

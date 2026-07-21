@@ -15,6 +15,8 @@ import { formatCurrency } from "@/lib/format";
 import { useUpsertBudgetMutation } from "@/lib/queries/budgets";
 import type { CategoryAmount } from "@/lib/calc/expenses";
 import type { Budget } from "@/lib/db/schema/budgets";
+import { CategoryAvatar } from "@/components/domain/categories";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 
 export interface CategoryBreakdownProps {
   categoryAmounts: CategoryAmount[];
@@ -104,9 +106,17 @@ function CategoryBreakdownRow({
 
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-3">
-      <div>
-        <p className="text-sm font-medium text-foreground">{entry.name}</p>
-        <p className="text-xs text-muted-foreground">{formatCurrency(entry.amount, currency)} speso</p>
+      <div className="flex items-center gap-3">
+        <CategoryAvatar
+          color={entry.color as CategoryColor}
+          icon={entry.icon as CategoryIcon}
+          size={14}
+          className="size-7"
+        />
+        <div>
+          <p className="text-sm font-medium text-foreground">{entry.name}</p>
+          <p className="text-xs text-muted-foreground">{formatCurrency(entry.amount, currency)} speso</p>
+        </div>
       </div>
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-1 text-sm text-muted-foreground">

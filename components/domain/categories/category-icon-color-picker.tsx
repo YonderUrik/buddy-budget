@@ -1,26 +1,23 @@
 "use client";
 
-/** Popover per scegliere colore e icona di un conto. Click sull'avatar apre il picker. */
+/** Popover per scegliere colore e icona di una categoria. Click sull'avatar apre il picker. */
 
 import * as React from "react";
 import { Popover } from "@base-ui/react/popover";
 import { cn } from "@/lib/utils";
-import { ACCOUNT_COLORS, ACCOUNT_ICONS } from "@/lib/validation/accounts";
-import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
-import { ICON_MAP } from "./account-avatar";
 import { COLOR_DOT } from "@/components/domain/shared/color-swatches";
+import { CATEGORY_ICONS } from "@/lib/validation/categories";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { SWATCH_COLORS } from "@/lib/validation/shared-colors";
+import { ICON_MAP } from "./category-avatar";
 
-export interface AccountIconColorPickerProps {
-  value: { color: AccountColor; icon: AccountIcon };
-  onChange: (value: { color: AccountColor; icon: AccountIcon }) => void;
+export interface CategoryIconColorPickerProps {
+  value: { color: CategoryColor; icon: CategoryIcon };
+  onChange: (value: { color: CategoryColor; icon: CategoryIcon }) => void;
   children: React.ReactNode;
 }
 
-export function AccountIconColorPicker({
-  value,
-  onChange,
-  children,
-}: AccountIconColorPickerProps) {
+export function CategoryIconColorPicker({ value, onChange, children }: CategoryIconColorPickerProps) {
   return (
     <Popover.Root>
       <Popover.Trigger className="cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
@@ -29,11 +26,9 @@ export function AccountIconColorPicker({
       <Popover.Portal>
         <Popover.Positioner sideOffset={8} className="z-[60]">
           <Popover.Popup className="z-[60] w-64 rounded-xl border border-border bg-popover p-3 shadow-lg outline-none">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">
-              Colore
-            </p>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Colore</p>
             <div className="mb-4 flex gap-1.5">
-              {ACCOUNT_COLORS.map((color) => (
+              {SWATCH_COLORS.map((color) => (
                 <button
                   key={color}
                   type="button"
@@ -50,11 +45,9 @@ export function AccountIconColorPicker({
               ))}
             </div>
 
-            <p className="mb-2 text-xs font-medium text-muted-foreground">
-              Icona
-            </p>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">Icona</p>
             <div className="grid grid-cols-7 gap-1">
-              {ACCOUNT_ICONS.map((icon) => {
+              {CATEGORY_ICONS.map((icon) => {
                 const Icon = ICON_MAP[icon];
                 return (
                   <button

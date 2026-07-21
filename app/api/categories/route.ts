@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
+import { createCategorySchema } from "@/lib/validation/categories";
 
 /** GET /api/categories — ritorna le categorie dell'utente autenticato, ordinate per data di creazione. */
 export async function GET(request: NextRequest) {
@@ -18,4 +19,39 @@ export async function GET(request: NextRequest) {
     .orderBy(asc(categories.createdAt));
 
   return Response.json(userCategories);
+}
+
+/** POST /api/categories — crea una categoria per l'utente autenticato; 409 se il nome è già in uso. */
+export async function POST(request: NextRequest) {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) {
+    return new Response(null, { status: 401 });
+  }
+
+  const body = await request.json();
+  const parsed = createCategorySchema.safeParse(body);
+  if (!parsed.success) {
+    return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  const [existing] = await db
+    .select()
+    .from(categories)
+    .where(and(eq(categories.userId, session.user.id), eq(categories.name, parsed.data.name)));
+  if (existing) {
+    return Response.json({ error: "Categoria già esistente" }, { status: 409 });
+  }
+
+  const [category] = await db
+    .insert(categories)
+    .values({
+      userId: session.user.id,
+      name: parsed.data.name,
+      type: parsed.data.type,
+      ...(parsed.data.color ? { color: parsed.data.color } : {}),
+      ...(parsed.data.icon ? { icon: parsed.data.icon } : {}),
+    })
+    .returning();
+
+  return Response.json(category, { status: 201 });
 }

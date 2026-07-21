@@ -67,6 +67,12 @@ export default function SpesePage() {
             {new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" }).format(range.to)}
           </p>
         </div>
+        <a
+          href="/categorie"
+          className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          Gestisci categorie
+        </a>
         <ExpensesPeriodSelector value={period} onChange={setPeriod} />
       </div>
 

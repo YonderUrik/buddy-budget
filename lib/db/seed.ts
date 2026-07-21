@@ -28,6 +28,9 @@ async function seed() {
         userId: user.id,
         name: category.name,
         type: category.type,
+        color: category.color,
+        icon: category.icon,
+        isFallback: category.isFallback ?? false,
       }))
     )
     .returning();

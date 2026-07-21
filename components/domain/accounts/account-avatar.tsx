@@ -36,6 +36,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
+import { COLOR_SWATCH_MAP } from "@/components/domain/shared/color-swatches";
 
 export const ICON_MAP: Record<AccountIcon, LucideIcon> = {
   wallet: Wallet,
@@ -70,41 +71,6 @@ export const ICON_MAP: Record<AccountIcon, LucideIcon> = {
   music: Music,
 };
 
-const COLOR_MAP: Record<AccountColor, { bg: string; fg: string }> = {
-  slate: {
-    bg: "bg-slate-100 dark:bg-slate-800",
-    fg: "text-slate-500 dark:text-slate-400",
-  },
-  blue: {
-    bg: "bg-blue-100 dark:bg-blue-900/40",
-    fg: "text-blue-600 dark:text-blue-400",
-  },
-  green: {
-    bg: "bg-green-100 dark:bg-green-900/40",
-    fg: "text-green-600 dark:text-green-400",
-  },
-  yellow: {
-    bg: "bg-yellow-100 dark:bg-yellow-900/40",
-    fg: "text-yellow-600 dark:text-yellow-400",
-  },
-  purple: {
-    bg: "bg-purple-100 dark:bg-purple-900/40",
-    fg: "text-purple-600 dark:text-purple-400",
-  },
-  orange: {
-    bg: "bg-orange-100 dark:bg-orange-900/40",
-    fg: "text-orange-600 dark:text-orange-400",
-  },
-  red: {
-    bg: "bg-red-100 dark:bg-red-900/40",
-    fg: "text-red-600 dark:text-red-400",
-  },
-  teal: {
-    bg: "bg-teal-100 dark:bg-teal-900/40",
-    fg: "text-teal-600 dark:text-teal-400",
-  },
-};
-
 export interface AccountAvatarProps {
   color: AccountColor;
   icon: AccountIcon;
@@ -119,7 +85,7 @@ export function AccountAvatar({
   className,
 }: AccountAvatarProps) {
   const Icon = ICON_MAP[icon] ?? Wallet;
-  const { bg, fg } = COLOR_MAP[color] ?? COLOR_MAP.slate;
+  const { bg, fg } = COLOR_SWATCH_MAP[color] ?? COLOR_SWATCH_MAP.slate;
 
   return (
     <div

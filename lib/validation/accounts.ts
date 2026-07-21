@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SWATCH_COLORS, type SwatchColor } from "./shared-colors";
 
 /** Opzioni proposte per il tipo di conto nella select; l'utente può comunque digitarne uno libero. */
 export const ACCOUNT_TYPE_OPTIONS = [
@@ -8,10 +9,8 @@ export const ACCOUNT_TYPE_OPTIONS = [
   "Contanti",
 ] as const;
 
-export const ACCOUNT_COLORS = [
-  "slate", "blue", "green", "yellow", "purple", "orange", "red", "teal",
-] as const;
-export type AccountColor = (typeof ACCOUNT_COLORS)[number];
+export const ACCOUNT_COLORS = SWATCH_COLORS;
+export type AccountColor = SwatchColor;
 
 export const ACCOUNT_ICONS = [
   "wallet", "credit-card", "banknote", "building-2", "piggy-bank",

@@ -253,3 +253,21 @@ export function compute6MonthTrend(transactions: Transaction[], referenceDate: D
   }
   return months;
 }
+
+export interface TransactionFilter {
+  categoryId: string | null;
+  searchText: string;
+}
+
+/** Filtra le transazioni per categoria esatta e/o substring case-insensitive sulla descrizione, in AND. */
+export function filterTransactions(
+  transactions: Transaction[],
+  filter: TransactionFilter
+): Transaction[] {
+  const normalizedSearch = filter.searchText.trim().toLocaleLowerCase();
+  return transactions.filter((t) => {
+    if (filter.categoryId !== null && t.categoryId !== filter.categoryId) return false;
+    if (normalizedSearch !== "" && !t.description.toLocaleLowerCase().includes(normalizedSearch)) return false;
+    return true;
+  });
+}

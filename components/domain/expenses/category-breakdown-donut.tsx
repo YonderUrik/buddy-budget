@@ -8,9 +8,11 @@
  */
 
 import * as React from "react";
+import { Package } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
-import { CategoryAvatar } from "@/components/domain/categories";
+import type { PieLabelRenderProps } from "recharts";
+import { CategoryAvatar, ICON_MAP } from "@/components/domain/categories";
 import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +32,31 @@ const TYPE_CONFIG = {
 
 /** Soglia di saturazione oltre la quale il badge budget passa allo stile "sopra budget". */
 const BUDGET_OVER_THRESHOLD_PCT = 100;
+
+/** Soglia sotto la quale l'icona categoria non viene mostrata nella fetta (troppo piccola per essere leggibile). */
+const PIE_ICON_MIN_PERCENT = 0.05;
+/** Dimensione in px dell'icona categoria renderizzata dentro una fetta. */
+const PIE_ICON_SIZE = 16;
+
+/** Renderizza l'icona della categoria al centro radiale della sua fetta nell'anello esterno; nasconde l'icona sotto PIE_ICON_MIN_PERCENT. */
+function renderCategoryIcon(props: PieLabelRenderProps) {
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props;
+  if (percent === undefined || percent < PIE_ICON_MIN_PERCENT) return null;
+  if (midAngle === undefined) return null;
+
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) / 2;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const icon = (payload as { icon?: CategoryIcon })?.icon;
+  const Icon = icon ? (ICON_MAP[icon] ?? Package) : Package;
+
+  return (
+    <g transform={`translate(${x - PIE_ICON_SIZE / 2}, ${y - PIE_ICON_SIZE / 2})`}>
+      <Icon size={PIE_ICON_SIZE} className="text-white" />
+    </g>
+  );
+}
 
 /** Formatta il valore del tooltip (nome + importo in valuta) al posto del default numerico di ChartTooltipContent. */
 function tooltipValueFormatter(currency: string) {
@@ -106,6 +133,7 @@ export function CategoryBreakdownDonut({
       label: entry.name,
       value: entry.amount,
       fill: SWATCH_CHART_COLOR[entry.color as CategoryColor],
+      icon: entry.icon as CategoryIcon,
     }));
   const formatTooltipValue = tooltipValueFormatter(currency);
 
@@ -125,7 +153,15 @@ export function CategoryBreakdownDonut({
                 <Cell key={entry.key} fill={entry.fill} />
               ))}
             </Pie>
-            <Pie data={outerData} dataKey="value" nameKey="label" innerRadius={62} outerRadius={90}>
+            <Pie
+              data={outerData}
+              dataKey="value"
+              nameKey="label"
+              innerRadius={62}
+              outerRadius={90}
+              label={renderCategoryIcon}
+              labelLine={false}
+            >
               {outerData.map((entry) => (
                 <Cell key={entry.key} fill={entry.fill} />
               ))}
@@ -133,7 +169,7 @@ export function CategoryBreakdownDonut({
           </PieChart>
         </ChartContainer>
 
-        <div className="divide-y divide-border">
+        <div className="max-h-56 divide-y divide-border overflow-y-auto">
           {sortedEntries.map((entry) => {
             const budgetAmount = budgetFor(entry.categoryId);
             const { saturazionePct, quotaPct } = computeBudgetStats(entry.amount, budgetAmount, totalSpeso);

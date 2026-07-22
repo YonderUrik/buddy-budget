@@ -47,6 +47,8 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const fullAmount = Math.abs(Number(transaction.amount));
   const netAmount = fullAmount - excludedAmount;
   const isSplit = excludedAmount > 0;
+  const currentCategory = categories.find((c) => c.id === transaction.categoryId);
+  const isUncategorized = currentCategory?.isFallback ?? false;
 
   function commitCategory(categoryId: string | null) {
     if (categoryId === null || categoryId === transaction.categoryId) return;
@@ -75,7 +77,13 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   }
 
   return (
-    <div className="border-b border-border last:border-b-0">
+    <div
+      className={
+        isUncategorized
+          ? "border-b border-border bg-neg-soft/40 last:border-b-0"
+          : "border-b border-border last:border-b-0"
+      }
+    >
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
         <div className="min-w-0 flex-1 space-y-1">
           {isAuto ? (
@@ -127,7 +135,15 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
               <SelectContent>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
-                    {category.name}
+                    <span className="flex items-center gap-1.5">
+                      <CategoryAvatar
+                        color={category.color as CategoryColor}
+                        icon={category.icon as CategoryIcon}
+                        size={10}
+                        className="size-4"
+                      />
+                      {category.name}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -149,6 +165,16 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           {isSplit && (
             <Badge variant="ghost" className="shrink-0">
               Diviso
+            </Badge>
+          )}
+
+          {isUncategorized && (
+            <Badge variant="outline" className="shrink-0 gap-1.5 border-neg/40 text-neg">
+              <span className="relative flex size-1.5">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-neg opacity-75" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-neg" />
+              </span>
+              Da categorizzare
             </Badge>
           )}
 

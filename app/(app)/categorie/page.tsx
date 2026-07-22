@@ -12,11 +12,19 @@ export default function CategoriePage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-6">
-      <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Categorie</h1>
-        <p className="text-sm text-muted-foreground">
-          Gestisci le categorie di spesa: nome, tipo, icona e colore.
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-2xl font-medium text-foreground">Categorie</h1>
+          <p className="text-sm text-muted-foreground">
+            Gestisci le categorie di spesa: nome, tipo, icona e colore.
+          </p>
+        </div>
+        <a
+          href="/spese"
+          className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          Torna a Spese
+        </a>
       </div>
 
       {isLoading ? (

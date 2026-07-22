@@ -162,7 +162,7 @@ describe("computeKpis", () => {
     ];
     const budgets = [makeBudget({ monthlyAmount: "700.00" })];
 
-    const kpis = computeKpis(transactions, budgets, "mese", referenceDate);
+    const kpis = computeKpis(transactions, budgets, "mese", referenceDate, referenceDate);
 
     expect(kpis.speso).toBe(400);
     expect(kpis.budgetTotale).toBe(700);
@@ -170,6 +170,22 @@ describe("computeKpis", () => {
     expect(kpis.giorniRimasti).toBe(13);
     expect(kpis.mediaGiornaliera).toBeCloseTo(400 / 15, 5);
     expect(kpis.mediaGiornalieraPeriodoPrecedente).toBe(10);
+  });
+
+  it("un periodo passato (mese concluso) conta tutti i giorni come trascorsi, indipendentemente da 'oggi'", () => {
+    const referenceDate = new Date(2026, 1, 15); // vista: metà febbraio 2026
+    const today = new Date(2026, 3, 10); // oggi reale: aprile 2026, febbraio è già concluso
+    const transactions = [
+      makeTransaction({ date: "2026-02-05", amount: "-100.00" }),
+      makeTransaction({ date: "2026-02-28", amount: "-180.00" }), // fine mese: futuro rispetto a referenceDate, passato rispetto a today
+    ];
+    const budgets = [makeBudget({ monthlyAmount: "280.00" })];
+
+    const kpis = computeKpis(transactions, budgets, "mese", referenceDate, today);
+
+    expect(kpis.speso).toBe(280);
+    expect(kpis.giorniRimasti).toBe(0);
+    expect(kpis.mediaGiornaliera).toBeCloseTo(280 / 28, 5);
   });
 });
 
@@ -183,7 +199,7 @@ describe("computeCategoryBreakdown", () => {
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
       makeTransaction({ categoryId: "cat-a", date: "2026-02-06", amount: "-40.00", excludedAmount: "-10.00" }),
     ];
-    const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15));
+    const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
 
     expect(breakdown).toEqual([
       { categoryId: "cat-a", name: "Spesa alimentare", type: "variabile", amount: 90, color: "slate", icon: "package" },
@@ -202,7 +218,7 @@ describe("computeFixedVsVariable", () => {
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
       makeTransaction({ categoryId: "cat-b", date: "2026-02-06", amount: "-500.00" }),
     ];
-    const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15));
+    const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
     expect(result).toEqual({ fissa: 500, variabile: 60 });
   });
 });

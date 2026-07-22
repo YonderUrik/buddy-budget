@@ -53,3 +53,15 @@ export const COLOR_DOT: Record<SwatchColor, string> = {
   red: "bg-red-500",
   teal: "bg-teal-500",
 };
+
+/** Mappa colore -> CSS var per la torta multilivello (recharts richiede un valore letterale, non una classe Tailwind). */
+export const SWATCH_CHART_COLOR: Record<SwatchColor, string> = {
+  slate: "var(--swatch-slate)",
+  blue: "var(--swatch-blue)",
+  green: "var(--swatch-green)",
+  yellow: "var(--swatch-yellow)",
+  purple: "var(--swatch-purple)",
+  orange: "var(--swatch-orange)",
+  red: "var(--swatch-red)",
+  teal: "var(--swatch-teal)",
+};

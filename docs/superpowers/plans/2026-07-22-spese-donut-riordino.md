@@ -771,3 +771,192 @@ Come per le feature precedenti in questa schermata (vedi CLAUDE.md), nessun Post
 - Editing budget inline invariato (salvataggio on-blur, stato errore).
 - Badge percentuali nei casi limite: budget a 0 (`—`), categoria a spesa zero, saturazione oltre il 100% (stile "sopra budget").
 - Nuovo ordine sezioni: KPI → torta+legenda → lista transazioni → andamento 6 mesi.
+
+---
+
+### Task 6: Legenda scrollabile e icone categoria nelle fette (addendum post-review)
+
+**Contesto:** dopo la review finale (Task 1-5 approvati, pronto al merge), l'utente ha chiesto due modifiche prima di mergiare, testate sul componente reale: con molte categorie la legenda occupa più spazio verticale del grafico, sbilanciando la card; e vorrebbe l'icona categoria leggibile direttamente nelle fette dell'anello esterno (nascosta se la fetta è troppo piccola). Dettagli di design in `docs/superpowers/specs/2026-07-22-spese-donut-riordino-design.md`, sezione "Addendum 2026-07-22".
+
+**Files:**
+- Modify: `components/domain/categories/index.ts` (barrel — aggiunge export di `ICON_MAP`)
+- Modify: `components/domain/expenses/category-breakdown-donut.tsx`
+
+**Interfaces:**
+- Consumes: `ICON_MAP: Record<CategoryIcon, LucideIcon>` (già esiste in `components/domain/categories/category-avatar.tsx`, non ancora esportato dal barrel — questo task lo espone).
+- Nessuna nuova funzione pura, nessun nuovo file di test (il filtro 5% usa il `percent` già calcolato da recharts, passthrough puro).
+
+- [ ] **Step 1: Esporta `ICON_MAP` dal barrel delle categorie**
+
+In `components/domain/categories/index.ts`, sostituisci la riga:
+
+```ts
+export { CategoryAvatar } from "./category-avatar";
+```
+
+con:
+
+```ts
+export { CategoryAvatar, ICON_MAP } from "./category-avatar";
+```
+
+(Il resto del file, incluso `export type { CategoryAvatarProps } from "./category-avatar";` e gli altri export, resta invariato.)
+
+- [ ] **Step 2: Aggiorna gli import in `category-breakdown-donut.tsx`**
+
+Sostituisci il blocco import (righe 10-24) con:
+
+```tsx
+import * as React from "react";
+import { Package } from "lucide-react";
+import { Cell, Pie, PieChart } from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import type { PieLabelRenderProps } from "recharts";
+import { CategoryAvatar, ICON_MAP } from "@/components/domain/categories";
+import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { Input } from "@/components/ui/input";
+import { formatCurrency } from "@/lib/format";
+import { useUpsertBudgetMutation } from "@/lib/queries/budgets";
+import type { CategoryAmount, FixedVsVariable } from "@/lib/calc/expenses";
+import type { Budget } from "@/lib/db/schema/budgets";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { computeBudgetStats, sortCategoryAmounts } from "./category-breakdown-donut.utils";
+```
+
+- [ ] **Step 3: Aggiungi la funzione di rendering dell'icona, subito dopo `BUDGET_OVER_THRESHOLD_PCT`**
+
+Trova questo blocco esistente:
+
+```tsx
+/** Soglia di saturazione oltre la quale il badge budget passa allo stile "sopra budget". */
+const BUDGET_OVER_THRESHOLD_PCT = 100;
+```
+
+e aggiungi subito dopo (prima di `tooltipValueFormatter`):
+
+```tsx
+
+/** Soglia sotto la quale l'icona categoria non viene mostrata nella fetta (troppo piccola per essere leggibile). */
+const PIE_ICON_MIN_PERCENT = 0.05;
+/** Dimensione in px dell'icona categoria renderizzata dentro una fetta. */
+const PIE_ICON_SIZE = 16;
+
+/** Renderizza l'icona della categoria al centro radiale della sua fetta nell'anello esterno; nasconde l'icona sotto PIE_ICON_MIN_PERCENT. */
+function renderCategoryIcon(props: PieLabelRenderProps) {
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props;
+  if (percent === undefined || percent < PIE_ICON_MIN_PERCENT) return null;
+  if (midAngle === undefined) return null;
+
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) / 2;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const icon = (payload as { icon?: CategoryIcon })?.icon;
+  const Icon = icon ? (ICON_MAP[icon] ?? Package) : Package;
+
+  return (
+    <g transform={`translate(${x - PIE_ICON_SIZE / 2}, ${y - PIE_ICON_SIZE / 2})`}>
+      <Icon size={PIE_ICON_SIZE} className="text-white" />
+    </g>
+  );
+}
+```
+
+- [ ] **Step 4: Aggiungi `icon` ai dati del layer esterno**
+
+Sostituisci:
+
+```tsx
+  const outerData = sortedEntries
+    .filter((entry) => entry.amount > 0)
+    .map((entry) => ({
+      key: entry.categoryId,
+      label: entry.name,
+      value: entry.amount,
+      fill: SWATCH_CHART_COLOR[entry.color as CategoryColor],
+    }));
+```
+
+con:
+
+```tsx
+  const outerData = sortedEntries
+    .filter((entry) => entry.amount > 0)
+    .map((entry) => ({
+      key: entry.categoryId,
+      label: entry.name,
+      value: entry.amount,
+      fill: SWATCH_CHART_COLOR[entry.color as CategoryColor],
+      icon: entry.icon as CategoryIcon,
+    }));
+```
+
+- [ ] **Step 5: Attiva le icone sul `<Pie>` esterno**
+
+Sostituisci:
+
+```tsx
+            <Pie data={outerData} dataKey="value" nameKey="label" innerRadius={62} outerRadius={90}>
+              {outerData.map((entry) => (
+                <Cell key={entry.key} fill={entry.fill} />
+              ))}
+            </Pie>
+```
+
+con:
+
+```tsx
+            <Pie
+              data={outerData}
+              dataKey="value"
+              nameKey="label"
+              innerRadius={62}
+              outerRadius={90}
+              label={renderCategoryIcon}
+              labelLine={false}
+            >
+              {outerData.map((entry) => (
+                <Cell key={entry.key} fill={entry.fill} />
+              ))}
+            </Pie>
+```
+
+- [ ] **Step 6: Rendi la legenda scrollabile con altezza massima pari al grafico**
+
+Sostituisci:
+
+```tsx
+        <div className="divide-y divide-border">
+```
+
+con:
+
+```tsx
+        <div className="max-h-56 divide-y divide-border overflow-y-auto">
+```
+
+- [ ] **Step 7: Verifica che il progetto compili, che il lint non peggiori, e che la build funzioni**
+
+Run: `pnpm exec tsc --noEmit`
+Expected: nessun errore
+
+Run: `pnpm lint`
+Expected: lo stesso conteggio di errori pre-esistente di prima di questo task (2 errori `react-hooks/set-state-in-effect`, non collegati — vedi Task 5). Nessun nuovo errore introdotto da questo task.
+
+Run: `pnpm build`
+Expected: build completata senza errori
+
+- [ ] **Step 8: Esegui l'intera suite di test**
+
+Run: `pnpm test`
+Expected: stesso esito di prima di questo task (nessuna modifica a moduli testati; le uniche 2 failure pre-esistenti restano `lib/gocardless/scheduler.test.ts`)
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add components/domain/categories/index.ts components/domain/expenses/category-breakdown-donut.tsx
+git commit -m "feat: aggiunge icone categoria nelle fette della torta e legenda scrollabile in Spese"
+```

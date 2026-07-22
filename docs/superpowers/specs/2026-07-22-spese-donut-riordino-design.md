@@ -67,3 +67,19 @@ Nuovo ordine in `app/(app)/spese/page.tsx`:
 - Nessuna modifica a `lib/calc/expenses.ts` o alle route API.
 - Nessuna modifica al meccanismo "Dividi" (`SplitSlider`) o a `TransactionRow`.
 - Nessuna modifica alla sezione Budget separata (rimandata, vedi `CLAUDE.md` — "In corso ora").
+
+## Addendum 2026-07-22 — legenda scrollabile e icone nelle fette
+
+Feedback dell'utente dopo la prima implementazione (5/5 task, review finale approvata, non ancora mergiata): con molte categorie la legenda occupa molto più spazio verticale del grafico, sbilanciando la card; inoltre l'icona categoria (già visibile in legenda tramite `CategoryAvatar`) sarebbe utile leggerla direttamente nelle fette dell'anello esterno per un riconoscimento più immediato.
+
+Due modifiche, entrambe circoscritte a `category-breakdown-donut.tsx`:
+
+1. **Legenda con altezza massima e scroll interno**: il contenitore della legenda (`div.divide-y` in `CategoryBreakdownDonut`) riceve `max-h-56 overflow-y-auto` (224px, stessa altezza del grafico `aspect-square max-h-56`), così il grafico resta sempre alla stessa proporzione visiva rispetto alla legenda indipendentemente dal numero di categorie. Scrollbar nativa del browser, nessun nuovo stile custom (non serve replicare il trattamento scrollbar dedicato di `.sidebar-nav` per questo caso).
+2. **Icona categoria nelle fette dell'anello esterno**: tramite il prop `label` di recharts sul `<Pie>` esterno (funzione custom, non il default), che riceve `cx`, `cy`, `midAngle`, `innerRadius`, `outerRadius`, `percent`, `payload` per ciascuna fetta. La funzione:
+   - Calcola la posizione al centro radiale della fetta: `radius = innerRadius + (outerRadius - innerRadius) / 2`, poi `x`/`y` da `cx`/`cy` + `radius * cos/sin(-midAngle in radianti)`.
+   - Nasconde l'icona (ritorna `null`) se `percent < 0.05` (soglia 5% sul totale — `percent` di recharts per il layer esterno è già `amount / sommaLayerEsterno`, e la somma del layer esterno coincide col totale speso nel periodo essendo filtrato a `amount > 0`, quindi stessa base di calcolo della "% sul totale" già mostrata in legenda).
+   - Renderizza l'icona Lucide della categoria (stessa mappa `ICON_MAP` già esportata da `components/domain/categories/category-avatar.tsx`, riusata qui — non duplicata) dentro un `<g transform="translate(...)">`, colore fisso `className="text-white"` (contrasto garantito su qualunque colore fetta, dato che i fill di `SWATCH_CHART_COLOR` sono tutti toni medi 400-500; nessuna variazione light/dark necessaria perché il fill della fetta stessa non varia per tema).
+   - `labelLine={false}` sul `<Pie>` esterno per disattivare la linea di connessione automatica di recharts (non serve, l'icona è già dentro la fetta).
+   - Il layer interno (`fissa`/`variabile`) **non** riceve questo trattamento — resta senza icone, invariato.
+
+Nessuna nuova funzione di calcolo pura necessaria (il filtro 5% usa direttamente il `percent` fornito da recharts, non richiede una funzione testabile separata — è puro passthrough di un dato già calcolato dalla libreria). Nessun impatto sulla legenda, sull'editing budget, o sull'ordinamento già implementati.

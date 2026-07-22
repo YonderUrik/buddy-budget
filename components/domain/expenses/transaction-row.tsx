@@ -87,7 +87,9 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
         <div className="min-w-0 flex-1 space-y-1">
           {isAuto ? (
-            <p className="truncate text-sm font-medium text-foreground">{transaction.description}</p>
+            <p className="truncate text-sm font-medium text-foreground" title={transaction.description}>
+              {transaction.description}
+            </p>
           ) : (
             <Input
               value={description}

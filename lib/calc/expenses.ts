@@ -18,6 +18,7 @@ export function parseDateOnly(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
+/** Annulla la componente oraria di una Date, mantenendo solo l'anno/mese/giorno locale (mezzanotte). */
 export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -249,6 +250,7 @@ export interface MonthlyTotal {
   total: number;
 }
 
+/** Etichette abbreviate mensili in italiano, usate nel grafico di andamento su 6 mesi. */
 export const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 
 /** Spesa effettiva totale per ciascuno degli ultimi 6 mesi calendariali (incluso quello corrente), indipendente dal periodo selezionato. */

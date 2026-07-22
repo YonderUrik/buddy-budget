@@ -18,7 +18,7 @@ export function parseDateOnly(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
-function startOfDay(date: Date): Date {
+export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
@@ -82,6 +82,20 @@ export function getPreviousPeriodRange(period: ExpensePeriod, referenceDate: Dat
       break;
   }
   return getPeriodRange(period, shiftedReference);
+}
+
+/** Sposta referenceDate di un'unità di periodo (avanti se direction=1, indietro se direction=-1). */
+export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date {
+  switch (period) {
+    case "settimana":
+      return addDays(referenceDate, 7 * direction);
+    case "mese":
+      return addMonths(referenceDate, 1 * direction);
+    case "3mesi":
+      return addMonths(referenceDate, 3 * direction);
+    case "anno":
+      return new Date(referenceDate.getFullYear() + direction, referenceDate.getMonth(), referenceDate.getDate());
+  }
 }
 
 function isWithinRange(date: Date, range: DateRange): boolean {
@@ -235,7 +249,7 @@ export interface MonthlyTotal {
   total: number;
 }
 
-const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+export const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 
 /** Spesa effettiva totale per ciascuno degli ultimi 6 mesi calendariali (incluso quello corrente), indipendente dal periodo selezionato. */
 export function compute6MonthTrend(transactions: Transaction[], referenceDate: Date): MonthlyTotal[] {

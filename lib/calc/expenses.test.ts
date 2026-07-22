@@ -11,6 +11,7 @@ import {
   computeCategoryBreakdown,
   computeFixedVsVariable,
   compute6MonthTrend,
+  shiftReferenceDate,
 } from "./expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
@@ -219,5 +220,31 @@ describe("compute6MonthTrend", () => {
     expect(trend[0]).toEqual({ year: 2026, month: 1, label: "Feb", total: 100 });
     expect(trend[5]).toEqual({ year: 2026, month: 6, label: "Lug", total: 50 });
     expect(trend.reduce((sum, m) => sum + m.total, 0)).toBe(150);
+  });
+});
+
+describe("shiftReferenceDate", () => {
+  it("settimana sposta di 7 giorni avanti e indietro", () => {
+    const referenceDate = new Date(2026, 6, 15);
+    expect(shiftReferenceDate("settimana", referenceDate, 1)).toEqual(new Date(2026, 6, 22));
+    expect(shiftReferenceDate("settimana", referenceDate, -1)).toEqual(new Date(2026, 6, 8));
+  });
+
+  it("mese sposta di un mese avanti e indietro, attraversando il cambio anno", () => {
+    const referenceDate = new Date(2026, 0, 15); // gennaio 2026
+    expect(shiftReferenceDate("mese", referenceDate, 1)).toEqual(new Date(2026, 1, 15));
+    expect(shiftReferenceDate("mese", referenceDate, -1)).toEqual(new Date(2025, 11, 15));
+  });
+
+  it("3mesi sposta di 3 mesi avanti e indietro", () => {
+    const referenceDate = new Date(2026, 5, 15); // giugno 2026
+    expect(shiftReferenceDate("3mesi", referenceDate, 1)).toEqual(new Date(2026, 8, 15));
+    expect(shiftReferenceDate("3mesi", referenceDate, -1)).toEqual(new Date(2026, 2, 15));
+  });
+
+  it("anno sposta di un anno avanti e indietro", () => {
+    const referenceDate = new Date(2026, 5, 15);
+    expect(shiftReferenceDate("anno", referenceDate, 1)).toEqual(new Date(2027, 5, 15));
+    expect(shiftReferenceDate("anno", referenceDate, -1)).toEqual(new Date(2025, 5, 15));
   });
 });

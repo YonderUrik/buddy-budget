@@ -42,6 +42,7 @@ export default function SpesePage() {
   const currency = session?.user.currency ?? "EUR";
   const referenceDate = React.useMemo(() => new Date(), []);
   const [period, setPeriod] = React.useState<ExpensePeriod>("mese");
+  const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
 
   const { from, to } = fetchWindow(referenceDate);
   const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to);
@@ -52,10 +53,20 @@ export default function SpesePage() {
   const safeCategories = categories ?? [];
   const safeBudgets = budgets ?? [];
 
+  const fallbackCategoryIds = new Set(
+    safeCategories.filter((c) => c.isFallback).map((c) => c.id)
+  );
+
   const range = getPeriodRange(period, referenceDate);
-  const transactionsInPeriod = safeTransactions.filter(
+  const transactionsInPeriodAll = safeTransactions.filter(
     (t) => t.date >= toDateString(range.from) && t.date <= toDateString(range.to)
   );
+  const uncategorizedCount = transactionsInPeriodAll.filter(
+    (t) => t.categoryId !== null && fallbackCategoryIds.has(t.categoryId)
+  ).length;
+  const transactionsInPeriod = showUncategorizedOnly
+    ? transactionsInPeriodAll.filter((t) => t.categoryId !== null && fallbackCategoryIds.has(t.categoryId))
+    : transactionsInPeriodAll;
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
@@ -73,6 +84,24 @@ export default function SpesePage() {
         >
           Gestisci categorie
         </a>
+        {uncategorizedCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowUncategorizedOnly((v) => !v)}
+            aria-pressed={showUncategorizedOnly}
+            className={
+              showUncategorizedOnly
+                ? "flex items-center gap-1.5 rounded-full border border-neg/40 bg-neg-soft px-3 py-1 text-sm font-medium text-neg"
+                : "flex items-center gap-1.5 rounded-full border border-neg/40 px-3 py-1 text-sm font-medium text-neg hover:bg-neg-soft/50"
+            }
+          >
+            <span className="relative flex size-1.5">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-neg opacity-75" />
+              <span className="relative inline-flex size-1.5 rounded-full bg-neg" />
+            </span>
+            Da categorizzare ({uncategorizedCount})
+          </button>
+        )}
         <ExpensesPeriodSelector value={period} onChange={setPeriod} />
       </div>
 
@@ -128,7 +157,9 @@ export default function SpesePage() {
             </div>
             {transactionsInPeriod.length === 0 ? (
               <p className="p-6 text-sm text-muted-foreground">
-                Nessuna transazione in questo periodo. Aggiungine una dal form qui sotto.
+                {showUncategorizedOnly
+                  ? "Nessuna transazione da categorizzare in questo periodo."
+                  : "Nessuna transazione in questo periodo. Aggiungine una dal form qui sotto."}
               </p>
             ) : (
               transactionsInPeriod.map((transaction) => (

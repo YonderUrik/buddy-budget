@@ -12,6 +12,7 @@ import {
   computeFixedVsVariable,
   compute6MonthTrend,
   shiftReferenceDate,
+  formatPeriodLabel,
 } from "./expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
@@ -246,5 +247,37 @@ describe("shiftReferenceDate", () => {
     const referenceDate = new Date(2026, 5, 15);
     expect(shiftReferenceDate("anno", referenceDate, 1)).toEqual(new Date(2027, 5, 15));
     expect(shiftReferenceDate("anno", referenceDate, -1)).toEqual(new Date(2025, 5, 15));
+  });
+});
+
+describe("formatPeriodLabel", () => {
+  it("mese: nome mese esteso capitalizzato + anno", () => {
+    const range = getPeriodRange("mese", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("mese", range)).toBe("Luglio 2026");
+  });
+
+  it("anno: solo l'anno", () => {
+    const range = getPeriodRange("anno", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("anno", range)).toBe("2026");
+  });
+
+  it("settimana: giorno-giorno mese abbreviato, stesso anno, senza spazi attorno al trattino", () => {
+    const range = getPeriodRange("settimana", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("settimana", range)).toBe("13–19 lug");
+  });
+
+  it("settimana: entrambe le date complete a cavallo d'anno", () => {
+    const range = { from: new Date(2026, 11, 28), to: new Date(2027, 0, 3) };
+    expect(formatPeriodLabel("settimana", range)).toBe("28 dic 2026 – 3 gen 2027");
+  });
+
+  it("3mesi: mese abbreviato - mese abbreviato + anno, stesso anno", () => {
+    const range = getPeriodRange("3mesi", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("3mesi", range)).toBe("Mag – Lug 2026");
+  });
+
+  it("3mesi: entrambi i mesi con anno, a cavallo d'anno", () => {
+    const range = getPeriodRange("3mesi", new Date(2026, 0, 15));
+    expect(formatPeriodLabel("3mesi", range)).toBe("Nov 2025 – Gen 2026");
   });
 });

@@ -41,6 +41,7 @@ export default function SpesePage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const referenceDate = React.useMemo(() => new Date(), []);
+  const today = React.useMemo(() => new Date(), []);
   const [period, setPeriod] = React.useState<ExpensePeriod>("mese");
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
 
@@ -126,11 +127,12 @@ export default function SpesePage() {
             period={period}
             currency={currency}
             referenceDate={referenceDate}
+            today={today}
           />
 
           <CategoryBreakdownDonut
-            categoryAmounts={computeCategoryBreakdown(safeTransactions, safeCategories, period, referenceDate)}
-            fixedVsVariable={computeFixedVsVariable(safeTransactions, safeCategories, period, referenceDate)}
+            categoryAmounts={computeCategoryBreakdown(safeTransactions, safeCategories, period, referenceDate, today)}
+            fixedVsVariable={computeFixedVsVariable(safeTransactions, safeCategories, period, referenceDate, today)}
             budgets={safeBudgets}
             currency={currency}
           />

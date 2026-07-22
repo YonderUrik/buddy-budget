@@ -10,8 +10,10 @@ export interface ExpensesKpiCardsProps {
   budgets: Budget[];
   period: ExpensePeriod;
   currency: string;
-  /** Data di riferimento per il calcolo (default: adesso). */
-  referenceDate?: Date;
+  /** Periodo che l'utente sta guardando (può essere passato o presente). */
+  referenceDate: Date;
+  /** Data reale corrente, per il taglio giorni-trascorsi — indipendente da referenceDate. */
+  today: Date;
 }
 
 export function ExpensesKpiCards({
@@ -19,9 +21,10 @@ export function ExpensesKpiCards({
   budgets,
   period,
   currency,
-  referenceDate = new Date(),
+  referenceDate,
+  today,
 }: ExpensesKpiCardsProps) {
-  const kpis = computeKpis(transactions, budgets, period, referenceDate);
+  const kpis = computeKpis(transactions, budgets, period, referenceDate, today);
   const trendLabel =
     kpis.mediaGiornaliera <= kpis.mediaGiornalieraPeriodoPrecedente
       ? "In calo rispetto al periodo precedente"

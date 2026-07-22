@@ -191,24 +191,31 @@ export interface ExpensesKpis {
 
 /**
  * KPI principali di Spese per il periodo selezionato. "Speso" e "Media giornaliera" contano solo i
- * giorni del periodo già trascorsi (fino a referenceDate incluso); "Budget rimanente"/"giorni rimasti"
- * guardano invece all'intero periodo calendariale (anche i giorni futuri).
+ * giorni del periodo già trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
+ * "giorni rimasti" guardano invece all'intero periodo calendariale (anche i giorni futuri).
+ * `referenceDate` è il periodo che si sta guardando (può essere passato o presente, mai futuro);
+ * `today` è sempre la data reale, indipendente da quale periodo si sta navigando.
  */
 export function computeKpis(
   transactions: Transaction[],
   budgets: Budget[],
   period: ExpensePeriod,
-  referenceDate: Date
+  referenceDate: Date,
+  today: Date
 ): ExpensesKpis {
   const range = getPeriodRange(period, referenceDate);
-  const today = startOfDay(referenceDate);
-  const elapsedRange: DateRange = { from: range.from, to: today.getTime() < range.to.getTime() ? today : range.to };
+  const todayStart = startOfDay(today);
+  const clampedToday = todayStart.getTime() < range.from.getTime() ? range.from : todayStart;
+  const elapsedRange: DateRange = {
+    from: range.from,
+    to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
+  };
 
   const { speseEffettive: speso } = computeSummary(transactions, elapsedRange);
 
   const budgetTotale = scaleBudgetForPeriod(totalMonthlyBudget(budgets), period);
   const budgetRimanente = budgetTotale - speso;
-  const giorniRimasti = Math.max(0, daysBetween(today, range.to));
+  const giorniRimasti = Math.max(0, daysBetween(todayStart, range.to));
 
   const elapsedDays = Math.max(1, daysBetween(range.from, elapsedRange.to) + 1);
   const mediaGiornaliera = speso / elapsedDays;
@@ -235,11 +242,16 @@ export function computeCategoryBreakdown(
   transactions: Transaction[],
   categories: Category[],
   period: ExpensePeriod,
-  referenceDate: Date
+  referenceDate: Date,
+  today: Date
 ): CategoryAmount[] {
   const range = getPeriodRange(period, referenceDate);
-  const today = startOfDay(referenceDate);
-  const elapsedRange: DateRange = { from: range.from, to: today.getTime() < range.to.getTime() ? today : range.to };
+  const todayStart = startOfDay(today);
+  const clampedToday = todayStart.getTime() < range.from.getTime() ? range.from : todayStart;
+  const elapsedRange: DateRange = {
+    from: range.from,
+    to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
+  };
 
   return categories.map((category) => {
     const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
@@ -265,9 +277,10 @@ export function computeFixedVsVariable(
   transactions: Transaction[],
   categories: Category[],
   period: ExpensePeriod,
-  referenceDate: Date
+  referenceDate: Date,
+  today: Date
 ): FixedVsVariable {
-  const breakdown = computeCategoryBreakdown(transactions, categories, period, referenceDate);
+  const breakdown = computeCategoryBreakdown(transactions, categories, period, referenceDate, today);
   return breakdown.reduce(
     (totals, entry) => {
       totals[entry.type] += entry.amount;

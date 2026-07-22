@@ -99,6 +99,40 @@ export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, d
   }
 }
 
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** Etichetta leggibile del periodo mostrato in Spese, formattata secondo il tipo (mese/settimana/3mesi/anno). */
+export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): string {
+  const sameYear = range.from.getFullYear() === range.to.getFullYear();
+  switch (period) {
+    case "mese": {
+      const monthName = new Intl.DateTimeFormat("it-IT", { month: "long" }).format(range.from);
+      return `${capitalize(monthName)} ${range.from.getFullYear()}`;
+    }
+    case "anno":
+      return `${range.from.getFullYear()}`;
+    case "settimana": {
+      if (sameYear) {
+        const day = new Intl.DateTimeFormat("it-IT", { day: "numeric" }).format(range.from);
+        const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.to);
+        return `${day}–${dayMonth}`;
+      }
+      const fullFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
+      return `${fullFormat.format(range.from)} – ${fullFormat.format(range.to)}`;
+    }
+    case "3mesi": {
+      const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
+      if (sameYear) {
+        const monthOnly = new Intl.DateTimeFormat("it-IT", { month: "short" }).format(range.from);
+        return `${capitalize(monthOnly)} – ${capitalize(monthYearFormat.format(range.to))}`;
+      }
+      return `${capitalize(monthYearFormat.format(range.from))} – ${capitalize(monthYearFormat.format(range.to))}`;
+    }
+  }
+}
+
 function isWithinRange(date: Date, range: DateRange): boolean {
   const day = startOfDay(date);
   return day.getTime() >= range.from.getTime() && day.getTime() <= range.to.getTime();

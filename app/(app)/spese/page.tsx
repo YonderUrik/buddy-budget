@@ -6,6 +6,7 @@ import * as React from "react";
 import {
   AddTransactionForm,
   CategoryBreakdownDonut,
+  ExpensesFilterBar,
   ExpensesKpiCards,
   ExpensesPeriodSelector,
   ExpenseTrendChart,
@@ -18,6 +19,7 @@ import {
   computeCategoryBreakdown,
   computeFixedVsVariable,
   computeSummary,
+  filterTransactions,
   getPeriodRange,
   type ExpensePeriod,
 } from "@/lib/calc/expenses";
@@ -43,6 +45,8 @@ export default function SpesePage() {
   const referenceDate = React.useMemo(() => new Date(), []);
   const [period, setPeriod] = React.useState<ExpensePeriod>("mese");
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
+  const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
+  const [searchText, setSearchText] = React.useState("");
 
   const { from, to } = fetchWindow(referenceDate);
   const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to);
@@ -53,12 +57,20 @@ export default function SpesePage() {
   const safeCategories = categories ?? [];
   const safeBudgets = budgets ?? [];
 
+  const filteredTransactions = filterTransactions(safeTransactions, {
+    categoryId: categoryFilter,
+    searchText,
+  });
+  const filteredBudgets = categoryFilter
+    ? safeBudgets.filter((b) => b.categoryId === categoryFilter)
+    : safeBudgets;
+
   const fallbackCategoryIds = new Set(
     safeCategories.filter((c) => c.isFallback).map((c) => c.id)
   );
 
   const range = getPeriodRange(period, referenceDate);
-  const transactionsInPeriodAll = safeTransactions.filter(
+  const transactionsInPeriodAll = filteredTransactions.filter(
     (t) => t.date >= toDateString(range.from) && t.date <= toDateString(range.to)
   );
   const uncategorizedCount = transactionsInPeriodAll.filter(
@@ -67,6 +79,8 @@ export default function SpesePage() {
   const transactionsInPeriod = showUncategorizedOnly
     ? transactionsInPeriodAll.filter((t) => t.categoryId !== null && fallbackCategoryIds.has(t.categoryId))
     : transactionsInPeriodAll;
+
+  const hasActiveFilter = categoryFilter !== null || searchText.trim() !== "";
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
@@ -105,6 +119,17 @@ export default function SpesePage() {
         <ExpensesPeriodSelector value={period} onChange={setPeriod} />
       </div>
 
+      <ExpensesFilterBar
+        categories={safeCategories}
+        categoryId={categoryFilter}
+        onCategoryChange={(categoryId) => {
+          setCategoryFilter(categoryId);
+          setShowUncategorizedOnly(false);
+        }}
+        searchText={searchText}
+        onSearchTextChange={setSearchText}
+      />
+
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-busy="true">
           {[0, 1, 2].map((i) => (
@@ -121,16 +146,16 @@ export default function SpesePage() {
       ) : (
         <>
           <ExpensesKpiCards
-            transactions={safeTransactions}
-            budgets={safeBudgets}
+            transactions={filteredTransactions}
+            budgets={filteredBudgets}
             period={period}
             currency={currency}
             referenceDate={referenceDate}
           />
 
           <CategoryBreakdownDonut
-            categoryAmounts={computeCategoryBreakdown(safeTransactions, safeCategories, period, referenceDate)}
-            fixedVsVariable={computeFixedVsVariable(safeTransactions, safeCategories, period, referenceDate)}
+            categoryAmounts={computeCategoryBreakdown(filteredTransactions, safeCategories, period, referenceDate)}
+            fixedVsVariable={computeFixedVsVariable(filteredTransactions, safeCategories, period, referenceDate)}
             budgets={safeBudgets}
             currency={currency}
           />
@@ -138,7 +163,7 @@ export default function SpesePage() {
           <Card className="p-0">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 text-sm text-muted-foreground">
               {(() => {
-                const summary = computeSummary(safeTransactions, range);
+                const summary = computeSummary(filteredTransactions, range);
                 return (
                   <>
                     <span>Uscite: {formatCurrency(summary.uscite, currency)}</span>
@@ -154,7 +179,9 @@ export default function SpesePage() {
               <p className="p-6 text-sm text-muted-foreground">
                 {showUncategorizedOnly
                   ? "Nessuna transazione da categorizzare in questo periodo."
-                  : "Nessuna transazione in questo periodo. Aggiungine una dal form qui sotto."}
+                  : hasActiveFilter
+                    ? "Nessuna transazione corrisponde ai filtri applicati in questo periodo."
+                    : "Nessuna transazione in questo periodo. Aggiungine una dal form qui sotto."}
               </p>
             ) : (
               transactionsInPeriod.map((transaction) => (
@@ -170,7 +197,7 @@ export default function SpesePage() {
           </Card>
 
           <ExpenseTrendChart
-            monthlyTrend={compute6MonthTrend(safeTransactions, referenceDate)}
+            monthlyTrend={compute6MonthTrend(filteredTransactions, referenceDate)}
             currency={currency}
           />
         </>

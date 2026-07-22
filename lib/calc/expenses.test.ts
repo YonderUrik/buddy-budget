@@ -11,6 +11,7 @@ import {
   computeCategoryBreakdown,
   computeFixedVsVariable,
   compute6MonthTrend,
+  filterTransactions,
 } from "./expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
@@ -219,5 +220,55 @@ describe("compute6MonthTrend", () => {
     expect(trend[0]).toEqual({ year: 2026, month: 1, label: "Feb", total: 100 });
     expect(trend[5]).toEqual({ year: 2026, month: 6, label: "Lug", total: 50 });
     expect(trend.reduce((sum, m) => sum + m.total, 0)).toBe(150);
+  });
+});
+
+describe("filterTransactions", () => {
+  it("senza filtri restituisce tutte le transazioni invariate", () => {
+    const transactions = [
+      makeTransaction({ id: "t1", categoryId: "category-1", description: "Spesa alimentare" }),
+      makeTransaction({ id: "t2", categoryId: "category-2", description: "Cinema" }),
+    ];
+    const result = filterTransactions(transactions, { categoryId: null, searchText: "" });
+    expect(result).toEqual(transactions);
+  });
+
+  it("filtra per categoryId esatto", () => {
+    const transactions = [
+      makeTransaction({ id: "t1", categoryId: "category-1", description: "Spesa alimentare" }),
+      makeTransaction({ id: "t2", categoryId: "category-2", description: "Cinema" }),
+    ];
+    const result = filterTransactions(transactions, { categoryId: "category-2", searchText: "" });
+    expect(result.map((t) => t.id)).toEqual(["t2"]);
+  });
+
+  it("filtra per testo, substring case-insensitive sulla descrizione", () => {
+    const transactions = [
+      makeTransaction({ id: "t1", categoryId: "category-1", description: "Spesa alimentare Esselunga" }),
+      makeTransaction({ id: "t2", categoryId: "category-1", description: "Cinema" }),
+    ];
+    const result = filterTransactions(transactions, { categoryId: null, searchText: "esselunga" });
+    expect(result.map((t) => t.id)).toEqual(["t1"]);
+  });
+
+  it("combina categoria e testo in AND", () => {
+    const transactions = [
+      makeTransaction({ id: "t1", categoryId: "category-1", description: "Spesa Esselunga" }),
+      makeTransaction({ id: "t2", categoryId: "category-2", description: "Spesa Esselunga" }),
+    ];
+    const result = filterTransactions(transactions, { categoryId: "category-1", searchText: "esselunga" });
+    expect(result.map((t) => t.id)).toEqual(["t1"]);
+  });
+
+  it("nessun match restituisce array vuoto", () => {
+    const transactions = [makeTransaction({ id: "t1", description: "Cinema" })];
+    const result = filterTransactions(transactions, { categoryId: null, searchText: "ristorante" });
+    expect(result).toEqual([]);
+  });
+
+  it("ignora spazi bianchi attorno al testo di ricerca", () => {
+    const transactions = [makeTransaction({ id: "t1", description: "Cinema" })];
+    const result = filterTransactions(transactions, { categoryId: null, searchText: "  cinema  " });
+    expect(result.map((t) => t.id)).toEqual(["t1"]);
   });
 });

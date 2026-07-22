@@ -5,10 +5,10 @@
 import * as React from "react";
 import {
   AddTransactionForm,
-  CategoryBreakdown,
-  ExpenseCharts,
+  CategoryBreakdownDonut,
   ExpensesKpiCards,
   ExpensesPeriodSelector,
+  ExpenseTrendChart,
   TransactionRow,
 } from "@/components/domain/expenses";
 import { Card } from "@/components/ui/card";
@@ -128,15 +128,10 @@ export default function SpesePage() {
             referenceDate={referenceDate}
           />
 
-          <CategoryBreakdown
+          <CategoryBreakdownDonut
             categoryAmounts={computeCategoryBreakdown(safeTransactions, safeCategories, period, referenceDate)}
-            budgets={safeBudgets}
-            currency={currency}
-          />
-
-          <ExpenseCharts
             fixedVsVariable={computeFixedVsVariable(safeTransactions, safeCategories, period, referenceDate)}
-            monthlyTrend={compute6MonthTrend(safeTransactions, referenceDate)}
+            budgets={safeBudgets}
             currency={currency}
           />
 
@@ -173,6 +168,11 @@ export default function SpesePage() {
             )}
             <AddTransactionForm categories={safeCategories} currency={currency} />
           </Card>
+
+          <ExpenseTrendChart
+            monthlyTrend={compute6MonthTrend(safeTransactions, referenceDate)}
+            currency={currency}
+          />
         </>
       )}
     </div>

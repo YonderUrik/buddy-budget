@@ -122,7 +122,10 @@ export default function SpesePage() {
       <ExpensesFilterBar
         categories={safeCategories}
         categoryId={categoryFilter}
-        onCategoryChange={setCategoryFilter}
+        onCategoryChange={(categoryId) => {
+          setCategoryFilter(categoryId);
+          setShowUncategorizedOnly(false);
+        }}
         searchText={searchText}
         onSearchTextChange={setSearchText}
       />

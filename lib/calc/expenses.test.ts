@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import {
   computeKpis,
   computeSummary,
@@ -12,6 +12,7 @@ import {
   computeFixedVsVariable,
   compute6MonthTrend,
   filterTransactions,
+  computeCategoryMonthlyTrend,
   shiftReferenceDate,
   formatPeriodLabel,
 } from "./expenses";
@@ -91,7 +92,7 @@ describe("getPeriodRange", () => {
     expect(range.to).toEqual(new Date(2026, 5, 30));
   });
 
-  it("settimana copre esattamente 7 giorni a partire da un lunedì e contiene referenceDate", () => {
+  it("settimana copre esattamente 7 giorni a partire da un lunedÃ¬ e contiene referenceDate", () => {
     const referenceDate = new Date(2026, 6, 15);
     const range = getPeriodRange("settimana", referenceDate);
     const spanDays = Math.round((range.to.getTime() - range.from.getTime()) / 86400000);
@@ -103,13 +104,13 @@ describe("getPeriodRange", () => {
 });
 
 describe("getPreviousPeriodRange", () => {
-  it("mese precedente è il mese calendariale immediatamente prima", () => {
+  it("mese precedente Ã¨ il mese calendariale immediatamente prima", () => {
     const range = getPreviousPeriodRange("mese", new Date(2026, 1, 10));
     expect(range.from).toEqual(new Date(2026, 0, 1));
     expect(range.to).toEqual(new Date(2026, 0, 31));
   });
 
-  it("anno precedente è l'anno solare immediatamente prima", () => {
+  it("anno precedente Ã¨ l'anno solare immediatamente prima", () => {
     const range = getPreviousPeriodRange("anno", new Date(2026, 5, 1));
     expect(range.from).toEqual(new Date(2025, 0, 1));
     expect(range.to).toEqual(new Date(2025, 11, 31));
@@ -174,8 +175,8 @@ describe("computeKpis", () => {
   });
 
   it("un periodo passato (mese concluso) conta tutti i giorni come trascorsi, indipendentemente da 'oggi'", () => {
-    const referenceDate = new Date(2026, 1, 15); // vista: metà febbraio 2026
-    const today = new Date(2026, 3, 10); // oggi reale: aprile 2026, febbraio è già concluso
+    const referenceDate = new Date(2026, 1, 15); // vista: metÃ  febbraio 2026
+    const today = new Date(2026, 3, 10); // oggi reale: aprile 2026, febbraio Ã¨ giÃ  concluso
     const transactions = [
       makeTransaction({ date: "2026-02-05", amount: "-100.00" }),
       makeTransaction({ date: "2026-02-28", amount: "-180.00" }), // fine mese: futuro rispetto a referenceDate, passato rispetto a today
@@ -330,26 +331,86 @@ describe("formatPeriodLabel", () => {
 
   it("settimana: giorno-giorno mese abbreviato, stesso anno, senza spazi attorno al trattino", () => {
     const range = getPeriodRange("settimana", new Date(2026, 6, 15));
-    expect(formatPeriodLabel("settimana", range)).toBe("13–19 lug");
+    expect(formatPeriodLabel("settimana", range)).toBe("13â€“19 lug");
   });
 
   it("settimana: giorno-mese - giorno-mese, stesso anno ma mesi diversi", () => {
     const range = getPeriodRange("settimana", new Date(2026, 6, 29));
-    expect(formatPeriodLabel("settimana", range)).toBe("27 lug – 2 ago");
+    expect(formatPeriodLabel("settimana", range)).toBe("27 lug â€“ 2 ago");
   });
 
   it("settimana: entrambe le date complete a cavallo d'anno", () => {
     const range = { from: new Date(2026, 11, 28), to: new Date(2027, 0, 3) };
-    expect(formatPeriodLabel("settimana", range)).toBe("28 dic 2026 – 3 gen 2027");
+    expect(formatPeriodLabel("settimana", range)).toBe("28 dic 2026 â€“ 3 gen 2027");
   });
 
   it("3mesi: mese abbreviato - mese abbreviato + anno, stesso anno", () => {
     const range = getPeriodRange("3mesi", new Date(2026, 6, 15));
-    expect(formatPeriodLabel("3mesi", range)).toBe("Mag – Lug 2026");
+    expect(formatPeriodLabel("3mesi", range)).toBe("Mag â€“ Lug 2026");
   });
 
   it("3mesi: entrambi i mesi con anno, a cavallo d'anno", () => {
     const range = getPeriodRange("3mesi", new Date(2026, 0, 15));
-    expect(formatPeriodLabel("3mesi", range)).toBe("Nov 2025 – Gen 2026");
+    expect(formatPeriodLabel("3mesi", range)).toBe("Nov 2025 â€“ Gen 2026");
   });
 });
+describe("computeCategoryMonthlyTrend", () => {
+  it("assegna alle top `topCount` categorie una serie propria, ordinate per spesa totale semestre discendente, e aggrega il resto in 'altro'", () => {
+    const referenceDate = new Date(2026, 6, 15); // luglio 2026
+    const categories = [
+      makeCategory({ id: "cat-a", name: "A", color: "blue" }),
+      makeCategory({ id: "cat-b", name: "B", color: "green" }),
+      makeCategory({ id: "cat-c", name: "C", color: "red" }),
+    ];
+    const transactions = [
+      makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-300.00" }),
+      makeTransaction({ categoryId: "cat-b", date: "2026-07-05", amount: "-200.00" }),
+      makeTransaction({ categoryId: "cat-c", date: "2026-07-06", amount: "-50.00" }),
+    ];
+
+    const trend = computeCategoryMonthlyTrend(transactions, categories, referenceDate, 2);
+
+    expect(trend.series).toEqual([
+      { key: "cat-a", name: "A", color: "blue" },
+      { key: "cat-b", name: "B", color: "green" },
+      { key: "altro", name: "Altro", color: "altro" },
+    ]);
+    expect(trend.months).toHaveLength(6);
+
+    const feb = trend.months.find((m) => m.month === 1);
+    expect(feb?.amounts).toEqual({ "cat-a": 300, "cat-b": 0, altro: 0 });
+
+    const jul = trend.months.find((m) => m.month === 6);
+    expect(jul?.amounts).toEqual({ "cat-a": 0, "cat-b": 200, altro: 50 });
+  });
+
+  it("omette la serie 'altro' quando non ci sono categorie oltre le top N con spesa positiva", () => {
+    const referenceDate = new Date(2026, 6, 15);
+    const categories = [
+      makeCategory({ id: "cat-a", name: "A", color: "blue" }),
+      makeCategory({ id: "cat-b", name: "B", color: "green" }),
+    ];
+    const transactions = [
+      makeTransaction({ categoryId: "cat-a", date: "2026-07-05", amount: "-100.00" }),
+      makeTransaction({ categoryId: "cat-b", date: "2026-07-06", amount: "-50.00" }),
+    ];
+
+    const trend = computeCategoryMonthlyTrend(transactions, categories, referenceDate);
+
+    expect(trend.series).toEqual([
+      { key: "cat-a", name: "A", color: "blue" },
+      { key: "cat-b", name: "B", color: "green" },
+    ]);
+    expect(trend.months.every((m) => !("altro" in m.amounts))).toBe(true);
+  });
+
+  it("con nessuna categoria ritorna 6 mesi vuoti e nessuna serie", () => {
+    const referenceDate = new Date(2026, 6, 15);
+    const trend = computeCategoryMonthlyTrend([], [], referenceDate);
+
+    expect(trend.series).toEqual([]);
+    expect(trend.months).toHaveLength(6);
+    expect(trend.months.every((m) => Object.keys(m.amounts).length === 0)).toBe(true);
+  });
+});
+

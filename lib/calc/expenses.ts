@@ -114,10 +114,15 @@ export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): stri
     case "anno":
       return `${range.from.getFullYear()}`;
     case "settimana": {
-      if (sameYear) {
+      const sameMonth = sameYear && range.from.getMonth() === range.to.getMonth();
+      if (sameMonth) {
         const day = new Intl.DateTimeFormat("it-IT", { day: "numeric" }).format(range.from);
         const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.to);
         return `${day}–${dayMonth}`;
+      }
+      if (sameYear) {
+        const dayMonthFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
+        return `${dayMonthFormat.format(range.from)} – ${dayMonthFormat.format(range.to)}`;
       }
       const fullFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
       return `${fullFormat.format(range.from)} – ${fullFormat.format(range.to)}`;

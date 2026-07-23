@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { CATEGORY_COLORS, CATEGORY_ICONS, createCategorySchema, updateCategorySchema } from "./categories";
 
 describe("CATEGORY_ICONS", () => {
-  it("ha 28 icone", () => {
-    expect(CATEGORY_ICONS).toHaveLength(28);
+  it("ha 60 icone", () => {
+    expect(CATEGORY_ICONS).toHaveLength(60);
   });
 
   it("non ha duplicati", () => {

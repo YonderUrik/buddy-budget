@@ -1,4 +1,4 @@
-import type { Transaction } from "@/lib/db/schema/transactions";
+﻿import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { Category } from "@/lib/db/schema/categories";
 
@@ -85,7 +85,7 @@ export function getPreviousPeriodRange(period: ExpensePeriod, referenceDate: Dat
   return getPeriodRange(period, shiftedReference);
 }
 
-/** Sposta referenceDate di un'unità di periodo (avanti se direction=1, indietro se direction=-1). */
+/** Sposta referenceDate di un'unitÃ  di periodo (avanti se direction=1, indietro se direction=-1). */
 export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date {
   switch (period) {
     case "settimana":
@@ -118,22 +118,22 @@ export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): stri
       if (sameMonth) {
         const day = new Intl.DateTimeFormat("it-IT", { day: "numeric" }).format(range.from);
         const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.to);
-        return `${day}–${dayMonth}`;
+        return `${day}â€“${dayMonth}`;
       }
       if (sameYear) {
         const dayMonthFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
-        return `${dayMonthFormat.format(range.from)} – ${dayMonthFormat.format(range.to)}`;
+        return `${dayMonthFormat.format(range.from)} â€“ ${dayMonthFormat.format(range.to)}`;
       }
       const fullFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
-      return `${fullFormat.format(range.from)} – ${fullFormat.format(range.to)}`;
+      return `${fullFormat.format(range.from)} â€“ ${fullFormat.format(range.to)}`;
     }
     case "3mesi": {
       const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
       if (sameYear) {
         const monthOnly = new Intl.DateTimeFormat("it-IT", { month: "short" }).format(range.from);
-        return `${capitalize(monthOnly)} – ${capitalize(monthYearFormat.format(range.to))}`;
+        return `${capitalize(monthOnly)} â€“ ${capitalize(monthYearFormat.format(range.to))}`;
       }
-      return `${capitalize(monthYearFormat.format(range.from))} – ${capitalize(monthYearFormat.format(range.to))}`;
+      return `${capitalize(monthYearFormat.format(range.from))} â€“ ${capitalize(monthYearFormat.format(range.to))}`;
     }
   }
 }
@@ -196,10 +196,10 @@ export interface ExpensesKpis {
 
 /**
  * KPI principali di Spese per il periodo selezionato. "Speso" e "Media giornaliera" contano solo i
- * giorni del periodo già trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
+ * giorni del periodo giÃ  trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
  * "giorni rimasti" guardano invece all'intero periodo calendariale (anche i giorni futuri).
- * `referenceDate` è il periodo che si sta guardando (può essere passato o presente, mai futuro);
- * `today` è sempre la data reale, indipendente da quale periodo si sta navigando.
+ * `referenceDate` Ã¨ il periodo che si sta guardando (puÃ² essere passato o presente, mai futuro);
+ * `today` Ã¨ sempre la data reale, indipendente da quale periodo si sta navigando.
  */
 export function computeKpis(
   transactions: Transaction[],
@@ -321,6 +321,91 @@ export function compute6MonthTrend(transactions: Transaction[], referenceDate: D
   }
   return months;
 }
+export interface MonthlyCategoryTotal {
+  year: number;
+  month: number;
+  label: string;
+  amounts: Record<string, number>;
+}
+
+export interface CategoryTrendSeries {
+  key: string;
+  name: string;
+  color: string;
+}
+
+export interface CategoryMonthlyTrend {
+  months: MonthlyCategoryTotal[];
+  series: CategoryTrendSeries[];
+}
+
+const OTHER_TREND_SERIES_KEY = "altro";
+
+/**
+ * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie
+ * (per spesa totale sul semestre) come serie proprie e il resto aggregato in una serie "Altro".
+ * Il ranking è calcolato una sola volta sull'intero semestre, cosà che ogni categoria mantenga
+ * sempre lo stesso segmento/colore da un mese all'altro.
+ */
+export function computeCategoryMonthlyTrend(
+  transactions: Transaction[],
+  categories: Category[],
+  referenceDate: Date,
+  topCount = 6
+): CategoryMonthlyTrend {
+  const monthRanges: { year: number; month: number; label: string; range: DateRange }[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = addMonths(referenceDate, -i);
+    monthRanges.push({
+      year: monthDate.getFullYear(),
+      month: monthDate.getMonth(),
+      label: MONTH_LABELS[monthDate.getMonth()],
+      range: { from: startOfMonth(monthDate), to: endOfMonth(monthDate) },
+    });
+  }
+
+  const perMonthByCategory = new Map<string, number[]>();
+  const totalByCategory = new Map<string, number>();
+
+  categories.forEach((category) => {
+    const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
+    const perMonth = monthRanges.map((m) => computeSummary(categoryTransactions, m.range).speseEffettive);
+    perMonthByCategory.set(category.id, perMonth);
+    totalByCategory.set(category.id, perMonth.reduce((sum, v) => sum + v, 0));
+  });
+
+  const rankedCategories = [...categories].sort(
+    (a, b) => (totalByCategory.get(b.id) ?? 0) - (totalByCategory.get(a.id) ?? 0)
+  );
+  const topCategories = rankedCategories.slice(0, topCount);
+  const restCategories = rankedCategories.slice(topCount);
+  const hasOther = restCategories.some((category) => (totalByCategory.get(category.id) ?? 0) > 0);
+
+  const series: CategoryTrendSeries[] = topCategories.map((category) => ({
+    key: category.id,
+    name: category.name,
+    color: category.color,
+  }));
+  if (hasOther) {
+    series.push({ key: OTHER_TREND_SERIES_KEY, name: "Altro", color: OTHER_TREND_SERIES_KEY });
+  }
+
+  const months: MonthlyCategoryTotal[] = monthRanges.map((m, index) => {
+    const amounts: Record<string, number> = {};
+    topCategories.forEach((category) => {
+      amounts[category.id] = perMonthByCategory.get(category.id)?.[index] ?? 0;
+    });
+    if (hasOther) {
+      amounts[OTHER_TREND_SERIES_KEY] = restCategories.reduce(
+        (sum, category) => sum + (perMonthByCategory.get(category.id)?.[index] ?? 0),
+        0
+      );
+    }
+    return { year: m.year, month: m.month, label: m.label, amounts };
+  });
+
+  return { months, series };
+}
 
 export interface TransactionFilter {
   categoryId: string | null;
@@ -339,3 +424,4 @@ export function filterTransactions(
     return true;
   });
 }
+

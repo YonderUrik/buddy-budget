@@ -282,6 +282,11 @@ describe("formatPeriodLabel", () => {
     expect(formatPeriodLabel("settimana", range)).toBe("13–19 lug");
   });
 
+  it("settimana: giorno-mese - giorno-mese, stesso anno ma mesi diversi", () => {
+    const range = getPeriodRange("settimana", new Date(2026, 6, 29));
+    expect(formatPeriodLabel("settimana", range)).toBe("27 lug – 2 ago");
+  });
+
   it("settimana: entrambe le date complete a cavallo d'anno", () => {
     const range = { from: new Date(2026, 11, 28), to: new Date(2027, 0, 3) };
     expect(formatPeriodLabel("settimana", range)).toBe("28 dic 2026 – 3 gen 2027");

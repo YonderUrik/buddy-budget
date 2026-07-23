@@ -1,7 +1,13 @@
 /** Riga di KPI per la schermata Spese: Speso nel periodo, Budget rimanente, Media giornaliera. */
 
 import { StatCard } from "@/components/domain/stat-card";
-import { computeKpis, type ExpensePeriod } from "@/lib/calc/expenses";
+import {
+  computeKpis,
+  formatPeriodLabel,
+  getPreviousPeriodRange,
+  type ExpensePeriod,
+} from "@/lib/calc/expenses";
+import { formatCurrency } from "@/lib/format";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
 
@@ -25,10 +31,20 @@ export function ExpensesKpiCards({
   today,
 }: ExpensesKpiCardsProps) {
   const kpis = computeKpis(transactions, budgets, period, referenceDate, today);
+  const previousRange = getPreviousPeriodRange(period, referenceDate);
+  const previousLabel = formatPeriodLabel(period, previousRange);
+  const delta = kpis.mediaGiornaliera - kpis.mediaGiornalieraPeriodoPrecedente;
+  const deltaText = formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 2 });
+  const percentText =
+    kpis.mediaGiornalieraPeriodoPrecedente > 0
+      ? ` (${Math.round((Math.abs(delta) / kpis.mediaGiornalieraPeriodoPrecedente) * 100)}%)`
+      : "";
   const trendLabel =
-    kpis.mediaGiornaliera <= kpis.mediaGiornalieraPeriodoPrecedente
-      ? "In calo rispetto al periodo precedente"
-      : "In aumento rispetto al periodo precedente";
+    delta === 0
+      ? `Invariata rispetto a ${previousLabel}`
+      : delta < 0
+        ? `In calo di ${deltaText}${percentText} rispetto a ${previousLabel}`
+        : `In aumento di ${deltaText}${percentText} rispetto a ${previousLabel}`;
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

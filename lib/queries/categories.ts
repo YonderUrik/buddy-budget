@@ -79,3 +79,21 @@ export function useDeleteCategoryMutation() {
     },
   });
 }
+
+/** Ridistribuisce automaticamente i colori delle categorie non-fallback ed invalida la lista al successo. */
+export function useDistributeColorsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/categories/distribute-colors", { method: "POST" });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error ?? "Impossibile distribuire i colori");
+      }
+      return response.json() as Promise<Category[]>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+    },
+  });
+}

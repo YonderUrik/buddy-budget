@@ -18,7 +18,8 @@ export function parseDateOnly(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
-function startOfDay(date: Date): Date {
+/** Annulla la componente oraria di una Date, mantenendo solo l'anno/mese/giorno locale (mezzanotte). */
+export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
@@ -84,6 +85,59 @@ export function getPreviousPeriodRange(period: ExpensePeriod, referenceDate: Dat
   return getPeriodRange(period, shiftedReference);
 }
 
+/** Sposta referenceDate di un'unità di periodo (avanti se direction=1, indietro se direction=-1). */
+export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date {
+  switch (period) {
+    case "settimana":
+      return addDays(referenceDate, 7 * direction);
+    case "mese":
+      return addMonths(referenceDate, 1 * direction);
+    case "3mesi":
+      return addMonths(referenceDate, 3 * direction);
+    case "anno":
+      return new Date(referenceDate.getFullYear() + direction, referenceDate.getMonth(), referenceDate.getDate());
+  }
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** Etichetta leggibile del periodo mostrato in Spese, formattata secondo il tipo (mese/settimana/3mesi/anno). */
+export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): string {
+  const sameYear = range.from.getFullYear() === range.to.getFullYear();
+  switch (period) {
+    case "mese": {
+      const monthName = new Intl.DateTimeFormat("it-IT", { month: "long" }).format(range.from);
+      return `${capitalize(monthName)} ${range.from.getFullYear()}`;
+    }
+    case "anno":
+      return `${range.from.getFullYear()}`;
+    case "settimana": {
+      const sameMonth = sameYear && range.from.getMonth() === range.to.getMonth();
+      if (sameMonth) {
+        const day = new Intl.DateTimeFormat("it-IT", { day: "numeric" }).format(range.from);
+        const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.to);
+        return `${day}–${dayMonth}`;
+      }
+      if (sameYear) {
+        const dayMonthFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
+        return `${dayMonthFormat.format(range.from)} – ${dayMonthFormat.format(range.to)}`;
+      }
+      const fullFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
+      return `${fullFormat.format(range.from)} – ${fullFormat.format(range.to)}`;
+    }
+    case "3mesi": {
+      const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
+      if (sameYear) {
+        const monthOnly = new Intl.DateTimeFormat("it-IT", { month: "short" }).format(range.from);
+        return `${capitalize(monthOnly)} – ${capitalize(monthYearFormat.format(range.to))}`;
+      }
+      return `${capitalize(monthYearFormat.format(range.from))} – ${capitalize(monthYearFormat.format(range.to))}`;
+    }
+  }
+}
+
 function isWithinRange(date: Date, range: DateRange): boolean {
   const day = startOfDay(date);
   return day.getTime() >= range.from.getTime() && day.getTime() <= range.to.getTime();
@@ -142,24 +196,31 @@ export interface ExpensesKpis {
 
 /**
  * KPI principali di Spese per il periodo selezionato. "Speso" e "Media giornaliera" contano solo i
- * giorni del periodo già trascorsi (fino a referenceDate incluso); "Budget rimanente"/"giorni rimasti"
- * guardano invece all'intero periodo calendariale (anche i giorni futuri).
+ * giorni del periodo già trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
+ * "giorni rimasti" guardano invece all'intero periodo calendariale (anche i giorni futuri).
+ * `referenceDate` è il periodo che si sta guardando (può essere passato o presente, mai futuro);
+ * `today` è sempre la data reale, indipendente da quale periodo si sta navigando.
  */
 export function computeKpis(
   transactions: Transaction[],
   budgets: Budget[],
   period: ExpensePeriod,
-  referenceDate: Date
+  referenceDate: Date,
+  today: Date
 ): ExpensesKpis {
   const range = getPeriodRange(period, referenceDate);
-  const today = startOfDay(referenceDate);
-  const elapsedRange: DateRange = { from: range.from, to: today.getTime() < range.to.getTime() ? today : range.to };
+  const todayStart = startOfDay(today);
+  const clampedToday = todayStart.getTime() < range.from.getTime() ? range.from : todayStart;
+  const elapsedRange: DateRange = {
+    from: range.from,
+    to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
+  };
 
   const { speseEffettive: speso } = computeSummary(transactions, elapsedRange);
 
   const budgetTotale = scaleBudgetForPeriod(totalMonthlyBudget(budgets), period);
   const budgetRimanente = budgetTotale - speso;
-  const giorniRimasti = Math.max(0, daysBetween(today, range.to));
+  const giorniRimasti = Math.max(0, daysBetween(todayStart, range.to));
 
   const elapsedDays = Math.max(1, daysBetween(range.from, elapsedRange.to) + 1);
   const mediaGiornaliera = speso / elapsedDays;
@@ -186,11 +247,16 @@ export function computeCategoryBreakdown(
   transactions: Transaction[],
   categories: Category[],
   period: ExpensePeriod,
-  referenceDate: Date
+  referenceDate: Date,
+  today: Date
 ): CategoryAmount[] {
   const range = getPeriodRange(period, referenceDate);
-  const today = startOfDay(referenceDate);
-  const elapsedRange: DateRange = { from: range.from, to: today.getTime() < range.to.getTime() ? today : range.to };
+  const todayStart = startOfDay(today);
+  const clampedToday = todayStart.getTime() < range.from.getTime() ? range.from : todayStart;
+  const elapsedRange: DateRange = {
+    from: range.from,
+    to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
+  };
 
   return categories.map((category) => {
     const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
@@ -216,9 +282,10 @@ export function computeFixedVsVariable(
   transactions: Transaction[],
   categories: Category[],
   period: ExpensePeriod,
-  referenceDate: Date
+  referenceDate: Date,
+  today: Date
 ): FixedVsVariable {
-  const breakdown = computeCategoryBreakdown(transactions, categories, period, referenceDate);
+  const breakdown = computeCategoryBreakdown(transactions, categories, period, referenceDate, today);
   return breakdown.reduce(
     (totals, entry) => {
       totals[entry.type] += entry.amount;
@@ -235,7 +302,8 @@ export interface MonthlyTotal {
   total: number;
 }
 
-const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+/** Etichette abbreviate mensili in italiano, usate nel grafico di andamento su 6 mesi. */
+export const MONTH_LABELS = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 
 /** Spesa effettiva totale per ciascuno degli ultimi 6 mesi calendariali (incluso quello corrente), indipendente dal periodo selezionato. */
 export function compute6MonthTrend(transactions: Transaction[], referenceDate: Date): MonthlyTotal[] {

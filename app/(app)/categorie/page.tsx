@@ -2,7 +2,7 @@
 
 /** Pagina Categorie: elenco categorie dell'utente con gestione completa (crea/rinomina/elimina/icona/colore). */
 
-import { AddCategoryForm, CategoryRow } from "@/components/domain/categories";
+import { AddCategoryForm, CategoryRow, DistributeColorsButton } from "@/components/domain/categories";
 import { Card } from "@/components/ui/card";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 
@@ -19,12 +19,15 @@ export default function CategoriePage() {
             Gestisci le categorie di spesa: nome, tipo, icona e colore.
           </p>
         </div>
-        <a
-          href="/spese"
-          className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
-        >
-          Torna a Spese
-        </a>
+        <div className="flex items-center gap-3">
+          <DistributeColorsButton />
+          <a
+            href="/spese"
+            className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          >
+            Torna a Spese
+          </a>
+        </div>
       </div>
 
       {isLoading ? (

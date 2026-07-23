@@ -43,7 +43,7 @@ describe("createCategorySchema", () => {
   });
 
   it("rifiuta un colore fuori enum", () => {
-    const result = createCategorySchema.safeParse({ name: "Palestra", type: "variabile", color: "pink" });
+    const result = createCategorySchema.safeParse({ name: "Palestra", type: "variabile", color: "brown" });
     expect(result.success).toBe(false);
   });
 });
@@ -61,7 +61,7 @@ describe("updateCategorySchema", () => {
 });
 
 describe("CATEGORY_COLORS", () => {
-  it("ha 8 colori (stessa palette dei conti)", () => {
-    expect(CATEGORY_COLORS).toHaveLength(8);
+  it("ha 48 colori (stessa palette dei conti)", () => {
+    expect(CATEGORY_COLORS).toHaveLength(48);
   });
 });

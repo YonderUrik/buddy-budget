@@ -10,6 +10,12 @@ export const CATEGORY_ICONS = [
   "music", "heart", "stethoscope", "dumbbell", "graduation-cap", "baby",
   "paw-print", "shirt", "scissors", "gift", "briefcase", "wrench",
   "package", "help-circle",
+  "wallet", "credit-card", "piggy-bank", "banknote", "landmark", "receipt",
+  "trending-up", "coins", "flame", "sofa", "hammer", "paintbrush",
+  "laptop", "headphones", "camera", "printer", "train-front", "ship",
+  "map-pin", "luggage", "coffee", "pizza", "wine", "cake", "pill",
+  "activity", "glasses", "book-open", "palette", "bike", "calculator",
+  "watch",
 ] as const;
 export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 

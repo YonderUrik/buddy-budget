@@ -5,8 +5,9 @@
 import * as React from "react";
 import { Popover } from "@base-ui/react/popover";
 import { cn } from "@/lib/utils";
-import { ACCOUNT_COLORS, ACCOUNT_ICONS } from "@/lib/validation/accounts";
+import { ACCOUNT_ICONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
+import { SWATCH_BASE_COLORS } from "@/lib/validation/shared-colors";
 import { ICON_MAP } from "./account-avatar";
 import { COLOR_DOT } from "@/components/domain/shared/color-swatches";
 
@@ -33,7 +34,7 @@ export function AccountIconColorPicker({
               Colore
             </p>
             <div className="mb-4 flex gap-1.5">
-              {ACCOUNT_COLORS.map((color) => (
+              {SWATCH_BASE_COLORS.map((color) => (
                 <button
                   key={color}
                   type="button"

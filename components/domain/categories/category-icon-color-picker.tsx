@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { COLOR_DOT } from "@/components/domain/shared/color-swatches";
 import { CATEGORY_ICONS } from "@/lib/validation/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
-import { SWATCH_COLORS } from "@/lib/validation/shared-colors";
+import { SWATCH_BASE_COLORS } from "@/lib/validation/shared-colors";
 import { ICON_MAP } from "./category-avatar";
 
 export interface CategoryIconColorPickerProps {
@@ -28,7 +28,7 @@ export function CategoryIconColorPicker({ value, onChange, children }: CategoryI
           <Popover.Popup className="z-[60] w-64 rounded-xl border border-border bg-popover p-3 shadow-lg outline-none">
             <p className="mb-2 text-xs font-medium text-muted-foreground">Colore</p>
             <div className="mb-4 flex gap-1.5">
-              {SWATCH_COLORS.map((color) => (
+              {SWATCH_BASE_COLORS.map((color) => (
                 <button
                   key={color}
                   type="button"

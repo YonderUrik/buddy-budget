@@ -12,3 +12,4 @@ export { CategoryRow } from "./category-row";
 export type { CategoryRowProps } from "./category-row";
 export { AddCategoryForm } from "./add-category-form";
 export type { AddCategoryFormProps } from "./add-category-form";
+export { DistributeColorsButton } from "./distribute-colors-button";

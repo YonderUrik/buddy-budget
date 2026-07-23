@@ -12,6 +12,8 @@ import {
   computeFixedVsVariable,
   compute6MonthTrend,
   filterTransactions,
+  shiftReferenceDate,
+  formatPeriodLabel,
 } from "./expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
@@ -161,7 +163,7 @@ describe("computeKpis", () => {
     ];
     const budgets = [makeBudget({ monthlyAmount: "700.00" })];
 
-    const kpis = computeKpis(transactions, budgets, "mese", referenceDate);
+    const kpis = computeKpis(transactions, budgets, "mese", referenceDate, referenceDate);
 
     expect(kpis.speso).toBe(400);
     expect(kpis.budgetTotale).toBe(700);
@@ -169,6 +171,22 @@ describe("computeKpis", () => {
     expect(kpis.giorniRimasti).toBe(13);
     expect(kpis.mediaGiornaliera).toBeCloseTo(400 / 15, 5);
     expect(kpis.mediaGiornalieraPeriodoPrecedente).toBe(10);
+  });
+
+  it("un periodo passato (mese concluso) conta tutti i giorni come trascorsi, indipendentemente da 'oggi'", () => {
+    const referenceDate = new Date(2026, 1, 15); // vista: metà febbraio 2026
+    const today = new Date(2026, 3, 10); // oggi reale: aprile 2026, febbraio è già concluso
+    const transactions = [
+      makeTransaction({ date: "2026-02-05", amount: "-100.00" }),
+      makeTransaction({ date: "2026-02-28", amount: "-180.00" }), // fine mese: futuro rispetto a referenceDate, passato rispetto a today
+    ];
+    const budgets = [makeBudget({ monthlyAmount: "280.00" })];
+
+    const kpis = computeKpis(transactions, budgets, "mese", referenceDate, today);
+
+    expect(kpis.speso).toBe(280);
+    expect(kpis.giorniRimasti).toBe(0);
+    expect(kpis.mediaGiornaliera).toBeCloseTo(280 / 28, 5);
   });
 });
 
@@ -182,7 +200,7 @@ describe("computeCategoryBreakdown", () => {
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
       makeTransaction({ categoryId: "cat-a", date: "2026-02-06", amount: "-40.00", excludedAmount: "-10.00" }),
     ];
-    const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15));
+    const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
 
     expect(breakdown).toEqual([
       { categoryId: "cat-a", name: "Spesa alimentare", type: "variabile", amount: 90, color: "slate", icon: "package" },
@@ -201,7 +219,7 @@ describe("computeFixedVsVariable", () => {
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
       makeTransaction({ categoryId: "cat-b", date: "2026-02-06", amount: "-500.00" }),
     ];
-    const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15));
+    const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
     expect(result).toEqual({ fissa: 500, variabile: 60 });
   });
 });
@@ -270,5 +288,68 @@ describe("filterTransactions", () => {
     const transactions = [makeTransaction({ id: "t1", description: "Cinema" })];
     const result = filterTransactions(transactions, { categoryId: null, searchText: "  cinema  " });
     expect(result.map((t) => t.id)).toEqual(["t1"]);
+  });
+});
+
+describe("shiftReferenceDate", () => {
+  it("settimana sposta di 7 giorni avanti e indietro", () => {
+    const referenceDate = new Date(2026, 6, 15);
+    expect(shiftReferenceDate("settimana", referenceDate, 1)).toEqual(new Date(2026, 6, 22));
+    expect(shiftReferenceDate("settimana", referenceDate, -1)).toEqual(new Date(2026, 6, 8));
+  });
+
+  it("mese sposta di un mese avanti e indietro, attraversando il cambio anno", () => {
+    const referenceDate = new Date(2026, 0, 15); // gennaio 2026
+    expect(shiftReferenceDate("mese", referenceDate, 1)).toEqual(new Date(2026, 1, 15));
+    expect(shiftReferenceDate("mese", referenceDate, -1)).toEqual(new Date(2025, 11, 15));
+  });
+
+  it("3mesi sposta di 3 mesi avanti e indietro", () => {
+    const referenceDate = new Date(2026, 5, 15); // giugno 2026
+    expect(shiftReferenceDate("3mesi", referenceDate, 1)).toEqual(new Date(2026, 8, 15));
+    expect(shiftReferenceDate("3mesi", referenceDate, -1)).toEqual(new Date(2026, 2, 15));
+  });
+
+  it("anno sposta di un anno avanti e indietro", () => {
+    const referenceDate = new Date(2026, 5, 15);
+    expect(shiftReferenceDate("anno", referenceDate, 1)).toEqual(new Date(2027, 5, 15));
+    expect(shiftReferenceDate("anno", referenceDate, -1)).toEqual(new Date(2025, 5, 15));
+  });
+});
+
+describe("formatPeriodLabel", () => {
+  it("mese: nome mese esteso capitalizzato + anno", () => {
+    const range = getPeriodRange("mese", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("mese", range)).toBe("Luglio 2026");
+  });
+
+  it("anno: solo l'anno", () => {
+    const range = getPeriodRange("anno", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("anno", range)).toBe("2026");
+  });
+
+  it("settimana: giorno-giorno mese abbreviato, stesso anno, senza spazi attorno al trattino", () => {
+    const range = getPeriodRange("settimana", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("settimana", range)).toBe("13–19 lug");
+  });
+
+  it("settimana: giorno-mese - giorno-mese, stesso anno ma mesi diversi", () => {
+    const range = getPeriodRange("settimana", new Date(2026, 6, 29));
+    expect(formatPeriodLabel("settimana", range)).toBe("27 lug – 2 ago");
+  });
+
+  it("settimana: entrambe le date complete a cavallo d'anno", () => {
+    const range = { from: new Date(2026, 11, 28), to: new Date(2027, 0, 3) };
+    expect(formatPeriodLabel("settimana", range)).toBe("28 dic 2026 – 3 gen 2027");
+  });
+
+  it("3mesi: mese abbreviato - mese abbreviato + anno, stesso anno", () => {
+    const range = getPeriodRange("3mesi", new Date(2026, 6, 15));
+    expect(formatPeriodLabel("3mesi", range)).toBe("Mag – Lug 2026");
+  });
+
+  it("3mesi: entrambi i mesi con anno, a cavallo d'anno", () => {
+    const range = getPeriodRange("3mesi", new Date(2026, 0, 15));
+    expect(formatPeriodLabel("3mesi", range)).toBe("Nov 2025 – Gen 2026");
   });
 });

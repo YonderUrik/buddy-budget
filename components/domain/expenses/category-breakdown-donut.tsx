@@ -20,6 +20,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } f
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/format";
 import { useUpsertBudgetMutation } from "@/lib/queries/budgets";
+import { cn } from "@/lib/utils";
 import type { CategoryAmount, FixedVsVariable } from "@/lib/calc/expenses";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
@@ -117,6 +118,31 @@ export function CategoryBreakdownDonut({
   const sortedEntries = sortCategoryAmounts(categoryAmounts);
   const totalSpeso = categoryAmounts.reduce((sum, entry) => sum + entry.amount, 0);
 
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollUp, setCanScrollUp] = React.useState(false);
+  const [canScrollDown, setCanScrollDown] = React.useState(false);
+
+  const checkScroll = React.useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    setCanScrollUp(scrollTop > 2);
+    setCanScrollDown(scrollTop + clientHeight < scrollHeight - 2);
+  }, []);
+
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    const observer = new ResizeObserver(checkScroll);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      observer.disconnect();
+    };
+  }, [checkScroll, sortedEntries.length]);
+
   const innerData = [
     { key: "fissa", label: TYPE_CONFIG.fissa.label, value: fixedVsVariable.fissa, fill: "var(--color-fissa)" },
     {
@@ -169,28 +195,50 @@ export function CategoryBreakdownDonut({
           </PieChart>
         </ChartContainer>
 
-        <div className="max-h-56 divide-y divide-border overflow-y-auto">
-          {sortedEntries.map((entry) => {
-            const budgetAmount = budgetFor(entry.categoryId);
-            const { saturazionePct, quotaPct } = computeBudgetStats(entry.amount, budgetAmount, totalSpeso);
-            return (
-              <CategoryLegendRow
-                key={entry.categoryId}
-                entry={entry}
-                budgetAmount={budgetAmount}
-                saturazionePct={saturazionePct}
-                quotaPct={quotaPct}
-                currency={currency}
-                isSaving={pendingCategoryId === entry.categoryId}
-                hasError={errorCategoryId === entry.categoryId}
-                onCommitBudget={(raw) => commitBudget(entry.categoryId, raw)}
-              />
-            );
-          })}
+        <div className="relative min-w-0">
+          {/* Indicatori gradient fade: segnalano all'utente che la lista continua sopra/sotto */}
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute top-0 inset-x-0 z-10 h-6 bg-gradient-to-b from-card to-transparent transition-opacity duration-200",
+              canScrollUp ? "opacity-100" : "opacity-0"
+            )}
+          />
+          <div
+            aria-hidden="true"
+            className={cn(
+              "pointer-events-none absolute bottom-0 inset-x-0 z-10 h-8 bg-gradient-to-t from-card to-transparent transition-opacity duration-200",
+              canScrollDown ? "opacity-100" : "opacity-0"
+            )}
+          />
+
+          <div
+            ref={scrollRef}
+            className="max-h-56 divide-y divide-border overflow-y-auto pr-1.5 custom-scrollbar"
+          >
+            {sortedEntries.map((entry) => {
+              const budgetAmount = budgetFor(entry.categoryId);
+              const { saturazionePct, quotaPct } = computeBudgetStats(entry.amount, budgetAmount, totalSpeso);
+              return (
+                <CategoryLegendRow
+                  key={entry.categoryId}
+                  entry={entry}
+                  budgetAmount={budgetAmount}
+                  saturazionePct={saturazionePct}
+                  quotaPct={quotaPct}
+                  currency={currency}
+                  isSaving={pendingCategoryId === entry.categoryId}
+                  hasError={errorCategoryId === entry.categoryId}
+                  onCommitBudget={(raw) => commitBudget(entry.categoryId, raw)}
+                />
+              );
+            })}
+          </div>
         </div>
       </CardContent>
     </Card>
   );
+
 }
 
 interface CategoryLegendRowProps {

@@ -8,6 +8,7 @@ import {
   CategoryBreakdownDonut,
   ExpensesKpiCards,
   ExpensesPeriodSelector,
+  ExpensesReferenceNav,
   ExpenseTrendChart,
   TransactionRow,
 } from "@/components/domain/expenses";
@@ -40,7 +41,7 @@ function fetchWindow(referenceDate: Date): { from: string; to: string } {
 export default function SpesePage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
-  const referenceDate = React.useMemo(() => new Date(), []);
+  const [referenceDate, setReferenceDate] = React.useState<Date>(() => new Date());
   const today = React.useMemo(() => new Date(), []);
   const [period, setPeriod] = React.useState<ExpensePeriod>("mese");
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
@@ -74,10 +75,7 @@ export default function SpesePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-medium text-foreground">Spese</h1>
-          <p className="text-sm text-muted-foreground">
-            {new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.from)} –{" "}
-            {new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" }).format(range.to)}
-          </p>
+          <ExpensesReferenceNav period={period} referenceDate={referenceDate} onChange={setReferenceDate} />
         </div>
         <a
           href="/categorie"

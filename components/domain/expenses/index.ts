@@ -14,6 +14,8 @@
 
 export { ExpensesPeriodSelector } from "./expenses-period-selector";
 export type { ExpensesPeriodSelectorProps } from "./expenses-period-selector";
+export { ExpensesReferenceNav } from "./expenses-reference-nav";
+export type { ExpensesReferenceNavProps } from "./expenses-reference-nav";
 export { ExpensesKpiCards } from "./expenses-kpi-cards";
 export type { ExpensesKpiCardsProps } from "./expenses-kpi-cards";
 export { CategoryBreakdownDonut } from "./category-breakdown-donut";

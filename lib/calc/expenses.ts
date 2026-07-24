@@ -1,4 +1,4 @@
-﻿import type { Transaction } from "@/lib/db/schema/transactions";
+import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { Category } from "@/lib/db/schema/categories";
 
@@ -85,7 +85,7 @@ export function getPreviousPeriodRange(period: ExpensePeriod, referenceDate: Dat
   return getPeriodRange(period, shiftedReference);
 }
 
-/** Sposta referenceDate di un'unitÃ  di periodo (avanti se direction=1, indietro se direction=-1). */
+/** Sposta referenceDate di un'unità di periodo (avanti se direction=1, indietro se direction=-1). */
 export function shiftReferenceDate(period: ExpensePeriod, referenceDate: Date, direction: 1 | -1): Date {
   switch (period) {
     case "settimana":
@@ -118,22 +118,22 @@ export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): stri
       if (sameMonth) {
         const day = new Intl.DateTimeFormat("it-IT", { day: "numeric" }).format(range.from);
         const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.to);
-        return `${day}â€“${dayMonth}`;
+        return `${day}–${dayMonth}`;
       }
       if (sameYear) {
         const dayMonthFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
-        return `${dayMonthFormat.format(range.from)} â€“ ${dayMonthFormat.format(range.to)}`;
+        return `${dayMonthFormat.format(range.from)} – ${dayMonthFormat.format(range.to)}`;
       }
       const fullFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
-      return `${fullFormat.format(range.from)} â€“ ${fullFormat.format(range.to)}`;
+      return `${fullFormat.format(range.from)} – ${fullFormat.format(range.to)}`;
     }
     case "3mesi": {
       const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
       if (sameYear) {
         const monthOnly = new Intl.DateTimeFormat("it-IT", { month: "short" }).format(range.from);
-        return `${capitalize(monthOnly)} â€“ ${capitalize(monthYearFormat.format(range.to))}`;
+        return `${capitalize(monthOnly)} – ${capitalize(monthYearFormat.format(range.to))}`;
       }
-      return `${capitalize(monthYearFormat.format(range.from))} â€“ ${capitalize(monthYearFormat.format(range.to))}`;
+      return `${capitalize(monthYearFormat.format(range.from))} – ${capitalize(monthYearFormat.format(range.to))}`;
     }
   }
 }
@@ -196,10 +196,10 @@ export interface ExpensesKpis {
 
 /**
  * KPI principali di Spese per il periodo selezionato. "Speso" e "Media giornaliera" contano solo i
- * giorni del periodo giÃ  trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
+ * giorni del periodo già trascorsi rispetto a `today` (la data reale corrente); "Budget rimanente"/
  * "giorni rimasti" guardano invece all'intero periodo calendariale (anche i giorni futuri).
- * `referenceDate` Ã¨ il periodo che si sta guardando (puÃ² essere passato o presente, mai futuro);
- * `today` Ã¨ sempre la data reale, indipendente da quale periodo si sta navigando.
+ * `referenceDate` è il periodo che si sta guardando (può essere passato o presente, mai futuro);
+ * `today` è sempre la data reale, indipendente da quale periodo si sta navigando.
  */
 export function computeKpis(
   transactions: Transaction[],
@@ -321,6 +321,7 @@ export function compute6MonthTrend(transactions: Transaction[], referenceDate: D
   }
   return months;
 }
+
 export interface MonthlyCategoryTotal {
   year: number;
   month: number;
@@ -344,7 +345,7 @@ const OTHER_TREND_SERIES_KEY = "altro";
 /**
  * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie
  * (per spesa totale sul semestre) come serie proprie e il resto aggregato in una serie "Altro".
- * Il ranking è calcolato una sola volta sull'intero semestre, cosà che ogni categoria mantenga
+ * Il ranking è calcolato una sola volta sull'intero semestre, così che ogni categoria mantenga
  * sempre lo stesso segmento/colore da un mese all'altro.
  */
 export function computeCategoryMonthlyTrend(
@@ -424,4 +425,3 @@ export function filterTransactions(
     return true;
   });
 }
-

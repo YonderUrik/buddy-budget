@@ -322,90 +322,81 @@ export function compute6MonthTrend(transactions: Transaction[], referenceDate: D
   return months;
 }
 
-export interface MonthlyCategoryTotal {
-  year: number;
-  month: number;
-  label: string;
-  amounts: Record<string, number>;
-}
-
-export interface CategoryTrendSeries {
+export interface MonthlyStackSegment {
   key: string;
   name: string;
   color: string;
+  amount: number;
 }
 
-export interface CategoryMonthlyTrend {
-  months: MonthlyCategoryTotal[];
-  series: CategoryTrendSeries[];
+export interface MonthlyCategoryStack {
+  year: number;
+  month: number;
+  label: string;
+  segments: MonthlyStackSegment[];
 }
 
-const OTHER_TREND_SERIES_KEY = "altro";
+const OTHER_STACK_SEGMENT_KEY = "altro";
 
 /**
  * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie
- * (per spesa totale sul semestre) come serie proprie e il resto aggregato in una serie "Altro".
- * Il ranking è calcolato una sola volta sull'intero semestre, così che ogni categoria mantenga
- * sempre lo stesso segmento/colore da un mese all'altro.
+ * e un eventuale segmento "Altro" ricalcolati indipendentemente per ciascun mese (non un ranking
+ * fisso sul totale semestre): la stessa categoria può occupare posizioni diverse, o finire dentro
+ * "Altro", da un mese all'altro. "Altro" è riordinato insieme alle categorie individuali per
+ * importo, non è fisso in coda.
  */
-export function computeCategoryMonthlyTrend(
+export function computeCategoryMonthlyStacks(
   transactions: Transaction[],
   categories: Category[],
   referenceDate: Date,
   topCount = 6
-): CategoryMonthlyTrend {
-  const monthRanges: { year: number; month: number; label: string; range: DateRange }[] = [];
+): MonthlyCategoryStack[] {
+  const months: MonthlyCategoryStack[] = [];
+
   for (let i = 5; i >= 0; i--) {
     const monthDate = addMonths(referenceDate, -i);
-    monthRanges.push({
+    const range: DateRange = { from: startOfMonth(monthDate), to: endOfMonth(monthDate) };
+
+    const categoryAmounts = categories
+      .map((category) => {
+        const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
+        const amount = computeSummary(categoryTransactions, range).speseEffettive;
+        return { category, amount };
+      })
+      .filter((entry) => entry.amount > 0)
+      .sort((a, b) => b.amount - a.amount);
+
+    const topEntries = categoryAmounts.slice(0, topCount);
+    const restEntries = categoryAmounts.slice(topCount);
+
+    const segments: MonthlyStackSegment[] = topEntries.map((entry) => ({
+      key: entry.category.id,
+      name: entry.category.name,
+      color: entry.category.color,
+      amount: entry.amount,
+    }));
+
+    const otherAmount = restEntries.reduce((sum, entry) => sum + entry.amount, 0);
+    if (otherAmount > 0) {
+      segments.push({
+        key: OTHER_STACK_SEGMENT_KEY,
+        name: "Altro",
+        color: OTHER_STACK_SEGMENT_KEY,
+        amount: otherAmount,
+      });
+    }
+
+    segments.sort((a, b) => b.amount - a.amount);
+
+    months.push({
       year: monthDate.getFullYear(),
       month: monthDate.getMonth(),
       label: MONTH_LABELS[monthDate.getMonth()],
-      range: { from: startOfMonth(monthDate), to: endOfMonth(monthDate) },
+      segments,
     });
   }
 
-  const perMonthByCategory = new Map<string, number[]>();
-  const totalByCategory = new Map<string, number>();
-
-  categories.forEach((category) => {
-    const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
-    const perMonth = monthRanges.map((m) => computeSummary(categoryTransactions, m.range).speseEffettive);
-    perMonthByCategory.set(category.id, perMonth);
-    totalByCategory.set(category.id, perMonth.reduce((sum, v) => sum + v, 0));
-  });
-
-  const rankedCategories = [...categories].sort(
-    (a, b) => (totalByCategory.get(b.id) ?? 0) - (totalByCategory.get(a.id) ?? 0)
-  );
-  const topCategories = rankedCategories.slice(0, topCount);
-  const restCategories = rankedCategories.slice(topCount);
-  const hasOther = restCategories.some((category) => (totalByCategory.get(category.id) ?? 0) > 0);
-
-  const series: CategoryTrendSeries[] = topCategories.map((category) => ({
-    key: category.id,
-    name: category.name,
-    color: category.color,
-  }));
-  if (hasOther) {
-    series.push({ key: OTHER_TREND_SERIES_KEY, name: "Altro", color: OTHER_TREND_SERIES_KEY });
-  }
-
-  const months: MonthlyCategoryTotal[] = monthRanges.map((m, index) => {
-    const amounts: Record<string, number> = {};
-    topCategories.forEach((category) => {
-      amounts[category.id] = perMonthByCategory.get(category.id)?.[index] ?? 0;
-    });
-    if (hasOther) {
-      amounts[OTHER_TREND_SERIES_KEY] = restCategories.reduce(
-        (sum, category) => sum + (perMonthByCategory.get(category.id)?.[index] ?? 0),
-        0
-      );
-    }
-    return { year: m.year, month: m.month, label: m.label, amounts };
-  });
-
-  return { months, series };
+  return months;
 }
 
 export interface TransactionFilter {

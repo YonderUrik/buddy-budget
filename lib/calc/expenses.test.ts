@@ -240,6 +240,7 @@ describe("compute6MonthTrend", () => {
     expect(trend[5]).toEqual({ year: 2026, month: 6, label: "Lug", total: 50 });
     expect(trend.reduce((sum, m) => sum + m.total, 0)).toBe(150);
   });
+});
 
 describe("computeCategoryMonthlyTrend", () => {
   it("assegna alle top `topCount` categorie una serie propria, ordinate per spesa totale semestre discendente, e aggrega il resto in 'altro'", () => {
@@ -299,7 +300,6 @@ describe("computeCategoryMonthlyTrend", () => {
     expect(trend.months).toHaveLength(6);
     expect(trend.months.every((m) => Object.keys(m.amounts).length === 0)).toBe(true);
   });
-});
 });
 
 describe("filterTransactions", () => {

@@ -30,3 +30,7 @@ export { SplitSlider } from "./split-slider";
 export type { SplitSliderProps } from "./split-slider";
 export { AddTransactionForm } from "./add-transaction-form";
 export type { AddTransactionFormProps } from "./add-transaction-form";
+export { AutoCategorizeButton } from "./auto-categorize-button";
+export type { AutoCategorizeButtonProps } from "./auto-categorize-button";
+export { AutoCategorizeWizard } from "./auto-categorize-wizard";
+export type { AutoCategorizeWizardProps } from "./auto-categorize-wizard";

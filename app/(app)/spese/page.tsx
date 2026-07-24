@@ -5,6 +5,7 @@
 import * as React from "react";
 import {
   AddTransactionForm,
+  AutoCategorizeButton,
   CategoryBreakdownDonut,
   ExpensesFilterBar,
   ExpensesKpiCards,
@@ -97,6 +98,7 @@ export default function SpesePage() {
         >
           Gestisci categorie
         </a>
+        <AutoCategorizeButton categories={safeCategories} currency={currency} />
         {uncategorizedCount > 0 && (
           <button
             type="button"

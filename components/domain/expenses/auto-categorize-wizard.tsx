@@ -162,6 +162,7 @@ export function AutoCategorizeWizard({ suggestions, categories, currency, onClos
       {
         onSuccess: () => {
           setAppliedCount((n) => n + 1);
+          updateMutation.reset();
           setIndex((i) => i + 1);
         },
       }
@@ -195,7 +196,10 @@ export function AutoCategorizeWizard({ suggestions, categories, currency, onClos
             total={suggestions.length}
             isPending={updateMutation.isPending}
             hasError={updateMutation.isError}
-            onSkip={() => setIndex((i) => i + 1)}
+            onSkip={() => {
+              updateMutation.reset();
+              setIndex((i) => i + 1);
+            }}
             onConfirm={handleConfirm}
           />
         )}

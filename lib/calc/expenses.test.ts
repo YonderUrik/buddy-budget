@@ -11,7 +11,7 @@ import {
   computeCategoryBreakdown,
   computeFixedVsVariable,
   compute6MonthTrend,
-  computeCategoryMonthlyTrend,
+  computeCategoryMonthlyStacks,
   filterTransactions,
   shiftReferenceDate,
   formatPeriodLabel,
@@ -242,8 +242,8 @@ describe("compute6MonthTrend", () => {
   });
 });
 
-describe("computeCategoryMonthlyTrend", () => {
-  it("assegna alle top `topCount` categorie una serie propria, ordinate per spesa totale semestre discendente, e aggrega il resto in 'altro'", () => {
+describe("computeCategoryMonthlyStacks", () => {
+  it("ricalcola composizione e ordine in modo indipendente per ogni mese (non un ranking fisso sul totale semestre)", () => {
     const referenceDate = new Date(2026, 6, 15); // luglio 2026
     const categories = [
       makeCategory({ id: "cat-a", name: "A", color: "blue" }),
@@ -252,53 +252,79 @@ describe("computeCategoryMonthlyTrend", () => {
     ];
     const transactions = [
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-300.00" }),
-      makeTransaction({ categoryId: "cat-b", date: "2026-07-05", amount: "-200.00" }),
-      makeTransaction({ categoryId: "cat-c", date: "2026-07-06", amount: "-50.00" }),
+      makeTransaction({ categoryId: "cat-b", date: "2026-07-05", amount: "-250.00" }),
+      makeTransaction({ categoryId: "cat-c", date: "2026-07-06", amount: "-100.00" }),
     ];
 
-    const trend = computeCategoryMonthlyTrend(transactions, categories, referenceDate, 2);
+    const months = computeCategoryMonthlyStacks(transactions, categories, referenceDate, 2);
 
-    expect(trend.series).toEqual([
-      { key: "cat-a", name: "A", color: "blue" },
-      { key: "cat-b", name: "B", color: "green" },
-      { key: "altro", name: "Altro", color: "altro" },
+    expect(months).toHaveLength(6);
+
+    const feb = months.find((m) => m.month === 1);
+    expect(feb?.segments).toEqual([{ key: "cat-a", name: "A", color: "blue", amount: 300 }]);
+
+    const jul = months.find((m) => m.month === 6);
+    expect(jul?.segments).toEqual([
+      { key: "cat-b", name: "B", color: "green", amount: 250 },
+      { key: "cat-c", name: "C", color: "red", amount: 100 },
     ]);
-    expect(trend.months).toHaveLength(6);
-
-    const feb = trend.months.find((m) => m.month === 1);
-    expect(feb?.amounts).toEqual({ "cat-a": 300, "cat-b": 0, altro: 0 });
-
-    const jul = trend.months.find((m) => m.month === 6);
-    expect(jul?.amounts).toEqual({ "cat-a": 0, "cat-b": 200, altro: 50 });
   });
 
-  it("omette la serie 'altro' quando non ci sono categorie oltre le top N con spesa positiva", () => {
+  it("riordina 'Altro' insieme alle categorie individuali: se il suo totale supera una categoria top, si posiziona di conseguenza (non fisso in coda)", () => {
     const referenceDate = new Date(2026, 6, 15);
     const categories = [
       makeCategory({ id: "cat-a", name: "A", color: "blue" }),
       makeCategory({ id: "cat-b", name: "B", color: "green" }),
+      makeCategory({ id: "cat-c", name: "C", color: "red" }),
+      makeCategory({ id: "cat-d", name: "D", color: "yellow" }),
+      makeCategory({ id: "cat-e", name: "E", color: "purple" }),
+    ];
+    const transactions = [
+      makeTransaction({ categoryId: "cat-a", date: "2026-07-05", amount: "-100.00" }),
+      makeTransaction({ categoryId: "cat-b", date: "2026-07-05", amount: "-50.00" }),
+      makeTransaction({ categoryId: "cat-c", date: "2026-07-05", amount: "-40.00" }),
+      makeTransaction({ categoryId: "cat-d", date: "2026-07-05", amount: "-35.00" }),
+      makeTransaction({ categoryId: "cat-e", date: "2026-07-05", amount: "-20.00" }),
+    ];
+
+    const months = computeCategoryMonthlyStacks(transactions, categories, referenceDate, 2);
+    const jul = months.find((m) => m.month === 6);
+
+    // top individuali: cat-a (100), cat-b (50). Resto: cat-c+cat-d+cat-e = 95 -> "Altro" si piazza tra cat-a e cat-b.
+    expect(jul?.segments).toEqual([
+      { key: "cat-a", name: "A", color: "blue", amount: 100 },
+      { key: "altro", name: "Altro", color: "altro", amount: 95 },
+      { key: "cat-b", name: "B", color: "green", amount: 50 },
+    ]);
+  });
+
+  it("con meno categorie attive del topCount, l'array segments è più corto e non contiene chiavi fantasma", () => {
+    const referenceDate = new Date(2026, 6, 15);
+    const categories = [
+      makeCategory({ id: "cat-a", name: "A", color: "blue" }),
+      makeCategory({ id: "cat-b", name: "B", color: "green" }),
+      makeCategory({ id: "cat-c", name: "C", color: "red" }),
     ];
     const transactions = [
       makeTransaction({ categoryId: "cat-a", date: "2026-07-05", amount: "-100.00" }),
       makeTransaction({ categoryId: "cat-b", date: "2026-07-06", amount: "-50.00" }),
     ];
 
-    const trend = computeCategoryMonthlyTrend(transactions, categories, referenceDate);
+    const months = computeCategoryMonthlyStacks(transactions, categories, referenceDate);
+    const jul = months.find((m) => m.month === 6);
 
-    expect(trend.series).toEqual([
-      { key: "cat-a", name: "A", color: "blue" },
-      { key: "cat-b", name: "B", color: "green" },
+    expect(jul?.segments).toEqual([
+      { key: "cat-a", name: "A", color: "blue", amount: 100 },
+      { key: "cat-b", name: "B", color: "green", amount: 50 },
     ]);
-    expect(trend.months.every((m) => !("altro" in m.amounts))).toBe(true);
   });
 
-  it("con nessuna categoria ritorna 6 mesi vuoti e nessuna serie", () => {
+  it("con nessuna categoria o transazione ritorna 6 mesi con segments vuoto", () => {
     const referenceDate = new Date(2026, 6, 15);
-    const trend = computeCategoryMonthlyTrend([], [], referenceDate);
+    const months = computeCategoryMonthlyStacks([], [], referenceDate);
 
-    expect(trend.series).toEqual([]);
-    expect(trend.months).toHaveLength(6);
-    expect(trend.months.every((m) => Object.keys(m.amounts).length === 0)).toBe(true);
+    expect(months).toHaveLength(6);
+    expect(months.every((m) => m.segments.length === 0)).toBe(true);
   });
 });
 

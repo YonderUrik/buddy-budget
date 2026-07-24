@@ -22,6 +22,9 @@ export function AutoCategorizeButton({ categories, currency }: AutoCategorizeBut
   async function handleClick() {
     setShowEmptyMessage(false);
     const result = await refetch();
+    if (result.isError) {
+      return;
+    }
     const suggestions = result.data ?? [];
     if (suggestions.length === 0) {
       setShowEmptyMessage(true);

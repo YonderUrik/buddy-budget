@@ -16,8 +16,8 @@ import {
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
 import {
-  compute6MonthTrend,
   computeCategoryBreakdown,
+  computeCategoryMonthlyTrend,
   computeFixedVsVariable,
   computeSummary,
   filterTransactions,
@@ -197,7 +197,7 @@ export default function SpesePage() {
           </Card>
 
           <ExpenseTrendChart
-            monthlyTrend={compute6MonthTrend(filteredTransactions, referenceDate)}
+            monthlyCategoryTrend={computeCategoryMonthlyTrend(filteredTransactions, safeCategories, referenceDate)}
             currency={currency}
           />
         </>

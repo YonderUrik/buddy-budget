@@ -42,6 +42,7 @@ describe("computeCategorizeSuggestions", () => {
     expect(result[0].suggestedCategoryId).toBe("cat-food");
     expect(result[0].matchCount).toBe(1);
     expect(result[0].suggestedSplitPercentage).toBe(0);
+    expect(result[0].averageSimilarity).toBe(1);
   });
 
   it("sceglie la categoria più frequente tra i match", () => {
@@ -112,5 +113,66 @@ describe("computeCategorizeSuggestions", () => {
 
     const result = computeCategorizeSuggestions(uncategorized, historical);
     expect(result[0].suggestedSplitPercentage).toBeNull();
+  });
+
+  it("riconosce come simile un suffisso/codice numerico variabile, scartandolo dal confronto", () => {
+    const uncategorized = [makeTransaction({ id: "u1", description: "PAYPAL *NETFLIX 4471" })];
+    const historical = [
+      makeTransaction({ id: "h1", description: "PAYPAL *NETFLIX 8832", categoryId: "cat-svago" }),
+    ];
+
+    const result = computeCategorizeSuggestions(uncategorized, historical);
+    expect(result).toHaveLength(1);
+    expect(result[0].suggestedCategoryId).toBe("cat-svago");
+    expect(result[0].averageSimilarity).toBe(1);
+  });
+
+  it("riconosce come simile una filiale diversa della stessa catena, esattamente alla soglia del 50%", () => {
+    const uncategorized = [makeTransaction({ id: "u1", description: "ESSELUNGA VIA ROMA 12" })];
+    const historical = [
+      makeTransaction({ id: "h1", description: "ESSELUNGA VIA MILANO 45", categoryId: "cat-food" }),
+    ];
+
+    const result = computeCategorizeSuggestions(uncategorized, historical);
+    expect(result).toHaveLength(1);
+    expect(result[0].suggestedCategoryId).toBe("cat-food");
+    expect(result[0].averageSimilarity).toBe(0.5);
+  });
+
+  it("esclude un match sotto la soglia del 50% (una sola parola in comune su cinque totali)", () => {
+    const uncategorized = [makeTransaction({ id: "u1", description: "Ristorante Rossi Milano" })];
+    const historical = [
+      makeTransaction({ id: "h1", description: "Ristorante Bianchi Torino", categoryId: "cat-food" }),
+    ];
+
+    expect(computeCategorizeSuggestions(uncategorized, historical)).toEqual([]);
+  });
+
+  it("descrizione interamente numerica: ricade sull'uguaglianza esatta invece che su insiemi di token vuoti", () => {
+    const uncategorized = [makeTransaction({ id: "u1", description: "123456789" })];
+    const historicalMatch = [
+      makeTransaction({ id: "h1", description: "123456789", categoryId: "cat-varie" }),
+    ];
+    const historicalNoMatch = [
+      makeTransaction({ id: "h2", description: "987654321", categoryId: "cat-varie" }),
+    ];
+
+    const matchResult = computeCategorizeSuggestions(uncategorized, historicalMatch);
+    expect(matchResult).toHaveLength(1);
+    expect(matchResult[0].averageSimilarity).toBe(1);
+
+    expect(computeCategorizeSuggestions(uncategorized, historicalNoMatch)).toEqual([]);
+  });
+
+  it("calcola averageSimilarity come media dei soli match della categoria vincente", () => {
+    const uncategorized = [makeTransaction({ id: "u1", description: "Esselunga Via Torino 9" })];
+    const historical = [
+      makeTransaction({ id: "h1", description: "Esselunga Via Torino 9", categoryId: "cat-food" }),
+      makeTransaction({ id: "h2", description: "Esselunga Via Napoli 3", categoryId: "cat-food" }),
+    ];
+
+    const result = computeCategorizeSuggestions(uncategorized, historical);
+    expect(result[0].matchCount).toBe(2);
+    expect(result[0].averageSimilarity).toBe(0.75);
   });
 });

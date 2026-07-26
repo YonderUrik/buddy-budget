@@ -5,9 +5,10 @@ import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connecti
 import { transactions } from "@/lib/db/schema/transactions";
 import { GoCardlessError, getAccountBalances, getAccountTransactions } from "./client";
 import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limit";
-import { resolveCategoryId } from "./categorize";
+import { getFallbackCategoryId, resolveCategoryId } from "./categorize";
+import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 
-const SYNC_INTERVAL_MS = 12 * 60 * 60 * 1000;
+const MAX_STORED_SYNC_TIMESTAMPS = 4;
 
 export interface SyncableLink {
   linkId: string;
@@ -17,10 +18,25 @@ export interface SyncableLink {
   userId: string;
 }
 
+export type SyncResult =
+  | {
+      status: "synced";
+      newTransactionsCount: number;
+      categorizedCount: number;
+      uncategorizedCount: number;
+      balanceUpdated: true;
+    }
+  | { status: "gocardless-limited" }
+  | { status: "expired" };
+
 /** Sincronizza saldo e transazioni di un conto collegato; aggiorna i timestamp o marca la connessione scaduta. */
-export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<void> {
-  if (await isRateLimited(rateLimitStore, link.externalAccountId, "balances")) return;
-  if (await isRateLimited(rateLimitStore, link.externalAccountId, "transactions")) return;
+export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<SyncResult> {
+  if (await isRateLimited(rateLimitStore, link.externalAccountId, "balances")) {
+    return { status: "gocardless-limited" };
+  }
+  if (await isRateLimited(rateLimitStore, link.externalAccountId, "transactions")) {
+    return { status: "gocardless-limited" };
+  }
 
   try {
     const { balance, rateLimit: balanceRateLimit } = await getAccountBalances(link.externalAccountId);
@@ -51,6 +67,11 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
       );
     }
 
+    const fallbackCategoryId = await getFallbackCategoryId(link.userId);
+    let newTransactionsCount = 0;
+    let categorizedCount = 0;
+    let uncategorizedCount = 0;
+
     for (const bankTransaction of bankTransactions) {
       const externalId = bankTransaction.internalTransactionId ?? bankTransaction.transactionId;
       if (!externalId) continue;
@@ -58,7 +79,7 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
       const description = bankTransaction.remittanceInformationUnstructured ?? "Movimento bancario";
       const categoryId = await resolveCategoryId(link.userId, description);
 
-      await db
+      const [inserted] = await db
         .insert(transactions)
         .values({
           userId: link.userId,
@@ -70,20 +91,46 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
           source: "auto",
           externalId,
         })
-        .onConflictDoNothing({ target: [transactions.accountId, transactions.externalId] });
+        .onConflictDoNothing({ target: [transactions.accountId, transactions.externalId] })
+        .returning({ categoryId: transactions.categoryId });
+
+      if (inserted) {
+        newTransactionsCount += 1;
+        if (inserted.categoryId === fallbackCategoryId) {
+          uncategorizedCount += 1;
+        } else {
+          categorizedCount += 1;
+        }
+      }
     }
+
+    const [currentLink] = await db
+      .select({ syncTimestamps: bankAccountLinks.syncTimestamps })
+      .from(bankAccountLinks)
+      .where(eq(bankAccountLinks.id, link.linkId));
+    const now = new Date();
+    const updatedTimestamps = [now.toISOString(), ...(currentLink?.syncTimestamps ?? [])].slice(
+      0,
+      MAX_STORED_SYNC_TIMESTAMPS
+    );
 
     await db
       .update(bankAccountLinks)
-      .set({ lastSyncedAt: new Date(), nextSyncEligibleAt: new Date(Date.now() + SYNC_INTERVAL_MS) })
+      .set({
+        lastSyncedAt: now,
+        syncTimestamps: updatedTimestamps,
+        nextSyncEligibleAt: new Date(now.getTime() + MIN_SYNC_GAP_MS),
+      })
       .where(eq(bankAccountLinks.id, link.linkId));
+
+    return { status: "synced", newTransactionsCount, categorizedCount, uncategorizedCount, balanceUpdated: true };
   } catch (error) {
     if (error instanceof GoCardlessError && error.status === 401) {
       await db
         .update(bankConnections)
         .set({ status: "expired", updatedAt: new Date() })
         .where(eq(bankConnections.id, link.connectionId));
-      return;
+      return { status: "expired" };
     }
     throw error;
   }

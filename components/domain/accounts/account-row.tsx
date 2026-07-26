@@ -38,9 +38,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Trash2, Link2Off, RefreshCw } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatRelativeTime } from "@/lib/format";
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
+import { useSyncAccountMutation } from "@/lib/queries/gocardless";
 import type { UpdateAccountInput } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import type { Account } from "@/lib/db/schema/accounts";
@@ -50,6 +51,23 @@ import { CurrencyInput } from "./currency-input";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
 
+/** Testo del `title` nativo del bottone sync, spiega perché è disabilitato quando non eleggibile. */
+function buildSyncButtonTitle(
+  syncInfo: AccountRowProps["syncInfo"],
+  needsReconnect?: boolean
+): string {
+  if (needsReconnect) return "Riconnetti il conto per sincronizzare";
+  if (!syncInfo) return "Info di sincronizzazione non disponibili";
+  if (syncInfo.eligible) return "Sincronizza ora";
+  if (!syncInfo.nextEligibleAt) return "Sync non disponibile";
+  const time = new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(
+    new Date(syncInfo.nextEligibleAt)
+  );
+  return syncInfo.syncsRemainingToday === 0
+    ? `Limite di 4 sync al giorno raggiunto. Prossimo alle ${time}.`
+    : `Prossimo sync disponibile alle ${time}.`;
+}
+
 export interface AccountRowProps {
   account: Account;
   /** Valuta dell'utente (ISO 4217), usata per formattare il saldo. */
@@ -58,12 +76,20 @@ export interface AccountRowProps {
   needsReconnect?: boolean;
   /** Chiamato quando l'utente clicca "Riconnetti". */
   onReconnect?: () => void;
+  /** Info di sync (solo per conti auto): ultimo sync ed eleggibilità al prossimo sync manuale. */
+  syncInfo?: {
+    lastSyncedAt: string | null;
+    eligible: boolean;
+    nextEligibleAt: string | null;
+    syncsRemainingToday: number;
+  };
 }
 
-export function AccountRow({ account, currency, needsReconnect, onReconnect }: AccountRowProps) {
+export function AccountRow({ account, currency, needsReconnect, onReconnect, syncInfo }: AccountRowProps) {
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
   const deleteMutation = useDeleteAccountMutation();
+  const syncMutation = useSyncAccountMutation();
 
   const [name, setName] = React.useState(account.name);
   const [type, setType] = React.useState(account.type);
@@ -186,6 +212,13 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect }: A
           )}
 
           <div className="flex items-center gap-2">
+            {isAuto && syncInfo && (
+              <span className="text-[10px] text-muted-foreground">
+                {syncInfo.lastSyncedAt
+                  ? `Ultimo sync: ${formatRelativeTime(new Date(syncInfo.lastSyncedAt))}`
+                  : "Mai sincronizzato"}
+              </span>
+            )}
             {needsReconnect && (
               <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive uppercase">
                 Riconnetti
@@ -196,6 +229,19 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect }: A
             </Badge>
           </div>
         </div>
+
+        {isAuto && (
+          <button
+            type="button"
+            onClick={() => syncMutation.mutate(account.id)}
+            disabled={!syncInfo?.eligible || syncMutation.isPending || needsReconnect}
+            title={buildSyncButtonTitle(syncInfo, needsReconnect)}
+            aria-label="Sincronizza ora"
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <RefreshCw size={15} className={syncMutation.isPending ? "animate-spin" : undefined} />
+          </button>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">

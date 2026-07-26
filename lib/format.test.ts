@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCurrency, getCurrencySymbol } from "./format";
+import { formatCurrency, formatRelativeTime, getCurrencySymbol } from "./format";
 
 describe("formatCurrency", () => {
   it("formatta un valore positivo nella valuta indicata", () => {
@@ -26,5 +26,31 @@ describe("getCurrencySymbol", () => {
 
   it("usa it-IT come default locale", () => {
     expect(getCurrencySymbol("EUR")).toBe("€");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  const now = new Date("2026-07-26T12:00:00.000Z");
+
+  it("restituisce 'adesso' per meno di un minuto fa", () => {
+    expect(formatRelativeTime(new Date(now.getTime() - 30_000), now)).toBe("adesso");
+  });
+
+  it("restituisce i minuti per meno di un'ora fa", () => {
+    expect(formatRelativeTime(new Date(now.getTime() - 5 * 60_000), now)).toBe("5 min fa");
+  });
+
+  it("restituisce le ore per meno di un giorno fa", () => {
+    expect(formatRelativeTime(new Date(now.getTime() - 3 * 60 * 60_000), now)).toBe("3 h fa");
+  });
+
+  it("restituisce i giorni per meno di 7 giorni fa", () => {
+    expect(formatRelativeTime(new Date(now.getTime() - 2 * 24 * 60 * 60_000), now)).toBe("2 giorni fa");
+  });
+
+  it("restituisce una data assoluta breve oltre i 7 giorni", () => {
+    const past = new Date(now.getTime() - 10 * 24 * 60 * 60_000);
+    const expected = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(past);
+    expect(formatRelativeTime(past, now)).toBe(expected);
   });
 });

@@ -5,18 +5,40 @@ import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { createRequisition } from "@/lib/gocardless/client";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
+import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
 
   const rows = await db
-    .select({ accountId: bankAccountLinks.accountId, status: bankConnections.status })
+    .select({
+      accountId: bankAccountLinks.accountId,
+      status: bankConnections.status,
+      lastSyncedAt: bankAccountLinks.lastSyncedAt,
+      syncTimestamps: bankAccountLinks.syncTimestamps,
+    })
     .from(bankAccountLinks)
     .innerJoin(bankConnections, eq(bankAccountLinks.connectionId, bankConnections.id))
     .where(eq(bankConnections.userId, session.user.id));
 
-  return Response.json(rows);
+  const now = new Date();
+  return Response.json(
+    rows.map((row) => {
+      const eligibility = computeSyncEligibility(
+        row.syncTimestamps.map((t) => new Date(t)),
+        now
+      );
+      return {
+        accountId: row.accountId,
+        status: row.status,
+        lastSyncedAt: row.lastSyncedAt,
+        eligible: eligibility.eligible,
+        nextEligibleAt: eligibility.nextEligibleAt,
+        syncsRemainingToday: eligibility.syncsRemainingToday,
+      };
+    })
+  );
 }
 
 export async function POST(request: NextRequest) {

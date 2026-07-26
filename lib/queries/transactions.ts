@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validation/transactions";
+import type { CategorizeSuggestion } from "@/lib/calc/categorize-suggestions";
 
 function transactionsQueryKey(from: string, to: string) {
   return ["transactions", from, to] as const;
@@ -79,5 +80,22 @@ export function useDeleteTransactionMutation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
+  });
+}
+
+async function fetchCategorizeSuggestions(): Promise<CategorizeSuggestion[]> {
+  const response = await fetch("/api/transactions/categorize-suggestions");
+  if (!response.ok) {
+    throw new Error("Impossibile calcolare i suggerimenti di categorizzazione");
+  }
+  return response.json();
+}
+
+/** Suggerimenti di categorizzazione automatica basati sullo storico; non parte al mount, va invocata con refetch(). */
+export function useCategorizeSuggestionsQuery() {
+  return useQuery({
+    queryKey: ["transactions", "categorize-suggestions"] as const,
+    queryFn: fetchCategorizeSuggestions,
+    enabled: false,
   });
 }

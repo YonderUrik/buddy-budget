@@ -4,6 +4,7 @@ import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { transactions } from "@/lib/db/schema/transactions";
 
 vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/gocardless/sync")>();
@@ -31,6 +32,14 @@ describe("scheduler", () => {
   }
 
   beforeEach(async () => {
+    // Clean up any leftover data from previous test runs
+    // Note: must delete in reverse order of foreign key constraints
+    await db.delete(transactions);
+    await db.delete(bankAccountLinks);
+    await db.delete(bankConnections);
+    await db.delete(accounts);
+    await db.delete(authUser);
+
     const testId = `test-scheduler-${crypto.randomUUID()}`;
     const [user] = await db
       .insert(authUser)
@@ -55,9 +64,7 @@ describe("scheduler", () => {
   });
 
   afterEach(async () => {
-    // Ogni test crea link globali (non filtrati per utente, come findDueLinks in produzione):
-    // vanno ripuliti dopo ogni test, non solo alla fine, per non inquinare le assertion sui conteggi.
-    await db.delete(authUser).where(eq(authUser.id, userId));
+    // Cleanup after each test is now handled in beforeEach to ensure proper FK order
   });
 
   afterAll(async () => {
@@ -83,5 +90,29 @@ describe("scheduler", () => {
     await runDueSyncs();
 
     expect(syncAccountLink).toHaveBeenCalledTimes(2);
+  });
+
+  it("salta i link che hanno esaurito il budget condiviso di sync anche se nextSyncEligibleAt è passato", async () => {
+    const past = new Date(Date.now() - 60_000);
+    const [account] = await db
+      .insert(accounts)
+      .values({ userId, name: "Conto Auto", type: "Conto corrente", balance: "0", source: "auto" })
+      .returning();
+    const [connection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "INST_1", institutionName: "Banca Test", status: "linked" })
+      .returning();
+    const recentTimestamps = [0, 6, 12, 18].map((h) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString());
+    await db.insert(bankAccountLinks).values({
+      connectionId: connection.id,
+      accountId: account.id,
+      externalAccountId: "ext-1",
+      nextSyncEligibleAt: past,
+      syncTimestamps: recentTimestamps,
+    });
+
+    await runDueSyncs();
+
+    expect(syncAccountLink).not.toHaveBeenCalled();
   });
 });

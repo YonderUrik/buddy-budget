@@ -2,11 +2,16 @@ import cron from "node-cron";
 import { and, eq, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { computeSyncEligibility } from "./sync-eligibility";
 import { redisRateLimitStore } from "./redis-rate-limit-store";
 import { syncAccountLink, type SyncableLink } from "./sync";
 
+export interface DueLink extends SyncableLink {
+  syncTimestamps: string[];
+}
+
 /** Conti collegati con sync scaduto e connessione ancora valida (non expired/error). */
-export async function findDueLinks(): Promise<SyncableLink[]> {
+export async function findDueLinks(): Promise<DueLink[]> {
   return db
     .select({
       linkId: bankAccountLinks.id,
@@ -14,6 +19,7 @@ export async function findDueLinks(): Promise<SyncableLink[]> {
       accountId: bankAccountLinks.accountId,
       externalAccountId: bankAccountLinks.externalAccountId,
       userId: bankConnections.userId,
+      syncTimestamps: bankAccountLinks.syncTimestamps,
     })
     .from(bankAccountLinks)
     .innerJoin(bankConnections, eq(bankAccountLinks.connectionId, bankConnections.id))
@@ -23,10 +29,15 @@ export async function findDueLinks(): Promise<SyncableLink[]> {
 /**
  * Sincronizza tutti i conti dovuti. Un errore su un conto (rete, 5xx GoCardless)
  * viene loggato e non deve bloccare il sync degli altri conti nello stesso tick.
+ * Salta silenziosamente i conti che hanno già esaurito il budget condiviso di
+ * sync (4/giorno, gap minimo 4h) per via di sync manuali avvenuti nel frattempo.
  */
 export async function runDueSyncs(): Promise<void> {
   const due = await findDueLinks();
+  const now = new Date();
   for (const link of due) {
+    const timestamps = link.syncTimestamps.map((t) => new Date(t));
+    if (!computeSyncEligibility(timestamps, now).eligible) continue;
     try {
       await syncAccountLink(link, redisRateLimitStore);
     } catch (error) {

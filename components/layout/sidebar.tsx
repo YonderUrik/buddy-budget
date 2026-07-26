@@ -85,10 +85,12 @@ function NavLink({
   item,
   collapsed,
   active = false,
+  onNavigate,
 }: {
   item: NavItem;
   collapsed: boolean;
   active?: boolean;
+  onNavigate?: () => void;
 }) {
   const Icon = item.icon;
 
@@ -97,6 +99,7 @@ function NavLink({
       href={item.href}
       title={collapsed ? item.label : undefined}
       aria-current={active ? "page" : undefined}
+      onClick={onNavigate}
       className={cn(
         "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
         "transition-colors duration-150",
@@ -230,6 +233,7 @@ export function AppSidebar({
                 item={item}
                 collapsed={isCollapsed}
                 active={activeHref === item.href}
+                onNavigate={onClose}
               />
             </li>
           ))}

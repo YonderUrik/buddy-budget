@@ -52,7 +52,11 @@ import { CurrencyInput } from "./currency-input";
 const CUSTOM_TYPE_VALUE = "__custom__";
 
 /** Testo del `title` nativo del bottone sync, spiega perché è disabilitato quando non eleggibile. */
-function buildSyncButtonTitle(syncInfo: AccountRowProps["syncInfo"]): string {
+function buildSyncButtonTitle(
+  syncInfo: AccountRowProps["syncInfo"],
+  needsReconnect?: boolean
+): string {
+  if (needsReconnect) return "Riconnetti il conto per sincronizzare";
   if (!syncInfo) return "Info di sincronizzazione non disponibili";
   if (syncInfo.eligible) return "Sincronizza ora";
   if (!syncInfo.nextEligibleAt) return "Sync non disponibile";
@@ -230,8 +234,8 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect, syn
           <button
             type="button"
             onClick={() => syncMutation.mutate(account.id)}
-            disabled={!syncInfo?.eligible || syncMutation.isPending}
-            title={buildSyncButtonTitle(syncInfo)}
+            disabled={!syncInfo?.eligible || syncMutation.isPending || needsReconnect}
+            title={buildSyncButtonTitle(syncInfo, needsReconnect)}
             aria-label="Sincronizza ora"
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
           >

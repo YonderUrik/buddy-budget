@@ -4,7 +4,6 @@ import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
-import { transactions } from "@/lib/db/schema/transactions";
 
 vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/gocardless/sync")>();
@@ -32,14 +31,6 @@ describe("scheduler", () => {
   }
 
   beforeEach(async () => {
-    // Clean up any leftover data from previous test runs
-    // Note: must delete in reverse order of foreign key constraints
-    await db.delete(transactions);
-    await db.delete(bankAccountLinks);
-    await db.delete(bankConnections);
-    await db.delete(accounts);
-    await db.delete(authUser);
-
     const testId = `test-scheduler-${crypto.randomUUID()}`;
     const [user] = await db
       .insert(authUser)
@@ -64,7 +55,7 @@ describe("scheduler", () => {
   });
 
   afterEach(async () => {
-    // Cleanup after each test is now handled in beforeEach to ensure proper FK order
+    await db.delete(authUser).where(eq(authUser.id, userId));
   });
 
   afterAll(async () => {

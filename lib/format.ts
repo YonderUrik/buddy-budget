@@ -25,3 +25,22 @@ export function formatCurrency(
     maximumFractionDigits,
   }).format(value);
 }
+
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+const RELATIVE_TIME_MAX_DAYS = 7;
+
+/**
+ * Formatta la distanza temporale tra `date` e `now` in italiano, con granularità
+ * decrescente (minuti/ore/giorni); oltre RELATIVE_TIME_MAX_DAYS giorni torna a
+ * una data assoluta breve (es. "12 lug").
+ */
+export function formatRelativeTime(date: Date, now: Date = new Date()): string {
+  const diffMs = now.getTime() - date.getTime();
+  if (diffMs < MINUTE_MS) return "adesso";
+  if (diffMs < HOUR_MS) return `${Math.floor(diffMs / MINUTE_MS)} min fa`;
+  if (diffMs < DAY_MS) return `${Math.floor(diffMs / HOUR_MS)} h fa`;
+  if (diffMs < RELATIVE_TIME_MAX_DAYS * DAY_MS) return `${Math.floor(diffMs / DAY_MS)} giorni fa`;
+  return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(date);
+}

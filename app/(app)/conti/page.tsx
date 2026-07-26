@@ -32,6 +32,18 @@ export default function ContiPage() {
       .map((status) => status.accountId)
   );
 
+  const syncInfoByAccountId = new Map(
+    (connectionStatuses ?? []).map((status) => [
+      status.accountId,
+      {
+        lastSyncedAt: status.lastSyncedAt,
+        eligible: status.eligible,
+        nextEligibleAt: status.nextEligibleAt,
+        syncsRemainingToday: status.syncsRemainingToday,
+      },
+    ])
+  );
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
@@ -86,6 +98,7 @@ export default function ContiPage() {
               account={account}
               currency={currency}
               needsReconnect={reconnectAccountIds.has(account.id)}
+              syncInfo={syncInfoByAccountId.get(account.id)}
               onReconnect={() => {
                 setReconnectTrigger((n) => n + 1);
                 setCreateDialogOpen(true);

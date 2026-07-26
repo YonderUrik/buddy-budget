@@ -43,12 +43,18 @@ describe("scheduler", () => {
       })
       .returning();
     userId = user.id;
-    vi.mocked(syncAccountLink).mockReset().mockResolvedValue(undefined);
+    vi.mocked(syncAccountLink)
+      .mockReset()
+      .mockResolvedValue({
+        status: "synced",
+        newTransactionsCount: 0,
+        categorizedCount: 0,
+        uncategorizedCount: 0,
+        balanceUpdated: true,
+      });
   });
 
   afterEach(async () => {
-    // Ogni test crea link globali (non filtrati per utente, come findDueLinks in produzione):
-    // vanno ripuliti dopo ogni test, non solo alla fine, per non inquinare le assertion sui conteggi.
     await db.delete(authUser).where(eq(authUser.id, userId));
   });
 
@@ -75,5 +81,29 @@ describe("scheduler", () => {
     await runDueSyncs();
 
     expect(syncAccountLink).toHaveBeenCalledTimes(2);
+  });
+
+  it("salta i link che hanno esaurito il budget condiviso di sync anche se nextSyncEligibleAt è passato", async () => {
+    const past = new Date(Date.now() - 60_000);
+    const [account] = await db
+      .insert(accounts)
+      .values({ userId, name: "Conto Auto", type: "Conto corrente", balance: "0", source: "auto" })
+      .returning();
+    const [connection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "INST_1", institutionName: "Banca Test", status: "linked" })
+      .returning();
+    const recentTimestamps = [0, 6, 12, 18].map((h) => new Date(Date.now() - h * 60 * 60 * 1000).toISOString());
+    await db.insert(bankAccountLinks).values({
+      connectionId: connection.id,
+      accountId: account.id,
+      externalAccountId: "ext-1",
+      nextSyncEligibleAt: past,
+      syncTimestamps: recentTimestamps,
+    });
+
+    await runDueSyncs();
+
+    expect(syncAccountLink).not.toHaveBeenCalled();
   });
 });

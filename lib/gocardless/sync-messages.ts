@@ -37,7 +37,7 @@ export function buildSyncErrorMessage(error: SyncErrorInfo): string {
       const time = new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(
         new Date(error.nextEligibleAt)
       );
-      return `Hai raggiunto il limite di sync per ora. Prossimo disponibile alle ${time}.`;
+      return `Hai raggiunto il limite giornaliero di sync. Prossimo disponibile alle ${time}.`;
     }
     case "gocardless-limited":
       return "La banca ha temporaneamente esaurito le chiamate disponibili. Riprova più tardi.";

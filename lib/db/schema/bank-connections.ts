@@ -1,4 +1,4 @@
-import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 import { accounts } from "./accounts";
 
@@ -41,6 +41,9 @@ export const bankAccountLinks = pgTable("bank_account_links", {
   nextSyncEligibleAt: timestamp("next_sync_eligible_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+  // Ultimi (al massimo 4) timestamp ISO di sync riuscito, automatico o manuale,
+  // usati da computeSyncEligibility per il budget condiviso 4/giorno + gap 4h.
+  syncTimestamps: jsonb("sync_timestamps").$type<string[]>().notNull().default([]),
 });
 
 export type BankAccountLink = typeof bankAccountLinks.$inferSelect;

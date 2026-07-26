@@ -43,7 +43,15 @@ describe("scheduler", () => {
       })
       .returning();
     userId = user.id;
-    vi.mocked(syncAccountLink).mockReset().mockResolvedValue(undefined);
+    vi.mocked(syncAccountLink)
+      .mockReset()
+      .mockResolvedValue({
+        status: "synced",
+        newTransactionsCount: 0,
+        categorizedCount: 0,
+        uncategorizedCount: 0,
+        balanceUpdated: true,
+      });
   });
 
   afterEach(async () => {

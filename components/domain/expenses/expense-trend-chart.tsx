@@ -1,40 +1,83 @@
 "use client";
 
-/** Grafico Spese: barre "Andamento ultimi 6 mesi". */
+/** Grafico Spese: barre impilate "Andamento ultimi 6 mesi", segmenti per categoria ricalcolati mese per mese (top 6 + eventuale "Altro", ordine per importo di quel mese specifico). */
 
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
+import type { TooltipContentProps } from "recharts";
+import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { formatCurrency } from "@/lib/format";
-import type { MonthlyTotal } from "@/lib/calc/expenses";
+import { OTHER_STACK_SEGMENT_KEY, type MonthlyCategoryStack, type MonthlyStackSegment } from "@/lib/calc/expenses";
+import type { CategoryColor } from "@/lib/validation/categories";
 
-const TREND_CONFIG = {
-  total: { label: "Speso", color: "var(--chart-1)" },
-} satisfies ChartConfig;
+/** Colore fisso (non uno swatch) per il segmento aggregato "Altro", per non confondersi con una categoria reale. */
+const OTHER_SEGMENT_COLOR = "var(--muted-foreground)";
 
 export interface ExpenseTrendChartProps {
-  monthlyTrend: MonthlyTotal[];
+  monthlyStacks: MonthlyCategoryStack[];
   currency: string;
 }
 
-/** Formatta il valore del tooltip (nome + importo in valuta) al posto del default numerico di ChartTooltipContent. */
-function tooltipValueFormatter(currency: string) {
-  return function TooltipValue(value: ValueType | undefined, name: NameType | undefined) {
-    return (
-      <div className="flex w-full items-center justify-between gap-3">
-        <span className="text-muted-foreground">{name}</span>
-        <span className="font-mono font-medium tabular-nums text-foreground">
-          {formatCurrency(Number(value), currency)}
-        </span>
-      </div>
-    );
-  };
+interface MonthlyStackRow {
+  label: string;
+  segments: MonthlyStackSegment[];
+  [slotAmountKey: string]: unknown;
 }
 
-export function ExpenseTrendChart({ monthlyTrend, currency }: ExpenseTrendChartProps) {
-  const trendData = monthlyTrend.map((month) => ({ label: month.label, total: month.total }));
-  const formatTooltipValue = tooltipValueFormatter(currency);
+function segmentColor(segment: MonthlyStackSegment): string {
+  return segment.key === OTHER_STACK_SEGMENT_KEY
+    ? OTHER_SEGMENT_COLOR
+    : SWATCH_CHART_COLOR[segment.color as CategoryColor];
+}
+
+/** Trasforma i mesi in righe dati recharts con uno slot posizionale (`posNAmount`) per ciascuna posizione dello stack, fino a `maxSlots`. */
+function buildRows(months: MonthlyCategoryStack[], maxSlots: number): MonthlyStackRow[] {
+  return months.map((month) => {
+    const row: MonthlyStackRow = { label: month.label, segments: month.segments };
+    for (let i = 0; i < maxSlots; i++) {
+      row[`pos${i}Amount`] = month.segments[i]?.amount;
+    }
+    return row;
+  });
+}
+
+/** `Partial<...>` perché il componente viene istanziato come elemento JSX con solo `currency` esplicito — le proprietà del tooltip (active/payload/...) le inietta Recharts via `cloneElement` a runtime, non sono note staticamente al momento della creazione dell'elemento. */
+interface MonthlyStackTooltipProps extends Partial<TooltipContentProps<number, string>> {
+  currency: string;
+}
+
+/** Tooltip custom: legge i segmenti reali del mese sotto hover dalla riga dati (`payload[0].payload.segments`), perché nome/colore per slot cambiano ogni mese e il `formatter` di `ChartTooltipContent` assume un nome fisso per serie. */
+function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipProps) {
+  const row = payload?.[0]?.payload as MonthlyStackRow | undefined;
+  if (!active || !row || row.segments.length === 0) return null;
+
+  const total = row.segments.reduce((sum, segment) => sum + segment.amount, 0);
+
+  return (
+    <div className="grid min-w-32 gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
+      {row.segments.map((segment) => (
+        <div key={segment.key} className="flex w-full items-center justify-between gap-3">
+          <span className="text-muted-foreground">{segment.name}</span>
+          <span className="font-mono font-medium tabular-nums text-foreground">
+            {formatCurrency(segment.amount, currency)}
+          </span>
+        </div>
+      ))}
+      <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-1.5">
+        <span className="font-medium text-foreground">Totale</span>
+        <span className="font-mono font-semibold tabular-nums text-foreground">
+          {formatCurrency(total, currency)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChartProps) {
+  const maxSlots = monthlyStacks.reduce((max, month) => Math.max(max, month.segments.length), 0);
+  const rows = buildRows(monthlyStacks, maxSlots);
+  const slots = Array.from({ length: maxSlots }, (_, i) => i);
 
   return (
     <Card>
@@ -44,12 +87,24 @@ export function ExpenseTrendChart({ monthlyTrend, currency }: ExpenseTrendChartP
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={TREND_CONFIG} className="max-h-56 w-full">
-          <BarChart data={trendData}>
+        <ChartContainer config={{}} className="max-h-56 w-full">
+          <BarChart data={rows}>
             <CartesianGrid vertical={false} />
             <XAxis dataKey="label" tickLine={false} axisLine={false} />
-            <ChartTooltip content={<ChartTooltipContent formatter={formatTooltipValue} />} />
-            <Bar dataKey="total" name={TREND_CONFIG.total.label} fill="var(--color-total)" radius={4} />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => formatCurrency(Number(value), currency, { maximumFractionDigits: 0 })}
+            />
+            <ChartTooltip content={<MonthlyStackTooltip currency={currency} />} />
+            {slots.map((slotIndex) => (
+              <Bar key={slotIndex} dataKey={`pos${slotIndex}Amount`} stackId="trend">
+                {rows.map((row, rowIndex) => {
+                  const segment = row.segments[slotIndex];
+                  return <Cell key={rowIndex} fill={segment ? segmentColor(segment) : "transparent"} />;
+                })}
+              </Bar>
+            ))}
           </BarChart>
         </ChartContainer>
       </CardContent>

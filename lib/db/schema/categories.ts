@@ -27,17 +27,30 @@ export type NewCategory = typeof categories.$inferInsert;
 export const DEFAULT_CATEGORIES: {
   name: string;
   type: "fissa" | "variabile";
-  icon: CategoryIcon;
-  color: CategoryColor;
+  icon: string; // Es. Lucide Icons
+  color: string;
   isFallback?: boolean;
 }[] = [
-  { name: "Affitto", type: "fissa", icon: "home", color: "slate" },
-  { name: "Bollette & casa", type: "fissa", icon: "zap", color: "yellow" },
+  // --- SPESE FISSE (I tuoi impegni mensili/annuali) ---
+  { name: "Affitto & Mutuo", type: "fissa", icon: "home", color: "slate" },
+  { name: "Bollette & Utenze", type: "fissa", icon: "zap", color: "yellow" },
   { name: "Abbonamenti", type: "fissa", icon: "tv", color: "purple" },
+  { name: "Assicurazioni & Tasse", type: "fissa", icon: "shield", color: "indigo" },
+  { name: "Risparmi & Investimenti", type: "fissa", icon: "piggy-bank", color: "emerald" },
+
+  // --- NECESSITÀ VARIABILI (Devi farle, ma l'importo cambia) ---
   { name: "Spesa alimentare", type: "variabile", icon: "shopping-cart", color: "green" },
-  { name: "Ristoranti", type: "variabile", icon: "utensils", color: "orange" },
-  { name: "Altro", type: "variabile", icon: "package", color: "slate" },
-  { name: "Svago", type: "variabile", icon: "film", color: "teal" },
-  { name: "Trasporti", type: "variabile", icon: "car", color: "blue" },
-  { name: "Da categorizzare", type: "variabile", icon: "help-circle", color: "red", isFallback: true },
+  { name: "Trasporti & Auto", type: "variabile", icon: "car", color: "blue" },
+  { name: "Salute & Cura", type: "variabile", icon: "heart", color: "rose" },
+
+  // --- STILE DI VITA (Discrezionali, dove puoi tagliare se serve) ---
+  { name: "Ristoranti & Bar", type: "variabile", icon: "utensils", color: "orange" },
+  { name: "Shopping", type: "variabile", icon: "shopping-bag", color: "pink" },
+  { name: "Svago & Hobbies", type: "variabile", icon: "smile", color: "teal" },
+  { name: "Viaggi", type: "variabile", icon: "plane", color: "cyan" },
+  { name: "Regali", type: "variabile", icon: "gift", color: "fuchsia" },
+
+  // --- GESTIONE EMERGENZE E FALLBACK ---
+  { name: "Imprevisti", type: "variabile", icon: "alert-triangle", color: "amber" },
+  { name: "Da categorizzare", type: "variabile", icon: "help-circle", color: "slate", isFallback: true },
 ];

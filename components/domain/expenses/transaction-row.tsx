@@ -49,6 +49,10 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const isSplit = excludedAmount > 0;
   const currentCategory = categories.find((c) => c.id === transaction.categoryId);
   const isUncategorized = currentCategory?.isFallback ?? false;
+  const sortedCategories = React.useMemo(
+    () => [...categories].sort((a, b) => a.name.localeCompare(b.name)),
+    [categories]
+  );
 
   function commitCategory(categoryId: string | null) {
     if (categoryId === null || categoryId === transaction.categoryId) return;
@@ -115,36 +119,40 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             )}
             <span>·</span>
             <Select value={transaction.categoryId} onValueChange={commitCategory}>
-              <SelectTrigger size="sm" className="h-6 text-xs">
+              <SelectTrigger size="sm" className="h-6 max-w-40 text-xs">
                 <SelectValue>
                   {(value: string | null) => {
                     const selected = categories.find((c) => c.id === value);
                     if (!selected) return "";
                     return (
-                      <span className="flex items-center gap-1.5">
+                      <span className="flex min-w-0 items-center gap-1.5">
                         <CategoryAvatar
                           color={selected.color as CategoryColor}
                           icon={selected.icon as CategoryIcon}
                           size={10}
-                          className="size-4"
+                          className="size-4 shrink-0"
                         />
-                        {selected.name}
+                        <span className="truncate" title={selected.name}>
+                          {selected.name}
+                        </span>
                       </span>
                     );
                   }}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
+              <SelectContent alignItemWithTrigger={false} className="max-h-64 w-max max-w-64 min-w-48">
+                {sortedCategories.map((category) => (
                   <SelectItem key={category.id} value={category.id}>
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex min-w-0 items-center gap-1.5">
                       <CategoryAvatar
                         color={category.color as CategoryColor}
                         icon={category.icon as CategoryIcon}
                         size={10}
-                        className="size-4"
+                        className="size-4 shrink-0"
                       />
-                      {category.name}
+                      <span className="truncate" title={category.name}>
+                        {category.name}
+                      </span>
                     </span>
                   </SelectItem>
                 ))}

@@ -8,23 +8,32 @@
  */
 
 import * as React from "react";
-import { Package } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, Package } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 import type { PieLabelRenderProps } from "recharts";
 import { CategoryAvatar, ICON_MAP } from "@/components/domain/categories";
 import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/format";
 import { useUpsertBudgetMutation } from "@/lib/queries/budgets";
 import { cn } from "@/lib/utils";
 import type { CategoryAmount, FixedVsVariable } from "@/lib/calc/expenses";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
-import { computeBudgetStats, sortCategoryAmounts } from "./category-breakdown-donut.utils";
+import {
+  computeBudgetStats,
+  LEGEND_SORT_DEFAULT_DIRECTION,
+  sortCategoryAmounts,
+  sortLegendEntries,
+  type LegendEntry,
+  type LegendSortCriterion,
+  type LegendSortDirection,
+} from "./category-breakdown-donut.utils";
 
 const TYPE_CONFIG = {
   fissa: { label: "Fisse", color: "var(--chart-1)" },
@@ -33,6 +42,13 @@ const TYPE_CONFIG = {
 
 /** Soglia di saturazione oltre la quale il badge budget passa allo stile "sopra budget". */
 const BUDGET_OVER_THRESHOLD_PCT = 100;
+
+const LEGEND_SORT_OPTIONS: { value: LegendSortCriterion; label: string }[] = [
+  { value: "percentuale", label: "% sul totale" },
+  { value: "valore", label: "Valore speso" },
+  { value: "budget", label: "% budget" },
+  { value: "nome", label: "Nome" },
+];
 
 /** Soglia sotto la quale l'icona categoria non viene mostrata nella fetta (troppo piccola per essere leggibile). */
 const PIE_ICON_MIN_PERCENT = 0.05;
@@ -89,6 +105,13 @@ export function CategoryBreakdownDonut({
   const upsertMutation = useUpsertBudgetMutation();
   const [pendingCategoryId, setPendingCategoryId] = React.useState<string | null>(null);
   const [errorCategoryId, setErrorCategoryId] = React.useState<string | null>(null);
+  const [sortCriterion, setSortCriterion] = React.useState<LegendSortCriterion>("percentuale");
+  const [sortDirection, setSortDirection] = React.useState<LegendSortDirection>("desc");
+
+  function handleCriterionChange(next: LegendSortCriterion) {
+    setSortCriterion(next);
+    setSortDirection(LEGEND_SORT_DEFAULT_DIRECTION[next]);
+  }
 
   function budgetFor(categoryId: string): number {
     const budget = budgets.find((b) => b.categoryId === categoryId);
@@ -118,6 +141,13 @@ export function CategoryBreakdownDonut({
   const sortedEntries = sortCategoryAmounts(categoryAmounts);
   const totalSpeso = categoryAmounts.reduce((sum, entry) => sum + entry.amount, 0);
 
+  const enrichedEntries: LegendEntry[] = categoryAmounts.map((entry) => {
+    const budgetAmount = budgetFor(entry.categoryId);
+    const { saturazionePct, quotaPct } = computeBudgetStats(entry.amount, budgetAmount, totalSpeso);
+    return { ...entry, budgetAmount, saturazionePct, quotaPct };
+  });
+  const sortedLegendEntries = sortLegendEntries(enrichedEntries, sortCriterion, sortDirection);
+
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [canScrollUp, setCanScrollUp] = React.useState(false);
   const [canScrollDown, setCanScrollDown] = React.useState(false);
@@ -141,7 +171,7 @@ export function CategoryBreakdownDonut({
       el.removeEventListener("scroll", checkScroll);
       observer.disconnect();
     };
-  }, [checkScroll, sortedEntries.length]);
+  }, [checkScroll, sortedLegendEntries.length]);
 
   const innerData = [
     { key: "fissa", label: TYPE_CONFIG.fissa.label, value: fixedVsVariable.fissa, fill: "var(--color-fissa)" },
@@ -169,6 +199,28 @@ export function CategoryBreakdownDonut({
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Per categoria
         </CardTitle>
+        <CardAction className="flex items-center gap-1">
+          <Select value={sortCriterion} onValueChange={(value) => handleCriterionChange(value as LegendSortCriterion)}>
+            <SelectTrigger size="sm" className="w-36">
+              <SelectValue>{(value: LegendSortCriterion) => LEGEND_SORT_OPTIONS.find((o) => o.value === value)?.label}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {LEGEND_SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <button
+            type="button"
+            onClick={() => setSortDirection((prev) => (prev === "desc" ? "asc" : "desc"))}
+            aria-label={sortDirection === "desc" ? "Ordina crescente" : "Ordina decrescente"}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            {sortDirection === "desc" ? <ArrowDownIcon className="size-4" /> : <ArrowUpIcon className="size-4" />}
+          </button>
+        </CardAction>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <ChartContainer config={TYPE_CONFIG} className="mx-auto aspect-square max-h-56 sm:mx-0">
@@ -216,23 +268,19 @@ export function CategoryBreakdownDonut({
             ref={scrollRef}
             className="max-h-56 divide-y divide-border overflow-y-auto pr-1.5 custom-scrollbar"
           >
-            {sortedEntries.map((entry) => {
-              const budgetAmount = budgetFor(entry.categoryId);
-              const { saturazionePct, quotaPct } = computeBudgetStats(entry.amount, budgetAmount, totalSpeso);
-              return (
-                <CategoryLegendRow
-                  key={entry.categoryId}
-                  entry={entry}
-                  budgetAmount={budgetAmount}
-                  saturazionePct={saturazionePct}
-                  quotaPct={quotaPct}
-                  currency={currency}
-                  isSaving={pendingCategoryId === entry.categoryId}
-                  hasError={errorCategoryId === entry.categoryId}
-                  onCommitBudget={(raw) => commitBudget(entry.categoryId, raw)}
-                />
-              );
-            })}
+            {sortedLegendEntries.map((entry) => (
+              <CategoryLegendRow
+                key={entry.categoryId}
+                entry={entry}
+                budgetAmount={entry.budgetAmount}
+                saturazionePct={entry.saturazionePct}
+                quotaPct={entry.quotaPct}
+                currency={currency}
+                isSaving={pendingCategoryId === entry.categoryId}
+                hasError={errorCategoryId === entry.categoryId}
+                onCommitBudget={(raw) => commitBudget(entry.categoryId, raw)}
+              />
+            ))}
           </div>
         </div>
       </CardContent>

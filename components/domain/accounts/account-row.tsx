@@ -53,7 +53,8 @@ const CUSTOM_TYPE_VALUE = "__custom__";
 
 /** Testo del `title` nativo del bottone sync, spiega perché è disabilitato quando non eleggibile. */
 function buildSyncButtonTitle(syncInfo: AccountRowProps["syncInfo"]): string {
-  if (!syncInfo || syncInfo.eligible) return "Sincronizza ora";
+  if (!syncInfo) return "Info di sincronizzazione non disponibili";
+  if (syncInfo.eligible) return "Sincronizza ora";
   if (!syncInfo.nextEligibleAt) return "Sync non disponibile";
   const time = new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(
     new Date(syncInfo.nextEligibleAt)

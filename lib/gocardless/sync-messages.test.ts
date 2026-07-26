@@ -37,6 +37,30 @@ describe("buildSyncSummaryMessage", () => {
       })
     ).toBe("1 nuova transazione (1 categorizzata). Saldo aggiornato.");
   });
+
+  it("combina singolare categorizzata e plurale da categorizzare", () => {
+    expect(
+      buildSyncSummaryMessage({
+        status: "synced",
+        newTransactionsCount: 3,
+        categorizedCount: 1,
+        uncategorizedCount: 2,
+        balanceUpdated: true,
+      })
+    ).toBe("3 nuove transazioni (1 categorizzata, 2 da categorizzare). Saldo aggiornato.");
+  });
+
+  it("omette la parte categorizzate quando il conteggio è zero", () => {
+    expect(
+      buildSyncSummaryMessage({
+        status: "synced",
+        newTransactionsCount: 2,
+        categorizedCount: 0,
+        uncategorizedCount: 2,
+        balanceUpdated: true,
+      })
+    ).toBe("2 nuove transazioni (2 da categorizzare). Saldo aggiornato.");
+  });
 });
 
 describe("buildSyncErrorMessage", () => {
@@ -61,6 +85,12 @@ describe("buildSyncErrorMessage", () => {
   it("not-eligible senza orario", () => {
     expect(buildSyncErrorMessage({ status: "not-eligible", nextEligibleAt: null, syncsRemainingToday: 0 })).toBe(
       "Sync non disponibile al momento. Riprova più tardi."
+    );
+  });
+
+  it("unknown", () => {
+    expect(buildSyncErrorMessage({ status: "unknown" })).toBe(
+      "Impossibile completare la sincronizzazione. Riprova più tardi."
     );
   });
 });

@@ -76,7 +76,10 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
       const externalId = bankTransaction.internalTransactionId ?? bankTransaction.transactionId;
       if (!externalId) continue;
 
-      const description = bankTransaction.remittanceInformationUnstructured ?? "Movimento bancario";
+      const rawDescription = bankTransaction.remittanceInformationUnstructured ?? null;
+      const isExpense = Number(bankTransaction.transactionAmount.amount) < 0;
+      const merchantName = (isExpense ? bankTransaction.creditorName : bankTransaction.debtorName)?.trim();
+      const description = merchantName || rawDescription || "Movimento bancario";
       const categoryId = await resolveCategoryId(link.userId, description);
 
       const [inserted] = await db
@@ -86,6 +89,7 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
           accountId: link.accountId,
           categoryId,
           description,
+          rawDescription,
           amount: bankTransaction.transactionAmount.amount,
           date: bankTransaction.bookingDate,
           source: "auto",

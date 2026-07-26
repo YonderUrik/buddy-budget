@@ -170,3 +170,143 @@ Voci in ordine cronologico. Aggiungine una nuova (in cima o in fondo, basta esse
 - **2026-07-19** — Aggiunto indicatore visivo "Diviso" in `TransactionRow` (schermata Spese), su richiesta dell'utente: dopo aver diviso una spesa non si vedeva nella riga che era stata divisa (si vedeva solo aprendo il pannello "Dividi"). Brainstorming → spec (`docs/superpowers/specs/2026-07-19-transaction-row-split-indicator-design.md`) → piano (`docs/superpowers/plans/2026-07-19-transaction-row-split-indicator.md`, 1 task) → `superpowers:executing-plans` (esecuzione inline, non subagent) su worktree dedicato. Decisioni: badge "Diviso" (`variant="ghost"`) accanto al badge Auto/Manuale quando `excludedAmount > 0`; riga Auto mostra l'importo netto come cifra principale con il pieno barrato sotto in piccolo; riga Manuale lascia il campo importo invariato (edita sempre il pieno, per non rompere la semantica di editing) e aggiunge sotto una nota "Netto: €X" di sola lettura. Nessuna modifica a SplitSlider/API/schema/motore di calcolo. **Incidente infrastrutturale scoperto e gestito**: il worktree creato con `EnterWorktree` è partito da `origin/main` (stale, 41 commit indietro — mancava l'intera schermata Spese), non dal `main` locale; risolto con un merge esplicito del `main` locale dentro il worktree, autorizzato esplicitamente dall'utente in questa sessione dato che l'esecuzione era inline (non coperta dall'eccezione git standard di questo repo, scritta pensando al workflow con subagent). Causa profonda: `origin/main` non veniva mai pushato in questo progetto, quindi divergeva sempre di più dal `main` locale. **Risolto nella stessa sessione**: eseguito `git push origin main` (autorizzato esplicitamente dall'utente), allineando `origin/main` a `b2449d7` — nessun commit perso lato remoto (0 commit `main..origin/main`). Prossimi worktree partiranno già aggiornati. Verifica in browser reale non eseguita (nessun Postgres/Redis disponibile nel sandbox di questa sessione): confermato solo che `pnpm build`/`tsc`/lint passano puliti — richiesto un check manuale dell'utente come già fatto per GoCardless Task 16.
 - **2026-07-22** — Completato (6/6 task, il 6° aggiunto a piano già approvato) il riordino della schermata Spese (`docs/superpowers/plans/2026-07-22-spese-donut-riordino.md`), eseguito con `superpowers:brainstorming` → spec (`docs/superpowers/specs/2026-07-22-spese-donut-riordino-design.md`, con addendum) → `superpowers:subagent-driven-development` su worktree dedicato `spese-donut-riordino`, poi mergiato (fast-forward) su `main`. Cambiamenti: lista transazioni spostata sopra il grafico "Andamento 6 mesi" (non più ultima); `CategoryBreakdown` (lista budget) e il donut "Fisse vs variabili" di `ExpenseCharts` sostituiti da un unico componente `CategoryBreakdownDonut` — torta multilivello nested (layer interno tipo fissa/variabile, layer esterno categoria colorata col colore proprio) con legenda integrata (budget editabile inline invariato + badge % saturazione budget + badge % sul totale speso, entrambi null-safe su denominatore 0); `ExpenseCharts` rinominato `ExpenseTrendChart` (solo bar chart). Nuovo modulo puro testato `category-breakdown-donut.utils.ts` (`sortCategoryAmounts`, `computeBudgetStats`, 9 test vitest). Nuovi token colore `--swatch-*` in `globals.css` + `SWATCH_CHART_COLOR` (`components/domain/shared/color-swatches.ts`) per i fill letterali richiesti dai `Cell` recharts. **Task 6 aggiunto dopo la review finale già "pronto al merge"**: l'utente, guardando il piano prima del merge, ha chiesto (a) legenda con `max-h-56 overflow-y-auto` per non sbilanciare la card quando ci sono molte categorie, e (b) icona categoria (riuso di `ICON_MAP`, ora esportato anche dal barrel `components/domain/categories`) renderizzata al centro di ogni fetta dell'anello esterno via `label` custom di recharts, nascosta sotto il 5% del totale — entrambe implementate con lo stesso ciclo brainstorming→spec-addendum→task→review. **Debito tecnico pre-esistente, non introdotto da questo piano** (verificato con `git show` sul commit precedente): `pnpm lint` continua a segnalare 2 errori `react-hooks/set-state-in-effect` (`components/theme-toggle.tsx`, mai toccato, e il pattern di sincronizzazione input↔prop in `CategoryLegendRow`, ereditato byte-per-byte dal vecchio `CategoryBreakdownRow`) — il piano ha ridotto il conteggio da 3 a 2 eliminando il duplicato, non li ha introdotti. **Verifica manuale in browser eseguita dall'utente il 2026-07-22, esito positivo**: allineamento angolare torta, legenda scrollabile e icone nelle fette confermati funzionanti, incluso il possibile basso contrasto segnalato dalla review finale sull'icona bianca fissa sulla fetta gialla (`--swatch-yellow` = `#facc15`, tono chiaro) — nessun problema riscontrato. Push di `origin/main` eseguito subito prima della creazione del worktree (anziché il merge post-hoc usato in sessioni precedenti) per evitare la staleness già nota di `EnterWorktree` con `baseRef: fresh` — approccio preventivo da preferire in futuro rispetto al merge riparativo.
 - **2026-07-23** — Completato (5/5 task) il piano navigazione periodo in Spese (`docs/superpowers/plans/2026-07-22-spese-navigazione-periodo.md`), ripreso da worktree già esistente (`spese-navigazione-periodo`, Task 1-3 già completi da sessione precedente) usando `superpowers:subagent-driven-development`, poi mergiato su `main`. Cambiamenti: `referenceDate` (periodo guardato) separato da `today` (data reale) in tutte le funzioni pure di `lib/calc/expenses.ts` (`computeKpis`/`computeCategoryBreakdown`/`computeFixedVsVariable`), così un mese passato calcola KPI corretti invece di trattarlo come "ancora in corso"; nuovo componente `ExpensesReferenceNav` (frecce prev/next + popover jump-to mese/anno con griglia mesi, mesi/anni futuri disabilitati) sostituisce il sottotitolo statico in `app/(app)/spese/page.tsx`; nuove funzioni pure `shiftReferenceDate`/`formatPeriodLabel`/`MONTH_LABELS`. Bug Important trovato dalla review finale whole-branch, corretto nella stessa sessione: `formatPeriodLabel` (caso "settimana") mostrava etichette sbagliate per settimane a cavallo di due mesi nello stesso anno (es. "28–3 ago" invece di "28 lug – 3 ago", mese di inizio perso) — bug direttamente raggiungibile dalla nuova navigazione settimanale e non coperto da test esistenti; fix con branch dedicato same-mese/same-anno-mesi-diversi/anni-diversi + nuovo test di regressione. **Incidente da annotare, distinto dai precedenti**: durante il merge locale su `main`, un `git commit --no-edit` ha incorporato per race condition il lavoro di un'altra sessione attiva **in parallelo nello stesso checkout `main`** (non in un worktree separato) — un messaggio di commit fuorviante ("docs: spec palette colori/icone estesa categorie...") e un file spec non pertinente (`docs/superpowers/specs/2026-07-23-categorie-palette-estesa-distribuzione-design.md`) sono finiti dentro il commit di merge di questa feature. Nessuna perdita di dati (parent del merge corretti, contenuto del file spec integro, build/test verificati puliti dopo), corretto con un singolo `git commit --amend` del solo messaggio (autorizzato esplicitamente dall'utente, contenuto/albero invariato). **Lezione, nuova rispetto ai precedenti incidenti worktree**: i rischi finora documentati riguardavano `origin/main` stale o worktree partiti da basi vecchie; questo è il primo caso di due sessioni che scrivono *contemporaneamente* nello stesso checkout `main` (non in worktree isolati) — un `git commit` senza verifica esplicita di `git status`/`git diff --cached` immediatamente prima può incorporare stato altrui. Da preferire in futuro: controllare lo stato staged subito prima di ogni commit di merge quando si sa o si sospetta che un'altra sessione sia attiva. Riscontrato anche un problema Windows-specifico nella cleanup: `git worktree remove` ha fallito con "Filename too long" per via di `node_modules` annidato di pnpm nel worktree — risolto rimuovendo `node_modules` a mano (`rm -rf`) prima del retry; il primo tentativo ha comunque deregistrato il worktree da git nonostante l'errore di cancellazione file, lasciando una directory residua ripulita manualmente.
+
+<!-- rtk-instructions v2 -->
+# RTK (Rust Token Killer) - Token-Optimized Commands
+
+## Golden Rule
+
+**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged. This means RTK is always safe to use.
+
+**Important**: Even in command chains with `&&`, use `rtk`:
+```bash
+# ❌ Wrong
+git add . && git commit -m "msg" && git push
+
+# ✅ Correct
+rtk git add . && rtk git commit -m "msg" && rtk git push
+```
+
+## RTK Commands by Workflow
+
+### Build & Compile (80-90% savings)
+```bash
+rtk cargo build         # Cargo build output
+rtk cargo check         # Cargo check output
+rtk cargo clippy        # Clippy warnings grouped by file (80%)
+rtk tsc                 # TypeScript errors grouped by file/code (83%)
+rtk lint                # ESLint/Biome violations grouped (84%)
+rtk prettier --check    # Files needing format only (70%)
+rtk next build          # Next.js build with route metrics (87%)
+```
+
+### Test (60-99% savings)
+```bash
+rtk cargo test          # Cargo test failures only (90%)
+rtk go test             # Go test failures only (90%)
+rtk jest                # Jest failures only (99.5%)
+rtk vitest              # Vitest failures only (99.5%)
+rtk playwright test     # Playwright failures only (94%)
+rtk pytest              # Python test failures only (90%)
+rtk rake test           # Ruby test failures only (90%)
+rtk rspec               # RSpec test failures only (60%)
+rtk test <cmd>          # Generic test wrapper - failures only
+```
+
+### Git (59-80% savings)
+```bash
+rtk git status          # Compact status
+rtk git log             # Compact log (works with all git flags)
+rtk git diff            # Compact diff (80%)
+rtk git show            # Compact show (80%)
+rtk git add             # Ultra-compact confirmations (59%)
+rtk git commit          # Ultra-compact confirmations (59%)
+rtk git push            # Ultra-compact confirmations
+rtk git pull            # Ultra-compact confirmations
+rtk git branch          # Compact branch list
+rtk git fetch           # Compact fetch
+rtk git stash           # Compact stash
+rtk git worktree        # Compact worktree
+```
+
+Note: Git passthrough works for ALL subcommands, even those not explicitly listed.
+
+### GitHub (26-87% savings)
+```bash
+rtk gh pr view <num>    # Compact PR view (87%)
+rtk gh pr checks        # Compact PR checks (79%)
+rtk gh run list         # Compact workflow runs (82%)
+rtk gh issue list       # Compact issue list (80%)
+rtk gh api              # Compact API responses (26%)
+```
+
+### JavaScript/TypeScript Tooling (70-90% savings)
+```bash
+rtk pnpm list           # Compact dependency tree (70%)
+rtk pnpm outdated       # Compact outdated packages (80%)
+rtk pnpm install        # Compact install output (90%)
+rtk npm run <script>    # Compact npm script output
+rtk npx <cmd>           # Compact npx command output
+rtk prisma              # Prisma without ASCII art (88%)
+rtk uv run <cmd>        # Compact uv project command output
+```
+
+### Files & Search (60-75% savings)
+```bash
+rtk ls <path>           # Tree format, compact (65%)
+rtk read <file>         # Code reading with filtering (60%)
+rtk grep <pattern>      # Search grouped by file (75%). Format flags (-c, -l, -L, -o, -Z) run raw.
+rtk find <pattern>      # Find grouped by directory (70%)
+```
+
+### Analysis & Debug (70-90% savings)
+```bash
+rtk err <cmd>           # Filter errors only from any command
+rtk log <file>          # Deduplicated logs with counts
+rtk json <file>         # JSON structure without values
+rtk deps                # Dependency overview
+rtk env                 # Environment variables compact
+rtk summary <cmd>       # Smart summary of command output
+rtk diff                # Ultra-compact diffs
+```
+
+### Infrastructure (85% savings)
+```bash
+rtk docker ps           # Compact container list
+rtk docker images       # Compact image list
+rtk docker logs <c>     # Deduplicated logs
+rtk kubectl get         # Compact resource list
+rtk kubectl logs        # Deduplicated pod logs
+```
+
+### Network (65-70% savings)
+```bash
+rtk curl <url>          # Compact HTTP responses (70%)
+rtk wget <url>          # Compact download output (65%)
+```
+
+### Meta Commands
+```bash
+rtk gain                # View token savings statistics
+rtk gain --history      # View command history with savings
+rtk discover            # Analyze Claude Code sessions for missed RTK usage
+rtk proxy <cmd>         # Run command without filtering (for debugging)
+rtk init                # Add RTK instructions to CLAUDE.md
+rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
+```
+
+## Token Savings Overview
+
+| Category | Commands | Typical Savings |
+|----------|----------|-----------------|
+| Tests | vitest, playwright, cargo test | 90-99% |
+| Build | next, tsc, lint, prettier | 70-87% |
+| Git | status, log, diff, add, commit | 59-80% |
+| GitHub | gh pr, gh run, gh issue | 26-87% |
+| Package Managers | pnpm, npm, npx | 70-90% |
+| Files | ls, read, grep, find | 60-75% |
+| Infrastructure | docker, kubectl | 85% |
+| Network | curl, wget | 65-70% |
+
+Overall average: **60-90% token reduction** on common development operations.
+<!-- /rtk-instructions -->

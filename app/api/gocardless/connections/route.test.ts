@@ -89,7 +89,7 @@ describe("GET/POST /api/gocardless/connections", () => {
     expect(connection.status).toBe("error");
   });
 
-  it("GET restituisce lo stato delle connessioni per conto", async () => {
+  it("GET restituisce lo stato delle connessioni per conto, incluso l'ultimo sync e l'eleggibilità", async () => {
     const [account] = await db
       .insert(accounts)
       .values({ userId, name: "Conto Auto", type: "Conto corrente", balance: "0", source: "auto" })
@@ -104,6 +104,15 @@ describe("GET/POST /api/gocardless/connections", () => {
 
     const response = await GET(new NextRequest("http://localhost/api/gocardless/connections"));
     const body = await response.json();
-    expect(body).toEqual([{ accountId: account.id, status: "expired" }]);
+    expect(body).toEqual([
+      {
+        accountId: account.id,
+        status: "expired",
+        lastSyncedAt: null,
+        eligible: true,
+        nextEligibleAt: null,
+        syncsRemainingToday: 4,
+      },
+    ]);
   });
 });

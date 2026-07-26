@@ -258,18 +258,20 @@ export function computeCategoryBreakdown(
     to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
   };
 
-  return categories.map((category) => {
-    const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
-    const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
-    return {
-      categoryId: category.id,
-      name: category.name,
-      type: category.type,
-      amount: speseEffettive,
-      color: category.color,
-      icon: category.icon,
-    };
-  });
+  return categories
+    .filter((c) => c.type !== "entrata")
+    .map((category) => {
+      const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
+      const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
+      return {
+        categoryId: category.id,
+        name: category.name,
+        type: category.type as "fissa" | "variabile",
+        amount: speseEffettive,
+        color: category.color,
+        icon: category.icon,
+      };
+    });
 }
 
 export interface FixedVsVariable {

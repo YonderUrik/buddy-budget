@@ -3,8 +3,8 @@ import { CATEGORY_COLORS, CATEGORY_ICONS } from "@/lib/validation/categories";
 import { DEFAULT_CATEGORIES } from "./categories";
 
 describe("DEFAULT_CATEGORIES", () => {
-  it("ha 9 categorie", () => {
-    expect(DEFAULT_CATEGORIES).toHaveLength(9);
+  it("ha 18 categorie", () => {
+    expect(DEFAULT_CATEGORIES).toHaveLength(18);
   });
 
   it("ogni categoria ha icona e colore validi", () => {
@@ -18,5 +18,12 @@ describe("DEFAULT_CATEGORIES", () => {
     const fallbackEntries = DEFAULT_CATEGORIES.filter((c) => c.isFallback === true);
     expect(fallbackEntries).toHaveLength(1);
     expect(fallbackEntries[0].name).toBe("Da categorizzare");
+  });
+
+  it("ha 3 categorie di tipo entrata: Stipendio, Freelance, Dividendi e interessi", () => {
+    const incomeEntries = DEFAULT_CATEGORIES.filter((c) => c.type === "entrata");
+    expect(incomeEntries.map((c) => c.name).sort()).toEqual(
+      ["Dividendi e interessi", "Freelance", "Stipendio"].sort()
+    );
   });
 });

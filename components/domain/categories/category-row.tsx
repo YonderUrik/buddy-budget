@@ -28,9 +28,10 @@ import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { CategoryAvatar } from "./category-avatar";
 import { CategoryIconColorPicker } from "./category-icon-color-picker";
 
-const TYPE_LABELS: Record<"fissa" | "variabile", string> = {
+const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
   fissa: "Fissa",
   variabile: "Variabile",
+  entrata: "Entrata",
 };
 
 export interface CategoryRowProps {
@@ -64,7 +65,7 @@ export function CategoryRow({ category }: CategoryRowProps) {
 
   function commitType(type: string | null) {
     if (type === null || type === category.type) return;
-    updateMutation.mutate({ id: category.id, input: { type: type as "fissa" | "variabile" } });
+    updateMutation.mutate({ id: category.id, input: { type: type as "fissa" | "variabile" | "entrata" } });
   }
 
   function handleAppearanceChange(next: { color: CategoryColor; icon: CategoryIcon }) {
@@ -103,12 +104,13 @@ export function CategoryRow({ category }: CategoryRowProps) {
           <Select value={category.type} onValueChange={commitType}>
             <SelectTrigger size="sm" className="h-6 w-fit text-xs">
               <SelectValue>
-                {(value: "fissa" | "variabile") => TYPE_LABELS[value]}
+                {(value: "fissa" | "variabile" | "entrata") => TYPE_LABELS[value]}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="fissa">Fissa</SelectItem>
               <SelectItem value="variabile">Variabile</SelectItem>
+              <SelectItem value="entrata">Entrata</SelectItem>
             </SelectContent>
           </Select>
           {error && <p className="text-sm text-destructive">{error}</p>}

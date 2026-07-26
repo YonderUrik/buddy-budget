@@ -8,7 +8,7 @@ import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { formatCurrency } from "@/lib/format";
-import type { MonthlyCategoryStack, MonthlyStackSegment } from "@/lib/calc/expenses";
+import { OTHER_STACK_SEGMENT_KEY, type MonthlyCategoryStack, type MonthlyStackSegment } from "@/lib/calc/expenses";
 import type { CategoryColor } from "@/lib/validation/categories";
 
 /** Colore fisso (non uno swatch) per il segmento aggregato "Altro", per non confondersi con una categoria reale. */
@@ -26,7 +26,9 @@ interface MonthlyStackRow {
 }
 
 function segmentColor(segment: MonthlyStackSegment): string {
-  return segment.key === "altro" ? OTHER_SEGMENT_COLOR : SWATCH_CHART_COLOR[segment.color as CategoryColor];
+  return segment.key === OTHER_STACK_SEGMENT_KEY
+    ? OTHER_SEGMENT_COLOR
+    : SWATCH_CHART_COLOR[segment.color as CategoryColor];
 }
 
 /** Trasforma i mesi in righe dati recharts con uno slot posizionale (`posNAmount`) per ciascuna posizione dello stack, fino a `maxSlots`. */

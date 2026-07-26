@@ -38,7 +38,15 @@
       "PowerShell(pnpm db:generate 2>&1)",
       "Bash(bash \"C:\\\\Users\\\\Daniele\\\\.claude\\\\plugins\\\\cache\\\\claude-plugins-official\\\\superpowers\\\\6.1.1\\\\skills\\\\subagent-driven-development\\\\scripts\\\\task-brief\" docs/superpowers/plans/2026-07-06-gocardless-open-banking.md 16)",
       "Bash(rm \"docs/superpowers/plans/2026-07-06-gocardless-open-banking.md\" \"docs/superpowers/specs/2026-07-06-gocardless-open-banking-design.md\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(ls -la \"c:/Users/Daniele/Desktop/\" | grep -i spese; ls -la \"c:/Users/Daniele/Desktop/buddy-budget/..\" 2>&1 | head -30)",
+      "Bash(find \"c:/Users/Daniele\" -maxdepth 4 -iname \"*spese*\" -o -iname \"*worktree*\" 2>/dev/null | grep -v AppData | head -50)",
+      "Read(//c/Users/Daniele/**)",
+      "Bash(\"C:/Users/Daniele/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief\" docs/superpowers/plans/2026-07-15-spese-screen.md 2)",
+      "Bash(pnpm approve-builds *)",
+      "Bash(bash \"C:/Users/Daniele/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief\" docs/superpowers/plans/2026-07-24-spese-categorizza-automatico-similarita.md 2)"
     ]
   }
 }

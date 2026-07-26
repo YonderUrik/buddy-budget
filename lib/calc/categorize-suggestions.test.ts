@@ -12,6 +12,8 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
     accountId: "account-1",
     categoryId: "category-1",
     description: "Esselunga",
+    rawDescription: null,
+    note: null,
     amount: "-20.00",
     excludedAmount: "0.00",
     date: "2026-01-01",

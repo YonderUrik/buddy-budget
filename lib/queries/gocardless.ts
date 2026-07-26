@@ -1,7 +1,10 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import type { CreateConnectionInput, FinalizeSelectionInput } from "@/lib/validation/gocardless";
+import { buildSyncErrorMessage, buildSyncSummaryMessage } from "@/lib/gocardless/sync-messages";
+import type { SyncErrorInfo, SyncSuccessResult } from "@/lib/gocardless/sync-messages";
 
 export interface Institution {
   id: string;
@@ -13,6 +16,10 @@ export interface Institution {
 export interface BankConnectionStatus {
   accountId: string;
   status: "pending" | "linked" | "expired" | "error";
+  lastSyncedAt: string | null;
+  eligible: boolean;
+  nextEligibleAt: string | null;
+  syncsRemainingToday: number;
 }
 
 export interface ExternalAccount {
@@ -99,6 +106,35 @@ export function useFinalizeConnectionMutation(connectionId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["gocardless", "connections", "status"] });
+    },
+  });
+}
+
+export class SyncNotAvailableError extends Error {
+  constructor(public readonly info: SyncErrorInfo) {
+    super("Sync non disponibile");
+  }
+}
+
+/** Avvia un sync manuale per un conto: mostra un toast con l'esito e invalida conti/transazioni/stato connessioni. */
+export function useSyncAccountMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (accountId: string): Promise<SyncSuccessResult> => {
+      const response = await fetch(`/api/gocardless/accounts/${accountId}/sync`, { method: "POST" });
+      const body = await response.json();
+      if (!response.ok) throw new SyncNotAvailableError(body);
+      return body as SyncSuccessResult;
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["gocardless", "connections", "status"] });
+      toast.success(buildSyncSummaryMessage(result));
+    },
+    onError: (error: unknown) => {
+      const info: SyncErrorInfo = error instanceof SyncNotAvailableError ? error.info : { status: "unknown" };
+      toast.error(buildSyncErrorMessage(info));
     },
   });
 }

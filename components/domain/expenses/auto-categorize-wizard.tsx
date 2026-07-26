@@ -59,7 +59,7 @@ function AutoCategorizeStep({
           Rivedi categorizzazione ({index + 1} di {total})
         </DialogTitle>
         <DialogDescription>
-          Basato su {suggestion.matchCount} transazioni passate categorizzate così.
+          Basato su {suggestion.matchCount} transazioni simili ({Math.round(suggestion.averageSimilarity * 100)}% di somiglianza media).
         </DialogDescription>
       </DialogHeader>
 

@@ -8,9 +8,9 @@ import { computeCategorizeSuggestions } from "@/lib/calc/categorize-suggestions"
 
 /**
  * GET /api/transactions/categorize-suggestions — per ogni transazione "Da categorizzare" dell'utente
- * con almeno un match storico (stessa descrizione già categorizzata in passato), suggerisce la
- * categoria più frequente e, se coerente, la percentuale di split da riproporre. Nessun filtro
- * periodo: considera l'intero storico dell'utente autenticato.
+ * con almeno un match storico simile (descrizione già categorizzata in passato, per similarità a
+ * token), suggerisce la categoria più frequente e, se coerente, la percentuale di split da
+ * riproporre. Nessun filtro periodo: considera l'intero storico dell'utente autenticato.
  */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });

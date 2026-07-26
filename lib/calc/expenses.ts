@@ -336,7 +336,7 @@ export interface MonthlyCategoryStack {
   segments: MonthlyStackSegment[];
 }
 
-const OTHER_STACK_SEGMENT_KEY = "altro";
+export const OTHER_STACK_SEGMENT_KEY = "altro";
 
 /**
  * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie

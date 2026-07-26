@@ -2,7 +2,7 @@
 
 /** Grafico Spese: barre impilate "Andamento ultimi 6 mesi", segmenti per categoria ricalcolati mese per mese (top 6 + eventuale "Altro", ordine per importo di quel mese specifico). */
 
-import { Bar, BarChart, CartesianGrid, Cell, XAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
 import type { TooltipContentProps } from "recharts";
 import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +52,8 @@ function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipP
   const row = payload?.[0]?.payload as MonthlyStackRow | undefined;
   if (!active || !row || row.segments.length === 0) return null;
 
+  const total = row.segments.reduce((sum, segment) => sum + segment.amount, 0);
+
   return (
     <div className="grid min-w-32 gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl">
       {row.segments.map((segment) => (
@@ -62,6 +64,12 @@ function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipP
           </span>
         </div>
       ))}
+      <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-1.5">
+        <span className="font-medium text-foreground">Totale</span>
+        <span className="font-mono font-semibold tabular-nums text-foreground">
+          {formatCurrency(total, currency)}
+        </span>
+      </div>
     </div>
   );
 }
@@ -83,6 +91,11 @@ export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChart
           <BarChart data={rows}>
             <CartesianGrid vertical={false} />
             <XAxis dataKey="label" tickLine={false} axisLine={false} />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => formatCurrency(Number(value), currency, { maximumFractionDigits: 0 })}
+            />
             <ChartTooltip content={<MonthlyStackTooltip currency={currency} />} />
             {slots.map((slotIndex) => (
               <Bar key={slotIndex} dataKey={`pos${slotIndex}Amount`} stackId="trend">

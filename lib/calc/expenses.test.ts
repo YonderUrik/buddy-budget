@@ -378,6 +378,15 @@ describe("filterTransactions", () => {
     const result = filterTransactions(transactions, { categoryId: null, searchText: "  cinema  " });
     expect(result.map((t) => t.id)).toEqual(["t1"]);
   });
+
+  it("filtra per testo anche dentro la nota, oltre alla descrizione", () => {
+    const transactions = [
+      makeTransaction({ id: "t1", description: "Esselunga", note: null }),
+      makeTransaction({ id: "t2", description: "PAYPAL *XYZ", note: "Regalo compleanno di Marco" }),
+    ];
+    const result = filterTransactions(transactions, { categoryId: null, searchText: "marco" });
+    expect(result.map((t) => t.id)).toEqual(["t2"]);
+  });
 });
 
 describe("shiftReferenceDate", () => {

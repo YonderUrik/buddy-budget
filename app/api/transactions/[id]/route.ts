@@ -50,6 +50,7 @@ export async function PATCH(
     );
   }
 
+  let resolvedCategory: typeof categories.$inferSelect | null = null;
   if (parsed.data.categoryId !== undefined) {
     const [category] = await db
       .select()
@@ -58,9 +59,35 @@ export async function PATCH(
     if (!category) {
       return Response.json({ error: "Categoria non valida" }, { status: 400 });
     }
+    resolvedCategory = category;
   }
 
-  const newAmount = parsed.data.amount !== undefined ? -parsed.data.amount : Number(transaction.amount);
+  const currentIsIncome = Number(transaction.amount) > 0;
+
+  // Se si cambia categoria senza toccare l'importo, la nuova categoria deve avere una direzione
+  // compatibile con il segno già salvato (a meno che sia la categoria fallback, che non ha una
+  // direzione propria e può accogliere transazioni di entrambi i segni).
+  if (resolvedCategory && parsed.data.amount === undefined && !resolvedCategory.isFallback) {
+    const newCategoryIsIncome = resolvedCategory.type === "entrata";
+    if (newCategoryIsIncome !== currentIsIncome) {
+      return Response.json(
+        { error: "La categoria scelta non è compatibile con la direzione della transazione" },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Direzione da usare per il segno del nuovo importo: quella della categoria appena assegnata
+  // (se non fallback), altrimenti quella già in vigore sulla transazione.
+  const signIsIncome =
+    resolvedCategory && !resolvedCategory.isFallback ? resolvedCategory.type === "entrata" : currentIsIncome;
+
+  const newAmount =
+    parsed.data.amount !== undefined
+      ? signIsIncome
+        ? parsed.data.amount
+        : -parsed.data.amount
+      : Number(transaction.amount);
   let newExcludedAmount: number | undefined;
   if (parsed.data.excludedAmount !== undefined) {
     newExcludedAmount = -Math.abs(parsed.data.excludedAmount);

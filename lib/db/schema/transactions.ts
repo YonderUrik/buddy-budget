@@ -18,6 +18,12 @@ export const transactions = pgTable(
       .notNull()
       .references(() => categories.id),
     description: text("description").notNull(),
+    // Testo grezzo remittanceInformationUnstructured originale (solo transazioni auto, quando
+    // GoCardless lo fornisce): usato per il tooltip quando `description` è stata sostituita dal
+    // nome pulito creditorName/debtorName, mai per il matching di categorizzazione.
+    rawDescription: text("raw_description"),
+    // Nota libera dell'utente, editabile su transazioni auto e manuali.
+    note: text("note"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
     excludedAmount: numeric("excluded_amount", { precision: 12, scale: 2 }).notNull().default("0"),
     date: date("date").notNull(),

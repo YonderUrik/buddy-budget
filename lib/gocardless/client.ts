@@ -192,6 +192,8 @@ export interface BankTransaction {
   transactionAmount: { amount: string; currency: string };
   remittanceInformationUnstructured?: string;
   bookingDate: string;
+  creditorName?: string;
+  debtorName?: string;
 }
 
 /** Transazioni "booked" di un conto esterno (le "pending" non si importano, per evitare doppioni al booking). */

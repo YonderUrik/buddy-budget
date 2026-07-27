@@ -404,7 +404,6 @@ export interface TransactionFilter {
   searchText: string;
 }
 
-/** Filtra le transazioni per categoria esatta e/o substring case-insensitive sulla descrizione, in AND. */
 /** Filtra le transazioni per categoria esatta e/o substring case-insensitive su descrizione o nota, in AND. */
 export function filterTransactions(
   transactions: Transaction[],

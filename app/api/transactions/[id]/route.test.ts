@@ -173,6 +173,89 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
     expect(updated.excludedAmount).toBe("-30.00");
   });
 
+  it("permette di impostare una nota su una transazione manuale", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId,
+        description: "Spesa",
+        amount: "-50.00",
+        date: "2026-02-10",
+        source: "manuale",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ note: "Regalo per Marco" }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.note).toBe("Regalo per Marco");
+  });
+
+  it("permette di impostare una nota su una transazione auto (unico campo libero anche per auto)", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId,
+        description: "Movimento sincronizzato",
+        amount: "-50.00",
+        date: "2026-02-10",
+        source: "auto",
+        externalId: "ext-note-auto",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ note: "Da controllare" }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.note).toBe("Da controllare");
+  });
+
+  it("cancella una nota esistente inviando null", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId,
+        description: "Spesa",
+        note: "Nota precedente",
+        amount: "-50.00",
+        date: "2026-02-10",
+        source: "manuale",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ note: null }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.note).toBeNull();
+  });
+
   it("risponde 400 se excludedAmount supera l'importo", async () => {
     const [transaction] = await db
       .insert(transactions)

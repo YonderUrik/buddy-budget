@@ -51,4 +51,33 @@ describe("updateTransactionSchema", () => {
     const result = updateTransactionSchema.safeParse({ excludedAmount: 12.3 });
     expect(result.success).toBe(true);
   });
+
+  it("accetta una nota valida", () => {
+    const result = updateTransactionSchema.safeParse({ note: "Regalo compleanno di Marco" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.note).toBe("Regalo compleanno di Marco");
+    }
+  });
+
+  it("normalizza una nota vuota (dopo trim) a null", () => {
+    const result = updateTransactionSchema.safeParse({ note: "   " });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.note).toBeNull();
+    }
+  });
+
+  it("accetta esplicitamente null per cancellare la nota", () => {
+    const result = updateTransactionSchema.safeParse({ note: null });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.note).toBeNull();
+    }
+  });
+
+  it("rifiuta una nota oltre 500 caratteri", () => {
+    const result = updateTransactionSchema.safeParse({ note: "a".repeat(501) });
+    expect(result.success).toBe(false);
+  });
 });

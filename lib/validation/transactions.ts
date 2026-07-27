@@ -19,6 +19,13 @@ export const updateTransactionSchema = z
     amount: z.number().positive().optional(),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida").optional(),
     excludedAmount: z.number().min(0).optional(),
+    note: z
+      .string()
+      .trim()
+      .max(500, "La nota non può superare 500 caratteri")
+      .nullable()
+      .optional()
+      .transform((val) => (val === "" ? null : val)),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Nessun campo da aggiornare",

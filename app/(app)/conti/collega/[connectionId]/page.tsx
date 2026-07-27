@@ -105,7 +105,13 @@ export default function CollegaBancaPage() {
               }
             >
               <SelectTrigger className="w-48">
-                <SelectValue />
+                <SelectValue>
+                  {(value: string) =>
+                    value === NEW_ACCOUNT_VALUE
+                      ? "Crea nuovo conto"
+                      : `Ricollega a "${data.existingAutoAccounts.find((existing) => existing.id === value)?.name ?? ""}"`
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NEW_ACCOUNT_VALUE}>Crea nuovo conto</SelectItem>

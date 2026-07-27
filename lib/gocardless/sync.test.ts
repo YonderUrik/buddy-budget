@@ -112,6 +112,103 @@ describe("syncAccountLink", () => {
     expect(storedTransactions[0].amount).toBe("-20.00");
   });
 
+  it("usa creditorName come description su una spesa (importo negativo), salvando il testo grezzo in rawDescription", async () => {
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-creditor",
+          transactionAmount: { amount: "-20.00", currency: "EUR" },
+          remittanceInformationUnstructured: "PAGAMENTO POS ESSELUNGA VIA ROMA COD.4471",
+          creditorName: "ESSELUNGA SPA",
+          bookingDate: "2026-07-01",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    await syncAccountLink(link, createMemoryStore());
+
+    const [stored] = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
+    expect(stored.description).toBe("ESSELUNGA SPA");
+    expect(stored.rawDescription).toBe("PAGAMENTO POS ESSELUNGA VIA ROMA COD.4471");
+  });
+
+  it("usa debtorName come description su un'entrata (importo positivo)", async () => {
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-debtor",
+          transactionAmount: { amount: "500.00", currency: "EUR" },
+          remittanceInformationUnstructured: "BONIFICO RIF.998877",
+          debtorName: "MARIO ROSSI SRL",
+          bookingDate: "2026-07-01",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    await syncAccountLink(link, createMemoryStore());
+
+    const [stored] = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
+    expect(stored.description).toBe("MARIO ROSSI SRL");
+    expect(stored.rawDescription).toBe("BONIFICO RIF.998877");
+  });
+
+  it("senza creditorName/debtorName ricade sulla descrizione grezza, con rawDescription uguale a description", async () => {
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-no-merchant",
+          transactionAmount: { amount: "-8.00", currency: "EUR" },
+          remittanceInformationUnstructured: "Supermercato",
+          bookingDate: "2026-07-01",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    await syncAccountLink(link, createMemoryStore());
+
+    const [stored] = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
+    expect(stored.description).toBe("Supermercato");
+    expect(stored.rawDescription).toBe("Supermercato");
+  });
+
+  it("senza nessun campo testuale ricade su 'Movimento bancario', con rawDescription null", async () => {
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-empty",
+          transactionAmount: { amount: "-3.00", currency: "EUR" },
+          bookingDate: "2026-07-01",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    await syncAccountLink(link, createMemoryStore());
+
+    const [stored] = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
+    expect(stored.description).toBe("Movimento bancario");
+    expect(stored.rawDescription).toBeNull();
+  });
+
   it("distingue le transazioni categorizzate per storico da quelle finite nel fallback", async () => {
     const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
     await db.insert(transactions).values({

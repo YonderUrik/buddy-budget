@@ -404,7 +404,7 @@ export interface TransactionFilter {
   searchText: string;
 }
 
-/** Filtra le transazioni per categoria esatta e/o substring case-insensitive sulla descrizione, in AND. */
+/** Filtra le transazioni per categoria esatta e/o substring case-insensitive su descrizione o nota, in AND. */
 export function filterTransactions(
   transactions: Transaction[],
   filter: TransactionFilter
@@ -412,7 +412,9 @@ export function filterTransactions(
   const normalizedSearch = filter.searchText.trim().toLocaleLowerCase();
   return transactions.filter((t) => {
     if (filter.categoryId !== null && t.categoryId !== filter.categoryId) return false;
-    if (normalizedSearch !== "" && !t.description.toLocaleLowerCase().includes(normalizedSearch)) return false;
-    return true;
+    if (normalizedSearch === "") return true;
+    const descriptionMatch = t.description.toLocaleLowerCase().includes(normalizedSearch);
+    const noteMatch = (t.note ?? "").toLocaleLowerCase().includes(normalizedSearch);
+    return descriptionMatch || noteMatch;
   });
 }

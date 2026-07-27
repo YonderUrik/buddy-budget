@@ -25,6 +25,7 @@ import type { Category } from "@/lib/db/schema/categories";
 import { SplitSlider } from "./split-slider";
 import { CategoryAvatar } from "@/components/domain/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { TransactionNotePopover } from "./transaction-note-popover";
 
 export interface TransactionRowProps {
   transaction: Transaction;
@@ -88,10 +89,17 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           : "border-b border-border last:border-b-0"
       }
     >
-      <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+      <div className="group flex flex-wrap items-center gap-3 px-4 py-3">
         <div className="min-w-0 flex-1 space-y-1">
           {isAuto ? (
-            <p className="truncate text-sm font-medium text-foreground" title={transaction.description}>
+            <p
+              className="truncate text-sm font-medium text-foreground"
+              title={
+                transaction.rawDescription && transaction.rawDescription !== transaction.description
+                  ? transaction.rawDescription
+                  : transaction.description
+              }
+            >
               {transaction.description}
             </p>
           ) : (
@@ -216,6 +224,8 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
               )}
             </div>
           )}
+
+          <TransactionNotePopover transaction={transaction} />
 
           <button
             type="button"

@@ -27,6 +27,8 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
     accountId: "account-1",
     categoryId: "category-1",
     description: "Transazione",
+    rawDescription: null,
+    note: null,
     amount: "-10.00",
     excludedAmount: "0.00",
     date: "2026-02-10",
@@ -375,6 +377,15 @@ describe("filterTransactions", () => {
     const transactions = [makeTransaction({ id: "t1", description: "Cinema" })];
     const result = filterTransactions(transactions, { categoryId: null, searchText: "  cinema  " });
     expect(result.map((t) => t.id)).toEqual(["t1"]);
+  });
+
+  it("filtra per testo anche dentro la nota, oltre alla descrizione", () => {
+    const transactions = [
+      makeTransaction({ id: "t1", description: "Esselunga", note: null }),
+      makeTransaction({ id: "t2", description: "PAYPAL *XYZ", note: "Regalo compleanno di Marco" }),
+    ];
+    const result = filterTransactions(transactions, { categoryId: null, searchText: "marco" });
+    expect(result.map((t) => t.id)).toEqual(["t2"]);
   });
 });
 

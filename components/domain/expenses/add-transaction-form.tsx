@@ -27,15 +27,23 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
   const createMutation = useCreateTransactionMutation();
 
   const [accountIdOverride, setAccountIdOverride] = React.useState<string | null>(null);
+  const [direction, setDirection] = React.useState<"spesa" | "entrata">("spesa");
   const [description, setDescription] = React.useState("");
   const [categoryIdOverride, setCategoryIdOverride] = React.useState<string | null>(null);
   const [amountValue, setAmountValue] = React.useState<number | null>(null);
   const [date, setDate] = React.useState(todayDateString());
   const [error, setError] = React.useState<string | null>(null);
 
+  const availableCategories = categories.filter((c) => (direction === "entrata" ? c.type === "entrata" : c.type !== "entrata"));
+
+  function handleDirectionChange(next: "spesa" | "entrata") {
+    setDirection(next);
+    setCategoryIdOverride(null);
+  }
+
   // Preseleziona il primo conto/categoria disponibile finché l'utente non sceglie esplicitamente.
   const accountId = accountIdOverride ?? manualAccounts[0]?.id ?? "";
-  const categoryId = categoryIdOverride ?? categories[0]?.id ?? "";
+  const categoryId = categoryIdOverride ?? availableCategories[0]?.id ?? "";
 
   const canSubmit =
     accountId !== "" &&
@@ -69,6 +77,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           setDescription("");
           setAmountValue(null);
           setDate(todayDateString());
+          setDirection("spesa");
         },
         onError: (mutationError) => setError(mutationError.message),
       }
@@ -77,6 +86,27 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
+      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+        <label className="text-xs text-muted-foreground">Tipo</label>
+        <div className="inline-flex w-fit items-center gap-1 rounded-lg bg-muted p-1">
+          {(["spesa", "entrata"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => handleDirectionChange(option)}
+              aria-pressed={direction === option}
+              className={
+                direction === option
+                  ? "rounded-md bg-background px-3 py-1.5 text-sm font-medium text-foreground shadow-sm"
+                  : "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+              }
+            >
+              {option === "spesa" ? "Spesa" : "Entrata"}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
         <label className="text-xs text-muted-foreground">Conto</label>
         <Select
@@ -122,15 +152,15 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
             if (value === null) return;
             setCategoryIdOverride(value);
           }}
-          disabled={categories.length === 0}
+          disabled={availableCategories.length === 0}
         >
           <SelectTrigger className="w-full sm:w-40">
             <SelectValue placeholder="Categoria">
-              {(value: string | null) => categories.find((c) => c.id === value)?.name ?? ""}
+              {(value: string | null) => availableCategories.find((c) => c.id === value)?.name ?? ""}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {categories.map((category) => (
+            {availableCategories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
               </SelectItem>
@@ -175,9 +205,11 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
         </p>
       )}
 
-      {categories.length === 0 && (
+      {availableCategories.length === 0 && (
         <p className="w-full text-sm text-muted-foreground">
-          Nessuna categoria disponibile: aggiungine una prima di registrare una spesa.
+          {direction === "entrata"
+            ? "Nessuna categoria di entrata disponibile: aggiungine una dalla pagina Categorie."
+            : "Nessuna categoria disponibile: aggiungine una prima di registrare una spesa."}
         </p>
       )}
 

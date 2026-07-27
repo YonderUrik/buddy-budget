@@ -20,6 +20,7 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
   const [note, setNote] = React.useState(transaction.note ?? "");
   const [open, setOpen] = React.useState(false);
   const hasNote = (transaction.note ?? "").trim() !== "";
+  const hasSaveError = updateMutation.isError;
 
   function commit() {
     if (note.trim() === (transaction.note ?? "")) return;
@@ -28,19 +29,39 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
 
   function handleOpenChange(nextOpen: boolean) {
     setOpen(nextOpen);
-    if (!nextOpen) commit();
+    if (nextOpen) {
+      // Riapertura: l'utente sta per riprovare, non lasciare lo stato d'errore
+      // precedente visibile mentre modifica di nuovo la nota.
+      updateMutation.reset();
+    } else {
+      commit();
+    }
   }
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
         className={
-          hasNote
-            ? "flex size-6 shrink-0 items-center justify-center rounded-md text-primary hover:bg-muted"
-            : "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 hover:bg-muted focus-visible:opacity-100 group-hover:opacity-100"
+          hasSaveError
+            ? "flex size-6 shrink-0 items-center justify-center rounded-md text-destructive hover:bg-muted"
+            : hasNote
+              ? "flex size-6 shrink-0 items-center justify-center rounded-md text-primary hover:bg-muted"
+              : "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 hover:bg-muted focus-visible:opacity-100 group-hover:opacity-100"
         }
-        aria-label={hasNote ? "Modifica nota" : "Aggiungi nota"}
-        title={hasNote ? (transaction.note ?? undefined) : "Aggiungi nota"}
+        aria-label={
+          hasSaveError
+            ? "Salvataggio della nota non riuscito, riprova"
+            : hasNote
+              ? "Modifica nota"
+              : "Aggiungi nota"
+        }
+        title={
+          hasSaveError
+            ? "Salvataggio della nota non riuscito, riprova"
+            : hasNote
+              ? (transaction.note ?? undefined)
+              : "Aggiungi nota"
+        }
       >
         <NotebookPen className="size-3.5" />
       </PopoverTrigger>

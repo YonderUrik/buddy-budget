@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { and, desc, eq, gte, lt, lte } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lt, lte } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
@@ -8,8 +8,10 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
+const VALID_TYPES = ["uscita", "entrata", "tutte"] as const;
+type TypeParam = (typeof VALID_TYPES)[number];
 
-/** GET /api/transactions?from&to — ritorna le spese (amount < 0) dell'utente autenticato nel periodo indicato. */
+/** GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per direzione (default "uscita", retrocompatibile). */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -26,15 +28,23 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "from e to devono avere formato YYYY-MM-DD" }, { status: 400 });
   }
 
+  const typeParam = (url.searchParams.get("type") ?? "uscita") as TypeParam;
+  if (!VALID_TYPES.includes(typeParam)) {
+    return Response.json({ error: "type deve essere uno tra uscita, entrata, tutte" }, { status: 400 });
+  }
+
+  const directionCondition =
+    typeParam === "uscita" ? lt(transactions.amount, "0") : typeParam === "entrata" ? gt(transactions.amount, "0") : undefined;
+
   const rows = await db
     .select()
     .from(transactions)
     .where(
       and(
         eq(transactions.userId, session.user.id),
-        lt(transactions.amount, "0"),
         gte(transactions.date, from),
-        lte(transactions.date, to)
+        lte(transactions.date, to),
+        ...(directionCondition ? [directionCondition] : [])
       )
     )
     .orderBy(desc(transactions.date));
@@ -42,7 +52,7 @@ export async function GET(request: NextRequest) {
   return Response.json(rows);
 }
 
-/** POST /api/transactions — crea una spesa manuale (l'importo positivo inserito viene negato prima del salvataggio). */
+/** POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta (entrata → positivo, fissa/variabile → negato). */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -77,6 +87,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Categoria non valida" }, { status: 400 });
   }
 
+  const signedAmount = category.type === "entrata" ? parsed.data.amount : -parsed.data.amount;
+
   const [transaction] = await db
     .insert(transactions)
     .values({
@@ -84,7 +96,7 @@ export async function POST(request: NextRequest) {
       accountId: parsed.data.accountId,
       categoryId: parsed.data.categoryId,
       description: parsed.data.description,
-      amount: (-parsed.data.amount).toFixed(2),
+      amount: signedAmount.toFixed(2),
       date: parsed.data.date,
       source: "manuale",
     })

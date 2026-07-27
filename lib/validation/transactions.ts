@@ -24,8 +24,8 @@ export const updateTransactionSchema = z
       .trim()
       .max(500, "La nota non può superare 500 caratteri")
       .nullable()
-      .optional()
-      .transform((val) => (val === "" ? null : val)),
+      .transform((val) => (val === "" ? null : val))
+      .optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: "Nessun campo da aggiornare",

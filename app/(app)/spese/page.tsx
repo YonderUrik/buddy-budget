@@ -1,6 +1,6 @@
 "use client";
 
-/** Pagina Spese: orchestra periodo selezionato, KPI, grafici, categorie/budget, lista transazioni e form di aggiunta. */
+/** Pagina Transazioni (ex Spese): orchestra periodo, KPI, grafici, categorie/budget, lista transazioni e form di aggiunta. */
 
 import * as React from "react";
 import {
@@ -13,6 +13,7 @@ import {
   ExpensesReferenceNav,
   ExpenseTrendChart,
   TransactionRow,
+  TransactionsTypeToggle,
 } from "@/components/domain/expenses";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
@@ -21,9 +22,12 @@ import {
   computeCategoryMonthlyStacks,
   computeFixedVsVariable,
   computeSummary,
+  filterByTransactionType,
   filterTransactions,
   getPeriodRange,
+  isExpense,
   type ExpensePeriod,
+  type TransactionDirection,
 } from "@/lib/calc/expenses";
 import { formatCurrency } from "@/lib/format";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
@@ -50,9 +54,10 @@ export default function SpesePage() {
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
   const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
   const [searchText, setSearchText] = React.useState("");
+  const [listTypeFilter, setListTypeFilter] = React.useState<TransactionDirection>("uscita");
 
   const { from, to } = fetchWindow(referenceDate);
-  const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to);
+  const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to, "tutte");
   const { data: categories } = useCategoriesQuery();
   const { data: budgets } = useBudgetsQuery();
 
@@ -64,16 +69,22 @@ export default function SpesePage() {
     categoryId: categoryFilter,
     searchText,
   });
+
+  // Widget di analisi (KPI/donut/trend): sempre e solo uscite, indipendentemente dal toggle tipo-lista.
+  const expenseTransactionsForAnalysis = filteredTransactions.filter(isExpense);
   const filteredBudgets = categoryFilter
     ? safeBudgets.filter((b) => b.categoryId === categoryFilter)
     : safeBudgets;
+
+  // Lista: rispetta il toggle Tutte/Uscite/Entrate.
+  const listFiltered = filterByTransactionType(filteredTransactions, listTypeFilter);
 
   const fallbackCategoryIds = new Set(
     safeCategories.filter((c) => c.isFallback).map((c) => c.id)
   );
 
   const range = getPeriodRange(period, referenceDate);
-  const transactionsInPeriodAll = filteredTransactions.filter(
+  const transactionsInPeriodAll = listFiltered.filter(
     (t) => t.date >= toDateString(range.from) && t.date <= toDateString(range.to)
   );
   const uncategorizedCount = transactionsInPeriodAll.filter(
@@ -89,7 +100,7 @@ export default function SpesePage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-heading text-2xl font-medium text-foreground">Spese</h1>
+          <h1 className="font-heading text-2xl font-medium text-foreground">Transazioni</h1>
           <ExpensesReferenceNav period={period} referenceDate={referenceDate} onChange={setReferenceDate} />
         </div>
         <a
@@ -120,16 +131,19 @@ export default function SpesePage() {
         <ExpensesPeriodSelector value={period} onChange={setPeriod} />
       </div>
 
-      <ExpensesFilterBar
-        categories={safeCategories}
-        categoryId={categoryFilter}
-        onCategoryChange={(categoryId) => {
-          setCategoryFilter(categoryId);
-          setShowUncategorizedOnly(false);
-        }}
-        searchText={searchText}
-        onSearchTextChange={setSearchText}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ExpensesFilterBar
+          categories={safeCategories}
+          categoryId={categoryFilter}
+          onCategoryChange={(categoryId) => {
+            setCategoryFilter(categoryId);
+            setShowUncategorizedOnly(false);
+          }}
+          searchText={searchText}
+          onSearchTextChange={setSearchText}
+        />
+        <TransactionsTypeToggle value={listTypeFilter} onChange={setListTypeFilter} />
+      </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-busy="true">
@@ -147,7 +161,7 @@ export default function SpesePage() {
       ) : (
         <>
           <ExpensesKpiCards
-            transactions={filteredTransactions}
+            transactions={expenseTransactionsForAnalysis}
             budgets={filteredBudgets}
             period={period}
             currency={currency}
@@ -156,8 +170,8 @@ export default function SpesePage() {
           />
 
           <CategoryBreakdownDonut
-            categoryAmounts={computeCategoryBreakdown(filteredTransactions, safeCategories, period, referenceDate, today)}
-            fixedVsVariable={computeFixedVsVariable(filteredTransactions, safeCategories, period, referenceDate, today)}
+            categoryAmounts={computeCategoryBreakdown(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
+            fixedVsVariable={computeFixedVsVariable(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
             budgets={safeBudgets}
             currency={currency}
           />
@@ -165,7 +179,7 @@ export default function SpesePage() {
           <Card className="p-0">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 text-sm text-muted-foreground">
               {(() => {
-                const summary = computeSummary(filteredTransactions, range);
+                const summary = computeSummary(expenseTransactionsForAnalysis, range);
                 return (
                   <>
                     <span>Uscite: {formatCurrency(summary.uscite, currency)}</span>
@@ -199,7 +213,7 @@ export default function SpesePage() {
           </Card>
 
           <ExpenseTrendChart
-            monthlyStacks={computeCategoryMonthlyStacks(filteredTransactions, safeCategories, referenceDate)}
+            monthlyStacks={computeCategoryMonthlyStacks(expenseTransactionsForAnalysis, safeCategories, referenceDate)}
             currency={currency}
           />
         </>

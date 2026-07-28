@@ -165,6 +165,13 @@ export interface CashflowMonthlyEntry {
   uscite: number;
 }
 
+/** Etichetta mese per gli assi Cash flow: aggiunge l'anno abbreviato se il range copre più anni solari, per non confondere mesi omonimi (es. lug 2024 e lug 2025 su un periodo 24 mesi). */
+function formatMonthAxisLabel(monthDate: Date, range: DateRange): string {
+  const monthLabel = MONTH_LABELS[monthDate.getMonth()];
+  const spansMultipleYears = range.from.getFullYear() !== range.to.getFullYear();
+  return spansMultipleYears ? `${monthLabel} '${String(monthDate.getFullYear()).slice(-2)}` : monthLabel;
+}
+
 /** Serie mensile entrate/uscite per ciascun mese calendariale nel range (inclusi i mesi senza transazioni, a 0). Le uscite contano la spesa effettiva post-"Dividi". */
 export function computeMonthlySeries(transactions: Transaction[], range: DateRange): CashflowMonthlyEntry[] {
   return monthsInRange(range).map((monthDate) => {
@@ -173,7 +180,7 @@ export function computeMonthlySeries(transactions: Transaction[], range: DateRan
     return {
       year: monthDate.getFullYear(),
       month: monthDate.getMonth(),
-      label: MONTH_LABELS[monthDate.getMonth()],
+      label: formatMonthAxisLabel(monthDate, range),
       entrate: inMonth.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0),
       uscite: inMonth.filter(isExpense).reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0),
     };

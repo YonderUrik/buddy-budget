@@ -178,6 +178,27 @@ describe("computeMonthlySeries", () => {
 
     expect(series[0].uscite).toBe(600);
   });
+
+  it("aggiunge l'anno all'etichetta quando il range copre più anni solari, per non confondere mesi omonimi", () => {
+    const range = { from: new Date(2024, 6, 1), to: new Date(2025, 6, 31) };
+
+    const series = computeMonthlySeries([], range);
+    const julyEntries = series.filter((entry) => entry.month === 6);
+
+    expect(julyEntries).toHaveLength(2);
+    expect(julyEntries[0].label).toBe("Lug '24");
+    expect(julyEntries[1].label).toBe("Lug '25");
+    expect(julyEntries[0].label).not.toBe(julyEntries[1].label);
+  });
+
+  it("non aggiunge l'anno all'etichetta quando il range resta nello stesso anno solare", () => {
+    const range = { from: new Date(2026, 0, 1), to: new Date(2026, 1, 28) };
+
+    const series = computeMonthlySeries([], range);
+
+    expect(series[0].label).toBe("Gen");
+    expect(series[1].label).toBe("Feb");
+  });
 });
 
 describe("computeIncomeSources", () => {

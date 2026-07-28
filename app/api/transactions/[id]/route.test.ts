@@ -23,6 +23,8 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
   let categoryId: string;
   let otherCategoryId: string;
   let otherUserCategoryId: string;
+  let incomeCategoryId: string;
+  let fallbackCategoryId: string;
 
   beforeEach(async () => {
     const testId = `test-transaction-id-${crypto.randomUUID()}`;
@@ -76,6 +78,18 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
       .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
       .returning();
     otherUserCategoryId = otherUserCategory.id;
+
+    const [incomeCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Stipendio", type: "entrata" })
+      .returning();
+    incomeCategoryId = incomeCategory.id;
+
+    const [fallbackCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .returning();
+    fallbackCategoryId = fallbackCategory.id;
   });
 
   afterEach(async () => {
@@ -359,6 +373,82 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
     );
 
     expect(response.status).toBe(400);
+  });
+
+  it("risponde 400 se si cambia categoria con una di direzione incompatibile (entrata su una spesa)", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId, description: "Spesa", amount: "-50.00", date: "2026-02-10", source: "manuale" })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ categoryId: incomeCategoryId }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(400);
+  });
+
+  it("permette di riassegnare a 'Da categorizzare' anche con direzione diversa (guard bypassata per la fallback)", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId, description: "Spesa", amount: "-50.00", date: "2026-02-10", source: "manuale" })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ categoryId: fallbackCategoryId }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.categoryId).toBe(fallbackCategoryId);
+    expect(updated.amount).toBe("-50.00");
+  });
+
+  it("deriva il segno dal tipo della nuova categoria quando categoria e importo cambiano insieme", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId, description: "Da correggere", amount: "-50.00", date: "2026-02-10", source: "manuale" })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ categoryId: incomeCategoryId, amount: 50 }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.categoryId).toBe(incomeCategoryId);
+    expect(updated.amount).toBe("50.00");
+  });
+
+  it("preserva la direzione entrata quando si modifica solo l'importo", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({ userId, accountId, categoryId: incomeCategoryId, description: "Stipendio", amount: "1500.00", date: "2026-02-27", source: "manuale" })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ amount: 1600 }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.amount).toBe("1600.00");
   });
 
   it("risponde 404 su una transazione di un altro utente", async () => {

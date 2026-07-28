@@ -67,7 +67,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: "Panoramica", href: "/panoramica", icon: LayoutDashboard },
   { label: "Conti", href: "/conti", icon: Landmark },
-  { label: "Spese", href: "/spese", icon: ShoppingCart },
+  { label: "Transazioni", href: "/spese", icon: ShoppingCart },
   { label: "Cash flow", href: "/cash-flow", icon: ArrowLeftRight },
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
   { label: "Pensione", href: "/pensione", icon: Umbrella },

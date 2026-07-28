@@ -2,7 +2,7 @@ import { boolean, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle
 import { authUser } from "./auth";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 
-export const categoryTypeEnum = pgEnum("category_type", ["fissa", "variabile"]);
+export const categoryTypeEnum = pgEnum("category_type", ["fissa", "variabile", "entrata"]);
 
 export const categories = pgTable(
   "categories",
@@ -26,7 +26,7 @@ export type NewCategory = typeof categories.$inferInsert;
 
 export const DEFAULT_CATEGORIES: {
   name: string;
-  type: "fissa" | "variabile";
+  type: "fissa" | "variabile" | "entrata";
   icon: string; // Es. Lucide Icons
   color: string;
   isFallback?: boolean;
@@ -48,9 +48,14 @@ export const DEFAULT_CATEGORIES: {
   { name: "Shopping", type: "variabile", icon: "shopping-bag", color: "pink" },
   { name: "Svago & Hobbies", type: "variabile", icon: "smile", color: "teal" },
   { name: "Viaggi", type: "variabile", icon: "plane", color: "cyan" },
-  { name: "Regali", type: "variabile", icon: "gift", color: "fuchsia" },
+  { name: "Regali", type: "variabile", icon: "gift", color: "pink" },
 
   // --- GESTIONE EMERGENZE E FALLBACK ---
   { name: "Imprevisti", type: "variabile", icon: "alert-triangle", color: "amber" },
   { name: "Da categorizzare", type: "variabile", icon: "help-circle", color: "slate", isFallback: true },
+
+  // --- ENTRATE ---
+  { name: "Stipendio", type: "entrata", icon: "banknote", color: "emerald" },
+  { name: "Freelance", type: "entrata", icon: "briefcase", color: "blue" },
+  { name: "Dividendi e interessi", type: "entrata", icon: "trending-up", color: "teal" },
 ];

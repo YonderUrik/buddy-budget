@@ -23,11 +23,11 @@ export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-function startOfMonth(date: Date): Date {
+export function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
-function endOfMonth(date: Date): Date {
+export function endOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
@@ -41,7 +41,7 @@ function addDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 }
 
-function addMonths(date: Date, months: number): Date {
+export function addMonths(date: Date, months: number): Date {
   return new Date(date.getFullYear(), date.getMonth() + months, date.getDate());
 }
 
@@ -146,6 +146,29 @@ function isWithinRange(date: Date, range: DateRange): boolean {
 /** Transazione di spesa reale (uscita bancaria): importo negativo. Le entrate non fanno parte di Spese. */
 export function isExpense(transaction: Transaction): boolean {
   return Number(transaction.amount) < 0;
+}
+
+/** Transazione di entrata reale: importo positivo. */
+export function isIncome(transaction: Transaction): boolean {
+  return Number(transaction.amount) > 0;
+}
+
+/** Direzione per il filtro tipo-lista della schermata Transazioni. */
+export type TransactionDirection = "tutte" | "uscita" | "entrata";
+
+/** Filtra per direzione (entrata/uscita), o non filtra affatto ("tutte"). */
+export function filterByTransactionType(
+  transactions: Transaction[],
+  direction: TransactionDirection
+): Transaction[] {
+  switch (direction) {
+    case "tutte":
+      return transactions;
+    case "uscita":
+      return transactions.filter(isExpense);
+    case "entrata":
+      return transactions.filter(isIncome);
+  }
 }
 
 /** Importo (negativo) della spesa effettiva dopo "Dividi": amount - excludedAmount. */
@@ -258,18 +281,20 @@ export function computeCategoryBreakdown(
     to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
   };
 
-  return categories.map((category) => {
-    const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
-    const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
-    return {
-      categoryId: category.id,
-      name: category.name,
-      type: category.type,
-      amount: speseEffettive,
-      color: category.color,
-      icon: category.icon,
-    };
-  });
+  return categories
+    .filter((c) => c.type !== "entrata")
+    .map((category) => {
+      const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
+      const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
+      return {
+        categoryId: category.id,
+        name: category.name,
+        type: category.type as "fissa" | "variabile",
+        amount: speseEffettive,
+        color: category.color,
+        icon: category.icon,
+      };
+    });
 }
 
 export interface FixedVsVariable {

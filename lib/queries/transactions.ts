@@ -5,21 +5,23 @@ import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validation/transactions";
 import type { CategorizeSuggestion } from "@/lib/calc/categorize-suggestions";
 
-function transactionsQueryKey(from: string, to: string) {
-  return ["transactions", from, to] as const;
+export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
+
+function transactionsQueryKey(from: string, to: string, type: TransactionDirectionParam) {
+  return ["transactions", from, to, type] as const;
 }
 
-async function fetchTransactions(from: string, to: string): Promise<Transaction[]> {
-  const response = await fetch(`/api/transactions?from=${from}&to=${to}`);
+async function fetchTransactions(from: string, to: string, type: TransactionDirectionParam): Promise<Transaction[]> {
+  const response = await fetch(`/api/transactions?from=${from}&to=${to}&type=${type}`);
   if (!response.ok) {
     throw new Error("Impossibile caricare le transazioni");
   }
   return response.json();
 }
 
-/** Recupera le transazioni di spesa dell'utente nell'intervallo [from, to] (YYYY-MM-DD). */
-export function useTransactionsQuery(from: string, to: string) {
-  return useQuery({ queryKey: transactionsQueryKey(from, to), queryFn: () => fetchTransactions(from, to) });
+/** Recupera le transazioni dell'utente nell'intervallo [from, to] (YYYY-MM-DD), filtrate per direzione (default "uscita"). */
+export function useTransactionsQuery(from: string, to: string, type: TransactionDirectionParam = "uscita") {
+  return useQuery({ queryKey: transactionsQueryKey(from, to, type), queryFn: () => fetchTransactions(from, to, type) });
 }
 
 /** Crea una spesa manuale e invalida tutte le liste di transazioni in cache. */

@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateCategoryMutation } from "@/lib/queries/categories";
 
-const TYPE_LABELS: Record<"fissa" | "variabile", string> = {
+const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
   fissa: "Fissa",
   variabile: "Variabile",
+  entrata: "Entrata",
 };
 
 export interface AddCategoryFormProps {
@@ -21,7 +22,7 @@ export interface AddCategoryFormProps {
 export function AddCategoryForm({ onSuccess }: AddCategoryFormProps) {
   const createMutation = useCreateCategoryMutation();
   const [name, setName] = React.useState("");
-  const [type, setType] = React.useState<"fissa" | "variabile">("variabile");
+  const [type, setType] = React.useState<"fissa" | "variabile" | "entrata">("variabile");
   const [error, setError] = React.useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
@@ -63,13 +64,14 @@ export function AddCategoryForm({ onSuccess }: AddCategoryFormProps) {
 
       <div className="flex flex-col gap-1">
         <label className="text-xs font-medium text-foreground">Tipo</label>
-        <Select value={type} onValueChange={(value) => value && setType(value as "fissa" | "variabile")}>
+        <Select value={type} onValueChange={(value) => value && setType(value as "fissa" | "variabile" | "entrata")}>
           <SelectTrigger className="w-32">
-            <SelectValue>{(value: "fissa" | "variabile") => TYPE_LABELS[value]}</SelectValue>
+            <SelectValue>{(value: "fissa" | "variabile" | "entrata") => TYPE_LABELS[value]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="fissa">Fissa</SelectItem>
             <SelectItem value="variabile">Variabile</SelectItem>
+            <SelectItem value="entrata">Entrata</SelectItem>
           </SelectContent>
         </Select>
       </div>

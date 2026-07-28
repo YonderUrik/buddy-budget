@@ -139,6 +139,71 @@ describe("GET/POST /api/transactions", () => {
     expect(list[0].id).toBe(created.id);
   });
 
+  it("crea un'entrata con importo positivo quando la categoria è di tipo entrata", async () => {
+    const [incomeCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Stipendio", type: "entrata" })
+      .returning();
+
+    const response = await POST(
+      new NextRequest("http://localhost/api/transactions", {
+        method: "POST",
+        body: JSON.stringify({
+          accountId: manualAccountId,
+          description: "Stipendio di febbraio",
+          categoryId: incomeCategory.id,
+          amount: 1800,
+          date: "2026-02-27",
+        }),
+      })
+    );
+    expect(response.status).toBe(201);
+    const created = await response.json();
+    expect(created.amount).toBe("1800.00");
+  });
+
+  it("GET con type=entrata ritorna solo le entrate", async () => {
+    const [incomeCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Stipendio", type: "entrata" })
+      .returning();
+    await db.insert(transactions).values([
+      { userId, accountId: manualAccountId, categoryId, description: "Spesa", amount: "-20.00", date: "2026-02-05", source: "manuale" },
+      { userId, accountId: manualAccountId, categoryId: incomeCategory.id, description: "Stipendio", amount: "1800.00", date: "2026-02-27", source: "manuale" },
+    ]);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/transactions?from=2026-01-01&to=2026-12-31&type=entrata")
+    );
+    const list = await response.json();
+    expect(list).toHaveLength(1);
+    expect(list[0].description).toBe("Stipendio");
+  });
+
+  it("GET con type=tutte ritorna sia entrate che uscite", async () => {
+    const [incomeCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Stipendio", type: "entrata" })
+      .returning();
+    await db.insert(transactions).values([
+      { userId, accountId: manualAccountId, categoryId, description: "Spesa", amount: "-20.00", date: "2026-02-05", source: "manuale" },
+      { userId, accountId: manualAccountId, categoryId: incomeCategory.id, description: "Stipendio", amount: "1800.00", date: "2026-02-27", source: "manuale" },
+    ]);
+
+    const response = await GET(
+      new NextRequest("http://localhost/api/transactions?from=2026-01-01&to=2026-12-31&type=tutte")
+    );
+    const list = await response.json();
+    expect(list).toHaveLength(2);
+  });
+
+  it("risponde 400 se type non è uno dei valori validi", async () => {
+    const response = await GET(
+      new NextRequest("http://localhost/api/transactions?from=2026-01-01&to=2026-12-31&type=boh")
+    );
+    expect(response.status).toBe(400);
+  });
+
   it("risponde 400 se il conto è auto", async () => {
     const response = await POST(
       new NextRequest("http://localhost/api/transactions", {

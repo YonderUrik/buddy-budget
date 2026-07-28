@@ -48,11 +48,15 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const fullAmount = Math.abs(Number(transaction.amount));
   const netAmount = fullAmount - excludedAmount;
   const isSplit = excludedAmount > 0;
+  const isIncome = Number(transaction.amount) > 0;
   const currentCategory = categories.find((c) => c.id === transaction.categoryId);
   const isUncategorized = currentCategory?.isFallback ?? false;
   const sortedCategories = React.useMemo(
-    () => [...categories].sort((a, b) => a.name.localeCompare(b.name)),
-    [categories]
+    () =>
+      categories
+        .filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata"))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [categories, isIncome]
   );
 
   function commitCategory(categoryId: string | null) {
@@ -227,14 +231,16 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
 
           <TransactionNotePopover transaction={transaction} />
 
-          <button
-            type="button"
-            onClick={() => setSplitOpen((open) => !open)}
-            className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
-            aria-pressed={splitOpen}
-          >
-            Dividi
-          </button>
+          {!isIncome && (
+            <button
+              type="button"
+              onClick={() => setSplitOpen((open) => !open)}
+              className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
+              aria-pressed={splitOpen}
+            >
+              Dividi
+            </button>
+          )}
 
           {!isAuto && (
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>

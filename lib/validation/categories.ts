@@ -8,8 +8,8 @@ export const CATEGORY_ICONS = [
   "utensils", "shopping-cart", "home", "zap", "droplet", "wifi", "tv",
   "smartphone", "car", "bus", "plane", "fuel", "film", "gamepad-2",
   "music", "heart", "stethoscope", "dumbbell", "graduation-cap", "baby",
-  "paw-print", "shirt", "scissors", "gift", "briefcase", "wrench",
-  "package", "help-circle",
+  "paw-print", "shield", "shirt", "scissors", "gift", "briefcase", "wrench",
+  "package", "help-circle", "shopping-bag", "smile", "alert-triangle",
   "wallet", "credit-card", "piggy-bank", "banknote", "landmark", "receipt",
   "trending-up", "coins", "flame", "sofa", "hammer", "paintbrush",
   "laptop", "headphones", "camera", "printer", "train-front", "ship",
@@ -21,7 +21,7 @@ export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 
 export const createCategorySchema = z.object({
   name: z.string().trim().min(1),
-  type: z.enum(["fissa", "variabile"]),
+  type: z.enum(["fissa", "variabile", "entrata"]),
   color: z.enum(CATEGORY_COLORS).optional(),
   icon: z.enum(CATEGORY_ICONS).optional(),
 });
@@ -30,7 +30,7 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export const updateCategorySchema = z
   .object({
     name: z.string().trim().min(1).optional(),
-    type: z.enum(["fissa", "variabile"]).optional(),
+    type: z.enum(["fissa", "variabile", "entrata"]).optional(),
     color: z.enum(CATEGORY_COLORS).optional(),
     icon: z.enum(CATEGORY_ICONS).optional(),
   })

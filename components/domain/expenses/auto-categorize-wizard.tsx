@@ -29,7 +29,7 @@ interface AutoCategorizeStepProps {
   index: number;
   total: number;
   isPending: boolean;
-  hasError: boolean;
+  errorMessage: string | null;
   onSkip: () => void;
   onConfirm: (categoryId: string, excludedAmount: number) => void;
 }
@@ -42,12 +42,28 @@ function AutoCategorizeStep({
   index,
   total,
   isPending,
-  hasError,
+  errorMessage,
   onSkip,
   onConfirm,
 }: AutoCategorizeStepProps) {
   const totalAmount = Math.abs(Number(suggestion.transaction.amount));
-  const [categoryId, setCategoryId] = React.useState(suggestion.suggestedCategoryId);
+  const isIncome = Number(suggestion.transaction.amount) > 0;
+  // Stessa regola di TransactionRow: la categoria fallback resta sempre selezionabile, le altre solo
+  // se compatibili con la direzione della transazione — evita il 400 del guard server-side su PATCH.
+  const sortedCategories = React.useMemo(
+    () =>
+      categories
+        .filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata"))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [categories, isIncome]
+  );
+  // Il motore di suggerimenti non conosce la direzione (matcha solo per somiglianza di descrizione): se
+  // la categoria suggerita risulta incompatibile con la transazione corrente, non preselezionarla —
+  // si ricade sulla categoria già assegnata alla transazione (la fallback, dato che è "Da categorizzare").
+  const isSuggestionValid = sortedCategories.some((c) => c.id === suggestion.suggestedCategoryId);
+  const [categoryId, setCategoryId] = React.useState(() =>
+    isSuggestionValid ? suggestion.suggestedCategoryId : suggestion.transaction.categoryId
+  );
   const [excluded, setExcluded] = React.useState(() =>
     clampExcluded((suggestion.suggestedSplitPercentage ?? 0) * totalAmount, totalAmount)
   );
@@ -92,7 +108,7 @@ function AutoCategorizeStep({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {categories.map((category) => (
+            {sortedCategories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 <span className="flex items-center gap-1.5">
                   <CategoryAvatar
@@ -108,31 +124,37 @@ function AutoCategorizeStep({
           </SelectContent>
         </Select>
 
-        <div className="flex flex-col gap-1.5">
-          <p className="text-xs text-muted-foreground">Dividi (quota esclusa dal conteggio)</p>
-          <Slider
-            value={[excluded]}
-            min={0}
-            max={totalAmount}
-            step={0.01}
-            onValueChange={(value) =>
-              setExcluded(clampExcluded(Array.isArray(value) ? value[0] : value, totalAmount))
-            }
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Spesa effettiva: {formatCurrency(totalAmount - excluded, currency)}</span>
-            <span>Esclusa: {formatCurrency(excluded, currency)}</span>
+        {!isIncome && (
+          <div className="flex flex-col gap-1.5">
+            <p className="text-xs text-muted-foreground">Dividi (quota esclusa dal conteggio)</p>
+            <Slider
+              value={[excluded]}
+              min={0}
+              max={totalAmount}
+              step={0.01}
+              onValueChange={(value) =>
+                setExcluded(clampExcluded(Array.isArray(value) ? value[0] : value, totalAmount))
+              }
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Spesa effettiva: {formatCurrency(totalAmount - excluded, currency)}</span>
+              <span>Esclusa: {formatCurrency(excluded, currency)}</span>
+            </div>
           </div>
-        </div>
+        )}
 
-        {hasError && <p className="text-xs text-destructive">Salvataggio non riuscito, riprova.</p>}
+        {errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
       </div>
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onSkip} disabled={isPending}>
           Salta
         </Button>
-        <Button type="button" onClick={() => onConfirm(categoryId, excluded)} disabled={isPending}>
+        <Button
+          type="button"
+          onClick={() => onConfirm(categoryId, isIncome ? 0 : excluded)}
+          disabled={isPending}
+        >
           {isPending ? "Salvataggio..." : "Conferma"}
         </Button>
       </DialogFooter>
@@ -195,7 +217,7 @@ export function AutoCategorizeWizard({ suggestions, categories, currency, onClos
             index={index}
             total={suggestions.length}
             isPending={updateMutation.isPending}
-            hasError={updateMutation.isError}
+            errorMessage={updateMutation.error?.message ?? null}
             onSkip={() => {
               updateMutation.reset();
               setIndex((i) => i + 1);

@@ -15,6 +15,8 @@ import {
   filterTransactions,
   shiftReferenceDate,
   formatPeriodLabel,
+  isIncome,
+  filterByTransactionType,
 } from "./expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
@@ -449,5 +451,51 @@ describe("formatPeriodLabel", () => {
   it("3mesi: entrambi i mesi con anno, a cavallo d'anno", () => {
     const range = getPeriodRange("3mesi", new Date(2026, 0, 15));
     expect(formatPeriodLabel("3mesi", range)).toBe("Nov 2025 – Gen 2026");
+  });
+});
+
+describe("isIncome", () => {
+  it("è true per un importo positivo", () => {
+    expect(isIncome(makeTransaction({ amount: "1500.00" }))).toBe(true);
+  });
+
+  it("è false per un importo negativo o zero", () => {
+    expect(isIncome(makeTransaction({ amount: "-10.00" }))).toBe(false);
+    expect(isIncome(makeTransaction({ amount: "0.00" }))).toBe(false);
+  });
+});
+
+describe("filterByTransactionType", () => {
+  const income = makeTransaction({ id: "t-income", amount: "1500.00" });
+  const expense = makeTransaction({ id: "t-expense", amount: "-30.00" });
+  const all = [income, expense];
+
+  it("'tutte' non filtra nulla", () => {
+    expect(filterByTransactionType(all, "tutte")).toEqual(all);
+  });
+
+  it("'uscita' tiene solo gli importi negativi", () => {
+    expect(filterByTransactionType(all, "uscita")).toEqual([expense]);
+  });
+
+  it("'entrata' tiene solo gli importi positivi", () => {
+    expect(filterByTransactionType(all, "entrata")).toEqual([income]);
+  });
+});
+
+describe("computeCategoryBreakdown esclude le categorie di entrata", () => {
+  it("non include una categoria type 'entrata' nel risultato", () => {
+    const variabile = makeCategory({ id: "cat-var", type: "variabile" });
+    const entrata = makeCategory({ id: "cat-income", name: "Stipendio", type: "entrata" });
+    const transactions = [
+      makeTransaction({ categoryId: "cat-var", amount: "-50.00", date: "2026-02-05" }),
+      makeTransaction({ categoryId: "cat-income", amount: "1500.00", date: "2026-02-01" }),
+    ];
+    const referenceDate = new Date(2026, 1, 10);
+    const today = referenceDate;
+
+    const breakdown = computeCategoryBreakdown(transactions, [variabile, entrata], "mese", referenceDate, today);
+
+    expect(breakdown.map((entry) => entry.categoryId)).toEqual(["cat-var"]);
   });
 });

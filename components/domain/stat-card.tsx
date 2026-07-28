@@ -10,6 +10,7 @@
  * semantica è lasciata al chiamante.
  */
 
+import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -29,13 +30,15 @@ export interface StatCardProps {
   subtitle?: string;
   /** Classi CSS aggiuntive per la Card esterna. */
   className?: string;
+  /** Contenuto alternativo mostrato al posto del valore formattato in valuta (es. una percentuale); `value` resta usato per il colore verde/rosso. */
+  valueOverride?: ReactNode;
 }
 
 // ---------------------------------------------------------------------------
 // Componente
 // ---------------------------------------------------------------------------
 
-export function StatCard({ label, value, currency = "EUR", subtitle, className }: StatCardProps) {
+export function StatCard({ label, value, currency = "EUR", subtitle, className, valueOverride }: StatCardProps) {
   const isNegative = value < 0;
 
   return (
@@ -52,7 +55,7 @@ export function StatCard({ label, value, currency = "EUR", subtitle, className }
             isNegative ? "text-neg" : "text-pos"
           )}
         >
-          {formatCurrency(value, currency, { maximumFractionDigits: 0 })}
+          {valueOverride ?? formatCurrency(value, currency, { maximumFractionDigits: 0 })}
         </p>
         {subtitle ? (
           <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>

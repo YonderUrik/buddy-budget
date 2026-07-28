@@ -142,6 +142,16 @@ describe("computeCashflowKpis", () => {
     expect(kpis.usciteMedie).toBe(300); // 600 di spesa effettiva totale ÷ 2 mesi
   });
 
+  it("conta come entrata solo la quota effettiva post-'Dividi' (amount - excludedAmount)", () => {
+    const transactions = [
+      makeTransaction({ amount: "1000.00", excludedAmount: "400.00", date: "2026-01-10" }), // effettiva: 600
+    ];
+
+    const kpis = computeCashflowKpis(transactions, range, todayAfterPeriod);
+
+    expect(kpis.entrateMedie).toBe(300); // 600 di entrata effettiva totale ÷ 2 mesi
+  });
+
   it("il denominatore delle medie riflette i mesi trascorsi: un mese in corso solo parzialmente trascorso non conta come mese intero", () => {
     const todayMidFebruary = new Date(2026, 1, 14); // 14 febbraio: gennaio trascorso per intero, febbraio al 50% (28 giorni)
     const transactions = [
@@ -177,6 +187,17 @@ describe("computeMonthlySeries", () => {
     const series = computeMonthlySeries(transactions, range);
 
     expect(series[0].uscite).toBe(600);
+  });
+
+  it("conta come entrata solo la quota effettiva post-'Dividi'", () => {
+    const range = { from: new Date(2026, 0, 1), to: new Date(2026, 0, 31) };
+    const transactions = [
+      makeTransaction({ amount: "1000.00", excludedAmount: "400.00", date: "2026-01-10" }),
+    ];
+
+    const series = computeMonthlySeries(transactions, range);
+
+    expect(series[0].entrate).toBe(600);
   });
 
   it("aggiunge l'anno all'etichetta quando il range copre più anni solari, per non confondere mesi omonimi", () => {
@@ -249,6 +270,24 @@ describe("computeIncomeSources", () => {
     const totalPct = sources.reduce((sum, s) => sum + (s.quotaPct ?? 0), 0);
     expect(totalPct).toBeCloseTo(100);
   });
+
+  it("conta come entrata solo la quota effettiva post-'Dividi', sia nel totale sia per categoria", () => {
+    const range = { from: new Date(2026, 0, 1), to: new Date(2026, 0, 31) };
+    const stipendio = makeCategory({ id: "cat-stipendio", name: "Stipendio", type: "entrata" });
+    const transactions = [
+      makeTransaction({
+        categoryId: "cat-stipendio",
+        amount: "1000.00",
+        excludedAmount: "400.00",
+        date: "2026-01-05",
+      }), // effettiva: 600
+    ];
+
+    const sources = computeIncomeSources(transactions, [stipendio], range);
+
+    expect(sources[0].amount).toBe(600);
+    expect(sources[0].quotaPct).toBeCloseTo(100);
+  });
 });
 
 describe("computeWhereItGoes", () => {
@@ -318,6 +357,24 @@ describe("computeWhereItGoes", () => {
     const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
 
     expect(entries.find((e) => e.key === "fisse")?.amount).toBe(250);
+  });
+
+  it("conta come entrata solo la quota effettiva post-'Dividi' nel totale usato come denominatore", () => {
+    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const transactions = [
+      makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
+      makeTransaction({
+        categoryId: "category-1",
+        amount: "1000.00",
+        excludedAmount: "400.00",
+        date: "2026-02-01",
+      }), // effettiva: 600
+    ];
+
+    const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
+
+    expect(entries.find((e) => e.key === "fisse")?.quotaPct).toBeCloseTo((400 / 600) * 100);
+    expect(entries.find((e) => e.key === "risparmio")?.amount).toBe(200); // 600 - 400
   });
 });
 

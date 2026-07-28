@@ -27,6 +27,7 @@ export function CashflowKpiCards({ transactions, period, currency, referenceDate
         label="Tasso di risparmio"
         value={kpis.tassoRisparmio ?? 0}
         currency={currency}
+        valueOverride={kpis.tassoRisparmio === null ? "—" : `${Math.round(kpis.tassoRisparmio * 100)}%`}
         subtitle={
           kpis.tassoRisparmio === null
             ? "Non calcolabile (nessuna entrata nel periodo)"

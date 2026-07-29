@@ -231,16 +231,14 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
 
           <TransactionNotePopover transaction={transaction} />
 
-          {!isIncome && (
-            <button
-              type="button"
-              onClick={() => setSplitOpen((open) => !open)}
-              className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
-              aria-pressed={splitOpen}
-            >
-              Dividi
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setSplitOpen((open) => !open)}
+            className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
+            aria-pressed={splitOpen}
+          >
+            Dividi
+          </button>
 
           {!isAuto && (
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>

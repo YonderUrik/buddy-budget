@@ -251,8 +251,9 @@ export interface WhereItGoesEntry {
  * categorie non classificabili come fisse/variabili (categoria assente dall'array passato,
  * o erroneamente di tipo "entrata"), e risparmio (entrate - fisse - variabili - non
  * classificato), con quota % sul totale entrate. Le spese non classificabili hanno una
- * riga dedicata proprio per non essere assorbite silenziosamente nel risparmio. Gli importi
- * di spesa contano la spesa effettiva post-"Dividi" (`effectiveAmount`).
+ * riga dedicata proprio per non essere assorbite silenziosamente nel risparmio. Entrate e
+ * uscite contano solo l'importo effettivo post-"Dividi" (`effectiveAmount`), coerentemente
+ * con Spese.
  */
 export function computeWhereItGoes(
   transactions: Transaction[],

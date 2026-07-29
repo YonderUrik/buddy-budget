@@ -187,6 +187,33 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
     expect(updated.excludedAmount).toBe("-30.00");
   });
 
+  it("normalizza excludedAmount con segno positivo per una transazione entrata (Dividi su un'entrata)", async () => {
+    const [transaction] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId: incomeCategoryId,
+        description: "Stipendio",
+        amount: "1000.00",
+        date: "2026-02-27",
+        source: "manuale",
+      })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/transactions/${transaction.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ excludedAmount: 400 }),
+      }),
+      { params: Promise.resolve({ id: transaction.id }) }
+    );
+
+    expect(response.status).toBe(200);
+    const updated = await response.json();
+    expect(updated.excludedAmount).toBe("400.00");
+  });
+
   it("permette di impostare una nota su una transazione manuale", async () => {
     const [transaction] = await db
       .insert(transactions)

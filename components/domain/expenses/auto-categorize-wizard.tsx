@@ -124,24 +124,24 @@ function AutoCategorizeStep({
           </SelectContent>
         </Select>
 
-        {!isIncome && (
-          <div className="flex flex-col gap-1.5">
-            <p className="text-xs text-muted-foreground">Dividi (quota esclusa dal conteggio)</p>
-            <Slider
-              value={[excluded]}
-              min={0}
-              max={totalAmount}
-              step={0.01}
-              onValueChange={(value) =>
-                setExcluded(clampExcluded(Array.isArray(value) ? value[0] : value, totalAmount))
-              }
-            />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Spesa effettiva: {formatCurrency(totalAmount - excluded, currency)}</span>
-              <span>Esclusa: {formatCurrency(excluded, currency)}</span>
-            </div>
+        <div className="flex flex-col gap-1.5">
+          <p className="text-xs text-muted-foreground">Dividi (quota esclusa dal conteggio)</p>
+          <Slider
+            value={[excluded]}
+            min={0}
+            max={totalAmount}
+            step={0.01}
+            onValueChange={(value) =>
+              setExcluded(clampExcluded(Array.isArray(value) ? value[0] : value, totalAmount))
+            }
+          />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>
+              {isIncome ? "Entrata effettiva" : "Spesa effettiva"}: {formatCurrency(totalAmount - excluded, currency)}
+            </span>
+            <span>Esclusa: {formatCurrency(excluded, currency)}</span>
           </div>
-        )}
+        </div>
 
         {errorMessage && <p className="text-xs text-destructive">{errorMessage}</p>}
       </div>
@@ -150,11 +150,7 @@ function AutoCategorizeStep({
         <Button type="button" variant="outline" onClick={onSkip} disabled={isPending}>
           Salta
         </Button>
-        <Button
-          type="button"
-          onClick={() => onConfirm(categoryId, isIncome ? 0 : excluded)}
-          disabled={isPending}
-        >
+        <Button type="button" onClick={() => onConfirm(categoryId, excluded)} disabled={isPending}>
           {isPending ? "Salvataggio..." : "Conferma"}
         </Button>
       </DialogFooter>

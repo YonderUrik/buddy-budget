@@ -190,6 +190,20 @@ export function computeSummary(transactions: Transaction[], range: DateRange): E
   return { uscite, escluse, speseEffettive: uscite - escluse };
 }
 
+export interface IncomeSummary {
+  entrate: number;
+  escluse: number;
+  entrateEffettive: number;
+}
+
+/** Somma Entrate / Escluse / Entrate effettive (valori positivi) per le transazioni di entrata nell'intervallo. */
+export function computeIncomeSummary(transactions: Transaction[], range: DateRange): IncomeSummary {
+  const inRange = transactions.filter((t) => isIncome(t) && isWithinRange(parseDateOnly(t.date), range));
+  const entrate = inRange.reduce((sum, t) => sum + Number(t.amount), 0);
+  const escluse = inRange.reduce((sum, t) => sum + Number(t.excludedAmount), 0);
+  return { entrate, escluse, entrateEffettive: entrate - escluse };
+}
+
 function totalMonthlyBudget(budgets: Budget[]): number {
   return budgets.reduce((sum, b) => sum + Number(b.monthlyAmount), 0);
 }
@@ -254,6 +268,42 @@ export function computeKpis(
   const mediaGiornalieraPeriodoPrecedente = prevSpeso / previousDays;
 
   return { speso, budgetTotale, budgetRimanente, giorniRimasti, mediaGiornaliera, mediaGiornalieraPeriodoPrecedente };
+}
+
+export interface IncomeKpis {
+  entrate: number;
+  mediaGiornaliera: number;
+  mediaGiornalieraPeriodoPrecedente: number;
+}
+
+/**
+ * KPI entrate per il periodo selezionato: stessa finestra "giorni trascorsi" di `computeKpis`
+ * (coerenza con le uscite). Nessun concetto di budget per le entrate.
+ */
+export function computeIncomeKpis(
+  transactions: Transaction[],
+  period: ExpensePeriod,
+  referenceDate: Date,
+  today: Date
+): IncomeKpis {
+  const range = getPeriodRange(period, referenceDate);
+  const todayStart = startOfDay(today);
+  const clampedToday = todayStart.getTime() < range.from.getTime() ? range.from : todayStart;
+  const elapsedRange: DateRange = {
+    from: range.from,
+    to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
+  };
+
+  const { entrateEffettive: entrate } = computeIncomeSummary(transactions, elapsedRange);
+  const elapsedDays = Math.max(1, daysBetween(range.from, elapsedRange.to) + 1);
+  const mediaGiornaliera = entrate / elapsedDays;
+
+  const previousRange = getPreviousPeriodRange(period, referenceDate);
+  const { entrateEffettive: prevEntrate } = computeIncomeSummary(transactions, previousRange);
+  const previousDays = Math.max(1, daysBetween(previousRange.from, previousRange.to) + 1);
+  const mediaGiornalieraPeriodoPrecedente = prevEntrate / previousDays;
+
+  return { entrate, mediaGiornaliera, mediaGiornalieraPeriodoPrecedente };
 }
 
 export interface CategoryAmount {

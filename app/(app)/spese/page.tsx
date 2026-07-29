@@ -12,6 +12,7 @@ import {
   ExpensesPeriodSelector,
   ExpensesReferenceNav,
   ExpenseTrendChart,
+  IncomeKpiCards,
   TransactionRow,
   TransactionsTypeToggle,
 } from "@/components/domain/expenses";
@@ -26,6 +27,7 @@ import {
   filterTransactions,
   getPeriodRange,
   isExpense,
+  isIncome,
   type ExpensePeriod,
   type TransactionDirection,
 } from "@/lib/calc/expenses";
@@ -72,6 +74,8 @@ export default function SpesePage() {
 
   // Widget di analisi (KPI/donut/trend): sempre e solo uscite, indipendentemente dal toggle tipo-lista.
   const expenseTransactionsForAnalysis = filteredTransactions.filter(isExpense);
+  // Card KPI entrate: stesso filtro categoria/testo, ma sul lato entrate.
+  const incomeTransactionsForAnalysis = filteredTransactions.filter(isIncome);
   const filteredBudgets = categoryFilter
     ? safeBudgets.filter((b) => b.categoryId === categoryFilter)
     : safeBudgets;
@@ -103,6 +107,10 @@ export default function SpesePage() {
           <h1 className="font-heading text-2xl font-medium text-foreground">Transazioni</h1>
           <ExpensesReferenceNav period={period} referenceDate={referenceDate} onChange={setReferenceDate} />
         </div>
+        <ExpensesPeriodSelector value={period} onChange={setPeriod} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
         <a
           href="/categorie"
           className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
@@ -128,7 +136,6 @@ export default function SpesePage() {
             Da categorizzare ({uncategorizedCount})
           </button>
         )}
-        <ExpensesPeriodSelector value={period} onChange={setPeriod} />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -146,10 +153,17 @@ export default function SpesePage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3" aria-busy="true">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
-          ))}
+        <div className="flex flex-col gap-6" aria-busy="true">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {[0, 1].map((i) => (
+              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
+            ))}
+          </div>
         </div>
       ) : isError ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
@@ -160,14 +174,28 @@ export default function SpesePage() {
         </div>
       ) : (
         <>
-          <ExpensesKpiCards
-            transactions={expenseTransactionsForAnalysis}
-            budgets={filteredBudgets}
-            period={period}
-            currency={currency}
-            referenceDate={referenceDate}
-            today={today}
-          />
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Uscite</p>
+            <ExpensesKpiCards
+              transactions={expenseTransactionsForAnalysis}
+              budgets={filteredBudgets}
+              period={period}
+              currency={currency}
+              referenceDate={referenceDate}
+              today={today}
+            />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Entrate</p>
+            <IncomeKpiCards
+              transactions={incomeTransactionsForAnalysis}
+              period={period}
+              currency={currency}
+              referenceDate={referenceDate}
+              today={today}
+            />
+          </div>
 
           <CategoryBreakdownDonut
             categoryAmounts={computeCategoryBreakdown(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}

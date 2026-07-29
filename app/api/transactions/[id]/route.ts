@@ -90,7 +90,8 @@ export async function PATCH(
       : Number(transaction.amount);
   let newExcludedAmount: number | undefined;
   if (parsed.data.excludedAmount !== undefined) {
-    newExcludedAmount = -Math.abs(parsed.data.excludedAmount);
+    const magnitude = Math.abs(parsed.data.excludedAmount);
+    newExcludedAmount = newAmount >= 0 ? magnitude : -magnitude;
   }
 
   // Se amount e/o excludedAmount cambiano, rivalida l'invariante |excludedAmount| ≤ |amount| contro

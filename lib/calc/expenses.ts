@@ -171,7 +171,7 @@ export function filterByTransactionType(
   }
 }
 
-/** Importo (negativo) della spesa effettiva dopo "Dividi": amount - excludedAmount. */
+/** Importo effettivo dopo "Dividi" (stesso segno di `amount`): amount - excludedAmount. */
 export function effectiveAmount(transaction: Transaction): number {
   return Number(transaction.amount) - Number(transaction.excludedAmount);
 }

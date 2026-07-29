@@ -136,12 +136,12 @@ function elapsedMonthCount(range: DateRange, today: Date): number {
  * risparmio sul periodo selezionato. `today` è la data reale corrente (indipendente da quale
  * periodo si sta guardando, stesso pattern di `computeKpis` in `expenses.ts`): serve a non
  * contare un mese in corso solo parzialmente trascorso come un mese intero nel denominatore
- * delle medie. Le uscite contano solo la spesa effettiva post-"Dividi" (`effectiveAmount`),
+ * delle medie. Entrate e uscite contano solo l'importo effettivo post-"Dividi" (`effectiveAmount`),
  * coerentemente con Spese.
  */
 export function computeCashflowKpis(transactions: Transaction[], range: DateRange, today: Date): CashflowKpis {
   const inRange = transactions.filter((t) => isWithinRange(parseDateOnly(t.date), range));
-  const entrate = inRange.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0);
+  const entrate = inRange.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0);
   const uscite = inRange.filter(isExpense).reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0);
 
   const elapsedMonths = elapsedMonthCount(range, today);
@@ -172,7 +172,7 @@ function formatMonthAxisLabel(monthDate: Date, range: DateRange): string {
   return spansMultipleYears ? `${monthLabel} '${String(monthDate.getFullYear()).slice(-2)}` : monthLabel;
 }
 
-/** Serie mensile entrate/uscite per ciascun mese calendariale nel range (inclusi i mesi senza transazioni, a 0). Le uscite contano la spesa effettiva post-"Dividi". */
+/** Serie mensile entrate/uscite per ciascun mese calendariale nel range (inclusi i mesi senza transazioni, a 0). Entrate e uscite contano l'importo effettivo post-"Dividi" (`effectiveAmount`). */
 export function computeMonthlySeries(transactions: Transaction[], range: DateRange): CashflowMonthlyEntry[] {
   return monthsInRange(range).map((monthDate) => {
     const monthRange: DateRange = { from: startOfMonth(monthDate), to: endOfMonth(monthDate) };
@@ -181,7 +181,7 @@ export function computeMonthlySeries(transactions: Transaction[], range: DateRan
       year: monthDate.getFullYear(),
       month: monthDate.getMonth(),
       label: formatMonthAxisLabel(monthDate, range),
-      entrate: inMonth.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0),
+      entrate: inMonth.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0),
       uscite: inMonth.filter(isExpense).reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0),
     };
   });
@@ -213,12 +213,12 @@ export function computeIncomeSources(
   range: DateRange
 ): IncomeSourceAmount[] {
   const inRange = transactions.filter((t) => isWithinRange(parseDateOnly(t.date), range) && isIncome(t));
-  const totalEntrate = inRange.reduce((sum, t) => sum + Number(t.amount), 0);
+  const totalEntrate = inRange.reduce((sum, t) => sum + effectiveAmount(t), 0);
   const categoryById = new Map(categories.map((c) => [c.id, c] as const));
 
   const amountByCategoryId = new Map<string, number>();
   for (const t of inRange) {
-    amountByCategoryId.set(t.categoryId, (amountByCategoryId.get(t.categoryId) ?? 0) + Number(t.amount));
+    amountByCategoryId.set(t.categoryId, (amountByCategoryId.get(t.categoryId) ?? 0) + effectiveAmount(t));
   }
 
   return Array.from(amountByCategoryId.entries())
@@ -251,8 +251,9 @@ export interface WhereItGoesEntry {
  * categorie non classificabili come fisse/variabili (categoria assente dall'array passato,
  * o erroneamente di tipo "entrata"), e risparmio (entrate - fisse - variabili - non
  * classificato), con quota % sul totale entrate. Le spese non classificabili hanno una
- * riga dedicata proprio per non essere assorbite silenziosamente nel risparmio. Gli importi
- * di spesa contano la spesa effettiva post-"Dividi" (`effectiveAmount`).
+ * riga dedicata proprio per non essere assorbite silenziosamente nel risparmio. Entrate e
+ * uscite contano solo l'importo effettivo post-"Dividi" (`effectiveAmount`), coerentemente
+ * con Spese.
  */
 export function computeWhereItGoes(
   transactions: Transaction[],
@@ -263,7 +264,7 @@ export function computeWhereItGoes(
   const inMonth = transactions.filter((t) => isWithinRange(parseDateOnly(t.date), monthRange));
   const categoryTypeById = new Map(categories.map((c) => [c.id, c.type] as const));
 
-  const entrate = inMonth.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0);
+  const entrate = inMonth.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0);
   const expenseTransactions = inMonth.filter(isExpense);
 
   const fisse = expenseTransactions

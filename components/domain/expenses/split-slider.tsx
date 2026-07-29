@@ -1,6 +1,6 @@
 "use client";
 
-/** UI "Dividi": ripartisce l'importo di una transazione tra spesa effettiva e quota esclusa dal conteggio. */
+/** UI "Dividi": ripartisce l'importo di una transazione (spesa o entrata) tra quota effettiva e quota esclusa dal conteggio. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ export interface SplitSliderProps {
 export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps) {
   const updateMutation = useUpdateTransactionMutation();
   const totalAmount = Math.abs(Number(transaction.amount));
+  const isIncome = Number(transaction.amount) > 0;
   const [excluded, setExcluded] = React.useState(Math.abs(Number(transaction.excludedAmount)));
   const [spentInput, setSpentInput] = React.useState(() => (totalAmount - excluded).toFixed(2));
 
@@ -52,8 +53,9 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
   return (
     <div className="flex flex-col gap-2 border-t border-border bg-muted/50 px-4 py-3">
       <p className="text-xs text-muted-foreground">
-        Sposta il cursore per escludere una parte dal conteggio: è uscita dal conto, ma non è una spesa
-        (rimborsi, quote di altri, giroconto).
+        {isIncome
+          ? "Sposta il cursore per escludere una parte dal conteggio: è entrata sul conto, ma non è reddito reale (rimborsi, giroconto, storni)."
+          : "Sposta il cursore per escludere una parte dal conteggio: è uscita dal conto, ma non è una spesa (rimborsi, quote di altri, giroconto)."}
       </p>
       <div className="flex gap-1.5">
         {SPLIT_SHORTCUTS.map((n) => (
@@ -71,7 +73,7 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
       </div>
       <div className="flex items-center gap-2">
         <label htmlFor={`spesa-effettiva-${transaction.id}`} className="text-xs text-muted-foreground">
-          Spesa effettiva
+          {isIncome ? "Entrata effettiva" : "Spesa effettiva"}
         </label>
         <Input
           id={`spesa-effettiva-${transaction.id}`}
@@ -105,7 +107,9 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
         onValueCommitted={(value) => commit(clampExcluded(Array.isArray(value) ? value[0] : value, totalAmount))}
       />
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Spesa effettiva: {formatCurrency(totalAmount - excluded, currency)}</span>
+        <span>
+          {isIncome ? "Entrata effettiva" : "Spesa effettiva"}: {formatCurrency(totalAmount - excluded, currency)}
+        </span>
         <span>Esclusa dal conteggio: {formatCurrency(excluded, currency)}</span>
       </div>
       {updateMutation.isPending && <p className="text-xs text-muted-foreground">Salvataggio in corso...</p>}

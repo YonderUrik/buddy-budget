@@ -20,6 +20,8 @@ export { ExpensesReferenceNav } from "./expenses-reference-nav";
 export type { ExpensesReferenceNavProps } from "./expenses-reference-nav";
 export { ExpensesKpiCards } from "./expenses-kpi-cards";
 export type { ExpensesKpiCardsProps } from "./expenses-kpi-cards";
+export { IncomeKpiCards } from "./income-kpi-cards";
+export type { IncomeKpiCardsProps } from "./income-kpi-cards";
 export { CategoryBreakdownDonut } from "./category-breakdown-donut";
 export type { CategoryBreakdownDonutProps } from "./category-breakdown-donut";
 export { ExpenseTrendChart } from "./expense-trend-chart";

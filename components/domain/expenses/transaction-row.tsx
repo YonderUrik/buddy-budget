@@ -3,6 +3,7 @@
 /** Riga singola della lista Transazioni in Spese: rendering diverso per source manuale/auto. */
 
 import * as React from "react";
+import { Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -93,7 +94,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           : "border-b border-border last:border-b-0"
       }
     >
-      <div className="group flex flex-wrap items-center gap-3 px-4 py-3">
+      <div className="group flex flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center">
         <div className="min-w-0 flex-1 space-y-1">
           {isAuto ? (
             <p
@@ -179,7 +180,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           )}
         </div>
 
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
+        <div className="flex flex-wrap items-center gap-3 sm:ml-auto sm:justify-end">
           <Badge variant={isAuto ? "secondary" : "outline"} className="shrink-0">
             {isAuto ? "Auto" : "Manuale"}
           </Badge>
@@ -243,10 +244,10 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           {!isAuto && (
             <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <AlertDialogTrigger
-                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 aria-label="Elimina transazione"
               >
-                ✕
+                <Trash2Icon className="size-4" />
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>

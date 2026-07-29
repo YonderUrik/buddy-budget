@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  computeIncomeKpis,
+  computeIncomeSummary,
   computeKpis,
   computeSummary,
   effectiveAmount,
@@ -148,6 +150,21 @@ describe("computeSummary", () => {
   });
 });
 
+describe("computeIncomeSummary", () => {
+  it("somma Entrate/Escluse/Entrate effettive ignorando le uscite", () => {
+    const range = { from: new Date(2026, 1, 1), to: new Date(2026, 1, 28) };
+    const transactions = [
+      makeTransaction({ date: "2026-02-05", amount: "1500.00", excludedAmount: "300.00" }),
+      makeTransaction({ date: "2026-02-10", amount: "200.00" }),
+      makeTransaction({ date: "2026-02-15", amount: "-80.00" }),
+    ];
+    const summary = computeIncomeSummary(transactions, range);
+    expect(summary.entrate).toBe(1700);
+    expect(summary.escluse).toBe(300);
+    expect(summary.entrateEffettive).toBe(1400);
+  });
+});
+
 describe("scaleBudgetForPeriod", () => {
   it("scala il budget mensile in base al periodo", () => {
     expect(scaleBudgetForPeriod(300, "settimana")).toBeCloseTo(70, 5);
@@ -192,6 +209,25 @@ describe("computeKpis", () => {
     expect(kpis.speso).toBe(280);
     expect(kpis.giorniRimasti).toBe(0);
     expect(kpis.mediaGiornaliera).toBeCloseTo(280 / 28, 5);
+  });
+});
+
+describe("computeIncomeKpis", () => {
+  it("calcola Entrate/media giornaliera per il mese in corso, ignorando le uscite", () => {
+    const referenceDate = new Date(2026, 1, 15);
+    const transactions = [
+      makeTransaction({ date: "2026-02-05", amount: "1500.00" }),
+      makeTransaction({ date: "2026-02-10", amount: "100.00" }),
+      makeTransaction({ date: "2026-02-20", amount: "500.00" }), // futuro rispetto a referenceDate
+      makeTransaction({ date: "2026-02-10", amount: "-50.00" }), // uscita, ignorata
+      makeTransaction({ date: "2026-01-15", amount: "1600.00" }), // mese precedente
+    ];
+
+    const kpis = computeIncomeKpis(transactions, "mese", referenceDate, referenceDate);
+
+    expect(kpis.entrate).toBe(1600);
+    expect(kpis.mediaGiornaliera).toBeCloseTo(1600 / 15, 5);
+    expect(kpis.mediaGiornalieraPeriodoPrecedente).toBeCloseTo(1600 / 31, 5);
   });
 });
 

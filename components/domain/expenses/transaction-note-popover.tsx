@@ -43,10 +43,10 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
       <PopoverTrigger
         className={
           hasSaveError
-            ? "flex size-6 shrink-0 items-center justify-center rounded-md text-destructive hover:bg-muted"
+            ? "flex size-8 shrink-0 items-center justify-center rounded-md text-destructive hover:bg-muted"
             : hasNote
-              ? "flex size-6 shrink-0 items-center justify-center rounded-md text-primary hover:bg-muted"
-              : "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 hover:bg-muted focus-visible:opacity-100 group-hover:opacity-100"
+              ? "flex size-8 shrink-0 items-center justify-center rounded-md text-primary hover:bg-muted"
+              : "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground"
         }
         aria-label={
           hasSaveError
@@ -63,7 +63,7 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
               : "Aggiungi nota"
         }
       >
-        <NotebookPen className="size-3.5" />
+        <NotebookPen className="size-4" />
       </PopoverTrigger>
       <PopoverContent align="end">
         <Textarea

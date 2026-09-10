@@ -225,7 +225,8 @@ export function scaleBudgetForPeriod(monthlyTotal: number, period: ExpensePeriod
 export interface ExpensesKpis {
   speso: number;
   budgetTotale: number;
-  budgetRimanente: number;
+  /** null quando l'utente non ha impostato alcun budget (nessuna categoria con un budget mensile). */
+  budgetRimanente: number | null;
   giorniRimasti: number;
   mediaGiornaliera: number;
   mediaGiornalieraPeriodoPrecedente: number;
@@ -256,7 +257,12 @@ export function computeKpis(
   const { speseEffettive: speso } = computeSummary(transactions, elapsedRange);
 
   const budgetTotale = scaleBudgetForPeriod(totalMonthlyBudget(budgets), period);
-  const budgetRimanente = budgetTotale - speso;
+  // "Budget rimanente" ha senso solo confrontando budget e speso sulle STESSE categorie:
+  // se il budget è impostato solo su alcune categorie, la spesa da confrontare è solo la loro.
+  const budgetedCategoryIds = new Set(budgets.map((b) => b.categoryId));
+  const budgetedTransactions = transactions.filter((t) => budgetedCategoryIds.has(t.categoryId));
+  const { speseEffettive: budgetedSpeso } = computeSummary(budgetedTransactions, elapsedRange);
+  const budgetRimanente = budgets.length === 0 ? null : budgetTotale - budgetedSpeso;
   const giorniRimasti = Math.max(0, daysBetween(todayStart, range.to));
 
   const elapsedDays = Math.max(1, daysBetween(range.from, elapsedRange.to) + 1);

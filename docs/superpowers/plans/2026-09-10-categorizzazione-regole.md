@@ -640,39 +640,72 @@ async function loadRuleCandidates(userId: string): Promise<RuleCandidate[]> {
   }));
 }
 
+export interface RuleResolver {
+  /** Risolve una transazione in memoria, senza toccare il DB. */
+  resolve(input: { description: string; amount: number }): ResolvedCategorization | null;
+  /** Ids delle regole che hanno agito, nell'ordine in cui hanno vinto (con ripetizioni). */
+  appliedRuleIds(): string[];
+}
+
 /**
- * Categoria da assegnare a una transazione in import, secondo le sole regole dell'utente: prima la
- * regola `merchant` sulla chiave esatta, poi la `contains` più specifica. `null` quando nessuna regola
- * si applica — il chiamante ricade sulla categoria di fallback. Non deduce mai nulla: le proposte per
- * somiglianza e assistente vivono in `suggest.ts` e non scrivono.
+ * Risolutore che carica le regole dell'utente **una sola volta** e poi lavora in memoria: pensato per
+ * il loop di import, dove una query per transazione degraderebbe il sync in modo lineare col numero di
+ * movimenti. Gli incrementi di `hitCount` non vengono scritti qui: si accumulano e si applicano in un
+ * solo update finale con `flushRuleHits`.
+ */
+export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
+  const rules = await loadRuleCandidates(userId);
+  const applied: string[] = [];
+
+  return {
+    resolve(input) {
+      if (rules.length === 0) return null;
+      const rule = selectMatchingRule(merchantKey(input.description), input.amount > 0, rules);
+      if (!rule) return null;
+
+      applied.push(rule.id);
+      const magnitude =
+        rule.splitPercentage === null
+          ? 0
+          : Math.round(Math.abs(input.amount) * rule.splitPercentage * 100) / 100;
+
+      return {
+        categoryId: rule.categoryId,
+        excludedAmount: input.amount >= 0 ? magnitude : -magnitude,
+        ruleId: rule.id,
+      };
+    },
+    appliedRuleIds: () => applied,
+  };
+}
+
+/** Scrive in un solo update per regola gli utilizzi accumulati durante un import. */
+export async function flushRuleHits(ruleIds: string[]): Promise<void> {
+  if (ruleIds.length === 0) return;
+  const countById = new Map<string, number>();
+  for (const id of ruleIds) countById.set(id, (countById.get(id) ?? 0) + 1);
+
+  const now = new Date();
+  for (const [id, count] of countById) {
+    await db
+      .update(categorizationRules)
+      .set({ hitCount: sql`${categorizationRules.hitCount} + ${count}`, lastAppliedAt: now })
+      .where(eq(categorizationRules.id, id));
+  }
+}
+
+/**
+ * Variante a chiamata singola, per i contesti fuori dal loop di import (una transazione sola, test).
+ * Dentro un ciclo usa sempre `buildRuleResolver`: questa funzione interroga il DB a ogni invocazione.
  */
 export async function resolveCategorization(
   userId: string,
   input: { description: string; amount: number }
 ): Promise<ResolvedCategorization | null> {
-  const rules = await loadRuleCandidates(userId);
-  if (rules.length === 0) return null;
-
-  const key = merchantKey(input.description);
-  const isIncome = input.amount > 0;
-  const rule = selectMatchingRule(key, isIncome, rules);
-  if (!rule) return null;
-
-  await db
-    .update(categorizationRules)
-    .set({ hitCount: sql`${categorizationRules.hitCount} + 1`, lastAppliedAt: new Date() })
-    .where(eq(categorizationRules.id, rule.id));
-
-  const magnitude =
-    rule.splitPercentage === null
-      ? 0
-      : Math.round(Math.abs(input.amount) * rule.splitPercentage * 100) / 100;
-
-  return {
-    categoryId: rule.categoryId,
-    excludedAmount: input.amount >= 0 ? magnitude : -magnitude,
-    ruleId: rule.id,
-  };
+  const resolver = await buildRuleResolver(userId);
+  const resolved = resolver.resolve(input);
+  await flushRuleHits(resolver.appliedRuleIds());
+  return resolved;
 }
 ```
 
@@ -687,14 +720,20 @@ In `lib/gocardless/sync.ts`, sostituisci l'import a riga 8:
 
 ```ts
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
-import { resolveCategorization } from "@/lib/categorization/resolve";
+import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 ```
 
-e il corpo del loop (riga ~83), dove oggi c'è `const categoryId = await resolveCategoryId(link.userId, description);`:
+Subito dopo `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` (riga ~70, **prima** del loop) costruisci il risolutore una volta sola:
+
+```ts
+    const ruleResolver = await buildRuleResolver(link.userId);
+```
+
+Nel loop, al posto di `const categoryId = await resolveCategoryId(link.userId, description);`:
 
 ```ts
       const amount = Number(bankTransaction.transactionAmount.amount);
-      const resolved = await resolveCategorization(link.userId, { description, amount });
+      const resolved = ruleResolver.resolve({ description, amount });
       const categoryId = resolved?.categoryId ?? fallbackCategoryId;
 ```
 
@@ -704,7 +743,13 @@ e nell'oggetto passato a `.values({...})` aggiungi, subito dopo `amount`:
           excludedAmount: (resolved?.excludedAmount ?? 0).toFixed(2),
 ```
 
-`fallbackCategoryId` è già calcolato a riga ~70 prima del loop: riusalo, non richiamare la funzione dentro il ciclo.
+Dopo la fine del loop, scrivi in blocco gli utilizzi accumulati:
+
+```ts
+    await flushRuleHits(ruleResolver.appliedRuleIds());
+```
+
+**Nessuna query dentro il loop**: `fallbackCategoryId` e `ruleResolver` sono entrambi calcolati prima. Un sync che interroga il DB una volta per transazione degrada linearmente col numero di movimenti — è il problema che il piano parallelo `2026-09-10-gocardless-sync-performance.md` sta risolvendo, e questo task non deve reintrodurlo.
 
 - [ ] **Step 7: Elimina il vecchio modulo**
 

@@ -210,6 +210,31 @@ describe("computeKpis", () => {
     expect(kpis.giorniRimasti).toBe(0);
     expect(kpis.mediaGiornaliera).toBeCloseTo(280 / 28, 5);
   });
+
+  it("nessun budget impostato: budgetRimanente è null, non un negativo basato su tutte le spese", () => {
+    const referenceDate = new Date(2026, 1, 15);
+    const transactions = [makeTransaction({ date: "2026-02-05", amount: "-300.00" })];
+
+    const kpis = computeKpis(transactions, [], "mese", referenceDate, referenceDate);
+
+    expect(kpis.budgetTotale).toBe(0);
+    expect(kpis.budgetRimanente).toBeNull();
+  });
+
+  it("budget impostato solo su alcune categorie: budgetRimanente considera solo la spesa di quelle categorie", () => {
+    const referenceDate = new Date(2026, 1, 15);
+    const transactions = [
+      makeTransaction({ categoryId: "category-1", date: "2026-02-05", amount: "-100.00" }),
+      makeTransaction({ categoryId: "category-2", date: "2026-02-06", amount: "-500.00" }), // categoria senza budget
+    ];
+    const budgets = [makeBudget({ categoryId: "category-1", monthlyAmount: "200.00" })];
+
+    const kpis = computeKpis(transactions, budgets, "mese", referenceDate, referenceDate);
+
+    expect(kpis.speso).toBe(600); // "Speso nel periodo" resta il totale di tutte le categorie
+    expect(kpis.budgetTotale).toBe(200);
+    expect(kpis.budgetRimanente).toBe(100); // 200 - 100, non 200 - 600
+  });
 });
 
 describe("computeIncomeKpis", () => {

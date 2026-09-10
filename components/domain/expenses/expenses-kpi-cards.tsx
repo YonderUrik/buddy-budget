@@ -51,9 +51,14 @@ export function ExpensesKpiCards({
       <StatCard label="Speso nel periodo" value={-kpis.speso} currency={currency} />
       <StatCard
         label="Budget rimanente"
-        value={kpis.budgetRimanente}
+        value={kpis.budgetRimanente ?? 0}
         currency={currency}
-        subtitle={`${kpis.giorniRimasti} giorni rimasti`}
+        valueOverride={kpis.budgetRimanente === null ? "—" : undefined}
+        subtitle={
+          kpis.budgetRimanente === null
+            ? "Nessun budget impostato"
+            : `${kpis.giorniRimasti} giorni rimasti`
+        }
       />
       <StatCard
         label="Media giornaliera"

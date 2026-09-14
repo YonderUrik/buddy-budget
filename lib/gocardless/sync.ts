@@ -5,7 +5,8 @@ import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connecti
 import { transactions } from "@/lib/db/schema/transactions";
 import { GoCardlessError, getAccountBalances, getAccountTransactions } from "./client";
 import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limit";
-import { getFallbackCategoryId, resolveCategoryId } from "./categorize";
+import { getFallbackCategoryId } from "@/lib/categorization/fallback";
+import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 
 const MAX_STORED_SYNC_TIMESTAMPS = 4;
@@ -68,6 +69,7 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
     }
 
     const fallbackCategoryId = await getFallbackCategoryId(link.userId);
+    const ruleResolver = await buildRuleResolver(link.userId);
     let newTransactionsCount = 0;
     let categorizedCount = 0;
     let uncategorizedCount = 0;
@@ -80,7 +82,9 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
       const isExpense = Number(bankTransaction.transactionAmount.amount) < 0;
       const merchantName = (isExpense ? bankTransaction.creditorName : bankTransaction.debtorName)?.trim();
       const description = merchantName || rawDescription || "Movimento bancario";
-      const categoryId = await resolveCategoryId(link.userId, description);
+      const amount = Number(bankTransaction.transactionAmount.amount);
+      const resolved = ruleResolver.resolve({ description, amount });
+      const categoryId = resolved?.categoryId ?? fallbackCategoryId;
 
       const [inserted] = await db
         .insert(transactions)
@@ -91,6 +95,7 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
           description,
           rawDescription,
           amount: bankTransaction.transactionAmount.amount,
+          excludedAmount: (resolved?.excludedAmount ?? 0).toFixed(2),
           date: bankTransaction.bookingDate,
           source: "auto",
           externalId,
@@ -107,6 +112,8 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
         }
       }
     }
+
+    await flushRuleHits(ruleResolver.appliedRuleIds());
 
     const [currentLink] = await db
       .select({ syncTimestamps: bankAccountLinks.syncTimestamps })

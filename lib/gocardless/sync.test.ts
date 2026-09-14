@@ -5,6 +5,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { categories } from "@/lib/db/schema/categories";
+import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 import type { RateLimitStore } from "./rate-limit";
@@ -209,16 +210,13 @@ describe("syncAccountLink", () => {
     expect(stored.rawDescription).toBeNull();
   });
 
-  it("distingue le transazioni categorizzate per storico da quelle finite nel fallback", async () => {
+  it("distingue le transazioni categorizzate da una regola da quelle finite nel fallback", async () => {
     const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
-    await db.insert(transactions).values({
+    await db.insert(categorizationRules).values({
       userId,
-      accountId: link.accountId,
+      matchType: "merchant",
+      pattern: "supermercato",
       categoryId: category.id,
-      description: "Supermercato",
-      amount: "-10.00",
-      date: "2026-06-01",
-      source: "manuale",
     });
 
     vi.mocked(getAccountBalances).mockResolvedValue({

@@ -22,6 +22,8 @@ export interface CategorizeGroupRowProps {
   selected: boolean;
   categoryId: string;
   excludedPercentage: number;
+  /** Se presente, il gruppo non ha una categoria di default disponibile: selezione disabilitata, motivo mostrato all'utente. */
+  disabledReason?: string;
   onToggleSelected: (selected: boolean) => void;
   onCategoryChange: (categoryId: string) => void;
   onExcludedPercentageChange: (value: number) => void;
@@ -39,6 +41,7 @@ export function CategorizeGroupRow({
   selected,
   categoryId,
   excludedPercentage,
+  disabledReason,
   onToggleSelected,
   onCategoryChange,
   onExcludedPercentageChange,
@@ -58,7 +61,12 @@ export function CategorizeGroupRow({
   return (
     <div className="flex flex-col gap-3 border-b border-border px-4 py-3 last:border-b-0">
       <div className="flex flex-wrap items-center gap-3">
-        <Checkbox checked={selected} onCheckedChange={(checked) => onToggleSelected(checked === true)} />
+        <Checkbox
+          checked={selected}
+          disabled={Boolean(disabledReason)}
+          title={disabledReason}
+          onCheckedChange={(checked) => onToggleSelected(checked === true)}
+        />
 
         <button
           type="button"
@@ -127,6 +135,8 @@ export function CategorizeGroupRow({
           Dividi
         </Button>
       </div>
+
+      {disabledReason && <p className="text-xs text-neg">{disabledReason}</p>}
 
       {group.suggestion && <SuggestionSourceBadge suggestion={group.suggestion} />}
 

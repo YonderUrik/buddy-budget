@@ -2,16 +2,8 @@
 
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import type { Category } from "@/lib/db/schema/categories";
 
-export interface AutoCategorizeButtonProps {
-  categories: Category[];
-  currency: string;
-}
-
-export function AutoCategorizeButton({ categories, currency }: AutoCategorizeButtonProps) {
-  void categories;
-  void currency;
+export function AutoCategorizeButton() {
   return (
     <Link href="/categorizza" className={buttonVariants({ variant: "outline", size: "sm" })}>
       Categorizza automaticamente

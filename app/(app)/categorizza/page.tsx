@@ -31,6 +31,14 @@ function defaultCategoryId(group: SuggestionGroup, categories: Category[]): stri
   return categories.find((c) => c.isFallback)?.id ?? "";
 }
 
+/**
+ * Motivo per cui un gruppo non può essere selezionato/applicato: nessuna categoria di default disponibile
+ * (caso limite — nessuna categoria compatibile con la direzione né una categoria fallback per l'utente).
+ */
+function disabledReason(group: SuggestionGroup, categories: Category[]): string | undefined {
+  return defaultCategoryId(group, categories) === "" ? "Nessuna categoria disponibile per questa direzione" : undefined;
+}
+
 export default function CategorizzaPage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -64,13 +72,17 @@ export default function CategorizzaPage() {
     setOverrides((prev) => {
       const next = new Map(prev);
       for (const group of safeGroups) {
+        // Un gruppo senza categoria di default disponibile non può mai essere selezionato.
+        if (selectAll && disabledReason(group, safeCategories)) continue;
         next.set(group.merchantKey, { ...getOverride(group), selected: selectAll });
       }
       return next;
     });
   }
 
-  const selectedGroups = safeGroups.filter((group) => getOverride(group).selected);
+  const selectedGroups = safeGroups.filter(
+    (group) => getOverride(group).selected && !disabledReason(group, safeCategories)
+  );
   const totalTransactionCount = safeGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
 
   function handleApply() {
@@ -161,6 +173,7 @@ export default function CategorizzaPage() {
                 selected={override.selected}
                 categoryId={override.categoryId}
                 excludedPercentage={override.excludedPercentage}
+                disabledReason={disabledReason(group, safeCategories)}
                 onToggleSelected={(selected) => updateOverride(group, { selected })}
                 onCategoryChange={(categoryId) => updateOverride(group, { categoryId })}
                 onExcludedPercentageChange={(excludedPercentage) => updateOverride(group, { excludedPercentage })}

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
@@ -75,7 +75,7 @@ describe("resolveCategorization", () => {
     const [before] = await db
       .select()
       .from(categorizationRules)
-      .where(eq(categorizationRules.pattern, "esselunga via roma"));
+      .where(and(eq(categorizationRules.pattern, "esselunga via roma"), eq(categorizationRules.userId, userId)));
     const hitCountBefore = before.hitCount;
 
     await resolveCategorization(userId, { description: "ESSELUNGA VIA ROMA", amount: -30 });

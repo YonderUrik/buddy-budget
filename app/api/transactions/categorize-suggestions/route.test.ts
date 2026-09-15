@@ -5,6 +5,7 @@ import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
+import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 
 vi.mock("@/lib/auth", () => ({
@@ -79,7 +80,7 @@ describe("GET /api/transactions/categorize-suggestions", () => {
 
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altro utente", type: "variabile" })
+      .values({ userId: otherUserId, name: "Da categorizzare", type: "variabile", isFallback: true })
       .returning();
     otherCategoryId = otherCategory.id;
   });
@@ -99,75 +100,76 @@ describe("GET /api/transactions/categorize-suggestions", () => {
     expect(response.status).toBe(401);
   });
 
-  it("suggerisce la categoria storica per una transazione da categorizzare con descrizione già vista", async () => {
-    await db.insert(transactions).values({
-      userId,
-      accountId,
-      categoryId: foodCategoryId,
-      description: "Esselunga",
-      amount: "-30.00",
-      date: "2026-01-05",
-      source: "manuale",
-    });
-    const [uncategorized] = await db
+  it("raggruppa le transazioni da categorizzare per chiave merchant", async () => {
+    const [first] = await db
       .insert(transactions)
       .values({
         userId,
         accountId,
         categoryId: fallbackCategoryId,
-        description: "esselunga",
+        description: "Esselunga Via Roma 4471",
         amount: "-25.00",
         date: "2026-02-01",
+        source: "manuale",
+      })
+      .returning();
+    const [second] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId: fallbackCategoryId,
+        description: "ESSELUNGA VIA ROMA 8832",
+        amount: "-18.50",
+        date: "2026-02-05",
         source: "manuale",
       })
       .returning();
 
     const response = await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"));
     expect(response.status).toBe(200);
-    const body = await response.json();
-    expect(body).toHaveLength(1);
-    expect(body[0].transaction.id).toBe(uncategorized.id);
-    expect(body[0].suggestedCategoryId).toBe(foodCategoryId);
+    const { groups } = await response.json();
+    expect(groups).toHaveLength(1);
+    expect(groups[0].transactionIds).toHaveLength(2);
+    expect(groups[0].transactionIds.sort()).toEqual([first.id, second.id].sort());
   });
 
-  it("esclude le transazioni senza nessun match storico", async () => {
+  it("include la proposta ricavata da una regola esistente", async () => {
+    await db.insert(categorizationRules).values({
+      userId,
+      matchType: "merchant",
+      pattern: "esselunga via roma",
+      categoryId: foodCategoryId,
+    });
+
     await db.insert(transactions).values({
       userId,
       accountId,
       categoryId: fallbackCategoryId,
-      description: "Merchant mai visto prima",
-      amount: "-10.00",
+      description: "Esselunga Via Roma 4471",
+      amount: "-25.00",
       date: "2026-02-01",
       source: "manuale",
     });
 
-    const response = await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"));
-    const body = await response.json();
-    expect(body).toHaveLength(0);
+    const { groups } = await (await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"))).json();
+    expect(groups).toHaveLength(1);
+    expect(groups[0].suggestion.source).toBe("regola");
+    expect(groups[0].suggestion.suggestedCategoryId).toBe(foodCategoryId);
   });
 
-  it("non usa transazioni categorizzate di un altro utente come storico", async () => {
+  it("non include le transazioni di altri utenti", async () => {
     await db.insert(transactions).values({
       userId: otherUserId,
       accountId: otherAccountId,
       categoryId: otherCategoryId,
       description: "Bar Centrale",
       amount: "-5.00",
-      date: "2026-01-01",
-      source: "manuale",
-    });
-    await db.insert(transactions).values({
-      userId,
-      accountId,
-      categoryId: fallbackCategoryId,
-      description: "Bar Centrale",
-      amount: "-5.00",
       date: "2026-02-01",
       source: "manuale",
     });
 
-    const response = await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"));
-    const body = await response.json();
-    expect(body).toHaveLength(0);
+    const { groups } = await (await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"))).json();
+    expect(groups).toEqual([]);
   });
 });

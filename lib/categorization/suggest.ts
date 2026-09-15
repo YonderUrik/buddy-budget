@@ -48,6 +48,10 @@ export interface SuggestionGroup {
   merchantKey: string;
   label: string;
   transactionIds: string[];
+  // Descrizione grezza di ogni transazione del gruppo, nello stesso ordine di `transactionIds` —
+  // usata dalla UI di revisione per l'espansione (le descrizioni possono differire leggermente pur
+  // condividendo la stessa chiave merchant, es. suffissi/codici di transazione variabili).
+  transactionDescriptions: string[];
   totalAmount: number;
   suggestion: CategorizeSuggestion | null;
   hasDivergentSuggestions: boolean;
@@ -210,6 +214,7 @@ export function groupByMerchant(
       merchantKey: key,
       label: mostRecent.description,
       transactionIds: group.map((transaction) => transaction.id),
+      transactionDescriptions: group.map((transaction) => transaction.description),
       totalAmount: Math.round(group.reduce((sum, transaction) => sum + transaction.amount, 0) * 100) / 100,
       suggestion: best,
       hasDivergentSuggestions:

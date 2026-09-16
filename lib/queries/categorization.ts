@@ -108,6 +108,21 @@ export function useUpdateRuleMutation() {
   });
 }
 
+/** Proposte aggiuntive dall'assistente per i gruppi rimasti senza proposta. Silenziosa se il livello è spento. */
+export function useAiSuggestionsMutation() {
+  return useMutation({
+    mutationFn: async (transactionIds: string[]) => {
+      const response = await fetch("/api/transactions/categorize-suggestions/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionIds }),
+      });
+      if (!response.ok) return { groups: [] as SuggestionGroup[] };
+      return response.json() as Promise<{ groups: SuggestionGroup[] }>;
+    },
+  });
+}
+
 /** Elimina una regola e invalida la lista al successo. */
 export function useDeleteRuleMutation() {
   const queryClient = useQueryClient();

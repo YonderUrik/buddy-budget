@@ -9,9 +9,13 @@ import { CategorizeGroupRow } from "@/components/domain/categorization";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
-import type { SuggestionGroup } from "@/lib/categorization/suggest";
+import type { CategorizeSuggestion, SuggestionGroup } from "@/lib/categorization/suggest";
 import type { Category } from "@/lib/db/schema/categories";
-import { useApplyCategorizationMutation, useCategorizeSuggestionsQuery } from "@/lib/queries/categorization";
+import {
+  useAiSuggestionsMutation,
+  useApplyCategorizationMutation,
+  useCategorizeSuggestionsQuery,
+} from "@/lib/queries/categorization";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 
 interface GroupOverride {
@@ -45,9 +49,44 @@ export default function CategorizzaPage() {
   const { data: groups, isLoading, isError } = useCategorizeSuggestionsQuery();
   const { data: categories } = useCategoriesQuery();
   const applyMutation = useApplyCategorizationMutation();
+  const aiSuggestionsMutation = useAiSuggestionsMutation();
   const [overrides, setOverrides] = React.useState<Map<string, GroupOverride>>(new Map());
+  const [aiSuggestionsByMerchant, setAiSuggestionsByMerchant] = React.useState<Map<string, CategorizeSuggestion>>(
+    new Map()
+  );
+  const aiRequestedRef = React.useRef(false);
 
-  const safeGroups = groups ?? [];
+  // Richiama l'assistente una sola volta per i gruppi rimasti senza proposta, appena i dati sono
+  // arrivati. Un fallimento non produce mai un errore visibile: la mutation stessa risolve sempre
+  // con { groups: [] } in quel caso, quindi qui c'è solo il caso "nessuna proposta aggiuntiva".
+  React.useEffect(() => {
+    if (isLoading || isError || !groups || aiRequestedRef.current) return;
+    aiRequestedRef.current = true;
+
+    const unsuggestedIds = groups.filter((group) => !group.suggestion).flatMap((group) => group.transactionIds);
+    if (unsuggestedIds.length === 0) return;
+
+    aiSuggestionsMutation.mutate(unsuggestedIds, {
+      onSuccess: (result) => {
+        setAiSuggestionsByMerchant((prev) => {
+          const next = new Map(prev);
+          for (const group of result.groups) {
+            if (group.suggestion) next.set(group.merchantKey, group.suggestion);
+          }
+          return next;
+        });
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, isError, groups]);
+
+  const safeGroups = React.useMemo(() => {
+    return (groups ?? []).map((group) => {
+      if (group.suggestion) return group;
+      const aiSuggestion = aiSuggestionsByMerchant.get(group.merchantKey);
+      return aiSuggestion ? { ...group, suggestion: aiSuggestion } : group;
+    });
+  }, [groups, aiSuggestionsByMerchant]);
   const safeCategories = categories ?? [];
 
   function getOverride(group: SuggestionGroup): GroupOverride {
@@ -126,6 +165,9 @@ export default function CategorizzaPage() {
               ? "Nessuna transazione da categorizzare"
               : `${totalTransactionCount} transazioni in attesa di categorizzazione`}
         </p>
+        {aiSuggestionsMutation.isPending && (
+          <p className="text-xs text-muted-foreground">Ricerca di altre proposte in corso…</p>
+        )}
       </div>
 
       {!isLoading && !isError && safeGroups.length > 0 && (

@@ -48,9 +48,9 @@ async function findDuplicateRule(
 
 /**
  * PATCH /api/categorization-rules/[id] — aggiorna una regola del proprio utente; 404 se non
- * propria o se la nuova categoria non è propria, 409 se la combinazione tipo/pattern risultante
- * coincide con un'altra regola già esistente. Il pattern viene rinormalizzato con `merchantKey`
- * prima di salvare, come in creazione.
+ * propria o se la nuova categoria non è propria, 400 se la nuova categoria è la fallback (stesso
+ * guard di POST), 409 se la combinazione tipo/pattern risultante coincide con un'altra regola già
+ * esistente. Il pattern viene rinormalizzato con `merchantKey` prima di salvare, come in creazione.
  */
 export async function PATCH(
   request: NextRequest,
@@ -77,6 +77,12 @@ export async function PATCH(
     const category = await getOwnedCategory(session.user.id, parsed.data.categoryId);
     if (!category) {
       return new Response(null, { status: 404 });
+    }
+    if (category.isFallback) {
+      return Response.json(
+        { error: "Non è possibile creare una regola sulla categoria di fallback" },
+        { status: 400 }
+      );
     }
   }
 

@@ -66,9 +66,10 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/categorization-rules — crea una regola manuale per l'utente autenticato; 404 se la
- * categoria non è propria, 409 se esiste già una regola con lo stesso tipo di match e pattern
- * (il pattern viene normalizzato con `merchantKey` prima di ogni confronto/scrittura, dato che
- * la risoluzione confronta sempre chiavi normalizzate, mai testo grezzo).
+ * categoria non è propria, 400 se è la categoria di fallback (una regola su di essa resterebbe sempre
+ * inutilizzata a runtime, vedi `selectMatchingRule`), 409 se esiste già una regola con lo stesso tipo
+ * di match e pattern (il pattern viene normalizzato con `merchantKey` prima di ogni confronto/scrittura,
+ * dato che la risoluzione confronta sempre chiavi normalizzate, mai testo grezzo).
  */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -85,6 +86,12 @@ export async function POST(request: NextRequest) {
   const category = await getOwnedCategory(session.user.id, parsed.data.categoryId);
   if (!category) {
     return new Response(null, { status: 404 });
+  }
+  if (category.isFallback) {
+    return Response.json(
+      { error: "Non è possibile creare una regola sulla categoria di fallback" },
+      { status: 400 }
+    );
   }
 
   const normalizedPattern = merchantKey(parsed.data.pattern);

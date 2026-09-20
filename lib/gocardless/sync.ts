@@ -105,6 +105,10 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
 
       if (inserted) {
         newTransactionsCount += 1;
+        // hitCount va incrementato solo per righe davvero scritte: GoCardless restituisce una finestra
+        // rolling di storico, quindi la stessa transazione (scartata qui da onConflictDoNothing nei sync
+        // successivi) non deve gonfiare artificialmente l'utilizzo della regola che l'ha categorizzata.
+        if (resolved) ruleResolver.recordHit(resolved.ruleId);
         if (inserted.categoryId === fallbackCategoryId) {
           uncategorizedCount += 1;
         } else {

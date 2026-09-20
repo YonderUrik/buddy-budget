@@ -134,6 +134,20 @@ describe("groupByMerchant", () => {
     expect(groups[0].hasDivergentSuggestions).toBe(true);
   });
 
+  it("non mescola nello stesso gruppo un acquisto e il suo rimborso dallo stesso merchant", () => {
+    const groups = groupByMerchant(
+      [
+        makeTx({ id: "t1", description: "ESSELUNGA VIA ROMA", amount: -30 }),
+        makeTx({ id: "t2", description: "ESSELUNGA VIA ROMA", amount: 30 }),
+      ],
+      []
+    );
+    expect(groups).toHaveLength(2);
+    expect(groups.every((group) => group.merchantKey === "esselunga via roma")).toBe(true);
+    expect(new Set(groups.map((group) => group.groupKey)).size).toBe(2);
+    expect(groups.map((group) => group.totalAmount).sort()).toEqual([-30, 30]);
+  });
+
   it("ordina i gruppi per numero di transazioni decrescente", () => {
     const groups = groupByMerchant(
       [

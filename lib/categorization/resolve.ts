@@ -35,17 +35,24 @@ async function loadRuleCandidates(userId: string): Promise<RuleCandidate[]> {
 }
 
 export interface RuleResolver {
-  /** Risolve una transazione in memoria, senza toccare il DB. */
+  /** Risolve una transazione in memoria, senza toccare il DB. Non conta da sola l'utilizzo della regola. */
   resolve(input: { description: string; amount: number }): ResolvedCategorization | null;
-  /** Ids delle regole che hanno agito, nell'ordine in cui hanno vinto (con ripetizioni). */
+  /**
+   * Registra che `ruleId` ha effettivamente categorizzato una riga scritta a DB (non scartata da un
+   * conflitto). Va chiamato dal chiamante solo dopo aver saputo l'esito dell'insert — `resolve` da sola
+   * non lo sa, perché GoCardless può restituire più volte la stessa transazione (finestra rolling di
+   * storico) e ogni ripetizione viene scartata da `onConflictDoNothing` senza essere un utilizzo reale.
+   */
+  recordHit(ruleId: string): void;
+  /** Ids delle regole che hanno agito, nell'ordine in cui è stato registrato l'hit (con ripetizioni). */
   appliedRuleIds(): string[];
 }
 
 /**
  * Risolutore che carica le regole dell'utente **una sola volta** e poi lavora in memoria: pensato per
  * il loop di import, dove una query per transazione degraderebbe il sync in modo lineare col numero di
- * movimenti. Gli incrementi di `hitCount` non vengono scritti qui: si accumulano e si applicano in un
- * solo update finale con `flushRuleHits`.
+ * movimenti. Gli incrementi di `hitCount` non vengono scritti qui: si accumulano (via `recordHit`) e si
+ * applicano in un solo update finale con `flushRuleHits`.
  */
 export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
   const rules = await loadRuleCandidates(userId);
@@ -57,7 +64,6 @@ export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
       const rule = selectMatchingRule(merchantKey(input.description), input.amount > 0, rules);
       if (!rule) return null;
 
-      applied.push(rule.id);
       const magnitude =
         rule.splitPercentage === null
           ? 0
@@ -68,6 +74,9 @@ export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
         excludedAmount: magnitude === 0 ? 0 : input.amount >= 0 ? magnitude : -magnitude,
         ruleId: rule.id,
       };
+    },
+    recordHit(ruleId) {
+      applied.push(ruleId);
     },
     appliedRuleIds: () => applied,
   };
@@ -98,6 +107,7 @@ export async function resolveCategorization(
 ): Promise<ResolvedCategorization | null> {
   const resolver = await buildRuleResolver(userId);
   const resolved = resolver.resolve(input);
+  if (resolved) resolver.recordHit(resolved.ruleId);
   await flushRuleHits(resolver.appliedRuleIds());
   return resolved;
 }

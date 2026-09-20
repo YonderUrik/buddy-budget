@@ -42,6 +42,10 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
   const [confirmOpen, setConfirmOpen] = React.useState(false);
 
   const category = categories.find((c) => c.id === rule.categoryId);
+  // La fallback ("Da categorizzare") non è mai una categoria valida per una regola: una regola che vi
+  // punti resta sempre "usata 0 volte" a runtime (`selectMatchingRule` la scarta) e, se creata su
+  // suggerimento della UI di revisione, intrappolerebbe quel merchant nel fallback per sempre.
+  const assignableCategories = categories.filter((c) => !c.isFallback);
 
   function commitPattern() {
     const trimmed = pattern.trim();
@@ -108,7 +112,7 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
                 <SelectValue>{() => category?.name ?? "—"}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {categories.map((c) => (
+                {assignableCategories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
                   </SelectItem>

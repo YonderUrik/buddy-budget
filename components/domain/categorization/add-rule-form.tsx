@@ -16,8 +16,11 @@ export interface AddRuleFormProps {
 
 export function AddRuleForm({ categories }: AddRuleFormProps) {
   const createMutation = useCreateRuleMutation();
+  // La fallback ("Da categorizzare") non è mai una categoria valida per una regola creata qui — vedi
+  // lo stesso ragionamento in RuleRow: una regola sulla fallback resta sempre inutilizzata a runtime.
+  const assignableCategories = React.useMemo(() => categories.filter((c) => !c.isFallback), [categories]);
   const [pattern, setPattern] = React.useState("");
-  const [categoryId, setCategoryId] = React.useState(categories[0]?.id ?? "");
+  const [categoryId, setCategoryId] = React.useState(assignableCategories[0]?.id ?? "");
   const [matchType, setMatchType] = React.useState<"merchant" | "contains">("contains");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -79,11 +82,11 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
         <Select value={categoryId} onValueChange={(value) => value && setCategoryId(value)}>
           <SelectTrigger className="w-40">
             <SelectValue>
-              {() => categories.find((c) => c.id === categoryId)?.name ?? "Seleziona"}
+              {() => assignableCategories.find((c) => c.id === categoryId)?.name ?? "Seleziona"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {categories.map((c) => (
+            {assignableCategories.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}
               </SelectItem>

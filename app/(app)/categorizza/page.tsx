@@ -24,23 +24,32 @@ interface GroupOverride {
   excludedPercentage: number;
 }
 
-/** Categoria proposta di default per un gruppo: quella suggerita, altrimenti la prima categoria compatibile con la direzione. */
-function defaultCategoryId(group: SuggestionGroup, categories: Category[]): string {
-  if (group.suggestion) return group.suggestion.suggestedCategoryId;
+/**
+ * Categoria proposta di default per un gruppo: **solo** quella suggerita, mai un default arbitrario.
+ * Un gruppo senza proposta deve restare senza categoria scelta finché l'utente non ne seleziona una a
+ * mano dal dropdown — un default alfabetico sarebbe indistinguibile da una proposta reale e rischierebbe
+ * di essere applicato (e trasformato in una regola "appresa" permanente) senza che l'utente se ne accorga.
+ */
+function defaultCategoryId(group: SuggestionGroup): string {
+  return group.suggestion?.suggestedCategoryId ?? "";
+}
+
+/** Esiste almeno una categoria (non fallback) compatibile con la direzione del gruppo. */
+function hasCompatibleCategory(group: SuggestionGroup, categories: Category[]): boolean {
   const isIncome = group.totalAmount > 0;
-  const candidate = categories
-    .filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata"))
-    .sort((a, b) => a.name.localeCompare(b.name))[0];
-  if (candidate) return candidate.id;
-  return categories.find((c) => c.isFallback)?.id ?? "";
+  return categories.some((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata"));
 }
 
 /**
- * Motivo per cui un gruppo non può essere selezionato/applicato: nessuna categoria di default disponibile
- * (caso limite — nessuna categoria compatibile con la direzione né una categoria fallback per l'utente).
+ * Motivo per cui un gruppo non può essere selezionato/applicato in questo momento: o non esiste affatto
+ * una categoria compatibile con la sua direzione (caso limite), oppure il gruppo non ha ancora una
+ * categoria scelta (nessuna proposta e l'utente non ne ha selezionata una manualmente) — in entrambi i
+ * casi la selezione/applicazione resta bloccata finché la condizione non cambia.
  */
-function disabledReason(group: SuggestionGroup, categories: Category[]): string | undefined {
-  return defaultCategoryId(group, categories) === "" ? "Nessuna categoria disponibile per questa direzione" : undefined;
+function disabledReason(group: SuggestionGroup, categories: Category[], categoryId: string): string | undefined {
+  if (!hasCompatibleCategory(group, categories)) return "Nessuna categoria disponibile per questa direzione";
+  if (categoryId === "") return "Scegli una categoria per continuare";
+  return undefined;
 }
 
 export default function CategorizzaPage() {
@@ -71,7 +80,7 @@ export default function CategorizzaPage() {
         setAiSuggestionsByMerchant((prev) => {
           const next = new Map(prev);
           for (const group of result.groups) {
-            if (group.suggestion) next.set(group.merchantKey, group.suggestion);
+            if (group.suggestion) next.set(group.groupKey, group.suggestion);
           }
           return next;
         });
@@ -83,7 +92,7 @@ export default function CategorizzaPage() {
   const safeGroups = React.useMemo(() => {
     return (groups ?? []).map((group) => {
       if (group.suggestion) return group;
-      const aiSuggestion = aiSuggestionsByMerchant.get(group.merchantKey);
+      const aiSuggestion = aiSuggestionsByMerchant.get(group.groupKey);
       return aiSuggestion ? { ...group, suggestion: aiSuggestion } : group;
     });
   }, [groups, aiSuggestionsByMerchant]);
@@ -91,9 +100,9 @@ export default function CategorizzaPage() {
 
   function getOverride(group: SuggestionGroup): GroupOverride {
     return (
-      overrides.get(group.merchantKey) ?? {
+      overrides.get(group.groupKey) ?? {
         selected: false,
-        categoryId: defaultCategoryId(group, safeCategories),
+        categoryId: defaultCategoryId(group),
         excludedPercentage: group.suggestion?.suggestedSplitPercentage ?? 0,
       }
     );
@@ -102,7 +111,7 @@ export default function CategorizzaPage() {
   function updateOverride(group: SuggestionGroup, patch: Partial<GroupOverride>) {
     setOverrides((prev) => {
       const next = new Map(prev);
-      next.set(group.merchantKey, { ...getOverride(group), ...patch });
+      next.set(group.groupKey, { ...getOverride(group), ...patch });
       return next;
     });
   }
@@ -111,16 +120,18 @@ export default function CategorizzaPage() {
     setOverrides((prev) => {
       const next = new Map(prev);
       for (const group of safeGroups) {
-        // Un gruppo senza categoria di default disponibile non può mai essere selezionato.
-        if (selectAll && disabledReason(group, safeCategories)) continue;
-        next.set(group.merchantKey, { ...getOverride(group), selected: selectAll });
+        const override = getOverride(group);
+        // Un gruppo senza categoria compatibile, o senza ancora una categoria scelta, non può mai
+        // essere selezionato da "Seleziona tutto" — solo una scelta esplicita dal dropdown lo sblocca.
+        if (selectAll && disabledReason(group, safeCategories, override.categoryId)) continue;
+        next.set(group.groupKey, { ...override, selected: selectAll });
       }
       return next;
     });
   }
 
   const selectedGroups = safeGroups.filter(
-    (group) => getOverride(group).selected && !disabledReason(group, safeCategories)
+    (group) => getOverride(group).selected && !disabledReason(group, safeCategories, getOverride(group).categoryId)
   );
   const totalTransactionCount = safeGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
 
@@ -208,14 +219,14 @@ export default function CategorizzaPage() {
             const override = getOverride(group);
             return (
               <CategorizeGroupRow
-                key={group.merchantKey}
+                key={group.groupKey}
                 group={group}
                 categories={safeCategories}
                 currency={currency}
                 selected={override.selected}
                 categoryId={override.categoryId}
                 excludedPercentage={override.excludedPercentage}
-                disabledReason={disabledReason(group, safeCategories)}
+                disabledReason={disabledReason(group, safeCategories, override.categoryId)}
                 onToggleSelected={(selected) => updateOverride(group, { selected })}
                 onCategoryChange={(categoryId) => updateOverride(group, { categoryId })}
                 onExcludedPercentageChange={(excludedPercentage) => updateOverride(group, { excludedPercentage })}

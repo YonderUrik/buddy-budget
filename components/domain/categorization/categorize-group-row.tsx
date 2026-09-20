@@ -50,10 +50,13 @@ export function CategorizeGroupRow({
   const [splitOpen, setSplitOpen] = React.useState(false);
 
   const isIncome = group.totalAmount > 0;
+  // La fallback ("Da categorizzare") non è mai una scelta valida qui: assegnarla creerebbe una regola
+  // "appresa" che intrappola per sempre quel merchant nel fallback (vince su ogni regola futura più
+  // specifica). Sceglierla di nuovo non ha senso in una pagina che serve a uscire dal fallback.
   const sortedCategories = React.useMemo(
     () =>
       categories
-        .filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata"))
+        .filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata"))
         .sort((a, b) => a.name.localeCompare(b.name)),
     [categories, isIncome]
   );

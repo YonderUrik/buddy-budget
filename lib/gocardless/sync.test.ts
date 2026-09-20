@@ -251,6 +251,41 @@ describe("syncAccountLink", () => {
     });
   });
 
+  it("non incrementa hitCount di una regola per una transazione già importata in un sync precedente", async () => {
+    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
+    const [rule] = await db
+      .insert(categorizationRules)
+      .values({ userId, matchType: "merchant", pattern: "supermercato", categoryId: category.id })
+      .returning();
+
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-hit-once",
+          transactionAmount: { amount: "-15.00", currency: "EUR" },
+          remittanceInformationUnstructured: "Supermercato",
+          bookingDate: "2026-07-02",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    // Primo sync: la transazione è nuova, la regola deve contare un hit.
+    await syncAccountLink(link, createMemoryStore());
+    const [afterFirst] = await db.select().from(categorizationRules).where(eq(categorizationRules.id, rule.id));
+    expect(afterFirst.hitCount).toBe(1);
+
+    // Secondo sync: GoCardless ripropone la stessa transazione (finestra rolling di storico), ma
+    // l'insert viene scartato da onConflictDoNothing — non deve essere un secondo hit.
+    await syncAccountLink(link, createMemoryStore());
+    const [afterSecond] = await db.select().from(categorizationRules).where(eq(categorizationRules.id, rule.id));
+    expect(afterSecond.hitCount).toBe(1);
+  });
+
   it("è idempotente: un secondo sync con la stessa transazione non la riconta come nuova", async () => {
     vi.mocked(getAccountBalances).mockResolvedValue({
       balance: { balanceAmount: { amount: "150.00", currency: "EUR" }, balanceType: "interimAvailable" },

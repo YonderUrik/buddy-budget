@@ -20,6 +20,7 @@ describe("GET/POST /api/categorization-rules", () => {
   let otherUserId: string;
   let categoryId: string;
   let otherCategoryId: string;
+  let fallbackCategoryId: string;
 
   beforeEach(async () => {
     const testId = `test-rules-${crypto.randomUUID()}`;
@@ -59,6 +60,12 @@ describe("GET/POST /api/categorization-rules", () => {
       .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
       .returning();
     otherCategoryId = otherCategory.id;
+
+    const [fallbackCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .returning();
+    fallbackCategoryId = fallbackCategory.id;
 
     mockedGetSession.mockResolvedValue({ user: { id: userId } } as never);
   });
@@ -128,6 +135,17 @@ describe("GET/POST /api/categorization-rules", () => {
     );
 
     expect(response.status).toBe(404);
+  });
+
+  it("rifiuta con 400 una regola sulla categoria di fallback", async () => {
+    const response = await POST(
+      new NextRequest("http://localhost/api/categorization-rules", {
+        method: "POST",
+        body: JSON.stringify({ matchType: "merchant", pattern: "esselunga", categoryId: fallbackCategoryId }),
+      })
+    );
+
+    expect(response.status).toBe(400);
   });
 
   it("rifiuta con 409 una regola duplicata su stesso tipo e pattern", async () => {

@@ -45,6 +45,11 @@ export interface CategorizeSuggestion {
 }
 
 export interface SuggestionGroup {
+  // Identificatore stabile del gruppo, da usare per ogni lookup/keying lato consumatori (Map, chiavi
+  // React, corrispondenza fra proposte). Include la direzione oltre alla chiave merchant: due gruppi
+  // possono condividere lo stesso `merchantKey` (es. un acquisto e il suo rimborso dallo stesso
+  // esercente) mentre restano gruppi distinti a tutti gli effetti.
+  groupKey: string;
   merchantKey: string;
   label: string;
   transactionIds: string[];
@@ -175,26 +180,31 @@ export function computeSuggestions(input: SuggestInput): CategorizeSuggestion[] 
 const SOURCE_PRIORITY: Record<SuggestionSource, number> = { regola: 3, storico: 2, assistente: 1 };
 
 /**
- * Transazioni da categorizzare raccolte per chiave merchant, così che una scelta sola ne categorizzi
- * molte. Il gruppo eredita la proposta di sorgente più alta fra quelle delle sue transazioni (a pari
- * sorgente, la confidenza maggiore) e segnala se al suo interno convivono proposte di categorie diverse.
- * Ordinati per numerosità decrescente: i gruppi che fanno risparmiare più lavoro stanno in cima.
+ * Transazioni da categorizzare raccolte per chiave merchant **e direzione**, così che una scelta sola ne
+ * categorizzi molte senza mai mescolare entrate e uscite dello stesso esercente (es. un acquisto e il suo
+ * rimborso): un gruppo con importi di segno misto renderebbe `totalAmount` un pessimo indicatore di
+ * direzione per la UI e farebbe rifiutare l'intero batch dal guard di direzione lato server. Il gruppo
+ * eredita la proposta di sorgente più alta fra quelle delle sue transazioni (a pari sorgente, la
+ * confidenza maggiore) e segnala se al suo interno convivono proposte di categorie diverse. Ordinati per
+ * numerosità decrescente: i gruppi che fanno risparmiare più lavoro stanno in cima.
  */
 export function groupByMerchant(
   uncategorized: SuggestTransaction[],
   suggestions: CategorizeSuggestion[]
 ): SuggestionGroup[] {
   const suggestionByTransactionId = new Map(suggestions.map((s) => [s.transactionId, s]));
-  const byKey = new Map<string, SuggestTransaction[]>();
+  const byGroupKey = new Map<string, { merchantKey: string; transactions: SuggestTransaction[] }>();
   for (const transaction of uncategorized) {
     const key = merchantKey(transaction.description);
-    const bucket = byKey.get(key);
-    if (bucket) bucket.push(transaction);
-    else byKey.set(key, [transaction]);
+    const direction = transaction.amount >= 0 ? "entrata" : "uscita";
+    const groupKey = `${key}::${direction}`;
+    const bucket = byGroupKey.get(groupKey);
+    if (bucket) bucket.transactions.push(transaction);
+    else byGroupKey.set(groupKey, { merchantKey: key, transactions: [transaction] });
   }
 
   const groups: SuggestionGroup[] = [];
-  for (const [key, group] of byKey) {
+  for (const [groupKey, { merchantKey: key, transactions: group }] of byGroupKey) {
     const groupSuggestions = group
       .map((transaction) => suggestionByTransactionId.get(transaction.id))
       .filter((suggestion): suggestion is CategorizeSuggestion => suggestion !== undefined);
@@ -211,6 +221,7 @@ export function groupByMerchant(
     const mostRecent = group.reduce((latest, candidate) => (candidate.date > latest.date ? candidate : latest));
 
     groups.push({
+      groupKey,
       merchantKey: key,
       label: mostRecent.description,
       transactionIds: group.map((transaction) => transaction.id),

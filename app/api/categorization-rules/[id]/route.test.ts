@@ -65,6 +65,27 @@ describe("PATCH/DELETE /api/categorization-rules/[id]", () => {
     await client.end();
   });
 
+  it("rifiuta con 400 lo spostamento di una regola sulla categoria di fallback", async () => {
+    const [fallbackCategory] = await db
+      .insert(categories)
+      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .returning();
+    const [rule] = await db
+      .insert(categorizationRules)
+      .values({ userId, matchType: "merchant", pattern: "esselunga", categoryId })
+      .returning();
+
+    const response = await PATCH(
+      new NextRequest(`http://localhost/api/categorization-rules/${rule.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ categoryId: fallbackCategory.id }),
+      }),
+      { params: Promise.resolve({ id: rule.id }) }
+    );
+
+    expect(response.status).toBe(400);
+  });
+
   it("aggiorna il tipo di match di una regola propria", async () => {
     const [rule] = await db
       .insert(categorizationRules)

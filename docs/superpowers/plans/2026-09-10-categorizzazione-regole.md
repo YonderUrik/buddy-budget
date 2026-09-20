@@ -139,8 +139,11 @@ export const MERCHANT_NOISE_TOKENS: ReadonlySet<string> = new Set([
   "pagamento", "pagam", "pag", "pos", "carta", "cartasi", "acquisto", "addebito",
   "accredito", "bonifico", "sepa", "sdd", "rid", "rif", "cod", "codice", "operazione",
   "oper", "ricarica", "prelievo", "prelevamento", "bancomat", "contactless", "ecommerce",
-  "internet", "online", "data", "ore", "del", "il", "su", "presso", "c", "spa", "eur",
+  "internet", "online", "presso", "eur",
 ]);
+// Nota deliberata: articoli e preposizioni ("il", "del", "su") NON sono in questa lista.
+// Rimuoverli fonderebbe merchant distinti — "IL FORNAIO" e "FORNAIO" collasserebbero sulla
+// stessa chiave, e una regola imparata sull'uno si applicherebbe da sola all'altro.
 
 /** Suffissi di forma societaria: non distinguono un merchant da un altro. */
 export const COMPANY_SUFFIX_TOKENS: ReadonlySet<string> = new Set([

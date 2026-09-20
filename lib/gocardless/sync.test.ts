@@ -5,6 +5,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { categories } from "@/lib/db/schema/categories";
+import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 import type { RateLimitStore } from "./rate-limit";
@@ -209,16 +210,13 @@ describe("syncAccountLink", () => {
     expect(stored.rawDescription).toBeNull();
   });
 
-  it("distingue le transazioni categorizzate per storico da quelle finite nel fallback", async () => {
+  it("distingue le transazioni categorizzate da una regola da quelle finite nel fallback", async () => {
     const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
-    await db.insert(transactions).values({
+    await db.insert(categorizationRules).values({
       userId,
-      accountId: link.accountId,
+      matchType: "merchant",
+      pattern: "supermercato",
       categoryId: category.id,
-      description: "Supermercato",
-      amount: "-10.00",
-      date: "2026-06-01",
-      source: "manuale",
     });
 
     vi.mocked(getAccountBalances).mockResolvedValue({
@@ -251,6 +249,41 @@ describe("syncAccountLink", () => {
       uncategorizedCount: 1,
       balanceUpdated: true,
     });
+  });
+
+  it("non incrementa hitCount di una regola per una transazione già importata in un sync precedente", async () => {
+    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
+    const [rule] = await db
+      .insert(categorizationRules)
+      .values({ userId, matchType: "merchant", pattern: "supermercato", categoryId: category.id })
+      .returning();
+
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-hit-once",
+          transactionAmount: { amount: "-15.00", currency: "EUR" },
+          remittanceInformationUnstructured: "Supermercato",
+          bookingDate: "2026-07-02",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    // Primo sync: la transazione è nuova, la regola deve contare un hit.
+    await syncAccountLink(link, createMemoryStore());
+    const [afterFirst] = await db.select().from(categorizationRules).where(eq(categorizationRules.id, rule.id));
+    expect(afterFirst.hitCount).toBe(1);
+
+    // Secondo sync: GoCardless ripropone la stessa transazione (finestra rolling di storico), ma
+    // l'insert viene scartato da onConflictDoNothing — non deve essere un secondo hit.
+    await syncAccountLink(link, createMemoryStore());
+    const [afterSecond] = await db.select().from(categorizationRules).where(eq(categorizationRules.id, rule.id));
+    expect(afterSecond.hitCount).toBe(1);
   });
 
   it("è idempotente: un secondo sync con la stessa transazione non la riconta come nuova", async () => {

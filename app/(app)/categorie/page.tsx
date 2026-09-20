@@ -3,6 +3,7 @@
 /** Pagina Categorie: elenco categorie dell'utente con gestione completa (crea/rinomina/elimina/icona/colore). */
 
 import { AddCategoryForm, CategoryRow, DistributeColorsButton } from "@/components/domain/categories";
+import { RulesManager } from "@/components/domain/categorization";
 import { Card } from "@/components/ui/card";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 
@@ -47,6 +48,8 @@ export default function CategoriePage() {
           <AddCategoryForm />
         </Card>
       )}
+
+      {!isLoading && !isError && <RulesManager categories={safeCategories} />}
     </div>
   );
 }

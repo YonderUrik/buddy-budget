@@ -117,7 +117,7 @@ export default function SpesePage() {
         >
           Gestisci categorie
         </a>
-        <AutoCategorizeButton categories={safeCategories} currency={currency} />
+        <AutoCategorizeButton />
         {uncategorizedCount > 0 && (
           <button
             type="button"

@@ -51,7 +51,7 @@ describe("GET /api/budgets", () => {
   it("ritorna i budget dell'utente", async () => {
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Affitto", type: "fissa" })
+      .values({ userId, name: "Affitto", type: "dovuta" })
       .returning();
     await db.insert(budgets).values({ userId, categoryId: category.id, monthlyAmount: "700.00" });
 

@@ -13,14 +13,14 @@ describe("CATEGORY_ICONS", () => {
 
 describe("createCategorySchema", () => {
   it("accetta nome/tipo validi senza icona/colore (opzionali)", () => {
-    const result = createCategorySchema.safeParse({ name: "Palestra", type: "variabile" });
+    const result = createCategorySchema.safeParse({ name: "Palestra", type: "voluta" });
     expect(result.success).toBe(true);
   });
 
   it("accetta icona/colore validi", () => {
     const result = createCategorySchema.safeParse({
       name: "Palestra",
-      type: "variabile",
+      type: "voluta",
       icon: "dumbbell",
       color: "teal",
     });
@@ -28,7 +28,7 @@ describe("createCategorySchema", () => {
   });
 
   it("rifiuta nome vuoto", () => {
-    const result = createCategorySchema.safeParse({ name: "  ", type: "variabile" });
+    const result = createCategorySchema.safeParse({ name: "  ", type: "voluta" });
     expect(result.success).toBe(false);
   });
 
@@ -38,12 +38,12 @@ describe("createCategorySchema", () => {
   });
 
   it("rifiuta un'icona fuori enum", () => {
-    const result = createCategorySchema.safeParse({ name: "Palestra", type: "variabile", icon: "bitcoin" });
+    const result = createCategorySchema.safeParse({ name: "Palestra", type: "voluta", icon: "bitcoin" });
     expect(result.success).toBe(false);
   });
 
   it("rifiuta un colore fuori enum", () => {
-    const result = createCategorySchema.safeParse({ name: "Palestra", type: "variabile", color: "brown" });
+    const result = createCategorySchema.safeParse({ name: "Palestra", type: "voluta", color: "brown" });
     expect(result.success).toBe(false);
   });
 });

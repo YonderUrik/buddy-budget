@@ -64,13 +64,13 @@ describe("POST /api/transactions/categorize-suggestions/ai", () => {
 
     const [fallbackCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
     fallbackCategoryId = fallbackCategory.id;
 
     const [foodCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     foodCategoryId = foodCategory.id;
 
@@ -97,7 +97,7 @@ describe("POST /api/transactions/categorize-suggestions/ai", () => {
 
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId: otherUserId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
     otherCategoryId = otherCategory.id;
 

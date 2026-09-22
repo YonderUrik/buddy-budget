@@ -33,7 +33,7 @@ describe("resolveCategorization", () => {
 
     const [spesaCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     spesaCategoryId = spesaCategory.id;
 

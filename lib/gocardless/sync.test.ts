@@ -211,7 +211,7 @@ describe("syncAccountLink", () => {
   });
 
   it("distingue le transazioni categorizzate da una regola da quelle finite nel fallback", async () => {
-    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
+    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "voluta" }).returning();
     await db.insert(categorizationRules).values({
       userId,
       matchType: "merchant",
@@ -252,7 +252,7 @@ describe("syncAccountLink", () => {
   });
 
   it("non incrementa hitCount di una regola per una transazione già importata in un sync precedente", async () => {
-    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "variabile" }).returning();
+    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "voluta" }).returning();
     const [rule] = await db
       .insert(categorizationRules)
       .values({ userId, matchType: "merchant", pattern: "supermercato", categoryId: category.id })

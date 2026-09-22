@@ -3,8 +3,8 @@ import { getSuggester } from "./index";
 import { createOllamaSuggester } from "./ollama";
 
 const categories = [
-  { id: "cat-spesa", name: "Spesa alimentare", type: "variabile", isFallback: false },
-  { id: "cat-casa", name: "Affitto & Mutuo", type: "fissa", isFallback: false },
+  { id: "cat-spesa", name: "Spesa alimentare", type: "voluta", isFallback: false },
+  { id: "cat-casa", name: "Affitto & Mutuo", type: "dovuta", isFallback: false },
 ] as never;
 
 const input = [{ index: 0, description: "esselunga via roma", amount: -30 }];

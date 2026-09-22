@@ -51,7 +51,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
 
     const [fallback] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
     fallbackCategoryId = fallback.id;
 
@@ -70,7 +70,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
   it("rinomina una categoria propria", async () => {
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Svago", type: "variabile" })
+      .values({ userId, name: "Svago", type: "voluta" })
       .returning();
 
     const response = await PATCH(
@@ -89,7 +89,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
   it("aggiorna icona/colore di una categoria propria", async () => {
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Svago", type: "variabile" })
+      .values({ userId, name: "Svago", type: "voluta" })
       .returning();
 
     const response = await PATCH(
@@ -107,10 +107,10 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
   });
 
   it("risponde 409 rinominando su un nome già usato dallo stesso utente", async () => {
-    await db.insert(categories).values({ userId, name: "Trasporti", type: "variabile" });
+    await db.insert(categories).values({ userId, name: "Trasporti", type: "voluta" });
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Svago", type: "variabile" })
+      .values({ userId, name: "Svago", type: "voluta" })
       .returning();
 
     const response = await PATCH(
@@ -127,7 +127,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
   it("risponde 404 aggiornando una categoria di un altro utente", async () => {
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
 
     const response = await PATCH(
@@ -174,7 +174,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
   it("elimina una categoria senza transazioni collegate", async () => {
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Svago", type: "variabile" })
+      .values({ userId, name: "Svago", type: "voluta" })
       .returning();
 
     const response = await DELETE(
@@ -194,7 +194,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
       .returning();
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Svago", type: "variabile" })
+      .values({ userId, name: "Svago", type: "voluta" })
       .returning();
     await db.insert(budgets).values({ userId, categoryId: category.id, monthlyAmount: "100.00" });
     const [transaction] = await db
@@ -237,7 +237,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
   it("risponde 404 eliminando una categoria di un altro utente", async () => {
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
 
     const response = await DELETE(

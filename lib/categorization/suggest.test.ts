@@ -13,9 +13,9 @@ function makeTx(overrides: Partial<SuggestTransaction> = {}): SuggestTransaction
   };
 }
 
-const spesa = { id: "cat-spesa", type: "variabile" as const, isFallback: false };
+const spesa = { id: "cat-spesa", type: "voluta" as const, isFallback: false };
 const stipendio = { id: "cat-stipendio", type: "entrata" as const, isFallback: false };
-const fallback = { id: "cat-fallback", type: "variabile" as const, isFallback: true };
+const fallback = { id: "cat-fallback", type: "voluta" as const, isFallback: true };
 
 describe("computeSuggestions", () => {
   it("non propone nulla senza regole né storico", () => {
@@ -54,7 +54,7 @@ describe("computeSuggestions", () => {
       uncategorized: [makeTx()],
       rules: [{ id: "r1", pattern: "esselunga via roma", categoryId: "cat-spesa", splitPercentage: null }],
       history: [makeTx({ id: "h1", categoryId: "cat-altro" })],
-      categories: [spesa, fallback, { id: "cat-altro", type: "variabile", isFallback: false }],
+      categories: [spesa, fallback, { id: "cat-altro", type: "voluta", isFallback: false }],
     });
     expect(result[0].source).toBe("regola");
   });

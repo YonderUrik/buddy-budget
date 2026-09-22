@@ -61,7 +61,7 @@ function makeCategory(overrides: Partial<Category>): Category {
     id: "category-1",
     userId: "user-1",
     name: "Categoria",
-    type: "variabile",
+    type: "voluta",
     color: "slate",
     icon: "package",
     isFallback: false,
@@ -259,8 +259,8 @@ describe("computeIncomeKpis", () => {
 describe("computeCategoryBreakdown", () => {
   it("somma la spesa effettiva per ciascuna categoria dell'utente, incluse quelle senza transazioni", () => {
     const categories = [
-      makeCategory({ id: "cat-a", name: "Spesa alimentare", type: "variabile" }),
-      makeCategory({ id: "cat-b", name: "Affitto", type: "fissa" }),
+      makeCategory({ id: "cat-a", name: "Spesa alimentare", type: "voluta" }),
+      makeCategory({ id: "cat-b", name: "Affitto", type: "dovuta" }),
     ];
     const transactions = [
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
@@ -269,8 +269,8 @@ describe("computeCategoryBreakdown", () => {
     const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
 
     expect(breakdown).toEqual([
-      { categoryId: "cat-a", name: "Spesa alimentare", type: "variabile", amount: 90, color: "slate", icon: "package" },
-      { categoryId: "cat-b", name: "Affitto", type: "fissa", amount: 0, color: "slate", icon: "package" },
+      { categoryId: "cat-a", name: "Spesa alimentare", type: "voluta", amount: 90, color: "slate", icon: "package" },
+      { categoryId: "cat-b", name: "Affitto", type: "dovuta", amount: 0, color: "slate", icon: "package" },
     ]);
   });
 });
@@ -278,8 +278,8 @@ describe("computeCategoryBreakdown", () => {
 describe("computeFixedVsVariable", () => {
   it("raggruppa la spesa effettiva del periodo per tipo categoria", () => {
     const categories = [
-      makeCategory({ id: "cat-a", type: "variabile" }),
-      makeCategory({ id: "cat-b", type: "fissa" }),
+      makeCategory({ id: "cat-a", type: "voluta" }),
+      makeCategory({ id: "cat-b", type: "dovuta" }),
     ];
     const transactions = [
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
@@ -546,7 +546,7 @@ describe("filterByTransactionType", () => {
 
 describe("computeCategoryBreakdown esclude le categorie di entrata", () => {
   it("non include una categoria type 'entrata' nel risultato", () => {
-    const variabile = makeCategory({ id: "cat-var", type: "variabile" });
+    const variabile = makeCategory({ id: "cat-var", type: "voluta" });
     const entrata = makeCategory({ id: "cat-income", name: "Stipendio", type: "entrata" });
     const transactions = [
       makeTransaction({ categoryId: "cat-var", amount: "-50.00", date: "2026-02-05" }),

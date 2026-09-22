@@ -25,11 +25,11 @@ import { useSidebar } from "@/components/layout/sidebar-context";
 // ---------------------------------------------------------------------------
 
 interface MobileTopbarProps {
-  /** Nome del brand mostrato nella topbar. Default: "Patrimonio". */
+  /** Nome del brand mostrato nella topbar. Default: "BuddyBudget". */
   brandName?: string;
 }
 
-export function MobileTopbar({ brandName = "Patrimonio" }: MobileTopbarProps) {
+export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
   const { openMobile } = useSidebar();
 
   return (

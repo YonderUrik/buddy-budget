@@ -256,7 +256,7 @@ export function AppSidebar({
           </span>
         ) : (
           <span className="font-heading text-base font-bold text-sidebar-foreground truncate">
-            Patrimonio
+            BuddyBudget
           </span>
         )}
       </div>

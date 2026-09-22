@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
+import { safeRedirectPath } from "@/lib/auth/constants";
 
 const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/_next", "/favicon.ico"];
 
@@ -10,6 +11,16 @@ function isPublicPath(pathname: string): boolean {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Chi è già autenticato non deve rivedere il form di login.
+  if (pathname === "/login") {
+    const existing = await auth.api.getSession({ headers: request.headers });
+    if (existing) {
+      const target = safeRedirectPath(request.nextUrl.searchParams.get("redirect"));
+      return NextResponse.redirect(new URL(target, request.url));
+    }
+    return NextResponse.next();
+  }
 
   if (isPublicPath(pathname)) {
     return NextResponse.next();

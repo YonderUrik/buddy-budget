@@ -102,13 +102,18 @@ script one-shot storico già eseguito: resta, ma il reset lo rende obsoleto (ann
 
 ### Migrazione DB
 
-1. Migration SQL versionata (non `CREATE`/`ALTER` ad hoc non tracciato):
+1. Script di migrazione enum versionato nel repo e idempotente, `lib/db/migrate-category-groups.ts`
+   (`pnpm db:migrate-category-groups`). Non una migration Drizzle: il DB di questo progetto è gestito con
+   `db:push` e il journal Drizzle contiene solo la baseline `0000`, quindi `db:migrate` non è affidabile.
+   Lo script legge i valori correnti da `pg_enum` ed esegue solo ciò che manca:
    `ALTER TYPE category_type RENAME VALUE 'fissa' TO 'dovuta'`,
    `ALTER TYPE category_type RENAME VALUE 'variabile' TO 'voluta'`,
-   `ALTER TYPE category_type ADD VALUE 'futuro'`, `ADD VALUE 'saltuaria'`.
-   Dopo la migration lo schema Drizzle e il DB coincidono → `db:push` non propone modifiche su questo enum.
-   (Nota: `ADD VALUE` non può essere usato nella stessa transazione in cui il nuovo valore viene letto — il
-   reset dati gira come step separato.)
+   `ALTER TYPE category_type ADD VALUE IF NOT EXISTS 'futuro' BEFORE 'entrata'`,
+   `ALTER TYPE category_type ADD VALUE IF NOT EXISTS 'saltuaria' BEFORE 'entrata'`
+   (ordine finale identico a `CATEGORY_TYPES` → `db:push` non propone modifiche su questo enum).
+   `ADD VALUE` gira fuori da transazioni; il reset dati è uno step separato.
+   **Attenzione DB condiviso**: dopo la rinomina, il codice di `main` non ancora mergiato (che scrive
+   `"fissa"`/`"variabile"`) è incompatibile col DB fino al merge — finestra da tenere breve.
 2. Script one-shot `lib/db/reset-categories.ts` (`pnpm db:reset-categories`), idempotente, una transazione
    **per utente**:
    - assicura che esista la categoria fallback (riusando la logica di `lib/categorization/fallback.ts`);
@@ -186,9 +191,11 @@ Trend 6 mesi (per categoria), KPI Uscite/Entrate, Panoramica, budget per categor
 - `lib/calc/cashflow.test.ts`: `computeWhereItGoes` con le 6 voci, fallback in "Non classificato", `avanzo`.
 - `lib/db/schema/categories.test.ts`: ogni default ha icona in `CATEGORY_ICONS`, tipo valido, nomi unici,
   esattamente una fallback, ogni gruppo ha almeno una categoria.
-- Script di reset: test d'integrazione (DB reale, stesso pattern degli altri `*.integration.test.ts`) —
-  rinomina via `LEGACY_NAME_MAP` preserva id e transazioni; personalizzata eliminata con transazioni spostate
-  sulla fallback e budget/regole rimossi; seconda esecuzione = no-op.
+- Script di reset: la decisione (cosa aggiornare/creare/eliminare) è una funzione pura `planCategoryReset`
+  testata con vitest, stesso pattern di `buildRulesFromHistory` in `backfill-categorization-rules.ts` —
+  rinomina via `LEGACY_NAME_MAP` preserva l'id; nome esatto vince sul nome legacy; personalizzata in
+  `deletions`; fallback mai toccata; secondo piano sullo stato già resettato = nessuna azione. Il wrapper DB
+  (`resetUserCategories`) applica il piano in transazione.
 - Tutti i fixture di test che usano `"fissa"`/`"variabile"` (≈20 file sotto `app/api/**` e `lib/**`) aggiornati.
 - Verifica finale: `tsc --noEmit` pulito, suite vitest (esclusi i 3 fallimenti noti di `scheduler.test.ts`),
   `pnpm lint` senza nuovi errori, `grep` di `"fissa"`/`"variabile"` nel codice (esclusi `docs/` e la

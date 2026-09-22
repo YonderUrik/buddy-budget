@@ -6,6 +6,7 @@ import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { CategorizeGroupRow } from "@/components/domain/categorization";
+import { LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
@@ -55,7 +56,7 @@ function disabledReason(group: SuggestionGroup, categories: Category[], category
 export default function CategorizzaPage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
-  const { data: groups, isLoading, isError } = useCategorizeSuggestionsQuery();
+  const { data: groups, isLoading, isError, refetch } = useCategorizeSuggestionsQuery();
   const { data: categories } = useCategoriesQuery();
   const applyMutation = useApplyCategorizationMutation();
   const aiSuggestionsMutation = useAiSuggestionsMutation();
@@ -160,10 +161,10 @@ export default function CategorizzaPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div className="flex flex-col gap-1">
         <Link
-          href="/spese"
+          href="/transazioni"
           className="w-fit text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
         >
           ← Torna a Transazioni
@@ -210,7 +211,7 @@ export default function CategorizzaPage() {
           ))}
         </div>
       ) : isError ? (
-        <p className="text-sm text-destructive">Impossibile caricare le proposte di categorizzazione.</p>
+        <LoadError message="Impossibile caricare le proposte di categorizzazione." onRetry={() => refetch()} />
       ) : safeGroups.length === 0 ? (
         <Card className="p-6 text-center text-sm text-muted-foreground">Nessuna transazione da categorizzare</Card>
       ) : (

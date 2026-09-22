@@ -22,7 +22,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Landmark,
@@ -33,6 +33,7 @@ import {
   CreditCard,
   Target,
   BarChart3,
+  Tags,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -58,23 +59,34 @@ export interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  /** Se true la voce è mostrata disabilitata con badge "Presto" (schermata non ancora disponibile). */
+  comingSoon?: boolean;
 }
 
+/** Etichetta del badge per le voci non ancora disponibili. */
+const COMING_SOON_LABEL = "Presto";
+
 /**
- * Le 9 voci di navigazione dell'applicazione.
+ * Le voci di navigazione dell'applicazione.
  * Esportata per permettere override o test unitari senza montare il componente.
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Panoramica", href: "/panoramica", icon: LayoutDashboard },
   { label: "Conti", href: "/conti", icon: Landmark },
-  { label: "Transazioni", href: "/spese", icon: ShoppingCart },
+  { label: "Transazioni", href: "/transazioni", icon: ShoppingCart },
+  { label: "Categorie", href: "/categorie", icon: Tags },
   { label: "Cash flow", href: "/cash-flow", icon: ArrowLeftRight },
-  { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
-  { label: "Pensione", href: "/pensione", icon: Umbrella },
-  { label: "Debiti", href: "/debiti", icon: CreditCard },
-  { label: "Pianifica", href: "/pianifica", icon: Target },
-  { label: "Analitiche", href: "/analitiche", icon: BarChart3 },
+  { label: "Investimenti", href: "/investimenti", icon: TrendingUp, comingSoon: true },
+  { label: "Pensione", href: "/pensione", icon: Umbrella, comingSoon: true },
+  { label: "Debiti", href: "/debiti", icon: CreditCard, comingSoon: true },
+  { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
+  { label: "Analitiche", href: "/analitiche", icon: BarChart3, comingSoon: true },
 ];
+
+/** True se `pathname` corrisponde alla voce `href` o a una sua sotto-route. */
+function isActivePath(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 // ---------------------------------------------------------------------------
 // Sotto-componenti interni
@@ -93,6 +105,30 @@ function NavLink({
   onNavigate?: () => void;
 }) {
   const Icon = item.icon;
+
+  if (item.comingSoon) {
+    return (
+      <span
+        aria-disabled="true"
+        title={collapsed ? `${item.label} (in arrivo)` : undefined}
+        className={cn(
+          "flex cursor-default items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+          "text-sidebar-foreground/40",
+          collapsed && "justify-center px-2"
+        )}
+      >
+        <Icon className={cn("shrink-0", collapsed ? "size-5" : "size-4")} aria-hidden="true" />
+        {!collapsed && (
+          <>
+            <span className="truncate leading-none">{item.label}</span>
+            <span className="ml-auto rounded-full border border-sidebar-border px-1.5 py-0.5 text-[10px] leading-none text-sidebar-foreground/60">
+              {COMING_SOON_LABEL}
+            </span>
+          </>
+        )}
+      </span>
+    );
+  }
 
   return (
     <Link
@@ -174,6 +210,7 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session } = authClient.useSession();
 
   const userName = session?.user.name ?? "Utente";
@@ -232,7 +269,7 @@ export function AppSidebar({
               <NavLink
                 item={item}
                 collapsed={isCollapsed}
-                active={activeHref === item.href}
+                active={activeHref ? activeHref === item.href : isActivePath(pathname, item.href)}
                 onNavigate={onClose}
               />
             </li>

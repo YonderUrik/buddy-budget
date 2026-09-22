@@ -48,12 +48,13 @@ export function ExpensesKpiCards({
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <StatCard label="Speso nel periodo" value={-kpis.speso} currency={currency} />
+      <StatCard label="Speso nel periodo" value={kpis.speso} currency={currency} tone="neutral" />
       <StatCard
         label="Budget rimanente"
         value={kpis.budgetRimanente ?? 0}
         currency={currency}
         valueOverride={kpis.budgetRimanente === null ? "—" : undefined}
+        tone={kpis.budgetRimanente === null ? "neutral" : "auto"}
         subtitle={
           kpis.budgetRimanente === null
             ? "Nessun budget impostato"
@@ -62,7 +63,8 @@ export function ExpensesKpiCards({
       />
       <StatCard
         label="Media giornaliera"
-        value={-kpis.mediaGiornaliera}
+        value={kpis.mediaGiornaliera}
+        tone="neutral"
         currency={currency}
         subtitle={trendLabel}
       />

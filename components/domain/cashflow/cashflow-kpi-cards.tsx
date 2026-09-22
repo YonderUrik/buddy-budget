@@ -21,17 +21,18 @@ export function CashflowKpiCards({ transactions, period, currency, referenceDate
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
       <StatCard label="Entrate medie" value={kpis.entrateMedie} currency={currency} />
-      <StatCard label="Uscite medie" value={-kpis.usciteMedie} currency={currency} />
+      <StatCard label="Uscite medie" value={kpis.usciteMedie} currency={currency} tone="neutral" />
       <StatCard label="Flusso netto" value={kpis.flussoNettoTotale} currency={currency} />
       <StatCard
         label="Tasso di risparmio"
         value={kpis.tassoRisparmio ?? 0}
         currency={currency}
         valueOverride={kpis.tassoRisparmio === null ? "—" : `${Math.round(kpis.tassoRisparmio * 100)}%`}
+        tone={kpis.tassoRisparmio === null ? "neutral" : "auto"}
         subtitle={
           kpis.tassoRisparmio === null
             ? "Non calcolabile (nessuna entrata nel periodo)"
-            : `${Math.round(kpis.tassoRisparmio * 100)}% delle entrate`
+            : "Quota delle entrate non spesa"
         }
       />
     </div>

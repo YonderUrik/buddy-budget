@@ -4,6 +4,8 @@
 
 import * as React from "react";
 import { Trash2Icon } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -62,7 +64,22 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
 
   function commitCategory(categoryId: string | null) {
     if (categoryId === null || categoryId === transaction.categoryId) return;
-    updateMutation.mutate({ id: transaction.id, input: { categoryId } });
+    const previousCategoryId = transaction.categoryId;
+    const nextName = categories.find((c) => c.id === categoryId)?.name ?? "";
+    updateMutation.mutate(
+      { id: transaction.id, input: { categoryId } },
+      {
+        onSuccess: () => {
+          if (previousCategoryId === null) return;
+          toast.success(`Spostata in ${nextName}`, {
+            action: {
+              label: "Annulla",
+              onClick: () => updateMutation.mutate({ id: transaction.id, input: { categoryId: previousCategoryId } }),
+            },
+          });
+        },
+      }
+    );
   }
 
   function commitDescription() {
@@ -112,7 +129,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onBlur={commitDescription}
-              className="h-7 text-sm font-medium"
+              className="h-9 text-sm font-medium sm:h-7"
               aria-label="Descrizione transazione"
             />
           )}
@@ -126,13 +143,13 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 onBlur={commitDate}
-                className="h-6 w-32 text-xs"
+                className="h-9 w-36 text-xs sm:h-6 sm:w-32"
                 aria-label="Data transazione"
               />
             )}
             <span>·</span>
             <Select value={transaction.categoryId} onValueChange={commitCategory}>
-              <SelectTrigger size="sm" className="h-6 max-w-40 text-xs">
+              <SelectTrigger size="sm" className="max-w-48 text-xs data-[size=sm]:h-9 sm:max-w-40 sm:data-[size=sm]:h-6">
                 <SelectValue>
                   {(value: string | null) => {
                     const selected = categories.find((c) => c.id === value);
@@ -193,17 +210,15 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
 
           {isUncategorized && (
             <Badge variant="outline" className="shrink-0 gap-1.5 border-neg/40 text-neg">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-neg opacity-75" />
-                <span className="relative inline-flex size-1.5 rounded-full bg-neg" />
-              </span>
+              <span className="inline-flex size-1.5 rounded-full bg-neg" aria-hidden="true" />
               Da categorizzare
             </Badge>
           )}
 
           {isAuto ? (
             <div className="w-24 shrink-0 text-right sm:w-28">
-              <p className="text-sm font-medium tabular-nums">
+              <p className={cn("text-sm font-medium tabular-nums", isIncome && "text-pos")}>
+                {isIncome && "+"}
                 {formatCurrency(isSplit ? netAmount : fullAmount, currency)}
               </p>
               {isSplit && (
@@ -219,8 +234,8 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
                 onChange={setAmountValue}
                 onBlur={commitAmount}
                 currency={currency}
-                className="w-full text-right"
-                aria-label="Importo"
+                className={cn("w-full text-right", isIncome && "text-pos")}
+                aria-label={isIncome ? "Importo entrata" : "Importo uscita"}
               />
               {isSplit && (
                 <p className="mt-0.5 text-right text-xs text-muted-foreground">
@@ -235,8 +250,9 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           <button
             type="button"
             onClick={() => setSplitOpen((open) => !open)}
-            className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
+            className="flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted"
             aria-pressed={splitOpen}
+            title="Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)"
           >
             Dividi
           </button>

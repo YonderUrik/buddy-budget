@@ -12,6 +12,7 @@ import {
   IncomeSourcesList,
   WhereItGoesBreakdown,
 } from "@/components/domain/cashflow";
+import { LoadError } from "@/components/domain/shared";
 import { authClient } from "@/lib/auth/client";
 import {
   computeAccumulatedSavings,
@@ -53,7 +54,7 @@ export default function CashFlowPage() {
   const today = startOfDay(new Date());
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-medium text-foreground">Cash flow</h1>
@@ -69,12 +70,7 @@ export default function CashFlowPage() {
           ))}
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Impossibile caricare i dati.{" "}
-          <button onClick={() => refetch()} className="underline underline-offset-2">
-            Riprova
-          </button>
-        </div>
+        <LoadError message="Impossibile caricare i dati del cash flow." onRetry={() => refetch()} />
       ) : (
         <>
           <CashflowKpiCards

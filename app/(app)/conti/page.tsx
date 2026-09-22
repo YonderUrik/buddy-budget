@@ -4,6 +4,7 @@
 
 import * as React from "react";
 import { AccountsKpi, AccountRow, AddAccountForm } from "@/components/domain/accounts";
+import { LoadError } from "@/components/domain/shared";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,7 +46,7 @@ export default function ContiPage() {
   );
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-medium text-foreground">Conti</h1>
         <Dialog open={createDialogOpen} onOpenChange={(open) => {
@@ -74,12 +75,7 @@ export default function ContiPage() {
           <div className="h-24 animate-pulse rounded-xl bg-muted" />
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Impossibile caricare i conti.{" "}
-          <button onClick={() => refetch()} className="underline underline-offset-2">
-            Riprova
-          </button>
-        </div>
+        <LoadError message="Impossibile caricare i conti." onRetry={() => refetch()} />
       ) : (
         <AccountsKpi accounts={accounts ?? []} currency={currency} />
       )}

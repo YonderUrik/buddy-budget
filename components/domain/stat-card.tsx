@@ -32,14 +32,35 @@ export interface StatCardProps {
   className?: string;
   /** Contenuto alternativo mostrato al posto del valore formattato in valuta (es. una percentuale); `value` resta usato per il colore verde/rosso. */
   valueOverride?: ReactNode;
+  /**
+   * Colore del valore. "auto" (default): verde se ≥0, rosso se <0. "neutral": colore testo normale,
+   * per importi che non sono un giudizio (es. quanto hai speso). "pos"/"neg": forzati.
+   */
+  tone?: StatCardTone;
 }
+
+export type StatCardTone = "auto" | "neutral" | "pos" | "neg";
+
+const TONE_CLASS: Record<Exclude<StatCardTone, "auto">, string> = {
+  neutral: "text-foreground",
+  pos: "text-pos",
+  neg: "text-neg",
+};
 
 // ---------------------------------------------------------------------------
 // Componente
 // ---------------------------------------------------------------------------
 
-export function StatCard({ label, value, currency = "EUR", subtitle, className, valueOverride }: StatCardProps) {
-  const isNegative = value < 0;
+export function StatCard({
+  label,
+  value,
+  currency = "EUR",
+  subtitle,
+  className,
+  valueOverride,
+  tone = "auto",
+}: StatCardProps) {
+  const resolvedTone = tone === "auto" ? (value < 0 ? "neg" : "pos") : tone;
 
   return (
     <Card className={cn(className)}>
@@ -52,7 +73,7 @@ export function StatCard({ label, value, currency = "EUR", subtitle, className, 
         <p
           className={cn(
             "font-heading text-3xl font-medium tabular-nums",
-            isNegative ? "text-neg" : "text-pos"
+            TONE_CLASS[resolvedTone]
           )}
         >
           {valueOverride ?? formatCurrency(value, currency, { maximumFractionDigits: 0 })}

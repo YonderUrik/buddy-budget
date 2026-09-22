@@ -1,8 +1,14 @@
 "use client";
 
-/** Pagina Transazioni (ex Spese): orchestra periodo, KPI, grafici, categorie/budget, lista transazioni e form di aggiunta. */
+/**
+ * Pagina Transazioni (ex Spese): orchestra periodo, filtri e due viste.
+ * - "Movimenti": riepilogo del periodo + lista transazioni (vista di lavoro, default).
+ * - "Analisi": KPI uscite/entrate, torta categorie/budget, andamento 6 mesi.
+ * I filtri categoria/testo valgono per entrambe le viste; il toggle Tutte/Uscite/Entrate solo per la lista.
+ */
 
 import * as React from "react";
+import { Plus } from "lucide-react";
 import {
   AddTransactionForm,
   AutoCategorizeButton,
@@ -14,14 +20,20 @@ import {
   ExpenseTrendChart,
   IncomeKpiCards,
   TransactionRow,
+  TransactionsPeriodSummary,
   TransactionsTypeToggle,
+  UncategorizedFilterChip,
 } from "@/components/domain/expenses";
+import { LoadError, SegmentedControl } from "@/components/domain/shared";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/client";
 import {
   computeCategoryBreakdown,
   computeCategoryMonthlyStacks,
   computeFixedVsVariable,
+  computeIncomeSummary,
   computeSummary,
   filterByTransactionType,
   filterTransactions,
@@ -31,10 +43,16 @@ import {
   type ExpensePeriod,
   type TransactionDirection,
 } from "@/lib/calc/expenses";
-import { formatCurrency } from "@/lib/format";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
+
+type TransactionsView = "movimenti" | "analisi";
+
+const VIEW_OPTIONS = [
+  { value: "movimenti", label: "Movimenti" },
+  { value: "analisi", label: "Analisi" },
+] as const satisfies readonly { value: TransactionsView; label: string }[];
 
 function toDateString(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -47,16 +65,18 @@ function fetchWindow(referenceDate: Date): { from: string; to: string } {
   return { from: toDateString(from), to: toDateString(to) };
 }
 
-export default function SpesePage() {
+export default function TransazioniPage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const [referenceDate, setReferenceDate] = React.useState<Date>(() => new Date());
   const today = React.useMemo(() => new Date(), []);
   const [period, setPeriod] = React.useState<ExpensePeriod>("mese");
+  const [view, setView] = React.useState<TransactionsView>("movimenti");
+  const [addDialogOpen, setAddDialogOpen] = React.useState(false);
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
   const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
   const [searchText, setSearchText] = React.useState("");
-  const [listTypeFilter, setListTypeFilter] = React.useState<TransactionDirection>("uscita");
+  const [listTypeFilter, setListTypeFilter] = React.useState<TransactionDirection>("tutte");
 
   const { from, to } = fetchWindow(referenceDate);
   const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to, "tutte");
@@ -101,44 +121,39 @@ export default function SpesePage() {
   const hasActiveFilter = categoryFilter !== null || searchText.trim() !== "";
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-heading text-2xl font-medium text-foreground">Transazioni</h1>
           <ExpensesReferenceNav period={period} referenceDate={referenceDate} onChange={setReferenceDate} />
         </div>
-        <ExpensesPeriodSelector value={period} onChange={setPeriod} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ExpensesPeriodSelector value={period} onChange={setPeriod} />
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger
+              render={
+                <Button className="gap-1.5 shadow-xs">
+                  <Plus size={15} aria-hidden="true" /> Aggiungi
+                </Button>
+              }
+            />
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Nuova transazione</DialogTitle>
+              </DialogHeader>
+              <AddTransactionForm
+                categories={safeCategories}
+                currency={currency}
+                stacked
+                onSuccess={() => setAddDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <a
-          href="/categorie"
-          className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
-        >
-          Gestisci categorie
-        </a>
-        <AutoCategorizeButton />
-        {uncategorizedCount > 0 && (
-          <button
-            type="button"
-            onClick={() => setShowUncategorizedOnly((v) => !v)}
-            aria-pressed={showUncategorizedOnly}
-            className={
-              showUncategorizedOnly
-                ? "flex items-center gap-1.5 rounded-full border border-neg/40 bg-neg-soft px-3 py-1 text-sm font-medium text-neg"
-                : "flex items-center gap-1.5 rounded-full border border-neg/40 px-3 py-1 text-sm font-medium text-neg hover:bg-neg-soft/50"
-            }
-          >
-            <span className="relative flex size-1.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-neg opacity-75" />
-              <span className="relative inline-flex size-1.5 rounded-full bg-neg" />
-            </span>
-            Da categorizzare ({uncategorizedCount})
-          </button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} ariaLabel="Vista" />
         <ExpensesFilterBar
           categories={safeCategories}
           categoryId={categoryFilter}
@@ -149,83 +164,46 @@ export default function SpesePage() {
           searchText={searchText}
           onSearchTextChange={setSearchText}
         />
-        <TransactionsTypeToggle value={listTypeFilter} onChange={setListTypeFilter} />
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-6" aria-busy="true">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {[0, 1].map((i) => (
-              <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
-            ))}
-          </div>
+        <div className="flex flex-col gap-4" aria-busy="true">
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="h-14 animate-pulse rounded-xl bg-muted" />
+          ))}
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Impossibile caricare le transazioni.{" "}
-          <button onClick={() => refetch()} className="underline underline-offset-2">
-            Riprova
-          </button>
-        </div>
-      ) : (
+        <LoadError message="Impossibile caricare le transazioni." onRetry={() => refetch()} />
+      ) : view === "movimenti" ? (
         <>
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Uscite</p>
-            <ExpensesKpiCards
-              transactions={expenseTransactionsForAnalysis}
-              budgets={filteredBudgets}
-              period={period}
-              currency={currency}
-              referenceDate={referenceDate}
-              today={today}
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <TransactionsTypeToggle value={listTypeFilter} onChange={setListTypeFilter} />
+            {uncategorizedCount > 0 && (
+              <>
+                <UncategorizedFilterChip
+                  count={uncategorizedCount}
+                  active={showUncategorizedOnly}
+                  onToggle={() => setShowUncategorizedOnly((v) => !v)}
+                />
+                <AutoCategorizeButton />
+              </>
+            )}
           </div>
-
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Entrate</p>
-            <IncomeKpiCards
-              transactions={incomeTransactionsForAnalysis}
-              period={period}
-              currency={currency}
-              referenceDate={referenceDate}
-              today={today}
-            />
-          </div>
-
-          <CategoryBreakdownDonut
-            categoryAmounts={computeCategoryBreakdown(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
-            fixedVsVariable={computeFixedVsVariable(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
-            budgets={safeBudgets}
-            currency={currency}
-          />
 
           <Card className="p-0">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 text-sm text-muted-foreground">
-              {(() => {
-                const summary = computeSummary(expenseTransactionsForAnalysis, range);
-                return (
-                  <>
-                    <span>Uscite: {formatCurrency(summary.uscite, currency)}</span>
-                    <span>Escluse: {formatCurrency(summary.escluse, currency)}</span>
-                    <span className="font-medium text-foreground">
-                      Spese effettive: {formatCurrency(summary.speseEffettive, currency)}
-                    </span>
-                  </>
-                );
-              })()}
-            </div>
+            <TransactionsPeriodSummary
+              expenses={computeSummary(expenseTransactionsForAnalysis, range)}
+              income={computeIncomeSummary(incomeTransactionsForAnalysis, range)}
+              currency={currency}
+            />
             {transactionsInPeriod.length === 0 ? (
               <p className="p-6 text-sm text-muted-foreground">
                 {showUncategorizedOnly
                   ? "Nessuna transazione da categorizzare in questo periodo."
                   : hasActiveFilter
                     ? "Nessuna transazione corrisponde ai filtri applicati in questo periodo."
-                    : "Nessuna transazione in questo periodo. Aggiungine una dal form qui sotto."}
+                    : "Nessuna transazione in questo periodo. Registrane una con “Aggiungi”."}
               </p>
             ) : (
               transactionsInPeriod.map((transaction) => (
@@ -237,8 +215,43 @@ export default function SpesePage() {
                 />
               ))
             )}
-            <AddTransactionForm categories={safeCategories} currency={currency} />
           </Card>
+        </>
+      ) : (
+        <>
+          <section className="flex flex-col gap-3" aria-labelledby="kpi-uscite">
+            <h2 id="kpi-uscite" className="text-sm font-medium text-muted-foreground">
+              Uscite
+            </h2>
+            <ExpensesKpiCards
+              transactions={expenseTransactionsForAnalysis}
+              budgets={filteredBudgets}
+              period={period}
+              currency={currency}
+              referenceDate={referenceDate}
+              today={today}
+            />
+          </section>
+
+          <section className="flex flex-col gap-3" aria-labelledby="kpi-entrate">
+            <h2 id="kpi-entrate" className="text-sm font-medium text-muted-foreground">
+              Entrate
+            </h2>
+            <IncomeKpiCards
+              transactions={incomeTransactionsForAnalysis}
+              period={period}
+              currency={currency}
+              referenceDate={referenceDate}
+              today={today}
+            />
+          </section>
+
+          <CategoryBreakdownDonut
+            categoryAmounts={computeCategoryBreakdown(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
+            fixedVsVariable={computeFixedVsVariable(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
+            budgets={safeBudgets}
+            currency={currency}
+          />
 
           <ExpenseTrendChart
             monthlyStacks={computeCategoryMonthlyStacks(expenseTransactionsForAnalysis, safeCategories, referenceDate)}

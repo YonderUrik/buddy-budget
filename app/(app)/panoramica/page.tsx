@@ -11,6 +11,8 @@ import {
   NetWorthChartCard,
   NetWorthCompositionRow,
 } from "@/components/domain/net-worth";
+import { LoadError } from "@/components/domain/shared";
+import { buttonVariants } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 import { computeMonthlySeries } from "@/lib/calc/cashflow";
 import { endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
@@ -57,7 +59,7 @@ export default function PanoramicaPage() {
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
+    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div>
         <h1 className="font-heading text-2xl font-medium text-foreground">Panoramica</h1>
         <p className="text-sm text-muted-foreground">{headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}</p>
@@ -72,20 +74,15 @@ export default function PanoramicaPage() {
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
         </div>
       ) : isError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-          Impossibile caricare i dati.{" "}
-          <button onClick={retry} className="underline underline-offset-2">
-            Riprova
-          </button>
-        </div>
+        <LoadError message="Impossibile caricare i dati della panoramica." onRetry={retry} />
       ) : accounts.length === 0 ? (
         <div className="rounded-xl border border-dashed p-8 text-center">
           <p className="font-heading text-lg font-medium text-foreground">Nessun conto ancora</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Aggiungi o collega un conto per vedere il tuo patrimonio netto.
           </p>
-          <Link href="/conti" className="mt-4 inline-block text-sm text-primary underline underline-offset-2">
-            Vai a Conti
+          <Link href="/conti" className={buttonVariants({ className: "mt-4" })}>
+            Aggiungi un conto
           </Link>
         </div>
       ) : (

@@ -1,7 +1,7 @@
 /**
  * components/domain/expenses — barrel file
  *
- * Punto di ingresso unico per i componenti della schermata Spese.
+ * Punto di ingresso unico per i componenti della schermata Transazioni (ex Spese).
  * Importa da qui invece che dai singoli file per isolare i refactor interni.
  *
  * Esempio:
@@ -35,3 +35,7 @@ export type { AddTransactionFormProps } from "./add-transaction-form";
 export { AutoCategorizeButton } from "./auto-categorize-button";
 export { TransactionsTypeToggle } from "./transactions-type-toggle";
 export type { TransactionsTypeToggleProps } from "./transactions-type-toggle";
+export { TransactionsPeriodSummary } from "./transactions-period-summary";
+export type { TransactionsPeriodSummaryProps } from "./transactions-period-summary";
+export { UncategorizedFilterChip } from "./uncategorized-filter-chip";
+export type { UncategorizedFilterChipProps } from "./uncategorized-filter-chip";

@@ -1,6 +1,6 @@
 "use client";
 
-/** Form "+ Aggiungi" spesa: crea una transazione manuale su uno dei conti manuali dell'utente. */
+/** Form "+ Aggiungi" transazione (spesa o entrata) su uno dei conti manuali dell'utente. `stacked` per l'uso in un dialog (campi a tutta larghezza). */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,10 @@ import type { Category } from "@/lib/db/schema/categories";
 export interface AddTransactionFormProps {
   categories: Category[];
   currency: string;
+  /** Layout verticale a tutta larghezza (per dialog). Default: riga orizzontale che va a capo. */
+  stacked?: boolean;
+  /** Chiamato dopo una creazione riuscita (es. per chiudere il dialog). */
+  onSuccess?: () => void;
 }
 
 function todayDateString(): string {
@@ -21,7 +25,10 @@ function todayDateString(): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 }
 
-export function AddTransactionForm({ categories, currency }: AddTransactionFormProps) {
+export function AddTransactionForm({ categories, currency, stacked = false, onSuccess }: AddTransactionFormProps) {
+  // In modalità stacked ogni campo occupa tutta la larghezza; altrimenti larghezze fisse da sm in su.
+  const fieldClass = stacked ? "flex w-full min-w-0 flex-col gap-1" : "flex w-full min-w-0 flex-col gap-1 sm:w-auto";
+  const controlWidth = (smWidth: string) => (stacked ? "w-full" : `w-full ${smWidth}`);
   const { data: accounts } = useAccountsQuery();
   const manualAccounts = (accounts ?? []).filter((account) => account.source === "manuale");
   const createMutation = useCreateTransactionMutation();
@@ -78,6 +85,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           setAmountValue(null);
           setDate(todayDateString());
           setDirection("spesa");
+          onSuccess?.();
         },
         onError: (mutationError) => setError(mutationError.message),
       }
@@ -85,8 +93,11 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
-      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+    <form
+      onSubmit={handleSubmit}
+      className={stacked ? "flex flex-col gap-3" : "flex flex-wrap items-end gap-3 border-t border-border p-4"}
+    >
+      <div className={fieldClass}>
         <label className="text-xs text-muted-foreground">Tipo</label>
         <div className="inline-flex w-fit items-center gap-1 rounded-lg bg-muted p-1">
           {(["spesa", "entrata"] as const).map((option) => (
@@ -107,7 +118,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
         </div>
       </div>
 
-      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+      <div className={fieldClass}>
         <label className="text-xs text-muted-foreground">Conto</label>
         <Select
           value={accountId}
@@ -117,7 +128,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           }}
           disabled={manualAccounts.length === 0}
         >
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className={controlWidth("sm:w-40")}>
             <SelectValue placeholder="Conto">
               {(value: string | null) => manualAccounts.find((a) => a.id === value)?.name ?? ""}
             </SelectValue>
@@ -132,7 +143,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
         </Select>
       </div>
 
-      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+      <div className={fieldClass}>
         <label className="text-xs text-muted-foreground" htmlFor="new-transaction-description">
           Descrizione
         </label>
@@ -140,11 +151,11 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           id="new-transaction-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className="w-full sm:w-40"
+          className={controlWidth("sm:w-40")}
         />
       </div>
 
-      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+      <div className={fieldClass}>
         <label className="text-xs text-muted-foreground">Categoria</label>
         <Select
           value={categoryId}
@@ -154,7 +165,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           }}
           disabled={availableCategories.length === 0}
         >
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className={controlWidth("sm:w-40")}>
             <SelectValue placeholder="Categoria">
               {(value: string | null) => availableCategories.find((c) => c.id === value)?.name ?? ""}
             </SelectValue>
@@ -169,7 +180,7 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
         </Select>
       </div>
 
-      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+      <div className={fieldClass}>
         <label className="text-xs text-muted-foreground" htmlFor="new-transaction-amount">
           Importo
         </label>
@@ -177,12 +188,12 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           value={amountValue}
           onChange={setAmountValue}
           currency={currency}
-          className="w-full sm:w-28"
+          className={controlWidth("sm:w-28")}
           aria-label="Importo"
         />
       </div>
 
-      <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
+      <div className={fieldClass}>
         <label className="text-xs text-muted-foreground" htmlFor="new-transaction-date">
           Data
         </label>
@@ -191,11 +202,11 @@ export function AddTransactionForm({ categories, currency }: AddTransactionFormP
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="w-full sm:w-36"
+          className={controlWidth("sm:w-36")}
         />
       </div>
 
-      <Button type="submit" disabled={!canSubmit || createMutation.isPending} className="w-full sm:w-auto">
+      <Button type="submit" disabled={!canSubmit || createMutation.isPending} className={stacked ? "w-full" : "w-full sm:w-auto"}>
         {createMutation.isPending ? "Aggiunta in corso..." : "+ Aggiungi"}
       </Button>
 

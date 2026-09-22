@@ -11,7 +11,7 @@ import {
   parseDateOnly,
   scaleBudgetForPeriod,
   computeCategoryBreakdown,
-  computeFixedVsVariable,
+  computeGroupTotals,
   compute6MonthTrend,
   computeCategoryMonthlyStacks,
   filterTransactions,
@@ -259,8 +259,8 @@ describe("computeIncomeKpis", () => {
 describe("computeCategoryBreakdown", () => {
   it("somma la spesa effettiva per ciascuna categoria dell'utente, incluse quelle senza transazioni", () => {
     const categories = [
-      makeCategory({ id: "cat-a", name: "Spesa alimentare", type: "voluta" }),
-      makeCategory({ id: "cat-b", name: "Affitto", type: "dovuta" }),
+      makeCategory({ id: "cat-a", name: "Spesa alimentare", type: "dovuta" }),
+      makeCategory({ id: "cat-b", name: "Netflix", type: "voluta" }),
     ];
     const transactions = [
       makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
@@ -269,24 +269,45 @@ describe("computeCategoryBreakdown", () => {
     const breakdown = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
 
     expect(breakdown).toEqual([
-      { categoryId: "cat-a", name: "Spesa alimentare", type: "voluta", amount: 90, color: "slate", icon: "package" },
-      { categoryId: "cat-b", name: "Affitto", type: "dovuta", amount: 0, color: "slate", icon: "package" },
+      { categoryId: "cat-a", name: "Spesa alimentare", group: "dovuta", amount: 90, color: "slate", icon: "package" },
+      { categoryId: "cat-b", name: "Netflix", group: "voluta", amount: 0, color: "slate", icon: "package" },
     ]);
+  });
+
+  it("la categoria fallback ha group 'daCategorizzare' anche se il suo type è 'voluta'", () => {
+    const categories = [makeCategory({ id: "cat-f", name: "Da categorizzare", type: "voluta", isFallback: true })];
+    const transactions = [makeTransaction({ categoryId: "cat-f", date: "2026-02-05", amount: "-25.00" })];
+    const [entry] = computeCategoryBreakdown(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
+    expect(entry.group).toBe("daCategorizzare");
+    expect(entry.amount).toBe(25);
   });
 });
 
-describe("computeFixedVsVariable", () => {
-  it("raggruppa la spesa effettiva del periodo per tipo categoria", () => {
+describe("computeGroupTotals", () => {
+  it("somma la spesa effettiva del periodo per gruppo, con la fallback in daCategorizzare", () => {
     const categories = [
-      makeCategory({ id: "cat-a", type: "voluta" }),
-      makeCategory({ id: "cat-b", type: "dovuta" }),
+      makeCategory({ id: "cat-dov", type: "dovuta" }),
+      makeCategory({ id: "cat-vol", type: "voluta" }),
+      makeCategory({ id: "cat-fut", type: "futuro" }),
+      makeCategory({ id: "cat-sal", type: "saltuaria" }),
+      makeCategory({ id: "cat-fb", type: "voluta", isFallback: true }),
+      makeCategory({ id: "cat-in", type: "entrata" }),
     ];
     const transactions = [
-      makeTransaction({ categoryId: "cat-a", date: "2026-02-05", amount: "-60.00" }),
-      makeTransaction({ categoryId: "cat-b", date: "2026-02-06", amount: "-500.00" }),
+      makeTransaction({ categoryId: "cat-dov", date: "2026-02-05", amount: "-500.00" }),
+      makeTransaction({ categoryId: "cat-vol", date: "2026-02-06", amount: "-60.00" }),
+      makeTransaction({ categoryId: "cat-fut", date: "2026-02-07", amount: "-200.00" }),
+      makeTransaction({ categoryId: "cat-sal", date: "2026-02-08", amount: "-90.00" }),
+      makeTransaction({ categoryId: "cat-fb", date: "2026-02-09", amount: "-15.00" }),
+      makeTransaction({ categoryId: "cat-in", date: "2026-02-01", amount: "1500.00" }),
     ];
-    const result = computeFixedVsVariable(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
-    expect(result).toEqual({ fissa: 500, variabile: 60 });
+    const result = computeGroupTotals(transactions, categories, "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
+    expect(result).toEqual({ dovuta: 500, voluta: 60, futuro: 200, saltuaria: 90, daCategorizzare: 15 });
+  });
+
+  it("restituisce tutti i gruppi a zero senza transazioni", () => {
+    const result = computeGroupTotals([], [], "mese", new Date(2026, 1, 15), new Date(2026, 1, 15));
+    expect(result).toEqual({ dovuta: 0, voluta: 0, futuro: 0, saltuaria: 0, daCategorizzare: 0 });
   });
 });
 

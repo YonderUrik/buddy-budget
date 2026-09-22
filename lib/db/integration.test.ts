@@ -34,7 +34,7 @@ describe("modello dati base — round trip end-to-end", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
 
     const [account] = await db
@@ -88,7 +88,7 @@ describe("modello dati base — round trip end-to-end", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId: user.id, name: "Trasporti", type: "variabile" })
+      .values({ userId: user.id, name: "Trasporti", type: "voluta" })
       .returning();
     const [account] = await db
       .insert(accounts)

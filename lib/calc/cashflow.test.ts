@@ -38,7 +38,7 @@ function makeCategory(overrides: Partial<Category>): Category {
     id: "category-1",
     userId: "user-1",
     name: "Categoria",
-    type: "variabile",
+    type: "voluta",
     color: "slate",
     icon: "package",
     isFallback: false,
@@ -256,7 +256,7 @@ describe("computeIncomeSources", () => {
     const fallback = makeCategory({
       id: "cat-fallback",
       name: "Da categorizzare",
-      type: "variabile",
+      type: "voluta",
       isFallback: true,
     });
     const transactions = [
@@ -292,8 +292,8 @@ describe("computeIncomeSources", () => {
 
 describe("computeWhereItGoes", () => {
   it("calcola fisse/variabili/risparmio del mese di riferimento con quote sul totale entrate", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
-    const variabile = makeCategory({ id: "cat-variabile", type: "variabile" });
+    const fissa = makeCategory({ id: "cat-fissa", type: "dovuta" });
+    const variabile = makeCategory({ id: "cat-variabile", type: "voluta" });
     const transactions = [
       makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
       makeTransaction({ categoryId: "cat-variabile", amount: "-300.00", date: "2026-02-10" }),
@@ -309,7 +309,7 @@ describe("computeWhereItGoes", () => {
   });
 
   it("il risparmio può essere negativo se si spende più di quanto entra", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const fissa = makeCategory({ id: "cat-fissa", type: "dovuta" });
     const transactions = [
       makeTransaction({ categoryId: "cat-fissa", amount: "-2000.00", date: "2026-02-05" }),
       makeTransaction({ categoryId: "category-1", amount: "1500.00", date: "2026-02-01" }),
@@ -321,7 +321,7 @@ describe("computeWhereItGoes", () => {
   });
 
   it("quotaPct è null quando le entrate del mese sono zero", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const fissa = makeCategory({ id: "cat-fissa", type: "dovuta" });
     const transactions = [makeTransaction({ categoryId: "cat-fissa", amount: "-200.00", date: "2026-02-05" })];
 
     const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
@@ -330,7 +330,7 @@ describe("computeWhereItGoes", () => {
   });
 
   it("una spesa su categoria non classificabile (assente dall'array o erroneamente 'entrata') non gonfia il risparmio", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const fissa = makeCategory({ id: "cat-fissa", type: "dovuta" });
     const transactions = [
       makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
       makeTransaction({ categoryId: "cat-sconosciuta", amount: "-100.00", date: "2026-02-06" }),
@@ -344,7 +344,7 @@ describe("computeWhereItGoes", () => {
   });
 
   it("conta come spesa solo l'importo effettivo post-'Dividi'", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const fissa = makeCategory({ id: "cat-fissa", type: "dovuta" });
     const transactions = [
       makeTransaction({
         categoryId: "cat-fissa",
@@ -360,7 +360,7 @@ describe("computeWhereItGoes", () => {
   });
 
   it("conta come entrata solo la quota effettiva post-'Dividi' nel totale usato come denominatore", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const fissa = makeCategory({ id: "cat-fissa", type: "dovuta" });
     const transactions = [
       makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
       makeTransaction({

@@ -49,7 +49,7 @@ describe("PATCH/DELETE /api/categorization-rules/[id]", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     categoryId = category.id;
 
@@ -68,7 +68,7 @@ describe("PATCH/DELETE /api/categorization-rules/[id]", () => {
   it("rifiuta con 400 lo spostamento di una regola sulla categoria di fallback", async () => {
     const [fallbackCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
     const [rule] = await db
       .insert(categorizationRules)
@@ -108,7 +108,7 @@ describe("PATCH/DELETE /api/categorization-rules/[id]", () => {
   it("risponde 404 sulla regola di un altro utente (PATCH e DELETE)", async () => {
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
     const [otherRule] = await db
       .insert(categorizationRules)

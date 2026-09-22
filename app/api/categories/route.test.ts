@@ -49,8 +49,8 @@ describe("GET /api/categories", () => {
 
   it("ritorna solo le categorie dell'utente autenticato", async () => {
     await db.insert(categories).values([
-      { userId, name: "Affitto", type: "fissa" },
-      { userId, name: "Svago", type: "variabile" },
+      { userId, name: "Affitto", type: "dovuta" },
+      { userId, name: "Svago", type: "voluta" },
     ]);
 
     const response = await GET(new NextRequest("http://localhost/api/categories"));
@@ -86,7 +86,7 @@ describe("GET /api/categories", () => {
       const response = await POST(
         new NextRequest("http://localhost/api/categories", {
           method: "POST",
-          body: JSON.stringify({ name: "Palestra", type: "variabile" }),
+          body: JSON.stringify({ name: "Palestra", type: "voluta" }),
         })
       );
       expect(response.status).toBe(201);
@@ -100,7 +100,7 @@ describe("GET /api/categories", () => {
       const response = await POST(
         new NextRequest("http://localhost/api/categories", {
           method: "POST",
-          body: JSON.stringify({ name: "Palestra", type: "variabile", icon: "dumbbell", color: "teal" }),
+          body: JSON.stringify({ name: "Palestra", type: "voluta", icon: "dumbbell", color: "teal" }),
         })
       );
       expect(response.status).toBe(201);
@@ -110,12 +110,12 @@ describe("GET /api/categories", () => {
     });
 
     it("risponde 409 su un nome già usato dallo stesso utente", async () => {
-      await db.insert(categories).values({ userId: postUserId, name: "Palestra", type: "variabile" });
+      await db.insert(categories).values({ userId: postUserId, name: "Palestra", type: "voluta" });
 
       const response = await POST(
         new NextRequest("http://localhost/api/categories", {
           method: "POST",
-          body: JSON.stringify({ name: "Palestra", type: "variabile" }),
+          body: JSON.stringify({ name: "Palestra", type: "voluta" }),
         })
       );
       expect(response.status).toBe(409);
@@ -125,7 +125,7 @@ describe("GET /api/categories", () => {
       const response = await POST(
         new NextRequest("http://localhost/api/categories", {
           method: "POST",
-          body: JSON.stringify({ name: "  ", type: "variabile" }),
+          body: JSON.stringify({ name: "  ", type: "voluta" }),
         })
       );
       expect(response.status).toBe(400);

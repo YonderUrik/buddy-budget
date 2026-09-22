@@ -51,19 +51,19 @@ describe("GET/POST /api/categorization-rules", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     categoryId = category.id;
 
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
     otherCategoryId = otherCategory.id;
 
     const [fallbackCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
     fallbackCategoryId = fallbackCategory.id;
 

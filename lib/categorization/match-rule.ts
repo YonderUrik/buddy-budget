@@ -1,9 +1,11 @@
+import type { CategoryType } from "@/lib/categories/groups";
+
 export interface RuleCandidate {
   id: string;
   matchType: "merchant" | "contains";
   pattern: string;
   categoryId: string;
-  categoryType: "fissa" | "variabile" | "entrata";
+  categoryType: CategoryType;
   categoryIsFallback: boolean;
   splitPercentage: number | null;
   createdAt: Date;
@@ -15,7 +17,7 @@ export interface RuleCandidate {
  * direzione propria e accoglie entrambi i segni — stesso invariante imposto da PATCH /api/transactions/[id].
  */
 export function isDirectionCompatible(
-  categoryType: "fissa" | "variabile" | "entrata",
+  categoryType: CategoryType,
   isIncome: boolean,
   isFallback: boolean
 ): boolean {

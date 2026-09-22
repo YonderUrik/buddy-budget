@@ -10,3 +10,5 @@ export { LoginPanel } from "./login-panel";
 export type { LoginPanelProps } from "./login-panel";
 export { CurrencyPicker } from "./currency-picker";
 export type { CurrencyPickerProps } from "./currency-picker";
+export { UpcomingFeatures } from "./upcoming-features";
+export type { UpcomingFeaturesProps } from "./upcoming-features";

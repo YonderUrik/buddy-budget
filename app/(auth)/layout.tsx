@@ -1,5 +1,5 @@
 import { Wallet } from "lucide-react";
-import { LoginStory } from "@/components/domain/auth";
+import { LoginStory, UpcomingFeatures } from "@/components/domain/auth";
 
 const BRAND_NAME = "BuddyBudget";
 
@@ -20,7 +20,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <h2 className="font-heading text-4xl font-medium leading-[1.05] tracking-tight text-balance xl:text-5xl">
               I tuoi movimenti, finalmente leggibili.
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-primary-foreground/75 [@media(max-height:860px)]:hidden">
+            <p className="mt-4 text-base leading-relaxed text-primary-foreground/75 [@media(max-height:940px)]:hidden">
               BuddyBudget collega le tue banche, ripulisce e categorizza ogni movimento e ti mostra dove va ogni euro.
             </p>
           </div>
@@ -28,9 +28,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <LoginStory />
         </div>
 
-        <p className="text-xs text-primary-foreground/60">
-          Collegamento bancario tramite Open Banking (PSD2), in sola lettura.
-        </p>
+        <div className="flex max-w-md flex-col gap-5">
+          <UpcomingFeatures />
+          <p className="text-xs text-primary-foreground/60">
+            Collegamento bancario tramite Open Banking (PSD2), in sola lettura.
+          </p>
+        </div>
       </aside>
 
       <main className="flex w-full flex-col lg:w-1/2">

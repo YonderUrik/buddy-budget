@@ -1,6 +1,7 @@
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { Category } from "@/lib/db/schema/categories";
+import { EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY, categoryGroupKey, type CategoryGroupKey } from "@/lib/categories/groups";
 
 /** Periodo selezionabile nella schermata Spese. */
 export type ExpensePeriod = "settimana" | "mese" | "3mesi" | "anno";
@@ -315,13 +316,14 @@ export function computeIncomeKpis(
 export interface CategoryAmount {
   categoryId: string;
   name: string;
-  type: "fissa" | "variabile";
+  /** Gruppo di spesa della categoria; la fallback (e tipi non riconosciuti) → "daCategorizzare". */
+  group: CategoryGroupKey;
   amount: number;
   color: string;
   icon: string;
 }
 
-/** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria dell'utente. */
+/** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria di spesa dell'utente (entrate escluse). */
 export function computeCategoryBreakdown(
   transactions: Transaction[],
   categories: Category[],
@@ -337,43 +339,41 @@ export function computeCategoryBreakdown(
     to: clampedToday.getTime() < range.to.getTime() ? clampedToday : range.to,
   };
 
-  return categories
-    .filter((c) => c.type !== "entrata")
-    .map((category) => {
-      const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
-      const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
-      return {
+  return categories.flatMap((category) => {
+    const group = categoryGroupKey(category);
+    if (group === null) return [];
+    const categoryTransactions = transactions.filter((t) => t.categoryId === category.id);
+    const { speseEffettive } = computeSummary(categoryTransactions, elapsedRange);
+    return [
+      {
         categoryId: category.id,
         name: category.name,
-        type: category.type as "fissa" | "variabile",
+        group,
         amount: speseEffettive,
         color: category.color,
         icon: category.icon,
-      };
-    });
+      },
+    ];
+  });
 }
 
-export interface FixedVsVariable {
-  fissa: number;
-  variabile: number;
-}
+export type GroupTotals = Record<CategoryGroupKey, number>;
 
-/** Somma spesa effettiva del periodo, raggruppata per tipo categoria (fissa/variabile). */
-export function computeFixedVsVariable(
+/** Somma la spesa effettiva del periodo per gruppo di spesa (Dovute/Volute/Te futuro/Saltuarie) più "daCategorizzare". */
+export function computeGroupTotals(
   transactions: Transaction[],
   categories: Category[],
   period: ExpensePeriod,
   referenceDate: Date,
   today: Date
-): FixedVsVariable {
-  const breakdown = computeCategoryBreakdown(transactions, categories, period, referenceDate, today);
-  return breakdown.reduce(
-    (totals, entry) => {
-      totals[entry.type] += entry.amount;
-      return totals;
-    },
-    { fissa: 0, variabile: 0 }
-  );
+): GroupTotals {
+  const totals = Object.fromEntries(
+    [...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY].map((key) => [key, 0])
+  ) as GroupTotals;
+  for (const entry of computeCategoryBreakdown(transactions, categories, period, referenceDate, today)) {
+    totals[entry.group] += entry.amount;
+  }
+  return totals;
 }
 
 export interface MonthlyTotal {

@@ -7,6 +7,7 @@ import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
 import { categories, DEFAULT_CATEGORIES } from "@/lib/db/schema/categories";
+import { MAGIC_LINK_EXPIRES_MINUTES } from "./constants";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -22,13 +23,19 @@ export const auth = betterAuth({
   }),
   plugins: [
     magicLink({
+      expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
       sendMagicLink: async ({ email, url }) => {
-        await resend.emails.send({
+        // Resend non lancia in caso di errore: restituisce `{ error }`. Lo trasformiamo in eccezione
+        // così better-auth risponde con errore e la UI non mostra "controlla la tua email" a vuoto.
+        const { error } = await resend.emails.send({
           from: process.env.RESEND_FROM!,
           to: email,
           subject: "Il tuo link di accesso a BuddyBudget",
-          text: `Clicca qui per accedere: ${url}\n\nIl link scade tra 10 minuti.`,
+          text: `Clicca qui per accedere: ${url}\n\nIl link scade tra ${MAGIC_LINK_EXPIRES_MINUTES} minuti.`,
         });
+        if (error) {
+          throw new Error(`Invio magic link non riuscito: ${error.message}`);
+        }
       },
     }),
   ],

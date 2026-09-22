@@ -71,27 +71,39 @@ Icone tutte già presenti in `CATEGORY_ICONS`.
 |---|---|---|
 | Dovute | Affitto & Mutuo | home |
 | Dovute | Bollette & Utenze | zap |
+| Dovute | Internet & Telefono | wifi |
 | Dovute | Spesa alimentare | shopping-cart |
-| Dovute | Trasporti | bus |
+| Dovute | Trasporti & Carburante | fuel |
 | Dovute | Salute & Farmaci | pill |
 | Dovute | Assicurazioni | shield |
 | Dovute | Rate & Finanziamenti | credit-card |
+| Dovute | Figli & Istruzione | graduation-cap |
+| Dovute | Animali domestici | paw-print |
 | Volute | Ristoranti & Bar | utensils |
-| Volute | Abbonamenti | tv |
-| Volute | Svago & Hobby | smile |
-| Volute | Sport & Palestra | dumbbell |
-| Volute | Shopping | shopping-bag |
-| Volute | Viaggi | plane |
+| Volute | Abbonamenti & Streaming | tv |
+| Volute | Svago & Hobby | gamepad-2 |
+| Volute | Sport & Benessere | dumbbell |
+| Volute | Abbigliamento | shirt |
+| Volute | Shopping & Tecnologia | laptop |
+| Volute | Cura personale | scissors |
+| Volute | Viaggi & Vacanze | plane |
 | Te futuro | Fondo emergenza | wallet |
 | Te futuro | Risparmio per obiettivi | piggy-bank |
 | Te futuro | Investimenti | coins |
 | Te futuro | Pensione integrativa | landmark |
 | Saltuarie | Tasse & Bolli | receipt |
-| Saltuarie | Manutenzione auto/casa | wrench |
-| Saltuarie | Regali | gift |
+| Saltuarie | Manutenzione auto | wrench |
+| Saltuarie | Casa & Arredamento | sofa |
+| Saltuarie | Regali & Ricorrenze | gift |
 | Saltuarie | Imprevisti | alert-triangle |
 | — (fallback) | Da categorizzare | help-circle (red, `isFallback`) |
-| Entrate | Stipendio / Freelance / Dividendi e interessi | invariate |
+| Entrate | Stipendio | banknote |
+| Entrate | Freelance | briefcase |
+| Entrate | Dividendi e interessi | trending-up |
+| Entrate | Rimborsi | calculator |
+| Entrate | Altre entrate | package |
+
+Lista estesa su richiesta dell'utente (2026-09-22) pensando alle spese di una persona media, senza frammentare.
 
 I colori delle singole categorie restano dalla palette `SWATCH_COLORS` (assegnati nella lista; l'utente può
 usare "Distribuisci colori"). I colori dei **gruppi** sono token separati (vedi §2).
@@ -119,7 +131,9 @@ script one-shot storico già eseguito: resta, ma il reset lo rende obsoleto (ann
    - assicura che esista la categoria fallback (riusando la logica di `lib/categorization/fallback.ts`);
    - per ogni default: se esiste una categoria con quel nome **o con un nome vecchio mappato**
      (`LEGACY_NAME_MAP`: "Assicurazioni & Tasse"→"Assicurazioni", "Risparmi & Investimenti"→"Investimenti",
-     "Trasporti & Auto"→"Trasporti", "Salute & Cura"→"Salute & Farmaci", "Svago & Hobbies"→"Svago & Hobby")
+     "Trasporti & Auto"→"Trasporti & Carburante", "Salute & Cura"→"Salute & Farmaci",
+     "Svago & Hobbies"→"Svago & Hobby", "Abbonamenti"→"Abbonamenti & Streaming",
+     "Shopping"→"Shopping & Tecnologia", "Viaggi"→"Viaggi & Vacanze", "Regali"→"Regali & Ricorrenze")
      la aggiorna (nome, tipo, icona, colore) preservandone id → transazioni, regole e budget restano collegati;
      altrimenti la crea;
    - ogni altra categoria non-fallback non presente nella nuova lista (incluse le personalizzate):

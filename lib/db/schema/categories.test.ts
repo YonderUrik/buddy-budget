@@ -4,9 +4,9 @@ import { CATEGORY_TYPES, EXPENSE_GROUP_KEYS } from "@/lib/categories/groups";
 import { DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES } from "./categories";
 
 describe("DEFAULT_CATEGORIES", () => {
-  it("ha 25 categorie con nomi unici", () => {
-    expect(DEFAULT_CATEGORIES).toHaveLength(25);
-    expect(new Set(DEFAULT_CATEGORIES.map((c) => c.name)).size).toBe(25);
+  it("ha 33 categorie con nomi unici", () => {
+    expect(DEFAULT_CATEGORIES).toHaveLength(33);
+    expect(new Set(DEFAULT_CATEGORIES.map((c) => c.name)).size).toBe(33);
   });
 
   it("ogni categoria ha icona, colore e tipo validi", () => {
@@ -29,10 +29,10 @@ describe("DEFAULT_CATEGORIES", () => {
     }
   });
 
-  it("ha 3 categorie di tipo entrata: Stipendio, Freelance, Dividendi e interessi", () => {
+  it("ha 5 categorie di tipo entrata", () => {
     const incomeEntries = DEFAULT_CATEGORIES.filter((c) => c.type === "entrata");
     expect(incomeEntries.map((c) => c.name).sort()).toEqual(
-      ["Dividendi e interessi", "Freelance", "Stipendio"].sort()
+      ["Altre entrate", "Dividendi e interessi", "Freelance", "Rimborsi", "Stipendio"].sort()
     );
   });
 
@@ -40,6 +40,13 @@ describe("DEFAULT_CATEGORIES", () => {
     const names = new Set(DEFAULT_CATEGORIES.map((c) => c.name));
     for (const target of Object.values(LEGACY_CATEGORY_NAMES)) {
       expect(names.has(target)).toBe(true);
+    }
+  });
+
+  it("nessun nome legacy coincide con un nome di default attuale", () => {
+    const names = new Set(DEFAULT_CATEGORIES.map((c) => c.name));
+    for (const key of Object.keys(LEGACY_CATEGORY_NAMES)) {
+      expect(names.has(key)).toBe(false);
     }
   });
 });

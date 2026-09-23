@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Category } from "@/lib/db/schema/categories";
+import { CATEGORY_TYPE_LABELS } from "@/lib/categories/groups";
 import type { CategorySuggester, LlmSuggestion, SuggestInput } from "./index";
 
 const TIMEOUT_MS = 10_000;
@@ -16,7 +17,7 @@ const llmResponseSchema = z.array(
 function buildPrompt(input: SuggestInput[], categories: Category[]): string {
   const categoryList = categories
     .filter((category) => !category.isFallback)
-    .map((category) => `- ${category.name} (${category.type})`)
+    .map((category) => `- ${category.name} (${CATEGORY_TYPE_LABELS[category.type]})`)
     .join("\n");
   const transactionList = input
     .map((item) => `${item.index}. "${item.description}" — importo ${item.amount.toFixed(2)}`)

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  describeCategoryResetPlan,
   planCategoryReset,
   resolveFallbackCandidate,
   type ExistingCategory,
   type ResetDefault,
 } from "./reset-categories";
+import { DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES } from "./schema/categories";
 
 const DEFAULTS: ResetDefault[] = [
   { name: "Affitto & Mutuo", type: "dovuta", icon: "home", color: "slate" },
@@ -87,6 +89,53 @@ describe("planCategoryReset", () => {
     );
     expect(plan.deletions).not.toContain("fb");
     expect(plan.deletions).toEqual(["custom"]);
+  });
+});
+
+describe("planCategoryReset con i default e la mappa legacy reali", () => {
+  it("un utente pre-luglio (Affitto/Ristoranti/Svago/Altro) viene aggiornato sui primi tre, solo 'Altro' eliminato", () => {
+    const existingUser: ExistingCategory[] = [
+      existing("affitto", "Affitto", "fissa" as never),
+      existing("ristoranti", "Ristoranti", "variabile" as never),
+      existing("svago", "Svago", "variabile" as never),
+      existing("altro", "Altro", "variabile" as never),
+    ];
+    const plan = planCategoryReset(existingUser, DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES);
+
+    const updatedIds = plan.updates.map((u) => u.id);
+    expect(updatedIds).toContain("affitto");
+    expect(updatedIds).toContain("ristoranti");
+    expect(updatedIds).toContain("svago");
+    expect(updatedIds).not.toContain("altro");
+
+    expect(plan.updates).toContainEqual(
+      expect.objectContaining({ id: "affitto", name: "Affitto & Mutuo" })
+    );
+    expect(plan.updates).toContainEqual(
+      expect.objectContaining({ id: "ristoranti", name: "Ristoranti & Bar" })
+    );
+    expect(plan.updates).toContainEqual(
+      expect.objectContaining({ id: "svago", name: "Svago & Hobby" })
+    );
+
+    expect(plan.deletions).toEqual(["altro"]);
+  });
+});
+
+describe("describeCategoryResetPlan", () => {
+  it("elenca i nomi eliminati e le rinomine (nome precedente → nuovo)", () => {
+    const existingUser = [existing("s", "Salute & Cura", "voluta"), existing("custom", "Palestra")];
+    const plan = planCategoryReset(existingUser, DEFAULTS, LEGACY);
+    const described = describeCategoryResetPlan(plan, existingUser);
+    expect(described.deletedNames).toEqual(["Palestra"]);
+    expect(described.renames).toEqual([{ from: "Salute & Cura", to: "Salute & Farmaci" }]);
+  });
+
+  it("un update senza cambio di nome non produce rinomine", () => {
+    const existingUser = [existing("a", "Abbonamenti", "dovuta")];
+    const plan = planCategoryReset(existingUser, DEFAULTS, LEGACY);
+    const described = describeCategoryResetPlan(plan, existingUser);
+    expect(described.renames).toEqual([]);
   });
 });
 

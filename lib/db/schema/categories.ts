@@ -81,8 +81,20 @@ export const DEFAULT_CATEGORIES: {
 /**
  * Nomi di categorie di default delle versioni precedenti → nome attuale. Usato dal reset categorie
  * per aggiornare (preservandone l'id e quindi transazioni/regole/budget) le categorie solo rinominate.
+ * Copre tutte le liste di default storicamente sedute (dallo schema iniziale fissa/variabile del
+ * 2026-07-03 fino agli ultimi default a gruppi di spesa), non solo l'ultima prima di questa lista.
+ * "Altro" (default storico fino al 2026-07-21) resta deliberatamente NON mappato: non ha un
+ * equivalente naturale nella nuova lista, quindi il reset la elimina come categoria personalizzata
+ * (le sue transazioni finiscono su "Da categorizzare" per essere ricategorizzate).
  */
 export const LEGACY_CATEGORY_NAMES: Record<string, string> = {
+  // --- default storici pre-icone/colori (2026-07-03 → 2026-07-21, fissa/variabile) ---
+  "Affitto": "Affitto & Mutuo",
+  "Bollette & casa": "Bollette & Utenze",
+  "Ristoranti": "Ristoranti & Bar",
+  "Svago": "Svago & Hobby",
+  "Trasporti": "Trasporti & Carburante",
+  // --- default 2026-07-26 (icone/colori, poi entrate) ---
   "Assicurazioni & Tasse": "Assicurazioni",
   "Risparmi & Investimenti": "Investimenti",
   "Trasporti & Auto": "Trasporti & Carburante",
@@ -92,4 +104,7 @@ export const LEGACY_CATEGORY_NAMES: Record<string, string> = {
   "Shopping": "Shopping & Tecnologia",
   "Viaggi": "Viaggi & Vacanze",
   "Regali": "Regali & Ricorrenze",
+  // --- prima versione dei gruppi di spesa (2026-09-22, prima dell'estensione a 33 default) ---
+  "Manutenzione auto/casa": "Manutenzione auto",
+  "Sport & Palestra": "Sport & Benessere",
 };

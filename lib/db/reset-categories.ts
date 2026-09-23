@@ -101,6 +101,23 @@ export interface CategoryResetSummary {
   reassignedTransactions: number;
   /** True se una riga "Da categorizzare" non ancora marcata fallback è stata (o andrebbe) promossa invece di crearne una nuova. */
   promotedFallback: boolean;
+  /** Nomi delle categorie personalizzate/orfane che il piano elimina (per il riepilogo dry-run/reale). */
+  deletedNames: string[];
+  /** Rinomine previste dagli aggiornamenti (nome precedente → nome nuovo). Solo gli update che cambiano nome. */
+  renames: { from: string; to: string }[];
+}
+
+/** Deriva nomi eliminati e rinomine dal piano + dalle righe esistenti, per il riepilogo stampato da `main()`. */
+export function describeCategoryResetPlan(
+  plan: CategoryResetPlan,
+  existing: ExistingCategory[]
+): { deletedNames: string[]; renames: { from: string; to: string }[] } {
+  const byId = new Map(existing.map((c) => [c.id, c]));
+  const deletedNames = plan.deletions.map((id) => byId.get(id)?.name ?? id);
+  const renames = plan.updates
+    .filter((update) => byId.get(update.id)?.name !== update.name)
+    .map((update) => ({ from: byId.get(update.id)?.name ?? update.id, to: update.name }));
+  return { deletedNames, renames };
 }
 
 /**
@@ -119,6 +136,7 @@ export async function resetUserCategories(userId: string, { dryRun }: { dryRun: 
     : existing;
   const plan = planCategoryReset(plannerInput, DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES);
   const promotedFallback = fallbackCandidate?.needsPromotion ?? false;
+  const { deletedNames, renames } = describeCategoryResetPlan(plan, existing);
 
   const affected =
     plan.deletions.length === 0
@@ -134,6 +152,8 @@ export async function resetUserCategories(userId: string, { dryRun }: { dryRun: 
     deleted: plan.deletions.length,
     reassignedTransactions: affected.length,
     promotedFallback,
+    deletedNames,
+    renames,
   };
   if (dryRun) return summary;
 
@@ -184,8 +204,14 @@ async function main() {
     const s = await resetUserCategories(userId, { dryRun });
     console.log(
       `utente ${userId}: ${s.updated} aggiornate, ${s.created} create, ${s.deleted} eliminate, ${s.reassignedTransactions} transazioni → "Da categorizzare"` +
-        (s.promotedFallback ? `, "Da categorizzare" esistente promossa a fallback` : "")
+        (s.promotedFallback ? `, "Da categorizzare" esistente promossa a fallback (colore/icona resettati a red/help-circle)` : "")
     );
+    if (s.renames.length > 0) {
+      console.log(`  rinominate: ${s.renames.map((r) => `${r.from} → ${r.to}`).join(", ")}`);
+    }
+    if (s.deletedNames.length > 0) {
+      console.log(`  eliminate: ${s.deletedNames.join(", ")}`);
+    }
   }
   process.exit(0);
 }

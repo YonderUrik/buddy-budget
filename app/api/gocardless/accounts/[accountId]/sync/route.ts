@@ -1,19 +1,23 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
+import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { redisRateLimitStore } from "@/lib/gocardless/redis-rate-limit-store";
-import { syncAccountLink } from "@/lib/gocardless/sync";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
+import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
+import { runSyncJob } from "@/lib/sync-jobs/run";
+import { queuedAccount, type SyncJob } from "@/lib/sync-jobs/types";
+
+// Il sync gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
+export const maxDuration = 300;
 
 /**
- * Avvia un sync manuale immediato per un singolo conto collegato dell'utente autenticato.
- * Ownership check (accountId + userId + connessione "linked") prima di qualunque altra
- * operazione, poi controllo eleggibilità (budget condiviso 4/giorno + gap 4h) PRIMA di
- * chiamare syncAccountLink, per non consumare una chiamata reale a GoCardless se il
- * budget è già esaurito. Mappa SyncResult su HTTP: synced 200, gocardless-limited 429,
- * expired 409; not-eligible (pre-check locale) è anch'esso 429.
+ * Avvia un sync manuale di un conto collegato come job in background.
+ * Ownership, eleggibilità (budget condiviso 4/giorno + gap 4h) e lock per conto restano sincroni,
+ * così gli errori prevedibili arrivano come risposta HTTP: 404, 429 not-eligible, 409 already-running,
+ * 503 se lo store dei job non risponde. Altrimenti crea il job e risponde subito 202 { jobId }.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ accountId: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -29,9 +33,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       externalAccountId: bankAccountLinks.externalAccountId,
       syncTimestamps: bankAccountLinks.syncTimestamps,
       userId: bankConnections.userId,
+      accountName: accounts.name,
     })
     .from(bankAccountLinks)
     .innerJoin(bankConnections, eq(bankAccountLinks.connectionId, bankConnections.id))
+    .innerJoin(accounts, eq(bankAccountLinks.accountId, accounts.id))
     .where(
       and(
         eq(bankAccountLinks.accountId, accountId),
@@ -57,13 +63,37 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     );
   }
 
-  const result = await syncAccountLink(link, redisRateLimitStore);
+  const store = redisSyncJobStore;
+  let locked: boolean;
+  try {
+    locked = await store.acquireAccountLock(link.accountId);
+  } catch (error) {
+    console.error("Store dei job di sync non raggiungibile", error);
+    return Response.json({ status: "unavailable" }, { status: 503 });
+  }
+  if (!locked) return Response.json({ status: "already-running" }, { status: 409 });
 
-  if (result.status === "gocardless-limited") {
-    return Response.json({ status: "gocardless-limited" }, { status: 429 });
+  let job: SyncJob;
+  try {
+    job = await store.createJob({
+      userId: session.user.id,
+      kind: "manual-sync",
+      accounts: [queuedAccount(link.accountId, link.accountName)],
+    });
+  } catch (error) {
+    console.error("Creazione del job di sync fallita", error);
+    await store.releaseAccountLock(link.accountId).catch(() => {});
+    return Response.json({ status: "unavailable" }, { status: 503 });
   }
-  if (result.status === "expired") {
-    return Response.json({ status: "expired" }, { status: 409 });
-  }
-  return Response.json(result, { status: 200 });
+
+  const syncableLink = {
+    linkId: link.linkId,
+    connectionId: link.connectionId,
+    accountId: link.accountId,
+    externalAccountId: link.externalAccountId,
+    userId: link.userId,
+  };
+  after(() => runSyncJob(job, [syncableLink], { store, rateLimitStore: redisRateLimitStore }));
+
+  return Response.json({ jobId: job.id }, { status: 202 });
 }

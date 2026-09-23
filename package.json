@@ -13,6 +13,7 @@
     "db:seed": "tsx --env-file=.env.local lib/db/seed.ts",
     "db:clear": "tsx --env-file=.env.local lib/db/clear.ts",
     "db:migrate-category-groups": "tsx --env-file=.env.local lib/db/migrate-category-groups.ts",
+    "db:reset-categories": "tsx --env-file=.env.local lib/db/reset-categories.ts",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {

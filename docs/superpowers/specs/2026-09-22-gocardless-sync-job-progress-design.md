@@ -54,6 +54,7 @@ export interface SyncJobAccount {
   inserted: number;          // righe nuove
   categorized: number;
   uncategorized: number;
+  errorReason?: "already-running"; // conto già in sync altrove (solo finalize)
 }
 
 export interface SyncJob {
@@ -70,17 +71,20 @@ export interface SyncJob {
 
 **Store** (`lib/sync-jobs/store.ts`) dietro un'interfaccia minima `SyncJobStore` (come `RateLimitStore`), con adapter Redis (`redis-sync-job-store.ts`) e fake in memoria per i test:
 
-- chiave job: `sync-job:{userId}:{jobId}` (JSON, TTL 24h, rinnovato a ogni update);
+- metadati del job: `sync-job:{userId}:{jobId}` → `{ id, userId, kind, startedAt, updatedAt, dismissed, accountIds }` (JSON, TTL 24h);
+- **una chiave per conto**: `sync-job:{userId}:{jobId}:account:{accountId}` → `SyncJobAccount` + `updatedAt` (TTL 24h, rinnovato a ogni update). Motivo (emerso scrivendo il piano): i conti si sincronizzano in parallelo, e un unico JSON aggiornato con read-modify-write da più conti perderebbe aggiornamenti; con chiavi separate ogni conto scrive solo la propria;
 - indice: `sync-jobs:{userId}` (set dei jobId, stesso TTL);
 - lock per conto: `sync-lock:{accountId}` via `SET NX EX`, TTL = `maxDuration` + 60s.
 
-Operazioni: `createJob`, `setAccounts(jobId, accounts)`, `updateAccount(jobId, accountId, patch)` (aggiorna anche `updatedAt` e ricalcola `status`), `listJobs(userId)`, `dismissJob(userId, jobId)`, `acquireAccountLock(accountId)`, `releaseAccountLock(accountId)`.
+`status` e `updatedAt` del job **non si salvano**: si calcolano in lettura (`updatedAt` = il più recente tra metadati e conti).
 
-`status` si deriva dagli account: `running` finché almeno un conto non è in fase finale (`done`/`limited`/`expired`/`error`); poi `failed` se **tutti** sono `error`, altrimenti `done`.
+Operazioni: `createJob`, `setAccounts(userId, jobId, accounts)`, `updateAccount(userId, jobId, accountId, patch)` (aggiorna `updatedAt` del conto; i campi `undefined` della patch non sovrascrivono), `listJobs(userId)`, `dismissJob(userId, jobId)`, `acquireAccountLock(accountId)`, `releaseAccountLock(accountId)`.
+
+`status` si deriva dagli account: `running` finché almeno un conto non è in fase finale (`done`/`limited`/`expired`/`error`) o finché il job non ha ancora conti; poi `failed` se **tutti** sono `error`, altrimenti `done`.
 
 **Funzioni pure** (`lib/sync-jobs/view.ts`):
-- `toJobView(job, now)`: se `status === "running"` e `now - updatedAt > SYNC_JOB_STALE_MS` (60s), restituisce il job come interrotto (`interrupted: true`, conti non finali in fase `error`);
-- `overallProgress(job)`: `{ determinate: true, processed, total }` solo quando tutti i conti hanno `total !== null`, altrimenti `{ determinate: false }`.
+- `toJobView(job, now)`: se `status === "running"` e `now - updatedAt > SYNC_JOB_STALE_MS` (60s), restituisce il job come interrotto (`interrupted: true`, conti non finali in fase `error`, status ricalcolato; un job senza conti diventa `failed`);
+- `overallProgress(job)`: `{ kind: "complete" }` se il job non è `running`; `{ kind: "determinate", processed, total }` quando ogni conto non finale ha già `total` (i conti finali senza `total`, es. `limited`, non contano); altrimenti `{ kind: "indeterminate" }`.
 
 ### 2. `syncAccountLink` (`lib/gocardless/sync.ts`)
 

@@ -5,6 +5,7 @@ import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connecti
 import { computeSyncEligibility } from "./sync-eligibility";
 import { redisRateLimitStore } from "./redis-rate-limit-store";
 import { syncAccountLink, type SyncableLink } from "./sync";
+import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 
 export interface DueLink extends SyncableLink {
   syncTimestamps: string[];
@@ -31,6 +32,7 @@ export async function findDueLinks(): Promise<DueLink[]> {
  * viene loggato e non deve bloccare il sync degli altri conti nello stesso tick.
  * Salta silenziosamente i conti che hanno già esaurito il budget condiviso di
  * sync (4/giorno, gap minimo 4h) per via di sync manuali avvenuti nel frattempo.
+ * Salta anche i conti con un sync già in corso (lock per conto).
  */
 export async function runDueSyncs(): Promise<void> {
   const due = await findDueLinks();
@@ -38,10 +40,16 @@ export async function runDueSyncs(): Promise<void> {
   for (const link of due) {
     const timestamps = link.syncTimestamps.map((t) => new Date(t));
     if (!computeSyncEligibility(timestamps, now).eligible) continue;
+    // Un sync manuale o un import in corso sullo stesso conto ha la precedenza: si salta al prossimo tick.
+    // Con Redis irraggiungibile si procede comunque (import idempotente): il cron non deve fermarsi per il lock.
+    const locked = await redisSyncJobStore.acquireAccountLock(link.accountId).catch(() => true);
+    if (!locked) continue;
     try {
       await syncAccountLink(link, redisRateLimitStore);
     } catch (error) {
       console.error(`Sync fallito per il conto ${link.accountId}`, error);
+    } finally {
+      await redisSyncJobStore.releaseAccountLock(link.accountId).catch(() => {});
     }
   }
 }

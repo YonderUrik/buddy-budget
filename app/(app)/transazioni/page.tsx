@@ -32,7 +32,7 @@ import { authClient } from "@/lib/auth/client";
 import {
   computeCategoryBreakdown,
   computeCategoryMonthlyStacks,
-  computeFixedVsVariable,
+  computeGroupTotals,
   computeIncomeSummary,
   computeSummary,
   filterByTransactionType,
@@ -248,7 +248,7 @@ export default function TransazioniPage() {
 
           <CategoryBreakdownDonut
             categoryAmounts={computeCategoryBreakdown(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
-            fixedVsVariable={computeFixedVsVariable(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
+            groupTotals={computeGroupTotals(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
             budgets={safeBudgets}
             currency={currency}
           />

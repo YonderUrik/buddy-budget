@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * Blocco "Per categoria": torta multilivello (layer interno tipo fissa/variabile, layer esterno categoria) e
- * legenda con budget mensile editabile, percentuale di saturazione budget e percentuale sul totale speso nel
- * periodo. Unifica il vecchio donut "Fisse vs variabili" e la lista budget separata in un'unica card. Il
- * salvataggio del budget avviene on-blur, stessa convenzione di add-account-form.tsx.
+ * Blocco "Per categoria": torta multilivello (layer interno gruppo di spesa — Dovute/Volute/Te futuro/Saltuarie
+ * più "Da categorizzare" se presente —, layer esterno categoria) e legenda con budget mensile editabile,
+ * percentuale di saturazione budget e percentuale sul totale speso nel periodo. Unifica torta per gruppo e
+ * lista budget in un'unica card. Il salvataggio del budget avviene on-blur, stessa convenzione di
+ * add-account-form.tsx.
  */
 
 import * as React from "react";
@@ -22,7 +23,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatCurrency } from "@/lib/format";
 import { useUpsertBudgetMutation } from "@/lib/queries/budgets";
 import { cn } from "@/lib/utils";
-import type { CategoryAmount, FixedVsVariable } from "@/lib/calc/expenses";
+import type { CategoryAmount, GroupTotals } from "@/lib/calc/expenses";
+import { EXPENSE_GROUP_KEYS, GROUP_DISPLAY, UNCATEGORIZED_GROUP_KEY, type CategoryGroupKey } from "@/lib/categories/groups";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import {
@@ -35,10 +37,14 @@ import {
   type LegendSortDirection,
 } from "./category-breakdown-donut.utils";
 
-const TYPE_CONFIG = {
-  fissa: { label: "Fisse", color: "var(--chart-1)" },
-  variabile: { label: "Variabili", color: "var(--chart-2)" },
-} satisfies ChartConfig;
+const ALL_GROUP_KEYS: readonly CategoryGroupKey[] = [...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY];
+
+const GROUP_CHART_CONFIG = Object.fromEntries(
+  ALL_GROUP_KEYS.map((key) => [
+    key,
+    { label: GROUP_DISPLAY[key].label, color: GROUP_DISPLAY[key].colorVar },
+  ] as const)
+) satisfies ChartConfig;
 
 /** Soglia di saturazione oltre la quale il badge budget passa allo stile "sopra budget". */
 const BUDGET_OVER_THRESHOLD_PCT = 100;
@@ -91,14 +97,14 @@ function tooltipValueFormatter(currency: string) {
 
 export interface CategoryBreakdownDonutProps {
   categoryAmounts: CategoryAmount[];
-  fixedVsVariable: FixedVsVariable;
+  groupTotals: GroupTotals;
   budgets: Budget[];
   currency: string;
 }
 
 export function CategoryBreakdownDonut({
   categoryAmounts,
-  fixedVsVariable,
+  groupTotals,
   budgets,
   currency,
 }: CategoryBreakdownDonutProps) {
@@ -173,15 +179,16 @@ export function CategoryBreakdownDonut({
     };
   }, [checkScroll, sortedLegendEntries.length]);
 
-  const innerData = [
-    { key: "fissa", label: TYPE_CONFIG.fissa.label, value: fixedVsVariable.fissa, fill: "var(--color-fissa)" },
-    {
-      key: "variabile",
-      label: TYPE_CONFIG.variabile.label,
-      value: fixedVsVariable.variabile,
-      fill: "var(--color-variabile)",
-    },
+  const innerKeys: CategoryGroupKey[] = [
+    ...EXPENSE_GROUP_KEYS,
+    ...(groupTotals.daCategorizzare > 0 ? ([UNCATEGORIZED_GROUP_KEY] as const) : []),
   ];
+  const innerData = innerKeys.map((key) => ({
+    key,
+    label: GROUP_DISPLAY[key].label,
+    value: groupTotals[key],
+    fill: GROUP_DISPLAY[key].colorVar,
+  }));
   const outerData = sortedEntries
     .filter((entry) => entry.amount > 0)
     .map((entry) => ({
@@ -223,7 +230,7 @@ export function CategoryBreakdownDonut({
         </CardAction>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
-        <ChartContainer config={TYPE_CONFIG} className="mx-auto aspect-square max-h-56 sm:mx-0">
+        <ChartContainer config={GROUP_CHART_CONFIG} className="mx-auto aspect-square max-h-56 sm:mx-0">
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent formatter={formatTooltipValue} />} />
             <Pie data={innerData} dataKey="value" nameKey="label" innerRadius={35} outerRadius={55}>
@@ -332,6 +339,11 @@ function CategoryLegendRow({
   return (
     <div className="flex items-center justify-between gap-3 py-3">
       <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          title={GROUP_DISPLAY[entry.group].label}
+          className={cn("size-2 shrink-0 rounded-full", GROUP_DISPLAY[entry.group].dotClassName)}
+        />
         <CategoryAvatar
           color={entry.color as CategoryColor}
           icon={entry.icon as CategoryIcon}
@@ -340,7 +352,9 @@ function CategoryLegendRow({
         />
         <div>
           <p className="text-sm font-medium text-foreground">{entry.name}</p>
-          <p className="text-xs text-muted-foreground">{formatCurrency(entry.amount, currency)} speso</p>
+          <p className="text-xs text-muted-foreground">
+            {formatCurrency(entry.amount, currency)} speso · {GROUP_DISPLAY[entry.group].label}
+          </p>
         </div>
       </div>
       <div className="flex flex-col items-end gap-1">

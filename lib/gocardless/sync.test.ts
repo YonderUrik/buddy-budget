@@ -16,7 +16,7 @@ vi.mock("@/lib/gocardless/client", async (importOriginal) => {
 });
 
 import { getAccountBalances, getAccountTransactions, GoCardlessError } from "./client";
-import { syncAccountLink, type SyncableLink } from "./sync";
+import { SYNC_INSERT_CHUNK_SIZE, syncAccountLink, type SyncableLink, type SyncProgress } from "./sync";
 
 function createMemoryStore(): RateLimitStore {
   const map = new Map<string, string>();
@@ -28,6 +28,22 @@ function createMemoryStore(): RateLimitStore {
       map.set(key, value);
     },
   };
+}
+
+function mockBankResponses(count: number) {
+  vi.mocked(getAccountBalances).mockResolvedValue({
+    balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+    rateLimit: null,
+  });
+  vi.mocked(getAccountTransactions).mockResolvedValue({
+    transactions: Array.from({ length: count }, (_, index) => ({
+      internalTransactionId: `bulk-${index}`,
+      transactionAmount: { amount: "-1.00", currency: "EUR" },
+      remittanceInformationUnstructured: `Movimento ${index}`,
+      bookingDate: "2026-07-01",
+    })),
+    rateLimit: null,
+  });
 }
 
 describe("syncAccountLink", () => {
@@ -362,5 +378,52 @@ describe("syncAccountLink", () => {
 
     const [updatedLink] = await db.select().from(bankAccountLinks).where(eq(bankAccountLinks.id, link.linkId));
     expect(updatedLink.syncTimestamps).toHaveLength(4);
+  });
+
+  it("importa a blocchi e notifica l'avanzamento con processed cumulativo", async () => {
+    expect(SYNC_INSERT_CHUNK_SIZE).toBe(50);
+    mockBankResponses(120);
+    const progress: SyncProgress[] = [];
+
+    const result = await syncAccountLink(link, createMemoryStore(), (p) => {
+      progress.push(p);
+    });
+
+    expect(result).toMatchObject({ status: "synced", newTransactionsCount: 120, uncategorizedCount: 120 });
+    expect(progress.map((p) => p.phase)).toEqual(["balance", "fetching", "saving", "saving", "saving", "saving"]);
+    expect(progress.filter((p) => p.phase === "saving").map((p) => p.processed)).toEqual([0, 50, 100, 120]);
+    expect(progress.at(-1)).toEqual({
+      phase: "saving",
+      total: 120,
+      processed: 120,
+      inserted: 120,
+      categorized: 0,
+      uncategorized: 120,
+    });
+
+    const stored = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
+    expect(stored).toHaveLength(120);
+  });
+
+  it("in un resync conta come elaborate anche le righe già presenti, ma come nuove solo quelle inserite", async () => {
+    mockBankResponses(60);
+    await syncAccountLink(link, createMemoryStore());
+
+    mockBankResponses(61);
+    const progress: SyncProgress[] = [];
+    const result = await syncAccountLink(link, createMemoryStore(), (p) => {
+      progress.push(p);
+    });
+
+    expect(result).toMatchObject({ status: "synced", newTransactionsCount: 1 });
+    expect(progress.at(-1)).toMatchObject({ total: 61, processed: 61, inserted: 1 });
+  });
+
+  it("un errore nella callback di avanzamento non interrompe il sync", async () => {
+    mockBankResponses(3);
+    const result = await syncAccountLink(link, createMemoryStore(), () => {
+      throw new Error("Redis giù");
+    });
+    expect(result).toMatchObject({ status: "synced", newTransactionsCount: 3 });
   });
 });

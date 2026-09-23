@@ -78,8 +78,8 @@ Questo documento nasce dall'esecuzione **interattiva** del mockup (`docs/design-
 **Cosa si vede**:
 - Selettore periodo **Settimana / Mese / 3 mesi / Anno**
 - 3 KPI: Speso nel periodo (su budget), Budget rimanente (con giorni rimasti), Media giornaliera (vs periodo precedente)
-- Blocco "Per categoria": 8 categorie fisse (Affitto, Spesa alimentare, Altro, Ristoranti, Bollette & casa, Svago, Trasporti, Abbonamenti) con relativo importo
-- Blocco "Fisse vs variabili" (donut) + "Andamento ultimi 6 mesi" (barre gen–giu)
+- Blocco "Per categoria": categorie personalizzabili dall'utente (pagina `/categorie`), ciascuna appartenente a uno di quattro **gruppi di spesa** — **Dovute** (spese necessarie: senza queste avresti problemi pratici o legali), **Volute** (migliorano la qualità della vita ma potresti farne a meno), **Te futuro** (risparmio/investimenti trattati come spesa prioritaria, non come ciò che avanza) e **Saltuarie** (necessarie ma non mensili: tasse, manutenzioni, regali) — più la categoria fallback "Da categorizzare" (fuori da ogni gruppo). Il donut ha l'**anello interno per gruppo** (una fetta per gruppo, più "Da categorizzare" se presente) e l'anello esterno per singola categoria, allineati angolarmente.
+- Blocco "Andamento ultimi 6 mesi" (barre, stacked per categoria)
 - Lista **Transazioni**, con sommario Uscite / Escluse / Spese effettive
 - Per ogni transazione: descrizione, data · categoria, importo, etichetta Auto/Manuale, bottone **"Dividi"**
 - Le transazioni **manuali** hanno anche: descrizione editabile, importo editabile, bottone **✕**
@@ -92,7 +92,7 @@ Questo documento nasce dall'esecuzione **interattiva** del mockup (`docs/design-
 - **Eliminare** una transazione manuale (✕).
 
 **Cosa il mockup NON implementa — decisione per il prodotto reale**:
-- **Il selettore di periodo non filtra realmente la lista sottostante**: cambiando a "Settimana" i tre KPI in alto cambiano, ma "Per categoria", "Fisse vs variabili", il grafico a 6 mesi e la lista Transazioni restano quelli di giugno. **Decisione: implementare correttamente** — cambiare periodo deve ricalcolare in modo coerente KPI, categorie, grafici e lista transazioni: nel mockup è una scorciatoia dei dati demo, non un comportamento voluto.
+- **Il selettore di periodo non filtra realmente la lista sottostante**: cambiando a "Settimana" i tre KPI in alto cambiano, ma "Per categoria" (donut per gruppo/categoria), il grafico a 6 mesi e la lista Transazioni restano quelli di giugno. **Decisione: implementare correttamente** — cambiare periodo deve ricalcolare in modo coerente KPI, categorie, grafici e lista transazioni: nel mockup è una scorciatoia dei dati demo, non un comportamento voluto. (Implementato: il periodo ricalcola anche il donut e il trend.)
 - **Il form "+ Aggiungi" in fondo è uno stub** (nessun effetto osservabile). **Decisione: implementare end-to-end** — è probabilmente il flusso più usato dell'intera app; deve creare la riga, aggiornare la lista transazioni e ricalcolare tutti i totali.
 - **Lo slider "Dividi" non ricalcola le card in alto** (Speso/Budget rimanente/Media giornaliera/Per categoria): sono due sistemi di calcolo scollegati. **Decisione: unificare** — deve esistere un solo motore di calcolo della spesa "effettiva" per periodo, e "Dividi" deve rientrarci ovunque; il disallineamento del mockup è un bug da non portare nel prodotto reale.
 - **Categoria non modificabile** su una transazione esistente. **Decisione: implementare** — correggere una spesa mal categorizzata è un'azione basilare che deve esistere.
@@ -110,7 +110,7 @@ Questo documento nasce dall'esecuzione **interattiva** del mockup (`docs/design-
 - 4 KPI: Entrate medie, Uscite medie (esclusi trasferimenti interni), Flusso netto, Tasso di risparmio
 - Grafico "Entrate vs uscite" ultimi 12 mesi (barre affiancate lug–giu)
 - "Fonti di entrata": Stipendio, Freelance, Dividendi e interessi, ciascuna con importo e quota % sul totale
-- "Dove va ogni euro" (mese corrente): Spese fisse, Spese variabili, Investimenti (PAC), Risparmio liquido — con importo e %
+- "Dove va ogni euro" (mese corrente): **Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo** — con importo e %, pallino colorato per le quattro voci di gruppo. "Te futuro" (risparmio/investimenti) conta come spesa a tutti gli effetti; "Non classificato" copre sia le spese sulla categoria fallback "Da categorizzare" sia quelle su una categoria sconosciuta; "Avanzo" (entrate − tutte le uscite, "Te futuro" incluso) è l'ex "Risparmio", rinominato per non essere ambiguo ora che il risparmio vero e proprio è già contato dentro "Te futuro"
 - "Risparmio accumulato" ultimi 12 mesi (grafico + totale)
 
 **Cosa si può fare**: nulla, è un cruscotto di analisi puro.

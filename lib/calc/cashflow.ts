@@ -203,7 +203,7 @@ export interface IncomeSourceAmount {
  * Entrate per categoria nel periodo, ordinate decrescenti, con quota % sul totale entrate.
  * Esclude le categorie a importo zero. Raggruppa per `categoryId` effettivo delle transazioni
  * (non solo le categorie di tipo "entrata"): un'entrata ancora sulla categoria fallback "Da
- * categorizzare" (type "variabile") o su una categoria mal classificata compare comunque come
+ * categorizzare" (type "voluta", instradata per `isFallback`) o su una categoria mal classificata compare comunque come
  * riga propria, con il nome/colore/icona reali della categoria — altrimenti il totale usato
  * come denominatore includerebbe entrate mai mostrate come riga, e le quote % non
  * sommerebbero a 100%.

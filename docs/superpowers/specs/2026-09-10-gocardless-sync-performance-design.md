@@ -1,5 +1,7 @@
 # Ottimizzazione performance sync GoCardless (import conti trovati + sync manuale)
 
+> **SUPERATO (2026-09-22)** — mai implementato e non più valido (`categorize.ts` rimosso dalla categorizzazione a regole). Sostituito da `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`.
+
 Data: 2026-09-10
 
 ## Problema

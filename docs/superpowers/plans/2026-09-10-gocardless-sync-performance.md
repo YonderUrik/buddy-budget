@@ -1,5 +1,7 @@
 # Ottimizzazione performance sync GoCardless — Implementation Plan
 
+> **SUPERATO (2026-09-22)** — mai implementato e non più valido (`categorize.ts` rimosso dalla categorizzazione a regole). Sostituito da `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Eliminare l'N+1 query e la sequenzialità che rendono lentissimo l'import GoCardless (conti trovati + sync manuale), sostituendo query-per-transazione con un matcher precaricato in memoria + insert batch, e parallelizzando il sync multi-conto; aggiungere feedback UI esplicito durante l'attesa.

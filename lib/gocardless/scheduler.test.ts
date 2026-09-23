@@ -10,6 +10,11 @@ vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
   return { ...actual, syncAccountLink: vi.fn() };
 });
 
+vi.mock("@/lib/sync-jobs/redis-store", async () => {
+  const { createMemorySyncJobKv, createSyncJobStore } = await import("@/lib/sync-jobs/store");
+  return { redisSyncJobStore: createSyncJobStore(createMemorySyncJobKv()) };
+});
+
 import { syncAccountLink } from "./sync";
 import { findDueLinks, runDueSyncs } from "./scheduler";
 

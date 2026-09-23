@@ -269,4 +269,26 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
     expect(response.status).toBe(503);
     expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toEqual([]);
   });
+
+  it("chiude il job se un conto 'existing' non ha nessun bank_account_links da aggiornare", async () => {
+    const [orphanAccount] = await db
+      .insert(accounts)
+      .values({ userId, name: "Conto senza link", type: "Conto corrente", balance: "0", source: "auto" })
+      .returning();
+
+    const response = await postFinalize([
+      {
+        externalAccountId: "ext-orphan",
+        name: "Conto Corrente",
+        type: "Conto corrente",
+        mode: "existing",
+        existingAccountId: orphanAccount.id,
+      },
+    ]);
+    expect(response.status).toBe(404);
+
+    const jobs = await redisSyncJobStore.listJobs(userId);
+    expect(jobs.length).toBeGreaterThan(0);
+    expect(jobs.every((j) => j.dismissed)).toBe(true);
+  });
 });

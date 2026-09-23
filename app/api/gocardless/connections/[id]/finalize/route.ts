@@ -70,48 +70,63 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return Response.json({ error: STORE_UNAVAILABLE_MESSAGE }, { status: 503 });
   }
 
+  // Se la scrittura dei conti fallisce, il job non deve restare orfano senza conti (apparirebbe
+  // come "interrotto" nel pannello dopo l'heartbeat stale) — lo si chiude subito, best-effort.
+  async function abandonJob(reason: string, error?: unknown) {
+    console.error(`Job di import ${job.id} abbandonato: ${reason}`, error);
+    await store.dismissJob(userId, job.id).catch((dismissError) => {
+      console.error(`Impossibile chiudere il job di import ${job.id} dopo un errore`, dismissError);
+    });
+  }
+
   // Seconda passata: scritture.
   const created: { link: SyncableLink; name: string }[] = [];
-  for (const selection of parsed.data.selections) {
-    if (selection.mode === "existing" && selection.existingAccountId) {
-      const [updatedLink] = await db
-        .update(bankAccountLinks)
-        .set({ connectionId: connection.id, externalAccountId: selection.externalAccountId })
-        .where(eq(bankAccountLinks.accountId, selection.existingAccountId))
-        .returning();
-      if (!updatedLink) {
-        return Response.json({ error: "Conto non trovato" }, { status: 404 });
+  try {
+    for (const selection of parsed.data.selections) {
+      if (selection.mode === "existing" && selection.existingAccountId) {
+        const [updatedLink] = await db
+          .update(bankAccountLinks)
+          .set({ connectionId: connection.id, externalAccountId: selection.externalAccountId })
+          .where(eq(bankAccountLinks.accountId, selection.existingAccountId))
+          .returning();
+        if (!updatedLink) {
+          await abandonJob("conto esistente non trovato in fase di scrittura");
+          return Response.json({ error: "Conto non trovato" }, { status: 404 });
+        }
+        created.push({
+          name: existingNames.get(selection.existingAccountId) ?? selection.name,
+          link: {
+            linkId: updatedLink.id,
+            connectionId: connection.id,
+            accountId: selection.existingAccountId,
+            externalAccountId: selection.externalAccountId,
+            userId,
+          },
+        });
+      } else {
+        const [account] = await db
+          .insert(accounts)
+          .values({ userId, name: selection.name, type: selection.type, source: "auto" })
+          .returning();
+        const [link] = await db
+          .insert(bankAccountLinks)
+          .values({ connectionId: connection.id, accountId: account.id, externalAccountId: selection.externalAccountId })
+          .returning();
+        created.push({
+          name: account.name,
+          link: {
+            linkId: link.id,
+            connectionId: connection.id,
+            accountId: account.id,
+            externalAccountId: selection.externalAccountId,
+            userId,
+          },
+        });
       }
-      created.push({
-        name: existingNames.get(selection.existingAccountId) ?? selection.name,
-        link: {
-          linkId: updatedLink.id,
-          connectionId: connection.id,
-          accountId: selection.existingAccountId,
-          externalAccountId: selection.externalAccountId,
-          userId,
-        },
-      });
-    } else {
-      const [account] = await db
-        .insert(accounts)
-        .values({ userId, name: selection.name, type: selection.type, source: "auto" })
-        .returning();
-      const [link] = await db
-        .insert(bankAccountLinks)
-        .values({ connectionId: connection.id, accountId: account.id, externalAccountId: selection.externalAccountId })
-        .returning();
-      created.push({
-        name: account.name,
-        link: {
-          linkId: link.id,
-          connectionId: connection.id,
-          accountId: account.id,
-          externalAccountId: selection.externalAccountId,
-          userId,
-        },
-      });
     }
+  } catch (error) {
+    await abandonJob("scrittura conti fallita", error);
+    throw error;
   }
 
   // Un conto "existing" può avere già un sync in corso: non lo si duplica, lo si segnala nel job.

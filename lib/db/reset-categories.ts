@@ -11,7 +11,7 @@ import { categories, DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES } from "./schema/
 import { transactions } from "./schema/transactions";
 import { budgets } from "./schema/budgets";
 import { categorizationRules } from "./schema/categorization-rules";
-import { getFallbackCategoryId } from "@/lib/categorization/fallback";
+import { FALLBACK_CATEGORY_NAME, getFallbackCategoryId } from "@/lib/categorization/fallback";
 import type { CategoryType } from "@/lib/categories/groups";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 
@@ -77,22 +77,48 @@ export function planCategoryReset(
   return plan;
 }
 
+/**
+ * Individua, tra le categorie esistenti di un utente, quale riga rappresenta (o dovrebbe rappresentare)
+ * la fallback: una riga già `isFallback: true`, oppure — dato reale storico su utenti creati prima del
+ * backfill icone/colori — una riga non-fallback il cui nome è esattamente "Da categorizzare"
+ * (`needsPromotion: true`, va promossa invece di crearne una seconda e violare l'unique su nome).
+ * Nessuna corrispondenza → `null` (nessuna riga candidata, va creata una fallback nuova).
+ */
+export function resolveFallbackCandidate(
+  existing: ExistingCategory[]
+): { id: string; needsPromotion: boolean } | null {
+  const alreadyFallback = existing.find((c) => c.isFallback);
+  if (alreadyFallback) return { id: alreadyFallback.id, needsPromotion: false };
+  const byName = existing.find((c) => !c.isFallback && c.name === FALLBACK_CATEGORY_NAME);
+  if (byName) return { id: byName.id, needsPromotion: true };
+  return null;
+}
+
 export interface CategoryResetSummary {
   updated: number;
   created: number;
   deleted: number;
   reassignedTransactions: number;
+  /** True se una riga "Da categorizzare" non ancora marcata fallback è stata (o andrebbe) promossa invece di crearne una nuova. */
+  promotedFallback: boolean;
 }
 
 /**
- * Applica il piano di reset per un utente in un'unica transazione. Ordine: riassegna le transazioni delle
+ * Applica il piano di reset per un utente in un'unica transazione. Ordine: promuove a fallback una riga
+ * "Da categorizzare" pre-esistente non ancora marcata tale (se serve), riassegna le transazioni delle
  * categorie da eliminare alla fallback, elimina budget e regole, elimina le categorie (liberando i nomi),
- * poi aggiorna e crea. Con `dryRun` calcola solo il riepilogo.
+ * poi aggiorna e crea. Con `dryRun` calcola solo il riepilogo, nessuna scrittura.
  */
 export async function resetUserCategories(userId: string, { dryRun }: { dryRun: boolean }): Promise<CategoryResetSummary> {
-  const fallbackId = dryRun ? null : await getFallbackCategoryId(userId);
   const existing = await db.select().from(categories).where(eq(categories.userId, userId));
-  const plan = planCategoryReset(existing, DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES);
+  const fallbackCandidate = resolveFallbackCandidate(existing);
+  // La riga candidata a promozione va esclusa dal planner come se fosse già fallback, altrimenti
+  // verrebbe trattata come categoria personalizzata e finirebbe tra le eliminazioni.
+  const plannerInput = fallbackCandidate?.needsPromotion
+    ? existing.map((c) => (c.id === fallbackCandidate.id ? { ...c, isFallback: true } : c))
+    : existing;
+  const plan = planCategoryReset(plannerInput, DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES);
+  const promotedFallback = fallbackCandidate?.needsPromotion ?? false;
 
   const affected =
     plan.deletions.length === 0
@@ -107,10 +133,19 @@ export async function resetUserCategories(userId: string, { dryRun }: { dryRun: 
     created: plan.creates.length,
     deleted: plan.deletions.length,
     reassignedTransactions: affected.length,
+    promotedFallback,
   };
-  if (dryRun || fallbackId === null) return summary;
+  if (dryRun) return summary;
+
+  const fallbackId = fallbackCandidate ? fallbackCandidate.id : await getFallbackCategoryId(userId);
 
   await db.transaction(async (tx) => {
+    if (fallbackCandidate?.needsPromotion) {
+      await tx
+        .update(categories)
+        .set({ isFallback: true, color: "red", icon: "help-circle", type: "voluta" })
+        .where(eq(categories.id, fallbackCandidate.id));
+    }
     if (plan.deletions.length > 0) {
       await tx
         .update(transactions)
@@ -148,7 +183,8 @@ async function main() {
   for (const { userId } of users) {
     const s = await resetUserCategories(userId, { dryRun });
     console.log(
-      `utente ${userId}: ${s.updated} aggiornate, ${s.created} create, ${s.deleted} eliminate, ${s.reassignedTransactions} transazioni → "Da categorizzare"`
+      `utente ${userId}: ${s.updated} aggiornate, ${s.created} create, ${s.deleted} eliminate, ${s.reassignedTransactions} transazioni → "Da categorizzare"` +
+        (s.promotedFallback ? `, "Da categorizzare" esistente promossa a fallback` : "")
     );
   }
   process.exit(0);

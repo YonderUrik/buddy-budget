@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { planCategoryReset, type ExistingCategory, type ResetDefault } from "./reset-categories";
+import {
+  planCategoryReset,
+  resolveFallbackCandidate,
+  type ExistingCategory,
+  type ResetDefault,
+} from "./reset-categories";
 
 const DEFAULTS: ResetDefault[] = [
   { name: "Affitto & Mutuo", type: "dovuta", icon: "home", color: "slate" },
@@ -72,5 +77,38 @@ describe("planCategoryReset", () => {
     );
     expect(plan.updates).toContainEqual({ id: "s", name: "Salute & Farmaci", type: "dovuta", icon: "pill", color: "rose" });
     expect(plan.deletions).toEqual(["custom"]);
+  });
+
+  it("una riga 'Da categorizzare' già marcata isFallback non finisce mai tra le eliminazioni", () => {
+    const plan = planCategoryReset(
+      [existing("fb", "Da categorizzare", "voluta", true), existing("custom", "Palestra")],
+      DEFAULTS,
+      LEGACY
+    );
+    expect(plan.deletions).not.toContain("fb");
+    expect(plan.deletions).toEqual(["custom"]);
+  });
+});
+
+describe("resolveFallbackCandidate", () => {
+  it("una riga già isFallback: la restituisce, nessuna promozione necessaria", () => {
+    const result = resolveFallbackCandidate([
+      existing("fb", "Da categorizzare", "voluta", true),
+      existing("custom", "Palestra"),
+    ]);
+    expect(result).toEqual({ id: "fb", needsPromotion: false });
+  });
+
+  it("nessuna riga isFallback ma una 'Da categorizzare' non-fallback: la restituisce da promuovere", () => {
+    const result = resolveFallbackCandidate([
+      existing("legacy-fallback", "Da categorizzare", "voluta", false),
+      existing("custom", "Palestra"),
+    ]);
+    expect(result).toEqual({ id: "legacy-fallback", needsPromotion: true });
+  });
+
+  it("nessuna delle due: null", () => {
+    const result = resolveFallbackCandidate([existing("custom", "Palestra")]);
+    expect(result).toBeNull();
   });
 });

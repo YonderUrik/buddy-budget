@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client, db } from "@/lib/db/client";
@@ -6,15 +6,35 @@ import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: vi.fn() };
+});
+vi.mock("@/lib/sync-jobs/redis-store", async () => {
+  const { createMemorySyncJobKv, createSyncJobStore } = await import("@/lib/sync-jobs/store");
+  return { redisSyncJobStore: createSyncJobStore(createMemorySyncJobKv()) };
+});
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/gocardless/sync")>();
-  return { ...actual, syncAccountLink: vi.fn().mockResolvedValue(undefined) };
+  return {
+    ...actual,
+    syncAccountLink: vi.fn().mockResolvedValue({
+      status: "synced",
+      newTransactionsCount: 0,
+      categorizedCount: 0,
+      uncategorizedCount: 0,
+      balanceUpdated: true,
+    }),
+  };
 });
 
 import { auth } from "@/lib/auth";
 import { syncAccountLink } from "@/lib/gocardless/sync";
+import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { POST } from "./route";
+
+const afterTasks: Promise<unknown>[] = [];
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
@@ -43,6 +63,11 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
       .returning();
     connectionId = connection.id;
     vi.mocked(syncAccountLink).mockClear();
+    afterTasks.length = 0;
+    vi.mocked(after).mockClear();
+    vi.mocked(after).mockImplementation((task) => {
+      afterTasks.push(Promise.resolve(typeof task === "function" ? task() : task));
+    });
   });
 
   afterEach(async () => {
@@ -64,7 +89,13 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
       { params: Promise.resolve({ id: connectionId }) }
     );
     expect(response.status).toBe(201);
+    const { jobId } = await response.json();
+    await Promise.all(afterTasks);
     expect(syncAccountLink).toHaveBeenCalledTimes(1);
+    const job = (await redisSyncJobStore.listJobs(userId)).find((j) => j.id === jobId);
+    expect(job?.kind).toBe("initial-import");
+    expect(job?.accounts).toHaveLength(1);
+    expect(job?.accounts[0]).toMatchObject({ name: "Conto Corrente", phase: "done" });
 
     const [createdAccount] = await db.select().from(accounts).where(eq(accounts.userId, userId));
     expect(createdAccount.source).toBe("auto");
@@ -137,6 +168,10 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
     );
 
     expect(response.status).toBe(201);
+    const { jobId } = await response.json();
+    await Promise.all(afterTasks);
+    const job = (await redisSyncJobStore.listJobs(userId)).find((j) => j.id === jobId);
+    expect(job?.accounts[0].phase).toBe("error");
 
     const [createdAccount] = await db.select().from(accounts).where(eq(accounts.userId, userId));
     expect(createdAccount.source).toBe("auto");
@@ -182,6 +217,7 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
 
       const links = await db.select().from(bankAccountLinks).where(eq(bankAccountLinks.accountId, otherAccount.id));
       expect(links).toHaveLength(0);
+      expect(await redisSyncJobStore.listJobs(userId)).toEqual([]);
     } finally {
       await db.delete(authUser).where(eq(authUser.id, otherUser.id));
     }
@@ -199,5 +235,38 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
       { params: Promise.resolve({ id: connectionId }) }
     );
     expect(response.status).toBe(404);
+  });
+
+  function postFinalize(selections: unknown[]) {
+    return POST(
+      new NextRequest(`http://localhost/api/gocardless/connections/${connectionId}/finalize`, {
+        method: "POST",
+        body: JSON.stringify({ selections }),
+      }),
+      { params: Promise.resolve({ id: connectionId }) }
+    );
+  }
+
+  it("sincronizza più conti nello stesso job", async () => {
+    const response = await postFinalize([
+      { externalAccountId: "ext-1", name: "Conto A", type: "Conto corrente", mode: "new" },
+      { externalAccountId: "ext-2", name: "Conto B", type: "Conto corrente", mode: "new" },
+    ]);
+    const { jobId } = await response.json();
+    await Promise.all(afterTasks);
+
+    expect(syncAccountLink).toHaveBeenCalledTimes(2);
+    const job = (await redisSyncJobStore.listJobs(userId)).find((j) => j.id === jobId);
+    expect(job?.accounts.map((a) => a.name)).toEqual(["Conto A", "Conto B"]);
+    expect(job?.status).toBe("done");
+  });
+
+  it("risponde 503 senza creare conti se lo store dei job non risponde", async () => {
+    vi.spyOn(redisSyncJobStore, "createJob").mockRejectedValueOnce(new Error("Redis giù"));
+    const response = await postFinalize([
+      { externalAccountId: "ext-1", name: "Conto A", type: "Conto corrente", mode: "new" },
+    ]);
+    expect(response.status).toBe(503);
+    expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toEqual([]);
   });
 });

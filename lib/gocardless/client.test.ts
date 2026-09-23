@@ -2,10 +2,11 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client as dbClient, db } from "@/lib/db/client";
 import { gocardlessToken } from "@/lib/db/schema/bank-connections";
-import { getAccessToken, getAccountBalances, listInstitutions } from "./client";
+import { getAccessToken, getAccountBalances, listInstitutions, resetAccessTokenCacheForTests } from "./client";
 
 describe("gocardless client", () => {
   beforeEach(async () => {
+    resetAccessTokenCacheForTests();
     await db.delete(gocardlessToken);
     vi.stubGlobal("fetch", vi.fn());
   });
@@ -45,6 +46,18 @@ describe("gocardless client", () => {
     const token = await getAccessToken();
     expect(token).toBe("cached-token");
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("dopo il primo recupero riusa il token dalla memoria, senza rileggere il DB", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response(JSON.stringify({ access: "token-mem", access_expires: 3600 }), { status: 200 })
+    );
+    expect(await getAccessToken()).toBe("token-mem");
+
+    // Se il secondo recupero leggesse il DB, troverebbe la cache svuotata e chiamerebbe di nuovo fetch.
+    await db.delete(gocardlessToken);
+    expect(await getAccessToken()).toBe("token-mem");
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("listInstitutions chiama l'endpoint corretto e restituisce l'array", async () => {

@@ -89,12 +89,14 @@ export async function flushRuleHits(ruleIds: string[]): Promise<void> {
   for (const id of ruleIds) countById.set(id, (countById.get(id) ?? 0) + 1);
 
   const now = new Date();
-  for (const [id, count] of countById) {
-    await db
-      .update(categorizationRules)
-      .set({ hitCount: sql`${categorizationRules.hitCount} + ${count}`, lastAppliedAt: now })
-      .where(eq(categorizationRules.id, id));
-  }
+  await Promise.all(
+    [...countById].map(([id, count]) =>
+      db
+        .update(categorizationRules)
+        .set({ hitCount: sql`${categorizationRules.hitCount} + ${count}`, lastAppliedAt: now })
+        .where(eq(categorizationRules.id, id))
+    )
+  );
 }
 
 /**

@@ -5,6 +5,15 @@ import { gocardlessToken } from "@/lib/db/schema/bank-connections";
 
 const BASE_URL = "https://bankaccountdata.gocardless.com/api/v2";
 const TOKEN_ROW_ID = "singleton";
+const TOKEN_EXPIRY_MARGIN_MS = 60_000;
+
+/** Cache di modulo: vive quanto l'istanza della funzione; la riga DB resta la cache condivisa tra istanze. */
+let memoryToken: { accessToken: string; expiresAt: number } | null = null;
+
+/** Svuota la cache in memoria del token (solo per i test). */
+export function resetAccessTokenCacheForTests(): void {
+  memoryToken = null;
+}
 
 export class GoCardlessError extends Error {
   status: number;
@@ -32,10 +41,15 @@ async function fetchNewToken(): Promise<{ access: string; access_expires: number
   return response.json();
 }
 
-/** Restituisce un access token valido, riusando la cache DB o rigenerandolo se scaduto/assente. */
+/** Restituisce un access token valido: memoria, poi cache DB, altrimenti ne genera uno nuovo. */
 export async function getAccessToken(): Promise<string> {
+  if (memoryToken && memoryToken.expiresAt > Date.now() + TOKEN_EXPIRY_MARGIN_MS) {
+    return memoryToken.accessToken;
+  }
+
   const [cached] = await db.select().from(gocardlessToken).where(eq(gocardlessToken.id, TOKEN_ROW_ID));
-  if (cached && cached.expiresAt.getTime() > Date.now() + 60_000) {
+  if (cached && cached.expiresAt.getTime() > Date.now() + TOKEN_EXPIRY_MARGIN_MS) {
+    memoryToken = { accessToken: cached.accessToken, expiresAt: cached.expiresAt.getTime() };
     return cached.accessToken;
   }
 
@@ -49,6 +63,7 @@ export async function getAccessToken(): Promise<string> {
       set: { accessToken: token.access, expiresAt },
     });
 
+  memoryToken = { accessToken: token.access, expiresAt: expiresAt.getTime() };
   return token.access;
 }
 

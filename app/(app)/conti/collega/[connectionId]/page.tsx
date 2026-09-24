@@ -17,6 +17,8 @@ import { useConnectionAccountsQuery, useFinalizeConnectionMutation } from "@/lib
 import type { FinalizeSelectionInput } from "@/lib/validation/gocardless";
 
 const NEW_ACCOUNT_VALUE = "__new__";
+const CONFIRM_LABEL = "Conferma";
+const CONFIRM_PENDING_LABEL = "Avvio…";
 
 export default function CollegaBancaPage() {
   const { connectionId } = useParams<{ connectionId: string }>();
@@ -127,7 +129,7 @@ export default function CollegaBancaPage() {
       </div>
 
       <Button onClick={handleConfirm} disabled={finalize.isPending}>
-        Conferma
+        {finalize.isPending ? CONFIRM_PENDING_LABEL : CONFIRM_LABEL}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </div>

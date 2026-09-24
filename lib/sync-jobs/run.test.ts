@@ -75,4 +75,36 @@ describe("runSyncJob", () => {
 
     await expect(runSyncJob(job, [link("a")], { store, rateLimitStore })).resolves.toBeUndefined();
   });
+
+  it("mantiene vivo l'heartbeat mentre syncAccountLink è in attesa, e si ferma alla fine", async () => {
+    vi.useFakeTimers();
+    try {
+      const job = await store.createJob({ userId: "u1", kind: "manual-sync", accounts: [queuedAccount("a", "A")] });
+      const updateSpy = vi.spyOn(store, "updateAccount");
+
+      let resolveSync: (value: { status: "expired" }) => void = () => {};
+      const syncPromise = new Promise<{ status: "expired" }>((resolve) => (resolveSync = resolve));
+      vi.mocked(syncAccountLink).mockReturnValue(syncPromise);
+
+      const runPromise = runSyncJob(job, [link("a")], { store, rateLimitStore });
+
+      // 3 tick da 15s: il keep-alive deve aver scritto almeno 3 patch vuote mentre la chiamata pende.
+      for (let i = 0; i < 3; i++) {
+        await vi.advanceTimersByTimeAsync(15_000);
+      }
+      const heartbeatCallsWhilePending = updateSpy.mock.calls.filter(
+        ([, , , patch]) => Object.keys(patch).length === 0
+      ).length;
+      expect(heartbeatCallsWhilePending).toBeGreaterThanOrEqual(3);
+
+      resolveSync({ status: "expired" });
+      await runPromise;
+
+      const callsAtEnd = updateSpy.mock.calls.length;
+      await vi.advanceTimersByTimeAsync(45_000);
+      expect(updateSpy.mock.calls.length).toBe(callsAtEnd);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

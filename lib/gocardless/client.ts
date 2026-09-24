@@ -6,6 +6,8 @@ import { gocardlessToken } from "@/lib/db/schema/bank-connections";
 const BASE_URL = "https://bankaccountdata.gocardless.com/api/v2";
 const TOKEN_ROW_ID = "singleton";
 const TOKEN_EXPIRY_MARGIN_MS = 60_000;
+/** Oltre questo tempo una chiamata GoCardless fallisce come errore invece di restare appesa fino al maxDuration della route. */
+const GOCARDLESS_REQUEST_TIMEOUT_MS = 120_000;
 
 /** Cache di modulo: vive quanto l'istanza della funzione; la riga DB resta la cache condivisa tra istanze. */
 let memoryToken: { accessToken: string; expiresAt: number } | null = null;
@@ -81,6 +83,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<GoCardl
   const accessToken = await getAccessToken();
   const response = await fetch(`${BASE_URL}${path}`, {
     ...init,
+    signal: init.signal ?? AbortSignal.timeout(GOCARDLESS_REQUEST_TIMEOUT_MS),
     headers: { ...init.headers, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
   });
 

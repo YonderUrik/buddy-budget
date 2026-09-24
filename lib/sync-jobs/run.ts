@@ -1,7 +1,7 @@
 import { syncAccountLink, type SyncProgress, type SyncResult, type SyncableLink } from "@/lib/gocardless/sync";
 import type { RateLimitStore } from "@/lib/gocardless/rate-limit";
 import type { SyncJobStore } from "./store";
-import type { SyncJobAccountPatch } from "./types";
+import { SYNC_JOB_HEARTBEAT_MS, type SyncJobAccountPatch } from "./types";
 
 export interface RunSyncJobDeps {
   store: SyncJobStore;
@@ -39,6 +39,13 @@ async function runAccount(job: { id: string; userId: string }, link: SyncableLin
     }
   };
 
+  // Le chiamate GoCardless (saldo/movimenti) possono restare in attesa a lungo senza che
+  // syncAccountLink emetta un progress: senza questo keep-alive l'heartbeat scade e il job
+  // sembra interrotto pur essendo ancora in corso.
+  const heartbeat = setInterval(() => {
+    update({});
+  }, SYNC_JOB_HEARTBEAT_MS);
+
   try {
     const result = await syncAccountLink(link, deps.rateLimitStore, (progress) => update(progressToPatch(progress)));
     await update(resultToPatch(result));
@@ -46,6 +53,7 @@ async function runAccount(job: { id: string; userId: string }, link: SyncableLin
     console.error(`Sync fallito per il conto ${link.accountId}`, error);
     await update({ phase: "error" });
   } finally {
+    clearInterval(heartbeat);
     try {
       await deps.store.releaseAccountLock(link.accountId);
     } catch (error) {

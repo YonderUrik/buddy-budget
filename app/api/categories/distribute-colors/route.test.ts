@@ -55,9 +55,9 @@ describe("POST /api/categories/distribute-colors", () => {
 
   it("assegna colori distinti alle categorie non-fallback e non tocca la fallback", async () => {
     await db.insert(categories).values([
-      { userId, name: "Affitto", type: "fissa", color: "blue" },
-      { userId, name: "Svago", type: "variabile", color: "blue" },
-      { userId, name: "Da categorizzare", type: "variabile", color: "red", isFallback: true },
+      { userId, name: "Affitto", type: "dovuta", color: "blue" },
+      { userId, name: "Svago", type: "voluta", color: "blue" },
+      { userId, name: "Da categorizzare", type: "voluta", color: "red", isFallback: true },
     ]);
 
     const response = await POST(new NextRequest("http://localhost/api/categories/distribute-colors", { method: "POST" }));

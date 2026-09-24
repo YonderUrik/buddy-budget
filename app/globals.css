@@ -16,6 +16,11 @@
   --color-neg-soft: var(--neg-soft);
   --color-text-2: var(--text-2);
   --color-text-3: var(--text-3);
+  --color-group-dovuta: var(--group-dovuta);
+  --color-group-voluta: var(--group-voluta);
+  --color-group-futuro: var(--group-futuro);
+  --color-group-saltuaria: var(--group-saltuaria);
+  --color-group-uncategorized: var(--group-uncategorized);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -85,6 +90,11 @@
   --chart-3: #41705f;
   --chart-4: #739688;
   --chart-5: #b6c4bc;
+  --group-dovuta: #dc2626;
+  --group-voluta: #d97706;
+  --group-futuro: #16a34a;
+  --group-saltuaria: #2563eb;
+  --group-uncategorized: #94a3b8;
   --swatch-slate: #94a3b8;
   --swatch-blue: #3b82f6;
   --swatch-green: #22c55e;
@@ -175,6 +185,11 @@
   --chart-3: #5b9280;
   --chart-4: #427060;
   --chart-5: #2f4940;
+  --group-dovuta: #f87171;
+  --group-voluta: #facc15;
+  --group-futuro: #4ade80;
+  --group-saltuaria: #60a5fa;
+  --group-uncategorized: #64748b;
   --swatch-slate: #94a3b8;
   --swatch-blue: #3b82f6;
   --swatch-green: #22c55e;

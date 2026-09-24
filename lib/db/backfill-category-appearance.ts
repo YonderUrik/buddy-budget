@@ -4,6 +4,7 @@
  * "package"/"slate"/false). Aggiorna per nome esatto contro DEFAULT_CATEGORIES;
  * lascia invariate le categorie che non corrispondono a nessun nome noto.
  * Esegui con: pnpm exec tsx --env-file=.env.local lib/db/backfill-category-appearance.ts
+ * Obsoleto dopo il reset categorie a gruppi di spesa (lib/db/reset-categories.ts, 2026-09-22): conservato solo come storico.
  */
 
 import { and, eq } from "drizzle-orm";

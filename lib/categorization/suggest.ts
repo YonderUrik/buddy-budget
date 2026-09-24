@@ -1,5 +1,6 @@
 import { isDirectionCompatible } from "./match-rule";
 import { jaccardSimilarity, merchantKey, merchantKeyTokens } from "./merchant-key";
+import type { CategoryType } from "@/lib/categories/groups";
 
 const SIMILARITY_THRESHOLD = 0.5;
 
@@ -16,7 +17,7 @@ export interface SuggestTransaction {
 
 export interface SuggestCategory {
   id: string;
-  type: "fissa" | "variabile" | "entrata";
+  type: CategoryType;
   isFallback: boolean;
 }
 

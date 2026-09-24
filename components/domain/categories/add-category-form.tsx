@@ -5,14 +5,9 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateCategoryMutation } from "@/lib/queries/categories";
-
-const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
-  fissa: "Fissa",
-  variabile: "Variabile",
-  entrata: "Entrata",
-};
+import { DEFAULT_NEW_CATEGORY_TYPE, type CategoryType } from "@/lib/categories/groups";
+import { CategoryTypeSelect } from "./category-type-select";
 
 export interface AddCategoryFormProps {
   /** Callback richiamata alla creazione con successo della categoria. */
@@ -22,7 +17,7 @@ export interface AddCategoryFormProps {
 export function AddCategoryForm({ onSuccess }: AddCategoryFormProps) {
   const createMutation = useCreateCategoryMutation();
   const [name, setName] = React.useState("");
-  const [type, setType] = React.useState<"fissa" | "variabile" | "entrata">("variabile");
+  const [type, setType] = React.useState<CategoryType>(DEFAULT_NEW_CATEGORY_TYPE);
   const [error, setError] = React.useState<string | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
@@ -39,7 +34,7 @@ export function AddCategoryForm({ onSuccess }: AddCategoryFormProps) {
       {
         onSuccess: () => {
           setName("");
-          setType("variabile");
+          setType(DEFAULT_NEW_CATEGORY_TYPE);
           onSuccess?.();
         },
         onError: (mutationError) => setError(mutationError.message),
@@ -64,16 +59,7 @@ export function AddCategoryForm({ onSuccess }: AddCategoryFormProps) {
 
       <div className="flex flex-col gap-1">
         <label className="text-xs font-medium text-foreground">Tipo</label>
-        <Select value={type} onValueChange={(value) => value && setType(value as "fissa" | "variabile" | "entrata")}>
-          <SelectTrigger className="w-32">
-            <SelectValue>{(value: "fissa" | "variabile" | "entrata") => TYPE_LABELS[value]}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="fissa">Fissa</SelectItem>
-            <SelectItem value="variabile">Variabile</SelectItem>
-            <SelectItem value="entrata">Entrata</SelectItem>
-          </SelectContent>
-        </Select>
+        <CategoryTypeSelect value={type} onChange={setType} className="w-36" />
       </div>
 
       <Button type="submit" disabled={createMutation.isPending}>

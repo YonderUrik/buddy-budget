@@ -20,7 +20,7 @@ export async function getFallbackCategoryId(userId: string): Promise<string> {
     .values({
       userId,
       name: FALLBACK_CATEGORY_NAME,
-      type: "variabile",
+      type: "voluta", // valore arbitrario: la fallback non viene mai classificata per type
       color: "red",
       icon: "help-circle",
       isFallback: true,

@@ -1,11 +1,14 @@
 import type { CategoryAmount } from "@/lib/calc/expenses";
+import { EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY, type CategoryGroupKey } from "@/lib/categories/groups";
 
-const TYPE_ORDER: Record<CategoryAmount["type"], number> = { fissa: 0, variabile: 1 };
+const GROUP_ORDER = Object.fromEntries(
+  [...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY].map((key, index) => [key, index])
+) as Record<CategoryGroupKey, number>;
 
-/** Ordina le categorie per tipo (fissa prima di variabile) e, dentro ogni gruppo, per importo speso decrescente. */
+/** Ordina le categorie per gruppo (Dovute → Volute → Te futuro → Saltuarie → Da categorizzare) e, dentro ogni gruppo, per importo decrescente. */
 export function sortCategoryAmounts(categoryAmounts: CategoryAmount[]): CategoryAmount[] {
   return [...categoryAmounts].sort((a, b) => {
-    if (a.type !== b.type) return TYPE_ORDER[a.type] - TYPE_ORDER[b.type];
+    if (a.group !== b.group) return GROUP_ORDER[a.group] - GROUP_ORDER[b.group];
     return b.amount - a.amount;
   });
 }

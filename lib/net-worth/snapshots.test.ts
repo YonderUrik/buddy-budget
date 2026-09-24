@@ -44,7 +44,7 @@ describe("net-worth snapshots", () => {
     userId = user.id;
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Varie", type: "variabile" })
+      .values({ userId, name: "Varie", type: "voluta" })
       .returning();
     categoryId = category.id;
   });

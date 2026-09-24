@@ -157,7 +157,7 @@ describe("PATCH/DELETE /api/accounts/[id]", () => {
       .returning();
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile" })
+      .values({ userId, name: "Da categorizzare", type: "voluta" })
       .returning();
     await db.insert(transactions).values({
       userId,

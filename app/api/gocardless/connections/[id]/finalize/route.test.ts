@@ -141,6 +141,43 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
     expect(link.connectionId).toBe(connectionId);
   });
 
+  it("segnala 'already-running' e non tocca il lock se il conto 'existing' è già in sincronizzazione altrove", async () => {
+    const [existingAccount] = await db
+      .insert(accounts)
+      .values({ userId, name: "Vecchio Conto Auto", type: "Conto corrente", balance: "0", source: "auto" })
+      .returning();
+    const [oldConnection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "INST_1", institutionName: "Banca Test", status: "expired" })
+      .returning();
+    await db
+      .insert(bankAccountLinks)
+      .values({ connectionId: oldConnection.id, accountId: existingAccount.id, externalAccountId: "old-ext" });
+
+    const lockedElsewhere = await redisSyncJobStore.acquireAccountLock(existingAccount.id);
+    expect(lockedElsewhere).toBe(true);
+
+    const response = await postFinalize([
+      {
+        externalAccountId: "ext-new",
+        name: "Conto Corrente",
+        type: "Conto corrente",
+        mode: "existing",
+        existingAccountId: existingAccount.id,
+      },
+    ]);
+    expect(response.status).toBe(201);
+    const { jobId } = await response.json();
+    await Promise.all(afterTasks);
+
+    expect(syncAccountLink).not.toHaveBeenCalled();
+    const job = (await redisSyncJobStore.listJobs(userId)).find((j) => j.id === jobId);
+    expect(job?.accounts[0]).toMatchObject({ phase: "error", errorReason: "already-running" });
+
+    // Il lock apparteneva a un'altra sincronizzazione: finalize non deve averlo rilasciato.
+    expect(await redisSyncJobStore.acquireAccountLock(existingAccount.id)).toBe(false);
+  });
+
   it("risponde 400 se 'existing' senza existingAccountId", async () => {
     const response = await POST(
       new NextRequest(`http://localhost/api/gocardless/connections/${connectionId}/finalize`, {

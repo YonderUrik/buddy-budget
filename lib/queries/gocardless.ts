@@ -3,8 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import type { CreateConnectionInput, FinalizeSelectionInput } from "@/lib/validation/gocardless";
-import { buildSyncErrorMessage, buildSyncSummaryMessage } from "@/lib/gocardless/sync-messages";
-import type { SyncErrorInfo, SyncSuccessResult } from "@/lib/gocardless/sync-messages";
+import { buildSyncErrorMessage } from "@/lib/gocardless/sync-messages";
+import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";
+import { SYNC_JOBS_QUERY_KEY } from "@/lib/queries/sync-jobs";
 
 export interface Institution {
   id: string;
@@ -91,7 +92,7 @@ export function useConnectionAccountsQuery(connectionId: string) {
 export function useFinalizeConnectionMutation(connectionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: FinalizeSelectionInput) => {
+    mutationFn: async (input: FinalizeSelectionInput): Promise<{ jobId: string }> => {
       const response = await fetch(`/api/gocardless/connections/${connectionId}/finalize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,6 +107,7 @@ export function useFinalizeConnectionMutation(connectionId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["gocardless", "connections", "status"] });
+      queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },
   });
 }
@@ -116,21 +118,18 @@ export class SyncNotAvailableError extends Error {
   }
 }
 
-/** Avvia un sync manuale per un conto: mostra un toast con l'esito e invalida conti/transazioni/stato connessioni. */
+/** Avvia un sync manuale come job in background; l'avanzamento compare nel pannello globale. Gli errori immediati vanno in un toast. */
 export function useSyncAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (accountId: string): Promise<SyncSuccessResult> => {
+    mutationFn: async (accountId: string): Promise<{ jobId: string }> => {
       const response = await fetch(`/api/gocardless/accounts/${accountId}/sync`, { method: "POST" });
-      const body = await response.json();
+      const body = await response.json().catch(() => ({ status: "unknown" }));
       if (!response.ok) throw new SyncNotAvailableError(body);
-      return body as SyncSuccessResult;
+      return body as { jobId: string };
     },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["gocardless", "connections", "status"] });
-      toast.success(buildSyncSummaryMessage(result));
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },
     onError: (error: unknown) => {
       const info: SyncErrorInfo = error instanceof SyncNotAvailableError ? error.info : { status: "unknown" };

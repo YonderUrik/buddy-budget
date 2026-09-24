@@ -6,6 +6,8 @@ export type SyncErrorInfo =
   | { status: "not-eligible"; nextEligibleAt: string | null; syncsRemainingToday: number }
   | { status: "gocardless-limited" }
   | { status: "expired" }
+  | { status: "already-running" }
+  | { status: "unavailable" }
   | { status: "unknown" };
 
 function pluralize(count: number, singular: string, plural: string): string {
@@ -43,6 +45,10 @@ export function buildSyncErrorMessage(error: SyncErrorInfo): string {
       return "La banca ha temporaneamente esaurito le chiamate disponibili. Riprova più tardi.";
     case "expired":
       return "Sessione con la banca scaduta. Riconnetti il conto per sincronizzare.";
+    case "already-running":
+      return "Sincronizzazione già in corso per questo conto.";
+    case "unavailable":
+      return "Servizio di sincronizzazione temporaneamente non disponibile. Riprova tra poco.";
     default:
       return "Impossibile completare la sincronizzazione. Riprova più tardi.";
   }

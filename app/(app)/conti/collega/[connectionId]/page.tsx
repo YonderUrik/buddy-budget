@@ -79,7 +79,7 @@ export default function CollegaBancaPage() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 p-6">
+    <div className="mx-auto flex max-w-2xl flex-col gap-4 p-4 sm:p-6">
       <h1 className="font-heading text-2xl font-medium text-foreground">Conti trovati</h1>
       <p className="text-sm text-muted-foreground">
         Seleziona quali conti importare. Puoi crearne di nuovi o ricollegarli a un conto già esistente.
@@ -87,26 +87,35 @@ export default function CollegaBancaPage() {
 
       <div className="flex flex-col gap-3">
         {data.externalAccounts.map((account) => (
-          <div key={account.externalAccountId} className="flex items-center gap-3 rounded-xl border border-border p-3">
-            <Checkbox
-              checked={selected[account.externalAccountId] ?? false}
-              onCheckedChange={(checked) =>
-                setSelected((prev) => ({ ...prev, [account.externalAccountId]: checked === true }))
-              }
-            />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-foreground">
-                {account.details.name ?? account.details.iban ?? account.externalAccountId}
-              </p>
-              {account.details.iban && <p className="text-xs text-muted-foreground">{account.details.iban}</p>}
-            </div>
+          <div
+            key={account.externalAccountId}
+            className="flex flex-col gap-3 rounded-xl border border-border p-3 sm:flex-row sm:items-center"
+          >
+            <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+              <Checkbox
+                checked={selected[account.externalAccountId] ?? false}
+                onCheckedChange={(checked) =>
+                  setSelected((prev) => ({ ...prev, [account.externalAccountId]: checked === true }))
+                }
+              />
+              <span className="flex min-w-0 flex-col">
+                <span className="text-sm font-medium break-words text-foreground">
+                  {account.details.name ?? account.details.iban ?? account.externalAccountId}
+                </span>
+                {account.details.iban && (
+                  <span className="text-xs break-all text-muted-foreground tabular-nums">
+                    {account.details.iban}
+                  </span>
+                )}
+              </span>
+            </label>
             <Select
               value={targets[account.externalAccountId] ?? NEW_ACCOUNT_VALUE}
               onValueChange={(value) =>
                 setTargets((prev) => ({ ...prev, [account.externalAccountId]: value as string }))
               }
             >
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full min-w-0 sm:w-56">
                 <SelectValue>
                   {(value: string) =>
                     value === NEW_ACCOUNT_VALUE

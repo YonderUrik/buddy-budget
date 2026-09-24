@@ -54,8 +54,10 @@ const CUSTOM_TYPE_VALUE = "__custom__";
 /** Testo del `title` nativo del bottone sync, spiega perché è disabilitato quando non eleggibile. */
 function buildSyncButtonTitle(
   syncInfo: AccountRowProps["syncInfo"],
-  needsReconnect?: boolean
+  needsReconnect: boolean | undefined,
+  syncing: boolean
 ): string {
+  if (syncing) return "Sincronizzazione in corso";
   if (needsReconnect) return "Riconnetti il conto per sincronizzare";
   if (!syncInfo) return "Info di sincronizzazione non disponibili";
   if (syncInfo.eligible) return "Sincronizza ora";
@@ -83,9 +85,18 @@ export interface AccountRowProps {
     nextEligibleAt: string | null;
     syncsRemainingToday: number;
   };
+  /** True se il conto ha un sync in corso (anche partito da un'altra pagina o scheda). */
+  syncing?: boolean;
 }
 
-export function AccountRow({ account, currency, needsReconnect, onReconnect, syncInfo }: AccountRowProps) {
+export function AccountRow({
+  account,
+  currency,
+  needsReconnect,
+  onReconnect,
+  syncInfo,
+  syncing = false,
+}: AccountRowProps) {
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
   const deleteMutation = useDeleteAccountMutation();
@@ -234,12 +245,12 @@ export function AccountRow({ account, currency, needsReconnect, onReconnect, syn
           <button
             type="button"
             onClick={() => syncMutation.mutate(account.id)}
-            disabled={!syncInfo?.eligible || syncMutation.isPending || needsReconnect}
-            title={buildSyncButtonTitle(syncInfo, needsReconnect)}
+            disabled={!syncInfo?.eligible || syncMutation.isPending || syncing || needsReconnect}
+            title={buildSyncButtonTitle(syncInfo, needsReconnect, syncing)}
             aria-label="Sincronizza ora"
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <RefreshCw size={15} className={syncMutation.isPending ? "animate-spin" : undefined} />
+            <RefreshCw size={15} className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />
           </button>
         )}
 

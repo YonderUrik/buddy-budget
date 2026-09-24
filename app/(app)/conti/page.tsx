@@ -17,6 +17,8 @@ import {
 import { authClient } from "@/lib/auth/client";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
+import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
+import { isAccountSyncing } from "@/lib/sync-jobs/view";
 import { Plus } from "lucide-react";
 
 export default function ContiPage() {
@@ -24,6 +26,7 @@ export default function ContiPage() {
   const currency = session?.user.currency ?? "EUR";
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const { data: connectionStatuses } = useBankConnectionsStatusQuery();
+  const { data: syncJobs } = useSyncJobsQuery();
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [reconnectTrigger, setReconnectTrigger] = React.useState(0);
 
@@ -95,6 +98,7 @@ export default function ContiPage() {
               currency={currency}
               needsReconnect={reconnectAccountIds.has(account.id)}
               syncInfo={syncInfoByAccountId.get(account.id)}
+              syncing={isAccountSyncing(syncJobs ?? [], account.id)}
               onReconnect={() => {
                 setReconnectTrigger((n) => n + 1);
                 setCreateDialogOpen(true);

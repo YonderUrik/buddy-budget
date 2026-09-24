@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SWATCH_COLORS, type SwatchColor } from "./shared-colors";
+import { CATEGORY_TYPES } from "@/lib/categories/groups";
 
 export const CATEGORY_COLORS = SWATCH_COLORS;
 export type CategoryColor = SwatchColor;
@@ -21,7 +22,7 @@ export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 
 export const createCategorySchema = z.object({
   name: z.string().trim().min(1),
-  type: z.enum(["fissa", "variabile", "entrata"]),
+  type: z.enum(CATEGORY_TYPES),
   color: z.enum(CATEGORY_COLORS).optional(),
   icon: z.enum(CATEGORY_ICONS).optional(),
 });
@@ -30,7 +31,7 @@ export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
 export const updateCategorySchema = z
   .object({
     name: z.string().trim().min(1).optional(),
-    type: z.enum(["fissa", "variabile", "entrata"]).optional(),
+    type: z.enum(CATEGORY_TYPES).optional(),
     color: z.enum(CATEGORY_COLORS).optional(),
     icon: z.enum(CATEGORY_ICONS).optional(),
   })

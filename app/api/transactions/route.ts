@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   return Response.json(rows);
 }
 
-/** POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta (entrata → positivo, fissa/variabile → negato). */
+/** POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta (entrata → positivo, gruppi di spesa → negato). */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {

@@ -1,5 +1,6 @@
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Category } from "@/lib/db/schema/categories";
+import { EXPENSE_GROUP_KEYS, EXPENSE_GROUPS, categoryGroupKey, isExpenseGroup, type ExpenseGroup } from "@/lib/categories/groups";
 import {
   addMonths,
   effectiveAmount,
@@ -202,7 +203,7 @@ export interface IncomeSourceAmount {
  * Entrate per categoria nel periodo, ordinate decrescenti, con quota % sul totale entrate.
  * Esclude le categorie a importo zero. Raggruppa per `categoryId` effettivo delle transazioni
  * (non solo le categorie di tipo "entrata"): un'entrata ancora sulla categoria fallback "Da
- * categorizzare" (type "variabile") o su una categoria mal classificata compare comunque come
+ * categorizzare" (type "voluta", instradata per `isFallback`) o su una categoria mal classificata compare comunque come
  * riga propria, con il nome/colore/icona reali della categoria — altrimenti il totale usato
  * come denominatore includerebbe entrate mai mostrate come riga, e le quote % non
  * sommerebbero a 100%.
@@ -237,23 +238,20 @@ export function computeIncomeSources(
     .sort((a, b) => b.amount - a.amount);
 }
 
-/** Riga di `computeWhereItGoes`: una delle quattro voci fisse/variabili/non classificato/risparmio del mese. */
+/** Riga di `computeWhereItGoes`: un gruppo di spesa, le spese non classificate o l'avanzo del mese. */
 export interface WhereItGoesEntry {
-  key: "fisse" | "variabili" | "nonClassificato" | "risparmio";
+  key: ExpenseGroup | "nonClassificato" | "avanzo";
   label: string;
   amount: number;
-  /** null se le entrate del mese sono zero (non calcolabile). Il risparmio può essere negativo (nessun floor a zero). */
+  /** null se le entrate del mese sono zero (non calcolabile). L'avanzo può essere negativo (nessun floor a zero). */
   quotaPct: number | null;
 }
 
 /**
- * "Dove va ogni euro" del mese di riferimento: spese fisse, spese variabili, spese su
- * categorie non classificabili come fisse/variabili (categoria assente dall'array passato,
- * o erroneamente di tipo "entrata"), e risparmio (entrate - fisse - variabili - non
- * classificato), con quota % sul totale entrate. Le spese non classificabili hanno una
- * riga dedicata proprio per non essere assorbite silenziosamente nel risparmio. Entrate e
- * uscite contano solo l'importo effettivo post-"Dividi" (`effectiveAmount`), coerentemente
- * con Spese.
+ * "Dove va ogni euro" del mese di riferimento: spesa per ciascun gruppo (Dovute, Volute, Te futuro,
+ * Saltuarie — Te futuro conta come spesa), spese non classificabili (categoria fallback, assente
+ * dall'array o erroneamente "entrata") e avanzo (entrate − tutte le uscite), con quota % sul totale
+ * entrate. Entrate e uscite contano l'importo effettivo post-"Dividi" (`effectiveAmount`).
  */
 export function computeWhereItGoes(
   transactions: Transaction[],
@@ -262,31 +260,31 @@ export function computeWhereItGoes(
 ): WhereItGoesEntry[] {
   const monthRange: DateRange = { from: startOfMonth(referenceDate), to: endOfMonth(referenceDate) };
   const inMonth = transactions.filter((t) => isWithinRange(parseDateOnly(t.date), monthRange));
-  const categoryTypeById = new Map(categories.map((c) => [c.id, c.type] as const));
+  const categoryById = new Map(categories.map((c) => [c.id, c] as const));
 
   const entrate = inMonth.filter(isIncome).reduce((sum, t) => sum + effectiveAmount(t), 0);
-  const expenseTransactions = inMonth.filter(isExpense);
 
-  const fisse = expenseTransactions
-    .filter((t) => categoryTypeById.get(t.categoryId) === "fissa")
-    .reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0);
-  const variabili = expenseTransactions
-    .filter((t) => categoryTypeById.get(t.categoryId) === "variabile")
-    .reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0);
-  const nonClassificato = expenseTransactions
-    .filter((t) => {
-      const type = categoryTypeById.get(t.categoryId);
-      return type !== "fissa" && type !== "variabile";
-    })
-    .reduce((sum, t) => sum + Math.abs(effectiveAmount(t)), 0);
-  const risparmio = entrate - fisse - variabili - nonClassificato;
+  const groupTotals = Object.fromEntries(EXPENSE_GROUP_KEYS.map((key) => [key, 0])) as Record<ExpenseGroup, number>;
+  let nonClassificato = 0;
+  for (const t of inMonth.filter(isExpense)) {
+    const category = categoryById.get(t.categoryId);
+    const group = category ? categoryGroupKey(category) : null;
+    const amount = Math.abs(effectiveAmount(t));
+    if (group !== null && isExpenseGroup(group)) groupTotals[group] += amount;
+    else nonClassificato += amount;
+  }
+  const totaleUscite = EXPENSE_GROUP_KEYS.reduce((sum, key) => sum + groupTotals[key], 0) + nonClassificato;
 
   const quotaOf = (amount: number) => (entrate > 0 ? (amount / entrate) * 100 : null);
   return [
-    { key: "fisse", label: "Spese fisse", amount: fisse, quotaPct: quotaOf(fisse) },
-    { key: "variabili", label: "Spese variabili", amount: variabili, quotaPct: quotaOf(variabili) },
-    { key: "nonClassificato", label: "Non classificato", amount: nonClassificato, quotaPct: quotaOf(nonClassificato) },
-    { key: "risparmio", label: "Risparmio", amount: risparmio, quotaPct: quotaOf(risparmio) },
+    ...EXPENSE_GROUP_KEYS.map((key) => ({
+      key,
+      label: EXPENSE_GROUPS[key].label,
+      amount: groupTotals[key],
+      quotaPct: quotaOf(groupTotals[key]),
+    })),
+    { key: "nonClassificato" as const, label: "Non classificato", amount: nonClassificato, quotaPct: quotaOf(nonClassificato) },
+    { key: "avanzo" as const, label: "Avanzo", amount: entrate - totaleUscite, quotaPct: quotaOf(entrate - totaleUscite) },
   ];
 }
 

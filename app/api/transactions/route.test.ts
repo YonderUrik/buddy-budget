@@ -54,7 +54,7 @@ describe("GET/POST /api/transactions", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     categoryId = category.id;
 
@@ -79,7 +79,7 @@ describe("GET/POST /api/transactions", () => {
 
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Spesa altro utente", type: "variabile" })
+      .values({ userId: otherUserId, name: "Spesa altro utente", type: "voluta" })
       .returning();
     otherCategoryId = otherCategory.id;
   });

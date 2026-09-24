@@ -71,7 +71,7 @@ describe("GET /api/net-worth/snapshots", () => {
       .insert(accounts)
       .values({ userId, name: "Conto Auto", type: "Conto corrente", balance: "1000.00", source: "auto" })
       .returning();
-    const [category] = await db.insert(categories).values({ userId, name: "Varie", type: "variabile" }).returning();
+    const [category] = await db.insert(categories).values({ userId, name: "Varie", type: "voluta" }).returning();
     await db.insert(transactions).values({
       userId,
       accountId: account.id,

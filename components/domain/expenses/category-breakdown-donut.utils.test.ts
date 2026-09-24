@@ -7,7 +7,7 @@ function makeEntry(overrides: Partial<CategoryAmount>): CategoryAmount {
   return {
     categoryId: "id",
     name: "Categoria",
-    type: "variabile",
+    group: "voluta",
     amount: 0,
     color: "slate",
     icon: "package",
@@ -16,28 +16,29 @@ function makeEntry(overrides: Partial<CategoryAmount>): CategoryAmount {
 }
 
 describe("sortCategoryAmounts", () => {
-  it("mette tutte le categorie fisse prima delle variabili", () => {
+  it("ordina per gruppo: dovute, volute, te futuro, saltuarie, da categorizzare in coda", () => {
     const input = [
-      makeEntry({ categoryId: "v1", type: "variabile", amount: 100 }),
-      makeEntry({ categoryId: "f1", type: "fissa", amount: 10 }),
+      makeEntry({ categoryId: "fb", group: "daCategorizzare", amount: 999 }),
+      makeEntry({ categoryId: "sal", group: "saltuaria", amount: 10 }),
+      makeEntry({ categoryId: "vol", group: "voluta", amount: 100 }),
+      makeEntry({ categoryId: "fut", group: "futuro", amount: 5 }),
+      makeEntry({ categoryId: "dov", group: "dovuta", amount: 1 }),
     ];
-    const result = sortCategoryAmounts(input);
-    expect(result.map((e) => e.categoryId)).toEqual(["f1", "v1"]);
+    expect(sortCategoryAmounts(input).map((e) => e.categoryId)).toEqual(["dov", "vol", "fut", "sal", "fb"]);
   });
 
-  it("dentro lo stesso tipo ordina per importo decrescente", () => {
+  it("dentro lo stesso gruppo ordina per importo decrescente", () => {
     const input = [
-      makeEntry({ categoryId: "f-low", type: "fissa", amount: 10 }),
-      makeEntry({ categoryId: "f-high", type: "fissa", amount: 50 }),
+      makeEntry({ categoryId: "d-low", group: "dovuta", amount: 10 }),
+      makeEntry({ categoryId: "d-high", group: "dovuta", amount: 50 }),
     ];
-    const result = sortCategoryAmounts(input);
-    expect(result.map((e) => e.categoryId)).toEqual(["f-high", "f-low"]);
+    expect(sortCategoryAmounts(input).map((e) => e.categoryId)).toEqual(["d-high", "d-low"]);
   });
 
   it("mantiene le categorie a importo zero nell'ordinamento", () => {
     const input = [
-      makeEntry({ categoryId: "zero", type: "variabile", amount: 0 }),
-      makeEntry({ categoryId: "speso", type: "variabile", amount: 20 }),
+      makeEntry({ categoryId: "zero", group: "voluta", amount: 0 }),
+      makeEntry({ categoryId: "speso", group: "voluta", amount: 20 }),
     ];
     const result = sortCategoryAmounts(input);
     expect(result.map((e) => e.categoryId)).toEqual(["speso", "zero"]);
@@ -77,7 +78,7 @@ function makeLegendEntry(overrides: Partial<LegendEntry>): LegendEntry {
   return {
     categoryId: "id",
     name: "Categoria",
-    type: "variabile",
+    group: "voluta",
     amount: 0,
     color: "slate",
     icon: "package",

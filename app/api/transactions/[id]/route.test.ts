@@ -63,19 +63,19 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     categoryId = category.id;
 
     const [otherCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Svago", type: "variabile" })
+      .values({ userId, name: "Svago", type: "voluta" })
       .returning();
     otherCategoryId = otherCategory.id;
 
     const [otherUserCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
     otherUserCategoryId = otherUserCategory.id;
 
@@ -87,7 +87,7 @@ describe("PATCH/DELETE /api/transactions/[id]", () => {
 
     const [fallbackCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
     fallbackCategoryId = fallbackCategory.id;
   });

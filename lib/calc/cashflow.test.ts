@@ -38,7 +38,7 @@ function makeCategory(overrides: Partial<Category>): Category {
     id: "category-1",
     userId: "user-1",
     name: "Categoria",
-    type: "variabile",
+    type: "voluta",
     color: "slate",
     icon: "package",
     isFallback: false,
@@ -256,7 +256,7 @@ describe("computeIncomeSources", () => {
     const fallback = makeCategory({
       id: "cat-fallback",
       name: "Da categorizzare",
-      type: "variabile",
+      type: "voluta",
       isFallback: true,
     });
     const transactions = [
@@ -291,78 +291,95 @@ describe("computeIncomeSources", () => {
 });
 
 describe("computeWhereItGoes", () => {
-  it("calcola fisse/variabili/risparmio del mese di riferimento con quote sul totale entrate", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
-    const variabile = makeCategory({ id: "cat-variabile", type: "variabile" });
-    const transactions = [
-      makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
-      makeTransaction({ categoryId: "cat-variabile", amount: "-300.00", date: "2026-02-10" }),
-      makeTransaction({ categoryId: "category-1", amount: "1500.00", date: "2026-02-01" }),
-    ];
-
-    const entries = computeWhereItGoes(transactions, [fissa, variabile], new Date(2026, 1, 15));
-
-    expect(entries.find((e) => e.key === "fisse")?.amount).toBe(400);
-    expect(entries.find((e) => e.key === "fisse")?.quotaPct).toBeCloseTo((400 / 1500) * 100);
-    expect(entries.find((e) => e.key === "variabili")?.amount).toBe(300);
-    expect(entries.find((e) => e.key === "risparmio")?.amount).toBe(800);
+  it("restituisce le sei voci nell'ordine Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo", () => {
+    const entries = computeWhereItGoes([], [], new Date(2026, 1, 15));
+    expect(entries.map((e) => e.key)).toEqual(["dovuta", "voluta", "futuro", "saltuaria", "nonClassificato", "avanzo"]);
+    expect(entries.map((e) => e.label)).toEqual(["Dovute", "Volute", "Te futuro", "Saltuarie", "Non classificato", "Avanzo"]);
   });
 
-  it("il risparmio può essere negativo se si spende più di quanto entra", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+  it("somma per gruppo con quote sul totale entrate; Te futuro conta come spesa", () => {
+    const categories = [
+      makeCategory({ id: "cat-dov", type: "dovuta" }),
+      makeCategory({ id: "cat-vol", type: "voluta" }),
+      makeCategory({ id: "cat-fut", type: "futuro" }),
+      makeCategory({ id: "cat-sal", type: "saltuaria" }),
+    ];
     const transactions = [
-      makeTransaction({ categoryId: "cat-fissa", amount: "-2000.00", date: "2026-02-05" }),
+      makeTransaction({ categoryId: "cat-dov", amount: "-400.00", date: "2026-02-05" }),
+      makeTransaction({ categoryId: "cat-vol", amount: "-300.00", date: "2026-02-10" }),
+      makeTransaction({ categoryId: "cat-fut", amount: "-200.00", date: "2026-02-11" }),
+      makeTransaction({ categoryId: "cat-sal", amount: "-100.00", date: "2026-02-12" }),
       makeTransaction({ categoryId: "category-1", amount: "1500.00", date: "2026-02-01" }),
     ];
 
-    const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
+    const entries = computeWhereItGoes(transactions, categories, new Date(2026, 1, 15));
+    const byKey = Object.fromEntries(entries.map((e) => [e.key, e]));
 
-    expect(entries.find((e) => e.key === "risparmio")?.amount).toBe(-500);
+    expect(byKey.dovuta.amount).toBe(400);
+    expect(byKey.dovuta.quotaPct).toBeCloseTo((400 / 1500) * 100);
+    expect(byKey.voluta.amount).toBe(300);
+    expect(byKey.futuro.amount).toBe(200);
+    expect(byKey.saltuaria.amount).toBe(100);
+    expect(byKey.avanzo.amount).toBe(500);
+  });
+
+  it("l'avanzo può essere negativo se si spende più di quanto entra", () => {
+    const dovuta = makeCategory({ id: "cat-dov", type: "dovuta" });
+    const transactions = [
+      makeTransaction({ categoryId: "cat-dov", amount: "-2000.00", date: "2026-02-05" }),
+      makeTransaction({ categoryId: "category-1", amount: "1500.00", date: "2026-02-01" }),
+    ];
+    const entries = computeWhereItGoes(transactions, [dovuta], new Date(2026, 1, 15));
+    expect(entries.find((e) => e.key === "avanzo")?.amount).toBe(-500);
   });
 
   it("quotaPct è null quando le entrate del mese sono zero", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
-    const transactions = [makeTransaction({ categoryId: "cat-fissa", amount: "-200.00", date: "2026-02-05" })];
-
-    const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
-
+    const dovuta = makeCategory({ id: "cat-dov", type: "dovuta" });
+    const transactions = [makeTransaction({ categoryId: "cat-dov", amount: "-200.00", date: "2026-02-05" })];
+    const entries = computeWhereItGoes(transactions, [dovuta], new Date(2026, 1, 15));
     expect(entries.every((e) => e.quotaPct === null)).toBe(true);
   });
 
-  it("una spesa su categoria non classificabile (assente dall'array o erroneamente 'entrata') non gonfia il risparmio", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
-    const transactions = [
-      makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
-      makeTransaction({ categoryId: "cat-sconosciuta", amount: "-100.00", date: "2026-02-06" }),
-      makeTransaction({ categoryId: "category-1", amount: "1500.00", date: "2026-02-01" }),
+  it("spese su fallback, su categoria sconosciuta o su categoria 'entrata' finiscono in Non classificato", () => {
+    const categories = [
+      makeCategory({ id: "cat-dov", type: "dovuta" }),
+      makeCategory({ id: "cat-fb", type: "voluta", isFallback: true }),
+      makeCategory({ id: "cat-in", type: "entrata" }),
     ];
-
-    const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
-
-    expect(entries.find((e) => e.key === "nonClassificato")?.amount).toBe(100);
-    expect(entries.find((e) => e.key === "risparmio")?.amount).toBe(1000); // 1500 - 400 - 0 - 100
+    const transactions = [
+      makeTransaction({ categoryId: "cat-dov", amount: "-400.00", date: "2026-02-05" }),
+      makeTransaction({ categoryId: "cat-fb", amount: "-50.00", date: "2026-02-06" }),
+      makeTransaction({ categoryId: "cat-sconosciuta", amount: "-100.00", date: "2026-02-06" }),
+      makeTransaction({ categoryId: "cat-in", amount: "-30.00", date: "2026-02-07" }),
+      makeTransaction({ categoryId: "cat-in", amount: "1500.00", date: "2026-02-01" }),
+    ];
+    const entries = computeWhereItGoes(transactions, categories, new Date(2026, 1, 15));
+    const byKey = Object.fromEntries(entries.map((e) => [e.key, e]));
+    expect(byKey.voluta.amount).toBe(0);
+    expect(byKey.nonClassificato.amount).toBe(180);
+    expect(byKey.avanzo.amount).toBe(920); // 1500 - 400 - 180
   });
 
   it("conta come spesa solo l'importo effettivo post-'Dividi'", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const dovuta = makeCategory({ id: "cat-dov", type: "dovuta" });
     const transactions = [
       makeTransaction({
-        categoryId: "cat-fissa",
+        categoryId: "cat-dov",
         amount: "-400.00",
         excludedAmount: "-150.00",
         date: "2026-02-05",
       }),
     ];
 
-    const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
+    const entries = computeWhereItGoes(transactions, [dovuta], new Date(2026, 1, 15));
 
-    expect(entries.find((e) => e.key === "fisse")?.amount).toBe(250);
+    expect(entries.find((e) => e.key === "dovuta")?.amount).toBe(250);
   });
 
   it("conta come entrata solo la quota effettiva post-'Dividi' nel totale usato come denominatore", () => {
-    const fissa = makeCategory({ id: "cat-fissa", type: "fissa" });
+    const dovuta = makeCategory({ id: "cat-dov", type: "dovuta" });
     const transactions = [
-      makeTransaction({ categoryId: "cat-fissa", amount: "-400.00", date: "2026-02-05" }),
+      makeTransaction({ categoryId: "cat-dov", amount: "-400.00", date: "2026-02-05" }),
       makeTransaction({
         categoryId: "category-1",
         amount: "1000.00",
@@ -371,10 +388,10 @@ describe("computeWhereItGoes", () => {
       }), // effettiva: 600
     ];
 
-    const entries = computeWhereItGoes(transactions, [fissa], new Date(2026, 1, 15));
+    const entries = computeWhereItGoes(transactions, [dovuta], new Date(2026, 1, 15));
 
-    expect(entries.find((e) => e.key === "fisse")?.quotaPct).toBeCloseTo((400 / 600) * 100);
-    expect(entries.find((e) => e.key === "risparmio")?.amount).toBe(200); // 600 - 400
+    expect(entries.find((e) => e.key === "dovuta")?.quotaPct).toBeCloseTo((400 / 600) * 100);
+    expect(entries.find((e) => e.key === "avanzo")?.amount).toBe(200); // 600 - 400
   });
 });
 

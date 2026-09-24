@@ -9,7 +9,6 @@
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,14 +24,10 @@ import { Trash2 } from "lucide-react";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "@/lib/queries/categories";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import type { CategoryType } from "@/lib/categories/groups";
 import { CategoryAvatar } from "./category-avatar";
 import { CategoryIconColorPicker } from "./category-icon-color-picker";
-
-const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
-  fissa: "Fissa",
-  variabile: "Variabile",
-  entrata: "Entrata",
-};
+import { CategoryTypeSelect } from "./category-type-select";
 
 export interface CategoryRowProps {
   category: Category;
@@ -63,9 +58,9 @@ export function CategoryRow({ category }: CategoryRowProps) {
     );
   }
 
-  function commitType(type: string | null) {
-    if (type === null || type === category.type) return;
-    updateMutation.mutate({ id: category.id, input: { type: type as "fissa" | "variabile" | "entrata" } });
+  function commitType(type: CategoryType) {
+    if (type === category.type) return;
+    updateMutation.mutate({ id: category.id, input: { type } });
   }
 
   function handleAppearanceChange(next: { color: CategoryColor; icon: CategoryIcon }) {
@@ -101,18 +96,7 @@ export function CategoryRow({ category }: CategoryRowProps) {
             className="h-7 w-full text-sm font-medium"
             aria-label="Nome categoria"
           />
-          <Select value={category.type} onValueChange={commitType}>
-            <SelectTrigger size="sm" className="h-6 w-fit text-xs">
-              <SelectValue>
-                {(value: "fissa" | "variabile" | "entrata") => TYPE_LABELS[value]}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fissa">Fissa</SelectItem>
-              <SelectItem value="variabile">Variabile</SelectItem>
-              <SelectItem value="entrata">Entrata</SelectItem>
-            </SelectContent>
-          </Select>
+          <CategoryTypeSelect value={category.type} onChange={commitType} size="sm" className="h-6 w-fit text-xs" />
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
       </div>

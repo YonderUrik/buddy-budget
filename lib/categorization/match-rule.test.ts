@@ -7,7 +7,7 @@ function makeRule(overrides: Partial<RuleCandidate> = {}): RuleCandidate {
     matchType: "merchant",
     pattern: "esselunga via roma",
     categoryId: "cat-spesa",
-    categoryType: "variabile",
+    categoryType: "voluta",
     categoryIsFallback: false,
     splitPercentage: null,
     createdAt: new Date("2026-01-01"),
@@ -25,11 +25,11 @@ describe("isDirectionCompatible", () => {
   });
 
   it("rifiuta una categoria di spesa su una transazione in entrata", () => {
-    expect(isDirectionCompatible("variabile", true, false)).toBe(false);
+    expect(isDirectionCompatible("voluta", true, false)).toBe(false);
   });
 
   it("accetta la categoria fallback in entrambe le direzioni", () => {
-    expect(isDirectionCompatible("variabile", true, true)).toBe(true);
+    expect(isDirectionCompatible("voluta", true, true)).toBe(true);
     expect(isDirectionCompatible("entrata", false, true)).toBe(true);
   });
 });

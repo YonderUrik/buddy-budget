@@ -38,7 +38,7 @@ describe("PUT /api/budgets/[categoryId]", () => {
 
     const [category] = await db
       .insert(categories)
-      .values({ userId, name: "Affitto", type: "fissa" })
+      .values({ userId, name: "Affitto", type: "dovuta" })
       .returning();
     categoryId = category.id;
 
@@ -57,7 +57,7 @@ describe("PUT /api/budgets/[categoryId]", () => {
 
     const [otherUserCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
     otherUserCategoryId = otherUserCategory.id;
   });

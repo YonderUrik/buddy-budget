@@ -76,7 +76,7 @@ describe("POST /api/transactions/categorize-apply", () => {
 
     const [expenseCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Spesa alimentare", type: "variabile" })
+      .values({ userId, name: "Spesa alimentare", type: "voluta" })
       .returning();
     expenseCategoryId = expenseCategory.id;
 
@@ -88,7 +88,7 @@ describe("POST /api/transactions/categorize-apply", () => {
 
     const [otherUserCategory] = await db
       .insert(categories)
-      .values({ userId: otherUserId, name: "Categoria altrui", type: "variabile" })
+      .values({ userId: otherUserId, name: "Categoria altrui", type: "voluta" })
       .returning();
     otherUserCategoryId = otherUserCategory.id;
   });
@@ -117,7 +117,7 @@ describe("POST /api/transactions/categorize-apply", () => {
   it("categorizza tutte le transazioni del gruppo in una sola chiamata", async () => {
     const [oldCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Da categorizzare", type: "variabile", isFallback: true })
+      .values({ userId, name: "Da categorizzare", type: "voluta", isFallback: true })
       .returning();
 
     const inserted = await db
@@ -195,7 +195,7 @@ describe("POST /api/transactions/categorize-apply", () => {
   it("aggiorna la regola esistente invece di duplicarla", async () => {
     const [otherExpenseCategory] = await db
       .insert(categories)
-      .values({ userId, name: "Ristoranti", type: "variabile" })
+      .values({ userId, name: "Ristoranti", type: "voluta" })
       .returning();
 
     const [transaction1] = await db

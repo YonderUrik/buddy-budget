@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { deriveJobStatus, queuedAccount, type SyncJob, type SyncJobAccount } from "./types";
-import { hasFinishedSince, isAccountSyncing, overallProgress, runningJobIds, toJobView } from "./view";
+import { hasFinishedSince, hasNewlyFinishedJob, isAccountSyncing, overallProgress, runningJobIds, toJobView } from "./view";
 
 function account(overrides: Partial<SyncJobAccount> = {}): SyncJobAccount {
   return { ...queuedAccount("acc-1", "Conto"), ...overrides };
@@ -93,6 +93,30 @@ describe("isAccountSyncing", () => {
     expect(isAccountSyncing(jobs, "b")).toBe(false);
     expect(isAccountSyncing(jobs, "c")).toBe(false);
     expect(isAccountSyncing([job({ status: "done", accounts: [account({ accountId: "a", phase: "saving" })] })], "a")).toBe(false);
+  });
+});
+
+describe("hasNewlyFinishedJob", () => {
+  const mountedAt = new Date("2026-09-22T10:00:00.000Z");
+
+  it("è true per un job mai visto, già concluso, avviato dopo il montaggio", () => {
+    const finished = job({ id: "x", status: "done", startedAt: "2026-09-22T10:00:05.000Z" });
+    expect(hasNewlyFinishedJob([finished], new Set(), mountedAt)).toBe(true);
+  });
+
+  it("è false per un job mai visto, già concluso, ma avviato prima del montaggio", () => {
+    const finished = job({ id: "x", status: "done", startedAt: "2026-09-22T09:59:00.000Z" });
+    expect(hasNewlyFinishedJob([finished], new Set(), mountedAt)).toBe(false);
+  });
+
+  it("è false per un job già visto, anche se concluso", () => {
+    const finished = job({ id: "x", status: "done", startedAt: "2026-09-22T10:00:05.000Z" });
+    expect(hasNewlyFinishedJob([finished], new Set(["x"]), mountedAt)).toBe(false);
+  });
+
+  it("è false per un job ancora running", () => {
+    const running = job({ id: "x", status: "running", startedAt: "2026-09-22T10:00:05.000Z" });
+    expect(hasNewlyFinishedJob([running], new Set(), mountedAt)).toBe(false);
   });
 });
 

@@ -134,6 +134,8 @@ export function useSyncAccountMutation() {
     onError: (error: unknown) => {
       const info: SyncErrorInfo = error instanceof SyncNotAvailableError ? error.info : { status: "unknown" };
       toast.error(buildSyncErrorMessage(info));
+      // Un 409 "già in sincronizzazione" segnala un job in corso avviato altrove: aggiorna il pannello.
+      queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },
   });
 }

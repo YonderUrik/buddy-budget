@@ -93,4 +93,13 @@ describe("buildSyncErrorMessage", () => {
       "Impossibile completare la sincronizzazione. Riprova più tardi."
     );
   });
+
+  it("spiega un sync già in corso e un servizio non disponibile", () => {
+    expect(buildSyncErrorMessage({ status: "already-running" })).toBe(
+      "Sincronizzazione già in corso per questo conto."
+    );
+    expect(buildSyncErrorMessage({ status: "unavailable" })).toBe(
+      "Servizio di sincronizzazione temporaneamente non disponibile. Riprova tra poco."
+    );
+  });
 });

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
-import { hasFinishedSince, runningJobIds } from "@/lib/sync-jobs/view";
+import { hasFinishedSince, hasNewlyFinishedJob, runningJobIds } from "@/lib/sync-jobs/view";
 
 export const SYNC_JOBS_QUERY_KEY = ["sync-jobs"] as const;
 export const SYNC_JOBS_POLL_INTERVAL_MS = 1000;
@@ -33,15 +33,22 @@ export function useSyncJobsQuery() {
 export function useInvalidateOnSyncJobFinish(jobs: SyncJobView[] | undefined): void {
   const queryClient = useQueryClient();
   const previous = React.useRef<Set<string>>(new Set());
+  const seenIds = React.useRef<Set<string>>(new Set());
+  const mountedAt = React.useRef<Date>(new Date());
 
   React.useEffect(() => {
     const current = runningJobIds(jobs);
-    if (hasFinishedSince(previous.current, current)) {
+    // Job già running al poll precedente e ora concluso, oppure job mai visto prima e già concluso
+    // al primo poll (finito prima che il pannello lo cogliesse "in corso").
+    const finished =
+      hasFinishedSince(previous.current, current) || hasNewlyFinishedJob(jobs, seenIds.current, mountedAt.current);
+    if (finished) {
       for (const queryKey of QUERY_KEYS_CHANGED_BY_SYNC) {
         queryClient.invalidateQueries({ queryKey: [...queryKey] });
       }
     }
     previous.current = current;
+    for (const job of jobs ?? []) seenIds.current.add(job.id);
   }, [jobs, queryClient]);
 }
 

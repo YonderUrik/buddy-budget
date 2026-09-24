@@ -66,3 +66,18 @@ export function hasFinishedSince(previous: Set<string>, current: Set<string>): b
   }
   return false;
 }
+
+/**
+ * True se tra `jobs` c'è un job mai visto prima (id assente da `seenIds`) già concluso e avviato
+ * dopo `mountedAt`: copre il caso in cui un job finisce prima del primo poll, quindi non passa mai
+ * da "running" a concluso e `hasFinishedSince` non lo vedrebbe. Un job concluso già presente al
+ * montaggio (avviato prima) non deve far scattare un'invalidazione spuria.
+ */
+export function hasNewlyFinishedJob(jobs: SyncJob[] | undefined, seenIds: Set<string>, mountedAt: Date): boolean {
+  for (const job of jobs ?? []) {
+    if (seenIds.has(job.id)) continue;
+    if (job.status === "running") continue;
+    if (Date.parse(job.startedAt) > mountedAt.getTime()) return true;
+  }
+  return false;
+}

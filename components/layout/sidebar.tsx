@@ -247,16 +247,26 @@ export function AppSidebar({
         )}
       >
         {isCollapsed ? (
-          /* Monogramma quando collapsed */
-          <span
-            className="font-heading text-lg font-bold text-sidebar-primary"
-            aria-label="BuddyBudget"
-          >
-            B
-          </span>
+          <Image
+            src="/brand/logo-mark.svg"
+            alt="BuddyBudget"
+            width={28}
+            height={34}
+            className="h-8 w-auto"
+          />
         ) : (
-          <span className="font-heading text-base font-bold text-sidebar-foreground truncate">
-            BuddyBudget
+          <span className="flex items-center gap-2 min-w-0">
+            <Image
+              src="/brand/logo-mark.svg"
+              alt=""
+              width={24}
+              height={29}
+              className="h-6 w-auto shrink-0"
+              aria-hidden="true"
+            />
+            <span className="font-heading text-base font-bold text-sidebar-foreground truncate">
+              BuddyBudget
+            </span>
           </span>
         )}
       </div>

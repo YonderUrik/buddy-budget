@@ -71,7 +71,7 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       </span>
 
       {/* Theme toggle */}
-      <ThemeToggle />
+      <ThemeToggle surface="sidebar" />
     </header>
   );
 }

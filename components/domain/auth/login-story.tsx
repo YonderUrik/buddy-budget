@@ -37,8 +37,8 @@ export function LoginStory({ className }: LoginStoryProps) {
         <div aria-hidden="true" className="flex flex-col gap-6">
           <StoryStepper phase={phase} cycle={cycle} static={reduceMotion} />
 
-          <div className="overflow-hidden rounded-xl border border-primary-foreground/15 bg-primary-foreground/[0.04]">
-            <div className="flex items-center justify-between border-b border-primary-foreground/10 px-4 py-2 text-xs text-primary-foreground/50">
+          <div className="overflow-hidden rounded-xl border border-sidebar-foreground/15 bg-sidebar-foreground/[0.04]">
+            <div className="flex items-center justify-between border-b border-sidebar-foreground/10 px-4 py-2 text-xs text-sidebar-foreground/50">
               <span>Conto corrente</span>
               <span>dati di esempio</span>
             </div>

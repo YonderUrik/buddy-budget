@@ -27,7 +27,7 @@ export function StoryRow({ transaction, resolved, dimmed }: StoryRowProps) {
       animate={{ opacity: dimmed ? 0.45 : 1, x: 0 }}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
       transition={{ duration: 0.5, ease: STORY_EASE }}
-      className="relative h-12 overflow-hidden border-b border-primary-foreground/10 last:border-b-0"
+      className="relative h-12 overflow-hidden border-b border-sidebar-foreground/10 last:border-b-0"
     >
       <AnimatePresence mode="wait" initial={false}>
         {resolved ? (
@@ -50,7 +50,7 @@ export function StoryRow({ transaction, resolved, dimmed }: StoryRowProps) {
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15, duration: 0.4, ease: STORY_EASE }}
-              className="hidden rounded-full px-2 py-0.5 text-xs text-primary-foreground xl:inline"
+              className="hidden rounded-full px-2 py-0.5 text-xs text-sidebar-foreground xl:inline"
               style={{ backgroundColor: `color-mix(in oklch, var(${transaction.swatchVar}) 35%, transparent)` }}
             >
               {transaction.category}
@@ -62,7 +62,7 @@ export function StoryRow({ transaction, resolved, dimmed }: StoryRowProps) {
             key="raw"
             exit={{ opacity: 0, y: -8, filter: "blur(6px)" }}
             transition={{ duration: 0.3, ease: STORY_EASE }}
-            className="flex h-full items-center gap-3 px-4 font-mono text-[12px] uppercase tracking-tight text-primary-foreground/55"
+            className="flex h-full items-center gap-3 px-4 font-mono text-[12px] uppercase tracking-tight text-sidebar-foreground/55"
           >
             <span className="min-w-0 flex-1 truncate">{transaction.raw}</span>
             <span className="w-24 shrink-0 text-right tabular-nums">{transaction.amount.toFixed(2)}</span>

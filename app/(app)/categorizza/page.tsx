@@ -6,18 +6,26 @@ import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { CategorizeGroupRow } from "@/components/domain/categorization";
-import { LoadError } from "@/components/domain/shared";
+import { LoadError, ProgressBar } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
 import type { CategorizeSuggestion, SuggestionGroup } from "@/lib/categorization/suggest";
 import type { Category } from "@/lib/db/schema/categories";
 import {
+  ApplyCategorizationPartialError,
+  type ApplyCategorizationProgress,
   useAiSuggestionsMutation,
   useApplyCategorizationMutation,
   useCategorizeSuggestionsQuery,
 } from "@/lib/queries/categorization";
 import { useCategoriesQuery } from "@/lib/queries/categories";
+
+/** Testo della barra di avanzamento durante l'applicazione in blocco. */
+function applyProgressLabel(progress: ApplyCategorizationProgress): string {
+  const noun = progress.totalTransactions === 1 ? "transazione" : "transazioni";
+  return `Applicate ${progress.processedTransactions} di ${progress.totalTransactions} ${noun}`;
+}
 
 interface GroupOverride {
   selected: boolean;
@@ -64,6 +72,7 @@ export default function CategorizzaPage() {
   const [aiSuggestionsByMerchant, setAiSuggestionsByMerchant] = React.useState<Map<string, CategorizeSuggestion>>(
     new Map()
   );
+  const [applyProgress, setApplyProgress] = React.useState<ApplyCategorizationProgress | null>(null);
   const aiRequestedRef = React.useRef(false);
 
   // Richiama l'assistente una sola volta per i gruppi rimasti senza proposta, appena i dati sono
@@ -150,11 +159,32 @@ export default function CategorizzaPage() {
             merchantKey: group.merchantKey,
           };
         }),
+        onProgress: setApplyProgress,
       },
       {
         onSuccess: (result) => {
           toast.success(`${result.applied} transazioni categorizzate, ${result.rulesCreated} regole create`);
           setOverrides(new Map());
+          setApplyProgress(null);
+        },
+        onError: (error) => {
+          // Un blocco fallito interrompe i successivi: i gruppi già applicati con successo escono
+          // dalla selezione (sono già stati scritti), quelli non ancora processati restano selezionati
+          // per poter ritentare senza doverli ricercare/riselezionare.
+          if (error instanceof ApplyCategorizationPartialError) {
+            const appliedGroupKeys = new Set(
+              error.partial.appliedGroupIndexes.map((index) => selectedGroups[index].groupKey)
+            );
+            setOverrides((prev) => {
+              const next = new Map(prev);
+              for (const key of appliedGroupKeys) next.delete(key);
+              return next;
+            });
+            toast.error(
+              `Applicate ${error.partial.applied} transazioni prima dell'errore, le altre restano selezionate: ${error.message}`
+            );
+          }
+          setApplyProgress(null);
         },
       }
     );
@@ -183,25 +213,50 @@ export default function CategorizzaPage() {
       </div>
 
       {!isLoading && !isError && safeGroups.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => handleSelectAll(true)}>
-              Seleziona tutto
-            </Button>
-            <Button type="button" variant="outline" size="sm" onClick={() => handleSelectAll(false)}>
-              Deseleziona tutto
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleSelectAll(true)}
+                disabled={applyMutation.isPending}
+              >
+                Seleziona tutto
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleSelectAll(false)}
+                disabled={applyMutation.isPending}
+              >
+                Deseleziona tutto
+              </Button>
+            </div>
+            <Button
+              type="button"
+              onClick={handleApply}
+              disabled={selectedGroups.length === 0 || applyMutation.isPending}
+            >
+              Applica selezionate ({selectedGroups.length})
             </Button>
           </div>
-          <Button type="button" onClick={handleApply} disabled={selectedGroups.length === 0 || applyMutation.isPending}>
-            Applica selezionate ({selectedGroups.length})
-          </Button>
+          {applyMutation.isPending && applyProgress && (
+            <div className="flex flex-col gap-1">
+              <ProgressBar
+                label={applyProgressLabel(applyProgress)}
+                state={{
+                  kind: "determinate",
+                  value: applyProgress.processedTransactions,
+                  max: Math.max(applyProgress.totalTransactions, 1),
+                }}
+              />
+              <p className="text-xs text-muted-foreground">{applyProgressLabel(applyProgress)}</p>
+            </div>
+          )}
         </div>
-      )}
-
-      {applyMutation.isError && (
-        <p className="text-sm text-destructive">
-          {applyMutation.error instanceof Error ? applyMutation.error.message : "Impossibile applicare la categorizzazione"}
-        </p>
       )}
 
       {isLoading ? (

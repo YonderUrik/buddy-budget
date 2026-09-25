@@ -34,6 +34,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Valore letterale richiesto dal contratto Metadata di Next.js (colore chrome browser/status
+  // bar) — tenere allineato a --sidebar/--background del tema scuro in globals.css.
   themeColor: "#0f0f3f",
   viewportFit: "cover",
 };

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Space_Grotesk, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
@@ -23,6 +23,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BuddyBudget",
   description: "Gestione finanziaria personale — patrimonio, spese, investimenti.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "BuddyBudget",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f0f3f",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

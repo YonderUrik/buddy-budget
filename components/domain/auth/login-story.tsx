@@ -38,7 +38,7 @@ export function LoginStory({ className }: LoginStoryProps) {
           <StoryStepper phase={phase} cycle={cycle} static={reduceMotion} />
 
           <div className="overflow-hidden rounded-xl border border-sidebar-foreground/15 bg-sidebar-foreground/[0.04]">
-            <div className="flex items-center justify-between border-b border-sidebar-foreground/10 px-4 py-2 text-xs text-sidebar-foreground/50">
+            <div className="flex items-center justify-between border-b border-sidebar-foreground/10 px-4 py-2 text-xs text-sidebar-foreground/60">
               <span>Conto corrente</span>
               <span>dati di esempio</span>
             </div>

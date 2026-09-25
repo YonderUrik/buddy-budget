@@ -1,4 +1,4 @@
-import { Wallet } from "lucide-react";
+import Image from "next/image";
 import { LoginStory, UpcomingFeatures } from "@/components/domain/auth";
 
 const BRAND_NAME = "BuddyBudget";
@@ -9,8 +9,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-dvh bg-background">
       <aside className="hidden w-1/2 flex-col justify-between gap-8 bg-primary px-12 py-10 text-primary-foreground lg:flex xl:px-16 [@media(min-height:960px)]:py-14">
         <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary-foreground text-primary">
-            <Wallet className="size-5" aria-hidden="true" />
+          <span className="flex size-9 items-center justify-center rounded-lg bg-primary-foreground p-1.5">
+            <Image src="/brand/logo-mark.svg" alt="" width={24} height={29} className="h-full w-auto" aria-hidden="true" />
           </span>
           {BRAND_NAME}
         </div>
@@ -38,7 +38,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       <main className="flex w-full flex-col lg:w-1/2">
         <div className="flex items-center gap-2 p-6 font-heading text-lg font-bold text-primary lg:hidden">
-          <Wallet className="size-5" aria-hidden="true" />
+          <Image src="/brand/logo-mark.svg" alt="" width={20} height={24} className="h-5 w-auto" aria-hidden="true" />
           {BRAND_NAME}
         </div>
 

@@ -19,6 +19,12 @@ interface ThemeToggleProps {
    * Default: false (mostra ☀ + Switch + ☾).
    */
   compact?: boolean;
+  /**
+   * Superficie su cui il toggle è montato: determina quali token di colore usare
+   * per restare leggibile. `"app"` (default) per sfondo `--background`/`--card`;
+   * `"sidebar"` per sfondo `--sidebar` (navy fisso in entrambi i temi).
+   */
+  surface?: "app" | "sidebar";
   /** Classi CSS aggiuntive per il wrapper esterno. */
   className?: string;
 }
@@ -27,7 +33,7 @@ interface ThemeToggleProps {
 // Componente
 // ---------------------------------------------------------------------------
 
-export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
+export function ThemeToggle({ compact = false, surface = "app", className }: ThemeToggleProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
@@ -45,6 +51,13 @@ export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
   const isDark = resolvedTheme === "dark";
   const toggle = () => setTheme(isDark ? "light" : "dark");
 
+  // Su --sidebar (navy fisso in entrambi i temi) i token app (--muted-foreground/--foreground)
+  // non garantiscono contrasto sufficiente: usa i token sidebar dedicati.
+  const iconClass =
+    surface === "sidebar" ? "text-sidebar-foreground/70" : "text-muted-foreground";
+  const iconHoverClass =
+    surface === "sidebar" ? "hover:text-sidebar-accent-foreground" : "hover:text-foreground";
+
   // ── Variante compatta: solo l'icona attiva, cliccabile ──
   if (compact) {
     const Icon = isDark ? Moon : Sun;
@@ -53,7 +66,8 @@ export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
         onClick={toggle}
         className={cn(
           "flex size-8 items-center justify-center rounded-lg",
-          "text-muted-foreground hover:text-foreground",
+          iconClass,
+          iconHoverClass,
           "hover:bg-sidebar-accent transition-colors duration-150",
           className
         )}
@@ -68,13 +82,13 @@ export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
   // ── Variante standard: ☀ + Switch + ☾ ──
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <Sun className="size-4 text-muted-foreground" aria-hidden="true" />
+      <Sun className={cn("size-4", iconClass)} aria-hidden="true" />
       <Switch
         id="theme-toggle"
         checked={isDark}
         onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
       />
-      <Moon className="size-4 text-muted-foreground" aria-hidden="true" />
+      <Moon className={cn("size-4", iconClass)} aria-hidden="true" />
       <Label htmlFor="theme-toggle" className="sr-only">
         Attiva tema scuro
       </Label>

@@ -7,9 +7,15 @@ const BRAND_NAME = "BuddyBudget";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh bg-background">
-      <aside className="hidden w-1/2 flex-col justify-between gap-8 bg-primary px-12 py-10 text-primary-foreground lg:flex xl:px-16 [@media(min-height:960px)]:py-14">
+      {/*
+        Sfondo navy (--sidebar), non --primary: --primary è ora l'azzurro brand,
+        troppo chiaro per garantire AA al testo secondario in opacità ridotta
+        (vedi docs/superpowers/plans/2026-09-25-brand-identity-pwa.md, Review Focus).
+        --sidebar è navy fisso in entrambi i temi, stesso trattamento della sidebar.
+      */}
+      <aside className="hidden w-1/2 flex-col justify-between gap-8 bg-sidebar px-12 py-10 text-sidebar-foreground lg:flex xl:px-16 [@media(min-height:960px)]:py-14">
         <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary-foreground p-1.5">
+          <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-foreground p-1.5">
             <Image src="/brand/logo-mark.svg" alt="" width={24} height={29} className="h-full w-auto" aria-hidden="true" />
           </span>
           {BRAND_NAME}
@@ -20,7 +26,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <h2 className="font-heading text-4xl font-medium leading-[1.05] tracking-tight text-balance xl:text-5xl">
               I tuoi movimenti, finalmente leggibili.
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-primary-foreground/75 [@media(max-height:940px)]:hidden">
+            <p className="mt-4 text-base leading-relaxed text-sidebar-foreground/75 [@media(max-height:940px)]:hidden">
               BuddyBudget collega le tue banche, ripulisce e categorizza ogni movimento e ti mostra dove va ogni euro.
             </p>
           </div>
@@ -30,7 +36,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         <div className="flex max-w-md flex-col gap-5">
           <UpcomingFeatures />
-          <p className="text-xs text-primary-foreground/60">
+          <p className="text-xs text-sidebar-foreground/60">
             Collegamento bancario tramite Open Banking (PSD2), in sola lettura.
           </p>
         </div>

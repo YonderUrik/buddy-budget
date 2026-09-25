@@ -31,21 +31,21 @@ export function StoryStepper({ phase, cycle, static: isStatic = false }: StorySt
       <ol className="grid grid-cols-3 gap-3">
         {STORY_STEPS.map((step, index) => (
           <li key={step.id} className="flex flex-col gap-2">
-            <span className="relative h-0.5 overflow-hidden rounded-full bg-primary-foreground/15">
+            <span className="relative h-0.5 overflow-hidden rounded-full bg-sidebar-foreground/15">
               {index <= activeIndex && (
                 <motion.span
                   key={`${cycle}-${step.id}`}
                   initial={index === activeIndex && !isStatic ? { scaleX: 0 } : false}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: PHASE_DURATION_S[step.id], ease: "linear" }}
-                  className="absolute inset-0 origin-left bg-primary-foreground"
+                  className="absolute inset-0 origin-left bg-sidebar-foreground"
                 />
               )}
             </span>
             <span
               className={cn(
                 "text-sm font-medium transition-colors duration-300",
-                index === activeIndex ? "text-primary-foreground" : "text-primary-foreground/45"
+                index === activeIndex ? "text-sidebar-foreground" : "text-sidebar-foreground/45"
               )}
             >
               {step.label}
@@ -58,7 +58,7 @@ export function StoryStepper({ phase, cycle, static: isStatic = false }: StorySt
         initial={isStatic ? false : { opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: STORY_EASE }}
-        className="text-sm text-primary-foreground/70"
+        className="text-sm text-sidebar-foreground/70"
       >
         {active.caption}
       </motion.p>

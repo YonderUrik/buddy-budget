@@ -44,7 +44,7 @@ export function StorySummary({ transactions }: StorySummaryProps) {
       transition={{ duration: 0.5, ease: STORY_EASE }}
       className="flex flex-col gap-4"
     >
-      <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-primary-foreground/10">
+      <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full bg-sidebar-foreground/10">
         {expenses.map((t, i) => (
           <motion.span
             key={t.merchant}
@@ -59,13 +59,13 @@ export function StorySummary({ transactions }: StorySummaryProps) {
 
       <div className="grid grid-cols-2 gap-6">
         <div>
-          <p className="text-xs text-primary-foreground/60">Speso questo mese</p>
+          <p className="text-xs text-sidebar-foreground/60">Speso questo mese</p>
           <p className="font-heading text-3xl font-medium tracking-tight">
             <CountUp value={spent} delay={0.2} />
           </p>
         </div>
         <div>
-          <p className="text-xs text-primary-foreground/60">Messo da parte</p>
+          <p className="text-xs text-sidebar-foreground/60">Messo da parte</p>
           <p className="font-heading text-3xl font-medium tracking-tight">
             <CountUp value={saved} delay={0.35} />
           </p>

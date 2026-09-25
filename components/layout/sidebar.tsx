@@ -337,7 +337,7 @@ export function AppSidebar({
             isCollapsed ? "justify-center" : "justify-start px-1"
           )}
         >
-          <ThemeToggle compact={isCollapsed} />
+          <ThemeToggle compact={isCollapsed} surface="sidebar" />
         </div>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}

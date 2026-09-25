@@ -16,6 +16,7 @@
  * adattata ad altre app senza modifiche al componente.
  */
 
+import Image from "next/image";
 import { Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
@@ -57,7 +58,15 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       </button>
 
       {/* Brand */}
-      <span className="font-heading text-base font-bold text-sidebar-foreground">
+      <span className="flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground">
+        <Image
+          src="/brand/logo-mark.svg"
+          alt=""
+          width={22}
+          height={27}
+          className="h-6 w-auto"
+          aria-hidden="true"
+        />
         {brandName}
       </span>
 

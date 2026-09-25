@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { SyncJobAccount } from "@/lib/sync-jobs/types";
+import { ProgressBar } from "@/components/domain/shared";
 import { describeAccountProgress } from "./describe-account-progress";
-import { ProgressBar } from "./progress-bar";
 
 export interface SyncAccountProgressRowProps {
   account: SyncJobAccount;

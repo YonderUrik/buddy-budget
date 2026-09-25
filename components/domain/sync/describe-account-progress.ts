@@ -1,10 +1,6 @@
 import { buildSyncErrorMessage, buildSyncSummaryMessage } from "@/lib/gocardless/sync-messages";
 import type { SyncJobAccount, SyncJobView } from "@/lib/sync-jobs/types";
-
-export type ProgressBarState =
-  | { kind: "none" }
-  | { kind: "indeterminate" }
-  | { kind: "determinate"; value: number; max: number };
+import type { ProgressBarState } from "@/components/domain/shared";
 
 export interface AccountProgressDescription {
   text: string;

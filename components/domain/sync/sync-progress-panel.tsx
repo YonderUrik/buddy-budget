@@ -6,8 +6,8 @@ import { ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
 import { overallProgress } from "@/lib/sync-jobs/view";
+import { ProgressBar } from "@/components/domain/shared";
 import { describeJobTitle } from "./describe-account-progress";
-import { ProgressBar } from "./progress-bar";
 import { SyncAccountProgressRow } from "./sync-account-progress-row";
 
 const PANEL_LABEL = "Avanzamento sincronizzazione";

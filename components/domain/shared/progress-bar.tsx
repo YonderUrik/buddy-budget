@@ -1,5 +1,9 @@
 import { cn } from "@/lib/utils";
-import type { ProgressBarState } from "./describe-account-progress";
+
+export type ProgressBarState =
+  | { kind: "none" }
+  | { kind: "indeterminate" }
+  | { kind: "determinate"; value: number; max: number };
 
 export interface ProgressBarProps {
   state: ProgressBarState;

@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
+import { chunkGroups } from "@/lib/categorization/batch-apply";
 import type {
   ApplyCategorizationInput,
   CreateRuleInput,
@@ -28,23 +29,96 @@ export function useCategorizeSuggestionsQuery() {
   return useQuery({ queryKey: SUGGESTIONS_QUERY_KEY, queryFn: fetchSuggestions });
 }
 
-/** Applica in blocco le scelte di categorizzazione e invalida proposte e transazioni al successo. */
+async function postApplyCategorization(
+  input: ApplyCategorizationInput
+): Promise<{ applied: number; rulesCreated: number }> {
+  const response = await fetch("/api/transactions/categorize-apply", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error ?? "Impossibile applicare la categorizzazione");
+  }
+  return response.json();
+}
+
+export interface ApplyCategorizationProgress {
+  processedGroups: number;
+  totalGroups: number;
+  processedTransactions: number;
+  totalTransactions: number;
+}
+
+/**
+ * Esito parziale di un'applicazione in blocco interrotta a metà: quanto è stato scritto con
+ * successo prima del gruppo che ha fatto fallire la richiesta, e quali gruppi (per indice
+ * nell'array passato alla mutation) sono da considerare già applicati.
+ */
+export class ApplyCategorizationPartialError extends Error {
+  constructor(
+    message: string,
+    public readonly partial: { applied: number; rulesCreated: number; appliedGroupIndexes: number[] }
+  ) {
+    super(message);
+    this.name = "ApplyCategorizationPartialError";
+  }
+}
+
+/**
+ * Applica in blocco le scelte di categorizzazione spezzando i gruppi in più richieste sequenziali
+ * (invece di un'unica richiesta con tutto il batch): l'operazione è comunque veloce (solo scritture
+ * DB, nessuna chiamata esterna), ma dare un avanzamento granulare via `onProgress` è più utile di uno
+ * spinner unico su batch grandi. Un blocco fallito interrompe i successivi (nessun retry automatico);
+ * i gruppi già applicati con successo sono riportati in `ApplyCategorizationPartialError.partial` così
+ * il chiamante può deselezionarli e lasciare selezionati solo quelli da ritentare.
+ */
 export function useApplyCategorizationMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: ApplyCategorizationInput) => {
-      const response = await fetch("/api/transactions/categorize-apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Impossibile applicare la categorizzazione");
+    mutationFn: async ({
+      groups,
+      onProgress,
+    }: {
+      groups: ApplyCategorizationInput["groups"];
+      onProgress: (progress: ApplyCategorizationProgress) => void;
+    }) => {
+      const totalGroups = groups.length;
+      const totalTransactions = groups.reduce((sum, group) => sum + group.transactionIds.length, 0);
+      let processedGroups = 0;
+      let processedTransactions = 0;
+      let applied = 0;
+      let rulesCreated = 0;
+      const appliedGroupIndexes: number[] = [];
+
+      onProgress({ processedGroups, totalGroups, processedTransactions, totalTransactions });
+
+      const batches = chunkGroups(groups);
+      let start = 0;
+      for (const batch of batches) {
+        try {
+          const result = await postApplyCategorization({ groups: batch });
+          applied += result.applied;
+          rulesCreated += result.rulesCreated;
+        } catch (error) {
+          throw new ApplyCategorizationPartialError(
+            error instanceof Error ? error.message : "Impossibile applicare la categorizzazione",
+            { applied, rulesCreated, appliedGroupIndexes }
+          );
+        }
+        for (let i = 0; i < batch.length; i++) appliedGroupIndexes.push(start + i);
+        start += batch.length;
+        processedGroups += batch.length;
+        processedTransactions += batch.reduce((sum, group) => sum + group.transactionIds.length, 0);
+        onProgress({ processedGroups, totalGroups, processedTransactions, totalTransactions });
       }
-      return response.json() as Promise<{ applied: number; rulesCreated: number }>;
+
+      return { applied, rulesCreated };
     },
-    onSuccess: () => {
+    // Anche su fallimento parziale i gruppi già applicati hanno scritto dati reali: invalida sempre,
+    // non solo al successo pieno.
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },

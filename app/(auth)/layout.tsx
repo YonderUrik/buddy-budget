@@ -7,17 +7,10 @@ const BRAND_NAME = "BuddyBudget";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh bg-background">
-      {/*
-        Sfondo navy (--sidebar), non --primary: --primary è ora l'azzurro brand,
-        troppo chiaro per garantire AA al testo secondario in opacità ridotta
-        (vedi docs/superpowers/plans/2026-09-25-brand-identity-pwa.md, Review Focus).
-        --sidebar è navy fisso in entrambi i temi, stesso trattamento della sidebar.
-      */}
-      <aside className="hidden w-1/2 flex-col justify-between gap-8 bg-sidebar px-12 py-10 text-sidebar-foreground lg:flex xl:px-16 [@media(min-height:960px)]:py-14">
+      {/* Stessa superficie neutra della sidebar (--sidebar): il brand vive nel logo, non nello sfondo. */}
+      <aside className="hidden w-1/2 flex-col justify-between gap-8 border-r border-sidebar-border bg-sidebar px-12 py-10 text-sidebar-foreground lg:flex xl:px-16 [@media(min-height:960px)]:py-14">
         <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-sidebar-foreground p-1.5">
-            <Image src="/brand/logo-mark.svg" alt="" width={24} height={29} className="h-full w-auto" aria-hidden="true" />
-          </span>
+          <Image src="/brand/logo-mark.svg" alt="" width={24} height={29} className="h-8 w-auto" aria-hidden="true" />
           {BRAND_NAME}
         </div>
 

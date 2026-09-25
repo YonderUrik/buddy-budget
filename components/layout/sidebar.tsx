@@ -311,7 +311,7 @@ export function AppSidebar({
                 <p className="truncate text-sm font-medium text-sidebar-foreground leading-tight">
                   {userName}
                 </p>
-                <p className="truncate text-xs text-sidebar-foreground/50 leading-tight mt-0.5">
+                <p className="truncate text-xs text-sidebar-foreground/60 leading-tight mt-0.5">
                   {session?.user.email ?? ""}
                 </p>
               </div>

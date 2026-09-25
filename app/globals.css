@@ -60,27 +60,27 @@
 }
 
 :root {
-  /* Design token brand BuddyBudget (palette light) — vedi docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md */
-  --background: #f6f8fa;
-  --foreground: #0f0f3f;
-  --text-2: #4a4d73;
-  --text-3: #8083a3;
+  /* Palette light: superfici neutre, azzurro brand solo come accento (azioni, voce attiva, focus). */
+  --background: #f7f7f8;
+  --foreground: #18181b;
+  --text-2: #52525b;
+  --text-3: #71717a;
   --card: #ffffff;
-  --card-foreground: #0f0f3f;
+  --card-foreground: #18181b;
   --popover: #ffffff;
-  --popover-foreground: #0f0f3f;
-  --primary: #187e98;
+  --popover-foreground: #18181b;
+  --primary: #15738b;
   --primary-foreground: #ffffff;
-  --secondary: #e9edf2;
-  --secondary-foreground: #0f0f3f;
-  --muted: #e9edf2;
-  --muted-foreground: #4a4d73;
-  --accent: rgba(255, 183, 3, 0.14);
-  --accent-foreground: #8a5a00;
+  --secondary: #f0f0f2;
+  --secondary-foreground: #18181b;
+  --muted: #f0f0f2;
+  --muted-foreground: #52525b;
+  --accent: #f0f0f2;
+  --accent-foreground: #18181b;
   --destructive: #b0473b;
-  --border: #dde2e9;
-  --input: #dde2e9;
-  --ring: #187e98;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #15738b;
   --pos: #2f7d57;
   --pos-soft: rgba(47, 125, 87, 0.1);
   --neg: #b0473b;
@@ -144,37 +144,37 @@
   --swatch-violet-dark: #6d28d9;
   --swatch-emerald-dark: #047857;
   --radius: 11px;
-  --sidebar: #0f0f3f;
-  --sidebar-foreground: #ecedf7;
-  --sidebar-primary: #219ebc;
-  --sidebar-primary-foreground: #0f0f3f;
-  --sidebar-accent: rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #219ebc;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #18181b;
+  --sidebar-primary: #15738b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f0f2;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #15738b;
 }
 
 .dark {
-  /* Design token brand BuddyBudget (palette dark) — vedi docs/superpowers/specs/2026-09-25-brand-identity-pwa-design.md */
-  --background: #0f0f3f;
-  --foreground: #ecedf7;
-  --text-2: #a3a6c9;
-  --text-3: #6f739c;
-  --card: #171a4d;
-  --card-foreground: #ecedf7;
-  --popover: #1d2159;
-  --popover-foreground: #ecedf7;
+  /* Palette dark: grigi neutri, azzurro brand solo come accento. */
+  --background: #111113;
+  --foreground: #ececef;
+  --text-2: #a1a1aa;
+  --text-3: #80808a;
+  --card: #18181b;
+  --card-foreground: #ececef;
+  --popover: #1f1f23;
+  --popover-foreground: #ececef;
   --primary: #219ebc;
-  --primary-foreground: #0f0f3f;
-  --secondary: #1d2159;
-  --secondary-foreground: #ecedf7;
-  --muted: #1d2159;
-  --muted-foreground: #a3a6c9;
-  --accent: rgba(255, 183, 3, 0.18);
-  --accent-foreground: #ffb703;
+  --primary-foreground: #0b0b0f;
+  --secondary: #232327;
+  --secondary-foreground: #ececef;
+  --muted: #232327;
+  --muted-foreground: #a1a1aa;
+  --accent: #232327;
+  --accent-foreground: #ececef;
   --destructive: #d2887b;
-  --border: #2a2e66;
-  --input: #2a2e66;
+  --border: #2a2a2f;
+  --input: #2a2a2f;
   --ring: #219ebc;
   --pos: #7bb79b;
   --pos-soft: rgba(123, 183, 155, 0.14);
@@ -238,13 +238,13 @@
   --swatch-rose-dark: #be123c;
   --swatch-violet-dark: #6d28d9;
   --swatch-emerald-dark: #047857;
-  --sidebar: #0b0b2e;
-  --sidebar-foreground: #ecedf7;
+  --sidebar: #16161a;
+  --sidebar-foreground: #ececef;
   --sidebar-primary: #219ebc;
-  --sidebar-primary-foreground: #0f0f3f;
-  --sidebar-accent: rgba(255, 255, 255, 0.06);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-primary-foreground: #0b0b0f;
+  --sidebar-accent: #232327;
+  --sidebar-accent-foreground: #ececef;
+  --sidebar-border: #2a2a2f;
   --sidebar-ring: #219ebc;
 }
 

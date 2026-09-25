@@ -22,7 +22,7 @@ interface ThemeToggleProps {
   /**
    * Superficie su cui il toggle è montato: determina quali token di colore usare
    * per restare leggibile. `"app"` (default) per sfondo `--background`/`--card`;
-   * `"sidebar"` per sfondo `--sidebar` (navy fisso in entrambi i temi).
+   * `"sidebar"` per sfondo `--sidebar`.
    */
   surface?: "app" | "sidebar";
   /** Classi CSS aggiuntive per il wrapper esterno. */
@@ -51,8 +51,8 @@ export function ThemeToggle({ compact = false, surface = "app", className }: The
   const isDark = resolvedTheme === "dark";
   const toggle = () => setTheme(isDark ? "light" : "dark");
 
-  // Su --sidebar (navy fisso in entrambi i temi) i token app (--muted-foreground/--foreground)
-  // non garantiscono contrasto sufficiente: usa i token sidebar dedicati.
+  // Su --sidebar usa i token sidebar dedicati invece dei token app (--muted-foreground/--foreground),
+  // così il contrasto resta corretto anche se le due superfici divergono.
   const iconClass =
     surface === "sidebar" ? "text-sidebar-foreground/70" : "text-muted-foreground";
   const iconHoverClass =

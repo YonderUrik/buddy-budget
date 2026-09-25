@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   description: "Gestione finanziaria personale — patrimonio, spese, investimenti.",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "BuddyBudget",
   },
   icons: {
@@ -35,8 +35,11 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // Valore letterale richiesto dal contratto Metadata di Next.js (colore chrome browser/status
-  // bar) — tenere allineato a --sidebar/--background del tema scuro in globals.css.
-  themeColor: "#0f0f3f",
+  // bar) — tenere allineato a --background di :root e .dark in globals.css.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f7f8" },
+    { media: "(prefers-color-scheme: dark)", color: "#111113" },
+  ],
   viewportFit: "cover",
 };
 

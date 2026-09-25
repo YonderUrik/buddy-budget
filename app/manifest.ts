@@ -12,6 +12,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Gestione finanziaria personale — patrimonio, spese, investimenti.",
     start_url: "/",
     display: "standalone",
+    // Valore letterale richiesto dal formato manifest (nessun accesso a CSS custom properties
+    // in questo contesto) — tenere allineato a --sidebar/--background del tema scuro in globals.css.
     background_color: "#0f0f3f",
     theme_color: "#0f0f3f",
     icons: [

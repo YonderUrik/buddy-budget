@@ -128,6 +128,7 @@ Ogni fase ha un proprio piano (runbook guidato) e un proprio criterio di "fatto"
 ## Rimandato consapevolmente
 
 - **Claude Code sempre attivo per sviluppo continuo**: rimandato. Vincolo già deciso: **mai sulla VPS di produzione** (rischio supply chain/prompt injection con accesso a dati bancari e contesa di CPU). Opzioni quando si riprende: Claude Code on the web (sessioni cloud) oppure una seconda VPS "dev box" senza credenziali di produzione, che lavora solo via PR.
+- **Paperclip (orchestrazione di più agenti come "azienda")**: rimandato a dopo il cutover (Fase 7), stessi vincoli del punto precedente — gira sulla futura dev box, mai sulla VPS di produzione; gli agenti lavorano solo via PR con CI obbligatoria e merge umano; spesa dei modelli limitata dai budget di Paperclip. Prerequisito: CI + GitOps delle Fasi 0-6 funzionanti.
 - **Staging**: rimandato per RAM e complessità; le PR si verificano in CI.
 - **Multi-nodo / alta disponibilità**: rimandato. La preparazione è già nel design (Ansible per aggiungere nodi, CNPG che scala a repliche nello stesso manifest).
 - **Cutover zero downtime** (replica logica): scartato per ora.

@@ -1,4 +1,3 @@
-import cron from "node-cron";
 import { and, eq, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
@@ -54,13 +53,3 @@ export async function runDueSyncs(): Promise<void> {
   }
 }
 
-let started = false;
-
-/** Avvia lo scheduler cron (ogni 12h); no-op se già avviato nel processo corrente. */
-export function startGoCardlessScheduler(): void {
-  if (started) return;
-  started = true;
-  cron.schedule("0 */12 * * *", () => {
-    runDueSyncs().catch((error) => console.error("Sync GoCardless fallito", error));
-  });
-}

@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Build autosufficiente in .next/standalone (server.js + sole dipendenze usate): base dell'immagine Docker.
+  // Vercel la ignora, quindi il deploy attuale non cambia.
+  output: "standalone",
   images: {
     remotePatterns: [
       {

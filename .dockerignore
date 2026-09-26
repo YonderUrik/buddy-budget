@@ -1,0 +1,15 @@
+.git
+.github
+.next
+node_modules
+.claude
+.superpowers
+.vercel
+.env*
+!.env.local.example
+vercelnenon.txt
+docs
+coverage
+test-results
+playwright-report
+*.tsbuildinfo

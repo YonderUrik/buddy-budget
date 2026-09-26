@@ -322,10 +322,13 @@ function CategoryLegendRow({
   onCommitBudget,
 }: CategoryLegendRowProps) {
   const [budgetInput, setBudgetInput] = React.useState(String(budgetAmount));
+  const [syncedBudget, setSyncedBudget] = React.useState(budgetAmount);
 
-  React.useEffect(() => {
+  // Il budget salvato è cambiato dall'esterno (salvataggio riuscito, cambio periodo): riallinea l'input.
+  if (budgetAmount !== syncedBudget) {
+    setSyncedBudget(budgetAmount);
     setBudgetInput(String(budgetAmount));
-  }, [budgetAmount]);
+  }
 
   function handleBlur() {
     const isValid = onCommitBudget(budgetInput);

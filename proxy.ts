@@ -3,10 +3,12 @@ import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/auth/constants";
 
-const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/_next", "/favicon.ico"];
+// /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
+const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/api/health", "/api/cron", "/_next", "/favicon.ico"];
 
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+/** True se il percorso è accessibile senza sessione (confronto per segmento: `/api/health` sì, `/api/healthz` no). */
+export function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
 
 export async function proxy(request: NextRequest) {

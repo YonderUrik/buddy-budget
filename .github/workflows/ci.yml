@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint, tipi e test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: buddy_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    # Valori fittizi usati solo dai test: nessun servizio esterno viene contattato con queste credenziali.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/buddy_test
+      REDIS_URL: redis://localhost:6379
+      BETTER_AUTH_SECRET: ci-only-placeholder-secret-000000000000
+      BETTER_AUTH_URL: http://localhost:3000
+      APP_URL: http://localhost:3000
+      GOOGLE_CLIENT_ID: ci-google-id
+      GOOGLE_CLIENT_SECRET: ci-google-secret
+      RESEND_API_KEY: re_ci_placeholder
+      RESEND_FROM: ci@example.com
+      GOCARDLESS_SECRET_ID: ci-gocardless-id
+      GOCARDLESS_SECRET_KEY: ci-gocardless-key
+      CRON_SECRET: ci-only-placeholder-cron-secret-0000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm db:migrate
+      - run: pnpm test
+
+  image:
+    name: Immagine ${{ matrix.image }}
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: buddy-budget
+            target: runner
+          - image: buddy-budget-migrate
+            target: migrator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=main
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

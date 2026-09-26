@@ -8,5 +8,8 @@ if (!connectionString) {
   throw new Error("DATABASE_URL non è definita. Copia .env.local.example in .env.local.");
 }
 
-export const client = postgres(connectionString, { ssl: process.env.NODE_ENV === "production" ? "require" : false });
+// La cifratura della connessione la decide l'URL (`?sslmode=require` per Neon/CNPG, assente per il Postgres
+// locale): un `ssl` esplicito qui vincerebbe sull'URL e impedirebbe di usare un Postgres locale senza TLS
+// anche con NODE_ENV=production (es. il container Docker in prova).
+export const client = postgres(connectionString);
 export const db = drizzle(client, { schema });

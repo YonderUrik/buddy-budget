@@ -2,6 +2,7 @@
   "name": "buddy-budget",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.5.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,12 +10,12 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file=.env.local lib/db/migrate.ts",
+    "db:migrate": "tsx --env-file-if-exists=.env.local lib/db/migrate.ts",
     "db:seed": "tsx --env-file=.env.local lib/db/seed.ts",
     "db:clear": "tsx --env-file=.env.local lib/db/clear.ts",
     "db:migrate-category-groups": "tsx --env-file=.env.local lib/db/migrate-category-groups.ts",
     "db:reset-categories": "tsx --env-file=.env.local lib/db/reset-categories.ts",
-    "db:push": "drizzle-kit push"
+    "db:mark-baseline": "tsx --env-file-if-exists=.env.local lib/db/mark-baseline.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

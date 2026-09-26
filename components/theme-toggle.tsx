@@ -33,15 +33,14 @@ interface ThemeToggleProps {
 // Componente
 // ---------------------------------------------------------------------------
 
+/** Store vuoto: serve solo a distinguere il render server (false) da quello client (true). */
+const subscribeNoop = () => () => {};
+
 export function ThemeToggle({ compact = false, surface = "app", className }: ThemeToggleProps) {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    // Necessario per evitare mismatch di idratazione: il tema risolto
-    // è noto solo lato client (next-themes legge localStorage/preferenze OS).
-    setMounted(true);
-  }, []);
+  // Il tema risolto è noto solo lato client (next-themes legge localStorage/preferenze OS):
+  // finché non siamo sul client si mostra un placeholder, per evitare mismatch di idratazione.
+  const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
 
   if (!mounted) {
     // Placeholder a larghezza fissa per evitare layout shift all'idratazione.

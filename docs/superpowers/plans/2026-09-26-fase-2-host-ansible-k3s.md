@@ -74,15 +74,16 @@ Installa il client Tailscale ufficiale e lancia `tailscale up` **senza chiave di
 
 ### Passo 4 — Hardening SSH ⚠️ conferma richiesta
 
+**Deciso con l'utente**: `PasswordAuthentication` resta **invariata** (`yes`) — niente desktop-only lockout risk, fallback via password disponibile per `deploy` se la chiave si perde. Segnato come **debito da rivedere** quando sarà disponibile un secondo dispositivo (portatile/telefono con client SSH). Il login diretto di **root** invece si disattiva comunque: è il bersaglio più ovvio per un brute-force, e non serve più visto che `deploy` con sudo lo sostituisce in tutto.
+
 Scrive `/etc/ssh/sshd_config.d/10-hardening.conf` (il prefisso `10-` lo fa vincere sul `50-`/`60-` esistenti, per come funziona l'`Include` di OpenSSH — primo valore incontrato vince):
 ```
-PasswordAuthentication no
 PermitRootLogin no
 PubkeyAuthentication yes
 ```
-Ricarica `sshd`, poi verifico con `sshd -T` sulla VPS che i valori effettivi siano quelli voluti.
+Ricarica `sshd`, poi verifico con `sshd -T` sulla VPS che i valori effettivi siano quelli voluti (incluso che `passwordauthentication` resti `yes`).
 
-**Prima di eseguire questo passo ti chiedo conferma esplicita in chat.** Dopo averlo eseguito, verifico *subito*: login come `deploy` via IP pubblico (ancora aperto, il firewall non è ancora toccato) e conferma che `root` e la password non funzionano più. Se qualcosa non torna, mi fermo qui — l'accesso via `deploy` con chiave resta comunque attivo, nessun rischio di lockout a questo stadio.
+**Prima di eseguire questo passo ti chiedo conferma esplicita in chat.** Dopo averlo eseguito, verifico *subito*: login come `deploy` via IP pubblico (ancora aperto, il firewall non è ancora toccato) funziona (chiave e password), e che `ssh root@...` non funzioni più in nessun modo. Se qualcosa non torna, mi fermo qui — l'accesso via `deploy` resta comunque attivo, nessun rischio di lockout a questo stadio.
 
 ---
 

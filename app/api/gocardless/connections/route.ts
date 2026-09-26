@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { getAppUrl } from "@/lib/env";
 import { createRequisition } from "@/lib/gocardless/client";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     })
     .returning();
 
-  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/gocardless/callback`;
+  const redirectUrl = `${getAppUrl()}/api/gocardless/callback`;
   try {
     const requisition = await createRequisition({
       institutionId: parsed.data.institutionId,

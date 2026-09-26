@@ -2,10 +2,11 @@ import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
+import { getAppUrl } from "@/lib/env";
 import { getRequisition } from "@/lib/gocardless/client";
 
 export async function GET(request: NextRequest) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL!;
+  const appUrl = getAppUrl();
   const ref = request.nextUrl.searchParams.get("ref");
   if (!ref) {
     return Response.redirect(`${appUrl}/conti?bankError=missing_ref`, 302);

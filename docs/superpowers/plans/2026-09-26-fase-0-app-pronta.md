@@ -1302,7 +1302,7 @@ docker run --rm --network bb-test -e DATABASE_URL=postgresql://postgres:test@bb-
 
 Expected: `Migration completate.`
 
-Crea `.env.docker` (gitignored grazie a `.env*`) copiando `.env.local` e cambiando: `DATABASE_URL=postgresql://postgres:test@bb-pg:5432/postgres`, `REDIS_URL=redis://bb-redis:6379`. **Togli le virgolette** attorno ai valori: `docker --env-file` non le rimuove.
+Crea `.env.docker` (gitignored grazie a `.env*`) copiando `.env.local` e cambiando: `DATABASE_URL=postgresql://postgres:test@bb-pg:5432/postgres?sslmode=disable` (opt-out esplicito: in produzione il client esige TLS salvo `sslmode` nell'URL), `REDIS_URL=redis://bb-redis:6379`. **Togli le virgolette** attorno ai valori: `docker --env-file` non le rimuove.
 
 ```bash
 docker run -d --name bb-app --network bb-test -p 3000:3000 --env-file .env.docker buddy-budget:local

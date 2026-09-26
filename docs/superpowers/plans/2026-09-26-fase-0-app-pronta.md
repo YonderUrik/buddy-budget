@@ -1128,7 +1128,7 @@ DATABASE_URL=postgresql://postgres:baseline@localhost:55432/postgres pnpm db:mig
 mkdir -p /tmp/bb-schema
 DUMP="pg_dump --schema-only --no-owner --no-privileges --schema=public"
 # Toglie commenti, righe vuote e intestazioni che cambiano a ogni dump (versione, \restrict casuale).
-clean() { grep -v -E '^(--|SET |SELECT pg_catalog|\\restrict|\\unrestrict)' | grep -v '^$'; }
+clean() { grep -v -E '^(--|SET |SELECT pg_catalog)' | grep -v -E '^.(un)?restrict ' | grep -v '^$'; }
 
 docker exec bb-baseline $DUMP -U postgres postgres | clean > /tmp/bb-schema/baseline.sql
 docker run --rm postgres:17 $DUMP "<DATABASE_URL del DB locale, con host.docker.internal al posto di localhost>" | clean > /tmp/bb-schema/local.sql
@@ -1143,6 +1143,7 @@ Incolla l'output dei due `git diff --stat`. Se non sono vuoti, incolla anche `gi
 - [ ] **Step 9: Analisi delle differenze (regola di stop)**
 
 Differenze **ammesse** senza intervento:
+- l'**ordine delle colonne** in una tabella (colonne aggiunte a mano con `ALTER TABLE ADD COLUMN` finiscono in coda; Drizzle usa i nomi, non le posizioni);
 - solo l'**ordine dei valori** dell'enum `category_type` (effetto della migrazione `db:migrate-category-groups`: rinomina e aggiunge valori in coda). Non influisce sui dati né sulle migration future, generate dallo snapshot TypeScript e non dal DB.
 
 **Qualunque altra differenza** (tabella/colonna/indice/vincolo mancante o in più, tipo o default diverso, `NOT NULL` diverso): **stop**, non marcare la baseline su quel DB. Si analizza insieme all'utente e si decide caso per caso tra (a) correggere lo schema TypeScript perché il DB ha ragione, rigenerando la baseline (torna allo step 7), oppure (b) correggere il DB con SQL mirato approvato esplicitamente dall'utente (per Neon: backup/branch Neon prima). Il vincolo `transactions_account_external_id_unique`, che bloccava `db:push`, è il primo sospettato: va confrontato con attenzione.

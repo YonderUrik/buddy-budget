@@ -11,8 +11,10 @@ export const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
   BETTER_AUTH_SECRET: z.string().min(32),
-  BETTER_AUTH_URL: z.url(),
-  APP_URL: z.url(),
+  // Solo http/https: z.url() da solo accetterebbe "localhost:3000" (schema "localhost:") o "ftp://x",
+  // refusi plausibili che romperebbero in silenzio i redirect (GoCardless, magic link).
+  BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
+  APP_URL: z.url({ protocol: /^https?$/ }),
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
   RESEND_API_KEY: z.string().min(1),

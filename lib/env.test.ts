@@ -41,6 +41,13 @@ describe("parseServerEnv", () => {
     expect(() => parseServerEnv({ ...VALID_ENV, APP_URL: "buddybudget" })).toThrow("APP_URL");
   });
 
+  it("rifiuta APP_URL senza schema http/https (es. dimenticato per errore)", () => {
+    // z.url() da solo accetta "localhost:3000" (schema "localhost:") o "ftp://x": un refuso plausibile
+    // che romperebbe in silenzio i redirect GoCardless se passasse la validazione.
+    expect(() => parseServerEnv({ ...VALID_ENV, APP_URL: "localhost:3000" })).toThrow("APP_URL");
+    expect(() => parseServerEnv({ ...VALID_ENV, APP_URL: "ftp://buddybudget.example" })).toThrow("APP_URL");
+  });
+
   it("non espone mai i valori nel messaggio d'errore", () => {
     const leaked = "segreto-che-non-deve-comparire";
     try {

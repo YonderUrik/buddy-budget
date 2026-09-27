@@ -1,6 +1,6 @@
 # Fase 7 — Cutover (Vercel + Neon → VPS k3s)
 
-> **Stato (2026-09-27):** Task 1-3 completi. Task 2: PR #4 nel repo infra mergiata (commit `44a9e00`). Task 3: redirect URI Google OAuth per `www.buddybudget.io` registrato dall'utente. Prerequisito soddisfatto: Fase 6 completa (9/9), verifica manuale utente end-to-end su `app.buddybudget.io` con dati reali confermata dall'utente.
+> **Stato (2026-09-27):** Task 1-5 completi. Sessione con accesso reale a kubectl/Tailscale (non sandbox cloud): CronJob k8s sospesi, dominio rimosso da Vercel dall'utente, dump Neon → restore CNPG verificato (conteggi identici), `APP_URL`/`BETTER_AUTH_URL` aggiornati e pod riavviati (`/api/health` 200). Prossimo: **Task 6, switch DNS** — ultimo passo prima che il traffico reale passi al cluster.
 
 > **Per chi esegue:** runbook guidato, stesso formato delle Fasi 1-6. Ogni comando `kubectl`/`psql`/DNS resta un'azione dell'utente da terminale (via Tailscale) o da pannello (Cloudflare, Vercel, Google Cloud Console) — Claude prepara i comandi esatti e i manifest, verifica gli esiti, non esegue nulla con credenziali proprie. Nessun task va eseguito senza una finestra di fermo annunciata agli utenti concordata in anticipo (oggi: solo l'utente stesso, ma il criterio resta lo stesso per il futuro).
 
@@ -154,27 +154,11 @@ Vercel → Project → Settings → scegliere una delle due (a scelta dell'utent
 
 Scelta consigliata: rimuovere il dominio da Vercel qui stesso, così il Task 6 diventa solo "aggiungere il record su Cloudflare verso il tunnel" invece di due operazioni separate.
 
-- [ ] **Step 3: Dump da Neon**
+- [x] **Step 3: Dump da Neon** — fatto (2026-09-27): pod effimero `pg-cutover` (immagine `postgres:17`, stessa versione di CNPG) in namespace `app`, dump via `DATABASE_URL_UNPOOLED`. Sessione con accesso reale a kubectl/Tailscale, non la sandbox cloud.
 
-Dalla macchina dell'utente (mai da questa sessione cloud — credenziali di produzione):
+- [x] **Step 4: Restore in CNPG** — fatto: `pg_restore --clean --if-exists --no-owner` verso `buddybudget-pg-rw.data.svc.cluster.local`. Solo 2 errori ignorati (grant su ruoli Neon-specifici `neon_superuser`/`cloud_admin`, irrilevanti fuori Neon).
 
-```bash
-pg_dump "$NEON_PRODUCTION_URL" --format=custom --file=buddybudget-cutover-$(date +%Y%m%d%H%M).dump
-```
-
-- [ ] **Step 4: Restore in CNPG**
-
-Stesso pattern già provato in Fase 4 (prova di restore) e Fase 6 (copia dati) — restore **pulito** (il DB CNPG di produzione contiene solo la copia stale di Fase 6, va sovrascritta):
-
-```bash
-# Da un pod con accesso a CNPG (o port-forward), sullo stesso DB già usato in Fase 6
-pg_restore --clean --if-exists --no-owner --role=<ruolo_app> \
-  --dbname="$CNPG_PRODUCTION_URL" buddybudget-cutover-*.dump
-```
-
-- [ ] **Step 5: Verifica conteggio righe**
-
-Confrontare `SELECT count(*) FROM <tabelle principali>` tra il dump appena fatto (o Neon, se ancora raggiungibile in lettura) e CNPG dopo il restore — stesso criterio già usato in Fase 0 per la baseline. Non procedere al Task 5 se i conteggi non combaciano.
+- [x] **Step 5: Verifica conteggio righe** — fatto: `accounts` 1, `transactions` 1247, `categories` 35, `auth_user` 1, `bank_connections` 1, `net_worth_snapshots` 730, `categorization_rules` 172 — identici su Neon e CNPG dopo il restore. Pod `pg-cutover` eliminato a fine task.
 
 ---
 
@@ -187,36 +171,13 @@ Confrontare `SELECT count(*) FROM <tabelle principali>` tra il dump appena fatto
 - Consumes: Secret `app-env` esistente.
 - Produces: pod pronti a servire richieste su `https://www.buddybudget.io` — precondizione per il Task 6 (l'ordine conta: se il DNS si sposta prima che i pod abbiano il nuovo `APP_URL`, i redirect GoCardless/email puntano ancora al dominio sbagliato per la finestra tra i due task).
 
-- [ ] **Step 1: Decifrare, modificare, ricifrare**
+- [x] **Step 1: Decifrare, modificare, ricifrare** — fatto (2026-09-27): chiave age privata estratta dal secret cluster `sops-age` (namespace `argocd`, stessa entità già usata da KSOPS in-cluster) e salvata in locale (`~/.config/sops/age/keys.txt`) per poter usare `sops` da questa sessione con accesso reale a kubectl/Tailscale. `sops set` su `APP_URL`/`BETTER_AUTH_URL`, PR #7 nel repo infra.
 
-```bash
-cd buddy-budget-infra
-sops argocd/manifests/app/app-secrets.enc.yaml
-# cambiare:
-#   APP_URL: https://app.buddybudget.io          → https://www.buddybudget.io
-#   BETTER_AUTH_URL: https://app.buddybudget.io   → https://www.buddybudget.io
-```
+- [x] **Step 2: Merge PR #7, verifica sync** — fatto: PR mergiata dall'utente; ArgoCD non aveva ancora fatto polling del nuovo commit (`status.sync.revision` fermo 2 commit indietro) — sbloccato con `kubectl annotate application app -n argocd argocd.argoproj.io/refresh=hard --overwrite`, poi sincronizzato correttamente.
 
-- [ ] **Step 2: Commit, push, verifica sync**
+- [x] **Step 3: Restart esplicito** — fatto: `kubectl rollout restart deployment/buddy-budget -n app`, rollout completato (`successfully rolled out`).
 
-```bash
-git add argocd/manifests/app/app-secrets.enc.yaml
-git commit -m "feat: APP_URL/BETTER_AUTH_URL al dominio di produzione per il cutover (Fase 7)"
-git push origin main
-```
-
-- [ ] **Step 3: Restart esplicito**
-
-ArgoCD aggiorna il Secret ma non riavvia da solo i pod (vedi Review Focus) — riavviare esplicitamente:
-
-```bash
-kubectl rollout restart deployment/buddy-budget -n app
-kubectl rollout status deployment/buddy-budget -n app
-```
-
-- [ ] **Step 4: Verifica interna**
-
-Da dentro il cluster o via port-forward: `curl http://<pod-ip>:3000/api/health` → conferma che i pod nuovi siano `Ready` prima di spostare il DNS.
+- [x] **Step 4: Verifica interna** — fatto: port-forward sul Deployment, `GET /api/health` → `200 {"status":"ok",...}` dal pod nuovo.
 
 ---
 

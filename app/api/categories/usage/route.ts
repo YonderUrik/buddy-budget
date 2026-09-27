@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { transactions } from "@/lib/db/schema/transactions";
 import { CATEGORY_USAGE_WINDOW_DAYS, type CategoryUsageCounts } from "@/lib/categories/picker";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Data (YYYY-MM-DD) di `days` giorni fa rispetto a `now`. */
 function daysAgo(now: Date, days: number): string {
@@ -17,11 +18,12 @@ function daysAgo(now: Date, days: number): string {
  * CATEGORY_USAGE_WINDOW_DAYS giorni, come `{ [categoryId]: count }`. Serve al selettore categorie per
  * mettere in cima le più usate; le categorie mai usate nella finestra sono assenti.
  */
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const rows = await db
     .select({ categoryId: transactions.categoryId, count: count() })
@@ -37,3 +39,5 @@ export async function GET(request: NextRequest) {
   const usage: CategoryUsageCounts = Object.fromEntries(rows.map((row) => [row.categoryId, row.count]));
   return Response.json(usage);
 }
+
+export const GET = withRoute("categories.usage", handleGet);

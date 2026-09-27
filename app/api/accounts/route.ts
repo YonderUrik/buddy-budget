@@ -4,12 +4,14 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { createAccountSchema } from "@/lib/validation/accounts";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const userAccounts = await db
     .select()
@@ -20,11 +22,12 @@ export async function GET(request: NextRequest) {
   return Response.json(userAccounts);
 }
 
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const body = await request.json();
   const parsed = createAccountSchema.safeParse(body);
@@ -47,3 +50,6 @@ export async function POST(request: NextRequest) {
 
   return Response.json(account, { status: 201 });
 }
+
+export const GET = withRoute("accounts.list", handleGet);
+export const POST = withRoute("accounts.create", handlePost);

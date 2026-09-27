@@ -7,10 +7,12 @@ import { getAppUrl } from "@/lib/env";
 import { createRequisition } from "@/lib/gocardless/client";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
+  bindRequestUser(session.user.id);
 
   const rows = await db
     .select({
@@ -42,9 +44,10 @@ export async function GET(request: NextRequest) {
   );
 }
 
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
+  bindRequestUser(session.user.id);
 
   const body = await request.json();
   const parsed = createConnectionSchema.safeParse(body);
@@ -85,3 +88,6 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Impossibile avviare il collegamento con la banca" }, { status: 502 });
   }
 }
+
+export const GET = withRoute("gocardless.connections.list", handleGet);
+export const POST = withRoute("gocardless.connections.create", handlePost);

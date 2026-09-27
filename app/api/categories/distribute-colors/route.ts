@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { distributeColors } from "@/lib/calc/distribute-colors";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /**
  * POST /api/categories/distribute-colors — riassegna un colore univoco (dal pool di 48)
@@ -11,11 +12,12 @@ import { distributeColors } from "@/lib/calc/distribute-colors";
  * ("Da categorizzare") non viene mai toccata. Applica tutti gli update in un'unica
  * transazione: se qualcosa fallisce, nessuna categoria viene modificata.
  */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const userCategories = await db
     .select()
@@ -40,3 +42,5 @@ export async function POST(request: NextRequest) {
 
   return Response.json(updated);
 }
+
+export const POST = withRoute("categories.distribute_colors", handlePost);

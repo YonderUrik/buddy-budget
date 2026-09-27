@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import "./globals.css";
+import { PwaInstallTracker } from "@/components/analytics";
 
 /** Website ID del sito "BuddyBudget" nell'istanza Umami self-hosted (non segreto: finisce comunque nell'HTML). */
 const UMAMI_WEBSITE_ID = "051f9e59-8ac4-4dc2-8d9e-825421b3af8c";
@@ -73,6 +74,7 @@ export default function RootLayout({
           </ThemeProvider>
         </QueryProvider>
         <Analytics />
+        <PwaInstallTracker />
       </body>
     </html>
   );

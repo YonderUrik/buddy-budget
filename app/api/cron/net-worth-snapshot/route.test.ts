@@ -1,6 +1,10 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/observability/redis-ops-store", async () => {
+  const { createMemoryOpsKv, createOpsStore } = await import("@/lib/observability/ops-store");
+  return { redisOpsStore: createOpsStore(createMemoryOpsKv()) };
+});
 vi.mock("@/lib/net-worth/scheduler", () => ({ runDailySnapshots: vi.fn() }));
 
 import { runDailySnapshots } from "@/lib/net-worth/scheduler";

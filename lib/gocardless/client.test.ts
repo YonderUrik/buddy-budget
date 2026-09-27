@@ -2,7 +2,14 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client as dbClient, db } from "@/lib/db/client";
 import { gocardlessToken } from "@/lib/db/schema/bank-connections";
-import { getAccessToken, getAccountBalances, listInstitutions, resetAccessTokenCacheForTests } from "./client";
+import { getMetricsRegistry, resetMetricsForTests } from "@/lib/observability";
+import {
+  GoCardlessError,
+  getAccessToken,
+  getAccountBalances,
+  listInstitutions,
+  resetAccessTokenCacheForTests,
+} from "./client";
 
 describe("gocardless client", () => {
   beforeEach(async () => {
@@ -87,5 +94,18 @@ describe("gocardless client", () => {
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ balances: [] }), { status: 200 }));
 
     await expect(getAccountBalances("ext-1")).rejects.toThrow("Nessun saldo disponibile");
+  });
+
+  it("un errore HTTP non riporta nel messaggio il path con gli id né il body, e conta la chiamata", async () => {
+    resetMetricsForTests();
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access: "token-1", access_expires: 3600 }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ detail: "IBAN IT60X0542811101000000123456" }), { status: 500 }));
+    const error = await getAccountBalances("ext-segreto-123").catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(GoCardlessError);
+    expect((error as Error).message).toBe("GoCardless accounts.balances ha risposto 500");
+    const text = await getMetricsRegistry().metrics();
+    expect(text).toContain('buddybudget_gocardless_api_requests_total{endpoint="accounts.balances",status_class="5xx"} 1');
+    expect(text).toContain('buddybudget_gocardless_api_requests_total{endpoint="token.new",status_class="2xx"} 1');
   });
 });

@@ -6,6 +6,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { createRuleSchema } from "@/lib/validation/categorization-rules";
 import { merchantKey } from "@/lib/categorization/merchant-key";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Recupera una categoria solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedCategory(userId: string, categoryId: string) {
@@ -35,11 +36,12 @@ async function findDuplicateRule(userId: string, matchType: string, pattern: str
  * GET /api/categorization-rules — ritorna le regole dell'utente autenticato, ordinate per
  * hitCount decrescente, ciascuna arricchita con il nome della categoria collegata.
  */
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const rows = await db
     .select({
@@ -71,11 +73,12 @@ export async function GET(request: NextRequest) {
  * di match e pattern (il pattern viene normalizzato con `merchantKey` prima di ogni confronto/scrittura,
  * dato che la risoluzione confronta sempre chiavi normalizzate, mai testo grezzo).
  */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const body = await request.json();
   const parsed = createRuleSchema.safeParse(body);
@@ -121,3 +124,6 @@ export async function POST(request: NextRequest) {
 
   return Response.json(rule, { status: 201 });
 }
+
+export const GET = withRoute("categorization_rules.list", handleGet);
+export const POST = withRoute("categorization_rules.create", handlePost);

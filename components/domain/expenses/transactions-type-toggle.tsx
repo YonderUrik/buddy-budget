@@ -14,8 +14,11 @@ const OPTIONS = [
 export interface TransactionsTypeToggleProps {
   value: TransactionDirection;
   onChange: (direction: TransactionDirection) => void;
+  /** Occupa tutta la larghezza disponibile (mobile). */
+  stretch?: boolean;
+  className?: string;
 }
 
-export function TransactionsTypeToggle({ value, onChange }: TransactionsTypeToggleProps) {
-  return <SegmentedControl options={OPTIONS} value={value} onChange={onChange} ariaLabel="Tipo di transazione" />;
+export function TransactionsTypeToggle({ value, onChange, stretch, className }: TransactionsTypeToggleProps) {
+  return <SegmentedControl options={OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel="Tipo di transazione" />;
 }

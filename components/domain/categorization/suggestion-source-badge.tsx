@@ -16,11 +16,11 @@ export interface SuggestionSourceBadgeProps {
 export function SuggestionSourceBadge({ suggestion }: SuggestionSourceBadgeProps) {
   const confidencePercentage = Math.round(suggestion.confidence * 100);
   return (
-    <div className="flex flex-col gap-0.5">
-      <Badge variant="secondary" className="w-fit">
+    <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+      <Badge variant="secondary" className="shrink-0">
         {SOURCE_LABELS[suggestion.source]} · {confidencePercentage}%
       </Badge>
-      <p className="text-xs text-muted-foreground">{suggestion.reason}</p>
-    </div>
+      <span className="min-w-0">{suggestion.reason}</span>
+    </p>
   );
 }

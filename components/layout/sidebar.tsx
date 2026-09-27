@@ -6,7 +6,7 @@
  * Barra di navigazione laterale principale dell'applicazione.
  *
  * Comportamento responsive:
- * - Desktop (≥1024px): espansa con logo, label voci, card utente.
+ * - Desktop (≥1024px): espansa con logo, label voci, card utente, versione della build.
  *   L'utente può collassarla manualmente → icon-only (stato in localStorage).
  * - Tablet (768–1023px): entra automaticamente in icon-only al caricamento.
  * - Mobile (<768px): non renderizzata qui; il drawer mobile viene gestito
@@ -41,6 +41,7 @@ import {
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
+import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { authClient } from "@/lib/auth/client";
 import {
   DropdownMenu,
@@ -363,6 +364,15 @@ export function AppSidebar({
             )}
           </button>
         )}
+
+        {/* Versione della build: cambia a ogni deploy */}
+        <AppVersionLabel
+          compact={isCollapsed}
+          className={cn(
+            "mt-2 text-sidebar-foreground/60",
+            isCollapsed ? "text-center" : "px-2"
+          )}
+        />
       </div>
     </aside>
   );

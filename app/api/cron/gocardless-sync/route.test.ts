@@ -1,9 +1,14 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/observability/redis-ops-store", async () => {
+  const { createMemoryOpsKv, createOpsStore } = await import("@/lib/observability/ops-store");
+  return { redisOpsStore: createOpsStore(createMemoryOpsKv()) };
+});
 vi.mock("@/lib/gocardless/scheduler", () => ({ runDueSyncs: vi.fn() }));
 
 import { runDueSyncs } from "@/lib/gocardless/scheduler";
+import { redisOpsStore } from "@/lib/observability/redis-ops-store";
 import { GET } from "./route";
 
 const SECRET = "s".repeat(40);
@@ -35,6 +40,7 @@ describe("GET /api/cron/gocardless-sync", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ ok: true });
     expect(mockedRun).toHaveBeenCalledOnce();
+    expect((await redisOpsStore.getCronSuccesses()).gocardless_sync).toBeGreaterThan(0);
   });
 
   it("risponde 500 se il sync lancia, così il fallimento è visibile al chiamante", async () => {

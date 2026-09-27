@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validation/transactions";
+import { track } from "@/lib/analytics";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
@@ -39,7 +40,8 @@ export function useCreateTransactionMutation() {
       }
       return response.json() as Promise<Transaction>;
     },
-    onSuccess: () => {
+    onSuccess: (transaction) => {
+      track("transaction_added", { direction: Number(transaction.amount) >= 0 ? "entrata" : "uscita" });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
@@ -61,7 +63,9 @@ export function useUpdateTransactionMutation() {
       }
       return response.json() as Promise<Transaction>;
     },
-    onSuccess: () => {
+    onSuccess: (_transaction, { input }) => {
+      if (input.categoryId !== undefined) track("transaction_category_changed", { source: "row" });
+      if (input.excludedAmount !== undefined) track("transaction_split");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });

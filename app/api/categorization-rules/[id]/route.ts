@@ -6,6 +6,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { updateRuleSchema } from "@/lib/validation/categorization-rules";
 import { merchantKey } from "@/lib/categorization/merchant-key";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Recupera una regola solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedRule(userId: string, ruleId: string) {
@@ -52,7 +53,7 @@ async function findDuplicateRule(
  * guard di POST), 409 se la combinazione tipo/pattern risultante coincide con un'altra regola già
  * esistente. Il pattern viene rinormalizzato con `merchantKey` prima di salvare, come in creazione.
  */
-export async function PATCH(
+async function handlePatch(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -60,6 +61,7 @@ export async function PATCH(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const rule = await getOwnedRule(session.user.id, id);
@@ -119,7 +121,7 @@ export async function PATCH(
 }
 
 /** DELETE /api/categorization-rules/[id] — elimina una regola del proprio utente; 404 se non propria. */
-export async function DELETE(
+async function handleDelete(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -127,6 +129,7 @@ export async function DELETE(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const rule = await getOwnedRule(session.user.id, id);
@@ -138,3 +141,6 @@ export async function DELETE(
 
   return new Response(null, { status: 204 });
 }
+
+export const PATCH = withRoute("categorization_rules.update", handlePatch);
+export const DELETE = withRoute("categorization_rules.delete", handleDelete);

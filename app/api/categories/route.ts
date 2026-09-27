@@ -4,13 +4,15 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { createCategorySchema } from "@/lib/validation/categories";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** GET /api/categories — ritorna le categorie dell'utente autenticato, ordinate per data di creazione. */
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const userCategories = await db
     .select()
@@ -22,11 +24,12 @@ export async function GET(request: NextRequest) {
 }
 
 /** POST /api/categories — crea una categoria per l'utente autenticato; 409 se il nome è già in uso. */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const body = await request.json();
   const parsed = createCategorySchema.safeParse(body);
@@ -55,3 +58,6 @@ export async function POST(request: NextRequest) {
 
   return Response.json(category, { status: 201 });
 }
+
+export const GET = withRoute("categories.list", handleGet);
+export const POST = withRoute("categories.create", handlePost);

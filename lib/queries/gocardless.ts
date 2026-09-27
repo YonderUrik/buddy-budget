@@ -6,6 +6,7 @@ import type { CreateConnectionInput, FinalizeSelectionInput } from "@/lib/valida
 import { buildSyncErrorMessage } from "@/lib/gocardless/sync-messages";
 import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";
 import { SYNC_JOBS_QUERY_KEY } from "@/lib/queries/sync-jobs";
+import { track } from "@/lib/analytics";
 
 export interface Institution {
   id: string;
@@ -73,6 +74,7 @@ export function useCreateConnectionMutation() {
       }
       return response.json();
     },
+    onSuccess: () => track("bank_connect_started"),
   });
 }
 
@@ -104,7 +106,8 @@ export function useFinalizeConnectionMutation(connectionId: string) {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_result, input) => {
+      track("bank_connect_completed", { accounts: input.selections.length });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["gocardless", "connections", "status"] });
       queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
@@ -129,6 +132,7 @@ export function useSyncAccountMutation() {
       return body as { jobId: string };
     },
     onSuccess: () => {
+      track("account_sync_manual");
       queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },
     onError: (error: unknown) => {

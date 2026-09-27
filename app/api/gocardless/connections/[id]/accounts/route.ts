@@ -5,10 +5,12 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { GoCardlessError, getAccountDetails, getRequisition } from "@/lib/gocardless/client";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handleGet(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const [connection] = await db
@@ -41,3 +43,5 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     throw error;
   }
 }
+
+export const GET = withRoute("gocardless.connections.accounts", handleGet);

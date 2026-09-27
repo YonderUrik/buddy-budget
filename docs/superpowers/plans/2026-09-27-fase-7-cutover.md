@@ -1,6 +1,6 @@
 # Fase 7 — Cutover (Vercel + Neon → VPS k3s)
 
-> **Stato (2026-09-27):** piano scritto, nessun task eseguito. Prerequisito soddisfatto: Fase 6 completa (9/9), verifica manuale utente end-to-end su `app.buddybudget.io` con dati reali confermata dall'utente.
+> **Stato (2026-09-27):** Task 1 completo. Task 2 completo, PR aperta: https://github.com/YonderUrik/buddy-budget-infra/pull/4 (in attesa di merge/sync ArgoCD da parte dell'utente). Prerequisito soddisfatto: Fase 6 completa (9/9), verifica manuale utente end-to-end su `app.buddybudget.io` con dati reali confermata dall'utente.
 
 > **Per chi esegue:** runbook guidato, stesso formato delle Fasi 1-6. Ogni comando `kubectl`/`psql`/DNS resta un'azione dell'utente da terminale (via Tailscale) o da pannello (Cloudflare, Vercel, Google Cloud Console) — Claude prepara i comandi esatti e i manifest, verifica gli esiti, non esegue nulla con credenziali proprie. Nessun task va eseguito senza una finestra di fermo annunciata agli utenti concordata in anticipo (oggi: solo l'utente stesso, ma il criterio resta lo stesso per il futuro).
 
@@ -74,7 +74,7 @@
 - Consumes: `IngressRoute` esistente (Fase 6), Service `buddy-budget`.
 - Produces: Traefik pronto a rispondere su `www.buddybudget.io` (app vera) e a reindirizzare `buddybudget.io` (apice) verso `www` non appena il DNS punterà lì — nessun effetto finché il Task 6 non sposta il DNS (il vecchio target Vercel resta autoritativo fino ad allora).
 
-- [ ] **Step 1: Aggiungere le route**
+- [x] **Step 1: Aggiungere le route** — fatto (2026-09-27), PR #4 nel repo infra.
 
 ```yaml
 # argocd/manifests/app/ingressroute.yaml — aggiungere accanto alla route esistente per app.buddybudget.io
@@ -113,16 +113,11 @@ spec:
 
 Decidere qui, con l'utente, se **tenere anche `app.buddybudget.io`** come alias permanente (utile come ambiente di staging/preview sempre aggiornato dalla CI) o rimuoverlo dopo il cutover — non blocca nulla, tutte le route possono coesistere indefinitamente sullo stesso Deployment.
 
-- [ ] **Step 2: Commit e push, verifica sync ArgoCD**
+- [ ] **Step 2: Merge PR #4 e verifica sync ArgoCD** (azione utente — richiede `kubectl`/Tailscale)
 
-```bash
-cd buddy-budget-infra
-git add argocd/manifests/app/ingressroute.yaml
-git commit -m "feat: aggiunge Host(www.buddybudget.io) + redirect apice per il cutover (Fase 7)"
-git push origin main
-```
+PR aperta invece di push diretto a `main` (infra tocca produzione, ArgoCD sincronizza da solo al merge): https://github.com/YonderUrik/buddy-budget-infra/pull/4
 
-Verificare con `kubectl get ingressroute -n app buddy-budget -o yaml` che le route siano applicate. Nessun impatto visibile finché il DNS non cambia (Task 6).
+Dopo il merge, verificare con `kubectl get ingressroute -n app buddy-budget -o yaml` che le route siano applicate. Nessun impatto visibile finché il DNS non cambia (Task 6).
 
 ---
 

@@ -43,8 +43,12 @@ L'utente vuole uno strumento a 360° per gli investimenti: **tracciare il propri
 | Serve per | Fonte | Note e rischi |
 |---|---|---|
 | Prezzi EOD, storico, ricerca per ISIN/nome, fondamentali (Fase 6), settori ETF (Fase 3) | **Yahoo Finance** via `yahoo-finance2` | Non ufficiale: può rompersi (meccanismo cookie/"crumb") e i termini d'uso ne vietano l'uso non personale. Accettabile per uso personale; se l'app si apre a utenti esterni va rivalutato, e l'interfaccia `PriceProvider` serve a questo |
-| Storico di riserva | **Stooq** (CSV senza chiave) | Copertura parziale sugli strumenti europei |
-| Crypto | **CoinGecko** (piano gratuito) | Id propri, niente ISIN |
+| Tutto ciò che è quotato a Milano (MOT/BTP, ETFplus, azioni) | **Borsa Italiana**, endpoint JSON non documentato dei grafici (`grafici.borsaitaliana.it`, lo usa la libreria LGPL `Librefolio/borsaItaliana-scraping`) | Unica fonte gratuita buona per i BTP. Protetto da WAF Imperva con token anonimo: fragile, può bloccare IP di datacenter, zona grigia sui termini. Solo uso personale |
+| Riserva ETF/azioni EU | **Stooq** (CSV EOD) | Dal 2026 richiede una `apikey` ottenuta una volta con captcha. Copertura parziale sugli strumenti europei |
+| Riserva ETF/azioni EU con chiave | **Alpha Vantage** (25 chiamate/giorno) | Borse globali incluse; il limite basta per l'aggiornamento giornaliero di ~20 strumenti, non per il recupero dello storico |
+| Riserva azioni USA | **Twelve Data** (800/giorno), **Finnhub** (60/min, storico 1 anno), **Tiingo** | Piani gratuiti ufficiali ma **solo USA**: utili soltanto per le azioni americane |
+| Fondi comuni (NAV) | Nessuna API gratuita ufficiale | Yahoo con id Morningstar `0P…` se c'è, altrimenti prezzo manuale. Gli endpoint non documentati di Morningstar sono troppo fragili per dipenderne |
+| Crypto | **CoinGecko** (piano gratuito); riserva: API pubbliche di **Binance/Kraken** (senza chiave) | Id propri, niente ISIN |
 | Cambi | **BCE** (Data API, ufficiale) | Base EUR, un fixing al giorno (no weekend/festivi: si usa l'ultimo disponibile) |
 | Inflazione (Fase 2) | **Eurostat HICP** | Serve anche ad Analitiche |
 | ISIN → ticker | **OpenFIGI** (gratuito, chiave facoltativa) | Riserva se la ricerca Yahoo per ISIN non trova lo strumento |
@@ -59,12 +63,13 @@ Script usa-e-getta, non committato come feature, che per una lista di ISIN reali
 
 1. la ricerca per ISIN restituisce un simbolo Yahoo, e su quale borsa (per gli ETF preferire la quotazione in EUR: Xetra `.DE` o Borsa Italiana `.MI`);
 2. lo storico giornaliero arriva, fino a quando e in quale valuta;
-3. **BTP e obbligazioni**: se c'è copertura (probabilmente scarsa, i prezzi del MOT su Yahoo sono incompleti) e se il prezzo è in percentuale del nominale;
+3. **BTP e obbligazioni**: copertura su Yahoo (probabilmente scarsa) e sull'endpoint di Borsa Italiana (probabilmente buona), prezzo in percentuale del nominale;
 4. **fondi comuni** (non quotati in borsa, NAV giornaliero): se Yahoo li espone (di solito con id Morningstar tipo `0P0000…`);
-5. crypto su CoinGecko e cambi BCE;
-6. ripetuto per qualche giorno dalla VPS, per vedere se arrivano errori 429 o blocchi.
+5. **Borsa Italiana dalla VPS**: se il WAF Imperva lascia passare le richieste dall'IP del datacenter;
+6. crypto su CoinGecko e cambi BCE;
+7. ripetuto per qualche giorno dalla VPS, per vedere se arrivano errori 429 o blocchi.
 
-Esito atteso: una tabella strumento → fonte (`yahoo` / `coingecko` / `manuale`). Se BTP o fondi non sono coperti restano a prezzo manuale in Fase 1, e si valuta una fonte dedicata (es. Borsa Italiana) come lavoro separato.
+Esito atteso: una tabella strumento → fonte principale e di riserva (`yahoo` / `borsaitaliana` / `stooq` / `alphavantage` / `coingecko` / `manuale`). Se BTP o fondi non sono coperti restano a prezzo manuale in Fase 1, e si valuta una fonte dedicata (es. Borsa Italiana) come lavoro separato.
 
 ## 4. Fase 1 — design proposto
 
@@ -81,7 +86,7 @@ Tutte le nuove tabelle tramite migration Drizzle versionata (`pnpm db:generate` 
 | `name` | nome visualizzato |
 | `type` | `etf` / `azione` / `obbligazione` / `fondo` / `crypto` / `etc` (materie prime) |
 | `currency` | valuta di quotazione (ISO 4217) |
-| `priceSource` | `yahoo` / `coingecko` / `manuale` |
+| `priceSource` | `yahoo` / `borsaitaliana` / `stooq` / `alphavantage` / `coingecko` / `manuale` (fonte principale; le riserve sono per tipo di strumento, nel codice) |
 | `providerSymbol` | es. `VWCE.DE`, `bitcoin`; nullable per `manuale` |
 | `exchange` | facoltativo, informativo |
 | `priceUnit` | `unita` (prezzo per quota) o `percentuale_nominale` (obbligazioni: valore = nominale × prezzo / 100) |

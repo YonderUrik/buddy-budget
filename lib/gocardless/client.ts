@@ -2,6 +2,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { gocardlessToken } from "@/lib/db/schema/bank-connections";
+import { recordGoCardlessApiRequest, type GoCardlessEndpoint } from "@/lib/observability";
 
 const BASE_URL = "https://bankaccountdata.gocardless.com/api/v2";
 const TOKEN_ROW_ID = "singleton";
@@ -26,13 +27,29 @@ export class GoCardlessError extends Error {
   }
 }
 
+/**
+ * `fetch` con metrica `gocardless_api_requests_total` per endpoint (template statico, mai il path reale
+ * che contiene id di conti/requisition). Un errore di rete conta come status 0 e viene rilanciato.
+ */
+async function observedFetch(endpoint: GoCardlessEndpoint, url: string, init: RequestInit): Promise<Response> {
+  let response: Response;
+  try {
+    response = await fetch(url, init);
+  } catch (error) {
+    recordGoCardlessApiRequest(endpoint, 0);
+    throw error;
+  }
+  recordGoCardlessApiRequest(endpoint, response.status);
+  return response;
+}
+
 async function fetchNewToken(): Promise<{ access: string; access_expires: number }> {
   const secretId = process.env.GOCARDLESS_SECRET_ID;
   const secretKey = process.env.GOCARDLESS_SECRET_KEY;
   if (!secretId || !secretKey) {
     throw new Error("GOCARDLESS_SECRET_ID/GOCARDLESS_SECRET_KEY non definite.");
   }
-  const response = await fetch(`${BASE_URL}/token/new/`, {
+  const response = await observedFetch("token.new", `${BASE_URL}/token/new/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ secret_id: secretId, secret_key: secretKey }),
@@ -79,16 +96,21 @@ interface GoCardlessResponse<T> {
   rateLimit: RateLimitInfo | null;
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<GoCardlessResponse<T>> {
+async function request<T>(
+  endpoint: GoCardlessEndpoint,
+  path: string,
+  init: RequestInit = {}
+): Promise<GoCardlessResponse<T>> {
   const accessToken = await getAccessToken();
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await observedFetch(endpoint, `${BASE_URL}${path}`, {
     ...init,
     signal: init.signal ?? AbortSignal.timeout(GOCARDLESS_REQUEST_TIMEOUT_MS),
     headers: { ...init.headers, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
   });
 
   if (!response.ok) {
-    throw new GoCardlessError(`GoCardless ${path} ha risposto ${response.status} ${response.text}`, response.status);
+    // Solo template e status: il path reale contiene id di conti e il body può riportare dati del conto.
+    throw new GoCardlessError(`GoCardless ${endpoint} ha risposto ${response.status}`, response.status);
   }
 
   const remainingHeader = response.headers.get("x-ratelimit-remaining");
@@ -120,7 +142,7 @@ export async function listInstitutions(country: string): Promise<Institution[]> 
   if (!/^[A-Z]{2}$/.test(country)) {
     throw new Error(`Codice paese non valido (atteso ISO 3166-1 alpha-2): ${country}`);
   }
-  const { data } = await request<Institution[]>(`/institutions/?country=${encodeURIComponent(country)}`);
+  const { data } = await request<Institution[]>("institutions.list", `/institutions/?country=${encodeURIComponent(country)}`);
   return data;
 }
 
@@ -138,7 +160,7 @@ export async function createRequisition(params: {
   redirectUrl: string;
   reference: string;
 }): Promise<Requisition> {
-  const { data: agreement } = await request<{ id: string }>("/agreements/enduser/", {
+  const { data: agreement } = await request<{ id: string }>("agreements.create", "/agreements/enduser/", {
     method: "POST",
     body: JSON.stringify({
       institution_id: params.institutionId,
@@ -148,7 +170,7 @@ export async function createRequisition(params: {
     }),
   });
 
-  const { data: requisition } = await request<Requisition>("/requisitions/", {
+  const { data: requisition } = await request<Requisition>("requisitions.create", "/requisitions/", {
     method: "POST",
     body: JSON.stringify({
       redirect: params.redirectUrl,
@@ -165,7 +187,7 @@ export async function createRequisition(params: {
 /** Stato aggiornato di una requisition (`accounts` è popolato solo dopo il consenso dell'utente). */
 export async function getRequisition(requisitionId: string): Promise<Requisition> {
   assertSafePathSegment(requisitionId);
-  const { data } = await request<Requisition>(`/requisitions/${encodeURIComponent(requisitionId)}/`);
+  const { data } = await request<Requisition>("requisitions.get", `/requisitions/${encodeURIComponent(requisitionId)}/`);
   return data;
 }
 
@@ -179,6 +201,7 @@ export interface AccountDetails {
 export async function getAccountDetails(externalAccountId: string): Promise<AccountDetails> {
   assertSafePathSegment(externalAccountId);
   const { data } = await request<{ account: AccountDetails }>(
+    "accounts.details",
     `/accounts/${encodeURIComponent(externalAccountId)}/details/`
   );
   return data.account;
@@ -195,6 +218,7 @@ export async function getAccountBalances(
 ): Promise<{ balance: Balance; rateLimit: RateLimitInfo | null }> {
   assertSafePathSegment(externalAccountId);
   const { data, rateLimit } = await request<{ balances: Balance[] }>(
+    "accounts.balances",
     `/accounts/${encodeURIComponent(externalAccountId)}/balances/`
   );
   const balance = data.balances.find((b) => b.balanceType === "interimAvailable") ?? data.balances[0];
@@ -221,6 +245,6 @@ export async function getAccountTransactions(
   assertSafePathSegment(externalAccountId);
   const { data, rateLimit } = await request<{
     transactions: { booked: BankTransaction[]; pending: BankTransaction[] };
-  }>(`/accounts/${encodeURIComponent(externalAccountId)}/transactions/`);
+  }>("accounts.transactions", `/accounts/${encodeURIComponent(externalAccountId)}/transactions/`);
   return { transactions: data.transactions.booked, rateLimit };
 }

@@ -17,6 +17,7 @@ export type DependencyName = "postgres" | "redis";
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
 export type GoCardlessEndpoint =
   | "token.new"
+  | "agreements.create"
   | "institutions.list"
   | "requisitions.create"
   | "requisitions.get"

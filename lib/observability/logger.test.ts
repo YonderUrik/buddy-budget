@@ -54,6 +54,18 @@ describe("createLogger", () => {
     expect((lines[1].record.error as Record<string, string>).message).toBe("stringa semplice");
   });
 
+  it("include la causa redatta (es. errore Postgres dentro un errore Drizzle)", () => {
+    const { log, lines } = capture();
+    const err = new Error("Failed query: select 1\nparams: mario@example.com", {
+      cause: new Error('duplicate key value violates unique constraint "x"'),
+    });
+    log.error("db.failed", { error: err });
+    const e = lines[0].record.error as { message: string; stack: string; cause: { message: string } };
+    expect(e.cause.message).toBe('duplicate key value violates unique constraint "x"');
+    expect(e.message).not.toContain("mario");
+    expect(e.stack).not.toContain("mario");
+  });
+
   it("warn ed error vanno al writer con il proprio livello", () => {
     const { log, lines } = capture();
     log.warn("w");

@@ -2,6 +2,9 @@
 export const MAX_ERROR_MESSAGE_LENGTH = 500;
 
 const REDACTIONS: ReadonlyArray<[RegExp, string]> = [
+  // DrizzleQueryError: "Failed query: <sql>\nparams: <valori>" — i valori sono dati degli utenti
+  // (descrizioni, importi, note). Si tiene la query, si tolgono sempre i parametri.
+  [/\nparams: [^\n]*/g, "\nparams: [redacted]"],
   [/Bearer\s+[A-Za-z0-9._~+/=-]+/g, "Bearer [redacted]"],
   [/\b(token|secret|code|access|refresh|password|key)=[^&\s"']+/gi, "$1=[redacted]"],
   [/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "[email]"],

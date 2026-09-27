@@ -19,6 +19,11 @@ describe("redactText", () => {
     expect(redactText("/accounts/3f2b8c1e-9a4d-4e5f-8a1b-2c3d4e5f6a7b/transactions/")).toBe("/accounts/[id]/transactions/");
   });
 
+  it("toglie i parametri di una query fallita (DrizzleQueryError)", () => {
+    const message = 'Failed query: insert into "transactions" ("description") values ($1)\nparams: Cena da Mario,42.50';
+    expect(redactText(message)).toBe('Failed query: insert into "transactions" ("description") values ($1)\nparams: [redacted]');
+  });
+
   it("tronca i testi troppo lunghi", () => {
     const out = redactText("x".repeat(MAX_ERROR_MESSAGE_LENGTH + 50));
     expect(out).toHaveLength(MAX_ERROR_MESSAGE_LENGTH + 1);

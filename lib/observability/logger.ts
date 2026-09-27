@@ -58,6 +58,8 @@ interface SerializedError {
   name?: string;
   message: string;
   stack?: string;
+  /** Primo livello di `cause` (es. l'errore Postgres dentro un DrizzleQueryError), senza stack. */
+  cause?: { name?: string; message: string };
 }
 
 /** Serializza un errore redigendo messaggio e stack; lo stack solo a livello `error`. */
@@ -65,6 +67,13 @@ export function serializeError(error: unknown, withStack: boolean): SerializedEr
   if (error instanceof Error) {
     const out: SerializedError = { name: error.name, message: redactText(error.message) };
     if (withStack && error.stack) out.stack = redactText(error.stack, 4000);
+    const cause = (error as { cause?: unknown }).cause;
+    if (cause !== undefined && cause !== error) {
+      out.cause =
+        cause instanceof Error
+          ? { name: cause.name, message: redactText(cause.message) }
+          : { message: redactText(String(cause)) };
+    }
     return out;
   }
   return { message: redactText(String(error)) };

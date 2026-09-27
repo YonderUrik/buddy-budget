@@ -1,6 +1,6 @@
 # Fase 7 — Cutover (Vercel + Neon → VPS k3s)
 
-> **Stato (2026-09-27):** Task 1 completo. Task 2 completo, PR aperta: https://github.com/YonderUrik/buddy-budget-infra/pull/4 (in attesa di merge/sync ArgoCD da parte dell'utente). Prerequisito soddisfatto: Fase 6 completa (9/9), verifica manuale utente end-to-end su `app.buddybudget.io` con dati reali confermata dall'utente.
+> **Stato (2026-09-27):** Task 1-3 completi. Task 2: PR #4 nel repo infra mergiata (commit `44a9e00`). Task 3: redirect URI Google OAuth per `www.buddybudget.io` registrato dall'utente. Prerequisito soddisfatto: Fase 6 completa (9/9), verifica manuale utente end-to-end su `app.buddybudget.io` con dati reali confermata dall'utente.
 
 > **Per chi esegue:** runbook guidato, stesso formato delle Fasi 1-6. Ogni comando `kubectl`/`psql`/DNS resta un'azione dell'utente da terminale (via Tailscale) o da pannello (Cloudflare, Vercel, Google Cloud Console) — Claude prepara i comandi esatti e i manifest, verifica gli esiti, non esegue nulla con credenziali proprie. Nessun task va eseguito senza una finestra di fermo annunciata agli utenti concordata in anticipo (oggi: solo l'utente stesso, ma il criterio resta lo stesso per il futuro).
 
@@ -113,11 +113,7 @@ spec:
 
 Decidere qui, con l'utente, se **tenere anche `app.buddybudget.io`** come alias permanente (utile come ambiente di staging/preview sempre aggiornato dalla CI) o rimuoverlo dopo il cutover — non blocca nulla, tutte le route possono coesistere indefinitamente sullo stesso Deployment.
 
-- [ ] **Step 2: Merge PR #4 e verifica sync ArgoCD** (azione utente — richiede `kubectl`/Tailscale)
-
-PR aperta invece di push diretto a `main` (infra tocca produzione, ArgoCD sincronizza da solo al merge): https://github.com/YonderUrik/buddy-budget-infra/pull/4
-
-Dopo il merge, verificare con `kubectl get ingressroute -n app buddy-budget -o yaml` che le route siano applicate. Nessun impatto visibile finché il DNS non cambia (Task 6).
+- [x] **Step 2: Merge PR #4 e verifica sync ArgoCD** — fatto (2026-09-27), PR mergiata (`44a9e00`). Nessun impatto visibile finché il DNS non cambia (Task 6).
 
 ---
 
@@ -129,19 +125,9 @@ Dopo il merge, verificare con `kubectl get ingressroute -n app buddy-budget -o y
 - Consumes: nessuna.
 - Produces: login Google funzionante sul dominio di produzione dal momento del cutover — precondizione bloccante per il Task 6.
 
-- [ ] **Step 1**
+- [x] **Step 1** — fatto (2026-09-27): redirect URI `https://www.buddybudget.io/api/auth/callback/google` registrato dall'utente.
 
-Google Cloud Console → Credentials → OAuth Client ID usato da `GOOGLE_CLIENT_ID` → Authorized redirect URIs → aggiungere:
-
-```
-https://www.buddybudget.io/api/auth/callback/google
-```
-
-(verificare l'URI esatto già presente per `https://app.buddybudget.io/api/auth/callback/google`, aggiunta in Fase 6 Task 5, e ricalcarne il formato).
-
-- [ ] **Step 2**
-
-Non rimuovere l'URI di `app.buddybudget.io` se si è deciso al Task 2 di tenerlo attivo.
+- [x] **Step 2** — URI di `app.buddybudget.io` lasciato attivo (alias mantenuto, deciso al Task 2).
 
 ---
 

@@ -4,7 +4,16 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import "./globals.css";
+
+/** Website ID del sito "BuddyBudget" nell'istanza Umami self-hosted (non segreto: finisce comunque nell'HTML). */
+const UMAMI_WEBSITE_ID = "051f9e59-8ac4-4dc2-8d9e-825421b3af8c";
+/**
+ * Script Umami servito dallo stesso dominio via IngressRoute Traefik (repo infra, namespace app).
+ * Il tracker invia gli eventi alla sua stessa cartella (/stats/api/send), instradata anch'essa a Umami.
+ */
+const UMAMI_SCRIPT_SRC = "/stats/script.js";
 
 const hankenGrotesk = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -56,6 +65,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">
+        <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}

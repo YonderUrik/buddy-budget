@@ -44,3 +44,14 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   if (diffMs < RELATIVE_TIME_MAX_DAYS * DAY_MS) return `${Math.floor(diffMs / DAY_MS)} giorni fa`;
   return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(date);
 }
+
+/**
+ * Formatta una data calendario "YYYY-MM-DD" (es. `transactions.date`) in forma breve, "26 set".
+ * Costruisce la data in ora locale: `new Date("YYYY-MM-DD")` la interpreterebbe in UTC e,
+ * a ovest di Greenwich, mostrerebbe il giorno prima.
+ */
+export function formatShortDate(isoDate: string, locale = "it-IT"): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  if (!year || !month || !day) return isoDate;
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(new Date(year, month - 1, day));
+}

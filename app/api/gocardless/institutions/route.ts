@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { GoCardlessError, listInstitutions } from "@/lib/gocardless/client";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const COUNTRY_FORMAT = /^[A-Z]{2}$/;
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
+  bindRequestUser(session.user.id);
 
   const country = request.nextUrl.searchParams.get("country");
   if (!country) {
@@ -26,3 +28,5 @@ export async function GET(request: NextRequest) {
     throw error;
   }
 }
+
+export const GET = withRoute("gocardless.institutions.list", handleGet);

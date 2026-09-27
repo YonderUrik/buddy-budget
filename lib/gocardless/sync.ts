@@ -8,6 +8,7 @@ import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limi
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
+import { logger } from "@/lib/observability";
 
 const MAX_STORED_SYNC_TIMESTAMPS = 4;
 
@@ -32,7 +33,7 @@ async function reportProgress(onProgress: SyncProgressCallback | undefined, prog
   try {
     await onProgress(progress);
   } catch (error) {
-    console.error("Aggiornamento dell'avanzamento del sync fallito", error);
+    logger.warn("gocardless.sync.progress_failed", { error });
   }
 }
 

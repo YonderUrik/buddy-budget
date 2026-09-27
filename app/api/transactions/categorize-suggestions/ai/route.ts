@@ -8,6 +8,7 @@ import { getSuggester } from "@/lib/categorization/llm";
 import { isDirectionCompatible } from "@/lib/categorization/match-rule";
 import { merchantKey } from "@/lib/categorization/merchant-key";
 import { groupByMerchant, type CategorizeSuggestion, type SuggestTransaction } from "@/lib/categorization/suggest";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Transazione del DB nella forma attesa dal motore delle proposte (numeri già convertiti). */
 function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTransaction {
@@ -27,11 +28,12 @@ function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTra
  * normale**, non un guasto: risponde comunque 200 con `{ groups: [] }`, mai un errore né un avviso —
  * chi chiama (la UI di revisione) tratta questa risposta esattamente come "nessuna proposta trovata".
  */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const userId = session.user.id;
 
@@ -97,3 +99,5 @@ export async function POST(request: NextRequest) {
 
   return Response.json({ groups: groupByMerchant(uncategorized, suggestions) });
 }
+
+export const POST = withRoute("transactions.categorize_suggestions_ai", handlePost);

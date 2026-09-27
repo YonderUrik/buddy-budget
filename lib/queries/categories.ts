@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/lib/validation/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
+import { track } from "@/lib/analytics";
 
 const CATEGORIES_QUERY_KEY = ["categories"] as const;
 
@@ -59,7 +60,8 @@ export function useCreateCategoryMutation() {
       }
       return response.json() as Promise<Category>;
     },
-    onSuccess: () => {
+    onSuccess: (_category, input) => {
+      track("category_created", { group: input.type });
       queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
     },
   });

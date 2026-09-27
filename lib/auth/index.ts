@@ -7,6 +7,7 @@ import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
 import { categories, DEFAULT_CATEGORIES } from "@/lib/db/schema/categories";
+import { recordAuthEvent, requestLogger } from "@/lib/observability";
 import { MAGIC_LINK_EXPIRES_MINUTES } from "./constants";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -34,8 +35,12 @@ export const auth = betterAuth({
           text: `Clicca qui per accedere: ${url}\n\nIl link scade tra ${MAGIC_LINK_EXPIRES_MINUTES} minuti.`,
         });
         if (error) {
-          throw new Error(`Invio magic link non riuscito: ${error.message}`);
+          recordAuthEvent("magic_link_failed");
+          // Solo il tipo d'errore di Resend: il messaggio può contenere l'indirizzo email.
+          requestLogger().error("auth.magic_link.failed", { reason: error.name });
+          throw new Error(`Invio magic link non riuscito (${error.name})`);
         }
+        recordAuthEvent("magic_link_sent");
       },
     }),
   ],
@@ -66,6 +71,14 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
+    session: {
+      create: {
+        /** Ogni sessione creata è un accesso riuscito (magic link o Google): solo un contatore, nessun dato utente. */
+        after: async () => {
+          recordAuthEvent("sign_in");
+        },
+      },
+    },
     user: {
       create: {
         /** Semina le categorie di default quando un nuovo utente viene creato via auth. */

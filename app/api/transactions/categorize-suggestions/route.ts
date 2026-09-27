@@ -6,6 +6,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { computeSuggestions, groupByMerchant, type SuggestTransaction } from "@/lib/categorization/suggest";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Transazione del DB nella forma attesa dal motore delle proposte (numeri già convertiti). */
 function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTransaction {
@@ -25,11 +26,12 @@ function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTra
  * dallo storico già categorizzato. Non interroga mai l'assistente (endpoint `ai` dedicato), quindi la
  * risposta non dipende dalla disponibilità di un modello.
  */
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const userId = session.user.id;
 
@@ -70,3 +72,5 @@ export async function GET(request: NextRequest) {
 
   return Response.json({ groups: groupByMerchant(uncategorized, suggestions) });
 }
+
+export const GET = withRoute("transactions.categorize_suggestions", handleGet);

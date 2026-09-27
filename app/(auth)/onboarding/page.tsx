@@ -9,6 +9,7 @@ import { CurrencyPicker } from "@/components/domain/auth";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_AFTER_LOGIN_PATH } from "@/lib/auth/constants";
 import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/currency";
+import { track } from "@/lib/analytics";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function OnboardingPage() {
       });
 
       if (response.ok) {
+        track("onboarding_completed", { currency });
         router.replace(DEFAULT_AFTER_LOGIN_PATH);
         router.refresh();
         return;

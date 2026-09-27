@@ -1,12 +1,25 @@
-import { syncAccountLink, type SyncProgress, type SyncResult, type SyncableLink } from "@/lib/gocardless/sync";
+import type { SyncProgress, SyncResult, SyncableLink } from "@/lib/gocardless/sync";
+import { syncAccountLinkObserved } from "@/lib/gocardless/sync-telemetry";
+import { logger as appLogger, type Logger, type OpsStore, type SyncTrigger } from "@/lib/observability";
 import type { RateLimitStore } from "@/lib/gocardless/rate-limit";
 import type { SyncJobStore } from "./store";
-import { SYNC_JOB_HEARTBEAT_MS, type SyncJobAccountPatch } from "./types";
+import { SYNC_JOB_HEARTBEAT_MS, type SyncJobAccountPatch, type SyncJobKind } from "./types";
 
 export interface RunSyncJobDeps {
   store: SyncJobStore;
   rateLimitStore: RateLimitStore;
+  /** Stato operativo per la metrica dei job attivi/bloccati (opzionale: senza, non viene aggiornato). */
+  ops?: OpsStore;
+  /** Logger della richiesta che ha avviato il job (collega job e richiesta via requestId). */
+  log?: Logger;
 }
+
+/** Il job di import iniziale nasce dal finalize del collegamento; il sync manuale dal bottone in Conti. */
+export function syncTriggerForJob(kind: SyncJobKind | undefined): SyncTrigger {
+  return kind === "initial-import" ? "finalize" : "manual";
+}
+
+type RunnableJob = { id: string; userId: string; kind?: SyncJobKind };
 
 /** Traduce l'avanzamento di `syncAccountLink` in una patch del conto nel job. */
 export function progressToPatch(progress: SyncProgress): SyncJobAccountPatch {
@@ -30,12 +43,12 @@ export function resultToPatch(result: SyncResult): SyncJobAccountPatch {
   }
 }
 
-async function runAccount(job: { id: string; userId: string }, link: SyncableLink, deps: RunSyncJobDeps) {
+async function runAccount(job: RunnableJob, link: SyncableLink, deps: RunSyncJobDeps, log: Logger) {
   const update = async (patch: SyncJobAccountPatch) => {
     try {
       await deps.store.updateAccount(job.userId, job.id, link.accountId, patch);
     } catch (error) {
-      console.error(`Aggiornamento del job ${job.id} fallito per il conto ${link.accountId}`, error);
+      log.warn("sync_job.update.failed", { accountId: link.accountId, error });
     }
   };
 
@@ -47,17 +60,21 @@ async function runAccount(job: { id: string; userId: string }, link: SyncableLin
   }, SYNC_JOB_HEARTBEAT_MS);
 
   try {
-    const result = await syncAccountLink(link, deps.rateLimitStore, (progress) => update(progressToPatch(progress)));
+    const result = await syncAccountLinkObserved(link, deps.rateLimitStore, {
+      trigger: syncTriggerForJob(job.kind),
+      log,
+      onProgress: (progress) => update(progressToPatch(progress)),
+    });
     await update(resultToPatch(result));
-  } catch (error) {
-    console.error(`Sync fallito per il conto ${link.accountId}`, error);
+  } catch {
+    // Già registrato (metrica + log) da syncAccountLinkObserved.
     await update({ phase: "error" });
   } finally {
     clearInterval(heartbeat);
     try {
       await deps.store.releaseAccountLock(link.accountId);
     } catch (error) {
-      console.error(`Rilascio del lock fallito per il conto ${link.accountId}`, error);
+      log.warn("sync_job.lock_release.failed", { accountId: link.accountId, error });
     }
   }
 }
@@ -66,10 +83,24 @@ async function runAccount(job: { id: string; userId: string }, link: SyncableLin
  * Esegue un job di sync: tutti i conti in parallelo, ognuno isolato dagli errori degli altri.
  * Pensato per girare in `after()`: non lancia mai e rilascia sempre il lock dei conti ricevuti.
  */
-export async function runSyncJob(
-  job: { id: string; userId: string },
-  links: SyncableLink[],
-  deps: RunSyncJobDeps
-): Promise<void> {
-  await Promise.allSettled(links.map((link) => runAccount(job, link, deps)));
+export async function runSyncJob(job: RunnableJob, links: SyncableLink[], deps: RunSyncJobDeps): Promise<void> {
+  const log = (deps.log ?? appLogger).child({ jobId: job.id });
+  const ops = deps.ops;
+  const safely = async (event: string, fn: () => Promise<void>) => {
+    try {
+      await fn();
+    } catch (error) {
+      log.warn(event, { error });
+    }
+  };
+  if (ops) await safely("sync_job.ops.write_failed", () => ops.markJobRunning(job.id, Date.now()));
+  const keepAlive = ops
+    ? setInterval(() => void safely("sync_job.ops.write_failed", () => ops.markJobRunning(job.id, Date.now())), SYNC_JOB_HEARTBEAT_MS)
+    : undefined;
+  try {
+    await Promise.allSettled(links.map((link) => runAccount(job, link, deps, log)));
+  } finally {
+    clearInterval(keepAlive);
+    if (ops) await safely("sync_job.ops.write_failed", () => ops.markJobDone(job.id));
+  }
 }

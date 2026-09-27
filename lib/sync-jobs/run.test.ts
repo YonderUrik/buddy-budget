@@ -6,7 +6,8 @@ import { syncAccountLink, type SyncableLink } from "@/lib/gocardless/sync";
 import type { RateLimitStore } from "@/lib/gocardless/rate-limit";
 import { queuedAccount } from "./types";
 import { createMemorySyncJobKv, createSyncJobStore, type SyncJobStore } from "./store";
-import { progressToPatch, resultToPatch, runSyncJob } from "./run";
+import { createMemoryOpsKv, createOpsStore, getMetricsRegistry, resetMetricsForTests } from "@/lib/observability";
+import { progressToPatch, resultToPatch, runSyncJob, syncTriggerForJob } from "./run";
 
 const rateLimitStore: RateLimitStore = { get: async () => null, set: async () => {} };
 
@@ -106,5 +107,42 @@ describe("runSyncJob", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it("segna il job come in corso durante il lavoro e lo toglie alla fine, anche se un conto fallisce", async () => {
+    const ops = createOpsStore(createMemoryOpsKv());
+    const job = await store.createJob({ userId: "u1", kind: "manual-sync", accounts: [queuedAccount("a", "A")] });
+    let during: { active: number; stale: number } | undefined;
+    vi.mocked(syncAccountLink).mockImplementation(async () => {
+      during = await ops.countJobs(Date.now());
+      throw new Error("GoCardless 500");
+    });
+    await runSyncJob(job, [link("a")], { store, rateLimitStore, ops });
+    expect(during).toEqual({ active: 1, stale: 0 });
+    expect(await ops.countJobs(Date.now())).toEqual({ active: 0, stale: 0 });
+  });
+
+  it("registra le metriche di sync con il trigger del tipo di job", async () => {
+    resetMetricsForTests();
+    const job = await store.createJob({ userId: "u1", kind: "initial-import", accounts: [queuedAccount("a", "A")] });
+    vi.mocked(syncAccountLink).mockResolvedValue({
+      status: "synced",
+      newTransactionsCount: 3,
+      categorizedCount: 2,
+      uncategorizedCount: 1,
+      balanceUpdated: true,
+    });
+    await runSyncJob(job, [link("a")], { store, rateLimitStore });
+    const text = await getMetricsRegistry().metrics();
+    expect(text).toContain('buddybudget_gocardless_sync_total{trigger="finalize",outcome="synced"} 1');
+    expect(text).toContain('buddybudget_transactions_imported_total{categorized="false"} 1');
+  });
+});
+
+describe("syncTriggerForJob", () => {
+  it("mappa il tipo di job sull'origine del sync", () => {
+    expect(syncTriggerForJob("initial-import")).toBe("finalize");
+    expect(syncTriggerForJob("manual-sync")).toBe("manual");
+    expect(syncTriggerForJob(undefined)).toBe("manual");
   });
 });

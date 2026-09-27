@@ -56,11 +56,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">
-        {/* Umami self-hosted (Fase 6 migrazione VPS): script servito dallo stesso dominio via
-            IngressRoute /stats/script. Valori letterali (non env): il layout radice viene
-            pre-renderizzato staticamente a build time, quindi una lettura di process.env qui
-            non riflette in modo affidabile l'ambiente di destinazione — vedi log Fase 6. */}
-        <script defer src="/stats/script" data-website-id="051f9e59-8ac4-4dc2-8d9e-825421b3af8c" />
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}

@@ -28,3 +28,6 @@ export type {
   SyncOutcome,
   SyncTrigger,
 } from "./metrics";
+export { withRoute, resolveRequestId, REQUEST_ID_HEADER } from "./with-route";
+export type { WithRouteOptions } from "./with-route";
+export { requestLogger, bindRequestUser, currentRequestId, runWithRequestContext } from "./request-context";

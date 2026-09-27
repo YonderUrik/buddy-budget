@@ -20,7 +20,7 @@
 - **Google OAuth invece sì**: better-auth è montato su `/api/auth/[...all]`, quindi il redirect URI da aggiungere in Google Cloud Console è `https://www.buddybudget.io/api/auth/callback/google` (stesso pattern già usato per `app.buddybudget.io` in Fase 6 Task 5 — verificare lì l'URI esatto già registrato come riferimento, prima di aggiungerne uno nuovo).
 - **Resend (email transazionali)**: nessuna azione — l'invio non dipende dal dominio da cui è servita l'app, solo dal dominio mittente già verificato su Resend (non cambia).
 - **Congelare le scritture durante dump+restore**: il freeze deve fermare _entrambe_ le fonti di scrittura concorrenti (Vercel Cron è già disattivato dalla Fase 0; i CronJob k8s **vanno sospesi anche loro** per la finestra di dump, altrimenti un sync GoCardless/snapshot patrimonio scritto su CNPG durante il dump Neon→CNPG verrebbe sovrascritto dal restore).
-- **DNS di `buddybudget.io` (apice) — verificato al Task 1**: `A` record verso `216.198.79.1`, **DNS-only** (non proxied), TTL 10 minuti. Non essendo proxied da Cloudflare, questo record segue la vera propagazione DNS (non lo switch quasi-istantaneo di un record proxied) — ma con TTL basso (600s) i resolver dovrebbero aggiornarsi entro pochi minuti dal cambio, coerente con il fermo di 15–30 min già stimato in spec. **Da verificare al Task 1** il record equivalente per `www.buddybudget.io` (non ancora controllato) prima di scrivere i comandi esatti del Task 6.
+- **DNS — verificato al Task 1, entrambi i record**: `buddybudget.io` (apice) = `A` → `216.198.79.1`; `www.buddybudget.io` = `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`. **Entrambi DNS-only** (non proxied da Cloudflare), TTL 10 minuti. Non essendo proxied, questi record seguono la vera propagazione DNS (non lo switch quasi-istantaneo di un record proxied) — ma con TTL basso (600s) i resolver dovrebbero aggiornarsi entro pochi minuti dal cambio, coerente con il fermo di 15–30 min già stimato in spec.
 - **`buddybudget.io` (apice) reindirizza a `www.buddybudget.io`** (verificato dall'utente al Task 1, oggi via Vercel) — il dominio realmente servito è `www`. Il redirect va replicato sulla nuova infrastruttura (Task 2/6), non lasciato cadere: chi visita `buddybudget.io` oggi finisce comunque su `www.buddybudget.io`.
 
 ## Review Focus
@@ -34,7 +34,7 @@
 
 ## Ordine dei passi
 
-1. ~~Ricognizione pre-cutover~~ **fatta**: apice `buddybudget.io` = `A` → `216.198.79.1`, DNS-only, TTL 10 min, redirige a `www.buddybudget.io` (il dominio vero); backup R2 fresco (`20260927T160200/`); finestra di fermo preferita: notte di un weekend. **Resta da controllare** il record DNS di `www.buddybudget.io` stesso (tipo/target/proxy) prima del Task 6 — non ancora fatto.
+1. ~~Ricognizione pre-cutover~~ **fatta e completa**: apice `buddybudget.io` = `A` → `216.198.79.1`, DNS-only, TTL 10 min, redirige a `www.buddybudget.io` (il dominio vero) = `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`, anch'esso DNS-only, TTL 10 min; backup R2 fresco (`20260927T160200/`); finestra di fermo preferita: notte di un weekend (data esatta da fissare).
 2. Aggiungere `Host(www.buddybudget.io)` + `Host(buddybudget.io)` (redirect) alla `IngressRoute` esistente (senza ancora spostare DNS/segreti — innocuo, non cambia nulla finché DNS punta a Vercel).
 3. Registrare il redirect URI Google OAuth per `www.buddybudget.io`.
 4. **Finestra di fermo**: sospendere i CronJob k8s + mettere Vercel in pausa (o rimuovere temporaneamente il dominio custom, a scelta dell'utente) → dump Neon → restore in CNPG → verifica.
@@ -57,9 +57,7 @@
 
 - [x] **Step 2: Redirect www** — fatto (2026-09-27): `buddybudget.io` (apice) reindirizza a `www.buddybudget.io` su Vercel — **`www` è il dominio realmente servito**, l'apice è solo un redirect. Cambia lo scope del cutover: il dominio da migrare per davvero è `www.buddybudget.io` (vedi Task 2/3/5/6 aggiornati); l'apice deve solo continuare a fare redirect sulla nuova infrastruttura.
 
-- [ ] **Step 2b: Tipo di record DNS di `www` — ancora da fare**
-
-Stesso controllo dello Step 1 ma per `www.buddybudget.io`: tipo (`CNAME`/`A`), target attuale, proxied o DNS-only, TTL. Necessario prima di scrivere i comandi esatti del Task 6 (cambia se si sta editando un record esistente o creandone uno nuovo).
+- [x] **Step 2b: Tipo di record DNS di `www`** — fatto (2026-09-27): `www.buddybudget.io` → `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`, **DNS-only**, TTL 10 minuti — stesso identikit dell'apice (nessun proxy Cloudflare su nessuno dei due record oggi). Il Task 6 diventa quindi, per entrambi: modificare il **target** di un record già esistente (non crearne uno nuovo) e attivare il proxy (nuvoletta arancione).
 
 - [x] **Step 3: Stato backup R2** — fatto (2026-09-27): ultimo oggetto `20260927T160200/`, fresco (stesso giorno). Nessuna azione necessaria, resta la rete di sicurezza se il restore Task 4 va storto.
 
@@ -251,11 +249,11 @@ Da dentro il cluster o via port-forward: `curl http://<pod-ip>:3000/api/health` 
 
 - [ ] **Step 1: `www.buddybudget.io` (dominio primario)**
 
-Cloudflare DNS → modificare (o creare, secondo quanto emerso allo Step 2b del Task 1) il record `www.buddybudget.io` da target Vercel a **CNAME verso lo stesso tunnel già usato per `app.`/`test.`/`status.`** (`<tunnel-id>.cfargotunnel.com`), **proxied** (nuvoletta arancione) — coerente con gli altri sottodomini, non serve certificato Let's Encrypt separato (TLS terminato da Cloudflare come per tutto il resto).
+Cloudflare DNS → il record `CNAME` esistente (oggi `www.buddybudget.io → c97c5418d705f7ed.vercel-dns-017.com`, DNS-only): cambiare solo il **target** a `<tunnel-id>.cfargotunnel.com` (stesso tunnel già usato per `app.`/`test.`/`status.`) e attivare il **proxy** (nuvoletta arancione) — non serve certificato Let's Encrypt separato, TLS terminato da Cloudflare come per tutto il resto.
 
 - [ ] **Step 2: `buddybudget.io` (apice, redirect)**
 
-Stesso cambio per l'apice: da `A` DNS-only → `216.198.79.1` a **CNAME proxied verso lo stesso tunnel**. Essendo oggi DNS-only con TTL 600s, questo è l'unico dei due switch dove la vera propagazione DNS conta — i resolver con la vecchia risposta in cache continueranno a risolvere verso `216.198.79.1` (Vercel, nel frattempo disattivato al Task 4) per al più ~10 minuti, poi passeranno al nuovo target. Coerente con la finestra di fermo di 15–30 min già prevista.
+Stesso cambio per l'apice, ma qui il record cambia anche **tipo**: da `A` (`216.198.79.1`) a `CNAME` verso lo stesso tunnel, proxied. Entrambi i record erano DNS-only con TTL 600s (10 min): i resolver con la vecchia risposta in cache continueranno a risolvere verso i target Vercel (nel frattempo disattivati al Task 4) per al più ~10 minuti dopo il cambio, poi passeranno al nuovo target — coerente con la finestra di fermo di 15–30 min già prevista.
 
 - [ ] **Step 3: Verifica da rete esterna**
 

@@ -18,7 +18,7 @@ Lato client, `lib/analytics/track.ts` manda a Umami eventi tipizzati. `GET /api/
 
 **Branch:** `claude/amazing-hamilton-zbn0d1`, portato su `main` con una PR (la CI la verifica).
 
-**Stato (2026-09-27):** Task 1-9 completati (deviazioni nel log di `CLAUDE.md` e nell'intestazione della spec). Da fare: Task 10 (infra) e Task 11 (merge e verifica sul cluster).
+**Stato (2026-09-27):** Task 1-9 completati (deviazioni nel log di `CLAUDE.md` e nell'intestazione della spec). Task 10 fatto nella PR infra YonderUrik/buddy-budget-infra#3 (token in due secret separati `app-metrics-token`/`alloy-metrics-token` invece di aggiungerlo a `app-secrets.enc.yaml`: quel file è cifrato per intero e si modifica solo con la chiave privata age). Da fare: Task 11, cioè merge (prima YonderUrik/buddy-budget#13, poi l'infra) e checklist sul cluster.
 
 ## Vincoli globali
 

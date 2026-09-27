@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
 import { runDueSyncs } from "@/lib/gocardless/scheduler";
+import { withRoute } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 // I conti dovuti si sincronizzano dentro la richiesta: nessun utente aspetta la risposta, quindi
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /** Cron di sync GoCardless dei conti dovuti (Vercel Cron oggi, CronJob k8s dopo la migrazione). Idempotente. */
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {
     return new Response(null, { status: 401 });
   }
@@ -21,3 +22,5 @@ export async function GET(request: NextRequest) {
   }
   return Response.json({ ok: true, durationMs: Date.now() - startedAt });
 }
+
+export const GET = withRoute("cron.gocardless_sync", handleGet);

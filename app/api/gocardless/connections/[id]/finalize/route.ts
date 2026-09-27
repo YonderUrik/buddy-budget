@@ -10,6 +10,7 @@ import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { runSyncJob } from "@/lib/sync-jobs/run";
 import { queuedAccount, type SyncJob, type SyncJobAccount } from "@/lib/sync-jobs/types";
 import { finalizeSelectionSchema } from "@/lib/validation/gocardless";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 // L'import iniziale gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
 export const maxDuration = 300;
@@ -22,9 +23,10 @@ const STORE_UNAVAILABLE_MESSAGE = "Servizio temporaneamente non disponibile. Rip
  * Validazione e ownership avvengono prima di creare il job; se lo store dei job non risponde,
  * 503 prima di creare qualunque conto.
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function handlePost(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
+  bindRequestUser(session.user.id);
   const userId = session.user.id;
 
   const { id } = await params;
@@ -156,3 +158,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   return Response.json({ jobId: job.id }, { status: 201 });
 }
+
+export const POST = withRoute("gocardless.connections.finalize", handlePost);

@@ -7,6 +7,7 @@ import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { isDirectionCompatible } from "@/lib/categorization/match-rule";
 import { applyCategorizationSchema } from "@/lib/validation/categorization-rules";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /**
  * POST /api/transactions/categorize-apply — applica in blocco le scelte fatte nella pagina di
@@ -14,11 +15,12 @@ import { applyCategorizationSchema } from "@/lib/validation/categorization-rules
  * richiesto, crea o aggiorna la regola `appresa` corrispondente. Tutto in un'unica transazione DB:
  * o passa l'intero batch, o non passa nulla.
  */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const userId = session.user.id;
   const body = await request.json();
@@ -115,3 +117,5 @@ export async function POST(request: NextRequest) {
 
   return Response.json({ applied, rulesCreated });
 }
+
+export const POST = withRoute("transactions.categorize_apply", handlePost);

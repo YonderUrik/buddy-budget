@@ -9,6 +9,7 @@ import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { runSyncJob } from "@/lib/sync-jobs/run";
 import { queuedAccount, type SyncJob } from "@/lib/sync-jobs/types";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 // Il sync gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
 export const maxDuration = 300;
@@ -19,9 +20,10 @@ export const maxDuration = 300;
  * così gli errori prevedibili arrivano come risposta HTTP: 404, 429 not-eligible, 409 already-running,
  * 503 se lo store dei job non risponde. Altrimenti crea il job e risponde subito 202 { jobId }.
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ accountId: string }> }) {
+async function handlePost(request: NextRequest, { params }: { params: Promise<{ accountId: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
+  bindRequestUser(session.user.id);
 
   const { accountId } = await params;
 
@@ -97,3 +99,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   return Response.json({ jobId: job.id }, { status: 202 });
 }
+
+export const POST = withRoute("gocardless.accounts.sync", handlePost);

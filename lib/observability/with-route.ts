@@ -36,11 +36,11 @@ function withRequestIdHeader(response: Response, requestId: string): Response {
  * `name` è un nome STATICO (es. "transactions.update"), mai il path reale: finisce nelle etichette
  * delle metriche. Dentro l'handler il logger della richiesta si ottiene con `requestLogger()`.
  */
-export function withRoute<A extends unknown[]>(
+export function withRoute<R extends Request, A extends unknown[]>(
   name: string,
-  handler: (request: Request, ...rest: A) => Promise<Response> | Response,
+  handler: (request: R, ...rest: A) => Promise<Response> | Response,
   options: WithRouteOptions = {}
-): (request: Request, ...rest: A) => Promise<Response> {
+): (request: R, ...rest: A) => Promise<Response> {
   return (request, ...rest) => {
     const requestId = resolveRequestId(request.headers.get(REQUEST_ID_HEADER));
     const method = request.method;

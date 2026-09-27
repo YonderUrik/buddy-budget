@@ -4,8 +4,9 @@ import { db } from "@/lib/db/client";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { getAppUrl } from "@/lib/env";
 import { getRequisition } from "@/lib/gocardless/client";
+import { withRoute } from "@/lib/observability";
 
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const appUrl = getAppUrl();
   const ref = request.nextUrl.searchParams.get("ref");
   if (!ref) {
@@ -34,3 +35,5 @@ export async function GET(request: NextRequest) {
     return Response.redirect(`${appUrl}/conti?bankError=gocardless_unavailable`, 302);
   }
 }
+
+export const GET = withRoute("gocardless.callback", handleGet);

@@ -1,13 +1,16 @@
 "use client";
 
-/** Riga singola della lista Transazioni in Spese: rendering diverso per source manuale/auto. */
+/**
+ * Riga singola della lista Transazioni. In alto descrizione e importo, sotto data e categoria
+ * (l'unica cosa che si cambia spesso, quindi sempre a portata). Le azioni secondarie (nota, Dividi,
+ * Modifica/Elimina per le manuali) stanno inline da `sm` in su e dietro il bottone "⋯" su mobile.
+ */
 
 import * as React from "react";
-import { Trash2Icon } from "lucide-react";
+import { EllipsisIcon, PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,8 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CurrencyInput } from "@/components/domain/accounts";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatShortDate } from "@/lib/format";
 import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/lib/queries/transactions";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Category } from "@/lib/db/schema/categories";
@@ -28,6 +30,7 @@ import { SplitSlider } from "./split-slider";
 import { CategoryPicker } from "@/components/domain/categories";
 import { useCategoryUsageQuery } from "@/lib/queries/categories";
 import { TransactionNotePopover } from "./transaction-note-popover";
+import { TransactionEditPanel } from "./transaction-edit-panel";
 
 export interface TransactionRowProps {
   transaction: Transaction;
@@ -35,17 +38,21 @@ export interface TransactionRowProps {
   currency: string;
 }
 
+/** Stile comune dei bottoni azione: con etichetta su mobile, solo icona (o etichetta breve) da `sm`. */
+const ACTION_BUTTON_CLASS =
+  "flex h-9 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground sm:h-8 sm:px-2";
+
+type OpenPanel = "none" | "split" | "edit";
+
 export function TransactionRow({ transaction, categories, currency }: TransactionRowProps) {
   const isAuto = transaction.source === "auto";
   const updateMutation = useUpdateTransactionMutation();
   const deleteMutation = useDeleteTransactionMutation();
   const { data: categoryUsage } = useCategoryUsageQuery();
 
-  const [description, setDescription] = React.useState(transaction.description);
-  const [amountValue, setAmountValue] = React.useState<number | null>(Math.abs(Number(transaction.amount)));
-  const [date, setDate] = React.useState(transaction.date);
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [splitOpen, setSplitOpen] = React.useState(false);
+  const [actionsOpen, setActionsOpen] = React.useState(false);
+  const [openPanel, setOpenPanel] = React.useState<OpenPanel>("none");
 
   const excludedAmount = Math.abs(Number(transaction.excludedAmount));
   const fullAmount = Math.abs(Number(transaction.amount));
@@ -58,6 +65,14 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
     () => categories.filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata")),
     [categories, isIncome]
   );
+  const descriptionTitle =
+    transaction.rawDescription && transaction.rawDescription !== transaction.description
+      ? transaction.rawDescription
+      : transaction.description;
+
+  function togglePanel(panel: Exclude<OpenPanel, "none">) {
+    setOpenPanel((current) => (current === panel ? "none" : panel));
+  }
 
   function commitCategory(categoryId: string) {
     if (categoryId === transaction.categoryId) return;
@@ -79,21 +94,6 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
     );
   }
 
-  function commitDescription() {
-    if (description.trim() === "" || description === transaction.description) return;
-    updateMutation.mutate({ id: transaction.id, input: { description } });
-  }
-
-  function commitAmount() {
-    if (amountValue === null || amountValue === Math.abs(Number(transaction.amount))) return;
-    updateMutation.mutate({ id: transaction.id, input: { amount: amountValue } });
-  }
-
-  function commitDate() {
-    if (date === transaction.date) return;
-    updateMutation.mutate({ id: transaction.id, input: { date } });
-  }
-
   function handleDeleteConfirm() {
     deleteMutation.mutate(transaction.id, {
       onSuccess: () => setDialogOpen(false),
@@ -101,159 +101,132 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   }
 
   return (
-    <div
-      className={
-        isUncategorized
-          ? "border-b border-border bg-neg-soft/40 last:border-b-0"
-          : "border-b border-border last:border-b-0"
-      }
-    >
-      <div className="group flex flex-col gap-3 px-4 py-3 sm:flex-row sm:flex-wrap sm:items-center">
+    <div className={cn("border-b border-border last:border-b-0", isUncategorized && "bg-neg-soft/40")}>
+      <div className="flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-3 sm:flex-nowrap sm:items-center">
         <div className="min-w-0 flex-1 space-y-1">
-          {isAuto ? (
-            <p
-              className="truncate text-sm font-medium text-foreground"
-              title={
-                transaction.rawDescription && transaction.rawDescription !== transaction.description
-                  ? transaction.rawDescription
-                  : transaction.description
-              }
-            >
-              {transaction.description}
-            </p>
-          ) : (
-            <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onBlur={commitDescription}
-              className="h-9 text-sm font-medium sm:h-7"
-              aria-label="Descrizione transazione"
-            />
-          )}
-
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            {isAuto ? (
-              <span>{transaction.date}</span>
-            ) : (
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                onBlur={commitDate}
-                className="h-9 w-36 text-xs sm:h-6 sm:w-32"
-                aria-label="Data transazione"
-              />
-            )}
-            <span>·</span>
+          <p className="truncate text-sm font-medium text-foreground" title={descriptionTitle}>
+            {transaction.description}
+          </p>
+          <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+            <time dateTime={transaction.date} className="shrink-0 tabular-nums">
+              {formatShortDate(transaction.date)}
+            </time>
+            <span aria-hidden="true">·</span>
             <CategoryPicker
               categories={selectableCategories}
               value={transaction.categoryId}
               onValueChange={commitCategory}
               usage={categoryUsage}
               size="sm"
-              className="h-9 max-w-48 text-xs sm:h-6 sm:max-w-40"
+              className={cn(
+                "max-w-44 text-xs data-[size=sm]:h-8 sm:max-w-48 sm:data-[size=sm]:h-7",
+                isUncategorized && "border-neg/40 text-neg"
+              )}
             />
+            {!isAuto && (
+              <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
+                Manuale
+              </Badge>
+            )}
           </div>
 
           {updateMutation.isPending && <p className="text-xs text-muted-foreground">Salvataggio in corso...</p>}
           {updateMutation.isError && <p className="text-xs text-destructive">Salvataggio non riuscito, riprova.</p>}
-          {deleteMutation.isError && (
-            <p className="text-xs text-destructive">Eliminazione non riuscita, riprova.</p>
+        </div>
+
+        <div className="shrink-0 text-right">
+          <p className={cn("text-sm font-medium tabular-nums", isIncome && "text-pos")}>
+            {isIncome && "+"}
+            {formatCurrency(isSplit ? netAmount : fullAmount, currency)}
+          </p>
+          {isSplit && (
+            <p className="text-xs text-muted-foreground">
+              <span className="sr-only">Diviso, importo pieno </span>
+              <span className="line-through">{formatCurrency(fullAmount, currency)}</span>
+            </p>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 sm:ml-auto sm:justify-end">
-          <Badge variant={isAuto ? "secondary" : "outline"} className="shrink-0">
-            {isAuto ? "Auto" : "Manuale"}
-          </Badge>
+        <button
+          type="button"
+          onClick={() => setActionsOpen((open) => !open)}
+          aria-expanded={actionsOpen}
+          aria-controls={`azioni-${transaction.id}`}
+          aria-label="Altre azioni"
+          className="-mr-2 flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted sm:hidden"
+        >
+          <EllipsisIcon className="size-4" aria-hidden="true" />
+        </button>
 
-          {isSplit && (
-            <Badge variant="ghost" className="shrink-0">
-              Diviso
-            </Badge>
+        <div
+          id={`azioni-${transaction.id}`}
+          className={cn(
+            "-ml-2.5 w-full flex-wrap items-center gap-1 sm:ml-0 sm:flex sm:w-auto sm:flex-nowrap",
+            actionsOpen ? "flex" : "hidden"
           )}
-
-          {isUncategorized && (
-            <Badge variant="outline" className="shrink-0 gap-1.5 border-neg/40 text-neg">
-              <span className="inline-flex size-1.5 rounded-full bg-neg" aria-hidden="true" />
-              Da categorizzare
-            </Badge>
-          )}
-
-          {isAuto ? (
-            <div className="w-24 shrink-0 text-right sm:w-28">
-              <p className={cn("text-sm font-medium tabular-nums", isIncome && "text-pos")}>
-                {isIncome && "+"}
-                {formatCurrency(isSplit ? netAmount : fullAmount, currency)}
-              </p>
-              {isSplit && (
-                <p className="text-xs text-muted-foreground line-through">
-                  {formatCurrency(fullAmount, currency)}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="w-24 shrink-0 sm:w-28">
-              <CurrencyInput
-                value={amountValue}
-                onChange={setAmountValue}
-                onBlur={commitAmount}
-                currency={currency}
-                className={cn("w-full text-right", isIncome && "text-pos")}
-                aria-label={isIncome ? "Importo entrata" : "Importo uscita"}
-              />
-              {isSplit && (
-                <p className="mt-0.5 text-right text-xs text-muted-foreground">
-                  Netto: {formatCurrency(netAmount, currency)}
-                </p>
-              )}
-            </div>
-          )}
-
+        >
           <TransactionNotePopover transaction={transaction} />
 
           <button
             type="button"
-            onClick={() => setSplitOpen((open) => !open)}
-            className="flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-muted"
-            aria-pressed={splitOpen}
+            onClick={() => togglePanel("split")}
+            className={cn(ACTION_BUTTON_CLASS, openPanel === "split" && "bg-muted text-foreground")}
+            aria-pressed={openPanel === "split"}
             title="Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)"
           >
+            <SplitIcon className="size-4 sm:hidden" aria-hidden="true" />
             Dividi
           </button>
 
           {!isAuto && (
-            <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <AlertDialogTrigger
-                className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                aria-label="Elimina transazione"
+            <>
+              <button
+                type="button"
+                onClick={() => togglePanel("edit")}
+                className={cn(ACTION_BUTTON_CLASS, openPanel === "edit" && "bg-muted text-foreground")}
+                aria-pressed={openPanel === "edit"}
+                aria-label="Modifica transazione"
               >
-                <Trash2Icon className="size-4" />
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Eliminare questa transazione?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    &quot;{transaction.description}&quot; verrà eliminata definitivamente.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                {deleteMutation.isError && (
-                  <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>
-                )}
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annulla</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
-                    {deleteMutation.isPending ? "Eliminazione..." : "Elimina"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                <PencilIcon className="size-4" aria-hidden="true" />
+                <span className="sm:sr-only">Modifica</span>
+              </button>
+
+              <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <AlertDialogTrigger
+                  className={cn(ACTION_BUTTON_CLASS, "hover:bg-destructive/10 hover:text-destructive")}
+                  aria-label="Elimina transazione"
+                >
+                  <Trash2Icon className="size-4" aria-hidden="true" />
+                  <span className="sm:sr-only">Elimina</span>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Eliminare questa transazione?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      &quot;{transaction.description}&quot; verrà eliminata definitivamente.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  {deleteMutation.isError && (
+                    <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>
+                  )}
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
+                      {deleteMutation.isPending ? "Eliminazione..." : "Elimina"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           )}
         </div>
       </div>
 
-      {splitOpen && (
-        <SplitSlider transaction={transaction} currency={currency} onClose={() => setSplitOpen(false)} />
+      {openPanel === "split" && (
+        <SplitSlider transaction={transaction} currency={currency} onClose={() => setOpenPanel("none")} />
+      )}
+      {openPanel === "edit" && (
+        <TransactionEditPanel transaction={transaction} currency={currency} onClose={() => setOpenPanel("none")} />
       )}
     </div>
   );

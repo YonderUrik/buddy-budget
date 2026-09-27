@@ -6,6 +6,7 @@ import * as React from "react";
 import { NotebookPen } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { useUpdateTransactionMutation } from "@/lib/queries/transactions";
 import type { Transaction } from "@/lib/db/schema/transactions";
 
@@ -41,13 +42,14 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
-        className={
+        className={cn(
+          "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-md px-2.5 text-xs font-medium hover:bg-muted sm:size-8 sm:px-0",
           hasSaveError
-            ? "flex size-8 shrink-0 items-center justify-center rounded-md text-destructive hover:bg-muted"
+            ? "text-destructive"
             : hasNote
-              ? "flex size-8 shrink-0 items-center justify-center rounded-md text-primary hover:bg-muted"
-              : "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground"
-        }
+              ? "text-primary"
+              : "text-muted-foreground sm:text-muted-foreground/50 sm:hover:text-muted-foreground"
+        )}
         aria-label={
           hasSaveError
             ? "Salvataggio della nota non riuscito, riprova"
@@ -63,7 +65,8 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
               : "Aggiungi nota"
         }
       >
-        <NotebookPen className="size-4" />
+        <NotebookPen className="size-4" aria-hidden="true" />
+        <span className="sm:sr-only">Nota</span>
       </PopoverTrigger>
       <PopoverContent align="end">
         <Textarea

@@ -9,6 +9,7 @@ import { CategorizeGroupRow } from "@/components/domain/categorization";
 import { LoadError, ProgressBar } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { authClient } from "@/lib/auth/client";
 import type { CategorizeSuggestion, SuggestionGroup } from "@/lib/categorization/suggest";
 import type { Category } from "@/lib/db/schema/categories";
@@ -145,6 +146,11 @@ export default function CategorizzaPage() {
     (group) => getOverride(group).selected && !disabledReason(group, safeCategories, getOverride(group).categoryId)
   );
   const totalTransactionCount = safeGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
+  const selectedTransactionCount = selectedGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
+  const selectableGroupCount = safeGroups.filter(
+    (group) => !disabledReason(group, safeCategories, getOverride(group).categoryId)
+  ).length;
+  const allSelected = selectableGroupCount > 0 && selectedGroups.length === selectableGroupCount;
 
   function handleApply() {
     if (selectedGroups.length === 0) return;
@@ -196,7 +202,7 @@ export default function CategorizzaPage() {
       <div className="flex flex-col gap-1">
         <Link
           href="/transazioni"
-          className="w-fit text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+          className="-my-1 w-fit py-1 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
         >
           ← Torna a Transazioni
         </Link>
@@ -206,64 +212,24 @@ export default function CategorizzaPage() {
             ? "Caricamento in corso..."
             : totalTransactionCount === 0
               ? "Nessuna transazione da categorizzare"
-              : `${totalTransactionCount} transazioni in attesa di categorizzazione`}
+              : `${totalTransactionCount} transazioni in attesa, raggruppate per esercente.`}
         </p>
+        {!isLoading && totalTransactionCount > 0 && (
+          <p className="text-sm text-muted-foreground">
+            Controlla la categoria proposta, spunta i gruppi giusti e premi{" "}
+            <span className="font-medium text-foreground">Applica</span>: da lì in poi lo stesso esercente verrà
+            categorizzato da solo. Cambiare categoria seleziona il gruppo.
+          </p>
+        )}
         {aiSuggestionsMutation.isPending && (
           <p className="text-xs text-muted-foreground">Ricerca di altre proposte in corso…</p>
         )}
       </div>
 
-      {!isLoading && !isError && safeGroups.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleSelectAll(true)}
-                disabled={applyMutation.isPending}
-              >
-                Seleziona tutto
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleSelectAll(false)}
-                disabled={applyMutation.isPending}
-              >
-                Deseleziona tutto
-              </Button>
-            </div>
-            <Button
-              type="button"
-              onClick={handleApply}
-              disabled={selectedGroups.length === 0 || applyMutation.isPending}
-            >
-              Applica selezionate ({selectedGroups.length})
-            </Button>
-          </div>
-          {applyMutation.isPending && applyProgress && (
-            <div className="flex flex-col gap-1">
-              <ProgressBar
-                label={applyProgressLabel(applyProgress)}
-                state={{
-                  kind: "determinate",
-                  value: applyProgress.processedTransactions,
-                  max: Math.max(applyProgress.totalTransactions, 1),
-                }}
-              />
-              <p className="text-xs text-muted-foreground">{applyProgressLabel(applyProgress)}</p>
-            </div>
-          )}
-        </div>
-      )}
-
       {isLoading ? (
         <div className="flex flex-col gap-3" aria-busy="true">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
+            <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
       ) : isError ? (
@@ -271,27 +237,81 @@ export default function CategorizzaPage() {
       ) : safeGroups.length === 0 ? (
         <Card className="p-6 text-center text-sm text-muted-foreground">Nessuna transazione da categorizzare</Card>
       ) : (
-        <Card className="p-0">
-          {safeGroups.map((group) => {
-            const override = getOverride(group);
-            return (
-              <CategorizeGroupRow
-                key={group.groupKey}
-                group={group}
-                categories={safeCategories}
-                currency={currency}
-                selected={override.selected}
-                categoryId={override.categoryId}
-                categoryUsage={categoryUsage}
-                excludedPercentage={override.excludedPercentage}
-                disabledReason={disabledReason(group, safeCategories, override.categoryId)}
-                onToggleSelected={(selected) => updateOverride(group, { selected })}
-                onCategoryChange={(categoryId) => updateOverride(group, { categoryId })}
-                onExcludedPercentageChange={(excludedPercentage) => updateOverride(group, { excludedPercentage })}
+        <>
+          <Card className="gap-0 p-0">
+            <label className="flex cursor-pointer items-center gap-3 border-b border-border px-4 py-3 text-sm text-muted-foreground">
+              <Checkbox
+                checked={allSelected}
+                disabled={selectableGroupCount === 0 || applyMutation.isPending}
+                onCheckedChange={(checked) => handleSelectAll(checked === true)}
               />
-            );
-          })}
-        </Card>
+              <span>
+                Seleziona tutti{" "}
+                <span className="tabular-nums">
+                  ({selectableGroupCount} {selectableGroupCount === 1 ? "gruppo pronto" : "gruppi pronti"})
+                </span>
+              </span>
+            </label>
+            {safeGroups.map((group) => {
+              const override = getOverride(group);
+              return (
+                <CategorizeGroupRow
+                  key={group.groupKey}
+                  group={group}
+                  categories={safeCategories}
+                  currency={currency}
+                  selected={override.selected}
+                  categoryId={override.categoryId}
+                  categoryUsage={categoryUsage}
+                  excludedPercentage={override.excludedPercentage}
+                  disabledReason={disabledReason(group, safeCategories, override.categoryId)}
+                  onToggleSelected={(selected) => updateOverride(group, { selected })}
+                  // Scegliere una categoria è già una conferma: il gruppo si seleziona da solo.
+                  onCategoryChange={(categoryId) => updateOverride(group, { categoryId, selected: true })}
+                  onExcludedPercentageChange={(excludedPercentage) => updateOverride(group, { excludedPercentage })}
+                />
+              );
+            })}
+          </Card>
+
+          <div className="sticky bottom-0 z-10 -mx-4 -mb-4 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
+            {applyMutation.isPending && applyProgress ? (
+              <div className="flex flex-col gap-1">
+                <ProgressBar
+                  label={applyProgressLabel(applyProgress)}
+                  state={{
+                    kind: "determinate",
+                    value: applyProgress.processedTransactions,
+                    max: Math.max(applyProgress.totalTransactions, 1),
+                  }}
+                />
+                <p className="text-xs text-muted-foreground">{applyProgressLabel(applyProgress)}</p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  {selectedGroups.length === 0 ? (
+                    "Nessun gruppo selezionato"
+                  ) : (
+                    <>
+                      <span className="font-medium text-foreground tabular-nums">{selectedTransactionCount}</span>{" "}
+                      {selectedTransactionCount === 1 ? "transazione" : "transazioni"} in {selectedGroups.length}{" "}
+                      {selectedGroups.length === 1 ? "gruppo" : "gruppi"}
+                    </>
+                  )}
+                </p>
+                <Button
+                  type="button"
+                  onClick={handleApply}
+                  disabled={selectedGroups.length === 0 || applyMutation.isPending}
+                  className="h-10 shrink-0 px-5 sm:h-9"
+                >
+                  Applica
+                </Button>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

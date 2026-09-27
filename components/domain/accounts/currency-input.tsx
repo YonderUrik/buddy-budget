@@ -13,6 +13,8 @@ export interface CurrencyInputProps {
   onBlur?: () => void;
   currency: string;
   className?: string;
+  /** Id dell'input numerico, per associarlo a una <label htmlFor>. */
+  id?: string;
   "aria-label"?: string;
 }
 
@@ -22,6 +24,7 @@ export function CurrencyInput({
   onBlur,
   currency,
   className,
+  id,
   "aria-label": ariaLabel,
 }: CurrencyInputProps) {
   const symbol = getCurrencySymbol(currency);
@@ -32,6 +35,7 @@ export function CurrencyInput({
         {symbol}
       </span>
       <NumericFormat
+        id={id}
         value={value ?? ""}
         onValueChange={({ floatValue }) => onChange(floatValue ?? null)}
         onBlur={onBlur}

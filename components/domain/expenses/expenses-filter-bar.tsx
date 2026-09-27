@@ -43,26 +43,30 @@ export function ExpensesFilterBar({
   }, []);
 
   return (
-    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3">
+    <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center sm:gap-3">
       <Select
         value={categoryId ?? ALL_CATEGORIES_VALUE}
         onValueChange={(value) => onCategoryChange(value === ALL_CATEGORIES_VALUE ? null : value)}
       >
-        <SelectTrigger size="sm" className="w-full data-[size=sm]:h-9 sm:w-56 sm:data-[size=sm]:h-8">
+        <SelectTrigger
+          size="sm"
+          aria-label="Filtra per categoria"
+          className="order-2 w-full min-w-0 data-[size=sm]:h-9 sm:order-1 sm:w-56 sm:data-[size=sm]:h-8"
+        >
           <SelectValue>
             {(value: string) => {
               if (value === ALL_CATEGORIES_VALUE) return "Tutte le categorie";
               const selected = categories.find((c) => c.id === value);
               if (!selected) return "Tutte le categorie";
               return (
-                <span className="flex items-center gap-1.5">
+                <span className="flex min-w-0 items-center gap-1.5">
                   <CategoryAvatar
                     color={selected.color as CategoryColor}
                     icon={selected.icon as CategoryIcon}
                     size={10}
-                    className="size-4"
+                    className="size-4 shrink-0"
                   />
-                  {selected.name}
+                  <span className="truncate">{selected.name}</span>
                 </span>
               );
             }}
@@ -94,8 +98,8 @@ export function ExpensesFilterBar({
         onKeyDown={(e) => {
           if (e.key === "Escape") onSearchTextChange("");
         }}
-        placeholder="Cerca descrizione o nota  ( / )"
-        className="h-9 w-full sm:h-8 sm:w-56"
+        placeholder="Cerca…"
+        className="order-1 h-9 w-full min-w-0 sm:order-2 sm:h-8 sm:w-56"
         aria-label="Cerca transazioni per descrizione o nota"
         aria-keyshortcuts="/"
       />

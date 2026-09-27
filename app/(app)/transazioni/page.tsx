@@ -11,7 +11,6 @@ import * as React from "react";
 import { Plus } from "lucide-react";
 import {
   AddTransactionForm,
-  AutoCategorizeButton,
   CategoryBreakdownDonut,
   ExpensesFilterBar,
   ExpensesKpiCards,
@@ -22,7 +21,7 @@ import {
   TransactionRow,
   TransactionsPeriodSummary,
   TransactionsTypeToggle,
-  UncategorizedFilterChip,
+  UncategorizedCallout,
 } from "@/components/domain/expenses";
 import { LoadError, SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
@@ -122,13 +121,18 @@ export default function TransazioniPage() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-heading text-2xl font-medium text-foreground">Transazioni</h1>
-          <ExpensesReferenceNav period={period} referenceDate={referenceDate} onChange={setReferenceDate} />
+          <ExpensesReferenceNav
+            period={period}
+            referenceDate={referenceDate}
+            onChange={setReferenceDate}
+            onPeriodChange={setPeriod}
+          />
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ExpensesPeriodSelector value={period} onChange={setPeriod} />
+        <div className="flex shrink-0 items-center gap-2">
+          <ExpensesPeriodSelector value={period} onChange={setPeriod} className="hidden sm:inline-flex" />
           <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger
               render={
@@ -153,7 +157,14 @@ export default function TransazioniPage() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} ariaLabel="Vista" />
+        <SegmentedControl
+          options={VIEW_OPTIONS}
+          value={view}
+          onChange={setView}
+          ariaLabel="Vista"
+          className="w-full sm:w-fit"
+          stretch
+        />
         <ExpensesFilterBar
           categories={safeCategories}
           categoryId={categoryFilter}
@@ -177,21 +188,23 @@ export default function TransazioniPage() {
         <LoadError message="Impossibile caricare le transazioni." onRetry={() => refetch()} />
       ) : view === "movimenti" ? (
         <>
-          <div className="flex flex-wrap items-center gap-2">
-            <TransactionsTypeToggle value={listTypeFilter} onChange={setListTypeFilter} />
-            {uncategorizedCount > 0 && (
-              <>
-                <UncategorizedFilterChip
-                  count={uncategorizedCount}
-                  active={showUncategorizedOnly}
-                  onToggle={() => setShowUncategorizedOnly((v) => !v)}
-                />
-                <AutoCategorizeButton />
-              </>
-            )}
-          </div>
+          {uncategorizedCount > 0 && (
+            <UncategorizedCallout
+              count={uncategorizedCount}
+              filterActive={showUncategorizedOnly}
+              onToggleFilter={() => setShowUncategorizedOnly((v) => !v)}
+            />
+          )}
 
-          <Card className="p-0">
+          <Card className="gap-0 p-0">
+            <div className="border-b border-border px-4 py-3">
+              <TransactionsTypeToggle
+                value={listTypeFilter}
+                onChange={setListTypeFilter}
+                stretch
+                className="sm:w-fit"
+              />
+            </div>
             <TransactionsPeriodSummary
               expenses={computeSummary(expenseTransactionsForAnalysis, range)}
               income={computeIncomeSummary(incomeTransactionsForAnalysis, range)}

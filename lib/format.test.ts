@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCurrency, formatRelativeTime, getCurrencySymbol } from "./format";
+import { formatCurrency, formatRelativeTime, formatShortDate, getCurrencySymbol } from "./format";
 
 describe("formatCurrency", () => {
   it("formatta un valore positivo nella valuta indicata", () => {
@@ -52,5 +52,16 @@ describe("formatRelativeTime", () => {
     const past = new Date(now.getTime() - 10 * 24 * 60 * 60_000);
     const expected = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(past);
     expect(formatRelativeTime(past, now)).toBe(expected);
+  });
+});
+
+describe("formatShortDate", () => {
+  it("formatta una data calendario in forma breve", () => {
+    expect(formatShortDate("2026-09-26")).toBe("26 set");
+    expect(formatShortDate("2026-01-01")).toBe("1 gen");
+  });
+
+  it("restituisce l'input invariato se non è una data valida", () => {
+    expect(formatShortDate("boh")).toBe("boh");
   });
 });

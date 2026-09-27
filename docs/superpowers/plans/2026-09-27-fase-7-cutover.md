@@ -189,22 +189,11 @@ Scelta consigliata: rimuovere il dominio da Vercel qui stesso, così il Task 6 d
 - Consumes: risultato del Task 1 (tipo di record), Task 4 (Vercel già disattivato), Task 5 (pod pronti).
 - Produces: `www.buddybudget.io` (e `buddybudget.io` come redirect) serviti dal cluster k3s.
 
-- [ ] **Step 1: `www.buddybudget.io` (dominio primario)**
+- [x] **Step 1: `www.buddybudget.io` (dominio primario)** — fatto (2026-09-27): target cambiato a `36bf9415-c966-4403-a6e2-a53530ded387.cfargotunnel.com`, proxy attivo.
 
-Cloudflare DNS → il record `CNAME` esistente (oggi `www.buddybudget.io → c97c5418d705f7ed.vercel-dns-017.com`, DNS-only): cambiare solo il **target** a `<tunnel-id>.cfargotunnel.com` (stesso tunnel già usato per `app.`/`test.`/`status.`) e attivare il **proxy** (nuvoletta arancione) — non serve certificato Let's Encrypt separato, TLS terminato da Cloudflare come per tutto il resto.
+- [x] **Step 2: `buddybudget.io` (apice, redirect)** — fatto: stesso target, tipo cambiato da `A` a `CNAME`, proxy attivo.
 
-- [ ] **Step 2: `buddybudget.io` (apice, redirect)**
-
-Stesso cambio per l'apice, ma qui il record cambia anche **tipo**: da `A` (`216.198.79.1`) a `CNAME` verso lo stesso tunnel, proxied. Entrambi i record erano DNS-only con TTL 600s (10 min): i resolver con la vecchia risposta in cache continueranno a risolvere verso i target Vercel (nel frattempo disattivati al Task 4) per al più ~10 minuti dopo il cambio, poi passeranno al nuovo target — coerente con la finestra di fermo di 15–30 min già prevista.
-
-- [ ] **Step 3: Verifica da rete esterna**
-
-```bash
-curl -sS -o /dev/null -w "%{http_code}\n" https://www.buddybudget.io/api/health
-curl -sSL -o /dev/null -w "%{http_code} %{url_effective}\n" https://buddybudget.io/
-```
-
-Atteso `200` sul primo, e sul secondo un redirect risolto fino a `https://www.buddybudget.io/` con `200` finale.
+- [x] **Step 3: Verifica da rete esterna** — fatto, con un bug reale trovato e corretto nel mezzo: il primo test su `buddybudget.io` restituiva `200` (l'app servita direttamente, non un redirect) — `Middleware apex-redirect-www` ancorava il regex a `^https://`, ma Traefik riceve il traffico in chiaro (TLS terminato da Cloudflare davanti al tunnel), quindi lo schema visto internamente è sempre `http://` e il regex non ha mai matchato. Fix: `^https?://` (PR #9 nel repo infra, mergiata). Verificato dopo il fix: `www.buddybudget.io/api/health` → `200`; `buddybudget.io/` → `301` verso `https://www.buddybudget.io/`, poi `200` a fine catena.
 
 ---
 
@@ -216,24 +205,15 @@ Atteso `200` sul primo, e sul secondo un redirect risolto fino a `https://www.bu
 - Consumes: tutto quanto dai Task 1-6.
 - Produces: cutover concluso, via libera per la finestra di rollback di 2 settimane.
 
-- [ ] **Step 1: Riattivare i CronJob**
+- [x] **Step 1: Riattivare i CronJob** — fatto (2026-09-27), `gocardless-sync`/`net-worth-snapshot` non più sospesi.
 
-```bash
-kubectl patch cronjob gocardless-sync -n app -p '{"spec":{"suspend":false}}'
-kubectl patch cronjob net-worth-snapshot -n app -p '{"spec":{"suspend":false}}'
-```
+- [x] **Step 2: Checklist end-to-end su `https://www.buddybudget.io`** — confermata dall'utente.
 
-- [ ] **Step 2: Checklist end-to-end su `https://www.buddybudget.io`**
+- [x] **Step 3: Ripuntare l'uptime check esterno** — fatto dall'utente su UptimeRobot.
 
-Stessa checklist del Task 9 di Fase 6, ripetuta sul dominio vero (login magic link + Google, Panoramica, Conti + sync manuale, Transazioni, Cash flow, Categorie, `/categorizza`, Umami Realtime, `kubectl get cronjobs -n app` → `LAST SCHEDULE` valorizzato dopo l'orario previsto).
+- [x] **Step 4: Annunciare la fine del fermo** — cutover concluso, `www.buddybudget.io`/`buddybudget.io` serviti dal cluster k3s.
 
-- [ ] **Step 3: Ripuntare l'uptime check esterno**
-
-UptimeRobot (Fase 5) monitora oggi `status.buddybudget.io` come proxy dell'app — aggiungere (o spostare) un check su `https://www.buddybudget.io/api/health`.
-
-- [ ] **Step 4: Annunciare la fine del fermo**
-
-Comunicare la fine della finestra di manutenzione.
+**Task 7 completo. Cutover concluso (Task 1-7/8).** Resta solo il **Task 8**, da fare non prima di due settimane (rotazione segreti + spegnimento definitivo Vercel/Neon + pulizia codice), su conferma esplicita dell'utente.
 
 ---
 

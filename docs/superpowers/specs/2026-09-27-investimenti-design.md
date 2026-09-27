@@ -1,7 +1,7 @@
 # Investimenti — portafoglio, prezzi di mercato gratuiti, statistiche
 
 **Data**: 2026-09-27
-**Stato**: brainstorming in corso — visione e roadmap concordate con l'utente, design della Fase 1 proposto, **da approvare** prima di scrivere il piano. Prima del piano va fatta la prova di copertura dei dati (sezione 3).
+**Stato**: design approvato dall'utente il 2026-09-27 ("procediamo"), piano della Fase 1 scritto: `docs/superpowers/plans/2026-09-27-investimenti-fase-1.md`. La prova di copertura (sezione 3) è diventata il primo task del piano e non blocca il resto: l'ordine delle fonti è configurabile.
 **Schermata**: Investimenti (oggi `comingSoon` in sidebar), sezione 5 di `docs/functional-spec.md`
 
 ## Obiettivo
@@ -21,7 +21,7 @@ L'utente vuole uno strumento a 360° per gli investimenti: **tracciare il propri
 | Tema | Scelta | Alternative scartate |
 |---|---|---|
 | Da cosa partire | **Prima il tracciamento del portafoglio**, poi l'analisi dei titoli | Tutto insieme: l'analisi richiede dati ricchi (fondamentali, look-through, screener), che gratis sono deboli e fragili |
-| Fonte prezzi | **Yahoo Finance** (`yahoo-finance2`) come fonte principale, dietro un'interfaccia `PriceProvider` sostituibile | API a pagamento (vincolo costo zero); Alpha Vantage free (25 chiamate/giorno, troppo poche) |
+| Fonte prezzi | **Catena di fonti gratuite con riserva automatica** per tipo di strumento (sezione 2.1), Yahoo Finance in testa quasi ovunque | API a pagamento (vincolo costo zero); una sola fonte (un blocco di Yahoo fermerebbe tutto) |
 | Frequenza prezzi | **Chiusura giornaliera (EOD)** salvata in Postgres, più al massimo una quotazione del giorno in cache Redis | Tempo reale (inutile per un portafoglio di lungo periodo, e fragile gratis) |
 | Posizioni | **Calcolate dalle operazioni**, mai salvate | Posizioni salvate e modificate a mano (due fonti di verità, stesso problema già evitato con `effectiveAmount`) |
 | Metodo del costo | **Costo medio ponderato** (quello mostrato da Fineco e usato dal fisco italiano nel regime amministrato) | FIFO (non è il metodo fiscale italiano) |
@@ -30,7 +30,7 @@ L'utente vuole uno strumento a 360° per gli investimenti: **tracciare il propri
 
 | Fase | Contenuto | Stato |
 |---|---|---|
-| **0. Prova dati** | Verificare dalla VPS e in locale che Yahoo risponda e copra gli strumenti reali dell'utente (sezione 3) | **da fare, prima del piano** |
+| **0. Prova dati** | Verificare dalla VPS e in locale quali fonti rispondono e cosa coprono, su un campione di strumenti pubblici (sezione 3) | primo task del piano Fase 1 |
 | **1. Portafoglio base** | Strumenti, operazioni manuali, PAC, prezzi EOD + cambi BCE, valore/guadagno/perdita, composizione per tipo e valuta, grafico nel tempo, classe `investimenti` nel patrimonio netto | design qui sotto |
 | **2. Rendimenti e confronto** | Rendimento del portafoglio (TWR) e tuo rendimento effettivo (XIRR), confronto "stessi versamenti in un indice", split, storico dividendi/cedole, rendimento reale (inflazione Eurostat) | futuro |
 | **3. Rischio e diversificazione** | Volatilità, massima perdita dal picco, Sharpe, beta, correlazioni; settore e geografia (look-through ETF dove i dati gratuiti lo permettono); sovrapposizione tra ETF; allocazione obiettivo e "dove mettere il prossimo PAC" | futuro |
@@ -55,11 +55,42 @@ L'utente vuole uno strumento a 360° per gli investimenti: **tracciare il propri
 
 **Prezzo manuale sempre disponibile** (decisione già presa in `functional-spec.md`): ogni strumento può avere `priceSource = "manuale"`, e l'utente può inserire un prezzo a mano anche per uno strumento automatico. È la rete di sicurezza per BTP e fondi se la copertura gratuita non basta.
 
-## 3. Fase 0 — prova di copertura (prima del piano)
+### 2.1 Catena di fonti con riserva automatica
+
+Richiesta esplicita dell'utente (2026-09-27): nessuna fonte gratuita è affidabile da sola, quindi ogni prezzo si chiede a **più fonti in ordine**, e se la prima fallisce si passa alla successiva senza intervento dell'utente.
+
+**Interfaccia comune** (`lib/market-data/`): ogni fonte implementa `PriceProvider` con `id`, `requiresKey`, `fetchDailyCloses(symbol, from, to)` (chiusure giornaliere con valuta) e, dove esiste, `searchByIsin(isin)`. I cambi hanno un'interfaccia separata `FxProvider`.
+
+**Ordine predefinito per tipo di strumento** (costante `PROVIDER_CHAINS`, modificabile in un solo punto dopo la prova di copertura):
+
+| Tipo | Catena |
+|---|---|
+| ETF / ETC / azioni europee | Yahoo → Borsa Italiana (solo se quotato a Milano) → Stooq → Alpha Vantage |
+| Azioni USA | Yahoo → Stooq → Twelve Data → Alpha Vantage |
+| Obbligazioni / BTP | Borsa Italiana → Yahoo |
+| Fondi comuni | Yahoo (id `0P…`) → nessuna riserva: prezzo manuale |
+| Crypto | CoinGecko → Kraken |
+| Cambi | BCE → Frankfurter (stessi dati BCE, altra via d'accesso) |
+
+**Simboli per fonte**: ogni fonte usa un suo simbolo (`VWCE.DE` su Yahoo, `vwce.de` su Stooq, `VWCE.DEX` su Alpha Vantage, id numerico su Borsa Italiana). Per questo i simboli stanno in una tabella `instrument_symbols (instrumentId, provider, symbol)` e non in una colonna unica. Si risolvono alla creazione dello strumento (ricerca per ISIN su ogni fonte che la supporta, altrimenti derivazione dal simbolo Yahoo e borsa); una fonte senza simbolo per quello strumento viene saltata. La risoluzione si ritenta nei giorni successivi per le fonti rimaste senza simbolo.
+
+**Regole della catena**:
+1. Si provano le fonti in ordine; vince la **prima risposta valida**. Valida significa: almeno una chiusura nel periodo chiesto, prezzo > 0, **valuta uguale a quella dello strumento**. Una quotazione in un'altra valuta (es. la stessa azione quotata in USD) viene scartata: mescolare valute falserebbe il valore.
+2. Ogni riga di `instrument_prices` salva la **fonte che l'ha fornita** (`source`). Così si vede quanto spesso si finisce sulle riserve.
+3. **Fonte senza chiave = disattivata, non in errore.** Stooq, Alpha Vantage, Twelve Data e CoinGecko leggono chiavi facoltative da variabili d'ambiente; se manca, la fonte si salta in silenzio (stesso principio di Ollama: "non configurato" è uno stato normale).
+4. **Interruttore per fonte** (circuit breaker): dentro un'esecuzione del cron, dopo 3 errori consecutivi della stessa fonte (429, 5xx, blocco del firewall, timeout) quella fonte si salta per il resto dell'esecuzione. Evita di martellare una fonte che ci ha bloccato.
+5. **Budget per le fonti a quota**: Alpha Vantage (25/giorno) ha un contatore giornaliero su Redis; esaurito il budget, la fonte si salta fino al giorno dopo. Pausa minima tra richieste configurata per fonte.
+6. **Recupero dello storico** solo dalle fonti senza limite di profondità (Yahoo, Borsa Italiana, Stooq); le fonti a quota servono solo all'aggiornamento giornaliero.
+7. **Controllo di plausibilità**: se la nuova chiusura si scosta di oltre il 20% dalla precedente **e** arriva da una fonte diversa, si salva comunque ma si logga `market.prices.suspect` (le crypto sono escluse dalla soglia). In Fase 1 niente blocco automatico: solo visibilità.
+8. Se **tutte** le fonti falliscono resta l'ultimo prezzo valido, mostrato con la sua data. Il prezzo manuale dell'utente, se più recente, vince sempre.
+
+**Osservabilità**: metrica `buddybudget_price_provider_requests_total{provider, outcome}` con `outcome` da enum chiuso (`success`, `empty`, `currency_mismatch`, `error`, `rate_limited`, `skipped`); log `market.prices.fallback_used` quando serve una riserva. Un alert su "troppe riserve" o "prezzi fermi" si aggiunge dopo aver visto i numeri reali.
+
+## 3. Fase 0 — prova di copertura (primo task del piano)
 
 Da eseguire **dalla VPS di produzione** (IP di datacenter Hostinger, dove Yahoo a volte risponde 429 o blocca) **e** in locale. Dal sandbox cloud non si può: il 2026-09-27 le richieste a Yahoo, Stooq e BCE hanno ricevuto 403 dalla policy di rete dell'ambiente.
 
-Script usa-e-getta, non committato come feature, che per una lista di ISIN reali dell'utente (solo gli identificativi, **nessuna quantità**) verifica:
+L'utente ha scelto di non fornire i propri ISIN (2026-09-27). Lo script di prova usa un **campione di strumenti pubblici** per ogni tipo (ETF UCITS su Xetra e Milano, azione italiana, azione USA, un BTP, un fondo comune, una crypto) e verifica:
 
 1. la ricerca per ISIN restituisce un simbolo Yahoo, e su quale borsa (per gli ETF preferire la quotazione in EUR: Xetra `.DE` o Borsa Italiana `.MI`);
 2. lo storico giornaliero arriva, fino a quando e in quale valuta;
@@ -69,7 +100,7 @@ Script usa-e-getta, non committato come feature, che per una lista di ISIN reali
 6. crypto su CoinGecko e cambi BCE;
 7. ripetuto per qualche giorno dalla VPS, per vedere se arrivano errori 429 o blocchi.
 
-Esito atteso: una tabella strumento → fonte principale e di riserva (`yahoo` / `borsaitaliana` / `stooq` / `alphavantage` / `coingecko` / `manuale`). Se BTP o fondi non sono coperti restano a prezzo manuale in Fase 1, e si valuta una fonte dedicata (es. Borsa Italiana) come lavoro separato.
+Esito: una tabella tipo di strumento → fonti che funzionano, usata per confermare o riordinare `PROVIDER_CHAINS`, più le risposte reali salvate come fixture per i test dei parser (dal sandbox cloud le fonti non si raggiungono). Se Borsa Italiana è bloccata dalla VPS, il suo provider si implementa comunque ma resta in fondo alle catene, e i BTP ricadono sul prezzo manuale.
 
 ## 4. Fase 1 — design proposto
 
@@ -86,8 +117,7 @@ Tutte le nuove tabelle tramite migration Drizzle versionata (`pnpm db:generate` 
 | `name` | nome visualizzato |
 | `type` | `etf` / `azione` / `obbligazione` / `fondo` / `crypto` / `etc` (materie prime) |
 | `currency` | valuta di quotazione (ISO 4217) |
-| `priceSource` | `yahoo` / `borsaitaliana` / `stooq` / `alphavantage` / `coingecko` / `manuale` (fonte principale; le riserve sono per tipo di strumento, nel codice) |
-| `providerSymbol` | es. `VWCE.DE`, `bitcoin`; nullable per `manuale` |
+| `priceMode` | `auto` (catena di fonti) o `manuale` (solo prezzi inseriti dall'utente) |
 | `exchange` | facoltativo, informativo |
 | `priceUnit` | `unita` (prezzo per quota) o `percentuale_nominale` (obbligazioni: valore = nominale × prezzo / 100) |
 | `taxRate` | aliquota italiana: 26% di default, 12,5% per titoli di Stato e assimilati (serve alla Fase 4, salvato subito) |
@@ -95,7 +125,9 @@ Tutte le nuove tabelle tramite migration Drizzle versionata (`pnpm db:generate` 
 
 Uno strumento `manuale` creato da un utente resta visibile solo a lui (`createdByUserId` nullable): non inquina la ricerca degli altri con nomi o prezzi inventati.
 
-**`instrument_prices`**: `(instrumentId, date)` unique, `close` numeric(20,8), `source`. Una riga al giorno per strumento; i prezzi manuali stanno in una tabella per utente (`user_instrument_prices`), perché un prezzo inserito a mano da un utente non deve cambiare il portafoglio di un altro.
+**`instrument_symbols`**: `(instrumentId, provider)` unique, `symbol`, `resolvedAt`. Vedi sezione 2.1.
+
+**`instrument_prices`**: `(instrumentId, date)` unique, `close` numeric(20,8), `source` (la fonte che ha fornito il prezzo). Una riga al giorno per strumento; i prezzi manuali stanno in una tabella per utente (`user_instrument_prices`), perché un prezzo inserito a mano da un utente non deve cambiare il portafoglio di un altro.
 
 **`fx_rates`**: `(date, currency)` unique, `perEur` (1 EUR = x valuta, come pubblica la BCE). La conversione tra due valute qualsiasi passa dall'EUR: l'app è multi-valuta e la valuta dell'utente non è per forza l'EUR.
 
@@ -131,9 +163,9 @@ Controllo lato server: una vendita non può superare le quote possedute a quella
 ### 4.3 Aggiornamento prezzi
 
 - **CronJob k8s `market-prices`** → `GET /api/cron/market-prices` (protetto da `CRON_SECRET`, come gli altri), **ogni giorno alle ~23:00** Europe/Rome (dopo la chiusura USA; anche nel weekend per le crypto). Gira **prima** di `net-worth-snapshot` (23:50).
-- Aggiorna solo gli strumenti posseduti da almeno un utente, più i cambi BCE. Richieste in sequenza con piccola pausa, retry con backoff. Se un provider fallisce resta l'ultimo prezzo valido (con la sua data), e il job non si interrompe.
+- Aggiorna solo gli strumenti posseduti da almeno un utente, più i cambi. Ogni strumento passa dalla catena di fonti della sezione 2.1; un errore su uno strumento non interrompe gli altri.
 - **Recupero dello storico** quando uno strumento viene usato per la prima volta (o quando si registra un'operazione più vecchia dello storico presente): job in background secondo lo standard "Operazioni lunghe" (`after()` + stato su Redis + indicatore globale). Scarica dalla data della prima operazione.
-- **Osservabilità**: `recordCronRun("market_prices", …)`; metrica `buddybudget_price_provider_requests_total{provider, outcome}` (etichette da enum chiuso); log `market.prices.failed` con simbolo e provider. **Mai quantità, importi o composizione del portafoglio di un utente nei log**: il simbolo di uno strumento comune non è un dato personale, il fatto che un certo utente lo possieda sì.
+- **Osservabilità**: `recordCronRun("market_prices", …)` più quanto descritto nella sezione 2.1. **Mai quantità, importi o composizione del portafoglio di un utente nei log**: il simbolo di uno strumento comune non è un dato personale, il fatto che un certo utente lo possieda sì.
 
 ### 4.4 Interfaccia (`/investimenti`)
 
@@ -158,8 +190,10 @@ Un versamento del PAC esce dal conto corrente Fineco (se collegato via GoCardles
 - **Tempo reale**: escluso, prezzi di chiusura.
 - **Collegamento automatico movimento bancario ↔ operazione**: successivo alla Fase 1.
 
-## Da confermare con l'utente prima del piano
+## Default adottati
 
-1. Risultati della Fase 0 (copertura di BTP e fondi Fineco).
-2. PAC che precompila invece di generare operazioni da solo.
+L'utente ha chiesto di procedere il 2026-09-27 senza rispondere punto per punto, quindi valgono le proposte della spec:
+
+1. Fase 0 su un campione di strumenti pubblici, non sugli ISIN dell'utente.
+2. Il PAC precompila il form, non genera operazioni da solo.
 3. Ratei obbligazionari esclusi dalla Fase 1.

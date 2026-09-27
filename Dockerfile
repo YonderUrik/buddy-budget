@@ -24,13 +24,6 @@ ENV DATABASE_URL=postgresql://build:build@localhost:5432/build?sslmode=disable \
     BETTER_AUTH_SECRET=build-only-placeholder-secret-0000000000 \
     BETTER_AUTH_URL=http://localhost:3000 \
     RESEND_API_KEY=re_build_placeholder
-# NEXT_PUBLIC_* non sono un'eccezione al commento sopra: Next.js le sostituisce testualmente in
-# fase di build in ogni file (anche i Server Component), quindi il valore letto a runtime nel pod
-# non ha alcun effetto se il bundle è stato compilato senza — vanno per forza passate qui.
-ARG NEXT_PUBLIC_UMAMI_SRC=""
-ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=""
-ENV NEXT_PUBLIC_UMAMI_SRC=$NEXT_PUBLIC_UMAMI_SRC \
-    NEXT_PUBLIC_UMAMI_WEBSITE_ID=$NEXT_PUBLIC_UMAMI_WEBSITE_ID
 RUN pnpm build
 
 # ---- migrator: esegue le migration Drizzle (Job PreSync in k8s) ----

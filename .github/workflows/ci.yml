@@ -95,12 +95,6 @@ jobs:
           target: ${{ matrix.target }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          # NEXT_PUBLIC_* sono sostituite testualmente da Next.js in fase di build (anche nei
-          # Server Component): passarle a runtime nel pod non basta, servono qui. Non sensibili
-          # (script pubblico/id sito Umami), valorizzate come repository variable.
-          build-args: |
-            NEXT_PUBLIC_UMAMI_SRC=${{ vars.NEXT_PUBLIC_UMAMI_SRC }}
-            NEXT_PUBLIC_UMAMI_WEBSITE_ID=${{ vars.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}

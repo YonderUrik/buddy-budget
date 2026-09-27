@@ -10,7 +10,8 @@ import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { runSyncJob } from "@/lib/sync-jobs/run";
 import { queuedAccount, type SyncJob, type SyncJobAccount } from "@/lib/sync-jobs/types";
 import { finalizeSelectionSchema } from "@/lib/validation/gocardless";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { redisOpsStore } from "@/lib/observability/redis-ops-store";
 
 // L'import iniziale gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
 export const maxDuration = 300;
@@ -68,16 +69,16 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   try {
     job = await store.createJob({ userId, kind: "initial-import" });
   } catch (error) {
-    console.error("Creazione del job di import fallita", error);
+    requestLogger().error("sync_job.create.failed", { error });
     return Response.json({ error: STORE_UNAVAILABLE_MESSAGE }, { status: 503 });
   }
 
   // Se la scrittura dei conti fallisce, il job non deve restare orfano senza conti (apparirebbe
   // come "interrotto" nel pannello dopo l'heartbeat stale) — lo si chiude subito, best-effort.
   async function abandonJob(reason: string, error?: unknown) {
-    console.error(`Job di import ${job.id} abbandonato: ${reason}`, error);
+    requestLogger().error("sync_job.abandoned", { jobId: job.id, reason, error });
     await store.dismissJob(userId, job.id).catch((dismissError) => {
-      console.error(`Impossibile chiudere il job di import ${job.id} dopo un errore`, dismissError);
+      requestLogger().warn("sync_job.dismiss.failed", { jobId: job.id, error: dismissError });
     });
   }
 
@@ -92,7 +93,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
           .where(eq(bankAccountLinks.accountId, selection.existingAccountId))
           .returning();
         if (!updatedLink) {
-          await abandonJob("conto esistente non trovato in fase di scrittura");
+          await abandonJob("existing_account_missing");
           return Response.json({ error: "Conto non trovato" }, { status: 404 });
         }
         created.push({
@@ -127,7 +128,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
   } catch (error) {
-    await abandonJob("scrittura conti fallita", error);
+    await abandonJob("accounts_write_failed", error);
     throw error;
   }
 
@@ -149,12 +150,15 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
     await store.setAccounts(userId, job.id, jobAccounts);
   } catch (error) {
     // I dati restano corretti: il sync parte comunque, il job verrà mostrato come interrotto.
-    console.error(`Registrazione dei conti nel job ${job.id} fallita`, error);
+    requestLogger().warn("sync_job.set_accounts.failed", { jobId: job.id, error });
   }
 
   // Best-effort: gli account/link sono già creati. Un fallimento del sync iniziale finisce nel job
   // come errore del conto, non fa fallire la richiesta (un retry duplicherebbe i conti "new").
-  after(() => runSyncJob(job, linksToSync, { store, rateLimitStore: redisRateLimitStore }));
+  const jobLog = requestLogger();
+  after(() =>
+    runSyncJob(job, linksToSync, { store, rateLimitStore: redisRateLimitStore, ops: redisOpsStore, log: jobLog })
+  );
 
   return Response.json({ jobId: job.id }, { status: 201 });
 }

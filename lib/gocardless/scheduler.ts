@@ -3,7 +3,8 @@ import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { computeSyncEligibility } from "./sync-eligibility";
 import { redisRateLimitStore } from "./redis-rate-limit-store";
-import { syncAccountLink, type SyncableLink } from "./sync";
+import type { SyncableLink } from "./sync";
+import { syncAccountLinkObserved } from "./sync-telemetry";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 
 export interface DueLink extends SyncableLink {
@@ -44,9 +45,9 @@ export async function runDueSyncs(): Promise<void> {
     const locked = await redisSyncJobStore.acquireAccountLock(link.accountId).catch(() => true);
     if (!locked) continue;
     try {
-      await syncAccountLink(link, redisRateLimitStore);
-    } catch (error) {
-      console.error(`Sync fallito per il conto ${link.accountId}`, error);
+      await syncAccountLinkObserved(link, redisRateLimitStore, { trigger: "cron" });
+    } catch {
+      // Già registrato (metrica + log) da syncAccountLinkObserved: si passa al conto successivo.
     } finally {
       await redisSyncJobStore.releaseAccountLock(link.accountId).catch(() => {});
     }

@@ -4,7 +4,7 @@ import { db } from "@/lib/db/client";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { getAppUrl } from "@/lib/env";
 import { getRequisition } from "@/lib/gocardless/client";
-import { withRoute } from "@/lib/observability";
+import { requestLogger, withRoute } from "@/lib/observability";
 
 async function handleGet(request: NextRequest) {
   const appUrl = getAppUrl();
@@ -31,7 +31,8 @@ async function handleGet(request: NextRequest) {
     // Copre sia un ref malformato (uuid non valido → Postgres lancia) sia un fallimento
     // di GoCardless (getRequisition): l'utente torna qui dal browser della banca, quindi
     // deve sempre atterrare su un redirect leggibile, mai su una pagina di errore grezza.
-    console.error(`Callback GoCardless fallito per ref ${ref}`, error);
+    // Il ref arriva dal browser (non fidato): non lo si logga, basta il requestId.
+    requestLogger().error("gocardless.callback.failed", { error });
     return Response.redirect(`${appUrl}/conti?bankError=gocardless_unavailable`, 302);
   }
 }

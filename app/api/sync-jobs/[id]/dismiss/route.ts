@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Chiude il riepilogo di un job: resta nascosto anche su altri dispositivi. Solo job dell'utente in sessione. */
 async function handlePost(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -14,7 +14,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
     const dismissed = await redisSyncJobStore.dismissJob(session.user.id, id);
     return dismissed ? new Response(null, { status: 204 }) : new Response(null, { status: 404 });
   } catch (error) {
-    console.error("Chiusura del job di sync fallita", error);
+    requestLogger().error("sync_job.dismiss.failed", { error });
     return new Response(null, { status: 503 });
   }
 }

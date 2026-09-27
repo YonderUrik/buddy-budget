@@ -9,7 +9,8 @@ import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { runSyncJob } from "@/lib/sync-jobs/run";
 import { queuedAccount, type SyncJob } from "@/lib/sync-jobs/types";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { redisOpsStore } from "@/lib/observability/redis-ops-store";
 
 // Il sync gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
 export const maxDuration = 300;
@@ -70,7 +71,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   try {
     locked = await store.acquireAccountLock(link.accountId);
   } catch (error) {
-    console.error("Store dei job di sync non raggiungibile", error);
+    requestLogger().error("sync_job.store.unavailable", { error });
     return Response.json({ status: "unavailable" }, { status: 503 });
   }
   if (!locked) return Response.json({ status: "already-running" }, { status: 409 });
@@ -83,7 +84,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
       accounts: [queuedAccount(link.accountId, link.accountName)],
     });
   } catch (error) {
-    console.error("Creazione del job di sync fallita", error);
+    requestLogger().error("sync_job.create.failed", { error });
     await store.releaseAccountLock(link.accountId).catch(() => {});
     return Response.json({ status: "unavailable" }, { status: 503 });
   }
@@ -95,7 +96,10 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
     externalAccountId: link.externalAccountId,
     userId: link.userId,
   };
-  after(() => runSyncJob(job, [syncableLink], { store, rateLimitStore: redisRateLimitStore }));
+  const jobLog = requestLogger();
+  after(() =>
+    runSyncJob(job, [syncableLink], { store, rateLimitStore: redisRateLimitStore, ops: redisOpsStore, log: jobLog })
+  );
 
   return Response.json({ jobId: job.id }, { status: 202 });
 }

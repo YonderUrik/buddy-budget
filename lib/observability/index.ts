@@ -31,3 +31,6 @@ export type {
 export { withRoute, resolveRequestId, REQUEST_ID_HEADER } from "./with-route";
 export type { WithRouteOptions } from "./with-route";
 export { requestLogger, bindRequestUser, currentRequestId, runWithRequestContext } from "./request-context";
+export { createOpsStore, createMemoryOpsKv, cronHeartbeatKey, RUNNING_JOBS_KEY } from "./ops-store";
+export type { OpsKv, OpsStore } from "./ops-store";
+export { recordCronRun } from "./heartbeat";

@@ -9,6 +9,7 @@ import type {
   UpdateRuleInput,
 } from "@/lib/validation/categorization-rules";
 import type { CategorizationRule } from "@/lib/db/schema/categorization-rules";
+import { track } from "@/lib/analytics";
 
 const SUGGESTIONS_QUERY_KEY = ["categorize-suggestions"] as const;
 const CATEGORIZATION_RULES_QUERY_KEY = ["categorization-rules"] as const;
@@ -116,6 +117,7 @@ export function useApplyCategorizationMutation() {
 
       return { applied, rulesCreated };
     },
+    onSuccess: (_result, { groups }) => track("categorization_applied", { groups: groups.length }),
     // Anche su fallimento parziale i gruppi già applicati hanno scritto dati reali: invalida sempre,
     // non solo al successo pieno.
     onSettled: () => {
@@ -154,7 +156,8 @@ export function useCreateRuleMutation() {
       }
       return response.json() as Promise<CategorizationRule>;
     },
-    onSuccess: () => {
+    onSuccess: (rule) => {
+      track("categorization_rule_saved", { matchType: rule.matchType });
       queryClient.invalidateQueries({ queryKey: CATEGORIZATION_RULES_QUERY_KEY });
     },
   });
@@ -176,7 +179,8 @@ export function useUpdateRuleMutation() {
       }
       return response.json() as Promise<CategorizationRule>;
     },
-    onSuccess: () => {
+    onSuccess: (rule) => {
+      track("categorization_rule_saved", { matchType: rule.matchType });
       queryClient.invalidateQueries({ queryKey: CATEGORIZATION_RULES_QUERY_KEY });
     },
   });

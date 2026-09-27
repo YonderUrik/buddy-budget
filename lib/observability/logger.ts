@@ -66,7 +66,9 @@ interface SerializedError {
 export function serializeError(error: unknown, withStack: boolean): SerializedError {
   if (error instanceof Error) {
     const out: SerializedError = { name: error.name, message: redactText(error.message) };
-    if (withStack && error.stack) out.stack = redactText(error.stack, 4000);
+    if (withStack && error.stack) {
+      out.stack = redactText(error.stack.split("\n").slice(0, MAX_STACK_LINES).join("\n"), 4000);
+    }
     const cause = (error as { cause?: unknown }).cause;
     if (cause !== undefined && cause !== error) {
       out.cause =
@@ -78,6 +80,9 @@ export function serializeError(error: unknown, withStack: boolean): SerializedEr
   }
   return { message: redactText(String(error)) };
 }
+
+/** Righe di stack conservate: oltre sono quasi sempre frame di framework, inutili e costosi in Loki. */
+export const MAX_STACK_LINES = 12;
 
 const defaultWrite: LogWriter = (line, level) => {
   if (level === "warn" || level === "error") process.stderr.write(`${line}\n`);

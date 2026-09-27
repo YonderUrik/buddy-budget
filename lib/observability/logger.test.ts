@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLogger, type LogLevel } from "./logger";
+import { MAX_STACK_LINES, createLogger, type LogLevel } from "./logger";
 
 function capture(level: LogLevel = "debug") {
   const lines: { record: Record<string, unknown>; level: LogLevel }[] = [];
@@ -64,6 +64,14 @@ describe("createLogger", () => {
     expect(e.cause.message).toBe('duplicate key value violates unique constraint "x"');
     expect(e.message).not.toContain("mario");
     expect(e.stack).not.toContain("mario");
+  });
+
+  it("tronca lo stack alle prime righe", () => {
+    const { log, lines } = capture();
+    const err = new Error("boom");
+    err.stack = ["Error: boom", ...Array.from({ length: 40 }, (_, i) => `    at frame${i}`)].join("\n");
+    log.error("x", { error: err });
+    expect((lines[0].record.error as { stack: string }).stack.split("\n")).toHaveLength(MAX_STACK_LINES);
   });
 
   it("warn ed error vanno al writer con il proprio livello", () => {

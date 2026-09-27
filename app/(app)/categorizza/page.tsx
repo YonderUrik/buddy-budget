@@ -19,7 +19,7 @@ import {
   useApplyCategorizationMutation,
   useCategorizeSuggestionsQuery,
 } from "@/lib/queries/categorization";
-import { useCategoriesQuery } from "@/lib/queries/categories";
+import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
 
 /** Testo della barra di avanzamento durante l'applicazione in blocco. */
 function applyProgressLabel(progress: ApplyCategorizationProgress): string {
@@ -66,6 +66,7 @@ export default function CategorizzaPage() {
   const currency = session?.user.currency ?? "EUR";
   const { data: groups, isLoading, isError, refetch } = useCategorizeSuggestionsQuery();
   const { data: categories } = useCategoriesQuery();
+  const { data: categoryUsage } = useCategoryUsageQuery();
   const applyMutation = useApplyCategorizationMutation();
   const aiSuggestionsMutation = useAiSuggestionsMutation();
   const [overrides, setOverrides] = React.useState<Map<string, GroupOverride>>(new Map());
@@ -281,6 +282,7 @@ export default function CategorizzaPage() {
                 currency={currency}
                 selected={override.selected}
                 categoryId={override.categoryId}
+                categoryUsage={categoryUsage}
                 excludedPercentage={override.excludedPercentage}
                 disabledReason={disabledReason(group, safeCategories, override.categoryId)}
                 onToggleSelected={(selected) => updateOverride(group, { selected })}

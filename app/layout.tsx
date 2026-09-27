@@ -56,6 +56,13 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">
+        {(() => {
+          console.log("[debug-umami]", JSON.stringify({
+            src: process.env.NEXT_PUBLIC_UMAMI_SRC,
+            id: process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID,
+          }));
+          return null;
+        })()}
         {process.env.NEXT_PUBLIC_UMAMI_SRC && process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
           <script
             defer

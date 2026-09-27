@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/lib/validation/categories";
+import type { CategoryUsageCounts } from "@/lib/categories/picker";
 
 const CATEGORIES_QUERY_KEY = ["categories"] as const;
 
@@ -17,6 +18,29 @@ async function fetchCategories(): Promise<Category[]> {
 /** Recupera la lista delle categorie dell'utente autenticato. */
 export function useCategoriesQuery() {
   return useQuery({ queryKey: CATEGORIES_QUERY_KEY, queryFn: fetchCategories });
+}
+
+// Sotto-chiave di CATEGORIES_QUERY_KEY: le mutation sulle categorie la invalidano già per prefisso.
+const CATEGORY_USAGE_QUERY_KEY = [...CATEGORIES_QUERY_KEY, "usage"] as const;
+
+/** Gli utilizzi cambiano lentamente: niente refetch a ogni cambio categoria, così l'ordine del selettore resta stabile mentre si lavora. */
+const CATEGORY_USAGE_STALE_TIME_MS = 5 * 60 * 1000;
+
+async function fetchCategoryUsage(): Promise<CategoryUsageCounts> {
+  const response = await fetch("/api/categories/usage");
+  if (!response.ok) {
+    throw new Error("Impossibile caricare l'utilizzo delle categorie");
+  }
+  return response.json();
+}
+
+/** Numero di transazioni recenti per categoria, usato dal selettore per mostrare in cima le più usate. */
+export function useCategoryUsageQuery() {
+  return useQuery({
+    queryKey: CATEGORY_USAGE_QUERY_KEY,
+    queryFn: fetchCategoryUsage,
+    staleTime: CATEGORY_USAGE_STALE_TIME_MS,
+  });
 }
 
 /** Crea una nuova categoria e invalida la lista al successo. */

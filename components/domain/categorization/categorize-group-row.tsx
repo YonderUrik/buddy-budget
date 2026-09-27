@@ -6,11 +6,10 @@ import * as React from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { CategoryAvatar } from "@/components/domain/categories";
+import { CategoryPicker } from "@/components/domain/categories";
 import type { Category } from "@/lib/db/schema/categories";
-import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import { formatCurrency } from "@/lib/format";
 import { SuggestionSourceBadge } from "./suggestion-source-badge";
@@ -22,6 +21,8 @@ export interface CategorizeGroupRowProps {
   selected: boolean;
   categoryId: string;
   excludedPercentage: number;
+  /** Utilizzi per categoria, per mostrare in cima le più usate nel selettore. */
+  categoryUsage?: CategoryUsageCounts;
   /** Se presente, il gruppo non ha una categoria di default disponibile: selezione disabilitata, motivo mostrato all'utente. */
   disabledReason?: string;
   onToggleSelected: (selected: boolean) => void;
@@ -41,6 +42,7 @@ export function CategorizeGroupRow({
   selected,
   categoryId,
   excludedPercentage,
+  categoryUsage,
   disabledReason,
   onToggleSelected,
   onCategoryChange,
@@ -53,11 +55,8 @@ export function CategorizeGroupRow({
   // La fallback ("Da categorizzare") non è mai una scelta valida qui: assegnarla creerebbe una regola
   // "appresa" che intrappola per sempre quel merchant nel fallback (vince su ogni regola futura più
   // specifica). Sceglierla di nuovo non ha senso in una pagina che serve a uscire dal fallback.
-  const sortedCategories = React.useMemo(
-    () =>
-      categories
-        .filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata"))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+  const selectableCategories = React.useMemo(
+    () => categories.filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata")),
     [categories, isIncome]
   );
 
@@ -93,46 +92,14 @@ export function CategorizeGroupRow({
           {formatCurrency(group.totalAmount, currency)}
         </span>
 
-        <Select value={categoryId} onValueChange={(value) => value && onCategoryChange(value)}>
-          <SelectTrigger size="sm" className="h-8 max-w-48 shrink-0 text-xs">
-            <SelectValue>
-              {(value: string | null) => {
-                const category = categories.find((c) => c.id === value);
-                if (!category) return "";
-                return (
-                  <span className="flex min-w-0 items-center gap-1.5">
-                    <CategoryAvatar
-                      color={category.color as CategoryColor}
-                      icon={category.icon as CategoryIcon}
-                      size={10}
-                      className="size-4 shrink-0"
-                    />
-                    <span className="truncate" title={category.name}>
-                      {category.name}
-                    </span>
-                  </span>
-                );
-              }}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent alignItemWithTrigger={false} className="max-h-64 w-max max-w-64 min-w-48">
-            {sortedCategories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                <span className="flex min-w-0 items-center gap-1.5">
-                  <CategoryAvatar
-                    color={category.color as CategoryColor}
-                    icon={category.icon as CategoryIcon}
-                    size={10}
-                    className="size-4 shrink-0"
-                  />
-                  <span className="truncate" title={category.name}>
-                    {category.name}
-                  </span>
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <CategoryPicker
+          categories={selectableCategories}
+          value={categoryId}
+          onValueChange={onCategoryChange}
+          usage={categoryUsage}
+          size="sm"
+          className="h-8 max-w-48 shrink-0 text-xs"
+        />
 
         <Button type="button" variant="ghost" size="sm" onClick={() => setSplitOpen((v) => !v)} className="shrink-0">
           Dividi

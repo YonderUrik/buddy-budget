@@ -81,7 +81,7 @@ Servizi esterni: Resend (email), GoCardless, uptime check esterno (UptimeRobot/H
 | Migration DB | Migration Drizzle versionate, eseguite da Job k8s come hook `PreSync` di ArgoCD | `db:push` in produzione: non versionato, già causa di incidenti ripetuti |
 | Job pianificati | **CronJob k8s** che chiamano endpoint interni `/api/cron/*` protetti da segreto | `node-cron` in `instrumentation.ts`: doppia esecuzione con più repliche, non osservabile, non funziona su serverless |
 | Observability | **VictoriaMetrics + Loki (single-binary) + Grafana Alloy + Grafana** | kube-prometheus-stack: ~3× la RAM per lo stesso risultato su 8 GB |
-| Alerting | Grafana alerting → **Telegram** (o email) + uptime check esterno | Solo monitoring interno: se cade la VPS cade anche l'allarme |
+| Alerting | Grafana alerting → **Slack** (webhook nativo) + uptime check esterno | Telegram: scartato il 2026-09-27, l'utente vuole restare su Slack (già usato, e possibile base per notifiche di altri strumenti in futuro). Solo monitoring interno: se cade la VPS cade anche l'allarme |
 | Web analytics | **Umami** self-hosted (in alternativa Cloudflare Web Analytics) al posto di `@vercel/analytics` | — |
 | Email | Resend, invariato | — |
 | Ambienti | Solo `production`; le PR si verificano in CI | Staging: rimandato (RAM e complessità) |
@@ -115,7 +115,7 @@ Ogni fase ha un proprio piano (runbook guidato) e un proprio criterio di "fatto"
 | 2 | Host | Playbook Ansible: utente non-root, SSH solo chiave e solo via Tailscale, firewall deny-all in ingresso, `unattended-upgrades`, k3s | Uno scan esterno non trova porte aperte; `kubectl` funziona via Tailscale |
 | 3 | Piattaforma | ArgoCD + KSOPS, cloudflared + Traefik, NetworkPolicy default-deny, ResourceQuota/LimitRange | Una app di prova risponde su un sottodominio via tunnel, gestita da ArgoCD |
 | 4 | Dati | CNPG + backup su R2, Redis | **Restore provato** su un cluster Postgres usa-e-getta da backup R2, con PITR a un istante scelto |
-| 5 | Observability | VictoriaMetrics, Loki, Alloy, Grafana, alert Telegram, uptime check esterno | Un alert di prova (es. pod in crash) arriva su Telegram; il check esterno segnala lo spegnimento simulato |
+| 5 | Observability | VictoriaMetrics, Loki, Alloy, Grafana, alert Slack, uptime check esterno | Un alert di prova (es. pod in crash) arriva su Slack; il check esterno segnala lo spegnimento simulato |
 | 6 | App in parallelo | Deploy su sottodominio di prova con copia dei dati Neon, CronJob, Umami, aggiornamento tag automatico | Verifica manuale completa di tutte le schermate con DB reale; i cron Vercel vengono **disattivati** prima di attivare i CronJob (rate limit GoCardless ~4 chiamate/giorno per conto) |
 | 7 | Cutover | Freeze annunciato 15–30 min → `pg_dump` da Neon → restore in CNPG → switch DNS → verifica | App di produzione servita dalla VPS; dopo 2 settimane senza rollback: spegnimento Vercel/Neon e rotazione segreti |
 
@@ -132,6 +132,7 @@ Ogni fase ha un proprio piano (runbook guidato) e un proprio criterio di "fatto"
 - **Staging**: rimandato per RAM e complessità; le PR si verificano in CI.
 - **Multi-nodo / alta disponibilità**: rimandato. La preparazione è già nel design (Ansible per aggiungere nodi, CNPG che scala a repliche nello stesso manifest).
 - **Cutover zero downtime** (replica logica): scartato per ora.
+- **ChatOps/integrazioni aggiuntive su Slack** (deciso 2026-09-27, dopo aver scelto Slack come canale alert della Fase 5): valutare in una sessione dedicata, dopo la Fase 5, l'integrazione di altri strumenti (CI, ArgoCD sync, deploy) come notifiche su Slack dove sensato — solo visibilità, non comandi/gestione operativa da chat (scartata esplicitamente come fuori scope per il rischio di superficie di attacco aggiuntiva con dati bancari in gioco).
 
 ## Rischi noti
 

@@ -98,3 +98,35 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  update-infra-tag:
+    name: Aggiorna tag immagine nel repo infra
+    needs: image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: YonderUrik/buddy-budget-infra
+          ssh-key: ${{ secrets.INFRA_DEPLOY_KEY }}
+      - name: Installa kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      - name: Aggiorna il tag immagine
+        run: |
+          cd argocd/manifests/app
+          kustomize edit set image \
+            ghcr.io/yonderurik/buddy-budget=ghcr.io/yonderurik/buddy-budget:sha-${GITHUB_SHA::7} \
+            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:sha-${GITHUB_SHA::7}
+      - name: Commit e push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add argocd/manifests/app/kustomization.yaml
+          if git diff --cached --quiet; then
+            echo "Nessuna modifica al tag, skip commit."
+          else
+            git commit -m "chore: aggiorna immagine buddy-budget a sha-${GITHUB_SHA::7}"
+            git push
+          fi

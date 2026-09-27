@@ -14,6 +14,10 @@ RUN pnpm install --frozen-lockfile
 
 # ---- builder: next build ----
 FROM deps AS builder
+# SHA del commit (build-arg dalla CI): .git è escluso dal contesto, senza questo l'etichetta versione
+# nell'app mostrerebbe solo il semver.
+ARG GIT_COMMIT_SHA=""
+ENV GIT_COMMIT_SHA=${GIT_COMMIT_SHA}
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 # Valori FITTIZI solo per la build: alcuni moduli leggono l'env all'import (client DB/Redis, Resend,

@@ -1,5 +1,7 @@
 # Fase 6 — App in parallelo — Runbook
 
+> **Stato (2026-09-27):** Task 1-8 eseguiti (le checkbox sotto non sono state spuntate durante l'esecuzione; lo stato reale è nei commit dei due repo e nel log di `CLAUDE.md`). Il tracking Umami (Task 7 Step 8-9) è stato corretto dopo: route `/stats/script.js` + `/stats/api/send` con `stripPrefix`, non `/stats/script`. Resta il **Task 9** (verifica manuale utente).
+
 > **Per chi esegue:** questo è un piano in formato runbook guidato, non un piano TDD su codice applicativo — stesso formato delle Fasi 1-5 (`docs/superpowers/plans/2026-09-26-fase-*.md`, `2026-09-27-fase-5-observability.md`), coerente con lo standard esplicito del progetto ("ogni fase diventa un piano in formato runbook guidato", `CLAUDE.md`). Ogni task produce manifest verificabili con `kubectl`/`curl` reali via Tailscale, non test automatici — l'unico task con codice applicativo (Task 7, script Umami) resta comunque minimo e verificato dal vivo. **REQUIRED SUB-SKILL:** superpowers:executing-plans (esecuzione inline in questa sessione, coerente col vincolo di processo dell'utente — le azioni su account/DNS/terminale restano sue, Claude prepara e verifica).
 
 **Goal:** far girare BuddyBudget dentro il cluster k3s su `app.buddybudget.io` con dati reali (dump da Neon), CronJob al posto di Vercel Cron, Umami per l'analytics, e un ciclo CI→GHCR→repo infra→ArgoCD completamente automatico — pronto per la verifica manuale completa prima del cutover (Fase 7).

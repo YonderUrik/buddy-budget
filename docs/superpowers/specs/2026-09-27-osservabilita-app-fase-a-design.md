@@ -1,7 +1,7 @@
 # Osservabilità dell'app — Fase A: l'app si racconta — design
 
 Data: 2026-09-27
-Stato: **approvata dall'utente il 2026-09-27**. Piano: `docs/superpowers/plans/2026-09-27-osservabilita-app-fase-a.md`.
+Stato: **approvata dall'utente il 2026-09-27, lato app implementata** (Task 1-9 del piano `docs/superpowers/plans/2026-09-27-osservabilita-app-fase-a.md`; manca il lavoro infra, Task 10). Deviazioni dall'implementazione: contesto della richiesta via AsyncLocalStorage (`requestLogger()`/`bindRequestUser()`) invece di `ctx.log`; `buddybudget_sync_jobs{state}` al posto di `buddybudget_sync_jobs_active`/`_stale`; `rate_limited` contato sui 429 della route `auth`.
 Contesto: gli strumenti di osservabilità esistono già nel cluster (Fase 5 migrazione VPS: VictoriaMetrics, Loki, Alloy, Grafana, alert Slack, UptimeRobot; ArgoCD da Fase 3; Umami da Fase 6), ma l'app non produce segnali utili: ~80 `console.*` in testo libero, nessuna metrica applicativa, nessun evento di prodotto.
 
 ## Visione in tre fasi (questa spec copre solo la A)
@@ -82,8 +82,7 @@ Aggiunta di `onRequestError` (hook di Next.js) che logga `next.request_error` co
 | `buddybudget_gocardless_sync_duration_seconds` | histogram | `trigger` | sync lenti |
 | `buddybudget_gocardless_api_requests_total` | counter | `endpoint` (template), `status_class` | salute dell'API esterna, 429 |
 | `buddybudget_transactions_imported_total` | counter | `categorized` (`true`/`false`) | resa della categorizzazione automatica |
-| `buddybudget_sync_jobs_active` | gauge (letto da Redis allo scrape) | — | job in corso |
-| `buddybudget_sync_jobs_stale` | gauge (letto da Redis allo scrape) | — | job con heartbeat scaduto |
+| `buddybudget_sync_jobs` | gauge (letto da Redis allo scrape) | `state` (`active`/`stale`) | job in corso / con heartbeat scaduto |
 | `buddybudget_cron_last_success_timestamp_seconds` | gauge (letto da Redis allo scrape) | `cron` | "il cron è girato?" |
 | `buddybudget_cron_runs_total` | counter | `cron`, `outcome` | fallimenti dei cron |
 | `buddybudget_auth_events_total` | counter | `event` (`magic_link_sent`/`magic_link_failed`/`sign_in`/`rate_limited`) | problemi di login/email |

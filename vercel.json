@@ -1,6 +1,1 @@
-{
-  "crons": [
-    { "path": "/api/cron/gocardless-sync", "schedule": "0 5 * * *" },
-    { "path": "/api/cron/net-worth-snapshot", "schedule": "50 21 * * *" }
-  ]
-}
+{}

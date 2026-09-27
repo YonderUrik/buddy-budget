@@ -4,13 +4,15 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { isSupportedCurrency } from "@/lib/validation/currency";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Completa l'onboarding: salva la valuta principale (solo tra quelle supportate) e marca l'utente come onboarded. */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   let body: unknown;
   try {
@@ -32,3 +34,5 @@ export async function POST(request: NextRequest) {
 
   return new Response(null, { status: 200 });
 }
+
+export const POST = withRoute("user.onboarding", handlePost);

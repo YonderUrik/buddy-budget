@@ -1,6 +1,7 @@
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { backfillDerivedHistory, writeDailySnapshot } from "./snapshots";
+import { hashUserId, logger } from "@/lib/observability";
 
 /** Id degli utenti con almeno un conto. */
 export async function findUsersWithAccounts(): Promise<string[]> {
@@ -21,7 +22,7 @@ export async function runDailySnapshots(today: Date = new Date()): Promise<void>
     try {
       await snapshotUser(userId, today);
     } catch (error) {
-      console.error(`Snapshot patrimonio fallito per l'utente ${userId}`, error);
+      logger.error("net_worth.snapshot.failed", { user: hashUserId(userId), error });
     }
   }
 }

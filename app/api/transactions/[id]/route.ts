@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { isValidExcludedAmount, transactions } from "@/lib/db/schema/transactions";
 import { updateTransactionSchema } from "@/lib/validation/transactions";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Recupera una transazione solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedTransaction(userId: string, transactionId: string) {
@@ -22,7 +23,7 @@ const MANUAL_ONLY_FIELDS = ["description", "amount", "date"] as const;
  * modificabili solo categoria ed excludedAmount ("Dividi"): un tentativo di cambiare descrizione,
  * importo o data risponde 403.
  */
-export async function PATCH(
+async function handlePatch(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -30,6 +31,7 @@ export async function PATCH(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const transaction = await getOwnedTransaction(session.user.id, id);
@@ -122,7 +124,7 @@ export async function PATCH(
 }
 
 /** Elimina una transazione manuale del proprio utente; 404 se non propria, 400 se auto. */
-export async function DELETE(
+async function handleDelete(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -130,6 +132,7 @@ export async function DELETE(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const transaction = await getOwnedTransaction(session.user.id, id);
@@ -144,3 +147,6 @@ export async function DELETE(
   await db.delete(transactions).where(eq(transactions.id, id));
   return new Response(null, { status: 204 });
 }
+
+export const PATCH = withRoute("transactions.update", handlePatch);
+export const DELETE = withRoute("transactions.delete", handleDelete);

@@ -6,6 +6,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { budgets } from "@/lib/db/schema/budgets";
 import { transactions } from "@/lib/db/schema/transactions";
 import { updateCategorySchema } from "@/lib/validation/categories";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Recupera una categoria solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedCategory(userId: string, categoryId: string) {
@@ -30,7 +31,7 @@ async function getFallbackCategory(userId: string) {
  * 409 se nome duplicato o se si tenta di rinominare la categoria fallback (icona/colore/tipo
  * restano modificabili anche per la fallback).
  */
-export async function PATCH(
+async function handlePatch(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -38,6 +39,7 @@ export async function PATCH(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const category = await getOwnedCategory(session.user.id, id);
@@ -83,7 +85,7 @@ export async function PATCH(
  * categoria fallback ("Da categorizzare") e il budget collegato eliminato,
  * nella stessa transazione DB della cancellazione.
  */
-export async function DELETE(
+async function handleDelete(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -91,6 +93,7 @@ export async function DELETE(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const category = await getOwnedCategory(session.user.id, id);
@@ -121,3 +124,6 @@ export async function DELETE(
 
   return new Response(null, { status: 204 });
 }
+
+export const PATCH = withRoute("categories.update", handlePatch);
+export const DELETE = withRoute("categories.delete", handleDelete);

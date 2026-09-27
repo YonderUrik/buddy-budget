@@ -6,17 +6,19 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 const VALID_TYPES = ["uscita", "entrata", "tutte"] as const;
 type TypeParam = (typeof VALID_TYPES)[number];
 
 /** GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per direzione (default "uscita", retrocompatibile). */
-export async function GET(request: NextRequest) {
+async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
@@ -53,11 +55,12 @@ export async function GET(request: NextRequest) {
 }
 
 /** POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta (entrata → positivo, gruppi di spesa → negato). */
-export async function POST(request: NextRequest) {
+async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const body = await request.json();
   const parsed = createTransactionSchema.safeParse(body);
@@ -104,3 +107,6 @@ export async function POST(request: NextRequest) {
 
   return Response.json(transaction, { status: 201 });
 }
+
+export const GET = withRoute("transactions.list", handleGet);
+export const POST = withRoute("transactions.create", handlePost);

@@ -27,6 +27,13 @@ describe("parseServerEnv", () => {
     expect(() => parseServerEnv({ ...VALID_ENV, OLLAMA_BASE_URL: "" })).not.toThrow();
   });
 
+  it("accetta LOG_LEVEL e METRICS_TOKEN assenti, rifiuta valori non validi", () => {
+    expect(() => parseServerEnv(VALID_ENV)).not.toThrow();
+    expect(() => parseServerEnv({ ...VALID_ENV, LOG_LEVEL: "debug", METRICS_TOKEN: "m".repeat(32) })).not.toThrow();
+    expect(() => parseServerEnv({ ...VALID_ENV, METRICS_TOKEN: "corto" })).toThrow("METRICS_TOKEN");
+    expect(() => parseServerEnv({ ...VALID_ENV, LOG_LEVEL: "verbose" })).toThrow("LOG_LEVEL");
+  });
+
   it("elenca in ordine alfabetico tutte le variabili mancanti", () => {
     const { APP_URL: _a, REDIS_URL: _r, ...rest } = VALID_ENV;
     expect(() => parseServerEnv(rest)).toThrow("Variabili d'ambiente mancanti o non valide: APP_URL, REDIS_URL");

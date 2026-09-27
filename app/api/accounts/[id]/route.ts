@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { transactions } from "@/lib/db/schema/transactions";
 import { updateAccountSchema } from "@/lib/validation/accounts";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /** Recupera un conto solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedAccount(userId: string, accountId: string) {
@@ -20,7 +21,7 @@ async function getOwnedAccount(userId: string, accountId: string) {
  * "auto" sono modificabili solo nome/colore/icona (tipo e saldo arrivano
  * dalla banca collegata): un tentativo di cambiarli risponde 403.
  */
-export async function PATCH(
+async function handlePatch(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -28,6 +29,7 @@ export async function PATCH(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const account = await getOwnedAccount(session.user.id, id);
@@ -63,7 +65,7 @@ export async function PATCH(
 }
 
 /** Elimina o scollega un conto del proprio utente, manuale o auto; 404 se non proprio. */
-export async function DELETE(
+async function handleDelete(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -71,6 +73,7 @@ export async function DELETE(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { id } = await params;
   const account = await getOwnedAccount(session.user.id, id);
@@ -87,3 +90,6 @@ export async function DELETE(
 
   return new Response(null, { status: 204 });
 }
+
+export const PATCH = withRoute("accounts.update", handlePatch);
+export const DELETE = withRoute("accounts.delete", handleDelete);

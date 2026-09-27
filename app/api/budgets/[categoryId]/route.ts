@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { upsertBudgetSchema } from "@/lib/validation/budgets";
+import { bindRequestUser, withRoute } from "@/lib/observability";
 
 /**
  * Crea o aggiorna (upsert) il budget mensile di una categoria del proprio utente.
@@ -12,7 +13,7 @@ import { upsertBudgetSchema } from "@/lib/validation/budgets";
  * prima di qualunque scrittura, per evitare un IDOR su una tabella (categories) altrui
  * (404 sia per categoria inesistente sia per categoria di un altro utente).
  */
-export async function PUT(
+async function handlePut(
   request: NextRequest,
   { params }: { params: Promise<{ categoryId: string }> }
 ) {
@@ -20,6 +21,7 @@ export async function PUT(
   if (!session) {
     return new Response(null, { status: 401 });
   }
+  bindRequestUser(session.user.id);
 
   const { categoryId } = await params;
   const [category] = await db
@@ -47,3 +49,5 @@ export async function PUT(
 
   return Response.json(budget);
 }
+
+export const PUT = withRoute("budgets.upsert", handlePut);

@@ -19,3 +19,5 @@ export { CategorySection } from "./category-section";
 export type { CategorySectionProps } from "./category-section";
 export { CategoryGroupedList } from "./category-grouped-list";
 export type { CategoryGroupedListProps } from "./category-grouped-list";
+export { CategoryPicker } from "./category-picker";
+export type { CategoryPickerProps } from "./category-picker";

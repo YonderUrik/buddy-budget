@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CurrencyInput } from "@/components/domain/accounts";
+import { CategoryPicker } from "@/components/domain/categories";
+import { useCategoryUsageQuery } from "@/lib/queries/categories";
+import { pickDefaultCategoryId } from "@/lib/categories/picker";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useCreateTransactionMutation } from "@/lib/queries/transactions";
 import type { Category } from "@/lib/db/schema/categories";
@@ -32,6 +35,7 @@ export function AddTransactionForm({ categories, currency, stacked = false, onSu
   const { data: accounts } = useAccountsQuery();
   const manualAccounts = (accounts ?? []).filter((account) => account.source === "manuale");
   const createMutation = useCreateTransactionMutation();
+  const { data: categoryUsage } = useCategoryUsageQuery();
 
   const [accountIdOverride, setAccountIdOverride] = React.useState<string | null>(null);
   const [direction, setDirection] = React.useState<"spesa" | "entrata">("spesa");
@@ -48,9 +52,9 @@ export function AddTransactionForm({ categories, currency, stacked = false, onSu
     setCategoryIdOverride(null);
   }
 
-  // Preseleziona il primo conto/categoria disponibile finché l'utente non sceglie esplicitamente.
+  // Preseleziona il primo conto e la categoria più usata finché l'utente non sceglie esplicitamente.
   const accountId = accountIdOverride ?? manualAccounts[0]?.id ?? "";
-  const categoryId = categoryIdOverride ?? availableCategories[0]?.id ?? "";
+  const categoryId = categoryIdOverride ?? pickDefaultCategoryId(availableCategories, categoryUsage ?? {});
 
   const canSubmit =
     accountId !== "" &&
@@ -85,6 +89,7 @@ export function AddTransactionForm({ categories, currency, stacked = false, onSu
           setAmountValue(null);
           setDate(todayDateString());
           setDirection("spesa");
+          setCategoryIdOverride(null);
           onSuccess?.();
         },
         onError: (mutationError) => setError(mutationError.message),
@@ -157,27 +162,14 @@ export function AddTransactionForm({ categories, currency, stacked = false, onSu
 
       <div className={fieldClass}>
         <label className="text-xs text-muted-foreground">Categoria</label>
-        <Select
+        <CategoryPicker
+          categories={availableCategories}
           value={categoryId}
-          onValueChange={(value) => {
-            if (value === null) return;
-            setCategoryIdOverride(value);
-          }}
+          onValueChange={setCategoryIdOverride}
+          usage={categoryUsage}
           disabled={availableCategories.length === 0}
-        >
-          <SelectTrigger className={controlWidth("sm:w-40")}>
-            <SelectValue placeholder="Categoria">
-              {(value: string | null) => availableCategories.find((c) => c.id === value)?.name ?? ""}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {availableCategories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          className={controlWidth("sm:w-48")}
+        />
       </div>
 
       <div className={fieldClass}>

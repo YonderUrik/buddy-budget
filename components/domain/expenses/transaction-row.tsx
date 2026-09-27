@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +25,8 @@ import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/li
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Category } from "@/lib/db/schema/categories";
 import { SplitSlider } from "./split-slider";
-import { CategoryAvatar } from "@/components/domain/categories";
-import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { CategoryPicker } from "@/components/domain/categories";
+import { useCategoryUsageQuery } from "@/lib/queries/categories";
 import { TransactionNotePopover } from "./transaction-note-popover";
 
 export interface TransactionRowProps {
@@ -40,6 +39,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const isAuto = transaction.source === "auto";
   const updateMutation = useUpdateTransactionMutation();
   const deleteMutation = useDeleteTransactionMutation();
+  const { data: categoryUsage } = useCategoryUsageQuery();
 
   const [description, setDescription] = React.useState(transaction.description);
   const [amountValue, setAmountValue] = React.useState<number | null>(Math.abs(Number(transaction.amount)));
@@ -54,16 +54,13 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const isIncome = Number(transaction.amount) > 0;
   const currentCategory = categories.find((c) => c.id === transaction.categoryId);
   const isUncategorized = currentCategory?.isFallback ?? false;
-  const sortedCategories = React.useMemo(
-    () =>
-      categories
-        .filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata"))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+  const selectableCategories = React.useMemo(
+    () => categories.filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata")),
     [categories, isIncome]
   );
 
-  function commitCategory(categoryId: string | null) {
-    if (categoryId === null || categoryId === transaction.categoryId) return;
+  function commitCategory(categoryId: string) {
+    if (categoryId === transaction.categoryId) return;
     const previousCategoryId = transaction.categoryId;
     const nextName = categories.find((c) => c.id === categoryId)?.name ?? "";
     updateMutation.mutate(
@@ -148,46 +145,14 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
               />
             )}
             <span>·</span>
-            <Select value={transaction.categoryId} onValueChange={commitCategory}>
-              <SelectTrigger size="sm" className="max-w-48 text-xs data-[size=sm]:h-9 sm:max-w-40 sm:data-[size=sm]:h-6">
-                <SelectValue>
-                  {(value: string | null) => {
-                    const selected = categories.find((c) => c.id === value);
-                    if (!selected) return "";
-                    return (
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <CategoryAvatar
-                          color={selected.color as CategoryColor}
-                          icon={selected.icon as CategoryIcon}
-                          size={10}
-                          className="size-4 shrink-0"
-                        />
-                        <span className="truncate" title={selected.name}>
-                          {selected.name}
-                        </span>
-                      </span>
-                    );
-                  }}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent alignItemWithTrigger={false} className="max-h-64 w-max max-w-64 min-w-48">
-                {sortedCategories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    <span className="flex min-w-0 items-center gap-1.5">
-                      <CategoryAvatar
-                        color={category.color as CategoryColor}
-                        icon={category.icon as CategoryIcon}
-                        size={10}
-                        className="size-4 shrink-0"
-                      />
-                      <span className="truncate" title={category.name}>
-                        {category.name}
-                      </span>
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CategoryPicker
+              categories={selectableCategories}
+              value={transaction.categoryId}
+              onValueChange={commitCategory}
+              usage={categoryUsage}
+              size="sm"
+              className="h-9 max-w-48 text-xs sm:h-6 sm:max-w-40"
+            />
           </div>
 
           {updateMutation.isPending && <p className="text-xs text-muted-foreground">Salvataggio in corso...</p>}

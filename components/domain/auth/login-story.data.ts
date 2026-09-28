@@ -70,69 +70,31 @@ export const STORY_STEPS: readonly StoryStep[] = [
   { id: "decidi", label: "Decidi", caption: "Vedi dove va ogni euro" },
 ];
 
-/** Un'operazione di investimento nella storia: riga grezza del broker, poi strumento col suo valore di oggi. */
-export interface StoryInvestment {
-  /** Testo grezzo come nell'estratto del broker. */
-  raw: string;
-  name: string;
-  /** Tipo di strumento (ETF, Azione, BTP, Crypto). */
-  kind: string;
-  /** Variabile CSS del colore del tipo, la stessa della pagina Investimenti. */
-  swatchVar: string;
-  /** Quanto hai pagato, in euro. */
-  cost: number;
-  /** Valore alla chiusura di ieri, in euro. */
-  value: number;
-}
+/** Versamento mensile del PAC di esempio del capitolo investimenti. */
+export const PAC_STORY_MONTHLY = 150;
 
-export const STORY_INVESTMENTS: StoryInvestment[] = [
-  {
-    raw: "ACQ 10 VWCE XETRA @ 95,50 EUR",
-    name: "Vanguard FTSE All-World",
-    kind: "ETF",
-    swatchVar: "--swatch-blue",
-    cost: 955,
-    value: 1210,
-  },
-  {
-    raw: "PAC SWDA MIL 150,00 EUR X 12",
-    name: "iShares Core MSCI World",
-    kind: "ETF",
-    swatchVar: "--swatch-blue",
-    cost: 1800,
-    value: 2160,
-  },
-  {
-    raw: "ACQ 3 AAPL NASDAQ @ 178,20 USD",
-    name: "Apple",
-    kind: "Azione",
-    swatchVar: "--swatch-violet",
-    cost: 492,
-    value: 603,
-  },
-  {
-    raw: "SOTTOSCR BTP 1.000 NOM @ 99,80",
-    name: "BTP 2030",
-    kind: "BTP",
-    swatchVar: "--swatch-teal",
-    cost: 998,
-    value: 1011,
-  },
-  {
-    raw: "ACQ 0,015 BTC-EUR @ 58.400",
-    name: "Bitcoin",
-    kind: "Crypto",
-    swatchVar: "--swatch-orange",
-    cost: 876,
-    value: 812,
-  },
-];
+/**
+ * Rendimenti mensili del PAC di esempio (24 mesi), con la volatilità di un portafoglio azionario: un calo di tre mesi
+ * a metà percorso che porta il valore sotto il versato (fino a −153 €), poi la ripresa fino a circa +16%.
+ */
+export const PAC_STORY_RETURNS = [
+  0.031, -0.024, 0.042, 0.018, -0.037, 0.029, 0.035, -0.052, -0.068, -0.041, 0.047, 0.058, 0.039, -0.021, 0.044, 0.027,
+  -0.033, 0.049, 0.022, -0.018, 0.036, 0.041, -0.026, 0.034,
+] as const;
+
+/** Composizione per tipo del portafoglio di esempio, coi colori dei tipi della pagina Investimenti. */
+export const STORY_ALLOCATION = [
+  { label: "ETF", share: 0.62, swatchVar: "--swatch-blue" },
+  { label: "Azioni", share: 0.18, swatchVar: "--swatch-violet" },
+  { label: "BTP", share: 0.12, swatchVar: "--swatch-teal" },
+  { label: "Crypto", share: 0.08, swatchVar: "--swatch-orange" },
+] as const;
 
 /** Fasi del capitolo degli investimenti. */
 export const INVESTMENT_STORY_STEPS: readonly StoryStep[] = [
-  { id: "collega", label: "Registra", caption: "Inserisci acquisti e PAC" },
-  { id: "capisci", label: "Segui", caption: "Ogni sera i prezzi di chiusura" },
-  { id: "decidi", label: "Capisci", caption: "Quanto hai messo e quanto ha fatto il mercato" },
+  { id: "collega", label: "Versa", caption: "Un PAC da 150 € al mese, per due anni" },
+  { id: "capisci", label: "Cresce", caption: "Quanto aggiunge o toglie il mercato, mese per mese" },
+  { id: "decidi", label: "Capisci", caption: "Il risultato e dove sono i tuoi soldi" },
 ];
 
 /** Capitoli della storia, mostrati a turno: uno per ciclo. */

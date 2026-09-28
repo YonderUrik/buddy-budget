@@ -15,9 +15,11 @@ export interface StoryCountUpProps {
   duration?: number;
   /** Mostra il segno anche per i positivi ("+427 €"). */
   signed?: boolean;
+  /** Andamento costante invece della curva della storia (per seguire un disegno che avanza a velocità fissa). */
+  linear?: boolean;
 }
 
-export function StoryCountUp({ value, from = 0, delay = 0, duration = 1.4, signed = false }: StoryCountUpProps) {
+export function StoryCountUp({ value, from = 0, delay = 0, duration = 1.4, signed = false, linear = false }: StoryCountUpProps) {
   const reduceMotion = useReducedMotion();
   const motionValue = useMotionValue(reduceMotion ? value : from);
   const text = useTransform(motionValue, (v) => {
@@ -31,9 +33,9 @@ export function StoryCountUp({ value, from = 0, delay = 0, duration = 1.4, signe
       motionValue.set(value);
       return;
     }
-    const controls = animate(motionValue, value, { duration, delay, ease: STORY_EASE });
+    const controls = animate(motionValue, value, { duration, delay, ease: linear ? "linear" : STORY_EASE });
     return () => controls.stop();
-  }, [motionValue, value, delay, duration, reduceMotion]);
+  }, [motionValue, value, delay, duration, linear, reduceMotion]);
 
   return <motion.span className="tabular-nums">{text}</motion.span>;
 }

@@ -25,4 +25,11 @@ export const FX_PROVIDERS: readonly FxProvider[] = [ecbProvider, frankfurterProv
 
 export { BORSAITALIANA_EXCHANGE_BY_TYPE, resetBorsaItalianaSession } from "./borsaitaliana";
 export { searchCoinGecko } from "./coingecko";
-export { fetchYahooQuoteMeta, resetYahooSession, searchYahoo, type YahooSearchHit } from "./yahoo";
+export {
+  fetchYahooQuoteMeta,
+  resetYahooSession,
+  searchYahoo,
+  setYahooSessionStore,
+  type YahooSearchHit,
+  type YahooSessionStore,
+} from "./yahoo";

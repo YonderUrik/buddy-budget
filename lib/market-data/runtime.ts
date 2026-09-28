@@ -9,11 +9,14 @@ import {
   fakeSearch,
   isFakeMarketData,
 } from "./fake";
-import { fetchYahooQuoteMeta, searchCoinGecko, searchYahoo, type YahooSearchHit } from "./providers";
-import { redisBackfillStore, redisBudgetStore } from "./redis-stores";
+import { fetchYahooQuoteMeta, searchCoinGecko, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
+import { redisBackfillStore, redisBudgetStore, redisYahooSessionStore } from "./redis-stores";
 import { findFirstPriceDate } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
+
+// Sessione Yahoo condivisa su Redis tra i pod, invece che in memoria per processo (vedi yahoo.ts).
+setYahooSessionStore(redisYahooSessionStore);
 
 /** Contesto reale delle fonti: `fetch` globale e variabili d'ambiente del processo. */
 function realContext(): ProviderContext {

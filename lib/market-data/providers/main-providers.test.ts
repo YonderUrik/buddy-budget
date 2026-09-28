@@ -1,13 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProviderBlockedError, ProviderError, ProviderRateLimitedError } from "../errors";
 import { coinGeckoProvider } from "./coingecko";
 import { ecbProvider } from "./ecb";
 import { frankfurterProvider } from "./frankfurter";
 import { krakenProvider } from "./kraken";
 import { fakeContext, readFixture } from "./test-utils";
-import { fetchYahooQuoteMeta, searchYahoo, yahooProvider } from "./yahoo";
+import type { ProviderContext } from "../types";
+import { fetchYahooQuoteMeta, resetYahooSession, searchYahoo, yahooProvider } from "./yahoo";
 
 describe("yahoo", () => {
+  beforeEach(() => resetYahooSession());
+
   it("legge le chiusure giornaliere saltando i giorni senza prezzo", async () => {
     const ctx = fakeContext(readFixture("synthetic-yahoo-chart.json"));
     const closes = await yahooProvider.fetchDailyCloses("VWCE.DE", "2025-09-20", "2025-09-30", ctx);
@@ -15,7 +18,7 @@ describe("yahoo", () => {
       { date: "2025-09-25", close: 140.12, currency: "EUR" },
       { date: "2025-09-27", close: 141.5, currency: "EUR" },
     ]);
-    expect(ctx.urls[0]).toContain("/v8/finance/chart/VWCE.DE?period1=");
+    expect(ctx.urls.some((u) => u.includes("/v8/finance/chart/VWCE.DE?period1="))).toBe(true);
   });
 
   it("converte i pence in sterline", async () => {
@@ -55,6 +58,59 @@ describe("yahoo", () => {
       ["VWCE.MI", "etf", "MIL"],
     ]);
     expect(hits[0].name).toBe("Vanguard FTSE All-World UCITS ETF USD Accumulation");
+  });
+
+  /** Yahoo finto: `fc.yahoo.com` imposta il cookie, `getcrumb` dà il crumb, il resto risponde con `answer`. */
+  function yahooSessionContext(answer: (url: string, cookie: string | null) => Response) {
+    const calls: { url: string; cookie: string | null }[] = [];
+    let crumbCount = 0;
+    const fetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const cookie = (init?.headers as Record<string, string> | undefined)?.Cookie ?? null;
+      calls.push({ url, cookie });
+      if (url.startsWith("https://fc.yahoo.com")) {
+        return new Response("", { status: 404, headers: { "Set-Cookie": "A3=abc123; Domain=.yahoo.com; Path=/; Secure" } });
+      }
+      if (url.includes("/getcrumb")) return new Response(`crumb${++crumbCount}`);
+      return answer(url, cookie);
+    }) as unknown as typeof globalThis.fetch;
+    const ctx: ProviderContext = { fetch, env: {} };
+    return { ctx, calls };
+  }
+
+  it("usa cookie e crumb della sessione, presi una volta sola", async () => {
+    const search = readFixture("synthetic-yahoo-search.json");
+    const { ctx, calls } = yahooSessionContext(() => new Response(search));
+    await searchYahoo("VWCE", ctx);
+    await searchYahoo("SWDA", ctx);
+    const searches = calls.filter((c) => c.url.includes("/v1/finance/search"));
+    expect(searches).toHaveLength(2);
+    expect(searches.every((c) => c.cookie === "A3=abc123" && c.url.includes("&crumb=crumb1"))).toBe(true);
+    expect(calls.filter((c) => c.url.startsWith("https://fc.yahoo.com"))).toHaveLength(1);
+  });
+
+  it("se Yahoo rifiuta una sessione vecchia ne prende una nuova e riprova una volta", async () => {
+    const search = readFixture("synthetic-yahoo-search.json");
+    const { ctx, calls } = yahooSessionContext((url) =>
+      url.includes("crumb=crumb1") && url.includes("q=SWDA") ? new Response("", { status: 429 }) : new Response(search)
+    );
+    await searchYahoo("VWCE", ctx);
+    const hits = await searchYahoo("SWDA", ctx);
+    expect(hits).toHaveLength(2);
+    expect(calls.filter((c) => c.url.includes("q=SWDA")).map((c) => c.url.match(/crumb=(\w+)/)?.[1])).toEqual(["crumb1", "crumb2"]);
+  });
+
+  it("una sessione appena creata e rifiutata non si riprova all'infinito", async () => {
+    const { ctx, calls } = yahooSessionContext(() => new Response("", { status: 429 }));
+    await expect(searchYahoo("VWCE", ctx)).rejects.toBeInstanceOf(ProviderRateLimitedError);
+    expect(calls.filter((c) => c.url.includes("/v1/finance/search"))).toHaveLength(1);
+  });
+
+  it("senza cookie da Yahoo si procede senza sessione", async () => {
+    const ctx = fakeContext(readFixture("synthetic-yahoo-search.json"));
+    const hits = await searchYahoo("VWCE", ctx);
+    expect(hits).toHaveLength(2);
+    expect(ctx.urls.find((u) => u.includes("/v1/finance/search"))).not.toContain("crumb=");
   });
 
   it("legge valuta e borsa di una quotazione", async () => {

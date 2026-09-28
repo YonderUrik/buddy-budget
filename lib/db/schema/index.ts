@@ -7,3 +7,4 @@ export * from "./budgets";
 export * from "./bank-connections";
 export * from "./net-worth-snapshots";
 export * from "./categorization-rules";
+export * from "./investments";

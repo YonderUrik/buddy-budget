@@ -53,14 +53,53 @@ export const STORY_TRANSACTIONS: StoryTransaction[] = [
   },
 ];
 
-/** Fasi della storia, nell'ordine in cui vengono mostrate. */
-export const STORY_STEPS = [
+/** Id delle tre fasi di ogni capitolo della storia (le etichette cambiano per capitolo). */
+export type StoryPhase = "collega" | "capisci" | "decidi";
+
+/** Una fase della storia: etichetta nello stepper e didascalia sotto. */
+export interface StoryStep {
+  id: StoryPhase;
+  label: string;
+  caption: string;
+}
+
+/** Fasi del capitolo dei movimenti, nell'ordine in cui vengono mostrate. */
+export const STORY_STEPS: readonly StoryStep[] = [
   { id: "collega", label: "Collega", caption: "I movimenti arrivano dalla banca" },
   { id: "capisci", label: "Capisci", caption: "Ogni movimento diventa leggibile" },
   { id: "decidi", label: "Decidi", caption: "Vedi dove va ogni euro" },
+];
+
+/** Versamento mensile del PAC di esempio del capitolo investimenti. */
+export const PAC_STORY_MONTHLY = 150;
+
+/**
+ * Rendimenti mensili del PAC di esempio (24 mesi), con la volatilità di un portafoglio azionario: un calo di tre mesi
+ * a metà percorso che porta il valore sotto il versato (fino a −153 €), poi la ripresa fino a circa +16%.
+ */
+export const PAC_STORY_RETURNS = [
+  0.031, -0.024, 0.042, 0.018, -0.037, 0.029, 0.035, -0.052, -0.068, -0.041, 0.047, 0.058, 0.039, -0.021, 0.044, 0.027,
+  -0.033, 0.049, 0.022, -0.018, 0.036, 0.041, -0.026, 0.034,
 ] as const;
 
-export type StoryPhase = (typeof STORY_STEPS)[number]["id"];
+/** Composizione per tipo del portafoglio di esempio, coi colori dei tipi della pagina Investimenti. */
+export const STORY_ALLOCATION = [
+  { label: "ETF", share: 0.62, swatchVar: "--swatch-blue" },
+  { label: "Azioni", share: 0.18, swatchVar: "--swatch-violet" },
+  { label: "BTP", share: 0.12, swatchVar: "--swatch-teal" },
+  { label: "Crypto", share: 0.08, swatchVar: "--swatch-orange" },
+] as const;
+
+/** Fasi del capitolo degli investimenti. */
+export const INVESTMENT_STORY_STEPS: readonly StoryStep[] = [
+  { id: "collega", label: "Versa", caption: "Un PAC da 150 € al mese, per due anni" },
+  { id: "capisci", label: "Cresce", caption: "Quanto aggiunge o toglie il mercato, mese per mese" },
+  { id: "decidi", label: "Capisci", caption: "Il risultato e dove sono i tuoi soldi" },
+];
+
+/** Capitoli della storia, mostrati a turno: uno per ciclo. */
+export const STORY_CHAPTERS = ["movimenti", "investimenti"] as const;
+export type StoryChapter = (typeof STORY_CHAPTERS)[number];
 
 /** Tempi della timeline, in millisecondi. */
 export const STORY_TIMING = {

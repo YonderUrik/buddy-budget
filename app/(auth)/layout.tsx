@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { LoginStory, UpcomingFeatures } from "@/components/domain/auth";
+import { LoginStory, NewFeatureNote, UpcomingFeatures } from "@/components/domain/auth";
 
 const BRAND_NAME = "BuddyBudget";
 
@@ -20,7 +20,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               I tuoi movimenti, finalmente leggibili.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-sidebar-foreground/75 [@media(max-height:940px)]:hidden">
-              BuddyBudget collega le tue banche, ripulisce e categorizza ogni movimento e ti mostra dove va ogni euro.
+              BuddyBudget collega le tue banche, ripulisce e categorizza ogni movimento, segue i tuoi investimenti e ti mostra dove va ogni euro.
             </p>
           </div>
 
@@ -28,6 +28,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="flex max-w-md flex-col gap-5">
+          <NewFeatureNote />
           <UpcomingFeatures />
           <p className="text-xs text-sidebar-foreground/60">
             Collegamento bancario tramite Open Banking (PSD2), in sola lettura.

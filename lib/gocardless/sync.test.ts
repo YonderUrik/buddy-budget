@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
-import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { eq, inArray } from "drizzle-orm";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
@@ -49,6 +49,8 @@ function mockBankResponses(count: number) {
 describe("syncAccountLink", () => {
   let userId: string;
   let link: SyncableLink;
+  // Un utente per test: vanno cancellati tutti, altrimenti i loro link restano e scheduler.test.ts li trova "dovuti".
+  const createdUserIds: string[] = [];
 
   beforeEach(async () => {
     const testId = `test-sync-${crypto.randomUUID()}`;
@@ -63,6 +65,7 @@ describe("syncAccountLink", () => {
       })
       .returning();
     userId = user.id;
+    createdUserIds.push(userId);
 
     const [account] = await db
       .insert(accounts)
@@ -89,8 +92,12 @@ describe("syncAccountLink", () => {
     vi.mocked(getAccountTransactions).mockReset();
   });
 
+  afterEach(async () => {
+    await db.delete(authUser).where(inArray(authUser.id, createdUserIds));
+    createdUserIds.length = 0;
+  });
+
   afterAll(async () => {
-    await db.delete(authUser).where(eq(authUser.id, userId));
     await client.end();
   });
 

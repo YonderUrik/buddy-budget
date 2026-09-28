@@ -3,6 +3,7 @@ import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
+import { backfillDerivedInvestmentHistory } from "@/lib/net-worth/investments";
 import { backfillDerivedHistory } from "@/lib/net-worth/snapshots";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
@@ -24,6 +25,7 @@ async function handleGet(request: NextRequest) {
   }
 
   await backfillDerivedHistory(session.user.id);
+  await backfillDerivedInvestmentHistory(session.user.id);
 
   const rows = await db
     .select()

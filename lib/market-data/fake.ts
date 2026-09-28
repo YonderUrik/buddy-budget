@@ -1,0 +1,109 @@
+import { splitYahooSymbol } from "./symbols";
+import type { DailyClose, FxProvider, PriceProvider, ProviderId } from "./types";
+import type { YahooSearchHit } from "./providers/yahoo";
+
+/**
+ * Fonti finte per lo sviluppo locale e le verifiche con browser (`MARKET_DATA_FAKE=1`): prezzi deterministici
+ * generati dal simbolo, nessuna chiamata di rete. Mai attive in produzione (vedi `isFakeMarketData`).
+ */
+export function isFakeMarketData(env: Record<string, string | undefined> = process.env): boolean {
+  return env.MARKET_DATA_FAKE === "1" && env.NODE_ENV !== "production";
+}
+
+function hash(text: string): number {
+  let h = 0;
+  for (const char of text) h = (h * 31 + char.charCodeAt(0)) >>> 0;
+  return h;
+}
+
+/** Chiusure finte: base tra 20 e 320 dal simbolo, oscillazione lenta, niente weekend (tranne crypto). */
+export function fakeCloses(symbol: string, from: string, to: string, everyDay = false): DailyClose[] {
+  const base = 20 + (hash(symbol) % 300);
+  const closes: DailyClose[] = [];
+  const cursor = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`);
+  while (cursor <= end) {
+    const day = cursor.getUTCDay();
+    if (everyDay || (day !== 0 && day !== 6)) {
+      const t = cursor.getTime() / 86_400_000;
+      const close = base * (1 + 0.08 * Math.sin(t / 25) + 0.0004 * (t - 20_000));
+      closes.push({ date: cursor.toISOString().slice(0, 10), close: Math.round(close * 100) / 100, currency: null });
+    }
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return closes;
+}
+
+function fakeProvider(id: ProviderId): PriceProvider {
+  return {
+    id,
+    requiredKeyEnv: null,
+    maxHistory: "unlimited",
+    minDelayMs: 0,
+    async fetchDailyCloses(symbol, from, to) {
+      return fakeCloses(symbol, from, to, id === "coingecko" || id === "kraken");
+    },
+  };
+}
+
+/** Tutte le fonti in versione finta. */
+export const FAKE_PRICE_PROVIDERS: Record<ProviderId, PriceProvider> = {
+  yahoo: fakeProvider("yahoo"),
+  borsaitaliana: fakeProvider("borsaitaliana"),
+  stooq: fakeProvider("stooq"),
+  alphavantage: fakeProvider("alphavantage"),
+  twelvedata: fakeProvider("twelvedata"),
+  coingecko: fakeProvider("coingecko"),
+  kraken: fakeProvider("kraken"),
+};
+
+const FAKE_PER_EUR: Record<string, number> = { USD: 1.1, GBP: 0.85, CHF: 0.95 };
+
+/** Cambi finti costanti, un valore per giorno. */
+export const FAKE_FX_PROVIDER: FxProvider = {
+  id: "ecb",
+  async fetchRates(currencies, from, to) {
+    return currencies.flatMap((currency) =>
+      fakeCloses(currency, from, to, true).map((c) => ({ date: c.date, currency, perEur: FAKE_PER_EUR[currency] ?? 1 }))
+    );
+  },
+};
+
+const FAKE_CATALOG: (YahooSearchHit & { keywords: string[] })[] = [
+  { symbol: "VWCE.DE", name: "Vanguard FTSE All-World UCITS ETF (Acc)", exchange: "GER", exchangeLabel: "XETRA", type: "etf", keywords: ["vwce", "vanguard", "ie00bk5bqt80", "all-world"] },
+  { symbol: "VWCE.MI", name: "Vanguard FTSE All-World UCITS ETF (Acc)", exchange: "MIL", exchangeLabel: "Milano", type: "etf", keywords: ["vwce", "vanguard", "ie00bk5bqt80", "all-world"] },
+  { symbol: "SWDA.MI", name: "iShares Core MSCI World UCITS ETF", exchange: "MIL", exchangeLabel: "Milano", type: "etf", keywords: ["swda", "ishares", "ie00b4l5y983", "msci world"] },
+  { symbol: "ENEL.MI", name: "Enel S.p.A.", exchange: "MIL", exchangeLabel: "Milano", type: "azione", keywords: ["enel", "it0003128367"] },
+  { symbol: "AAPL", name: "Apple Inc.", exchange: "NMS", exchangeLabel: "NASDAQ", type: "azione", keywords: ["apple", "aapl", "us0378331005"] },
+];
+
+/** Ricerca finta su un piccolo catalogo. */
+export function fakeSearch(query: string): YahooSearchHit[] {
+  const q = query.trim().toLowerCase();
+  return FAKE_CATALOG.filter((item) => item.keywords.some((k) => k.includes(q) || q.includes(k))).map((item) => ({
+    symbol: item.symbol,
+    name: item.name,
+    exchange: item.exchange,
+    exchangeLabel: item.exchangeLabel,
+    type: item.type,
+  }));
+}
+
+/** Valuta e borsa finte ricavate dal suffisso del simbolo. */
+export function fakeQuoteMeta(symbol: string): { currency: string; exchange: string } {
+  const { suffix } = splitYahooSymbol(symbol);
+  if (suffix === "L") return { currency: "GBP", exchange: "LSE" };
+  if (suffix === "") return { currency: "USD", exchange: "NMS" };
+  return { currency: "EUR", exchange: suffix === "MI" ? "MIL" : "GER" };
+}
+
+/** Crypto finte per la ricerca. */
+export function fakeCryptoSearch(query: string): { id: string; name: string; symbol: string }[] {
+  const all = [
+    { id: "bitcoin", name: "Bitcoin", symbol: "BTC" },
+    { id: "ethereum", name: "Ethereum", symbol: "ETH" },
+  ];
+  const q = query.trim().toLowerCase();
+  return all.filter((c) => c.id.includes(q) || c.symbol.toLowerCase() === q);
+}
+

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { Instrument, InvestmentPlan } from "@/lib/db/schema/investments";
-import { PLAN_FREQUENCY_LABELS } from "@/lib/investments/labels";
+import { daysUntil, nextPlanDate } from "@/lib/investments/insights";
+import { PLAN_FREQUENCY_LABELS, PLAN_FREQUENCY_MONTHS } from "@/lib/investments/labels";
 import { formatCurrency } from "@/lib/format";
 import { useCreatePlanMutation, useDeletePlanMutation, useUpdatePlanMutation } from "@/lib/queries/investments";
 import { PLAN_MAX_DAY_OF_MONTH } from "@/lib/validation/investments";
@@ -22,7 +23,17 @@ export interface PlansCardProps {
   plans: InvestmentPlan[];
   instrumentsById: Map<string, Instrument>;
   currency: string;
+  /** Data di oggi, per il prossimo versamento. */
+  today: Date;
   onRegisterExecution: (plan: InvestmentPlan) => void;
+}
+
+const NEXT_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long" });
+
+function whenText(days: number): string {
+  if (days === 0) return "oggi";
+  if (days === 1) return "domani";
+  return `tra ${days} giorni`;
 }
 
 function NewPlanForm({ currency, onDone }: { currency: string; onDone: () => void }) {
@@ -59,14 +70,25 @@ function NewPlanForm({ currency, onDone }: { currency: string; onDone: () => voi
   );
 }
 
-export function PlansCard({ plans, instrumentsById, currency, onRegisterExecution }: PlansCardProps) {
+export function PlansCard({ plans, instrumentsById, currency, today, onRegisterExecution }: PlansCardProps) {
   const [adding, setAdding] = React.useState(false);
   const update = useUpdatePlanMutation();
   const remove = useDeletePlanMutation();
+  const yearly = plans
+    .filter((p) => p.active)
+    .reduce((sum, p) => sum + (Number(p.amount) * 12) / PLAN_FREQUENCY_MONTHS[p.frequency], 0);
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Piani di accumulo</CardTitle>
+        <div className="flex flex-col gap-1">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Piani di accumulo</CardTitle>
+          {yearly > 0 ? (
+            <p className="text-sm text-foreground">
+              In un anno versi <span className="font-semibold tabular-nums">{formatCurrency(yearly, currency, { maximumFractionDigits: 0 })}</span>{" "}
+              senza pensarci.
+            </p>
+          ) : null}
+        </div>
         {!adding ? (
           <Button size="sm" variant="outline" onClick={() => setAdding(true)}>
             Nuovo PAC
@@ -82,8 +104,14 @@ export function PlansCard({ plans, instrumentsById, currency, onRegisterExecutio
                 <p className="truncate text-sm font-medium text-foreground">{instrumentsById.get(plan.instrumentId)?.name ?? "Strumento"}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatCurrency(Number(plan.amount), currency)} {PLAN_FREQUENCY_LABELS[plan.frequency]}, il giorno {plan.dayOfMonth}
-                  {plan.active ? "" : " · sospeso"}
                 </p>
+                {plan.active ? (
+                  <p className="text-xs text-foreground">
+                    Prossimo versamento il {NEXT_DATE_FORMAT.format(nextPlanDate(plan, today))}, {whenText(daysUntil(nextPlanDate(plan, today), today))}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Sospeso</p>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <Button size="sm" variant="secondary" disabled={!plan.active} onClick={() => onRegisterExecution(plan)}>

@@ -6,12 +6,13 @@ import * as React from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import {
-  InvestmentsKpiCards,
+  CURRENCY_COLORS,
+  INSTRUMENT_TYPE_COLOR,
   InvestmentTransactionsList,
   ManualPriceDialog,
   PlansCard,
-  PortfolioChartCard,
   PortfolioComposition,
+  PortfolioHeroCard,
   PositionsList,
   prefillFromPlan,
   RegisterOperationForm,
@@ -23,7 +24,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { resolvePrice } from "@/lib/calc/investments";
 import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
-import type { Instrument, InvestmentPlan } from "@/lib/db/schema/investments";
+import type { Instrument, InstrumentType, InvestmentPlan } from "@/lib/db/schema/investments";
+import {
+  CURRENCY_EXPOSURE_THRESHOLD,
+  computeConcentration,
+  computeCurrencyExposure,
+  computeValueBreakdown,
+} from "@/lib/investments/insights";
 import { INSTRUMENT_TYPE_LABELS } from "@/lib/investments/labels";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import {
@@ -33,6 +40,16 @@ import {
 } from "@/lib/queries/investments";
 
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
+
+function typeLabel(key: string): string {
+  return INSTRUMENT_TYPE_LABELS[key as InstrumentType] ?? key;
+}
+
+/** Frase sull'esposizione valutaria: sotto soglia non c'è rischio di cambio da segnalare. */
+function currencyInsight(exposure: number, currency: string): string {
+  if (exposure < CURRENCY_EXPOSURE_THRESHOLD) return `Quasi tutto in ${currency}: il cambio non sposta il valore.`;
+  return `Il ${Math.round(exposure * 100)}% è in altre valute: il cambio muove il valore anche a mercati fermi.`;
+}
 
 export default function InvestimentiPage() {
   const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
@@ -96,10 +113,17 @@ export default function InvestimentiPage() {
         </div>
       ) : (
         <>
-          <InvestmentsKpiCards summary={view.summary} monthlyPlanAmount={view.monthlyPlanAmount} currency={currency} />
-          <PortfolioChartCard series={view.series} period={period} onPeriodChange={setPeriod} currency={currency} />
+          <PortfolioHeroCard
+            summary={view.summary}
+            breakdown={computeValueBreakdown(view.summary)}
+            series={view.series}
+            period={period}
+            onPeriodChange={setPeriod}
+            currency={currency}
+          />
           <PositionsList
             rows={view.summary.rows}
+            concentration={computeConcentration(view.summary.rows)}
             currency={currency}
             todayKey={toDateKey(today)}
             backfill={backfill.data ?? []}
@@ -108,15 +132,32 @@ export default function InvestimentiPage() {
           <PortfolioComposition
             currency={currency}
             groups={[
-              { title: "Per tipo", slices: view.byType, labelFor: (key) => INSTRUMENT_TYPE_LABELS[key as keyof typeof INSTRUMENT_TYPE_LABELS] ?? key },
-              { title: "Per valuta", slices: view.byCurrency },
+              {
+                title: "Per tipo",
+                slices: view.byType,
+                labelFor: typeLabel,
+                colorFor: (key) => INSTRUMENT_TYPE_COLOR[key as InstrumentType] ?? "var(--swatch-slate)",
+                insight: view.byType[0] ? `Soprattutto ${typeLabel(view.byType[0].key)} (${Math.round(view.byType[0].share * 100)}%).` : null,
+              },
+              {
+                title: "Per valuta",
+                slices: view.byCurrency,
+                colorFor: (_key, index) => CURRENCY_COLORS[index % CURRENCY_COLORS.length],
+                insight: currencyInsight(computeCurrencyExposure(view.byCurrency, currency), currency),
+              },
             ]}
           />
         </>
       )}
       {view ? (
         <>
-          <PlansCard plans={overview.data?.plans ?? []} instrumentsById={view.instrumentsById} currency={currency} onRegisterExecution={registerFromPlan} />
+          <PlansCard
+            plans={overview.data?.plans ?? []}
+            instrumentsById={view.instrumentsById}
+            currency={currency}
+            today={today}
+            onRegisterExecution={registerFromPlan}
+          />
           {view.hasTransactions ? (
             <InvestmentTransactionsList
               transactions={overview.data?.transactions ?? []}

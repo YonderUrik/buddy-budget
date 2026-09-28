@@ -4,10 +4,11 @@
  * Componenti della schermata Investimenti.
  */
 
-export { InvestmentsKpiCards } from "./investments-kpi-cards";
-export type { InvestmentsKpiCardsProps } from "./investments-kpi-cards";
-export { PortfolioChartCard } from "./portfolio-chart-card";
-export type { PortfolioChartCardProps } from "./portfolio-chart-card";
+export { PortfolioHeroCard } from "./portfolio-hero-card";
+export type { PortfolioHeroCardProps } from "./portfolio-hero-card";
+export { ValueBreakdownBar } from "./value-breakdown-bar";
+export type { ValueBreakdownBarProps } from "./value-breakdown-bar";
+export { INSTRUMENT_TYPE_COLOR, CURRENCY_COLORS } from "./instrument-colors";
 export { PortfolioComposition } from "./portfolio-composition";
 export type { CompositionGroup, PortfolioCompositionProps } from "./portfolio-composition";
 export { PositionsList, STALE_PRICE_DAYS } from "./positions-list";

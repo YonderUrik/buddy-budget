@@ -22,6 +22,29 @@ import { GET as backfillStatus } from "./backfill/route";
 const mockedGetSession = vi.mocked(auth.api.getSession);
 const afterTasks: Promise<unknown>[] = [];
 
+/** ISIN valido e unico per esecuzione: il DB di sviluppo può già contenere gli strumenti veri (condivisi tra utenti). */
+function uniqueIsin(country: string): string {
+  const body = `${country}${crypto.randomUUID().replace(/-/g, "").slice(0, 9).toUpperCase()}`;
+  const digits = [...body].map((c) => (/\d/.test(c) ? c : String(c.charCodeAt(0) - 55))).join("");
+  let sum = 0;
+  let double = true;
+  for (let i = digits.length - 1; i >= 0; i -= 1) {
+    let d = Number(digits[i]);
+    if (double) {
+      d *= 2;
+      if (d > 9) d -= 9;
+    }
+    sum += d;
+    double = !double;
+  }
+  return `${body}${(10 - (sum % 10)) % 10}`;
+}
+
+/** Ticker unico per esecuzione (le fonti finte accettano qualunque simbolo). */
+function uniqueTicker(): string {
+  return `BBT${crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+}
+
 function post(body: unknown) {
   return new NextRequest("http://localhost/api/instruments", { method: "POST", body: JSON.stringify(body) });
 }
@@ -52,7 +75,8 @@ describe("API strumenti", () => {
   async function createAndTrack(body: unknown) {
     const response = await createInstrument(post(body));
     const json = await response.json();
-    if (json.id) createdInstrumentIds.push(json.id);
+    // Solo gli strumenti creati qui: uno riusato può appartenere ad altri dati del DB.
+    if (response.status === 201 && json.id) createdInstrumentIds.push(json.id);
     return { response, json };
   }
 
@@ -92,14 +116,15 @@ describe("API strumenti", () => {
   });
 
   it("crea uno strumento da Yahoo con valuta letta dal server, simboli derivati e storico recuperato in background", async () => {
-    const { response, json } = await createAndTrack({ source: "yahoo", yahooSymbol: "VWCE.DE", name: "VWCE", type: "etf", isin: "IE00BK5BQT80" });
+    const ticker = uniqueTicker();
+    const { response, json } = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.DE`, name: ticker, type: "etf", isin: uniqueIsin("IE") });
     expect(response.status).toBe(201);
     expect([json.currency, json.exchange, json.createdByUserId, json.priceMode]).toEqual(["EUR", "GER", null, "auto"]);
     const symbols = await db.select().from(instrumentSymbols).where(eq(instrumentSymbols.instrumentId, json.id));
     expect(symbols.map((s) => [s.provider, s.symbol]).sort()).toEqual([
-      ["alphavantage", "VWCE.DEX"],
-      ["stooq", "vwce.de"],
-      ["yahoo", "VWCE.DE"],
+      ["alphavantage", `${ticker}.DEX`],
+      ["stooq", `${ticker.toLowerCase()}.de`],
+      ["yahoo", `${ticker}.DE`],
     ]);
     await Promise.all(afterTasks);
     const prices = await db.select().from(instrumentPrices).where(eq(instrumentPrices.instrumentId, json.id));
@@ -110,9 +135,11 @@ describe("API strumenti", () => {
   });
 
   it("riusa lo strumento esistente con lo stesso ISIN o lo stesso simbolo", async () => {
-    const first = await createAndTrack({ source: "yahoo", yahooSymbol: "VWCE.DE", name: "VWCE", type: "etf", isin: "IE00BK5BQT80" });
-    const sameIsin = await createAndTrack({ source: "yahoo", yahooSymbol: "VWCE.MI", name: "Altro nome", type: "etf", isin: "IE00BK5BQT80" });
-    const sameSymbol = await createAndTrack({ source: "yahoo", yahooSymbol: "VWCE.DE", name: "Altro", type: "etf" });
+    const ticker = uniqueTicker();
+    const isin = uniqueIsin("IE");
+    const first = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.DE`, name: ticker, type: "etf", isin });
+    const sameIsin = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.MI`, name: "Altro nome", type: "etf", isin });
+    const sameSymbol = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.DE`, name: "Altro", type: "etf" });
     expect(sameIsin.response.status).toBe(200);
     expect(sameIsin.json.id).toBe(first.json.id);
     expect(sameSymbol.json.id).toBe(first.json.id);
@@ -136,13 +163,14 @@ describe("API strumenti", () => {
   });
 
   it("la creazione solo-ISIN vale per le obbligazioni, non per un'azione", async () => {
-    const bond = await createAndTrack({ source: "isin", isin: "IT0003128367", name: "Titolo", type: "obbligazione", currency: "EUR" });
+    const bondIsin = uniqueIsin("IT");
+    const bond = await createAndTrack({ source: "isin", isin: bondIsin, name: "Titolo", type: "obbligazione", currency: "EUR" });
     expect(bond.response.status).toBe(201);
     expect(bond.json.priceUnit).toBe("percentuale_nominale");
     await Promise.all(afterTasks);
     await db.delete(instruments).where(eq(instruments.id, bond.json.id));
     createdInstrumentIds.splice(createdInstrumentIds.indexOf(bond.json.id), 1);
-    const stock = await createAndTrack({ source: "isin", isin: "IT0003128367", name: "Titolo", type: "azione", currency: "EUR" });
+    const stock = await createAndTrack({ source: "isin", isin: bondIsin, name: "Titolo", type: "azione", currency: "EUR" });
     expect(stock.response.status).toBe(400);
   });
 
@@ -155,7 +183,7 @@ describe("API strumenti", () => {
   });
 
   it("rinomina solo gli strumenti manuali propri", async () => {
-    const shared = await createAndTrack({ source: "yahoo", yahooSymbol: "AAPL", name: "Apple", type: "azione" });
+    const shared = await createAndTrack({ source: "yahoo", yahooSymbol: uniqueTicker(), name: "Azione", type: "azione" });
     const denied = await renameInstrument(
       new NextRequest(`http://localhost/api/instruments/${shared.json.id}`, { method: "PATCH", body: JSON.stringify({ name: "Mela" }) }),
       { params: Promise.resolve({ id: shared.json.id }) }

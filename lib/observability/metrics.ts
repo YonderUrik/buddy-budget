@@ -1,5 +1,7 @@
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "prom-client";
 import { APP_BUILD_INFO } from "@/lib/app-version";
+import type { ProviderId } from "@/lib/db/schema/investments";
+import type { ProviderOutcome } from "@/lib/market-data/types";
 
 /** Prefisso comune di tutte le metriche applicative. */
 export const METRIC_PREFIX = "buddybudget_";
@@ -9,7 +11,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
@@ -25,7 +27,7 @@ export type GoCardlessEndpoint =
   | "accounts.balances"
   | "accounts.transactions";
 
-export const CRON_NAMES: readonly CronName[] = ["gocardless_sync", "net_worth_snapshot"];
+export const CRON_NAMES: readonly CronName[] = ["gocardless_sync", "net_worth_snapshot", "market_prices"];
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -49,6 +51,7 @@ interface MetricsState {
   imported: Counter<"categorized">;
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
+  priceProvider: Counter<"provider" | "outcome">;
 }
 
 function createState(): MetricsState {
@@ -105,6 +108,13 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}auth_events_total`,
     help: "Eventi di autenticazione (invio magic link, accessi, rate limit).",
     labelNames: ["event"],
+    registers: r,
+  });
+
+  state.priceProvider = new Counter({
+    name: `${METRIC_PREFIX}price_provider_requests_total`,
+    help: "Tentativi sulle fonti di prezzi di mercato per fonte ed esito (success, empty, error, skipped...).",
+    labelNames: ["provider", "outcome"],
     registers: r,
   });
 
@@ -251,4 +261,9 @@ export function recordCronRunMetric(cron: CronName, outcome: CronOutcome): void 
 /** Registra un evento di autenticazione. */
 export function recordAuthEvent(event: AuthEvent): void {
   metrics().authEvents.inc({ event });
+}
+
+/** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */
+export function recordPriceProviderRequest(provider: ProviderId, outcome: ProviderOutcome): void {
+  metrics().priceProvider.inc({ provider, outcome });
 }

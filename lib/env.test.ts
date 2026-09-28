@@ -34,6 +34,12 @@ describe("parseServerEnv", () => {
     expect(() => parseServerEnv({ ...VALID_ENV, LOG_LEVEL: "verbose" })).toThrow("LOG_LEVEL");
   });
 
+  it("si avvia senza chiavi delle fonti prezzi e le accetta se presenti", () => {
+    expect(() => parseServerEnv(VALID_ENV)).not.toThrow();
+    const env = parseServerEnv({ ...VALID_ENV, ALPHAVANTAGE_API_KEY: "av", STOOQ_API_KEY: "st" });
+    expect(env.ALPHAVANTAGE_API_KEY).toBe("av");
+  });
+
   it("elenca in ordine alfabetico tutte le variabili mancanti", () => {
     const { APP_URL: _a, REDIS_URL: _r, ...rest } = VALID_ENV;
     expect(() => parseServerEnv(rest)).toThrow("Variabili d'ambiente mancanti o non valide: APP_URL, REDIS_URL");

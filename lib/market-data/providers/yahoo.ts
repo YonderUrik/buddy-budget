@@ -25,6 +25,8 @@ const CRUMB_URL = "https://query2.finance.yahoo.com/v1/test/getcrumb";
 export const YAHOO_SESSION_TTL_MS = 60 * 60 * 1000;
 /** Dopo un tentativo fallito di ottenere la sessione, attesa prima di riprovare (evita 2 chiamate in più a ricerca). */
 export const YAHOO_SESSION_RETRY_MS = 5 * 60 * 1000;
+/** Dopo un rifiuto (429/403) confermato, pausa prima di ritentare Yahoo: evita di martellare una fonte già in rifiuto. */
+export const YAHOO_COOLDOWN_MS = 3 * 60 * 1000;
 /** Un crumb è una stringa corta senza spazi; una pagina HTML o un JSON d'errore non lo sono. */
 const CRUMB_PATTERN = /^[^\s<>{}"]{1,64}$/;
 
@@ -33,11 +35,53 @@ interface YahooSession {
   crumb: string | null;
 }
 
-let cachedSession: { session: YahooSession | null; expiresAt: number } | null = null;
+/**
+ * Cache della sessione Yahoo e del raffreddamento dopo un rifiuto. In produzione è su Redis (condivisa tra pod,
+ * sopravvive ai riavvii); i test usano quella in memoria di default, mai toccata da Redis.
+ */
+export interface YahooSessionStore {
+  /** Sessione cache, `undefined` se non salvata/scaduta (va rinegoziata), `null` se un tentativo precedente è fallito. */
+  get(): Promise<YahooSession | null | undefined>;
+  set(session: YahooSession | null, ttlSeconds: number): Promise<void>;
+  isCoolingDown(): Promise<boolean>;
+  markRefused(ttlSeconds: number): Promise<void>;
+  clear(): Promise<void>;
+}
 
-/** Svuota la sessione in cache (test, o dopo un rifiuto di Yahoo). */
-export function resetYahooSession(): void {
-  cachedSession = null;
+function createMemoryYahooSessionStore(): YahooSessionStore {
+  let entry: { session: YahooSession | null; expiresAt: number } | null = null;
+  let coolingUntil = 0;
+  return {
+    async get() {
+      if (!entry || entry.expiresAt <= Date.now()) return undefined;
+      return entry.session;
+    },
+    async set(session, ttlSeconds) {
+      entry = { session, expiresAt: Date.now() + ttlSeconds * 1000 };
+    },
+    async isCoolingDown() {
+      return coolingUntil > Date.now();
+    },
+    async markRefused(ttlSeconds) {
+      coolingUntil = Date.now() + ttlSeconds * 1000;
+    },
+    async clear() {
+      entry = null;
+      coolingUntil = 0;
+    },
+  };
+}
+
+let activeStore: YahooSessionStore = createMemoryYahooSessionStore();
+
+/** Sostituisce lo store attivo (produzione: quello su Redis). Va chiamato una volta, al caricamento del modulo. */
+export function setYahooSessionStore(store: YahooSessionStore): void {
+  activeStore = store;
+}
+
+/** Svuota la sessione in cache e il raffreddamento (test, o dopo un rifiuto di Yahoo). */
+export async function resetYahooSession(): Promise<void> {
+  await activeStore.clear();
 }
 
 async function createSession(ctx: ProviderContext): Promise<YahooSession | null> {
@@ -68,10 +112,11 @@ async function createSession(ctx: ProviderContext): Promise<YahooSession | null>
   return { cookie, crumb };
 }
 
-async function getSession(ctx: ProviderContext, nowMs: number): Promise<YahooSession | null> {
-  if (cachedSession && cachedSession.expiresAt > nowMs) return cachedSession.session;
+async function getSession(ctx: ProviderContext): Promise<YahooSession | null> {
+  const cached = await activeStore.get();
+  if (cached !== undefined) return cached;
   const session = await createSession(ctx);
-  cachedSession = { session, expiresAt: nowMs + (session ? YAHOO_SESSION_TTL_MS : YAHOO_SESSION_RETRY_MS) };
+  await activeStore.set(session, (session ? YAHOO_SESSION_TTL_MS : YAHOO_SESSION_RETRY_MS) / 1000);
   return session;
 }
 
@@ -81,24 +126,41 @@ function withSession(url: string, session: YahooSession | null): { url: string; 
   return { url: `${url}${crumbParam}`, headers: { Cookie: session.cookie } };
 }
 
+function isRefusal(error: unknown): boolean {
+  return error instanceof ProviderRateLimitedError || error instanceof ProviderBlockedError;
+}
+
 /**
- * GET verso Yahoo con cookie e crumb. Se Yahoo rifiuta (429, 401/403) una sessione già in cache, la sessione
- * potrebbe essere scaduta: se ne prende una nuova e si riprova una volta sola.
+ * GET verso Yahoo con cookie e crumb. Con `useCooldown` (la ricerca interattiva, priva di un proprio interruttore)
+ * si salta subito la chiamata di rete se Yahoo ci ha rifiutato di recente; l'aggiornamento prezzi giornaliero/storico
+ * ha già il proprio interruttore per run in `chain.ts` e non lo usa, per non alterarne i codici di errore.
+ * Se Yahoo rifiuta (429, 401/403) una sessione già in cache, la sessione potrebbe essere scaduta: se ne prende una
+ * nuova e si riprova una volta sola. Un rifiuto confermato attiva comunque il raffreddamento condiviso.
  */
-async function yahooGet(url: string, ctx: ProviderContext): Promise<Response | null> {
-  const wasCached = cachedSession !== null && cachedSession.expiresAt > Date.now();
-  const session = await getSession(ctx, Date.now());
+async function yahooGet(url: string, ctx: ProviderContext, options: { useCooldown?: boolean } = {}): Promise<Response | null> {
+  if (options.useCooldown && (await activeStore.isCoolingDown())) throw new ProviderRateLimitedError("yahoo");
+  const wasCached = (await activeStore.get()) !== undefined;
+  const session = await getSession(ctx);
   const first = withSession(url, session);
   try {
     return await providerGet("yahoo", first.url, ctx, { notFoundAsNull: true, headers: first.headers });
   } catch (error) {
-    const refused = error instanceof ProviderRateLimitedError || error instanceof ProviderBlockedError;
-    if (!refused || !wasCached || !session) throw error;
-    resetYahooSession();
-    const fresh = await getSession(ctx, Date.now());
-    if (!fresh) throw error;
-    const retry = withSession(url, fresh);
-    return providerGet("yahoo", retry.url, ctx, { notFoundAsNull: true, headers: retry.headers });
+    if (!isRefusal(error)) throw error;
+    if (wasCached && session) {
+      await resetYahooSession();
+      const fresh = await getSession(ctx);
+      if (fresh) {
+        const retry = withSession(url, fresh);
+        try {
+          return await providerGet("yahoo", retry.url, ctx, { notFoundAsNull: true, headers: retry.headers });
+        } catch (retryError) {
+          if (isRefusal(retryError)) await activeStore.markRefused(YAHOO_COOLDOWN_MS / 1000);
+          throw retryError;
+        }
+      }
+    }
+    await activeStore.markRefused(YAHOO_COOLDOWN_MS / 1000);
+    throw error;
   }
 }
 
@@ -226,7 +288,7 @@ export function parseYahooSearch(body: YahooSearchResponse): YahooSearchHit[] {
 /** Cerca strumenti per nome, ticker o ISIN. */
 export async function searchYahoo(query: string, ctx: ProviderContext): Promise<YahooSearchHit[]> {
   const url = `${SEARCH_URL}?q=${encodeURIComponent(query)}&quotesCount=15&newsCount=0&listsCount=0`;
-  const response = await yahooGet(url, ctx);
+  const response = await yahooGet(url, ctx, { useCooldown: true });
   if (!response) return [];
   return parseYahooSearch(await readJson<YahooSearchResponse>("yahoo", response));
 }

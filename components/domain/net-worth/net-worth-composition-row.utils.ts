@@ -1,4 +1,5 @@
 import type { Account } from "@/lib/db/schema/accounts";
+import { ASSET_CLASS_LABELS } from "./asset-classes";
 
 /** Etichetta della riga di sintesi degli investimenti: quanto ha aggiunto (o tolto) il mercato. */
 export const MARKET_HIGHLIGHT_LABEL = "dal mercato";
@@ -42,13 +43,13 @@ export function buildCompositionItems(
   if (accounts.length > 0) {
     const amount = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
     const detail = accounts.length === 1 ? "1 conto" : `${accounts.length} conti`;
-    items.push({ key: "liquidita", label: "Liquidità", detail, amount, href: "/conti" });
+    items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/conti" });
   }
   if (investments) {
     const detail = investments.positions === 1 ? "1 posizione" : `${investments.positions} posizioni`;
     items.push({
       key: "investimenti",
-      label: "Investimenti",
+      label: ASSET_CLASS_LABELS.investimenti,
       detail,
       amount: investments.value,
       href: "/investimenti",

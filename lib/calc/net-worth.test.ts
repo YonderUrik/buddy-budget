@@ -46,7 +46,7 @@ function snapshot(date: string, amount: string, source = "snapshot", assetClass 
 }
 
 function point(date: string, value: number): NetWorthSeriesPoint {
-  return { date, label: date, value, isEstimated: false };
+  return { date, label: date, value, byClass: { liquidita: value }, isEstimated: false };
 }
 
 describe("toDateKey", () => {
@@ -140,14 +140,14 @@ describe("getNetWorthPeriodRange", () => {
 
 describe("buildNetWorthSeries", () => {
   it("senza snapshot restituisce solo il totale di oggi", () => {
-    const series = buildNetWorthSeries([], 140, "3mesi", TODAY);
+    const series = buildNetWorthSeries([], { liquidita: 140 }, "3mesi", TODAY);
     expect(series.map((p) => [p.date, p.value, p.isEstimated])).toEqual([["2026-09-13", 140, false]]);
   });
 
   it("serie giornaliera: ripete l'ultimo valore nei giorni mancanti e chiude col totale di oggi", () => {
     const series = buildNetWorthSeries(
       [snapshot("2026-09-10", "100.00"), snapshot("2026-09-12", "130.00")],
-      140,
+      { liquidita: 140 },
       "1mese",
       TODAY
     );
@@ -162,22 +162,40 @@ describe("buildNetWorthSeries", () => {
   it("somma le classi di asset dello stesso giorno", () => {
     const series = buildNetWorthSeries(
       [snapshot("2026-09-12", "100.00"), snapshot("2026-09-12", "50.00", "snapshot", "investimenti")],
-      0,
+      {},
       "1mese",
       TODAY
     );
-    expect(series[0]).toMatchObject({ date: "2026-09-12", value: 150 });
+    expect(series[0]).toMatchObject({ date: "2026-09-12", value: 150, byClass: { liquidita: 100, investimenti: 50 } });
+  });
+
+  it("ogni classe ripete il proprio ultimo valore: un giorno con la sola liquidità non azzera gli investimenti", () => {
+    const series = buildNetWorthSeries(
+      [
+        snapshot("2026-09-11", "100.00"),
+        snapshot("2026-09-11", "50.00", "derivato", "investimenti"),
+        snapshot("2026-09-12", "120.00"),
+      ],
+      { liquidita: 130, investimenti: 60 },
+      "1mese",
+      TODAY
+    );
+    expect(series.map((p) => [p.date, p.value, p.byClass, p.isEstimated])).toEqual([
+      ["2026-09-11", 150, { liquidita: 100, investimenti: 50 }, true],
+      ["2026-09-12", 170, { liquidita: 120, investimenti: 50 }, true],
+      ["2026-09-13", 190, { liquidita: 130, investimenti: 60 }, false],
+    ]);
   });
 
   it("porta dentro il periodo l'ultimo valore precedente all'inizio", () => {
-    const series = buildNetWorthSeries([snapshot("2026-01-01", "500.00")], 600, "1mese", TODAY);
+    const series = buildNetWorthSeries([snapshot("2026-01-01", "500.00")], { liquidita: 600 }, "1mese", TODAY);
     expect(series[0]).toMatchObject({ date: "2026-08-13", value: 500 });
     expect(series).toHaveLength(32);
     expect(series[series.length - 1]).toMatchObject({ date: "2026-09-13", value: 600 });
   });
 
   it("marca come stimati i punti derivati e quelli che ne ripetono il valore, mai il punto di oggi", () => {
-    const series = buildNetWorthSeries([snapshot("2026-09-11", "100.00", "derivato")], 120, "1mese", TODAY);
+    const series = buildNetWorthSeries([snapshot("2026-09-11", "100.00", "derivato")], { liquidita: 120 }, "1mese", TODAY);
     expect(series.map((p) => [p.date, p.isEstimated])).toEqual([
       ["2026-09-11", true],
       ["2026-09-12", true],
@@ -191,13 +209,13 @@ describe("buildNetWorthSeries", () => {
       snapshot("2026-07-31", "120.00"),
       snapshot("2026-08-20", "200.00"),
     ];
-    const series = buildNetWorthSeries(snapshots, 250, "1anno", TODAY);
+    const series = buildNetWorthSeries(snapshots, { liquidita: 250 }, "1anno", TODAY);
     expect(series.map((p) => [p.date, p.value])).toEqual([
       ["2026-07-31", 120],
       ["2026-08-31", 200],
       ["2026-09-13", 250],
     ]);
-    expect(buildNetWorthSeries(snapshots, 250, "max", TODAY).map((p) => p.date)).toEqual([
+    expect(buildNetWorthSeries(snapshots, { liquidita: 250 }, "max", TODAY).map((p) => p.date)).toEqual([
       "2026-07-31",
       "2026-08-31",
       "2026-09-13",
@@ -205,7 +223,7 @@ describe("buildNetWorthSeries", () => {
   });
 
   it("ignora gli snapshot datati oggi o dopo: l'ultimo punto è sempre il totale corrente", () => {
-    const series = buildNetWorthSeries([snapshot("2026-09-13", "999.00")], 140, "1mese", TODAY);
+    const series = buildNetWorthSeries([snapshot("2026-09-13", "999.00")], { liquidita: 140 }, "1mese", TODAY);
     expect(series.map((p) => [p.date, p.value])).toEqual([["2026-09-13", 140]]);
   });
 });

@@ -16,7 +16,13 @@ import { buttonVariants } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 import { computeMonthlySeries } from "@/lib/calc/cashflow";
 import { endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
-import { buildNetWorthSeries, computeNetWorthChange, toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
+import {
+  buildNetWorthSeries,
+  computeNetWorthChange,
+  toDateKey,
+  type NetWorthByClass,
+  type NetWorthPeriod,
+} from "@/lib/calc/net-worth";
 import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useAccountsQuery } from "@/lib/queries/accounts";
@@ -67,7 +73,10 @@ export default function PanoramicaPage() {
     const { paid, market } = computeValueBreakdown(summary);
     return { value: summary.totalValue, positions: summary.rows.length, paid, marketGain: market };
   }, [investmentsQuery.data, today]);
-  const series = buildNetWorthSeries(snapshotsQuery.data ?? [], totalLiquidity + (investments?.value ?? 0), period, today);
+  const todayByClass: NetWorthByClass = investments
+    ? { liquidita: totalLiquidity, investimenti: investments.value }
+    : { liquidita: totalLiquidity };
+  const series = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
   const change = computeNetWorthChange(series);
   const compositionItems = buildCompositionItems(accounts, investments);
   const [currentMonth] = computeMonthlySeries(monthTransactionsQuery.data ?? [], monthRange);

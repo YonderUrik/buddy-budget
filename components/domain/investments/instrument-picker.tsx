@@ -125,7 +125,13 @@ export function InstrumentPicker({ value, onChange, defaultCurrency, className }
               ))}
             </Section>
           ) : null}
-          {searching && search.data && !knownIds.size && !market.length && !crypto.length ? (
+          {searching && search.data?.marketUnavailable ? (
+            <p className="px-2 py-2 text-sm text-muted-foreground">
+              La fonte di ETF, azioni e fondi non risponde in questo momento: riprova tra qualche minuto, oppure
+              aggiungilo qui sotto.
+            </p>
+          ) : null}
+          {searching && search.data && !search.data.marketUnavailable && !knownIds.size && !market.length && !crypto.length ? (
             <p className="px-2 py-2 text-sm text-muted-foreground">Nessun risultato dalle fonti di mercato.</p>
           ) : null}
           {searching ? (

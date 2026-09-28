@@ -10,7 +10,7 @@ const MIN_QUERY_LENGTH = 2;
 
 /**
  * Cerca strumenti per nome, ticker o ISIN: prima tra quelli già noti, poi su Yahoo e CoinGecko. Le fonti che non
- * rispondono si ignorano (la ricerca resta utile con quello che c'è). `isin` è valorizzato se la query è un ISIN
+ * rispondono si ignorano (la ricerca resta utile con quello che c'è) e si segnalano con `marketUnavailable`/`cryptoUnavailable`. `isin` è valorizzato se la query è un ISIN
  * valido, per offrire la creazione "solo ISIN" (BTP) o manuale.
  */
 async function handleGet(request: NextRequest) {
@@ -19,22 +19,32 @@ async function handleGet(request: NextRequest) {
   bindRequestUser(session.user.id);
 
   const query = (request.nextUrl.searchParams.get("q") ?? "").trim();
-  if (query.length < MIN_QUERY_LENGTH) return Response.json({ known: [], market: [], crypto: [], isin: null });
+  if (query.length < MIN_QUERY_LENGTH) {
+    return Response.json({ known: [], market: [], crypto: [], isin: null, marketUnavailable: false, cryptoUnavailable: false });
+  }
 
   const log = requestLogger();
   const [known, market, crypto] = await Promise.all([
     searchKnownInstruments(session.user.id, query),
     searchInstrumentsOnProviders(query).catch((error) => {
       log.warn("instruments.search.provider_failed", { provider: "yahoo", error });
-      return [];
+      return null;
     }),
     searchCryptoOnProviders(query).catch((error) => {
       log.warn("instruments.search.provider_failed", { provider: "coingecko", error });
-      return [];
+      return null;
     }),
   ]);
   const upper = query.toUpperCase();
-  return Response.json({ known, market, crypto: crypto.slice(0, 5), isin: isValidIsin(upper) ? upper : null });
+  return Response.json({
+    known,
+    market: market ?? [],
+    crypto: (crypto ?? []).slice(0, 5),
+    isin: isValidIsin(upper) ? upper : null,
+    // Una fonte che non ha risposto non è "nessun risultato": la UI lo dice, invece di un elenco vuoto muto.
+    marketUnavailable: market === null,
+    cryptoUnavailable: crypto === null,
+  });
 }
 
 export const GET = withRoute("instruments.search", handleGet);

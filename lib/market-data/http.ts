@@ -33,6 +33,12 @@ export async function providerGet(
   return response;
 }
 
+/** Header `Cookie` con i cookie impostati da una risposta (solo nome=valore, senza attributi). */
+export function setCookieHeader(response: Response): string {
+  const cookies = typeof response.headers.getSetCookie === "function" ? response.headers.getSetCookie() : [];
+  return cookies.map((c) => c.split(";")[0]).join("; ");
+}
+
 /** Legge il body come JSON; un body non JSON (pagina HTML di un firewall) è un blocco. */
 export async function readJson<T>(provider: string, response: Response): Promise<T> {
   const text = await response.text();

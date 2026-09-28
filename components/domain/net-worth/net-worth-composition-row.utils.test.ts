@@ -31,4 +31,15 @@ describe("buildCompositionItems", () => {
   it("singolare con un solo conto", () => {
     expect(buildCompositionItems([makeAccount("10.00")])[0].detail).toBe("1 conto");
   });
+
+  it("aggiunge gli investimenti, anche senza conti", () => {
+    expect(buildCompositionItems([makeAccount("10.00")], { value: 1500, positions: 3 })[1]).toEqual({
+      key: "investimenti",
+      label: "Investimenti",
+      detail: "3 posizioni",
+      amount: 1500,
+      href: "/investimenti",
+    });
+    expect(buildCompositionItems([], { value: 100, positions: 1 }).map((i) => [i.key, i.detail])).toEqual([["investimenti", "1 posizione"]]);
+  });
 });

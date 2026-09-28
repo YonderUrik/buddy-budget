@@ -8,6 +8,13 @@
       "when": 1790419241470,
       "tag": "0000_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790576143725,
+      "tag": "0001_investimenti",
+      "breakpoints": true
     }
   ]
 }

@@ -77,7 +77,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Transazioni", href: "/transazioni", icon: ShoppingCart },
   { label: "Categorie", href: "/categorie", icon: Tags },
   { label: "Cash flow", href: "/cash-flow", icon: ArrowLeftRight },
-  { label: "Investimenti", href: "/investimenti", icon: TrendingUp, comingSoon: true },
+  { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
   { label: "Pensione", href: "/pensione", icon: Umbrella, comingSoon: true },
   { label: "Debiti", href: "/debiti", icon: CreditCard, comingSoon: true },
   { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },

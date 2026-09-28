@@ -59,13 +59,15 @@ export const FAKE_PRICE_PROVIDERS: Record<ProviderId, PriceProvider> = {
 
 const FAKE_PER_EUR: Record<string, number> = { USD: 1.1, GBP: 0.85, CHF: 0.95 };
 
-/** Cambi finti costanti, un valore per giorno. */
+/** Cambi finti costanti, un valore per giorno; le valute sconosciute non hanno cambi (come per una fonte vera). */
 export const FAKE_FX_PROVIDER: FxProvider = {
   id: "ecb",
   async fetchRates(currencies, from, to) {
-    return currencies.flatMap((currency) =>
-      fakeCloses(currency, from, to, true).map((c) => ({ date: c.date, currency, perEur: FAKE_PER_EUR[currency] ?? 1 }))
-    );
+    return currencies
+      .filter((currency) => currency in FAKE_PER_EUR)
+      .flatMap((currency) =>
+        fakeCloses(currency, from, to, true).map((c) => ({ date: c.date, currency, perEur: FAKE_PER_EUR[currency] }))
+      );
   },
 };
 

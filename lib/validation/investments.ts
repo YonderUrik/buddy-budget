@@ -109,8 +109,9 @@ const transactionFields = z.object({
     .trim()
     .max(INVESTMENT_NOTE_MAX_LENGTH, "La nota non può superare 500 caratteri")
     .nullable()
-    .optional()
-    .transform((v) => (v === "" ? null : v)),
+    .transform((v) => (v === "" ? null : v))
+    // .optional() dopo .transform(): prima renderebbe la chiave obbligatoria nel tipo inferito (quirk di Zod).
+    .optional(),
 });
 
 function checkTypeFields(

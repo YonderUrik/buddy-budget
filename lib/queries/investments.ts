@@ -56,6 +56,10 @@ export interface InstrumentSearchResult {
   crypto: { id: string; name: string; symbol: string }[];
   /** ISIN valido digitato dall'utente, per offrire la creazione "solo ISIN" o manuale. */
   isin: string | null;
+  /** Yahoo (ETF, azioni, fondi) non ha risposto: l'assenza di risultati non significa che lo strumento non esista. */
+  marketUnavailable: boolean;
+  /** CoinGecko non ha risposto. */
+  cryptoUnavailable: boolean;
 }
 
 /** Valore che si aggiorna solo dopo `delay` ms senza cambi. */

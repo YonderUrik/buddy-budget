@@ -1,6 +1,6 @@
 import type { InstrumentType } from "@/lib/db/schema/investments";
 import { ProviderBlockedError, ProviderError } from "../errors";
-import { providerGet, readJson } from "../http";
+import { providerGet, readJson, setCookieHeader } from "../http";
 import type { DailyClose, PriceProvider, ProviderContext } from "../types";
 
 /**
@@ -37,11 +37,6 @@ export function resetBorsaItalianaSession(): void {
   cachedSession = null;
 }
 
-function cookieHeader(response: Response): string {
-  const cookies = typeof response.headers.getSetCookie === "function" ? response.headers.getSetCookie() : [];
-  return cookies.map((c) => c.split(";")[0]).join("; ");
-}
-
 async function getSession(symbol: string, ctx: ProviderContext, nowMs: number): Promise<Session> {
   if (cachedSession && cachedSession.expiresAt > nowMs) return cachedSession;
   const [isin, exchange] = symbol.split(",");
@@ -52,7 +47,7 @@ async function getSession(symbol: string, ctx: ProviderContext, nowMs: number): 
   const token = TOKEN_PATTERN.exec(html)?.[1];
   // Senza token la pagina è la sfida del firewall, non il grafico.
   if (!token) throw new ProviderBlockedError("borsaitaliana");
-  cachedSession = { token, cookie: cookieHeader(response!), expiresAt: nowMs + BORSAITALIANA_TOKEN_TTL_MS };
+  cachedSession = { token, cookie: setCookieHeader(response!), expiresAt: nowMs + BORSAITALIANA_TOKEN_TTL_MS };
   return cachedSession;
 }
 

@@ -78,13 +78,21 @@ export interface NetWorthSnapshotInput {
   date: string;
   amount: string;
   source: string;
+  assetClass: string;
 }
 
-/** Punto del grafico: `isEstimated` indica un valore ricostruito dalle transazioni. */
+/** Valore per classe di asset (chiave = `assetClass`, es. "liquidita", "investimenti"). */
+export type NetWorthByClass = Record<string, number>;
+
+/**
+ * Punto del grafico: `value` è il totale, `byClass` la sua divisione per classe di asset (la somma coincide con
+ * `value`); `isEstimated` indica che almeno una classe è ricostruita dalle transazioni.
+ */
 export interface NetWorthSeriesPoint {
   date: string;
   label: string;
   value: number;
+  byClass: NetWorthByClass;
   isEstimated: boolean;
 }
 
@@ -94,6 +102,11 @@ export interface NetWorthChange {
   end: number;
   delta: number;
   deltaPct: number | null;
+}
+
+interface ClassValue {
+  value: number;
+  isEstimated: boolean;
 }
 
 const DAY_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
@@ -115,45 +128,66 @@ export function getNetWorthPeriodRange(period: NetWorthPeriod, today: Date, earl
 }
 
 /**
- * Serie del patrimonio netto nel periodo: somma le classi di asset per giorno, ripete l'ultimo valore nei giorni
- * mancanti e chiude col totale corrente di oggi. Giornaliera per 1mese/3mesi, un punto per fine mese per 1anno/max.
+ * Serie del patrimonio netto nel periodo, divisa per classe di asset. Ogni classe ripete il proprio ultimo valore nei
+ * giorni in cui manca (così un giorno con la sola riga di liquidità non fa sparire gli investimenti); il punto di oggi
+ * usa i valori correnti `todayByClass`. Giornaliera per 1mese/3mesi, un punto per fine mese per 1anno/max.
  */
 export function buildNetWorthSeries(
   snapshots: NetWorthSnapshotInput[],
-  todayTotal: number,
+  todayByClass: NetWorthByClass,
   period: NetWorthPeriod,
   today: Date
 ): NetWorthSeriesPoint[] {
   const todayKey = toDateKey(startOfDay(today));
-  const byDate = new Map<string, { value: number; isEstimated: boolean }>();
+  const byDate = new Map<string, Map<string, ClassValue>>();
   for (const row of snapshots) {
     if (row.date >= todayKey) continue;
-    const current = byDate.get(row.date) ?? { value: 0, isEstimated: false };
-    byDate.set(row.date, {
+    const classes = byDate.get(row.date) ?? new Map<string, ClassValue>();
+    const current = classes.get(row.assetClass) ?? { value: 0, isEstimated: false };
+    classes.set(row.assetClass, {
       value: current.value + Number(row.amount),
       isEstimated: current.isEstimated || row.source === "derivato",
     });
+    byDate.set(row.date, classes);
   }
 
   const sortedKeys = [...byDate.keys()].sort();
   const range = getNetWorthPeriodRange(period, today, sortedKeys[0] ?? null);
   const fromKey = toDateKey(range.from);
 
-  let last: { value: number; isEstimated: boolean } | null = null;
+  const last = new Map<string, ClassValue>();
+  const carry = (key: string) => {
+    for (const [assetClass, value] of byDate.get(key) ?? []) last.set(assetClass, value);
+  };
   for (const key of sortedKeys) {
     if (key >= fromKey) break;
-    last = byDate.get(key) ?? null;
+    carry(key);
   }
 
   const daily: NetWorthSeriesPoint[] = [];
   for (let cursor = range.from; toDateKey(cursor) < todayKey; cursor = addDays(cursor, 1)) {
     const key = toDateKey(cursor);
-    last = byDate.get(key) ?? last;
-    if (last) {
-      daily.push({ date: key, label: DAY_LABEL_FORMAT.format(cursor), value: last.value, isEstimated: last.isEstimated });
+    carry(key);
+    if (last.size > 0) {
+      const byClass: NetWorthByClass = {};
+      let value = 0;
+      let isEstimated = false;
+      for (const [assetClass, entry] of last) {
+        byClass[assetClass] = entry.value;
+        value += entry.value;
+        isEstimated ||= entry.isEstimated;
+      }
+      daily.push({ date: key, label: DAY_LABEL_FORMAT.format(cursor), value: round2(value), byClass, isEstimated });
     }
   }
-  daily.push({ date: todayKey, label: DAY_LABEL_FORMAT.format(startOfDay(today)), value: todayTotal, isEstimated: false });
+  const todayValue = Object.values(todayByClass).reduce((sum, v) => sum + v, 0);
+  daily.push({
+    date: todayKey,
+    label: DAY_LABEL_FORMAT.format(startOfDay(today)),
+    value: round2(todayValue),
+    byClass: { ...todayByClass },
+    isEstimated: false,
+  });
 
   if (period === "1mese" || period === "3mesi") return daily;
 

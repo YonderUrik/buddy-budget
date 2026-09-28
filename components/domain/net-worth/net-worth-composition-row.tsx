@@ -9,14 +9,8 @@ import { ChevronRightIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { assetClassColor } from "./asset-classes";
 import { computeInvestedShare, type NetWorthCompositionItem } from "./net-worth-composition-row.utils";
-
-/** Colore di ogni classe di asset nella barra e nel pallino della riga. */
-const CLASS_COLORS: Record<string, string> = {
-  liquidita: "var(--swatch-teal)",
-  investimenti: "var(--primary)",
-};
-const FALLBACK_CLASS_COLOR = "var(--swatch-slate)";
 
 export interface NetWorthCompositionRowProps {
   items: NetWorthCompositionItem[];
@@ -40,7 +34,7 @@ function investedSentence(share: number): string {
 export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio" }: NetWorthCompositionRowProps) {
   if (items.length === 0) return null;
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
-  const colorFor = (key: string) => CLASS_COLORS[key] ?? FALLBACK_CLASS_COLOR;
+  const colorFor = assetClassColor;
   const investedShare = computeInvestedShare(items);
   const showBar = items.length > 1 && items.some((i) => i.share > 0);
 

@@ -23,6 +23,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { InstrumentType } from "@/lib/db/schema/investments";
+import { browserTlsFetch } from "@/lib/market-data/browser-fetch";
 import { PRICE_PROVIDERS, FX_PROVIDERS, searchYahoo, searchCoinGecko } from "@/lib/market-data/providers";
 import { deriveSymbols } from "@/lib/market-data/symbols";
 import type { ProviderContext, ProviderId } from "@/lib/market-data/types";
@@ -66,7 +67,7 @@ function recordingContext(bodies: string[]): ProviderContext {
   return {
     env: process.env,
     fetch: (async (input: string | URL | Request, init?: RequestInit) => {
-      const response = await fetch(input, init);
+      const response = await browserTlsFetch(input, init);
       const text = await response.clone().text();
       bodies.push(text);
       return response;
@@ -140,7 +141,7 @@ async function main() {
   for (const fxProvider of FX_PROVIDERS) {
     const started = Date.now();
     try {
-      const rates = await fxProvider.fetchRates(["USD", "GBP", "CHF"], from, to, { fetch, env: process.env });
+      const rates = await fxProvider.fetchRates(["USD", "GBP", "CHF"], from, to, { fetch: browserTlsFetch, env: process.env });
       rows.push({ strumento: "cambi", fonte: fxProvider.id, esito: rates.length > 0 ? "ok" : "vuoto", chiusure: String(rates.length), ms: String(Date.now() - started) });
     } catch (error) {
       rows.push({ strumento: "cambi", fonte: fxProvider.id, esito: `${(error as Error).name}: ${(error as Error).message}` });

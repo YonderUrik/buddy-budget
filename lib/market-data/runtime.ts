@@ -1,6 +1,7 @@
 import "server-only";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { logger } from "@/lib/observability";
+import { browserTlsFetch } from "./browser-fetch";
 import {
   FAKE_FX_PROVIDER,
   FAKE_PRICE_PROVIDERS,
@@ -18,9 +19,9 @@ import { backfillInstrument, type MarketDataDeps } from "./update";
 // Sessione Yahoo condivisa su Redis tra i pod, invece che in memoria per processo (vedi yahoo.ts).
 setYahooSessionStore(redisYahooSessionStore);
 
-/** Contesto reale delle fonti: `fetch` globale e variabili d'ambiente del processo. */
+/** Contesto reale delle fonti: `fetch` con TLS da browser (vedi browser-fetch.ts) e variabili d'ambiente del processo. */
 function realContext(): ProviderContext {
-  return { fetch: globalThis.fetch, env: process.env };
+  return { fetch: browserTlsFetch, env: process.env };
 }
 
 /** Dipendenze dell'aggiornamento prezzi: fonti vere, o finte con `MARKET_DATA_FAKE=1` fuori produzione. */

@@ -34,6 +34,7 @@ RUN pnpm build
 FROM deps AS migrator
 COPY tsconfig.json drizzle.config.ts ./
 COPY lib ./lib
+COPY scripts ./scripts
 USER node
 CMD ["pnpm", "db:migrate"]
 

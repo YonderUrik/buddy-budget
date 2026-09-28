@@ -4,7 +4,7 @@
 
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { STORY_STEPS, STORY_TIMING, type StoryPhase } from "./login-story.data";
+import { STORY_STEPS, STORY_TIMING, type StoryPhase, type StoryStep } from "./login-story.data";
 import { STORY_EASE } from "./story-row";
 
 /** Durata di ciascuna fase, in secondi, derivata dalla timeline. */
@@ -20,16 +20,18 @@ export interface StoryStepperProps {
   cycle: number;
   /** Se true le barre sono piene e ferme (reduced motion). */
   static?: boolean;
+  /** Etichette e didascalie delle fasi (cambiano per capitolo della storia). */
+  steps?: readonly StoryStep[];
 }
 
-export function StoryStepper({ phase, cycle, static: isStatic = false }: StoryStepperProps) {
-  const activeIndex = STORY_STEPS.findIndex((s) => s.id === phase);
-  const active = STORY_STEPS[activeIndex];
+export function StoryStepper({ phase, cycle, static: isStatic = false, steps = STORY_STEPS }: StoryStepperProps) {
+  const activeIndex = steps.findIndex((s) => s.id === phase);
+  const active = steps[activeIndex];
 
   return (
     <div className="flex flex-col gap-3">
       <ol className="grid grid-cols-3 gap-3">
-        {STORY_STEPS.map((step, index) => (
+        {steps.map((step, index) => (
           <li key={step.id} className="flex flex-col gap-2">
             <span className="relative h-0.5 overflow-hidden rounded-full bg-sidebar-foreground/15">
               {index <= activeIndex && (
@@ -54,7 +56,7 @@ export function StoryStepper({ phase, cycle, static: isStatic = false }: StorySt
         ))}
       </ol>
       <motion.p
-        key={active.id}
+        key={`${cycle}-${active.id}`}
         initial={isStatic ? false : { opacity: 0, y: 4 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: STORY_EASE }}

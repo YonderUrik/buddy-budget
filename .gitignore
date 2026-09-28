@@ -56,3 +56,6 @@ next-env.d.ts
 test-results/
 playwright-report/
 vercelnenon.txt
+
+# snapshot di un redis-server locale avviato dalla cartella del progetto
+dump.rdb

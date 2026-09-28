@@ -1,4 +1,5 @@
 import type { CategoryType } from "@/lib/categories/groups";
+import type { InvestmentTransactionType } from "@/lib/db/schema/investments";
 import type { SupportedCurrency } from "@/lib/validation/currency";
 
 /**
@@ -17,6 +18,9 @@ export interface ProductEvents {
   transaction_split: undefined;
   category_created: { group: CategoryType };
   pwa_installed: undefined;
+  instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
+  investment_operation_added: { type: InvestmentTransactionType };
+  investment_plan_created: undefined;
 }
 
 export type ProductEventName = keyof ProductEvents;

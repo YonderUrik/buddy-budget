@@ -33,6 +33,10 @@ export interface LogFields {
   processed?: number;
   total?: number;
   count?: number;
+  /** Fonte di prezzi di mercato (id statico). */
+  provider?: string;
+  /** Simbolo di uno strumento comune a tutti gli utenti: mai insieme a quantità o importi dell'utente. */
+  symbol?: string;
   error?: unknown;
 }
 

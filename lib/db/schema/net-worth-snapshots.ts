@@ -2,7 +2,7 @@ import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "dr
 import { authUser } from "./auth";
 
 /** Classi di asset del patrimonio: text + costante invece di enum Postgres, per aggiungerne senza migrazioni. */
-export const ASSET_CLASSES = ["liquidita"] as const;
+export const ASSET_CLASSES = ["liquidita", "investimenti"] as const;
 export type AssetClass = (typeof ASSET_CLASSES)[number];
 
 /** Origine di una riga: rilevata dal cron giornaliero o ricostruita dalle transazioni. */

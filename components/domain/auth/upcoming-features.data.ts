@@ -3,7 +3,7 @@
  * (sezioni 5-9): quando una di queste schermate viene implementata, va rimossa da qui.
  */
 
-import { BarChart3, CreditCard, Target, TrendingUp, Umbrella, type LucideIcon } from "lucide-react";
+import { BarChart3, CreditCard, Target, Umbrella, type LucideIcon } from "lucide-react";
 
 export interface UpcomingFeature {
   name: string;
@@ -12,11 +12,6 @@ export interface UpcomingFeature {
 }
 
 export const UPCOMING_FEATURES: UpcomingFeature[] = [
-  {
-    name: "Investimenti",
-    description: "Portafoglio di ETF e titoli: valore, guadagni e composizione.",
-    icon: TrendingUp,
-  },
   {
     name: "Pensione",
     description: "Il tuo fondo pensione e una stima di quanto varrà.",

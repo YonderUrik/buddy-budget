@@ -5,12 +5,15 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { deriveLiquidityHistory, toDateKey } from "@/lib/calc/net-worth";
 
-/** True se l'utente ha già almeno una riga di snapshot, reale o derivata. */
+/**
+ * True se l'utente ha già almeno una riga di liquidità, reale o derivata. Le righe "investimenti" non contano:
+ * hanno una ricostruzione propria, e non devono impedire quella della liquidità.
+ */
 export async function hasAnySnapshot(userId: string): Promise<boolean> {
   const rows = await db
     .select({ id: netWorthSnapshots.id })
     .from(netWorthSnapshots)
-    .where(eq(netWorthSnapshots.userId, userId))
+    .where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "liquidita")))
     .limit(1);
   return rows.length > 0;
 }

@@ -4,7 +4,7 @@ import { z } from "zod";
 export const CRON_SECRET_MIN_LENGTH = 32;
 
 /**
- * Variabili d'ambiente richieste dal server. OLLAMA_*, LOG_LEVEL e METRICS_TOKEN sono opzionali: se assenti il livello
+ * Variabili d'ambiente richieste dal server. OLLAMA_*, LOG_LEVEL, METRICS_TOKEN e le chiavi delle fonti prezzi sono opzionali: se assenti il livello
  * assistente della categorizzazione è semplicemente spento (stato normale, non un guasto).
  */
 export const serverEnvSchema = z.object({
@@ -27,6 +27,12 @@ export const serverEnvSchema = z.object({
   // Osservabilità (opzionali): senza METRICS_TOKEN /api/metrics risponde 404 (es. su Vercel).
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
   METRICS_TOKEN: z.string().min(CRON_SECRET_MIN_LENGTH).optional(),
+  // Fonti prezzi (opzionali): senza chiave la fonte è spenta e la catena passa alla successiva.
+  ALPHAVANTAGE_API_KEY: z.string().optional(),
+  STOOQ_API_KEY: z.string().optional(),
+  TWELVEDATA_API_KEY: z.string().optional(),
+  COINGECKO_API_KEY: z.string().optional(),
+  OPENFIGI_API_KEY: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

@@ -2,29 +2,10 @@
 
 /** Riepilogo finale della storia del login: barra delle spese per categoria e numeri che scorrono fino al valore. */
 
-import * as React from "react";
-import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
-import { formatCurrency } from "@/lib/format";
+import { motion } from "motion/react";
 import type { StoryTransaction } from "./login-story.data";
+import { StoryCountUp as CountUp } from "./story-count-up";
 import { STORY_EASE } from "./story-row";
-
-/** Numero che scorre da 0 al valore finale quando viene montato. */
-function CountUp({ value, delay }: { value: number; delay: number }) {
-  const reduceMotion = useReducedMotion();
-  const motionValue = useMotionValue(reduceMotion ? value : 0);
-  const text = useTransform(motionValue, (v) => formatCurrency(v, "EUR", { maximumFractionDigits: 0 }));
-
-  React.useEffect(() => {
-    if (reduceMotion) {
-      motionValue.set(value);
-      return;
-    }
-    const controls = animate(motionValue, value, { duration: 1.4, delay, ease: STORY_EASE });
-    return () => controls.stop();
-  }, [motionValue, value, delay, reduceMotion]);
-
-  return <motion.span className="tabular-nums">{text}</motion.span>;
-}
 
 export interface StorySummaryProps {
   transactions: StoryTransaction[];

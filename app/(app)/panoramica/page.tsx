@@ -17,12 +17,17 @@ import { authClient } from "@/lib/auth/client";
 import { computeMonthlySeries } from "@/lib/calc/cashflow";
 import { endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
 import { buildNetWorthSeries, computeNetWorthChange, toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
+import { computeValueBreakdown } from "@/lib/investments/insights";
+import { buildInvestmentsView } from "@/lib/investments/view";
 import { useAccountsQuery } from "@/lib/queries/accounts";
+import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
 /** Inizio della finestra di fetch degli snapshot: tutto lo storico, così il cambio periodo non richiede nuove richieste. */
 const NET_WORTH_FETCH_FROM = "2000-01-01";
+/** Per il valore di oggi degli investimenti basta l'ultimo mese di prezzi. */
+const INVESTMENTS_PERIOD: NetWorthPeriod = "1mese";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
 const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
   weekday: "long",
@@ -41,20 +46,30 @@ export default function PanoramicaPage() {
   const accountsQuery = useAccountsQuery();
   const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today));
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
+  const investmentsQuery = useInvestmentsOverviewQuery(INVESTMENTS_PERIOD);
 
-  const isLoading = accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading;
+  const isLoading =
+    accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading || investmentsQuery.isLoading;
   const isError = accountsQuery.isError || snapshotsQuery.isError || monthTransactionsQuery.isError;
   const retry = () => {
     accountsQuery.refetch();
     snapshotsQuery.refetch();
     monthTransactionsQuery.refetch();
+    investmentsQuery.refetch();
   };
 
   const accounts = accountsQuery.data ?? [];
   const { totalLiquidity } = computeAccountsKpi(accounts);
-  const series = buildNetWorthSeries(snapshotsQuery.data ?? [], totalLiquidity, period, today);
+  // Un errore sugli investimenti non blocca la Panoramica: si mostra la sola liquidità.
+  const investments = React.useMemo(() => {
+    if (!investmentsQuery.data || investmentsQuery.data.transactions.length === 0) return null;
+    const { summary } = buildInvestmentsView(investmentsQuery.data, INVESTMENTS_PERIOD, today);
+    const { paid, market } = computeValueBreakdown(summary);
+    return { value: summary.totalValue, positions: summary.rows.length, paid, marketGain: market };
+  }, [investmentsQuery.data, today]);
+  const series = buildNetWorthSeries(snapshotsQuery.data ?? [], totalLiquidity + (investments?.value ?? 0), period, today);
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts);
+  const compositionItems = buildCompositionItems(accounts, investments);
   const [currentMonth] = computeMonthlySeries(monthTransactionsQuery.data ?? [], monthRange);
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
@@ -68,14 +83,12 @@ export default function PanoramicaPage() {
       {isLoading ? (
         <div className="flex flex-col gap-6" aria-busy="true">
           <div className="h-80 animate-pulse rounded-xl bg-muted" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="h-24 animate-pulse rounded-xl bg-muted" />
-          </div>
+          <div className="h-36 animate-pulse rounded-xl bg-muted" />
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
         </div>
       ) : isError ? (
         <LoadError message="Impossibile caricare i dati della panoramica." onRetry={retry} />
-      ) : accounts.length === 0 ? (
+      ) : accounts.length === 0 && !investments ? (
         <div className="rounded-xl border border-dashed p-8 text-center">
           <p className="font-heading text-lg font-medium text-foreground">Nessun conto ancora</p>
           <p className="mt-1 text-sm text-muted-foreground">

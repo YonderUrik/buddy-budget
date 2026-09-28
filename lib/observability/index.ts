@@ -14,6 +14,7 @@ export {
   recordTransactionsImported,
   recordCronRunMetric,
   recordAuthEvent,
+  recordPriceProviderRequest,
   CRON_NAMES,
   METRIC_PREFIX,
   DURATION_BUCKETS_SECONDS,

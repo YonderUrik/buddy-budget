@@ -1,0 +1,2 @@
+Get your apikey:
+1. Open https://stooq.com/q/d/?s=vwce.de&get_apikey

@@ -47,7 +47,7 @@ export default function OnboardingPage() {
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-medium tracking-tight">Ti diamo il benvenuto</h1>
         <p className="text-text-2">
-          Un&apos;ultima cosa: in che valuta vuoi vedere saldi e transazioni?
+          Un&apos;ultima cosa: in che valuta vuoi vedere saldi, transazioni e investimenti?
         </p>
       </div>
 

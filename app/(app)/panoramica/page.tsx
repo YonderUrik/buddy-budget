@@ -17,6 +17,7 @@ import { authClient } from "@/lib/auth/client";
 import { computeMonthlySeries } from "@/lib/calc/cashflow";
 import { endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
 import { buildNetWorthSeries, computeNetWorthChange, toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
+import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
@@ -63,7 +64,8 @@ export default function PanoramicaPage() {
   const investments = React.useMemo(() => {
     if (!investmentsQuery.data || investmentsQuery.data.transactions.length === 0) return null;
     const { summary } = buildInvestmentsView(investmentsQuery.data, INVESTMENTS_PERIOD, today);
-    return { value: summary.totalValue, positions: summary.rows.length };
+    const { paid, market } = computeValueBreakdown(summary);
+    return { value: summary.totalValue, positions: summary.rows.length, paid, marketGain: market };
   }, [investmentsQuery.data, today]);
   const series = buildNetWorthSeries(snapshotsQuery.data ?? [], totalLiquidity + (investments?.value ?? 0), period, today);
   const change = computeNetWorthChange(series);
@@ -81,9 +83,7 @@ export default function PanoramicaPage() {
       {isLoading ? (
         <div className="flex flex-col gap-6" aria-busy="true">
           <div className="h-80 animate-pulse rounded-xl bg-muted" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="h-24 animate-pulse rounded-xl bg-muted" />
-          </div>
+          <div className="h-36 animate-pulse rounded-xl bg-muted" />
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
         </div>
       ) : isError ? (

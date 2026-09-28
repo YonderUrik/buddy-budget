@@ -1,19 +1,20 @@
 "use client";
 
 /**
- * Selettore strumento con ricerca per nome, ticker o ISIN: prima gli strumenti già noti, poi i risultati delle fonti
- * di mercato e delle crypto (sceglierne uno lo aggiunge), infine "Non lo trovi?" per BTP o strumenti manuali.
+ * Selettore strumento con ricerca per nome, ticker o ISIN: prima gli strumenti già noti, poi i risultati di mercato
+ * divisi per tipo (sceglierne uno lo aggiunge), infine "Non lo trovi?" per BTP o strumenti manuali.
  */
 
 import * as React from "react";
 import { ChevronDownIcon, SearchIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Instrument } from "@/lib/db/schema/investments";
-import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
+import { groupSearchResults, type MarketSearchItem } from "@/lib/investments/search-results";
 import { useCreateInstrumentMutation, useInstrumentSearchQuery } from "@/lib/queries/investments";
 import type { CreateInstrumentInput } from "@/lib/validation/investments";
 import { cn } from "@/lib/utils";
 import { InstrumentManualForm } from "./instrument-manual-form";
+import { InstrumentSearchResults } from "./instrument-search-results";
 
 export interface InstrumentPickerProps {
   value: Instrument | null;
@@ -23,27 +24,15 @@ export interface InstrumentPickerProps {
   className?: string;
 }
 
-function ResultButton({ title, detail, onClick, disabled }: { title: string; detail: string; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex w-full flex-col items-start rounded-md px-2 py-1.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none disabled:opacity-50"
-    >
-      <span className="w-full truncate text-sm text-foreground">{title}</span>
-      <span className="text-xs text-muted-foreground">{detail}</span>
-    </button>
-  );
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return <p className="px-2 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">{children}</p>;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</p>
-      {children}
-    </div>
-  );
+/** Input di creazione per un risultato di mercato; l'ISIN digitato si allega ai risultati Yahoo. */
+function toCreateInput(item: MarketSearchItem, currency: string, isin: string | null): CreateInstrumentInput {
+  if (item.source === "coingecko") return { source: "coingecko", coingeckoId: item.coin.id, name: item.coin.name, currency };
+  const { hit } = item;
+  return { source: "yahoo", yahooSymbol: hit.symbol, name: hit.name, type: hit.type, ...(isin ? { isin } : {}) };
 }
 
 export function InstrumentPicker({ value, onChange, defaultCurrency, className }: InstrumentPickerProps) {
@@ -51,9 +40,8 @@ export function InstrumentPicker({ value, onChange, defaultCurrency, className }
   const [query, setQuery] = React.useState("");
   const search = useInstrumentSearchQuery(query);
   const create = useCreateInstrumentMutation();
-  const knownIds = new Set(search.data?.known.map((k) => k.id));
-  const market = search.data?.market ?? [];
-  const crypto = search.data?.crypto ?? [];
+  const known = search.data?.known ?? [];
+  const groups = groupSearchResults(search.data?.market ?? [], search.data?.crypto ?? [], query);
 
   function choose(instrument: Instrument) {
     onChange(instrument);
@@ -92,38 +80,15 @@ export function InstrumentPicker({ value, onChange, defaultCurrency, className }
         <div className="mt-1 flex max-h-80 flex-col overflow-y-auto">
           {!searching ? <p className="px-2 py-3 text-sm text-muted-foreground">Scrivi almeno 2 caratteri.</p> : null}
           {searching && search.isFetching && !search.data ? <p className="px-2 py-3 text-sm text-muted-foreground">Ricerca…</p> : null}
-          {search.data?.known.length ? (
-            <Section title="Già aggiunti">
-              {search.data.known.map((i) => (
-                <ResultButton key={i.id} title={i.name} detail={`${INSTRUMENT_TYPE_SINGULAR[i.type]} · ${i.currency}${i.isin ? ` · ${i.isin}` : ""}`} onClick={() => choose(i)} />
-              ))}
-            </Section>
-          ) : null}
-          {market.length ? (
-            <Section title="Mercato">
-              {market.map((hit) => (
-                <ResultButton
-                  key={hit.symbol}
-                  title={hit.name}
-                  detail={`${hit.symbol} · ${hit.exchangeLabel} · ${INSTRUMENT_TYPE_SINGULAR[hit.type]}`}
-                  disabled={create.isPending}
-                  onClick={() => add({ source: "yahoo", yahooSymbol: hit.symbol, name: hit.name, type: hit.type, ...(search.data?.isin ? { isin: search.data.isin } : {}) })}
-                />
-              ))}
-            </Section>
-          ) : null}
-          {crypto.length ? (
-            <Section title="Crypto">
-              {crypto.map((c) => (
-                <ResultButton
-                  key={c.id}
-                  title={c.name}
-                  detail={`${c.symbol} · in ${defaultCurrency}`}
-                  disabled={create.isPending}
-                  onClick={() => add({ source: "coingecko", coingeckoId: c.id, name: c.name, currency: defaultCurrency })}
-                />
-              ))}
-            </Section>
+          {search.data ? (
+            <InstrumentSearchResults
+              known={known}
+              groups={groups}
+              cryptoCurrency={defaultCurrency}
+              disabled={create.isPending}
+              onChoose={choose}
+              onAdd={(item) => add(toCreateInput(item, defaultCurrency, search.data?.isin ?? null))}
+            />
           ) : null}
           {searching && search.data?.marketUnavailable ? (
             <p className="px-2 py-2 text-sm text-muted-foreground">
@@ -131,15 +96,16 @@ export function InstrumentPicker({ value, onChange, defaultCurrency, className }
               aggiungilo qui sotto.
             </p>
           ) : null}
-          {searching && search.data && !search.data.marketUnavailable && !knownIds.size && !market.length && !crypto.length ? (
+          {searching && search.data && !search.data.marketUnavailable && !known.length && !groups.length ? (
             <p className="px-2 py-2 text-sm text-muted-foreground">Nessun risultato dalle fonti di mercato.</p>
           ) : null}
           {searching ? (
-            <Section title="Non lo trovi?">
+            <div className="flex flex-col gap-0.5">
+              <SectionTitle>Non lo trovi?</SectionTitle>
               <div className="px-2 pb-1">
                 <InstrumentManualForm isin={search.data?.isin ?? null} defaultCurrency={defaultCurrency} pending={create.isPending} onCreate={add} />
               </div>
-            </Section>
+            </div>
           ) : null}
           {create.isError ? <p className="px-2 py-2 text-sm text-destructive">{create.error.message}</p> : null}
         </div>

@@ -8,7 +8,7 @@ describe("OpsStore", () => {
   it("salva e rilegge l'ultimo successo dei cron, null se mai eseguito", async () => {
     const store = createOpsStore(createMemoryOpsKv());
     await store.setCronSuccess("gocardless_sync", 1_790_000_000);
-    expect(await store.getCronSuccesses()).toEqual({ gocardless_sync: 1_790_000_000, net_worth_snapshot: null, market_prices: null });
+    expect(await store.getCronSuccesses()).toEqual({ gocardless_sync: 1_790_000_000, net_worth_snapshot: null, market_prices: null, account_deletion: null });
   });
 
   it("separa job attivi e bloccati e pulisce le voci più vecchie del TTL", async () => {

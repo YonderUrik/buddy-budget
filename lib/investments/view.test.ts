@@ -61,6 +61,10 @@ function data(): InvestmentData {
     fxRates: [],
     benchmark: null,
     inflation: [],
+    targets: [],
+    profiles: [],
+    manualBreakdowns: [],
+    riskFreeRates: [],
   };
 }
 

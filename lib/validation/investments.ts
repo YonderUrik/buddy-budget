@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { TARGET_SUM_TOLERANCE } from "@/lib/investments/allocation";
+import { MANUAL_AREA_KEYS, MANUAL_SECTOR_KEYS } from "@/lib/investments/exposure-keys";
 import {
   INSTRUMENT_TYPES,
   INVESTMENT_TRANSACTION_TYPES,
@@ -165,3 +167,43 @@ export type ManualPriceInput = z.infer<typeof manualPriceSchema>;
 /** Impostazioni del portafoglio: `null` toglie il benchmark. */
 export const updatePortfolioSchema = z.object({ benchmarkInstrumentId: z.string().uuid().nullable() });
 export type UpdatePortfolioInput = z.infer<typeof updatePortfolioSchema>;
+
+/** Strumenti massimi nell'allocazione obiettivo. */
+export const MAX_TARGETS = 30;
+
+/**
+ * Allocazione obiettivo per strumento: pesi tra 0 e 1 che sommano a 1 (100%), strumenti tutti diversi.
+ * Una lista vuota toglie l'obiettivo.
+ */
+export const updateTargetsSchema = z.object({
+  targets: z
+    .array(z.object({ instrumentId: z.string().uuid(), weight: z.number().gt(0).max(1) }))
+    .max(MAX_TARGETS, `Al massimo ${MAX_TARGETS} strumenti`)
+    .refine((targets) => new Set(targets.map((t) => t.instrumentId)).size === targets.length, "Uno strumento compare due volte")
+    .refine(
+      (targets) => targets.length === 0 || Math.abs(targets.reduce((s, t) => s + t.weight, 0) - 1) <= TARGET_SUM_TOLERANCE,
+      "I pesi devono sommare a 100%"
+    ),
+});
+export type UpdateTargetsInput = z.infer<typeof updateTargetsSchema>;
+
+/** Tolleranza sulla somma dei pesi di una ripartizione manuale (arrotondamenti dei campi percentuali). */
+const BREAKDOWN_SUM_TOLERANCE = 0.0001;
+
+function breakdownWeights<K extends string>(keys: readonly [K, ...K[]]) {
+  return z
+    .partialRecord(z.enum(keys), z.number().gt(0).max(1))
+    .refine((weights) => Object.keys(weights).length > 0, "Inserisci almeno una percentuale")
+    .refine(
+      (weights) => Object.values(weights).reduce<number>((s, v) => s + (typeof v === "number" ? v : 0), 0) <= 1 + BREAKDOWN_SUM_TOLERANCE,
+      "Le percentuali superano il 100%"
+    )
+    .nullable();
+}
+
+/** Correzione manuale di settore e area di uno strumento: null = torna all'automatico per quella dimensione. */
+export const updateBreakdownSchema = z.object({
+  sectors: breakdownWeights(MANUAL_SECTOR_KEYS),
+  areas: breakdownWeights(MANUAL_AREA_KEYS),
+});
+export type UpdateBreakdownInput = z.infer<typeof updateBreakdownSchema>;

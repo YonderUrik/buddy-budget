@@ -11,7 +11,9 @@ import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { PortfolioReturns } from "@/lib/calc/returns";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatMonthLabel } from "@/lib/investments/operations-history";
-import { timingInsight } from "@/lib/investments/returns-insights";
+import type { BackfillStateView } from "@/lib/market-data/backfill-state";
+import { benchmarkWait, timingInsight } from "@/lib/investments/returns-insights";
+import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { BenchmarkDialog } from "./benchmark-dialog";
 import { BenchmarkSummary } from "./benchmark-summary";
 import { formatSignedPct } from "./gain-text";
@@ -35,11 +37,17 @@ export interface ReturnsCardProps {
   returns: PortfolioReturns;
   period: NetWorthPeriod;
   benchmark: Instrument | null;
+  /** Primo prezzo caricato del benchmark, per spiegare un confronto che non parte. */
+  benchmarkFirstPriceDate: string | null;
+  /** Stato del recupero dello storico del benchmark: undefined finché non è stato letto. */
+  benchmarkBackfill: BackfillStateView | null | undefined;
   currency: string;
 }
 
-export function ReturnsCard({ returns, period, benchmark, currency }: ReturnsCardProps) {
+export function ReturnsCard({ returns, period, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency }: ReturnsCardProps) {
   const [choosing, setChoosing] = React.useState(false);
+  const retry = useUpdatePortfolioMutation();
+  const wait = benchmarkWait({ backfill: benchmarkBackfill, firstPriceDate: benchmarkFirstPriceDate, baseKey: returns.baseKey });
   const insight = timingInsight(returns.twr, returns.moneyWeighted);
   const { real } = returns;
 
@@ -78,7 +86,10 @@ export function ReturnsCard({ returns, period, benchmark, currency }: ReturnsCar
           comparison={returns.benchmark}
           benchmarkName={benchmark?.name ?? null}
           currency={currency}
+          wait={wait}
           onChoose={() => setChoosing(true)}
+          onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })}
+          retrying={retry.isPending}
         />
         {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmark?.name ?? null : null} /> : null}
       </CardContent>

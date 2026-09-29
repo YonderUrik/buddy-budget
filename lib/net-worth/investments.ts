@@ -1,12 +1,22 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, lt, or, sql, type AnyColumn, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { investmentTransactions } from "@/lib/db/schema/investments";
+import { authUser } from "@/lib/db/schema/auth";
+import {
+  fxRates,
+  instrumentPrices,
+  instruments,
+  investmentTransactions,
+  userInstrumentPrices,
+} from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { buildFxTable } from "@/lib/calc/fx";
 import { buildPriceIndex, computeDailyPortfolioValues, computePortfolioSummary } from "@/lib/calc/investments";
-import { MAX_DERIVED_HISTORY_MONTHS, addDays, toDateKey } from "@/lib/calc/net-worth";
+import { addDays, toDateKey } from "@/lib/calc/net-worth";
 import { startOfDay } from "@/lib/calc/expenses";
 import { loadInvestmentData, type InvestmentData } from "@/lib/investments/data";
+import { hashUserId, logger } from "@/lib/observability";
+import type { InvestmentHistoryStateStore } from "./history-state";
+import { redisHistoryStateStore } from "./redis-history-state";
 
 /** Blocchi di insert delle righe ricostruite. */
 const SNAPSHOT_INSERT_BATCH_SIZE = 500;
@@ -56,59 +66,150 @@ export async function writeInvestmentSnapshot(userId: string, today: Date = new 
 }
 
 /**
- * Ricostruisce lo storico "investimenti" (righe `derivato`) dalla prima operazione a ieri, massimo 24 mesi, con i
- * prezzi salvati. Riparte se è stata registrata un'operazione più vecchia dello storico esistente; non tocca mai le
- * righe reali (`snapshot`). Ritorna le righe scritte.
+ * Profondità massima dello storico "investimenti", in anni: la stessa del recupero dei prezzi
+ * (`MAX_BACKFILL_YEARS` in `lib/market-data/update.ts`), così un'operazione di anni fa entra nel patrimonio.
  */
-export async function backfillDerivedInvestmentHistory(userId: string, today: Date = new Date()): Promise<number> {
-  // Controlli economici prima di caricare operazioni e prezzi: la route li esegue a ogni apertura della Panoramica.
-  const [first] = await db
-    .select({ date: sql<string | null>`min(${investmentTransactions.date})` })
+export const MAX_INVESTMENT_HISTORY_YEARS = 20;
+
+/** Aggregato "quante righe · ultima modifica" di una tabella: cambia a ogni insert, update o delete. */
+function changeMarker(column: SQL | AnyColumn) {
+  return sql<string>`count(*)::text || ':' || coalesce(max(${column})::text, '')`;
+}
+
+/**
+ * Impronta dei dati da cui dipende lo storico investimenti dell'utente: operazioni, prezzi manuali, chiusure e
+ * cambi degli strumenti posseduti, valuta dell'utente. Cambia quando si registra, modifica o elimina un'operazione
+ * (anche datata anni fa), quando si inserisce un prezzo manuale e quando arriva lo storico prezzi in background.
+ */
+async function investmentInputsFingerprint(userId: string): Promise<string> {
+  const heldInstruments = db
+    .selectDistinct({ id: investmentTransactions.instrumentId })
     .from(investmentTransactions)
     .where(eq(investmentTransactions.userId, userId));
-  if (!first?.date) return 0;
+  const [[ops], [manual], [prices], [user]] = await Promise.all([
+    db.select({ marker: changeMarker(investmentTransactions.updatedAt) }).from(investmentTransactions).where(eq(investmentTransactions.userId, userId)),
+    db.select({ marker: changeMarker(userInstrumentPrices.updatedAt) }).from(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId)),
+    db.select({ marker: changeMarker(instrumentPrices.createdAt) }).from(instrumentPrices).where(inArray(instrumentPrices.instrumentId, heldInstruments)),
+    db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),
+  ]);
+  const currencies = db
+    .selectDistinct({ currency: instruments.currency })
+    .from(instruments)
+    .where(inArray(instruments.id, heldInstruments));
+  const [fx] = await db
+    .select({ marker: changeMarker(fxRates.createdAt) })
+    .from(fxRates)
+    .where(or(inArray(fxRates.currency, currencies), eq(fxRates.currency, user?.currency ?? "EUR")));
+  return [ops?.marker, manual?.marker, prices?.marker, fx?.marker, user?.currency].join("|");
+}
 
-  const todayStart = startOfDay(today);
-  const cutoffKey = toDateKey(new Date(todayStart.getFullYear(), todayStart.getMonth() - MAX_DERIVED_HISTORY_MONTHS, 1));
-  const fromKey = first.date < cutoffKey ? cutoffKey : first.date;
-  const toKey = toDateKey(addDays(todayStart, -1));
-  if (fromKey > toKey) return 0;
+async function readFingerprint(state: InvestmentHistoryStateStore, userId: string): Promise<string | null> {
+  try {
+    return await state.get(userId);
+  } catch (error) {
+    logger.warn("net_worth.history_state.unavailable", { user: hashUserId(userId), error });
+    return null;
+  }
+}
 
-  const [existing] = await db
-    .select({ first: sql<string | null>`min(${netWorthSnapshots.date})` })
-    .from(netWorthSnapshots)
-    .where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "investimenti")));
-  if (existing?.first && existing.first <= fromKey) return 0;
+async function saveFingerprint(state: InvestmentHistoryStateStore, userId: string, fingerprint: string): Promise<void> {
+  try {
+    await state.set(userId, fingerprint);
+  } catch (error) {
+    logger.warn("net_worth.history_state.unavailable", { user: hashUserId(userId), error });
+  }
+}
 
-  const data = await loadInvestmentData(userId, fromKey);
-
+/** Elimina le righe "investimenti" dei giorni passati prima di `beforeKey` (esclusa). */
+async function deletePastRowsBefore(userId: string, beforeKey: string): Promise<void> {
   await db
     .delete(netWorthSnapshots)
     .where(
       and(
         eq(netWorthSnapshots.userId, userId),
         eq(netWorthSnapshots.assetClass, "investimenti"),
-        eq(netWorthSnapshots.source, "derivato")
+        lt(netWorthSnapshots.date, beforeKey)
       )
     );
+}
 
-  const points = computeDailyPortfolioValues({ ...calcInputs(data), fromKey, toKey });
-  let written = 0;
-  for (let i = 0; i < points.length; i += SNAPSHOT_INSERT_BATCH_SIZE) {
-    const inserted = await db
+/**
+ * Tiene allineato lo storico "investimenti" dei giorni passati (dalla prima operazione a ieri, massimo 20 anni) con
+ * operazioni e prezzi salvati. Ricalcola solo se i dati sono cambiati dall'ultima volta (vedi
+ * `investmentInputsFingerprint`), e allora riscrive i soli giorni il cui valore è cambiato: un'operazione inserita,
+ * modificata o eliminata con una data passata aggiorna tutti i giorni da quella data in poi. Le righe reali
+ * (`snapshot`) tengono la loro origine ma ricevono il valore ricalcolato; la riga di oggi non si tocca (la scrive il
+ * cron della sera). Ritorna le righe scritte.
+ */
+export async function refreshDerivedInvestmentHistory(
+  userId: string,
+  today: Date = new Date(),
+  state: InvestmentHistoryStateStore = redisHistoryStateStore
+): Promise<number> {
+  const todayStart = startOfDay(today);
+  const todayKey = toDateKey(todayStart);
+  const toKey = toDateKey(addDays(todayStart, -1));
+
+  // Il giorno fa parte dell'impronta: ogni giorno nuovo allunga lo storico fino a ieri.
+  const fingerprint = `${await investmentInputsFingerprint(userId)}|${toKey}`;
+  if ((await readFingerprint(state, userId)) === fingerprint) return 0;
+
+  const [first] = await db
+    .select({ date: sql<string | null>`min(${investmentTransactions.date})` })
+    .from(investmentTransactions)
+    .where(eq(investmentTransactions.userId, userId));
+  const cutoffKey = toDateKey(
+    new Date(todayStart.getFullYear() - MAX_INVESTMENT_HISTORY_YEARS, todayStart.getMonth(), 1)
+  );
+  const fromKey = first?.date && first.date < cutoffKey ? cutoffKey : first?.date;
+
+  // Nessuna operazione (o solo di oggi): nei giorni passati non c'era nulla investito.
+  if (!first?.date || !fromKey || fromKey > toKey) {
+    await deletePastRowsBefore(userId, todayKey);
+    await saveFingerprint(state, userId, fingerprint);
+    return 0;
+  }
+
+  const [data, existingRows] = await Promise.all([
+    loadInvestmentData(userId, fromKey),
+    db
+      .select({ date: netWorthSnapshots.date, amount: netWorthSnapshots.amount })
+      .from(netWorthSnapshots)
+      .where(
+        and(
+          eq(netWorthSnapshots.userId, userId),
+          eq(netWorthSnapshots.assetClass, "investimenti"),
+          lt(netWorthSnapshots.date, todayKey)
+        )
+      ),
+  ]);
+  const existing = new Map(existingRows.map((r) => [r.date, r.amount]));
+
+  const changed = computeDailyPortfolioValues({ ...calcInputs(data), fromKey, toKey })
+    .map((p) => ({ date: p.date, amount: p.value.toFixed(2) }))
+    .filter((p) => existing.get(p.date) !== p.amount);
+
+  // Righe prima della prima operazione (es. è stata eliminata o spostata in avanti): non c'era nulla investito.
+  await deletePastRowsBefore(userId, first.date);
+
+  for (let i = 0; i < changed.length; i += SNAPSHOT_INSERT_BATCH_SIZE) {
+    await db
       .insert(netWorthSnapshots)
       .values(
-        points.slice(i, i + SNAPSHOT_INSERT_BATCH_SIZE).map((p) => ({
+        changed.slice(i, i + SNAPSHOT_INSERT_BATCH_SIZE).map((p) => ({
           userId,
           date: p.date,
           assetClass: "investimenti" as const,
-          amount: p.value.toFixed(2),
+          amount: p.amount,
           source: "derivato" as const,
         }))
       )
-      .onConflictDoNothing()
-      .returning({ id: netWorthSnapshots.id });
-    written += inserted.length;
+      .onConflictDoUpdate({
+        target: [netWorthSnapshots.userId, netWorthSnapshots.date, netWorthSnapshots.assetClass],
+        set: { amount: sql`excluded.amount`, updatedAt: new Date() },
+      });
   }
-  return written;
+
+  await saveFingerprint(state, userId, fingerprint);
+  return changed.length;
 }

@@ -3,13 +3,13 @@ import { and, asc, eq, gte, lte } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
-import { backfillDerivedInvestmentHistory } from "@/lib/net-worth/investments";
+import { refreshDerivedInvestmentHistory } from "@/lib/net-worth/investments";
 import { backfillDerivedHistory } from "@/lib/net-worth/snapshots";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 
-/** GET /api/net-worth/snapshots?from&to — righe snapshot dell'utente nel periodo; alla prima chiamata ricostruisce lo storico. */
+/** GET /api/net-worth/snapshots?from&to — righe snapshot dell'utente nel periodo; prima ricostruisce lo storico che manca o non è più aggiornato. */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -25,7 +25,7 @@ async function handleGet(request: NextRequest) {
   }
 
   await backfillDerivedHistory(session.user.id);
-  await backfillDerivedInvestmentHistory(session.user.id);
+  await refreshDerivedInvestmentHistory(session.user.id);
 
   const rows = await db
     .select()

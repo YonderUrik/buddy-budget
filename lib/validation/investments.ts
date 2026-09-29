@@ -122,6 +122,9 @@ function checkTypeFields(
     if (!(data.quantity > 0)) ctx.addIssue({ code: "custom", path: ["quantity"], message: "Quantità non valida" });
     if (!(data.price > 0)) ctx.addIssue({ code: "custom", path: ["price"], message: "Prezzo non valido" });
   }
+  if (data.type === "split" && !(data.quantity > 0)) {
+    ctx.addIssue({ code: "custom", path: ["quantity"], message: "Rapporto dello split non valido" });
+  }
   if (INCOME_TYPES.has(data.type) && !((data.grossAmount ?? 0) > 0)) {
     ctx.addIssue({ code: "custom", path: ["grossAmount"], message: "Importo non valido" });
   }

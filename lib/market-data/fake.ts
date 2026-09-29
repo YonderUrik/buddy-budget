@@ -1,6 +1,7 @@
 import { splitYahooSymbol } from "./symbols";
 import type { DailyClose, FxProvider, PriceProvider, ProviderId } from "./types";
 import type { YahooSearchHit } from "./providers/yahoo";
+import type { InflationProvider } from "./providers/eurostat";
 
 /**
  * Fonti finte per lo sviluppo locale e le verifiche con browser (`MARKET_DATA_FAKE=1`): prezzi deterministici
@@ -109,3 +110,22 @@ export function fakeCryptoSearch(query: string): { id: string; name: string; sym
   return all.filter((c) => c.id.includes(q) || c.symbol.toLowerCase() === q);
 }
 
+
+/** Indice dei prezzi finto: 100 a gennaio 2015, +2% l'anno composto, fino al mese scorso (come Eurostat). */
+export const FAKE_INFLATION_PROVIDER: InflationProvider = {
+  id: "eurostat",
+  async fetchMonthlyIndex(_area, fromMonth) {
+    const now = new Date();
+    const lastMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
+    const values = [];
+    for (let year = 2000; year <= now.getUTCFullYear(); year += 1) {
+      for (let month = 1; month <= 12; month += 1) {
+        const key = `${year}-${String(month).padStart(2, "0")}`;
+        if (key < fromMonth || key > lastMonth) continue;
+        const monthsFrom2015 = (year - 2015) * 12 + (month - 1);
+        values.push({ month: key, value: Math.round(100 * 1.02 ** (monthsFrom2015 / 12) * 100) / 100 });
+      }
+    }
+    return values;
+  },
+};

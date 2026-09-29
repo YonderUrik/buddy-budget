@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Form "Registra operazione": acquisto, vendita, dividendo, cedola o rimborso. Per acquisti e vendite il prezzo si
+ * Form "Registra operazione": acquisto, vendita, dividendo, cedola, rimborso o split (solo il rapporto). Per acquisti e vendite il prezzo si
  * precompila col prezzo dello strumento alla data scelta, finché l'utente non lo cambia. Il cambio compare solo se
  * lo strumento è in un'altra valuta (vuoto = cambio BCE del giorno). Può partire precompilato da un PAC.
  */
@@ -27,6 +27,8 @@ import {
   priceSuggestionHint,
   priceText,
   quantityLabel,
+  SPLIT_RATIO_HINT,
+  SPLIT_RATIO_LABEL,
   suggestsMarketPrice,
 } from "./register-operation-form.state";
 
@@ -62,7 +64,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const [error, setError] = React.useState<string | null>(null);
 
   const fields = fieldsFor(type);
-  const needsFx = instrument !== null && instrument.currency !== currency;
+  const needsFx = fields.costs && instrument !== null && instrument.currency !== currency;
   const suggestPrice = fields.price && suggestsMarketPrice(type);
   const priceOnDate = useInstrumentPriceOnDateQuery(suggestPrice ? (instrument?.id ?? null) : null, date);
   const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close) : null;
@@ -89,8 +91,8 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
         quantity: fields.quantity ? (parseAmount(quantity) ?? 0) : 0,
         price: fields.price ? (parseAmount(price) ?? 0) : 0,
         grossAmount: fields.grossAmount ? parseAmount(gross) : null,
-        fees: parseAmount(fees) ?? 0,
-        taxes: parseAmount(taxes) ?? 0,
+        fees: fields.costs ? (parseAmount(fees) ?? 0) : 0,
+        taxes: fields.costs ? (parseAmount(taxes) ?? 0) : 0,
         ...(needsFx && parseAmount(fxRate) ? { fxRate: parseAmount(fxRate)! } : {}),
       },
       { onSuccess: () => onSuccess?.(), onError: (e) => setError(e.message) }
@@ -123,7 +125,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
       </Field>
       <div className="grid grid-cols-2 gap-3">
         {fields.quantity ? (
-          <Field label={quantityLabel(instrument?.priceUnit)} htmlFor={`${id}-qty`}>
+          <Field label={type === "split" ? SPLIT_RATIO_LABEL : quantityLabel(instrument?.priceUnit)} htmlFor={`${id}-qty`}>
             <Input id={`${id}-qty`} inputMode="decimal" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
           </Field>
         ) : null}
@@ -143,18 +145,23 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
             <Input id={`${id}-gross`} inputMode="decimal" value={gross} onChange={(e) => setGross(e.target.value)} />
           </Field>
         ) : null}
-        <Field label={`Commissioni (${currency})`} htmlFor={`${id}-fees`}>
-          <Input id={`${id}-fees`} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" />
-        </Field>
-        <Field label={`Imposte trattenute (${currency})`} htmlFor={`${id}-taxes`}>
-          <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder="0" />
-        </Field>
+        {fields.costs ? (
+          <>
+            <Field label={`Commissioni (${currency})`} htmlFor={`${id}-fees`}>
+              <Input id={`${id}-fees`} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" />
+            </Field>
+            <Field label={`Imposte trattenute (${currency})`} htmlFor={`${id}-taxes`}>
+              <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder="0" />
+            </Field>
+          </>
+        ) : null}
         {needsFx ? (
           <Field label={`Cambio 1 ${instrument.currency} = ? ${currency}`} htmlFor={`${id}-fx`}>
             <Input id={`${id}-fx`} inputMode="decimal" value={fxRate} onChange={(e) => setFxRate(e.target.value)} placeholder="BCE del giorno" />
           </Field>
         ) : null}
       </div>
+      {type === "split" ? <p className="text-sm text-muted-foreground">{SPLIT_RATIO_HINT}</p> : null}
       {grossValue !== null && instrument ? (
         <p className="text-sm text-muted-foreground">
           Controvalore: <span className="font-mono tabular-nums text-foreground">{formatCurrency(grossValue, instrument.currency)}</span>

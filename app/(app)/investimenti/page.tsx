@@ -7,6 +7,7 @@ import { Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   CURRENCY_COLORS,
+  IncomeHistoryCard,
   INSTRUMENT_TYPE_COLOR,
   InvestmentImportDialog,
   InvestmentTransactionsList,
@@ -17,6 +18,7 @@ import {
   PositionsList,
   prefillFromPlan,
   RegisterOperationForm,
+  ReturnsCard,
   type RegisterOperationInitial,
 } from "@/components/domain/investments";
 import { LoadError } from "@/components/domain/shared";
@@ -131,6 +133,9 @@ export default function InvestimentiPage() {
             onPeriodChange={setPeriod}
             currency={currency}
           />
+          {view.returns ? (
+            <ReturnsCard returns={view.returns} period={period} benchmark={view.benchmark} currency={currency} />
+          ) : null}
           <PositionsList
             rows={view.summary.rows}
             concentration={computeConcentration(view.summary.rows)}
@@ -157,6 +162,9 @@ export default function InvestimentiPage() {
               },
             ]}
           />
+          {view.income.count > 0 ? (
+            <IncomeHistoryCard income={view.income} instrumentsById={view.instrumentsById} currency={currency} />
+          ) : null}
         </>
       )}
       {view ? (

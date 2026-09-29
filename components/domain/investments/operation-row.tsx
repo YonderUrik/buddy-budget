@@ -20,6 +20,7 @@ const REMAINING_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits:
 
 function describe(t: InvestmentTransaction, instrument: Instrument | undefined): string {
   const currency = instrument?.currency ?? "";
+  if (t.type === "split") return `ogni quota diventa ${QUANTITY_FORMAT.format(Number(t.quantity))}`;
   if (t.type === "dividendo" || t.type === "cedola") {
     return `${formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR")} lordi`;
   }
@@ -72,7 +73,9 @@ export function OperationRow({ insight, instrument, currency, deleting, onDelete
         <p className="mt-0.5 text-xs text-muted-foreground">{details.join(" · ")}</p>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5 text-right">
-        <span className="text-sm font-medium tabular-nums text-foreground">{formatCurrency(amount, currency)}</span>
+        {t.type === "split" ? null : (
+          <span className="text-sm font-medium tabular-nums text-foreground">{formatCurrency(amount, currency)}</span>
+        )}
         <GainCell insight={insight} currency={currency} />
       </div>
       <Button

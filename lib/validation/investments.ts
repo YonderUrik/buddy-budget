@@ -161,3 +161,7 @@ export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;
 
 export const manualPriceSchema = z.object({ date: dateKey, close: z.number().positive() });
 export type ManualPriceInput = z.infer<typeof manualPriceSchema>;
+
+/** Impostazioni del portafoglio: `null` toglie il benchmark. */
+export const updatePortfolioSchema = z.object({ benchmarkInstrumentId: z.string().uuid().nullable() });
+export type UpdatePortfolioInput = z.infer<typeof updatePortfolioSchema>;

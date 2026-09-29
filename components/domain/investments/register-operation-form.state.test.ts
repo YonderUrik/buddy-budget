@@ -13,8 +13,9 @@ import {
 
 describe("form operazione", () => {
   it("mostra quote e prezzo per acquisti e vendite, l'importo per i proventi", () => {
-    expect(fieldsFor("acquisto")).toEqual({ quantity: true, price: true, grossAmount: false });
-    expect(fieldsFor("cedola")).toEqual({ quantity: false, price: false, grossAmount: true });
+    expect(fieldsFor("acquisto")).toEqual({ quantity: true, price: true, grossAmount: false, costs: true });
+    expect(fieldsFor("cedola")).toEqual({ quantity: false, price: false, grossAmount: true, costs: true });
+    expect(fieldsFor("split")).toEqual({ quantity: true, price: false, grossAmount: false, costs: false });
   });
 
   it("calcola il controvalore, anche per le obbligazioni in percentuale del nominale", () => {

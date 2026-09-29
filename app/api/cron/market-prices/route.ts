@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
-import { marketDataDeps } from "@/lib/market-data/runtime";
+import { marketDataDeps, refreshCryptoCatalogOnProviders } from "@/lib/market-data/runtime";
 import { updateInflationIndex } from "@/lib/market-data/inflation";
 import { refreshStaleProfiles } from "@/lib/market-data/profiles";
 import { updateRiskFreeRates } from "@/lib/market-data/rates";
@@ -28,6 +28,8 @@ async function handleGet(request: NextRequest) {
     const summary = await updateHeldInstruments(new Date(), deps);
     // Non fa mai fallire il cron: un errore di Eurostat si logga dentro.
     const inflationMonths = await updateInflationIndex(new Date(), deps.ctx, { provider: deps.inflationProvider, log });
+    // Come l'inflazione: un rifiuto di CoinGecko non fa fallire il cron, il catalogo vecchio resta valido una settimana.
+    await refreshCryptoCatalogOnProviders().catch((error) => log.warn("market.crypto_catalog.failed", { error }));
     // Tasso privo di rischio e profili (settori, primi titoli): anche questi non fanno mai fallire il cron.
     const riskFreeDays = await updateRiskFreeRates(new Date(), deps.ctx, { provider: deps.rateProvider, log });
     const profiles = await refreshStaleProfiles(await findHeldAutoInstruments(), new Date(), deps.ctx, { provider: deps.profileProvider, log });

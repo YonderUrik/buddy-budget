@@ -49,7 +49,7 @@ describe("deriveSymbols", () => {
       coingecko: "bitcoin:EUR",
       kraken: "XBTEUR",
     });
-    expect(deriveSymbols({ isin: null, type: "crypto", currency: "EUR", coingeckoId: "pepe" })).toEqual({ coingecko: "pepe:EUR" });
+    expect(deriveSymbols({ isin: null, type: "crypto", currency: "EUR", coingeckoId: "moneta-sconosciuta" })).toEqual({ coingecko: "moneta-sconosciuta:EUR" });
   });
 
   it("splitYahooSymbol lascia intere le classi di azioni", () => {

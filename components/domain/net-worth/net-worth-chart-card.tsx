@@ -1,21 +1,22 @@
-"use client";
-
-/** Card principale della Panoramica: patrimonio netto attuale, variazione nel periodo, selettore periodo e grafico ad area. */
+/**
+ * Card principale della Panoramica: patrimonio netto attuale, variazione nel periodo, selettore periodo e grafico ad
+ * aree impilate, un'area per classe di asset (liquidità alla base, investimenti sopra): il bordo superiore è il totale.
+ */
 
 import { Area, AreaChart, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
-import { parseDateOnly } from "@/lib/calc/expenses";
 import type { NetWorthChange, NetWorthPeriod, NetWorthSeriesPoint } from "@/lib/calc/net-worth";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { assetClassColor, assetClassesInSeries, assetClassLabel } from "./asset-classes";
+import { NetWorthChartTooltip } from "./net-worth-chart-tooltip";
 import { NetWorthPeriodSelector } from "./net-worth-period-selector";
 
-const CHART_CONFIG = {
-  value: { label: "Patrimonio netto", color: "var(--primary)" },
-} satisfies ChartConfig;
-
-const AREA_FILL_ID = "net-worth-area-fill";
+const STACK_ID = "net-worth";
+const AREA_FILL_ID_PREFIX = "net-worth-area-fill-";
+/** Classe mostrata quando la serie è tutta a zero (nessuna classe con valori). */
+const DEFAULT_CLASS = "liquidita";
 
 const PERIOD_CHANGE_LABELS: Record<NetWorthPeriod, string> = {
   "1mese": "nell'ultimo mese",
@@ -25,27 +26,9 @@ const PERIOD_CHANGE_LABELS: Record<NetWorthPeriod, string> = {
 };
 
 const NO_HISTORY_MESSAGE = "L'andamento comparirà nei prossimi giorni.";
-const ESTIMATED_LABEL = "stimato";
-const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
 
-interface NetWorthTooltipProps {
-  active?: boolean;
-  payload?: { payload: NetWorthSeriesPoint }[];
-  currency: string;
-}
-
-function NetWorthTooltip({ active, payload, currency }: NetWorthTooltipProps) {
-  const point = payload?.[0]?.payload;
-  if (!active || !point) return null;
-  return (
-    <div className="rounded-lg border bg-background px-3 py-2 text-xs shadow-sm">
-      <p className="text-muted-foreground">
-        {TOOLTIP_DATE_FORMAT.format(parseDateOnly(point.date))}
-        {point.isEstimated ? ` · ${ESTIMATED_LABEL}` : ""}
-      </p>
-      <p className="font-mono font-medium tabular-nums text-foreground">{formatCurrency(point.value, currency)}</p>
-    </div>
-  );
+function buildChartConfig(classes: string[]): ChartConfig {
+  return Object.fromEntries(classes.map((key) => [key, { label: assetClassLabel(key), color: assetClassColor(key) }]));
 }
 
 export interface NetWorthChartCardProps {
@@ -61,6 +44,8 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
   const isNegative = change.delta < 0;
   const sign = isNegative ? "−" : "+";
   const pctText = change.deltaPct !== null ? ` (${sign}${Math.abs(change.deltaPct * 100).toFixed(1)}%)` : "";
+  const presentClasses = assetClassesInSeries(series);
+  const classes = presentClasses.length > 0 ? presentClasses : [DEFAULT_CLASS];
 
   return (
     <Card>
@@ -86,26 +71,43 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
       </CardHeader>
       {hasHistory ? (
         <CardContent>
-          <ChartContainer config={CHART_CONFIG} className="max-h-64 w-full">
+          <ChartContainer config={buildChartConfig(classes)} className="max-h-64 w-full">
             <AreaChart data={series}>
               <defs>
-                <linearGradient id={AREA_FILL_ID} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="var(--color-value)" stopOpacity={0} />
-                </linearGradient>
+                {classes.map((key) => (
+                  <linearGradient key={key} id={`${AREA_FILL_ID_PREFIX}${key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={0.55} />
+                    <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={0.15} />
+                  </linearGradient>
+                ))}
               </defs>
               <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
-              <YAxis hide domain={["dataMin", "dataMax"]} />
-              <ChartTooltip cursor={false} content={<NetWorthTooltip currency={currency} />} />
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="var(--color-value)"
-                strokeWidth={2}
-                fill={`url(#${AREA_FILL_ID})`}
-              />
+              <YAxis hide />
+              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={classes} />} />
+              {classes.map((key) => (
+                <Area
+                  key={key}
+                  type="monotone"
+                  dataKey={(point: NetWorthSeriesPoint) => point.byClass[key] ?? 0}
+                  name={key}
+                  stackId={STACK_ID}
+                  stroke={`var(--color-${key})`}
+                  strokeWidth={2}
+                  fill={`url(#${AREA_FILL_ID_PREFIX}${key})`}
+                />
+              ))}
             </AreaChart>
           </ChartContainer>
+          {classes.length > 1 ? (
+            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              {classes.map((key) => (
+                <li key={key} className="flex items-center gap-1.5">
+                  <span className="size-2 rounded-full" style={{ backgroundColor: assetClassColor(key) }} aria-hidden="true" />
+                  {assetClassLabel(key)}
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </CardContent>
       ) : null}
     </Card>

@@ -26,3 +26,5 @@ export type { PlansCardProps } from "./plans-card";
 export { ManualPriceDialog } from "./manual-price-dialog";
 export type { ManualPriceDialogProps } from "./manual-price-dialog";
 export { prefillFromPlan } from "./register-operation-form.state";
+export { InvestmentImportDialog } from "./import/investment-import-dialog";
+export type { InvestmentImportDialogProps } from "./import/investment-import-dialog";

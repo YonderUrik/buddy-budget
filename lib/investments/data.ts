@@ -127,6 +127,16 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   return { currency, portfolios, instruments: userInstruments, transactions, plans, prices, manualPrices, fxRates: rates };
 }
 
+/** Cambi salvati tra due date (con margine prima di `fromKey` per weekend e festivi). */
+export async function loadRatesBetween(currencies: string[], fromKey: string, toKey: string): Promise<FxRateInput[]> {
+  const wanted = currencies.filter((c) => c !== "EUR");
+  if (wanted.length === 0) return [];
+  return db
+    .select({ date: fxRates.date, currency: fxRates.currency, perEur: fxRates.perEur })
+    .from(fxRates)
+    .where(and(inArray(fxRates.currency, wanted), lte(fxRates.date, toKey), gte(fxRates.date, shiftDays(fromKey, -PRICE_LOOKBACK_DAYS))));
+}
+
 /** Cambi delle valute richieste fino alla data (per precompilare il cambio di un'operazione). */
 export async function loadRatesUpTo(currencies: string[], dateKey: string): Promise<FxRateInput[]> {
   const wanted = currencies.filter((c) => c !== "EUR");

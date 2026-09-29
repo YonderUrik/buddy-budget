@@ -18,6 +18,7 @@ import {
   PositionsList,
   prefillFromPlan,
   RegisterOperationForm,
+  ReturnHeatmapCard,
   ReturnsCard,
   type RegisterOperationInitial,
 } from "@/components/domain/investments";
@@ -35,6 +36,7 @@ import {
   computeValueBreakdown,
 } from "@/lib/investments/insights";
 import { INSTRUMENT_TYPE_LABELS } from "@/lib/investments/labels";
+import { historyDailyReturns } from "@/lib/investments/return-heatmap-view";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import {
   useBackfillStatusQuery,
@@ -61,6 +63,12 @@ export default function InvestimentiPage() {
   const view = React.useMemo(
     () => (overview.data ? buildInvestmentsView(overview.data, period, today) : null),
     [overview.data, period, today]
+  );
+  // La heatmap copre tutto lo storico: usa i dati del periodo "max" (stessa cache se il grafico è già su Max).
+  const fullHistory = useInvestmentsOverviewQuery("max");
+  const historyReturns = React.useMemo(
+    () => (fullHistory.data ? historyDailyReturns(fullHistory.data, today) : null),
+    [fullHistory.data, today]
   );
   const backfill = useBackfillStatusQuery(view?.instruments.map((i) => i.id) ?? []);
   const deleteOperation = useDeleteInvestmentTransactionMutation();
@@ -135,6 +143,9 @@ export default function InvestimentiPage() {
           />
           {view.returns ? (
             <ReturnsCard returns={view.returns} period={period} benchmark={view.benchmark} currency={currency} />
+          ) : null}
+          {historyReturns && historyReturns.length > 0 ? (
+            <ReturnHeatmapCard daily={historyReturns} currency={currency} today={today} />
           ) : null}
           <PositionsList
             rows={view.summary.rows}

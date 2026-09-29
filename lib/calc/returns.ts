@@ -60,20 +60,43 @@ export function toDailyFlows(points: PortfolioDailyPoint[]): DailyFlow[] {
   return flows;
 }
 
+/** Rendimento di un singolo giorno: `ret` è null se quel giorno non c'era niente investito. */
+export interface DailyReturn {
+  date: string;
+  ret: number | null;
+  /** Guadagno del giorno in valuta utente: variazione di valore al netto di versamenti e prelievi. */
+  gain: number;
+}
+
 /**
- * Rendimento cumulato giorno per giorno. Se il giorno prima c'era qualcosa investito i movimenti si considerano a
- * fine giornata: `(V_t − entrate + uscite + proventi) / V_{t−1} − 1`, così un acquisto in un giorno di rialzo non
- * prende il rialzo delle quote già possedute. Se non c'era niente, il giorno misura il primo acquisto rispetto alla
- * chiusura: `(V_t + uscite + proventi) / entrate − 1`. I giorni senza niente investito non contano.
+ * Rendimento di ogni giorno. Se il giorno prima c'era qualcosa investito i movimenti si considerano a fine giornata:
+ * `(V_t − entrate + uscite + proventi) / V_{t−1} − 1`, così un acquisto in un giorno di rialzo non prende il rialzo
+ * delle quote già possedute. Se non c'era niente, il giorno misura il primo acquisto rispetto alla chiusura:
+ * `(V_t + uscite + proventi) / entrate − 1`. I giorni senza niente investito hanno `ret` null.
  */
-export function computeTwrSeries(baseValue: number, flows: DailyFlow[]): { date: string; cumulative: number }[] {
-  let index = 1;
+export function computeDailyReturns(baseValue: number, flows: DailyFlow[]): DailyReturn[] {
   let previousValue = baseValue;
   return flows.map((day) => {
     const gained = day.value + day.outflow + day.income;
-    if (previousValue > AMOUNT_EPSILON) index *= (gained - day.inflow) / previousValue;
-    else if (day.inflow > AMOUNT_EPSILON) index *= gained / day.inflow;
+    let ret: number | null = null;
+    let gain = 0;
+    if (previousValue > AMOUNT_EPSILON) {
+      gain = gained - day.inflow - previousValue;
+      ret = gain / previousValue;
+    } else if (day.inflow > AMOUNT_EPSILON) {
+      gain = gained - day.inflow;
+      ret = gain / day.inflow;
+    }
     previousValue = day.value;
+    return { date: day.date, ret, gain };
+  });
+}
+
+/** Rendimento cumulato giorno per giorno (TWR), concatenando i rendimenti giornalieri. */
+export function computeTwrSeries(baseValue: number, flows: DailyFlow[]): { date: string; cumulative: number }[] {
+  let index = 1;
+  return computeDailyReturns(baseValue, flows).map((day) => {
+    if (day.ret !== null) index *= 1 + day.ret;
     return { date: day.date, cumulative: index - 1 };
   });
 }
@@ -360,4 +383,20 @@ export function computePortfolioReturns(params: {
     benchmark: comparison,
     series,
   };
+}
+
+/** Rendimenti giornalieri dalla prima operazione a oggi, per la heatmap (indipendenti dal periodo del grafico). */
+export function computeHistoryDailyReturns(params: {
+  transactions: InvestmentTransactionInput[];
+  instruments: InstrumentInput[];
+  priceIndex: PriceIndex;
+  fx: FxTable;
+  userCurrency: string;
+  today: Date;
+}): DailyReturn[] {
+  const fromKey = periodStartKey(params.transactions, "max", params.today);
+  if (fromKey === null) return [];
+  const baseKey = toDateKey(addDays(parseDateOnly(fromKey), -1));
+  const points = computeDailyPortfolioValues({ ...params, fromKey: baseKey, toKey: toDateKey(startOfDay(params.today)) });
+  return computeDailyReturns(points[0].value, toDailyFlows(points));
 }

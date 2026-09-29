@@ -48,3 +48,7 @@ export { BenchmarkDialog } from "./benchmark-dialog";
 export type { BenchmarkDialogProps } from "./benchmark-dialog";
 export { IncomeHistoryCard } from "./income-history-card";
 export type { IncomeHistoryCardProps } from "./income-history-card";
+export { ReturnHeatmapCard } from "./return-heatmap-card";
+export type { ReturnHeatmapCardProps } from "./return-heatmap-card";
+export { ReturnHeatmapGrid, heatmapCellColor } from "./return-heatmap-grid";
+export type { ReturnHeatmapGridProps } from "./return-heatmap-grid";

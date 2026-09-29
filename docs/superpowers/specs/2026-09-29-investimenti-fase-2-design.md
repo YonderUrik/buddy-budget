@@ -56,6 +56,20 @@ Nuova card "Dividendi e cedole", visibile solo se c'è almeno un provento:
 - strumenti che hanno pagato di più negli ultimi 12 mesi.
 Logica pura in `lib/investments/income.ts`, dai proventi già calcolati per la lista operazioni.
 
+### 6. Heatmap dei rendimenti (aggiunta su richiesta dell'utente)
+
+Card "Rendimento nel tempo": caselle verdi e rosse come un calendario delle attività, raggruppabili per **giorni**
+(ultimo anno, righe = giorni della settimana), **settimane** (righe = anni, colonne = settimane ISO), **mesi**
+(righe = anni, 12 colonne più il totale dell'anno, valore scritto nella casella) e **anni**.
+- Ogni casella concatena i rendimenti giornalieri (TWR) dei suoi giorni: non dipende da quanto si è versato. Il dettaglio
+  mostra anche il guadagno in euro (variazione di valore al netto di versamenti e prelievi).
+- Copre sempre tutto lo storico dalla prima operazione, indipendentemente dal periodo della card principale.
+- Colore: 4 livelli di `--pos`/`--neg` mescolati al neutro `--muted`; la scala piena è il 90° percentile dei rendimenti
+  della griglia (pochi giorni estremi non appiattiscono gli altri); sotto lo 0,05% la casella è neutra.
+- Nella vista per giorno sabato e domenica si nascondono se non si sono mai mossi (mercati chiusi); con le crypto restano.
+- Logica pura in `lib/calc/return-heatmap.ts`, rendimenti giornalieri in `computeDailyReturns` / `computeHistoryDailyReturns`
+  (`lib/calc/returns.ts`), UI in `return-heatmap-card.tsx` e `return-heatmap-grid.tsx`.
+
 ## Dove sta il codice
 
 - `lib/calc/returns.ts`: flussi giornalieri, TWR, XIRR, annualizzazione, simulazione benchmark, serie del rendimento cumulato, inflazione. Tutto puro e testato.

@@ -1,4 +1,5 @@
 import type { BenchmarkComparison } from "@/lib/calc/returns";
+import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 
 /** Sotto questa differenza (1 punto percentuale) due rendimenti si considerano uguali. */
 export const RETURN_DIFFERENCE_THRESHOLD = 0.01;
@@ -25,4 +26,37 @@ export function benchmarkVerdict(comparison: Pick<BenchmarkComparison, "simulate
   const diff = (comparison.portfolioValue - comparison.simulatedValue) / base;
   if (Math.abs(diff) < RETURN_DIFFERENCE_THRESHOLD) return "even";
   return diff > 0 ? "better" : "worse";
+}
+
+/** Perché il confronto col benchmark non c'è ancora, per dire all'utente cosa succede e cosa può fare. */
+export type BenchmarkWait =
+  /** Stato del recupero non ancora letto (subito dopo la scelta). */
+  | { kind: "checking" }
+  /** Prezzi in arrivo: `total` è null finché la fonte non ha risposto. */
+  | { kind: "downloading"; saved: number; total: number | null }
+  /** Recupero fallito o interrotto: si può riprovare. */
+  | { kind: "failed" }
+  /** Lo strumento ha prezzi solo da una data successiva all'inizio del periodo. */
+  | { kind: "no_history"; firstPriceDate: string }
+  /** Prezzi presenti ma incompleti (es. manca il cambio): si può riprovare. */
+  | { kind: "incomplete" };
+
+/**
+ * Stato dell'attesa del confronto. `backfill` è lo stato del recupero dello storico del benchmark: undefined se non
+ * ancora letto, null se su Redis non c'è (mai partito o scaduto). `firstPriceDate` è il primo prezzo caricato del
+ * benchmark, `baseKey` il giorno da cui parte il periodo.
+ */
+export function benchmarkWait(params: {
+  backfill: BackfillStateView | null | undefined;
+  firstPriceDate: string | null;
+  baseKey: string;
+}): BenchmarkWait {
+  const { backfill, firstPriceDate, baseKey } = params;
+  if (backfill === undefined) return { kind: "checking" };
+  if (backfill?.status === "running" && !backfill.interrupted) {
+    return { kind: "downloading", saved: backfill.saved, total: backfill.total };
+  }
+  if (firstPriceDate === null) return { kind: "failed" };
+  if (firstPriceDate > baseKey) return { kind: "no_history", firstPriceDate };
+  return backfill?.status === "failed" || backfill?.interrupted ? { kind: "failed" } : { kind: "incomplete" };
 }

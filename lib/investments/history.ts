@@ -2,7 +2,7 @@ import "server-only";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { ensureHistory, marketDataDeps } from "@/lib/market-data/runtime";
 import { updateFxRates } from "@/lib/market-data/update";
-import { requestLogger } from "@/lib/observability";
+import { logger, requestLogger } from "@/lib/observability";
 import { shiftDateKey } from "./operations";
 
 /** Giorni di prezzi chiesti prima di un'operazione, così il prezzo del giorno esiste anche dopo un weekend. */
@@ -19,6 +19,21 @@ export async function ensureHistorySafely(
   } catch (error) {
     requestLogger().warn("market.backfill.not_started", { error });
   }
+}
+
+/**
+ * Recupera in background i cambi di una valuta da `fromKey` a oggi. Serve al benchmark: se i suoi prezzi c'erano già,
+ * `ensureHistory` non parte e i cambi dei giorni vecchi potrebbero mancare. Non fa mai fallire la richiesta.
+ */
+export function ensureFxHistorySafely(currency: string, fromKey: string, schedule: (task: () => Promise<void>) => void): void {
+  if (currency === "EUR") return;
+  schedule(async () => {
+    try {
+      await updateFxRates([currency], shiftDateKey(fromKey, -HISTORY_MARGIN_DAYS), new Date().toISOString().slice(0, 10), marketDataDeps());
+    } catch (error) {
+      logger.warn("market.fx.failed", { error });
+    }
+  });
 }
 
 /** Scarica i cambi mancanti attorno a una data (per precompilare il cambio di un'operazione). */

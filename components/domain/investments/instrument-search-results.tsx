@@ -16,6 +16,8 @@ import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
 export interface InstrumentSearchResultsProps {
   /** Strumenti già presenti nell'app che corrispondono alla ricerca. */
   known: Instrument[];
+  /** Titolo della sezione degli strumenti già presenti. */
+  knownTitle?: string;
   groups: SearchResultGroup[];
   /** Valuta in cui si aggiungono le crypto, mostrata accanto al simbolo. */
   cryptoCurrency: string;
@@ -74,7 +76,15 @@ function itemView(item: MarketSearchItem, cryptoCurrency: string): { key: string
   return { key: `y:${hit.symbol}`, title: hit.name, detail: [hit.symbol, hit.exchangeLabel].filter(Boolean).join(" · ") };
 }
 
-export function InstrumentSearchResults({ known, groups, cryptoCurrency, disabled, onChoose, onAdd }: InstrumentSearchResultsProps) {
+export function InstrumentSearchResults({
+  known,
+  knownTitle = "Già aggiunti",
+  groups,
+  cryptoCurrency,
+  disabled,
+  onChoose,
+  onAdd,
+}: InstrumentSearchResultsProps) {
   const [filter, setFilter] = React.useState<InstrumentType | null>(null);
   const types = groups.map((g) => g.type);
   // Un filtro su un tipo che non c'è più (ricerca cambiata) vale come "Tutti".
@@ -85,7 +95,7 @@ export function InstrumentSearchResults({ known, groups, cryptoCurrency, disable
     <>
       {known.length ? (
         <div className="flex flex-col gap-0.5">
-          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Già aggiunti</p>
+          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{knownTitle}</p>
           {known.map((i) => (
             <ResultButton
               key={i.id}

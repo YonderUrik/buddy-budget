@@ -188,7 +188,12 @@ export default function InvestimentiPage() {
             <DialogTitle>Registra operazione</DialogTitle>
           </DialogHeader>
           {registerInitial ? (
-            <RegisterOperationForm currency={currency} initial={registerInitial} onSuccess={() => setRegisterInitial(null)} />
+            <RegisterOperationForm
+              currency={currency}
+              initial={registerInitial}
+              usedInstruments={view?.usedInstruments}
+              onSuccess={() => setRegisterInitial(null)}
+            />
           ) : null}
         </DialogContent>
       </Dialog>

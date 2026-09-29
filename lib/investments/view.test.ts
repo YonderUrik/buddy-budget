@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { InvestmentData } from "./data";
-import { buildInvestmentsView } from "./view";
+import { buildInvestmentsView, usedInstruments } from "./view";
 
 const NOW = new Date("2026-09-20T12:00:00Z");
 
@@ -71,5 +71,22 @@ describe("buildInvestmentsView", () => {
     expect(view.activePlans).toHaveLength(2);
     expect(view.monthlyPlanAmount).toBeCloseTo(300);
     expect(view.hasTransactions).toBe(true);
+  });
+
+  it("propone gli strumenti già usati, dal più recente, poi quelli dei soli PAC", () => {
+    const base = data().instruments[0];
+    const byId = new Map(["a", "b", "c"].map((id) => [id, { ...base, id }]));
+    const used = usedInstruments(
+      [
+        { instrumentId: "a", date: "2026-01-10" },
+        { instrumentId: "b", date: "2026-09-01" },
+        { instrumentId: "a", date: "2026-03-01" },
+        { instrumentId: "sparito", date: "2026-09-10" },
+      ],
+      [{ instrumentId: "c" }, { instrumentId: "a" }],
+      byId
+    );
+    expect(used.map((i) => i.id)).toEqual(["b", "a", "c"]);
+    expect(buildInvestmentsView(data(), "1mese", NOW).usedInstruments.map((i) => i.id)).toEqual(["etf"]);
   });
 });

@@ -1,4 +1,6 @@
+import type { ResolvedPrice } from "@/lib/calc/investments";
 import type { InvestmentPlan, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
+import { formatDateWithYear } from "@/lib/format";
 
 /** Campi visibili nel form a seconda del tipo di operazione. */
 export interface OperationFieldVisibility {
@@ -49,4 +51,43 @@ export function prefillFromPlan(
 /** Data di oggi YYYY-MM-DD in ora locale (per il campo data). */
 export function localTodayKey(now: Date = new Date()): string {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+/** Decimali massimi di un prezzo precompilato (le chiusure salvate ne hanno fino a 8). */
+export const PREFILL_PRICE_DECIMALS = 6;
+
+/** Numero nel formato del campo (virgola decimale), vuoto se assente. */
+export function numberText(value: number | null | undefined): string {
+  return value === null || value === undefined ? "" : String(value).replace(".", ",");
+}
+
+/** Prezzo precompilato nel formato del campo, senza la coda di decimali delle chiusure salvate. */
+export function priceText(close: number): string {
+  return numberText(Number(close.toFixed(PREFILL_PRICE_DECIMALS)));
+}
+
+/**
+ * Il prezzo di mercato alla data si propone solo per acquisti e vendite: un rimborso avviene al valore di
+ * rimborso (per un BTP 100), non alla quotazione di quel giorno.
+ */
+export function suggestsMarketPrice(type: InvestmentTransactionType): boolean {
+  return type === "acquisto" || type === "vendita";
+}
+
+/** Stato della ricerca del prezzo alla data, come arriva dalla query. */
+export interface PriceSuggestionState {
+  price: ResolvedPrice | null;
+  /** Lo storico dello strumento si sta ancora scaricando. */
+  loading: boolean;
+}
+
+/** Frase sotto il campo prezzo: da dove viene il valore proposto, o perché manca. Null se non c'è niente da dire. */
+export function priceSuggestionHint(dateKey: string, state: PriceSuggestionState | undefined, fetching: boolean): string | null {
+  if (!state) return fetching ? "Cerco il prezzo di questa data…" : null;
+  if (state.loading) return "Scarico i prezzi di questa data…";
+  const { price } = state;
+  if (!price) return "Nessun prezzo per questa data: inseriscilo tu.";
+  const when = formatDateWithYear(price.date);
+  if (price.origin === "manuale") return price.date === dateKey ? `Il tuo prezzo del ${when}` : `Il tuo ultimo prezzo prima di questa data, del ${when}`;
+  return price.date === dateKey ? `Chiusura del ${when}` : `Ultima chiusura prima di questa data, del ${when}`;
 }

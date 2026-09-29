@@ -2,7 +2,8 @@
 
 /**
  * Selettore strumento con ricerca per nome, ticker o ISIN: prima gli strumenti già noti, poi i risultati di mercato
- * divisi per tipo (sceglierne uno lo aggiunge), infine "Non lo trovi?" per BTP o strumenti manuali.
+ * divisi per tipo (sceglierne uno lo aggiunge), infine "Non lo trovi?" per BTP o strumenti manuali. Prima di
+ * scrivere propone gli strumenti già usati (`suggestions`), che nei risultati della ricerca salgono in cima.
  */
 
 import * as React from "react";
@@ -21,6 +22,8 @@ export interface InstrumentPickerProps {
   onChange: (instrument: Instrument) => void;
   /** Valuta proposta per crypto e strumenti manuali. */
   defaultCurrency: string;
+  /** Strumenti già usati dall'utente, mostrati prima di scrivere e in cima ai risultati. */
+  suggestions?: Instrument[];
   /** Testo del bottone quando nessuno strumento è scelto. */
   placeholder?: string;
   className?: string;
@@ -41,6 +44,7 @@ export function InstrumentPicker({
   value,
   onChange,
   defaultCurrency,
+  suggestions = [],
   placeholder = "Cerca per nome, ticker o ISIN",
   className,
 }: InstrumentPickerProps) {
@@ -48,7 +52,10 @@ export function InstrumentPicker({
   const [query, setQuery] = React.useState("");
   const search = useInstrumentSearchQuery(query);
   const create = useCreateInstrumentMutation();
-  const known = search.data?.known ?? [];
+  const suggestionRank = new Map(suggestions.map((i, index) => [i.id, index]));
+  const known = [...(search.data?.known ?? [])].sort(
+    (a, b) => (suggestionRank.get(a.id) ?? Infinity) - (suggestionRank.get(b.id) ?? Infinity)
+  );
   const groups = groupSearchResults(search.data?.market ?? [], search.data?.crypto ?? [], query);
 
   function choose(instrument: Instrument) {
@@ -86,7 +93,21 @@ export function InstrumentPicker({
           />
         </div>
         <div className="mt-1 flex max-h-80 flex-col overflow-y-auto">
-          {!searching ? <p className="px-2 py-3 text-sm text-muted-foreground">Scrivi almeno 2 caratteri.</p> : null}
+          {!searching && suggestions.length ? (
+            <InstrumentSearchResults
+              known={suggestions}
+              knownTitle="I tuoi strumenti"
+              groups={[]}
+              cryptoCurrency={defaultCurrency}
+              onChoose={choose}
+              onAdd={() => undefined}
+            />
+          ) : null}
+          {!searching ? (
+            <p className="px-2 py-3 text-sm text-muted-foreground">
+              {suggestions.length ? "Oppure cercane un altro: scrivi almeno 2 caratteri." : "Scrivi almeno 2 caratteri."}
+            </p>
+          ) : null}
           {searching && search.isFetching && !search.data ? <p className="px-2 py-3 text-sm text-muted-foreground">Ricerca…</p> : null}
           {search.data ? (
             <InstrumentSearchResults

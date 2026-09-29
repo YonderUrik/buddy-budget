@@ -3,11 +3,12 @@
 /** Pagina Investimenti: valore e guadagno del portafoglio, andamento, posizioni, composizione, PAC e operazioni. */
 
 import * as React from "react";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
   CURRENCY_COLORS,
   INSTRUMENT_TYPE_COLOR,
+  InvestmentImportDialog,
   InvestmentTransactionsList,
   ManualPriceDialog,
   PlansCard,
@@ -65,6 +66,7 @@ export default function InvestimentiPage() {
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
   const [priceInstrument, setPriceInstrument] = React.useState<Instrument | null>(null);
   const [showAllOperations, setShowAllOperations] = React.useState(false);
+  const [importOpen, setImportOpen] = React.useState(false);
 
   function registerFromPlan(plan: InvestmentPlan) {
     if (!view) return;
@@ -80,9 +82,14 @@ export default function InvestimentiPage() {
         <h1 className="font-heading text-2xl font-medium text-foreground">Investimenti</h1>
         <p className="text-sm text-muted-foreground">Prezzi di chiusura aggiornati ogni sera</p>
       </div>
-      <Button className="gap-1.5 shadow-xs" onClick={() => setRegisterInitial({ instrument: null })}>
-        <Plus size={15} aria-hidden="true" /> Registra
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline" className="gap-1.5" onClick={() => setImportOpen(true)}>
+          <Upload size={15} aria-hidden="true" /> Importa
+        </Button>
+        <Button className="gap-1.5 shadow-xs" onClick={() => setRegisterInitial({ instrument: null })}>
+          <Plus size={15} aria-hidden="true" /> Registra
+        </Button>
+      </div>
     </div>
   );
 
@@ -107,9 +114,12 @@ export default function InvestimentiPage() {
             Cerca uno strumento per nome, ticker o ISIN (ETF, azioni, BTP, fondi, crypto) e inserisci l&apos;acquisto:
             valore e guadagno si aggiornano da soli con i prezzi di chiusura.
           </p>
-          <Button className="mt-4" onClick={() => setRegisterInitial({ instrument: null })}>
-            Registra un acquisto
-          </Button>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Button onClick={() => setRegisterInitial({ instrument: null })}>Registra un acquisto</Button>
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              Importa da file CSV
+            </Button>
+          </div>
         </div>
       ) : (
         <>
@@ -182,6 +192,7 @@ export default function InvestimentiPage() {
         </DialogContent>
       </Dialog>
       <ManualPriceDialog instrument={priceInstrument} onClose={() => setPriceInstrument(null)} />
+      <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
     </div>
   );
 }

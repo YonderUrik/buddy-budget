@@ -8,6 +8,8 @@ import type { Instrument, InvestmentPlan, InvestmentTransaction, UserInstrumentP
 import type { InvestmentData } from "@/lib/investments/data";
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 import type { YahooSearchHit } from "@/lib/market-data/providers/yahoo";
+import type { ImportMatch, ImportResult } from "@/lib/investments/import/types";
+import type { ResolveImportInput, RunImportInput } from "@/lib/validation/investments-import";
 import type {
   CreateInstrumentInput,
   CreateInvestmentTransactionInput,
@@ -244,5 +246,45 @@ export function useSaveManualPriceMutation() {
       return response.json();
     },
     onSuccess: invalidate,
+  });
+}
+
+/** Abbina gli strumenti di un file da importare (catalogo o fonti). Non scrive nulla. */
+export function useResolveImportMutation() {
+  return useMutation({
+    mutationFn: async (input: ResolveImportInput): Promise<{ key: string; match: ImportMatch }[]> => {
+      const response = await fetch("/api/investments/import/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile riconoscere gli strumenti");
+      return (await response.json()).results;
+    },
+  });
+}
+
+/**
+ * Anteprima (`dryRun`) o import delle operazioni. Un import rifiutato per righe in errore (400) o per uno strumento
+ * (422) restituisce comunque l'esito, così la UI mostra le righe da correggere.
+ */
+export function useRunImportMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async (input: RunImportInput): Promise<ImportResult> => {
+      const response = await fetch("/api/investments/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      const body = await response.json().catch(() => null);
+      if (body && Array.isArray(body.rows)) return body;
+      throw new Error(body?.error ?? "Import non riuscito");
+    },
+    onSuccess: (result, input) => {
+      if (input.dryRun || result.inserted === 0) return;
+      track("investments_imported", { operations: result.inserted, format: input.preset ?? "personalizzato" });
+      invalidate();
+    },
   });
 }

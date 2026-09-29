@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Form "Registra operazione": acquisto, vendita, dividendo, cedola o rimborso. Il cambio compare solo se lo
- * strumento è in un'altra valuta (vuoto = cambio BCE del giorno). Può partire precompilato da un PAC.
+ * Form "Registra operazione": acquisto, vendita, dividendo, cedola o rimborso. Per acquisti e vendite il prezzo si
+ * precompila col prezzo dello strumento alla data scelta, finché l'utente non lo cambia. Il cambio compare solo se
+ * lo strumento è in un'altra valuta (vuoto = cambio BCE del giorno). Può partire precompilato da un PAC.
  */
 
 import * as React from "react";
@@ -12,10 +13,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { INVESTMENT_TRANSACTION_TYPES, type Instrument, type InvestmentTransactionType } from "@/lib/db/schema/investments";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { formatCurrency } from "@/lib/format";
-import { useCreateInvestmentTransactionMutation } from "@/lib/queries/investments";
+import { useCreateInvestmentTransactionMutation, useInstrumentPriceOnDateQuery } from "@/lib/queries/investments";
 import { parseAmount } from "@/lib/validation/accounts";
 import { InstrumentPicker } from "./instrument-picker";
-import { computeGrossValue, fieldsFor, localTodayKey, priceLabel, quantityLabel } from "./register-operation-form.state";
+import { OperationFormField as Field } from "./operation-form-field";
+import { OperationPriceField } from "./operation-price-field";
+import {
+  computeGrossValue,
+  fieldsFor,
+  localTodayKey,
+  numberText,
+  priceLabel,
+  priceSuggestionHint,
+  priceText,
+  quantityLabel,
+  suggestsMarketPrice,
+} from "./register-operation-form.state";
 
 /** Valori iniziali (es. da un PAC). */
 export interface RegisterOperationInitial {
@@ -28,32 +41,20 @@ export interface RegisterOperationInitial {
 export interface RegisterOperationFormProps {
   currency: string;
   initial?: RegisterOperationInitial;
+  /** Strumenti già usati, proposti nel selettore prima di scrivere. */
+  usedInstruments?: Instrument[];
   onSuccess?: () => void;
 }
 
-function numberText(value: number | null | undefined): string {
-  return value === null || value === undefined ? "" : String(value).replace(".", ",");
-}
-
-function Field({ label, htmlFor, children }: { label: string; htmlFor?: string; children: React.ReactNode }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-1">
-      <label className="text-xs text-muted-foreground" htmlFor={htmlFor}>
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-export function RegisterOperationForm({ currency, initial, onSuccess }: RegisterOperationFormProps) {
+export function RegisterOperationForm({ currency, initial, usedInstruments = [], onSuccess }: RegisterOperationFormProps) {
   const id = React.useId();
   const create = useCreateInvestmentTransactionMutation();
   const [instrument, setInstrument] = React.useState<Instrument | null>(initial?.instrument ?? null);
   const [type, setType] = React.useState<InvestmentTransactionType>(initial?.type ?? "acquisto");
   const [date, setDate] = React.useState(localTodayKey());
   const [quantity, setQuantity] = React.useState(numberText(initial?.quantity));
-  const [price, setPrice] = React.useState(numberText(initial?.price));
+  // null = il campo segue il prezzo proposto; una stringa = valore scritto dall'utente.
+  const [priceInput, setPriceInput] = React.useState<string | null>(null);
   const [gross, setGross] = React.useState("");
   const [fees, setFees] = React.useState("");
   const [taxes, setTaxes] = React.useState("");
@@ -62,7 +63,19 @@ export function RegisterOperationForm({ currency, initial, onSuccess }: Register
 
   const fields = fieldsFor(type);
   const needsFx = instrument !== null && instrument.currency !== currency;
+  const suggestPrice = fields.price && suggestsMarketPrice(type);
+  const priceOnDate = useInstrumentPriceOnDateQuery(suggestPrice ? (instrument?.id ?? null) : null, date);
+  const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close) : null;
+  // Senza prezzo alla data resta quello di partenza (es. l'ultimo prezzo stimato dal PAC).
+  const price = priceInput ?? suggested ?? numberText(initial?.price);
+  const priceHint = suggestPrice && instrument ? priceSuggestionHint(date, priceOnDate.data, priceOnDate.isFetching) : null;
   const grossValue = computeGrossValue(type, parseAmount(quantity), parseAmount(price), parseAmount(gross), instrument?.priceUnit);
+
+  function chooseInstrument(next: Instrument) {
+    setInstrument(next);
+    // Il prezzo scritto per un altro strumento non vale per questo.
+    setPriceInput(null);
+  }
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -106,7 +119,7 @@ export function RegisterOperationForm({ currency, initial, onSuccess }: Register
         </Field>
       </div>
       <Field label="Strumento">
-        <InstrumentPicker value={instrument} onChange={setInstrument} defaultCurrency={currency} />
+        <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         {fields.quantity ? (
@@ -115,9 +128,15 @@ export function RegisterOperationForm({ currency, initial, onSuccess }: Register
           </Field>
         ) : null}
         {fields.price ? (
-          <Field label={`${priceLabel(instrument?.priceUnit)}${instrument ? ` (${instrument.currency})` : ""}`} htmlFor={`${id}-price`}>
-            <Input id={`${id}-price`} inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
-          </Field>
+          <OperationPriceField
+            id={`${id}-price`}
+            label={`${priceLabel(instrument?.priceUnit)}${instrument ? ` (${instrument.currency})` : ""}`}
+            value={price}
+            onChange={setPriceInput}
+            hint={priceHint}
+            restoreValue={priceInput !== null && suggested !== null && parseAmount(priceInput) !== parseAmount(suggested) ? suggested : null}
+            onRestore={() => setPriceInput(null)}
+          />
         ) : null}
         {fields.grossAmount ? (
           <Field label={`Importo lordo${instrument ? ` (${instrument.currency})` : ""}`} htmlFor={`${id}-gross`}>

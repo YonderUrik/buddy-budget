@@ -34,6 +34,8 @@ export interface InvestmentsView {
   hasTransactions: boolean;
   /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
+  /** Strumenti già usati, dal più recente: il selettore li propone senza doverli cercare. */
+  usedInstruments: Instrument[];
 }
 
 /** Operazioni del DB nella forma dei calcoli. */
@@ -52,6 +54,20 @@ export function toTransactionInputs(data: InvestmentData): InvestmentTransaction
   }));
 }
 
+/**
+ * Strumenti già usati dall'utente, per sceglierli senza cercarli: prima quelli delle operazioni più recenti, poi
+ * quelli dei PAC senza operazioni. Gli id senza strumento corrispondente si saltano.
+ */
+export function usedInstruments(
+  transactions: Pick<InvestmentTransaction, "instrumentId" | "date">[],
+  plans: Pick<InvestmentPlan, "instrumentId">[],
+  instrumentsById: Map<string, Instrument>
+): Instrument[] {
+  const byRecent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).map((t) => t.instrumentId);
+  const ids = [...new Set([...byRecent, ...plans.map((p) => p.instrumentId)])];
+  return ids.map((id) => instrumentsById.get(id)).filter((i): i is Instrument => i !== undefined);
+}
+
 /** Calcola tutto ciò che mostra la pagina Investimenti a partire dai dati grezzi dell'API. */
 export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date): InvestmentsView {
   const transactions = toTransactionInputs(data);
@@ -65,6 +81,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     computeOperationInsights({ ...common, transactions: data.transactions, todayKey })
   );
   const activePlans = data.plans.filter((p) => p.active);
+  const instrumentsById = new Map(data.instruments.map((i) => [i.id, i]));
   return {
     currency: data.currency,
     summary,
@@ -72,11 +89,12 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     byType: computeComposition(summary.rows, "type"),
     byCurrency: computeComposition(summary.rows, "currency"),
     instruments: data.instruments,
-    instrumentsById: new Map(data.instruments.map((i) => [i.id, i])),
+    instrumentsById,
     priceIndex,
     activePlans,
     monthlyPlanAmount: activePlans.reduce((sum, p) => sum + Number(p.amount) / PLAN_FREQUENCY_MONTHS[p.frequency], 0),
     hasTransactions: transactions.length > 0,
     operationMonths,
+    usedInstruments: usedInstruments(data.transactions, data.plans, instrumentsById),
   };
 }

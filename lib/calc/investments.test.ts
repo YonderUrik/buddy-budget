@@ -124,6 +124,49 @@ describe("computePositions", () => {
   });
 });
 
+describe("split", () => {
+  it("moltiplica le quote per il rapporto lasciando invariato il costo (il prezzo medio si divide)", () => {
+    const p = computePositions(
+      [
+        tx({ instrumentId: "etf", type: "acquisto", date: "2026-01-10", quantity: "10", price: "100" }),
+        tx({ instrumentId: "etf", type: "split", date: "2026-02-01", quantity: "2" }),
+      ],
+      INSTRUMENTS,
+      "2026-12-31"
+    ).get("etf")!;
+    expect(p.quantity).toBe(20);
+    expect(p.costBasis).toBeCloseTo(1000);
+    expect(p.averagePrice).toBeCloseTo(50);
+    expect(p.investedNet).toBeCloseTo(1000);
+  });
+
+  it("un raggruppamento (rapporto < 1) riduce le quote e vale prima delle operazioni dello stesso giorno", () => {
+    const p = computePositions(
+      [
+        tx({ instrumentId: "etf", type: "acquisto", date: "2026-01-10", quantity: "100", price: "1" }),
+        tx({ instrumentId: "etf", type: "acquisto", date: "2026-02-01", quantity: "1", price: "10" }),
+        tx({ instrumentId: "etf", type: "split", date: "2026-02-01", quantity: "0.1" }),
+      ],
+      INSTRUMENTS,
+      "2026-12-31"
+    ).get("etf")!;
+    expect(p.quantity).toBeCloseTo(11);
+    expect(p.costBasis).toBeCloseTo(110);
+  });
+
+  it("dopo uno split si possono vendere le quote nuove", () => {
+    const transactions = [
+      tx({ instrumentId: "etf", type: "acquisto", date: "2026-01-10", quantity: "10", price: "100" }),
+      tx({ instrumentId: "etf", type: "split", date: "2026-02-01", quantity: "3" }),
+      tx({ instrumentId: "etf", type: "vendita", date: "2026-03-01", quantity: "30", price: "40" }),
+    ];
+    expect(findOversoldTransaction(transactions)).toBeNull();
+    const p = computePositions(transactions, INSTRUMENTS, "2026-12-31").get("etf")!;
+    expect(p.quantity).toBe(0);
+    expect(p.realizedGain).toBeCloseTo(200);
+  });
+});
+
 describe("findOversoldTransaction", () => {
   it("trova una vendita oltre le quote possedute", () => {
     const sell = tx({ instrumentId: "etf", type: "vendita", date: "2026-02-01", quantity: "11", price: "100" });
@@ -247,6 +290,7 @@ describe("serie e composizione", () => {
       fromKey: "2026-09-19",
       toKey: "2026-09-23",
     });
+    expect(points.at(-1)).toMatchObject({ bought: 2000, income: 0 });
     expect(points.map((p) => [p.date, p.value, p.invested])).toEqual([
       ["2026-09-19", 0, 0],
       ["2026-09-20", 1000, 1000],

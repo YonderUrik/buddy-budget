@@ -7,13 +7,20 @@ export interface OperationFieldVisibility {
   quantity: boolean;
   price: boolean;
   grossAmount: boolean;
+  /** Commissioni, imposte e cambio: non servono per uno split, che non muove denaro. */
+  costs: boolean;
 }
 
-/** Acquisti, vendite e rimborsi muovono quote; dividendi e cedole sono importi. */
+/** Acquisti, vendite e rimborsi muovono quote; dividendi e cedole sono importi; lo split è solo un rapporto. */
 export function fieldsFor(type: InvestmentTransactionType): OperationFieldVisibility {
+  if (type === "split") return { quantity: true, price: false, grossAmount: false, costs: false };
   const income = type === "dividendo" || type === "cedola";
-  return { quantity: !income, price: !income, grossAmount: income };
+  return { quantity: !income, price: !income, grossAmount: income, costs: true };
 }
+
+/** Etichetta del rapporto di uno split e spiegazione sotto il campo. */
+export const SPLIT_RATIO_LABEL = "Quote nuove per ogni quota";
+export const SPLIT_RATIO_HINT = "Es. 2 se ogni quota diventa due, 0,1 per un raggruppamento 10 a 1. Il costo resta lo stesso.";
 
 /** Etichetta della quantità: per le obbligazioni si registra il valore nominale. */
 export function quantityLabel(unit: PriceUnit | undefined): string {
@@ -33,6 +40,7 @@ export function computeGrossValue(
   grossAmount: number | null,
   unit: PriceUnit | undefined
 ): number | null {
+  if (type === "split") return null;
   if (!fieldsFor(type).quantity) return grossAmount;
   if (quantity === null || price === null) return null;
   return quantity * price * (unit === "percentuale_nominale" ? 0.01 : 1);

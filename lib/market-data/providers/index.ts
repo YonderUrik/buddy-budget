@@ -33,3 +33,4 @@ export {
   type YahooSearchHit,
   type YahooSessionStore,
 } from "./yahoo";
+export { eurostatProvider, parseEurostatHicp, type InflationProvider, type MonthlyIndexValue } from "./eurostat";

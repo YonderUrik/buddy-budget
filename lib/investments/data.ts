@@ -16,6 +16,11 @@ import {
 } from "@/lib/db/schema/investments";
 import type { FxRateInput } from "@/lib/calc/fx";
 import type { ManualPriceInput, PriceInput } from "@/lib/calc/investments";
+import type { InflationPoint } from "@/lib/calc/returns";
+import { loadInflationIndex } from "@/lib/market-data/inflation";
+
+/** Valuta per cui esiste l'indice d'inflazione (Eurostat, area Italia): per le altre il rendimento reale non si mostra. */
+export const INFLATION_CURRENCY = "EUR";
 
 /** Nome del portafoglio creato al primo utilizzo. */
 export const DEFAULT_PORTFOLIO_NAME = "Portafoglio";
@@ -67,6 +72,10 @@ export interface InvestmentData {
   prices: PriceInput[];
   manualPrices: ManualPriceInput[];
   fxRates: FxRateInput[];
+  /** Strumento di confronto scelto sul portafoglio (i suoi prezzi sono in `prices`), o null. */
+  benchmark: Instrument | null;
+  /** Indice mensile dei prezzi al consumo; vuoto se la valuta dell'utente non è EUR. */
+  inflation: InflationPoint[];
 }
 
 function shiftDays(dateKey: string, days: number): string {
@@ -88,19 +97,23 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     db.select().from(investmentPlans).where(eq(investmentPlans.userId, userId)).orderBy(asc(investmentPlans.createdAt)),
   ]);
 
-  const instrumentIds = [...new Set([...transactions.map((t) => t.instrumentId), ...plans.map((p) => p.instrumentId)])];
-  if (instrumentIds.length === 0) {
-    return { currency, portfolios, instruments: [], transactions, plans, prices: [], manualPrices: [], fxRates: [] };
+  const ownedIds = [...new Set([...transactions.map((t) => t.instrumentId), ...plans.map((p) => p.instrumentId)])];
+  if (ownedIds.length === 0) {
+    return { currency, portfolios, instruments: [], transactions, plans, prices: [], manualPrices: [], fxRates: [], benchmark: null, inflation: [] };
   }
+  const benchmarkId = portfolios[0]?.benchmarkInstrumentId ?? null;
+  const instrumentIds = benchmarkId && !ownedIds.includes(benchmarkId) ? [...ownedIds, benchmarkId] : ownedIds;
 
   const firstTransaction = transactions[0]?.date ?? null;
   const start = [pricesFrom, firstTransaction].filter((d): d is string => d !== null).sort().at(-1) ?? null;
   const from = start ? shiftDays(start, -PRICE_LOOKBACK_DAYS) : shiftDays(new Date().toISOString().slice(0, 10), -PRICE_LOOKBACK_DAYS);
 
-  const userInstruments = await db.select().from(instruments).where(inArray(instruments.id, instrumentIds));
-  const currencies = [...new Set([...userInstruments.map((i) => i.currency), currency])].filter((c) => c !== "EUR");
+  const loaded = await db.select().from(instruments).where(inArray(instruments.id, instrumentIds));
+  const userInstruments = loaded.filter((i) => ownedIds.includes(i.id));
+  const benchmark = loaded.find((i) => i.id === benchmarkId) ?? null;
+  const currencies = [...new Set([...loaded.map((i) => i.currency), currency])].filter((c) => c !== "EUR");
 
-  const [prices, manualPrices, rates] = await Promise.all([
+  const [prices, manualPrices, rates, inflation] = await Promise.all([
     db
       .select({
         instrumentId: instrumentPrices.instrumentId,
@@ -122,9 +135,21 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
           .from(fxRates)
           .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from)))
           .orderBy(asc(fxRates.date)),
+    currency === INFLATION_CURRENCY ? loadInflationIndex() : Promise.resolve([]),
   ]);
 
-  return { currency, portfolios, instruments: userInstruments, transactions, plans, prices, manualPrices, fxRates: rates };
+  return {
+    currency,
+    portfolios,
+    instruments: userInstruments,
+    transactions,
+    plans,
+    prices,
+    manualPrices,
+    fxRates: rates,
+    benchmark,
+    inflation,
+  };
 }
 
 /** Cambi salvati tra due date (con margine prima di `fromKey` per weekend e festivi). */

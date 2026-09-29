@@ -3,7 +3,7 @@ import { logger, recordPriceProviderRequest, type Logger } from "@/lib/observabi
 import type { ProviderBudgetStore } from "./budget";
 import { createChainRunState, runChain, type ChainAttempt, type ChainRunState } from "./chain";
 import { chainFor } from "./chains";
-import { FX_PROVIDERS, PRICE_PROVIDERS } from "./providers";
+import { FX_PROVIDERS, PRICE_PROVIDERS, type InflationProvider } from "./providers";
 import {
   findHeldAutoInstruments,
   findLastClose,
@@ -27,6 +27,8 @@ export interface MarketDataDeps {
   budget: ProviderBudgetStore;
   providers?: Partial<Record<ProviderId, PriceProvider>>;
   fxProviders?: readonly FxProvider[];
+  /** Fonte dell'indice d'inflazione (default Eurostat). */
+  inflationProvider?: InflationProvider;
   log?: Logger;
   sleep?: (ms: number) => Promise<void>;
 }

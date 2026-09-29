@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import {
@@ -6,6 +6,7 @@ import {
   instrumentPrices,
   instrumentSymbols,
   instruments,
+  investmentPortfolios,
   investmentTransactions,
   type Instrument,
 } from "@/lib/db/schema/investments";
@@ -17,7 +18,10 @@ export const PRICE_INSERT_BATCH_SIZE = 500;
 /** Soglia sotto cui la quantità netta di uno strumento è considerata zero. */
 const HELD_EPSILON = "0.0000001";
 
-/** Strumenti `auto` posseduti oggi da almeno un utente (quantità netta positiva). */
+/**
+ * Strumenti `auto` da aggiornare ogni sera: posseduti oggi da almeno un utente (quantità netta positiva) o scelti
+ * come benchmark. La somma SQL non applica gli split, quindi uno strumento con uno split si considera posseduto.
+ */
 export async function findHeldAutoInstruments(): Promise<Instrument[]> {
   const held = db
     .select({ instrumentId: investmentTransactions.instrumentId })
@@ -26,12 +30,19 @@ export async function findHeldAutoInstruments(): Promise<Instrument[]> {
     .having(
       sql`sum(case when ${investmentTransactions.type} = 'acquisto' then ${investmentTransactions.quantity}
         when ${investmentTransactions.type} in ('vendita', 'rimborso') then -${investmentTransactions.quantity}
-        else 0 end) > ${HELD_EPSILON}`
+        else 0 end) > ${HELD_EPSILON}
+        or bool_or(${investmentTransactions.type} = 'split')`
     );
+  const benchmarks = db
+    .select({ instrumentId: investmentPortfolios.benchmarkInstrumentId })
+    .from(investmentPortfolios)
+    .where(isNotNull(investmentPortfolios.benchmarkInstrumentId));
   return db
     .select()
     .from(instruments)
-    .where(and(eq(instruments.priceMode, "auto"), inArray(instruments.id, held)));
+    .where(
+      and(eq(instruments.priceMode, "auto"), or(inArray(instruments.id, held), inArray(instruments.id, benchmarks)))
+    );
 }
 
 /** Valute per cui servono i cambi: quelle degli strumenti posseduti e quelle degli utenti che investono. */

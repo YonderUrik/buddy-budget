@@ -14,9 +14,15 @@ export const QUANTITY_EPSILON = 1e-9;
 /** Operazioni che aumentano o riducono le quote; le altre sono proventi. */
 const BUY_TYPES: ReadonlySet<InvestmentTransactionType> = new Set(["acquisto"]);
 const SELL_TYPES: ReadonlySet<InvestmentTransactionType> = new Set(["vendita", "rimborso"]);
+/** Lo split moltiplica le quote per il rapporto salvato in `quantity`, lasciando invariato il costo. */
+const SPLIT_TYPE: InvestmentTransactionType = "split";
 
-/** Nello stesso giorno gli acquisti si applicano prima delle vendite (vendere quanto comprato in giornata è lecito). */
+/**
+ * Nello stesso giorno gli acquisti si applicano prima delle vendite (vendere quanto comprato in giornata è lecito).
+ * Lo split vale dall'apertura: le operazioni dello stesso giorno sono già al prezzo dopo lo split.
+ */
 const SAME_DAY_ORDER: Record<InvestmentTransactionType, number> = {
+  split: -1,
   acquisto: 0,
   dividendo: 1,
   cedola: 1,
@@ -179,6 +185,8 @@ function applyTransaction(position: Position, t: InvestmentTransactionInput, mul
     position.costBasis += cost;
     position.investedNet += cost;
     position.totalBought += cost;
+  } else if (t.type === SPLIT_TYPE) {
+    if (quantity > 0) position.quantity *= quantity;
   } else if (SELL_TYPES.has(t.type)) {
     const sold = Math.min(quantity, position.quantity);
     const averageCost = position.quantity > QUANTITY_EPSILON ? position.costBasis / position.quantity : 0;
@@ -230,6 +238,8 @@ export function findOversoldTransaction<T extends InvestmentTransactionInput>(tr
     const quantity = Number(t.quantity);
     if (BUY_TYPES.has(t.type)) {
       quantities.set(t.instrumentId, current + quantity);
+    } else if (t.type === SPLIT_TYPE) {
+      if (quantity > 0) quantities.set(t.instrumentId, current * quantity);
     } else if (SELL_TYPES.has(t.type)) {
       const next = current - quantity;
       if (next < -QUANTITY_EPSILON) return t;
@@ -373,11 +383,16 @@ export function computePortfolioSummary(params: {
   };
 }
 
-/** Valore del portafoglio e investito netto a fine giornata. */
+/** Valore del portafoglio e flussi cumulati a fine giornata. Importi in valuta utente. */
 export interface PortfolioDailyPoint {
   date: string;
   value: number;
+  /** Investito netto: acquistato meno incassato da vendite e rimborsi. */
   invested: number;
+  /** Totale acquistato da sempre, commissioni incluse. */
+  bought: number;
+  /** Dividendi e cedole netti incassati da sempre. */
+  income: number;
 }
 
 /**
@@ -412,15 +427,19 @@ export function computeDailyPortfolioValues(params: {
     }
     let value = 0;
     let invested = 0;
+    let bought = 0;
+    let income = 0;
     for (const position of positions.values()) {
       invested += position.investedNet;
+      bought += position.totalBought;
+      income += position.income;
       const instrument = instrumentById.get(position.instrumentId);
       if (!instrument || position.quantity <= 0) continue;
       const price = resolvePrice(priceIndex, instrument.id, key);
       const positionValue = price ? valueAt(instrument, position.quantity, price.close, userCurrency, key, fx) : null;
       if (positionValue !== null) value += positionValue;
     }
-    points.push({ date: key, value, invested });
+    points.push({ date: key, value, invested, bought, income });
   }
   return points;
 }
@@ -432,6 +451,38 @@ export interface PortfolioSeriesPoint extends PortfolioDailyPoint {
 
 const DAY_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
 const MONTH_LABEL_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "short", year: "2-digit" });
+
+/**
+ * Campiona una serie giornaliera con la granularità del patrimonio netto: tutti i giorni per 1mese/3mesi, l'ultimo
+ * giorno di ogni mese per 1anno/max. `label` è l'etichetta dell'asse X.
+ */
+export function samplePeriodSeries<T extends { date: string }>(
+  daily: T[],
+  period: NetWorthPeriod
+): (T & { label: string })[] {
+  if (period === "1mese" || period === "3mesi") {
+    return daily.map((p) => ({ ...p, label: DAY_LABEL_FORMAT.format(parseDateOnly(p.date)) }));
+  }
+  const monthly: (T & { label: string })[] = [];
+  for (const p of daily) {
+    const point = { ...p, label: MONTH_LABEL_FORMAT.format(parseDateOnly(p.date)) };
+    const previous = monthly[monthly.length - 1];
+    if (previous && previous.date.slice(0, 7) === p.date.slice(0, 7)) {
+      monthly[monthly.length - 1] = point;
+    } else {
+      monthly.push(point);
+    }
+  }
+  return monthly;
+}
+
+/** Primo giorno del periodo: l'inizio del range, ma non prima della prima operazione. */
+export function periodStartKey(transactions: Pick<InvestmentTransactionInput, "date" | "type">[], period: NetWorthPeriod, today: Date): string | null {
+  if (transactions.length === 0) return null;
+  const firstDate = sortTransactions(transactions)[0].date;
+  const fromKey = toDateKey(getNetWorthPeriodRange(period, today, firstDate).from);
+  return fromKey < firstDate ? firstDate : fromKey;
+}
 
 /**
  * Serie del grafico nel periodo, con la stessa granularità del patrimonio netto: giornaliera per 1mese/3mesi,
@@ -447,27 +498,10 @@ export function buildPortfolioSeries(params: {
   today: Date;
 }): PortfolioSeriesPoint[] {
   const { transactions, period, today } = params;
-  if (transactions.length === 0) return [];
-  const firstDate = sortTransactions(transactions)[0].date;
-  const range = getNetWorthPeriodRange(period, today, firstDate);
+  const fromKey = periodStartKey(transactions, period, today);
+  if (fromKey === null) return [];
   const todayKey = toDateKey(startOfDay(today));
-  const fromKey = toDateKey(range.from) < firstDate ? firstDate : toDateKey(range.from);
-  const daily = computeDailyPortfolioValues({ ...params, fromKey, toKey: todayKey });
-
-  if (period === "1mese" || period === "3mesi") {
-    return daily.map((p) => ({ ...p, label: DAY_LABEL_FORMAT.format(parseDateOnly(p.date)) }));
-  }
-  const monthly: PortfolioSeriesPoint[] = [];
-  for (const p of daily) {
-    const point = { ...p, label: MONTH_LABEL_FORMAT.format(parseDateOnly(p.date)) };
-    const previous = monthly[monthly.length - 1];
-    if (previous && previous.date.slice(0, 7) === p.date.slice(0, 7)) {
-      monthly[monthly.length - 1] = point;
-    } else {
-      monthly.push(point);
-    }
-  }
-  return monthly;
+  return samplePeriodSeries(computeDailyPortfolioValues({ ...params, fromKey, toKey: todayKey }), period);
 }
 
 /** Fetta della composizione del portafoglio. */

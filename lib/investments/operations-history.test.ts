@@ -127,6 +127,28 @@ describe("computeOperationInsights", () => {
   });
 });
 
+describe("split nella lista operazioni", () => {
+  it("un acquisto prima di uno split si misura sulle quote moltiplicate, e i totali coincidono col portafoglio", () => {
+    const transactions = [
+      op({ id: "a", type: "acquisto", date: "2026-01-10", quantity: "10", price: "100" }),
+      op({ id: "s", type: "split", date: "2026-02-01", quantity: "2" }),
+      op({ id: "v", type: "vendita", date: "2026-03-01", quantity: "5", price: "60" }),
+    ];
+    const { params, insights } = run(transactions, [{ instrumentId: "etf", date: TODAY, close: "70" }]);
+    const buy = insights.find((i) => i.transaction.id === "a")!;
+    expect(buy.remainingQuantity).toBeCloseTo(15);
+    expect(buy.gainBase).toBeCloseTo(750);
+    expect(buy.currentValue).toBeCloseTo(1050);
+    const sell = insights.find((i) => i.transaction.id === "v")!;
+    expect(sell.gain).toBeCloseTo(50);
+    const split = insights.find((i) => i.transaction.id === "s")!;
+    expect(split.gain).toBeNull();
+    const totals = sumOperationTotals(insights);
+    expect(totals.bought).toBeCloseTo(1000);
+    expect(totals.gain).toBeCloseTo(computePortfolioSummary(params).totalGain);
+  });
+});
+
 describe("groupOperationsByMonth", () => {
   it("raggruppa per mese dal più recente, con totali e anni", () => {
     const { insights } = run(

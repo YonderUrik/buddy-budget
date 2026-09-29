@@ -59,6 +59,8 @@ function data(): InvestmentData {
     prices: [{ instrumentId: "etf", date: "2026-09-18", close: "110", source: "yahoo" }],
     manualPrices: [],
     fxRates: [],
+    benchmark: null,
+    inflation: [],
   };
 }
 

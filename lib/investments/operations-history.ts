@@ -41,6 +41,7 @@ export interface OperationInsight<T extends InvestmentTransactionInput = Investm
 
 /** Totali di un insieme di operazioni, in valuta utente. */
 export interface OperationTotals {
+  /** Operazioni, split compresi. */
   count: number;
   /** Totale acquistato, commissioni incluse. */
   bought: number;
@@ -90,6 +91,8 @@ export function computeOperationInsights<T extends InvestmentTransactionInput>(p
   const instrumentById = new Map(instruments.map((i) => [i.id, i]));
   const state = new Map<string, { quantity: number; costBasis: number; openBuys: OperationInsight<T>[] }>();
   const insights: OperationInsight<T>[] = [];
+  // Quote comprate × split successivi: la base su cui misurare quante quote di un acquisto restano.
+  const splitAdjustedQuantity = new Map<OperationInsight<T>, number>();
 
   for (const t of sortTransactions(transactions)) {
     const multiplier = priceMultiplier(instrumentById.get(t.instrumentId)?.priceUnit ?? "unita");
@@ -117,6 +120,15 @@ export function computeOperationInsights<T extends InvestmentTransactionInput>(p
       position.quantity += quantity;
       position.costBasis += insight.paid;
       position.openBuys.push(insight);
+      splitAdjustedQuantity.set(insight, quantity);
+    } else if (t.type === "split") {
+      if (quantity > 0) {
+        position.quantity *= quantity;
+        for (const buy of position.openBuys) {
+          buy.remainingQuantity *= quantity;
+          splitAdjustedQuantity.set(buy, (splitAdjustedQuantity.get(buy) ?? 0) * quantity);
+        }
+      }
     } else if (SELL_TYPES.has(t.type)) {
       const sold = Math.min(quantity, position.quantity);
       const averageCost = position.quantity > QUANTITY_EPSILON ? position.costBasis / position.quantity : 0;
@@ -151,7 +163,8 @@ export function computeOperationInsights<T extends InvestmentTransactionInput>(p
     const local = insight.remainingQuantity * last.close * priceMultiplier(instrument.priceUnit);
     const value = convertAmount(fx, local, instrument.currency, userCurrency, todayKey);
     if (value === null) continue;
-    insight.gainBase = insight.paid * (insight.remainingQuantity / Number(t.quantity));
+    const base = splitAdjustedQuantity.get(insight) ?? Number(t.quantity);
+    insight.gainBase = insight.paid * (insight.remainingQuantity / base);
     insight.currentValue = value;
     insight.gain = value - insight.gainBase;
     insight.gainPct = insight.gainBase > 0 ? insight.gain / insight.gainBase : null;
@@ -169,6 +182,7 @@ export function sumOperationTotals(insights: OperationInsight[]): OperationTotal
   let unpricedCount = 0;
   for (const insight of insights) {
     const type = insight.transaction.type;
+    if (type === "split") continue;
     if (BUY_TYPES.has(type)) bought += insight.paid;
     else if (SELL_TYPES.has(type)) sold += insight.received;
     else income += insight.received;

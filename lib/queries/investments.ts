@@ -5,7 +5,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { ResolvedPrice } from "@/lib/calc/investments";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
-import type { Instrument, InvestmentPlan, InvestmentTransaction, UserInstrumentPrice } from "@/lib/db/schema/investments";
+import type {
+  Instrument,
+  InvestmentPlan,
+  InvestmentPortfolio,
+  InvestmentTransaction,
+  UserInstrumentPrice,
+} from "@/lib/db/schema/investments";
 import type { InvestmentData } from "@/lib/investments/data";
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 import type { YahooSearchHit } from "@/lib/market-data/providers/yahoo";
@@ -18,6 +24,7 @@ import type {
   ManualPriceInput,
   UpdateInvestmentTransactionInput,
   UpdatePlanInput,
+  UpdatePortfolioInput,
 } from "@/lib/validation/investments";
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
@@ -306,6 +313,26 @@ export function useRunImportMutation() {
     onSuccess: (result, input) => {
       if (input.dryRun || result.inserted === 0) return;
       track("investments_imported", { operations: result.inserted, format: input.preset ?? "personalizzato" });
+      invalidate();
+    },
+  });
+}
+
+/** Sceglie o toglie (null) lo strumento di confronto del portafoglio. */
+export function useUpdatePortfolioMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async (input: UpdatePortfolioInput): Promise<InvestmentPortfolio> => {
+      const response = await fetch("/api/investments/portfolio", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile salvare il confronto");
+      return response.json();
+    },
+    onSuccess: (_portfolio, input) => {
+      if (input.benchmarkInstrumentId) track("investment_benchmark_set");
       invalidate();
     },
   });

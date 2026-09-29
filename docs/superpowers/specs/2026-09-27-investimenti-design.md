@@ -32,10 +32,10 @@ L'utente vuole uno strumento a 360° per gli investimenti: **tracciare il propri
 |---|---|---|
 | **0. Prova dati** | Verificare dalla VPS e in locale quali fonti rispondono e cosa coprono, su un campione di strumenti pubblici (sezione 3) | primo task del piano Fase 1 |
 | **1. Portafoglio base** | Strumenti, operazioni manuali, PAC, prezzi EOD + cambi BCE, valore/guadagno/perdita, composizione per tipo e valuta, grafico nel tempo, classe `investimenti` nel patrimonio netto | design qui sotto |
-| **2. Rendimenti e confronto** | Rendimento del portafoglio (TWR) e tuo rendimento effettivo (XIRR), confronto "stessi versamenti in un indice", split, storico dividendi/cedole, rendimento reale (inflazione Eurostat) | futuro |
+| **2. Rendimenti e confronto** | Rendimento del portafoglio (TWR) e tuo rendimento effettivo (XIRR), confronto "stessi versamenti in un indice", split, storico dividendi/cedole, rendimento reale (inflazione Eurostat) | **implementata** il 2026-09-29, spec `2026-09-29-investimenti-fase-2-design.md` |
 | **3. Rischio e diversificazione** | Volatilità, massima perdita dal picco, Sharpe, beta, correlazioni; settore e geografia (look-through ETF dove i dati gratuiti lo permettono); sovrapposizione tra ETF; allocazione obiettivo e "dove mettere il prossimo PAC" | futuro |
 | **4. Fiscalità italiana** | Plus/minusvalenze, zaino delle minusvalenze con scadenza a 4 anni, distinzione redditi diversi / redditi di capitale (le plus degli ETF armonizzati non compensano le minus), stima tasse prima di una vendita, bollo 0,2% | futuro |
-| **5. Import CSV Fineco** | Import delle operazioni dall'export Fineco, con mappatura delle colonne riusabile per altri broker | **rimandato** (scelta utente) |
+| **5. Import CSV Fineco** | Import delle operazioni dall'export Fineco, con mappatura delle colonne riusabile per altri broker | **implementata** il 2026-09-29 (import CSV generico con formati riconosciuti) |
 | **6. Analisi titoli** | Pagina strumento (storico, fondamentali da Yahoo), watchlist, avvisi di prezzo (email / notifica PWA), commento opzionale via Ollama. Screener escluso (non realistico gratis) | **rimandato** (scelta utente, tracciato) |
 
 ## 2. Fonti di dati gratuite

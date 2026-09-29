@@ -23,6 +23,20 @@ export interface OperationFields {
 
 /** Valori per la tabella `investment_transactions` (numeric come stringhe). */
 export function toRowValues(fields: OperationFields, fxRate: number) {
+  if (fields.type === "split") {
+    // Lo split non muove denaro: resta solo il rapporto, in `quantity`.
+    return {
+      type: fields.type,
+      date: fields.date,
+      quantity: String(fields.quantity),
+      price: "0",
+      grossAmount: null,
+      fxRate: "1",
+      fees: "0.00",
+      taxes: "0.00",
+      note: fields.note ?? null,
+    };
+  }
   const income = INCOME_TYPES.has(fields.type);
   return {
     type: fields.type,

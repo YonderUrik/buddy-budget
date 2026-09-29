@@ -12,11 +12,16 @@ import {
   type PriceIndex,
 } from "@/lib/calc/investments";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
+import { computePortfolioReturns, type PortfolioReturns } from "@/lib/calc/returns";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument, InvestmentPlan, InvestmentTransaction } from "@/lib/db/schema/investments";
 import type { InvestmentData } from "./data";
 import { PLAN_FREQUENCY_MONTHS } from "./labels";
+import { computeIncomeHistory, type IncomeHistory } from "./income";
 import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
+
+/** Il rendimento reale si mostra solo su periodi lunghi: Eurostat pubblica con circa un mese di ritardo. */
+const REAL_RETURN_PERIODS: ReadonlySet<NetWorthPeriod> = new Set(["1anno", "max"]);
 
 /** Dati della pagina Investimenti già calcolati: la UI li riceve pronti. */
 export interface InvestmentsView {
@@ -36,6 +41,12 @@ export interface InvestmentsView {
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
   /** Strumenti già usati, dal più recente: il selettore li propone senza doverli cercare. */
   usedInstruments: Instrument[];
+  /** Rendimenti del periodo (TWR, money-weighted, reale, benchmark), null senza operazioni. */
+  returns: PortfolioReturns | null;
+  /** Strumento di confronto scelto, o null. */
+  benchmark: Instrument | null;
+  /** Storico di dividendi e cedole. */
+  income: IncomeHistory;
 }
 
 /** Operazioni del DB nella forma dei calcoli. */
@@ -77,9 +88,8 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
   const common = { transactions, instruments, priceIndex, fx, userCurrency: data.currency };
   const todayKey = toDateKey(startOfDay(today));
   const summary = computePortfolioSummary({ ...common, todayKey });
-  const operationMonths = groupOperationsByMonth(
-    computeOperationInsights({ ...common, transactions: data.transactions, todayKey })
-  );
+  const insights = computeOperationInsights({ ...common, transactions: data.transactions, todayKey });
+  const operationMonths = groupOperationsByMonth(insights);
   const activePlans = data.plans.filter((p) => p.active);
   const instrumentsById = new Map(data.instruments.map((i) => [i.id, i]));
   return {
@@ -96,5 +106,14 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     hasTransactions: transactions.length > 0,
     operationMonths,
     usedInstruments: usedInstruments(data.transactions, data.plans, instrumentsById),
+    returns: computePortfolioReturns({
+      ...common,
+      period,
+      today,
+      benchmark: data.benchmark,
+      inflation: REAL_RETURN_PERIODS.has(period) && data.inflation.length > 0 ? data.inflation : null,
+    }),
+    benchmark: data.benchmark,
+    income: computeIncomeHistory(insights, summary.costBasis, todayKey),
   };
 }

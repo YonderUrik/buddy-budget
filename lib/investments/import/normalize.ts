@@ -84,6 +84,11 @@ export function normalizeRows(table: CsvTable, mapping: ImportMapping, todayKey:
     const taxes = Math.abs(number("taxes") ?? 0);
     const note = cell("note").slice(0, INVESTMENT_NOTE_MAX_LENGTH) || null;
 
+    if (type === "split") {
+      if (!(quantity > 0)) return { line, status: "error", message: "Rapporto dello split mancante (va nella colonna delle quote)" };
+      return { line, status: "ok", identity, operation: { type, date, quantity, price: 0, grossAmount: null, fees: 0, taxes: 0, note }, warnings };
+    }
+
     if (POSITION_TYPES.has(type)) {
       if (!(quantity > 0)) return { line, status: "error", message: "Quantità mancante o zero" };
       const price = number("price") !== null ? Math.abs(number("price")!) : total !== null ? total / quantity : null;

@@ -42,7 +42,8 @@ export type ProviderId = (typeof PROVIDER_IDS)[number];
 export const FX_PROVIDER_IDS = ["ecb", "frankfurter"] as const;
 export type FxProviderId = (typeof FX_PROVIDER_IDS)[number];
 
-export const INVESTMENT_TRANSACTION_TYPES = ["acquisto", "vendita", "dividendo", "cedola", "rimborso"] as const;
+/** `split`: il rapporto (quote nuove per quota vecchia) sta in `quantity`. */
+export const INVESTMENT_TRANSACTION_TYPES = ["acquisto", "vendita", "dividendo", "cedola", "rimborso", "split"] as const;
 export type InvestmentTransactionType = (typeof INVESTMENT_TRANSACTION_TYPES)[number];
 
 export const PLAN_FREQUENCIES = ["mensile", "bimestrale", "trimestrale"] as const;
@@ -151,6 +152,8 @@ export const investmentPortfolios = pgTable(
       .references(() => authUser.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     broker: text("broker"),
+    /** Strumento di confronto per il rendimento ("stessi versamenti in un indice"), scelto dall'utente. */
+    benchmarkInstrumentId: uuid("benchmark_instrument_id").references(() => instruments.id, { onDelete: "set null" }),
     ...timestamps,
   },
   (table) => [index("investment_portfolios_user_idx").on(table.userId)]
@@ -216,6 +219,22 @@ export const investmentPlans = pgTable(
   (table) => [index("investment_plans_user_idx").on(table.userId)]
 );
 
+/** Indice mensile dei prezzi al consumo (HICP Eurostat, base 2015=100), comune a tutti gli utenti. */
+export const inflationIndex = pgTable(
+  "inflation_index",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Area geografica Eurostat (es. `IT`). */
+    area: text("area").notNull(),
+    /** `YYYY-MM`. */
+    month: text("month").notNull(),
+    value: numeric("value", { precision: 12, scale: 4 }).notNull(),
+    source: text("source").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("inflation_index_area_month_unique").on(table.area, table.month)]
+);
+
 export type Instrument = typeof instruments.$inferSelect;
 export type NewInstrument = typeof instruments.$inferInsert;
 export type InstrumentSymbol = typeof instrumentSymbols.$inferSelect;
@@ -226,3 +245,4 @@ export type InvestmentPortfolio = typeof investmentPortfolios.$inferSelect;
 export type InvestmentTransaction = typeof investmentTransactions.$inferSelect;
 export type NewInvestmentTransaction = typeof investmentTransactions.$inferInsert;
 export type InvestmentPlan = typeof investmentPlans.$inferSelect;
+export type InflationIndexRow = typeof inflationIndex.$inferSelect;

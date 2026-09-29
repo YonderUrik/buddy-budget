@@ -4,6 +4,7 @@ import { logger } from "@/lib/observability";
 import { browserTlsFetch } from "./browser-fetch";
 import {
   FAKE_FX_PROVIDER,
+  FAKE_INFLATION_PROVIDER,
   FAKE_PRICE_PROVIDERS,
   fakeCryptoSearch,
   fakeQuoteMeta,
@@ -27,7 +28,9 @@ function realContext(): ProviderContext {
 /** Dipendenze dell'aggiornamento prezzi: fonti vere, o finte con `MARKET_DATA_FAKE=1` fuori produzione. */
 export function marketDataDeps(): MarketDataDeps {
   const base = { ctx: realContext(), budget: redisBudgetStore };
-  return isFakeMarketData() ? { ...base, providers: FAKE_PRICE_PROVIDERS, fxProviders: [FAKE_FX_PROVIDER] } : base;
+  return isFakeMarketData()
+    ? { ...base, providers: FAKE_PRICE_PROVIDERS, fxProviders: [FAKE_FX_PROVIDER], inflationProvider: FAKE_INFLATION_PROVIDER }
+    : base;
 }
 
 /** Ricerca strumenti su Yahoo (o sul catalogo finto). */

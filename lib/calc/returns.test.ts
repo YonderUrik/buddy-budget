@@ -88,6 +88,15 @@ describe("xirr e rendimento money-weighted", () => {
     expect(annual).toBeLessThan(0.1);
   });
 
+  it("regge periodi di anni con importi grandi (niente overflow nella ricerca)", () => {
+    const flows = Array.from({ length: 24 }, (_, i) => ({ date: `${2024 + Math.floor((i + 9) / 12)}-${String(((i + 9) % 12) + 1).padStart(2, "0")}-05`, amount: -150_000 }));
+    flows.push({ date: "2026-09-29", amount: 4_000_000 });
+    const mwr = moneyWeightedReturn(flows, 760)!;
+    expect(mwr).not.toBeNull();
+    expect(mwr.annual).toBeGreaterThan(0.05);
+    expect(mwr.annual).toBeLessThan(0.2);
+  });
+
   it("senza flussi di segno opposto non c'è un tasso", () => {
     expect(xirrDaily([{ date: "2026-01-01", amount: -100 }])).toBeNull();
     expect(xirrDaily([{ date: "2026-01-01", amount: 100 }, { date: "2026-02-01", amount: 5 }])).toBeNull();

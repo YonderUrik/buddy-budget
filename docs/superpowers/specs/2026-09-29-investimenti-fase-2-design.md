@@ -1,7 +1,7 @@
 # Investimenti, Fase 2: rendimenti e confronto
 
 **Data**: 2026-09-29
-**Stato**: design scritto il 2026-09-29 su richiesta dell'utente ("avevamo detto che c'erano altre fasi, possiamo occuparcene?", scelta la Fase 2 tra 2/3/4/6). Eseguito inline nella stessa sessione, sul branch `claude/investimenti-fase-2`.
+**Stato**: implementata il 2026-09-29; design scritto lo stesso giorno su richiesta dell'utente ("avevamo detto che c'erano altre fasi, possiamo occuparcene?", scelta la Fase 2 tra 2/3/4/6). Eseguito inline nella stessa sessione, sul branch `claude/investimenti-fase-2`.
 **Spec madre**: `2026-09-27-investimenti-design.md`, sezione 1 (roadmap).
 
 ## Obiettivo

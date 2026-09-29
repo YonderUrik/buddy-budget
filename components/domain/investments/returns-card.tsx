@@ -18,6 +18,12 @@ import { formatSignedPct } from "./gain-text";
 import { ReturnMetric } from "./return-metric";
 import { ReturnsChart } from "./returns-chart";
 
+/** "fino a settembre 2026", "fino ad agosto 2026": "ad" davanti ai mesi che iniziano per vocale. */
+function untilMonth(month: string): string {
+  const label = formatMonthLabel(month).toLowerCase();
+  return `fino ${/^[aeiou]/.test(label) ? "ad" : "a"} ${label}`;
+}
+
 const PERIOD_LABELS: Record<NetWorthPeriod, string> = {
   "1mese": "Nell'ultimo mese",
   "3mesi": "Negli ultimi 3 mesi",
@@ -61,7 +67,7 @@ export function ReturnsCard({ returns, period, benchmark, currency }: ReturnsCar
             <ReturnMetric
               label="Tolta l'inflazione"
               value={real.value}
-              note={`Inflazione ${formatSignedPct(real.inflation)} fino a ${formatMonthLabel(real.throughMonth).toLowerCase()}`}
+              note={`Inflazione ${formatSignedPct(real.inflation)} ${untilMonth(real.throughMonth)}`}
               hint="Il rendimento del portafoglio al netto dell'aumento dei prezzi in Italia (indice Eurostat). Se è positivo, con quei soldi oggi compri più cose di prima."
             />
           ) : null}

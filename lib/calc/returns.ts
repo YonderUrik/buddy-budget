@@ -27,8 +27,11 @@ const AMOUNT_EPSILON = 1e-6;
 const XIRR_ITERATIONS = 200;
 /** Massimo tasso logaritmico giornaliero cercato (e^1 ≈ ×2,7 al giorno): oltre non ha senso per un portafoglio. */
 const XIRR_MAX_DAILY_LOG_RATE = 1;
-/** `exp` resta finito fino a ~709: il tasso massimo si riduce sui periodi lunghi per non andare in overflow. */
-const XIRR_MAX_EXPONENT = 700;
+/**
+ * `exp` resta finito fino a ~709, ma lo sconto si moltiplica per l'importo: con un margine di 200 ordini di grandezza
+ * (e^500 ≈ 1e217) anche importi da miliardi restano finiti. Sui periodi lunghi il tasso massimo si riduce di conseguenza.
+ */
+const XIRR_MAX_EXPONENT = 500;
 
 /** Movimenti di denaro di un giorno, in valuta utente. */
 export interface DailyFlow {

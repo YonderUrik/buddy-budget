@@ -55,3 +55,12 @@ export function formatShortDate(isoDate: string, locale = "it-IT"): string {
   if (!year || !month || !day) return isoDate;
   return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(new Date(year, month - 1, day));
 }
+
+/** Data con giorno, mese abbreviato e anno ("12 set 2026") da una stringa `YYYY-MM-DD`. */
+export function formatDateWithYear(isoDate: string, locale = "it-IT"): string {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  if (!year || !month || !day) return isoDate;
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(
+    new Date(year, month - 1, day)
+  );
+}

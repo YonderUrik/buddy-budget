@@ -170,8 +170,9 @@ export default function InvestimentiPage() {
           />
           {view.hasTransactions ? (
             <InvestmentTransactionsList
-              transactions={overview.data?.transactions ?? []}
+              months={view.operationMonths}
               instrumentsById={view.instrumentsById}
+              currency={currency}
               showAll={showAllOperations}
               onToggleShowAll={() => setShowAllOperations((v) => !v)}
               deletingId={deleteOperation.isPending ? deleteOperation.variables : null}

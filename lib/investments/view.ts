@@ -46,6 +46,8 @@ export interface InvestmentsView {
   returns: PortfolioReturns | null;
   /** Strumento di confronto scelto, o null. */
   benchmark: Instrument | null;
+  /** Primo prezzo caricato del benchmark (per spiegare un confronto che non parte), o null. */
+  benchmarkFirstPriceDate: string | null;
   /** Storico di dividendi e cedole. */
   income: IncomeHistory;
   /** Rischio, diversificazione, sovrapposizioni e allocazione obiettivo (Fase 3). */
@@ -129,6 +131,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
       inflation: REAL_RETURN_PERIODS.has(period) && data.inflation.length > 0 ? data.inflation : null,
     }),
     benchmark: data.benchmark,
+    benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),
     analysis,
   };

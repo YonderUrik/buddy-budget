@@ -77,7 +77,19 @@ export default function InvestimentiPage() {
     () => (fullHistory.data ? historyDailyReturns(fullHistory.data, today) : null),
     [fullHistory.data, today]
   );
-  const backfill = useBackfillStatusQuery(view?.instruments.map((i) => i.id) ?? []);
+  // Anche il benchmark: il suo storico si scarica quando lo si sceglie, e a fine recupero la pagina si aggiorna.
+  const backfillIds = React.useMemo(
+    () => [...(view?.instruments.map((i) => i.id) ?? []), ...(view?.benchmark ? [view.benchmark.id] : [])],
+    [view]
+  );
+  const backfill = useBackfillStatusQuery(backfillIds);
+  const benchmarkBackfill = view?.benchmark
+    ? backfill.data
+      ? (backfill.data.find((b) => b.instrumentId === view.benchmark!.id) ?? null)
+      : backfill.isError
+        ? null
+        : undefined
+    : null;
   const deleteOperation = useDeleteInvestmentTransactionMutation();
 
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
@@ -149,7 +161,14 @@ export default function InvestimentiPage() {
             currency={currency}
           />
           {view.returns ? (
-            <ReturnsCard returns={view.returns} period={period} benchmark={view.benchmark} currency={currency} />
+            <ReturnsCard
+              returns={view.returns}
+              period={period}
+              benchmark={view.benchmark}
+              benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
+              benchmarkBackfill={benchmarkBackfill}
+              currency={currency}
+            />
           ) : null}
           {view.analysis.risk ? (
             <RiskCard risk={view.analysis.risk} period={period} benchmarkName={view.benchmark?.name ?? null} currency={currency} />

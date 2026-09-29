@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { investmentPortfolios } from "@/lib/db/schema/investments";
 import { getOrCreateDefaultPortfolio, loadUserTransactions } from "@/lib/investments/data";
-import { ensureHistorySafely } from "@/lib/investments/history";
+import { ensureFxHistorySafely, ensureHistorySafely } from "@/lib/investments/history";
 import { findVisibleInstrument } from "@/lib/investments/instruments";
 import { todayKey } from "@/lib/investments/operations";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -14,7 +14,8 @@ export const maxDuration = 300;
 
 /**
  * Impostazioni del portafoglio: oggi solo lo strumento di confronto (benchmark). Scegliendolo se ne scarica in
- * background lo storico dalla prima operazione, così il confronto copre tutto il periodo "Max".
+ * background lo storico (prezzi e cambi) dalla prima operazione, così il confronto copre tutto il periodo "Max".
+ * Richiamarlo con lo stesso strumento riprova un recupero fallito.
  */
 async function handlePatch(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -41,7 +42,9 @@ async function handlePatch(request: NextRequest) {
 
   if (instrument) {
     const [first] = await loadUserTransactions(userId);
-    await ensureHistorySafely(instrument, first?.date ?? todayKey(), after);
+    const fromKey = first?.date ?? todayKey();
+    await ensureHistorySafely(instrument, fromKey, after);
+    ensureFxHistorySafely(instrument.currency, fromKey, after);
   }
   return Response.json(updated);
 }

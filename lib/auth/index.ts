@@ -6,9 +6,11 @@ import { magicLink } from "better-auth/plugins";
 import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser, authSession, authAccount, authVerification } from "@/lib/db/schema/auth";
-import { categories, DEFAULT_CATEGORIES } from "@/lib/db/schema/categories";
+import { categories } from "@/lib/db/schema/categories";
+import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
-import { MAGIC_LINK_EXPIRES_MINUTES } from "./constants";
+import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
+import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -50,6 +52,11 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
+  // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.
+  session: {
+    expiresIn: SESSION_EXPIRES_IN_DAYS * 24 * 60 * 60,
+    updateAge: SESSION_UPDATE_AGE_DAYS * 24 * 60 * 60,
+  },
   account: {
     accountLinking: {
       enabled: true,
@@ -57,16 +64,31 @@ export const auth = betterAuth({
     },
   },
   user: {
+    // `input: false` su tutti i campi: non si impostano da `/api/auth/update-user` (che non li validerebbe),
+    // ma solo dalle route dell'app (onboarding, impostazioni, gestione account).
     additionalFields: {
       currency: {
         type: "string",
         defaultValue: "EUR",
         required: false,
+        input: false,
       },
       onboardingCompleted: {
         type: "boolean",
         defaultValue: false,
         required: false,
+        input: false,
+      },
+      homePage: {
+        type: "string",
+        defaultValue: DEFAULT_HOME_PAGE,
+        required: false,
+        input: false,
+      },
+      deletionScheduledAt: {
+        type: "date",
+        required: false,
+        input: false,
       },
     },
   },
@@ -83,16 +105,7 @@ export const auth = betterAuth({
       create: {
         /** Semina le categorie di default quando un nuovo utente viene creato via auth. */
         after: async (user) => {
-          await db.insert(categories).values(
-            DEFAULT_CATEGORIES.map((cat) => ({
-              userId: user.id,
-              name: cat.name,
-              type: cat.type,
-              color: cat.color,
-              icon: cat.icon,
-              isFallback: cat.isFallback ?? false,
-            }))
-          );
+          await db.insert(categories).values(defaultCategoryRows(user.id));
         },
       },
     },

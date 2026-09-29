@@ -1,5 +1,6 @@
-import { and, eq, lte } from "drizzle-orm";
+import { and, eq, isNull, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { authUser } from "@/lib/db/schema/auth";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { computeSyncEligibility } from "./sync-eligibility";
 import { redisRateLimitStore } from "./redis-rate-limit-store";
@@ -11,7 +12,7 @@ export interface DueLink extends SyncableLink {
   syncTimestamps: string[];
 }
 
-/** Conti collegati con sync scaduto e connessione ancora valida (non expired/error). */
+/** Conti collegati con sync scaduto e connessione ancora valida (non expired/error), di utenti non disattivati. */
 export async function findDueLinks(): Promise<DueLink[]> {
   return db
     .select({
@@ -24,7 +25,14 @@ export async function findDueLinks(): Promise<DueLink[]> {
     })
     .from(bankAccountLinks)
     .innerJoin(bankConnections, eq(bankAccountLinks.connectionId, bankConnections.id))
-    .where(and(lte(bankAccountLinks.nextSyncEligibleAt, new Date()), eq(bankConnections.status, "linked")));
+    .innerJoin(authUser, eq(bankConnections.userId, authUser.id))
+    .where(
+      and(
+        lte(bankAccountLinks.nextSyncEligibleAt, new Date()),
+        eq(bankConnections.status, "linked"),
+        isNull(authUser.deletionScheduledAt)
+      )
+    );
 }
 
 /**

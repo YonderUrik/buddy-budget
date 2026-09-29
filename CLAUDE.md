@@ -173,6 +173,8 @@ Fase di **autenticazione completata**, schermata **Conti implementata** (gestion
 
 **Verifica manuale utente ancora da fare** per i gruppi di spesa delle categorie (piano 2026-09-22, vedi log dedicato): `pnpm db:migrate-category-groups` è già stato eseguito dall'utente sul DB locale il 2026-09-22 (enum migrato); resta da eseguire `pnpm db:reset-categories --dry-run` e poi reale (finché non gira, le categorie esistenti hanno solo i valori dovuta/voluta rinominati meccanicamente da fissa/variabile, non ancora la nuova lista a 4 gruppi). Da controllare dopo il reset: `/categorie` divisa per sezioni Dovute/Volute/Te futuro/Saltuarie/Entrate; il donut "Per categoria" in Transazioni con l'anello interno a 4 colori di gruppo allineato all'anello esterno; "Dove va ogni euro" in Cash flow con le 6 voci (incluso "Avanzo"); creare una nuova categoria per ciascun gruppo; un nuovo utente riceve i 33 nuovi default.
 
+**Pagina Impostazioni + gestione account implementata, non ancora mergiata** (2026-09-29, spec `docs/superpowers/specs/2026-09-29-impostazioni-utente-design.md`, branch `claude/user-management-page-4suqzv` in entrambi i repo): profilo, preferenze (valuta, pagina iniziale, tema), sessioni attive, export ZIP, reset, disattivazione con 30 giorni di ripensamento, eliminazione. **Dopo il merge, a carico dell'utente**: mergiare il CronJob `account-deletion` del repo infra solo quando l'immagine con `/api/cron/account-deletion` è in produzione; verificare dal vivo le email di disattivazione/eliminazione e la revoca GoCardless (non testabili nel sandbox).
+
 **Investimenti, Fase 1 implementata, non ancora mergiata** (spec `docs/superpowers/specs/2026-09-27-investimenti-design.md`, piano `docs/superpowers/plans/2026-09-27-investimenti-fase-1.md`, branch `claude/investment-analysis-tool-wbdcvk` in entrambi i repo): strumenti con catena di fonti gratuite a riserva automatica, prezzi EOD e cambi BCE, operazioni e posizioni calcolate, PAC, prezzi manuali, storico in background, cron `market-prices`, classe `investimenti` nel patrimonio netto e in Panoramica, pagina `/investimenti` resa più espressiva il 2026-09-28. **Prima del merge, a carico dell'utente**: (1) Task 1, `pnpm tsx scripts/probe-price-sources.ts` in locale e dalla VPS (il sandbox cloud non raggiunge le fonti), per sapere quali fonti rispondono davvero; (2) la migration `0001_investimenti` non va applicata a mano: in produzione la esegue il Job `PreSync` di ArgoCD (`argocd/manifests/app/migration-job.yaml`) prima del rollout della nuova immagine; (3) il CronJob `market-prices` del repo infra si mergia **dopo** che l'immagine con la route `/api/cron/market-prices` è in produzione; (4) verifica manuale su dati veri (ricerca di un ETF/BTP/crypto reali, acquisto, PAC, prezzo manuale, Panoramica). **Rimandati**: modifica di un'operazione dalla UI (oggi solo eliminazione), riserva OpenFIGI per ISIN→ticker, più portafogli per utente, import CSV Fineco (Fase 5), analisi dei singoli titoli (Fase 6).
 
 **In corso ora (in parallelo alla migrazione)**: **osservabilità dell'app**. **Fase A completata e verificata sul cluster** (spec `docs/superpowers/specs/2026-09-27-osservabilita-app-fase-a-design.md`, piano `docs/superpowers/plans/2026-09-27-osservabilita-app-fase-a.md`, PR YonderUrik/buddy-budget#13 e YonderUrik/buddy-budget-infra#3 mergiate, checklist confermata dall'utente). **Fase B completata e verificata dall'utente** (2026-09-27): 4 dashboard Grafana as code (YonderUrik/buddy-budget-infra#5, quota in #6), 12 alert con runbook instradati su `#bb-allarmi`/`#bb-avvisi`, notifiche ArgoCD su `#bb-deploy` e guida `docs/osservabilita.md` nel repo infra (YonderUrik/buddy-budget-infra#8, fix `tpl` in #10); regole visibili in Grafana e test dei contact point arrivati su Slack. Rimandato: alert sul backup Postgres fallito (servirebbe lo scrape delle metriche CNPG, oggi non raccolte). Prossimo: Fase C (accesso in sola lettura per agenti via MCP).
@@ -186,6 +188,47 @@ Fase di **autenticazione completata**, schermata **Conti implementata** (gestion
 **Nota tecnica GoCardless**: il sync scatta (a) una tantum al `finalize` del collegamento conto, (b) manualmente dal bottone in Conti (throttle condiviso, vedi piano 2026-07-26), o (c) dal cron **`GET /api/cron/gocardless-sync`** (dal 2026-09-26 non più `node-cron` in-process: chiamato da Vercel Cron, orario in `vercel.json`, giornaliero su piano Hobby — su Pro ogni 12h). Per test manuali fuori da questi trigger: `curl -H "Authorization: Bearer $CRON_SECRET" $APP_URL/api/cron/gocardless-sync`. Rate limit sandbox ~4 chiamate/giorno per endpoint per conto — oltre soglia, il sync esce silenzioso senza errore.
 
 ## Log delle decisioni
+
+- **2026-09-29** — Pagina **Impostazioni** (`/impostazioni`, dal menu dell'avatar in sidebar) con gestione completa dell'account, su richiesta dell'utente. Spec `docs/superpowers/specs/2026-09-29-impostazioni-utente-design.md`, eseguita inline sul branch `claude/user-management-page-4suqzv` di entrambi i repo. **Scelte dell'utente**:
+  - disattivazione = **eliminazione con 30 giorni di ripensamento** (rientrando prima si riattiva);
+  - reset = **tutto**, si riparte dall'onboarding;
+  - export = **ZIP con JSON + CSV**;
+  - accettate tutte le aggiunte proposte: pagina iniziale, sessioni attive, riepilogo dati, accesso recente per le azioni sensibili.
+
+  **Cosa c'è**: profilo (nome, email, metodi di accesso con "Collega Google"), preferenze (valuta, pagina iniziale, tema, lingua "Presto"), sessioni attive (disconnetti una sessione o tutte le altre; durata esplicita, 7 giorni senza utilizzo), riepilogo dei dati + export, zona pericolosa (reset con `RESETTA`, disattiva, elimina scrivendo l'email). Export, reset, disattivazione ed eliminazione richiedono una sessione creata da ≤10 minuti (`403 reauth_required`), altrimenti la UI chiede un nuovo magic link o un nuovo accesso Google e riporta in Impostazioni.
+
+  **Implementazione**:
+  - logica in `lib/account/` (`lifecycle.ts`, `export.ts`, `sessions.ts`, `csv.ts`, `recent-login.ts`, `home-pages.ts`);
+  - route `/api/user/{settings,sessions,data-summary,export,reset,deactivate,reactivate,account}`;
+  - cron `GET /api/cron/account-deletion`, con CronJob alle 03:30 nel repo infra;
+  - componenti in `components/domain/settings/`, pagina `/account-disattivato` (unica raggiungibile da un account disattivato: il proxy risponde 403 a tutte le API tranne la riattivazione);
+  - migration `0002_impostazioni_utente` (`home_page`, `deletion_scheduled_at`), nuova dipendenza `fflate` per lo ZIP;
+  - i cron `gocardless-sync` e `net-worth-snapshot` saltano gli account disattivati;
+  - GoCardless revoca i consensi (`deleteRequisition`) al reset e all'eliminazione;
+  - email di disattivazione ed eliminazione via Resend.
+
+  **Problemi trovati e corretti**:
+  - (1) gli strumenti manuali sono privati ma la FK è `set null`: eliminando un utente sarebbero diventati visibili a tutti. Ora si cancellano con l'utente se nessun altro li usa.
+  - (2) gli `additionalFields` di better-auth non avevano `input: false`, quindi `/api/auth/update-user` accettava `currency` senza whitelist e `onboardingCompleted`. Ora sono tutti `input: false`.
+  - (3) mismatch di idratazione dell'avatar in sidebar (preesistente, più visibile ora che il nome si modifica): nome e iniziali si leggono solo dopo il mount.
+
+  **Verificato**:
+  - 26 test unitari, 7 d'integrazione del lifecycle su Postgres/Redis locali, 9 delle route (401, accesso recente, conferme, IDOR sulle sessioni), proxy e cron; suite 863/863; tsc e lint puliti;
+  - dal vivo con Playwright (27 controlli) su dev server + Postgres/Redis locali, con login via token magic link letto dal DB:
+    - preferenze salvate e rispettate dalla home;
+    - una sessione disconnessa viene davvero buttata fuori;
+    - con sessione "vecchia" l'export è rifiutato e la UI chiede la verifica;
+    - lo ZIP si scarica;
+    - il reset porta all'onboarding;
+    - la disattivazione chiude gli altri dispositivi e blocca pagine/API, il login successivo mostra la riattivazione, la riattivazione funziona;
+    - l'eliminazione cancella l'utente e butta fuori tutti i dispositivi;
+  - cron provato con curl sul dev server.
+
+  **Non verificato (sandbox)**: invio vero delle email Resend e revoca vera su GoCardless (chiavi finte), "Collega Google" oltre il redirect (credenziali finte). Da provare in produzione.
+
+  **Prima del merge**: la migration la applica il Job PreSync; il CronJob `account-deletion` del repo infra va mergiato **dopo** che l'immagine con la route è in produzione.
+
+  **Rimandati**: cambio email, scollegare Google, notifiche email, import dell'export.
 
 - **2026-09-29** — Form "Registra operazione" di Investimenti: prezzo precompilato alla data scelta e strumenti già usati nel selettore, su richiesta dell'utente. **Prezzo**: per acquisti e vendite il campo segue il prezzo dello strumento alla data (chiusura del giorno o l'ultima entro `PRICE_LOOKBACK_DAYS` giorni prima; il prezzo manuale dell'utente vince, come nelle posizioni), finché l'utente non lo scrive a mano. Sotto il campo si dice da dove viene ("Chiusura del 25 set 2026", "Ultima chiusura prima di questa data…", "Nessun prezzo per questa data: inseriscilo tu."); se il valore scritto è diverso compare "Usa X" per ripristinarlo. Cambiare la data tiene il prezzo scritto a mano, cambiare strumento lo azzera. I rimborsi non si precompilano (avvengono al valore di rimborso, per un BTP 100, non alla quotazione). Nuova route `GET /api/instruments/[id]/price?date=` (`lib/investments/prices.ts`): se per la data non c'è un prezzo avvia il recupero dello storico in `after()` e risponde `loading: true`, il client ripete ogni 2s finché il recupero è in corso. **Bug evitato scrivendo i test**: se le fonti non hanno prezzi per quella data (strumento quotato dopo, fonte giù) ogni polling ripartiva col recupero all'infinito; ora un tentativo per strumento+data ogni ora (chiave Redis `market:price-on-date:*`, TTL 1h). **Selettore**: aprendolo, prima di scrivere, mostra "I tuoi strumenti" (dalle operazioni più recenti, poi i soli PAC: `usedInstruments` in `lib/investments/view.ts`); cercando, gli strumenti già usati salgono in cima ai "Già aggiunti". Verificato con 5 test d'integrazione della route su Postgres/Redis locali, test unitari, tsc/lint puliti e dal vivo con Playwright (`MARKET_DATA_FAKE=1`): prefill a oggi, data passata con recupero storico, prezzo modificato mantenuto al cambio data, "Usa". **Non verificato**: prezzi dalle fonti vere (sandbox senza rete verso le fonti).
 

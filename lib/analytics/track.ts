@@ -23,6 +23,11 @@ export interface ProductEvents {
   investment_plan_created: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_imported: { operations: number; format: string };
+  account_data_exported: undefined;
+  account_reset: undefined;
+  account_deactivated: undefined;
+  account_reactivated: undefined;
+  account_deleted: undefined;
 }
 
 export type ProductEventName = keyof ProductEvents;

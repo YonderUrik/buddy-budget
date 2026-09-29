@@ -191,6 +191,20 @@ export async function getRequisition(requisitionId: string): Promise<Requisition
   return data;
 }
 
+/**
+ * Elimina una requisition: GoCardless revoca il consenso e smette di esporre i conti collegati.
+ * Una requisition già eliminata o scaduta (404) conta come revocata.
+ */
+export async function deleteRequisition(requisitionId: string): Promise<void> {
+  assertSafePathSegment(requisitionId);
+  try {
+    await request<unknown>("requisitions.delete", `/requisitions/${encodeURIComponent(requisitionId)}/`, { method: "DELETE" });
+  } catch (error) {
+    if (error instanceof GoCardlessError && error.status === 404) return;
+    throw error;
+  }
+}
+
 export interface AccountDetails {
   iban?: string;
   name?: string;

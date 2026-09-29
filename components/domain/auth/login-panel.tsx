@@ -27,9 +27,11 @@ function describeAuthError(error: { status?: number; message?: string } | null |
 
 export interface LoginPanelProps {
   redirectTo: string;
+  /** Avviso informativo sopra il form (es. account appena eliminato). */
+  notice?: string;
 }
 
-export function LoginPanel({ redirectTo }: LoginPanelProps) {
+export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
   const [email, setEmail] = React.useState("");
   const [sent, setSent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -123,6 +125,11 @@ export function LoginPanel({ redirectTo }: LoginPanelProps) {
 
   return (
     <div className="flex flex-col gap-8">
+      {notice && (
+        <p className="rounded-lg bg-muted p-3 text-sm text-foreground" role="status">
+          {notice}
+        </p>
+      )}
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-medium tracking-tight">Accedi</h1>
         <p className="text-text-2">

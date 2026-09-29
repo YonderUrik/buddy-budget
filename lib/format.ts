@@ -64,3 +64,8 @@ export function formatDateWithYear(isoDate: string, locale = "it-IT"): string {
     new Date(year, month - 1, day)
   );
 }
+
+/** Data estesa ("29 ottobre 2026") da un istante, per scadenze e date importanti. */
+export function formatLongDate(date: Date, locale = "it-IT"): string {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(date);
+}

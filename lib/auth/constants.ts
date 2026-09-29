@@ -6,8 +6,11 @@ export const MAGIC_LINK_EXPIRES_MINUTES = 10;
 /** Attesa minima prima di poter richiedere un nuovo magic link dalla UI, in secondi. */
 export const MAGIC_LINK_RESEND_COOLDOWN_SECONDS = 30;
 
-/** Rotta di atterraggio dopo login/onboarding quando non c'è una destinazione richiesta. */
-export const DEFAULT_AFTER_LOGIN_PATH = "/panoramica";
+/**
+ * Rotta di atterraggio dopo login/onboarding quando non c'è una destinazione richiesta: la home, che rimanda
+ * alla pagina iniziale scelta dall'utente in Impostazioni.
+ */
+export const DEFAULT_AFTER_LOGIN_PATH = "/";
 
 /**
  * Restituisce `candidate` solo se è un percorso interno sicuro ("/qualcosa", non "//host" né URL assoluto),
@@ -22,3 +25,9 @@ export function safeRedirectPath(candidate: string | null | undefined): string {
   }
   return candidate;
 }
+
+/** Durata di una sessione senza utilizzo, in giorni: oltre, si deve accedere di nuovo. */
+export const SESSION_EXPIRES_IN_DAYS = 7;
+
+/** Ogni quanti giorni di utilizzo la scadenza della sessione viene spostata in avanti. */
+export const SESSION_UPDATE_AGE_DAYS = 1;

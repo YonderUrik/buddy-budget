@@ -20,6 +20,7 @@
  * sovrascritta via prop `items` per adattare la sidebar ad altri contesti.
  */
 
+import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -37,6 +38,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Settings,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -188,6 +190,9 @@ function UserAvatar({ initials, image }: { initials: string; image?: string | nu
   );
 }
 
+/** Store vuoto: distingue il render server (false) da quello client (true). */
+const subscribeNoop = () => () => {};
+
 // ---------------------------------------------------------------------------
 // Componente principale
 // ---------------------------------------------------------------------------
@@ -201,6 +206,8 @@ interface AppSidebarProps {
   activeHref?: string;
   /** Callback opzionale alla chiusura (usata dal drawer mobile). */
   onClose?: () => void;
+  /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
+  settingsHref?: string;
 }
 
 export function AppSidebar({
@@ -208,11 +215,16 @@ export function AppSidebar({
   items = NAV_ITEMS,
   activeHref,
   onClose,
+  settingsHref = "/impostazioni",
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session } = authClient.useSession();
+  const { data: sessionData } = authClient.useSession();
+  // La sessione si legge solo sul client: finché non siamo idratati si usa il placeholder, come sul server,
+  // altrimenti nome e iniziali renderizzati dal server ("Utente", "U") non combaciano con quelli del client.
+  const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const session = mounted ? sessionData : null;
 
   const userName = session?.user.name ?? "Utente";
   const userImage = session?.user.image ?? null;
@@ -324,6 +336,16 @@ export function AppSidebar({
               <p className="text-xs text-muted-foreground truncate">{session?.user.email ?? ""}</p>
             </div>
             <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(settingsHref);
+                onClose?.();
+              }}
+              className="cursor-pointer"
+            >
+              <Settings className="mr-2 size-4" aria-hidden="true" />
+              Impostazioni
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
               <LogOut className="mr-2 size-4" aria-hidden="true" />
               Esci

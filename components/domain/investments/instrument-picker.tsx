@@ -21,6 +21,8 @@ export interface InstrumentPickerProps {
   onChange: (instrument: Instrument) => void;
   /** Valuta proposta per crypto e strumenti manuali. */
   defaultCurrency: string;
+  /** Testo del bottone quando nessuno strumento è scelto. */
+  placeholder?: string;
   className?: string;
 }
 
@@ -35,7 +37,13 @@ function toCreateInput(item: MarketSearchItem, currency: string, isin: string | 
   return { source: "yahoo", yahooSymbol: hit.symbol, name: hit.name, type: hit.type, ...(isin ? { isin } : {}) };
 }
 
-export function InstrumentPicker({ value, onChange, defaultCurrency, className }: InstrumentPickerProps) {
+export function InstrumentPicker({
+  value,
+  onChange,
+  defaultCurrency,
+  placeholder = "Cerca per nome, ticker o ISIN",
+  className,
+}: InstrumentPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const search = useInstrumentSearchQuery(query);
@@ -63,7 +71,7 @@ export function InstrumentPicker({ value, onChange, defaultCurrency, className }
           className
         )}
       >
-        <span className={cn("truncate", !value && "text-muted-foreground")}>{value?.name ?? "Cerca per nome, ticker o ISIN"}</span>
+        <span className={cn("truncate", !value && "text-muted-foreground")}>{value?.name ?? placeholder}</span>
         <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent className="w-(--anchor-width) min-w-72 p-2" align="start">

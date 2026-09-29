@@ -13,9 +13,10 @@ import {
 } from "@/lib/calc/investments";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
 import { startOfDay } from "@/lib/calc/expenses";
-import type { Instrument, InvestmentPlan } from "@/lib/db/schema/investments";
+import type { Instrument, InvestmentPlan, InvestmentTransaction } from "@/lib/db/schema/investments";
 import type { InvestmentData } from "./data";
 import { PLAN_FREQUENCY_MONTHS } from "./labels";
+import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
 
 /** Dati della pagina Investimenti già calcolati: la UI li riceve pronti. */
 export interface InvestmentsView {
@@ -31,6 +32,8 @@ export interface InvestmentsView {
   /** Importo mensile equivalente dei PAC attivi (un PAC trimestrale da 300 vale 100 al mese). */
   monthlyPlanAmount: number;
   hasTransactions: boolean;
+  /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
+  operationMonths: OperationMonthGroup<InvestmentTransaction>[];
 }
 
 /** Operazioni del DB nella forma dei calcoli. */
@@ -56,7 +59,11 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
   const priceIndex = buildPriceIndex(data.prices, data.manualPrices, transactions);
   const fx = buildFxTable(data.fxRates);
   const common = { transactions, instruments, priceIndex, fx, userCurrency: data.currency };
-  const summary = computePortfolioSummary({ ...common, todayKey: toDateKey(startOfDay(today)) });
+  const todayKey = toDateKey(startOfDay(today));
+  const summary = computePortfolioSummary({ ...common, todayKey });
+  const operationMonths = groupOperationsByMonth(
+    computeOperationInsights({ ...common, transactions: data.transactions, todayKey })
+  );
   const activePlans = data.plans.filter((p) => p.active);
   return {
     currency: data.currency,
@@ -70,5 +77,6 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     activePlans,
     monthlyPlanAmount: activePlans.reduce((sum, p) => sum + Number(p.amount) / PLAN_FREQUENCY_MONTHS[p.frequency], 0),
     hasTransactions: transactions.length > 0,
+    operationMonths,
   };
 }

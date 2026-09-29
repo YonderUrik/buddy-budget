@@ -1,92 +1,104 @@
 "use client";
 
-/** Elenco delle operazioni registrate, dalla più recente, con eliminazione (il server rifiuta se renderebbe negative le quote). */
+/**
+ * Operazioni registrate raggruppate per mese (dal più recente), con filtro per anno, totali dell'anno scelto
+ * (acquistato, venduto, proventi, guadagno) e il guadagno di ogni operazione. Eliminazione per riga: il server rifiuta
+ * se renderebbe negative le quote.
+ */
 
-import { Trash2Icon } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import * as React from "react";
+import { SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investments";
-import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
-import { formatCurrency, formatShortDate } from "@/lib/format";
+import {
+  operationYears,
+  sumOperationTotals,
+  type OperationMonthGroup as MonthGroup,
+} from "@/lib/investments/operations-history";
+import { OperationMonthGroup } from "./operation-month-group";
+import { OperationsTotals } from "./operations-totals";
 
-const QUANTITY_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 6 });
-/** Operazioni mostrate prima di "Mostra tutte". */
-export const RECENT_TRANSACTIONS_LIMIT = 10;
+/** Mesi mostrati prima di "Mostra tutti". */
+export const RECENT_OPERATION_MONTHS_LIMIT = 3;
+const ALL_YEARS = "tutti";
 
 export interface InvestmentTransactionsListProps {
-  transactions: InvestmentTransaction[];
+  months: MonthGroup<InvestmentTransaction>[];
   instrumentsById: Map<string, Instrument>;
+  currency: string;
   showAll: boolean;
   onToggleShowAll: () => void;
   onDelete: (transaction: InvestmentTransaction) => void;
   deletingId?: string | null;
 }
 
-function describe(t: InvestmentTransaction, instrument: Instrument | undefined): string {
-  const currency = instrument?.currency ?? "";
-  if (t.type === "dividendo" || t.type === "cedola") {
-    return `${formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR")} lordi`;
-  }
-  const unit = instrument?.priceUnit === "percentuale_nominale" ? "% " : " ";
-  return `${QUANTITY_FORMAT.format(Number(t.quantity))} × ${Number(t.price).toLocaleString("it-IT")}${unit}${currency}`;
-}
-
 export function InvestmentTransactionsList({
-  transactions,
+  months,
   instrumentsById,
+  currency,
   showAll,
   onToggleShowAll,
   onDelete,
   deletingId,
 }: InvestmentTransactionsListProps) {
-  const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
-  const visible = showAll ? sorted : sorted.slice(0, RECENT_TRANSACTIONS_LIMIT);
+  const years = React.useMemo(() => operationYears(months), [months]);
+  const [year, setYear] = React.useState<string>(ALL_YEARS);
+  // Se l'anno scelto sparisce (operazioni eliminate) si torna a tutti gli anni.
+  const selectedYear = year !== ALL_YEARS && !years.includes(Number(year)) ? ALL_YEARS : year;
+  const filtered = React.useMemo(
+    () => (selectedYear === ALL_YEARS ? months : months.filter((m) => m.year === Number(selectedYear))),
+    [months, selectedYear]
+  );
+  const totals = React.useMemo(() => sumOperationTotals(filtered.flatMap((m) => m.operations)), [filtered]);
+  const visible = showAll ? filtered : filtered.slice(0, RECENT_OPERATION_MONTHS_LIMIT);
+  const yearOptions = [
+    { value: ALL_YEARS, label: "Tutti" },
+    ...years.map((y) => ({ value: String(y), label: String(y) })),
+  ];
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Operazioni</CardTitle>
+      <CardHeader className="gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Operazioni</CardTitle>
+          {years.length > 1 ? (
+            <div className="max-w-full overflow-x-auto">
+              <SegmentedControl options={yearOptions} value={selectedYear} onChange={setYear} ariaLabel="Anno delle operazioni" />
+            </div>
+          ) : null}
+        </div>
+        {months.length > 0 ? (
+          <>
+            <OperationsTotals totals={totals} currency={currency} />
+            <p className="text-xs text-muted-foreground">
+              Per un acquisto il guadagno è quanto valgono oggi le quote ancora possedute rispetto a quanto le hai pagate;
+              per una vendita è il guadagno realizzato.
+            </p>
+          </>
+        ) : null}
       </CardHeader>
       <CardContent className="p-0">
-        {sorted.length === 0 ? (
+        {months.length === 0 ? (
           <p className="px-6 pb-6 text-sm text-muted-foreground">Nessuna operazione registrata.</p>
         ) : (
-          <ul className="divide-y divide-border">
-            {visible.map((t) => {
-              const instrument = instrumentsById.get(t.instrumentId);
-              return (
-                <li key={t.id} className="flex items-center gap-3 px-4 py-3 sm:px-6">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <Badge variant={t.type === "vendita" || t.type === "rimborso" ? "outline" : "secondary"}>
-                        {TRANSACTION_TYPE_LABELS[t.type]}
-                      </Badge>
-                      <p className="truncate text-sm font-medium text-foreground">{instrument?.name ?? "Strumento"}</p>
-                    </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {formatShortDate(t.date)} · {describe(t, instrument)}
-                      {Number(t.fees) > 0 ? ` · commissioni ${Number(t.fees).toLocaleString("it-IT")}` : ""}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-9 shrink-0"
-                    aria-label="Elimina operazione"
-                    disabled={deletingId === t.id}
-                    onClick={() => onDelete(t)}
-                  >
-                    <Trash2Icon className="size-4" aria-hidden="true" />
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="border-t border-border">
+            {visible.map((group) => (
+              <OperationMonthGroup
+                key={group.key}
+                group={group}
+                instrumentsById={instrumentsById}
+                currency={currency}
+                deletingId={deletingId}
+                onDelete={onDelete}
+              />
+            ))}
+          </div>
         )}
-        {sorted.length > RECENT_TRANSACTIONS_LIMIT ? (
+        {filtered.length > RECENT_OPERATION_MONTHS_LIMIT ? (
           <div className="border-t border-border px-4 py-2 sm:px-6">
             <Button variant="link" className="px-0" onClick={onToggleShowAll}>
-              {showAll ? "Mostra solo le più recenti" : `Mostra tutte (${sorted.length})`}
+              {showAll ? "Mostra solo i mesi più recenti" : `Mostra tutti i mesi (${filtered.length})`}
             </Button>
           </div>
         ) : null}

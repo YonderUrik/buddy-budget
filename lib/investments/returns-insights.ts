@@ -56,7 +56,13 @@ export function benchmarkWait(params: {
   if (backfill?.status === "running" && !backfill.interrupted) {
     return { kind: "downloading", saved: backfill.saved, total: backfill.total };
   }
+  const failed = backfill?.status === "failed" || backfill?.interrupted === true;
   if (firstPriceDate === null) return { kind: "failed" };
-  if (firstPriceDate > baseKey) return { kind: "no_history", firstPriceDate };
-  return backfill?.status === "failed" || backfill?.interrupted ? { kind: "failed" } : { kind: "incomplete" };
+  if (firstPriceDate > baseKey) {
+    // "Prezzi solo da…" è vero solo se un recupero completo è finito: uno fallito, interrotto o scaduto lascia lo
+    // storico a metà (es. i soli 30 giorni scaricati alla creazione dello strumento) e va riprovato.
+    if (failed) return { kind: "failed" };
+    return backfill?.status === "done" ? { kind: "no_history", firstPriceDate } : { kind: "incomplete" };
+  }
+  return failed ? { kind: "failed" } : { kind: "incomplete" };
 }

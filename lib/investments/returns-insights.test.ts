@@ -54,6 +54,13 @@ describe("benchmarkWait", () => {
     });
   });
 
+  it("prezzi a metà con recupero fallito, scaduto o interrotto non è \"solo dal…\": si riprova", () => {
+    const late = "2026-08-31";
+    expect(benchmarkWait({ backfill: state({ status: "failed" }), firstPriceDate: late, baseKey: base }).kind).toBe("failed");
+    expect(benchmarkWait({ backfill: state({ status: "done", interrupted: true }), firstPriceDate: late, baseKey: base }).kind).toBe("failed");
+    expect(benchmarkWait({ backfill: null, firstPriceDate: late, baseKey: base }).kind).toBe("incomplete");
+  });
+
   it("prezzi che coprono il periodo ma confronto assente: dati incompleti", () => {
     expect(benchmarkWait({ backfill: state({ status: "done" }), firstPriceDate: "2023-12-29", baseKey: base }).kind).toBe("incomplete");
     expect(benchmarkWait({ backfill: null, firstPriceDate: "2023-12-29", baseKey: base }).kind).toBe("incomplete");

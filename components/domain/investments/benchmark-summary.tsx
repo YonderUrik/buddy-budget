@@ -65,7 +65,7 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
   }
   if (status === "missing_prices" || !comparison) {
     const name = benchmarkName ?? "questo strumento";
-    const canRetry = wait.kind === "failed" || wait.kind === "incomplete";
+    const canRetry = wait.kind === "failed" || wait.kind === "incomplete" || wait.kind === "no_history";
     return (
       <div className="flex flex-col gap-2 rounded-lg bg-muted/50 p-3">
         <div className="flex flex-wrap items-start justify-between gap-2">

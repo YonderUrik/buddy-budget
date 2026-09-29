@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
+import type { ResolvedPrice } from "@/lib/calc/investments";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { Instrument, InvestmentPlan, InvestmentTransaction, UserInstrumentPrice } from "@/lib/db/schema/investments";
 import type { InvestmentData } from "@/lib/investments/data";
@@ -86,6 +87,27 @@ export function useInstrumentSearchQuery(query: string) {
       if (!response.ok) throw new Error("Ricerca non riuscita");
       return response.json();
     },
+  });
+}
+
+/** Prezzo di uno strumento a una data; `loading` indica che lo storico si sta ancora scaricando. */
+export interface InstrumentPriceOnDate {
+  price: ResolvedPrice | null;
+  loading: boolean;
+}
+
+/** Prezzo alla data per precompilare un'operazione; riprova finché lo storico di quello strumento si sta scaricando. */
+export function useInstrumentPriceOnDateQuery(instrumentId: string | null, date: string) {
+  return useQuery({
+    queryKey: [...INVESTMENTS_QUERY_KEY, "price-on-date", instrumentId, date],
+    enabled: instrumentId !== null && /^\d{4}-\d{2}-\d{2}$/.test(date),
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<InstrumentPriceOnDate> => {
+      const response = await fetch(`/api/instruments/${instrumentId}/price?date=${date}`);
+      if (!response.ok) throw await readError(response, "Prezzo non disponibile");
+      return response.json();
+    },
+    refetchInterval: (q) => (q.state.data?.loading ? BACKFILL_POLL_INTERVAL_MS : false),
   });
 }
 

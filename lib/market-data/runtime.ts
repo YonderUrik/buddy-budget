@@ -11,8 +11,16 @@ import {
   fakeSearch,
   isFakeMarketData,
 } from "./fake";
-import { fetchYahooQuoteMeta, searchCoinGecko, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
-import { redisBackfillStore, redisBudgetStore, redisYahooSessionStore } from "./redis-stores";
+import { refreshCryptoCatalog, searchCryptoCached } from "./crypto-catalog";
+import { fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
+import {
+  getCachedYahooSearch,
+  redisBackfillStore,
+  redisBudgetStore,
+  redisCryptoCatalogStore,
+  redisYahooSessionStore,
+  setCachedYahooSearch,
+} from "./redis-stores";
 import { findFirstPriceDate } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
@@ -35,12 +43,23 @@ export function marketDataDeps(): MarketDataDeps {
 
 /** Ricerca strumenti su Yahoo (o sul catalogo finto). */
 export async function searchInstrumentsOnProviders(query: string): Promise<YahooSearchHit[]> {
-  return isFakeMarketData() ? fakeSearch(query) : searchYahoo(query, realContext());
+  if (isFakeMarketData()) return fakeSearch(query);
+  const cached = await getCachedYahooSearch<YahooSearchHit[]>(query).catch(() => null);
+  if (cached !== null) return cached;
+  const hits = await searchYahoo(query, realContext());
+  await setCachedYahooSearch(query, hits).catch(() => undefined);
+  return hits;
 }
 
-/** Ricerca crypto su CoinGecko (o sull'elenco finto). */
+/** Ricerca crypto nel catalogo locale, con CoinGecko solo per le rare fuori catalogo (o sull'elenco finto). */
 export async function searchCryptoOnProviders(query: string): Promise<{ id: string; name: string; symbol: string }[]> {
-  return isFakeMarketData() ? fakeCryptoSearch(query) : searchCoinGecko(query, realContext());
+  return isFakeMarketData() ? fakeCryptoSearch(query) : searchCryptoCached(query, realContext(), redisCryptoCatalogStore);
+}
+
+/** Rinnova il catalogo crypto locale (cron serale); con le fonti finte non fa nulla. */
+export async function refreshCryptoCatalogOnProviders(): Promise<number> {
+  if (isFakeMarketData()) return 0;
+  return (await refreshCryptoCatalog(realContext(), redisCryptoCatalogStore)).length;
 }
 
 /** Valuta e borsa di un simbolo Yahoo, o null se Yahoo non lo conosce. */

@@ -23,8 +23,10 @@ import type {
   CreatePlanInput,
   ManualPriceInput,
   UpdateInvestmentTransactionInput,
+  UpdateBreakdownInput,
   UpdatePlanInput,
   UpdatePortfolioInput,
+  UpdateTargetsInput,
 } from "@/lib/validation/investments";
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
@@ -334,6 +336,46 @@ export function useUpdatePortfolioMutation() {
     onSuccess: (_portfolio, input) => {
       if (input.benchmarkInstrumentId) track("investment_benchmark_set");
       invalidate();
+    },
+  });
+}
+
+/** Sostituisce l'allocazione obiettivo del portafoglio (lista vuota = nessun obiettivo). */
+export function useUpdateTargetsMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: UpdateTargetsInput): Promise<{ targets: { instrumentId: string; weight: string }[] }> => {
+      const response = await fetch("/api/investments/targets", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile salvare l'obiettivo");
+      return response.json();
+    },
+    onSuccess: (_result, input) => {
+      if (input.targets.length > 0) track("investment_targets_set", { instruments: input.targets.length });
+      queryClient.invalidateQueries({ queryKey: [...INVESTMENTS_QUERY_KEY] });
+    },
+  });
+}
+
+/** Salva (o cancella, con entrambe le dimensioni null) la correzione manuale di settore e area di uno strumento. */
+export function useUpdateBreakdownMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ instrumentId, input }: { instrumentId: string; input: UpdateBreakdownInput }): Promise<unknown> => {
+      const response = await fetch(`/api/instruments/${instrumentId}/breakdown`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile salvare la ripartizione");
+      return response.json();
+    },
+    onSuccess: (_result, { input }) => {
+      if (input.sectors !== null || input.areas !== null) track("instrument_breakdown_saved");
+      queryClient.invalidateQueries({ queryKey: [...INVESTMENTS_QUERY_KEY] });
     },
   });
 }

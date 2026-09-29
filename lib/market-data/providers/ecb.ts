@@ -5,7 +5,7 @@ import type { FxDailyRate, FxProvider } from "../types";
 const ECB_URL = "https://data-api.ecb.europa.eu/service/data/EXR/";
 
 /** Divide una riga CSV rispettando i campi tra virgolette. */
-function splitCsvLine(line: string): string[] {
+export function splitCsvLine(line: string): string[] {
   const fields: string[] = [];
   let current = "";
   let quoted = false;

@@ -12,6 +12,7 @@ import {
   investmentPlans,
   investmentPortfolios,
   investmentTransactions,
+  userInstrumentBreakdowns,
   userInstrumentPrices,
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
@@ -122,6 +123,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
   await tx.delete(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
   await tx.delete(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId));
+  await tx.delete(userInstrumentBreakdowns).where(eq(userInstrumentBreakdowns.userId, userId));
   // Gli strumenti manuali sono privati di chi li crea: con la FK `set null` diventerebbero visibili a tutti.
   // Si eliminano se nessun altro li usa (prezzi e simboli vanno via in cascata).
   await tx

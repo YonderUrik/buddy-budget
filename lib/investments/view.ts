@@ -15,6 +15,7 @@ import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
 import { computePortfolioReturns, type PortfolioReturns } from "@/lib/calc/returns";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument, InvestmentPlan, InvestmentTransaction } from "@/lib/db/schema/investments";
+import { buildInvestmentsAnalysis, type InvestmentsAnalysis } from "./analysis-view";
 import type { InvestmentData } from "./data";
 import { PLAN_FREQUENCY_MONTHS } from "./labels";
 import { computeIncomeHistory, type IncomeHistory } from "./income";
@@ -49,6 +50,8 @@ export interface InvestmentsView {
   benchmarkFirstPriceDate: string | null;
   /** Storico di dividendi e cedole. */
   income: IncomeHistory;
+  /** Rischio, diversificazione, sovrapposizioni e allocazione obiettivo (Fase 3). */
+  analysis: InvestmentsAnalysis;
 }
 
 /** Operazioni del DB nella forma dei calcoli. */
@@ -94,6 +97,18 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
   const operationMonths = groupOperationsByMonth(insights);
   const activePlans = data.plans.filter((p) => p.active);
   const instrumentsById = new Map(data.instruments.map((i) => [i.id, i]));
+  const analysis = buildInvestmentsAnalysis({
+    ...common,
+    summary,
+    instrumentsById,
+    profiles: data.profiles,
+    manualBreakdowns: data.manualBreakdowns,
+    targets: data.targets,
+    benchmark: data.benchmark,
+    riskFreeRates: data.riskFreeRates.length > 0 ? data.riskFreeRates : null,
+    period,
+    today,
+  });
   return {
     currency: data.currency,
     summary,
@@ -118,5 +133,6 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     benchmark: data.benchmark,
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),
+    analysis,
   };
 }

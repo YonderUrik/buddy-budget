@@ -8,6 +8,11 @@ vi.mock("@/lib/observability/redis-ops-store", async () => {
 vi.mock("@/lib/market-data/update", () => ({ updateHeldInstruments: vi.fn() }));
 vi.mock("@/lib/market-data/runtime", () => ({ marketDataDeps: vi.fn(() => ({})) }));
 vi.mock("@/lib/market-data/inflation", () => ({ updateInflationIndex: vi.fn(async () => 36) }));
+vi.mock("@/lib/market-data/rates", () => ({ updateRiskFreeRates: vi.fn(async () => 21) }));
+vi.mock("@/lib/market-data/store", () => ({ findHeldAutoInstruments: vi.fn(async () => []) }));
+vi.mock("@/lib/market-data/profiles", () => ({
+  refreshStaleProfiles: vi.fn(async () => ({ candidates: 2, saved: 1, empty: 1, failed: 0 })),
+}));
 
 import { updateHeldInstruments } from "@/lib/market-data/update";
 import { redisOpsStore } from "@/lib/observability/redis-ops-store";
@@ -40,7 +45,13 @@ describe("GET /api/cron/market-prices", () => {
   it("aggiorna, risponde coi soli conteggi e registra l'ultimo successo", async () => {
     const response = await call(`Bearer ${SECRET}`);
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ ok: true, ...SUMMARY, inflationMonths: 36 });
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      ...SUMMARY,
+      inflationMonths: 36,
+      riskFreeDays: 21,
+      profiles: { candidates: 2, saved: 1, empty: 1, failed: 0 },
+    });
     expect((await redisOpsStore.getCronSuccesses()).market_prices).toEqual(expect.any(Number));
   });
 

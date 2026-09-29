@@ -12,7 +12,9 @@ import {
   instruments,
   investmentPlans,
   investmentPortfolios,
+  investmentTargets,
   investmentTransactions,
+  userInstrumentBreakdowns,
   userInstrumentPrices,
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
@@ -64,6 +66,8 @@ async function loadUserData(userId: string) {
     operationRows,
     planRows,
     manualPriceRows,
+    targetRows,
+    breakdownRows,
     snapshotRows,
   ] = await Promise.all([
     db
@@ -195,6 +199,27 @@ async function loadUserData(userId: string) {
       .where(eq(userInstrumentPrices.userId, userId)),
     db
       .select({
+        portfolioId: investmentTargets.portfolioId,
+        instrumentId: investmentTargets.instrumentId,
+        instrumentName: instruments.name,
+        weight: investmentTargets.weight,
+      })
+      .from(investmentTargets)
+      .innerJoin(investmentPortfolios, eq(investmentPortfolios.id, investmentTargets.portfolioId))
+      .innerJoin(instruments, eq(instruments.id, investmentTargets.instrumentId))
+      .where(eq(investmentPortfolios.userId, userId)),
+    db
+      .select({
+        instrumentId: userInstrumentBreakdowns.instrumentId,
+        instrumentName: instruments.name,
+        sectors: userInstrumentBreakdowns.sectors,
+        areas: userInstrumentBreakdowns.areas,
+      })
+      .from(userInstrumentBreakdowns)
+      .innerJoin(instruments, eq(instruments.id, userInstrumentBreakdowns.instrumentId))
+      .where(eq(userInstrumentBreakdowns.userId, userId)),
+    db
+      .select({
         date: netWorthSnapshots.date,
         assetClass: netWorthSnapshots.assetClass,
         amount: netWorthSnapshots.amount,
@@ -217,6 +242,8 @@ async function loadUserData(userId: string) {
     investmentOperations: operationRows,
     investmentPlans: planRows,
     manualPrices: manualPriceRows,
+    investmentTargets: targetRows,
+    instrumentBreakdowns: breakdownRows,
     netWorth: snapshotRows,
   };
 }

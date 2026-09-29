@@ -1,17 +1,23 @@
 "use client";
 
-/** Pagina Investimenti: valore e guadagno del portafoglio, andamento, posizioni, composizione, PAC e operazioni. */
+/**
+ * Pagina Investimenti: valore e guadagno del portafoglio, rendimenti, rischio, posizioni, composizione e
+ * diversificazione, sovrapposizioni, allocazione obiettivo, PAC e operazioni.
+ */
 
 import * as React from "react";
 import { Plus, Upload } from "lucide-react";
 import { toast } from "sonner";
 import {
+  AllocationCard,
   CURRENCY_COLORS,
+  DiversificationCard,
   IncomeHistoryCard,
   INSTRUMENT_TYPE_COLOR,
   InvestmentImportDialog,
   InvestmentTransactionsList,
   ManualPriceDialog,
+  OverlapCard,
   PlansCard,
   PortfolioComposition,
   PortfolioHeroCard,
@@ -20,6 +26,7 @@ import {
   RegisterOperationForm,
   ReturnHeatmapCard,
   ReturnsCard,
+  RiskCard,
   type RegisterOperationInitial,
 } from "@/components/domain/investments";
 import { LoadError } from "@/components/domain/shared";
@@ -90,7 +97,7 @@ export default function InvestimentiPage() {
   const [showAllOperations, setShowAllOperations] = React.useState(false);
   const [importOpen, setImportOpen] = React.useState(false);
 
-  function registerFromPlan(plan: InvestmentPlan) {
+  function registerFromPlan(plan: Pick<InvestmentPlan, "instrumentId" | "amount">) {
     if (!view) return;
     const last = resolvePrice(view.priceIndex, plan.instrumentId, toDateKey(today));
     const prefill = prefillFromPlan(plan, last?.close ?? null);
@@ -163,6 +170,9 @@ export default function InvestimentiPage() {
               currency={currency}
             />
           ) : null}
+          {view.analysis.risk ? (
+            <RiskCard risk={view.analysis.risk} period={period} benchmarkName={view.benchmark?.name ?? null} currency={currency} />
+          ) : null}
           {historyReturns && historyReturns.length > 0 ? (
             <ReturnHeatmapCard daily={historyReturns} currency={currency} today={today} />
           ) : null}
@@ -192,9 +202,23 @@ export default function InvestimentiPage() {
               },
             ]}
           />
+          {view.analysis.exposureRows.length > 0 ? <DiversificationCard analysis={view.analysis} currency={currency} /> : null}
+          {view.analysis.exposureRows.length > 1 ? (
+            <OverlapCard analysis={view.analysis} instrumentsById={view.instrumentsById} currency={currency} />
+          ) : null}
           {view.income.count > 0 ? (
             <IncomeHistoryCard income={view.income} instrumentsById={view.instrumentsById} currency={currency} />
           ) : null}
+          <AllocationCard
+            allocation={view.analysis.allocation}
+            targets={view.analysis.targets}
+            positions={view.summary.rows.map((r) => ({ instrumentId: r.instrument.id, value: r.value }))}
+            instrumentsById={view.instrumentsById}
+            suggestions={view.usedInstruments}
+            monthlyPlanAmount={view.monthlyPlanAmount}
+            currency={currency}
+            onRegister={(instrumentId, amount) => registerFromPlan({ instrumentId, amount: String(amount) })}
+          />
         </>
       )}
       {view ? (

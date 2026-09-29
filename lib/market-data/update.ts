@@ -4,6 +4,8 @@ import type { ProviderBudgetStore } from "./budget";
 import { createChainRunState, runChain, type ChainAttempt, type ChainRunState } from "./chain";
 import { chainFor } from "./chains";
 import { FX_PROVIDERS, PRICE_PROVIDERS, type InflationProvider } from "./providers";
+import type { RateProvider } from "./providers/estr";
+import type { ProfileProvider } from "./profiles";
 import {
   findHeldAutoInstruments,
   findLastClose,
@@ -29,6 +31,10 @@ export interface MarketDataDeps {
   fxProviders?: readonly FxProvider[];
   /** Fonte dell'indice d'inflazione (default Eurostat). */
   inflationProvider?: InflationProvider;
+  /** Fonte del tasso privo di rischio (default €STR dalla BCE). */
+  rateProvider?: RateProvider;
+  /** Fonte dei profili (settori, primi titoli) degli strumenti (default Yahoo). */
+  profileProvider?: ProfileProvider;
   log?: Logger;
   sleep?: (ms: number) => Promise<void>;
 }

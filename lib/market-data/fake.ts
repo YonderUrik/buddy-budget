@@ -2,6 +2,8 @@ import { splitYahooSymbol } from "./symbols";
 import type { DailyClose, FxProvider, PriceProvider, ProviderId } from "./types";
 import type { YahooSearchHit } from "./providers/yahoo";
 import type { InflationProvider } from "./providers/eurostat";
+import type { RateProvider } from "./providers/estr";
+import type { ProfileProvider } from "./profiles";
 
 /**
  * Fonti finte per lo sviluppo locale e le verifiche con browser (`MARKET_DATA_FAKE=1`): prezzi deterministici
@@ -127,5 +129,40 @@ export const FAKE_INFLATION_PROVIDER: InflationProvider = {
       }
     }
     return values;
+  },
+};
+
+/** €STR finto: 2% annuo in ogni giorno feriale. */
+export const FAKE_RATE_PROVIDER: RateProvider = {
+  id: "ecb",
+  async fetchDailyRates(from, to) {
+    return fakeCloses("estr", from, to).map((c) => ({ date: c.date, rate: 0.02 }));
+  },
+};
+
+/** Profili finti: settori e primi titoli per gli ETF del catalogo, settore e paese per le azioni. */
+export const FAKE_PROFILE_PROVIDER: ProfileProvider = {
+  async fetchProfile(symbol, kind) {
+    const { base } = splitYahooSymbol(symbol);
+    if (kind === "company") {
+      if (base === "AAPL") return { sectors: null, assetMix: null, holdings: null, sector: "tecnologia", country: "US" };
+      if (base === "ENEL") return { sectors: null, assetMix: null, holdings: null, sector: "servizi_pubblici", country: "IT" };
+      return null;
+    }
+    if (base === "VWCE" || base === "SWDA") {
+      return {
+        sectors: { tecnologia: 0.26, finanza: 0.16, salute: 0.1, industria: 0.11, consumi_ciclici: 0.11, comunicazioni: 0.08, consumi_difensivi: 0.06, energia: 0.04, materiali: 0.04, servizi_pubblici: 0.02, immobiliare: 0.02 },
+        assetMix: { stock: 0.995, bond: 0, cash: 0.005, other: 0 },
+        holdings: [
+          { symbol: "NVDA", name: "NVIDIA Corp", weight: base === "VWCE" ? 0.048 : 0.055 },
+          { symbol: "AAPL", name: "Apple Inc", weight: base === "VWCE" ? 0.042 : 0.049 },
+          { symbol: "MSFT", name: "Microsoft Corp", weight: base === "VWCE" ? 0.039 : 0.045 },
+          { symbol: "AMZN", name: "Amazon.com Inc", weight: base === "VWCE" ? 0.024 : 0.028 },
+        ],
+        sector: null,
+        country: null,
+      };
+    }
+    return null;
   },
 };

@@ -6,6 +6,8 @@ import {
   FAKE_FX_PROVIDER,
   FAKE_INFLATION_PROVIDER,
   FAKE_PRICE_PROVIDERS,
+  FAKE_PROFILE_PROVIDER,
+  FAKE_RATE_PROVIDER,
   fakeCryptoSearch,
   fakeQuoteMeta,
   fakeSearch,
@@ -21,7 +23,9 @@ import {
   redisYahooSessionStore,
   setCachedYahooSearch,
 } from "./redis-stores";
-import { findFirstPriceDate } from "./store";
+import { findInstrumentsWithoutProfile, PROFILE_ON_DEMAND_LIMIT, refreshInstrumentProfile } from "./profiles";
+import { redis } from "@/lib/redis/client";
+import { findFirstPriceDate, loadSymbols } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
 
@@ -37,7 +41,14 @@ function realContext(): ProviderContext {
 export function marketDataDeps(): MarketDataDeps {
   const base = { ctx: realContext(), budget: redisBudgetStore };
   return isFakeMarketData()
-    ? { ...base, providers: FAKE_PRICE_PROVIDERS, fxProviders: [FAKE_FX_PROVIDER], inflationProvider: FAKE_INFLATION_PROVIDER }
+    ? {
+        ...base,
+        providers: FAKE_PRICE_PROVIDERS,
+        fxProviders: [FAKE_FX_PROVIDER],
+        inflationProvider: FAKE_INFLATION_PROVIDER,
+        rateProvider: FAKE_RATE_PROVIDER,
+        profileProvider: FAKE_PROFILE_PROVIDER,
+      }
     : base;
 }
 
@@ -98,4 +109,33 @@ export async function ensureHistory(
     }
   });
   return true;
+}
+
+/** Un tentativo di profilo su richiesta per strumento ogni ora: evita di richiedere a ogni caricamento della pagina. */
+const PROFILE_ATTEMPT_TTL_SECONDS = 60 * 60;
+
+/**
+ * Scarica in background i profili (settori, area, primi titoli) degli strumenti che non ne hanno ancora uno, al
+ * massimo `PROFILE_ON_DEMAND_LIMIT` per volta. Non lancia mai: un errore resta nei log.
+ */
+export async function ensureProfilesSafely(instruments: Instrument[], schedule: (task: () => Promise<void>) => void): Promise<void> {
+  try {
+    const missing = await findInstrumentsWithoutProfile(instruments);
+    const toFetch: Instrument[] = [];
+    for (const instrument of missing) {
+      if (toFetch.length >= PROFILE_ON_DEMAND_LIMIT) break;
+      const acquired = await redis.set(`market:profile-attempt:${instrument.id}`, "1", "EX", PROFILE_ATTEMPT_TTL_SECONDS, "NX");
+      if (acquired === "OK") toFetch.push(instrument);
+    }
+    if (toFetch.length === 0) return;
+    schedule(async () => {
+      const deps = marketDataDeps();
+      const symbols = await loadSymbols(toFetch.map((i) => i.id));
+      for (const instrument of toFetch) {
+        await refreshInstrumentProfile(instrument, symbols.get(instrument.id)?.yahoo ?? null, deps.ctx, { provider: deps.profileProvider });
+      }
+    });
+  } catch (error) {
+    logger.warn("market.profiles.failed", { error });
+  }
 }

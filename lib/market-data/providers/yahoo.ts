@@ -1,4 +1,5 @@
-import type { InstrumentType } from "@/lib/db/schema/investments";
+import type { InstrumentType, ProfileAssetMix, ProfileHolding } from "@/lib/db/schema/investments";
+import { YAHOO_COMPANY_SECTORS, YAHOO_SECTOR_WEIGHTING_KEYS, countryCodeFromName } from "@/lib/investments/exposure-keys";
 import { ProviderBlockedError, ProviderError, ProviderRateLimitedError } from "../errors";
 import {
   BROWSER_USER_AGENT,
@@ -291,4 +292,91 @@ export async function searchYahoo(query: string, ctx: ProviderContext): Promise<
   const response = await yahooGet(url, ctx, { useCooldown: true });
   if (!response) return [];
   return parseYahooSearch(await readJson<YahooSearchResponse>("yahoo", response));
+}
+
+const QUOTE_SUMMARY_URL = "https://query2.finance.yahoo.com/v10/finance/quoteSummary/";
+
+interface YahooRawNumber {
+  raw?: number;
+}
+
+interface YahooQuoteSummaryResponse {
+  quoteSummary?: {
+    result?:
+      | {
+          topHoldings?: {
+            stockPosition?: YahooRawNumber;
+            bondPosition?: YahooRawNumber;
+            cashPosition?: YahooRawNumber;
+            otherPosition?: YahooRawNumber;
+            holdings?: { symbol?: string; holdingName?: string; holdingPercent?: YahooRawNumber }[];
+            sectorWeightings?: Record<string, YahooRawNumber>[];
+          };
+          assetProfile?: { sector?: string; country?: string };
+        }[]
+      | null;
+    error?: { code?: string } | null;
+  };
+}
+
+/** Profilo di uno strumento letto da Yahoo `quoteSummary`, già nelle chiavi dell'app. */
+export interface YahooProfile {
+  sectors: Record<string, number> | null;
+  assetMix: ProfileAssetMix | null;
+  holdings: ProfileHolding[] | null;
+  sector: string | null;
+  country: string | null;
+}
+
+/** `company`: settore e paese di un'azienda; `fund`: settori, mix di attività e primi titoli di un ETF/fondo. */
+export type YahooProfileKind = "company" | "fund";
+
+function rawNumber(value: YahooRawNumber | undefined): number | null {
+  return typeof value?.raw === "number" && Number.isFinite(value.raw) ? value.raw : null;
+}
+
+/** Converte la risposta `quoteSummary` (moduli `topHoldings` e `assetProfile`) nel profilo dell'app. */
+export function parseYahooQuoteSummary(body: YahooQuoteSummaryResponse): YahooProfile | null {
+  const result = body.quoteSummary?.result?.[0];
+  if (!result) return null;
+  const top = result.topHoldings;
+  const sectors: Record<string, number> = {};
+  for (const entry of top?.sectorWeightings ?? []) {
+    for (const [yahooKey, value] of Object.entries(entry)) {
+      const key = YAHOO_SECTOR_WEIGHTING_KEYS[yahooKey];
+      const weight = rawNumber(value);
+      if (key && weight !== null && weight > 0) sectors[key] = (sectors[key] ?? 0) + weight;
+    }
+  }
+  const holdings: ProfileHolding[] = [];
+  for (const h of top?.holdings ?? []) {
+    const weight = rawNumber(h.holdingPercent);
+    const name = h.holdingName?.trim() || h.symbol?.trim();
+    if (name && weight !== null && weight > 0) holdings.push({ symbol: h.symbol?.trim() || null, name, weight });
+  }
+  const assetMix: ProfileAssetMix | null = top
+    ? {
+        stock: rawNumber(top.stockPosition),
+        bond: rawNumber(top.bondPosition),
+        cash: rawNumber(top.cashPosition),
+        other: rawNumber(top.otherPosition),
+      }
+    : null;
+  const hasMix = assetMix !== null && Object.values(assetMix).some((v) => v !== null);
+  const sectorName = result.assetProfile?.sector;
+  return {
+    sectors: Object.keys(sectors).length > 0 ? sectors : null,
+    assetMix: hasMix ? assetMix : null,
+    holdings: holdings.length > 0 ? holdings : null,
+    sector: sectorName ? (YAHOO_COMPANY_SECTORS[sectorName] ?? null) : null,
+    country: countryCodeFromName(result.assetProfile?.country),
+  };
+}
+
+/** Profilo di un simbolo Yahoo, o null se Yahoo non ha dati per quello strumento. */
+export async function fetchYahooProfile(symbol: string, kind: YahooProfileKind, ctx: ProviderContext): Promise<YahooProfile | null> {
+  const modules = kind === "company" ? "assetProfile" : "topHoldings";
+  const response = await yahooGet(`${QUOTE_SUMMARY_URL}${encodeURIComponent(symbol)}?modules=${modules}`, ctx);
+  if (!response) return null;
+  return parseYahooQuoteSummary(await readJson<YahooQuoteSummaryResponse>("yahoo", response));
 }

@@ -113,7 +113,8 @@ export interface CashFlow {
   amount: number;
 }
 
-function daysBetween(fromKey: string, toKey: string): number {
+/** Giorni di calendario tra due date YYYY-MM-DD. */
+export function daysBetween(fromKey: string, toKey: string): number {
   return Math.round((parseDateOnly(toKey).getTime() - parseDateOnly(fromKey).getTime()) / MS_PER_DAY);
 }
 
@@ -289,7 +290,7 @@ export interface PortfolioReturns {
 }
 
 /** Prezzo di uno strumento in valuta utente alla data (ultimo disponibile), o null. */
-function priceInUserCurrency(
+export function priceInUserCurrency(
   instrument: InstrumentInput,
   priceIndex: PriceIndex,
   fx: FxTable,

@@ -7,7 +7,9 @@ import {
   instruments,
   investmentPlans,
   investmentPortfolios,
+  investmentTargets,
   investmentTransactions,
+  userInstrumentBreakdowns,
   userInstrumentPrices,
   type Instrument,
   type InvestmentPlan,
@@ -17,10 +19,16 @@ import {
 import type { FxRateInput } from "@/lib/calc/fx";
 import type { ManualPriceInput, PriceInput } from "@/lib/calc/investments";
 import type { InflationPoint } from "@/lib/calc/returns";
+import type { RateInput } from "@/lib/calc/risk";
 import { loadInflationIndex } from "@/lib/market-data/inflation";
+import { loadProfiles } from "@/lib/market-data/profiles";
+import { loadRiskFreeRates } from "@/lib/market-data/rates";
+import type { ExposureProfile, ManualBreakdown } from "./exposure";
 
 /** Valuta per cui esiste l'indice d'inflazione (Eurostat, area Italia): per le altre il rendimento reale non si mostra. */
 export const INFLATION_CURRENCY = "EUR";
+/** Valuta del tasso privo di rischio €STR: per le altre lo Sharpe usa zero. */
+export const RISK_FREE_CURRENCY = "EUR";
 
 /** Nome del portafoglio creato al primo utilizzo. */
 export const DEFAULT_PORTFOLIO_NAME = "Portafoglio";
@@ -76,6 +84,14 @@ export interface InvestmentData {
   benchmark: Instrument | null;
   /** Indice mensile dei prezzi al consumo; vuoto se la valuta dell'utente non è EUR. */
   inflation: InflationPoint[];
+  /** Allocazione obiettivo per strumento (pesi come stringhe numeric). */
+  targets: { instrumentId: string; weight: string }[];
+  /** Profili dalle fonti (settori, primi titoli, paese) degli strumenti. */
+  profiles: ExposureProfile[];
+  /** Correzioni manuali dell'utente di settore e area. */
+  manualBreakdowns: ManualBreakdown[];
+  /** €STR giornaliero dal periodo richiesto; vuoto se la valuta dell'utente non è EUR. */
+  riskFreeRates: RateInput[];
 }
 
 function shiftDays(dateKey: string, days: number): string {
@@ -97,9 +113,33 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     db.select().from(investmentPlans).where(eq(investmentPlans.userId, userId)).orderBy(asc(investmentPlans.createdAt)),
   ]);
 
-  const ownedIds = [...new Set([...transactions.map((t) => t.instrumentId), ...plans.map((p) => p.instrumentId)])];
+  const targets = portfolios[0]
+    ? await db
+        .select({ instrumentId: investmentTargets.instrumentId, weight: investmentTargets.weight })
+        .from(investmentTargets)
+        .where(eq(investmentTargets.portfolioId, portfolios[0].id))
+    : [];
+  // Gli strumenti in obiettivo ma non ancora posseduti servono per nome e prezzo (suggerimento del prossimo acquisto).
+  const ownedIds = [
+    ...new Set([...transactions.map((t) => t.instrumentId), ...plans.map((p) => p.instrumentId), ...targets.map((t) => t.instrumentId)]),
+  ];
   if (ownedIds.length === 0) {
-    return { currency, portfolios, instruments: [], transactions, plans, prices: [], manualPrices: [], fxRates: [], benchmark: null, inflation: [] };
+    return {
+      currency,
+      portfolios,
+      instruments: [],
+      transactions,
+      plans,
+      prices: [],
+      manualPrices: [],
+      fxRates: [],
+      benchmark: null,
+      inflation: [],
+      targets,
+      profiles: [],
+      manualBreakdowns: [],
+      riskFreeRates: [],
+    };
   }
   const benchmarkId = portfolios[0]?.benchmarkInstrumentId ?? null;
   const instrumentIds = benchmarkId && !ownedIds.includes(benchmarkId) ? [...ownedIds, benchmarkId] : ownedIds;
@@ -113,7 +153,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   const benchmark = loaded.find((i) => i.id === benchmarkId) ?? null;
   const currencies = [...new Set([...loaded.map((i) => i.currency), currency])].filter((c) => c !== "EUR");
 
-  const [prices, manualPrices, rates, inflation] = await Promise.all([
+  const [prices, manualPrices, rates, inflation, profiles, manualBreakdowns, riskFreeRates] = await Promise.all([
     db
       .select({
         instrumentId: instrumentPrices.instrumentId,
@@ -136,6 +176,12 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
           .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from)))
           .orderBy(asc(fxRates.date)),
     currency === INFLATION_CURRENCY ? loadInflationIndex() : Promise.resolve([]),
+    loadProfiles(ownedIds),
+    db
+      .select({ instrumentId: userInstrumentBreakdowns.instrumentId, sectors: userInstrumentBreakdowns.sectors, areas: userInstrumentBreakdowns.areas })
+      .from(userInstrumentBreakdowns)
+      .where(and(eq(userInstrumentBreakdowns.userId, userId), inArray(userInstrumentBreakdowns.instrumentId, ownedIds))),
+    currency === RISK_FREE_CURRENCY ? loadRiskFreeRates(from) : Promise.resolve([]),
   ]);
 
   return {
@@ -149,6 +195,10 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     fxRates: rates,
     benchmark,
     inflation,
+    targets,
+    profiles,
+    manualBreakdowns,
+    riskFreeRates,
   };
 }
 

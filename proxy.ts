@@ -6,6 +6,11 @@ import { safeRedirectPath } from "@/lib/auth/constants";
 // /api/health* sono le probe di liveness/readiness; /api/cron/* è protetto dal segreto CRON_SECRET, non dalla sessione.
 const PUBLIC_PATH_PREFIXES = ["/login", "/api/auth", "/api/health", "/api/cron", "/api/metrics", "/_next", "/favicon.ico"];
 
+/** Unica pagina accessibile a un account disattivato. */
+const DEACTIVATED_PAGE_PATH = "/account-disattivato";
+/** Unica API accessibile a un account disattivato. */
+const REACTIVATE_API_PATH = "/api/user/reactivate";
+
 /** True se il percorso è accessibile senza sessione (confronto per segmento: `/api/health` sì, `/api/healthz` no). */
 export function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATH_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
@@ -39,7 +44,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  const { onboardingCompleted } = session.user;
+  const { onboardingCompleted, deletionScheduledAt } = session.user;
+
+  // Account disattivato: finché non viene riattivato si vede solo la pagina dedicata; le API rispondono 403,
+  // tranne quella di riattivazione (e /api/auth, pubblica, per uscire).
+  if (deletionScheduledAt) {
+    if (pathname.startsWith("/api/")) {
+      return pathname === REACTIVATE_API_PATH ? NextResponse.next() : new NextResponse(null, { status: 403 });
+    }
+    return pathname === DEACTIVATED_PAGE_PATH
+      ? NextResponse.next()
+      : NextResponse.redirect(new URL(DEACTIVATED_PAGE_PATH, request.url));
+  }
+  if (pathname === DEACTIVATED_PAGE_PATH) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   if (!onboardingCompleted && pathname !== "/onboarding" && !pathname.startsWith("/api/")) {
     return NextResponse.redirect(new URL("/onboarding", request.url));

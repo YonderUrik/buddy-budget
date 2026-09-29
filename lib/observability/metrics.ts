@@ -11,7 +11,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
@@ -23,11 +23,12 @@ export type GoCardlessEndpoint =
   | "institutions.list"
   | "requisitions.create"
   | "requisitions.get"
+  | "requisitions.delete"
   | "accounts.details"
   | "accounts.balances"
   | "accounts.transactions";
 
-export const CRON_NAMES: readonly CronName[] = ["gocardless_sync", "net_worth_snapshot", "market_prices"];
+export const CRON_NAMES: readonly CronName[] = ["gocardless_sync", "net_worth_snapshot", "market_prices", "account_deletion"];
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge

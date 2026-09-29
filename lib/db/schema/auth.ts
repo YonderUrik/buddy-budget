@@ -9,6 +9,10 @@ export const authUser = pgTable("auth_user", {
   image: text("image"),
   currency: text("currency").notNull().default("EUR"),
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
+  /** Pagina di atterraggio dopo il login (solo valori di `HOME_PAGE_PATHS`, validati dalla route impostazioni). */
+  homePage: text("home_page").notNull().default("/panoramica"),
+  /** Se valorizzata l'account è disattivato e verrà eliminato definitivamente a questa data (cron `account-deletion`). */
+  deletionScheduledAt: timestamp("deletion_scheduled_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

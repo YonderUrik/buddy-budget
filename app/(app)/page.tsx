@@ -1,6 +1,10 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+import { resolveHomePage } from "@/lib/account/home-pages";
 
-/** Home: la schermata principale dell'app è la Panoramica. */
-export default function Home() {
-  redirect("/panoramica");
+/** Home: rimanda alla pagina iniziale scelta dall'utente in Impostazioni (default Panoramica). */
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  redirect(resolveHomePage(session?.user.homePage));
 }

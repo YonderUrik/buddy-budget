@@ -324,7 +324,9 @@ export function computePortfolioReturns(params: {
   const points = computeDailyPortfolioValues({ ...params, fromKey: baseKey, toKey });
   const base = points[0];
   const flows = toDailyFlows(points);
-  const days = daysBetween(baseKey, toKey);
+  // Se all'inizio non c'era niente investito il periodo parte dal primo acquisto, non dal giorno prima: altrimenti
+  // rendimento dei tuoi soldi e valori annui conterebbero un giorno in cui non c'era niente da far rendere.
+  const days = Math.max(1, daysBetween(base.value > AMOUNT_EPSILON ? baseKey : fromKey, toKey));
   const showAnnual = days >= DAYS_PER_YEAR;
   const endValue = points.at(-1)?.value ?? 0;
 

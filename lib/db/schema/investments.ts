@@ -4,6 +4,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   text,
@@ -235,6 +236,98 @@ export const inflationIndex = pgTable(
   (table) => [unique("inflation_index_area_month_unique").on(table.area, table.month)]
 );
 
+/** Titolo tra i primi di un ETF/fondo (da Yahoo `topHoldings`). */
+export interface ProfileHolding {
+  symbol: string | null;
+  name: string;
+  /** Peso sul fondo (0-1). */
+  weight: number;
+}
+
+/** Ripartizione del fondo per tipo di attività (0-1): azioni, obbligazioni, liquidità, altro. */
+export interface ProfileAssetMix {
+  stock: number | null;
+  bond: number | null;
+  cash: number | null;
+  other: number | null;
+}
+
+/**
+ * Profilo di uno strumento dalle fonti (oggi Yahoo `quoteSummary`), comune a tutti gli utenti: settori e primi
+ * titoli degli ETF/fondi, settore e paese delle azioni. Una risposta vuota salva comunque la riga (con i campi
+ * null), così non si richiede ogni giorno.
+ */
+export const instrumentProfiles = pgTable("instrument_profiles", {
+  instrumentId: uuid("instrument_id")
+    .primaryKey()
+    .references(() => instruments.id, { onDelete: "cascade" }),
+  source: text("source").$type<ProviderId>().notNull(),
+  /** Simbolo usato sulla fonte (per riconoscere un'azione posseduta tra i titoli di un ETF). */
+  symbol: text("symbol"),
+  /** Pesi per settore della parte azionaria (chiavi di `SECTOR_KEYS`, somma ≈ 1). */
+  sectors: jsonb("sectors").$type<Record<string, number>>(),
+  assetMix: jsonb("asset_mix").$type<ProfileAssetMix>(),
+  holdings: jsonb("holdings").$type<ProfileHolding[]>(),
+  /** Settore dell'azienda (chiave di `SECTOR_KEYS`), solo azioni. */
+  sector: text("sector"),
+  /** Paese dell'azienda (ISO 3166 alpha-2), solo azioni. */
+  country: text("country"),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Correzione manuale di settore e area di uno strumento, per utente: null = si usa l'automatico. */
+export const userInstrumentBreakdowns = pgTable(
+  "user_instrument_breakdowns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => authUser.id, { onDelete: "cascade" }),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    sectors: jsonb("sectors").$type<Record<string, number>>(),
+    areas: jsonb("areas").$type<Record<string, number>>(),
+    ...timestamps,
+  },
+  (table) => [unique("user_instrument_breakdowns_unique").on(table.userId, table.instrumentId)]
+);
+
+/** Allocazione obiettivo del portafoglio, per strumento: i pesi sommano a 1. */
+export const investmentTargets = pgTable(
+  "investment_targets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    portfolioId: uuid("portfolio_id")
+      .notNull()
+      .references(() => investmentPortfolios.id, { onDelete: "cascade" }),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    weight: numeric("weight", { precision: 7, scale: 6 }).notNull(),
+    ...timestamps,
+  },
+  (table) => [unique("investment_targets_portfolio_instrument_unique").on(table.portfolioId, table.instrumentId)]
+);
+
+/** Serie di tassi d'interesse di riferimento (oggi solo €STR), comuni a tutti gli utenti. */
+export const INTEREST_RATE_SERIES = ["estr"] as const;
+export type InterestRateSeries = (typeof INTEREST_RATE_SERIES)[number];
+
+/** Tassi giornalieri: `rate` come frazione annua (0,0192 = 1,92%). */
+export const interestRates = pgTable(
+  "interest_rates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    series: text("series").$type<InterestRateSeries>().notNull(),
+    date: date("date").notNull(),
+    rate: numeric("rate", { precision: 10, scale: 8 }).notNull(),
+    source: text("source").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("interest_rates_series_date_unique").on(table.series, table.date)]
+);
+
 export type Instrument = typeof instruments.$inferSelect;
 export type NewInstrument = typeof instruments.$inferInsert;
 export type InstrumentSymbol = typeof instrumentSymbols.$inferSelect;
@@ -246,3 +339,6 @@ export type InvestmentTransaction = typeof investmentTransactions.$inferSelect;
 export type NewInvestmentTransaction = typeof investmentTransactions.$inferInsert;
 export type InvestmentPlan = typeof investmentPlans.$inferSelect;
 export type InflationIndexRow = typeof inflationIndex.$inferSelect;
+export type InstrumentProfile = typeof instrumentProfiles.$inferSelect;
+export type UserInstrumentBreakdown = typeof userInstrumentBreakdowns.$inferSelect;
+export type InvestmentTarget = typeof investmentTargets.$inferSelect;

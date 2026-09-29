@@ -1,0 +1,4 @@
+KEY,FREQ,BENCHMARK_ITEM,DATA_TYPE_EST,TIME_PERIOD,OBS_VALUE,OBS_STATUS,TITLE
+EST.B.EU000A2X2A25.WT,B,EU000A2X2A25,WT,2026-09-24,1.918,A,"Euro short-term rate, volume-weighted trimmed mean rate"
+EST.B.EU000A2X2A25.WT,B,EU000A2X2A25,WT,2026-09-25,1.921,A,"Euro short-term rate, volume-weighted trimmed mean rate"
+EST.B.EU000A2X2A25.WT,B,EU000A2X2A25,WT,2026-09-28,,M,"Euro short-term rate, volume-weighted trimmed mean rate"

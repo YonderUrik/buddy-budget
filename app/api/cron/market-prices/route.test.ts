@@ -6,7 +6,10 @@ vi.mock("@/lib/observability/redis-ops-store", async () => {
   return { redisOpsStore: createOpsStore(createMemoryOpsKv()) };
 });
 vi.mock("@/lib/market-data/update", () => ({ updateHeldInstruments: vi.fn() }));
-vi.mock("@/lib/market-data/runtime", () => ({ marketDataDeps: vi.fn(() => ({})) }));
+vi.mock("@/lib/market-data/runtime", () => ({
+  marketDataDeps: vi.fn(() => ({})),
+  refreshCryptoCatalogOnProviders: vi.fn(async () => 500),
+}));
 vi.mock("@/lib/market-data/inflation", () => ({ updateInflationIndex: vi.fn(async () => 36) }));
 vi.mock("@/lib/market-data/rates", () => ({ updateRiskFreeRates: vi.fn(async () => 21) }));
 vi.mock("@/lib/market-data/store", () => ({ findHeldAutoInstruments: vi.fn(async () => []) }));
@@ -14,6 +17,7 @@ vi.mock("@/lib/market-data/profiles", () => ({
   refreshStaleProfiles: vi.fn(async () => ({ candidates: 2, saved: 1, empty: 1, failed: 0 })),
 }));
 
+import { refreshCryptoCatalogOnProviders } from "@/lib/market-data/runtime";
 import { updateHeldInstruments } from "@/lib/market-data/update";
 import { redisOpsStore } from "@/lib/observability/redis-ops-store";
 import { GET } from "./route";
@@ -53,6 +57,11 @@ describe("GET /api/cron/market-prices", () => {
       profiles: { candidates: 2, saved: 1, empty: 1, failed: 0 },
     });
     expect((await redisOpsStore.getCronSuccesses()).market_prices).toEqual(expect.any(Number));
+  });
+
+  it("non fallisce se il rinnovo del catalogo crypto viene rifiutato", async () => {
+    vi.mocked(refreshCryptoCatalogOnProviders).mockRejectedValueOnce(new Error("rate limited"));
+    expect((await call(`Bearer ${SECRET}`)).status).toBe(200);
   });
 
   it("risponde 500 se l'aggiornamento lancia", async () => {

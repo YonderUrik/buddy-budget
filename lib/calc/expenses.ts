@@ -420,7 +420,7 @@ export interface MonthlyCategoryStack {
 export const OTHER_STACK_SEGMENT_KEY = "altro";
 
 /**
- * Spesa effettiva per categoria sugli ultimi 6 mesi calendariali, con le top `topCount` categorie
+ * Spesa effettiva per categoria sugli ultimi `monthCount` (default 6) mesi calendariali, con le top `topCount` categorie
  * e un eventuale segmento "Altro" ricalcolati indipendentemente per ciascun mese (non un ranking
  * fisso sul totale semestre): la stessa categoria può occupare posizioni diverse, o finire dentro
  * "Altro", da un mese all'altro. "Altro" è riordinato insieme alle categorie individuali per
@@ -430,12 +430,13 @@ export function computeCategoryMonthlyStacks(
   transactions: Transaction[],
   categories: Category[],
   referenceDate: Date,
-  topCount = 6
+  topCount = 6,
+  monthCount = 6
 ): MonthlyCategoryStack[] {
   const months: MonthlyCategoryStack[] = [];
 
-  for (let i = 5; i >= 0; i--) {
-    const monthDate = addMonths(referenceDate, -i);
+  for (let i = monthCount - 1; i >= 0; i--) {
+    const monthDate = addMonths(startOfMonth(referenceDate), -i);
     const range: DateRange = { from: startOfMonth(monthDate), to: endOfMonth(monthDate) };
 
     const categoryAmounts = categories

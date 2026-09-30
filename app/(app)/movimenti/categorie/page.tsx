@@ -1,6 +1,6 @@
 "use client";
 
-/** Pagina Categorie: board per gruppo (crea/sposta/modifica/elimina) e, in una scheda separata, le regole di categorizzazione. */
+/** Movimenti · Categorie: board per gruppo (crea/sposta/modifica/elimina) e, in una scheda separata, le regole di categorizzazione. */
 
 import * as React from "react";
 import { CategoryBoard, DistributeColorsButton } from "@/components/domain/categories";
@@ -16,7 +16,7 @@ const TAB_OPTIONS = [
   { value: "regole", label: "Regole" },
 ] as const;
 
-export default function CategoriePage() {
+export default function MovimentiCategoriePage() {
   const { data: categories, isLoading, isError, refetch } = useCategoriesQuery();
   const [tab, setTab] = React.useState<CategoriesTab>("categorie");
   const { data: session } = authClient.useSession();
@@ -24,16 +24,13 @@ export default function CategoriePage() {
   const safeCategories = categories ?? [];
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-medium text-foreground">Categorie</h1>
-          <p className="text-sm text-muted-foreground">
-            {tab === "categorie"
-              ? "Trascina una categoria in un altro gruppo, oppure toccala per modificarla."
-              : "Le regole assegnano da sole la categoria ai movimenti che riconoscono."}
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {tab === "categorie"
+            ? "Trascina una categoria in un altro gruppo, oppure toccala per modificarla."
+            : "Le regole assegnano da sole la categoria ai movimenti che riconoscono."}
+        </p>
         {tab === "categorie" && <DistributeColorsButton />}
       </div>
 
@@ -48,6 +45,6 @@ export default function CategoriePage() {
       ) : (
         <RulesManager categories={safeCategories} />
       )}
-    </div>
+    </>
   );
 }

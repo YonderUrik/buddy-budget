@@ -2,7 +2,7 @@
 
 /**
  * Card di gestione delle regole di categorizzazione, montata sotto l'elenco categorie
- * in `/categorie`. Elenca le regole esistenti (editabili inline, eliminabili con conferma)
+ * in `/movimenti/categorie`. Elenca le regole esistenti (editabili inline, eliminabili con conferma)
  * e permette di aggiungerne una manualmente.
  */
 

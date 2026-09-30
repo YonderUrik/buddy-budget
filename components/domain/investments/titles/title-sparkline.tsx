@@ -8,11 +8,14 @@ const PADDING = 2;
 
 export interface TitleSparklineProps {
   values: number[];
+  /** Larghezza in pixel (default 72); l'altezza segue le proporzioni. */
+  width?: number;
   className?: string;
 }
 
-export function TitleSparkline({ values, className }: TitleSparklineProps) {
-  if (values.length < 2) return <span className={cn("block", className)} style={{ width: WIDTH, height: HEIGHT }} aria-hidden="true" />;
+export function TitleSparkline({ values, width = WIDTH, className }: TitleSparklineProps) {
+  const height = Math.round((width * HEIGHT) / WIDTH);
+  if (values.length < 2) return <span className={cn("block", className)} style={{ width, height }} aria-hidden="true" />;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -24,8 +27,8 @@ export function TitleSparkline({ values, className }: TitleSparklineProps) {
   return (
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      width={WIDTH}
-      height={HEIGHT}
+      width={width}
+      height={height}
       className={cn(up ? "text-pos" : "text-neg", className)}
       aria-hidden="true"
     >

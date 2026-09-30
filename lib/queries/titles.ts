@@ -44,7 +44,10 @@ export function useTitleAnalysisQuery(instrumentId: string, period: TitleChartPe
 
 function useInvalidateTitles() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: [...TITLES_KEY] });
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ["investments", "sidebar-summary"] });
+    return queryClient.invalidateQueries({ queryKey: [...TITLES_KEY] });
+  };
 }
 
 /** Segue o smette di seguire un titolo. */

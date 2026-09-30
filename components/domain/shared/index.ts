@@ -12,3 +12,5 @@ export { LoadError } from "./load-error";
 export type { LoadErrorProps } from "./load-error";
 export { ProgressBar } from "./progress-bar";
 export type { ProgressBarProps, ProgressBarState } from "./progress-bar";
+export { CollapsibleSection, COLLAPSIBLE_STORAGE_PREFIX } from "./collapsible-section";
+export type { CollapsibleSectionProps } from "./collapsible-section";

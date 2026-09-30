@@ -6,6 +6,7 @@ import * as React from "react";
 import { CategoryBoard, DistributeColorsButton } from "@/components/domain/categories";
 import { RulesManager } from "@/components/domain/categorization";
 import { LoadError, SegmentedControl } from "@/components/domain/shared";
+import { authClient } from "@/lib/auth/client";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 
 type CategoriesTab = "categorie" | "regole";
@@ -18,6 +19,8 @@ const TAB_OPTIONS = [
 export default function CategoriePage() {
   const { data: categories, isLoading, isError, refetch } = useCategoriesQuery();
   const [tab, setTab] = React.useState<CategoriesTab>("categorie");
+  const { data: session } = authClient.useSession();
+  const currency = session?.user.currency ?? "EUR";
   const safeCategories = categories ?? [];
 
   return (
@@ -41,7 +44,7 @@ export default function CategoriePage() {
       ) : isError ? (
         <LoadError message="Impossibile caricare le categorie." onRetry={() => refetch()} />
       ) : tab === "categorie" ? (
-        <CategoryBoard categories={safeCategories} />
+        <CategoryBoard categories={safeCategories} currency={currency} />
       ) : (
         <RulesManager categories={safeCategories} />
       )}

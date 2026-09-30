@@ -13,6 +13,7 @@ export const updateUserSettingsSchema = z
       .max(DISPLAY_NAME_MAX_LENGTH, `Massimo ${DISPLAY_NAME_MAX_LENGTH} caratteri`)
       .optional(),
     currency: z.string().refine(isSupportedCurrency, "Valuta non supportata").optional(),
+    hideAmounts: z.boolean().optional(),
     homePage: z.string().refine(isHomePagePath, "Pagina non valida").optional(),
   })
   .strict()

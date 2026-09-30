@@ -85,6 +85,12 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      hideAmounts: {
+        type: "boolean",
+        defaultValue: false,
+        required: false,
+        input: false,
+      },
       deletionScheduledAt: {
         type: "date",
         required: false,

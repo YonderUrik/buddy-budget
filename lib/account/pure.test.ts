@@ -30,7 +30,7 @@ describe("isRecentLogin", () => {
 
 describe("pagina iniziale", () => {
   it("accetta solo le pagine previste", () => {
-    expect(isHomePagePath("/transazioni")).toBe(true);
+    expect(isHomePagePath("/movimenti")).toBe(true);
     expect(isHomePagePath("/impostazioni")).toBe(false);
     expect(isHomePagePath("https://evil.example")).toBe(false);
     expect(isHomePagePath(42)).toBe(false);

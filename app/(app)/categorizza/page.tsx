@@ -201,10 +201,10 @@ export default function CategorizzaPage() {
     <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div className="flex flex-col gap-1">
         <Link
-          href="/transazioni"
+          href="/movimenti"
           className="-my-1 w-fit py-1 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
         >
-          ← Torna a Transazioni
+          ← Torna a Movimenti
         </Link>
         <h1 className="font-heading text-2xl font-medium text-foreground">Categorizza</h1>
         <p className="text-sm text-muted-foreground">

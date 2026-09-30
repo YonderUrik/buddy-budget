@@ -5,8 +5,8 @@
 export const HOME_PAGE_OPTIONS = [
   { path: "/panoramica", label: "Panoramica" },
   { path: "/conti", label: "Conti" },
-  { path: "/transazioni", label: "Transazioni" },
-  { path: "/cash-flow", label: "Cash flow" },
+  { path: "/movimenti", label: "Movimenti" },
+  { path: "/movimenti/analisi", label: "Analisi dei movimenti" },
   { path: "/investimenti", label: "Investimenti" },
 ] as const;
 

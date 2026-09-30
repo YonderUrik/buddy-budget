@@ -17,6 +17,8 @@ export interface Institution {
 
 export interface BankConnectionStatus {
   accountId: string;
+  /** Nome della banca a cui appartiene il conto (per raggruppare la lista). */
+  institutionName: string;
   status: "pending" | "linked" | "expired" | "error";
   lastSyncedAt: string | null;
   eligible: boolean;

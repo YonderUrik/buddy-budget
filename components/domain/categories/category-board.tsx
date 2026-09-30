@@ -1,0 +1,97 @@
+"use client";
+
+/**
+ * Board delle categorie: una colonna per gruppo di spesa, "Da categorizzare" ed Entrate. Le tessere si trascinano
+ * tra le colonne per cambiare gruppo; il clic apre il dettaglio (dove il gruppo si cambia anche senza trascinare, utile su touch).
+ */
+
+import * as React from "react";
+import { EXPENSE_GROUPS, GROUP_DISPLAY, groupCategoriesByType, type CategoryType } from "@/lib/categories/groups";
+import type { Category } from "@/lib/db/schema/categories";
+import { useCategoryUsageQuery, useUpdateCategoryMutation } from "@/lib/queries/categories";
+import { CategoryDetailDialog } from "./category-detail-dialog";
+import { CategoryGroupColumn } from "./category-group-column";
+
+export interface CategoryBoardProps {
+  categories: Category[];
+}
+
+/** Colonna della board che raccoglie i movimenti in entrata. */
+const INCOME_DESCRIPTION = "Stipendio, rimborsi e tutto ciò che entra.";
+const UNCATEGORIZED_DESCRIPTION = "Movimenti non ancora assegnati: si sistemano da Transazioni.";
+
+export function CategoryBoard({ categories }: CategoryBoardProps) {
+  const { data: usage } = useCategoryUsageQuery();
+  const updateMutation = useUpdateCategoryMutation();
+  const sections = groupCategoriesByType(categories);
+
+  const [openId, setOpenId] = React.useState<string | null>(null);
+  const [dragged, setDragged] = React.useState<Category | null>(null);
+  const [overType, setOverType] = React.useState<CategoryType | null>(null);
+  const [movingId, setMovingId] = React.useState<string | null>(null);
+
+  // Derivata dalla lista così il pannello riflette le modifiche appena salvate (e si chiude se la categoria sparisce).
+  const openCategory = categories.find((category) => category.id === openId) ?? null;
+
+  function endDrag() {
+    setDragged(null);
+    setOverType(null);
+  }
+
+  function handleDrop(type: CategoryType) {
+    const moved = dragged;
+    endDrag();
+    if (!moved || moved.type === type) return;
+    setMovingId(moved.id);
+    updateMutation.mutate({ id: moved.id, input: { type } }, { onSettled: () => setMovingId(null) });
+  }
+
+  function column(key: string, type: CategoryType | undefined, props: { title: string; description?: string; dotClassName?: string; items: Category[] }) {
+    return (
+      <CategoryGroupColumn
+        key={key}
+        title={props.title}
+        description={props.description}
+        dotClassName={props.dotClassName}
+        categories={props.items}
+        usage={usage}
+        dropType={type}
+        isDropActive={type !== undefined && dragged !== null && dragged.type !== type && overType === type}
+        movingId={movingId}
+        onOpen={(category) => setOpenId(category.id)}
+        onDragStart={setDragged}
+        onDragEnd={endDrag}
+        onDragEnter={() => setOverType(type ?? null)}
+        onDrop={() => type && handleDrop(type)}
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {sections.groups.map((group) =>
+          column(group.key, group.key, {
+            title: EXPENSE_GROUPS[group.key].label,
+            description: EXPENSE_GROUPS[group.key].shortDescription,
+            dotClassName: EXPENSE_GROUPS[group.key].dotClassName,
+            items: group.categories,
+          })
+        )}
+        {column("entrata", "entrata", { title: "Entrate", description: INCOME_DESCRIPTION, items: sections.income })}
+        {sections.uncategorized.length > 0 &&
+          column("daCategorizzare", undefined, {
+            title: GROUP_DISPLAY.daCategorizzare.label,
+            description: UNCATEGORIZED_DESCRIPTION,
+            dotClassName: GROUP_DISPLAY.daCategorizzare.dotClassName,
+            items: sections.uncategorized,
+          })}
+      </div>
+      <CategoryDetailDialog
+        category={openCategory}
+        usageCount={openCategory ? usage?.[openCategory.id] : undefined}
+        onClose={() => setOpenId(null)}
+      />
+    </>
+  );
+}

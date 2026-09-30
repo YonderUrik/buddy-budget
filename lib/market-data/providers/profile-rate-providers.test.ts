@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { estrProvider, parseEstrCsv } from "./estr";
 import { fakeContext, readFixture } from "./test-utils";
-import { fetchYahooProfile, resetYahooSession } from "./yahoo";
+import { fetchYahooDividends, fetchYahooProfile, resetYahooSession } from "./yahoo";
 
 describe("yahoo quoteSummary", () => {
   beforeEach(() => resetYahooSession());
@@ -46,5 +46,22 @@ describe("€STR BCE", () => {
 
   it("un'intestazione inattesa è un errore della fonte", () => {
     expect(() => parseEstrCsv("A,B\n1,2")).toThrow();
+  });
+});
+
+describe("yahoo dividendi", () => {
+  beforeEach(() => resetYahooSession());
+
+  it("legge gli stacchi in ordine di data, converte le sottounità e scarta gli importi nulli", async () => {
+    const ctx = fakeContext(readFixture("synthetic-yahoo-dividends.json"));
+    expect(await fetchYahooDividends("VHYL.L", ctx)).toEqual([
+      { exDate: "2024-12-19", amount: 0.38, currency: "GBP" },
+      { exDate: "2025-03-19", amount: 0.455, currency: "GBP" },
+    ]);
+    expect(ctx.urls.some((u) => u.includes("/v8/finance/chart/VHYL.L?") && u.includes("events=div"))).toBe(true);
+  });
+
+  it("uno strumento sconosciuto non ha dividendi, non è un errore", async () => {
+    expect(await fetchYahooDividends("NOPE", fakeContext('{"chart":{"result":null,"error":{"code":"Not Found"}}}', 404))).toEqual([]);
   });
 });

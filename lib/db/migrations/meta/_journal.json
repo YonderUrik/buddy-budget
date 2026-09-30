@@ -36,6 +36,13 @@
       "when": 1790702461486,
       "tag": "0004_investimenti_fase_3",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790745923442,
+      "tag": "0005_investimenti_fase_4",
+      "breakpoints": true
     }
   ]
 }

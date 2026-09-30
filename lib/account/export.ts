@@ -13,9 +13,12 @@ import {
   investmentPlans,
   investmentPortfolios,
   investmentTargets,
+  investmentTaxCarryforwards,
   investmentTransactions,
+  userDismissedDividends,
   userInstrumentBreakdowns,
   userInstrumentPrices,
+  userInstrumentSettings,
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -69,6 +72,9 @@ async function loadUserData(userId: string) {
     targetRows,
     breakdownRows,
     snapshotRows,
+    instrumentSettingRows,
+    carryforwardRows,
+    dismissedDividendRows,
   ] = await Promise.all([
     db
       .select({
@@ -146,7 +152,7 @@ async function loadUserData(userId: string) {
       .where(eq(transactions.userId, userId))
       .orderBy(asc(transactions.date), asc(transactions.createdAt)),
     db
-      .select({ id: investmentPortfolios.id, name: investmentPortfolios.name, broker: investmentPortfolios.broker })
+      .select({ id: investmentPortfolios.id, name: investmentPortfolios.name, broker: investmentPortfolios.broker, taxRegime: investmentPortfolios.taxRegime })
       .from(investmentPortfolios)
       .where(eq(investmentPortfolios.userId, userId)),
     db
@@ -228,6 +234,33 @@ async function loadUserData(userId: string) {
       .from(netWorthSnapshots)
       .where(eq(netWorthSnapshots.userId, userId))
       .orderBy(asc(netWorthSnapshots.date), asc(netWorthSnapshots.assetClass)),
+    db
+      .select({
+        instrumentId: userInstrumentSettings.instrumentId,
+        instrumentName: instruments.name,
+        taxRate: userInstrumentSettings.taxRate,
+        taxHarmonized: userInstrumentSettings.taxHarmonized,
+        couponRate: userInstrumentSettings.couponRate,
+        couponFrequency: userInstrumentSettings.couponFrequency,
+        maturityDate: userInstrumentSettings.maturityDate,
+      })
+      .from(userInstrumentSettings)
+      .innerJoin(instruments, eq(instruments.id, userInstrumentSettings.instrumentId))
+      .where(eq(userInstrumentSettings.userId, userId)),
+    db
+      .select({
+        portfolioId: investmentTaxCarryforwards.portfolioId,
+        year: investmentTaxCarryforwards.year,
+        amount: investmentTaxCarryforwards.amount,
+        note: investmentTaxCarryforwards.note,
+      })
+      .from(investmentTaxCarryforwards)
+      .where(eq(investmentTaxCarryforwards.userId, userId)),
+    db
+      .select({ instrumentId: userDismissedDividends.instrumentId, instrumentName: instruments.name, date: userDismissedDividends.date })
+      .from(userDismissedDividends)
+      .innerJoin(instruments, eq(instruments.id, userDismissedDividends.instrumentId))
+      .where(eq(userDismissedDividends.userId, userId)),
   ]);
 
   return {
@@ -245,6 +278,9 @@ async function loadUserData(userId: string) {
     investmentTargets: targetRows,
     instrumentBreakdowns: breakdownRows,
     netWorth: snapshotRows,
+    instrumentSettings: instrumentSettingRows,
+    taxCarryforwards: carryforwardRows,
+    dismissedDividends: dismissedDividendRows,
   };
 }
 

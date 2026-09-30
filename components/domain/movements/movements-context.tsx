@@ -19,7 +19,13 @@ export interface MovementsState {
   setCategoryFilter: (categoryId: string | null) => void;
   searchText: string;
   setSearchText: (text: string) => void;
+  /** Conto di cui si guardano i movimenti (null = tutti). Può arrivare dall'indirizzo, da Conti. */
+  accountFilter: string | null;
+  setAccountFilter: (accountId: string | null) => void;
 }
+
+/** Nome del parametro d'indirizzo con cui Conti apre Movimenti già filtrato per conto. */
+export const MOVEMENTS_ACCOUNT_PARAM = "conto";
 
 const MovementsContext = React.createContext<MovementsState | null>(null);
 
@@ -27,19 +33,22 @@ const MovementsContext = React.createContext<MovementsState | null>(null);
 export function MovementsProvider({
   children,
   initialPeriod = "mese",
+  initialAccountId = null,
 }: {
   children: React.ReactNode;
   initialPeriod?: ExpensePeriod;
+  initialAccountId?: string | null;
 }) {
   const [period, setPeriod] = React.useState<ExpensePeriod>(initialPeriod);
   const [referenceDate, setReferenceDate] = React.useState<Date>(() => new Date());
   const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
   const [searchText, setSearchText] = React.useState("");
+  const [accountFilter, setAccountFilter] = React.useState<string | null>(initialAccountId);
   const today = React.useMemo(() => new Date(), []);
 
   const value = React.useMemo<MovementsState>(
-    () => ({ period, setPeriod, referenceDate, setReferenceDate, today, categoryFilter, setCategoryFilter, searchText, setSearchText }),
-    [period, referenceDate, today, categoryFilter, searchText]
+    () => ({ period, setPeriod, referenceDate, setReferenceDate, today, categoryFilter, setCategoryFilter, searchText, setSearchText, accountFilter, setAccountFilter }),
+    [period, referenceDate, today, categoryFilter, searchText, accountFilter]
   );
   return <MovementsContext.Provider value={value}>{children}</MovementsContext.Provider>;
 }

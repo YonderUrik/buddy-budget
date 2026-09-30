@@ -484,6 +484,8 @@ export function computeCategoryMonthlyStacks(
 export interface TransactionFilter {
   categoryId: string | null;
   searchText: string;
+  /** Se presente, tiene solo le transazioni di quel conto. */
+  accountId?: string | null;
 }
 
 /** Filtra le transazioni per categoria esatta e/o substring case-insensitive su descrizione o nota, in AND. */
@@ -494,6 +496,7 @@ export function filterTransactions(
   const normalizedSearch = filter.searchText.trim().toLocaleLowerCase();
   return transactions.filter((t) => {
     if (filter.categoryId !== null && t.categoryId !== filter.categoryId) return false;
+    if (filter.accountId && t.accountId !== filter.accountId) return false;
     if (normalizedSearch === "") return true;
     const descriptionMatch = t.description.toLocaleLowerCase().includes(normalizedSearch);
     const noteMatch = (t.note ?? "").toLocaleLowerCase().includes(normalizedSearch);

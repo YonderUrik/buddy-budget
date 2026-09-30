@@ -2,18 +2,18 @@
 
 /**
  * Layout di Movimenti: titolo, periodo (un solo selettore per tutte le schede), "Aggiungi" e schede
- * Elenco / Analisi / Categorie. Nella scheda Categorie periodo e "Aggiungi" non compaiono e la pagina si allarga per la board.
+ * Elenco / Analisi / Categorie. Nelle schede Categorie e Regole periodo e "Aggiungi" non compaiono e la pagina si allarga per la board.
  */
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Plus } from "lucide-react";
 import {
   AddTransactionForm,
   ExpensesPeriodSelector,
   ExpensesReferenceNav,
 } from "@/components/domain/expenses";
-import { MOVEMENTS_CATEGORIES_HREF, MOVEMENTS_TABS, MovementsProvider, useMovements } from "@/components/domain/movements";
+import { MOVEMENTS_ACCOUNT_PARAM, MOVEMENTS_CATEGORIES_HREF, MOVEMENTS_MANAGEMENT_HREFS, MOVEMENTS_TABS, MovementsProvider, useMovements } from "@/components/domain/movements";
 import { SectionTabs } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -67,19 +67,30 @@ function MovementsHeader({ showPeriod }: { showPeriod: boolean }) {
   );
 }
 
-export default function MovimentiLayout({ children }: { children: React.ReactNode }) {
+function MovementsFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const accountParam = useSearchParams().get(MOVEMENTS_ACCOUNT_PARAM);
   const isCategories = pathname.startsWith(MOVEMENTS_CATEGORIES_HREF);
+  const isManagement = MOVEMENTS_MANAGEMENT_HREFS.some((href) => pathname.startsWith(href));
 
   return (
-    <MovementsProvider>
+    <MovementsProvider initialAccountId={accountParam}>
       <div className={cn("mx-auto flex flex-col gap-5 p-4 sm:gap-6 sm:p-6", isCategories ? "max-w-6xl" : "max-w-4xl")}>
         <div className="flex flex-col gap-3">
-          <MovementsHeader showPeriod={!isCategories} />
+          <MovementsHeader showPeriod={!isManagement} />
           <SectionTabs tabs={MOVEMENTS_TABS} activeHref={pathname} ariaLabel="Sezioni di Movimenti" />
         </div>
         {children}
       </div>
     </MovementsProvider>
+  );
+}
+
+export default function MovimentiLayout({ children }: { children: React.ReactNode }) {
+  // useSearchParams richiede un confine Suspense.
+  return (
+    <React.Suspense fallback={null}>
+      <MovementsFrame>{children}</MovementsFrame>
+    </React.Suspense>
   );
 }

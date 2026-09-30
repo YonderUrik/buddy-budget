@@ -10,7 +10,7 @@ import {
   TransactionsTypeToggle,
   UncategorizedCallout,
 } from "@/components/domain/expenses";
-import { movementsFetchWindow, useMovements } from "@/components/domain/movements";
+import { AccountFilterChip, movementsFetchWindow, useMovements } from "@/components/domain/movements";
 import { LoadError } from "@/components/domain/shared";
 import { Card } from "@/components/ui/card";
 import { authClient } from "@/lib/auth/client";
@@ -34,7 +34,7 @@ function toDateString(date: Date): string {
 export default function MovimentiElencoPage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
-  const { period, referenceDate, categoryFilter, setCategoryFilter, searchText, setSearchText } = useMovements();
+  const { period, referenceDate, categoryFilter, setCategoryFilter, searchText, setSearchText, accountFilter, setAccountFilter } = useMovements();
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
   const [listTypeFilter, setListTypeFilter] = React.useState<TransactionDirection>("tutte");
 
@@ -43,7 +43,7 @@ export default function MovimentiElencoPage() {
   const { data: categories } = useCategoriesQuery();
   const safeCategories = categories ?? [];
 
-  const filtered = filterTransactions(transactions ?? [], { categoryId: categoryFilter, searchText });
+  const filtered = filterTransactions(transactions ?? [], { categoryId: categoryFilter, searchText, accountId: accountFilter });
   const range = getPeriodRange(period, referenceDate);
   const fallbackCategoryIds = new Set(safeCategories.filter((c) => c.isFallback).map((c) => c.id));
   const isUncategorized = (categoryId: string | null) => categoryId !== null && fallbackCategoryIds.has(categoryId);
@@ -57,6 +57,7 @@ export default function MovimentiElencoPage() {
 
   return (
     <>
+      <AccountFilterChip accountId={accountFilter} onClear={() => setAccountFilter(null)} />
       <ExpensesFilterBar
         categories={safeCategories}
         categoryId={categoryFilter}

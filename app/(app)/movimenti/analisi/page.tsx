@@ -7,7 +7,7 @@
 
 import { AccumulatedSavingsChart, IncomeSourcesList } from "@/components/domain/cashflow";
 import { CategoryBreakdownDonut, ExpensesFilterBar } from "@/components/domain/expenses";
-import { MovementsKpiStrip, MovementsTrendSwitch, movementsFetchWindow, useMovements } from "@/components/domain/movements";
+import { AccountFilterChip, MovementsKpiStrip, MovementsTrendSwitch, movementsFetchWindow, useMovements } from "@/components/domain/movements";
 import { LoadError } from "@/components/domain/shared";
 import { authClient } from "@/lib/auth/client";
 import {
@@ -31,7 +31,7 @@ import { useTransactionsQuery } from "@/lib/queries/transactions";
 export default function MovimentiAnalisiPage() {
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
-  const { period, referenceDate, today, categoryFilter, setCategoryFilter, searchText, setSearchText } = useMovements();
+  const { period, referenceDate, today, categoryFilter, setCategoryFilter, searchText, setSearchText, accountFilter, setAccountFilter } = useMovements();
 
   const { from, to } = movementsFetchWindow(referenceDate);
   const { data: transactions, isLoading, isError, refetch } = useTransactionsQuery(from, to, "tutte");
@@ -40,7 +40,7 @@ export default function MovimentiAnalisiPage() {
   const safeCategories = categories ?? [];
   const safeBudgets = budgets ?? [];
 
-  const filtered = filterTransactions(transactions ?? [], { categoryId: categoryFilter, searchText });
+  const filtered = filterTransactions(transactions ?? [], { categoryId: categoryFilter, searchText, accountId: accountFilter });
   const expenses = filtered.filter(isExpense);
   const range = getPeriodRange(period, referenceDate);
   const trendRange = getTrendRange(period, referenceDate);
@@ -48,6 +48,7 @@ export default function MovimentiAnalisiPage() {
 
   return (
     <>
+      <AccountFilterChip accountId={accountFilter} onClear={() => setAccountFilter(null)} />
       <ExpensesFilterBar
         categories={safeCategories}
         categoryId={categoryFilter}

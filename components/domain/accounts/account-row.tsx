@@ -37,7 +37,8 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Trash2, Link2Off, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { MoreVertical, Trash2, Link2Off, RefreshCw, ListOrdered } from "lucide-react";
 import { formatCurrency, formatRelativeTime } from "@/lib/format";
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
@@ -87,6 +88,8 @@ export interface AccountRowProps {
   };
   /** True se il conto ha un sync in corso (anche partito da un'altra pagina o scheda). */
   syncing?: boolean;
+  /** Se presente, la riga mostra un link ai movimenti di questo conto (es. `/movimenti?conto=<id>`). */
+  movementsHref?: string;
 }
 
 export function AccountRow({
@@ -96,6 +99,7 @@ export function AccountRow({
   onReconnect,
   syncInfo,
   syncing = false,
+  movementsHref,
 }: AccountRowProps) {
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
@@ -240,6 +244,17 @@ export function AccountRow({
             </Badge>
           </div>
         </div>
+
+        {movementsHref && (
+          <Link
+            href={movementsHref}
+            title="Vedi i movimenti di questo conto"
+            aria-label={`Vedi i movimenti di ${account.name}`}
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            <ListOrdered size={15} aria-hidden="true" />
+          </Link>
+        )}
 
         {isAuto && (
           <button

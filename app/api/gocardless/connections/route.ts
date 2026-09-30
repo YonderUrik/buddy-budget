@@ -17,6 +17,7 @@ async function handleGet(request: NextRequest) {
   const rows = await db
     .select({
       accountId: bankAccountLinks.accountId,
+      institutionName: bankConnections.institutionName,
       status: bankConnections.status,
       lastSyncedAt: bankAccountLinks.lastSyncedAt,
       syncTimestamps: bankAccountLinks.syncTimestamps,
@@ -34,6 +35,7 @@ async function handleGet(request: NextRequest) {
       );
       return {
         accountId: row.accountId,
+        institutionName: row.institutionName,
         status: row.status,
         lastSyncedAt: row.lastSyncedAt,
         eligible: eligibility.eligible,

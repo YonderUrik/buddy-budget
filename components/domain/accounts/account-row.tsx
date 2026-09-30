@@ -148,7 +148,7 @@ export function AccountRow({
   const avatar = <AccountAvatar color={color} icon={icon} />;
 
   return (
-    <div className="group relative flex items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0 hover:bg-muted/10 transition-colors">
+    <div className="group relative flex flex-col gap-2 border-b sm:flex-row sm:items-center sm:justify-between sm:gap-3 border-border px-4 py-3 last:border-b-0 hover:bg-muted/10 transition-colors">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <AccountIconColorPicker value={{ color, icon }} onChange={handleAppearanceChange}>
           {avatar}
@@ -209,8 +209,8 @@ export function AccountRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="flex flex-col items-end gap-1">
+      <div className="flex items-center justify-between gap-4 sm:shrink-0 sm:justify-end">
+        <div className="flex flex-col items-start gap-1 sm:items-end">
           {isAuto ? (
             <p className="h-7 text-right text-sm font-semibold tabular-nums flex items-center pr-1.5 text-foreground">
               {formatCurrency(Number(account.balance), currency)}

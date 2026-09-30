@@ -3,7 +3,7 @@
 /** Pagina Conti: orchestra fetch, KPI, lista conti e form di creazione. Nessuna logica di business qui. */
 
 import * as React from "react";
-import { AccountsKpi, AccountRow, AddAccountForm } from "@/components/domain/accounts";
+import { AccountsKpi, AccountsTrend, AccountRow, AddAccountForm, computeAccountsKpi, groupAccounts } from "@/components/domain/accounts";
 import { MOVEMENTS_ACCOUNT_PARAM } from "@/components/domain/movements";
 import { LoadError } from "@/components/domain/shared";
 import { Card } from "@/components/ui/card";
@@ -16,17 +16,17 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/client";
+import { buildNetWorthSeries, toDateKey } from "@/lib/calc/net-worth";
+import { startOfDay } from "@/lib/calc/expenses";
 import { useAccountsQuery } from "@/lib/queries/accounts";
+import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { isAccountSyncing } from "@/lib/sync-jobs/view";
 import { Plus } from "lucide-react";
 
-/** Gruppi della lista: prima i conti sincronizzati con la banca, poi quelli tenuti a mano. */
-const ACCOUNT_SECTIONS = [
-  { source: "auto", label: "Collegati alla banca", hint: "Saldo e movimenti si aggiornano da soli" },
-  { source: "manuale", label: "Manuali", hint: "Li aggiorni tu" },
-] as const;
+/** Giorni di storia mostrati nel mini andamento della liquidità. */
+const TREND_DAYS = 30;
 
 export default function ContiPage() {
   const { data: session } = authClient.useSession();
@@ -34,6 +34,9 @@ export default function ContiPage() {
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const { data: connectionStatuses } = useBankConnectionsStatusQuery();
   const { data: syncJobs } = useSyncJobsQuery();
+  const today = React.useMemo(() => startOfDay(new Date()), []);
+  const trendFrom = React.useMemo(() => toDateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() - TREND_DAYS - 1)), [today]);
+  const { data: snapshots } = useNetWorthSnapshotsQuery(trendFrom, toDateKey(today));
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [reconnectTrigger, setReconnectTrigger] = React.useState(0);
 
@@ -42,6 +45,15 @@ export default function ContiPage() {
       .filter((status) => status.status === "expired" || status.status === "error")
       .map((status) => status.accountId)
   );
+
+  const bankByAccountId = new Map((connectionStatuses ?? []).map((status) => [status.accountId, status.institutionName]));
+  const accountGroups = groupAccounts(accounts ?? [], bankByAccountId);
+  const trendValues = buildNetWorthSeries(
+    (snapshots ?? []).filter((row) => row.assetClass === "liquidita"),
+    { liquidita: computeAccountsKpi(accounts ?? []).totalLiquidity },
+    "1mese",
+    today
+  ).map((point) => point.value);
 
   const syncInfoByAccountId = new Map(
     (connectionStatuses ?? []).map((status) => [
@@ -87,7 +99,10 @@ export default function ContiPage() {
       ) : isError ? (
         <LoadError message="Impossibile caricare i conti." onRetry={() => refetch()} />
       ) : (
-        <AccountsKpi accounts={accounts ?? []} currency={currency} />
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+          <AccountsKpi accounts={accounts ?? []} currency={currency} />
+          <AccountsTrend values={trendValues} currency={currency} className="ml-auto" />
+        </div>
       )}
 
       {!isLoading && !isError && (accounts ?? []).length === 0 ? (
@@ -99,13 +114,12 @@ export default function ContiPage() {
       ) : (
         !isLoading &&
         !isError &&
-        ACCOUNT_SECTIONS.map((section) => {
-          const sectionAccounts = (accounts ?? []).filter((account) => account.source === section.source);
-          if (sectionAccounts.length === 0) return null;
+        accountGroups.map((section) => {
+          const sectionAccounts = section.accounts;
           return (
-            <section key={section.source} className="flex flex-col gap-2" aria-labelledby={`conti-${section.source}`}>
+            <section key={section.key} className="flex flex-col gap-2" aria-labelledby={`conti-${section.key}`}>
               <div className="flex items-baseline justify-between px-1">
-                <h2 id={`conti-${section.source}`} className="text-sm font-medium text-foreground">
+                <h2 id={`conti-${section.key}`} className="text-sm font-medium text-foreground">
                   {section.label}
                 </h2>
                 <span className="text-xs text-muted-foreground">{section.hint}</span>

@@ -24,9 +24,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // La schermata Spese è stata rinominata Transazioni: mantiene validi i vecchi link/segnalibri.
+  // Spese, Transazioni, Cash flow e Categorie sono confluite in Movimenti: i vecchi link, i segnalibri e le pagine
+  // iniziali già salvate nel profilo continuano a funzionare.
   async redirects() {
-    return [{ source: "/spese", destination: "/transazioni", permanent: true }];
+    return [
+      { source: "/spese", destination: "/movimenti", permanent: true },
+      { source: "/transazioni", destination: "/movimenti", permanent: true },
+      { source: "/cash-flow", destination: "/movimenti/analisi", permanent: true },
+      { source: "/categorie", destination: "/movimenti/categorie", permanent: true },
+    ];
   },
 };
 

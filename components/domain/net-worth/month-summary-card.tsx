@@ -12,7 +12,7 @@ export interface MonthSummaryCardProps {
   href?: string;
 }
 
-export function MonthSummaryCard({ entrate, uscite, currency, href = "/cash-flow" }: MonthSummaryCardProps) {
+export function MonthSummaryCard({ entrate, uscite, currency, href = "/movimenti/analisi" }: MonthSummaryCardProps) {
   const saved = entrate - uscite;
   const format = (value: number) => formatCurrency(value, currency, { maximumFractionDigits: 0 });
 

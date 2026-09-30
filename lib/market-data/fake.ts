@@ -3,6 +3,7 @@ import type { DailyClose, FxProvider, PriceProvider, ProviderId } from "./types"
 import type { YahooSearchHit } from "./providers/yahoo";
 import type { InflationProvider } from "./providers/eurostat";
 import type { RateProvider } from "./providers/estr";
+import type { FundamentalsProvider } from "./fundamentals";
 import type { ProfileProvider } from "./profiles";
 import type { DividendProvider } from "./dividends";
 
@@ -192,5 +193,25 @@ export const FAKE_DIVIDEND_PROVIDER: DividendProvider = {
       }
     }
     return events;
+  },
+};
+
+/** Numeri chiave finti: costi e patrimonio per gli ETF del catalogo, multipli e margini per le azioni. */
+export const FAKE_FUNDAMENTALS_PROVIDER: FundamentalsProvider = {
+  async fetchFundamentals(symbol, kind) {
+    const { base } = splitYahooSymbol(symbol);
+    const empty = {
+      marketCap: null, trailingPE: null, forwardPE: null, priceToBook: null, dividendYield: null, eps: null, beta: null,
+      profitMargin: null, returnOnEquity: null, revenueGrowth: null, debtToEquity: null, expenseRatio: null, totalAssets: null,
+    };
+    if (kind === "fund") {
+      if (base === "VWCE" || base === "SWDA") return { ...empty, expenseRatio: 0.0022, totalAssets: 8.5e9, beta: 1 };
+      return null;
+    }
+    if (base === "AAPL") {
+      return { ...empty, marketCap: 3.1e12, trailingPE: 31.2, forwardPE: 27.5, priceToBook: 46, dividendYield: 0.0045, eps: 6.4, beta: 1.2,
+        profitMargin: 0.25, returnOnEquity: 1.5, revenueGrowth: 0.06, debtToEquity: 150 };
+    }
+    return null;
   },
 };

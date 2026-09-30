@@ -14,6 +14,8 @@ import {
   investmentTaxCarryforwards,
   investmentTransactions,
   userDismissedDividends,
+  userPriceAlerts,
+  userWatchlistItems,
   userInstrumentBreakdowns,
   userInstrumentPrices,
   userInstrumentSettings,
@@ -130,6 +132,8 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(userInstrumentBreakdowns).where(eq(userInstrumentBreakdowns.userId, userId));
   await tx.delete(userInstrumentSettings).where(eq(userInstrumentSettings.userId, userId));
   await tx.delete(userDismissedDividends).where(eq(userDismissedDividends.userId, userId));
+  await tx.delete(userWatchlistItems).where(eq(userWatchlistItems.userId, userId));
+  await tx.delete(userPriceAlerts).where(eq(userPriceAlerts.userId, userId));
   // Gli strumenti manuali sono privati di chi li crea: con la FK `set null` diventerebbero visibili a tutti.
   // Si eliminano se nessun altro li usa (prezzi e simboli vanno via in cascata).
   await tx

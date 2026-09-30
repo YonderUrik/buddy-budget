@@ -44,6 +44,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
+import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import { authClient } from "@/lib/auth/client";
 import {
   DropdownMenu,
@@ -208,6 +209,8 @@ interface AppSidebarProps {
   onClose?: () => void;
   /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
   settingsHref?: string;
+  /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
+  extra?: React.ReactNode;
 }
 
 export function AppSidebar({
@@ -216,6 +219,7 @@ export function AppSidebar({
   activeHref,
   onClose,
   settingsHref = "/impostazioni",
+  extra,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
   const router = useRouter();
@@ -298,6 +302,9 @@ export function AppSidebar({
             </li>
           ))}
         </ul>
+        {extra ? (
+          <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
+        ) : null}
       </nav>
 
       {/* ── Footer: card utente + toggle tema + collapse button ── */}

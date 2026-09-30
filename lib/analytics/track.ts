@@ -28,6 +28,9 @@ export interface ProductEvents {
   instrument_settings_saved: undefined;
   tax_carryforward_added: undefined;
   investment_dividend_dismissed: undefined;
+  title_watched: undefined;
+  price_alert_created: { direction: "sopra" | "sotto" };
+  title_commentary_requested: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_imported: { operations: number; format: string };
   account_data_exported: undefined;

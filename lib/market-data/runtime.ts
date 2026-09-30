@@ -7,6 +7,7 @@ import {
   FAKE_INFLATION_PROVIDER,
   FAKE_PRICE_PROVIDERS,
   FAKE_DIVIDEND_PROVIDER,
+  FAKE_FUNDAMENTALS_PROVIDER,
   FAKE_PROFILE_PROVIDER,
   FAKE_RATE_PROVIDER,
   fakeCryptoSearch,
@@ -27,6 +28,7 @@ import {
 import { findInstrumentsWithoutProfile, PROFILE_ON_DEMAND_LIMIT, refreshInstrumentProfile } from "./profiles";
 import { redis } from "@/lib/redis/client";
 import { DIVIDENDS_ON_DEMAND_LIMIT, findInstrumentsWithoutDividends, refreshInstrumentDividends } from "./dividends";
+import { loadFundamentals } from "./fundamentals";
 import { findFirstPriceDate, loadSymbols } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
@@ -51,6 +53,7 @@ export function marketDataDeps(): MarketDataDeps {
         rateProvider: FAKE_RATE_PROVIDER,
         profileProvider: FAKE_PROFILE_PROVIDER,
         dividendProvider: FAKE_DIVIDEND_PROVIDER,
+        fundamentalsProvider: FAKE_FUNDAMENTALS_PROVIDER,
       }
     : base;
 }
@@ -167,4 +170,10 @@ export async function ensureDividendsSafely(instruments: Instrument[], schedule:
   } catch (error) {
     logger.warn("market.dividends.failed", { error });
   }
+}
+
+/** Numeri chiave di uno strumento (Yahoo, o finti con `MARKET_DATA_FAKE=1`), con cache giornaliera su Redis. */
+export function fundamentalsOnProviders(instrument: Pick<Instrument, "id" | "type" | "priceMode">) {
+  const deps = marketDataDeps();
+  return loadFundamentals(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
 }

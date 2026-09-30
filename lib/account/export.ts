@@ -19,6 +19,8 @@ import {
   userInstrumentBreakdowns,
   userInstrumentPrices,
   userInstrumentSettings,
+  userPriceAlerts,
+  userWatchlistItems,
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -75,6 +77,8 @@ async function loadUserData(userId: string) {
     instrumentSettingRows,
     carryforwardRows,
     dismissedDividendRows,
+    watchlistRows,
+    priceAlertRows,
   ] = await Promise.all([
     db
       .select({
@@ -261,6 +265,27 @@ async function loadUserData(userId: string) {
       .from(userDismissedDividends)
       .innerJoin(instruments, eq(instruments.id, userDismissedDividends.instrumentId))
       .where(eq(userDismissedDividends.userId, userId)),
+    db
+      .select({ instrumentId: userWatchlistItems.instrumentId, instrumentName: instruments.name, isin: instruments.isin, createdAt: userWatchlistItems.createdAt })
+      .from(userWatchlistItems)
+      .innerJoin(instruments, eq(instruments.id, userWatchlistItems.instrumentId))
+      .where(eq(userWatchlistItems.userId, userId)),
+    db
+      .select({
+        instrumentId: userPriceAlerts.instrumentId,
+        instrumentName: instruments.name,
+        isin: instruments.isin,
+        currency: instruments.currency,
+        direction: userPriceAlerts.direction,
+        targetPrice: userPriceAlerts.targetPrice,
+        status: userPriceAlerts.status,
+        triggeredAt: userPriceAlerts.triggeredAt,
+        triggeredPrice: userPriceAlerts.triggeredPrice,
+        createdAt: userPriceAlerts.createdAt,
+      })
+      .from(userPriceAlerts)
+      .innerJoin(instruments, eq(instruments.id, userPriceAlerts.instrumentId))
+      .where(eq(userPriceAlerts.userId, userId)),
   ]);
 
   return {
@@ -281,6 +306,8 @@ async function loadUserData(userId: string) {
     instrumentSettings: instrumentSettingRows,
     taxCarryforwards: carryforwardRows,
     dismissedDividends: dismissedDividendRows,
+    watchlist: watchlistRows,
+    priceAlerts: priceAlertRows,
   };
 }
 
@@ -355,6 +382,21 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Frequenza", value: (p) => p.frequency },
       { header: "Giorno del mese", value: (p) => p.dayOfMonth },
       { header: "Attivo", value: (p) => p.active },
+    ]),
+    "investimenti-titoli-seguiti.csv": toCsv(data.watchlist, [
+      { header: "Strumento", value: (w) => w.instrumentName },
+      { header: "ISIN", value: (w) => w.isin },
+      { header: "Seguito dal", value: (w) => w.createdAt },
+    ]),
+    "investimenti-avvisi-prezzo.csv": toCsv(data.priceAlerts, [
+      { header: "Strumento", value: (a) => a.instrumentName },
+      { header: "ISIN", value: (a) => a.isin },
+      { header: "Direzione", value: (a) => a.direction },
+      { header: "Livello", value: (a) => decimal(a.targetPrice) },
+      { header: "Valuta", value: (a) => a.currency },
+      { header: "Stato", value: (a) => a.status },
+      { header: "Scattato il", value: (a) => a.triggeredAt },
+      { header: "Chiusura allo scatto", value: (a) => decimal(a.triggeredPrice) },
     ]),
     "patrimonio-netto.csv": toCsv(data.netWorth, [
       { header: "Data", value: (s) => s.date },

@@ -27,6 +27,9 @@ import type {
   UpdatePlanInput,
   UpdatePortfolioInput,
   UpdateTargetsInput,
+  CreateTaxCarryforwardInput,
+  DismissDividendInput,
+  UpdateInstrumentSettingsInput,
 } from "@/lib/validation/investments";
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
@@ -330,11 +333,12 @@ export function useUpdatePortfolioMutation() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
-      if (!response.ok) throw await readError(response, "Impossibile salvare il confronto");
+      if (!response.ok) throw await readError(response, "Impossibile salvare le impostazioni del portafoglio");
       return response.json();
     },
     onSuccess: (_portfolio, input) => {
       if (input.benchmarkInstrumentId) track("investment_benchmark_set");
+      if (input.taxRegime) track("investment_tax_regime_set", { regime: input.taxRegime });
       invalidate();
     },
   });
@@ -376,6 +380,64 @@ export function useUpdateBreakdownMutation() {
     onSuccess: (_result, { input }) => {
       if (input.sectors !== null || input.areas !== null) track("instrument_breakdown_saved");
       queryClient.invalidateQueries({ queryKey: [...INVESTMENTS_QUERY_KEY] });
+    },
+  });
+}
+
+async function sendJson(url: string, method: string, body: unknown, fallback: string): Promise<Response> {
+  const response = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!response.ok) throw await readError(response, fallback);
+  return response;
+}
+
+/** Salva le impostazioni fiscali e le cedole di uno strumento (tutto null = torna all'automatico). */
+export function useUpdateInstrumentSettingsMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async ({ instrumentId, ...input }: UpdateInstrumentSettingsInput & { instrumentId: string }) =>
+      (await sendJson(`/api/instruments/${instrumentId}/settings`, "PUT", input, "Impossibile salvare le impostazioni")).json(),
+    onSuccess: () => {
+      track("instrument_settings_saved");
+      invalidate();
+    },
+  });
+}
+
+/** Aggiunge una minusvalenza pregressa allo zaino. */
+export function useCreateTaxCarryforwardMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async (input: CreateTaxCarryforwardInput) =>
+      (await sendJson("/api/investments/tax-carryforwards", "POST", input, "Impossibile salvare la minusvalenza")).json(),
+    onSuccess: () => {
+      track("tax_carryforward_added");
+      invalidate();
+    },
+  });
+}
+
+/** Elimina una minusvalenza pregressa. */
+export function useDeleteTaxCarryforwardMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/investments/tax-carryforwards/${id}`, { method: "DELETE" });
+      if (!response.ok) throw await readError(response, "Impossibile eliminare la minusvalenza");
+    },
+    onSuccess: () => invalidate(),
+  });
+}
+
+/** Ignora (o, con `restore`, ripristina) una o più proposte di dividendo o cedola da registrare. */
+export function useDismissDividendMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async ({ restore, ...input }: DismissDividendInput & { restore?: boolean }) => {
+      await sendJson("/api/investments/dividends/dismissed", restore ? "DELETE" : "POST", input, "Operazione non riuscita");
+    },
+    onSuccess: (_result, input) => {
+      if (!input.restore) track("investment_dividend_dismissed");
+      invalidate();
     },
   });
 }

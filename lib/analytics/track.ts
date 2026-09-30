@@ -24,6 +24,10 @@ export interface ProductEvents {
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
+  investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };
+  instrument_settings_saved: undefined;
+  tax_carryforward_added: undefined;
+  investment_dividend_dismissed: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_imported: { operations: number; format: string };
   account_data_exported: undefined;

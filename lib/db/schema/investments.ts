@@ -53,6 +53,14 @@ export type PlanFrequency = (typeof PLAN_FREQUENCIES)[number];
 /** Aliquota italiana di default sui redditi finanziari (12,5% per titoli di Stato, si imposta per strumento). */
 export const DEFAULT_TAX_RATE = "0.2600";
 
+/** Regime fiscale del portafoglio: il broker fa da sostituto d'imposta (amministrato) o si paga in dichiarazione. */
+export const TAX_REGIMES = ["amministrato", "dichiarativo"] as const;
+export type TaxRegime = (typeof TAX_REGIMES)[number];
+
+/** Cedole all'anno di un'obbligazione: annuale, semestrale, trimestrale. */
+export const COUPON_FREQUENCIES = [1, 2, 4] as const;
+export type CouponFrequency = (typeof COUPON_FREQUENCIES)[number];
+
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -72,6 +80,8 @@ export const instruments = pgTable(
     exchange: text("exchange"),
     taxRate: numeric("tax_rate", { precision: 5, scale: 4 }).notNull().default(DEFAULT_TAX_RATE),
     taxHarmonized: boolean("tax_harmonized"),
+    /** Ultimo scaricamento dello storico dei dividendi per quota (null = mai). */
+    dividendsFetchedAt: timestamp("dividends_fetched_at", { withTimezone: true }),
     createdByUserId: text("created_by_user_id").references(() => authUser.id, { onDelete: "set null" }),
     ...timestamps,
   },
@@ -155,6 +165,7 @@ export const investmentPortfolios = pgTable(
     broker: text("broker"),
     /** Strumento di confronto per il rendimento ("stessi versamenti in un indice"), scelto dall'utente. */
     benchmarkInstrumentId: uuid("benchmark_instrument_id").references(() => instruments.id, { onDelete: "set null" }),
+    taxRegime: text("tax_regime").$type<TaxRegime>().notNull().default("amministrato"),
     ...timestamps,
   },
   (table) => [index("investment_portfolios_user_idx").on(table.userId)]
@@ -328,6 +339,83 @@ export const interestRates = pgTable(
   (table) => [unique("interest_rates_series_date_unique").on(table.series, table.date)]
 );
 
+/**
+ * Impostazioni fiscali e cedole di uno strumento, per utente (gli strumenti sono condivisi): null = automatico.
+ * Le cedole servono solo alle obbligazioni: tasso annuo lordo (0,035 = 3,5%), cedole all'anno, scadenza.
+ */
+export const userInstrumentSettings = pgTable(
+  "user_instrument_settings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => authUser.id, { onDelete: "cascade" }),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    taxRate: numeric("tax_rate", { precision: 5, scale: 4 }),
+    taxHarmonized: boolean("tax_harmonized"),
+    couponRate: numeric("coupon_rate", { precision: 8, scale: 6 }),
+    couponFrequency: integer("coupon_frequency").$type<CouponFrequency>(),
+    maturityDate: date("maturity_date"),
+    ...timestamps,
+  },
+  (table) => [unique("user_instrument_settings_unique").on(table.userId, table.instrumentId)]
+);
+
+/** Minusvalenze pregresse inserite a mano (lo zaino del broker da prima dell'app), nella valuta dell'utente. */
+export const investmentTaxCarryforwards = pgTable(
+  "investment_tax_carryforwards",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => authUser.id, { onDelete: "cascade" }),
+    portfolioId: uuid("portfolio_id")
+      .notNull()
+      .references(() => investmentPortfolios.id, { onDelete: "cascade" }),
+    /** Anno in cui la minusvalenza è nata: si usa fino al 31/12 di anno + 4. */
+    year: integer("year").notNull(),
+    amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
+    note: text("note"),
+    ...timestamps,
+  },
+  (table) => [index("investment_tax_carryforwards_user_idx").on(table.userId)]
+);
+
+/** Dividendi per quota dalle fonti (data di stacco, valuta dello strumento, corretti per gli split), comuni a tutti. */
+export const instrumentDividends = pgTable(
+  "instrument_dividends",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    exDate: date("ex_date").notNull(),
+    amount: numeric("amount", { precision: 20, scale: 8 }).notNull(),
+    source: text("source").$type<ProviderId>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("instrument_dividends_instrument_date_unique").on(table.instrumentId, table.exDate)]
+);
+
+/** Proposte "dividendo da registrare" ignorate dall'utente (data di stacco o di cedola). */
+export const userDismissedDividends = pgTable(
+  "user_dismissed_dividends",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => authUser.id, { onDelete: "cascade" }),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("user_dismissed_dividends_unique").on(table.userId, table.instrumentId, table.date)]
+);
+
 export type Instrument = typeof instruments.$inferSelect;
 export type NewInstrument = typeof instruments.$inferInsert;
 export type InstrumentSymbol = typeof instrumentSymbols.$inferSelect;
@@ -342,3 +430,6 @@ export type InflationIndexRow = typeof inflationIndex.$inferSelect;
 export type InstrumentProfile = typeof instrumentProfiles.$inferSelect;
 export type UserInstrumentBreakdown = typeof userInstrumentBreakdowns.$inferSelect;
 export type InvestmentTarget = typeof investmentTargets.$inferSelect;
+export type UserInstrumentSetting = typeof userInstrumentSettings.$inferSelect;
+export type InvestmentTaxCarryforward = typeof investmentTaxCarryforwards.$inferSelect;
+export type InstrumentDividend = typeof instrumentDividends.$inferSelect;

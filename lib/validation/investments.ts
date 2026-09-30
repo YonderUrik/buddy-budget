@@ -2,7 +2,9 @@ import { z } from "zod";
 import { TARGET_SUM_TOLERANCE } from "@/lib/investments/allocation";
 import { MANUAL_AREA_KEYS, MANUAL_SECTOR_KEYS } from "@/lib/investments/exposure-keys";
 import {
+  COUPON_FREQUENCIES,
   INSTRUMENT_TYPES,
+  TAX_REGIMES,
   INVESTMENT_TRANSACTION_TYPES,
   PLAN_FREQUENCIES,
   PRICE_UNITS,
@@ -164,8 +166,10 @@ export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;
 export const manualPriceSchema = z.object({ date: dateKey, close: z.number().positive() });
 export type ManualPriceInput = z.infer<typeof manualPriceSchema>;
 
-/** Impostazioni del portafoglio: `null` toglie il benchmark. */
-export const updatePortfolioSchema = z.object({ benchmarkInstrumentId: z.string().uuid().nullable() });
+/** Impostazioni del portafoglio: `null` toglie il benchmark; si manda solo ciò che cambia. */
+export const updatePortfolioSchema = z
+  .object({ benchmarkInstrumentId: z.string().uuid().nullable().optional(), taxRegime: z.enum(TAX_REGIMES).optional() })
+  .refine((data) => data.benchmarkInstrumentId !== undefined || data.taxRegime !== undefined, "Nessun campo da aggiornare");
 export type UpdatePortfolioInput = z.infer<typeof updatePortfolioSchema>;
 
 /** Strumenti massimi nell'allocazione obiettivo. */
@@ -207,3 +211,54 @@ export const updateBreakdownSchema = z.object({
   areas: breakdownWeights(MANUAL_AREA_KEYS),
 });
 export type UpdateBreakdownInput = z.infer<typeof updateBreakdownSchema>;
+
+/** Tasso cedolare annuo massimo accettato (sopra è quasi certamente un errore di battitura). */
+export const MAX_COUPON_RATE = 0.3;
+
+/**
+ * Impostazioni fiscali e cedole di uno strumento, per utente: null = automatico. Le cedole vanno inserite tutte e tre
+ * insieme (tasso, frequenza, scadenza) o nessuna.
+ */
+export const updateInstrumentSettingsSchema = z
+  .object({
+    taxRate: z.enum(TAX_RATES).nullable(),
+    taxHarmonized: z.boolean().nullable(),
+    couponRate: z.number().gt(0).max(MAX_COUPON_RATE).nullable(),
+    couponFrequency: z
+      .number()
+      .int()
+      .refine((v) => (COUPON_FREQUENCIES as readonly number[]).includes(v), "Frequenza non valida")
+      .nullable(),
+    maturityDate: dateKey.nullable(),
+  })
+  .refine(
+    (d) => [d.couponRate, d.couponFrequency, d.maturityDate].every((v) => v === null) || [d.couponRate, d.couponFrequency, d.maturityDate].every((v) => v !== null),
+    { message: "Per le cedole servono tasso, frequenza e scadenza", path: ["couponRate"] }
+  );
+export type UpdateInstrumentSettingsInput = z.infer<typeof updateInstrumentSettingsSchema>;
+
+/** Primo anno accettato per una minusvalenza pregressa (più vecchia è comunque scaduta da tempo). */
+export const MIN_CARRYFORWARD_YEAR = 2000;
+
+/** Minusvalenza pregressa inserita a mano. L'anno futuro si controlla nella route (serve "oggi"). */
+export const createTaxCarryforwardSchema = z.object({
+  year: z.number().int().min(MIN_CARRYFORWARD_YEAR),
+  amount: z.number().positive().max(100_000_000),
+  note: z
+    .string()
+    .trim()
+    .max(INVESTMENT_NOTE_MAX_LENGTH)
+    .nullable()
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
+});
+export type CreateTaxCarryforwardInput = z.infer<typeof createTaxCarryforwardSchema>;
+
+/** Proposte massime ignorate in una richiesta. */
+export const MAX_DISMISSED_PER_REQUEST = 500;
+
+const dismissedItem = z.object({ instrumentId: z.string().uuid(), date: dateKey });
+
+/** Proposte "da registrare" da ignorare (o da ripristinare), una o più. */
+export const dismissDividendSchema = z.object({ items: z.array(dismissedItem).min(1).max(MAX_DISMISSED_PER_REQUEST) });
+export type DismissDividendInput = z.infer<typeof dismissDividendSchema>;

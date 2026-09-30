@@ -13,6 +13,9 @@ vi.mock("@/lib/market-data/runtime", () => ({
 vi.mock("@/lib/market-data/inflation", () => ({ updateInflationIndex: vi.fn(async () => 36) }));
 vi.mock("@/lib/market-data/rates", () => ({ updateRiskFreeRates: vi.fn(async () => 21) }));
 vi.mock("@/lib/market-data/store", () => ({ findHeldAutoInstruments: vi.fn(async () => []) }));
+vi.mock("@/lib/market-data/dividends", () => ({
+  refreshStaleDividends: vi.fn(async () => ({ candidates: 1, saved: 1, empty: 0, failed: 0 })),
+}));
 vi.mock("@/lib/market-data/profiles", () => ({
   refreshStaleProfiles: vi.fn(async () => ({ candidates: 2, saved: 1, empty: 1, failed: 0 })),
 }));

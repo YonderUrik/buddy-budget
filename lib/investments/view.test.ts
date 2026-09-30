@@ -17,6 +17,7 @@ function data(): InvestmentData {
     taxRate: "0.2600",
     taxHarmonized: true,
     createdByUserId: null,
+    dividendsFetchedAt: null,
     createdAt: NOW,
     updatedAt: NOW,
   };
@@ -65,6 +66,10 @@ function data(): InvestmentData {
     profiles: [],
     manualBreakdowns: [],
     riskFreeRates: [],
+    instrumentSettings: [],
+    taxCarryforwards: [],
+    dividends: [],
+    dismissedDividends: [],
   };
 }
 

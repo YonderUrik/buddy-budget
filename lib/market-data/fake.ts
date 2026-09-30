@@ -4,6 +4,7 @@ import type { YahooSearchHit } from "./providers/yahoo";
 import type { InflationProvider } from "./providers/eurostat";
 import type { RateProvider } from "./providers/estr";
 import type { ProfileProvider } from "./profiles";
+import type { DividendProvider } from "./dividends";
 
 /**
  * Fonti finte per lo sviluppo locale e le verifiche con browser (`MARKET_DATA_FAKE=1`): prezzi deterministici
@@ -79,6 +80,7 @@ const FAKE_CATALOG: (YahooSearchHit & { keywords: string[] })[] = [
   { symbol: "VWCE.MI", name: "Vanguard FTSE All-World UCITS ETF (Acc)", exchange: "MIL", exchangeLabel: "Milano", type: "etf", keywords: ["vwce", "vanguard", "ie00bk5bqt80", "all-world"] },
   { symbol: "SWDA.MI", name: "iShares Core MSCI World UCITS ETF", exchange: "MIL", exchangeLabel: "Milano", type: "etf", keywords: ["swda", "ishares", "ie00b4l5y983", "msci world"] },
   { symbol: "ENEL.MI", name: "Enel S.p.A.", exchange: "MIL", exchangeLabel: "Milano", type: "azione", keywords: ["enel", "it0003128367"] },
+  { symbol: "VHYL.MI", name: "Vanguard FTSE All-World High Dividend Yield UCITS ETF (Dist)", exchange: "MIL", exchangeLabel: "Milano", type: "etf", keywords: ["vhyl", "vanguard", "ie00b8gkdb10", "high dividend"] },
   { symbol: "AAPL", name: "Apple Inc.", exchange: "NMS", exchangeLabel: "NASDAQ", type: "azione", keywords: ["apple", "aapl", "us0378331005"] },
 ];
 
@@ -164,5 +166,31 @@ export const FAKE_PROFILE_PROVIDER: ProfileProvider = {
       };
     }
     return null;
+  },
+};
+
+/** Dividendi finti: mesi di stacco e importo per quota per simbolo base; gli altri non pagano. */
+const FAKE_DIVIDENDS: Record<string, { months: number[]; day: number; amount: number }> = {
+  ENEL: { months: [1, 7], day: 20, amount: 0.22 },
+  AAPL: { months: [2, 5, 8, 11], day: 10, amount: 0.25 },
+  VHYL: { months: [3, 6, 9, 12], day: 18, amount: 0.45 },
+};
+
+/** Storico dividendi finto degli ultimi 5 anni, fino a oggi. */
+export const FAKE_DIVIDEND_PROVIDER: DividendProvider = {
+  async fetchDividends(symbol) {
+    const plan = FAKE_DIVIDENDS[splitYahooSymbol(symbol).base];
+    if (!plan) return [];
+    const today = new Date().toISOString().slice(0, 10);
+    const thisYear = Number(today.slice(0, 4));
+    const events = [];
+    for (let year = thisYear - 5; year <= thisYear; year += 1) {
+      for (const month of plan.months) {
+        const exDate = `${year}-${String(month).padStart(2, "0")}-${String(plan.day).padStart(2, "0")}`;
+        // Una piccola crescita annua, per avere qualcosa da mostrare.
+        if (exDate <= today) events.push({ exDate, amount: Math.round(plan.amount * 1.05 ** (year - thisYear) * 10_000) / 10_000, currency: null });
+      }
+    }
+    return events;
   },
 };

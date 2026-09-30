@@ -8,9 +8,12 @@ import {
   investmentPlans,
   investmentPortfolios,
   investmentTargets,
+  investmentTaxCarryforwards,
   investmentTransactions,
+  userDismissedDividends,
   userInstrumentBreakdowns,
   userInstrumentPrices,
+  userInstrumentSettings,
   type Instrument,
   type InvestmentPlan,
   type InvestmentPortfolio,
@@ -22,8 +25,10 @@ import type { InflationPoint } from "@/lib/calc/returns";
 import type { RateInput } from "@/lib/calc/risk";
 import { loadInflationIndex } from "@/lib/market-data/inflation";
 import { loadProfiles } from "@/lib/market-data/profiles";
+import { loadDividends, type DividendRow } from "@/lib/market-data/dividends";
 import { loadRiskFreeRates } from "@/lib/market-data/rates";
 import type { ExposureProfile, ManualBreakdown } from "./exposure";
+import type { InstrumentSettingInput } from "./tax-settings";
 
 /** Valuta per cui esiste l'indice d'inflazione (Eurostat, area Italia): per le altre il rendimento reale non si mostra. */
 export const INFLATION_CURRENCY = "EUR";
@@ -92,6 +97,14 @@ export interface InvestmentData {
   manualBreakdowns: ManualBreakdown[];
   /** €STR giornaliero dal periodo richiesto; vuoto se la valuta dell'utente non è EUR. */
   riskFreeRates: RateInput[];
+  /** Impostazioni fiscali e cedole dell'utente per strumento (Fase 4). */
+  instrumentSettings: InstrumentSettingInput[];
+  /** Minusvalenze pregresse inserite a mano. */
+  taxCarryforwards: { id: string; year: number; amount: string; note: string | null }[];
+  /** Stacchi dei dividendi per quota degli strumenti posseduti. */
+  dividends: DividendRow[];
+  /** Proposte "da registrare" ignorate. */
+  dismissedDividends: { instrumentId: string; date: string }[];
 }
 
 function shiftDays(dateKey: string, days: number): string {
@@ -112,6 +125,35 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     loadUserTransactions(userId),
     db.select().from(investmentPlans).where(eq(investmentPlans.userId, userId)).orderBy(asc(investmentPlans.createdAt)),
   ]);
+
+  const [instrumentSettings, taxCarryforwards, dismissedDividends] = await Promise.all([
+    db
+      .select({
+        instrumentId: userInstrumentSettings.instrumentId,
+        taxRate: userInstrumentSettings.taxRate,
+        taxHarmonized: userInstrumentSettings.taxHarmonized,
+        couponRate: userInstrumentSettings.couponRate,
+        couponFrequency: userInstrumentSettings.couponFrequency,
+        maturityDate: userInstrumentSettings.maturityDate,
+      })
+      .from(userInstrumentSettings)
+      .where(eq(userInstrumentSettings.userId, userId)),
+    db
+      .select({
+        id: investmentTaxCarryforwards.id,
+        year: investmentTaxCarryforwards.year,
+        amount: investmentTaxCarryforwards.amount,
+        note: investmentTaxCarryforwards.note,
+      })
+      .from(investmentTaxCarryforwards)
+      .where(eq(investmentTaxCarryforwards.userId, userId))
+      .orderBy(asc(investmentTaxCarryforwards.year), asc(investmentTaxCarryforwards.createdAt)),
+    db
+      .select({ instrumentId: userDismissedDividends.instrumentId, date: userDismissedDividends.date })
+      .from(userDismissedDividends)
+      .where(eq(userDismissedDividends.userId, userId)),
+  ]);
+  const fase4 = { instrumentSettings, taxCarryforwards, dismissedDividends };
 
   const targets = portfolios[0]
     ? await db
@@ -139,6 +181,8 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
       profiles: [],
       manualBreakdowns: [],
       riskFreeRates: [],
+      ...fase4,
+      dividends: [],
     };
   }
   const benchmarkId = portfolios[0]?.benchmarkInstrumentId ?? null;
@@ -153,7 +197,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   const benchmark = loaded.find((i) => i.id === benchmarkId) ?? null;
   const currencies = [...new Set([...loaded.map((i) => i.currency), currency])].filter((c) => c !== "EUR");
 
-  const [prices, manualPrices, rates, inflation, profiles, manualBreakdowns, riskFreeRates] = await Promise.all([
+  const [prices, manualPrices, rates, inflation, profiles, manualBreakdowns, riskFreeRates, dividends] = await Promise.all([
     db
       .select({
         instrumentId: instrumentPrices.instrumentId,
@@ -182,6 +226,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
       .from(userInstrumentBreakdowns)
       .where(and(eq(userInstrumentBreakdowns.userId, userId), inArray(userInstrumentBreakdowns.instrumentId, ownedIds))),
     currency === RISK_FREE_CURRENCY ? loadRiskFreeRates(from) : Promise.resolve([]),
+    loadDividends(ownedIds),
   ]);
 
   return {
@@ -199,6 +244,8 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     profiles,
     manualBreakdowns,
     riskFreeRates,
+    ...fase4,
+    dividends,
   };
 }
 

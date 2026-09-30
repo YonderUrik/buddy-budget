@@ -32,12 +32,17 @@ import {
   suggestsMarketPrice,
 } from "./register-operation-form.state";
 
-/** Valori iniziali (es. da un PAC). */
+/** Valori iniziali (es. da un PAC o da un dividendo da registrare). */
 export interface RegisterOperationInitial {
   instrument: Instrument | null;
   type?: InvestmentTransactionType;
   quantity?: number | null;
   price?: number | null;
+  date?: string;
+  /** Lordo di un dividendo o una cedola, nella valuta dello strumento. */
+  grossAmount?: number | null;
+  /** Imposte trattenute stimate, nella valuta dell'utente. */
+  taxes?: number | null;
 }
 
 export interface RegisterOperationFormProps {
@@ -48,18 +53,22 @@ export interface RegisterOperationFormProps {
   onSuccess?: () => void;
 }
 
+function roundCents(value: number | null | undefined): number | null {
+  return value === null || value === undefined ? null : Math.round(value * 100) / 100;
+}
+
 export function RegisterOperationForm({ currency, initial, usedInstruments = [], onSuccess }: RegisterOperationFormProps) {
   const id = React.useId();
   const create = useCreateInvestmentTransactionMutation();
   const [instrument, setInstrument] = React.useState<Instrument | null>(initial?.instrument ?? null);
   const [type, setType] = React.useState<InvestmentTransactionType>(initial?.type ?? "acquisto");
-  const [date, setDate] = React.useState(localTodayKey());
+  const [date, setDate] = React.useState(initial?.date ?? localTodayKey());
   const [quantity, setQuantity] = React.useState(numberText(initial?.quantity));
   // null = il campo segue il prezzo proposto; una stringa = valore scritto dall'utente.
   const [priceInput, setPriceInput] = React.useState<string | null>(null);
-  const [gross, setGross] = React.useState("");
+  const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount)));
   const [fees, setFees] = React.useState("");
-  const [taxes, setTaxes] = React.useState("");
+  const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes)));
   const [fxRate, setFxRate] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
 

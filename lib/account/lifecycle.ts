@@ -11,9 +11,12 @@ import {
   instruments,
   investmentPlans,
   investmentPortfolios,
+  investmentTaxCarryforwards,
   investmentTransactions,
+  userDismissedDividends,
   userInstrumentBreakdowns,
   userInstrumentPrices,
+  userInstrumentSettings,
 } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -121,9 +124,12 @@ export async function clearUserRedisState(userId: string): Promise<void> {
 async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(investmentPlans).where(eq(investmentPlans.userId, userId));
   await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+  await tx.delete(investmentTaxCarryforwards).where(eq(investmentTaxCarryforwards.userId, userId));
   await tx.delete(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
   await tx.delete(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId));
   await tx.delete(userInstrumentBreakdowns).where(eq(userInstrumentBreakdowns.userId, userId));
+  await tx.delete(userInstrumentSettings).where(eq(userInstrumentSettings.userId, userId));
+  await tx.delete(userDismissedDividends).where(eq(userDismissedDividends.userId, userId));
   // Gli strumenti manuali sono privati di chi li crea: con la FK `set null` diventerebbero visibili a tutti.
   // Si eliminano se nessun altro li usa (prezzi e simboli vanno via in cascata).
   await tx

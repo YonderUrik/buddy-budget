@@ -1,266 +1,75 @@
 "use client";
 
 /**
- * Pagina Investimenti: valore e guadagno del portafoglio, rendimenti, rischio, posizioni, composizione e
- * diversificazione, sovrapposizioni, allocazione obiettivo, PAC e operazioni.
+ * Scheda Portafoglio di Investimenti, la più essenziale: quanto vale e quanto ha guadagnato, le posizioni e i PAC.
+ * Performance, diversificazione, proventi, tasse e operazioni hanno le loro schede; titolo, schede e dialog
+ * "Registra"/"Importa" sono nel layout.
  */
 
 import * as React from "react";
-import { Plus, Upload } from "lucide-react";
-import { toast } from "sonner";
 import {
-  AllocationCard,
-  CURRENCY_COLORS,
-  DiversificationCard,
-  IncomeHistoryCard,
-  INSTRUMENT_TYPE_COLOR,
-  InvestmentImportDialog,
-  InvestmentTransactionsList,
+  InvestmentsViewGate,
   ManualPriceDialog,
-  OverlapCard,
   PlansCard,
-  PortfolioComposition,
   PortfolioHeroCard,
   PositionsList,
-  prefillFromPlan,
-  RegisterOperationForm,
-  ReturnHeatmapCard,
-  ReturnsCard,
-  RiskCard,
-  type RegisterOperationInitial,
+  useRegisterFromPlan,
 } from "@/components/domain/investments";
-import { LoadError } from "@/components/domain/shared";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { resolvePrice } from "@/lib/calc/investments";
-import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
-import type { Instrument, InstrumentType, InvestmentPlan } from "@/lib/db/schema/investments";
-import {
-  CURRENCY_EXPOSURE_THRESHOLD,
-  computeConcentration,
-  computeCurrencyExposure,
-  computeValueBreakdown,
-} from "@/lib/investments/insights";
-import { INSTRUMENT_TYPE_LABELS } from "@/lib/investments/labels";
-import { historyDailyReturns } from "@/lib/investments/return-heatmap-view";
-import { buildInvestmentsView } from "@/lib/investments/view";
-import {
-  useBackfillStatusQuery,
-  useDeleteInvestmentTransactionMutation,
-  useInvestmentsOverviewQuery,
-} from "@/lib/queries/investments";
-
-const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
-
-function typeLabel(key: string): string {
-  return INSTRUMENT_TYPE_LABELS[key as InstrumentType] ?? key;
-}
-
-/** Frase sull'esposizione valutaria: sotto soglia non c'è rischio di cambio da segnalare. */
-function currencyInsight(exposure: number, currency: string): string {
-  if (exposure < CURRENCY_EXPOSURE_THRESHOLD) return `Quasi tutto in ${currency}: il cambio non sposta il valore.`;
-  return `Il ${Math.round(exposure * 100)}% è in altre valute: il cambio muove il valore anche a mercati fermi.`;
-}
+import type { Instrument } from "@/lib/db/schema/investments";
+import { computeConcentration, computeValueBreakdown } from "@/lib/investments/insights";
+import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
+import { useBackfillStatusQuery } from "@/lib/queries/investments";
+import { useInvestmentsView } from "@/lib/queries/investments-view";
 
 export default function InvestimentiPage() {
-  const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
-  const today = React.useMemo(() => startOfDay(new Date()), []);
-  const overview = useInvestmentsOverviewQuery(period);
-  const view = React.useMemo(
-    () => (overview.data ? buildInvestmentsView(overview.data, period, today) : null),
-    [overview.data, period, today]
-  );
-  // La heatmap copre tutto lo storico: usa i dati del periodo "max" (stessa cache se il grafico è già su Max).
-  const fullHistory = useInvestmentsOverviewQuery("max");
-  const historyReturns = React.useMemo(
-    () => (fullHistory.data ? historyDailyReturns(fullHistory.data, today) : null),
-    [fullHistory.data, today]
-  );
-  // Anche il benchmark: il suo storico si scarica quando lo si sceglie, e a fine recupero la pagina si aggiorna.
-  const backfillIds = React.useMemo(
-    () => [...(view?.instruments.map((i) => i.id) ?? []), ...(view?.benchmark ? [view.benchmark.id] : [])],
-    [view]
-  );
-  const backfill = useBackfillStatusQuery(backfillIds);
-  const benchmarkBackfill = view?.benchmark
-    ? backfill.data
-      ? (backfill.data.find((b) => b.instrumentId === view.benchmark!.id) ?? null)
-      : backfill.isError
-        ? null
-        : undefined
-    : null;
-  const deleteOperation = useDeleteInvestmentTransactionMutation();
-
-  const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
+  const [period, setPeriod] = React.useState<NetWorthPeriod>(INVESTMENTS_DEFAULT_PERIOD);
+  const { overview, view, today } = useInvestmentsView(period);
+  const instrumentIds = React.useMemo(() => view?.instruments.map((i) => i.id) ?? [], [view]);
+  const backfill = useBackfillStatusQuery(instrumentIds);
+  const registerFromPlan = useRegisterFromPlan(view, today);
   const [priceInstrument, setPriceInstrument] = React.useState<Instrument | null>(null);
-  const [showAllOperations, setShowAllOperations] = React.useState(false);
-  const [importOpen, setImportOpen] = React.useState(false);
-
-  function registerFromPlan(plan: Pick<InvestmentPlan, "instrumentId" | "amount">) {
-    if (!view) return;
-    const last = resolvePrice(view.priceIndex, plan.instrumentId, toDateKey(today));
-    const prefill = prefillFromPlan(plan, last?.close ?? null);
-    setRegisterInitial({ ...prefill, instrument: view.instrumentsById.get(plan.instrumentId) ?? null });
-  }
-
   const currency = view?.currency ?? "EUR";
-  const header = (
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Investimenti</h1>
-        <p className="text-sm text-muted-foreground">Prezzi di chiusura aggiornati ogni sera</p>
-      </div>
-      <div className="flex gap-2">
-        <Button variant="outline" className="gap-1.5" onClick={() => setImportOpen(true)}>
-          <Upload size={15} aria-hidden="true" /> Importa
-        </Button>
-        <Button className="gap-1.5 shadow-xs" onClick={() => setRegisterInitial({ instrument: null })}>
-          <Plus size={15} aria-hidden="true" /> Registra
-        </Button>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      {header}
-      {overview.isLoading ? (
-        <div className="flex flex-col gap-6" aria-busy="true">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />
-            ))}
-          </div>
-          <div className="h-72 animate-pulse rounded-xl bg-muted" />
-        </div>
-      ) : overview.isError || !view ? (
-        <LoadError message="Impossibile caricare gli investimenti." onRetry={() => overview.refetch()} />
-      ) : !view.hasTransactions ? (
-        <div className="rounded-xl border border-dashed p-8 text-center">
-          <p className="font-heading text-lg font-medium text-foreground">Registra il tuo primo investimento</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Cerca uno strumento per nome, ticker o ISIN (ETF, azioni, BTP, fondi, crypto) e inserisci l&apos;acquisto:
-            valore e guadagno si aggiornano da soli con i prezzi di chiusura.
-          </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            <Button onClick={() => setRegisterInitial({ instrument: null })}>Registra un acquisto</Button>
-            <Button variant="outline" onClick={() => setImportOpen(true)}>
-              Importa da file CSV
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <PortfolioHeroCard
-            summary={view.summary}
-            breakdown={computeValueBreakdown(view.summary)}
-            series={view.series}
-            period={period}
-            onPeriodChange={setPeriod}
-            currency={currency}
-          />
-          {view.returns ? (
-            <ReturnsCard
-              returns={view.returns}
+    <>
+      <InvestmentsViewGate
+        loading={overview.isLoading}
+        error={overview.isError || (!overview.isLoading && !view)}
+        empty={!!view && !view.hasTransactions}
+        onRetry={() => overview.refetch()}
+      >
+        {view ? (
+          <>
+            <PortfolioHeroCard
+              summary={view.summary}
+              breakdown={computeValueBreakdown(view.summary)}
+              series={view.series}
               period={period}
-              benchmark={view.benchmark}
-              benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
-              benchmarkBackfill={benchmarkBackfill}
+              onPeriodChange={setPeriod}
               currency={currency}
             />
-          ) : null}
-          {view.analysis.risk ? (
-            <RiskCard risk={view.analysis.risk} period={period} benchmarkName={view.benchmark?.name ?? null} currency={currency} />
-          ) : null}
-          {historyReturns && historyReturns.length > 0 ? (
-            <ReturnHeatmapCard daily={historyReturns} currency={currency} today={today} />
-          ) : null}
-          <PositionsList
-            rows={view.summary.rows}
-            concentration={computeConcentration(view.summary.rows)}
-            currency={currency}
-            todayKey={toDateKey(today)}
-            backfill={backfill.data ?? []}
-            onManualPrice={(row) => setPriceInstrument(view.instrumentsById.get(row.instrument.id) ?? null)}
-          />
-          <PortfolioComposition
-            currency={currency}
-            groups={[
-              {
-                title: "Per tipo",
-                slices: view.byType,
-                labelFor: typeLabel,
-                colorFor: (key) => INSTRUMENT_TYPE_COLOR[key as InstrumentType] ?? "var(--swatch-slate)",
-                insight: view.byType[0] ? `Soprattutto ${typeLabel(view.byType[0].key)} (${Math.round(view.byType[0].share * 100)}%).` : null,
-              },
-              {
-                title: "Per valuta",
-                slices: view.byCurrency,
-                colorFor: (_key, index) => CURRENCY_COLORS[index % CURRENCY_COLORS.length],
-                insight: currencyInsight(computeCurrencyExposure(view.byCurrency, currency), currency),
-              },
-            ]}
-          />
-          {view.analysis.exposureRows.length > 0 ? <DiversificationCard analysis={view.analysis} currency={currency} /> : null}
-          {view.analysis.exposureRows.length > 1 ? (
-            <OverlapCard analysis={view.analysis} instrumentsById={view.instrumentsById} currency={currency} />
-          ) : null}
-          {view.income.count > 0 ? (
-            <IncomeHistoryCard income={view.income} instrumentsById={view.instrumentsById} currency={currency} />
-          ) : null}
-          <AllocationCard
-            allocation={view.analysis.allocation}
-            targets={view.analysis.targets}
-            positions={view.summary.rows.map((r) => ({ instrumentId: r.instrument.id, value: r.value }))}
-            instrumentsById={view.instrumentsById}
-            suggestions={view.usedInstruments}
-            monthlyPlanAmount={view.monthlyPlanAmount}
-            currency={currency}
-            onRegister={(instrumentId, amount) => registerFromPlan({ instrumentId, amount: String(amount) })}
-          />
-        </>
-      )}
+            <PositionsList
+              rows={view.summary.rows}
+              concentration={computeConcentration(view.summary.rows)}
+              currency={currency}
+              todayKey={toDateKey(today)}
+              backfill={backfill.data ?? []}
+              onManualPrice={(row) => setPriceInstrument(view.instrumentsById.get(row.instrument.id) ?? null)}
+            />
+          </>
+        ) : null}
+      </InvestmentsViewGate>
       {view ? (
-        <>
-          <PlansCard
-            plans={overview.data?.plans ?? []}
-            instrumentsById={view.instrumentsById}
-            currency={currency}
-            today={today}
-            onRegisterExecution={registerFromPlan}
-          />
-          {view.hasTransactions ? (
-            <InvestmentTransactionsList
-              months={view.operationMonths}
-              instrumentsById={view.instrumentsById}
-              currency={currency}
-              showAll={showAllOperations}
-              onToggleShowAll={() => setShowAllOperations((v) => !v)}
-              deletingId={deleteOperation.isPending ? deleteOperation.variables : null}
-              onDelete={(t) => deleteOperation.mutate(t.id, { onError: (e) => toast.error(e.message) })}
-            />
-          ) : null}
-        </>
+        <PlansCard
+          plans={overview.data?.plans ?? []}
+          instrumentsById={view.instrumentsById}
+          currency={currency}
+          today={today}
+          onRegisterExecution={registerFromPlan}
+        />
       ) : null}
-
-      <Dialog open={registerInitial !== null} onOpenChange={(open) => !open && setRegisterInitial(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Registra operazione</DialogTitle>
-          </DialogHeader>
-          {registerInitial ? (
-            <RegisterOperationForm
-              currency={currency}
-              initial={registerInitial}
-              usedInstruments={view?.usedInstruments}
-              onSuccess={() => setRegisterInitial(null)}
-            />
-          ) : null}
-        </DialogContent>
-      </Dialog>
       <ManualPriceDialog instrument={priceInstrument} onClose={() => setPriceInstrument(null)} />
-      <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
-    </div>
+    </>
   );
 }

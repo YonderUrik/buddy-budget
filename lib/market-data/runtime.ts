@@ -6,6 +6,7 @@ import {
   FAKE_FX_PROVIDER,
   FAKE_INFLATION_PROVIDER,
   FAKE_PRICE_PROVIDERS,
+  FAKE_DIVIDEND_PROVIDER,
   FAKE_PROFILE_PROVIDER,
   FAKE_RATE_PROVIDER,
   fakeCryptoSearch,
@@ -25,6 +26,7 @@ import {
 } from "./redis-stores";
 import { findInstrumentsWithoutProfile, PROFILE_ON_DEMAND_LIMIT, refreshInstrumentProfile } from "./profiles";
 import { redis } from "@/lib/redis/client";
+import { DIVIDENDS_ON_DEMAND_LIMIT, findInstrumentsWithoutDividends, refreshInstrumentDividends } from "./dividends";
 import { findFirstPriceDate, loadSymbols } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
@@ -48,6 +50,7 @@ export function marketDataDeps(): MarketDataDeps {
         inflationProvider: FAKE_INFLATION_PROVIDER,
         rateProvider: FAKE_RATE_PROVIDER,
         profileProvider: FAKE_PROFILE_PROVIDER,
+        dividendProvider: FAKE_DIVIDEND_PROVIDER,
       }
     : base;
 }
@@ -137,5 +140,31 @@ export async function ensureProfilesSafely(instruments: Instrument[], schedule: 
     });
   } catch (error) {
     logger.warn("market.profiles.failed", { error });
+  }
+}
+
+/**
+ * Scarica in background lo storico dividendi degli strumenti mai scaricati, al massimo `DIVIDENDS_ON_DEMAND_LIMIT`
+ * per volta e un tentativo all'ora per strumento. Non lancia mai: un errore resta nei log.
+ */
+export async function ensureDividendsSafely(instruments: Instrument[], schedule: (task: () => Promise<void>) => void): Promise<void> {
+  try {
+    const missing = await findInstrumentsWithoutDividends(instruments);
+    const toFetch: Instrument[] = [];
+    for (const instrument of missing) {
+      if (toFetch.length >= DIVIDENDS_ON_DEMAND_LIMIT) break;
+      const acquired = await redis.set(`market:dividends-attempt:${instrument.id}`, "1", "EX", PROFILE_ATTEMPT_TTL_SECONDS, "NX");
+      if (acquired === "OK") toFetch.push(instrument);
+    }
+    if (toFetch.length === 0) return;
+    schedule(async () => {
+      const deps = marketDataDeps();
+      const symbols = await loadSymbols(toFetch.map((i) => i.id));
+      for (const instrument of toFetch) {
+        await refreshInstrumentDividends(instrument, symbols.get(instrument.id)?.yahoo ?? null, deps.ctx, { provider: deps.dividendProvider });
+      }
+    });
+  } catch (error) {
+    logger.warn("market.dividends.failed", { error });
   }
 }

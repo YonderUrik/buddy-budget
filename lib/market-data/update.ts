@@ -6,6 +6,7 @@ import { chainFor } from "./chains";
 import { FX_PROVIDERS, PRICE_PROVIDERS, type InflationProvider } from "./providers";
 import type { RateProvider } from "./providers/estr";
 import type { ProfileProvider } from "./profiles";
+import type { DividendProvider } from "./dividends";
 import {
   findHeldAutoInstruments,
   findLastClose,
@@ -35,6 +36,8 @@ export interface MarketDataDeps {
   rateProvider?: RateProvider;
   /** Fonte dei profili (settori, primi titoli) degli strumenti (default Yahoo). */
   profileProvider?: ProfileProvider;
+  /** Fonte degli storici dividendi (default Yahoo). */
+  dividendProvider?: DividendProvider;
   log?: Logger;
   sleep?: (ms: number) => Promise<void>;
 }

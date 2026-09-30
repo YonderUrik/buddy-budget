@@ -380,3 +380,52 @@ export async function fetchYahooProfile(symbol: string, kind: YahooProfileKind, 
   if (!response) return null;
   return parseYahooQuoteSummary(await readJson<YahooQuoteSummaryResponse>("yahoo", response));
 }
+
+/** Dividendo per quota da Yahoo: data di stacco (locale della borsa) e importo nella valuta dello strumento. */
+export interface DividendEvent {
+  exDate: string;
+  amount: number;
+  currency: string | null;
+}
+
+interface YahooDividendsResponse {
+  chart: {
+    result:
+      | {
+          meta: { currency?: string | null; gmtoffset?: number };
+          events?: { dividends?: Record<string, { amount?: number; date?: number }> };
+        }[]
+      | null;
+    error: { code?: string } | null;
+  };
+}
+
+/** Anni di storico dividendi chiesti a Yahoo. */
+export const DIVIDEND_HISTORY_YEARS = 10;
+
+/** Converte gli eventi `div` di `chart` in dividendi per quota (già corretti per gli split da Yahoo). */
+export function parseYahooDividends(body: YahooDividendsResponse): DividendEvent[] {
+  const result = body.chart.result?.[0];
+  if (!result) return [];
+  const { currency, divisor } = normalizeYahooCurrency(result.meta.currency);
+  const offsetMs = (result.meta.gmtoffset ?? 0) * 1000;
+  const byDate = new Map<string, DividendEvent>();
+  for (const event of Object.values(result.events?.dividends ?? {})) {
+    if (typeof event.amount !== "number" || !(event.amount > 0) || typeof event.date !== "number") continue;
+    const exDate = utcDateKey(event.date * 1000 + offsetMs);
+    byDate.set(exDate, { exDate, amount: event.amount / divisor, currency });
+  }
+  return [...byDate.values()].sort((a, b) => a.exDate.localeCompare(b.exDate));
+}
+
+/** Storico dei dividendi per quota di un simbolo Yahoo (intervallo mensile: servono solo gli eventi). */
+export async function fetchYahooDividends(symbol: string, ctx: ProviderContext, nowMs: number = Date.now()): Promise<DividendEvent[]> {
+  const to = Math.floor(nowMs / 1000);
+  const from = to - DIVIDEND_HISTORY_YEARS * 366 * 86_400;
+  const url = `${CHART_URL}${encodeURIComponent(symbol)}?period1=${from}&period2=${to}&interval=1mo&events=div`;
+  const response = await yahooGet(url, ctx);
+  if (!response) return [];
+  const body = await readJson<YahooDividendsResponse>("yahoo", response);
+  if (body.chart.error && body.chart.error.code !== "Not Found") throw new ProviderError("yahoo", "chart error");
+  return parseYahooDividends(body);
+}

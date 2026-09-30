@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { formatCurrency, formatRelativeTime, formatShortDate, getCurrencySymbol } from "./format";
+import { afterEach, describe, expect, it } from "vitest";
+import { AMOUNT_MASK, formatCurrency, formatRelativeTime, formatShortDate, getCurrencySymbol, setAmountsMasked } from "./format";
 
 describe("formatCurrency", () => {
   it("formatta un valore positivo nella valuta indicata", () => {
@@ -63,5 +63,16 @@ describe("formatShortDate", () => {
 
   it("restituisce l'input invariato se non è una data valida", () => {
     expect(formatShortDate("boh")).toBe("boh");
+  });
+});
+
+describe("maschera degli importi", () => {
+  afterEach(() => setAmountsMasked(false));
+
+  it("sostituisce l'importo con la maschera finché è attiva", () => {
+    setAmountsMasked(true);
+    expect(formatCurrency(1234.5, "EUR")).toBe(AMOUNT_MASK);
+    setAmountsMasked(false);
+    expect(formatCurrency(1234.5, "EUR")).toContain("1234,50");
   });
 });

@@ -7,6 +7,7 @@ import {
   TAX_REGIMES,
   INVESTMENT_TRANSACTION_TYPES,
   PLAN_FREQUENCIES,
+  PRICE_ALERT_DIRECTIONS,
   PRICE_UNITS,
   type InvestmentTransactionType,
 } from "@/lib/db/schema/investments";
@@ -262,3 +263,12 @@ const dismissedItem = z.object({ instrumentId: z.string().uuid(), date: dateKey 
 /** Proposte "da registrare" da ignorare (o da ripristinare), una o più. */
 export const dismissDividendSchema = z.object({ items: z.array(dismissedItem).min(1).max(MAX_DISMISSED_PER_REQUEST) });
 export type DismissDividendInput = z.infer<typeof dismissDividendSchema>;
+
+/** Avvisi di prezzo attivi al massimo per strumento e utente. */
+export const MAX_ACTIVE_ALERTS_PER_INSTRUMENT = 10;
+
+export const createPriceAlertSchema = z.object({
+  direction: z.enum(PRICE_ALERT_DIRECTIONS),
+  targetPrice: z.number().positive().max(1e12),
+});
+export type CreatePriceAlertInput = z.infer<typeof createPriceAlertSchema>;

@@ -433,3 +433,53 @@ export type InvestmentTarget = typeof investmentTargets.$inferSelect;
 export type UserInstrumentSetting = typeof userInstrumentSettings.$inferSelect;
 export type InvestmentTaxCarryforward = typeof investmentTaxCarryforwards.$inferSelect;
 export type InstrumentDividend = typeof instrumentDividends.$inferSelect;
+
+/** Strumenti che l'utente segue senza possederli (watchlist). */
+export const userWatchlistItems = pgTable(
+  "user_watchlist_items",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => authUser.id, { onDelete: "cascade" }),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("user_watchlist_items_user_instrument_unique").on(table.userId, table.instrumentId)]
+);
+
+/** `sopra`: scatta quando la chiusura arriva o supera il livello; `sotto`: quando arriva o scende sotto. */
+export const PRICE_ALERT_DIRECTIONS = ["sopra", "sotto"] as const;
+export type PriceAlertDirection = (typeof PRICE_ALERT_DIRECTIONS)[number];
+
+/** `attivo`: da controllare ogni sera; `scattato`: già notificato, non si ripete (si può eliminare o ricreare). */
+export const PRICE_ALERT_STATUSES = ["attivo", "scattato"] as const;
+export type PriceAlertStatus = (typeof PRICE_ALERT_STATUSES)[number];
+
+/** Avvisi di prezzo dell'utente, nella valuta dello strumento (la stessa del prezzo di chiusura). */
+export const userPriceAlerts = pgTable(
+  "user_price_alerts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => authUser.id, { onDelete: "cascade" }),
+    instrumentId: uuid("instrument_id")
+      .notNull()
+      .references(() => instruments.id, { onDelete: "cascade" }),
+    direction: text("direction").$type<PriceAlertDirection>().notNull(),
+    targetPrice: numeric("target_price", { precision: 20, scale: 8 }).notNull(),
+    status: text("status").$type<PriceAlertStatus>().notNull().default("attivo"),
+    triggeredAt: timestamp("triggered_at", { withTimezone: true }),
+    triggeredPrice: numeric("triggered_price", { precision: 20, scale: 8 }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("user_price_alerts_user_instrument_idx").on(table.userId, table.instrumentId),
+    index("user_price_alerts_status_idx").on(table.status),
+  ]
+);
+
+export type UserPriceAlert = typeof userPriceAlerts.$inferSelect;

@@ -7,6 +7,7 @@ import { FX_PROVIDERS, PRICE_PROVIDERS, type InflationProvider } from "./provide
 import type { RateProvider } from "./providers/estr";
 import type { ProfileProvider } from "./profiles";
 import type { DividendProvider } from "./dividends";
+import type { FundamentalsProvider } from "./fundamentals";
 import {
   findHeldAutoInstruments,
   findLastClose,
@@ -38,6 +39,8 @@ export interface MarketDataDeps {
   profileProvider?: ProfileProvider;
   /** Fonte degli storici dividendi (default Yahoo). */
   dividendProvider?: DividendProvider;
+  /** Fonte dei numeri chiave dei titoli (default Yahoo). */
+  fundamentalsProvider?: FundamentalsProvider;
   log?: Logger;
   sleep?: (ms: number) => Promise<void>;
 }

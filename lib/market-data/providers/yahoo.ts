@@ -429,3 +429,88 @@ export async function fetchYahooDividends(symbol: string, ctx: ProviderContext, 
   if (body.chart.error && body.chart.error.code !== "Not Found") throw new ProviderError("yahoo", "chart error");
   return parseYahooDividends(body);
 }
+
+interface YahooFundamentalsResponse {
+  quoteSummary?: {
+    result?:
+      | {
+          summaryDetail?: {
+            marketCap?: YahooRawNumber;
+            trailingPE?: YahooRawNumber;
+            forwardPE?: YahooRawNumber;
+            dividendYield?: YahooRawNumber;
+            beta?: YahooRawNumber;
+            totalAssets?: YahooRawNumber;
+          };
+          defaultKeyStatistics?: {
+            priceToBook?: YahooRawNumber;
+            trailingEps?: YahooRawNumber;
+            beta?: YahooRawNumber;
+            annualReportExpenseRatio?: YahooRawNumber;
+          };
+          financialData?: {
+            profitMargins?: YahooRawNumber;
+            returnOnEquity?: YahooRawNumber;
+            revenueGrowth?: YahooRawNumber;
+            debtToEquity?: YahooRawNumber;
+          };
+          fundProfile?: { feesExpensesInvestment?: { annualReportExpenseRatio?: YahooRawNumber } };
+        }[]
+      | null;
+  };
+}
+
+/** Numeri chiave di un titolo (frazioni dove Yahoo dà percentuali: 0,03 = 3%). Ogni campo può mancare. */
+export interface YahooFundamentals {
+  marketCap: number | null;
+  trailingPE: number | null;
+  forwardPE: number | null;
+  priceToBook: number | null;
+  /** Rendimento da dividendo, frazione. */
+  dividendYield: number | null;
+  eps: number | null;
+  beta: number | null;
+  profitMargin: number | null;
+  returnOnEquity: number | null;
+  revenueGrowth: number | null;
+  /** Debiti su capitale proprio, in percentuale come li dà Yahoo (150 = 1,5 volte). */
+  debtToEquity: number | null;
+  /** Costo annuo di un ETF o fondo (TER), frazione. */
+  expenseRatio: number | null;
+  /** Patrimonio gestito di un ETF o fondo. */
+  totalAssets: number | null;
+}
+
+/** Converte la risposta `quoteSummary` dei moduli dei fondamentali. Null se non c'è nessun numero. */
+export function parseYahooFundamentals(body: YahooFundamentalsResponse): YahooFundamentals | null {
+  const result = body.quoteSummary?.result?.[0];
+  if (!result) return null;
+  const detail = result.summaryDetail;
+  const stats = result.defaultKeyStatistics;
+  const financial = result.financialData;
+  const values: YahooFundamentals = {
+    marketCap: rawNumber(detail?.marketCap),
+    trailingPE: rawNumber(detail?.trailingPE),
+    forwardPE: rawNumber(detail?.forwardPE),
+    priceToBook: rawNumber(stats?.priceToBook),
+    dividendYield: rawNumber(detail?.dividendYield),
+    eps: rawNumber(stats?.trailingEps),
+    beta: rawNumber(detail?.beta) ?? rawNumber(stats?.beta),
+    profitMargin: rawNumber(financial?.profitMargins),
+    returnOnEquity: rawNumber(financial?.returnOnEquity),
+    revenueGrowth: rawNumber(financial?.revenueGrowth),
+    debtToEquity: rawNumber(financial?.debtToEquity),
+    expenseRatio:
+      rawNumber(result.fundProfile?.feesExpensesInvestment?.annualReportExpenseRatio) ?? rawNumber(stats?.annualReportExpenseRatio),
+    totalAssets: rawNumber(detail?.totalAssets),
+  };
+  return Object.values(values).some((v) => v !== null) ? values : null;
+}
+
+/** Fondamentali di un simbolo Yahoo, o null se Yahoo non ne ha per quello strumento. */
+export async function fetchYahooFundamentals(symbol: string, kind: YahooProfileKind, ctx: ProviderContext): Promise<YahooFundamentals | null> {
+  const modules = kind === "company" ? "summaryDetail,defaultKeyStatistics,financialData" : "summaryDetail,defaultKeyStatistics,fundProfile";
+  const response = await yahooGet(`${QUOTE_SUMMARY_URL}${encodeURIComponent(symbol)}?modules=${modules}`, ctx);
+  if (!response) return null;
+  return parseYahooFundamentals(await readJson<YahooFundamentalsResponse>("yahoo", response));
+}

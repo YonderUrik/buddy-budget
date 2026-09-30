@@ -4,6 +4,7 @@ import { marketDataDeps, refreshCryptoCatalogOnProviders } from "@/lib/market-da
 import { updateInflationIndex } from "@/lib/market-data/inflation";
 import { refreshStaleProfiles } from "@/lib/market-data/profiles";
 import { refreshStaleDividends } from "@/lib/market-data/dividends";
+import { evaluatePriceAlerts } from "@/lib/investments/alerts-run";
 import { updateRiskFreeRates } from "@/lib/market-data/rates";
 import { findHeldAutoInstruments } from "@/lib/market-data/store";
 import { updateHeldInstruments } from "@/lib/market-data/update";
@@ -15,7 +16,7 @@ export const maxDuration = 300;
 
 /**
  * Cron serale dei prezzi di mercato: aggiorna le chiusure degli strumenti posseduti (e dei benchmark) dalla catena
- * di fonti, i cambi, l'indice d'inflazione, il tasso €STR, i profili (settori, primi titoli) e gli storici dividendi degli strumenti.
+ * di fonti, i cambi, l'indice d'inflazione, il tasso €STR, i profili (settori, primi titoli) e gli storici dividendi degli strumenti e valuta gli avvisi di prezzo (email a chi li ha impostati).
  * Gira prima dello snapshot del patrimonio. Risponde solo con conteggi, mai dati di utenti.
  */
 async function handleGet(request: NextRequest) {
@@ -37,6 +38,8 @@ async function handleGet(request: NextRequest) {
     const profiles = await refreshStaleProfiles(held, new Date(), deps.ctx, { provider: deps.profileProvider, log });
     // Storici dividendi (per le proposte "da registrare" e la previsione): come i profili, mai un fallimento del cron.
     const dividends = await refreshStaleDividends(held, new Date(), deps.ctx, { provider: deps.dividendProvider, log });
+    // Avvisi di prezzo con le chiusure appena salvate: un errore si logga dentro e non fa fallire il cron.
+    const alerts = await evaluatePriceAlerts({ log });
     const durationMs = Date.now() - startedAt;
     log.info("market.prices.updated", {
       total: summary.instruments,
@@ -45,7 +48,7 @@ async function handleGet(request: NextRequest) {
       reason: `failed:${summary.failed},suspect:${summary.suspect},fx:${summary.fxRates}`,
     });
     await recordCronRun("market_prices", "success", durationMs, { store: redisOpsStore, log });
-    return Response.json({ ok: true, durationMs, ...summary, inflationMonths, riskFreeDays, profiles, dividends });
+    return Response.json({ ok: true, durationMs, ...summary, inflationMonths, riskFreeDays, profiles, dividends, alerts });
   } catch (error) {
     await recordCronRun("market_prices", "error", Date.now() - startedAt, { store: redisOpsStore, log, error });
     return Response.json({ ok: false }, { status: 500 });

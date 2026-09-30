@@ -8,6 +8,8 @@ import {
   instruments,
   investmentPortfolios,
   investmentTransactions,
+  userPriceAlerts,
+  userWatchlistItems,
   type Instrument,
 } from "@/lib/db/schema/investments";
 import type { DailyClose, FxDailyRate, FxProviderId, ProviderId } from "./types";
@@ -20,7 +22,7 @@ const HELD_EPSILON = "0.0000001";
 
 /**
  * Strumenti `auto` da aggiornare ogni sera: posseduti oggi da almeno un utente (quantità netta positiva) o scelti
- * come benchmark. La somma SQL non applica gli split, quindi uno strumento con uno split si considera posseduto.
+ * come benchmark, seguiti in una watchlist o con un avviso di prezzo attivo. La somma SQL non applica gli split, quindi uno strumento con uno split si considera posseduto.
  */
 export async function findHeldAutoInstruments(): Promise<Instrument[]> {
   const held = db
@@ -37,11 +39,24 @@ export async function findHeldAutoInstruments(): Promise<Instrument[]> {
     .select({ instrumentId: investmentPortfolios.benchmarkInstrumentId })
     .from(investmentPortfolios)
     .where(isNotNull(investmentPortfolios.benchmarkInstrumentId));
+  const watched = db.select({ instrumentId: userWatchlistItems.instrumentId }).from(userWatchlistItems);
+  const alerted = db
+    .select({ instrumentId: userPriceAlerts.instrumentId })
+    .from(userPriceAlerts)
+    .where(eq(userPriceAlerts.status, "attivo"));
   return db
     .select()
     .from(instruments)
     .where(
-      and(eq(instruments.priceMode, "auto"), or(inArray(instruments.id, held), inArray(instruments.id, benchmarks)))
+      and(
+        eq(instruments.priceMode, "auto"),
+        or(
+          inArray(instruments.id, held),
+          inArray(instruments.id, benchmarks),
+          inArray(instruments.id, watched),
+          inArray(instruments.id, alerted)
+        )
+      )
     );
 }
 

@@ -39,9 +39,10 @@ import { cn } from "@/lib/utils";
 interface InnerShellProps {
   children: React.ReactNode;
   activeHref?: string;
+  sidebarExtra?: React.ReactNode;
 }
 
-function InnerShell({ children, activeHref }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra }: InnerShellProps) {
   const { collapsed, mobileOpen, closeMobile } = useSidebar();
 
   // Chiude il drawer mobile se la finestra viene allargata oltre il breakpoint.
@@ -77,7 +78,7 @@ function InnerShell({ children, activeHref }: InnerShellProps) {
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} />
+          <AppSidebar activeHref={activeHref} extra={sidebarExtra} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -124,6 +125,7 @@ function InnerShell({ children, activeHref }: InnerShellProps) {
           forceExpanded
           activeHref={activeHref}
           onClose={closeMobile}
+          extra={sidebarExtra}
         />
       </div>
     </div>
@@ -138,16 +140,20 @@ interface AppShellProps {
   children: React.ReactNode;
   /** Href della voce attiva. Propagato alla sidebar per evidenziare il link corrente. */
   activeHref?: string;
+  /** Contenuto extra sotto le voci della sidebar (desktop e drawer mobile). */
+  sidebarExtra?: React.ReactNode;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref}>{children}</InnerShell>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra}>
+        {children}
+      </InnerShell>
     </SidebarProvider>
   );
 }

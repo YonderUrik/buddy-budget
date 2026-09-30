@@ -11,6 +11,8 @@ export const authUser = pgTable("auth_user", {
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   /** Pagina di atterraggio dopo il login (solo valori di `HOME_PAGE_PATHS`, validati dalla route impostazioni). */
   homePage: text("home_page").notNull().default("/panoramica"),
+  /** Preferenza "nascondi importi": se attiva tutti i valori in denaro dell'app sono coperti da una maschera. */
+  hideAmounts: boolean("hide_amounts").notNull().default(false),
   /** Se valorizzata l'account è disattivato e verrà eliminato definitivamente a questa data (cron `account-deletion`). */
   deletionScheduledAt: timestamp("deletion_scheduled_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

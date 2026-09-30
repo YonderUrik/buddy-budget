@@ -314,4 +314,9 @@
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
-}
+}
+/* Importi nascosti: le cifre sono già mascherate da `formatCurrency`, i grafici mostrerebbero ancora le proporzioni. */
+:root[data-privacy="hidden"] .recharts-wrapper {
+  filter: blur(10px);
+  pointer-events: none;
+}

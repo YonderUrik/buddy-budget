@@ -1,0 +1,1 @@
+ALTER TABLE "auth_user" ADD COLUMN "hide_amounts" boolean DEFAULT false NOT NULL;

@@ -12,12 +12,26 @@ export function getCurrencySymbol(currency: string, locale = "it-IT"): string {
   return formatted.replace(/[\d\s  .,]/g, "").trim();
 }
 
-/** Formatta un valore numerico come valuta, secondo la valuta e il locale dell'utente. */
+/** Maschera mostrata al posto degli importi quando l'utente ha scelto di nasconderli. */
+export const AMOUNT_MASK = "••••";
+
+let amountsMasked = false;
+
+/**
+ * Attiva o disattiva la maschera globale sugli importi (usata da `formatCurrency`). Chiamata dal provider della
+ * privacy solo nel browser: sul server il valore sarebbe condiviso tra richieste di utenti diversi.
+ */
+export function setAmountsMasked(masked: boolean): void {
+  amountsMasked = masked;
+}
+
+/** Formatta un valore numerico come valuta, secondo la valuta e il locale dell'utente. Con gli importi nascosti restituisce `AMOUNT_MASK`. */
 export function formatCurrency(
   value: number,
   currency: string,
   options: { locale?: string; maximumFractionDigits?: number } = {}
 ): string {
+  if (amountsMasked) return AMOUNT_MASK;
   const { locale = "it-IT", maximumFractionDigits = 2 } = options;
   return new Intl.NumberFormat(locale, {
     style: "currency",

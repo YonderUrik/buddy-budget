@@ -19,6 +19,7 @@
 import Image from "next/image";
 import { Menu } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PrivacyToggle } from "@/components/privacy-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 
 // ---------------------------------------------------------------------------
@@ -71,7 +72,10 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       </span>
 
       {/* Theme toggle */}
-      <ThemeToggle surface="sidebar" />
+      <div className="flex items-center gap-1">
+        <PrivacyToggle />
+        <ThemeToggle surface="sidebar" />
+      </div>
     </header>
   );
 }

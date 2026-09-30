@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PrivacyToggle } from "@/components/privacy-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
@@ -364,10 +365,11 @@ export function AppSidebar({
         <div
           className={cn(
             "flex mb-2",
-            isCollapsed ? "justify-center" : "justify-start px-1"
+            isCollapsed ? "flex-col items-center gap-1" : "items-center justify-between px-1"
           )}
         >
           <ThemeToggle compact={isCollapsed} surface="sidebar" />
+          <PrivacyToggle />
         </div>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}

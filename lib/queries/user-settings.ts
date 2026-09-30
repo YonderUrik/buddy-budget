@@ -17,6 +17,7 @@ export interface UserSettings {
   image: string | null;
   currency: SupportedCurrency;
   homePage: HomePagePath;
+  hideAmounts: boolean;
   createdAt: string;
   googleLinked: boolean;
   /** Fino a quando le azioni sensibili non chiedono di accedere di nuovo. */

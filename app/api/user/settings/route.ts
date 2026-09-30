@@ -21,13 +21,14 @@ async function handleGet(request: NextRequest) {
     image: user.image ?? null,
     currency: user.currency,
     homePage: resolveHomePage(user.homePage),
+    hideAmounts: user.hideAmounts === true,
     createdAt: new Date(user.createdAt).toISOString(),
     googleLinked: providers.includes("google"),
     recentLoginUntil: recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),
   });
 }
 
-/** Aggiorna nome, valuta o pagina iniziale (solo valori ammessi). */
+/** Aggiorna nome, valuta, pagina iniziale o nascondi importi (solo valori ammessi). */
 async function handlePatch(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);
   if (session instanceof Response) return session;

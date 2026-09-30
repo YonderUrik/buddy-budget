@@ -77,7 +77,7 @@ export { ContributionSuggestions } from "./allocation/contribution-suggestions";
 export type { ContributionSuggestionsProps } from "./allocation/contribution-suggestions";
 export { InvestmentsActionsProvider, useInvestmentsActions } from "./investments-actions";
 export type { InvestmentsActions } from "./investments-actions";
-export { InvestmentsTabs, INVESTMENTS_TABS } from "./investments-tabs";
+export { InvestmentsTabs, INVESTMENTS_TABS, INVESTMENTS_TAB_ICON_SIZE } from "./investments-tabs";
 export type { InvestmentsTab, InvestmentsTabsProps } from "./investments-tabs";
 export { MonthBars } from "./income/month-bars";
 export type { MonthBar, MonthBarsProps } from "./income/month-bars";

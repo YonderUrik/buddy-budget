@@ -29,7 +29,7 @@ La pagina Investimenti aveva 11 card una sotto l'altra. Ora sei schede con URL p
 | Tasse | `/investimenti/tasse` | fiscalità (sezione 3) |
 | Operazioni | `/investimenti/operazioni` | elenco delle operazioni per mese |
 
-- `app/(app)/investimenti/layout.tsx` (client): titolo, bottoni Importa/Registra, barra delle schede (`InvestmentsTabs`: link veri, `aria-current`, scorrevole su mobile con la scheda attiva portata in vista), dialog "Registra operazione" e import condivisi. Le pagine aprono il dialog precompilato con `useInvestmentsActions()` / `useRegisterFromPlan()` (`components/domain/investments/investments-actions.tsx`).
+- `app/(app)/investimenti/layout.tsx` (client): titolo, bottoni Importa/Registra, barra delle schede (`InvestmentsTabs`: link veri, `aria-current`, scorrevole su mobile con la scheda attiva portata in vista, con una piccola icona lucide da 14px per scheda: Wallet, TrendingUp, ChartPie, HandCoins, Landmark, ArrowLeftRight; colore del primario sulla scheda attiva, attenuato sulle altre), dialog "Registra operazione" e import condivisi. Le pagine aprono il dialog precompilato con `useInvestmentsActions()` / `useRegisterFromPlan()` (`components/domain/investments/investments-actions.tsx`).
 - Tutte le schede usano la stessa query dell'overview (`useInvestmentsView`, `lib/queries/investments-view.ts`) al periodo di default (`3mesi`): cambiare scheda non riscarica niente. Performance ha il suo selettore del periodo; la heatmap e Tasse usano `max` (Tasse serve il valore a fine anno per il bollo).
 - Stati comuni (caricamento, errore, portafoglio vuoto) in `InvestmentsViewGate`.
 - La card "Dividendi e cedole" passa da Portafoglio a Proventi.

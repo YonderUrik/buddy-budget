@@ -1,0 +1,7 @@
+# Radice di workspace propria: la landing è un progetto indipendente dall'app (lockfile e dipendenze separati).
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

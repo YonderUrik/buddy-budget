@@ -1,5 +1,6 @@
 /** Anteprima di un'estinzione anticipata: le due alternative affiancate (o l'esito di un extra mensile), con i numeri che contano. */
 
+import { CalendarCheckIcon, TrendingDownIcon } from "lucide-react";
 import type { EarlyRepaymentOutcome } from "@/lib/calc/early-repayment";
 import type { EarlyRepaymentPreview } from "@/lib/debts/early-repayment-form";
 import { formatCurrency } from "@/lib/format";
@@ -10,8 +11,8 @@ type PreviewOnce = Extract<EarlyRepaymentPreview, { kind: "once" }>;
 type PreviewMonthly = Extract<EarlyRepaymentPreview, { kind: "monthly" }>;
 
 const EFFECT_COPY = {
-  reduce_installment: { title: "Riduci la rata", detail: "Stessa scadenza, rata più bassa" },
-  reduce_duration: { title: "Riduci la durata", detail: "Stessa rata, finisci prima" },
+  reduce_installment: { title: "Riduci la rata", detail: "Stessa scadenza, rata più bassa", Icon: TrendingDownIcon },
+  reduce_duration: { title: "Riduci la durata", detail: "Stessa rata, finisci prima", Icon: CalendarCheckIcon },
 } as const;
 
 function monthsLabel(months: number): string {
@@ -19,11 +20,11 @@ function monthsLabel(months: number): string {
   return months === 1 ? "1 mese prima" : `${months} mesi prima`;
 }
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+function Row({ label, value, strong, positive }: { label: string; value: string; strong?: boolean; positive?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-2 text-sm">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={cn("text-right tabular-nums text-foreground", strong && "font-medium")}>{value}</dd>
+      <dd className={cn("text-right tabular-nums text-foreground", strong && "font-medium", positive && "text-pos")}>{value}</dd>
     </div>
   );
 }
@@ -32,13 +33,16 @@ function OutcomeCard({ outcome, currency, selectable, selected, onSelect }: { ou
   const copy = EFFECT_COPY[outcome.effect];
   const body = (
     <>
-      <p className="text-sm font-medium text-foreground">{copy.title}</p>
+      <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+        <copy.Icon size={15} className="text-primary" aria-hidden="true" />
+        {copy.title}
+      </p>
       <p className="mb-2 text-xs text-muted-foreground">{copy.detail}</p>
       <dl className="flex flex-col gap-1">
         <Row label="Prossima rata" value={outcome.closesDebt ? "—" : formatCurrency(outcome.nextInstallment, currency)} />
         <Row label="Finisci" value={`${formatMonthYear(outcome.endDate)} · ${monthsLabel(outcome.monthsSaved)}`} />
-        <Row label="Interessi risparmiati" value={formatCurrency(outcome.interestSaved, currency)} strong />
-        <Row label="Al netto della penale" value={formatCurrency(outcome.netBenefit, currency)} strong />
+        <Row label="Interessi risparmiati" value={formatCurrency(outcome.interestSaved, currency)} strong positive />
+        <Row label="Al netto della penale" value={formatCurrency(outcome.netBenefit, currency)} strong positive={outcome.netBenefit > 0} />
       </dl>
     </>
   );
@@ -89,7 +93,7 @@ export function EarlyRepaymentMonthly({ preview, currency }: EarlyRepaymentMonth
       <p className="mb-2 text-sm font-medium text-foreground">Con {formatCurrency(preview.amount, currency)} in più ogni mese</p>
       <dl className="flex flex-col gap-1">
         <Row label="Finisci" value={`${formatMonthYear(result.endDate)} · ${monthsLabel(result.monthsSaved)}`} />
-        <Row label="Interessi risparmiati" value={formatCurrency(result.interestSaved, currency)} strong />
+        <Row label="Interessi risparmiati" value={formatCurrency(result.interestSaved, currency)} strong positive />
         <Row label="Versato in extra in totale" value={formatCurrency(result.extraPaid, currency)} />
       </dl>
       <p className="mt-2 text-xs text-muted-foreground">È solo una simulazione: non si registra. Se vuoi farlo davvero, registra le singole estinzioni quando le fai.</p>

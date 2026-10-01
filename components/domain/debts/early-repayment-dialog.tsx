@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { CheckIcon, PiggyBankIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -107,6 +108,7 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
 
       {mode === "once" ? (
         <Button type="button" onClick={register} disabled={mutation.isPending || preview.kind !== "once" || !effect}>
+          {effect && !mutation.isPending ? <CheckIcon aria-hidden="true" /> : null}
           {mutation.isPending ? "Salvo…" : effect ? "Registra come fatto" : "Scegli un'alternativa per registrarla"}
         </Button>
       ) : null}
@@ -119,7 +121,10 @@ export function EarlyRepaymentDialog({ debt, currency, open, onOpenChange }: Ear
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Estinzione anticipata</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <PiggyBankIcon size={18} className="text-primary" aria-hidden="true" />
+            Estinzione anticipata
+          </DialogTitle>
           <DialogDescription>{DESCRIPTION}</DialogDescription>
         </DialogHeader>
         {open ? <EarlyRepaymentForm debt={debt} currency={currency} onDone={() => onOpenChange(false)} /> : null}

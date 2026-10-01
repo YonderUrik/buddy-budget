@@ -3,6 +3,7 @@
 /** Dettaglio di un finanziamento: cifre, avviso sulle rate da confermare, piano rata per rata, registro eventi e azioni. */
 
 import * as React from "react";
+import { PercentIcon, PiggyBankIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -54,16 +55,20 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           <p className="text-xs text-muted-foreground">{START_MODE_LABELS[debt.startMode]}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" disabled={debt.plan.totals.finished} onClick={() => setEarlyOpen(true)}>
+          <Button size="sm" disabled={debt.plan.totals.finished} onClick={() => setEarlyOpen(true)}>
+            <PiggyBankIcon aria-hidden="true" />
             Estinzione anticipata
           </Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("rate_change")}>
+            <PercentIcon aria-hidden="true" />
             Cambio tasso
           </Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("balance_correction")}>
+            <SlidersHorizontalIcon aria-hidden="true" />
             Correggi residuo
           </Button>
           <Button size="sm" variant="ghost" className="text-neg" onClick={() => setConfirmDelete(true)}>
+            <Trash2Icon aria-hidden="true" />
             Elimina
           </Button>
         </div>

@@ -22,6 +22,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Worktree locali di Claude Code: contengono build .next generate, non codice sorgente.
     ".claude/**",
+    // La landing è un progetto a parte (landing/package.json) con la sua configurazione.
+    "landing/**",
   ]),
 ]);
 

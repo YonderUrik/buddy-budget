@@ -59,6 +59,26 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm test
 
+  landing:
+    name: Landing (tipi e build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: landing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: landing/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: landing/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm build
+
   image:
     name: Immagine ${{ matrix.image }}
     needs: check

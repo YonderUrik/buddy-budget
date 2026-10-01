@@ -1,0 +1,25 @@
+{
+  "name": "buddy-budget-landing",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.5.0",
+  "scripts": {
+    "sync:features": "node scripts/sync-features.mjs",
+    "predev": "pnpm sync:features",
+    "dev": "next dev",
+    "prebuild": "pnpm sync:features",
+    "build": "next build",
+    "lint": "pnpm sync:features && tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "16.2.10",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}

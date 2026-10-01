@@ -1,0 +1,5 @@
+# Rende landing/ la radice di un workspace a sé: ha il suo lockfile e le sue dipendenze, separate dall'app.
+packages: []
+# La landing è statica con immagini non ottimizzate: sharp non serve.
+allowBuilds:
+  sharp: false

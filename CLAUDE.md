@@ -107,7 +107,7 @@ Livello applicativo (deciso in `docs/superpowers/specs/2026-07-03-tech-stack-arc
 - **Cache**: Redis (rate limiting auth + cache calcoli derivati costosi)
 - **Charts**: Recharts via componente `Chart` di shadcn/ui
 - **Osservabilità**: VictoriaMetrics + Loki + Alloy + Grafana, Umami per gli eventi di prodotto (vedi standard sopra e `docs/osservabilita.md` nel repo infra)
-- **Deployment**: cluster k3s single-VPS (Hostinger, Düsseldorf), provisioning Ansible, ArgoCD + SOPS/KSOPS, ingresso via Cloudflare Tunnel + Traefik, admin solo via Tailscale. **Dal 2026-09-27 la produzione è `www.buddybudget.io` su k3s**; Vercel e Neon sono spenti (rotazione segreti e chiusura definitiva: Task 8 della Fase 7, vedi Stato). Il codice resta portabile anche su serverless (niente processi in memoria di lunga durata, cron come endpoint `/api/cron/*`). Repo infra: `YonderUrik/buddy-budget-infra`.
+- **Deployment**: cluster k3s single-VPS (Hostinger, Düsseldorf), provisioning Ansible, ArgoCD + SOPS/KSOPS, ingresso via Cloudflare Tunnel + Traefik, admin solo via Tailscale. **Dal 2026-09-27 la produzione è su k3s** (dal 2026-10-01 in corso il passaggio a `buddybudget.io` = landing statica in `landing/` su Cloudflare Pages, `app.buddybudget.io` = app: vedi `docs/decision-log.md`); Vercel e Neon sono spenti (rotazione segreti e chiusura definitiva: Task 8 della Fase 7, vedi Stato). Il codice resta portabile anche su serverless (niente processi in memoria di lunga durata, cron come endpoint `/api/cron/*`). Repo infra: `YonderUrik/buddy-budget-infra`.
 - **CI/CD**: GitHub Actions (lint, tsc, test) → immagine su GHCR → la CI aggiorna il tag nel repo infra → ArgoCD fa il rollout. Le migration le applica un Job `PreSync` di ArgoCD prima del rollout.
 
 ## Comandi
@@ -168,14 +168,17 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 - I componenti compositi specifici del dominio (es. `StatCard`) vivono in `components/` e vanno costruiti componendo le primitive di `components/ui/`.
 - Tutte le stringhe visibili all'utente sono in italiano per ora (l'app è multi-lingua per design, ma l'infrastruttura di i18n non è ancora implementata — vedi "Stack" e log delle decisioni). Quando si introdurrà l'i18n, queste stringhe andranno estratte in chiavi di traduzione invece di restare hardcoded nei componenti.
 
-### Schermate "in arrivo": punti da aggiornare quando se ne implementa una
+### Schermate "in arrivo" e catalogo funzionalità: punti da aggiornare quando se ne implementa una
 
-Le schermate non ancora implementate (oggi: Pensione, Pianifica, Analitiche) sono annunciate all'utente in **due posti separati**, che vanno tenuti allineati a mano (vivono in layer diversi, quindi non condividono un'unica costante):
+Elenco, descrizioni e stato (`live` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, che aggiunge solo l'icona) e la landing (`landing/`, import `@features`). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
 
-1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: la voce ha `comingSoon: true` (mostrata disabilitata con badge "Presto", nessun link). Quando la schermata esiste, **togliere il flag** e verificare che `href` corrisponda alla route reale.
-2. `components/domain/auth/upcoming-features.data.ts` → `UPCOMING_FEATURES`: la voce compare nella riga "In arrivo" del pannello di login. Quando la schermata esiste, **rimuovere la voce** (le descrizioni sono prese da `docs/functional-spec.md`, sezioni 5-9: se la spec cambia, aggiornarle).
+Quando si implementa una schermata pianificata (oggi: Pensione, Pianifica, Analitiche):
 
-Una schermata nuova non è "completata" finché entrambi i punti non sono aggiornati, insieme a "Stato del progetto" qui sotto. Se in futuro si aggiunge una nuova schermata pianificata, va aggiunta in entrambi i punti.
+1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: **togliere `comingSoon: true`** e verificare che `href` corrisponda alla route reale.
+2. `lib/features/catalog.ts`: passare la voce da `soon` a `live` (e aggiornare la descrizione se serve); togliere l'icona da `UPCOMING_ICONS` nel file dati del login.
+3. Una **feature nuova** (non pianificata) si aggiunge al catalogo come `live`: la landing la mostra da sola, ma va controllato che il testo regga nella pagina.
+
+Una schermata o feature nuova non è "completata" finché il catalogo non è aggiornato, insieme a "Stato del progetto" qui sotto.
 
 ## Stato del progetto
 
@@ -191,6 +194,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### In corso
 
+- **Landing / separazione domini**: `buddybudget.io` = landing statica (`landing/`, la costruisce un thread dedicato), `app.buddybudget.io` = app. Codice pronto in PR bozza; restano a mano il cambio di `APP_URL`/`BETTER_AUTH_URL` (SOPS), il DNS e Cloudflare Pages (passi nella PR). Quando il cutover è fatto, aggiornare questa riga.
 - **Debiti**: Fasi 3 (credit Lombard) e 4 (patrimonio netto, Lombard contro il portafoglio, scheda Simulatore) implementate, PR #43 in revisione. Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
 
 ### Previsto

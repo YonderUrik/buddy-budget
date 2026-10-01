@@ -8,6 +8,8 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  */
 export interface ProductEvents {
   onboarding_completed: { currency: SupportedCurrency };
+  account_created: undefined;
+  budget_set: undefined;
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   account_sync_manual: undefined;
@@ -20,6 +22,7 @@ export interface ProductEvents {
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
+  investment_operation_updated: { type: InvestmentTransactionType };
   investment_plan_created: undefined;
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" | "linea_di_credito" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" | "draw" | "repay" | "interest_charged" };

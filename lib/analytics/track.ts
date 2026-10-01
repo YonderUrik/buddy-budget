@@ -8,6 +8,8 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  */
 export interface ProductEvents {
   onboarding_completed: { currency: SupportedCurrency };
+  account_created: undefined;
+  budget_set: undefined;
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   account_sync_manual: undefined;

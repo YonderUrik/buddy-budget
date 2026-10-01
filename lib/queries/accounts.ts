@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { track } from "@/lib/analytics";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { CreateAccountInput, UpdateAccountInput } from "@/lib/validation/accounts";
 
@@ -36,6 +37,7 @@ export function useCreateAccountMutation() {
       return response.json() as Promise<Account>;
     },
     onSuccess: () => {
+      track("account_created");
       queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
     },
   });

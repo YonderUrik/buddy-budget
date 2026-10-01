@@ -3,9 +3,12 @@
 /** Lombard: le linee di credito (credit Lombard, fido) con utilizzo, interessi, andamento e registro. */
 
 import * as React from "react";
-import { CreditLineDetail, CreditLineSelector, DebtsViewGate, useDebtsActions } from "@/components/domain/debts";
+import { CreditLineDetail, CreditLinePortfolioCard, CreditLineSelector, DebtsViewGate, useDebtsActions } from "@/components/domain/debts";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
+import { buildInvestmentsView } from "@/lib/investments/view";
+import { startOfDay } from "@/lib/calc/expenses";
+import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { useDebtsQuery } from "@/lib/queries/debts";
 
 const EMPTY_TITLE = "Nessuna linea di credito";
@@ -18,6 +21,12 @@ export default function LombardPage() {
   const query = useDebtsQuery();
   const data = query.data;
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  // Gli investimenti sono facoltativi: senza operazioni (o con un errore) la scheda di confronto non compare.
+  const investmentsQuery = useInvestmentsOverviewQuery("1mese");
+  const portfolioValue = React.useMemo(() => {
+    if (!investmentsQuery.data || investmentsQuery.data.transactions.length === 0) return null;
+    return buildInvestmentsView(investmentsQuery.data, "1mese", startOfDay(new Date())).summary.totalValue;
+  }, [investmentsQuery.data]);
   const lines = data?.creditLines ?? [];
   const selected = lines.find((l) => l.id === selectedId) ?? lines[0];
 
@@ -26,6 +35,9 @@ export default function LombardPage() {
       {selected ? (
         <>
           <CreditLineSelector lines={lines} selectedId={selected.id} onSelect={setSelectedId} currency={currency} />
+          {portfolioValue !== null ? (
+            <CreditLinePortfolioCard used={selected.plan.used} currentRate={selected.plan.currentRate} portfolioValue={portfolioValue} currency={currency} />
+          ) : null}
           <CreditLineDetail key={selected.id} line={selected} currency={currency} onDeleted={() => setSelectedId(null)} />
         </>
       ) : (

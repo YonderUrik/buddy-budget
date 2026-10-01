@@ -25,6 +25,7 @@ import {
 } from "@/lib/calc/net-worth";
 import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
+import { useDebtsQuery } from "@/lib/queries/debts";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
@@ -53,6 +54,8 @@ export default function PanoramicaPage() {
   const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today));
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
   const investmentsQuery = useInvestmentsOverviewQuery(INVESTMENTS_PERIOD);
+  // Un errore sui debiti non blocca la Panoramica: semplicemente non compaiono.
+  const debtsQuery = useDebtsQuery();
 
   const isLoading =
     accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading || investmentsQuery.isLoading;
@@ -62,6 +65,7 @@ export default function PanoramicaPage() {
     snapshotsQuery.refetch();
     monthTransactionsQuery.refetch();
     investmentsQuery.refetch();
+    debtsQuery.refetch();
   };
 
   const accounts = accountsQuery.data ?? [];
@@ -73,12 +77,16 @@ export default function PanoramicaPage() {
     const { paid, market } = computeValueBreakdown(summary);
     return { value: summary.totalValue, positions: summary.rows.length, paid, marketGain: market };
   }, [investmentsQuery.data, today]);
-  const todayByClass: NetWorthByClass = investments
-    ? { liquidita: totalLiquidity, investimenti: investments.value }
-    : { liquidita: totalLiquidity };
+  const debtsData = debtsQuery.data?.overview;
+  const debts = debtsData && debtsData.totalDebt > 0 ? { total: debtsData.totalDebt, count: debtsData.openCount + debtsData.creditLineCount } : null;
+  const todayByClass: NetWorthByClass = {
+    liquidita: totalLiquidity,
+    ...(investments ? { investimenti: investments.value } : {}),
+    ...(debts ? { debiti: -debts.total } : {}),
+  };
   const series = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts, investments);
+  const compositionItems = buildCompositionItems(accounts, investments, debts);
   const [currentMonth] = computeMonthlySeries(monthTransactionsQuery.data ?? [], monthRange);
   const headerDate = HEADER_DATE_FORMAT.format(today);
 

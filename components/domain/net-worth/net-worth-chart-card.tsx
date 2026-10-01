@@ -3,7 +3,7 @@
  * aree impilate, un'area per classe di asset (liquidità alla base, investimenti sopra): il bordo superiore è il totale.
  */
 
-import { Area, AreaChart, XAxis, YAxis } from "recharts";
+import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { NetWorthChange, NetWorthPeriod, NetWorthSeriesPoint } from "@/lib/calc/net-worth";
@@ -17,6 +17,8 @@ const STACK_ID = "net-worth";
 const AREA_FILL_ID_PREFIX = "net-worth-area-fill-";
 /** Classe mostrata quando la serie è tutta a zero (nessuna classe con valori). */
 const DEFAULT_CLASS = "liquidita";
+/** Classe in negativo: non si impila (le aree sono i beni), si mostra nel tooltip e nella linea del netto. */
+const LIABILITY_CLASS = "debiti";
 
 const PERIOD_CHANGE_LABELS: Record<NetWorthPeriod, string> = {
   "1mese": "nell'ultimo mese",
@@ -45,7 +47,10 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
   const sign = isNegative ? "−" : "+";
   const pctText = change.deltaPct !== null ? ` (${sign}${Math.abs(change.deltaPct * 100).toFixed(1)}%)` : "";
   const presentClasses = assetClassesInSeries(series);
-  const classes = presentClasses.length > 0 ? presentClasses : [DEFAULT_CLASS];
+  const hasDebts = presentClasses.includes(LIABILITY_CLASS);
+  const assetClasses = presentClasses.filter((key) => key !== LIABILITY_CLASS);
+  const classes = assetClasses.length > 0 ? assetClasses : [DEFAULT_CLASS];
+  const tooltipClasses = hasDebts ? [...classes, LIABILITY_CLASS] : classes;
 
   return (
     <Card>
@@ -72,7 +77,7 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
       {hasHistory ? (
         <CardContent>
           <ChartContainer config={buildChartConfig(classes)} className="max-h-64 w-full">
-            <AreaChart data={series}>
+            <ComposedChart data={series}>
               <defs>
                 {classes.map((key) => (
                   <linearGradient key={key} id={`${AREA_FILL_ID_PREFIX}${key}`} x1="0" y1="0" x2="0" y2="1">
@@ -83,7 +88,7 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
               </defs>
               <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
               <YAxis hide />
-              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={classes} />} />
+              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} />} />
               {classes.map((key) => (
                 <Area
                   key={key}
@@ -96,16 +101,28 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
                   fill={`url(#${AREA_FILL_ID_PREFIX}${key})`}
                 />
               ))}
-            </AreaChart>
+            {hasDebts ? (
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  name="netto"
+                  stroke="var(--foreground)"
+                  strokeWidth={2}
+                  strokeDasharray="4 3"
+                  dot={false}
+                />
+              ) : null}
+            </ComposedChart>
           </ChartContainer>
-          {classes.length > 1 ? (
+          {classes.length > 1 || hasDebts ? (
             <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {classes.map((key) => (
+              {tooltipClasses.map((key) => (
                 <li key={key} className="flex items-center gap-1.5">
                   <span className="size-2 rounded-full" style={{ backgroundColor: assetClassColor(key) }} aria-hidden="true" />
                   {assetClassLabel(key)}
                 </li>
               ))}
+              {hasDebts ? <li className="text-muted-foreground">Linea tratteggiata: patrimonio netto</li> : null}
             </ul>
           ) : null}
         </CardContent>

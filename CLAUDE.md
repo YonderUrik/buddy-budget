@@ -174,12 +174,12 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login con pannello "mosaico", brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
 - **Movimenti** (`/movimenti`: Elenco · Analisi · Categorie · Regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
 - **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, PAC, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
-- **Debiti**: Fase 1 (motore e finanziamenti, PR #36) e Fase 2 (estinzioni anticipate, PR #38).
+- **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
 - **Infrastruttura**: migrazione Vercel+Neon → VPS k3s completata (Fasi 0-7, cutover il 2026-09-27). Osservabilità Fasi A e B completate (log JSON, metriche, 4 dashboard, 12 alert con runbook, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
 
 ### In corso
 
-- **Debiti**: Fase 3 (credit Lombard) implementata, PR in revisione; resta la Fase 4 (patrimonio netto, extra investimenti, Simulatore completo con surroga e valanga). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
+- **Debiti**: Fasi 3 (credit Lombard) e 4 (patrimonio netto, Lombard contro il portafoglio, scheda Simulatore) implementate, PR #43 in revisione. Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
 
 ### Previsto
 

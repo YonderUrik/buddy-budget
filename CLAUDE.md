@@ -79,6 +79,18 @@ Standard deciso il 2026-09-27 (Fase A osservabilità, spec `docs/superpowers/spe
 6. **Eventi di prodotto**: `track()` di `lib/analytics` (Umami) dopo l'esito positivo di un'azione, con props solo categoriche o conteggi. I nomi evento sono un tipo chiuso (`ProductEvents`).
 7. `GET /api/metrics` risponde solo con `Authorization: Bearer <METRICS_TOKEN>`; senza `METRICS_TOKEN` risponde 404 (così su Vercel resta spento).
 
+#### Ogni feature è osservabile (definition of done)
+
+Regola decisa il 2026-10-01: una feature non è "completata" finché in produzione non si può **vedere cosa succede** e **capire come sta andando**. Prima di chiuderla (e di aprire la PR) si risponde a queste domande, e la PR le riporta in una riga ciascuna:
+
+1. **Log**: ogni esito che conta (successo di un'azione importante, ogni errore gestito, ogni fallback) ha un evento `dominio.oggetto.esito` via `requestLogger()`/`logger`, filtrabile in Loki con una query. Le route nuove sono `withRoute`.
+2. **Umami**: ogni azione dell'utente che la feature introduce o cambia ha un evento in `ProductEvents` e un `track()` dopo l'esito positivo (anche modifica ed eliminazione, non solo creazione), con props solo categoriche o conteggi. Serve a capire se la feature viene usata, non solo se funziona.
+3. **Metriche e alert**: se la feature ha un lavoro in background, un cron o una dipendenza esterna (API, fonte dati, email), ha una metrica con `record*` e `recordCronRun`, e se può fallire senza che l'utente se ne accorga ha un alert nel repo infra (regola in `argocd/apps/grafana.yaml` + runbook in `docs/runbooks/`).
+4. **Dashboard e guida**: se aggiunge metriche, un pannello nella dashboard giusta (repo infra) e una riga in `docs/osservabilita.md`.
+5. **Dopo il deploy**: nella PR, "Come verificare in produzione": quale query Loki, quale metrica e quale evento Umami guardare, e che valori aspettarsi.
+
+Un cambiamento puramente grafico o di calcolo senza nuovi esiti osservabili può dichiarare "nessun nuovo segnale" nella PR, ma va dichiarato, non omesso.
+
 ## Stack
 
 - Next.js (App Router) + TypeScript
@@ -234,6 +246,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 Il log completo è in [`docs/decision-log.md`](docs/decision-log.md) (voci nuove in cima, 3-8 righe). Decisioni ancora vincolanti, in sintesi:
 
+- **2026-10-01** — Ogni feature deve essere osservabile (log, evento Umami, metriche/alert se serve, riga "Come verificare in produzione" nella PR): vedi "Osservabilità" sopra.
 - **2026-10-01** — Prezzi di mercato e snapshot del patrimonio a 3 giri al giorno (06:30/17:30/22:30 UTC e 06:50/17:50/23:50 UTC). Sono chiusure di fine giornata, non intraday.
 - **2026-09-30** — Sezioni unificate: Transazioni, Cash flow e Categorie sono `/movimenti`. Categorie con board a colonne per gruppo di spesa.
 - **2026-09-30** — Debiti: piano calcolato da condizioni iniziali + registro eventi (come le posizioni di Investimenti); rate segnate a mano, mai automatiche.

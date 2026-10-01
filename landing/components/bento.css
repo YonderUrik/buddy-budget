@@ -28,3 +28,23 @@
 .hide .amts { filter: blur(8px); }
 @media (max-width: 1000px) { .bento { grid-template-columns: 1fr; } .s7, .s5, .s4 { grid-column: auto; } }
 @media (max-width: 600px) { .bc { padding: 24px; border-radius: 24px; } }
+
+/* Elementi condivisi dai riquadri dimostrativi (prima vivevano nella finestra ricostruita, ora sostituita da screenshot veri). */
+.lab { font: 700 10px var(--f-b); letter-spacing: 0.08em; text-transform: uppercase; color: var(--a-t2); }
+.mini { font: 600 19px var(--f-h); letter-spacing: -0.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.between { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.chart { display: block; width: 100%; height: auto; overflow: visible; }
+.dr { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.6s var(--ease) 0.15s forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.pb { height: 7px; border-radius: 99px; background: var(--a-soft); overflow: hidden; margin-top: 6px; }
+.pb i { display: block; height: 100%; border-radius: 99px; }
+.gbar { display: flex; height: 10px; border-radius: 99px; overflow: hidden; gap: 2px; margin: 10px 0 8px; }
+.gbar i { display: block; height: 100%; }
+.leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--a-t2); }
+.leg b { font-weight: 600; color: var(--a-fg); }
+.leg i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; }
+.rw { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid var(--a-line); }
+.rw:first-of-type { border-top: 0; }
+.rw .d { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.rw b { font-weight: 600; display: block; }
+.rw .v { margin-left: auto; font: 600 14px var(--f-h); font-variant-numeric: tabular-nums; white-space: nowrap; }

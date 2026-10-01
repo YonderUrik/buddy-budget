@@ -17,6 +17,7 @@ export interface NavLink {
 
 export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
   { href: "#prodotto", label: "Prodotto" },
+  { href: "#schermate", label: "Schermate" },
   { href: "#funzioni", label: "Funzioni" },
   { href: "#perche", label: "Perché" },
   { href: "#chi", label: "Chi siamo" },

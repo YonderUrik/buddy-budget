@@ -1,25 +1,25 @@
 /*
  * Token e base della landing. Il linguaggio è quello dell'app (token --a-* = quelli di app/globals.css, usati dalla
- * finestra del prodotto); il resto è pagina chiara e sobria con un solo accento (azzurro brand). Il giallo compare
+ * finestra del prodotto); il resto è pagina neutra (grigi caldi, niente blu) e sobria con un solo accento (azzurro brand). Il giallo compare
  * solo nel marchio e nel pulsante principale. Niente colori esadecimali nei componenti: solo token.
  */
 :root {
-  --bg: #f6f6f8;
+  --bg: #f5f5f4;
   --surface: #fff;
-  --ink: #0f0f3f;
-  --ink2: #4a4a66;
-  --ink3: #7b7b92;
-  --line: #e3e3ea;
+  --ink: #18181b;
+  --ink2: #52525b;
+  --ink3: #71717a;
+  --line: #e4e4e7;
   --accent: #15738b;
   --sky: #219ebc;
   --sun: #ffb703;
-  --navy: #0f0f3f;
-  --on-navy: #f2f2f8;
-  --on-navy2: #b4b4cc;
-  --on-sun: #0f0f3f;
+  --navy: #18181b;
+  --on-navy: #f4f4f5;
+  --on-navy2: #a1a1aa;
+  --on-sun: #18181b;
   --mk2: #1f224e;
-  --shadow-win: rgba(10, 10, 40, 0.45);
-  --shadow-win2: rgba(10, 10, 40, 0.3);
+  --shadow-win: rgba(0, 0, 0, 0.35);
+  --shadow-win2: rgba(0, 0, 0, 0.22);
 
   /* token dell'app (finestra del prodotto) */
   --a-bg: #f7f7f8;
@@ -47,15 +47,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0b0b12;
-    --surface: #14141d;
-    --ink: #f2f2f8;
-    --ink2: #a9a9c0;
-    --ink3: #7c7c94;
-    --line: #25252f;
+    --bg: #0e0e10;
+    --surface: #17171a;
+    --ink: #f4f4f5;
+    --ink2: #a1a1aa;
+    --ink3: #80808a;
+    --line: #27272a;
     --accent: #46b8d4;
-    --navy: #14153f;
-    --mk2: #7378c8;
+    --navy: #1c1c1f;
+    --mk2: #8b8fd6;
     --a-bg: #111113;
     --a-card: #18181b;
     --a-fg: #ececef;
@@ -76,15 +76,15 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #0b0b12;
-  --surface: #14141d;
-  --ink: #f2f2f8;
-  --ink2: #a9a9c0;
-  --ink3: #7c7c94;
-  --line: #25252f;
+  --bg: #0e0e10;
+  --surface: #17171a;
+  --ink: #f4f4f5;
+  --ink2: #a1a1aa;
+  --ink3: #80808a;
+  --line: #27272a;
   --accent: #46b8d4;
-  --navy: #14153f;
-  --mk2: #7378c8;
+  --navy: #1c1c1f;
+  --mk2: #8b8fd6;
   --a-bg: #111113;
   --a-card: #18181b;
   --a-fg: #ececef;

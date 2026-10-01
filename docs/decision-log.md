@@ -37,6 +37,7 @@ Fase di **autenticazione completata**, schermata **Conti implementata** (gestion
 
 ## Log delle decisioni
 
+>>>>>>> 4dc354b (Landing: screenshot veri dell'app, galleria, palette neutra)
 - **2026-10-01** — **Debiti: la transazione da collegare a una rata si filtra per testo e categoria.** Il selettore "Collega una transazione" era un menu a tendina con tutte le uscite entro ±20 giorni dalla scadenza: ora è una lista scorrevole con la stessa barra filtri di Movimenti (`ExpensesFilterBar` + `filterTransactions`), con in cima le uscite dall'importo della rata e poi le più vicine alla scadenza. Filtro lato client sulla finestra già scaricata (nessuna nuova route, quindi nessun nuovo log server). Evento Umami `debt_installment_transaction_linked` con il solo tipo di filtro usato (nessuno/testo/categoria/entrambi). Nessun impatto sulla landing: rifinitura di una funzione già nel catalogo.
 - **2026-10-01** — **Un solo catalogo delle funzioni** (`lib/features/catalog.ts`), con area e stato `live`/`new`/`soon`. Lo leggono il pannello "In arrivo" del login e il test della sidebar; la landing ne tiene una copia generata (`pnpm sync:features`) perché l'immagine Docker e Turbopack vedono solo `landing/`. La CI della landing fallisce se la copia diverge (`check:features`). Sostituisce `landing/content/features.ts`. Il login mostra solo le `soon` con `appPath` (le schermate), non le trasversali come lingue e push.
 

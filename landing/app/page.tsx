@@ -4,6 +4,7 @@ import { FeaturesSection } from "@/components/features-section";
 import { Founder } from "@/components/founder";
 import { Hero } from "@/components/hero";
 import { ProductTour } from "@/components/product-tour";
+import { ScreenGallery } from "@/components/screen-gallery";
 import { SiteNav } from "@/components/site-nav";
 import { Story } from "@/components/story";
 
@@ -15,6 +16,7 @@ export default function HomePage() {
         <Hero />
         <Story />
         <ProductTour />
+        <ScreenGallery />
         <FeaturesSection />
         <Comparison />
         <Founder />

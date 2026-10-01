@@ -1,0 +1,71 @@
+name: Screenshot landing
+
+# Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md). Avvio manuale: le immagini
+# escono come artifact da scaricare e committare in landing/public/screens/.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: Cattura screenshot
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bb_demo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    # Valori fittizi: nessun servizio esterno viene contattato.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bb_demo
+      REDIS_URL: redis://localhost:6379
+      BETTER_AUTH_SECRET: ci-only-placeholder-secret-000000000000
+      BETTER_AUTH_URL: http://localhost:3300
+      APP_URL: http://localhost:3300
+      GOOGLE_CLIENT_ID: demo
+      GOOGLE_CLIENT_SECRET: demo
+      RESEND_API_KEY: re_demo
+      RESEND_FROM: demo@example.com
+      GOCARDLESS_SECRET_ID: demo
+      GOCARDLESS_SECRET_KEY: demo
+      CRON_SECRET: ci-only-cron-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm demo:seed
+      - run: pnpm build
+      - run: pnpm exec next start -p 3300 &
+      - name: Installa Playwright e Chromium
+        run: |
+          npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Attendi l'app e cattura
+        working-directory: landing
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/pw/node_modules/playwright
+        run: |
+          npx --yes wait-on http://localhost:3300/login --timeout 60000
+          node --experimental-strip-types scripts/capture-screens.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landing-screens
+          path: landing/public/screens

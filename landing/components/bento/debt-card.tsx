@@ -1,4 +1,4 @@
-import { DebtStepsChart } from "../screens";
+import { DebtStepsChart } from "./debt-steps-chart";
 
 /** Residuo d'esempio di un finanziamento che scende a ogni rata. */
 export function DebtCard() {

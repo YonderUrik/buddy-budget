@@ -5,17 +5,12 @@ import "./product-tour.css";
 import { TOUR_STEPS } from "@/content/site";
 import { track, type LandingEvents } from "@/lib/analytics";
 import { ScrollTrigger, useGSAP } from "@/lib/motion/gsap";
-import { AppWindow, type NavKey } from "./app-window";
-import { ContiScreen, DebitiScreen, InvestimentiScreen, MovimentiScreen } from "./screens";
+import { TOUR_SCREEN_IDS } from "@/content/screens";
+import { AppShot } from "./app-shot";
 import { TrackedSection } from "./tracked-section";
 
-/** Schermata dell'app, voce di sidebar e indirizzo per ciascun passo (stesso ordine di `TOUR_STEPS`). */
-const TOUR_SCREENS: readonly { nav: NavKey; url: string; Screen: typeof ContiScreen; event: LandingEvents["tour_step_viewed"]["step"] }[] = [
-  { nav: "conti", url: "app.buddybudget.io/conti", Screen: ContiScreen, event: "collega" },
-  { nav: "mov", url: "app.buddybudget.io/movimenti", Screen: MovimentiScreen, event: "capisci" },
-  { nav: "inv", url: "app.buddybudget.io/investimenti", Screen: InvestimentiScreen, event: "investi" },
-  { nav: "deb", url: "app.buddybudget.io/debiti", Screen: DebitiScreen, event: "decidi" },
-];
+/** Evento Umami per ciascun passo (stesso ordine di `TOUR_STEPS` e di `TOUR_SCREEN_IDS`). */
+const TOUR_EVENTS: readonly LandingEvents["tour_step_viewed"]["step"][] = ["collega", "capisci", "investi", "decidi"];
 
 /** Quanta parte dell'altezza del passo deve superare il centro dello schermo per attivarlo. */
 const STEP_ACTIVATE_AT = "top 55%";
@@ -43,7 +38,7 @@ export function ProductTour() {
             setActive(i);
             if (!seen.current.has(i)) {
               seen.current.add(i);
-              track("tour_step_viewed", { step: TOUR_SCREENS[i].event });
+              track("tour_step_viewed", { step: TOUR_EVENTS[i] });
             }
           },
         }),
@@ -52,8 +47,6 @@ export function ProductTour() {
     },
     { scope: root },
   );
-
-  const current = TOUR_SCREENS[active];
 
   return (
     <TrackedSection id="prodotto" section="prodotto" className="tour" navDark>
@@ -77,11 +70,11 @@ export function ProductTour() {
             ))}
           </div>
           <div className="sticky">
-            <AppWindow active={current.nav} url={current.url}>
-              {TOUR_SCREENS.map(({ Screen }, i) => (
-                <Screen key={i} className={`scr${i === active ? " on" : ""}`} />
+            <div className="tour-shots">
+              {TOUR_SCREEN_IDS.map((id, i) => (
+                <AppShot key={id} id={id} className={`tour-shot${i === active ? " on" : ""}`} />
               ))}
-            </AppWindow>
+            </div>
           </div>
         </div>
       </div>

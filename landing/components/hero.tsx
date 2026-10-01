@@ -1,21 +1,16 @@
 "use client";
 
-import { groupThousands } from "@/lib/format";
 import { useRef } from "react";
 import "./hero.css";
 import { APP_LINKS } from "@/content/site";
 import { track } from "@/lib/analytics";
 import { useSectionView } from "@/lib/use-section-view";
 import { EASE_OUT, gsap, MOTION_OK, useGSAP } from "@/lib/motion/gsap";
-import { AppWindow } from "./app-window";
+import { AppShot } from "./app-shot";
 import { ARROW_ICON, CtaLink } from "./cta-link";
-import { PanoramicaScreen } from "./screens";
-
-/** Totale d'esempio del patrimonio netto che si anima nella finestra dell'hero. */
-const HERO_NET_WORTH = 47320;
 
 /**
- * Apertura: il titolo entra riga per riga, poi sale la finestra dell'app con il patrimonio che conta fino al totale.
+ * Apertura: il titolo entra riga per riga, poi sale la schermata vera dell'app (Panoramica).
  * Scrollando, la finestra si raddrizza e cresce (trasformazioni GPU, nessun layout).
  */
 export function Hero() {
@@ -28,25 +23,11 @@ export function Hero() {
     () => {
       const mm = gsap.matchMedia();
       mm.add(MOTION_OK, () => {
-        const count = root.current?.querySelector<HTMLElement>("[data-count]");
-        const counter = { v: 0 };
         gsap
           .timeline({ defaults: { ease: EASE_OUT } })
           .fromTo("h1 .ln > span", { yPercent: 112, y: 0 }, { yPercent: 0, y: 0, duration: 1.4, stagger: 0.14, delay: 0.1 })
           .fromTo(".hrow > *", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, stagger: 0.1 }, "-=1")
-          .fromTo(tilt.current, { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 1.6 }, "-=0.9")
-          .to(
-            counter,
-            {
-              v: HERO_NET_WORTH,
-              duration: 2,
-              ease: "power3.out",
-              onUpdate: () => {
-                if (count) count.textContent = groupThousands(counter.v);
-              },
-            },
-            "-=1.1",
-          );
+          .fromTo(tilt.current, { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 1.6 }, "-=0.9");
         gsap.fromTo(
           tilt.current,
           { rotateX: 12, scale: 0.93 },
@@ -82,9 +63,7 @@ export function Hero() {
           <div className="wrap">
             <div className="inner">
               <div className="tilt" ref={tilt}>
-                <AppWindow active="pano" url="app.buddybudget.io/panoramica">
-                  <PanoramicaScreen />
-                </AppWindow>
+                <AppShot id="panoramica" priority />
               </div>
             </div>
           </div>

@@ -131,3 +131,25 @@ jobs:
             git commit -m "chore: aggiorna immagine buddy-budget a sha-${GITHUB_SHA::7}"
             git push
           fi
+
+  landing:
+    name: Landing (lint, tipi, test, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: landing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: landing/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: landing/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build

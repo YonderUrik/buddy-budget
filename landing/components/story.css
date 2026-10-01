@@ -1,0 +1,8 @@
+.story { padding-block: 200px 140px; }
+.say { font: 600 clamp(30px, 4.6vw, 66px) / 1.12 var(--f-h); letter-spacing: -0.03em; max-width: 21em; margin-top: 28px; }
+.js-motion .say .w { opacity: 0.16; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; margin-top: 96px; border-top: 1px solid var(--line); padding-top: 36px; }
+.trio h3 { font: 600 22px var(--f-h); letter-spacing: -0.02em; margin-bottom: 10px; }
+.trio p { color: var(--ink2); font-size: 16px; }
+.trio .n { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+@media (max-width: 1000px) { .trio { grid-template-columns: 1fr; gap: 32px; margin-top: 64px; } .story { padding-block: 120px 80px; } }

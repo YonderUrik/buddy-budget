@@ -142,7 +142,7 @@ lib/
   calc/                      motori di calcolo puri e testati (spese, cashflow, rendimenti, tasse, ammortamento, debiti...)
   observability/ analytics/  log, metriche, eventi di prodotto
   <feature>/                 logica di dominio per area (gocardless, categorization, investments, market-data, net-worth, debts, account...)
-landing/                     sito vetrina statico (buddybudget.io), progetto Next.js a sé con proprio package.json, CI e deploy su Cloudflare Pages; contenuti in landing/content/
+landing/                     sito vetrina statico (buddybudget.io), progetto Next.js a sé con proprio package.json, CI e immagine nginx nel cluster k3s (non Cloudflare Pages); contenuti in landing/content/
 docs/
   product-vision.md          visione di prodotto (sintesi)
   functional-spec.md         specifica funzionale per schermata, dedotta dal mockup
@@ -197,7 +197,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### Previsto
 
-- **Landing** (`landing/`, bozza in PR): sito statico su `buddybudget.io`, app su `app.buddybudget.io`. Da fare dopo il merge: progetto Cloudflare Pages, sito Umami dedicato con le due variabili `NEXT_PUBLIC_UMAMI_*`, immagine Open Graph, validare testi di storia e confronto. La divisione dei domini (infra/app) è di un altro lavoro.
+- **Landing** (`landing/`): sito statico servito da nginx nel cluster (namespace `app`, immagine `buddy-budget-landing`, manifest infra `argocd/manifests/landing`). Sito Umami "BuddyBudget Landing" creato (id nel Dockerfile). **Da fare, in quest ordine**: (1) spostare l app su `app.buddybudget.io` (`APP_URL`/`BETTER_AUTH_URL` nel Secret, redirect URI Google OAuth); (2) switch dell apice: togliere `apex-redirect-www` e puntare `Host(buddybudget.io)` al Service `landing`; (3) immagine Open Graph, validare testi di storia e confronto. Vedi `docs/decision-log.md` 2026-10-01.
 
 - **Osservabilità Fase C**: accesso in sola lettura per agenti via MCP (mai sulla VPS di produzione).
 - **Fase 7, Task 8 (migrazione VPS)**: non prima di 2 settimane dal cutover (cioè dopo il 2026-10-11) e con conferma esplicita dell'utente: rotazione di tutti i segreti (sono transitati su Vercel), chiusura definitiva di Vercel/Neon, rimozione di `@vercel/analytics` e delle chiavi Umami inutilizzate dall'env. Piano: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.

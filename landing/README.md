@@ -25,9 +25,9 @@ pnpm build        # genera out/
 | `NEXT_PUBLIC_UMAMI_SRC` | `<APP_URL>/stats/script.js` | script Umami (proxy dell'app) |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | vuoto | id del sito Umami **della landing**; senza, nessun tracciamento |
 
-## Deploy su Cloudflare Pages
+## Deploy (cluster k3s)
 
-Root directory `landing`, comando `pnpm build`, output `out`, Node 24. Gli header di sicurezza sono in `public/_headers`, i redirect dei vecchi percorsi dell'app verso `app.buddybudget.io` in `public/_redirects`.
+Immagine nginx (`Dockerfile`, config in `nginx.conf`) costruita dalla CI e servita dal cluster (namespace `app`, manifest nel repo infra `argocd/manifests/landing`). Gli header di sicurezza e i redirect dei vecchi percorsi dell'app verso `app.buddybudget.io` sono in `nginx.conf`; `public/_headers` e `public/_redirects` restano il formato Cloudflare Pages: se cambiano, vanno riportati in `nginx.conf`. Le `NEXT_PUBLIC_*` sono `ARG` del Dockerfile (valori incollati a build time).
 
 ## Eventi Umami
 

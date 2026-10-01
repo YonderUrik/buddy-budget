@@ -93,11 +93,21 @@ describe("buildDebtsView", () => {
     expect(debts[0].events).toHaveLength(2);
   });
 
-  it("calcola il TAEG con le spese e lo omette per la fotografia di oggi", () => {
+  it("calcola il TAEG con le spese, e per la fotografia di oggi quello di ciò che resta", () => {
     const withCosts = buildDebtsView([debt({ startMode: "nuovo", costs: [{ label: "Istruttoria", amount: 150, kind: "una_tantum" }] })], [], "2026-02-01");
     expect(withCosts.debts[0].apr).toBeGreaterThan(6.17);
     const photo = buildDebtsView([debt({ startMode: "fotografia" })], [], "2026-09-30");
-    expect(photo.debts[0].apr).toBeNull();
+    expect(photo.debts[0].apr).toBeGreaterThan(6);
+    expect(photo.debts[0].apr).toBeLessThan(6.5);
+  });
+
+  it("il TAEG medio pesa sul residuo", () => {
+    const cheap = debt({ id: "a", annualRate: "2.0000", principal: "20000.00", startMode: "fotografia", firstInstallmentDate: "2026-10-05", installments: 24 });
+    const dear = debt({ id: "b", annualRate: "10.0000", principal: "2000.00", startMode: "fotografia", firstInstallmentDate: "2026-10-05", installments: 24 });
+    const { overview } = buildDebtsView([cheap, dear], [], "2026-09-30");
+    expect(overview.weightedApr).toBeGreaterThan(2.5);
+    expect(overview.weightedApr).toBeLessThan(4);
+    expect(buildDebtsView([], [], "2026-09-30").overview.weightedApr).toBeNull();
   });
 
   it("la serie del residuo complessivo parte da oggi con il residuo di oggi e finisce a zero", () => {

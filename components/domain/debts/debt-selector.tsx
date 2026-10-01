@@ -45,7 +45,7 @@ export function DebtSelector({ debts, selectedId, onSelect, currency }: DebtSele
               <span className="text-xs text-muted-foreground">
                 {debt.plan.totals.finished
                   ? "Estinto"
-                  : `${formatCurrency(debt.plan.totals.currentInstallment, currency)} al mese · ${debt.plan.totals.remainingInstallments} rate rimaste`}
+                  : `${formatCurrency(debt.plan.totals.currentInstallment, currency)} al mese · ${debt.plan.totals.remainingInstallments} rate rimaste${debt.apr !== null ? ` · TAEG ${debt.apr.toFixed(2).replace(".", ",")}%` : ""}`}
               </span>
               <span className="h-1.5 overflow-hidden rounded-full bg-muted" role="img" aria-label={`${Math.round(share * 100)}% restituito`}>
                 <span className="block h-full rounded-full bg-primary" style={{ width: `${share * 100}%` }} />

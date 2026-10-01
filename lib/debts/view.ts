@@ -32,7 +32,7 @@ export interface DebtView {
   anchorDate: IsoDate | null;
   costs: DebtCost[];
   plan: LoanPlan;
-  /** TAEG in % (solo con le condizioni originali e le spese note), null se non calcolabile. */
+  /** TAEG in % (con la fotografia di oggi è quello di ciò che resta), null se non calcolabile. */
   apr: number | null;
   events: DebtEventView[];
 }
@@ -55,6 +55,8 @@ export interface DebtsOverview {
   /** Data dell'ultima rata del debito che finisce per ultimo (null senza debiti aperti). */
   debtFreeDate: IsoDate | null;
   openCount: number;
+  /** TAEG medio dei debiti aperti, pesato sul residuo (null se nessuno è calcolabile). */
+  weightedApr: number | null;
   nextDue: DebtDueItem[];
   /** Residuo complessivo da oggi in avanti (somma dei residui di tutti i finanziamenti). */
   residualSeries: { date: IsoDate; residual: number }[];
@@ -82,9 +84,12 @@ function toPlanEvents(events: DebtEvent[]): DebtPlanEvent[] {
   return out;
 }
 
+/**
+ * TAEG del debito, sempre calcolato quando i dati lo permettono. Con le condizioni originali (nuovo/origine) conta le
+ * spese una tantum; con la fotografia di oggi (che non ha l'erogazione) è il TAEG di ciò che resta, dal residuo di oggi.
+ */
 function computeDebtApr(debt: Debt, plan: LoanPlan): number | null {
-  if (debt.startMode === "fotografia") return null;
-  const upfront = debt.costs.filter((c) => c.kind === "una_tantum").reduce((s, c) => s + c.amount, 0);
+  const upfront = debt.startMode === "fotografia" ? 0 : debt.costs.filter((c) => c.kind === "una_tantum").reduce((s, c) => s + c.amount, 0);
   const recurring = debt.costs.filter((c) => c.kind === "per_rata").reduce((s, c) => s + c.amount, 0);
   const installment = debt.installment !== null ? Number(debt.installment) : plan.rows[0]?.installment;
   if (!installment) return null;
@@ -109,6 +114,14 @@ function valueAt(series: { date: IsoDate; residual: number }[], date: IsoDate): 
 function buildResidualSeries(views: DebtView[], today: IsoDate): DebtsOverview["residualSeries"] {
   const dates = [...new Set(views.flatMap((v) => v.plan.residualSeries.map((p) => p.date)))].filter((d) => d > today).sort();
   return [today, ...dates].map((date) => ({ date, residual: round2(views.reduce((s, v) => s + valueAt(v.plan.residualSeries, date), 0)) }));
+}
+
+/** TAEG medio dei debiti aperti, pesato sul capitale residuo. */
+function weightedApr(open: DebtView[]): number | null {
+  const withApr = open.filter((v) => v.apr !== null && v.plan.totals.residual > 0);
+  const weight = withApr.reduce((s, v) => s + v.plan.totals.residual, 0);
+  if (weight === 0) return null;
+  return withApr.reduce((s, v) => s + (v.apr as number) * v.plan.totals.residual, 0) / weight;
 }
 
 /** Costruisce la vista completa dei debiti dell'utente a `today`. */
@@ -175,6 +188,7 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
       interestRemaining: sum((v) => v.plan.totals.interestRemaining, views),
       debtFreeDate: open.length > 0 ? open.map((v) => v.plan.totals.endDate).sort().at(-1)! : null,
       openCount: open.length,
+      weightedApr: weightedApr(open),
       nextDue,
       residualSeries: buildResidualSeries(views, today),
     },

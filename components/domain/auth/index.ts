@@ -4,8 +4,8 @@
  * Componenti delle pagine di autenticazione e onboarding.
  */
 
-export { LoginStory } from "./login-story";
-export type { LoginStoryProps } from "./login-story";
+export { LoginMosaic } from "./login-mosaic";
+export type { LoginMosaicProps } from "./login-mosaic";
 export { LoginPanel } from "./login-panel";
 export type { LoginPanelProps } from "./login-panel";
 export { CurrencyPicker } from "./currency-picker";

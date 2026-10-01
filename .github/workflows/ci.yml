@@ -150,6 +150,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: landing/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - run: pnpm check:features
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

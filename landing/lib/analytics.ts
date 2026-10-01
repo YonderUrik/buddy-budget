@@ -1,4 +1,4 @@
-import type { FeatureArea } from "@/content/features";
+import type { FeatureArea } from "@/content/catalog.generated";
 
 /** Sezioni della pagina misurate con `section_view`. */
 export type SectionId = "hero" | "perche" | "prodotto" | "funzioni" | "confronto" | "chi" | "fine";

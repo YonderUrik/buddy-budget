@@ -1,3 +1,4 @@
+// GENERATO da scripts/sync-features.mjs a partire da lib/features/catalog.ts: non modificare a mano.
 /**
  * Catalogo delle funzionalità di BuddyBudget: UNICA fonte di verità per la landing (catalogo "Tutte le funzioni",
  * conteggi), il pannello "In arrivo" del login e il test di coerenza con la sidebar. Solo dati, nessuna dipendenza:

@@ -1,4 +1,4 @@
-import { featureCounts } from "@/content/features";
+import { featureCounts } from "@/content/catalog.generated";
 import { Bento } from "./bento";
 import { FeatureCatalog } from "./feature-catalog";
 import { TrackedSection } from "./tracked-section";

@@ -1,9 +1,12 @@
 /**
- * Funzionalità in arrivo mostrate nel pannello del login. Descrizioni allineate a `docs/functional-spec.md`
- * (sezioni 5-9): quando una di queste schermate viene implementata, va rimossa da qui.
+ * Funzionalità in arrivo mostrate nel pannello del login. Nomi e descrizioni vengono dal catalogo condiviso
+ * (`lib/features`, lo stesso della landing): qui si aggiunge solo l'icona. Quando una schermata viene implementata
+ * si cambia lo stato nel catalogo e si toglie l'icona da `UPCOMING_ICONS`.
  */
 
 import { BarChart3, Target, Umbrella, type LucideIcon } from "lucide-react";
+
+import { featuresByStatus } from "@/lib/features";
 
 export interface UpcomingFeature {
   name: string;
@@ -11,23 +14,18 @@ export interface UpcomingFeature {
   icon: LucideIcon;
 }
 
-export const UPCOMING_FEATURES: UpcomingFeature[] = [
-  {
-    name: "Pensione",
-    description: "Il tuo fondo pensione e una stima di quanto varrà.",
-    icon: Umbrella,
-  },
-  {
-    name: "Pianifica",
-    description: "Simula un cambio di lavoro, una casa o un figlio e vedi l'effetto sul patrimonio.",
-    icon: Target,
-  },
-  {
-    name: "Analitiche",
-    description: "Autonomia finanziaria, tasso di risparmio reale e radar degli abbonamenti.",
-    icon: BarChart3,
-  },
-];
+/** Icona di ogni funzionalità `soon`, per id del catalogo. */
+const UPCOMING_ICONS: Record<string, LucideIcon> = {
+  pensione: Umbrella,
+  pianifica: Target,
+  analitiche: BarChart3,
+};
+
+export const UPCOMING_FEATURES: UpcomingFeature[] = featuresByStatus("soon").map((feature) => ({
+  name: feature.name,
+  description: feature.description,
+  icon: UPCOMING_ICONS[feature.id] ?? Target,
+}));
 
 /** Tempo di permanenza di ciascuna funzionalità nel ticker, in millisecondi. */
 export const UPCOMING_FEATURE_INTERVAL_MS = 6000;

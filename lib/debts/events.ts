@@ -20,6 +20,7 @@ export function checkEventApplicable(debt: Debt, events: DebtEvent[], input: Cre
     return null;
   }
   if (!rows.some((r) => r.dueDate > input.date)) return "La data è dopo l'ultima rata del piano";
+  if (input.type === "early_repayment" && debts[0].plan.totals.closedOn) return "Il debito è già stato estinto";
   return null;
 }
 

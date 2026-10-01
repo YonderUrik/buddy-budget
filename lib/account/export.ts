@@ -316,6 +316,8 @@ async function loadUserData(userId: string) {
         amount: debtEvents.amount,
         installmentNumber: debtEvents.installmentNumber,
         rate: debtEvents.rate,
+        penalty: debtEvents.penalty,
+        effect: debtEvents.effect,
         transactionId: debtEvents.transactionId,
         note: debtEvents.note,
         createdAt: debtEvents.createdAt,
@@ -455,6 +457,8 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Rata n.", value: (e) => e.installmentNumber },
       { header: "Importo", value: (e) => decimal(e.amount) },
       { header: "Nuovo tasso (%)", value: (e) => decimal(e.rate) },
+      { header: "Penale", value: (e) => decimal(e.penalty) },
+      { header: "Effetto estinzione", value: (e) => e.effect },
       { header: "Nota", value: (e) => e.note },
     ]),
     "patrimonio-netto.csv": toCsv(data.netWorth, [

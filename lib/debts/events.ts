@@ -3,12 +3,8 @@ import { db } from "@/lib/db/client";
 import { transactions } from "@/lib/db/schema/transactions";
 import type { Debt, DebtEvent } from "@/lib/db/schema/debts";
 import type { CreateDebtEventInput } from "@/lib/validation/debts";
+import { todayIso } from "./dates";
 import { buildDebtsView } from "./view";
-
-/** Data di oggi (UTC) come `YYYY-MM-DD`. */
-export function todayIso(now: Date = new Date()): string {
-  return now.toISOString().slice(0, 10);
-}
 
 /**
  * Controlla che un nuovo evento sia applicabile al debito: un pagamento deve riferirsi a una rata esistente e non ancora

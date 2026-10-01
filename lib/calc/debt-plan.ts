@@ -137,7 +137,7 @@ export function buildLoanPlan(terms: DebtTerms, events: DebtPlanEvent[], today: 
     const payment = payments.get(row.number);
     let status: InstallmentStatus;
     if (payment) status = "pagata";
-    else if (row.dueDate > today) status = "da_pagare";
+    else if (row.dueDate >= today) status = "da_pagare";
     else status = terms.startMode === "origine" ? "da_confermare" : "scaduta";
     return {
       ...row,

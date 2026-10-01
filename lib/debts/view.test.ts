@@ -100,9 +100,10 @@ describe("buildDebtsView", () => {
     expect(photo.debts[0].apr).toBeNull();
   });
 
-  it("la serie del residuo complessivo parte dal capitale e finisce a zero", () => {
+  it("la serie del residuo complessivo parte da oggi con il residuo di oggi e finisce a zero", () => {
     const { overview } = buildDebtsView([debt()], [], "2026-09-30");
-    expect(overview.residualSeries[0].residual).toBe(12000);
+    expect(overview.residualSeries[0]).toEqual({ date: "2026-09-30", residual: overview.totalResidual });
     expect(overview.residualSeries.at(-1)?.residual).toBe(0);
+    expect(overview.residualSeries.every((p, i, all) => i === 0 || p.date > all[i - 1].date)).toBe(true);
   });
 });

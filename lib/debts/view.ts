@@ -56,7 +56,7 @@ export interface DebtsOverview {
   debtFreeDate: IsoDate | null;
   openCount: number;
   nextDue: DebtDueItem[];
-  /** Residuo complessivo nel tempo (somma dei residui di tutti i finanziamenti). */
+  /** Residuo complessivo da oggi in avanti (somma dei residui di tutti i finanziamenti). */
   residualSeries: { date: IsoDate; residual: number }[];
 }
 
@@ -105,9 +105,10 @@ function valueAt(series: { date: IsoDate; residual: number }[], date: IsoDate): 
   return value;
 }
 
-function buildResidualSeries(views: DebtView[]): DebtsOverview["residualSeries"] {
-  const dates = [...new Set(views.flatMap((v) => v.plan.residualSeries.map((p) => p.date)))].sort();
-  return dates.map((date) => ({ date, residual: round2(views.reduce((s, v) => s + valueAt(v.plan.residualSeries, date), 0)) }));
+/** Residuo complessivo da oggi in avanti: un primo punto a oggi e poi uno per ogni scadenza, fino a zero. */
+function buildResidualSeries(views: DebtView[], today: IsoDate): DebtsOverview["residualSeries"] {
+  const dates = [...new Set(views.flatMap((v) => v.plan.residualSeries.map((p) => p.date)))].filter((d) => d > today).sort();
+  return [today, ...dates].map((date) => ({ date, residual: round2(views.reduce((s, v) => s + valueAt(v.plan.residualSeries, date), 0)) }));
 }
 
 /** Costruisce la vista completa dei debiti dell'utente a `today`. */
@@ -175,7 +176,7 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
       debtFreeDate: open.length > 0 ? open.map((v) => v.plan.totals.endDate).sort().at(-1)! : null,
       openCount: open.length,
       nextDue,
-      residualSeries: buildResidualSeries(views),
+      residualSeries: buildResidualSeries(views, today),
     },
   };
 }

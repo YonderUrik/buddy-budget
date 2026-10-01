@@ -146,3 +146,12 @@ describe("buildLoanPlan: difese", () => {
     expect(plan.totals.interestToDate + plan.totals.interestRemaining).toBeCloseTo(interest, 2);
   });
 });
+
+describe("buildLoanPlan: scadenza di oggi", () => {
+  it("una rata che scade oggi è ancora da pagare, non scaduta", () => {
+    const plan = buildLoanPlan({ ...base, startMode: "fotografia", firstInstallmentDate: "2026-10-01" }, [], "2026-10-01");
+    expect(plan.rows[0].status).toBe("da_pagare");
+    expect(plan.totals.overdueCount).toBe(0);
+    expect(plan.totals.nextDueDate).toBe("2026-10-01");
+  });
+});

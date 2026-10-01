@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { debts } from "@/lib/db/schema/debts";
 import { loadUserDebts } from "@/lib/debts/data";
-import { todayIso } from "@/lib/debts/events";
+import { todayIso } from "@/lib/debts/dates";
 import { buildDebtsView } from "@/lib/debts/view";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 import { createDebtSchema } from "@/lib/validation/debts";

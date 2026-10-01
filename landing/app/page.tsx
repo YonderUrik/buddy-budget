@@ -2,6 +2,8 @@ import { Closing } from "@/components/closing";
 import { Comparison } from "@/components/comparison";
 import { FeaturesSection } from "@/components/features-section";
 import { Founder } from "@/components/founder";
+import { HeadingReveals } from "@/components/heading-reveals";
+import { Numbers } from "@/components/numbers";
 import { Hero } from "@/components/hero";
 import { ProductTour } from "@/components/product-tour";
 import { ScreenGallery } from "@/components/screen-gallery";
@@ -12,9 +14,11 @@ export default function HomePage() {
   return (
     <>
       <SiteNav />
+      <HeadingReveals />
       <main>
         <Hero />
         <Story />
+        <Numbers />
         <ProductTour />
         <ScreenGallery />
         <FeaturesSection />

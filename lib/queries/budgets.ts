@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { track } from "@/lib/analytics";
 import type { Budget } from "@/lib/db/schema/budgets";
 import type { UpsertBudgetInput } from "@/lib/validation/budgets";
 
@@ -36,6 +37,7 @@ export function useUpsertBudgetMutation() {
       return response.json() as Promise<Budget>;
     },
     onSuccess: () => {
+      track("budget_set");
       queryClient.invalidateQueries({ queryKey: BUDGETS_QUERY_KEY });
     },
   });

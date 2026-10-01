@@ -120,6 +120,22 @@ describe("route debiti", () => {
     expect((await postEvent(request("/x", "POST", { type: "balance_correction", date: "2031-01-01", amount: 100 }), idParams(id))).status).toBe(400);
   });
 
+  it("un'estinzione anticipata accorcia il piano, salva penale ed effetto, e dopo la chiusura non se ne accettano altre", async () => {
+    const id = await createDebt({ ...loan, startMode: "nuovo", installments: 24, firstInstallmentDate: "2027-01-05" });
+    const early = (amount: number, date = "2027-06-10") =>
+      postEvent(request("/x", "POST", { type: "early_repayment", date, amount, penalty: 25, effect: "reduce_duration" }), idParams(id));
+    expect((await early(3000)).status).toBe(201);
+    type View = { debts: { plan: { rows: unknown[]; earlyRepayments: unknown[]; totals: { closedOn: string | null } }; events: { penalty: number; effect: string }[] }[] };
+    const view = (await (await GET(request("/api/debts", "GET"))).json()) as View;
+    expect(view.debts[0].plan.rows.length).toBeLessThan(24);
+    expect(view.debts[0].events[0]).toMatchObject({ penalty: 25, effect: "reduce_duration" });
+    expect((await early(99999, "2027-08-10")).status).toBe(201);
+    const closed = (await (await GET(request("/api/debts", "GET"))).json()) as View;
+    expect(closed.debts[0].plan.totals.closedOn).toBe("2027-08-10");
+    expect((await early(10, "2027-09-10")).status).toBe(400);
+    expect((await postEvent(request("/x", "POST", { type: "early_repayment", date: "2027-06-10", amount: 10, effect: "boh" }), idParams(id))).status).toBe(400);
+  });
+
   it("collega una transazione solo se è dell'utente", async () => {
     const id = await createDebt();
     const otherId = await createUser();

@@ -31,3 +31,7 @@ export { DebtEventDialog } from "./debt-event-dialog";
 export type { DebtEventDialogKind, DebtEventDialogProps } from "./debt-event-dialog";
 export { AddDebtDialog } from "./add-debt-dialog";
 export type { AddDebtDialogProps } from "./add-debt-dialog";
+export { EarlyRepaymentDialog } from "./early-repayment-dialog";
+export type { EarlyRepaymentDialogProps } from "./early-repayment-dialog";
+export { EarlyRepaymentCompare, EarlyRepaymentMonthly } from "./early-repayment-compare";
+export type { EarlyRepaymentCompareProps, EarlyRepaymentMonthlyProps } from "./early-repayment-compare";

@@ -4,7 +4,7 @@
  */
 
 import { computeApr, round2, type IsoDate } from "@/lib/calc/amortization";
-import { buildLoanPlan, type DebtPlanEvent, type LoanPlan } from "@/lib/calc/debt-plan";
+import { buildLoanPlan, type DebtPlanEvent, type DebtTerms, type LoanPlan } from "@/lib/calc/debt-plan";
 import type { Debt, DebtCost, DebtEvent } from "@/lib/db/schema/debts";
 
 export interface DebtEventView {
@@ -14,6 +14,8 @@ export interface DebtEventView {
   amount: number | null;
   installmentNumber: number | null;
   rate: number | null;
+  penalty: number | null;
+  effect: DebtEvent["effect"];
   transactionId: string | null;
   note: string | null;
 }
@@ -70,18 +72,44 @@ export interface DebtsViewData {
 /** Quante scadenze mostrare nell'elenco "prossime". */
 export const NEXT_DUE_LIMIT = 5;
 
-function toPlanEvents(events: DebtEvent[]): DebtPlanEvent[] {
-  const out: DebtPlanEvent[] = [];
-  for (const e of events) {
-    if (e.type === "payment" && e.installmentNumber !== null && e.amount !== null) {
-      out.push({ type: "payment", installmentNumber: e.installmentNumber, date: e.date, amount: Number(e.amount), transactionId: e.transactionId });
-    } else if (e.type === "rate_change" && e.rate !== null) {
-      out.push({ type: "rate_change", date: e.date, rate: Number(e.rate) });
-    } else if (e.type === "balance_correction" && e.amount !== null) {
-      out.push({ type: "balance_correction", date: e.date, amount: Number(e.amount) });
-    }
+/** Evento del registro nella forma che il motore del piano capisce (null se mancano dati). */
+export function toPlanEvent(e: DebtEventView): DebtPlanEvent | null {
+  if (e.type === "payment" && e.installmentNumber !== null && e.amount !== null) {
+    return { type: "payment", installmentNumber: e.installmentNumber, date: e.date, amount: e.amount, transactionId: e.transactionId };
   }
-  return out;
+  if (e.type === "rate_change" && e.rate !== null) return { type: "rate_change", date: e.date, rate: e.rate };
+  if (e.type === "balance_correction" && e.amount !== null) return { type: "balance_correction", date: e.date, amount: e.amount };
+  if (e.type === "early_repayment" && e.amount !== null && e.effect) {
+    return { type: "early_repayment", date: e.date, amount: e.amount, penalty: e.penalty ?? 0, effect: e.effect };
+  }
+  return null;
+}
+
+function toEventView(e: DebtEvent): DebtEventView {
+  return {
+    id: e.id,
+    type: e.type,
+    date: e.date,
+    amount: e.amount !== null ? Number(e.amount) : null,
+    installmentNumber: e.installmentNumber,
+    rate: e.rate !== null ? Number(e.rate) : null,
+    penalty: e.penalty !== null ? Number(e.penalty) : null,
+    effect: e.effect,
+    transactionId: e.transactionId,
+    note: e.note,
+  };
+}
+
+/** Condizioni iniziali di un debito nella forma del motore del piano (anche lato client, dalla vista). */
+export function toPlanTerms(debt: Pick<DebtView, "startMode" | "principal" | "annualRate" | "installments" | "firstInstallmentDate" | "declaredInstallment">): DebtTerms {
+  return {
+    startMode: debt.startMode,
+    principal: debt.principal,
+    annualRate: debt.annualRate,
+    installments: debt.installments,
+    firstInstallmentDate: debt.firstInstallmentDate,
+    installment: debt.declaredInstallment,
+  };
 }
 
 /**
@@ -129,20 +157,8 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
   const views: DebtView[] = debts
     .filter((d) => d.kind === "loan")
     .map((debt) => {
-      const own = events.filter((e) => e.debtId === debt.id).sort((a, b) => a.date.localeCompare(b.date));
-      const plan = buildLoanPlan(
-        {
-          startMode: debt.startMode,
-          principal: Number(debt.principal),
-          annualRate: Number(debt.annualRate),
-          installments: debt.installments,
-          firstInstallmentDate: debt.firstInstallmentDate,
-          installment: debt.installment !== null ? Number(debt.installment) : null,
-        },
-        toPlanEvents(own),
-        today
-      );
-      return {
+      const own = events.filter((e) => e.debtId === debt.id).sort((a, b) => a.date.localeCompare(b.date)).map(toEventView);
+      const view = {
         id: debt.id,
         kind: debt.kind,
         name: debt.name,
@@ -154,19 +170,13 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
         declaredInstallment: debt.installment !== null ? Number(debt.installment) : null,
         anchorDate: debt.anchorDate,
         costs: debt.costs,
-        plan,
-        apr: computeDebtApr(debt, plan),
-        events: own.map((e) => ({
-          id: e.id,
-          type: e.type,
-          date: e.date,
-          amount: e.amount !== null ? Number(e.amount) : null,
-          installmentNumber: e.installmentNumber,
-          rate: e.rate !== null ? Number(e.rate) : null,
-          transactionId: e.transactionId,
-          note: e.note,
-        })),
       };
+      const plan = buildLoanPlan(
+        toPlanTerms(view),
+        own.flatMap((e) => toPlanEvent(e) ?? []),
+        today
+      );
+      return { ...view, plan, apr: computeDebtApr(debt, plan), events: own };
     });
 
   const open = views.filter((v) => !v.plan.totals.finished);

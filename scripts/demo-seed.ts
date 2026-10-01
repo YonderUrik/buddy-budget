@@ -6,7 +6,7 @@
  * partire se l'utente demo non esiste e il database contiene già altri utenti.
  * Uso: `pnpm demo:seed` con `DATABASE_URL` che punta al database demo. Vedi `docs/landing-screens.md`.
  */
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import { client, db } from "@/lib/db/client";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { accounts } from "@/lib/db/schema/accounts";
@@ -84,6 +84,8 @@ async function main() {
     throw new Error("Il database contiene già altri utenti: il seed demo gira solo su un database vuoto.");
   }
   await db.delete(authUser).where(eq(authUser.id, DEMO_USER_ID));
+  // Gli strumenti demo sopravvivono all'utente (created_by si azzera): si rimuovono per ISIN fittizio prima di ricrearli.
+  await db.delete(instruments).where(like(instruments.isin, "__00DEMO%"));
 
   await db.insert(authUser).values({
     id: DEMO_USER_ID,
@@ -191,12 +193,13 @@ async function main() {
     .insert(investmentPortfolios)
     .values({ userId: DEMO_USER_ID, name: "Portafoglio principale", broker: "Broker Demo", taxRegime: "amministrato" })
     .returning();
-  const [etf, stock, bond] = await db
+  const [etf, stock, bond, tech] = await db
     .insert(instruments)
     .values([
       { isin: "IE00DEMO0001", name: "ETF Azionario Globale Demo", type: "etf", currency: "EUR", exchange: "XETRA", taxHarmonized: true, createdByUserId: DEMO_USER_ID },
       { isin: "IT00DEMO0002", name: "Energia Italia S.p.A.", type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: DEMO_USER_ID },
       { isin: "IT00DEMO0003", name: "BTP Valore 2030", type: "obbligazione", currency: "EUR", priceUnit: "percentuale_nominale", taxRate: "0.1250", createdByUserId: DEMO_USER_ID },
+      { isin: "IT00DEMO0004", name: "Tecnologia Futura S.p.A.", type: "azione", currency: "EUR", exchange: "MIL", createdByUserId: DEMO_USER_ID },
     ])
     .returning();
   const priceDays = 430;
@@ -209,10 +212,13 @@ async function main() {
     }
     return out;
   };
+  // Titolo che scende nei primi 50 giorni (da qui la minusvalenza venduta l'anno scorso) e poi recupera piano.
+  const techSeries = series(30, 0.0006, 0.016).map((p, i) => (i < 50 ? 30 * (1 - 0.14 * (i / 50)) : p * 0.86));
   const prices = [
     { id: etf.id, s: series(88, 0.0004, 0.012), scale: 1 },
-    { id: stock.id, s: series(21, 0.0002, 0.018), scale: 1 },
+    { id: stock.id, s: series(21, 0.0007, 0.014), scale: 1 },
     { id: bond.id, s: series(99.6, 0.00004, 0.0012), scale: 1 },
+    { id: tech.id, s: techSeries, scale: 1 },
   ];
   const priceRows: (typeof instrumentPrices.$inferInsert)[] = [];
   for (const p of prices) {
@@ -244,6 +250,10 @@ async function main() {
   ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: stock.id, type: "acquisto", date: iso(daysAgo(300)), quantity: "380", price: priceOn(stock.id, 300).toFixed(4), fees: "4.95" });
   ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: stock.id, type: "dividendo", date: iso(daysAgo(120)), quantity: "0", price: "0", grossAmount: "152.00", taxes: "39.52" });
   ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: bond.id, type: "acquisto", date: iso(daysAgo(200)), quantity: "10000", price: "99.8000", fees: "0" });
+  // Vendite: una minusvalenza l'anno scorso (finisce nello zaino fiscale) e una plusvalenza quest'anno che la compensa.
+  ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: tech.id, type: "acquisto", date: iso(daysAgo(425)), quantity: "300", price: priceOn(tech.id, 425).toFixed(4), fees: "4.95" });
+  ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: tech.id, type: "vendita", date: iso(daysAgo(375)), quantity: "300", price: priceOn(tech.id, 375).toFixed(4), fees: "4.95" });
+  ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: stock.id, type: "vendita", date: iso(daysAgo(45)), quantity: "190", price: priceOn(stock.id, 45).toFixed(4), fees: "4.95" });
   await db.insert(investmentTransactions).values(ops);
 
   // Debiti: mutuo a tasso fisso e una linea di credito Lombard (valori inventati).

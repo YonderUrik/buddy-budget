@@ -45,6 +45,10 @@ for (const theme of SCREEN_THEMES) {
       throw new Error(`${screen.route}: l'app ha rimandato a ${page.url()} (sessione demo non valida o route cambiata)`);
     }
     if (screen.clickFirst) await page.getByRole("button", { name: screen.clickFirst, exact: true }).first().click();
+    // l'indicatore di sviluppo di Next non deve finire nelle immagini se l'app gira con `next dev`
+    await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root]{display:none!important}" });
+    for (const [label, value] of screen.fill ?? []) await page.getByLabel(label, { exact: true }).first().fill(value);
+    if (screen.scrollToText) await page.getByText(screen.scrollToText).first().scrollIntoViewIfNeeded();
     await page.waitForTimeout(SETTLE_MS);
     const file = join(root, "public", "screens", theme, `${screen.id}.jpg`);
     await page.screenshot({ path: file, type: "jpeg", quality: JPEG_QUALITY });

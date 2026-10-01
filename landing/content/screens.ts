@@ -22,6 +22,10 @@ export interface AppScreen {
   alt: string;
   /** Azione da fare sulla pagina prima dello scatto: clic su un bottone con questo nome (es. il periodo "Anno"). */
   clickFirst?: string;
+  /** Campi da compilare prima dello scatto (etichetta del campo → valore), per mostrare un risultato e non un modulo vuoto. */
+  fill?: readonly (readonly [label: string, value: string])[];
+  /** Testo di un elemento da portare in vista prima dello scatto. */
+  scrollToText?: string;
 }
 
 export const SCREENS = [
@@ -37,7 +41,7 @@ export const SCREENS = [
   { id: "tasse", area: "Investimenti", label: "Tasse", route: "/investimenti/tasse", caption: "Plus e minus, zaino a 4 anni e imposta stimata.", alt: "Tasse: stima della fiscalità italiana sul portafoglio" },
   { id: "debiti", area: "Debiti", label: "Debiti", route: "/debiti", caption: "Quanto costa ogni debito e quando finisce.", alt: "Debiti: debito totale, costo di ogni finanziamento e scadenze" },
   { id: "lombard", area: "Debiti", label: "Lombard", route: "/debiti/lombard", caption: "Linea di credito contro il portafoglio, con la soglia di allerta.", alt: "Lombard: linea di credito, utilizzo e interessi" },
-  { id: "simulatore", area: "Debiti", label: "Simulatore", route: "/debiti/simulatore", caption: "Surroga, estinzione, valanga e palla di neve a confronto.", alt: "Simulatore dei debiti: confronto tra strategie di rimborso" },
+  { id: "simulatore", area: "Debiti", label: "Simulatore", route: "/debiti/simulatore", caption: "Surroga, estinzione, valanga e palla di neve a confronto.", alt: "Simulatore dei debiti: confronto tra strategie di rimborso", scrollToText: "Surroga", fill: [["Nuovo TAN (%)", "1,8"], ["Numero di rate", "84"], ["Spese della nuova offerta", "600"], ["Penale di estinzione", "0"], ["Extra al mese", "200"]] },
 ] as const satisfies readonly AppScreen[];
 
 /** Id di una schermata (tipo chiuso: finisce negli eventi Umami). */

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import { formatCurrency } from "@/lib/format";
-import { STORY_EASE } from "./story-row";
+import { STORY_EASE } from "./story-motion";
 
 export interface StoryCountUpProps {
   value: number;

@@ -12,7 +12,7 @@ import * as React from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { UPCOMING_FEATURE_INTERVAL_MS, UPCOMING_FEATURES } from "./upcoming-features.data";
-import { STORY_EASE } from "./story-row";
+import { STORY_EASE } from "./story-motion";
 
 export interface UpcomingFeaturesProps {
   className?: string;

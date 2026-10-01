@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { LoginStory, NewFeatureNote, UpcomingFeatures } from "@/components/domain/auth";
+import { LoginMosaic, NewFeatureNote, UpcomingFeatures } from "@/components/domain/auth";
 
 const BRAND_NAME = "BuddyBudget";
 
@@ -8,28 +8,28 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex min-h-dvh bg-background">
       {/* Stessa superficie neutra della sidebar (--sidebar): il brand vive nel logo, non nello sfondo. */}
-      <aside className="hidden w-1/2 flex-col justify-between gap-8 border-r border-sidebar-border bg-sidebar px-12 py-10 text-sidebar-foreground lg:flex xl:px-16 [@media(min-height:960px)]:py-14">
+      <aside className="hidden w-1/2 flex-col justify-between gap-6 border-r border-sidebar-border bg-sidebar px-12 py-10 text-sidebar-foreground lg:flex xl:px-16 [@media(max-height:940px)]:py-7 [@media(min-height:1200px)]:py-14">
         <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
           <Image src="/brand/logo-mark.svg" alt="" width={24} height={29} className="h-8 w-auto" aria-hidden="true" />
           {BRAND_NAME}
         </div>
 
-        <div className="flex flex-col gap-8">
-          <div className="max-w-md">
+        <div className="flex flex-col gap-6">
+          <div className="max-w-xl">
             <h2 className="font-heading text-4xl font-medium leading-[1.05] tracking-tight text-balance xl:text-5xl">
-              I tuoi movimenti, finalmente leggibili.
+              Tutta la tua finanza, in una sola schermata.
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-sidebar-foreground/75 [@media(max-height:940px)]:hidden">
-              BuddyBudget collega le tue banche, ripulisce e categorizza ogni movimento, segue i tuoi investimenti e ti mostra dove va ogni euro.
+            <p className="mt-4 text-base leading-relaxed text-sidebar-foreground/75 [@media(max-height:1100px)]:hidden">
+              Conti, movimenti, investimenti e debiti si leggono insieme: collega le tue banche e vedi dove va ogni euro, e quanto vale davvero ciò che hai.
             </p>
           </div>
 
-          <LoginStory />
+          <LoginMosaic />
         </div>
 
         <div className="flex max-w-md flex-col gap-5">
           <NewFeatureNote />
-          <UpcomingFeatures />
+          <UpcomingFeatures className="[@media(max-height:820px)]:hidden" />
           <p className="text-xs text-sidebar-foreground/60">
             Collegamento bancario tramite Open Banking (PSD2), in sola lettura.
           </p>

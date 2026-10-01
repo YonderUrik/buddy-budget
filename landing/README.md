@@ -22,12 +22,12 @@ pnpm build        # genera out/
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | `https://buddybudget.io` | URL canonico, sitemap, Open Graph |
 | `NEXT_PUBLIC_APP_URL` | `https://app.buddybudget.io` | destinazione di "Accedi" e "Crea il tuo account" |
-| `NEXT_PUBLIC_UMAMI_SRC` | vuoto | script Umami; senza, nessun tracciamento |
-| `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | vuoto | id del sito Umami **della landing** (diverso da quello dell'app) |
+| `NEXT_PUBLIC_UMAMI_SRC` | `<APP_URL>/stats/script.js` | script Umami (proxy dell'app) |
+| `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | vuoto | id del sito Umami **della landing**; senza, nessun tracciamento |
 
 ## Deploy su Cloudflare Pages
 
-Root directory `landing`, comando `pnpm build`, output `out`, Node 24. Gli header di sicurezza sono in `public/_headers`.
+Root directory `landing`, comando `pnpm build`, output `out`, Node 24. Gli header di sicurezza sono in `public/_headers`, i redirect dei vecchi percorsi dell'app verso `app.buddybudget.io` in `public/_redirects`.
 
 ## Eventi Umami
 

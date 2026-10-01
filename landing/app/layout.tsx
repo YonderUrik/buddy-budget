@@ -5,11 +5,13 @@ import "@fontsource-variable/hanken-grotesk";
 import "./globals.css";
 import { BrandSprite } from "@/components/brand";
 import { SmoothScroll } from "@/components/smooth-scroll";
-import { SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/content/site";
+import { APP_URL, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/content/site";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
-const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC;
+// Lo script passa dal proxy `/stats` dell'app (già esistente, evita i blocchi dei tracker); `data-domains` limita il conteggio al dominio vero.
+const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC ?? `${APP_URL}/stats/script.js`;
+const UMAMI_DOMAINS = new URL(SITE_URL).hostname;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -36,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BrandSprite />
         <SmoothScroll />
         {children}
-        {UMAMI_ID && UMAMI_SRC ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} strategy="afterInteractive" /> : null}
+        {UMAMI_ID ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} data-domains={UMAMI_DOMAINS} strategy="afterInteractive" /> : null}
       </body>
     </html>
   );

@@ -8,7 +8,9 @@ export const SITE_DESCRIPTION =
   "Conti, spese, investimenti e debiti in un solo quadro, con le tasse italiane già dentro. Collega la banca, categorizza i movimenti e decidi con i numeri davanti.";
 
 /** Destinazioni dei pulsanti verso l'app. */
-export const APP_LINKS = { signup: `${APP_URL}/login`, login: `${APP_URL}/login` } as const;
+/** Link verso l'app, con UTM per distinguere in Umami gli arrivi dalla landing. */
+const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
+export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 
 export interface TourStep {
   kicker: string;

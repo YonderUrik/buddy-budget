@@ -20,6 +20,7 @@ export function dataSummaryItems(summary: UserDataSummary): DataSummaryItem[] {
     item(summary.budgets, "budget", "budget"),
     item(summary.investmentOperations, "operazione di investimento", "operazioni di investimento"),
     item(summary.investmentPlans, "piano di accumulo", "piani di accumulo"),
+    item(summary.debts, "debito", "debiti"),
     item(summary.netWorthDays, "giorno di storico del patrimonio", "giorni di storico del patrimonio"),
   ];
 }

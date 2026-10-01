@@ -21,6 +21,7 @@ import {
   investmentTransactions,
   userInstrumentPrices,
 } from "@/lib/db/schema/investments";
+import { debtEvents, debts } from "@/lib/db/schema/debts";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { defaultCategoryRows } from "@/lib/categories/seed";
@@ -117,6 +118,11 @@ async function createUserWithData(): Promise<Fixture> {
   await db.insert(investmentPlans).values({ userId, portfolioId: portfolio.id, instrumentId: commonInstrument.id, amount: "150", dayOfMonth: 5 });
   await db.insert(userInstrumentPrices).values({ userId, instrumentId: manualInstrument.id, date: "2026-09-01", close: "510" });
   await db.insert(netWorthSnapshots).values({ userId, date: "2026-09-01", assetClass: "liquidita", amount: "1050", source: "snapshot" });
+  const [debt] = await db
+    .insert(debts)
+    .values({ userId, name: `Prestito ${tag}`, startMode: "nuovo", principal: "5000", annualRate: "5", installments: 24, firstInstallmentDate: "2026-10-05" })
+    .returning();
+  await db.insert(debtEvents).values({ debtId: debt.id, userId, type: "payment", date: "2026-10-05", amount: "219.36", installmentNumber: 1 });
 
   await redis.set(`net-worth:investments:fingerprint:${userId}`, "x");
   await redisSyncJobStore.createJob({ userId, kind: "manual-sync", accounts: [queuedAccount(autoAccount.id, "Banca")] });
@@ -172,6 +178,7 @@ describe("gestione account (integrazione)", () => {
       budgets: 1,
       investmentOperations: 2,
       investmentPlans: 1,
+      debts: 1,
       netWorthDays: 1,
     });
   });
@@ -187,6 +194,8 @@ describe("gestione account (integrazione)", () => {
         "categorie.csv",
         "conti.csv",
         "dati-completi.json",
+        "debiti-eventi.csv",
+        "debiti.csv",
         "investimenti-avvisi-prezzo.csv",
         "investimenti-operazioni.csv",
         "investimenti-pac.csv",
@@ -208,6 +217,9 @@ describe("gestione account (integrazione)", () => {
     const parsed = JSON.parse(json);
     expect(parsed.transactions).toHaveLength(2);
     expect(parsed.investmentOperations).toHaveLength(2);
+    expect(parsed.debts).toHaveLength(1);
+    expect(parsed.debts[0]).not.toHaveProperty("userId");
+    expect(parsed.debtEvents).toHaveLength(1);
   });
 
   it("il reset cancella tutto, ricrea le categorie, riporta all'onboarding e revoca la banca", async () => {
@@ -224,6 +236,7 @@ describe("gestione account (integrazione)", () => {
       budgets: 0,
       investmentOperations: 0,
       investmentPlans: 0,
+      debts: 0,
       netWorthDays: 0,
     });
     const [user] = await db.select().from(authUser).where(eq(authUser.id, f.userId));

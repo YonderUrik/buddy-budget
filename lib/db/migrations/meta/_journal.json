@@ -71,6 +71,13 @@
       "when": 1790876451532,
       "tag": "0009_debiti_fase_2",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790878445582,
+      "tag": "0010_debiti_fase_3",
+      "breakpoints": true
     }
   ]
 }

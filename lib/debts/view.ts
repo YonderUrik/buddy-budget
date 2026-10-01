@@ -5,7 +5,14 @@
 
 import { computeApr, round2, type IsoDate } from "@/lib/calc/amortization";
 import { buildLoanPlan, type DebtPlanEvent, type DebtTerms, type LoanPlan } from "@/lib/calc/debt-plan";
-import type { Debt, DebtCost, DebtEvent } from "@/lib/db/schema/debts";
+import {
+  buildCreditLinePlan,
+  isOverAlertThreshold,
+  type CreditLineEvent,
+  type CreditLinePlan,
+  type CreditLineTerms,
+} from "@/lib/calc/credit-line";
+import type { CreditLineAlertType, CreditLineDayCount, CreditLineFrequency, Debt, DebtCost, DebtEvent } from "@/lib/db/schema/debts";
 
 export interface DebtEventView {
   id: string;
@@ -39,6 +46,28 @@ export interface DebtView {
   events: DebtEventView[];
 }
 
+/** Linea di credito (credit Lombard, fido) con lo stato calcolato a oggi. */
+export interface CreditLineView {
+  id: string;
+  name: string;
+  openDate: IsoDate;
+  initialUsed: number;
+  creditLimit: number;
+  /** Valore dell'indice alla data di apertura (%). */
+  initialIndexRate: number;
+  spread: number;
+  indexLabel: string | null;
+  interestFrequency: CreditLineFrequency;
+  dayCount: CreditLineDayCount;
+  capitalizeInterest: boolean;
+  alertThreshold: { type: CreditLineAlertType; value: number } | null;
+  /** True se l'utilizzato ha raggiunto la soglia impostata dall'utente (sempre false senza soglia). */
+  alertTriggered: boolean;
+  costs: DebtCost[];
+  plan: CreditLinePlan;
+  events: DebtEventView[];
+}
+
 export interface DebtDueItem {
   debtId: string;
   name: string;
@@ -50,6 +79,19 @@ export interface DebtDueItem {
 export interface DebtsOverview {
   /** Capitale residuo dei finanziamenti ancora aperti. */
   totalResidual: number;
+  /** Debito totale: capitale residuo dei finanziamenti più l'utilizzato delle linee di credito. */
+  totalDebt: number;
+  /** Utilizzato complessivo delle linee di credito. */
+  creditUsed: number;
+  /** Fido complessivo delle linee di credito. */
+  creditLimit: number;
+  /** Costo di un mese a saldo e tasso di oggi, sommato sulle linee. */
+  creditMonthlyCost: number;
+  /** Interessi maturati sulle linee dall'apertura a oggi. */
+  creditInterestToDate: number;
+  creditLineCount: number;
+  /** Linee di credito che hanno raggiunto la soglia di allerta. */
+  creditAlerts: { debtId: string; name: string }[];
   /** Somma delle rate correnti dei finanziamenti ancora aperti. */
   monthlyPayment: number;
   interestToDate: number;
@@ -66,6 +108,7 @@ export interface DebtsOverview {
 
 export interface DebtsViewData {
   debts: DebtView[];
+  creditLines: CreditLineView[];
   overview: DebtsOverview;
 }
 
@@ -138,10 +181,11 @@ function valueAt(series: { date: IsoDate; residual: number }[], date: IsoDate): 
   return value;
 }
 
-/** Residuo complessivo da oggi in avanti: un primo punto a oggi e poi uno per ogni scadenza, fino a zero. */
-function buildResidualSeries(views: DebtView[], today: IsoDate): DebtsOverview["residualSeries"] {
+/** Debito complessivo da oggi in avanti: un primo punto a oggi e poi uno per ogni scadenza, fino al solo utilizzato delle linee. */
+function buildResidualSeries(views: DebtView[], today: IsoDate, constantUsed: number): DebtsOverview["residualSeries"] {
   const dates = [...new Set(views.flatMap((v) => v.plan.residualSeries.map((p) => p.date)))].filter((d) => d > today).sort();
-  return [today, ...dates].map((date) => ({ date, residual: round2(views.reduce((s, v) => s + valueAt(v.plan.residualSeries, date), 0)) }));
+  // Le linee di credito restano al saldo di oggi: non c'è un piano di rientro, finché l'utente non rimborsa.
+  return [today, ...dates].map((date) => ({ date, residual: round2(views.reduce((s, v) => s + valueAt(v.plan.residualSeries, date), constantUsed)) }));
 }
 
 /** TAEG medio dei debiti aperti, pesato sul capitale residuo. */
@@ -150,6 +194,58 @@ function weightedApr(open: DebtView[]): number | null {
   const weight = withApr.reduce((s, v) => s + v.plan.totals.residual, 0);
   if (weight === 0) return null;
   return withApr.reduce((s, v) => s + (v.apr as number) * v.plan.totals.residual, 0) / weight;
+}
+
+/** Evento del registro nella forma che il motore della linea di credito capisce (null se non la riguarda o mancano dati). */
+export function toCreditLineEvent(e: DebtEventView): CreditLineEvent | null {
+  if ((e.type === "draw" || e.type === "repay" || e.type === "interest_charged" || e.type === "balance_correction") && e.amount !== null) {
+    return { type: e.type, date: e.date, amount: e.amount };
+  }
+  if (e.type === "rate_change" && e.rate !== null) return { type: "rate_change", date: e.date, rate: e.rate };
+  return null;
+}
+
+/** Condizioni iniziali di una linea nella forma del motore (anche lato client, dalla vista). */
+export function toCreditLineTerms(line: Pick<CreditLineView, "openDate" | "creditLimit" | "initialUsed" | "initialIndexRate" | "spread" | "interestFrequency" | "dayCount" | "capitalizeInterest" | "costs">): CreditLineTerms {
+  return {
+    openDate: line.openDate,
+    creditLimit: line.creditLimit,
+    initialUsed: line.initialUsed,
+    indexRate: line.initialIndexRate,
+    spread: line.spread,
+    frequency: line.interestFrequency,
+    dayCount: line.dayCount,
+    capitalize: line.capitalizeInterest,
+    fees: line.costs,
+  };
+}
+
+function buildCreditLineView(debt: Debt, events: DebtEvent[], today: IsoDate): CreditLineView {
+  const own = events.filter((e) => e.debtId === debt.id).sort((a, b) => a.date.localeCompare(b.date)).map(toEventView);
+  const base = {
+    id: debt.id,
+    name: debt.name,
+    openDate: debt.firstInstallmentDate,
+    initialUsed: Number(debt.principal),
+    creditLimit: Number(debt.creditLimit ?? 0),
+    initialIndexRate: Number(debt.annualRate),
+    spread: Number(debt.spread ?? 0),
+    indexLabel: debt.indexLabel,
+    interestFrequency: debt.interestFrequency ?? "monthly",
+    dayCount: debt.dayCount ?? "365",
+    capitalizeInterest: debt.capitalizeInterest ?? false,
+    costs: debt.costs,
+  } as const;
+  const alertThreshold =
+    debt.alertThresholdType && debt.alertThresholdValue !== null ? { type: debt.alertThresholdType, value: Number(debt.alertThresholdValue) } : null;
+  const plan = buildCreditLinePlan(toCreditLineTerms(base), own.flatMap((e) => toCreditLineEvent(e) ?? []), today);
+  return {
+    ...base,
+    alertThreshold,
+    alertTriggered: isOverAlertThreshold(plan.used, base.creditLimit, alertThreshold),
+    plan,
+    events: own,
+  };
 }
 
 /** Costruisce la vista completa dei debiti dell'utente a `today`. */
@@ -179,6 +275,9 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
       return { ...view, plan, apr: computeDebtApr(debt, plan), events: own };
     });
 
+  const creditLines = debts.filter((d) => d.kind === "credit_line").map((d) => buildCreditLineView(d, events, today));
+  const creditUsed = round2(creditLines.reduce((s, l) => s + l.plan.used, 0));
+
   const open = views.filter((v) => !v.plan.totals.finished);
   const sum = (pick: (v: DebtView) => number, list = open) => round2(list.reduce((s, v) => s + pick(v), 0));
   const nextDue: DebtDueItem[] = open
@@ -191,8 +290,16 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
 
   return {
     debts: views,
+    creditLines,
     overview: {
       totalResidual: sum((v) => v.plan.totals.residual),
+      totalDebt: round2(sum((v) => v.plan.totals.residual) + creditUsed),
+      creditUsed,
+      creditLimit: round2(creditLines.reduce((s, l) => s + l.creditLimit, 0)),
+      creditMonthlyCost: round2(creditLines.reduce((s, l) => s + l.plan.monthlyCostAtCurrent, 0)),
+      creditInterestToDate: round2(creditLines.reduce((s, l) => s + l.plan.interestToDate, 0)),
+      creditLineCount: creditLines.length,
+      creditAlerts: creditLines.filter((l) => l.alertTriggered).map((l) => ({ debtId: l.id, name: l.name })),
       monthlyPayment: sum((v) => v.plan.totals.currentInstallment),
       interestToDate: sum((v) => v.plan.totals.interestToDate, views),
       interestRemaining: sum((v) => v.plan.totals.interestRemaining, views),
@@ -200,7 +307,7 @@ export function buildDebtsView(debts: Debt[], events: DebtEvent[], today: IsoDat
       openCount: open.length,
       weightedApr: weightedApr(open),
       nextDue,
-      residualSeries: buildResidualSeries(views, today),
+      residualSeries: buildResidualSeries(views, today, creditUsed),
     },
   };
 }

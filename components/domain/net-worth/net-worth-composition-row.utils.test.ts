@@ -63,3 +63,14 @@ describe("computeInvestedShare", () => {
     expect(computeInvestedShare(buildCompositionItems([], INVESTMENTS))).toBeNull();
   });
 });
+
+describe("buildCompositionItems con i debiti", () => {
+  it("aggiunge i debiti in negativo senza toccare i pesi né la frase sugli investimenti", () => {
+    const accounts = [{ balance: "1000" }] as never;
+    const items = buildCompositionItems(accounts, null, { total: 400, count: 2 });
+    const debt = items.find((i) => i.key === "debiti");
+    expect(debt).toMatchObject({ amount: -400, share: 0, detail: "2 debiti", isLiability: true });
+    expect(items.find((i) => i.key === "liquidita")?.share).toBe(1);
+    expect(computeInvestedShare(items)).toBeNull();
+  });
+});

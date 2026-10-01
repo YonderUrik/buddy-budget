@@ -36,7 +36,8 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const colorFor = assetClassColor;
   const investedShare = computeInvestedShare(items);
-  const showBar = items.length > 1 && items.some((i) => i.share > 0);
+  const assetCount = items.filter((i) => !i.isLiability).length;
+  const showBar = assetCount > 1 && items.some((i) => i.share > 0);
 
   return (
     <Card>
@@ -66,7 +67,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                   <span className="block text-sm font-medium text-foreground">{item.label}</span>
                   <span className="block text-xs text-muted-foreground">
                     {item.detail}
-                    {items.length > 1 ? (
+                    {assetCount > 1 && !item.isLiability ? (
                       <>
                         {` · ${percent(item.share)}`}
                         <span className="hidden sm:inline"> del totale</span>

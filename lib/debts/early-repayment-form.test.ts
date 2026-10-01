@@ -6,7 +6,7 @@ import type { Debt } from "@/lib/db/schema/debts";
 const now = new Date();
 const debt: Debt = {
   id: "d1", userId: "u1", kind: "loan", name: "Auto", startMode: "nuovo", principal: "12000.00", annualRate: "6.0000", installments: 24,
-  firstInstallmentDate: "2026-03-05", installment: null, anchorDate: null, costs: [], createdAt: now, updatedAt: now,
+  firstInstallmentDate: "2026-03-05", installment: null, anchorDate: null, costs: [], creditLimit: null, spread: null, indexLabel: null, interestFrequency: null, dayCount: null, capitalizeInterest: null, alertThresholdType: null, alertThresholdValue: null, createdAt: now, updatedAt: now,
 };
 const view = buildDebtsView([debt], [], "2026-02-01").debts[0];
 const values = { mode: "once" as const, date: "2026-08-10", amount: "3000", penalty: "", penaltyUnit: "eur" as const };

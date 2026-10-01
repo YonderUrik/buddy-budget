@@ -6,7 +6,7 @@ import { instruments, investmentTransactions } from "@/lib/db/schema/investments
 import { loadUserTransactions } from "@/lib/investments/data";
 import { ensureHistorySafely } from "@/lib/investments/history";
 import { oversoldMessage, toCalcInput, todayKey, toRowValues } from "@/lib/investments/operations";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { updateInvestmentTransactionSchema } from "@/lib/validation/investments";
 
 export const maxDuration = 300;
@@ -39,7 +39,10 @@ async function handlePatch(request: NextRequest, { params }: Params) {
   const values = toRowValues(parsed.data, parsed.data.fxRate ?? Number(current.fxRate));
   const others = (await loadUserTransactions(userId, current.instrumentId)).filter((t) => t.id !== id).map(toCalcInput);
   const message = oversoldMessage([...others, { id, instrumentId: current.instrumentId, ...values }]);
-  if (message) return Response.json({ error: message }, { status: 400 });
+  if (message) {
+    requestLogger().warn("investments.operation.update_rejected", { reason: "oversold", operationType: parsed.data.type });
+    return Response.json({ error: message }, { status: 400 });
+  }
 
   const [updated] = await db
     .update(investmentTransactions)
@@ -48,6 +51,7 @@ async function handlePatch(request: NextRequest, { params }: Params) {
     .returning();
   const [instrument] = await db.select().from(instruments).where(eq(instruments.id, current.instrumentId));
   if (instrument) await ensureHistorySafely(instrument, parsed.data.date, after);
+  requestLogger().info("investments.operation.updated", { operationType: updated.type });
   return Response.json(updated);
 }
 

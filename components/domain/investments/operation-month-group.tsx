@@ -13,10 +13,11 @@ export interface OperationMonthGroupProps {
   instrumentsById: Map<string, Instrument>;
   currency: string;
   deletingId?: string | null;
+  onEdit?: (transaction: InvestmentTransaction) => void;
   onDelete: (transaction: InvestmentTransaction) => void;
 }
 
-export function OperationMonthGroup({ group, instrumentsById, currency, deletingId, onDelete }: OperationMonthGroupProps) {
+export function OperationMonthGroup({ group, instrumentsById, currency, deletingId, onEdit, onDelete }: OperationMonthGroupProps) {
   const { totals } = group;
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const parts = [
@@ -48,6 +49,7 @@ export function OperationMonthGroup({ group, instrumentsById, currency, deleting
             instrument={instrumentsById.get(insight.transaction.instrumentId)}
             currency={currency}
             deleting={deletingId === insight.transaction.id}
+            onEdit={onEdit}
             onDelete={onDelete}
           />
         ))}

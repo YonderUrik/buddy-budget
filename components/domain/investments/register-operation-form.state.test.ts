@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeGrossValue,
   fieldsFor,
+  initialFromTransaction,
   localTodayKey,
   prefillFromPlan,
   priceLabel,
@@ -54,5 +55,14 @@ describe("form operazione", () => {
     expect(priceSuggestionHint("2026-09-25", close("2026-09-25", "yahoo"), false)).toBe("Chiusura del 25 set 2026");
     expect(priceSuggestionHint("2026-09-27", close("2026-09-25", "yahoo"), false)).toBe("Ultima chiusura prima di questa data, del 25 set 2026");
     expect(priceSuggestionHint("2026-09-25", close("2026-09-25", "manuale"), false)).toBe("Il tuo prezzo del 25 set 2026");
+  });
+
+  it("precompila la modifica dai valori salvati (numeric come stringhe)", () => {
+    const initial = initialFromTransaction(
+      { type: "acquisto", date: "2026-09-01", quantity: "10.5000000000", price: "99.1200", grossAmount: null, fees: "1.50", taxes: "0.00", fxRate: "1.08000000" },
+      null
+    );
+    expect(initial).toMatchObject({ type: "acquisto", date: "2026-09-01", quantity: 10.5, price: 99.12, grossAmount: null, fees: 1.5, taxes: 0, fxRate: 1.08 });
+    expect(initialFromTransaction({ ...initial, quantity: "0", price: "0", grossAmount: "12.30", fees: "0", taxes: "0", fxRate: "1" }, null).grossAmount).toBe(12.3);
   });
 });

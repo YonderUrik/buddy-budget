@@ -201,7 +201,10 @@ export function useUpdateInvestmentTransactionMutation() {
       if (!response.ok) throw await readError(response, "Impossibile modificare l'operazione");
       return response.json();
     },
-    onSuccess: invalidate,
+    onSuccess: (_row, { input }) => {
+      track("investment_operation_updated", { type: input.type });
+      invalidate();
+    },
   });
 }
 

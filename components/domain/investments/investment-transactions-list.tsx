@@ -2,8 +2,8 @@
 
 /**
  * Operazioni registrate raggruppate per mese (dal più recente), con filtro per anno, totali dell'anno scelto
- * (acquistato, venduto, proventi, guadagno) e il guadagno di ogni operazione. Eliminazione per riga: il server rifiuta
- * se renderebbe negative le quote.
+ * (acquistato, venduto, proventi, guadagno) e il guadagno di ogni operazione. Modifica ed eliminazione per riga: il server
+ * rifiuta se renderebbero negative le quote.
  */
 
 import * as React from "react";
@@ -29,6 +29,7 @@ export interface InvestmentTransactionsListProps {
   currency: string;
   showAll: boolean;
   onToggleShowAll: () => void;
+  onEdit?: (transaction: InvestmentTransaction) => void;
   onDelete: (transaction: InvestmentTransaction) => void;
   deletingId?: string | null;
 }
@@ -39,6 +40,7 @@ export function InvestmentTransactionsList({
   currency,
   showAll,
   onToggleShowAll,
+  onEdit,
   onDelete,
   deletingId,
 }: InvestmentTransactionsListProps) {
@@ -90,6 +92,7 @@ export function InvestmentTransactionsList({
                 instrumentsById={instrumentsById}
                 currency={currency}
                 deletingId={deletingId}
+                onEdit={onEdit}
                 onDelete={onDelete}
               />
             ))}

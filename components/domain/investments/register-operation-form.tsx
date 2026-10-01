@@ -4,6 +4,7 @@
  * Form "Registra operazione": acquisto, vendita, dividendo, cedola, rimborso o split (solo il rapporto). Per acquisti e vendite il prezzo si
  * precompila col prezzo dello strumento alla data scelta, finché l'utente non lo cambia. Il cambio compare solo se
  * lo strumento è in un'altra valuta (vuoto = cambio BCE del giorno). Può partire precompilato da un PAC.
+ * Con `editing` modifica un'operazione esistente: lo strumento è fisso e i campi partono dai valori salvati.
  */
 
 import * as React from "react";
@@ -13,7 +14,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { INVESTMENT_TRANSACTION_TYPES, type Instrument, type InvestmentTransactionType } from "@/lib/db/schema/investments";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { formatCurrency } from "@/lib/format";
-import { useCreateInvestmentTransactionMutation, useInstrumentPriceOnDateQuery } from "@/lib/queries/investments";
+import {
+  useCreateInvestmentTransactionMutation,
+  useInstrumentPriceOnDateQuery,
+  useUpdateInvestmentTransactionMutation,
+} from "@/lib/queries/investments";
 import { parseAmount } from "@/lib/validation/accounts";
 import { InstrumentPicker } from "./instrument-picker";
 import { OperationFormField as Field } from "./operation-form-field";
@@ -43,6 +48,16 @@ export interface RegisterOperationInitial {
   grossAmount?: number | null;
   /** Imposte trattenute stimate, nella valuta dell'utente. */
   taxes?: number | null;
+  /** Commissioni e cambio salvati, nella modifica di un'operazione. */
+  fees?: number | null;
+  fxRate?: number | null;
+}
+
+/** Operazione che il form sta modificando. */
+export interface EditingOperation {
+  id: string;
+  /** La nota non si modifica dal form: si rimanda com'è, altrimenti la modifica la cancellerebbe. */
+  note: string | null;
 }
 
 export interface RegisterOperationFormProps {
@@ -50,6 +65,8 @@ export interface RegisterOperationFormProps {
   initial?: RegisterOperationInitial;
   /** Strumenti già usati, proposti nel selettore prima di scrivere. */
   usedInstruments?: Instrument[];
+  /** Se presente, il form salva le modifiche di questa operazione invece di registrarne una nuova. */
+  editing?: EditingOperation;
   onSuccess?: () => void;
 }
 
@@ -57,19 +74,22 @@ function roundCents(value: number | null | undefined): number | null {
   return value === null || value === undefined ? null : Math.round(value * 100) / 100;
 }
 
-export function RegisterOperationForm({ currency, initial, usedInstruments = [], onSuccess }: RegisterOperationFormProps) {
+export function RegisterOperationForm({ currency, initial, usedInstruments = [], editing, onSuccess }: RegisterOperationFormProps) {
   const id = React.useId();
   const create = useCreateInvestmentTransactionMutation();
+  const update = useUpdateInvestmentTransactionMutation();
+  const save = editing ? update : create;
   const [instrument, setInstrument] = React.useState<Instrument | null>(initial?.instrument ?? null);
   const [type, setType] = React.useState<InvestmentTransactionType>(initial?.type ?? "acquisto");
   const [date, setDate] = React.useState(initial?.date ?? localTodayKey());
   const [quantity, setQuantity] = React.useState(numberText(initial?.quantity));
   // null = il campo segue il prezzo proposto; una stringa = valore scritto dall'utente.
-  const [priceInput, setPriceInput] = React.useState<string | null>(null);
+  // In modifica parte dal prezzo salvato, non da quello di mercato della data.
+  const [priceInput, setPriceInput] = React.useState<string | null>(editing ? numberText(initial?.price) : null);
   const [gross, setGross] = React.useState(numberText(roundCents(initial?.grossAmount)));
-  const [fees, setFees] = React.useState("");
+  const [fees, setFees] = React.useState(numberText(initial?.fees));
   const [taxes, setTaxes] = React.useState(numberText(roundCents(initial?.taxes)));
-  const [fxRate, setFxRate] = React.useState("");
+  const [fxRate, setFxRate] = React.useState(numberText(initial?.fxRate));
   const [error, setError] = React.useState<string | null>(null);
 
   const fields = fieldsFor(type);
@@ -92,20 +112,19 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     event.preventDefault();
     setError(null);
     if (!instrument) return setError("Scegli uno strumento");
-    create.mutate(
-      {
-        instrumentId: instrument.id,
-        type,
-        date,
-        quantity: fields.quantity ? (parseAmount(quantity) ?? 0) : 0,
-        price: fields.price ? (parseAmount(price) ?? 0) : 0,
-        grossAmount: fields.grossAmount ? parseAmount(gross) : null,
-        fees: fields.costs ? (parseAmount(fees) ?? 0) : 0,
-        taxes: fields.costs ? (parseAmount(taxes) ?? 0) : 0,
-        ...(needsFx && parseAmount(fxRate) ? { fxRate: parseAmount(fxRate)! } : {}),
-      },
-      { onSuccess: () => onSuccess?.(), onError: (e) => setError(e.message) }
-    );
+    const input = {
+      type,
+      date,
+      quantity: fields.quantity ? (parseAmount(quantity) ?? 0) : 0,
+      price: fields.price ? (parseAmount(price) ?? 0) : 0,
+      grossAmount: fields.grossAmount ? parseAmount(gross) : null,
+      fees: fields.costs ? (parseAmount(fees) ?? 0) : 0,
+      taxes: fields.costs ? (parseAmount(taxes) ?? 0) : 0,
+      ...(needsFx && parseAmount(fxRate) ? { fxRate: parseAmount(fxRate)! } : {}),
+    };
+    const callbacks = { onSuccess: () => onSuccess?.(), onError: (e: Error) => setError(e.message) };
+    if (editing) update.mutate({ id: editing.id, input: { ...input, note: editing.note } }, callbacks);
+    else create.mutate({ ...input, instrumentId: instrument.id }, callbacks);
   }
 
   return (
@@ -130,7 +149,11 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
         </Field>
       </div>
       <Field label="Strumento">
-        <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
+        {editing ? (
+          <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? "Strumento"}</p>
+        ) : (
+          <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
+        )}
       </Field>
       <div className="grid grid-cols-2 gap-3">
         {fields.quantity ? (
@@ -177,8 +200,8 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
         </p>
       ) : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <Button type="submit" disabled={create.isPending || !instrument}>
-        {create.isPending ? "Registrazione…" : "Registra operazione"}
+      <Button type="submit" disabled={save.isPending || !instrument}>
+        {editing ? (save.isPending ? "Salvataggio…" : "Salva modifiche") : save.isPending ? "Registrazione…" : "Registra operazione"}
       </Button>
     </form>
   );

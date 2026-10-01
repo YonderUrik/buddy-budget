@@ -1,5 +1,5 @@
 import type { ResolvedPrice } from "@/lib/calc/investments";
-import type { InvestmentPlan, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
+import type { Instrument, InvestmentPlan, InvestmentTransaction, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
 import { formatDateWithYear } from "@/lib/format";
 
 /** Campi visibili nel form a seconda del tipo di operazione. */
@@ -98,4 +98,22 @@ export function priceSuggestionHint(dateKey: string, state: PriceSuggestionState
   const when = formatDateWithYear(price.date);
   if (price.origin === "manuale") return price.date === dateKey ? `Il tuo prezzo del ${when}` : `Il tuo ultimo prezzo prima di questa data, del ${when}`;
   return price.date === dateKey ? `Chiusura del ${when}` : `Ultima chiusura prima di questa data, del ${when}`;
+}
+
+/** Valori iniziali del form per modificare un'operazione salvata (le colonne numeric arrivano come stringhe). */
+export function initialFromTransaction(
+  t: Pick<InvestmentTransaction, "type" | "date" | "quantity" | "price" | "grossAmount" | "fees" | "taxes" | "fxRate">,
+  instrument: Instrument | null
+) {
+  return {
+    instrument,
+    type: t.type,
+    date: t.date,
+    quantity: Number(t.quantity),
+    price: Number(t.price),
+    grossAmount: t.grossAmount === null ? null : Number(t.grossAmount),
+    fees: Number(t.fees),
+    taxes: Number(t.taxes),
+    fxRate: Number(t.fxRate),
+  };
 }

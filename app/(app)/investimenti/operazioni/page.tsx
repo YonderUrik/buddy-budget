@@ -1,10 +1,11 @@
 "use client";
 
-/** Scheda Operazioni di Investimenti: tutte le operazioni per mese, con l'esito di ciascuna, i totali e l'eliminazione. */
+/** Scheda Operazioni di Investimenti: tutte le operazioni per mese, con l'esito di ciascuna, i totali la modifica e l'eliminazione. */
 
 import * as React from "react";
 import { toast } from "sonner";
-import { InvestmentsViewGate, InvestmentTransactionsList } from "@/components/domain/investments";
+import { EditOperationDialog, InvestmentsViewGate, InvestmentTransactionsList } from "@/components/domain/investments";
+import type { InvestmentTransaction } from "@/lib/db/schema/investments";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useDeleteInvestmentTransactionMutation } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
@@ -13,6 +14,7 @@ export default function OperazioniPage() {
   const { overview, view } = useInvestmentsView(INVESTMENTS_DEFAULT_PERIOD);
   const deleteOperation = useDeleteInvestmentTransactionMutation();
   const [showAll, setShowAll] = React.useState(false);
+  const [editing, setEditing] = React.useState<InvestmentTransaction | null>(null);
 
   return (
     <InvestmentsViewGate
@@ -29,9 +31,16 @@ export default function OperazioniPage() {
           showAll={showAll}
           onToggleShowAll={() => setShowAll((v) => !v)}
           deletingId={deleteOperation.isPending ? deleteOperation.variables : null}
+          onEdit={setEditing}
           onDelete={(t) => deleteOperation.mutate(t.id, { onError: (e) => toast.error(e.message) })}
         />
       ) : null}
+      <EditOperationDialog
+        transaction={editing}
+        instrument={editing ? view?.instrumentsById.get(editing.instrumentId) : undefined}
+        currency={view?.currency ?? "EUR"}
+        onClose={() => setEditing(null)}
+      />
     </InvestmentsViewGate>
   );
 }

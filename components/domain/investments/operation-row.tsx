@@ -5,7 +5,7 @@
  * Per un acquisto il guadagno è sulle quote ancora possedute al prezzo di oggi, per una vendita è il realizzato.
  */
 
-import { Trash2Icon } from "lucide-react";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QUANTITY_EPSILON } from "@/lib/calc/investments";
@@ -49,10 +49,11 @@ export interface OperationRowProps {
   instrument: Instrument | undefined;
   currency: string;
   deleting: boolean;
+  onEdit?: (transaction: InvestmentTransaction) => void;
   onDelete: (transaction: InvestmentTransaction) => void;
 }
 
-export function OperationRow({ insight, instrument, currency, deleting, onDelete }: OperationRowProps) {
+export function OperationRow({ insight, instrument, currency, deleting, onEdit, onDelete }: OperationRowProps) {
   const t = insight.transaction;
   const amount = t.type === "acquisto" ? insight.paid : insight.received;
   const details = [
@@ -78,6 +79,17 @@ export function OperationRow({ insight, instrument, currency, deleting, onDelete
         )}
         <GainCell insight={insight} currency={currency} />
       </div>
+      {onEdit ? (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="size-9 shrink-0 text-muted-foreground hover:text-primary"
+          aria-label="Modifica operazione"
+          onClick={() => onEdit(t)}
+        >
+          <PencilIcon className="size-4" aria-hidden="true" />
+        </Button>
+      ) : null}
       <Button
         variant="ghost"
         size="icon"

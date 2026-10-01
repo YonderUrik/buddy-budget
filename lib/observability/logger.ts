@@ -25,6 +25,8 @@ export interface LogFields {
   cron?: string;
   phase?: string;
   trigger?: string;
+  /** Tipo di un'operazione di investimento (enum chiuso: acquisto, vendita...). */
+  operationType?: string;
   outcome?: string;
   reason?: string;
   inserted?: number;

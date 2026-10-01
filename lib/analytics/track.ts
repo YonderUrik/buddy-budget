@@ -20,6 +20,7 @@ export interface ProductEvents {
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
+  investment_operation_updated: { type: InvestmentTransactionType };
   investment_plan_created: undefined;
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" };

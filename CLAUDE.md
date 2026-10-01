@@ -192,7 +192,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### Rimandato consapevolmente
 
-- **Investimenti**: modifica di un'operazione dalla UI (l'API `PATCH` c'è già), OpenFIGI per ISIN→ticker, più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
+- **Investimenti**: OpenFIGI per ISIN→ticker, più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
 - **Debiti**: aggiornamento automatico Euribor, valute estere, tasso misto/cap, debiti informali, push sulle scadenze, quota capitale/interessi nel Cash flow, modifica dei dati di un debito dalla UI, ordinamento dei debiti.
 - **Impostazioni**: cambio email, scollegare Google, notifiche email, import dell'export.
 - **Sidebar**: popover al passaggio del mouse sul chip compresso, sezione "Prossimi eventi", sezioni riordinabili, eventuale sidebar a gruppi (alternativa B).
@@ -234,6 +234,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 Il log completo è in [`docs/decision-log.md`](docs/decision-log.md) (voci nuove in cima, 3-8 righe). Decisioni ancora vincolanti, in sintesi:
 
+- **2026-10-01** — Ogni feature nuova deve essere osservabile: log strutturati (`dominio.oggetto.esito`) e un evento Umami per l'azione, già nella stessa PR.
 - **2026-10-01** — Prezzi di mercato e snapshot del patrimonio a 3 giri al giorno (06:30/17:30/22:30 UTC e 06:50/17:50/23:50 UTC). Sono chiusure di fine giornata, non intraday.
 - **2026-09-30** — Sezioni unificate: Transazioni, Cash flow e Categorie sono `/movimenti`. Categorie con board a colonne per gruppo di spesa.
 - **2026-09-30** — Debiti: piano calcolato da condizioni iniziali + registro eventi (come le posizioni di Investimenti); rate segnate a mano, mai automatiche.

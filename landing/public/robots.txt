@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://buddybudget.io/sitemap.xml

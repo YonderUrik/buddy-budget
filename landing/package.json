@@ -9,7 +9,9 @@
     "build": "next build",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "sync:features": "node scripts/sync-features.mjs",
+    "check:features": "node scripts/sync-features.mjs --check"
   },
   "dependencies": {
     "@fontsource-variable/hanken-grotesk": "^5.2.0",

@@ -21,7 +21,10 @@ const UPCOMING_ICONS: Record<string, LucideIcon> = {
   analitiche: BarChart3,
 };
 
-export const UPCOMING_FEATURES: UpcomingFeature[] = featuresByStatus("soon").map((feature) => ({
+/** Il pannello mostra le funzionalità `soon` che sono una schermata (hanno `appPath`), non quelle trasversali. */
+export const UPCOMING_FEATURES: UpcomingFeature[] = featuresByStatus("soon")
+  .filter((feature) => feature.appPath)
+  .map((feature) => ({
   name: feature.name,
   description: feature.description,
   icon: UPCOMING_ICONS[feature.id] ?? Target,

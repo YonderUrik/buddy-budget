@@ -1,0 +1,12 @@
+.hero { padding-top: 148px; position: relative; }
+.hero h1 { font-size: clamp(52px, 9vw, 140px); font-weight: 600; letter-spacing: -0.055em; line-height: 0.92; }
+.hero h1 .ln { display: block; overflow: hidden; padding: 0.04em 0.02em 0.12em; margin-bottom: -0.06em; }
+.hero h1 .ln > span { display: block; }
+.hero h1 em { font-style: normal; color: var(--sky); }
+.hrow { display: flex; flex-wrap: wrap; gap: 28px 64px; align-items: flex-end; justify-content: space-between; margin-top: 44px; }
+.hrow p { font-size: clamp(18px, 1.7vw, 22px); color: var(--ink2); max-width: 25em; line-height: 1.5; }
+.stage { position: relative; margin-top: 56px; }
+.stage::before { content: ""; position: absolute; left: 0; right: 0; top: 34%; bottom: -2px; background: var(--navy); border-radius: 36px 36px 0 0; }
+.stage .inner { position: relative; perspective: 1600px; padding: 0 clamp(12px, 4vw, 56px); }
+.tilt { transform-origin: 50% 100%; will-change: transform; }
+@media (max-width: 600px) { .hero { padding-top: 112px; } .hrow { margin-top: 32px; } .stage { margin-top: 48px; } }

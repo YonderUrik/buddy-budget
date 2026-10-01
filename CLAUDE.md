@@ -8,6 +8,7 @@ App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e val
 - **Schema DB solo via migration versionate** (decisione del 2026-09-26, Fase 0 migrazione VPS): `db:push` non esiste più. Ogni modifica allo schema (`lib/db/schema/`) richiede `pnpm db:generate` + migration committata + `pnpm db:migrate` sul DB di sviluppo, poi (finché si è su Neon) sul DB di produzione **prima** del merge che la usa.
 - **Fai domande di approfondimento solo quando la richiesta è ambigua o ha un impatto rilevante** (scelte architetturali, comportamento non specificato, più interpretazioni plausibili). Per richieste chiare o di portata limitata, procedi direttamente senza chiedere conferma: l'obiettivo è non rallentare il lavoro con domande superflue.
 - **Ogni feature, bug, debito tecnico, task o verifica manuale va segnato su Slack** (decisione del 2026-09-27): nella Slack List "BuddyBudget — Backlog" (https://buddybudget.slack.com/lists/T0C5LCECH6U/F0C4THFDKD0, canale privato `#bb-backlog`, id `C0C4THFBUBU`). Vale sia per gli elementi nuovi (idea, bug trovato, debito emerso in una review, scope rimandato) sia per i cambi di stato (Da fare → In corso → Fatto, Sospeso, Scartato) — a fine lavoro va aggiornata la riga corrispondente. Finché il connettore Slack non permette di aggiungere righe alla lista (oggi `add_list_record` fallisce con `bot_not_found`), Claude pubblica l'elemento o l'aggiornamento come messaggio in `#bb-backlog` (titolo, tipo, stato, priorità, area, perché, link) e lo segnala all'utente, che lo riporta nella lista. Non sostituisce il log delle decisioni qui sotto: la lista dice *cosa* c'è da fare e a che punto è, il log *perché* si è deciso.
+- **Ogni feature nuova o cambiata aggiorna la landing** (decisione del 2026-10-01): `landing/content/features.ts` è l'unico elenco delle funzioni mostrato su buddybudget.io (catalogo, conteggio, badge Disponibile/Nuovo/Presto). Quando una funzione viene rilasciata, cambia o viene pianificata si aggiorna quel file; se cambia il racconto (passi del tour in `landing/content/site.ts`, righe del confronto) si aggiorna anche quello. Una feature non è "completata" finché la landing non la riflette, e la PR lo dichiara (anche solo "nessun impatto sulla landing").
 - **Mantieni questo file aggiornato.** Ogni volta che viene presa una decisione di progetto, cambiata una scelta tecnica, o completata una fase di lavoro rilevante, aggiungi una voce breve (3-8 righe, in cima) a [`docs/decision-log.md`](docs/decision-log.md) e aggiorna "Stato del progetto" qui sotto se cambia lo stato generale. I dettagli di un lavoro vanno nella sua spec/piano in `docs/superpowers/`, non qui. L'obiettivo è che una nuova chat possa leggere questo file e avere subito il contesto, senza dover richiedere all'utente di ripetere spiegazioni già date.
 - **Tieni sempre traccia esplicita di tre cose, in "Stato del progetto" e/o nei documenti di spec/piano collegati**: (1) cosa si sta facendo adesso, (2) cosa si è deciso consapevolmente di saltare/rimandare e perché, (3) cosa è previsto in futuro e quando tornarci. Non lasciare che uno scope tagliato o un piano messo in pausa si perda nella conversazione: se un piano viene sospeso (es. per cambiare priorità), aggiorna il suo stato nel file stesso invece di lasciarlo silenziosamente incompleto.
 
@@ -141,6 +142,7 @@ lib/
   calc/                      motori di calcolo puri e testati (spese, cashflow, rendimenti, tasse, ammortamento, debiti...)
   observability/ analytics/  log, metriche, eventi di prodotto
   <feature>/                 logica di dominio per area (gocardless, categorization, investments, market-data, net-worth, debts, account...)
+landing/                     sito vetrina statico (buddybudget.io), progetto Next.js a sé con proprio package.json, CI e deploy su Cloudflare Pages; contenuti in landing/content/
 docs/
   product-vision.md          visione di prodotto (sintesi)
   functional-spec.md         specifica funzionale per schermata, dedotta dal mockup
@@ -170,7 +172,7 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 
 ### Schermate "in arrivo" e catalogo funzionalità: punti da aggiornare quando se ne implementa una
 
-Elenco, descrizioni e stato (`live` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, che aggiunge solo l'icona) e la landing (`landing/`, import `@features`). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
+Elenco, descrizioni e stato (`live` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, che aggiunge solo l'icona) e, dopo la PR di unificazione, la landing (oggi ha ancora il proprio `landing/content/features.ts`: finché non è unificato si aggiornano entrambi). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
 
 Quando si implementa una schermata pianificata (oggi: Pensione, Pianifica, Analitiche):
 
@@ -194,10 +196,11 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### In corso
 
-- **Landing / separazione domini**: `buddybudget.io` = landing statica (`landing/`, la costruisce un thread dedicato), `app.buddybudget.io` = app. Codice pronto in PR bozza; restano a mano il cambio di `APP_URL`/`BETTER_AUTH_URL` (SOPS), il DNS e Cloudflare Pages (passi nella PR). Quando il cutover è fatto, aggiornare questa riga.
 - **Debiti**: Fasi 3 (credit Lombard) e 4 (patrimonio netto, Lombard contro il portafoglio, scheda Simulatore) implementate, PR #43 in revisione. Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
 
 ### Previsto
+
+- **Landing** (`landing/`, bozza in PR): sito statico su `buddybudget.io`, app su `app.buddybudget.io`. Da fare dopo il merge: progetto Cloudflare Pages, sito Umami dedicato con le due variabili `NEXT_PUBLIC_UMAMI_*`, immagine Open Graph, validare testi di storia e confronto. La divisione dei domini (infra/app) è di un altro lavoro.
 
 - **Osservabilità Fase C**: accesso in sola lettura per agenti via MCP (mai sulla VPS di produzione).
 - **Fase 7, Task 8 (migrazione VPS)**: non prima di 2 settimane dal cutover (cioè dopo il 2026-10-11) e con conferma esplicita dell'utente: rotazione di tutti i segreti (sono transitati su Vercel), chiusura definitiva di Vercel/Neon, rimozione di `@vercel/analytics` e delle chiavi Umami inutilizzate dall'env. Piano: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.

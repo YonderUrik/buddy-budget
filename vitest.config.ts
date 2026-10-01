@@ -7,6 +7,7 @@ export default defineConfig({
     exclude: [
       "**/node_modules/**",
       "**/.claude/worktrees/**",
+      "landing/**",
     ],
     // I test di integrazione girano contro lo stesso Postgres reale (nessun mock/rollback per test):
     // file paralleli possono farsi vedere a vicenda righe transitorie (es. bank_account_links non ancora

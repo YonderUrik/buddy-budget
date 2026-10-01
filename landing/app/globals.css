@@ -1,0 +1,154 @@
+/*
+ * Token e base della landing. Il linguaggio è quello dell'app (token --a-* = quelli di app/globals.css, usati dalla
+ * finestra del prodotto); il resto è pagina chiara e sobria con un solo accento (azzurro brand). Il giallo compare
+ * solo nel marchio e nel pulsante principale. Niente colori esadecimali nei componenti: solo token.
+ */
+:root {
+  --bg: #f6f6f8;
+  --surface: #fff;
+  --ink: #0f0f3f;
+  --ink2: #4a4a66;
+  --ink3: #7b7b92;
+  --line: #e3e3ea;
+  --accent: #15738b;
+  --sky: #219ebc;
+  --sun: #ffb703;
+  --navy: #0f0f3f;
+  --on-navy: #f2f2f8;
+  --on-navy2: #b4b4cc;
+  --on-sun: #0f0f3f;
+  --mk2: #1f224e;
+  --shadow-win: rgba(10, 10, 40, 0.45);
+  --shadow-win2: rgba(10, 10, 40, 0.3);
+
+  /* token dell'app (finestra del prodotto) */
+  --a-bg: #f7f7f8;
+  --a-card: #fff;
+  --a-fg: #18181b;
+  --a-t2: #52525b;
+  --a-t3: #71717a;
+  --a-line: #e4e4e7;
+  --a-soft: #f0f0f2;
+  --a-primary: #15738b;
+  --a-pos: #2f7d57;
+  --a-neg: #b0473b;
+  --a-pos-soft: rgba(47, 125, 87, 0.1);
+  --a-liq: #14b8a6;
+  --a-inv: #219ebc;
+  --a-dov: #dc2626;
+  --a-vol: #d97706;
+  --a-fut: #16a34a;
+  --a-sal: #2563eb;
+
+  --f-h: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
+  --f-b: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, sans-serif;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0b12;
+    --surface: #14141d;
+    --ink: #f2f2f8;
+    --ink2: #a9a9c0;
+    --ink3: #7c7c94;
+    --line: #25252f;
+    --accent: #46b8d4;
+    --navy: #14153f;
+    --mk2: #7378c8;
+    --a-bg: #111113;
+    --a-card: #18181b;
+    --a-fg: #ececef;
+    --a-t2: #a1a1aa;
+    --a-t3: #80808a;
+    --a-line: #2a2a2f;
+    --a-soft: #232327;
+    --a-primary: #219ebc;
+    --a-pos: #7bb79b;
+    --a-neg: #d2887b;
+    --a-pos-soft: rgba(123, 183, 155, 0.14);
+    --a-dov: #f87171;
+    --a-vol: #facc15;
+    --a-fut: #4ade80;
+    --a-sal: #60a5fa;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b0b12;
+  --surface: #14141d;
+  --ink: #f2f2f8;
+  --ink2: #a9a9c0;
+  --ink3: #7c7c94;
+  --line: #25252f;
+  --accent: #46b8d4;
+  --navy: #14153f;
+  --mk2: #7378c8;
+  --a-bg: #111113;
+  --a-card: #18181b;
+  --a-fg: #ececef;
+  --a-t2: #a1a1aa;
+  --a-t3: #80808a;
+  --a-line: #2a2a2f;
+  --a-soft: #232327;
+  --a-primary: #219ebc;
+  --a-pos: #7bb79b;
+  --a-neg: #d2887b;
+  --a-pos-soft: rgba(123, 183, 155, 0.14);
+  --a-dov: #f87171;
+  --a-vol: #facc15;
+  --a-fut: #4ade80;
+  --a-sal: #60a5fa;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 17px/1.6 var(--f-b);
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { font-family: var(--f-h); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; border-radius: 8px; }
+
+.wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
+.kicker { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+h2.t { font-size: clamp(36px, 5.2vw, 72px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; margin-top: 18px; max-width: 15em; }
+.lede { font-size: clamp(18px, 1.6vw, 21px); color: var(--ink2); max-width: 34em; margin-top: 22px; }
+.sec { padding-block: 150px; }
+.mark { height: 26px; aspect-ratio: 378 / 464; display: block; }
+.mark .mk2 { fill: var(--mk2); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px;
+  font: 600 16px var(--f-b); text-decoration: none; border: 0; cursor: pointer;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.2s;
+}
+.btn.main { background: var(--sun); color: var(--on-sun); }
+.btn.main:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(255, 183, 3, 0.7); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+.btn.ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.btn svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }
+.btn:hover svg { transform: translateX(3px); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* stati iniziali dell'animazione: solo se il JS è attivo e il movimento è consentito (vedi layout.tsx) */
+.js-motion .hero h1 .ln > span { transform: translateY(112%); animation: force-rise 0s 3.5s forwards; }
+.js-motion .hrow > *, .js-motion .tilt { opacity: 0; animation: force-show 0s 3.5s forwards; }
+@keyframes force-show { to { opacity: 1; } }
+@keyframes force-rise { to { transform: none; } }
+
+@media (max-width: 1000px) { .sec { padding-block: 96px; } }
+@media (max-width: 600px) { .wrap { padding-inline: 20px; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+}

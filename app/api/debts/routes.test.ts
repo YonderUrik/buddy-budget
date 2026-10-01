@@ -15,6 +15,7 @@ import { GET, POST } from "./route";
 import { DELETE as deleteDebt, PATCH as patchDebt } from "./[id]/route";
 import { POST as postEvent } from "./[id]/events/route";
 import { DELETE as deleteEvent } from "./[id]/events/[eventId]/route";
+import { POST as postBulk } from "./[id]/payments/bulk/route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
@@ -153,5 +154,22 @@ describe("route debiti", () => {
     const view = (await (await GET(request("/api/debts", "GET"))).json()) as { debts: { name: string; costs: unknown[] }[] };
     expect(view.debts[0]).toMatchObject({ name: "Rinominato" });
     expect(view.debts[0].costs).toHaveLength(1);
+  });
+
+  it("segna in blocco le rate scadute fino a una rata, senza toccare quelle future né quelle già pagate", async () => {
+    const id = await createDebt({ ...loan, firstInstallmentDate: "2026-01-05" });
+    await postEvent(request("/x", "POST", { type: "payment", installmentNumber: 1, date: "2026-01-05", amount: 1035.5 }), idParams(id));
+    const res = await postBulk(request("/x", "POST", { upToInstallment: 4 }), idParams(id));
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { count: number }).count).toBe(3);
+    const view = (await (await GET(request("/api/debts", "GET"))).json()) as { debts: { plan: { rows: { number: number; status: string; payment: { amount: number } | null }[] } }[] };
+    const rows = view.debts[0].plan.rows;
+    expect(rows.slice(0, 4).every((r) => r.status === "pagata")).toBe(true);
+    expect(rows[0].payment?.amount).toBe(1035.5);
+    // Una seconda chiamata non ha più nulla da segnare; un'altra utente non può usarla.
+    expect((await postBulk(request("/x", "POST", { upToInstallment: 4 }), idParams(id))).status).toBe(400);
+    const otherId = await createUser();
+    mockedGetSession.mockResolvedValue({ user: { id: otherId } } as never);
+    expect((await postBulk(request("/x", "POST", { upToInstallment: 4 }), idParams(id))).status).toBe(404);
   });
 });

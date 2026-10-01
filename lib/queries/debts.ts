@@ -110,3 +110,23 @@ export function useDeleteDebtEventMutation() {
     onSuccess: invalidate,
   });
 }
+
+/** Segna come pagate in blocco le rate scadute fino alla rata indicata (pregresso di un finanziamento in corso). */
+export function useBulkPayDebtMutation() {
+  const invalidate = useInvalidateDebts();
+  return useMutation({
+    mutationFn: async ({ debtId, upToInstallment }: { debtId: string; upToInstallment: number }): Promise<{ count: number }> => {
+      const response = await fetch(`/api/debts/${debtId}/payments/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ upToInstallment }),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile segnare le rate");
+      return response.json();
+    },
+    onSuccess: () => {
+      track("debt_event_added", { type: "payment" });
+      invalidate();
+    },
+  });
+}

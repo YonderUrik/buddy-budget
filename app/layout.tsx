@@ -34,6 +34,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "BuddyBudget",
   description: "Gestione finanziaria personale — patrimonio, spese, investimenti.",
+  // L'app sta su app.buddybudget.io e non va indicizzata (la landing è su buddybudget.io).
+  robots: { index: false, follow: false },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

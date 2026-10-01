@@ -15,6 +15,8 @@ export { PositionsList, STALE_PRICE_DAYS } from "./positions-list";
 export type { PositionsListProps } from "./positions-list";
 export { InvestmentTransactionsList, RECENT_OPERATION_MONTHS_LIMIT } from "./investment-transactions-list";
 export type { InvestmentTransactionsListProps } from "./investment-transactions-list";
+export { EditOperationDialog } from "./edit-operation-dialog";
+export type { EditOperationDialogProps } from "./edit-operation-dialog";
 export { OperationMonthGroup } from "./operation-month-group";
 export type { OperationMonthGroupProps } from "./operation-month-group";
 export { OperationRow } from "./operation-row";

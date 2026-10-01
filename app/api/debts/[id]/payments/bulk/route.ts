@@ -29,6 +29,7 @@ async function handlePost(request: NextRequest, { params }: Params) {
   const { id } = await params;
   const debt = await findOwnDebt(userId, id);
   if (!debt) return Response.json({ error: "Debito non trovato" }, { status: 404 });
+  if (debt.kind !== "loan") return Response.json({ error: "Una linea di credito non ha rate" }, { status: 400 });
 
   const today = todayIso();
   const { events } = await loadUserDebts(userId);

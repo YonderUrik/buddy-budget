@@ -179,7 +179,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### In corso
 
-- **Debiti**: restano Fase 3 (credit Lombard) e Fase 4 (patrimonio netto, extra investimenti, Simulatore completo con surroga e valanga). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
+- **Debiti**: Fase 3 (credit Lombard) implementata, PR in revisione; resta la Fase 4 (patrimonio netto, extra investimenti, Simulatore completo con surroga e valanga). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
 
 ### Previsto
 

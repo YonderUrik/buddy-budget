@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { DebtsViewData } from "@/lib/debts/view";
-import type { CreateDebtEventInput, CreateDebtInput, UpdateDebtInput } from "@/lib/validation/debts";
+import type { CreateCreditLineInput, CreateDebtEventInput, CreateDebtInput, UpdateDebtInput } from "@/lib/validation/debts";
 
 export const DEBTS_QUERY_KEY = ["debts"] as const;
 /** Quanto restano valide le cifre dei debiti prima di ricaricarle: cambiano solo per azioni dell'utente o col passare dei giorni. */
@@ -52,7 +52,27 @@ export function useCreateDebtMutation() {
   });
 }
 
-/** Modifica nome e spese di un debito. */
+/** Crea una linea di credito (credit Lombard, fido); restituisce l'id. */
+export function useCreateCreditLineMutation() {
+  const invalidate = useInvalidateDebts();
+  return useMutation({
+    mutationFn: async (input: CreateCreditLineInput): Promise<{ id: string }> => {
+      const response = await fetch("/api/debts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile aggiungere la linea di credito");
+      return response.json();
+    },
+    onSuccess: () => {
+      track("debt_added", { startMode: "linea_di_credito" });
+      invalidate();
+    },
+  });
+}
+
+/** Modifica nome e spese di un debito e, per una linea di credito, le sue regole. */
 export function useUpdateDebtMutation() {
   const invalidate = useInvalidateDebts();
   return useMutation({

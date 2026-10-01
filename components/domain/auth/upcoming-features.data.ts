@@ -3,7 +3,7 @@
  * (sezioni 5-9): quando una di queste schermate viene implementata, va rimossa da qui.
  */
 
-import { BarChart3, CreditCard, Target, Umbrella, type LucideIcon } from "lucide-react";
+import { BarChart3, Target, Umbrella, type LucideIcon } from "lucide-react";
 
 export interface UpcomingFeature {
   name: string;
@@ -16,11 +16,6 @@ export const UPCOMING_FEATURES: UpcomingFeature[] = [
     name: "Pensione",
     description: "Il tuo fondo pensione e una stima di quanto varrà.",
     icon: Umbrella,
-  },
-  {
-    name: "Debiti",
-    description: "Mutuo e prestiti: quando li estingui e quanto risparmi con una rata più alta.",
-    icon: CreditCard,
   },
   {
     name: "Pianifica",

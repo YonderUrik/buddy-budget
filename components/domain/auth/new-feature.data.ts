@@ -3,7 +3,7 @@
  * sostituisce questa voce (e la si toglie da `upcoming-features.data.ts`, se era lì).
  */
 
-import { TrendingUp } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import type { UpcomingFeature } from "./upcoming-features.data";
 
 /** Funzionalità appena uscita: come quelle in arrivo, più una frase corta per gli schermi bassi. */
@@ -12,8 +12,8 @@ export interface NewFeature extends UpcomingFeature {
 }
 
 export const LATEST_FEATURE: NewFeature = {
-  name: "Investimenti",
-  description: "ETF, azioni, BTP e crypto con i prezzi di chiusura di ogni sera, dentro il tuo patrimonio netto.",
-  summary: "Il tuo portafoglio, aggiornato ogni sera.",
-  icon: TrendingUp,
+  name: "Debiti",
+  description: "Finanziamenti e mutui rata per rata: quanto paghi di interessi e quando finisci, anche se il debito è già in corso.",
+  summary: "I tuoi debiti, rata per rata.",
+  icon: CreditCard,
 };

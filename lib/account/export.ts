@@ -8,6 +8,7 @@ import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connecti
 import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
+import { debtEvents, debts } from "@/lib/db/schema/debts";
 import {
   instruments,
   investmentPlans,
@@ -79,6 +80,8 @@ async function loadUserData(userId: string) {
     dismissedDividendRows,
     watchlistRows,
     priceAlertRows,
+    debtRows,
+    debtEventRows,
   ] = await Promise.all([
     db
       .select({
@@ -286,6 +289,40 @@ async function loadUserData(userId: string) {
       .from(userPriceAlerts)
       .innerJoin(instruments, eq(instruments.id, userPriceAlerts.instrumentId))
       .where(eq(userPriceAlerts.userId, userId)),
+    db
+      .select({
+        id: debts.id,
+        kind: debts.kind,
+        name: debts.name,
+        startMode: debts.startMode,
+        principal: debts.principal,
+        annualRate: debts.annualRate,
+        installments: debts.installments,
+        firstInstallmentDate: debts.firstInstallmentDate,
+        installment: debts.installment,
+        anchorDate: debts.anchorDate,
+        costs: debts.costs,
+        createdAt: debts.createdAt,
+      })
+      .from(debts)
+      .where(eq(debts.userId, userId))
+      .orderBy(asc(debts.createdAt)),
+    db
+      .select({
+        id: debtEvents.id,
+        debtId: debtEvents.debtId,
+        type: debtEvents.type,
+        date: debtEvents.date,
+        amount: debtEvents.amount,
+        installmentNumber: debtEvents.installmentNumber,
+        rate: debtEvents.rate,
+        transactionId: debtEvents.transactionId,
+        note: debtEvents.note,
+        createdAt: debtEvents.createdAt,
+      })
+      .from(debtEvents)
+      .where(eq(debtEvents.userId, userId))
+      .orderBy(asc(debtEvents.date)),
   ]);
 
   return {
@@ -308,6 +345,8 @@ async function loadUserData(userId: string) {
     dismissedDividends: dismissedDividendRows,
     watchlist: watchlistRows,
     priceAlerts: priceAlertRows,
+    debts: debtRows,
+    debtEvents: debtEventRows,
   };
 }
 
@@ -318,6 +357,7 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
   const accountName = new Map(data.accounts.map((a) => [a.id, a.name]));
   const categoryName = new Map(data.categories.map((c) => [c.id, c.name]));
   const portfolioName = new Map(data.investmentPortfolios.map((p) => [p.id, p.name]));
+  const debtName = new Map(data.debts.map((d) => [d.id, d.name]));
 
   const json = JSON.stringify({ format: "buddybudget-export", version: EXPORT_FORMAT_VERSION, exportedAt: now.toISOString(), ...data }, null, 2);
 
@@ -397,6 +437,25 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Stato", value: (a) => a.status },
       { header: "Scattato il", value: (a) => a.triggeredAt },
       { header: "Chiusura allo scatto", value: (a) => decimal(a.triggeredPrice) },
+    ]),
+    "debiti.csv": toCsv(data.debts, [
+      { header: "Nome", value: (d) => d.name },
+      { header: "Tipo", value: (d) => d.kind },
+      { header: "Avvio", value: (d) => d.startMode },
+      { header: "Capitale", value: (d) => decimal(d.principal) },
+      { header: "Tasso annuo (%)", value: (d) => decimal(d.annualRate) },
+      { header: "Rate", value: (d) => d.installments },
+      { header: "Prima scadenza", value: (d) => d.firstInstallmentDate },
+      { header: "Rata dichiarata", value: (d) => decimal(d.installment) },
+    ]),
+    "debiti-eventi.csv": toCsv(data.debtEvents, [
+      { header: "Debito", value: (e) => debtName.get(e.debtId) },
+      { header: "Data", value: (e) => e.date },
+      { header: "Tipo", value: (e) => e.type },
+      { header: "Rata n.", value: (e) => e.installmentNumber },
+      { header: "Importo", value: (e) => decimal(e.amount) },
+      { header: "Nuovo tasso (%)", value: (e) => decimal(e.rate) },
+      { header: "Nota", value: (e) => e.note },
     ]),
     "patrimonio-netto.csv": toCsv(data.netWorth, [
       { header: "Data", value: (s) => s.date },

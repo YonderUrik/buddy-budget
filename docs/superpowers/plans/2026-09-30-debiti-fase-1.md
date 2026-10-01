@@ -1,6 +1,6 @@
 # Debiti, Fase 1 (motore e finanziamenti): piano di implementazione
 
-Spec: `docs/superpowers/specs/2026-09-30-debiti-design.md`. Branch: `claude/debiti-feature-brainstorm-9fmwa8`. Stato: **da approvare, nessun task eseguito**.
+Spec: `docs/superpowers/specs/2026-09-30-debiti-design.md`. Branch: `claude/debiti-feature-brainstorm-9fmwa8`. Stato: **eseguito il 2026-10-01** (10/10 task, branch non ancora mergiato). Differenze rispetto a quanto scritto sotto: aggiunta la route `POST /api/debts/[id]/payments/bulk` per segnare in blocco il pregresso; il grafico del residuo parte da oggi; una rata che scade oggi è ancora da pagare.
 
 **Obiettivo della fase**: finanziamenti (`loan`) nuovi o in corso, piano di ammortamento calcolato da condizioni iniziali + registro eventi, calcolatore della variabile mancante, rate segnate pagate a mano, schede Panoramica e Finanziamenti. **Fuori da questa fase**: estinzioni anticipate (Fase 2), linee di credito/Lombard (Fase 3), patrimonio netto, simulatore, extra investimenti (Fase 4).
 

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { parseAmount } from "@/lib/debts/add-form";
+import { todayIso } from "@/lib/debts/dates";
 import { useCreateDebtEventMutation } from "@/lib/queries/debts";
 import { DebtFormField } from "./debt-form-field";
 import { DebtTransactionPicker } from "./debt-transaction-picker";
@@ -22,7 +23,8 @@ export interface PayInstallmentDialogProps {
 
 function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanPlanRow; currency: string; onDone: () => void }) {
   const mutation = useCreateDebtEventMutation();
-  const [date, setDate] = React.useState(row.dueDate);
+  // Una rata non ancora scaduta si segna con la data di oggi, non con una scadenza futura.
+  const [date, setDate] = React.useState(row.dueDate < todayIso() ? row.dueDate : todayIso());
   const [amount, setAmount] = React.useState(String(row.installment).replace(".", ","));
   const [transactionId, setTransactionId] = React.useState<string | null>(null);
   const [error, setError] = React.useState<string | null>(null);

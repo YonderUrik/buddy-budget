@@ -7,7 +7,7 @@
  * riallineare il residuo dopo sospensioni o rinegoziazioni c'è la correzione del residuo.
  */
 
-import { addMonthsClamped, buildSegmentSchedule, round2, type IsoDate, type ScheduleRow } from "./amortization";
+import { addMonthsClamped, buildSegmentSchedule, round2, solveInstallments, type IsoDate, type ScheduleRow } from "./amortization";
 
 export const DEBT_START_MODES = ["nuovo", "origine", "fotografia"] as const;
 export type DebtStartMode = (typeof DEBT_START_MODES)[number];
@@ -26,10 +26,25 @@ export interface DebtTerms {
   installment?: number | null;
 }
 
+/** Effetto di un'estinzione anticipata: stessa scadenza con rata più bassa, o stessa rata e fine anticipata. */
+export const EARLY_REPAYMENT_EFFECTS = ["reduce_installment", "reduce_duration"] as const;
+export type EarlyRepaymentEffect = (typeof EARLY_REPAYMENT_EFFECTS)[number];
+
 export type DebtPlanEvent =
   | { type: "payment"; installmentNumber: number; date: IsoDate; amount: number; transactionId?: string | null }
   | { type: "balance_correction"; date: IsoDate; amount: number }
-  | { type: "rate_change"; date: IsoDate; rate: number };
+  | { type: "rate_change"; date: IsoDate; rate: number }
+  | { type: "early_repayment"; date: IsoDate; amount: number; penalty: number; effect: EarlyRepaymentEffect };
+
+/** Estinzione anticipata applicata al piano, con il residuo che ne resta. */
+export interface AppliedEarlyRepayment {
+  date: IsoDate;
+  amount: number;
+  penalty: number;
+  effect: EarlyRepaymentEffect;
+  /** Residuo dopo l'estinzione (0 se chiude il debito). */
+  residualAfter: number;
+}
 
 export type InstallmentStatus = "pagata" | "da_pagare" | "scaduta" | "da_confermare";
 
@@ -59,6 +74,10 @@ export interface LoanPlanTotals {
   /** Rate passate ricostruite ma non ancora confermate dall'utente. */
   unconfirmedCount: number;
   finished: boolean;
+  /** Penali pagate sulle estinzioni anticipate già applicate (scadenza ≤ oggi). */
+  penaltiesPaid: number;
+  /** Data in cui un'estinzione anticipata ha chiuso il debito (null se non è successo). */
+  closedOn: IsoDate | null;
 }
 
 export interface LoanPlan {
@@ -66,18 +85,26 @@ export interface LoanPlan {
   totals: LoanPlanTotals;
   /** Residuo nel tempo, dalla situazione iniziale all'ultima rata (per il grafico). */
   residualSeries: { date: IsoDate; residual: number }[];
+  /** Estinzioni anticipate applicate, in ordine di data. */
+  earlyRepayments: AppliedEarlyRepayment[];
   /** Eventi non applicabili (rata inesistente o già pagata, evento oltre la fine del piano). */
   warnings: string[];
 }
 
-type AnchorEvent = Extract<DebtPlanEvent, { type: "balance_correction" | "rate_change" }>;
+type AnchorEvent = Extract<DebtPlanEvent, { type: "balance_correction" | "rate_change" | "early_repayment" }>;
 
 function isAnchorEvent(event: DebtPlanEvent): event is AnchorEvent {
   return event.type !== "payment";
 }
 
-/** Righe del piano teorico (senza stato) applicando in ordine di data i cambi di tasso e le correzioni. */
-function buildTheoreticalRows(terms: DebtTerms, anchors: AnchorEvent[], warnings: string[]): ScheduleRow[] {
+interface TheoreticalPlan {
+  rows: ScheduleRow[];
+  closedOn: IsoDate | null;
+  repayments: AppliedEarlyRepayment[];
+}
+
+/** Righe del piano teorico (senza stato) applicando in ordine di data i cambi di tasso, le correzioni e le estinzioni. */
+function buildTheoreticalRows(terms: DebtTerms, anchors: AnchorEvent[], warnings: string[]): TheoreticalPlan {
   const anchorDay = Number(terms.firstInstallmentDate.slice(8, 10));
   let rows = buildSegmentSchedule({
     firstDueDate: terms.firstInstallmentDate,
@@ -87,6 +114,8 @@ function buildTheoreticalRows(terms: DebtTerms, anchors: AnchorEvent[], warnings
     installment: terms.installment ?? undefined,
   });
   let currentRate = terms.annualRate;
+  let closedOn: IsoDate | null = null;
+  const repayments: AppliedEarlyRepayment[] = [];
   for (const event of anchors) {
     const frozen = rows.filter((r) => r.dueDate <= event.date);
     const remaining = rows.length - frozen.length;
@@ -96,6 +125,38 @@ function buildTheoreticalRows(terms: DebtTerms, anchors: AnchorEvent[], warnings
     }
     const residualBefore = frozen.length > 0 ? frozen[frozen.length - 1].residual : terms.principal;
     if (event.type === "rate_change") currentRate = event.rate;
+    if (event.type === "early_repayment") {
+      const principal = round2(residualBefore - event.amount);
+      if (principal <= 0) {
+        repayments.push({ date: event.date, amount: round2(residualBefore), penalty: event.penalty, effect: event.effect, residualAfter: 0 });
+        closedOn = event.date;
+        rows = frozen;
+        break;
+      }
+      const current = rows[frozen.length].installment;
+      let installments = remaining;
+      let installment: number | undefined;
+      if (event.effect === "reduce_duration") {
+        installment = current;
+        try {
+          installments = Math.min(remaining, solveInstallments({ principal, annualRate: currentRate, installment: current }));
+        } catch {
+          installment = undefined;
+        }
+      }
+      const tail = buildSegmentSchedule({
+        firstDueDate: rows[frozen.length].dueDate,
+        anchorDay,
+        principal,
+        annualRate: currentRate,
+        installments,
+        installment,
+        firstNumber: frozen.length + 1,
+      });
+      rows = [...frozen, ...tail];
+      repayments.push({ date: event.date, amount: event.amount, penalty: event.penalty, effect: event.effect, residualAfter: principal });
+      continue;
+    }
     const principal = event.type === "balance_correction" ? event.amount : residualBefore;
     if (!(principal > 0)) {
       warnings.push(`Correzione del ${event.date} con residuo non positivo: ignorata`);
@@ -111,14 +172,14 @@ function buildTheoreticalRows(terms: DebtTerms, anchors: AnchorEvent[], warnings
     });
     rows = [...frozen, ...tail];
   }
-  return rows;
+  return { rows, closedOn, repayments };
 }
 
 /** Costruisce il piano del finanziamento a `today` da condizioni ed eventi. */
 export function buildLoanPlan(terms: DebtTerms, events: DebtPlanEvent[], today: IsoDate): LoanPlan {
   const warnings: string[] = [];
   const anchors = events.filter(isAnchorEvent).sort((a, b) => a.date.localeCompare(b.date));
-  const theoretical = buildTheoreticalRows(terms, anchors, warnings);
+  const { rows: theoretical, closedOn, repayments } = buildTheoreticalRows(terms, anchors, warnings);
 
   const payments = new Map<number, Extract<DebtPlanEvent, { type: "payment" }>>();
   for (const event of events) {
@@ -148,13 +209,25 @@ export function buildLoanPlan(terms: DebtTerms, events: DebtPlanEvent[], today: 
 
   const past = rows.filter((r) => r.dueDate <= today);
   const future = rows.filter((r) => r.dueDate > today);
-  const settledResidual = past.length > 0 ? past[past.length - 1].residual : terms.principal;
+  const closed = closedOn !== null && closedOn <= today;
+  // Residuo di oggi: l'ultima rata scaduta o l'ultima estinzione già avvenuta, quella più recente (a pari data conta l'estinzione).
+  const lastPast = past.at(-1);
+  const lastRepayment = repayments.filter((r) => r.date <= today).at(-1);
+  const settledResidual = closed
+    ? 0
+    : lastRepayment && (!lastPast || lastRepayment.date >= lastPast.dueDate)
+      ? lastRepayment.residualAfter
+      : (lastPast?.residual ?? terms.principal);
   const nextUnsettled = rows.find((r) => r.status === "da_pagare" || r.status === "scaduta");
   const sum = (list: LoanPlanRow[], pick: (r: LoanPlanRow) => number) => round2(list.reduce((s, r) => s + pick(r), 0));
 
-  const first = rows[0];
-  const startBefore = addMonthsClamped(first.dueDate, -1, Number(terms.firstInstallmentDate.slice(8, 10)));
-  const residualSeries = [{ date: startBefore, residual: round2(terms.principal) }, ...rows.map((r) => ({ date: r.dueDate, residual: r.residual }))];
+  const anchorDay = Number(terms.firstInstallmentDate.slice(8, 10));
+  const startDate = rows.length > 0 ? addMonthsClamped(rows[0].dueDate, -1, anchorDay) : (closedOn as IsoDate);
+  const residualSeries = [
+    { date: startDate, residual: round2(terms.principal) },
+    ...rows.map((r) => ({ date: r.dueDate, residual: r.residual })),
+    ...repayments.map((r) => ({ date: r.date, residual: r.residualAfter })),
+  ].sort((x, y) => x.date.localeCompare(y.date));
 
   return {
     rows,
@@ -165,13 +238,16 @@ export function buildLoanPlan(terms: DebtTerms, events: DebtPlanEvent[], today: 
       interestRemaining: sum(future, (r) => r.interest),
       paidTotal: round2([...payments.values()].reduce((s, p) => s + p.amount, 0)),
       remainingInstallments: future.length,
-      endDate: rows[rows.length - 1].dueDate,
+      endDate: closedOn ?? rows[rows.length - 1].dueDate,
       nextDueDate: nextUnsettled?.dueDate ?? null,
       overdueCount: rows.filter((r) => r.status === "scaduta").length,
       unconfirmedCount: rows.filter((r) => r.status === "da_confermare").length,
       finished: future.length === 0,
+      penaltiesPaid: round2(repayments.filter((r) => r.date <= today).reduce((s, r) => s + r.penalty, 0)),
+      closedOn,
     },
     residualSeries,
+    earlyRepayments: repayments,
     warnings,
   };
 }

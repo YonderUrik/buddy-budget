@@ -22,7 +22,7 @@ export interface ProductEvents {
   investment_operation_added: { type: InvestmentTransactionType };
   investment_plan_created: undefined;
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" };
-  debt_event_added: { type: "payment" | "rate_change" | "balance_correction" };
+  debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" };
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;

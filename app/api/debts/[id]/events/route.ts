@@ -9,7 +9,7 @@ import { createDebtEventSchema } from "@/lib/validation/debts";
 
 type Params = { params: Promise<{ id: string }> };
 
-/** Registra un evento (rata pagata, cambio tasso, correzione del residuo) su un debito dell'utente. */
+/** Registra un evento (rata pagata, cambio tasso, correzione del residuo, estinzione anticipata) su un debito dell'utente. */
 async function handlePost(request: NextRequest, { params }: Params) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
@@ -42,6 +42,8 @@ async function handlePost(request: NextRequest, { params }: Params) {
       amount: "amount" in input ? input.amount.toFixed(2) : null,
       installmentNumber: input.type === "payment" ? input.installmentNumber : null,
       rate: input.type === "rate_change" ? input.rate.toFixed(4) : null,
+      penalty: input.type === "early_repayment" ? input.penalty.toFixed(2) : null,
+      effect: input.type === "early_repayment" ? input.effect : null,
       transactionId: input.type === "payment" ? (input.transactionId ?? null) : null,
       note: input.note ?? null,
     })

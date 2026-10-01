@@ -3,6 +3,7 @@
 /** Dettaglio di un finanziamento: cifre, avviso sulle rate da confermare, piano rata per rata, registro eventi e azioni. */
 
 import * as React from "react";
+import { PercentIcon, PiggyBankIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -25,6 +26,7 @@ import { DebtEventsList } from "./debt-events-list";
 import { DebtFacts } from "./debt-facts";
 import { DebtPendingBanner } from "./debt-pending-banner";
 import { DebtPlanTable } from "./debt-plan-table";
+import { EarlyRepaymentDialog } from "./early-repayment-dialog";
 import { PayInstallmentDialog } from "./pay-installment-dialog";
 import { START_MODE_LABELS } from "./debt-status";
 
@@ -39,6 +41,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
   const today = todayIso();
   const [payRow, setPayRow] = React.useState<LoanPlanRow | null>(null);
   const [eventKind, setEventKind] = React.useState<DebtEventDialogKind | null>(null);
+  const [earlyOpen, setEarlyOpen] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const bulk = useBulkPayDebtMutation();
   const deleteEvent = useDeleteDebtEventMutation();
@@ -52,13 +55,20 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           <p className="text-xs text-muted-foreground">{START_MODE_LABELS[debt.startMode]}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button size="sm" disabled={debt.plan.totals.finished} onClick={() => setEarlyOpen(true)}>
+            <PiggyBankIcon aria-hidden="true" />
+            Estinzione anticipata
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("rate_change")}>
+            <PercentIcon aria-hidden="true" />
             Cambio tasso
           </Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("balance_correction")}>
+            <SlidersHorizontalIcon aria-hidden="true" />
             Correggi residuo
           </Button>
           <Button size="sm" variant="ghost" className="text-neg" onClick={() => setConfirmDelete(true)}>
+            <Trash2Icon aria-hidden="true" />
             Elimina
           </Button>
         </div>
@@ -90,6 +100,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
       </CardContent>
 
       <PayInstallmentDialog debtId={debt.id} row={payRow} currency={currency} onOpenChange={(open) => !open && setPayRow(null)} />
+      <EarlyRepaymentDialog debt={debt} currency={currency} open={earlyOpen} onOpenChange={setEarlyOpen} />
       <DebtEventDialog debtId={debt.id} kind={eventKind} onOpenChange={(open) => !open && setEventKind(null)} />
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>

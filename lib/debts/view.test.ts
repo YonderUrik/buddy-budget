@@ -34,6 +34,8 @@ function event(overrides: Partial<DebtEvent>): DebtEvent {
     amount: "1000.00",
     installmentNumber: 1,
     rate: null,
+    penalty: null,
+    effect: null,
     transactionId: null,
     note: null,
     createdAt: now,

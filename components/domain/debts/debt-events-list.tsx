@@ -16,6 +16,11 @@ export interface DebtEventsListProps {
 export function describeEvent(event: DebtEventView, currency: string): string {
   if (event.type === "payment") return `Rata ${event.installmentNumber} pagata · ${formatCurrency(event.amount ?? 0, currency)}`;
   if (event.type === "rate_change") return `Tasso portato al ${String(event.rate).replace(".", ",")}%`;
+  if (event.type === "early_repayment") {
+    const how = event.effect === "reduce_installment" ? "rata ridotta" : "durata ridotta";
+    const penalty = event.penalty ? ` · penale ${formatCurrency(event.penalty, currency)}` : "";
+    return `Estinzione anticipata di ${formatCurrency(event.amount ?? 0, currency)} · ${how}${penalty}`;
+  }
   return `Residuo corretto a ${formatCurrency(event.amount ?? 0, currency)}`;
 }
 

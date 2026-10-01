@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DEBT_START_MODES } from "@/lib/db/schema/debts";
+import { DEBT_EARLY_EFFECTS, DEBT_START_MODES } from "@/lib/db/schema/debts";
 
 /** Lunghezza massima del nome di un debito e delle etichette delle spese. */
 export const DEBT_NAME_MAX_LENGTH = 80;
@@ -64,5 +64,13 @@ export const createDebtEventSchema = z.discriminatedUnion("type", [
   }),
   z.object({ type: z.literal("rate_change"), date: dateKey, rate: annualRate, note }),
   z.object({ type: z.literal("balance_correction"), date: dateKey, amount: positiveMoney, note }),
+  z.object({
+    type: z.literal("early_repayment"),
+    date: dateKey,
+    amount: positiveMoney,
+    penalty: money.default(0),
+    effect: z.enum(DEBT_EARLY_EFFECTS),
+    note,
+  }),
 ]);
 export type CreateDebtEventInput = z.input<typeof createDebtEventSchema>;

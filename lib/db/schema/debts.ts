@@ -11,9 +11,16 @@ export type DebtKind = (typeof DEBT_KINDS)[number];
 export const DEBT_START_MODES = ["nuovo", "origine", "fotografia"] as const;
 export type DebtStartMode = (typeof DEBT_START_MODES)[number];
 
-/** `rate_change`: nuovo tasso annuo dalla data. `balance_correction`: residuo reale alla data. `payment`: rata pagata. */
-export const DEBT_EVENT_TYPES = ["payment", "rate_change", "balance_correction"] as const;
+/**
+ * `rate_change`: nuovo tasso annuo dalla data. `balance_correction`: residuo reale alla data. `payment`: rata pagata.
+ * `early_repayment`: estinzione anticipata (importo, penale, effetto sul piano).
+ */
+export const DEBT_EVENT_TYPES = ["payment", "rate_change", "balance_correction", "early_repayment"] as const;
 export type DebtEventType = (typeof DEBT_EVENT_TYPES)[number];
+
+/** Effetto di un'estinzione anticipata: rata più bassa a parità di scadenza, o stessa rata e fine anticipata. */
+export const DEBT_EARLY_EFFECTS = ["reduce_installment", "reduce_duration"] as const;
+export type DebtEarlyEffect = (typeof DEBT_EARLY_EFFECTS)[number];
 
 /** Spesa accessoria di un finanziamento (istruttoria, assicurazione, incasso rata), decisa dall'utente. */
 export interface DebtCost {
@@ -64,11 +71,14 @@ export const debtEvents = pgTable(
       .references(() => authUser.id, { onDelete: "cascade" }),
     type: text("type").$type<DebtEventType>().notNull(),
     date: date("date").notNull(),
-    // Importo reale pagato (payment) o residuo reale (balance_correction).
+    // Importo reale pagato (payment), residuo reale (balance_correction) o somma estinta (early_repayment).
     amount: numeric("amount", { precision: 14, scale: 2 }),
     installmentNumber: integer("installment_number"),
     // Nuovo tasso annuo in percentuale (rate_change).
     rate: numeric("rate", { precision: 7, scale: 4 }),
+    // Penale pagata sull'estinzione anticipata, in euro.
+    penalty: numeric("penalty", { precision: 12, scale: 2 }),
+    effect: text("effect").$type<DebtEarlyEffect>(),
     // Transazione collegata a mano dall'utente (facoltativa): nessun automatismo.
     transactionId: uuid("transaction_id").references(() => transactions.id, { onDelete: "set null" }),
     note: text("note"),

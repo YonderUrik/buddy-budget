@@ -188,4 +188,105 @@ describe("route debiti", () => {
     mockedGetSession.mockResolvedValue({ user: { id: otherId } } as never);
     expect((await postBulk(request("/x", "POST", { upToInstallment: 4 }), idParams(id))).status).toBe(404);
   });
+
+  describe("linea di credito", () => {
+    const line = {
+      kind: "credit_line",
+      name: "Lombard",
+      creditLimit: 50000,
+      initialUsed: 10000,
+      indexRate: 3,
+      spread: 2,
+      indexLabel: "Euribor 3M",
+      openDate: "2026-01-01",
+      interestFrequency: "monthly",
+      dayCount: "365",
+      capitalizeInterest: false,
+      alertThreshold: { type: "percent", value: 80 },
+    };
+    type LineView = { creditLines: { id: string; plan: { used: number; interestCharged: number }; alertTriggered: boolean; events: { id: string }[] }[]; debts: unknown[]; overview: { totalDebt: number; creditUsed: number; creditAlerts: unknown[] } };
+    const readView = async () => (await (await GET(request("/api/debts", "GET"))).json()) as LineView;
+
+    it("crea la linea e la mostra a parte, con l'utilizzato nel debito totale", async () => {
+      const id = await createDebt(line);
+      const view = await readView();
+      expect(view.debts).toHaveLength(0);
+      expect(view.creditLines).toHaveLength(1);
+      expect(view.creditLines[0]).toMatchObject({ id, alertTriggered: false });
+      expect(view.creditLines[0].plan.used).toBe(10000);
+      expect(view.overview).toMatchObject({ totalDebt: 10000, creditUsed: 10000 });
+    });
+
+    it("rifiuta dati non validi: utilizzo oltre il fido, apertura nel futuro, spread negativo", async () => {
+      const post = (body: object) => POST(request("/api/debts", "POST", body));
+      expect((await post({ ...line, initialUsed: 60000 })).status).toBe(400);
+      expect((await post({ ...line, openDate: "2999-01-01" })).status).toBe(400);
+      expect((await post({ ...line, spread: -1 })).status).toBe(400);
+      expect((await post({ ...line, interestFrequency: "weekly" })).status).toBe(400);
+    });
+
+    it("utilizzi e rimborsi cambiano il saldo, un rimborso oltre il saldo è rifiutato, la soglia scatta", async () => {
+      const id = await createDebt(line);
+      const draw = await postEvent(request("/x", "POST", { type: "draw", date: "2026-02-10", amount: 32000 }), idParams(id));
+      expect(draw.status).toBe(201);
+      let view = await readView();
+      expect(view.creditLines[0].plan.used).toBe(42000);
+      expect(view.creditLines[0].alertTriggered).toBe(true);
+      expect(view.overview.creditAlerts).toHaveLength(1);
+
+      expect((await postEvent(request("/x", "POST", { type: "repay", date: "2026-02-11", amount: 50000 }), idParams(id))).status).toBe(400);
+      expect((await postEvent(request("/x", "POST", { type: "repay", date: "2026-02-11", amount: 12000 }), idParams(id))).status).toBe(201);
+      view = await readView();
+      expect(view.creditLines[0].plan.used).toBe(30000);
+      expect(view.creditLines[0].alertTriggered).toBe(false);
+    });
+
+    it("rifiuta eventi prima dell'apertura, nel futuro o di un altro tipo di debito", async () => {
+      const id = await createDebt(line);
+      const post = (body: object) => postEvent(request("/x", "POST", body), idParams(id));
+      expect((await post({ type: "draw", date: "2025-12-31", amount: 100 })).status).toBe(400);
+      expect((await post({ type: "draw", date: "2999-01-01", amount: 100 })).status).toBe(400);
+      expect((await post({ type: "payment", installmentNumber: 1, date: "2026-02-01", amount: 100 })).status).toBe(400);
+      expect((await post({ type: "early_repayment", date: "2026-02-01", amount: 100, penalty: 0, effect: "reduce_duration" })).status).toBe(400);
+
+      const loanId = await createDebt();
+      expect((await postEvent(request("/x", "POST", { type: "draw", date: "2026-03-01", amount: 100 }), idParams(loanId))).status).toBe(400);
+      expect((await postBulk(request("/x", "POST", { upToInstallment: 1 }), idParams(id))).status).toBe(400);
+    });
+
+    it("registra interessi addebitati, cambio indice e correzione del saldo, e li toglie eliminando l'evento", async () => {
+      const id = await createDebt(line);
+      await postEvent(request("/x", "POST", { type: "interest_charged", date: "2026-02-03", amount: 40 }), idParams(id));
+      await postEvent(request("/x", "POST", { type: "rate_change", date: "2026-02-10", rate: 3.5 }), idParams(id));
+      const corrected = await postEvent(request("/x", "POST", { type: "balance_correction", date: "2026-02-15", amount: 0 }), idParams(id));
+      expect(corrected.status).toBe(201);
+      let view = await readView();
+      expect(view.creditLines[0].plan.used).toBe(0);
+      expect(view.creditLines[0].events).toHaveLength(3);
+      expect(view.creditLines[0].plan.interestCharged).toBeGreaterThan(0);
+
+      const created = view.creditLines[0].events.find(Boolean)!;
+      expect((await deleteEvent(request("/x", "DELETE"), eventParams(id, created.id))).status).toBe(204);
+      view = await readView();
+      expect(view.creditLines[0].events).toHaveLength(2);
+    });
+
+    it("modifica fido, spread, regole e soglia, e toglie la soglia con null; un finanziamento rifiuta queste impostazioni", async () => {
+      const id = await createDebt(line);
+      const res = await patchDebt(request("/x", "PATCH", { creditLimit: 20000, spread: 1.5, interestFrequency: "quarterly", capitalizeInterest: true, alertThreshold: null }), idParams(id));
+      expect(res.status).toBe(200);
+      const view = (await readView()) as unknown as { creditLines: { creditLimit: number; spread: number; interestFrequency: string; capitalizeInterest: boolean; alertThreshold: unknown }[] };
+      expect(view.creditLines[0]).toMatchObject({ creditLimit: 20000, spread: 1.5, interestFrequency: "quarterly", capitalizeInterest: true, alertThreshold: null });
+
+      const loanId = await createDebt();
+      expect((await patchDebt(request("/x", "PATCH", { creditLimit: 1000 }), idParams(loanId))).status).toBe(400);
+    });
+
+    it("non permette di toccare la linea di un altro utente", async () => {
+      const id = await createDebt(line);
+      mockedGetSession.mockResolvedValue({ user: { id: await createUser() } } as never);
+      expect((await postEvent(request("/x", "POST", { type: "draw", date: "2026-02-01", amount: 100 }), idParams(id))).status).toBe(404);
+      expect((await patchDebt(request("/x", "PATCH", { creditLimit: 1 }), idParams(id))).status).toBe(404);
+    });
+  });
 });

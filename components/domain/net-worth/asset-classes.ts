@@ -4,6 +4,7 @@
 export const ASSET_CLASS_COLORS: Record<string, string> = {
   liquidita: "var(--swatch-teal)",
   investimenti: "var(--primary)",
+  debiti: "var(--neg)",
 };
 export const FALLBACK_ASSET_CLASS_COLOR = "var(--swatch-slate)";
 
@@ -11,10 +12,11 @@ export const FALLBACK_ASSET_CLASS_COLOR = "var(--swatch-slate)";
 export const ASSET_CLASS_LABELS: Record<string, string> = {
   liquidita: "Liquidità",
   investimenti: "Investimenti",
+  debiti: "Debiti",
 };
 
 /** Ordine di impilamento nel grafico, dal basso: la liquidità fa da base. */
-export const ASSET_CLASS_ORDER = ["liquidita", "investimenti"];
+export const ASSET_CLASS_ORDER = ["liquidita", "investimenti", "debiti"];
 
 export function assetClassColor(key: string): string {
   return ASSET_CLASS_COLORS[key] ?? FALLBACK_ASSET_CLASS_COLOR;

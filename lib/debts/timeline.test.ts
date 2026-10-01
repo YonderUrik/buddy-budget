@@ -7,7 +7,7 @@ const now = new Date("2026-09-30T10:00:00Z");
 function debt(overrides: Partial<Debt>): Debt {
   return {
     id: "d1", userId: "u", kind: "loan", name: "Prestito", startMode: "fotografia", principal: "5000.00", annualRate: "5.0000",
-    installments: 12, firstInstallmentDate: "2026-10-05", installment: null, anchorDate: "2026-09-30", costs: [], createdAt: now, updatedAt: now,
+    installments: 12, firstInstallmentDate: "2026-10-05", installment: null, anchorDate: "2026-09-30", costs: [], creditLimit: null, spread: null, indexLabel: null, interestFrequency: null, dayCount: null, capitalizeInterest: null, alertThresholdType: null, alertThresholdValue: null, createdAt: now, updatedAt: now,
     ...overrides,
   };
 }

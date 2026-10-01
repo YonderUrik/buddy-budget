@@ -5,6 +5,9 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { authUser } from "@/lib/db/schema/auth";
 import { fxRates, instrumentPrices, userInstrumentPrices, type Instrument } from "@/lib/db/schema/investments";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
+import { loadUserDebts } from "@/lib/debts/data";
+import { buildDebtsView } from "@/lib/debts/view";
+import { buildDebtHistoryRows } from "@/lib/net-worth/debt-history";
 import { loadUserTransactions } from "@/lib/investments/data";
 import { shiftDateKey, toCalcInput, todayKey } from "@/lib/investments/operations";
 import { loadTitleList, type TitleListItem } from "@/lib/investments/titles-list";
@@ -120,12 +123,19 @@ export async function loadSidebarSummary(userId: string): Promise<SidebarSummary
     });
   }
 
-  const hasAnyAccount = liquid !== 0 || portfolio !== null;
+  // I debiti non sono negli snapshot: oggi vengono dalla vista, un mese fa dallo storico ricalcolato dai piani.
+  const { debts: debtRows, events: debtEvents } = await loadUserDebts(userId);
+  const debtsView = buildDebtsView(debtRows, debtEvents, today);
+  const debtTotal = debtsView.overview.totalDebt;
+  const pastDebtDate = shiftDateKey(today, -NET_WORTH_COMPARE_DAYS);
+  const pastDebt = -Number(buildDebtHistoryRows(debtsView, today, pastDebtDate).find((r) => r.date === pastDebtDate)?.amount ?? 0);
+
+  const hasAnyAccount = liquid !== 0 || portfolio !== null || debtTotal > 0;
   let netWorth: SidebarNetWorth | null = null;
   if (hasAnyAccount) {
-    const total = liquid + (portfolio?.totalValue ?? 0);
+    const total = liquid + (portfolio?.totalValue ?? 0) - debtTotal;
     const past = await pastNetWorth(userId, today);
-    netWorth = { total, monthChange: past === null ? null : total - past };
+    netWorth = { total, monthChange: past === null ? null : total - (past - pastDebt) };
   }
 
   return {

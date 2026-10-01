@@ -22,14 +22,15 @@ export function DebtsSummaryCard({ overview, currency }: DebtsSummaryCardProps) 
   const stats = [
     { label: "Rata al mese", value: money(overview.monthlyPayment) },
     { label: "TAEG medio", value: overview.weightedApr !== null ? percent(overview.weightedApr) : "—" },
-    { label: "Interessi già pagati", value: money(overview.interestToDate) },
+    { label: "Interessi già pagati", value: money(overview.interestToDate + overview.creditInterestToDate) },
+    ...(overview.creditLineCount > 0 ? [{ label: "Interessi linee al mese", value: money(overview.creditMonthlyCost) }] : []),
   ];
   return (
     <Card>
       <CardContent className="flex flex-col gap-5">
         <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Debito residuo</p>
-          <p className="font-heading text-4xl font-medium tabular-nums text-foreground">{money(overview.totalResidual)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Debito totale</p>
+          <p className="font-heading text-4xl font-medium tabular-nums text-foreground">{money(overview.totalDebt)}</p>
           <p className="text-sm text-muted-foreground">{summarySentence(overview, formatMonthYear)}</p>
         </div>
 
@@ -46,7 +47,7 @@ export function DebtsSummaryCard({ overview, currency }: DebtsSummaryCardProps) 
           </div>
         ) : null}
 
-        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <dl className={`grid grid-cols-1 gap-3 ${stats.length > 3 ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}>
           {stats.map((stat) => (
             <div key={stat.label} className="rounded-lg bg-muted/50 px-3 py-2.5">
               <dt className="text-xs text-muted-foreground">{stat.label}</dt>

@@ -302,6 +302,14 @@ async function loadUserData(userId: string) {
         installment: debts.installment,
         anchorDate: debts.anchorDate,
         costs: debts.costs,
+        creditLimit: debts.creditLimit,
+        spread: debts.spread,
+        indexLabel: debts.indexLabel,
+        interestFrequency: debts.interestFrequency,
+        dayCount: debts.dayCount,
+        capitalizeInterest: debts.capitalizeInterest,
+        alertThresholdType: debts.alertThresholdType,
+        alertThresholdValue: debts.alertThresholdValue,
         createdAt: debts.createdAt,
       })
       .from(debts)
@@ -449,6 +457,13 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Rate", value: (d) => d.installments },
       { header: "Prima scadenza", value: (d) => d.firstInstallmentDate },
       { header: "Rata dichiarata", value: (d) => decimal(d.installment) },
+      { header: "Fido", value: (d) => decimal(d.creditLimit) },
+      { header: "Spread (%)", value: (d) => decimal(d.spread) },
+      { header: "Indice", value: (d) => d.indexLabel },
+      { header: "Addebito interessi", value: (d) => d.interestFrequency },
+      { header: "Base giorni", value: (d) => d.dayCount },
+      { header: "Interessi capitalizzati", value: (d) => d.capitalizeInterest },
+      { header: "Soglia di allerta", value: (d) => (d.alertThresholdType ? `${decimal(d.alertThresholdValue)} ${d.alertThresholdType === "percent" ? "%" : "importo"}` : null) },
     ]),
     "debiti-eventi.csv": toCsv(data.debtEvents, [
       { header: "Debito", value: (e) => debtName.get(e.debtId) },

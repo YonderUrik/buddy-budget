@@ -11,7 +11,7 @@ pnpm build        # genera out/
 
 ## Dove si cambia cosa
 
-- `content/features.ts`: **unico elenco delle funzioni** (catalogo, conteggi). Si aggiorna a ogni feature nuova o cambiata (regola in `CLAUDE.md`).
+- `content/catalog.generated.ts`: **copia generata** del catalogo condiviso `../lib/features/catalog.ts`, che è l'unico elenco delle funzioni (landing, pannello "In arrivo" del login, test della sidebar). Non si modifica a mano: si cambia il catalogo, poi `pnpm sync:features` e si committa. `pnpm check:features` (in CI) fallisce se le due copie divergono. Perché una copia: l'immagine Docker e Turbopack vedono solo `landing/`.
 - `content/site.ts`: titoli, passi del tour, storia, righe del confronto, fondatore.
 - `content/demo.ts`: dati finti mostrati nella finestra dell'app (nessun dato reale).
 - `components/`: sezioni e animazioni (GSAP + ScrollTrigger, scroll morbido con Lenis). Con `prefers-reduced-motion: reduce` la pagina resta statica.

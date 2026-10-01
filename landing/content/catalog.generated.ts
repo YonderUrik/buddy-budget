@@ -34,6 +34,7 @@ const f = (
 
 export const FEATURES: readonly Feature[] = [
   f("collegamento-alla-banca", "Conti", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live", "/conti"),
+  f("avviso-rinnovo-banca", "Conti", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
   f("conti-manuali", "Conti", "Conti manuali", "Per il contante o le banche che non si collegano. Si modificano a mano.", "live"),
   f("aggiornamento-automatico-e-manuale", "Conti", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
   f("conti-raggruppati-per-banca", "Conti", "Conti raggruppati per banca", "Con l'andamento della liquidità degli ultimi 30 giorni.", "live"),

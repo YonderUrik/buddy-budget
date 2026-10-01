@@ -17,6 +17,10 @@ export interface Institution {
 
 export interface BankConnectionStatus {
   accountId: string;
+  /** Connessione a cui appartiene il conto (più conti possono condividerla). */
+  connectionId: string;
+  /** Fine del consenso concesso alla banca (ISO), se nota. */
+  consentExpiresAt: string | null;
   /** Nome della banca a cui appartiene il conto (per raggruppare la lista). */
   institutionName: string;
   status: "pending" | "linked" | "expired" | "error";

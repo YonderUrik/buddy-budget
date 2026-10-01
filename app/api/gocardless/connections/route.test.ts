@@ -107,8 +107,10 @@ describe("GET/POST /api/gocardless/connections", () => {
     expect(body).toEqual([
       {
         accountId: account.id,
+        connectionId: connection.id,
         institutionName: "Banca Test",
         status: "expired",
+        consentExpiresAt: null,
         lastSyncedAt: null,
         eligible: true,
         nextEligibleAt: null,

@@ -11,7 +11,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
@@ -23,12 +23,37 @@ export type GoCardlessEndpoint =
   | "institutions.list"
   | "requisitions.create"
   | "requisitions.get"
+  | "requisitions.list"
   | "requisitions.delete"
+  | "agreements.list"
+  | "agreements.delete"
   | "accounts.details"
   | "accounts.balances"
   | "accounts.transactions";
 
-export const CRON_NAMES: readonly CronName[] = ["gocardless_sync", "net_worth_snapshot", "market_prices", "account_deletion"];
+export const CRON_NAMES: readonly CronName[] = [
+  "gocardless_sync",
+  "net_worth_snapshot",
+  "market_prices",
+  "account_deletion",
+  "gocardless_maintenance",
+];
+
+/** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
+export type CleanupMode = "dry-run" | "execute";
+/** Cosa ha deciso/fatto la pulizia: `*_candidate` solo in dry-run, `*_deleted` solo in execute. */
+export type CleanupAction =
+  | "abandoned_attempt"
+  | "orphan_connection"
+  | "expired_connection"
+  | "unknown_requisition"
+  | "unknown_agreement"
+  | "skipped_linked"
+  | "capped"
+  | "failed";
+/** Avvisi di consenso bancario (scadenza vicina o scaduto) per esito dell'invio email. */
+export type ConsentNoticeKind = "expiring" | "expired";
+export type ConsentNoticeOutcome = "sent" | "failed";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -53,6 +78,8 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
+  gcCleanup: Counter<"action" | "mode">;
+  consentNotices: Counter<"kind" | "outcome">;
 }
 
 function createState(): MetricsState {
@@ -116,6 +143,19 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}price_provider_requests_total`,
     help: "Tentativi sulle fonti di prezzi di mercato per fonte ed esito (success, empty, error, skipped...).",
     labelNames: ["provider", "outcome"],
+    registers: r,
+  });
+
+  state.gcCleanup = new Counter({
+    name: `${METRIC_PREFIX}gocardless_cleanup_total`,
+    help: "Requisition/agreement GoCardless trovate dalla pulizia per tipo di azione e modalità (dry-run o execute).",
+    labelNames: ["action", "mode"],
+    registers: r,
+  });
+  state.consentNotices = new Counter({
+    name: `${METRIC_PREFIX}gocardless_consent_notices_total`,
+    help: "Email di avviso sul consenso bancario (in scadenza o scaduto) per esito dell'invio.",
+    labelNames: ["kind", "outcome"],
     registers: r,
   });
 
@@ -267,4 +307,14 @@ export function recordAuthEvent(event: AuthEvent): void {
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */
 export function recordPriceProviderRequest(provider: ProviderId, outcome: ProviderOutcome): void {
   metrics().priceProvider.inc({ provider, outcome });
+}
+
+/** Registra `count` elementi su cui la pulizia GoCardless ha deciso (dry-run) o agito (execute) per tipo di azione. */
+export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode, count = 1): void {
+  if (count > 0) metrics().gcCleanup.inc({ action, mode }, count);
+}
+
+/** Registra l'invio di un avviso email sul consenso bancario. */
+export function recordConsentNotice(kind: ConsentNoticeKind, outcome: ConsentNoticeOutcome): void {
+  metrics().consentNotices.inc({ kind, outcome });
 }

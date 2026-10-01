@@ -78,6 +78,13 @@
       "when": 1790878445582,
       "tag": "0010_debiti_fase_3",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790887884131,
+      "tag": "0011_gocardless_avvisi_consenso",
+      "breakpoints": true
     }
   ]
 }

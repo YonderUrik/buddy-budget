@@ -26,8 +26,8 @@ async function fetchSuggestions(): Promise<SuggestionGroup[]> {
 }
 
 /** Gruppi di transazioni da categorizzare con le relative proposte da regole e storico. */
-export function useCategorizeSuggestionsQuery() {
-  return useQuery({ queryKey: SUGGESTIONS_QUERY_KEY, queryFn: fetchSuggestions });
+export function useCategorizeSuggestionsQuery({ enabled = true }: { enabled?: boolean } = {}) {
+  return useQuery({ queryKey: SUGGESTIONS_QUERY_KEY, queryFn: fetchSuggestions, enabled });
 }
 
 async function postApplyCategorization(
@@ -123,6 +123,7 @@ export function useApplyCategorizationMutation() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["attention"] });
     },
   });
 }

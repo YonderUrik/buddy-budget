@@ -3,7 +3,16 @@
 /** Pagina Conti: orchestra fetch, KPI, lista conti e form di creazione. Nessuna logica di business qui. */
 
 import * as React from "react";
-import { AccountsKpi, AccountsTrend, AccountRow, AddAccountForm, computeAccountsKpi, groupAccounts } from "@/components/domain/accounts";
+import {
+  AccountsKpi,
+  AccountsTrend,
+  AccountRow,
+  AddAccountForm,
+  RenewalBanner,
+  buildRenewalAlerts,
+  computeAccountsKpi,
+  groupAccounts,
+} from "@/components/domain/accounts";
 import { MOVEMENTS_ACCOUNT_PARAM } from "@/components/domain/movements";
 import { LoadError } from "@/components/domain/shared";
 import { Card } from "@/components/ui/card";
@@ -21,6 +30,8 @@ import { startOfDay } from "@/lib/calc/expenses";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
+import { computeConnectionHealth } from "@/lib/gocardless/connection-health";
+import { track } from "@/lib/analytics";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { isAccountSyncing } from "@/lib/sync-jobs/view";
 import { Plus } from "lucide-react";
@@ -40,11 +51,36 @@ export default function ContiPage() {
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [reconnectTrigger, setReconnectTrigger] = React.useState(0);
 
+  // Il badge "Riconnetti" compare quando il collegamento non funziona già (anche se il cron non l'ha ancora segnato);
+  // il banner anticipa di 7 giorni, quando il collegamento funziona ma sta per scadere.
   const reconnectAccountIds = new Set(
     (connectionStatuses ?? [])
-      .filter((status) => status.status === "expired" || status.status === "error")
+      .filter((status) => {
+        const { state } = computeConnectionHealth(status, today);
+        return state === "expired" || state === "error";
+      })
       .map((status) => status.accountId)
   );
+  const renewalAlerts = buildRenewalAlerts(connectionStatuses ?? [], today);
+
+  const openRenewDialog = React.useCallback((source: "banner" | "row" | "email" | "panoramica") => {
+    track("bank_renew_started", { source });
+    setReconnectTrigger((n) => n + 1);
+    setCreateDialogOpen(true);
+  }, []);
+
+  // I link dell'email (?rinnova=1) e del banner in Panoramica (?rinnova=panoramica) aprono subito il flusso di rinnovo (una volta sola).
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const origin = params.get("rinnova");
+    if (!origin) return;
+    params.delete("rinnova");
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    // Rimandato di un tick: aprire il dialog (setState) in modo sincrono dentro l'effetto causerebbe render a cascata.
+    const timer = window.setTimeout(() => openRenewDialog(origin === "panoramica" ? "panoramica" : "email"), 0);
+    return () => window.clearTimeout(timer);
+  }, [openRenewDialog]);
 
   const bankByAccountId = new Map((connectionStatuses ?? []).map((status) => [status.accountId, status.institutionName]));
   const accountGroups = groupAccounts(accounts ?? [], bankByAccountId);
@@ -92,6 +128,8 @@ export default function ContiPage() {
         </Dialog>
       </div>
 
+      <RenewalBanner alerts={renewalAlerts} onRenew={() => openRenewDialog("banner")} />
+
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4" aria-busy="true">
           <div className="h-24 animate-pulse rounded-xl bg-muted" />
@@ -134,10 +172,7 @@ export default function ContiPage() {
                     syncInfo={syncInfoByAccountId.get(account.id)}
                     syncing={isAccountSyncing(syncJobs ?? [], account.id)}
                     movementsHref={`/movimenti?${MOVEMENTS_ACCOUNT_PARAM}=${account.id}`}
-                    onReconnect={() => {
-                      setReconnectTrigger((n) => n + 1);
-                      setCreateDialogOpen(true);
-                    }}
+                    onReconnect={() => openRenewDialog("row")}
                   />
                 ))}
               </Card>

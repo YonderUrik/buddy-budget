@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { getAppUrl } from "@/lib/env";
 import { createRequisition } from "@/lib/gocardless/client";
+import { consentExpiryFrom } from "@/lib/gocardless/connection-health";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -17,8 +18,10 @@ async function handleGet(request: NextRequest) {
   const rows = await db
     .select({
       accountId: bankAccountLinks.accountId,
+      connectionId: bankConnections.id,
       institutionName: bankConnections.institutionName,
       status: bankConnections.status,
+      consentExpiresAt: bankConnections.consentExpiresAt,
       lastSyncedAt: bankAccountLinks.lastSyncedAt,
       syncTimestamps: bankAccountLinks.syncTimestamps,
     })
@@ -35,8 +38,10 @@ async function handleGet(request: NextRequest) {
       );
       return {
         accountId: row.accountId,
+        connectionId: row.connectionId,
         institutionName: row.institutionName,
         status: row.status,
+        consentExpiresAt: row.consentExpiresAt,
         lastSyncedAt: row.lastSyncedAt,
         eligible: eligibility.eligible,
         nextEligibleAt: eligibility.nextEligibleAt,
@@ -80,7 +85,7 @@ async function handlePost(request: NextRequest) {
       .update(bankConnections)
       .set({
         requisitionId: requisition.id,
-        consentExpiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        consentExpiresAt: consentExpiryFrom(new Date()),
       })
       .where(eq(bankConnections.id, connection.id));
 

@@ -6,8 +6,10 @@ import { getMetricsRegistry, resetMetricsForTests } from "@/lib/observability";
 import {
   GoCardlessError,
   getAccessToken,
+  deleteAgreement,
   getAccountBalances,
   listInstitutions,
+  listRequisitions,
   resetAccessTokenCacheForTests,
 } from "./client";
 
@@ -107,5 +109,35 @@ describe("gocardless client", () => {
     const text = await getMetricsRegistry().metrics();
     expect(text).toContain('buddybudget_gocardless_api_requests_total{endpoint="accounts.balances",status_class="5xx"} 1');
     expect(text).toContain('buddybudget_gocardless_api_requests_total{endpoint="token.new",status_class="2xx"} 1');
+  });
+
+  describe("elenchi e agreement", () => {
+    beforeEach(async () => {
+      await db.insert(gocardlessToken).values({
+        id: "singleton",
+        accessToken: "cached-token",
+        expiresAt: new Date(Date.now() + 3600_000),
+      });
+    });
+
+    it("listRequisitions segue la paginazione finché esiste una pagina successiva", async () => {
+      vi.mocked(fetch)
+        .mockResolvedValueOnce(new Response(JSON.stringify({ next: "https://x/next", results: [{ id: "r1" }] }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ next: null, results: [{ id: "r2" }] }), { status: 200 }));
+
+      const all = await listRequisitions();
+      expect(all.map((r) => r.id)).toEqual(["r1", "r2"]);
+      expect(vi.mocked(fetch).mock.calls[0][0]).toContain("/requisitions/?limit=100&offset=0");
+      expect(vi.mocked(fetch).mock.calls[1][0]).toContain("offset=100");
+    });
+
+    it("deleteAgreement tratta un 404 come già eliminato e rilancia gli altri errori", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 404 }));
+      await expect(deleteAgreement("ag-1")).resolves.toBeUndefined();
+      expect(vi.mocked(fetch).mock.calls[0][1]?.method).toBe("DELETE");
+
+      vi.mocked(fetch).mockResolvedValueOnce(new Response("{}", { status: 500 }));
+      await expect(deleteAgreement("ag-1")).rejects.toBeInstanceOf(GoCardlessError);
+    });
   });
 });

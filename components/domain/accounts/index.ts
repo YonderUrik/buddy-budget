@@ -22,3 +22,7 @@ export { AccountsTrend, buildTrendPoints } from "./accounts-trend";
 export type { AccountsTrendProps } from "./accounts-trend";
 export { groupAccounts, MANUAL_GROUP_KEY, UNKNOWN_BANK_LABEL } from "./accounts-grouping";
 export type { AccountGroup } from "./accounts-grouping";
+export { RenewalBanner } from "./renewal-banner";
+export type { RenewalBannerProps } from "./renewal-banner";
+export { buildRenewalAlerts, describeRenewalAlert } from "./renewal-alerts";
+export type { RenewalAlert, RenewalSource } from "./renewal-alerts";

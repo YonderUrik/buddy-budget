@@ -50,7 +50,7 @@ export interface EarlyRepaymentResult {
 
 /**
  * Estinzione parziale dopo `afterMonths` rate: confronta "stessa rata, durata più breve" e "stessa durata, rata più bassa".
- * La penale è una percentuale del capitale estinto (in Italia di norma fino all'1% sui mutui, 0 sulla prima casa).
+ * La penale è una percentuale del capitale estinto: per i mutui sull'abitazione la normativa non prevede compensi né penali, per altri finanziamenti dipende dal contratto.
  */
 export function simulateEarlyRepayment(params: { principal: number; annualRatePct: number; months: number; afterMonths: number; extra: number; penaltyPct: number }): EarlyRepaymentResult {
   const { principal, annualRatePct, months, afterMonths, extra, penaltyPct } = params;

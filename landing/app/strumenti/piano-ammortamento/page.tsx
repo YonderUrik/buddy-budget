@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
 import { AmmortamentoCalculator } from "@/components/tools/ammortamento-calculator";
-import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
+import { Sources } from "@/components/sources";
+import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
 const TITLE = "Calcolatore piano di ammortamento ed estinzione anticipata";
@@ -31,6 +32,7 @@ export default function Page() {
         <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale<span>Minusvalenze, scadenze e imposta su una plusvalenza.</span></Link>
         <Link href={CONTENT_PATHS.funzioneInvestimenti}>Investimenti con le tasse italiane<span>Come BuddyBudget calcola rendimento, zaino fiscale e bollo.</span></Link>
       </div>
+      <Sources items={[SOURCES.guidaMutuo, SOURCES.prestitoPersonale]} />
     </ContentPage>
   );
 }

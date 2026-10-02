@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
 import { ZainettoCalculator } from "@/components/tools/zainetto-calculator";
-import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
+import { Sources } from "@/components/sources";
+import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
 const TITLE = "Calcolatore zainetto fiscale: minusvalenze e imposta sulle plusvalenze";
@@ -28,7 +29,7 @@ export default function Page() {
       <ul>
         <li>Le minusvalenze si compensano con le plusvalenze della stessa categoria di redditi diversi.</li>
         <li>Una minusvalenza si può riportare fino al quarto anno successivo a quello in cui è stata realizzata: una perdita del 2023 si usa fino al 2027.</li>
-        <li>Si usano per prime le più vecchie, perché sono quelle che scadono prima.</li>
+        <li>Di norma si parte dalle più vecchie, perché sono quelle che scadono prima: il calcolatore segue questo criterio.</li>
         <li>Sull&apos;eccedenza si paga il 26% (12,5% per i titoli di Stato).</li>
       </ul>
       <p>Vuoi capire la logica con degli esempi? Leggi la <Link href={CONTENT_PATHS.guidaZainetto}>guida allo zainetto fiscale</Link>.</p>
@@ -37,6 +38,7 @@ export default function Page() {
         <Link href={CONTENT_PATHS.ammortamento}>Piano di ammortamento<span>Rata, interessi ed estinzione anticipata di un finanziamento.</span></Link>
         <Link href={CONTENT_PATHS.funzioneInvestimenti}>Investimenti con le tasse italiane<span>Come BuddyBudget calcola rendimento, zaino fiscale e bollo.</span></Link>
       </div>
+      <Sources items={[SOURCES.tuir68, SOURCES.circolare19e, SOURCES.quadroRt]} />
     </ContentPage>
   );
 }

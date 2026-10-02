@@ -56,3 +56,5 @@
 @media (max-width: 760px) { .tool, .fn-grid { grid-template-columns: 1fr; } .cp-cta { padding: 26px; } }
 .cp-cta { border: 1px solid var(--line); }
 @media (max-width: 600px) { .legal-bar nav { display: none; } }
+.sources ul { font-size: 15px; }
+.sources .note { font-size: 14px; }

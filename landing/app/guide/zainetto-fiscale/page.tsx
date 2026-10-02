@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
-import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
+import { Sources } from "@/components/sources";
+import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
 const TITLE = "Zainetto fiscale: cos'è e come recuperare le minusvalenze";
@@ -25,7 +26,7 @@ export default function Page() {
       <h2>Che cos&apos;è</h2>
       <p>Quando vendi azioni, ETF o altri strumenti e incassi più di quanto hai pagato, hai una plusvalenza e paghi di norma il 26%. Se incassi meno, hai una minusvalenza. Le minusvalenze possono compensare le plusvalenze della stessa categoria, riducendo l&apos;imposta. Quelle che non riesci a usare subito restano &ldquo;nello zainetto&rdquo;.</p>
       <h2>Per quanto tempo si porta</h2>
-      <p>Una minusvalenza si può riportare fino al quarto anno successivo a quello in cui è stata realizzata. Una perdita del 2023 si può usare fino al 2027; dal 2028 è scaduta. Se hai più perdite, si usano prima le più vecchie.</p>
+      <p>Una minusvalenza si può riportare fino al quarto anno successivo a quello in cui è stata realizzata. Una perdita del 2023 si può usare fino al 2027; dal 2028 è scaduta. Se hai più perdite, di norma si parte dalle più vecchie.</p>
       <h2>Un esempio</h2>
       <ul>
         <li>Nel 2023 vendi in perdita: minusvalenza di 1.500 €.</li>
@@ -46,6 +47,7 @@ export default function Page() {
       <p>In generale no: i redditi di capitale e i redditi diversi sono categorie distinte. Verifica il tuo caso.</p>
       <h3>Posso usare lo zainetto se non vendo più nulla?</h3>
       <p>Serve una plusvalenza futura da compensare, entro la scadenza dei quattro anni.</p>
+      <Sources items={[SOURCES.tuir68, SOURCES.circolare19e, SOURCES.quadroRt]} />
     </ContentPage>
   );
 }

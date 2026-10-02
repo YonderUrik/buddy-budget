@@ -15,7 +15,7 @@ export function AmmortamentoCalculator() {
   const [years, setYears] = useState("20");
   const [after, setAfter] = useState("5");
   const [extra, setExtra] = useState("20000");
-  const [penalty, setPenalty] = useState("1");
+  const [penalty, setPenalty] = useState("0");
   const months = Math.min(MAX_MONTHS, Math.max(1, Math.round(num(years) * 12)));
   const P = Math.max(0, num(principal));
   const valid = P > 0 && num(rate) >= 0;
@@ -51,7 +51,7 @@ export function AmmortamentoCalculator() {
         <div className="tool-card">
           <div className="field"><label htmlFor="e-a">Dopo quanti anni (dall&apos;inizio)</label><input id="e-a" inputMode="decimal" value={after} onChange={(e) => setAfter(e.target.value)} /></div>
           <div className="field"><label htmlFor="e-x">Capitale estinto (€)</label><input id="e-x" inputMode="decimal" value={extra} onChange={(e) => setExtra(e.target.value)} /></div>
-          <div className="field"><label htmlFor="e-p">Penale sul capitale estinto (%)</label><input id="e-p" inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} /></div>
+          <div className="field"><label htmlFor="e-p">Penale sul capitale estinto (%, di solito 0 per i mutui sull&apos;abitazione)</label><input id="e-p" inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} /></div>
         </div>
         <div className="tool-card" aria-live="polite">
           {early ? (

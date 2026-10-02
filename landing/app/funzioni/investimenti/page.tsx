@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
-import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
+import { Sources } from "@/components/sources";
+import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
 const TITLE = "Tracciare gli investimenti con le tasse italiane: ETF, azioni, BTP";
@@ -40,6 +41,7 @@ export default function Page() {
         <Link href={CONTENT_PATHS.zainetto}>Calcolatore zainetto fiscale<span>Minusvalenze, scadenze e imposta su una plusvalenza.</span></Link>
         <Link href={CONTENT_PATHS.guidaZainetto}>Guida allo zainetto fiscale<span>Cos&apos;è, come funzionano i 4 anni, con esempi.</span></Link>
       </div>
+      <Sources items={[SOURCES.tuir68, SOURCES.circolare19e]} />
     </ContentPage>
   );
 }

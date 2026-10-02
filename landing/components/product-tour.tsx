@@ -10,14 +10,14 @@ import { AppShot } from "./app-shot";
 import { TrackedSection } from "./tracked-section";
 
 /** Evento Umami per ciascun passo (stesso ordine di `TOUR_STEPS` e di `TOUR_SCREEN_IDS`). */
-const TOUR_EVENTS: readonly LandingEvents["tour_step_viewed"]["step"][] = ["collega", "capisci", "investi", "decidi"];
+const TOUR_EVENTS: readonly LandingEvents["tour_step_viewed"]["step"][] = ["collega", "capisci", "investi", "prepara", "decidi"];
 
 /** Quanta parte dell'altezza del passo deve superare il centro dello schermo per attivarlo. */
 const STEP_ACTIVATE_AT = "top 55%";
 const STEP_DEACTIVATE_AT = "bottom 55%";
 
 /**
- * Racconto in quattro passi: a sinistra il testo scorre, a destra la finestra dell'app resta ferma (sticky nativo)
+ * Racconto in cinque passi: a sinistra il testo scorre, a destra la finestra dell'app resta ferma (sticky nativo)
  * e cambia schermata col passo attivo.
  */
 export function ProductTour() {
@@ -53,7 +53,7 @@ export function ProductTour() {
       <div className="wrap">
         <div className="kicker">Il prodotto</div>
         <h2 className="t">Dal movimento grezzo alla decisione.</h2>
-        <p className="lede">Quattro passi, nello stesso quadro. Scorri e guarda l&apos;app.</p>
+        <p className="lede">Cinque passi, nello stesso quadro. Scorri e guarda l&apos;app.</p>
         <div className="tgrid" ref={root}>
           <div className="steps">
             {TOUR_STEPS.map((s, i) => (

@@ -96,6 +96,11 @@ export interface NetWorthSeriesPoint {
   isEstimated: boolean;
 }
 
+/** Copia della serie con il totale (`value`) senza una classe di asset: `byClass` resta intatto, per mostrarla comunque nel grafico. */
+export function excludeClassFromSeries(series: NetWorthSeriesPoint[], classKey: string): NetWorthSeriesPoint[] {
+  return series.map((point) => ({ ...point, value: point.value - (point.byClass[classKey] ?? 0) }));
+}
+
 /** Variazione tra primo e ultimo punto; `deltaPct` è un rapporto (0.5 = +50%). */
 export interface NetWorthChange {
   start: number;

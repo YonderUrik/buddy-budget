@@ -22,6 +22,7 @@ import {
   userInstrumentPrices,
 } from "@/lib/db/schema/investments";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { defaultCategoryRows } from "@/lib/categories/seed";
@@ -124,6 +125,9 @@ async function createUserWithData(): Promise<Fixture> {
     .returning();
   await db.insert(debtEvents).values({ debtId: debt.id, userId, type: "payment", date: "2026-10-05", amount: "219.36", installmentNumber: 1 });
 
+  const [pensionFund] = await db.insert(pensionFunds).values({ userId, name: `Fondo ${tag}`, adhesionDate: "2022-03-15" }).returning();
+  await db.insert(pensionSnapshots).values({ fundId: pensionFund.id, userId, date: "2026-09-30", netContributions: "1000", value: "1040" });
+
   await redis.set(`net-worth:investments:fingerprint:${userId}`, "x");
   await redisSyncJobStore.createJob({ userId, kind: "manual-sync", accounts: [queuedAccount(autoAccount.id, "Banca")] });
 
@@ -179,6 +183,7 @@ describe("gestione account (integrazione)", () => {
       investmentOperations: 2,
       investmentPlans: 1,
       debts: 1,
+      pensionFunds: 1,
       netWorthDays: 1,
     });
   });
@@ -201,6 +206,8 @@ describe("gestione account (integrazione)", () => {
         "investimenti-pac.csv",
         "investimenti-titoli-seguiti.csv",
         "patrimonio-netto.csv",
+        "previdenza-fondi.csv",
+        "previdenza-fotografie.csv",
         "regole-categorizzazione.csv",
         "transazioni.csv",
       ].sort()
@@ -220,6 +227,8 @@ describe("gestione account (integrazione)", () => {
     expect(parsed.debts).toHaveLength(1);
     expect(parsed.debts[0]).not.toHaveProperty("userId");
     expect(parsed.debtEvents).toHaveLength(1);
+    expect(parsed.pensionFunds).toHaveLength(1);
+    expect(parsed.pensionSnapshots).toHaveLength(1);
   });
 
   it("il reset cancella tutto, ricrea le categorie, riporta all'onboarding e revoca la banca", async () => {
@@ -237,6 +246,7 @@ describe("gestione account (integrazione)", () => {
       investmentOperations: 0,
       investmentPlans: 0,
       debts: 0,
+      pensionFunds: 0,
       netWorthDays: 0,
     });
     const [user] = await db.select().from(authUser).where(eq(authUser.id, f.userId));

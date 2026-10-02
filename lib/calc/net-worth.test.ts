@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildNetWorthSeries, computeNetWorthChange, deriveLiquidityHistory, getNetWorthPeriodRange, toDateKey, type NetWorthSeriesPoint } from "./net-worth";
+import { buildNetWorthSeries, computeNetWorthChange, excludeClassFromSeries, deriveLiquidityHistory, getNetWorthPeriodRange, toDateKey, type NetWorthSeriesPoint } from "./net-worth";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { Transaction } from "@/lib/db/schema/transactions";
 
@@ -225,6 +225,15 @@ describe("buildNetWorthSeries", () => {
   it("ignora gli snapshot datati oggi o dopo: l'ultimo punto è sempre il totale corrente", () => {
     const series = buildNetWorthSeries([snapshot("2026-09-13", "999.00")], { liquidita: 140 }, "1mese", TODAY);
     expect(series.map((p) => [p.date, p.value])).toEqual([["2026-09-13", 140]]);
+  });
+});
+
+describe("excludeClassFromSeries", () => {
+  it("toglie la classe dal totale senza toccare byClass", () => {
+    const point = { date: "2026-10-01", label: "1 ott", value: 1000, byClass: { liquidita: 600, previdenza: 400 }, isEstimated: false };
+    const [result] = excludeClassFromSeries([point], "previdenza");
+    expect(result.value).toBe(600);
+    expect(result.byClass).toEqual(point.byClass);
   });
 });
 

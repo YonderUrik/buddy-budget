@@ -13,6 +13,7 @@ describe("dataSummaryItems", () => {
       investmentOperations: 1,
       investmentPlans: 2,
       debts: 3,
+      pensionFunds: 1,
       netWorthDays: 1,
     });
     expect(items.map((i) => `${i.value} ${i.label}`)).toEqual([
@@ -25,6 +26,7 @@ describe("dataSummaryItems", () => {
       "1 operazione di investimento",
       "2 piani di accumulo",
       "3 debiti",
+      "1 fondo pensione",
       "1 giorno di storico del patrimonio",
     ]);
   });

@@ -74,3 +74,19 @@ describe("buildCompositionItems con i debiti", () => {
     expect(computeInvestedShare(items)).toBeNull();
   });
 });
+
+describe("buildCompositionItems con la previdenza", () => {
+  const accounts = [{ balance: "600" }] as never;
+
+  it("la conta nelle quote, tra investimenti e debiti", () => {
+    const items = buildCompositionItems(accounts, null, null, { value: 400, funds: 1 });
+    expect(items.find((i) => i.key === "previdenza")).toMatchObject({ amount: 400, share: 0.4, detail: "1 fondo" });
+    expect(items.find((i) => i.key === "liquidita")?.share).toBe(0.6);
+  });
+
+  it("se esclusa resta in elenco ma fuori dalle quote", () => {
+    const items = buildCompositionItems(accounts, null, null, { value: 400, funds: 2, excluded: true });
+    expect(items.find((i) => i.key === "previdenza")).toMatchObject({ amount: 400, share: 0, detail: "2 fondi · fuori dal totale" });
+    expect(items.find((i) => i.key === "liquidita")?.share).toBe(1);
+  });
+});

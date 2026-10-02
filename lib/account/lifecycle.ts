@@ -8,6 +8,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debts } from "@/lib/db/schema/debts";
+import { pensionFunds } from "@/lib/db/schema/pension";
 import {
   instruments,
   investmentPlans,
@@ -46,13 +47,14 @@ export interface UserDataSummary {
   investmentOperations: number;
   investmentPlans: number;
   debts: number;
+  pensionFunds: number;
   netWorthDays: number;
 }
 
 /** Conta i dati dell'utente tabella per tabella. */
 export async function countUserData(userId: string): Promise<UserDataSummary> {
   const countOf = async (query: Promise<{ value: number }[]>) => (await query)[0]?.value ?? 0;
-  const [acc, conn, tx, cat, rules, bud, ops, plans, debtCount, days] = await Promise.all([
+  const [acc, conn, tx, cat, rules, bud, ops, plans, debtCount, pensionCount, days] = await Promise.all([
     countOf(db.select({ value: count() }).from(accounts).where(eq(accounts.userId, userId))),
     countOf(db.select({ value: count() }).from(bankConnections).where(eq(bankConnections.userId, userId))),
     countOf(db.select({ value: count() }).from(transactions).where(eq(transactions.userId, userId))),
@@ -62,6 +64,7 @@ export async function countUserData(userId: string): Promise<UserDataSummary> {
     countOf(db.select({ value: count() }).from(investmentTransactions).where(eq(investmentTransactions.userId, userId))),
     countOf(db.select({ value: count() }).from(investmentPlans).where(eq(investmentPlans.userId, userId))),
     countOf(db.select({ value: count() }).from(debts).where(eq(debts.userId, userId))),
+    countOf(db.select({ value: count() }).from(pensionFunds).where(eq(pensionFunds.userId, userId))),
     countOf(db.select({ value: countDistinct(netWorthSnapshots.date) }).from(netWorthSnapshots).where(eq(netWorthSnapshots.userId, userId))),
   ]);
   return {
@@ -74,6 +77,7 @@ export async function countUserData(userId: string): Promise<UserDataSummary> {
     investmentOperations: ops,
     investmentPlans: plans,
     debts: debtCount,
+    pensionFunds: pensionCount,
     netWorthDays: days,
   };
 }
@@ -130,6 +134,8 @@ export async function clearUserRedisState(userId: string): Promise<void> {
 async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   // I debiti portano con sé i loro eventi (cascata); le transazioni collegate restano e si cancellano più sotto.
   await tx.delete(debts).where(eq(debts.userId, userId));
+  // I fondi di previdenza portano con sé le loro fotografie (cascata).
+  await tx.delete(pensionFunds).where(eq(pensionFunds.userId, userId));
   await tx.delete(investmentPlans).where(eq(investmentPlans.userId, userId));
   await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
   await tx.delete(investmentTaxCarryforwards).where(eq(investmentTaxCarryforwards.userId, userId));

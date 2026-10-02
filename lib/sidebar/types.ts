@@ -40,6 +40,8 @@ export interface SidebarNetWorth {
   total: number;
   /** Differenza rispetto a circa 30 giorni fa, null se lo storico non ci arriva. */
   monthChange: number | null;
+  /** Quota di previdenza dentro `total` e `monthChange` (null se non ci sono fondi): l'utente può escluderla dal totale. */
+  pension: { total: number; monthChange: number | null } | null;
 }
 
 export interface SidebarSummary {

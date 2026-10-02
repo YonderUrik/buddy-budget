@@ -11,6 +11,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { formatSignedPct } from "@/components/domain/investments";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarSummary } from "@/lib/sidebar/types";
+import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { cn } from "@/lib/utils";
 import { InsightRow } from "./insight-row";
 import {
@@ -79,6 +80,7 @@ export function SidebarInsights({
   onNavigate,
   titlesHref = "/investimenti/titoli",
 }: SidebarInsightsProps) {
+  const [pensionIncluded] = usePensionInNetWorth();
   if (loading) {
     return collapsed ? null : (
       <div className="mt-2 flex flex-col gap-2 border-t border-sidebar-border pt-3" aria-busy="true">
@@ -109,6 +111,13 @@ export function SidebarInsights({
     );
   }
 
+  // La previdenza è dentro `total` e `monthChange`: se l'utente la esclude dal patrimonio la togliamo qui.
+  const dropPension = !pensionIncluded && netWorth?.pension;
+  const netWorthTotal = netWorth ? netWorth.total - (dropPension ? netWorth.pension!.total : 0) : 0;
+  const netWorthChange =
+    netWorth && netWorth.monthChange !== null
+      ? netWorth.monthChange - (dropPension ? (netWorth.pension!.monthChange ?? 0) : 0)
+      : null;
   const eyeInFirstSection = netWorth ? "oggi" : portfolio ? "portafoglio" : "watchlist";
   const eye = (owner: string) =>
     owner === eyeInFirstSection ? <PrivacyToggle hidden={hidden} onToggle={onToggleHidden} /> : undefined;
@@ -120,20 +129,20 @@ export function SidebarInsights({
         <CollapsibleSection
           id="oggi"
           title="Oggi"
-          summary={formatSidebarAmount(netWorth.total, currency, hidden)}
+          summary={formatSidebarAmount(netWorthTotal, currency, hidden)}
           action={eye("oggi")}
         >
           <div className="px-1.5 pb-1">
             <p className="font-heading text-xl font-semibold tabular-nums text-sidebar-foreground">
-              {formatSidebarAmount(netWorth.total, currency, hidden)}
+              {formatSidebarAmount(netWorthTotal, currency, hidden)}
             </p>
             <p className="text-[11px] text-sidebar-foreground/60">
               Patrimonio netto
-              {netWorth.monthChange !== null ? (
+              {netWorthChange !== null ? (
                 <>
                   {" · "}
-                  <span className={cn("font-medium", changeToneClass(netWorth.monthChange))}>
-                    {formatSidebarSignedAmount(netWorth.monthChange, currency, hidden)}
+                  <span className={cn("font-medium", changeToneClass(netWorthChange))}>
+                    {formatSidebarSignedAmount(netWorthChange, currency, hidden)}
                   </span>{" "}
                   in 30 giorni
                 </>

@@ -25,7 +25,8 @@ describe("catalogo funzionalità", () => {
     for (const item of NAV_ITEMS) {
       const feature = FEATURES.find((candidate) => candidate.appPath === item.href);
       expect(feature, `manca la scheda del catalogo per ${item.href}`).toBeDefined();
-      expect(feature?.status).toBe(item.comingSoon ? "soon" : "live");
+      if (item.comingSoon) expect(feature?.status).toBe("soon");
+      else expect(["live", "new"]).toContain(feature?.status);
     }
   });
 

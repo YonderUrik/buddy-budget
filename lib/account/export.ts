@@ -9,6 +9,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
   instruments,
   investmentPlans,
@@ -82,6 +83,8 @@ async function loadUserData(userId: string) {
     priceAlertRows,
     debtRows,
     debtEventRows,
+    pensionFundRows,
+    pensionSnapshotRows,
   ] = await Promise.all([
     db
       .select({
@@ -333,6 +336,16 @@ async function loadUserData(userId: string) {
       .from(debtEvents)
       .where(eq(debtEvents.userId, userId))
       .orderBy(asc(debtEvents.date)),
+    db
+      .select({ id: pensionFunds.id, name: pensionFunds.name, adhesionDate: pensionFunds.adhesionDate, createdAt: pensionFunds.createdAt })
+      .from(pensionFunds)
+      .where(eq(pensionFunds.userId, userId))
+      .orderBy(asc(pensionFunds.createdAt)),
+    db
+      .select({ fundId: pensionSnapshots.fundId, date: pensionSnapshots.date, netContributions: pensionSnapshots.netContributions, value: pensionSnapshots.value })
+      .from(pensionSnapshots)
+      .where(eq(pensionSnapshots.userId, userId))
+      .orderBy(asc(pensionSnapshots.date)),
   ]);
 
   return {
@@ -357,6 +370,8 @@ async function loadUserData(userId: string) {
     priceAlerts: priceAlertRows,
     debts: debtRows,
     debtEvents: debtEventRows,
+    pensionFunds: pensionFundRows,
+    pensionSnapshots: pensionSnapshotRows,
   };
 }
 
@@ -368,6 +383,7 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
   const categoryName = new Map(data.categories.map((c) => [c.id, c.name]));
   const portfolioName = new Map(data.investmentPortfolios.map((p) => [p.id, p.name]));
   const debtName = new Map(data.debts.map((d) => [d.id, d.name]));
+  const pensionFundName = new Map(data.pensionFunds.map((f) => [f.id, f.name]));
 
   const json = JSON.stringify({ format: "buddybudget-export", version: EXPORT_FORMAT_VERSION, exportedAt: now.toISOString(), ...data }, null, 2);
 
@@ -475,6 +491,16 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Penale", value: (e) => decimal(e.penalty) },
       { header: "Effetto estinzione", value: (e) => e.effect },
       { header: "Nota", value: (e) => e.note },
+    ]),
+    "previdenza-fondi.csv": toCsv(data.pensionFunds, [
+      { header: "Nome", value: (f) => f.name },
+      { header: "Prima adesione", value: (f) => f.adhesionDate },
+    ]),
+    "previdenza-fotografie.csv": toCsv(data.pensionSnapshots, [
+      { header: "Fondo", value: (r) => pensionFundName.get(r.fundId) },
+      { header: "Data", value: (r) => r.date },
+      { header: "Contributi netti", value: (r) => decimal(r.netContributions) },
+      { header: "Controvalore", value: (r) => decimal(r.value) },
     ]),
     "patrimonio-netto.csv": toCsv(data.netWorth, [
       { header: "Data", value: (s) => s.date },

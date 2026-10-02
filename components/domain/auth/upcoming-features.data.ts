@@ -4,7 +4,7 @@
  * si cambia lo stato nel catalogo e si toglie l'icona da `UPCOMING_ICONS`.
  */
 
-import { BarChart3, Target, Umbrella, type LucideIcon } from "lucide-react";
+import { BarChart3, Target, type LucideIcon } from "lucide-react";
 
 import { featuresByStatus } from "@/lib/features";
 
@@ -16,7 +16,6 @@ export interface UpcomingFeature {
 
 /** Icona di ogni funzionalità `soon`, per id del catalogo. */
 const UPCOMING_ICONS: Record<string, LucideIcon> = {
-  pensione: Umbrella,
   pianifica: Target,
   analitiche: BarChart3,
 };

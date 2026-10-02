@@ -13,8 +13,8 @@ export interface ProductEvents {
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   account_sync_manual: undefined;
-  /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner, riga del conto, link dell'email). */
-  bank_renew_started: { source: "banner" | "row" | "email" };
+  /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
+  bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" };
   transaction_added: { direction: "entrata" | "uscita" };
   transaction_category_changed: { source: "row" | "categorizza" };
   categorization_applied: { groups: number };

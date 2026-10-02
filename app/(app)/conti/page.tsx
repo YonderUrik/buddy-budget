@@ -63,21 +63,22 @@ export default function ContiPage() {
   );
   const renewalAlerts = buildRenewalAlerts(connectionStatuses ?? [], today);
 
-  const openRenewDialog = React.useCallback((source: "banner" | "row" | "email") => {
+  const openRenewDialog = React.useCallback((source: "banner" | "row" | "email" | "panoramica") => {
     track("bank_renew_started", { source });
     setReconnectTrigger((n) => n + 1);
     setCreateDialogOpen(true);
   }, []);
 
-  // Il link dell'email porta a /conti?rinnova=1: apre subito il flusso di rinnovo (una volta sola).
+  // I link dell'email (?rinnova=1) e del banner in Panoramica (?rinnova=panoramica) aprono subito il flusso di rinnovo (una volta sola).
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("rinnova") !== "1") return;
+    const origin = params.get("rinnova");
+    if (!origin) return;
     params.delete("rinnova");
     const query = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
     // Rimandato di un tick: aprire il dialog (setState) in modo sincrono dentro l'effetto causerebbe render a cascata.
-    const timer = window.setTimeout(() => openRenewDialog("email"), 0);
+    const timer = window.setTimeout(() => openRenewDialog(origin === "panoramica" ? "panoramica" : "email"), 0);
     return () => window.clearTimeout(timer);
   }, [openRenewDialog]);
 

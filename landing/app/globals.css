@@ -4,16 +4,16 @@
  * solo nel marchio e nel pulsante principale. Niente colori esadecimali nei componenti: solo token.
  */
 :root {
-  --bg: #f5f5f4;
-  --surface: #fff;
-  --ink: #18181b;
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --ink: #0b0b0d;
   --ink2: #52525b;
   --ink3: #71717a;
   --line: #e4e4e7;
   --accent: #15738b;
   --sky: #219ebc;
   --sun: #ffb703;
-  --navy: #18181b;
+  --navy: #0b0b0d;
   --on-navy: #f4f4f5;
   --on-navy2: #a1a1aa;
   --on-sun: #18181b;
@@ -40,6 +40,11 @@
   --a-fut: #16a34a;
   --a-sal: #2563eb;
 
+  /* spotlight dell'apertura e sfumatura dei titoli grandi */
+  --glow: rgba(33, 158, 188, 0.22);
+  --grad-a: #0b0b0d;
+  --grad-b: #5b5b66;
+
   --f-h: "Space Grotesk Variable", "Space Grotesk", system-ui, sans-serif;
   --f-b: "Hanken Grotesk Variable", "Hanken Grotesk", system-ui, sans-serif;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -47,15 +52,18 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e0e10;
-    --surface: #17171a;
+    --bg: #0b0b0d;
+    --surface: #141417;
     --ink: #f4f4f5;
     --ink2: #a1a1aa;
-    --ink3: #80808a;
-    --line: #27272a;
+    --ink3: #80808c;
+    --line: #26262c;
     --accent: #46b8d4;
-    --navy: #1c1c1f;
+    --navy: #101013;
     --mk2: #8b8fd6;
+    --glow: rgba(33, 158, 188, 0.38);
+    --grad-a: #ffffff;
+    --grad-b: #8e8e99;
     --a-bg: #111113;
     --a-card: #18181b;
     --a-fg: #ececef;
@@ -76,15 +84,18 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #0e0e10;
-  --surface: #17171a;
+  --bg: #0b0b0d;
+  --surface: #141417;
   --ink: #f4f4f5;
   --ink2: #a1a1aa;
-  --ink3: #80808a;
-  --line: #27272a;
+  --ink3: #80808c;
+  --line: #26262c;
   --accent: #46b8d4;
-  --navy: #1c1c1f;
+  --navy: #101013;
   --mk2: #8b8fd6;
+  --glow: rgba(33, 158, 188, 0.38);
+  --grad-a: #ffffff;
+  --grad-b: #8e8e99;
   --a-bg: #111113;
   --a-card: #18181b;
   --a-fg: #ececef;

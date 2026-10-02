@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, type PointerEvent } from "react";
 import "./hero.css";
 import { APP_LINKS } from "@/content/site";
 import { track } from "@/lib/analytics";
@@ -39,24 +39,32 @@ export function Hero() {
     { scope: root },
   );
 
+  const onMove = (e: PointerEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
+
   return (
-    <section id="top" className="hero" ref={root}>
+    <section id="top" className="hero" ref={root} onPointerMove={onMove}>
       <div>
         <div className="wrap">
+          <span className="pill">Conti · Movimenti · Investimenti · Debiti</span>
           <h1 aria-label="Quanto vali, davvero?">
             <span className="ln"><span>Quanto <em>vali</em>,</span></span>
             <span className="ln"><span>davvero?</span></span>
           </h1>
           <div className="hrow">
-            <p>BuddyBudget mette conti, spese, investimenti e debiti in un solo quadro, con le tasse italiane già dentro.</p>
+            <p>BuddyBudget tiene insieme conti, spese, investimenti e debiti in un solo quadro. Le tasse italiane le calcola lui.</p>
             <div className="cta">
               <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
                 Crea il tuo account{ARROW_ICON}
               </CtaLink>
-              <a className="btn ghost" href="#prodotto" onClick={() => track("cta_click", { location: "hero", target: "how_it_works" })}>
-                Guarda come funziona
+              <a className="btn ghost" href="#schermate" onClick={() => track("cta_click", { location: "hero", target: "how_it_works" })}>
+                Guarda le schermate
               </a>
             </div>
+            <span className="small">I tuoi dati restano tuoi: li esporti in ZIP quando vuoi.</span>
           </div>
         </div>
         <div className="stage" ref={stage}>
@@ -65,6 +73,10 @@ export function Hero() {
               <div className="tilt" ref={tilt}>
                 <AppShot id="panoramica" priority />
               </div>
+            </div>
+            <div className="duo">
+              <AppShot id="simulatore" />
+              <AppShot id="lombard" />
             </div>
           </div>
         </div>

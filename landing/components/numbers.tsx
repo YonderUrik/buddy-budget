@@ -18,9 +18,9 @@ export function Numbers() {
   const root = useRef<HTMLDivElement>(null);
   const { total, available } = featureCounts();
   const items = [
-    { value: available, label: "funzioni già in uso" },
-    { value: total, label: "funzioni nel catalogo" },
-    { value: SCREENS.length, label: "schermate, tutte nell'app" },
+    { value: available, label: "funzioni già disponibili" },
+    { value: total - available, label: "in arrivo" },
+    { value: SCREENS.length, label: "schermate, tutte fotografate dall'app" },
     { value: SPEND_GROUPS, label: "gruppi di spesa, un solo budget" },
   ];
 

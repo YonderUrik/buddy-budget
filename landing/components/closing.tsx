@@ -10,18 +10,18 @@ export function Closing() {
     <TrackedSection id="fine" section="fine" className="end" navDark>
       <div className="wrap">
         <Reveal stagger distance={50}>
-          <h2>Smetti di indovinare. Guardalo.</h2>
+          <h2>Scopri quanto vali.</h2>
           <div className="cta">
             <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup">
               Crea il tuo account{ARROW_ICON}
             </CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="closing" target="login">Accedi</CtaLink>
           </div>
-          <p className="small">Accesso con link via email o con Google. Italiano ed EUR di default, altre lingue e valute in arrivo.</p>
+          <p className="small">Accedi con un link via email o con Google. Per ora in italiano e in euro; altre lingue e valute arriveranno.</p>
         </Reveal>
         <footer>
           <span>© BuddyBudget · creato da Daniele</span>
-          <span>Landing in sviluppo: testi, storia e confronto da validare</span>
+          <span>Le schermate del sito usano dati di esempio inventati</span>
         </footer>
       </div>
     </TrackedSection>

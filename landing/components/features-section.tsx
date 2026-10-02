@@ -15,7 +15,7 @@ export function FeaturesSection() {
         <div style={{ marginTop: 150 }}>
           <div className="kicker">Tutte le funzioni</div>
           <h2 className="t">{total} funzioni, e il numero cresce a ogni uscita.</h2>
-          <p className="lede">Questo elenco viene da un&apos;unica lista. Quando ne aggiungiamo una, compare qui.</p>
+          <p className="lede">L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare qui.</p>
           <FeatureCatalog />
         </div>
       </div>

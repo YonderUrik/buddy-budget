@@ -1,0 +1,141 @@
+{
+  "capturedAt": "2026-10-01T21:11:52.050Z",
+  "app": "http://localhost:3300",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "scale": 1.5,
+  "screens": [
+    {
+      "id": "panoramica",
+      "theme": "light",
+      "route": "/panoramica"
+    },
+    {
+      "id": "conti",
+      "theme": "light",
+      "route": "/conti"
+    },
+    {
+      "id": "movimenti",
+      "theme": "light",
+      "route": "/movimenti"
+    },
+    {
+      "id": "analisi",
+      "theme": "light",
+      "route": "/movimenti/analisi"
+    },
+    {
+      "id": "categorie",
+      "theme": "light",
+      "route": "/movimenti/categorie"
+    },
+    {
+      "id": "categorizza",
+      "theme": "light",
+      "route": "/categorizza"
+    },
+    {
+      "id": "investimenti",
+      "theme": "light",
+      "route": "/investimenti"
+    },
+    {
+      "id": "performance",
+      "theme": "light",
+      "route": "/investimenti/performance"
+    },
+    {
+      "id": "diversificazione",
+      "theme": "light",
+      "route": "/investimenti/diversificazione"
+    },
+    {
+      "id": "tasse",
+      "theme": "light",
+      "route": "/investimenti/tasse"
+    },
+    {
+      "id": "debiti",
+      "theme": "light",
+      "route": "/debiti"
+    },
+    {
+      "id": "lombard",
+      "theme": "light",
+      "route": "/debiti/lombard"
+    },
+    {
+      "id": "simulatore",
+      "theme": "light",
+      "route": "/debiti/simulatore"
+    },
+    {
+      "id": "panoramica",
+      "theme": "dark",
+      "route": "/panoramica"
+    },
+    {
+      "id": "conti",
+      "theme": "dark",
+      "route": "/conti"
+    },
+    {
+      "id": "movimenti",
+      "theme": "dark",
+      "route": "/movimenti"
+    },
+    {
+      "id": "analisi",
+      "theme": "dark",
+      "route": "/movimenti/analisi"
+    },
+    {
+      "id": "categorie",
+      "theme": "dark",
+      "route": "/movimenti/categorie"
+    },
+    {
+      "id": "categorizza",
+      "theme": "dark",
+      "route": "/categorizza"
+    },
+    {
+      "id": "investimenti",
+      "theme": "dark",
+      "route": "/investimenti"
+    },
+    {
+      "id": "performance",
+      "theme": "dark",
+      "route": "/investimenti/performance"
+    },
+    {
+      "id": "diversificazione",
+      "theme": "dark",
+      "route": "/investimenti/diversificazione"
+    },
+    {
+      "id": "tasse",
+      "theme": "dark",
+      "route": "/investimenti/tasse"
+    },
+    {
+      "id": "debiti",
+      "theme": "dark",
+      "route": "/debiti"
+    },
+    {
+      "id": "lombard",
+      "theme": "dark",
+      "route": "/debiti/lombard"
+    },
+    {
+      "id": "simulatore",
+      "theme": "dark",
+      "route": "/debiti/simulatore"
+    }
+  ]
+}

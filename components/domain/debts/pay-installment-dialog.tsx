@@ -52,7 +52,7 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
         </DebtFormField>
       </div>
       <DebtFormField label="Collega una transazione (facoltativo)" hint="Solo un promemoria: non cambia la transazione">
-        <DebtTransactionPicker dueDate={row.dueDate} value={transactionId} onChange={setTransactionId} currency={currency} />
+        <DebtTransactionPicker dueDate={row.dueDate} expectedAmount={row.installment} value={transactionId} onChange={setTransactionId} currency={currency} />
       </DebtFormField>
       {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
       <Button type="submit" disabled={mutation.isPending}>
@@ -65,7 +65,7 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
 export function PayInstallmentDialog({ debtId, row, currency, onOpenChange }: PayInstallmentDialogProps) {
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Rata {row?.number} pagata</DialogTitle>
         </DialogHeader>

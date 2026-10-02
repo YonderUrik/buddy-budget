@@ -1,8 +1,10 @@
 import "./security.css";
+import "./security-art.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { SECURITY } from "@/content/site";
 import { Reveal } from "./reveal";
+import { SecurityCard } from "./security-card";
 import { ServerMap } from "./server-map";
 import { TrackedSection } from "./tracked-section";
 
@@ -18,10 +20,7 @@ export function Security() {
         <ServerMap />
         <Reveal stagger className="sec-grid">
           {SECURITY.points.map((point) => (
-            <div key={point.title} className="sec-card">
-              <h3>{point.title}</h3>
-              <p>{point.text}</p>
-            </div>
+            <SecurityCard key={point.title} point={point} />
           ))}
         </Reveal>
         </div>

@@ -63,7 +63,7 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS }: { links?: readonly NavLin
         <div className="nr">
           <ThemeToggle />
           <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">Accedi</CtaLink>
-          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">Inizia</CtaLink>
+          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">Prova gratis</CtaLink>
         </div>
       </div>
     </header>

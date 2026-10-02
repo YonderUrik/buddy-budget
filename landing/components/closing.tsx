@@ -13,7 +13,7 @@ export function Closing() {
           <h2>Scopri quanto vali.</h2>
           <div className="cta">
             <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup">
-              Crea il tuo account{ARROW_ICON}
+              Prova gratis{ARROW_ICON}
             </CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="closing" target="login">Accedi</CtaLink>
           </div>

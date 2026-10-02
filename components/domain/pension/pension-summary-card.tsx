@@ -1,12 +1,13 @@
 /**
- * Card principale di Pensione: controvalore del fondo, quanto è dato dai contributi e quanto dal rendimento, con il
- * rendimento annuo ponderato per i tempi (non "valore meno versato", che con versamenti a rate è fuorviante).
+ * Card principale di Pensione: l'anello di cosa è fatto il fondo e, a fianco, versato, guadagno e rendimento annuo
+ * ponderato per i tempi (non "valore meno versato", che con versamenti a rate è fuorviante).
  */
 
 import { Card, CardContent } from "@/components/ui/card";
-import type { PensionPerformance } from "@/lib/calc/pension";
 import { InfoHint } from "@/components/domain/shared";
+import type { PensionPerformance } from "@/lib/calc/pension";
 import { formatLongDateKey, formatSignedPercent, money } from "./pension-format";
+import { PensionRing } from "./pension-ring";
 
 export interface PensionSummaryCardProps {
   name: string;
@@ -19,54 +20,35 @@ const ANNUAL_RETURN_HINT =
 
 export function PensionSummaryCard({ name, performance, currency }: PensionSummaryCardProps) {
   const { value, netContributions, gain, gainPct, annualReturn, approximate, lastDate } = performance;
-  const contributionShare = value > 0 ? Math.min(1, netContributions / value) : 1;
-  const stats = [
-    { label: "Contributi netti", value: money(netContributions, currency) },
-    { label: gain >= 0 ? "Guadagno" : "Perdita", value: `${gain >= 0 ? "+" : "−"}${money(Math.abs(gain), currency)}`, tone: gain >= 0 ? "text-pos" : "text-neg" },
-    { label: "Sui contributi", value: gainPct !== null ? formatSignedPercent(gainPct) : "—", tone: gain >= 0 ? "text-pos" : "text-neg" },
-  ];
+  const tone = gain >= 0 ? "text-pos" : "text-neg";
   return (
     <Card>
-      <CardContent className="flex flex-col gap-5">
-        <div className="space-y-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{name}</p>
-          <p className="font-heading text-4xl font-medium tabular-nums text-foreground">{money(value, currency)}</p>
-          <p className="text-sm text-muted-foreground">Controvalore al {formatLongDateKey(lastDate)}</p>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <div className="flex h-3 overflow-hidden rounded-full bg-muted" role="img" aria-label={`Contributi netti ${money(netContributions, currency)} su ${money(value, currency)}`}>
-            <span className="h-full bg-primary" style={{ width: `${contributionShare * 100}%` }} />
-            {gain > 0 ? <span className="h-full bg-pos" style={{ width: `${(1 - contributionShare) * 100}%` }} /> : null}
+      <CardContent className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+        <PensionRing value={value} netContributions={netContributions} currency={currency} />
+        <div className="flex w-full min-w-0 flex-1 flex-col gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{name}</p>
+            <p className="text-sm text-muted-foreground">Aggiornato al {formatLongDateKey(lastDate)}</p>
           </div>
-          <p className="text-sm text-foreground">
-            {gain >= 0 ? (
-              <>
-                Hai versato <strong className="font-medium tabular-nums">{money(netContributions, currency)}</strong>, il resto (
-                <strong className="font-medium tabular-nums text-pos">{money(gain, currency)}</strong>) l&apos;ha prodotto il fondo.
-              </>
-            ) : (
-              <>
-                Hai versato <strong className="font-medium tabular-nums">{money(netContributions, currency)}</strong>: oggi il fondo ne vale meno.
-              </>
-            )}
-          </p>
-        </div>
-
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {stats.map((stat) => (
-            <div key={stat.label} className="rounded-lg bg-muted/50 px-3 py-2.5">
-              <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-              <dd className={`font-heading text-lg font-medium tabular-nums ${stat.tone ?? "text-foreground"}`}>{stat.value}</dd>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+            <div>
+              <dt className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />Versato</dt>
+              <dd className="font-heading text-xl font-medium tabular-nums text-foreground">{money(netContributions, currency)}</dd>
             </div>
-          ))}
-          <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-            <dt className="flex items-center gap-1 text-xs text-muted-foreground">
-              Rendimento annuo{approximate ? " (stima)" : ""} <InfoHint label="Come si calcola il rendimento annuo">{ANNUAL_RETURN_HINT}</InfoHint>
-            </dt>
-            <dd className="font-heading text-lg font-medium tabular-nums text-foreground">{annualReturn !== null ? formatSignedPercent(annualReturn) : "—"}</dd>
-          </div>
-        </dl>
+            <div>
+              <dt className="flex items-center gap-1.5 text-xs text-muted-foreground"><span className={`size-2 rounded-full ${gain >= 0 ? "bg-pos" : "bg-neg"}`} aria-hidden="true" />{gain >= 0 ? "Guadagno" : "Perdita"}</dt>
+              <dd className={`font-heading text-xl font-medium tabular-nums ${tone}`}>{gain >= 0 ? "+" : "−"}{money(Math.abs(gain), currency)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Sui contributi</dt>
+              <dd className={`font-heading text-xl font-medium tabular-nums ${tone}`}>{gainPct !== null ? formatSignedPercent(gainPct) : "—"}</dd>
+            </div>
+            <div>
+              <dt className="flex items-center gap-1 text-xs text-muted-foreground">Rendimento annuo{approximate ? " (stima)" : ""} <InfoHint label="Come si calcola il rendimento annuo">{ANNUAL_RETURN_HINT}</InfoHint></dt>
+              <dd className="font-heading text-xl font-medium tabular-nums text-foreground">{annualReturn !== null ? formatSignedPercent(annualReturn) : "—"}</dd>
+            </div>
+          </dl>
+        </div>
       </CardContent>
     </Card>
   );

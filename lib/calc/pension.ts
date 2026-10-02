@@ -274,3 +274,34 @@ export function projectPension(params: { startValue: number; quarterlyContributi
   }
   return points;
 }
+
+/** Un anno di vita del fondo: quanto è stato versato e quanto ha reso (valore finale meno valore iniziale meno versamenti). */
+export interface YearBreakdown {
+  year: number;
+  contributions: number;
+  /** Variazione di valore non dovuta ai versamenti; può essere negativa. */
+  gain: number;
+  endValue: number;
+  /** Vero se l'anno non è finito (ultima fotografia prima del 31/12). */
+  partial: boolean;
+}
+
+/**
+ * Ripartizione anno per anno tra versamenti e rendimento, dalle ultime fotografie di ogni anno. Il primo anno parte da
+ * zero; un anno senza fotografie viene saltato (il suo effetto finisce nell'anno successivo).
+ */
+export function yearlyBreakdown(snapshots: PensionSnapshot[]): YearBreakdown[] {
+  const sorted = sortSnapshots(snapshots);
+  const lastOfYear = new Map<number, PensionSnapshot>();
+  for (const s of sorted) lastOfYear.set(Number(s.date.slice(0, 4)), s);
+  const years = [...lastOfYear.keys()].sort((a, b) => a - b);
+  const latest = sorted.at(-1);
+  let previous = { netContributions: 0, value: 0 };
+  return years.map((year) => {
+    const end = lastOfYear.get(year)!;
+    const contributions = end.netContributions - previous.netContributions;
+    const gain = end.value - previous.value - contributions;
+    previous = end;
+    return { year, contributions, gain, endValue: end.value, partial: end === latest && !end.date.endsWith("-12-31") };
+  });
+}

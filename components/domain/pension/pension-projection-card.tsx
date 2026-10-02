@@ -29,6 +29,12 @@ const MAX_YEARS = 45;
 const MAX_CONTRIBUTION = 3000;
 const CONTRIBUTION_STEP = 20;
 
+const SCENARIOS = [
+  { key: "prudent", label: "Prudente" },
+  { key: "base", label: "Base" },
+  { key: "optimistic", label: "Ottimistico" },
+] as const;
+
 const CHART_CONFIG: ChartConfig = {
   optimistic: { label: "Ottimistico", color: "var(--swatch-teal)" },
   base: { label: "Base", color: "var(--primary)" },
@@ -49,11 +55,14 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
         <p className="text-sm text-muted-foreground">In euro di oggi, quindi già al netto dell&apos;inflazione. Una stima, non una promessa.</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        <div className="space-y-1">
-          <p className="font-heading text-4xl font-medium tabular-nums text-foreground">{money(end.base, currency)}</p>
-          <p className="text-sm text-muted-foreground">
-            tra {years} anni nello scenario base, con un rendimento reale del {formatPercent(rates.base, 0)} l&apos;anno. Tra {money(end.prudent, currency)} (prudente) e {money(end.optimistic, currency)} (ottimistico).
-          </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {SCENARIOS.map((scenario) => (
+            <div key={scenario.key} className={`rounded-lg px-3 py-2.5 ${scenario.key === "base" ? "bg-primary/10 ring-1 ring-primary/30" : "bg-muted/50"}`}>
+              <p className="text-xs text-muted-foreground">{scenario.label} · rendimento reale {formatPercent(rates[scenario.key], 0)}</p>
+              <p className="font-heading text-2xl font-medium tabular-nums text-foreground">{money(end[scenario.key], currency)}</p>
+              <p className="text-xs text-muted-foreground">tra {years} anni, di cui {money(Math.max(0, end[scenario.key] - startValue - paidIn), currency)} di rendimento</p>
+            </div>
+          ))}
         </div>
 
         <ChartContainer config={CHART_CONFIG} className="max-h-60 w-full">

@@ -8,6 +8,7 @@ import {
   exitTaxRate,
   projectPension,
   recentQuarterlyContribution,
+  yearlyBreakdown,
   withdrawalScenarios,
   type PensionSnapshot,
 } from "./pension";
@@ -128,5 +129,24 @@ describe("projectPension", () => {
     const point = projectPension({ startValue: 5000, quarterlyContribution: 400, years: 20, rates: { prudent: 0, base: 0.02, optimistic: 0.04 } }).at(-1)!;
     expect(point.prudent).toBeLessThan(point.base);
     expect(point.base).toBeLessThan(point.optimistic);
+  });
+});
+
+describe("yearlyBreakdown", () => {
+  it("separa versamenti e rendimento per anno, partendo da zero", () => {
+    const rows = yearlyBreakdown([
+      snap("a", "2024-06-30", 500, 490),
+      snap("b", "2024-12-31", 1000, 1010),
+      snap("c", "2025-12-31", 2000, 2150),
+      snap("d", "2026-03-31", 2250, 2420),
+    ]);
+    expect(rows.map((r) => r.year)).toEqual([2024, 2025, 2026]);
+    expect(rows[0]).toMatchObject({ contributions: 1000, gain: 10, partial: false });
+    expect(rows[1]).toMatchObject({ contributions: 1000, gain: 140, endValue: 2150, partial: false });
+    expect(rows[2]).toMatchObject({ contributions: 250, gain: 20, partial: true });
+  });
+
+  it("restituisce un elenco vuoto senza fotografie", () => {
+    expect(yearlyBreakdown([])).toEqual([]);
   });
 });

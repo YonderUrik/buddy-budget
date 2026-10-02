@@ -93,6 +93,16 @@ describe("withdrawalScenarios", () => {
   });
 });
 
+describe("withdrawalScenarios con anni simulati", () => {
+  it("usa gli anni indicati al posto di quelli reali", () => {
+    const [real] = withdrawalScenarios(10_000, 8_000, "2022-03-10", "2026-10-01");
+    const [simulated] = withdrawalScenarios(10_000, 8_000, "2022-03-10", "2026-10-01", 35);
+    expect(real.rate).toBeCloseTo(0.15);
+    expect(simulated.rate).toBeCloseTo(0.09);
+    expect(simulated.netLow).toBeCloseTo(9_100);
+  });
+});
+
 describe("companyTfrValue", () => {
   it("rivaluta ogni versamento con 1,5% + 75% dell'inflazione", () => {
     const result = companyTfrValue([{ date: "2025-10-01", amount: 1000, estimated: false }], "2026-10-01", 0.02);
@@ -144,6 +154,16 @@ describe("yearlyBreakdown", () => {
     expect(rows[0]).toMatchObject({ contributions: 1000, gain: 10, partial: false });
     expect(rows[1]).toMatchObject({ contributions: 1000, gain: 140, endValue: 2150, partial: false });
     expect(rows[2]).toMatchObject({ contributions: 250, gain: 20, partial: true });
+  });
+
+  it("calcola il rendimento percentuale sul valore a inizio anno più i versamenti", () => {
+    const rows = yearlyBreakdown([snap("b", "2024-12-31", 1000, 1010), snap("c", "2025-12-31", 2000, 2150)]);
+    expect(rows[0].returnRate).toBeCloseTo(0.01);
+    expect(rows[1].returnRate).toBeCloseTo(140 / 2010);
+  });
+
+  it("non calcola la percentuale se la base non è positiva", () => {
+    expect(yearlyBreakdown([snap("a", "2024-12-31", 0, 0)])[0].returnRate).toBeNull();
   });
 
   it("restituisce un elenco vuoto senza fotografie", () => {

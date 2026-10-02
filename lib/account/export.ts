@@ -56,6 +56,8 @@ async function loadUserData(userId: string) {
       email: authUser.email,
       currency: authUser.currency,
       homePage: authUser.homePage,
+      legalAcceptedAt: authUser.legalAcceptedAt,
+      legalAcceptedVersion: authUser.legalAcceptedVersion,
       createdAt: authUser.createdAt,
     })
     .from(authUser)

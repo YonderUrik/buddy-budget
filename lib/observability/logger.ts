@@ -39,6 +39,8 @@ export interface LogFields {
   provider?: string;
   /** Simbolo di uno strumento comune a tutti gli utenti: mai insieme a quantità o importi dell'utente. */
   symbol?: string;
+  /** Versione dei documenti legali (data, `LEGAL_VERSION`): non è un dato personale. */
+  legalVersion?: string;
   error?: unknown;
 }
 

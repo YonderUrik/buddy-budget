@@ -96,6 +96,11 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      legalAcceptedVersion: {
+        type: "string",
+        required: false,
+        input: false,
+      },
     },
   },
   databaseHooks: {

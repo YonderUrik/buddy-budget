@@ -37,6 +37,8 @@ Fase di **autenticazione completata**, schermata **Conti implementata** (gestion
 
 ## Log delle decisioni
 
+- **2026-10-02** — **Landing, Sicurezza: mappa del server.** Mappa d'Europa con la Germania evidenziata, bandiera in SVG, punto pulsante del server e linea cifrata animata da un utente in Italia (`landing/components/server-map.tsx`). I contorni sono generati una tantum da Natural Earth (110m, dominio pubblico) con d3-geo e salvati in `landing/content/europe-map.ts` (10 KB, nessuna libreria a runtime). Le animazioni rispettano `prefers-reduced-motion`. Il pin è su Düsseldorf; i testi parlano solo di "Germania".
+
 - **2026-10-02** — **Landing: sezione "Sicurezza e privacy"** (`landing/components/security.tsx`, testi in `SECURITY` di `landing/content/site.ts`, evento `section_view` con id `sicurezza`). Sei impegni, tutti verificabili: accesso senza password, banca in sola lettura (PSD2), server in Germania, niente vendita dei dati, log senza dati personali, export/reset/eliminazione. **Scelta**: niente promesse non verificate (per questo manca "backup cifrati" finché non si controlla R2 e disco della VPS; vedi GDPR PR 8). I testi vanno riletti insieme alla revisione legale.
 
 - **2026-10-02** — **GDPR, PR 8: header di sicurezza.** `next.config.ts` aggiunge a ogni risposta HSTS, `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy` e `Permissions-Policy`. **Rimandato**: Content-Security-Policy (va tarata su Umami e stili inline, rischio di rompere la UI senza prova in browser). Verificato a codice: rate limit di auth su Redis già presente, cookie di sessione gestiti da better-auth. **Da verificare in infra**: cifratura dei backup su R2 e del disco della VPS.

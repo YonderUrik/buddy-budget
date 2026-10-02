@@ -16,6 +16,19 @@ export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
 
+/** Numeri aggregati di utilizzo (nessun dato personale: solo conteggi), letti dal DB allo scrape. */
+export interface UsageSnapshot {
+  users: { registered: number; onboarded: number; deactivated: number };
+  newUsers: { "7d": number; "30d": number };
+  activeUsers: { "24h": number; "7d": number; "30d": number };
+  /** Utenti con almeno un record per funzione. */
+  usersWithFeature: Record<UsageFeature, number>;
+  /** Righe totali per tipo di dato. */
+  records: Record<UsageRecordKind, number>;
+}
+export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts";
+export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts";
+
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
 export type GoCardlessEndpoint =
   | "token.new"
@@ -39,6 +52,7 @@ export interface AsyncGaugeDeps {
   dependencies?: () => Promise<Record<DependencyName, boolean>>;
   cronLastSuccess?: () => Promise<Partial<Record<CronName, number | null>>>;
   syncJobs?: () => Promise<{ active: number; stale: number }>;
+  usage?: () => Promise<UsageSnapshot>;
 }
 
 interface MetricsState {
@@ -182,6 +196,34 @@ function createState(): MetricsState {
       }
     },
   });
+
+  const usageGauge = (
+    name: string,
+    help: string,
+    label: string,
+    pick: (u: UsageSnapshot) => Record<string, number>
+  ) =>
+    new Gauge({
+      name: `${METRIC_PREFIX}${name}`,
+      help,
+      labelNames: [label],
+      registers: r,
+      async collect() {
+        this.reset();
+        const read = state.deps.usage;
+        if (!read) return;
+        try {
+          for (const [value, n] of Object.entries(pick(await read()))) this.set({ [label]: value }, n);
+        } catch {
+          // assenza del dato per questo scrape
+        }
+      },
+    });
+  usageGauge("users", "Utenti per stato: registered (tutti), onboarded (onboarding finito), deactivated (in attesa di eliminazione).", "state", (u) => u.users);
+  usageGauge("users_new", "Utenti registrati nella finestra indicata (7d, 30d).", "window", (u) => u.newUsers);
+  usageGauge("users_active", "Utenti con una sessione attiva nella finestra indicata (24h, 7d, 30d).", "window", (u) => u.activeUsers);
+  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti).", "feature", (u) => u.usersWithFeature);
+  usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti).", "kind", (u) => u.records);
 
   return state;
 }

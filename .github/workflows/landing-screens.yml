@@ -1,0 +1,99 @@
+name: Screenshot landing
+
+# Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md). Parte da sola quando su main
+# cambia ciò che si vede nelle schermate (UI, calcoli, dati demo, elenco screen) e apre una PR con le immagini
+# nuove; si può anche avviare a mano. La PR la apre GITHUB_TOKEN, quindi la CI non parte da sola su di essa:
+# basta un push vuoto o "Re-run" dal branch bot/landing-screens se serve.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/demo-seed.ts"
+      - "landing/content/screens.ts"
+      - "landing/scripts/capture-screens.mjs"
+  workflow_dispatch:
+
+concurrency:
+  group: landing-screens
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  capture:
+    name: Cattura screenshot
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bb_demo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    # Valori fittizi: nessun servizio esterno viene contattato.
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bb_demo
+      REDIS_URL: redis://localhost:6379
+      BETTER_AUTH_SECRET: ci-only-placeholder-secret-000000000000
+      BETTER_AUTH_URL: http://localhost:3300
+      APP_URL: http://localhost:3300
+      GOOGLE_CLIENT_ID: demo
+      GOOGLE_CLIENT_SECRET: demo
+      RESEND_API_KEY: re_demo
+      RESEND_FROM: demo@example.com
+      GOCARDLESS_SECRET_ID: demo
+      GOCARDLESS_SECRET_KEY: demo
+      CRON_SECRET: ci-only-placeholder-cron-secret-0000000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:migrate
+      - run: pnpm demo:seed
+      - run: pnpm build
+      - run: pnpm exec next start -p 3300 &
+      - name: Installa Playwright e Chromium
+        run: |
+          npm install --no-save --prefix "$RUNNER_TEMP/pw" playwright
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Attendi l'app e cattura
+        working-directory: landing
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/pw/node_modules/playwright
+        run: |
+          npx --yes wait-on http://localhost:3300/login --timeout 60000
+          node --experimental-strip-types scripts/capture-screens.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: landing-screens
+          path: landing/public/screens
+      - name: Apri o aggiorna la PR con le immagini nuove
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bot/landing-screens
+          add-paths: landing/public/screens
+          commit-message: "chore(landing): aggiorna gli screenshot dall'app"
+          title: "Landing: screenshot aggiornati dall'app"
+          body: |
+            Screenshot rigenerati automaticamente dall'app su `main` con i dati demo (`pnpm demo:seed`).
+            Controlla a colpo d'occhio le immagini nel diff prima di fare il merge.
+
+            Nessun nuovo segnale di osservabilità: solo immagini statiche.

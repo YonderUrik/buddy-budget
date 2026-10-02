@@ -23,36 +23,38 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     kicker: "Collega",
     title: "I movimenti arrivano da soli.",
-    text: "Colleghi la banca in sola lettura. Ogni movimento entra con il testo grezzo e ne esce con un nome pulito.",
-    bullets: ["Open Banking, aggiornamento ogni 12 ore", "Conti manuali per il contante"],
+    text: "Colleghi la banca in sola lettura e ogni movimento entra con il testo grezzo dell'estratto. Per il contante c'è il conto manuale.",
+    bullets: ["Open Banking, aggiornamento ogni 12 ore", "Conti manuali per contanti e risparmi"],
   },
   {
     kicker: "Capisci",
     title: "Sai dove vanno i soldi.",
-    text: "Conferma un negozio una volta e BuddyBudget lo riconosce le volte dopo. Quattro gruppi di spesa e un budget per categoria.",
-    bullets: ["Dovute, Volute, Te futuro, Saltuarie", "Regole visibili e modificabili"],
+    text: "Confermi un negozio una volta e dalla volta dopo BuddyBudget lo riconosce. Le spese si dividono in quattro gruppi, con un budget per categoria.",
+    bullets: ["Dovute, Volute, Te futuro, Saltuarie", "Regole che vedi e puoi modificare"],
   },
   {
     kicker: "Investi",
-    title: "Vedi quanto rende, e quanto paghi.",
-    text: "Rendimento vero contro un indice, rischio e diversificazione. E l'imposta che pagheresti vendendo oggi.",
-    bullets: ["Plus e minus, zaino a 4 anni, bollo", "ETF, azioni, BTP, fondi e crypto"],
+    title: "Quanto rende, e quanto paghi.",
+    text: "Il rendimento vero, confrontato con un indice a parità di versamenti, più rischio e diversificazione. E l'imposta che pagheresti vendendo oggi.",
+    bullets: ["Plusvalenze, zaino fiscale a 4 anni e bollo", "ETF, azioni, BTP, fondi e crypto"],
   },
   {
     kicker: "Decidi",
-    title: "Scegli con la penale già dentro.",
-    text: "Estinguere il finanziamento riducendo la rata o la durata? Il confronto è già fatto, con interessi risparmiati e costi.",
+    title: "Scegli con i conti già fatti.",
+    text: "Estinguere un finanziamento riducendo la rata o la durata? Surrogarlo? Il confronto è pronto, con interessi risparmiati, penale e costi.",
     bullets: ["Piano di ammortamento e TAEG", "Surroga, valanga e Credit Lombard"],
   },
 ];
 
-export const STORY_TEXT =
-  "Per sapere quanto valevo servivano cinque posti: la banca, un foglio di calcolo, l'app dei titoli, quella del budget e un cassetto di PDF. Nessuno parlava di tasse italiane. Così ho costruito il sesto, e l'ho fatto diventare l'unico.";
+export const STORY = {
+  title: "Il tuo patrimonio non sta in un posto solo. BuddyBudget sì.",
+  text: "Conti in banca, titoli sul broker, un mutuo, un foglio di calcolo per le tasse. Ogni pezzo ha la sua app, e nessuna ti dice quanto hai davvero. BuddyBudget li mette insieme e fa i conti con le regole italiane.",
+} as const;
 
 export const STORY_POINTS = [
-  { kicker: "Che cos'è", title: "Un solo quadro.", text: "Conti, movimenti, investimenti, debiti e patrimonio netto nello stesso posto, aggiornati insieme." },
-  { kicker: "A cosa serve", title: "Decidere con i numeri davanti.", text: "Sapere dove vanno i soldi, quanto rende davvero un portafoglio e quanto costa un debito, prima di muoversi." },
-  { kicker: "Cosa ti dà", title: "Tasse e rate già calcolate.", text: "Plusvalenze, zaino fiscale, ammortamento ed estinzione anticipata, senza foglio di calcolo." },
+  { kicker: "Il problema", title: "Tutto sparso.", text: "Conti, titoli e debiti stanno in posti diversi. Qui sono insieme, e il patrimonio netto si aggiorna da solo." },
+  { kicker: "Il problema", title: "Le tasse a occhio.", text: "Plusvalenze, zaino fiscale e bollo calcolati dalle tue operazioni, senza un foglio da rifare ogni anno." },
+  { kicker: "Il problema", title: "Un debito di cui non conosci il costo.", text: "Rata, interessi ed estinzione anticipata: vedi quanto costa e quanto risparmi se lo chiudi prima." },
 ] as const;
 
 export type ComparisonLevel = "yes" | "half" | "no";
@@ -79,10 +81,3 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   { need: "Ammortamento ed estinzione anticipata", budgetApp: c("no", "No"), investApp: c("no", "No"), sheet: c("half", "A mano"), us: US },
   { need: "Un solo patrimonio netto nel tempo", budgetApp: c("half", "Parziale"), investApp: c("half", "Parziale"), sheet: c("no", "A mano"), us: US },
 ];
-
-export const FOUNDER = {
-  name: "Daniele",
-  role: "Fondatore e sviluppatore",
-  text: "BuddyBudget nasce da un bisogno personale: avere in un solo posto conti, spese, investimenti e debiti, con le regole fiscali italiane già dentro. Si costruisce una funzione alla volta e si apre a chi ha lo stesso problema.",
-  quote: "Volevo sapere quanto valgo davvero, senza aprire cinque app.",
-} as const;

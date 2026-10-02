@@ -1,0 +1,6 @@
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 40px; }
+.tools-card { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; transition: border-color 0.2s, translate 0.2s; }
+.tools-card:hover { border-color: var(--accent); translate: 0 -3px; }
+.tools-card b { font: 600 20px / 1.2 var(--f-h); letter-spacing: -0.02em; }
+.tools-card span:last-child { color: var(--ink2); font-size: 15px; line-height: 1.5; }
+.tools-tag { font: 600 12px var(--f-b); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }

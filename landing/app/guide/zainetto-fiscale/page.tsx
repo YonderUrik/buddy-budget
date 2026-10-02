@@ -22,7 +22,6 @@ export default function Page() {
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: TITLE, description: DESCRIPTION, inLanguage: "it-IT", mainEntityOfPage: `${SITE_URL}${CONTENT_PATHS.guidaZainetto}`, author: { "@type": "Organization", name: "BuddyBudget" }, publisher: { "@type": "Organization", name: "BuddyBudget" } }} />
       <h1>Zainetto fiscale: cos&apos;è e come recuperare le minusvalenze</h1>
       <p className="lead">Se vendi un investimento in perdita, quella perdita non è tutta persa: per quattro anni puoi usarla per ridurre le tasse sui guadagni futuri. Questo &ldquo;serbatoio&rdquo; di perdite è lo zainetto fiscale.</p>
-      <p className="note">Bozza: testo da validare con un professionista prima della pubblicazione. Informazione generale, non consulenza fiscale.</p>
       <h2>Che cos&apos;è</h2>
       <p>Quando vendi azioni, ETF o altri strumenti e incassi più di quanto hai pagato, hai una plusvalenza e paghi di norma il 26%. Se incassi meno, hai una minusvalenza. Le minusvalenze possono compensare le plusvalenze della stessa categoria, riducendo l&apos;imposta. Quelle che non riesci a usare subito restano &ldquo;nello zainetto&rdquo;.</p>
       <h2>Per quanto tempo si porta</h2>

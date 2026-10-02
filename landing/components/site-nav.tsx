@@ -19,6 +19,7 @@ export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
   { href: "#prodotto", label: "Prodotto" },
   { href: "#schermate", label: "Schermate" },
   { href: "#funzioni", label: "Funzioni" },
+  { href: "#strumenti", label: "Strumenti" },
   { href: "#perche", label: "Perché" },
 ];
 

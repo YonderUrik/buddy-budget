@@ -1,8 +1,8 @@
 import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 
-/** Classi di asset del patrimonio ("debiti" ha importi negativi e non si salva: la calcola l'API dai piani dei debiti): text + costante invece di enum Postgres, per aggiungerne senza migrazioni. */
-export const ASSET_CLASSES = ["liquidita", "investimenti", "debiti"] as const;
+/** Classi di asset del patrimonio ("debiti" ha importi negativi; "debiti" e "previdenza" non si salvano: le calcola l'API dai piani dei debiti e dalle fotografie dei fondi): text + costante invece di enum Postgres, per aggiungerne senza migrazioni. */
+export const ASSET_CLASSES = ["liquidita", "investimenti", "previdenza", "debiti"] as const;
 export type AssetClass = (typeof ASSET_CLASSES)[number];
 
 /** Origine di una riga: rilevata dal cron giornaliero o ricostruita dalle transazioni. */

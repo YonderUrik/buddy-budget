@@ -17,9 +17,11 @@ export interface NetWorthChartTooltipProps {
   currency: string;
   /** Classi mostrate nel grafico, dal basso verso l'alto. */
   classes: string[];
+  /** Etichetta del totale (default "Totale"); cambia quando una classe è esclusa dal totale. */
+  totalLabel?: string;
 }
 
-export function NetWorthChartTooltip({ active, payload, currency, classes }: NetWorthChartTooltipProps) {
+export function NetWorthChartTooltip({ active, payload, currency, classes, totalLabel = TOTAL_LABEL }: NetWorthChartTooltipProps) {
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
   const showBreakdown = classes.length > 1;
@@ -51,7 +53,7 @@ export function NetWorthChartTooltip({ active, payload, currency, classes }: Net
             : "font-mono font-medium tabular-nums text-foreground"
         }
       >
-        {showBreakdown ? <span className="font-sans text-muted-foreground">{TOTAL_LABEL}</span> : null}
+        {showBreakdown ? <span className="font-sans text-muted-foreground">{totalLabel}</span> : null}
         {formatCurrency(point.value, currency)}
       </p>
     </div>

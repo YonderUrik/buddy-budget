@@ -13,7 +13,7 @@ export type { NetWorthChartTooltipProps } from "./net-worth-chart-tooltip";
 export { NetWorthCompositionRow } from "./net-worth-composition-row";
 export type { NetWorthCompositionRowProps } from "./net-worth-composition-row";
 export { buildCompositionItems, computeInvestedShare, MARKET_HIGHLIGHT_LABEL } from "./net-worth-composition-row.utils";
-export type { CompositionHighlight, DebtsComposition, InvestmentsComposition, NetWorthCompositionItem } from "./net-worth-composition-row.utils";
+export type { CompositionHighlight, DebtsComposition, InvestmentsComposition, NetWorthCompositionItem, PensionComposition } from "./net-worth-composition-row.utils";
 export { MonthSummaryCard } from "./month-summary-card";
 export type { MonthSummaryCardProps } from "./month-summary-card";
 export {

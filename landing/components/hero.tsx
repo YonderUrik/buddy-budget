@@ -49,13 +49,13 @@ export function Hero() {
     <section id="top" className="hero" ref={root} onPointerMove={onMove}>
       <div>
         <div className="wrap">
-          <span className="pill">Conti · Movimenti · Investimenti · Debiti</span>
+          <span className="pill">Conti · Movimenti · Investimenti · Pensione · Debiti</span>
           <h1 aria-label="Quanto vali, davvero?">
             <span className="ln"><span>Quanto <em>vali</em>,</span></span>
             <span className="ln"><span>davvero?</span></span>
           </h1>
           <div className="hrow">
-            <p>BuddyBudget tiene insieme conti, spese, investimenti e debiti in un solo quadro. Le tasse italiane le calcola lui.</p>
+            <p>BuddyBudget tiene insieme conti, spese, investimenti, pensione e debiti in un solo quadro. Le tasse italiane le calcola lui.</p>
             <div className="cta">
               <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
                 Prova gratis{ARROW_ICON}

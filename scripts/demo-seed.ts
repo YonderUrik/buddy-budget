@@ -14,6 +14,7 @@ import { authSession, authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
   instrumentPrices,
   instruments,
@@ -296,6 +297,22 @@ async function main() {
     alertThresholdType: "percent",
     alertThresholdValue: "80.00",
   });
+
+  // Previdenza: un fondo aperto da 4 anni, con solo TFR versato ogni trimestre (valori inventati).
+  const [pensionFund] = await db
+    .insert(pensionFunds)
+    .values({ userId: DEMO_USER_ID, name: "Piano pensione", adhesionDate: iso(new Date(Date.UTC(today.getUTCFullYear() - 4, today.getUTCMonth(), 15))) })
+    .returning();
+  const pensionQuarters = 16;
+  const quarterlyTfr = 620;
+  let pensionValue = 0;
+  await db.insert(pensionSnapshots).values(
+    Array.from({ length: pensionQuarters }, (_, i) => {
+      pensionValue = (pensionValue + quarterlyTfr) * (1 + between(-0.012, 0.028));
+      const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 3 * (pensionQuarters - 1 - i), 1));
+      return { fundId: pensionFund.id, userId: DEMO_USER_ID, date: iso(date), netContributions: ((i + 1) * quarterlyTfr).toFixed(2), value: pensionValue.toFixed(2) };
+    })
+  );
 
   // Lo storico del patrimonio netto lo ricostruisce il codice vero dell'app (lo stesso del cron giornaliero).
   await snapshotUser(DEMO_USER_ID);

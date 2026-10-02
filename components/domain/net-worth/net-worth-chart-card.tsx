@@ -4,6 +4,8 @@
  */
 
 import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { NetWorthChange, NetWorthPeriod, NetWorthSeriesPoint } from "@/lib/calc/net-worth";
@@ -19,6 +21,12 @@ const AREA_FILL_ID_PREFIX = "net-worth-area-fill-";
 const DEFAULT_CLASS = "liquidita";
 /** Classe in negativo: non si impila (le aree sono i beni), si mostra nel tooltip e nella linea del netto. */
 const LIABILITY_CLASS = "debiti";
+
+/** Classe che l'utente può escludere dal totale: i soldi sono suoi ma non subito disponibili. */
+const PENSION_CLASS = "previdenza";
+const PENSION_SWITCH_LABEL = "Includi la previdenza nel totale";
+const PENSION_EXCLUDED_NOTE = "Area grigia: previdenza, non inclusa nel totale";
+const PENSION_EXCLUDED_TOTAL_LABEL = "Totale senza previdenza";
 
 const PERIOD_CHANGE_LABELS: Record<NetWorthPeriod, string> = {
   "1mese": "nell'ultimo mese",
@@ -39,9 +47,20 @@ export interface NetWorthChartCardProps {
   period: NetWorthPeriod;
   onPeriodChange: (period: NetWorthPeriod) => void;
   currency: string;
+  /** Se la previdenza conta nel totale (la serie e `change` sono già calcolati di conseguenza). Con `onPensionIncludedChange` mostra l'interruttore. */
+  pensionIncluded?: boolean;
+  onPensionIncludedChange?: (included: boolean) => void;
 }
 
-export function NetWorthChartCard({ series, change, period, onPeriodChange, currency }: NetWorthChartCardProps) {
+export function NetWorthChartCard({
+  series,
+  change,
+  period,
+  onPeriodChange,
+  currency,
+  pensionIncluded = true,
+  onPensionIncludedChange,
+}: NetWorthChartCardProps) {
   const hasHistory = series.length >= 2;
   const isNegative = change.delta < 0;
   const sign = isNegative ? "−" : "+";
@@ -51,6 +70,10 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
   const assetClasses = presentClasses.filter((key) => key !== LIABILITY_CLASS);
   const classes = assetClasses.length > 0 ? assetClasses : [DEFAULT_CLASS];
   const tooltipClasses = hasDebts ? [...classes, LIABILITY_CLASS] : classes;
+  const hasPension = classes.includes(PENSION_CLASS);
+  const pensionExcluded = hasPension && !pensionIncluded;
+  // Senza previdenza il bordo dell'area non è più il totale: serve la linea del netto.
+  const showNetLine = hasDebts || pensionExcluded;
 
   return (
     <Card>
@@ -73,6 +96,14 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
           )}
         </div>
         {hasHistory ? <NetWorthPeriodSelector value={period} onChange={onPeriodChange} /> : null}
+        {hasPension && onPensionIncludedChange ? (
+          <div className="flex w-full items-center gap-2">
+            <Switch id="pension-in-net-worth" size="sm" checked={pensionIncluded} onCheckedChange={onPensionIncludedChange} />
+            <Label htmlFor="pension-in-net-worth" className="text-xs font-normal text-muted-foreground">
+              {PENSION_SWITCH_LABEL}
+            </Label>
+          </div>
+        ) : null}
       </CardHeader>
       {hasHistory ? (
         <CardContent>
@@ -81,14 +112,14 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
               <defs>
                 {classes.map((key) => (
                   <linearGradient key={key} id={`${AREA_FILL_ID_PREFIX}${key}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={0.55} />
-                    <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={0.15} />
+                    <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.3 : 0.55} />
+                    <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.08 : 0.15} />
                   </linearGradient>
                 ))}
               </defs>
               <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
               <YAxis hide />
-              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} />} />
+              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} totalLabel={pensionExcluded ? PENSION_EXCLUDED_TOTAL_LABEL : undefined} />} />
               {classes.map((key) => (
                 <Area
                   key={key}
@@ -98,10 +129,11 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
                   stackId={STACK_ID}
                   stroke={`var(--color-${key})`}
                   strokeWidth={2}
+                  strokeDasharray={key === PENSION_CLASS && pensionExcluded ? "2 3" : undefined}
                   fill={`url(#${AREA_FILL_ID_PREFIX}${key})`}
                 />
               ))}
-            {hasDebts ? (
+            {showNetLine ? (
                 <Line
                   type="monotone"
                   dataKey="value"
@@ -114,7 +146,7 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
               ) : null}
             </ComposedChart>
           </ChartContainer>
-          {classes.length > 1 || hasDebts ? (
+          {classes.length > 1 || showNetLine ? (
             <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
               {tooltipClasses.map((key) => (
                 <li key={key} className="flex items-center gap-1.5">
@@ -122,7 +154,8 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
                   {assetClassLabel(key)}
                 </li>
               ))}
-              {hasDebts ? <li className="text-muted-foreground">Linea tratteggiata: patrimonio netto</li> : null}
+              {showNetLine ? <li className="text-muted-foreground">Linea tratteggiata: patrimonio netto</li> : null}
+              {pensionExcluded ? <li className="text-muted-foreground">{PENSION_EXCLUDED_NOTE}</li> : null}
             </ul>
           ) : null}
         </CardContent>

@@ -30,6 +30,12 @@ export interface ProductEvents {
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" | "draw" | "repay" | "interest_charged" };
   /** `filter`: quali filtri erano attivi quando l'utente ha collegato la transazione alla rata. */
   debt_installment_transaction_linked: { filter: "nessuno" | "testo" | "categoria" | "entrambi" };
+  pension_fund_added: undefined;
+  pension_fund_updated: undefined;
+  pension_fund_deleted: undefined;
+  /** `existing`: quante fotografie aveva già il fondo (0 = la prima). */
+  pension_snapshot_saved: { existing: number };
+  pension_snapshot_deleted: undefined;
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;

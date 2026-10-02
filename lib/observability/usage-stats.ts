@@ -21,10 +21,12 @@ interface UsageRow {
   f_rules: number;
   f_investments: number;
   f_debts: number;
+  f_pension: number;
   r_accounts: number;
   r_transactions: number;
   r_investment_operations: number;
   r_debts: number;
+  r_pension_snapshots: number;
 }
 
 let cache: { at: number; value: UsageSnapshot } | null = null;
@@ -53,10 +55,12 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       (select count(distinct user_id)::int from categorization_rules) as f_rules,
       (select count(distinct user_id)::int from investment_transactions) as f_investments,
       (select count(distinct user_id)::int from debts) as f_debts,
+      (select count(distinct user_id)::int from pension_funds) as f_pension,
       (select count(*)::int from accounts) as r_accounts,
       (select count(*)::int from transactions) as r_transactions,
       (select count(*)::int from investment_transactions) as r_investment_operations,
-      (select count(*)::int from debts) as r_debts
+      (select count(*)::int from debts) as r_debts,
+      (select count(*)::int from pension_snapshots) as r_pension_snapshots
   `;
   const value: UsageSnapshot = {
     users: { registered: row.registered, onboarded: row.onboarded, deactivated: row.deactivated },
@@ -70,12 +74,14 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       rules: row.f_rules,
       investments: row.f_investments,
       debts: row.f_debts,
+      pension: row.f_pension,
     },
     records: {
       accounts: row.r_accounts,
       transactions: row.r_transactions,
       investment_operations: row.r_investment_operations,
       debts: row.r_debts,
+      pension_snapshots: row.r_pension_snapshots,
     },
   };
   cache = { at: now, value };

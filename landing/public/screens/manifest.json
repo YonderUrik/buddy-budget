@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-01T21:11:52.050Z",
+  "capturedAt": "2026-10-02T10:11:38.339Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -56,6 +56,16 @@
       "id": "tasse",
       "theme": "light",
       "route": "/investimenti/tasse"
+    },
+    {
+      "id": "pensione",
+      "theme": "light",
+      "route": "/pensione"
+    },
+    {
+      "id": "pensione-scenari",
+      "theme": "light",
+      "route": "/pensione/scenari"
     },
     {
       "id": "debiti",
@@ -121,6 +131,16 @@
       "id": "tasse",
       "theme": "dark",
       "route": "/investimenti/tasse"
+    },
+    {
+      "id": "pensione",
+      "theme": "dark",
+      "route": "/pensione"
+    },
+    {
+      "id": "pensione-scenari",
+      "theme": "dark",
+      "route": "/pensione/scenari"
     },
     {
       "id": "debiti",

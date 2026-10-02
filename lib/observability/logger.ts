@@ -41,6 +41,9 @@ export interface LogFields {
   symbol?: string;
   /** Versione dei documenti legali (data, `LEGAL_VERSION`): non è un dato personale. */
   legalVersion?: string;
+  /** Sessioni e token di verifica scaduti eliminati dal cron di conservazione (conteggi). */
+  sessionsPurged?: number;
+  verificationsPurged?: number;
   error?: unknown;
 }
 

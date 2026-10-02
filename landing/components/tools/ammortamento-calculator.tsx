@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { BalanceViz, SplitBar } from "@/components/viz/viz";
 import { groupThousands } from "@/lib/format";
 import { buildFrenchPlan, simulateEarlyRepayment } from "@/lib/tools/ammortamento";
 
@@ -20,6 +21,7 @@ export function AmmortamentoCalculator() {
   const P = Math.max(0, num(principal));
   const valid = P > 0 && num(rate) >= 0;
   const plan = valid ? buildFrenchPlan(P, num(rate), months) : null;
+  const yearly = plan ? [P, ...plan.rows.filter((r) => r.n % 12 === 0 || r.n === months).map((r) => r.balance)] : [];
   const afterMonths = Math.min(months - 1, Math.max(1, Math.round(num(after) * 12)));
   const early = valid && months > 1 ? simulateEarlyRepayment({ principal: P, annualRatePct: num(rate), months, afterMonths, extra: Math.max(0, num(extra)), penaltyPct: Math.max(0, num(penalty)) }) : null;
 
@@ -36,6 +38,8 @@ export function AmmortamentoCalculator() {
           <h2>Il piano</h2>
           {plan ? (
             <div className="res">
+              <SplitBar parts={[{ label: "Capitale", value: P, tone: "pos" }, { label: "Interessi", value: plan.totalInterest, tone: "neg" }]} />
+              <BalanceViz balances={yearly} />
               <div className="row key"><span>Rata mensile</span><b>{eur2(plan.installment)}</b></div>
               <div className="row"><span>Interessi totali</span><b>{eur2(plan.totalInterest)}</b></div>
               <div className="row"><span>Totale pagato</span><b>{eur2(plan.totalPaid)}</b></div>
@@ -57,7 +61,7 @@ export function AmmortamentoCalculator() {
           {early ? (
             <div className="res">
               <div className="row"><span>Interessi risparmiati</span><b>{eur2(early.interestSaved)}</b></div>
-              <div className="row"><span>Penale</span><b>−{eur2(early.penalty)}</b></div>
+              <div className="row"><span>Penale</span><b>{early.penalty > 0 ? "−" : ""}{eur2(early.penalty)}</b></div>
               <div className="row key"><span>Risparmio netto</span><b>{eur2(early.netSaving)}</b></div>
               <div className="row"><span>Stessa rata: rate che restano</span><b>{early.monthsLeftSameInstallment}</b></div>
               <div className="row"><span>Stessa durata: nuova rata</span><b>{eur2(early.newInstallmentSameTerm)}</b></div>

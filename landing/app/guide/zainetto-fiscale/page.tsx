@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
+import { GuideExample } from "@/components/guide-example";
 import { JsonLd } from "@/components/json-ld";
+import { TimelineViz } from "@/components/viz/viz";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
@@ -25,22 +27,19 @@ export default function Page() {
       <h2>Che cos&apos;è</h2>
       <p>Quando vendi azioni, ETF o altri strumenti e incassi più di quanto hai pagato, hai una plusvalenza e paghi di norma il 26%. Se incassi meno, hai una minusvalenza. Le minusvalenze possono compensare le plusvalenze della stessa categoria, riducendo l&apos;imposta. Quelle che non riesci a usare subito restano &ldquo;nello zainetto&rdquo;.</p>
       <h2>Per quanto tempo si porta</h2>
+      <div className="inline-viz"><TimelineViz /></div>
       <p>Una minusvalenza si può riportare fino al quarto anno successivo a quello in cui è stata realizzata. Una perdita del 2023 si può usare fino al 2027; dal 2028 è scaduta. Se hai più perdite, di norma si parte dalle più vecchie.</p>
       <h2>Un esempio</h2>
-      <ul>
-        <li>Nel 2023 vendi in perdita: minusvalenza di 1.500 €.</li>
-        <li>Nel 2025 vendi in perdita: minusvalenza di 2.000 €.</li>
-        <li>Nel 2026 realizzi una plusvalenza di 3.000 €.</li>
-      </ul>
+      <GuideExample />
       <p>Compensi prima i 1.500 € del 2023 e poi 1.500 € dei 2.000 € del 2025: la base imponibile è zero, l&apos;imposta evitata è 780 € (il 26% di 3.000) e restano 500 € di minusvalenza utilizzabili fino al 2029. Prova i tuoi numeri con il <Link href={CONTENT_PATHS.zainetto}>calcolatore dello zainetto fiscale</Link>.</p>
       <h2>Regime amministrato o dichiarativo</h2>
       <p>Se il tuo intermediario opera in regime amministrato, di norma tiene lui il conto delle minusvalenze e applica le compensazioni. Se lavori in regime dichiarativo, o hai più intermediari, devi riportare le minusvalenze nella dichiarazione dei redditi: tenerne traccia diventa fondamentale per non perderle.</p>
       <h2>Errori comuni</h2>
-      <ul>
-        <li>Lasciar scadere una minusvalenza senza usarla.</li>
-        <li>Dimenticare le perdite realizzate presso un altro intermediario.</li>
-        <li>Confondere le regole degli strumenti diversi: titoli di Stato, fondi e crypto hanno trattamenti propri.</li>
-      </ul>
+      <div className="tips">
+        <div><b>1</b><p>Lasciar scadere una minusvalenza senza usarla.</p></div>
+        <div><b>2</b><p>Dimenticare le perdite realizzate presso un altro intermediario.</p></div>
+        <div><b>3</b><p>Confondere le regole degli strumenti diversi: titoli di Stato, fondi e crypto hanno trattamenti propri.</p></div>
+      </div>
       <h2>Domande rapide</h2>
       <h3>Le minusvalenze compensano anche i dividendi?</h3>
       <p>In generale no: i redditi di capitale e i redditi diversi sono categorie distinte. Verifica il tuo caso.</p>

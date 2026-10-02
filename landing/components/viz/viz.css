@@ -1,0 +1,35 @@
+.viz { width: 100%; height: auto; display: block; overflow: visible; }
+.viz-wide { height: 130px; }
+.viz-t { font: 600 10px var(--f-b); fill: var(--ink3); }
+.viz-neg { fill: var(--a-neg); }
+.viz-pos { fill: var(--a-pos); }
+.viz-fill { fill: var(--sky); opacity: 0.9; }
+.viz-dot { fill: var(--sky); }
+.viz-end { fill: var(--sun); }
+.viz-axis { stroke: var(--line); stroke-width: 2; }
+.viz-span { fill: var(--glow); }
+.viz-flow { fill: none; stroke: var(--sun); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 5 6; }
+.viz-line { fill: none; stroke: var(--sky); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.viz-area { fill: var(--glow); }
+.split-bar { display: flex; height: 18px; border-radius: 999px; overflow: hidden; background: var(--line); gap: 2px; }
+.split-seg { flex-basis: 0; min-width: 0; transition: flex-grow 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.split-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 13px; color: var(--ink2); }
+.split-legend .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+.tone-pos { background: var(--a-pos); } .tone-acc { background: var(--sky); } .tone-neg { background: var(--a-neg); } .tone-mut { background: var(--ink3); }
+
+/* L'animazione parte quando il disegno entra in vista (dove i timeline di scroll esistono); altrove resta lo stato finale. */
+@keyframes viz-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes viz-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes viz-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes viz-march { to { stroke-dashoffset: -22; } }
+@keyframes viz-pulse { 0%, 100% { r: 5; } 50% { r: 8; } }
+@media (prefers-reduced-motion: no-preference) {
+  .viz-bar, .viz-col, .viz-dot { transform-box: fill-box; transform-origin: bottom; }
+  .viz-flow { animation: viz-march 1.2s linear infinite; }
+  .viz-end { animation: viz-pulse 2s ease-in-out infinite; }
+  @supports (animation-timeline: view()) {
+    .viz-bar, .viz-col, .viz-dot { animation: viz-grow 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: var(--d, 0s); animation-timeline: view(); animation-range: entry 10% entry 90%; }
+    .viz-line { stroke-dasharray: 1; animation: viz-draw 1s linear both; animation-timeline: view(); animation-range: entry 10% cover 40%; }
+    .viz-area { animation: viz-fade 1s linear both; animation-timeline: view(); animation-range: entry 20% cover 50%; }
+  }
+}

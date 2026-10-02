@@ -89,8 +89,15 @@
     {
       "idx": 12,
       "version": "7",
-      "when": 1790939282198,
-      "tag": "0012_pensione",
+      "when": 1790938746278,
+      "tag": "0012_gocardless_avvisi_consenso",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790939798965,
+      "tag": "0013_pensione",
       "breakpoints": true
     }
   ]

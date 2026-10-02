@@ -21,6 +21,12 @@ export const bankConnections = pgTable("bank_connections", {
   requisitionId: text("requisition_id"),
   status: bankConnectionStatusEnum("status").notNull().default("pending"),
   consentExpiresAt: timestamp("consent_expires_at", { withTimezone: true }),
+  // Avvisi email già inviati per questa connessione (uno per fase): evitano di ripeterli a ogni giro del cron.
+  expiryWarningSentAt: timestamp("expiry_warning_sent_at", { withTimezone: true }),
+  expiredNoticeSentAt: timestamp("expired_notice_sent_at", { withTimezone: true }),
+  // Prima volta che la pulizia ha visto la connessione senza conti collegati; azzerato se ne torna uno.
+  // Il periodo di grazia prima di eliminare la requisition parte da qui, non da createdAt.
+  orphanedAt: timestamp("orphaned_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -6,3 +6,4 @@
 .who .sig b { display: block; font: 600 18px var(--f-h); }
 .who .sig span { color: var(--ink3); font-size: 14px; }
 @media (max-width: 1000px) { .who { grid-template-columns: 1fr; gap: 40px; } .mono { max-width: 240px; } }
+.mono .mark .mk2 { fill: var(--on-navy2); }

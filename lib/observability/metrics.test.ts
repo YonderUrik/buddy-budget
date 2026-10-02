@@ -92,4 +92,27 @@ describe("metriche applicative", () => {
     expect(t).not.toMatch(/^buddybudget_cron_last_success_timestamp_seconds\{/m);
     expect(t).not.toMatch(/^buddybudget_sync_jobs\{/m);
   });
+
+  it("espone i numeri di utilizzo letti allo scrape", async () => {
+    configureAsyncGauges({
+      usage: async () => ({
+        users: { registered: 12, onboarded: 10, deactivated: 1 },
+        newUsers: { "7d": 3, "30d": 9 },
+        activeUsers: { "24h": 2, "7d": 6, "30d": 8 },
+        usersWithFeature: { accounts: 9, bank_connection: 4, transactions: 8, budgets: 3, rules: 2, investments: 5, debts: 1 },
+        records: { accounts: 20, transactions: 4000, investment_operations: 150, debts: 2 },
+      }),
+    });
+    const t = await text();
+    expect(t).toContain('buddybudget_users{state="registered"} 12');
+    expect(t).toContain('buddybudget_users_new{window="7d"} 3');
+    expect(t).toContain('buddybudget_users_active{window="30d"} 8');
+    expect(t).toContain('buddybudget_users_with_feature{feature="investments"} 5');
+    expect(t).toContain('buddybudget_records{kind="transactions"} 4000');
+  });
+
+  it("senza lettura dell'utilizzo le gauge non emettono campioni", async () => {
+    configureAsyncGauges({ usage: async () => Promise.reject(new Error("db giù")) });
+    expect(await text()).not.toMatch(/^buddybudget_users\{/m);
+  });
 });

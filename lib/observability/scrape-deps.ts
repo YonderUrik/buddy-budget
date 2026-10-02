@@ -4,6 +4,7 @@ import { checkReadiness } from "@/lib/health/readiness";
 import { redis } from "@/lib/redis/client";
 import type { AsyncGaugeDeps } from "./metrics";
 import { redisOpsStore } from "./redis-ops-store";
+import { readUsageSnapshot } from "./usage-stats";
 
 /**
  * Letture reali delle gauge asincrone (Postgres, Redis, stato operativo su Redis). Separate dal registry così `metrics.ts`
@@ -22,5 +23,6 @@ export function createScrapeDeps(): AsyncGaugeDeps {
     },
     cronLastSuccess: () => redisOpsStore.getCronSuccesses(),
     syncJobs: () => redisOpsStore.countJobs(Date.now()),
+    usage: () => readUsageSnapshot(),
   };
 }

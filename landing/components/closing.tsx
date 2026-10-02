@@ -1,4 +1,6 @@
 import "./closing.css";
+import Link from "next/link";
+import { LEGAL_PATHS } from "@/content/legal";
 import { APP_LINKS } from "@/content/site";
 import { ARROW_ICON, CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
@@ -22,6 +24,11 @@ export function Closing() {
         <footer>
           <span>© BuddyBudget · creato da Daniele</span>
           <span>Le schermate del sito usano dati di esempio inventati</span>
+          <nav className="legal-links" aria-label="Documenti legali">
+            <Link href={LEGAL_PATHS.privacy}>Privacy</Link>
+            <Link href={LEGAL_PATHS.termini}>Termini</Link>
+            <Link href={LEGAL_PATHS.cookie}>Cookie</Link>
+          </nav>
         </footer>
       </div>
     </TrackedSection>

@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { CurrencyPicker } from "@/components/domain/auth";
+import { CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_AFTER_LOGIN_PATH } from "@/lib/auth/constants";
 import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/currency";
@@ -14,6 +14,7 @@ import { track } from "@/lib/analytics";
 export default function OnboardingPage() {
   const router = useRouter();
   const [currency, setCurrency] = useState<SupportedCurrency>(DEFAULT_CURRENCY);
+  const { consent, setConsent, complete, payload } = useLegalConsent();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,11 +27,12 @@ export default function OnboardingPage() {
       const response = await fetch("/api/user/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currency }),
+        body: JSON.stringify({ currency, legal: payload }),
       });
 
       if (response.ok) {
         track("onboarding_completed", { currency });
+        track("terms_accepted", { context: "onboarding" });
         router.replace(DEFAULT_AFTER_LOGIN_PATH);
         router.refresh();
         return;
@@ -54,13 +56,15 @@ export default function OnboardingPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <CurrencyPicker value={currency} onChange={setCurrency} disabled={loading} />
 
+        <LegalConsentFields value={consent} onChange={setConsent} disabled={loading} />
+
         {error && (
           <p className="rounded-lg bg-neg-soft p-3 text-sm text-neg" role="alert">
             {error}
           </p>
         )}
 
-        <Button type="submit" className="h-11 w-full text-base" disabled={loading}>
+        <Button type="submit" className="h-11 w-full text-base" disabled={loading || !complete}>
           {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
           {loading ? "Salvataggio in corso…" : "Inizia"}
         </Button>

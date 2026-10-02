@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/client";
 import { MAGIC_LINK_EXPIRES_MINUTES, MAGIC_LINK_RESEND_COOLDOWN_SECONDS } from "@/lib/auth/constants";
 import { GoogleIcon } from "./google-icon";
+import { LegalLinksNote } from "./legal-links-note";
 
 const RATE_LIMIT_STATUS = 429;
 
@@ -181,6 +182,8 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         {googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
         {googleLoading ? "Reindirizzamento…" : "Continua con Google"}
       </Button>
+
+      <LegalLinksNote />
     </div>
   );
 }

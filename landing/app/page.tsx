@@ -5,6 +5,7 @@ import { HeadingReveals } from "@/components/heading-reveals";
 import { Numbers } from "@/components/numbers";
 import { Hero } from "@/components/hero";
 import { ProductTour } from "@/components/product-tour";
+import { Security } from "@/components/security";
 import { ScreenGallery } from "@/components/screen-gallery";
 import { SiteNav } from "@/components/site-nav";
 import { Story } from "@/components/story";
@@ -22,6 +23,7 @@ export default function HomePage() {
         <ScreenGallery />
         <FeaturesSection />
         <Comparison />
+        <Security />
         <Closing />
       </main>
     </>

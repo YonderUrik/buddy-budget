@@ -57,7 +57,7 @@ jobs:
       RESEND_FROM: demo@example.com
       GOCARDLESS_SECRET_ID: demo
       GOCARDLESS_SECRET_KEY: demo
-      CRON_SECRET: ci-only-cron-secret
+      CRON_SECRET: ci-only-placeholder-cron-secret-0000000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

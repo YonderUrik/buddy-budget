@@ -37,6 +37,8 @@ Fase di **autenticazione completata**, schermata **Conti implementata** (gestion
 
 ## Log delle decisioni
 
+- **2026-10-02** — **Landing, Sicurezza: riquadri animati.** Ogni riquadro ha una piccola illustrazione SVG animata (password che svaniscono e arriva il link, righe lette da una scansione con lucchetto, stelle europee, cartellino barrato, log con dati coperti, interruttore che maschera gli importi), che parte quando il riquadro entra in vista. Al passaggio del mouse il riquadro si solleva; la mappa resta fissa mentre si scorre. Solo CSS e SVG, nessuna libreria; con `prefers-reduced-motion` restano ferme. **Lezione**: non mettere `transition: transform` su elementi che GSAP anima con `transform` (l'ingresso si blocca a metà): per l'hover usare la proprietà `translate`.
+
 - **2026-10-02** — **Landing, Sicurezza: mappa a puntini.** La mappa a contorni era poco leggibile e la linea Italia-Germania confusa (feedback dell'utente). Ora è una mappa a puntini (Natural Earth 50m, generata una tantum, `landing/content/europe-map.ts`) con la Germania in azzurro; un'onda parte dal server e scopre l'Europa, il punto pulsa. Tolta la linea tratteggiata. Resta `prefers-reduced-motion` rispettato.
 
 - **2026-10-02** — **Landing, Sicurezza: mappa del server.** Mappa d'Europa con la Germania evidenziata, bandiera in SVG, punto pulsante del server e linea cifrata animata da un utente in Italia (`landing/components/server-map.tsx`). I contorni sono generati una tantum da Natural Earth (110m, dominio pubblico) con d3-geo e salvati in `landing/content/europe-map.ts` (10 KB, nessuna libreria a runtime). Le animazioni rispettano `prefers-reduced-motion`. Il pin è su Düsseldorf; i testi parlano solo di "Germania".

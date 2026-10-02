@@ -1,7 +1,6 @@
 import { Closing } from "@/components/closing";
 import { Comparison } from "@/components/comparison";
 import { FeaturesSection } from "@/components/features-section";
-import { Founder } from "@/components/founder";
 import { HeadingReveals } from "@/components/heading-reveals";
 import { Numbers } from "@/components/numbers";
 import { Hero } from "@/components/hero";
@@ -23,7 +22,6 @@ export default function HomePage() {
         <ScreenGallery />
         <FeaturesSection />
         <Comparison />
-        <Founder />
         <Closing />
       </main>
     </>

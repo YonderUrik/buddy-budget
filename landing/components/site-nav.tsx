@@ -20,7 +20,6 @@ export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
   { href: "#schermate", label: "Schermate" },
   { href: "#funzioni", label: "Funzioni" },
   { href: "#perche", label: "Perché" },
-  { href: "#chi", label: "Chi siamo" },
 ];
 
 /** Barra fissa in alto. Passa allo stile scuro quando sta sopra una sezione `data-nav-dark`. */

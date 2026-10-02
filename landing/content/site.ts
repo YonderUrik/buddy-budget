@@ -81,9 +81,3 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   { need: "Ammortamento ed estinzione anticipata", budgetApp: c("no", "No"), investApp: c("no", "No"), sheet: c("half", "A mano"), us: US },
   { need: "Un solo patrimonio netto nel tempo", budgetApp: c("half", "Parziale"), investApp: c("half", "Parziale"), sheet: c("no", "A mano"), us: US },
 ];
-
-export const FOUNDER = {
-  name: "Daniele",
-  role: "Sviluppa BuddyBudget",
-  text: "BuddyBudget lo sviluppa Daniele, da solo, e lo usa ogni giorno per i suoi soldi. Le funzioni escono una alla volta: quelle in arrivo sono segnate tra le funzioni.",
-} as const;

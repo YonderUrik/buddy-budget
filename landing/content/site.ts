@@ -90,7 +90,11 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   { need: "Un solo patrimonio netto nel tempo", budgetApp: c("half", "Parziale"), investApp: c("half", "Parziale"), sheet: c("no", "A mano"), us: US },
 ];
 
+/** Illustrazione animata del riquadro (vedi `SecurityArt`). */
+export type SecurityArtId = "password" | "bank" | "europe" | "sell" | "logs" | "control";
+
 export interface SecurityPoint {
+  art: SecurityArtId;
   title: string;
   text: string;
 }
@@ -101,12 +105,12 @@ export const SECURITY = {
   title: "I tuoi soldi sono affari tuoi. Anche per noi.",
   intro: "Un'app che vede i tuoi conti deve meritarsi la fiducia. Ecco cosa facciamo, in concreto.",
   points: [
-    { title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
-    { title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
-    { title: "Dati in Europa", text: "App e database girano su un server in Germania. Le connessioni sono cifrate." },
-    { title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
-    { title: "Log senza dati personali", text: "I registri tecnici non contengono email, importi, descrizioni dei movimenti né IBAN: l'utente compare solo come codice pseudonimo." },
-    { title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
+    { art: "password", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
+    { art: "bank", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
+    { art: "europe", title: "Dati in Europa", text: "App e database girano su un server in Germania. Le connessioni sono cifrate." },
+    { art: "sell", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
+    { art: "logs", title: "Log senza dati personali", text: "I registri tecnici non contengono email, importi, descrizioni dei movimenti né IBAN: l'utente compare solo come codice pseudonimo." },
+    { art: "control", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
   ] satisfies readonly SecurityPoint[],
   legalNote: "Maggiori dettagli nella",
 } as const;

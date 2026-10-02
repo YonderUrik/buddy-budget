@@ -162,6 +162,9 @@ export function exitTaxRate(years: number): number {
   return Math.max(r.exitMinRate, r.exitBaseRate - reduction);
 }
 
+/** Anni di partecipazione dopo i quali l'aliquota in uscita raggiunge il minimo (fine della linea del tempo). */
+export const EXIT_TAX_TIMELINE_YEARS = 35;
+
 /** Quando l'aliquota comincia a scendere e quando arriva al minimo, dalla data di prima adesione. */
 export function exitTaxMilestones(adhesionDate: string): { reductionStartsOn: string; minRateOn: string } {
   const r = PENSION_TAX_RULES;
@@ -188,8 +191,15 @@ export interface WithdrawalScenario {
  * Netto stimato se si prelevasse oggi, in tre ipotesi. Non tiene conto di limiti di legge sulle ipotesi di
  * prelievo, di eventuali costi di uscita del prodotto né della quota che alla pensione va in rendita.
  */
-export function withdrawalScenarios(value: number, netContributions: number, adhesionDate: string | null, today: string): WithdrawalScenario[] {
-  const years = adhesionDate ? wholeYearsBetween(adhesionDate, today) : 0;
+export function withdrawalScenarios(
+  value: number,
+  netContributions: number,
+  adhesionDate: string | null,
+  today: string,
+  /** Anni di partecipazione da usare al posto di quelli reali (simulazione locale dell'aliquota). */
+  yearsOverride?: number,
+): WithdrawalScenario[] {
+  const years = yearsOverride ?? (adhesionDate ? wholeYearsBetween(adhesionDate, today) : 0);
   const reduced = exitTaxRate(years);
   const base = Math.min(value, Math.max(0, netContributions));
   const make = (reason: WithdrawalReason, rate: number): WithdrawalScenario => ({
@@ -282,6 +292,8 @@ export interface YearBreakdown {
   /** Variazione di valore non dovuta ai versamenti; può essere negativa. */
   gain: number;
   endValue: number;
+  /** Rendimento in percentuale (0,05 = 5%): `gain` diviso il valore a inizio anno più i versamenti dell'anno. Null se quella base non è positiva. Non annualizzato per l'anno in corso. */
+  returnRate: number | null;
   /** Vero se l'anno non è finito (ultima fotografia prima del 31/12). */
   partial: boolean;
 }
@@ -301,7 +313,9 @@ export function yearlyBreakdown(snapshots: PensionSnapshot[]): YearBreakdown[] {
     const end = lastOfYear.get(year)!;
     const contributions = end.netContributions - previous.netContributions;
     const gain = end.value - previous.value - contributions;
+    const previousValue = previous.value;
     previous = end;
-    return { year, contributions, gain, endValue: end.value, partial: end === latest && !end.date.endsWith("-12-31") };
+    const base = previousValue + contributions;
+    return { year, contributions, gain, endValue: end.value, returnRate: base > 0 ? gain / base : null, partial: end === latest && !end.date.endsWith("-12-31") };
   });
 }

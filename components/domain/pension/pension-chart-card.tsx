@@ -4,9 +4,10 @@
 
 import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { PensionSnapshot } from "@/lib/calc/pension";
-import { formatChartDate, money } from "./pension-format";
+import { PensionChartTooltip } from "./pension-chart-tooltip";
+import { formatChartDate } from "./pension-format";
 
 export interface PensionChartCardProps {
   snapshots: PensionSnapshot[];
@@ -41,7 +42,7 @@ export function PensionChartCard({ snapshots, currency }: PensionChartCardProps)
                 <YAxis hide domain={[0, "auto"]} />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent indicator="dot" formatter={(v) => money(Number(v), currency)} />}
+                  content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => String(point.label ?? "")} />}
                 />
                 <Area type="stepAfter" dataKey="netContributions" stroke="var(--color-netContributions)" strokeWidth={2} fill="url(#pension-contributions-fill)" />
                 <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2.5} dot={false} />

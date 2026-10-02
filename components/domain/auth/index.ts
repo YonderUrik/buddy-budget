@@ -17,3 +17,5 @@ export type { NewFeatureNoteProps } from "./new-feature-note";
 export { LATEST_FEATURE } from "./new-feature.data";
 export type { NewFeature } from "./new-feature.data";
 export type { UpcomingFeaturesProps } from "./upcoming-features";
+export { LegalLinksNote } from "./legal-links-note";
+export type { LegalLinksNoteProps } from "./legal-links-note";

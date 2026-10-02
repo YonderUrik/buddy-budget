@@ -9,3 +9,6 @@
 .end::before { content: ""; position: absolute; inset: -10% 10% auto; height: 60%; background: radial-gradient(closest-side, rgba(33, 158, 188, 0.32), transparent); filter: blur(24px); pointer-events: none; }
 .end .wrap { position: relative; }
 .end h2 { background: linear-gradient(180deg, #fff 30%, #8e8e99); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.end .legal-links { display: flex; gap: 18px; }
+.end .legal-links a { color: var(--on-navy2); text-decoration: none; }
+.end .legal-links a:hover { color: #fff; text-decoration: underline; }

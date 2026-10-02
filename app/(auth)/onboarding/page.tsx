@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { CurrencyPicker } from "@/components/domain/auth";
+import { CurrencyPicker, LegalLinksNote } from "@/components/domain/auth";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_AFTER_LOGIN_PATH } from "@/lib/auth/constants";
 import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/currency";
@@ -65,6 +65,8 @@ export default function OnboardingPage() {
           {loading ? "Salvataggio in corso…" : "Inizia"}
         </Button>
       </form>
+
+      <LegalLinksNote />
     </div>
   );
 }

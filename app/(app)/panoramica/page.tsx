@@ -20,6 +20,7 @@ import { endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
 import {
   buildNetWorthSeries,
   computeNetWorthChange,
+  excludeClassFromSeries,
   toDateKey,
   type NetWorthByClass,
   type NetWorthPeriod,
@@ -30,6 +31,7 @@ import { useDebtsQuery } from "@/lib/queries/debts";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
+import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
@@ -100,9 +102,12 @@ export default function PanoramicaPage() {
     ...(pension ? { previdenza: pension.value } : {}),
     ...(debts ? { debiti: -debts.total } : {}),
   };
-  const series = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
+  const [pensionIncluded, setPensionIncluded] = usePensionInNetWorth();
+  const fullSeries = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
+  // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
+  const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts, investments, debts, pension);
+  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null);
   const [currentMonth] = computeMonthlySeries(monthTransactionsQuery.data ?? [], monthRange);
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
@@ -141,6 +146,8 @@ export default function PanoramicaPage() {
             period={period}
             onPeriodChange={setPeriod}
             currency={currency}
+            pensionIncluded={pensionIncluded}
+            onPensionIncludedChange={setPensionIncluded}
           />
           <AttentionSection currency={currency} />
           <NetWorthCompositionRow items={compositionItems} currency={currency} />

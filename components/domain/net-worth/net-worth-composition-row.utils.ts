@@ -48,7 +48,11 @@ export interface PensionComposition {
   /** Valore complessivo oggi: ultima fotografia di ogni fondo. */
   value: number;
   funds: number;
+  /** Escluso dal patrimonio dall'utente: resta in elenco ma non pesa sulle quote. */
+  excluded?: boolean;
 }
+
+const PENSION_EXCLUDED_DETAIL = "fuori dal totale";
 
 /** Voci di composizione per le sole classi presenti: Liquidità (se ci sono conti), Investimenti, Previdenza e Debiti (in negativo). */
 export function buildCompositionItems(
@@ -82,7 +86,7 @@ export function buildCompositionItems(
     items.push({
       key: "previdenza",
       label: ASSET_CLASS_LABELS.previdenza,
-      detail: pension.funds === 1 ? "1 fondo" : `${pension.funds} fondi`,
+      detail: `${pension.funds === 1 ? "1 fondo" : `${pension.funds} fondi`}${pension.excluded ? ` · ${PENSION_EXCLUDED_DETAIL}` : ""}`,
       amount: pension.value,
       href: "/pensione",
     });
@@ -99,9 +103,13 @@ export function buildCompositionItems(
       isLiability: true,
     });
   }
-  const positiveTotal = items.reduce((sum, i) => sum + Math.max(0, i.amount), 0);
+  const counts = (item: Omit<NetWorthCompositionItem, "share">) => !(item.key === "previdenza" && pension?.excluded);
+  const positiveTotal = items.reduce((sum, i) => sum + (counts(i) ? Math.max(0, i.amount) : 0), 0);
   return [
-    ...items.map((item) => ({ ...item, share: positiveTotal > 0 ? Math.max(0, item.amount) / positiveTotal : 0 })),
+    ...items.map((item) => ({
+      ...item,
+      share: positiveTotal > 0 && counts(item) ? Math.max(0, item.amount) / positiveTotal : 0,
+    })),
     ...liabilities,
   ];
 }

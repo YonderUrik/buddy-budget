@@ -142,7 +142,11 @@ export async function loadSidebarSummary(userId: string): Promise<SidebarSummary
   if (hasAnyAccount) {
     const total = liquid + (portfolio?.totalValue ?? 0) + pensionTotal - debtTotal;
     const past = await pastNetWorth(userId, today);
-    netWorth = { total, monthChange: past === null ? null : total - (past - pastDebt + pastPension) };
+    netWorth = {
+      total,
+      monthChange: past === null ? null : total - (past - pastDebt + pastPension),
+      pension: pensionTotal > 0 ? { total: pensionTotal, monthChange: past === null ? null : pensionTotal - pastPension } : null,
+    };
   }
 
   return {

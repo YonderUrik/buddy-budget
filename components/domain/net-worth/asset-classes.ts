@@ -4,7 +4,7 @@
 export const ASSET_CLASS_COLORS: Record<string, string> = {
   liquidita: "var(--swatch-teal)",
   investimenti: "var(--primary)",
-  previdenza: "var(--swatch-indigo)",
+  previdenza: "var(--swatch-slate)",
   debiti: "var(--neg)",
 };
 export const FALLBACK_ASSET_CLASS_COLOR = "var(--swatch-slate)";

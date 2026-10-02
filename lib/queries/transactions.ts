@@ -43,6 +43,7 @@ export function useCreateTransactionMutation() {
     onSuccess: (transaction) => {
       track("transaction_added", { direction: Number(transaction.amount) >= 0 ? "entrata" : "uscita" });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["attention"] });
     },
   });
 }
@@ -67,6 +68,7 @@ export function useUpdateTransactionMutation() {
       if (input.categoryId !== undefined) track("transaction_category_changed", { source: "row" });
       if (input.excludedAmount !== undefined) track("transaction_split");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["attention"] });
     },
   });
 }
@@ -84,6 +86,7 @@ export function useDeleteTransactionMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["attention"] });
     },
   });
 }

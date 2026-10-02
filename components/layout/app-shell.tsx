@@ -27,7 +27,7 @@
  */
 
 import { useEffect } from "react";
-import { AppSidebar } from "@/components/layout/sidebar";
+import { AppSidebar, type NavSubItem } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
 import { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
 import { cn } from "@/lib/utils";
@@ -40,9 +40,10 @@ interface InnerShellProps {
   children: React.ReactNode;
   activeHref?: string;
   sidebarExtra?: React.ReactNode;
+  navSubItems?: Record<string, NavSubItem>;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navSubItems }: InnerShellProps) {
   const { collapsed, mobileOpen, closeMobile } = useSidebar();
 
   // Chiude il drawer mobile se la finestra viene allargata oltre il breakpoint.
@@ -78,7 +79,7 @@ function InnerShell({ children, activeHref, sidebarExtra }: InnerShellProps) {
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} extra={sidebarExtra} />
+          <AppSidebar activeHref={activeHref} subItems={navSubItems} extra={sidebarExtra} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -125,6 +126,7 @@ function InnerShell({ children, activeHref, sidebarExtra }: InnerShellProps) {
           forceExpanded
           activeHref={activeHref}
           onClose={closeMobile}
+          subItems={navSubItems}
           extra={sidebarExtra}
         />
       </div>
@@ -142,16 +144,18 @@ interface AppShellProps {
   activeHref?: string;
   /** Contenuto extra sotto le voci della sidebar (desktop e drawer mobile). */
   sidebarExtra?: React.ReactNode;
+  /** Sottovoci con contatore sotto le voci della sidebar, per `href` della voce padre. */
+  navSubItems?: Record<string, NavSubItem>;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navSubItems }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navSubItems={navSubItems}>
         {children}
       </InnerShell>
     </SidebarProvider>

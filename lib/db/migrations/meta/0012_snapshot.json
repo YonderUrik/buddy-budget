@@ -1,6 +1,6 @@
 {
-  "id": "327f0096-96f8-4804-a545-a67c9e166a3f",
-  "prevId": "2ffc0f44-18d0-4a7e-8849-bf7206d9321a",
+  "id": "417ba1f5-341c-43af-b15b-366d164eb980",
+  "prevId": "327f0096-96f8-4804-a545-a67c9e166a3f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -937,6 +937,24 @@
         },
         "consent_expires_at": {
           "name": "consent_expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expiry_warning_sent_at": {
+          "name": "expiry_warning_sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expired_notice_sent_at": {
+          "name": "expired_notice_sent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "orphaned_at": {
+          "name": "orphaned_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false

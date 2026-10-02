@@ -42,6 +42,10 @@ export interface ProductEvents {
   title_commentary_requested: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_imported: { operations: number; format: string };
+  /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso "Da sistemare". */
+  attention_link_clicked: { from: "home" | "sidebar" };
+  /** Conferma in un tocco dalla card "Da sistemare" della Panoramica. */
+  attention_quick_confirmed: { groups: number };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

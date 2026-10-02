@@ -197,6 +197,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### In corso
 
+- **Connessioni GoCardless**: avvisi di scadenza (banner + email, `/conti?rinnova=1`) e cron `gocardless-maintenance` che ripulisce la lista su GoCardless. PR in bozza; il cron parte in **dry-run** e va portato a `execute` a mano (`GOCARDLESS_CLEANUP_MODE` nel Secret) dopo qualche giorno di dry-run. Vedi `docs/decision-log.md` 2026-10-01.
 - **Debiti**: Fasi 3 (credit Lombard) e 4 (patrimonio netto, Lombard contro il portafoglio, scheda Simulatore) implementate, PR #43 in revisione. Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
 
 ### Previsto
@@ -254,6 +255,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 Il log completo è in [`docs/decision-log.md`](docs/decision-log.md) (voci nuove in cima, 3-8 righe). Decisioni ancora vincolanti, in sintesi:
 
+- **2026-10-01** — Connessioni GoCardless: avvisi di scadenza (7 giorni prima, email + banner) e pulizia giornaliera della lista GoCardless con periodi di grazia (3/7/30 giorni), dry-run di default, mai su utenti con eliminazione programmata.
 - **2026-10-01** — Ogni feature deve essere osservabile (log, evento Umami, metriche/alert se serve, riga "Come verificare in produzione" nella PR): vedi "Osservabilità" sopra.
 - **2026-10-01** — Prezzi di mercato e snapshot del patrimonio a 3 giri al giorno (06:30/17:30/22:30 UTC e 06:50/17:50/23:50 UTC). Sono chiusure di fine giornata, non intraday.
 - **2026-09-30** — Sezioni unificate: Transazioni, Cash flow e Categorie sono `/movimenti`. Categorie con board a colonne per gruppo di spesa.

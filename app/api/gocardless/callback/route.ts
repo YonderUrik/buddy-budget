@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { getAppUrl } from "@/lib/env";
 import { getRequisition } from "@/lib/gocardless/client";
+import { consentExpiryFrom } from "@/lib/gocardless/connection-health";
 import { requestLogger, withRoute } from "@/lib/observability";
 
 async function handleGet(request: NextRequest) {
@@ -25,7 +26,11 @@ async function handleGet(request: NextRequest) {
       return Response.redirect(`${appUrl}/conti?bankError=consent_failed`, 302);
     }
 
-    await db.update(bankConnections).set({ status: "linked" }).where(eq(bankConnections.id, connection.id));
+    // Il consenso dura da quando l'utente lo dà (non da quando abbiamo creato la requisition): da qui parte il conto alla rovescia.
+    await db
+      .update(bankConnections)
+      .set({ status: "linked", consentExpiresAt: consentExpiryFrom(new Date()), updatedAt: new Date() })
+      .where(eq(bankConnections.id, connection.id));
     return Response.redirect(`${appUrl}/conti/collega/${connection.id}`, 302);
   } catch (error) {
     // Copre sia un ref malformato (uuid non valido → Postgres lancia) sia un fallimento

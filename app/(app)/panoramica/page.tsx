@@ -4,7 +4,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { computeAccountsKpi } from "@/components/domain/accounts";
+import { RenewalBanner, buildRenewalAlerts, computeAccountsKpi } from "@/components/domain/accounts";
 import { AttentionSection } from "@/components/domain/attention";
 import {
   buildCompositionItems,
@@ -28,6 +28,7 @@ import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
 import { useAccountsQuery } from "@/lib/queries/accounts";
+import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
@@ -36,6 +37,8 @@ import { useTransactionsQuery } from "@/lib/queries/transactions";
 const NET_WORTH_FETCH_FROM = "2000-01-01";
 /** Per il valore di oggi degli investimenti basta l'ultimo mese di prezzi. */
 const INVESTMENTS_PERIOD: NetWorthPeriod = "1mese";
+/** Porta in Conti e vi apre subito il flusso di rinnovo (il valore dice da dove si arriva). */
+const RENEW_PATH = "/conti?rinnova=";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
 const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
   weekday: "long",
@@ -57,6 +60,9 @@ export default function PanoramicaPage() {
   const investmentsQuery = useInvestmentsOverviewQuery(INVESTMENTS_PERIOD);
   // Un errore sui debiti non blocca la Panoramica: semplicemente non compaiono.
   const debtsQuery = useDebtsQuery();
+  // Anche questo è opzionale: se lo stato delle connessioni non carica, semplicemente non c'è il banner.
+  const connectionsQuery = useBankConnectionsStatusQuery();
+  const renewalAlerts = buildRenewalAlerts(connectionsQuery.data ?? [], today);
 
   const isLoading =
     accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading || investmentsQuery.isLoading;
@@ -97,6 +103,8 @@ export default function PanoramicaPage() {
         <h1 className="font-heading text-2xl font-medium text-foreground">Panoramica</h1>
         <p className="text-sm text-muted-foreground">{headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}</p>
       </div>
+
+      <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
 
       {isLoading ? (
         <div className="flex flex-col gap-6" aria-busy="true">

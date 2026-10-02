@@ -59,6 +59,10 @@ describe("GET /api/gocardless/callback", () => {
 
     const [updated] = await db.select().from(bankConnections).where(eq(bankConnections.id, connection.id));
     expect(updated.status).toBe("linked");
+    // Il conto alla rovescia del consenso parte dal collegamento: 90 giorni da adesso.
+    const days = (updated.consentExpiresAt!.getTime() - Date.now()) / 86_400_000;
+    expect(days).toBeGreaterThan(89.9);
+    expect(days).toBeLessThanOrEqual(90);
   });
 
   it("con requisition non completata, marca 'error' e redirige a /conti", async () => {

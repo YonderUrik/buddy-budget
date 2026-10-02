@@ -3,8 +3,13 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { gocardlessToken } from "@/lib/db/schema/bank-connections";
 import { recordGoCardlessApiRequest, type GoCardlessEndpoint } from "@/lib/observability";
+import { CONSENT_VALID_DAYS } from "./connection-health";
 
 const BASE_URL = "https://bankaccountdata.gocardless.com/api/v2";
+
+/** Righe per pagina e pagine massime quando si elencano requisition e agreement (tetto di sicurezza). */
+const LIST_PAGE_SIZE = 100;
+const LIST_MAX_PAGES = 50;
 const TOKEN_ROW_ID = "singleton";
 const TOKEN_EXPIRY_MARGIN_MS = 60_000;
 /** Oltre questo tempo una chiamata GoCardless fallisce come errore invece di restare appesa fino al maxDuration della route. */
@@ -165,7 +170,7 @@ export async function createRequisition(params: {
     body: JSON.stringify({
       institution_id: params.institutionId,
       max_historical_days: params.maxHistoricalDays,
-      access_valid_for_days: 90,
+      access_valid_for_days: CONSENT_VALID_DAYS,
       access_scope: ["balances", "details", "transactions"],
     }),
   });
@@ -199,6 +204,56 @@ export async function deleteRequisition(requisitionId: string): Promise<void> {
   assertSafePathSegment(requisitionId);
   try {
     await request<unknown>("requisitions.delete", `/requisitions/${encodeURIComponent(requisitionId)}/`, { method: "DELETE" });
+  } catch (error) {
+    if (error instanceof GoCardlessError && error.status === 404) return;
+    throw error;
+  }
+}
+
+/** Requisition come elencata dall'API: `created` (ISO), `agreement` e `reference` (id della nostra connessione). */
+export interface RemoteRequisition {
+  id: string;
+  created: string;
+  status: string;
+  reference?: string;
+  agreement?: string;
+}
+
+export interface RemoteAgreement {
+  id: string;
+  created: string;
+}
+
+interface Page<T> {
+  next: string | null;
+  results: T[];
+}
+
+async function listAll<T>(endpoint: "requisitions.list" | "agreements.list", path: string): Promise<T[]> {
+  const all: T[] = [];
+  for (let page = 0; page < LIST_MAX_PAGES; page += 1) {
+    const { data } = await request<Page<T>>(endpoint, `${path}?limit=${LIST_PAGE_SIZE}&offset=${page * LIST_PAGE_SIZE}`);
+    all.push(...data.results);
+    if (!data.next || data.results.length === 0) return all;
+  }
+  throw new Error(`Elenco GoCardless ${endpoint} oltre ${LIST_MAX_PAGES} pagine: interrotto per sicurezza`);
+}
+
+/** Tutte le requisition dell'account GoCardless (paginate). */
+export function listRequisitions(): Promise<RemoteRequisition[]> {
+  return listAll<RemoteRequisition>("requisitions.list", "/requisitions/");
+}
+
+/** Tutti gli End User Agreement dell'account GoCardless (paginati). */
+export function listAgreements(): Promise<RemoteAgreement[]> {
+  return listAll<RemoteAgreement>("agreements.list", "/agreements/enduser/");
+}
+
+/** Elimina un agreement non più referenziato da nessuna requisition. Un 404 conta come già eliminato. */
+export async function deleteAgreement(agreementId: string): Promise<void> {
+  assertSafePathSegment(agreementId);
+  try {
+    await request<unknown>("agreements.delete", `/agreements/enduser/${encodeURIComponent(agreementId)}/`, { method: "DELETE" });
   } catch (error) {
     if (error instanceof GoCardlessError && error.status === 404) return;
     throw error;

@@ -22,6 +22,7 @@ import {
   investmentTransactions,
 } from "@/lib/db/schema/investments";
 import { transactions } from "@/lib/db/schema/transactions";
+import { LEGAL_VERSION } from "@/lib/legal";
 import { snapshotUser } from "@/lib/net-worth/scheduler";
 
 export const DEMO_USER_ID = "demo-user";
@@ -95,6 +96,9 @@ async function main() {
     emailVerified: true,
     currency: "EUR",
     onboardingCompleted: true,
+    // Termini già accettati, sempre nella versione in vigore al momento del seed: così il gate di proxy.ts non rimanda a /accetta-termini.
+    legalAcceptedAt: new Date(),
+    legalAcceptedVersion: LEGAL_VERSION,
   });
   await db.insert(authSession).values({
     id: "demo-session",

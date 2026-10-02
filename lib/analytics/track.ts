@@ -36,6 +36,8 @@ export interface ProductEvents {
   /** `existing`: quante fotografie aveva già il fondo (0 = la prima). */
   pension_snapshot_saved: { existing: number };
   pension_snapshot_deleted: undefined;
+  /** Simulazione locale dell'aliquota in uscita (chip trascinato o mosso da tastiera); `years`: anni di partecipazione simulati. */
+  pension_rate_simulated: { years: number };
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
@@ -56,6 +58,8 @@ export interface ProductEvents {
   terms_accepted: { context: "onboarding" | "aggiornamento" };
   /** Clic su una richiesta privacy (apre la bozza di email al titolare); `type`: quale diritto. */
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
+  /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
+  landing_link_clicked: { from: "logo" | "back_link" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

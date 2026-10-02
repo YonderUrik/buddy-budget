@@ -13,6 +13,9 @@ export interface PensionWithdrawalCardProps {
   /** Controvalore di partenza: la barra intera. */
   value: number;
   currency: string;
+  /** Stime con gli anni reali: se passate e diverse da `scenarios` si mostra la differenza e l'etichetta "simulazione". */
+  baseline?: WithdrawalScenario[];
+  isSimulated?: boolean;
 }
 
 const REASON_LABELS: Record<WithdrawalReason, { title: string; detail: string }> = {
@@ -24,7 +27,7 @@ const REASON_LABELS: Record<WithdrawalReason, { title: string; detail: string }>
 const RANGE_HINT =
   "Il valore alto presuppone che l'imposta si applichi solo ai contributi (i rendimenti hanno già pagato il 20% mentre maturavano). Il valore basso applica l'aliquota a tutto il controvalore. Quale sia giusto per te va confermato da un commercialista; non sono incluse eventuali penali del prodotto.";
 
-export function PensionWithdrawalCard({ scenarios, value, currency }: PensionWithdrawalCardProps) {
+export function PensionWithdrawalCard({ scenarios, value, currency, baseline, isSimulated = false }: PensionWithdrawalCardProps) {
   const total = Math.max(value, 1);
   return (
     <Card>
@@ -32,12 +35,16 @@ export function PensionWithdrawalCard({ scenarios, value, currency }: PensionWit
         <CardTitle className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           Se prelevassi oggi <InfoHint label="Come si stima il netto">{RANGE_HINT}</InfoHint>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Quanto ti resterebbe al netto delle tasse, in tre ipotesi. È una stima, non consulenza fiscale.</p>
+        <p className="text-sm text-muted-foreground">
+          {isSimulated ? <strong className="font-medium text-foreground">Simulazione dell&apos;aliquota in corso (vedi «Quando l&apos;aliquota scende»). </strong> : null}
+          Quanto ti resterebbe al netto delle tasse, in tre ipotesi. È una stima, non consulenza fiscale.
+        </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         {scenarios.map((scenario) => {
           const label = REASON_LABELS[scenario.reason];
           const lowShare = (scenario.netLow / total) * 100;
+          const delta = isSimulated ? scenario.netLow - (baseline?.find((b) => b.reason === scenario.reason)?.netLow ?? scenario.netLow) : 0;
           const highShare = (scenario.netHigh / total) * 100;
           return (
             <div key={scenario.reason} className="flex flex-col gap-2">
@@ -51,7 +58,9 @@ export function PensionWithdrawalCard({ scenarios, value, currency }: PensionWit
                 <span className="h-full bg-primary" style={{ width: `${lowShare}%` }} />
                 <span className="h-full bg-primary/45" style={{ width: `${Math.max(0, highShare - lowShare)}%` }} />
               </div>
-              <p className="text-xs text-muted-foreground">{label.detail} · aliquota {formatPercent(scenario.rate)}</p>
+              <p className="text-xs text-muted-foreground">{label.detail} · aliquota {formatPercent(scenario.rate)}
+                {delta !== 0 ? <span className={delta > 0 ? "text-pos" : "text-neg"}> · {delta > 0 ? "+" : "−"}{money(Math.abs(delta), currency)} rispetto a oggi</span> : null}
+              </p>
             </div>
           );
         })}

@@ -258,7 +258,7 @@ export const COOKIE: LegalDocument = {
       title: "Statistiche d'uso anonime",
       paragraphs: [
         "Usiamo Umami, installato sui nostri server, per contare visite e azioni (per esempio \"transazione aggiunta\"). Non usa cookie, non ti segue su altri siti e non riceve importi, nomi o testi tuoi. Non è condiviso con terzi.",
-        "Vuoi che le tue visite non vengano contate? Apri la console del browser e imposta localStorage.setItem(\"umami.disabled\", \"1\"); un interruttore dedicato in Impostazioni arriverà con un prossimo aggiornamento.",
+        "Vuoi che le tue visite non vengano contate? Nell'app, in Impostazioni → Preferenze, spegni \"Statistiche d'uso anonime\". Sul sito, e in generale, basta impostare nel browser il valore localStorage \"umami.disabled\" a \"1\" (localStorage.setItem(\"umami.disabled\", \"1\")). La scelta vale per il dispositivo e il sito in cui la fai.",
       ],
     },
     {

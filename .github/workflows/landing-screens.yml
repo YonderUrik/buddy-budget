@@ -44,9 +44,10 @@ jobs:
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 10
-    # Valori fittizi: nessun servizio esterno viene contattato.
+    # Valori fittizi: nessun servizio esterno viene contattato. `sslmode=disable` perché in produzione l'app pretende TLS,
+    # che il Postgres del job non ha.
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bb_demo
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bb_demo?sslmode=disable
       REDIS_URL: redis://localhost:6379
       BETTER_AUTH_SECRET: ci-only-placeholder-secret-000000000000
       BETTER_AUTH_URL: http://localhost:3300

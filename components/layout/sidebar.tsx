@@ -78,7 +78,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Conti", href: "/conti", icon: Landmark },
   { label: "Movimenti", href: "/movimenti", icon: ArrowLeftRight },
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
-  { label: "Pensione", href: "/pensione", icon: Umbrella, comingSoon: true },
+  { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
   { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
   { label: "Analitiche", href: "/analitiche", icon: BarChart3, comingSoon: true },

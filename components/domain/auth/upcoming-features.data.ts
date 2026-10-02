@@ -16,7 +16,6 @@ export interface UpcomingFeature {
 
 /** Icona di ogni funzionalità `soon`, per id del catalogo. */
 const UPCOMING_ICONS: Record<string, LucideIcon> = {
-  pensione: Umbrella,
   pianifica: Target,
   analitiche: BarChart3,
 };

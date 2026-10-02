@@ -2,12 +2,12 @@
 
 /** Proiezione a pensione con scenari e slider. */
 
-import { PensionEmptyState, PensionProjectionCard } from "@/components/domain/pension";
+import { PensionNoSnapshots, PensionProjectionCard } from "@/components/domain/pension";
 
-import { usePensionView } from "@/lib/pension/use-pension-view";
+import { usePensionView } from "@/lib/pension/pension-context";
 
 export default function PensioneProiezionePage() {
   const { last, quarterly, currency } = usePensionView();
-  if (!last) return <PensionEmptyState />;
+  if (!last) return <PensionNoSnapshots />;
   return <PensionProjectionCard startValue={last.value} defaultQuarterlyContribution={quarterly} currency={currency} />;
 }

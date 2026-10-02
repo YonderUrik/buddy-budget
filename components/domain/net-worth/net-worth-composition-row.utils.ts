@@ -43,11 +43,19 @@ export interface DebtsComposition {
   count: number;
 }
 
-/** Voci di composizione per le sole classi presenti: Liquidità (se ci sono conti), Investimenti e Debiti (in negativo). */
+/** Riepilogo della previdenza per la composizione (null se l'utente non ha fondi con fotografie). */
+export interface PensionComposition {
+  /** Valore complessivo oggi: ultima fotografia di ogni fondo. */
+  value: number;
+  funds: number;
+}
+
+/** Voci di composizione per le sole classi presenti: Liquidità (se ci sono conti), Investimenti, Previdenza e Debiti (in negativo). */
 export function buildCompositionItems(
   accounts: Account[],
   investments: InvestmentsComposition | null = null,
-  debts: DebtsComposition | null = null
+  debts: DebtsComposition | null = null,
+  pension: PensionComposition | null = null
 ): NetWorthCompositionItem[] {
   const items: Omit<NetWorthCompositionItem, "share">[] = [];
   if (accounts.length > 0) {
@@ -68,6 +76,15 @@ export function buildCompositionItems(
         ratio: investments.paid > 0 ? investments.marketGain / investments.paid : null,
         label: MARKET_HIGHLIGHT_LABEL,
       },
+    });
+  }
+  if (pension && pension.value > 0) {
+    items.push({
+      key: "previdenza",
+      label: ASSET_CLASS_LABELS.previdenza,
+      detail: pension.funds === 1 ? "1 fondo" : `${pension.funds} fondi`,
+      amount: pension.value,
+      href: "/pensione",
     });
   }
   const liabilities: NetWorthCompositionItem[] = [];

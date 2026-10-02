@@ -28,6 +28,8 @@ import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
+import { usePensionQuery } from "@/lib/queries/pension";
+import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
@@ -56,6 +58,8 @@ export default function PanoramicaPage() {
   const investmentsQuery = useInvestmentsOverviewQuery(INVESTMENTS_PERIOD);
   // Un errore sui debiti non blocca la Panoramica: semplicemente non compaiono.
   const debtsQuery = useDebtsQuery();
+  // Lo stesso vale per la previdenza.
+  const pensionQuery = usePensionQuery();
 
   const isLoading =
     accountsQuery.isLoading || snapshotsQuery.isLoading || monthTransactionsQuery.isLoading || investmentsQuery.isLoading;
@@ -66,6 +70,7 @@ export default function PanoramicaPage() {
     monthTransactionsQuery.refetch();
     investmentsQuery.refetch();
     debtsQuery.refetch();
+    pensionQuery.refetch();
   };
 
   const accounts = accountsQuery.data ?? [];
@@ -79,14 +84,18 @@ export default function PanoramicaPage() {
   }, [investmentsQuery.data, today]);
   const debtsData = debtsQuery.data?.overview;
   const debts = debtsData && debtsData.totalDebt > 0 ? { total: debtsData.totalDebt, count: debtsData.openCount + debtsData.creditLineCount } : null;
+  const pensionFunds = pensionQuery.data?.funds ?? [];
+  const pensionValue = pensionTotalOn(pensionFunds, toDateKey(today));
+  const pension = pensionValue > 0 ? { value: pensionValue, funds: pensionFunds.filter((f) => f.snapshots.length > 0).length } : null;
   const todayByClass: NetWorthByClass = {
     liquidita: totalLiquidity,
     ...(investments ? { investimenti: investments.value } : {}),
+    ...(pension ? { previdenza: pension.value } : {}),
     ...(debts ? { debiti: -debts.total } : {}),
   };
   const series = buildNetWorthSeries(snapshotsQuery.data ?? [], todayByClass, period, today);
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts, investments, debts);
+  const compositionItems = buildCompositionItems(accounts, investments, debts, pension);
   const [currentMonth] = computeMonthlySeries(monthTransactionsQuery.data ?? [], monthRange);
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
@@ -105,7 +114,7 @@ export default function PanoramicaPage() {
         </div>
       ) : isError ? (
         <LoadError message="Impossibile caricare i dati della panoramica." onRetry={retry} />
-      ) : accounts.length === 0 && !investments ? (
+      ) : accounts.length === 0 && !investments && !pension ? (
         <div className="rounded-xl border border-dashed p-8 text-center">
           <p className="font-heading text-lg font-medium text-foreground">Nessun conto ancora</p>
           <p className="mt-1 text-sm text-muted-foreground">

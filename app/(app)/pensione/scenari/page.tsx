@@ -2,13 +2,14 @@
 
 /** Scenari: se prelevassi oggi, fondo contro TFR in azienda e quando scende l'aliquota. */
 
-import { PensionEmptyState, PensionTaxCard, PensionTfrCompareCard, PensionWithdrawalCard } from "@/components/domain/pension";
+import { PensionNoSnapshots, PensionTaxCard, PensionTfrCompareCard, PensionWithdrawalCard } from "@/components/domain/pension";
 
-import { ASSUMED_INFLATION, usePensionView } from "@/lib/pension/use-pension-view";
+import { ASSUMED_INFLATION, usePensionView } from "@/lib/pension/pension-context";
 
 export default function PensioneScenariPage() {
-  const { last, performance, tfr, scenarios, adhesion, today, currency } = usePensionView();
-  if (!last || !performance || !tfr) return <PensionEmptyState />;
+  const { last, performance, tfr, scenarios, fund, today, currency } = usePensionView();
+  const adhesion = fund?.adhesionDate ?? null;
+  if (!last || !performance || !tfr) return <PensionNoSnapshots />;
   return (
     <>
       <PensionWithdrawalCard scenarios={scenarios} value={last.value} currency={currency} />

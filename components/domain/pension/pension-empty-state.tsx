@@ -1,17 +1,23 @@
-/** Stato vuoto di Pensione: nessuna fotografia del fondo, rimanda alla scheda dei dati. */
+"use client";
 
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+/** Stato vuoto di Pensione: spiega cosa fa la sezione e fa aggiungere il primo fondo. */
 
-export function PensionEmptyState() {
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PensionAddFundForm, type PensionAddFundFormProps } from "./pension-add-fund-form";
+
+export type PensionEmptyStateProps = Pick<PensionAddFundFormProps, "today" | "onSubmit" | "pending" | "errorMessage">;
+
+export function PensionEmptyState(props: PensionEmptyStateProps) {
   return (
     <Card>
-      <CardContent className="flex flex-col gap-2 text-center">
-        <p className="font-heading text-lg font-medium text-foreground">Ancora nessun dato del fondo</p>
+      <CardHeader>
+        <CardTitle className="font-heading text-lg font-medium">Aggiungi il tuo fondo pensione</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Inserisci i due numeri che vedi nell&apos;area clienti (contributi netti e controvalore) dalla scheda{" "}
-          <Link href="/pensione/dati" className="font-medium text-primary underline-offset-2 hover:underline">I tuoi dati</Link>: al resto pensiamo noi.
+          Ti basta inserire, ogni tanto, i due numeri che vedi nell&apos;area clienti del fondo: contributi netti e controvalore. Da lì calcoliamo rendimento, quanto ti resterebbe prelevando oggi, il confronto col TFR in azienda e dove arriverai.
         </p>
+      </CardHeader>
+      <CardContent>
+        <PensionAddFundForm {...props} />
       </CardContent>
     </Card>
   );

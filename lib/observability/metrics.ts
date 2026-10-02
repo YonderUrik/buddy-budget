@@ -26,8 +26,8 @@ export interface UsageSnapshot {
   /** Righe totali per tipo di dato. */
   records: Record<UsageRecordKind, number>;
 }
-export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts";
-export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts";
+export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension";
+export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
 export type GoCardlessEndpoint =
@@ -222,8 +222,8 @@ function createState(): MetricsState {
   usageGauge("users", "Utenti per stato: registered (tutti), onboarded (onboarding finito), deactivated (in attesa di eliminazione).", "state", (u) => u.users);
   usageGauge("users_new", "Utenti registrati nella finestra indicata (7d, 30d).", "window", (u) => u.newUsers);
   usageGauge("users_active", "Utenti con una sessione attiva nella finestra indicata (24h, 7d, 30d).", "window", (u) => u.activeUsers);
-  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti).", "feature", (u) => u.usersWithFeature);
-  usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti).", "kind", (u) => u.records);
+  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza).", "feature", (u) => u.usersWithFeature);
+  usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti, fotografie della previdenza).", "kind", (u) => u.records);
 
   return state;
 }

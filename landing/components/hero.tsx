@@ -49,7 +49,7 @@ export function Hero() {
     <section id="top" className="hero" ref={root} onPointerMove={onMove}>
       <div>
         <div className="wrap">
-          <span className="pill">Conti · Movimenti · Investimenti · Debiti</span>
+          <span className="pill">Conti · Movimenti · Investimenti · Pensione · Debiti</span>
           <h1 aria-label="Quanto vali, davvero?">
             <span className="ln"><span>Quanto <em>vali</em>,</span></span>
             <span className="ln"><span>davvero?</span></span>

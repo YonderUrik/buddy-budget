@@ -11,7 +11,7 @@ export interface AppScreen {
   /** Identificatore stabile, anche nome del file immagine. */
   id: string;
   /** Voce di sidebar (area) a cui appartiene. */
-  area: "Panoramica" | "Conti" | "Movimenti" | "Investimenti" | "Debiti";
+  area: "Panoramica" | "Conti" | "Movimenti" | "Investimenti" | "Pensione" | "Debiti";
   /** Etichetta breve per le schede della galleria. */
   label: string;
   /** Una riga che dice cosa mostra la schermata. */
@@ -39,6 +39,8 @@ export const SCREENS = [
   { id: "performance", area: "Investimenti", label: "Performance", route: "/investimenti/performance", caption: "Rendimento vero, contro un indice e al netto dell'inflazione.", alt: "Performance: rendimento del portafoglio a confronto con un indice" },
   { id: "diversificazione", area: "Investimenti", label: "Diversificazione", route: "/investimenti/diversificazione", caption: "Per area e settore, guardando dentro gli ETF.", alt: "Diversificazione: ripartizione del portafoglio per area e settore" },
   { id: "tasse", area: "Investimenti", label: "Tasse", route: "/investimenti/tasse", caption: "Plus e minus, zaino a 4 anni e imposta stimata.", alt: "Tasse: stima della fiscalità italiana sul portafoglio" },
+  { id: "pensione", area: "Pensione", label: "Pensione", route: "/pensione", caption: "Contributi, valore e rendimento reale del fondo, da due numeri per fotografia.", alt: "Pensione: valore del fondo, contributi versati e rendimento reale" },
+  { id: "pensione-scenari", area: "Pensione", label: "Se ritiri oggi", route: "/pensione/scenari", caption: "Quanto ti resterebbe oggi al netto delle tasse e il confronto con il TFR in azienda.", alt: "Pensione: stima netta di un prelievo oggi e confronto con il TFR lasciato in azienda" },
   { id: "debiti", area: "Debiti", label: "Debiti", route: "/debiti", caption: "Quanto costa ogni debito e quando finisce.", alt: "Debiti: debito totale, costo di ogni finanziamento e scadenze" },
   { id: "lombard", area: "Debiti", label: "Lombard", route: "/debiti/lombard", caption: "Linea di credito contro il portafoglio, con la soglia di allerta.", alt: "Lombard: linea di credito, utilizzo e interessi" },
   { id: "simulatore", area: "Debiti", label: "Simulatore", route: "/debiti/simulatore", caption: "Surroga, estinzione, valanga e palla di neve a confronto.", alt: "Simulatore dei debiti: confronto tra strategie di rimborso", scrollToText: "Surroga", fill: [["Nuovo TAN (%)", "1,8"], ["Numero di rate", "84"], ["Spese della nuova offerta", "600"], ["Penale di estinzione", "0"], ["Extra al mese", "200"]] },

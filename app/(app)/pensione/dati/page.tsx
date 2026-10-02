@@ -1,19 +1,70 @@
 "use client";
 
-/** I tuoi dati: profilo del fondo e inserimento delle fotografie (contributi netti e controvalore). */
+/** I tuoi dati: inserimento delle fotografie (contributi netti e controvalore), profilo del fondo e altri fondi. */
 
-import { PensionProfileCard, PensionSnapshotsCard } from "@/components/domain/pension";
-import { usePensionView } from "@/lib/pension/use-pension-view";
+import * as React from "react";
+import { PensionAddFundForm, PensionProfileCard, PensionSnapshotsCard } from "@/components/domain/pension";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePensionView } from "@/lib/pension/pension-context";
+import { PENSION_MAX_FUNDS } from "@/lib/pension/limits";
+import {
+  useCreatePensionFundMutation,
+  useDeletePensionFundMutation,
+  useDeletePensionSnapshotMutation,
+  useSavePensionSnapshotMutation,
+  useUpdatePensionFundMutation,
+} from "@/lib/queries/pension";
 
 export default function PensioneDatiPage() {
-  const { store, snapshots, today, currency } = usePensionView();
+  const { fund, funds, snapshots, today, currency, selectFund } = usePensionView();
+  const saveSnapshot = useSavePensionSnapshotMutation();
+  const deleteSnapshot = useDeletePensionSnapshotMutation();
+  const updateFund = useUpdatePensionFundMutation();
+  const deleteFund = useDeletePensionFundMutation();
+  const createFund = useCreatePensionFundMutation();
+  if (!fund) return null;
+
   return (
     <>
-      <PensionSnapshotsCard snapshots={snapshots} currency={currency} today={today} onAdd={store.addSnapshot} onRemove={store.removeSnapshot} />
-      <PensionProfileCard name={store.profile.name} adhesionDate={store.profile.adhesionDate} today={today} onChange={store.setProfile} />
-      <div className="flex justify-end">
-        <button type="button" className="text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={store.resetDemo}>Ripristina i dati d&apos;esempio</button>
-      </div>
+      <PensionSnapshotsCard
+        snapshots={snapshots}
+        currency={currency}
+        today={today}
+        onAdd={async (snapshot) => {
+          await saveSnapshot.mutateAsync({ fundId: fund.id, input: snapshot, existing: snapshots.length });
+        }}
+        onRemove={(snapshotId) => deleteSnapshot.mutate({ fundId: fund.id, snapshotId })}
+      />
+      <PensionProfileCard
+        key={fund.id}
+        name={fund.name}
+        adhesionDate={fund.adhesionDate}
+        today={today}
+        onSave={async (input) => {
+          await updateFund.mutateAsync({ fundId: fund.id, input });
+        }}
+        onDelete={async () => {
+          await deleteFund.mutateAsync(fund.id);
+          selectFund(funds.find((f) => f.id !== fund.id)?.id ?? "");
+        }}
+      />
+      {funds.length < PENSION_MAX_FUNDS ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Hai un altro fondo?</CardTitle>
+            <p className="text-sm text-muted-foreground">Puoi tracciarne più di uno (per esempio un fondo negoziale e un PIP): il patrimonio netto li somma.</p>
+          </CardHeader>
+          <CardContent>
+            <PensionAddFundForm
+              key={funds.length}
+              today={today}
+              pending={createFund.isPending}
+              errorMessage={createFund.isError ? createFund.error.message : null}
+              onSubmit={(input) => createFund.mutate(input, { onSuccess: (created) => selectFund(created.id) })}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
     </>
   );
 }

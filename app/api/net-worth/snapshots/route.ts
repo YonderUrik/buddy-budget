@@ -7,6 +7,8 @@ import { loadUserDebts } from "@/lib/debts/data";
 import { todayIso } from "@/lib/debts/dates";
 import { buildDebtsView } from "@/lib/debts/view";
 import { buildDebtHistoryRows } from "@/lib/net-worth/debt-history";
+import { buildPensionHistoryRows } from "@/lib/net-worth/pension-history";
+import { loadUserPension } from "@/lib/pension/data";
 import { refreshDerivedInvestmentHistory } from "@/lib/net-worth/investments";
 import { backfillDerivedHistory } from "@/lib/net-worth/snapshots";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -44,7 +46,10 @@ async function handleGet(request: NextRequest) {
   const { debts: debtRows, events } = await loadUserDebts(session.user.id);
   const debtHistory = buildDebtHistoryRows(buildDebtsView(debtRows, events, today), today, from).filter((r) => r.date <= to);
 
-  return Response.json([...rows, ...debtHistory]);
+  // Anche la previdenza si ricalcola dalle fotografie dei fondi, senza salvare nulla.
+  const pensionHistory = buildPensionHistoryRows((await loadUserPension(session.user.id)).funds, today, from).filter((r) => r.date <= to);
+
+  return Response.json([...rows, ...debtHistory, ...pensionHistory]);
 }
 
 export const GET = withRoute("net_worth.snapshots", handleGet);

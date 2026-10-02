@@ -18,7 +18,8 @@ export interface PensionSnapshotsCardProps {
   currency: string;
   /** Data di oggi `YYYY-MM-DD`, usata come default del form. */
   today: string;
-  onAdd: (snapshot: Omit<PensionSnapshot, "id">) => void;
+  /** Salva la fotografia; la promessa rifiutata porta il messaggio d'errore da mostrare. */
+  onAdd: (snapshot: Omit<PensionSnapshot, "id">) => Promise<void>;
   onRemove: (id: string) => void;
 }
 
@@ -34,6 +35,8 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
   const [contributions, setContributions] = React.useState("");
   const [value, setValue] = React.useState("");
   const [showAll, setShowAll] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const parsedContributions = parseAmount(contributions);
   const parsedValue = parseAmount(value);
   const canSave = parsedContributions !== null && parsedValue !== null && date !== "";
@@ -41,19 +44,27 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
   const rows = [...sorted].reverse();
   const visible = showAll ? rows : rows.slice(0, LIST_VISIBLE_ROWS);
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!canSave) return;
-    onAdd({ date, netContributions: parsedContributions, value: parsedValue });
-    setContributions("");
-    setValue("");
+    if (!canSave || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await onAdd({ date, netContributions: parsedContributions, value: parsedValue });
+      setContributions("");
+      setValue("");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Salvataggio non riuscito");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aggiorna i valori del fondo</CardTitle>
-        <p className="text-sm text-muted-foreground">Riporta i due numeri che vedi nell&apos;area clienti, ogni volta che vuoi (di solito dopo ogni versamento del TFR). Il versamento lo ricaviamo noi dalla differenza.</p>
+        <p className="text-sm text-muted-foreground">Riporta i due numeri che vedi nell&apos;area clienti, ogni volta che vuoi (di solito dopo ogni versamento del TFR). Il versamento lo ricaviamo noi dalla differenza. Se esiste già una fotografia con la stessa data, viene sostituita.</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
@@ -69,8 +80,9 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
             Controvalore
             <Input inputMode="decimal" placeholder="es. 11.420" value={value} onChange={(e) => setValue(e.target.value)} />
           </label>
-          <Button type="submit" disabled={!canSave}>Aggiungi</Button>
+          <Button type="submit" disabled={!canSave || saving}>{saving ? "Salvo…" : "Aggiungi"}</Button>
         </form>
+        {error ? <p role="alert" className="text-sm text-neg">{error}</p> : null}
 
         {rows.length > 0 ? (
           <div className="flex flex-col">

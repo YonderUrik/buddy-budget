@@ -67,7 +67,7 @@ export const FEATURES: readonly Feature[] = [
   f("patrimonio-netto-nel-tempo", "Patrimonio", "Patrimonio netto nel tempo", "Liquidità, investimenti e debiti, con lo storico ricostruito.", "live", "/panoramica"),
   f("riepilogo-sempre-in-vista", "Patrimonio", "Riepilogo sempre in vista", "Nella barra laterale: patrimonio, portafoglio, watchlist e avvisi.", "live"),
   f("nascondi-importi", "Patrimonio", "Nascondi importi", "Oscura cifre e grafici quando qualcuno guarda lo schermo.", "live"),
-  f("pensione", "Patrimonio", "Pensione", "Il tuo fondo pensione e una stima di quanto varrà.", "soon", "/pensione"),
+  f("pensione", "Patrimonio", "Pensione", "Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse e una stima di quanto varrà.", "new", "/pensione"),
   f("pianifica", "Patrimonio", "Pianifica", "Simula un cambio di lavoro, una casa o un figlio e vedi l'effetto sul patrimonio.", "soon", "/pianifica"),
   f("analitiche", "Patrimonio", "Analitiche", "Autonomia finanziaria, tasso di risparmio reale e radar degli abbonamenti.", "soon", "/analitiche"),
 

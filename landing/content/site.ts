@@ -79,5 +79,6 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   { need: "Rendimento e rischio degli investimenti", budgetApp: c("no", "Di rado"), investApp: c("yes", "Sì"), sheet: c("no", "A mano"), us: US },
   { need: "Tasse italiane e zaino fiscale", budgetApp: c("no", "No"), investApp: c("half", "Poche"), sheet: c("no", "A mano"), us: US },
   { need: "Ammortamento ed estinzione anticipata", budgetApp: c("no", "No"), investApp: c("no", "No"), sheet: c("half", "A mano"), us: US },
+  { need: "Fondo pensione e TFR, con le tasse sul riscatto", budgetApp: c("no", "No"), investApp: c("no", "No"), sheet: c("no", "A mano"), us: US },
   { need: "Un solo patrimonio netto nel tempo", budgetApp: c("half", "Parziale"), investApp: c("half", "Parziale"), sheet: c("no", "A mano"), us: US },
 ];

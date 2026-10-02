@@ -6,6 +6,8 @@
 
 export { LoginMosaic } from "./login-mosaic";
 export type { LoginMosaicProps } from "./login-mosaic";
+export { BrandLink } from "./brand-link";
+export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";
 export type { LoginPanelProps } from "./login-panel";
 export { CurrencyPicker } from "./currency-picker";

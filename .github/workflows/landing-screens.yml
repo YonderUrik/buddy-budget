@@ -1,12 +1,28 @@
 name: Screenshot landing
 
-# Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md). Avvio manuale: le immagini
-# escono come artifact da scaricare e committare in landing/public/screens/.
+# Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md). Parte da sola quando su main
+# cambia ciò che si vede nelle schermate (UI, calcoli, dati demo, elenco screen) e apre una PR con le immagini
+# nuove; si può anche avviare a mano. La PR la apre GITHUB_TOKEN, quindi la CI non parte da sola su di essa:
+# basta un push vuoto o "Re-run" dal branch bot/landing-screens se serve.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "scripts/demo-seed.ts"
+      - "landing/content/screens.ts"
+      - "landing/scripts/capture-screens.mjs"
   workflow_dispatch:
 
+concurrency:
+  group: landing-screens
+  cancel-in-progress: true
+
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   capture:
@@ -69,3 +85,15 @@ jobs:
         with:
           name: landing-screens
           path: landing/public/screens
+      - name: Apri o aggiorna la PR con le immagini nuove
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bot/landing-screens
+          add-paths: landing/public/screens
+          commit-message: "chore(landing): aggiorna gli screenshot dall'app"
+          title: "Landing: screenshot aggiornati dall'app"
+          body: |
+            Screenshot rigenerati automaticamente dall'app su `main` con i dati demo (`pnpm demo:seed`).
+            Controlla a colpo d'occhio le immagini nel diff prima di fare il merge.
+
+            Nessun nuovo segnale di osservabilità: solo immagini statiche.

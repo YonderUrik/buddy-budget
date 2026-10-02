@@ -54,6 +54,8 @@ export interface ProductEvents {
   attention_quick_confirmed: { groups: number };
   /** `context`: onboarding (nuovo account) o aggiornamento (nuova versione dei documenti per un utente esistente). */
   terms_accepted: { context: "onboarding" | "aggiornamento" };
+  /** Clic su una richiesta privacy (apre la bozza di email al titolare); `type`: quale diritto. */
+  privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

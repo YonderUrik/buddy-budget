@@ -18,6 +18,9 @@ export interface UserSettings {
   currency: SupportedCurrency;
   homePage: HomePagePath;
   hideAmounts: boolean;
+  /** Quando e quale versione di Termini e Privacy ha accettato (null se mai). */
+  legalAcceptedAt: string | null;
+  legalAcceptedVersion: string | null;
   createdAt: string;
   googleLinked: boolean;
   /** Fino a quando le azioni sensibili non chiedono di accedere di nuovo. */

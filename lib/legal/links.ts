@@ -22,3 +22,6 @@ export const LEGAL_LINKS: readonly LegalLink[] = [
 export function legalHref(id: LegalDocumentId): string {
   return `${LANDING_URL}/${id}`;
 }
+
+/** Indirizzo a cui scrivere per esercitare i diritti sui dati personali (uguale a `LEGAL_OWNER.email` della landing). */
+export const PRIVACY_EMAIL = "privacy@buddybudget.io";

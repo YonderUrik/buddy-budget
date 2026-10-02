@@ -1,13 +1,18 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { LEGAL_DOCUMENTS, LEGAL_VERSION } from "./legal";
+import { LEGAL_DOCUMENTS, LEGAL_OWNER, LEGAL_VERSION } from "./legal";
 
 describe("testi legali", () => {
   it("la versione coincide con quella dell'app (lib/legal/version.ts)", () => {
     const appVersionFile = readFileSync(join(__dirname, "..", "..", "lib", "legal", "version.ts"), "utf8");
     const match = appVersionFile.match(/export const LEGAL_VERSION = "([^"]+)"/);
     expect(match?.[1]).toBe(LEGAL_VERSION);
+  });
+
+  it("l'indirizzo privacy coincide con quello dell'app (lib/legal/links.ts)", () => {
+    const appLinksFile = readFileSync(join(__dirname, "..", "..", "lib", "legal", "links.ts"), "utf8");
+    expect(appLinksFile.match(/export const PRIVACY_EMAIL = "([^"]+)"/)?.[1]).toBe(LEGAL_OWNER.email);
   });
 
   it("le sezioni da approvare in modo specifico esistono nei Termini", () => {

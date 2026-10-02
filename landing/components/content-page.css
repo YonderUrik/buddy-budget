@@ -66,7 +66,6 @@
 .cp .cp-disclaimer::before { content: "i"; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 13px/22px var(--f-h); text-align: center; margin-top: 1px; }
 .cp .note { position: relative; padding-left: 52px; border: 0; background: var(--glow); }
 .cp .note::before { content: "!"; position: absolute; left: 16px; top: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 14px/24px var(--f-h); text-align: center; }
-.inline-viz { max-width: 420px; margin: 8px 0 20px; padding: 14px 10px 4px; border-radius: 18px; background: var(--surface); border: 1px solid var(--line); }
 .tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
 .tips > div { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--a-neg); border-radius: 16px; padding: 16px 18px; }
 .tips b { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--a-neg); color: #fff; font: 700 14px var(--f-h); margin-bottom: 8px; }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BalanceViz, SplitBar } from "@/components/viz/viz";
+import { SplitBar } from "@/components/viz/viz";
 import { groupThousands } from "@/lib/format";
 import { buildFrenchPlan, simulateEarlyRepayment } from "@/lib/tools/ammortamento";
 
@@ -21,7 +21,6 @@ export function AmmortamentoCalculator() {
   const P = Math.max(0, num(principal));
   const valid = P > 0 && num(rate) >= 0;
   const plan = valid ? buildFrenchPlan(P, num(rate), months) : null;
-  const yearly = plan ? [P, ...plan.rows.filter((r) => r.n % 12 === 0 || r.n === months).map((r) => r.balance)] : [];
   const afterMonths = Math.min(months - 1, Math.max(1, Math.round(num(after) * 12)));
   const early = valid && months > 1 ? simulateEarlyRepayment({ principal: P, annualRatePct: num(rate), months, afterMonths, extra: Math.max(0, num(extra)), penaltyPct: Math.max(0, num(penalty)) }) : null;
 
@@ -39,7 +38,6 @@ export function AmmortamentoCalculator() {
           {plan ? (
             <div className="res">
               <SplitBar parts={[{ label: "Capitale", value: P, tone: "pos" }, { label: "Interessi", value: plan.totalInterest, tone: "neg" }]} />
-              <BalanceViz balances={yearly} />
               <div className="row key"><span>Rata mensile</span><b>{eur2(plan.installment)}</b></div>
               <div className="row"><span>Interessi totali</span><b>{eur2(plan.totalInterest)}</b></div>
               <div className="row"><span>Totale pagato</span><b>{eur2(plan.totalPaid)}</b></div>

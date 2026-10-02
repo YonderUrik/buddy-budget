@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ContentPage } from "@/components/content-page";
 import { GuideExample } from "@/components/guide-example";
 import { JsonLd } from "@/components/json-ld";
-import { TimelineViz } from "@/components/viz/viz";
+import { YearsStrip } from "@/components/viz/viz";
 import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
@@ -27,7 +27,7 @@ export default function Page() {
       <h2>Che cos&apos;è</h2>
       <p>Quando vendi azioni, ETF o altri strumenti e incassi più di quanto hai pagato, hai una plusvalenza e paghi di norma il 26%. Se incassi meno, hai una minusvalenza. Le minusvalenze possono compensare le plusvalenze della stessa categoria, riducendo l&apos;imposta. Quelle che non riesci a usare subito restano &ldquo;nello zainetto&rdquo;.</p>
       <h2>Per quanto tempo si porta</h2>
-      <div className="inline-viz"><TimelineViz /></div>
+      <YearsStrip from={2023} label="Una minusvalenza del 2023 si può usare fino al 2027" />
       <p>Una minusvalenza si può riportare fino al quarto anno successivo a quello in cui è stata realizzata. Una perdita del 2023 si può usare fino al 2027; dal 2028 è scaduta. Se hai più perdite, di norma si parte dalle più vecchie.</p>
       <h2>Un esempio</h2>
       <GuideExample />

@@ -1,15 +1,19 @@
-.tools-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
+.tools-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
 .tools-card { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 24px; transition: border-color 0.25s, translate 0.25s, box-shadow 0.25s; }
-.tools-card.wide { grid-column: span 2; }
 .tools-card::before { content: ""; position: absolute; inset: auto -20% -50% 20%; height: 80%; background: radial-gradient(closest-side, var(--glow), transparent); opacity: 0; transition: opacity 0.4s; pointer-events: none; }
 .tools-card:hover { border-color: var(--accent); translate: 0 -4px; box-shadow: 0 18px 40px -22px var(--glow); }
 .tools-card:hover::before { opacity: 1; }
-.tools-viz { margin: -4px 0 14px; padding: 14px 10px 6px; border-radius: 16px; background: var(--bg); }
+.tools-viz { margin: -4px 0 14px; }
 .tools-card b { font: 600 clamp(18px, 1.8vw, 22px) / 1.2 var(--f-h); letter-spacing: -0.02em; }
 .tools-tag { font: 600 12px var(--f-b); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .tools-sub { color: var(--ink2); font-size: 15px; line-height: 1.5; display: flex; justify-content: space-between; gap: 12px; }
 .tools-sub em { font-style: normal; color: var(--accent); transition: translate 0.25s; }
 .tools-card:hover .tools-sub em { translate: 6px 0; }
-@media (max-width: 960px) { .tools-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 600px) { .tools-grid { grid-template-columns: 1fr; } .tools-card.wide { grid-column: auto; } }
-.tools-viz .viz { max-height: 150px; }
+@media (max-width: 700px) { .tools-grid { grid-template-columns: 1fr; } }
+.tools-card .years { margin: 0; }
+.tools-card .years li { padding: 10px 2px; }
+.tools-card .years b { font-size: 13px; }
+.tools-card .years li { padding: 14px 4px; }
+.tools-card .years b { font-size: 18px; }
+.tools-card .tools-viz { display: flex; align-items: center; min-height: 210px; }
+.tools-card .tools-viz .years { width: 100%; }

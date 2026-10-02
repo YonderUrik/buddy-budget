@@ -58,3 +58,28 @@
 @media (max-width: 600px) { .legal-bar nav { display: none; } }
 .sources ul { font-size: 15px; }
 .sources .note { font-size: 14px; }
+.cp .cp-disclaimer { background: var(--surface); border: 1px solid var(--sun); border-radius: 12px; padding: 12px 16px; font-size: 14px; line-height: 1.55; margin: 0 0 28px; max-width: none; }
+.cp .cp-disclaimer strong { color: var(--ink); }
+
+/* Avviso: striscia compatta con icona, non un riquadro di testo. */
+.cp .cp-disclaimer { display: flex; gap: 12px; align-items: flex-start; background: var(--glow); border: 0; border-radius: 14px; padding: 12px 16px; font-size: 14px; line-height: 1.55; margin: 0 0 28px; max-width: none; }
+.cp .cp-disclaimer::before { content: "i"; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 13px/22px var(--f-h); text-align: center; margin-top: 1px; }
+.cp .note { position: relative; padding-left: 52px; border: 0; background: var(--glow); }
+.cp .note::before { content: "!"; position: absolute; left: 16px; top: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 14px/24px var(--f-h); text-align: center; }
+.tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+.tips > div { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--a-neg); border-radius: 16px; padding: 16px 18px; }
+.tips b { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--a-neg); color: #fff; font: 700 14px var(--f-h); margin-bottom: 8px; }
+.tips p { margin: 0; font-size: 15px; }
+.fn-card { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 24px; transition: translate 0.25s, border-color 0.25s; }
+.fn-card:hover { translate: 0 -3px; border-color: var(--accent); }
+.fn-card svg { width: 44px; height: 44px; padding: 10px; border-radius: 14px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 14px; }
+.fn-card.tone-acc svg { background: var(--sky); } .fn-card.tone-pos svg { background: var(--a-pos); } .fn-card.tone-sun svg { background: var(--sun); stroke: var(--on-sun); } .fn-card.tone-neg svg { background: var(--a-neg); }
+.fn-card h3 { margin: 0 0 6px; }
+.fn-card p { margin: 0; font-size: 15px; }
+.sources-box { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.sources-box summary { cursor: pointer; padding: 14px 18px; font: 600 16px var(--f-h); }
+.sources-box summary::marker { color: var(--accent); }
+.sources-box ul, .sources-box .note { margin-inline: 18px; }
+.sources-box .note { margin-bottom: 18px; }
+.cp .tool-card { transition: border-color 0.25s; }
+@media (max-width: 760px) { .tips { grid-template-columns: 1fr; } }

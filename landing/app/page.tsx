@@ -1,3 +1,4 @@
+import { ToolsSection } from "@/components/tools-section";
 import { Faq } from "@/components/faq";
 import { Closing } from "@/components/closing";
 import { Comparison } from "@/components/comparison";
@@ -25,6 +26,7 @@ export default function HomePage() {
         <FeaturesSection />
         <Comparison />
         <Security />
+        <ToolsSection />
         <Faq />
         <Closing />
       </main>

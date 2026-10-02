@@ -1,8 +1,9 @@
 /**
- * Pagine di contenuto per la ricerca organica (calcolatori, guide, pagine funzione). BOZZA: finché `CONTENT_DRAFT` è true
- * le pagine sono `noindex` e fuori dal sitemap. I testi fiscali vanno validati da un professionista prima di metterlo a false.
+ * Pagine di contenuto per la ricerca organica (calcolatori, guide, pagine funzione). Pubblicate per scelta dell'utente
+ * (2026-10-02) con un avviso "solo a scopo informativo" in ogni pagina. Rimettere `CONTENT_DRAFT` a true le toglie
+ * dall'indice e dal sitemap (utile se un testo fiscale va ritirato in attesa di verifica).
  */
-export const CONTENT_DRAFT = true;
+export const CONTENT_DRAFT = false;
 
 export const CONTENT_PATHS = {
   zainetto: "/strumenti/zainetto-fiscale",

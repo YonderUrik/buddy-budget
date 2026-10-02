@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { SplitBar } from "@/components/viz/viz";
 import { eur } from "@/lib/format";
 import { computeZainetto, ZAINETTO_RATES, type LossInput, type ZainettoInstrument } from "@/lib/tools/zainetto";
 
@@ -53,6 +54,8 @@ export function ZainettoCalculator() {
       </div>
       <div className="tool-card" aria-live="polite">
         <h2>Risultato (stima)</h2>
+        <SplitBar parts={[{ label: "Compensata dalle minusvalenze", value: r.compensated, tone: "pos" }, { label: "Su cui paghi l'imposta", value: r.taxableGain, tone: "acc" }]} />
+        <div style={{ height: 16 }} />
         <div className="res">
           <div className="row"><span>Plusvalenza</span><b>{eur(r.gain)}</b></div>
           <div className="row"><span>Minusvalenze compensate</span><b>−{eur(r.compensated)}</b></div>

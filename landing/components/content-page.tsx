@@ -44,6 +44,7 @@ export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation }
               <span key={c.label}>{c.href ? <Link href={c.href}>{c.label}</Link> : c.label}{i < crumbs.length - 1 ? " / " : ""}</span>
             ))}
           </nav>
+          <p className="cp-disclaimer" role="note"><strong>Solo a scopo informativo.</strong> I calcoli sono stime semplificate e i testi riassumono norme che cambiano: non sono consulenza fiscale né un riferimento assoluto. Verifica sempre con il tuo intermediario, la normativa in vigore o un consulente.</p>
           {children}
           <aside className="cp-cta">
             <h2>{ctaTitle}</h2>

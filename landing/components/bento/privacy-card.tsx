@@ -12,7 +12,7 @@ export function PrivacyCard() {
       <div className="between">
         <div>
           <div className="lab">Patrimonio netto</div>
-          <div className="mini amts">47.320 €</div>
+          <div className="mini amts">27.049 €</div>
         </div>
         <button
           className="eye"
@@ -31,10 +31,10 @@ export function PrivacyCard() {
         </button>
       </div>
       <div className="rw amts" style={{ marginTop: 12 }}>
-        <span className="d" style={{ background: "var(--a-liq)" }} /><b>Liquidità</b><span className="v">14.416 €</span>
+        <span className="d" style={{ background: "var(--a-liq)" }} /><b>Liquidità</b><span className="v">25.464 €</span>
       </div>
       <div className="rw amts">
-        <span className="d" style={{ background: "var(--a-inv)" }} /><b>Investimenti</b><span className="v">39.070 €</span>
+        <span className="d" style={{ background: "var(--a-inv)" }} /><b>Investimenti</b><span className="v">35.317 €</span>
       </div>
     </div>
   );

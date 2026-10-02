@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@11.5.0",
   "scripts": {
+    "demo:seed": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/demo-seed.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

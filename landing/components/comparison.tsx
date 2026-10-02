@@ -17,7 +17,7 @@ export function Comparison() {
     <TrackedSection id="confronto" section="confronto" className="sec" >
       <div className="wrap" style={{ paddingTop: 0 }}>
         <div className="kicker">Perché BuddyBudget</div>
-        <h2 className="t">Nessuno li tiene insieme. Né le tasse italiane.</h2>
+        <h2 className="t">Un&apos;app per ogni pezzo. Nessuna per il quadro intero.</h2>
         <Reveal className="cmpw">
           <table>
             <thead>
@@ -42,7 +42,7 @@ export function Comparison() {
             </tbody>
           </table>
         </Reveal>
-        <p className="fine">Confronto per categorie di prodotto, non per singoli nomi.</p>
+        <p className="fine">Confronto tra categorie di prodotto, non tra singoli nomi.</p>
       </div>
     </TrackedSection>
   );

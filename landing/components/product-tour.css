@@ -14,9 +14,10 @@
 .step li { display: flex; gap: 10px; }
 .step li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sky); margin-top: 10px; flex: none; }
 .sticky { position: sticky; top: 12vh; align-self: start; height: min(76vh, 760px); display: flex; align-items: center; }
-.sticky .fit { margin: 0; }
-.tour .scr { opacity: 0; transform: translateY(22px); transition: opacity 0.7s var(--ease), transform 0.9s var(--ease); pointer-events: none; }
-.tour .scr.on { opacity: 1; transform: none; }
+.tour-shots { position: relative; width: 100%; }
+.tour-shot { transition: opacity 0.7s var(--ease), transform 0.9s var(--ease); }
+.tour-shot:not(:first-child) { position: absolute; inset: 0; }
+.tour-shot:not(.on) { opacity: 0; transform: translateY(22px); pointer-events: none; }
 @media (max-width: 1000px) {
   .tgrid { grid-template-columns: 1fr; gap: 0; }
   .sticky { order: -1; top: 68px; height: auto; z-index: 5; background: var(--navy); padding-block: 12px; }

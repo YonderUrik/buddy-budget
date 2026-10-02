@@ -1,7 +1,8 @@
 import type { FeatureArea } from "@/content/catalog.generated";
+import type { ScreenId } from "@/content/screens";
 
 /** Sezioni della pagina misurate con `section_view`. */
-export type SectionId = "hero" | "perche" | "prodotto" | "funzioni" | "confronto" | "chi" | "fine";
+export type SectionId = "hero" | "perche" | "prodotto" | "schermate" | "funzioni" | "confronto" | "chi" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).
@@ -11,6 +12,7 @@ export interface LandingEvents {
   cta_click: { location: "nav" | "hero" | "closing"; target: "signup" | "login" | "how_it_works" };
   section_view: { section: SectionId };
   tour_step_viewed: { step: "collega" | "capisci" | "investi" | "decidi" };
+  screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };
   hide_amounts_toggled: { hidden: boolean };

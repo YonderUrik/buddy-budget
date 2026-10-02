@@ -3,7 +3,6 @@ import { Hanken_Grotesk, Space_Grotesk, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import "./globals.css";
 import { PwaInstallTracker } from "@/components/analytics";
@@ -75,7 +74,6 @@ export default function RootLayout({
             <Toaster />
           </ThemeProvider>
         </QueryProvider>
-        <Analytics />
         <PwaInstallTracker />
       </body>
     </html>

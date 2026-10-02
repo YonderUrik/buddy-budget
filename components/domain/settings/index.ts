@@ -12,6 +12,8 @@ export type { PreferencesSectionProps } from "./preferences-section";
 export { SessionsSection } from "./sessions-section";
 export { DataSection } from "./data-section";
 export type { DataSectionProps } from "./data-section";
+export { PrivacySection } from "./privacy-section";
+export type { PrivacySectionProps } from "./privacy-section";
 export { DangerZoneSection } from "./danger-zone-section";
 export type { DangerZoneSectionProps } from "./danger-zone-section";
 export { ReauthPanel } from "./reauth-panel";

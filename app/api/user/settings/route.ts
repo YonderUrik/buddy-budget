@@ -22,6 +22,8 @@ async function handleGet(request: NextRequest) {
     currency: user.currency,
     homePage: resolveHomePage(user.homePage),
     hideAmounts: user.hideAmounts === true,
+    legalAcceptedAt: user.legalAcceptedAt ? new Date(user.legalAcceptedAt).toISOString() : null,
+    legalAcceptedVersion: user.legalAcceptedVersion ?? null,
     createdAt: new Date(user.createdAt).toISOString(),
     googleLinked: providers.includes("google"),
     recentLoginUntil: recentLoginExpiresAt(new Date(session.session.createdAt)).toISOString(),

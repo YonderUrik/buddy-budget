@@ -99,6 +99,13 @@
       "when": 1790939798965,
       "tag": "0013_pensione",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790950271657,
+      "tag": "0014_accettazione_termini",
+      "breakpoints": true
     }
   ]
 }

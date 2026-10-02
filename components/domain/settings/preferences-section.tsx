@@ -1,11 +1,13 @@
 "use client";
 
-/** Sezione Preferenze: valuta, pagina iniziale, tema e lingua (quest'ultima non ancora disponibile). */
+/** Sezione Preferenze: valuta, pagina iniziale, tema, statistiche d'uso anonime e lingua (quest'ultima non ancora disponibile). */
 
 import * as React from "react";
 import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SegmentedControl } from "@/components/domain/shared";
+import { Switch } from "@/components/ui/switch";
+import { useAnalyticsOptOut } from "@/lib/hooks/use-analytics-opt-out";
 import { HOME_PAGE_OPTIONS, type HomePagePath } from "@/lib/account/home-pages";
 import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/validation/currency";
 import { useUpdateUserSettingsMutation, type UserSettings } from "@/lib/queries/user-settings";
@@ -36,6 +38,7 @@ export function PreferencesSection({ settings }: PreferencesSectionProps) {
   const update = useUpdateUserSettingsMutation();
   const { theme, setTheme } = useTheme();
   const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const [optedOut, setOptedOut] = useAnalyticsOptOut();
 
   return (
     <SettingsSection id="impostazioni-preferenze" title="Preferenze">
@@ -90,6 +93,21 @@ export function PreferencesSection({ settings }: PreferencesSectionProps) {
           />
         ) : (
           <div className="h-10 w-56" />
+        )}
+      </SettingsRow>
+
+      <SettingsRow
+        label="Statistiche d'uso anonime"
+        hint="Contano le pagine viste e le azioni (mai importi o testi tuoi), senza cookie. Spegnile e non ti misuriamo più su questo dispositivo."
+      >
+        {mounted ? (
+          <Switch
+            checked={!optedOut}
+            onCheckedChange={(checked) => setOptedOut(!checked)}
+            aria-label="Statistiche d'uso anonime"
+          />
+        ) : (
+          <div className="h-[18.4px] w-[32px]" />
         )}
       </SettingsRow>
 

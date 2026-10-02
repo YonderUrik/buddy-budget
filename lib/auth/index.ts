@@ -11,6 +11,7 @@ import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
 import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
+import { truncateIp } from "@/lib/account/ip-mask";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -96,11 +97,23 @@ export const auth = betterAuth({
         required: false,
         input: false,
       },
+      legalAcceptedAt: {
+        type: "date",
+        required: false,
+        input: false,
+      },
+      legalAcceptedVersion: {
+        type: "string",
+        required: false,
+        input: false,
+      },
     },
   },
   databaseHooks: {
     session: {
       create: {
+        /** Salva l'IP troncato (minimizzazione): serve solo a riconoscere da dove arriva un accesso, non a identificare un dispositivo. */
+        before: async (session) => ({ data: { ...session, ipAddress: truncateIp(session.ipAddress) } }),
         /** Ogni sessione creata è un accesso riuscito (magic link o Google): solo un contatore, nessun dato utente. */
         after: async () => {
           recordAuthEvent("sign_in");

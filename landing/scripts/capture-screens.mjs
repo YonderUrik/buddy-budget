@@ -40,7 +40,8 @@ for (const theme of SCREEN_THEMES) {
   const page = await context.newPage();
   mkdirSync(join(root, "public", "screens", theme), { recursive: true });
   for (const screen of SCREENS) {
-    await page.goto(APP + screen.route, { waitUntil: "networkidle", timeout: 90_000 });
+    const response = await page.goto(APP + screen.route, { waitUntil: "networkidle", timeout: 90_000 });
+    if (!response || !response.ok()) throw new Error(`${screen.route}: risposta ${response?.status() ?? "assente"}, l'app non sta servendo la pagina`);
     if (new URL(page.url()).pathname !== screen.route) {
       throw new Error(`${screen.route}: l'app ha rimandato a ${page.url()} (sessione demo non valida o route cambiata)`);
     }

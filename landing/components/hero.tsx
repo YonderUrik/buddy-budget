@@ -55,7 +55,7 @@ export function Hero() {
             <span className="ln"><span>davvero?</span></span>
           </h1>
           <div className="hrow">
-            <p>BuddyBudget tiene insieme conti, spese, investimenti e debiti in un solo quadro. Le tasse italiane le calcola lui.</p>
+            <p>BuddyBudget tiene insieme conti, spese, investimenti, pensione e debiti in un solo quadro. Le tasse italiane le calcola lui.</p>
             <div className="cta">
               <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
                 Prova gratis{ARROW_ICON}

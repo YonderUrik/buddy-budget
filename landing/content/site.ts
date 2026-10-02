@@ -5,7 +5,7 @@ export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudg
 
 export const SITE_TITLE = "BuddyBudget: quanto vali, davvero?";
 export const SITE_DESCRIPTION =
-  "Conti, spese, investimenti e debiti in un solo quadro, con le tasse italiane già dentro. Collega la banca, categorizza i movimenti e decidi con i numeri davanti.";
+  "Conti, spese, investimenti, pensione e debiti in un solo quadro, con le tasse italiane già dentro. Collega la banca, categorizza i movimenti e decidi con i numeri davanti.";
 
 /** Destinazioni dei pulsanti verso l'app. */
 /** Link verso l'app, con UTM per distinguere in Umami gli arrivi dalla landing. */
@@ -39,6 +39,12 @@ export const TOUR_STEPS: readonly TourStep[] = [
     bullets: ["Plusvalenze, zaino fiscale a 4 anni e bollo", "ETF, azioni, BTP, fondi e crypto"],
   },
   {
+    kicker: "Prepara",
+    title: "Il fondo pensione, finalmente leggibile.",
+    text: "Il tuo provider mostra solo contributi netti e controvalore? Inserisci i due numeri ogni tanto: BuddyBudget ricava versamenti e rendimento vero, ti dice quanto ti resterebbe prelevando oggi e se convengono di più il fondo o il TFR in azienda.",
+    bullets: ["Stima al netto delle tasse, con una forbice onesta", "Proiezione in termini reali, dentro il patrimonio netto"],
+  },
+  {
     kicker: "Decidi",
     title: "Scegli con i conti già fatti.",
     text: "Estinguere un finanziamento riducendo la rata o la durata? Surrogarlo? Il confronto è pronto, con interessi risparmiati, penale e costi.",
@@ -54,6 +60,7 @@ export const STORY = {
 export const STORY_POINTS = [
   { kicker: "Il problema", title: "Tutto sparso.", text: "Conti, titoli e debiti stanno in posti diversi. Qui sono insieme, e il patrimonio netto si aggiorna da solo." },
   { kicker: "Il problema", title: "Le tasse a occhio.", text: "Plusvalenze, zaino fiscale e bollo calcolati dalle tue operazioni, senza un foglio da rifare ogni anno." },
+  { kicker: "Il problema", title: "Una pensione che è un grafico.", text: "Due curve e nessuna tabella: quanto hai versato, quanto rende, quanto ti resterebbe. Qui lo ricavi dai due numeri che già vedi, con le tasse in uscita." },
   { kicker: "Il problema", title: "Un debito di cui non conosci il costo.", text: "Rata, interessi ed estinzione anticipata: vedi quanto costa e quanto risparmi se lo chiudi prima." },
 ] as const;
 

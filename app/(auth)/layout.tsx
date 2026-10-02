@@ -20,7 +20,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               Tutta la tua finanza, in una sola schermata.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-sidebar-foreground/75 [@media(max-height:1100px)]:hidden">
-              Conti, movimenti, investimenti e debiti si leggono insieme: collega le tue banche e vedi dove va ogni euro, e quanto vale davvero ciò che hai.
+              Conti, movimenti, investimenti, pensione e debiti si leggono insieme: collega le tue banche e vedi dove va ogni euro, e quanto vale davvero ciò che hai.
             </p>
           </div>
 

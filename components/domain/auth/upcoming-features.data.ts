@@ -4,7 +4,7 @@
  * si cambia lo stato nel catalogo e si toglie l'icona da `UPCOMING_ICONS`.
  */
 
-import { BarChart3, Target, Umbrella, type LucideIcon } from "lucide-react";
+import { BarChart3, Target, type LucideIcon } from "lucide-react";
 
 import { featuresByStatus } from "@/lib/features";
 

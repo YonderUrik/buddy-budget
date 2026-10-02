@@ -29,7 +29,7 @@ export interface AppScreen {
 }
 
 export const SCREENS = [
-  { id: "panoramica", area: "Panoramica", label: "Panoramica", route: "/panoramica", caption: "Patrimonio netto nel tempo, per liquidità, investimenti e debiti.", alt: "Panoramica: patrimonio netto, grafico nel tempo e ripartizione per classe di asset" },
+  { id: "panoramica", area: "Panoramica", label: "Panoramica", route: "/panoramica", caption: "Patrimonio netto nel tempo, per liquidità, investimenti, previdenza e debiti.", alt: "Panoramica: patrimonio netto, grafico nel tempo e ripartizione per classe di asset" },
   { id: "conti", area: "Conti", label: "Conti", route: "/conti", caption: "Banca collegata e conti manuali, con la liquidità dell'ultimo mese.", alt: "Conti: conto collegato alla banca e conti manuali con saldi" },
   { id: "movimenti", area: "Movimenti", label: "Movimenti", route: "/movimenti", caption: "Ogni movimento con la sua categoria; quelli da sistemare in evidenza.", alt: "Movimenti: elenco delle transazioni con categorie e importi", clickFirst: "Anno" },
   { id: "analisi", area: "Movimenti", label: "Analisi", route: "/movimenti/analisi", caption: "Entrate, uscite, netto e risparmio, mese per mese.", alt: "Analisi: entrate contro uscite per mese e indicatori di risparmio", clickFirst: "Anno" },
@@ -55,4 +55,4 @@ export function screenSrc(id: ScreenId, theme: ScreenTheme): string {
 }
 
 /** Screenshot del tour, per passo (stesso ordine di `TOUR_STEPS`). */
-export const TOUR_SCREEN_IDS = ["conti", "movimenti", "investimenti", "debiti"] as const;
+export const TOUR_SCREEN_IDS = ["conti", "movimenti", "investimenti", "pensione-scenari", "debiti"] as const;

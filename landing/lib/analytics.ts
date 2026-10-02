@@ -11,7 +11,7 @@ export type SectionId = "hero" | "perche" | "prodotto" | "schermate" | "funzioni
 export interface LandingEvents {
   cta_click: { location: "nav" | "hero" | "closing"; target: "signup" | "login" | "how_it_works" };
   section_view: { section: SectionId };
-  tour_step_viewed: { step: "collega" | "capisci" | "investi" | "decidi" };
+  tour_step_viewed: { step: "collega" | "capisci" | "investi" | "prepara" | "decidi" };
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };

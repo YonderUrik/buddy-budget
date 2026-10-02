@@ -5,7 +5,7 @@ import "@fontsource-variable/hanken-grotesk";
 import "./globals.css";
 import { BrandSprite } from "@/components/brand";
 import { SmoothScroll } from "@/components/smooth-scroll";
-import { APP_URL, SITE_DESCRIPTION, SITE_TITLE, SITE_URL } from "@/content/site";
+import { APP_URL, FAQ, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
@@ -17,8 +17,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
-  openGraph: { title: SITE_TITLE, description: SITE_DESCRIPTION, url: SITE_URL, locale: "it_IT", type: "website" },
-  twitter: { card: "summary", title: SITE_TITLE, description: SITE_DESCRIPTION },
+  alternates: { canonical: "/" },
+  openGraph: { title: SITE_TITLE, description: SITE_DESCRIPTION, url: SITE_URL, siteName: SITE_NAME, locale: "it_IT", type: "website", images: [OG_IMAGE] },
+  twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [OG_IMAGE.url] },
   icons: { icon: "/icon.svg", apple: "/icons/apple-touch-icon.png" },
 };
 
@@ -26,6 +27,32 @@ export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#fafafa" },
     { media: "(prefers-color-scheme: dark)", color: "#0b0b0d" },
+  ],
+};
+
+/** Dati strutturati della home: organizzazione, sito, applicazione web e FAQ (le stesse domande della sezione visibile). */
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icons/icon-512.png` },
+    { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, inLanguage: "it-IT", publisher: { "@id": `${SITE_URL}/#organization` } },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${SITE_URL}/#app`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      applicationCategory: "FinanceApplication",
+      operatingSystem: "Web, iOS, Android (PWA)",
+      inLanguage: "it-IT",
+      description: SITE_DESCRIPTION,
+      image: `${SITE_URL}${OG_IMAGE.url}`,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/#faq`,
+      mainEntity: FAQ.map((q) => ({ "@type": "Question", name: q.question, acceptedAnswer: { "@type": "Answer", text: q.answer } })),
+    },
   ],
 };
 
@@ -40,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="boot" strategy="beforeInteractive">
           {BOOT_SCRIPT}
         </Script>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
         <BrandSprite />
         <SmoothScroll />
         {children}

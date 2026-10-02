@@ -2,7 +2,7 @@ import type { FeatureArea } from "@/content/catalog.generated";
 import type { ScreenId } from "@/content/screens";
 
 /** Sezioni della pagina misurate con `section_view`. */
-export type SectionId = "hero" | "perche" | "prodotto" | "schermate" | "funzioni" | "confronto" | "sicurezza" | "domande" | "fine";
+export type SectionId = "hero" | "perche" | "prodotto" | "schermate" | "funzioni" | "confronto" | "sicurezza" | "strumenti" | "domande" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).

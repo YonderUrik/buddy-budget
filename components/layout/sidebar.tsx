@@ -66,6 +66,18 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
+/** Sottovoce sotto una voce di navigazione, mostrata solo quando `count > 0` (es. "Da sistemare" sotto Movimenti). */
+export interface NavSubItem {
+  label: string;
+  href: string;
+  /** Contatore mostrato nel badge; con 0 la sottovoce non compare. */
+  count: number;
+  /** Testo del badge (es. "99+"); default: `count`. */
+  countLabel?: string;
+  /** Chiamata al clic sulla sottovoce (es. per tracciare l'uso). */
+  onClick?: () => void;
+}
+
 /** Etichetta del badge per le voci non ancora disponibili. */
 const COMING_SOON_LABEL = "Presto";
 
@@ -98,11 +110,14 @@ function NavLink({
   item,
   collapsed,
   active = false,
+  indicator = false,
   onNavigate,
 }: {
   item: NavItem;
   collapsed: boolean;
   active?: boolean;
+  /** Pallino di avviso sull'icona (usato dalla sidebar compatta, dove la sottovoce non si vede). */
+  indicator?: boolean;
   onNavigate?: () => void;
 }) {
   const Icon = item.icon;
@@ -145,17 +160,48 @@ function NavLink({
         collapsed && "justify-center px-2"
       )}
     >
-      <Icon
-        className={cn(
-          "shrink-0 transition-transform duration-150",
-          collapsed ? "size-5" : "size-4",
-          active && "text-sidebar-primary"
+      <span className="relative flex shrink-0">
+        <Icon
+          className={cn(
+            "shrink-0 transition-transform duration-150",
+            collapsed ? "size-5" : "size-4",
+            active && "text-sidebar-primary"
+          )}
+          aria-hidden="true"
+        />
+        {indicator && collapsed && (
+          <span
+            className="absolute -right-1 -top-1 size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar"
+            aria-hidden="true"
+          />
         )}
-        aria-hidden="true"
-      />
+      </span>
       {!collapsed && (
         <span className="truncate leading-none">{item.label}</span>
       )}
+    </Link>
+  );
+}
+
+/** Sottovoce con contatore sotto una voce di navigazione. */
+function NavSubLink({ subItem, onNavigate }: { subItem: NavSubItem; onNavigate?: () => void }) {
+  return (
+    <Link
+      href={subItem.href}
+      onClick={() => {
+        subItem.onClick?.();
+        onNavigate?.();
+      }}
+      className={cn(
+        "flex items-center gap-2 rounded-lg py-1.5 pl-9 pr-3 text-[13px] font-semibold",
+        "text-sidebar-primary transition-colors duration-150 hover:bg-sidebar-accent"
+      )}
+    >
+      <span className="size-1.5 shrink-0 rounded-full bg-sidebar-primary" aria-hidden="true" />
+      <span className="truncate">{subItem.label}</span>
+      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-xs font-bold leading-none text-sidebar-primary-foreground tabular-nums">
+        {subItem.countLabel ?? subItem.count}
+      </span>
     </Link>
   );
 }
@@ -206,6 +252,8 @@ interface AppSidebarProps {
   onClose?: () => void;
   /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
   settingsHref?: string;
+  /** Sottovoci con contatore, per `href` della voce padre (es. `{ "/movimenti": { label: "Da sistemare", href: "/categorizza", count: 9 } }`). */
+  subItems?: Record<string, NavSubItem>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
   extra?: React.ReactNode;
 }
@@ -216,6 +264,7 @@ export function AppSidebar({
   activeHref,
   onClose,
   settingsHref = "/impostazioni",
+  subItems,
   extra,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
@@ -288,16 +337,26 @@ export function AppSidebar({
       {/* ── Navigazione ── */}
       <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
         <ul className="flex flex-col gap-0.5" role="list">
-          {items.map((item) => (
-            <li key={item.href}>
-              <NavLink
-                item={item}
-                collapsed={isCollapsed}
-                active={activeHref ? activeHref === item.href : isActivePath(pathname, item.href)}
-                onNavigate={onClose}
-              />
-            </li>
-          ))}
+          {items.map((item) => {
+            const subItem = subItems?.[item.href];
+            const showSubItem = subItem !== undefined && subItem.count > 0;
+            return (
+              <li key={item.href}>
+                <NavLink
+                  item={item}
+                  collapsed={isCollapsed}
+                  active={activeHref ? activeHref === item.href : isActivePath(pathname, item.href)}
+                  indicator={showSubItem}
+                  onNavigate={onClose}
+                />
+                {showSubItem && !isCollapsed && (
+                  <div className="mt-0.5">
+                    <NavSubLink subItem={subItem} onNavigate={onClose} />
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
         {extra ? (
           <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>

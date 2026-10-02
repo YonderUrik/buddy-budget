@@ -15,6 +15,8 @@ export const authUser = pgTable("auth_user", {
   hideAmounts: boolean("hide_amounts").notNull().default(false),
   /** Se valorizzata l'account è disattivato e verrà eliminato definitivamente a questa data (cron `account-deletion`). */
   deletionScheduledAt: timestamp("deletion_scheduled_at", { withTimezone: true }),
+  /** Ultima visita alle schermate dei movimenti: le transazioni importate dopo questo istante sono "nuove" (avviso "Da sistemare"). */
+  movementsSeenAt: timestamp("movements_seen_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "auth_user" ADD COLUMN "movements_seen_at" timestamp with time zone DEFAULT now() NOT NULL;

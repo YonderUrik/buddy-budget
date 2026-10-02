@@ -45,6 +45,7 @@ export const FEATURES: readonly Feature[] = [
   f("budget-per-categoria", "Movimenti", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
   f("analisi-e-cash-flow", "Movimenti", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/movimenti"),
   f("ricerca-filtri-e-note", "Movimenti", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
+  f("da-sistemare", "Movimenti", "Da sistemare", "Un avviso in Panoramica e nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
   f("operazioni-pac-e-import-csv", "Investimenti", "Operazioni, PAC e import CSV", "Registra acquisti e vendite, programma i PAC, importa da un file.", "live"),

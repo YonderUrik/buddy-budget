@@ -18,6 +18,7 @@ import { SectionTabs } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/client";
+import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { cn } from "@/lib/utils";
 
@@ -68,6 +69,7 @@ function MovementsHeader({ showPeriod }: { showPeriod: boolean }) {
 }
 
 function MovementsFrame({ children }: { children: React.ReactNode }) {
+  useMarkMovementsSeen();
   const pathname = usePathname();
   const accountParam = useSearchParams().get(MOVEMENTS_ACCOUNT_PARAM);
   const isCategories = pathname.startsWith(MOVEMENTS_CATEGORIES_HREF);

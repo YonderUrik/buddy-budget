@@ -36,6 +36,8 @@ export interface ProductEvents {
   /** `existing`: quante fotografie aveva già il fondo (0 = la prima). */
   pension_snapshot_saved: { existing: number };
   pension_snapshot_deleted: undefined;
+  /** Simulazione locale dell'aliquota in uscita (chip trascinato o mosso da tastiera); `years`: anni di partecipazione simulati. */
+  pension_rate_simulated: { years: number };
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;

@@ -8,9 +8,10 @@
 import * as React from "react";
 import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { Slider } from "@/components/ui/slider";
 import { projectPension, type ProjectionRates } from "@/lib/calc/pension";
+import { PensionChartTooltip } from "./pension-chart-tooltip";
 import { formatPercent, money } from "./pension-format";
 
 export interface PensionProjectionCardProps {
@@ -75,8 +76,8 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
             </defs>
             <XAxis dataKey="year" tickLine={false} axisLine={false} tickFormatter={(y) => `${y}a`} minTickGap={24} />
             <YAxis hide domain={[0, "auto"]} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" labelFormatter={(_, p) => `Tra ${p?.[0]?.payload?.year ?? 0} anni`} formatter={(v) => money(Number(v), currency)} />} />
-            <Area type="monotone" dataKey="optimistic" stroke="none" fill="url(#pension-band-fill)" />
+            <ChartTooltip cursor={false} content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => `Tra ${Number(point.year ?? 0)} anni`} />} />
+            <Area type="monotone" dataKey="optimistic" stroke="none" tooltipType="none" fill="url(#pension-band-fill)" />
             <Line type="monotone" dataKey="optimistic" stroke="var(--color-optimistic)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
             <Line type="monotone" dataKey="base" stroke="var(--color-base)" strokeWidth={2.5} dot={false} />
             <Line type="monotone" dataKey="prudent" stroke="var(--color-prudent)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />

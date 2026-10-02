@@ -82,8 +82,15 @@
     {
       "idx": 11,
       "version": "7",
-      "when": 1790935363398,
-      "tag": "0011_pensione",
+      "when": 1790937095108,
+      "tag": "0011_avviso_da_sistemare",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790939282198,
+      "tag": "0012_pensione",
       "breakpoints": true
     }
   ]

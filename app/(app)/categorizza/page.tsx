@@ -20,6 +20,7 @@ import {
   useApplyCategorizationMutation,
   useCategorizeSuggestionsQuery,
 } from "@/lib/queries/categorization";
+import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
 
 /** Testo della barra di avanzamento durante l'applicazione in blocco. */
@@ -63,6 +64,7 @@ function disabledReason(group: SuggestionGroup, categories: Category[], category
 }
 
 export default function CategorizzaPage() {
+  useMarkMovementsSeen();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: groups, isLoading, isError, refetch } = useCategorizeSuggestionsQuery();

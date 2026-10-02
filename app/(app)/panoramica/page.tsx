@@ -5,6 +5,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { computeAccountsKpi } from "@/components/domain/accounts";
+import { AttentionSection } from "@/components/domain/attention";
 import {
   buildCompositionItems,
   MonthSummaryCard,
@@ -133,6 +134,7 @@ export default function PanoramicaPage() {
             onPeriodChange={setPeriod}
             currency={currency}
           />
+          <AttentionSection currency={currency} />
           <NetWorthCompositionRow items={compositionItems} currency={currency} />
           <MonthSummaryCard
             entrate={currentMonth?.entrate ?? 0}

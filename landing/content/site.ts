@@ -46,13 +46,15 @@ export const TOUR_STEPS: readonly TourStep[] = [
   },
 ];
 
-export const STORY_TEXT =
-  "Per sapere quanto valevo servivano cinque posti: la banca, un foglio di calcolo, l'app dei titoli, quella del budget e un cassetto di PDF. Nessuno parlava di tasse italiane. Così ho costruito il sesto, e l'ho fatto diventare l'unico.";
+export const STORY = {
+  title: "Il tuo patrimonio non sta in un posto solo. BuddyBudget sì.",
+  text: "Conti in banca, titoli sul broker, un mutuo, un foglio di calcolo per le tasse. Ogni pezzo ha la sua app, e nessuna ti dice quanto hai davvero. BuddyBudget li mette insieme e fa i conti con le regole italiane.",
+} as const;
 
 export const STORY_POINTS = [
-  { kicker: "Che cos'è", title: "Tutto il patrimonio in un posto.", text: "Conti, movimenti, investimenti e debiti insieme, con un patrimonio netto che si aggiorna da solo." },
-  { kicker: "A cosa serve", title: "Decidere con i numeri davanti.", text: "Sapere dove vanno i soldi, quanto rende davvero il portafoglio e quanto costa un debito, prima di muoverti." },
-  { kicker: "Cosa ti dà", title: "Le tasse italiane, già calcolate.", text: "Plusvalenze, zaino fiscale, bollo, ammortamento ed estinzione anticipata: niente foglio di calcolo." },
+  { kicker: "Il problema", title: "Tutto sparso.", text: "Conti, titoli e debiti stanno in posti diversi. Qui sono insieme, e il patrimonio netto si aggiorna da solo." },
+  { kicker: "Il problema", title: "Le tasse a occhio.", text: "Plusvalenze, zaino fiscale e bollo calcolati dalle tue operazioni, senza un foglio da rifare ogni anno." },
+  { kicker: "Il problema", title: "Un debito di cui non conosci il costo.", text: "Rata, interessi ed estinzione anticipata: vedi quanto costa e quanto risparmi se lo chiudi prima." },
 ] as const;
 
 export type ComparisonLevel = "yes" | "half" | "no";
@@ -82,7 +84,6 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
 
 export const FOUNDER = {
   name: "Daniele",
-  role: "Fondatore e sviluppatore",
-  text: "BuddyBudget nasce da un bisogno personale: avere in un solo posto conti, spese, investimenti e debiti, con le regole fiscali italiane già dentro. Si costruisce una funzione alla volta e si apre a chi ha lo stesso problema.",
-  quote: "Volevo sapere quanto valgo davvero, senza aprire cinque app.",
+  role: "Sviluppa BuddyBudget",
+  text: "BuddyBudget lo sviluppa Daniele, da solo, e lo usa ogni giorno per i suoi soldi. Le funzioni escono una alla volta: quelle in arrivo sono segnate tra le funzioni.",
 } as const;

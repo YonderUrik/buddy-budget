@@ -56,6 +56,8 @@ export interface ProductEvents {
   terms_accepted: { context: "onboarding" | "aggiornamento" };
   /** Clic su una richiesta privacy (apre la bozza di email al titolare); `type`: quale diritto. */
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
+  /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
+  landing_link_clicked: { from: "logo" | "back_link" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

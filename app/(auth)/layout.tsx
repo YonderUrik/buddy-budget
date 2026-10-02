@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { LoginMosaic, NewFeatureNote, UpcomingFeatures } from "@/components/domain/auth";
+import { BrandLink, LoginMosaic, NewFeatureNote, UpcomingFeatures } from "@/components/domain/auth";
 
 const BRAND_NAME = "BuddyBudget";
 
@@ -9,10 +8,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="flex min-h-dvh bg-background">
       {/* Stessa superficie neutra della sidebar (--sidebar): il brand vive nel logo, non nello sfondo. */}
       <aside className="hidden w-1/2 flex-col justify-between gap-6 border-r border-sidebar-border bg-sidebar px-12 py-10 text-sidebar-foreground lg:flex xl:px-16 [@media(max-height:940px)]:py-7 [@media(min-height:1200px)]:py-14">
-        <div className="flex items-center gap-2.5 font-heading text-xl font-bold">
-          <Image src="/brand/logo-mark.svg" alt="" width={24} height={29} className="h-8 w-auto" aria-hidden="true" />
-          {BRAND_NAME}
-        </div>
+        <BrandLink name={BRAND_NAME} className="text-xl" showBackLink />
 
         <div className="flex flex-col gap-6">
           <div className="max-w-xl">
@@ -37,9 +33,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </aside>
 
       <main className="flex w-full flex-col lg:w-1/2">
-        <div className="flex items-center gap-2 p-6 font-heading text-lg font-bold text-primary lg:hidden">
-          <Image src="/brand/logo-mark.svg" alt="" width={20} height={24} className="h-5 w-auto" aria-hidden="true" />
-          {BRAND_NAME}
+        <div className="p-6 lg:hidden">
+          <BrandLink name={BRAND_NAME} className="gap-2 text-lg text-primary" markClassName="h-5 w-auto" showBackLink />
         </div>
 
         <div className="flex flex-1 items-center justify-center px-6 pb-12 sm:px-12 lg:py-12">

@@ -5,6 +5,8 @@
 import type { AnalyticsBase } from "@/lib/analitiche/base";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
 import { num, pct } from "./analytics-format";
+import { GuidedReading } from "./guided-reading";
+import { riskSteps } from "./guided-steps";
 
 export interface RiskTabProps {
   base: AnalyticsBase;
@@ -18,6 +20,7 @@ export function RiskTab({ base, assumedVolatility }: RiskTabProps) {
   const dash = (v: number | null, fmt: (x: number) => string) => (v === null ? "—" : fmt(v));
   return (
     <div className="flex flex-col gap-4">
+      <GuidedReading tab="rischio" steps={riskSteps(base, assumedVolatility)} />
       <AnalyticsCard title="Rischio del portafoglio" explainer="risk">
         {risk.fewData ? <p className="text-sm text-neg">Meno di un anno di dati: i numeri sono indicativi.</p> : null}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

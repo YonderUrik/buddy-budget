@@ -11,7 +11,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
     body: [
       "Analitiche è la parte di Buddy Budget per chi vuole ragionare sui numeri: indipendenza finanziaria (FIRE), scenari futuri, rischio e costi. Non ripete ciò che trovi già nelle altre sezioni.",
       "Ogni risultato è una stima basata su ipotesi che decidi tu. Non è una previsione e non è una consulenza: serve a capire quali scelte contano di più.",
-      "In ogni scheda trovi il riquadro «Come leggerla e come è calcolata», così nessun numero resta un mistero.",
+      "In cima a ogni scheda trovi la «Guida passo passo», che ti accompagna sui tuoi numeri uno alla volta; sotto ogni analisi il riquadro «Come leggerla e come è calcolata» spiega formula e limiti, così nessun numero resta un mistero.",
     ],
   },
   {

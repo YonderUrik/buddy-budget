@@ -1,10 +1,10 @@
-.gal-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; margin-top: 48px; align-items: start; }
+.gal-grid { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; margin-top: 32px; align-items: start; }
 .gal-nav { display: grid; gap: 22px; position: sticky; top: 96px; }
 .gal-area-t { font: 600 11px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink3); margin-bottom: 6px; }
 .gal-tab { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 7px 12px; border-radius: 10px; color: var(--ink2); font-weight: 500; cursor: pointer; transition: background 0.2s, color 0.2s; }
 .gal-tab:hover { background: var(--surface); color: var(--ink); }
 .gal-tab[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
-.gal-cap { margin-top: 18px; color: var(--ink2); max-width: 40em; }
+.gal-cap { margin-top: 20px; font-size: 17px; color: var(--ink2); max-width: 40em; }
 @media (max-width: 1000px) {
   .gal-grid { grid-template-columns: 1fr; gap: 24px; }
   .gal-nav { position: static; display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }

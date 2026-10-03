@@ -1,7 +1,7 @@
 import "./legal-page.css";
-import Link from "next/link";
 import { LEGAL_DRAFT, LEGAL_PATHS, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
-import { Mark } from "./brand";
+import { PageBar } from "./page-bar";
+import { SiteFooter } from "./site-footer";
 
 const LEGAL_NAV = [
   { href: LEGAL_PATHS.privacy, label: "Privacy" },
@@ -13,21 +13,7 @@ const LEGAL_NAV = [
 export function LegalPage({ doc }: { doc: LegalDocument }) {
   return (
     <>
-      <header className="legal-bar">
-        <div className="wrap">
-          <Link href="/" className="legal-brand" aria-label="BuddyBudget, torna alla home">
-            <Mark />
-            <span>BuddyBudget</span>
-          </Link>
-          <nav aria-label="Documenti legali">
-            {LEGAL_NAV.map((link) => (
-              <Link key={link.href} href={link.href} aria-current={link.href === `/${doc.slug}` ? "page" : undefined}>
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <PageBar label="Documenti legali" links={LEGAL_NAV} current={`/${doc.slug}`} />
       <main className="legal">
         <div className="wrap legal-wrap">
           {LEGAL_DRAFT ? (
@@ -64,6 +50,7 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
           ))}
         </div>
       </main>
+      <SiteFooter />
     </>
   );
 }

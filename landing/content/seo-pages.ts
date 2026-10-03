@@ -10,6 +10,8 @@ export const CONTENT_PATHS = {
   ammortamento: "/strumenti/piano-ammortamento",
   guidaZainetto: "/guide/zainetto-fiscale",
   funzioneInvestimenti: "/funzioni/investimenti",
+  funzioni: "/funzioni",
+  schermate: "/schermate",
 } as const;
 
 export interface Source {

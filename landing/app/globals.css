@@ -4,17 +4,19 @@
  * solo nel marchio e nel pulsante principale. Niente colori esadecimali nei componenti: solo token.
  */
 :root {
-  --bg: #fafafa;
+  --bg: #faf9f6;
+  --bg-alt: #f1eee7;
   --surface: #ffffff;
   --ink: #0b0b0d;
-  --ink2: #52525b;
-  --ink3: #71717a;
-  --line: #e4e4e7;
+  --ink2: #55524d;
+  --ink3: #75716b;
+  --line: #e6e2d9;
   --accent: #15738b;
   --sky: #219ebc;
   --sun: #ffb703;
-  --navy: #0b0b0d;
-  --on-navy: #f4f4f5;
+  --sun-edge: #d99500;
+  --navy: #0b1c2a;
+  --on-navy: #f4f6f7;
   --on-navy2: #a1a1aa;
   --on-sun: #18181b;
   --mk2: #1f224e;
@@ -59,7 +61,8 @@
     --ink3: #80808c;
     --line: #26262c;
     --accent: #46b8d4;
-    --navy: #101013;
+    --bg-alt: #101216;
+    --navy: #0b1b27;
     --mk2: #8b8fd6;
     --glow: rgba(33, 158, 188, 0.38);
     --grad-a: #ffffff;
@@ -91,7 +94,8 @@
   --ink3: #80808c;
   --line: #26262c;
   --accent: #46b8d4;
-  --navy: #101013;
+  --bg-alt: #101216;
+  --navy: #0b1b27;
   --mk2: #8b8fd6;
   --glow: rgba(33, 158, 188, 0.38);
   --grad-a: #ffffff;
@@ -133,19 +137,24 @@ button { font: inherit; color: inherit; }
 
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
 .kicker { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
-h2.t { font-size: clamp(36px, 5.2vw, 72px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; margin-top: 18px; max-width: 15em; }
+h2.t { font-size: clamp(38px, 5.8vw, 84px); font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-top: 18px; max-width: 15em; }
 .lede { font-size: clamp(18px, 1.6vw, 21px); color: var(--ink2); max-width: 34em; margin-top: 22px; }
 .sec { padding-block: 150px; }
+/* fascia alternata: stacca le sezioni senza bordi né ombre */
+.band { background: var(--bg-alt); }
+/* denaro che cresce o si risparmia: il verde dell'app, solo accanto a cifre vere */
+.pos { color: var(--a-pos); }
 .mark { height: 26px; aspect-ratio: 378 / 464; display: block; }
 .mark .mk2 { fill: var(--mk2); }
 
 .btn {
+  white-space: nowrap; flex: none;
   display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px;
   font: 600 16px var(--f-b); text-decoration: none; border: 0; cursor: pointer;
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.2s;
 }
-.btn.main { background: var(--sun); color: var(--on-sun); }
-.btn.main:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(255, 183, 3, 0.7); }
+.btn.main { background: var(--sun); color: var(--on-sun); box-shadow: inset 0 0 0 1px var(--sun-edge), 0 6px 16px -8px color-mix(in srgb, var(--sun-edge) 80%, transparent); }
+.btn.main:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--sun-edge), 0 14px 30px -12px color-mix(in srgb, var(--sun) 70%, transparent); }
 .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
 .btn.ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
 .btn svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }
@@ -153,13 +162,15 @@ h2.t { font-size: clamp(36px, 5.2vw, 72px); font-weight: 600; letter-spacing: -0
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* stati iniziali dell'animazione: solo se il JS è attivo e il movimento è consentito (vedi layout.tsx) */
-.js-motion .hero h1 .ln > span { transform: translateY(112%); animation: force-rise 0s 3.5s forwards; }
-.js-motion .hrow > *, .js-motion .tilt { opacity: 0; animation: force-show 0s 3.5s forwards; }
+.js-motion .hero h1 .ln > span { transform: translateY(112%); animation: force-rise 0s 2s forwards; }
+.js-motion .hrow > *, .js-motion .tilt { opacity: 0; animation: force-show 0s 2s forwards; }
 @keyframes force-show { to { opacity: 1; } }
 @keyframes force-rise { to { transform: none; } }
 
 @media (max-width: 1000px) { .sec { padding-block: 96px; } }
 @media (max-width: 600px) { .wrap { padding-inline: 20px; } }
+/* movimento ridotto: niente scorrimenti, parallasse né animazioni in loop; restano le dissolvenze brevi che segnalano il cambio di stato */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+  *, *::before, *::after { animation-duration: 0.01s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+  .btn, .btn svg, .tools-card, .gal-tab, .areas button { transition-property: color, background-color, box-shadow, opacity !important; transition-duration: 0.15s !important; }
 }

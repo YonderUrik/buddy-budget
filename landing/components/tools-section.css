@@ -1,8 +1,6 @@
 .tools-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
 .tools-card { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 24px; padding: 24px; transition: border-color 0.25s, translate 0.25s, box-shadow 0.25s; }
-.tools-card::before { content: ""; position: absolute; inset: auto -20% -50% 20%; height: 80%; background: radial-gradient(closest-side, var(--glow), transparent); opacity: 0; transition: opacity 0.4s; pointer-events: none; }
-.tools-card:hover { border-color: var(--accent); translate: 0 -4px; box-shadow: 0 18px 40px -22px var(--glow); }
-.tools-card:hover::before { opacity: 1; }
+.tools-card:hover { border-color: var(--accent); translate: 0 -4px; box-shadow: 0 18px 40px -26px var(--shadow-win); }
 .tools-viz { margin: -4px 0 14px; }
 .tools-card b { font: 600 clamp(18px, 1.8vw, 22px) / 1.2 var(--f-h); letter-spacing: -0.02em; }
 .tools-tag { font: 600 12px var(--f-b); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }

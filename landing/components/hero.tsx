@@ -3,6 +3,8 @@
 import { useRef, type PointerEvent } from "react";
 import "./hero.css";
 import { APP_LINKS } from "@/content/site";
+import Link from "next/link";
+import { CONTENT_PATHS } from "@/content/seo-pages";
 import { track } from "@/lib/analytics";
 import { useSectionView } from "@/lib/use-section-view";
 import { EASE_OUT, gsap, MOTION_OK, useGSAP } from "@/lib/motion/gsap";
@@ -49,22 +51,23 @@ export function Hero() {
     <section id="top" className="hero" ref={root} onPointerMove={onMove}>
       <div>
         <div className="wrap">
-          <span className="pill">Conti · Movimenti · Investimenti · Pensione · Debiti</span>
           <h1 aria-label="Quanto vali, davvero?">
             <span className="ln"><span>Quanto <em>vali</em>,</span></span>
             <span className="ln"><span>davvero?</span></span>
           </h1>
           <div className="hrow">
-            <p>BuddyBudget è l&apos;app per gestire il budget, gli investimenti, il fondo pensione e i debiti in un solo quadro. Le tasse italiane le calcola lui.</p>
+            <p>Conti, investimenti, fondo pensione e debiti in un solo numero: il tuo patrimonio netto, con le tasse italiane già calcolate.</p>
             <div className="cta">
               <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
                 Prova gratis{ARROW_ICON}
               </CtaLink>
-              <a className="btn ghost" href="#schermate" onClick={() => track("cta_click", { location: "hero", target: "how_it_works" })}>
-                Guarda le schermate
+              <a className="btn ghost" href="#prodotto" onClick={() => track("cta_click", { location: "hero", target: "how_it_works" })}>
+                Guarda come funziona
               </a>
             </div>
-            <span className="small">I tuoi dati restano tuoi: li esporti in ZIP quando vuoi.</span>
+            <span className="small">
+              Collega la banca in sola lettura. Oppure prova senza account il <Link href={CONTENT_PATHS.zainetto}>calcolatore dello zainetto fiscale</Link>.
+            </span>
           </div>
         </div>
         <div className="stage" ref={stage}>

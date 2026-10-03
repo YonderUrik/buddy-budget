@@ -6,7 +6,7 @@ import { TrackedSection } from "./tracked-section";
 /** Domande frequenti: `<details>` nativi (funzionano senza JS e il testo sta nell'HTML, indicizzabile). Lo stesso `FAQ` alimenta il JSON-LD. */
 export function Faq() {
   return (
-    <TrackedSection id="domande" section="domande" className="sec faq">
+    <TrackedSection id="domande" section="domande" className="sec faq band">
       <div className="wrap">
         <div className="kicker">Domande frequenti</div>
         <h2 className="t">Prima di iniziare.</h2>

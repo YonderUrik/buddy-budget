@@ -14,7 +14,7 @@ export interface RevealProps {
 }
 
 /** Ingresso morbido (dissolvenza e risalita) quando l'elemento entra in vista. Senza movimento resta fermo e visibile. */
-export function Reveal({ as: Tag = "div", className, distance = 50, stagger = false, children }: RevealProps) {
+export function Reveal({ as: Tag = "div", className, distance = 20, stagger = false, children }: RevealProps) {
   const ref = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -26,7 +26,7 @@ export function Reveal({ as: Tag = "div", className, distance = 50, stagger = fa
         gsap.from(stagger ? Array.from(el.children) : el, {
           opacity: 0,
           y: distance,
-          duration: 1.1,
+          duration: 0.9,
           ease: EASE_OUT,
           stagger: stagger ? 0.12 : 0,
           scrollTrigger: { trigger: el, start: "top 88%", once: true },

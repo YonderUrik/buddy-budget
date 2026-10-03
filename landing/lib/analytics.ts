@@ -17,6 +17,7 @@ export interface LandingEvents {
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };
   hide_amounts_toggled: { hidden: boolean };
   theme_toggled: { theme: "light" | "dark" };
+  source_link_click: { location: "footer" };
 }
 
 export type LandingEventName = keyof LandingEvents;

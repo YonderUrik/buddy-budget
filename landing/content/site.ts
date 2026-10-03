@@ -2,6 +2,13 @@
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudget.io";
+/**
+ * Repository pubblico del codice. Vuoto finché il repo è privato: senza valore la landing non mostra nessun link
+ * (così non ne pubblica uno rotto). Si attiva impostando `NEXT_PUBLIC_SOURCE_URL` (vedi `Dockerfile`).
+ */
+export const SOURCE_URL = process.env.NEXT_PUBLIC_SOURCE_URL ?? "";
+/** Licenza del codice, mostrata accanto al link. */
+export const SOURCE_LICENSE = "AGPL-3.0";
 
 export const SITE_NAME = "BuddyBudget";
 /** Title della home: marchio + parole che la gente cerca (budget, investimenti, pensione, debiti), entro ~60 caratteri. */

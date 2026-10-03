@@ -2,9 +2,10 @@ import "./closing.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
-import { APP_LINKS } from "@/content/site";
+import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL } from "@/content/site";
 import { ARROW_ICON, CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
+import { SourceLink } from "./source-link";
 import { TrackedSection } from "./tracked-section";
 
 /** Chiusura: invito a creare l'account e piè di pagina. */
@@ -25,6 +26,11 @@ export function Closing() {
         <footer>
           <span>© BuddyBudget · creato da Daniele</span>
           <span>Le schermate del sito usano dati di esempio inventati</span>
+          {SOURCE_URL && (
+            <span>
+              Open source ({SOURCE_LICENSE}) · <SourceLink href={SOURCE_URL}>Vedi il codice</SourceLink>
+            </span>
+          )}
           <nav className="legal-links" aria-label="Strumenti e guide">
             <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale</Link>
             <Link href={CONTENT_PATHS.ammortamento}>Ammortamento</Link>

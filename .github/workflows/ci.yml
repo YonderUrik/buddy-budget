@@ -124,7 +124,8 @@ jobs:
     name: Immagine ${{ matrix.image }}
     timeout-minutes: 30
     needs: [check, release]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Le immagini servono solo al deploy, che usa il tag di versione: si costruiscono nel run del rilascio, non a ogni push.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -233,7 +234,7 @@ jobs:
     name: Immagine landing
     timeout-minutes: 20
     needs: [landing, release]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

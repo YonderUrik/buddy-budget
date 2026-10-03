@@ -26,7 +26,7 @@ I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distr
 ## Configurazione una tantum
 
 - Repo → Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests* (serve a release-please per aprire la PR).
-- `main` richiede la check "Lint, tipi e test" e le PR create col `GITHUB_TOKEN` non fanno partire i workflow: per far girare i check sulla PR di release crea un token (PAT fine-grained con `contents` e `pull requests` in scrittura su questo repo) e salvalo come secret `RELEASE_PLEASE_TOKEN`. Senza, la PR di release si mergia con il bypass da admin.
+- `main` richiede la check "Lint, tipi e test" e le PR create col `GITHUB_TOKEN` non fanno partire i workflow: per far girare i check sulla PR di release crea un token (PAT fine-grained con `contents` e `pull requests` in scrittura su questo repo) e salvalo come secret `RELEASE_PLEASE_TOKEN`. Senza, la PR di release si mergia con il bypass da admin. Lo stesso secret serve al workflow degli screenshot della landing (`bot/landing-screens`): con il solo `GITHUB_TOKEN` la sua PR non avvia CI e "Titolo PR" e va rilanciata a mano.
 
 ## Dove si vede la versione
 
@@ -40,3 +40,8 @@ I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distr
 - Versione iniziale `0.2.0` (2026-10-03), senza storia retroattiva: `bootstrap-sha` in `release-please-config.json` fa partire il conteggio dei commit dal merge che l'ha introdotta.
 - Se il run del merge di release fallisce a metà (immagini o infra), la Release esiste già e un rilancio non rifà il deploy: si rilancia a mano il job di deploy o si aggiorna il `newTag` in infra.
 - Per forzare una versione: commit con `Release-As: X.Y.Z` nel corpo.
+
+## Immagini e auto-merge
+
+- Le immagini (app, migrator, landing) si costruiscono e pubblicano solo nel run del merge della PR di release, con tag `sha-…`, `main` e `X.Y.Z`. Un push normale su `main` esegue solo i test e tiene aggiornata la PR di release.
+- `automerge.yml` abilita l auto-merge (squash) sulle PR di Dependabot minor/patch e su `bot/landing-screens`. Serve "Allow auto-merge" nelle impostazioni del repo e le check obbligatorie sulla branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): è la protezione a decidere quando unire. La PR di release e le major restano a mano.

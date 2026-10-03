@@ -7,14 +7,51 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Si annullano solo i run delle PR superati da un push nuovo. Quelli su main non vanno mai annullati: un run
+  # cancellato salta immagini e rilascio di quel commit.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Cosa è cambiato
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      app: ${{ steps.f.outputs.app }}
+      landing: ${{ steps.f.outputs.landing }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Sulle PR salta i job che non servono (es. un bump di dipendenze solo in landing/ non rilancia lint e test dell'app).
+      # I job saltati contano come superati per i check obbligatori. Su main (push) gira sempre tutto.
+      - id: f
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"; echo "landing=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          files=$(git diff --name-only "$BASE...$HEAD")
+          echo "$files"
+          # App: tutto tranne landing/, docs/ e i file markdown.
+          if echo "$files" | grep -qvE '^(landing/|docs/)|\.md$'; then app=true; else app=false; fi
+          # Landing: landing/, il catalogo funzioni condiviso (lib/features/) e i workflow stessi.
+          if echo "$files" | grep -qE '^(landing/|lib/features/|\.github/)'; then landing=true; else landing=false; fi
+          # Se cambiano i workflow, prova entrambi.
+          if echo "$files" | grep -qE '^\.github/'; then app=true; fi
+          echo "app=$app" >> "$GITHUB_OUTPUT"; echo "landing=$landing" >> "$GITHUB_OUTPUT"
+
   check:
     name: Lint, tipi e test
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -61,6 +98,7 @@ jobs:
 
   release:
     name: Release (release-please)
+    timeout-minutes: 10
     needs: [check, landing]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -84,8 +122,10 @@ jobs:
 
   image:
     name: Immagine ${{ matrix.image }}
+    timeout-minutes: 30
     needs: [check, release]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Le immagini servono solo al deploy, che usa il tag di versione: si costruiscono nel run del rilascio, non a ogni push.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -127,6 +167,7 @@ jobs:
 
   update-infra-tag:
     name: Deploy app (tag versione nel repo infra)
+    timeout-minutes: 10
     needs: [image, release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
@@ -165,6 +206,9 @@ jobs:
 
   landing:
     name: Landing (lint, tipi, test, build)
+    needs: changes
+    if: needs.changes.outputs.landing == 'true'
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -188,8 +232,9 @@ jobs:
 
   landing-image:
     name: Immagine landing
+    timeout-minutes: 20
     needs: [landing, release]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -221,6 +266,7 @@ jobs:
 
   update-infra-tag-landing:
     name: Deploy landing (tag versione nel repo infra)
+    timeout-minutes: 10
     needs: [landing-image, release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest

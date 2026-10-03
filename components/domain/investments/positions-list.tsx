@@ -39,13 +39,18 @@ function concentrationText(insight: ConcentrationInsight | null): string | null 
   return `Le prime tre posizioni pesano il ${percent(insight.share)} del portafoglio.`;
 }
 
+/** Testo mostrato quando un prezzo aggiornato in automatico è fermo: la fonte potrebbe non conoscere quel simbolo. */
+export const STALE_AUTO_PRICE_HINT = "La fonte non lo aggiorna: puoi inserire il prezzo a mano.";
+
 function priceNote(row: PositionRow, todayKey: string): { text: string; stale: boolean } {
   if (!row.lastPrice) return { text: "Nessun prezzo: inseriscilo a mano", stale: true };
   const origin =
     row.lastPrice.origin === "manuale" ? " · manuale" : row.lastPrice.origin === "operazione" ? " · dall'ultima operazione" : "";
+  const stale = daysBetween(row.lastPrice.date, todayKey) > STALE_PRICE_DAYS;
+  const hint = stale && row.lastPrice.origin !== "manuale" && row.lastPrice.origin !== "operazione" ? ` · ${STALE_AUTO_PRICE_HINT}` : "";
   return {
-    text: `${PRICE_FORMAT.format(row.lastPrice.close)} ${row.instrument.currency} al ${formatShortDate(row.lastPrice.date)}${origin}`,
-    stale: daysBetween(row.lastPrice.date, todayKey) > STALE_PRICE_DAYS,
+    text: `${PRICE_FORMAT.format(row.lastPrice.close)} ${row.instrument.currency} al ${formatShortDate(row.lastPrice.date)}${origin}${hint}`,
+    stale,
   };
 }
 

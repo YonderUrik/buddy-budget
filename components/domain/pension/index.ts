@@ -35,4 +35,6 @@ export { PensionAddFundForm } from "./pension-add-fund-form";
 export type { PensionAddFundFormProps } from "./pension-add-fund-form";
 export { PensionFundSelector } from "./pension-fund-selector";
 export type { PensionFundSelectorProps } from "./pension-fund-selector";
+export { PensionImportDialog } from "./import";
+export type { PensionImportDialogProps } from "./import";
 export { PensionNoSnapshots } from "./pension-no-snapshots";

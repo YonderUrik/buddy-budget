@@ -31,6 +31,8 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     id: "yahoo-portfolio",
     name: "Yahoo Finance",
     initials: "YF",
+    // Wordmark da SVG Logos (CC0 sulla raccolta; il marchio resta di Yahoo, usato solo per indicare la fonte del file).
+    logoSrc: "/import-providers/yahoo.svg",
     tagline: "Export del portafoglio",
     howTo: "Su Yahoo Finance apri il portafoglio → Altro (⋯) → Esporta portafoglio, e carica il CSV scaricato.",
   },

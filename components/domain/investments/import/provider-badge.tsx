@@ -14,7 +14,9 @@ export function ProviderBadge({ provider, className }: ProviderBadgeProps) {
     <span
       aria-hidden="true"
       className={cn(
-        "flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted font-heading text-sm font-semibold text-foreground",
+        "flex h-10 shrink-0 items-center justify-center overflow-hidden rounded-lg font-heading text-sm font-semibold text-foreground",
+        // Un logo ha sfondo chiaro in entrambi i temi (i marchi sono pensati per fondi bianchi) e un po' più di larghezza.
+        provider.logoSrc ? "w-16 bg-white" : "w-10 bg-muted",
         className,
       )}
     >

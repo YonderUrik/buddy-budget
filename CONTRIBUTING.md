@@ -21,3 +21,7 @@ Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di s
 - Il codice server non usa `console.*`: si logga con `lib/observability`, senza dati personali (email, IBAN, importi, descrizioni).
 - La logica di calcolo vive in `lib/calc/` come funzioni pure, con test.
 - Una nuova funzione si aggiunge a `lib/features/catalog.ts`.
+
+## Licenza dei contributi
+
+Contribuendo accetti che il tuo contributo sia rilasciato con la stessa licenza del progetto (AGPL-3.0, vedi [`LICENSE`](LICENSE)).

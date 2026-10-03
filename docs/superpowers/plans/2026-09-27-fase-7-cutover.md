@@ -20,7 +20,7 @@
 - **Google OAuth invece sì**: better-auth è montato su `/api/auth/[...all]`, quindi il redirect URI da aggiungere in Google Cloud Console è `https://www.buddybudget.io/api/auth/callback/google` (stesso pattern già usato per `app.buddybudget.io` in Fase 6 Task 5 — verificare lì l'URI esatto già registrato come riferimento, prima di aggiungerne uno nuovo).
 - **Resend (email transazionali)**: nessuna azione — l'invio non dipende dal dominio da cui è servita l'app, solo dal dominio mittente già verificato su Resend (non cambia).
 - **Congelare le scritture durante dump+restore**: il freeze deve fermare _entrambe_ le fonti di scrittura concorrenti (Vercel Cron è già disattivato dalla Fase 0; i CronJob k8s **vanno sospesi anche loro** per la finestra di dump, altrimenti un sync GoCardless/snapshot patrimonio scritto su CNPG durante il dump Neon→CNPG verrebbe sovrascritto dal restore).
-- **DNS — verificato al Task 1, entrambi i record**: `buddybudget.io` (apice) = `A` → `216.198.79.1`; `www.buddybudget.io` = `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`. **Entrambi DNS-only** (non proxied da Cloudflare), TTL 10 minuti. Non essendo proxied, questi record seguono la vera propagazione DNS (non lo switch quasi-istantaneo di un record proxied) — ma con TTL basso (600s) i resolver dovrebbero aggiornarsi entro pochi minuti dal cambio, coerente con il fermo di 15–30 min già stimato in spec.
+- **DNS — verificato al Task 1, entrambi i record**: `buddybudget.io` (apice) = `A` → `<IP-vecchio-hosting>`; `www.buddybudget.io` = `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`. **Entrambi DNS-only** (non proxied da Cloudflare), TTL 10 minuti. Non essendo proxied, questi record seguono la vera propagazione DNS (non lo switch quasi-istantaneo di un record proxied) — ma con TTL basso (600s) i resolver dovrebbero aggiornarsi entro pochi minuti dal cambio, coerente con il fermo di 15–30 min già stimato in spec.
 - **`buddybudget.io` (apice) reindirizza a `www.buddybudget.io`** (verificato dall'utente al Task 1, oggi via Vercel) — il dominio realmente servito è `www`. Il redirect va replicato sulla nuova infrastruttura (Task 2/6), non lasciato cadere: chi visita `buddybudget.io` oggi finisce comunque su `www.buddybudget.io`.
 
 ## Review Focus
@@ -34,7 +34,7 @@
 
 ## Ordine dei passi
 
-1. ~~Ricognizione pre-cutover~~ **fatta e completa**: apice `buddybudget.io` = `A` → `216.198.79.1`, DNS-only, TTL 10 min, redirige a `www.buddybudget.io` (il dominio vero) = `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`, anch'esso DNS-only, TTL 10 min; backup R2 fresco (`20260927T160200/`); finestra di fermo preferita: notte di un weekend (data esatta da fissare).
+1. ~~Ricognizione pre-cutover~~ **fatta e completa**: apice `buddybudget.io` = `A` → `<IP-vecchio-hosting>`, DNS-only, TTL 10 min, redirige a `www.buddybudget.io` (il dominio vero) = `CNAME` → `c97c5418d705f7ed.vercel-dns-017.com`, anch'esso DNS-only, TTL 10 min; backup R2 fresco (`20260927T160200/`); finestra di fermo preferita: notte di un weekend (data esatta da fissare).
 2. Aggiungere `Host(www.buddybudget.io)` + `Host(buddybudget.io)` (redirect) alla `IngressRoute` esistente (senza ancora spostare DNS/segreti — innocuo, non cambia nulla finché DNS punta a Vercel).
 3. Registrare il redirect URI Google OAuth per `www.buddybudget.io`.
 4. **Finestra di fermo**: sospendere i CronJob k8s + mettere Vercel in pausa (o rimuovere temporaneamente il dominio custom, a scelta dell'utente) → dump Neon → restore in CNPG → verifica.
@@ -53,7 +53,7 @@
 - Consumes: nessuna.
 - Produces: conferma del tipo di record DNS e della finestra di fermo — precondizione per stimare correttamente il Task 6.
 
-- [x] **Step 1: Tipo di record DNS dell'apice** — fatto (2026-09-27): `buddybudget.io` → `A` → `216.198.79.1`, **DNS-only** (non proxied), TTL 10 minuti (600s).
+- [x] **Step 1: Tipo di record DNS dell'apice** — fatto (2026-09-27): `buddybudget.io` → `A` → `<IP-vecchio-hosting>`, **DNS-only** (non proxied), TTL 10 minuti (600s).
 
 - [x] **Step 2: Redirect www** — fatto (2026-09-27): `buddybudget.io` (apice) reindirizza a `www.buddybudget.io` su Vercel — **`www` è il dominio realmente servito**, l'apice è solo un redirect. Cambia lo scope del cutover: il dominio da migrare per davvero è `www.buddybudget.io` (vedi Task 2/3/5/6 aggiornati); l'apice deve solo continuare a fare redirect sulla nuova infrastruttura.
 

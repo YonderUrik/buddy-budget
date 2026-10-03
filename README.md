@@ -103,4 +103,4 @@ To run it locally you need Node 24, pnpm, Postgres and Redis: `pnpm install`, co
 
 ## Licenza
 
-Nessuna licenza è ancora stata scelta. Finché non viene aggiunto un file `LICENSE`, tutti i diritti sono riservati: il codice è consultabile ma non è concesso il diritto di copiarlo, modificarlo o ridistribuirlo.
+[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only). In sintesi: puoi usare, studiare, modificare e ridistribuire il codice, ma se offri una versione modificata come servizio in rete devi rendere disponibile il codice sorgente agli utenti, con la stessa licenza. Resta l'obbligo di conservare le note di copyright e l'attribuzione all'autore originale indicate in [`NOTICE`](NOTICE).

@@ -1,5 +1,10 @@
 # BuddyBudget
 
+[![CI](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml)
+[![Ultima release](https://img.shields.io/github/v/release/YonderUrik/buddy-budget?label=release)](https://github.com/YonderUrik/buddy-budget/releases/latest)
+[![Licenza: AGPL-3.0](https://img.shields.io/badge/licenza-AGPL--3.0-blue)](LICENSE)
+[![Node.js 24](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](.github/workflows/ci.yml)
+
 App di finanza personale: conti, movimenti e budget, investimenti con fiscalità italiana, debiti e pensione, in un'unica vista sul patrimonio netto. Lingua e valuta si scelgono in onboarding (oggi l'interfaccia è solo in italiano, vedi [Stato](#stato-del-progetto)).
 
 > **English:** BuddyBudget is a personal finance web app (accounts, transactions and budgets, investments with Italian tax rules, debts, pension, net worth over time). The UI and most of the documentation are in Italian. A short English summary is at the [bottom](#english-summary).

@@ -6,8 +6,12 @@ import { parseCsv, type CsvTable } from "@/lib/investments/import/csv";
 import { missingFields, type ImportMapping } from "@/lib/investments/import/mapping";
 import { collectIdentities, normalizeRows } from "@/lib/investments/import/normalize";
 import { initialMapping, type ImportPreset } from "@/lib/investments/import/presets";
+import type { ActivityStatement } from "@/lib/investments/import/interactive-brokers";
+import { detectImportProvider, providerMismatchMessage, type ImportProviderId } from "@/lib/investments/import/providers";
+import { statementToRows, statementWarnings } from "@/lib/investments/import/statement-rows";
 import { toDateKey } from "@/lib/calc/net-worth";
-import { useResolveImportMutation, useRunImportMutation } from "@/lib/queries/investments";
+import { track } from "@/lib/analytics";
+import { useParseStatementMutation, useResolveImportMutation, useRunImportMutation } from "@/lib/queries/investments";
 import type { ImportResult } from "@/lib/investments/import/types";
 import { IMPORT_MAX_IDENTITIES } from "@/lib/validation/investments-import";
 import {
@@ -28,6 +32,10 @@ export function useInvestmentImport() {
   const [fileName, setFileName] = React.useState<string | null>(null);
   const [table, setTable] = React.useState<CsvTable | null>(null);
   const [preset, setPreset] = React.useState<ImportPreset | null>(null);
+  // Provider scelto nella griglia del primo passo; null = lo riconosce dal file.
+  const [provider, setProvider] = React.useState<ImportProviderId | null>(null);
+  // Rendiconto già strutturato (Interactive Brokers): sostituisce tabella e mappatura.
+  const [statement, setStatement] = React.useState<ActivityStatement | null>(null);
   const [mapping, setMapping] = React.useState<ImportMapping | null>(null);
   const [choices, setChoices] = React.useState<Record<string, InstrumentChoice>>({});
   const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(new Set());
@@ -37,23 +45,62 @@ export function useInvestmentImport() {
   const [result, setResult] = React.useState<ImportResult | null>(null);
   const resolve = useResolveImportMutation();
   const run = useRunImportMutation();
+  const parseStatement = useParseStatementMutation();
 
   const todayKey = React.useMemo(() => toDateKey(new Date()), []);
-  const rows = React.useMemo(() => (table && mapping ? normalizeRows(table, mapping, todayKey) : []), [table, mapping, todayKey]);
+  const rows = React.useMemo(() => {
+    if (statement) return statementToRows(statement);
+    return table && mapping ? normalizeRows(table, mapping, todayKey) : [];
+  }, [statement, table, mapping, todayKey]);
+  const warnings = React.useMemo(() => (statement ? statementWarnings(statement) : []), [statement]);
   const identities = React.useMemo(() => collectIdentities(rows), [rows]);
   const missing = mapping ? missingFields(mapping) : [];
 
-  function loadText(text: string, name: string | null) {
+  function selectProvider(next: ImportProviderId | null) {
+    setProvider(next);
+    setError(null);
+  }
+
+  async function loadText(text: string, name: string | null) {
+    const detected = detectImportProvider(text);
+    const mismatch = provider ? providerMismatchMessage(provider, detected) : null;
+    if (mismatch) {
+      setError(mismatch);
+      return;
+    }
+    if (detected === "interactive-brokers") {
+      try {
+        const parsed = await parseStatement.mutateAsync(text);
+        if (parsed.operations.length === 0 && !parsed.issues.some((i) => i.severity === "error")) {
+          setError("Nel rendiconto non ci sono acquisti, vendite o dividendi di azioni ed ETF da importare");
+          return;
+        }
+        setStatement(parsed);
+        setTable(null);
+        setMapping(null);
+        setPreset(null);
+        track("investments_import_file_read", { provider: "interactive-brokers", chosen: provider === "interactive-brokers" });
+        setProvider("interactive-brokers");
+        setFileName(name);
+        setError(null);
+        setStep("mapping");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Impossibile leggere il file");
+      }
+      return;
+    }
     const parsed = parseCsv(text);
     if (parsed.headers.length < 2 || parsed.rows.length === 0) {
       setError("Il file non sembra un CSV con intestazioni e almeno una riga");
       return;
     }
-    const detected = initialMapping(parsed);
+    const initial = initialMapping(parsed);
+    track("investments_import_file_read", { provider: detected ?? "generic", chosen: provider !== null });
+    setStatement(null);
     setTable(parsed);
     setFileName(name);
-    setPreset(detected.preset);
-    setMapping(readSavedMapping(parsed) ?? detected.mapping);
+    setPreset(initial.preset);
+    setMapping(readSavedMapping(parsed) ?? initial.mapping);
     setError(null);
     setStep("mapping");
   }
@@ -64,16 +111,23 @@ export function useInvestmentImport() {
   }
 
   async function goToInstruments() {
-    if (!table || !mapping) return;
+    if (!statement && (!table || !mapping)) return;
     if (identities.length > IMPORT_MAX_IDENTITIES) {
       setError(`Il file ha ${identities.length} strumenti: al massimo ${IMPORT_MAX_IDENTITIES} per import`);
       return;
     }
-    saveMapping(table, mapping);
+    if (table && mapping) saveMapping(table, mapping);
     setError(null);
     try {
       const results = await resolve.mutateAsync({
-        identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo }) => ({ key, symbol, isin, name, currency, symbolIsYahoo })),
+        identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo }) => ({
+          key,
+          symbol,
+          isin,
+          name,
+          currency,
+          symbolIsYahoo,
+        })),
       });
       setChoices(Object.fromEntries(results.map((r) => [r.key, choiceFromMatch(r.match)])));
       setExcluded(new Set());
@@ -84,7 +138,10 @@ export function useInvestmentImport() {
   }
 
   function chooseInstrument(key: string, instrument: Instrument) {
-    setChoices((current) => ({ ...current, [key]: { kind: "known", instrument } }));
+    setChoices((current) => ({
+      ...current,
+      [key]: { kind: "known", instrument },
+    }));
     setExcluded((current) => new Set([...current].filter((k) => k !== key)));
   }
 
@@ -98,7 +155,7 @@ export function useInvestmentImport() {
   }
 
   async function submit(dryRun: boolean) {
-    const request = buildImportRequest(rows, choices, excluded, dryRun, preset?.id ?? null);
+    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? "interactive-brokers" : (preset?.id ?? null));
     if (!request) {
       setError("Nessuna operazione da importare: scegli almeno uno strumento");
       return;
@@ -126,6 +183,9 @@ export function useInvestmentImport() {
     fileName,
     table,
     preset,
+    provider,
+    statement,
+    warnings,
     mapping,
     rows,
     identities,
@@ -134,9 +194,11 @@ export function useInvestmentImport() {
     excluded,
     error,
     done,
+    reading: parseStatement.isPending,
     resolving: resolve.isPending,
     running: run.isPending,
     result,
+    selectProvider,
     loadText,
     updateMapping,
     goToInstruments,

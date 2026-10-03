@@ -24,6 +24,8 @@ export interface ImportOperation {
   fees: number;
   taxes: number;
   note: string | null;
+  /** Se presente, tutti gli importi (anche costi) sono in questa valuta (es. file di un broker estero). */
+  sourceCurrency?: string;
 }
 
 /** Esito della lettura di una riga del file. `line` è il numero di riga nel file (1 = intestazioni). */

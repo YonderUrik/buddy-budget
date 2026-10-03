@@ -7,12 +7,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getImportProvider } from "@/lib/investments/import/providers";
 import { cn } from "@/lib/utils";
 import { ImportFileStep } from "./import-file-step";
 import { ImportInstrumentsStep } from "./import-instruments-step";
 import { ImportMappingStep } from "./import-mapping-step";
+import { ImportStatementStep } from "./import-statement-step";
 import { ImportSummaryStep } from "./import-summary-step";
-import { IMPORT_STEP_LABELS, IMPORT_STEPS, type ImportStep } from "./investment-import.state";
+import { IMPORT_STEPS, importStepLabel, type ImportStep } from "./investment-import.state";
 import { useInvestmentImport } from "./use-investment-import";
 
 export interface InvestmentImportDialogProps {
@@ -22,14 +24,16 @@ export interface InvestmentImportDialogProps {
   currency: string;
 }
 
-function Stepper({ current }: { current: ImportStep }) {
+function Stepper({ current, structured }: { current: ImportStep; structured: boolean }) {
   const index = IMPORT_STEPS.indexOf(current);
   return (
     <ol className="flex gap-1.5" aria-label="Passi dell'import">
       {IMPORT_STEPS.map((step, i) => (
         <li key={step} className="flex flex-1 flex-col gap-1" aria-current={i === index ? "step" : undefined}>
           <span className={cn("h-1 rounded-full", i <= index ? "bg-primary" : "bg-muted")} />
-          <span className={cn("text-xs", i === index ? "font-medium text-foreground" : "text-muted-foreground")}>{IMPORT_STEP_LABELS[step]}</span>
+          <span className={cn("text-xs", i === index ? "font-medium text-foreground" : "text-muted-foreground")}>
+            {importStepLabel(step, structured)}
+          </span>
         </li>
       ))}
     </ol>
@@ -47,10 +51,20 @@ function ImportWizard({ currency, onClose }: { currency: string; onClose: () => 
 
   return (
     <div className="flex min-h-0 flex-col gap-4">
-      {!s.done ? <Stepper current={s.step} /> : null}
+      {!s.done ? <Stepper current={s.step} structured={s.statement !== null} /> : null}
 
       <div className="min-h-0 overflow-y-auto">
-        {s.step === "file" ? <ImportFileStep onLoad={s.loadText} /> : null}
+        {s.step === "file" ? (
+          <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} reading={s.reading} />
+        ) : null}
+        {s.step === "mapping" && s.statement ? (
+          <ImportStatementStep
+            fileName={s.fileName}
+            providerName={getImportProvider("interactive-brokers").name}
+            rows={s.rows}
+            warnings={s.warnings}
+          />
+        ) : null}
         {s.step === "mapping" && s.table && s.mapping ? (
           <ImportMappingStep
             fileName={s.fileName}
@@ -121,7 +135,7 @@ export function InvestmentImportDialog({ open, onOpenChange, currency }: Investm
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
         <DialogHeader>
           <DialogTitle>Importa operazioni</DialogTitle>
-          <DialogDescription>Da un file CSV del broker, di Yahoo Finance o dal modello BuddyBudget.</DialogDescription>
+          <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, Yahoo Finance o un altro CSV.</DialogDescription>
         </DialogHeader>
         {open ? <ImportWizard currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>

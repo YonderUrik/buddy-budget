@@ -11,10 +11,10 @@ COPY . .
 # NEXT_PUBLIC_* sono pubbliche e vengono incollate nel bundle a build time: vanno passate qui, non a runtime.
 ARG NEXT_PUBLIC_SITE_URL=https://buddybudget.io
 ARG NEXT_PUBLIC_APP_URL=https://app.buddybudget.io
-# Repo del codice: vuoto finché il repo è privato (nessun link nella landing). Per attivarlo: https://github.com/YonderUrik/buddy-budget
-ARG NEXT_PUBLIC_SOURCE_URL=
 ARG NEXT_PUBLIC_UMAMI_SRC=https://app.buddybudget.io/stats/script.js
 ARG NEXT_PUBLIC_UMAMI_WEBSITE_ID=409671c6-76bb-464b-88a0-314a6c592efe
+# Repo del codice: se vuoto la landing non mostra il link «Vedi il codice».
+ARG NEXT_PUBLIC_SOURCE_URL=https://github.com/YonderUrik/buddy-budget
 ENV NEXT_TELEMETRY_DISABLED=1 \
     NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
     NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL} \

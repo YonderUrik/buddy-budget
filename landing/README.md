@@ -22,7 +22,7 @@ pnpm build        # genera out/
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | `https://buddybudget.io` | URL canonico, sitemap, Open Graph |
 | `NEXT_PUBLIC_APP_URL` | `https://app.buddybudget.io` | destinazione di "Accedi" e "Crea il tuo account" |
-| `NEXT_PUBLIC_SOURCE_URL` | vuoto | repo del codice: con un valore il piè di pagina mostra «Open source · Vedi il codice»; vuoto = nessun link |
+| `NEXT_PUBLIC_SOURCE_URL` | `https://github.com/YonderUrik/buddy-budget` | repo del codice: il piè di pagina mostra «Open source · Vedi il codice»; vuoto = nessun link |
 | `NEXT_PUBLIC_UMAMI_SRC` | `<APP_URL>/stats/script.js` | script Umami (proxy dell'app) |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID` | vuoto | id del sito Umami **della landing**; senza, nessun tracciamento |
 

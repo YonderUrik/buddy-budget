@@ -14,7 +14,7 @@ import {
 import { createMemoryBudgetStore } from "./budget";
 import { ProviderError } from "./errors";
 import type { DailyClose, FxProvider, PriceProvider, ProviderId } from "./types";
-import { backfillInstrument, updateHeldInstruments, type MarketDataDeps } from "./update";
+import { backfillInstrument, updateFxRates, updateHeldInstruments, type MarketDataDeps } from "./update";
 
 // Valuta di test ISO 4217: nessun dato reale la usa, così le righe di cambio si ripuliscono senza rischi.
 const TEST_CURRENCY = "XTS";
@@ -161,6 +161,48 @@ describe("aggiornamento prezzi", () => {
     await updateHeldInstruments(TODAY, deps({ yahoo }, [failing, backup]));
     const rates = await db.select().from(fxRates).where(eq(fxRates.currency, TEST_CURRENCY));
     expect(rates.map((r) => [r.date, r.perEur, r.source])).toEqual([["2026-09-26", "2.00000000", "frankfurter"]]);
+  });
+
+  it("se Yahoo non ha il simbolo con suffisso ritenta con l'ISIN, senza salvarlo come simbolo", async () => {
+    await db.update(instruments).set({ isin: "LU0000000001" }).where(eq(instruments.id, instrument.id));
+    const requested: string[] = [];
+    const yahoo = fake("yahoo", () => [], {
+      async fetchDailyCloses(symbol: string) {
+        requested.push(symbol);
+        return symbol === "LU0000000001" ? [xts("2026-09-26", 100)] : [];
+      },
+    });
+    const info = vi.fn();
+    const testDeps = { ...deps({ yahoo }), log: { debug() {}, info, warn() {}, error() {}, child() { return this; } } };
+    const summary = await updateHeldInstruments(TODAY, testDeps);
+    expect(requested).toEqual(["TEST.DE", "LU0000000001"]);
+    expect(summary.updated).toBeGreaterThanOrEqual(1);
+    expect(info).toHaveBeenCalledWith("market.prices.isin_fallback_used", { symbol: "TEST.DE", provider: "yahoo" });
+    const [saved] = await db
+      .select({ symbol: instrumentSymbols.symbol })
+      .from(instrumentSymbols)
+      .where(and(eq(instrumentSymbols.instrumentId, instrument.id), eq(instrumentSymbols.provider, "yahoo")));
+    expect(saved.symbol).toBe("TEST.DE");
+  });
+
+  it("senza ISIN un risultato vuoto di Yahoo non innesca nessun secondo tentativo", async () => {
+    const yahoo = fake("yahoo", () => []);
+    const summary = await updateHeldInstruments(TODAY, deps({ yahoo }));
+    expect(yahoo.calls).toBe(1);
+    expect(summary.failed).toBeGreaterThanOrEqual(1);
+  });
+
+  it("se tutte le fonti dei cambi falliscono registra market.fx.all_failed", async () => {
+    const down = (id: FxProvider["id"]): FxProvider => ({
+      id,
+      async fetchRates() {
+        throw new ProviderError(id, "timeout");
+      },
+    });
+    const error = vi.fn();
+    const testDeps = { ...deps({}, [down("ecb"), down("frankfurter")]), log: { debug() {}, info() {}, warn() {}, error, child() { return this; } } };
+    expect(await updateFxRates([TEST_CURRENCY], "2026-09-21", "2026-09-28", testDeps)).toBe(0);
+    expect(error).toHaveBeenCalledWith("market.fx.all_failed", { reason: "ecb:error,frankfurter:error", count: 1 });
   });
 
   it("il recupero storico usa solo fonti senza limiti e non tocca i giorni già salvati", async () => {

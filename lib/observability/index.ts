@@ -16,6 +16,8 @@ export {
   recordCronRunMetric,
   recordAuthEvent,
   recordPriceProviderRequest,
+  recordFxProviderRequest,
+  recordPriceInstruments,
   recordGoCardlessCleanup,
   recordConsentNotice,
   CRON_NAMES,
@@ -23,6 +25,8 @@ export {
   DURATION_BUCKETS_SECONDS,
 } from "./metrics";
 export type {
+  FxOutcome,
+  PriceInstrumentOutcome,
   AsyncGaugeDeps,
   AuthEvent,
   CleanupAction,

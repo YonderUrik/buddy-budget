@@ -13,6 +13,7 @@ import { GET } from "./route";
 import { POST as postFund } from "./funds/route";
 import { DELETE as deleteFund, PATCH as patchFund } from "./funds/[id]/route";
 import { POST as postSnapshot } from "./funds/[id]/snapshots/route";
+import { POST as importSnapshots } from "./funds/[id]/snapshots/import/route";
 import { DELETE as deleteSnapshot } from "./funds/[id]/snapshots/[snapshotId]/route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
@@ -63,6 +64,7 @@ describe("route previdenza", () => {
     expect((await deleteFund(request("/x", "DELETE"), idParams(id))).status).toBe(401);
     expect((await postSnapshot(request("/x", "POST", {}), idParams(id))).status).toBe(401);
     expect((await deleteSnapshot(request("/x", "DELETE"), snapshotParams(id, id))).status).toBe(401);
+    expect((await importSnapshots(request("/x", "POST", {}), idParams(id))).status).toBe(401);
   });
 
   it("crea un fondo e lo restituisce con le fotografie in ordine di data", async () => {
@@ -131,5 +133,44 @@ describe("route previdenza", () => {
     await postSnapshot(request("/x", "POST", { date: "2026-04-30", netContributions: 1, value: 1 }), idParams(fundId));
     expect((await deleteFund(request("/x", "DELETE"), idParams(fundId))).status).toBe(204);
     expect((await overview()).funds).toEqual([]);
+  });
+
+  describe("import di fotografie", () => {
+    const row = (line: number, date: string, netContributions: number, value: number) => ({ line, date, netContributions, value });
+    const run = (fundId: string, rows: object[]) => importSnapshots(request("/x", "POST", { format: "csv", rows }), idParams(fundId));
+
+    it("aggiunge le nuove e aggiorna la stessa data; reimportare non cambia nulla", async () => {
+      const fundId = await createFund();
+      await postSnapshot(request("/x", "POST", { date: "2026-03-31", netContributions: 1000, value: 1100 }), idParams(fundId));
+      const rows = [row(2, "2026-03-31", 1000, 1150), row(3, "2026-06-30", 1200, 1300), row(4, "2026-09-30", 1400, 1500)];
+      const first = await run(fundId, rows);
+      expect(first.status).toBe(201);
+      expect(await first.json()).toEqual({ counts: { new: 2, update: 1, unchanged: 0, error: 0 } });
+      const snapshots = (await overview()).funds[0].snapshots;
+      expect(snapshots.map((s) => [s.date, s.value])).toEqual([["2026-03-31", 1150], ["2026-06-30", 1300], ["2026-09-30", 1500]]);
+      const again = await run(fundId, rows);
+      expect((await again.json()).counts).toEqual({ new: 0, update: 0, unchanged: 3, error: 0 });
+      expect((await overview()).funds[0].snapshots).toHaveLength(3);
+    });
+
+    it("con una riga in errore non scrive niente e restituisce il piano", async () => {
+      const fundId = await createFund();
+      const res = await run(fundId, [row(2, "2026-03-31", 1, 1), row(3, "2026-03-31", 2, 2)]);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.rows[1]).toMatchObject({ line: 3, status: "error" });
+      expect((await overview()).funds[0].snapshots).toEqual([]);
+      expect((await run(fundId, [row(2, "2999-01-01", 1, 1)])).status).toBe(400);
+    });
+
+    it("rifiuta richieste malformate e vuote, e fondi di un altro utente", async () => {
+      const fundId = await createFund();
+      expect((await run(fundId, [])).status).toBe(400);
+      expect((await run(fundId, [{ line: 2, date: "x", netContributions: 1, value: 1 }])).status).toBe(400);
+      expect((await run(fundId, [row(2, "2026-03-31", -1, 1)])).status).toBe(400);
+      const other = await createUser();
+      mockedGetSession.mockResolvedValue({ user: { id: other } } as never);
+      expect((await run(fundId, [row(2, "2026-03-31", 1, 1)])).status).toBe(404);
+    });
   });
 });

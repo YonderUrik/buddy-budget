@@ -11,7 +11,7 @@ import { TrackedSection } from "./tracked-section";
 /** Sezione "Sicurezza e privacy": quattro impegni concreti sui dati, con rimando all'informativa. */
 export function Security() {
   return (
-    <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security">
+    <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security band">
       <div className="wrap" style={{ paddingTop: 0 }}>
         <div className="kicker">{SECURITY.kicker}</div>
         <h2 className="t">{SECURITY.title}</h2>

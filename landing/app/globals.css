@@ -4,17 +4,18 @@
  * solo nel marchio e nel pulsante principale. Niente colori esadecimali nei componenti: solo token.
  */
 :root {
-  --bg: #fafafa;
+  --bg: #faf9f6;
+  --bg-alt: #f1eee7;
   --surface: #ffffff;
   --ink: #0b0b0d;
-  --ink2: #52525b;
-  --ink3: #71717a;
-  --line: #e4e4e7;
+  --ink2: #55524d;
+  --ink3: #75716b;
+  --line: #e6e2d9;
   --accent: #15738b;
   --sky: #219ebc;
   --sun: #ffb703;
-  --navy: #0b0b0d;
-  --on-navy: #f4f4f5;
+  --navy: #0b1c2a;
+  --on-navy: #f4f6f7;
   --on-navy2: #a1a1aa;
   --on-sun: #18181b;
   --mk2: #1f224e;
@@ -59,7 +60,8 @@
     --ink3: #80808c;
     --line: #26262c;
     --accent: #46b8d4;
-    --navy: #101013;
+    --bg-alt: #101216;
+    --navy: #0b1b27;
     --mk2: #8b8fd6;
     --glow: rgba(33, 158, 188, 0.38);
     --grad-a: #ffffff;
@@ -91,7 +93,8 @@
   --ink3: #80808c;
   --line: #26262c;
   --accent: #46b8d4;
-  --navy: #101013;
+  --bg-alt: #101216;
+  --navy: #0b1b27;
   --mk2: #8b8fd6;
   --glow: rgba(33, 158, 188, 0.38);
   --grad-a: #ffffff;
@@ -133,9 +136,13 @@ button { font: inherit; color: inherit; }
 
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
 .kicker { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
-h2.t { font-size: clamp(36px, 5.2vw, 72px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; margin-top: 18px; max-width: 15em; }
+h2.t { font-size: clamp(38px, 5.8vw, 84px); font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin-top: 18px; max-width: 15em; }
 .lede { font-size: clamp(18px, 1.6vw, 21px); color: var(--ink2); max-width: 34em; margin-top: 22px; }
 .sec { padding-block: 150px; }
+/* fascia alternata: stacca le sezioni senza bordi né ombre */
+.band { background: var(--bg-alt); }
+/* denaro che cresce o si risparmia: il verde dell'app, solo accanto a cifre vere */
+.pos { color: var(--a-pos); }
 .mark { height: 26px; aspect-ratio: 378 / 464; display: block; }
 .mark .mk2 { fill: var(--mk2); }
 

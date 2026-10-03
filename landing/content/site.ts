@@ -34,11 +34,31 @@ export const FAQ: readonly FaqItem[] = [
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
 export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 
+import { simulateEarlyRepayment } from "@/lib/tools/ammortamento";
+
+/** Cifra d'esempio che compare sulla schermata del passo e conta fino al valore. I numeri sono calcolati o verificabili a mano, mai inventati a occhio. */
+export interface TourFigure {
+  label: string;
+  value: number;
+  /** `eur` aggiunge "€", `ore` aggiunge "h". */
+  unit: "eur" | "ore";
+  note: string;
+  /** `pos` colora la cifra col verde del denaro risparmiato. */
+  tone?: "pos";
+}
+
+/** Plusvalenza 2.000 € con 1.200 € di minusvalenze nello zainetto: 26% su 800 € = 208 € invece di 520 €. */
+const ZAINO_SAVING = Math.round(2000 * 0.26 - (2000 - 1200) * 0.26);
+
+/** Mutuo di 120.000 € al 3% su 240 rate, 20.000 € estinti dopo 5 anni senza penale (mutuo prima casa). */
+const EARLY_REPAYMENT_SAVING = Math.round(simulateEarlyRepayment({ principal: 120000, annualRatePct: 3, months: 240, afterMonths: 60, extra: 20000, penaltyPct: 0 }).netSaving);
+
 export interface TourStep {
   kicker: string;
   title: string;
   text: string;
   bullets: readonly string[];
+  figure?: TourFigure;
 }
 
 export const TOUR_STEPS: readonly TourStep[] = [
@@ -47,6 +67,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     title: "I movimenti arrivano da soli.",
     text: "Colleghi la banca in sola lettura e ogni movimento entra con il testo grezzo dell'estratto. Per il contante c'è il conto manuale.",
     bullets: ["Open Banking, aggiornamento ogni 12 ore", "Conti manuali per contanti e risparmi"],
+    figure: { label: "Aggiornamento", value: 12, unit: "ore", note: "Ogni 12 ore, più un pulsante per farlo subito." },
   },
   {
     kicker: "Capisci",
@@ -59,6 +80,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     title: "Quanto rende, e quanto paghi.",
     text: "Il rendimento vero, confrontato con un indice a parità di versamenti, più rischio e diversificazione. E l'imposta che pagheresti vendendo oggi.",
     bullets: ["Plusvalenze, zaino fiscale a 4 anni e bollo", "ETF, azioni, BTP, fondi e crypto"],
+    figure: { label: "Imposta risparmiata", value: ZAINO_SAVING, unit: "eur", tone: "pos", note: "Esempio: plusvalenza di 2.000 € con 1.200 € di minusvalenze nello zainetto." },
   },
   {
     kicker: "Prepara",
@@ -71,6 +93,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
     title: "Scegli con i conti già fatti.",
     text: "Estinguere un finanziamento riducendo la rata o la durata? Surrogarlo? Il confronto è pronto, con interessi risparmiati, penale e costi.",
     bullets: ["Piano di ammortamento e TAEG", "Surroga, valanga e Credit Lombard"],
+    figure: { label: "Interessi risparmiati", value: EARLY_REPAYMENT_SAVING, unit: "eur", tone: "pos", note: "Esempio: mutuo di 120.000 € al 3%, 20.000 € estinti dopo 5 anni." },
   },
 ];
 

@@ -1,9 +1,11 @@
 .bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; margin-top: 64px; }
 .bc { position: relative; background: var(--surface); border-radius: 28px; box-shadow: 0 0 0 1px var(--line); padding: 32px; overflow: hidden; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
-.bc::after { content: ""; position: absolute; inset: 0; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--sky) 11%, transparent), transparent 60%); opacity: 0; transition: opacity 0.4s; pointer-events: none; }
-.bc:hover::after { opacity: 1; }
 .bc h3 { font: 600 clamp(24px, 2.4vw, 32px) / 1.08 var(--f-h); letter-spacing: -0.03em; }
 .bc p { color: var(--ink2); font-size: 16px; margin-top: 10px; max-width: 30em; }
+.bc.lead h3 { font-size: clamp(30px, 3.4vw, 46px); max-width: 12em; }
+.bc.tone-warm { background: var(--bg-alt); box-shadow: none; }
+.bc.tone-deep { background: var(--navy); color: var(--on-navy); box-shadow: none; }
+.bc.tone-deep p { color: var(--on-navy2); }
 .s7 { grid-column: span 7; } .s5 { grid-column: span 5; } .s4 { grid-column: span 4; }
 .vis { margin-top: auto; border-radius: 16px; background: var(--a-bg); color: var(--a-fg); padding: 16px; font: 13px/1.45 var(--f-b); box-shadow: inset 0 0 0 1px var(--a-line); }
 .feed { display: grid; gap: 8px; overflow: hidden; height: 250px; align-content: start; }

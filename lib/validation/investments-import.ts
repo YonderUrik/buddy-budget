@@ -60,6 +60,8 @@ export const runImportSchema = z.object({
         quantity: z.number().nonnegative(),
         price: z.number().nonnegative(),
         grossAmount: z.number().positive().nullable(),
+        /** Se presente, tutti gli importi (anche costi) sono nella valuta sorgente dello strumento. */
+        sourceCurrency: z.string().regex(/^[A-Z]{3}$/).optional(),
         fees: z.number().nonnegative(),
         taxes: z.number().nonnegative(),
         note: z.string().max(INVESTMENT_NOTE_MAX_LENGTH).nullable(),

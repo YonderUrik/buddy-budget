@@ -1,0 +1,21 @@
+# Interactive Brokers fixtures
+
+- `interactive-brokers.csv`: compact, hand-written synthetic example for focused
+  edge-case tests.
+- `interactive-brokers-full.csv`: full fixture derived from a 2025 English Activity
+  Statement export, with all 618 records and the original section/column layout.
+
+The full fixture replaces the account holder and account number with fictitious
+values. Transaction IDs, security names/symbols, broker instrument IDs and ISINs
+are synthetic; synthetic ISINs have valid checksums. Dates/times are shifted or
+replaced, and nonzero financial values are randomized while retaining signs,
+zeroes and repeated/reversed amount relationships. No original account name or
+number is included. The fixture was generated once with a fixed random seed so
+committed test data stays reproducible.
+
+This is parser test data, not a financial example: randomized balances, prices,
+quantities and summary totals are not intended to reconcile. The full fixture
+covers changing headers, multi-currency trades, dividends, withholding reversals,
+cash movements, fees, interest, lending, positions, metadata and legal notes.
+It yields 20 buys, 7 sells and 7 dividends; unsupported records remain available
+with review warnings. The source file and generation script are not distributed.

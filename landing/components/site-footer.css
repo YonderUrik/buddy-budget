@@ -1,0 +1,5 @@
+.sf { background: var(--navy); color: var(--on-navy2); font-size: 14px; padding-block: 40px; }
+.sf .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px 32px; }
+.sf nav { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.sf a { color: var(--on-navy2); text-decoration: none; }
+.sf a:hover { color: var(--on-navy); text-decoration: underline; }

@@ -1,14 +1,6 @@
 import type { ReactElement } from "react";
 import type { SecurityArtId } from "@/content/site";
 
-/** Numero di stelle della ghirlanda europea. */
-const EU_STARS = 12;
-
-/** Raggio (unità del disegno) della ghirlanda di stelle. */
-const EU_RADIUS = 34;
-
-const STAR_PATH = "M0-7 2-2.2 7-2.2 3-.2 4.4 5 0 2 -4.4 5 -3-.2 -7-2.2 -2-2.2Z";
-
 function PasswordArt() {
   return (
     <svg viewBox="0 0 200 96" aria-hidden="true">
@@ -50,29 +42,6 @@ function BankArt() {
   );
 }
 
-function EuropeArt() {
-  return (
-    <svg viewBox="0 0 200 96" aria-hidden="true">
-      <g transform="translate(100 48)">
-        <g className="a-stars">
-          {Array.from({ length: EU_STARS }, (_, i) => {
-            const angle = (i / EU_STARS) * Math.PI * 2 - Math.PI / 2;
-            return (
-              <path
-                key={i}
-                d={STAR_PATH}
-                transform={`translate(${(Math.cos(angle) * EU_RADIUS).toFixed(1)} ${(Math.sin(angle) * EU_RADIUS).toFixed(1)}) scale(0.9)`}
-                style={{ animationDelay: `${i * 0.18}s` }}
-              />
-            );
-          })}
-        </g>
-        <circle className="a-core" r="10" />
-      </g>
-    </svg>
-  );
-}
-
 function SellArt() {
   return (
     <svg viewBox="0 0 200 96" aria-hidden="true">
@@ -85,30 +54,6 @@ function SellArt() {
       </g>
       <circle className="a-ban" cx="100" cy="48" r="38" fill="none" pathLength={1} />
       <path className="a-ban" d="M73 75 127 21" pathLength={1} />
-    </svg>
-  );
-}
-
-function LogsArt() {
-  const lines = [
-    { label: "sessione.aperta", user: "a41f…", w: 0 },
-    { label: "movimenti.letti", user: "a41f…", w: 1 },
-    { label: "export.scaricato", user: "a41f…", w: 2 },
-  ];
-  return (
-    <svg viewBox="0 0 200 96" aria-hidden="true">
-      {lines.map((l, i) => (
-        <g key={l.label} className="a-line" style={{ animationDelay: `${i * 0.7}s` }} transform={`translate(10 ${14 + i * 26})`}>
-          <rect width="180" height="20" rx="6" className="a-linebg" />
-          <text x="10" y="14" className="a-code">
-            {l.label}
-          </text>
-          <text x="112" y="14" className="a-code a-user">
-            {l.user}
-          </text>
-          <rect className="a-redact" x="146" y="5" width={[24, 16, 28][l.w]} height="10" rx="3" />
-        </g>
-      ))}
     </svg>
   );
 }
@@ -148,9 +93,7 @@ function ControlArt() {
 const ARTS: Record<SecurityArtId, () => ReactElement> = {
   password: PasswordArt,
   bank: BankArt,
-  europe: EuropeArt,
   sell: SellArt,
-  logs: LogsArt,
   control: ControlArt,
 };
 

@@ -29,20 +29,10 @@
 .art-bank .a-keyhole { fill: var(--sun); stroke: var(--sun); stroke-width: 2.5; stroke-linecap: round; }
 .art-bank .a-lock { transform-box: fill-box; transform-origin: 50% 100%; }
 .live.sec-card .art-bank .a-scan { animation: a-scan 3.4s ease-in-out infinite; }
-.live.sec-card .art-bank .a-lock { animation: a-wobble 3.4s ease-in-out infinite; }
+.live.sec-card .art-bank .a-lock { animation: a-lock-tilt 3.4s var(--ease) infinite; }
 @keyframes a-scan { 0% { opacity: 0; transform: translateY(-4px) scaleY(0.25); } 20% { opacity: 1; } 70% { opacity: 1; transform: translateY(40px) scaleY(0.25); } 100% { opacity: 0; transform: translateY(52px) scaleY(0.25); } }
-@keyframes a-wobble { 0%, 60% { transform: rotate(0); } 68% { transform: rotate(-6deg); } 76% { transform: rotate(5deg); } 84% { transform: rotate(-3deg); } 92%, 100% { transform: rotate(0); } }
+@keyframes a-lock-tilt { 0%, 60% { transform: rotate(0); } 72% { transform: rotate(-5deg); } 100% { transform: rotate(0); } }
 
-/* Europa: ghirlanda di stelle che ruota piano, cuore che pulsa */
-.art-europe .a-stars path { fill: var(--sun); }
-.art-europe .a-core { fill: var(--accent); }
-.art-europe .a-stars { transform-box: fill-box; transform-origin: center; }
-.live.sec-card .art-europe .a-stars { animation: a-spin 40s linear infinite; }
-.live.sec-card .art-europe .a-stars path { animation: a-twinkle 2.4s ease-in-out infinite; }
-.live.sec-card .art-europe .a-core { animation: a-beat 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes a-spin { to { transform: rotate(360deg); } }
-@keyframes a-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-@keyframes a-beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
 
 /* non vendiamo: il cartellino oscilla, il divieto si disegna */
 .art-sell .a-tag path { fill: color-mix(in srgb, var(--sky) 18%, transparent); stroke: var(--accent); stroke-width: 3; stroke-linejoin: round; }
@@ -55,16 +45,6 @@
 @keyframes a-swing { 0%, 100% { transform: translate(100px, 12px) rotate(-6deg); } 50% { transform: translate(100px, 12px) rotate(6deg); } }
 @keyframes a-ban { 0%, 15% { stroke-dashoffset: 1; } 55%, 85% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1; } }
 
-/* log: righe che compaiono, i dati personali coperti */
-.art-logs .a-linebg { fill: color-mix(in srgb, var(--ink3) 14%, transparent); }
-.art-logs .a-code { font: 500 10px ui-monospace, SFMono-Regular, Menlo, monospace; fill: var(--ink2); }
-.art-logs .a-user { fill: var(--accent); }
-.art-logs .a-redact { fill: var(--ink); opacity: 0.85; transform-box: fill-box; transform-origin: left; }
-.art-logs .a-line { opacity: 0.001; }
-.live.sec-card .art-logs .a-line { animation: a-line 4.2s ease-out infinite; }
-.live.sec-card .art-logs .a-redact { animation: a-redact 4.2s ease-out infinite; }
-@keyframes a-line { 0% { opacity: 0.001; } 12%, 85% { opacity: 1; } 100% { opacity: 0.001; } }
-@keyframes a-redact { 0%, 15% { transform: scaleX(0); } 30%, 100% { transform: scaleX(1); } }
 
 /* controllo: interruttore, importi mascherati, bottoni */
 .art-control .a-track { fill: color-mix(in srgb, var(--ink3) 30%, transparent); }
@@ -95,7 +75,6 @@
 @media (prefers-reduced-motion: reduce) {
   .art *, .sec-card { animation: none !important; transition: none !important; }
   .art-password .a-strike, .art-password .a-check, .art-sell .a-ban { stroke-dashoffset: 0; }
-  .art-logs .a-line { opacity: 1; }
   .art-control .a-money { opacity: 0; }
   .art-control .a-masked { opacity: 1; }
   .art-bank .a-scan { opacity: 0; }

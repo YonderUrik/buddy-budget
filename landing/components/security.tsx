@@ -2,16 +2,16 @@ import "./security.css";
 import "./security-art.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
-import { SECURITY } from "@/content/site";
+import { SECURITY, SOURCE_URL } from "@/content/site";
 import { Reveal } from "./reveal";
 import { SecurityCard } from "./security-card";
 import { ServerMap } from "./server-map";
 import { TrackedSection } from "./tracked-section";
 
-/** Sezione "Sicurezza e privacy": sei impegni concreti sui dati, con rimando all'informativa. */
+/** Sezione "Sicurezza e privacy": quattro impegni concreti sui dati, con rimando all'informativa. */
 export function Security() {
   return (
-    <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security">
+    <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security band">
       <div className="wrap" style={{ paddingTop: 0 }}>
         <div className="kicker">{SECURITY.kicker}</div>
         <h2 className="t">{SECURITY.title}</h2>
@@ -25,6 +25,11 @@ export function Security() {
         </Reveal>
         </div>
         <p className="fine">
+          {SOURCE_URL ? (
+            <>
+              {SECURITY.sourceNote} <a href={SOURCE_URL} rel="noopener">leggilo su GitHub</a>.{" "}
+            </>
+          ) : null}
           {SECURITY.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
         </p>
       </div>

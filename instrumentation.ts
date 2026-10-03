@@ -3,6 +3,9 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { parseServerEnv } = await import("@/lib/env");
     parseServerEnv(process.env);
+    // Una riga a ogni avvio del pod: versione e commit arrivano dal logger (campi `version` e `commit`).
+    const { logger } = await import("@/lib/observability");
+    logger.info("app.process.started");
   }
 }
 

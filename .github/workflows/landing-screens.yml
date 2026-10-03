@@ -2,8 +2,8 @@ name: Screenshot landing
 
 # Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md). Parte da sola quando su main
 # cambia ciò che si vede nelle schermate (UI, calcoli, dati demo, elenco screen) e apre una PR con le immagini
-# nuove; si può anche avviare a mano. La PR la apre GITHUB_TOKEN, quindi la CI non parte da sola su di essa:
-# basta un push vuoto o "Re-run" dal branch bot/landing-screens se serve.
+# nuove; si può anche avviare a mano. Con RELEASE_PLEASE_TOKEN (PAT) la PR fa partire CI e "Titolo PR" da sola;
+# con il solo GITHUB_TOKEN no, e serve un "Re-run" a mano (vedi docs/rilasci.md).
 on:
   push:
     branches: [main]
@@ -28,6 +28,7 @@ jobs:
   capture:
     name: Cattura screenshot
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:17
@@ -89,10 +90,11 @@ jobs:
       - name: Apri o aggiorna la PR con le immagini nuove
         uses: peter-evans/create-pull-request@v7
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           branch: bot/landing-screens
           add-paths: landing/public/screens
           commit-message: "chore(landing): aggiorna gli screenshot dall'app"
-          title: "Landing: screenshot aggiornati dall'app"
+          title: "chore(landing): aggiorna gli screenshot dall'app"
           body: |
             Screenshot rigenerati automaticamente dall'app su `main` con i dati demo (`pnpm demo:seed`).
             Controlla a colpo d'occhio le immagini nel diff prima di fare il merge.

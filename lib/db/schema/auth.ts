@@ -13,8 +13,6 @@ export const authUser = pgTable("auth_user", {
   homePage: text("home_page").notNull().default("/panoramica"),
   /** Preferenza "nascondi importi": se attiva tutti i valori in denaro dell'app sono coperti da una maschera. */
   hideAmounts: boolean("hide_amounts").notNull().default(false),
-  /** Preferenza "Strumenti avanzati": se attiva compare la sezione Analitiche (FIRE, simulazioni, rischio). Spenta di default. */
-  advancedAnalytics: boolean("advanced_analytics").notNull().default(false),
   /** Se valorizzata l'account è disattivato e verrà eliminato definitivamente a questa data (cron `account-deletion`). */
   deletionScheduledAt: timestamp("deletion_scheduled_at", { withTimezone: true }),
   /** Quando l'utente ha accettato Termini e Privacy (ultima accettazione). */

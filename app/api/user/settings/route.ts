@@ -22,7 +22,6 @@ async function handleGet(request: NextRequest) {
     currency: user.currency,
     homePage: resolveHomePage(user.homePage),
     hideAmounts: user.hideAmounts === true,
-    advancedAnalytics: user.advancedAnalytics === true,
     legalAcceptedAt: user.legalAcceptedAt ? new Date(user.legalAcceptedAt).toISOString() : null,
     legalAcceptedVersion: user.legalAcceptedVersion ?? null,
     createdAt: new Date(user.createdAt).toISOString(),
@@ -31,7 +30,7 @@ async function handleGet(request: NextRequest) {
   });
 }
 
-/** Aggiorna nome, valuta, pagina iniziale, nascondi importi o strumenti avanzati (solo valori ammessi). */
+/** Aggiorna nome, valuta, pagina iniziale o nascondi importi (solo valori ammessi). */
 async function handlePatch(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);
   if (session instanceof Response) return session;

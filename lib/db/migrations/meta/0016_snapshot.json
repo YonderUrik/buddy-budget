@@ -265,13 +265,6 @@
           "notNull": true,
           "default": false
         },
-        "advanced_analytics": {
-          "name": "advanced_analytics",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "deletion_scheduled_at": {
           "name": "deletion_scheduled_at",
           "type": "timestamp with time zone",

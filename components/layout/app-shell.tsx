@@ -41,10 +41,9 @@ interface InnerShellProps {
   activeHref?: string;
   sidebarExtra?: React.ReactNode;
   navSubItems?: Record<string, NavSubItem>;
-  showAdvanced?: boolean;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navSubItems, showAdvanced }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navSubItems }: InnerShellProps) {
   const { collapsed, mobileOpen, closeMobile } = useSidebar();
 
   // Chiude il drawer mobile se la finestra viene allargata oltre il breakpoint.
@@ -80,7 +79,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navSubItems, showAdvan
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} subItems={navSubItems} extra={sidebarExtra} showAdvanced={showAdvanced} />
+          <AppSidebar activeHref={activeHref} subItems={navSubItems} extra={sidebarExtra} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -129,7 +128,6 @@ function InnerShell({ children, activeHref, sidebarExtra, navSubItems, showAdvan
           onClose={closeMobile}
           subItems={navSubItems}
           extra={sidebarExtra}
-          showAdvanced={showAdvanced}
         />
       </div>
     </div>
@@ -148,18 +146,16 @@ interface AppShellProps {
   sidebarExtra?: React.ReactNode;
   /** Sottovoci con contatore sotto le voci della sidebar, per `href` della voce padre. */
   navSubItems?: Record<string, NavSubItem>;
-  /** Mostra le voci di navigazione avanzate (Strumenti avanzati accesi). */
-  showAdvanced?: boolean;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navSubItems, showAdvanced }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navSubItems }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navSubItems={navSubItems} showAdvanced={showAdvanced}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navSubItems={navSubItems}>
         {children}
       </InnerShell>
     </SidebarProvider>

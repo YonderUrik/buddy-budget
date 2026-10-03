@@ -14,7 +14,6 @@ export const updateUserSettingsSchema = z
       .optional(),
     currency: z.string().refine(isSupportedCurrency, "Valuta non supportata").optional(),
     hideAmounts: z.boolean().optional(),
-    advancedAnalytics: z.boolean().optional(),
     homePage: z.string().refine(isHomePagePath, "Pagina non valida").optional(),
   })
   .strict()

@@ -49,7 +49,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
     title: "Come usarla bene",
     body: [
       "Parti dalle ipotesi più prudenti e allontanati solo se hai un motivo. Se un risultato dipende molto da una sola ipotesi, fidati meno.",
-      "Puoi riaprire questa guida dal pulsante «Guida» in alto, e spegnere Analitiche in qualsiasi momento da Impostazioni → Preferenze.",
+      "Puoi riaprire questa guida dal pulsante «Guida» in alto e tornare qui quando vuoi: nessuna ipotesi è definitiva.",
     ],
   },
 ];

@@ -66,9 +66,6 @@ export interface ProductEvents {
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
   /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
   landing_link_clicked: { from: "logo" | "back_link" };
-  /** Strumenti avanzati accesi o spenti da Impostazioni. */
-  analytics_enabled: undefined;
-  analytics_disabled: undefined;
   /** Scheda di Analitiche aperta; `tab`: quale. */
   analytics_tab_viewed: { tab: "fire" | "simulazione" | "prelievi" | "crescita" | "rischio" | "costi" };
   /** Ipotesi salvate; `fields`: quanti campi sono cambiati. */

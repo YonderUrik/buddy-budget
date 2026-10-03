@@ -1,12 +1,11 @@
 /**
  * components/domain/analytics — barrel file
  *
- * Sezione Analitiche (strumenti avanzati): ipotesi, guida iniziale e le sei schede.
+ * Sezione Analitiche: ipotesi, guida iniziale e le sei schede.
  */
 
 export { ANALYTICS_TABS } from "./analytics-tabs";
 export type { AnalyticsTab } from "./analytics-tabs";
-export { AnalyticsGate } from "./analytics-gate";
 export { AssumptionsPanel } from "./assumptions-panel";
 export type { AssumptionsPanelProps } from "./assumptions-panel";
 export { WalkthroughDialog } from "./walkthrough-dialog";

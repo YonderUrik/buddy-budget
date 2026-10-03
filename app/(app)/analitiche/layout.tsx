@@ -1,16 +1,15 @@
 "use client";
 
-/** Layout di Analitiche: accesso solo con gli strumenti avanzati accesi, ipotesi, guida iniziale e schede. */
+/** Layout di Analitiche: ipotesi, guida iniziale e schede. */
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
 import { HelpCircle } from "lucide-react";
-import { ANALYTICS_TABS, AnalyticsGate, AssumptionsPanel, WalkthroughDialog } from "@/components/domain/analytics";
+import { ANALYTICS_TABS, AssumptionsPanel, WalkthroughDialog } from "@/components/domain/analytics";
 import { CollapsibleSection, LoadError, SectionTabs } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
-import { useUserSettingsQuery } from "@/lib/queries/user-settings";
 
 const TAB_EVENT_NAMES = {
   "/analitiche": "fire",
@@ -109,16 +108,6 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function AnalitricheLayout({ children }: { children: React.ReactNode }) {
-  const settings = useUserSettingsQuery();
-  if (settings.isLoading) return <div className="mx-auto max-w-4xl p-4 sm:p-6" aria-busy="true"><div className="h-40 animate-pulse rounded-xl bg-muted" /></div>;
-  if (!settings.data?.advancedAnalytics) {
-    return (
-      <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:p-6">
-        <Header />
-        <AnalyticsGate />
-      </div>
-    );
-  }
   return (
     <AnalyticsProvider>
       <AnalyticsShell>{children}</AnalyticsShell>

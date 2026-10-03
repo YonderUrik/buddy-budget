@@ -8,7 +8,7 @@ Una sezione per chi vuole "smanettare": FIRE, scenari, rischio e costi. Tre rego
 
 1. **Solo analisi avanzate.** Niente di ciò che si ricava già da Panoramica, Movimenti, Investimenti, Pensione.
 2. **Tutto spiegato.** Ogni analitica ha cosa significa, come leggerla, come è calcolata, limiti e fonti; guida alla prima visita; nessun numero senza contesto.
-3. **Nascosta di default.** Si accende da Impostazioni → Preferenze → Strumenti avanzati (`auth_user.advanced_analytics`). Senza interruttore `/analitiche` mostra una pagina che spiega e permette di accenderlo.
+3. **Visibile a tutti.** Voce di sidebar sempre presente (scelta dell'utente, 2026-10-03: nessun interruttore, «se qualcuno vuole entrare entra»); chi non è interessato non ci va.
 
 ## Schede
 
@@ -40,4 +40,4 @@ Passo annuale, rendimenti reali lognormali con media aritmetica `r` e volatilit�
 
 ## Osservabilità
 
-Log: `analytics.assumptions.saved` (campi cambiati), `analytics.walkthrough.seen`. Umami: `analytics_enabled/disabled`, `analytics_tab_viewed`, `analytics_assumptions_saved`, `analytics_guide_closed`, `analytics_guide_reopened`, `analytics_explainer_opened`. Nessun job in background, cron o dipendenza esterna: nessuna metrica né alert.
+Log: `analytics.assumptions.saved` (campi cambiati), `analytics.walkthrough.seen`. Umami: `analytics_tab_viewed`, `analytics_assumptions_saved`, `analytics_guide_closed`, `analytics_guide_reopened`, `analytics_explainer_opened`. Nessun job in background, cron o dipendenza esterna: nessuna metrica né alert.

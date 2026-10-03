@@ -100,9 +100,8 @@ async function main() {
     // Termini già accettati, sempre nella versione in vigore al momento del seed: così il gate di proxy.ts non rimanda a /accetta-termini.
     legalAcceptedAt: new Date(),
     legalAcceptedVersion: LEGAL_VERSION,
-    // Strumenti avanzati accesi e guida già vista: la schermata Analitiche si cattura senza il dialogo di benvenuto.
-    advancedAnalytics: true,
   });
+  // Guida di Analitiche già vista: la schermata si cattura senza il dialogo di benvenuto.
   await db.insert(analyticsAssumptions).values({ userId: DEMO_USER_ID, walkthroughSeenAt: new Date() });
   await db.insert(authSession).values({
     id: "demo-session",

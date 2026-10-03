@@ -6,5 +6,4 @@ CREATE TABLE "analytics_assumptions" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "auth_user" ADD COLUMN "advanced_analytics" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "analytics_assumptions" ADD CONSTRAINT "analytics_assumptions_user_id_auth_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."auth_user"("id") ON DELETE cascade ON UPDATE no action;

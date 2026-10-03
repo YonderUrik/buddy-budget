@@ -93,13 +93,18 @@ export async function runImport(userId: string, input: RunImportInput, deps: Imp
     existing
   );
   for (const [index, op] of operations.entries()) {
+    const entry = input.instruments.find((i) => i.key === op.key)!;
+    const currency = instrumentByKey.get(op.key)?.currency ?? ("create" in entry && "currency" in entry.create ? entry.create.currency : undefined);
+    if (op.sourceCurrency && currency && op.sourceCurrency !== currency) {
+      rows[index] = { line: op.line, status: "error", message: "La valuta dello strumento non coincide con quella del file" };
+    }
     if (op.date > deps.todayKey) rows[index] = { line: op.line, status: "error", message: "Data nel futuro" };
   }
 
   const fresh = operations.filter((_, i) => rows[i].status === "new");
-  const known = fresh.filter((op) => instrumentByKey.get(op.key));
+  const known = fresh.filter((op) => instrumentByKey.get(op.key) || op.sourceCurrency);
   const fxByLine = await resolveFxRates(
-    known.map((op) => ({ line: op.line, date: op.date, currency: instrumentByKey.get(op.key)!.currency })),
+    known.map((op) => ({ line: op.line, date: op.date, currency: op.sourceCurrency ?? instrumentByKey.get(op.key)!.currency })),
     deps
   );
   for (const [index, op] of operations.entries()) {
@@ -116,7 +121,11 @@ export async function runImport(userId: string, input: RunImportInput, deps: Imp
     userId,
     portfolioId: portfolio.id,
     instrumentId: idOf(op.key),
-    ...toRowValues(op, fxByLine.get(op.line) ?? 1),
+    ...toRowValues({
+      ...op,
+      fees: op.fees * (op.sourceCurrency ? fxByLine.get(op.line) ?? 1 : 1),
+      taxes: op.taxes * (op.sourceCurrency ? fxByLine.get(op.line) ?? 1 : 1),
+    }, fxByLine.get(op.line) ?? 1),
   }));
   await db.transaction(async (tx) => {
     for (let i = 0; i < values.length; i += INSERT_BATCH_SIZE) {

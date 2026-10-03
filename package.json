@@ -5,7 +5,6 @@
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@11.5.0",
   "scripts": {
-    "release:prepare": "tsx scripts/release-prepare.ts",
     "demo:seed": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/demo-seed.ts",
     "dev": "next dev",
     "build": "next build",

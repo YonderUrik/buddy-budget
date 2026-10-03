@@ -1,6 +1,6 @@
 # Changelog
 
-Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è generato da `pnpm release:prepare` (vedi `docs/rilasci.md`).
+Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
 ## 0.2.0 — 2026-10-03
 

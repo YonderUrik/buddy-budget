@@ -60,42 +60,27 @@ jobs:
       - run: pnpm test
 
   release:
-    name: Release (tag e GitHub Release)
+    name: Release (release-please)
     needs: [check, landing]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      is_release: ${{ steps.version.outputs.is_release }}
+      # `is_release` è true solo nel run causato dal merge della PR di release: quello che deve distribuire.
+      version: ${{ steps.rp.outputs.version }}
+      is_release: ${{ steps.rp.outputs.release_created == 'true' }}
     steps:
-      - uses: actions/checkout@v4
+      # Legge i titoli delle PR (Conventional Commits) dall'ultimo tag e tiene aperta una PR "chore(main): release X.Y.Z"
+      # con versione (app e landing) e CHANGELOG. Al merge di quella PR crea tag e GitHub Release.
+      # Con RELEASE_PLEASE_TOKEN (PAT) la PR di release riceve anche i check; con GITHUB_TOKEN no (vedi docs/rilasci.md).
+      - id: rp
+        uses: googleapis/release-please-action@v4
         with:
-          fetch-depth: 0
-      # È una release se package.json ha una versione il cui tag non esiste ancora, oppure esiste già
-      # su questo stesso commit (rilancio del workflow dopo un errore a metà).
-      - id: version
-        run: |
-          VERSION=$(jq -r .version package.json)
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          if ! git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
-            echo "is_release=true" >> "$GITHUB_OUTPUT"
-            echo "create_tag=true" >> "$GITHUB_OUTPUT"
-          elif [ "$(git rev-list -n1 "v$VERSION")" = "$GITHUB_SHA" ]; then
-            echo "is_release=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_release=false" >> "$GITHUB_OUTPUT"
-          fi
-      - name: Crea tag e GitHub Release
-        if: steps.version.outputs.create_tag == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          awk -v v="$VERSION" '$0 ~ "^## "v"( |$)" {f=1; next} /^## / {f=0} f' CHANGELOG.md > release-notes.md
-          if [ ! -s release-notes.md ]; then echo "Nessuna sezione $VERSION in CHANGELOG.md" >&2; exit 1; fi
-          gh release create "v$VERSION" --target "$GITHUB_SHA" --title "v$VERSION" --notes-file release-notes.md
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   image:
     name: Immagine ${{ matrix.image }}

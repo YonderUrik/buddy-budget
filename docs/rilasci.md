@@ -40,3 +40,8 @@ I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distr
 - Versione iniziale `0.2.0` (2026-10-03), senza storia retroattiva: `bootstrap-sha` in `release-please-config.json` fa partire il conteggio dei commit dal merge che l'ha introdotta.
 - Se il run del merge di release fallisce a metà (immagini o infra), la Release esiste già e un rilancio non rifà il deploy: si rilancia a mano il job di deploy o si aggiorna il `newTag` in infra.
 - Per forzare una versione: commit con `Release-As: X.Y.Z` nel corpo.
+
+## Immagini e auto-merge
+
+- Le immagini (app, migrator, landing) si costruiscono e pubblicano solo nel run del merge della PR di release, con tag `sha-…`, `main` e `X.Y.Z`. Un push normale su `main` esegue solo i test e tiene aggiornata la PR di release.
+- `automerge.yml` abilita l auto-merge (squash) sulle PR di Dependabot minor/patch e su `bot/landing-screens`. Serve "Allow auto-merge" nelle impostazioni del repo e le check obbligatorie sulla branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): è la protezione a decidere quando unire. La PR di release e le major restano a mano.

@@ -57,6 +57,8 @@ export interface ProductEvents {
   /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso "Da sistemare". */
   attention_link_clicked: { from: "home" | "sidebar" };
   /** Conferma in un tocco dalla card "Da sistemare" della Panoramica. */
+  /** Clic su una voce della legenda del patrimonio netto per mostrarla o nasconderla; `visible`: lo stato dopo il clic. */
+  net_worth_class_toggled: { assetClass: "liquidita" | "investimenti" | "previdenza" | "altro"; visible: boolean };
   attention_quick_confirmed: { groups: number };
   /** `context`: onboarding (nuovo account) o aggiornamento (nuova versione dei documenti per un utente esistente). */
   terms_accepted: { context: "onboarding" | "aggiornamento" };

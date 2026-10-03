@@ -25,6 +25,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto e BuddyBudget ricava versamenti e rendimento, stima quanto ti resterebbe prelevando oggi al netto delle tasse e confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
   { question: "Posso simulare l'estinzione anticipata di un finanziamento o di un mutuo?", answer: "Sì. Inserisci le condizioni del debito e vedi il piano di ammortamento, il TAEG, gli interessi risparmiati e la penale se riduci la rata o la durata, oppure se lo surroghi. C'è anche il Credit Lombard contro il tuo portafoglio." },
   { question: "Dove sono i miei dati e posso portarli via?", answer: "App e database girano su un server in Germania e le connessioni sono cifrate. Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
+  { question: "In che lingua e in che valuta funziona?", answer: "Per ora in italiano e in euro. L'app è pensata per più lingue e valute, che arriveranno più avanti." },
   { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
 ];
 
@@ -79,40 +80,16 @@ export const STORY = {
 } as const;
 
 export const STORY_POINTS = [
-  { kicker: "Il problema", title: "Tutto sparso.", text: "Conti, titoli e debiti stanno in posti diversi. Qui sono insieme, e il patrimonio netto si aggiorna da solo." },
-  { kicker: "Il problema", title: "Le tasse a occhio.", text: "Plusvalenze, zaino fiscale e bollo calcolati dalle tue operazioni, senza un foglio da rifare ogni anno." },
-  { kicker: "Il problema", title: "Una pensione che è un grafico.", text: "Due curve e nessuna tabella: quanto hai versato, quanto rende, quanto ti resterebbe. Qui lo ricavi dai due numeri che già vedi, con le tasse in uscita." },
-  { kicker: "Il problema", title: "Un debito di cui non conosci il costo.", text: "Rata, interessi ed estinzione anticipata: vedi quanto costa e quanto risparmi se lo chiudi prima." },
+  { title: "Tutto sparso.", text: "Conti, titoli e debiti stanno in posti diversi. Qui sono insieme, e il patrimonio netto si aggiorna da solo." },
+  { title: "Le tasse a occhio.", text: "Plusvalenze, zaino fiscale e bollo calcolati dalle tue operazioni, senza un foglio da rifare ogni anno." },
+  { title: "Una pensione che è un grafico.", text: "Quanto hai versato, quanto rende, quanto ti resterebbe: lo ricavi dai due numeri che già vedi, con le tasse in uscita." },
 ] as const;
 
-export type ComparisonLevel = "yes" | "half" | "no";
-export interface ComparisonCell {
-  level: ComparisonLevel;
-  label: string;
-}
-export interface ComparisonRow {
-  need: string;
-  budgetApp: ComparisonCell;
-  investApp: ComparisonCell;
-  sheet: ComparisonCell;
-  us: ComparisonCell;
-}
-const c = (level: ComparisonLevel, label: string): ComparisonCell => ({ level, label });
-const US = c("yes", "Sì");
-
-/** Confronto per categorie di prodotto, non per singoli nomi: va verificato con l'analisi di mercato prima del lancio. */
-export const COMPARISON_ROWS: readonly ComparisonRow[] = [
-  { need: "Conti collegati alla banca", budgetApp: c("yes", "Sì"), investApp: c("half", "Spesso"), sheet: c("no", "A mano"), us: US },
-  { need: "Categorie e budget mensile", budgetApp: c("yes", "Sì"), investApp: c("no", "No"), sheet: c("no", "A mano"), us: US },
-  { need: "Rendimento e rischio degli investimenti", budgetApp: c("no", "Di rado"), investApp: c("yes", "Sì"), sheet: c("no", "A mano"), us: US },
-  { need: "Tasse italiane e zaino fiscale", budgetApp: c("no", "No"), investApp: c("half", "Poche"), sheet: c("no", "A mano"), us: US },
-  { need: "Ammortamento ed estinzione anticipata", budgetApp: c("no", "No"), investApp: c("no", "No"), sheet: c("half", "A mano"), us: US },
-  { need: "Fondo pensione e TFR, con le tasse sul riscatto", budgetApp: c("no", "No"), investApp: c("no", "No"), sheet: c("no", "A mano"), us: US },
-  { need: "Un solo patrimonio netto nel tempo", budgetApp: c("half", "Parziale"), investApp: c("half", "Parziale"), sheet: c("no", "A mano"), us: US },
-];
-
 /** Illustrazione animata del riquadro (vedi `SecurityArt`). */
-export type SecurityArtId = "password" | "bank" | "europe" | "sell" | "logs" | "control";
+export type SecurityArtId = "password" | "bank" | "sell" | "control";
+
+/** Repository pubblico del codice, mostrato nella sezione Sicurezza come prova verificabile. */
+export const SOURCE_URL = process.env.NEXT_PUBLIC_SOURCE_URL ?? "https://github.com/YonderUrik/buddy-budget";
 
 export interface SecurityPoint {
   art: SecurityArtId;
@@ -124,14 +101,13 @@ export interface SecurityPoint {
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
   title: "I tuoi soldi sono affari tuoi. Anche per noi.",
-  intro: "Un'app che vede i tuoi conti deve meritarsi la fiducia. Ecco cosa facciamo, in concreto.",
+  intro: "Un'app che vede i tuoi conti deve meritarsi la fiducia. I server sono in Germania, le connessioni cifrate, e questi sono gli impegni.",
   points: [
     { art: "password", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
     { art: "bank", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
-    { art: "europe", title: "Dati in Europa", text: "App e database girano su un server in Germania. Le connessioni sono cifrate." },
     { art: "sell", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
-    { art: "logs", title: "Log senza dati personali", text: "I registri tecnici non contengono email, importi, descrizioni dei movimenti né IBAN: l'utente compare solo come codice pseudonimo." },
     { art: "control", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
   ] satisfies readonly SecurityPoint[],
   legalNote: "Maggiori dettagli nella",
+  sourceNote: "Il codice dell'app è pubblico:",
 } as const;

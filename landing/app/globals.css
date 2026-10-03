@@ -153,13 +153,15 @@ h2.t { font-size: clamp(36px, 5.2vw, 72px); font-weight: 600; letter-spacing: -0
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* stati iniziali dell'animazione: solo se il JS è attivo e il movimento è consentito (vedi layout.tsx) */
-.js-motion .hero h1 .ln > span { transform: translateY(112%); animation: force-rise 0s 3.5s forwards; }
-.js-motion .hrow > *, .js-motion .tilt { opacity: 0; animation: force-show 0s 3.5s forwards; }
+.js-motion .hero h1 .ln > span { transform: translateY(112%); animation: force-rise 0s 2s forwards; }
+.js-motion .hrow > *, .js-motion .tilt { opacity: 0; animation: force-show 0s 2s forwards; }
 @keyframes force-show { to { opacity: 1; } }
 @keyframes force-rise { to { transform: none; } }
 
 @media (max-width: 1000px) { .sec { padding-block: 96px; } }
 @media (max-width: 600px) { .wrap { padding-inline: 20px; } }
+/* movimento ridotto: niente scorrimenti, parallasse né animazioni in loop; restano le dissolvenze brevi che segnalano il cambio di stato */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01s !important; transition-duration: 0.01s !important; }
+  *, *::before, *::after { animation-duration: 0.01s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+  .btn, .btn svg, .tools-card, .gal-tab, .areas button { transition-property: color, background-color, box-shadow, opacity !important; transition-duration: 0.15s !important; }
 }

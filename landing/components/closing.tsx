@@ -20,12 +20,14 @@ export function Closing() {
             </CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="closing" target="login">Accedi</CtaLink>
           </div>
-          <p className="small">Accedi con un link via email o con Google. Per ora in italiano e in euro; altre lingue e valute arriveranno.</p>
+          <p className="small">Accedi con un link via email o con Google. Nessuna password da ricordare.</p>
         </Reveal>
         <footer>
           <span>© BuddyBudget · creato da Daniele</span>
           <span>Le schermate del sito usano dati di esempio inventati</span>
           <nav className="legal-links" aria-label="Strumenti e guide">
+            <Link href={CONTENT_PATHS.funzioni}>Funzioni</Link>
+            <Link href={CONTENT_PATHS.schermate}>Schermate</Link>
             <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale</Link>
             <Link href={CONTENT_PATHS.ammortamento}>Ammortamento</Link>
             <Link href={CONTENT_PATHS.guidaZainetto}>Guida</Link>

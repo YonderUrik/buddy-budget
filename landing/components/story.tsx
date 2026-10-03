@@ -16,7 +16,6 @@ export function Story() {
         <Reveal className="trio" stagger distance={40}>
           {STORY_POINTS.map((p) => (
             <div key={p.title}>
-              <div className="n">{p.kicker}</div>
               <h3>{p.title}</h3>
               <p>{p.text}</p>
             </div>

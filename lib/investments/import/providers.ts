@@ -23,6 +23,8 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     id: "interactive-brokers",
     name: "Interactive Brokers",
     initials: "IB",
+    // Simbolo fornito dal proprietario del progetto; il marchio resta di Interactive Brokers, usato solo per indicare la fonte del file.
+    logoSrc: "/import-providers/interactive-brokers.svg",
     tagline: "Activity Statement in CSV",
     howTo:
       "Nel portale: Rendiconti → Rendiconti di attività (Activity Statement) → Annuale o Personalizzato → formato CSV. Il file deve essere in inglese.",

@@ -3,7 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { PensionOverviewData } from "@/lib/pension/types";
-import type { CreatePensionFundInput, CreatePensionSnapshotInput, UpdatePensionFundInput } from "@/lib/validation/pension";
+import type { SnapshotImportPlan } from "@/lib/pension/import/plan";
+import type { CreatePensionFundInput, CreatePensionSnapshotInput, ImportPensionSnapshotsInput, UpdatePensionFundInput } from "@/lib/validation/pension";
 
 export const PENSION_QUERY_KEY = ["pension"] as const;
 /** Quanto restano valide le cifre della previdenza: cambiano solo per azioni dell'utente. */
@@ -111,6 +112,19 @@ export function useDeletePensionSnapshotMutation() {
     },
     onSuccess: () => {
       track("pension_snapshot_deleted");
+      invalidate();
+    },
+  });
+}
+
+/** Importa in blocco le fotografie di un fondo da righe lette da un file; restituisce i conteggi. */
+export function useImportPensionSnapshotsMutation() {
+  const invalidate = useInvalidatePension();
+  return useMutation({
+    mutationFn: async ({ fundId, input }: { fundId: string; input: ImportPensionSnapshotsInput }): Promise<{ counts: SnapshotImportPlan["counts"] }> =>
+      (await send(`/api/pension/funds/${fundId}/snapshots/import`, "POST", input, "Import non riuscito")).json(),
+    onSuccess: ({ counts }, variables) => {
+      track("pension_snapshots_imported", { created: counts.new, updated: counts.update, format: variables.input.format });
       invalidate();
     },
   });

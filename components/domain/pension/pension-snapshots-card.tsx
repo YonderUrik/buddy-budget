@@ -6,7 +6,7 @@
  */
 
 import * as React from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,8 @@ export interface PensionSnapshotsCardProps {
   /** Salva la fotografia; la promessa rifiutata porta il messaggio d'errore da mostrare. */
   onAdd: (snapshot: Omit<PensionSnapshot, "id">) => Promise<void>;
   onRemove: (id: string) => void;
+  /** Apre l'import da file; senza, il pulsante non compare. */
+  onImport?: () => void;
 }
 
 const LIST_VISIBLE_ROWS = 6;
@@ -30,7 +32,7 @@ const parseAmount = (raw: string): number | null => {
   return raw.trim() !== "" && Number.isFinite(value) && value >= 0 ? value : null;
 };
 
-export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemove }: PensionSnapshotsCardProps) {
+export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemove, onImport }: PensionSnapshotsCardProps) {
   const [date, setDate] = React.useState(today);
   const [contributions, setContributions] = React.useState("");
   const [value, setValue] = React.useState("");
@@ -83,6 +85,14 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
           <Button type="submit" disabled={!canSave || saving}>{saving ? "Salvo…" : "Aggiungi"}</Button>
         </form>
         {error ? <p role="alert" className="text-sm text-neg">{error}</p> : null}
+        {onImport ? (
+          <p className="text-sm text-muted-foreground">
+            Hai già uno storico?{" "}
+            <button type="button" onClick={onImport} className="inline-flex items-center gap-1 font-medium text-primary underline-offset-2 hover:underline">
+              <Upload size={14} aria-hidden="true" /> Importa da file CSV o Excel
+            </button>
+          </p>
+        ) : null}
 
         {rows.length > 0 ? (
           <div className="flex flex-col">

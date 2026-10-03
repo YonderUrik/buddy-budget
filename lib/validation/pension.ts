@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PENSION_IMPORT_MAX_ROWS } from "@/lib/pension/limits";
 
 /** Lunghezza massima del nome di un fondo. */
 export const PENSION_NAME_MAX_LENGTH = 80;
@@ -31,3 +32,13 @@ export type UpdatePensionFundInput = z.input<typeof updatePensionFundSchema>;
 
 export const createPensionSnapshotSchema = z.object({ date: dateKey, netContributions: amount, value: amount });
 export type CreatePensionSnapshotInput = z.input<typeof createPensionSnapshotSchema>;
+
+/** Import di fotografie da file: righe già lette dal client (il file non arriva mai al server). */
+export const importPensionSnapshotsSchema = z.object({
+  format: z.enum(["csv", "xlsx", "incollato"]),
+  rows: z
+    .array(z.object({ line: z.number().int().min(1), date: dateKey, netContributions: amount, value: amount }))
+    .min(1, "Nessuna riga da importare")
+    .max(PENSION_IMPORT_MAX_ROWS, `Al massimo ${PENSION_IMPORT_MAX_ROWS} righe per import`),
+});
+export type ImportPensionSnapshotsInput = z.input<typeof importPensionSnapshotsSchema>;

@@ -3,7 +3,7 @@
 /** I tuoi dati: inserimento delle fotografie (contributi netti e controvalore), profilo del fondo e altri fondi. */
 
 import * as React from "react";
-import { PensionAddFundForm, PensionProfileCard, PensionSnapshotsCard } from "@/components/domain/pension";
+import { PensionAddFundForm, PensionImportDialog, PensionProfileCard, PensionSnapshotsCard } from "@/components/domain/pension";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePensionView } from "@/lib/pension/pension-context";
 import { PENSION_MAX_FUNDS } from "@/lib/pension/limits";
@@ -17,6 +17,7 @@ import {
 
 export default function PensioneDatiPage() {
   const { fund, funds, snapshots, today, currency, selectFund } = usePensionView();
+  const [importOpen, setImportOpen] = React.useState(false);
   const saveSnapshot = useSavePensionSnapshotMutation();
   const deleteSnapshot = useDeletePensionSnapshotMutation();
   const updateFund = useUpdatePensionFundMutation();
@@ -34,6 +35,16 @@ export default function PensioneDatiPage() {
           await saveSnapshot.mutateAsync({ fundId: fund.id, input: snapshot, existing: snapshots.length });
         }}
         onRemove={(snapshotId) => deleteSnapshot.mutate({ fundId: fund.id, snapshotId })}
+        onImport={() => setImportOpen(true)}
+      />
+      <PensionImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        fundId={fund.id}
+        fundName={fund.name}
+        existing={snapshots}
+        currency={currency}
+        today={today}
       />
       <PensionProfileCard
         key={fund.id}

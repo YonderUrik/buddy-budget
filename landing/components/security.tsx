@@ -25,7 +25,12 @@ export function Security() {
         </Reveal>
         </div>
         <p className="fine">
-          {SECURITY.sourceNote} <a href={SOURCE_URL} rel="noopener">leggilo su GitHub</a>. {SECURITY.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
+          {SOURCE_URL ? (
+            <>
+              {SECURITY.sourceNote} <a href={SOURCE_URL} rel="noopener">leggilo su GitHub</a>.{" "}
+            </>
+          ) : null}
+          {SECURITY.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
         </p>
       </div>
     </TrackedSection>

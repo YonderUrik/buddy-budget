@@ -12,3 +12,5 @@
 .end .legal-links a { color: var(--on-navy2); text-decoration: none; }
 .end .legal-links a:hover { color: var(--on-navy); text-decoration: underline; }
 .end h2 em { font-style: normal; color: var(--sky); }
+.end footer > span a { color: var(--on-navy2); }
+.end footer > span a:hover { color: var(--on-navy); }

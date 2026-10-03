@@ -110,7 +110,7 @@ Livello applicativo (deciso in `docs/superpowers/specs/2026-07-03-tech-stack-arc
 - **Charts**: Recharts via componente `Chart` di shadcn/ui
 - **Osservabilità**: VictoriaMetrics + Loki + Alloy + Grafana, Umami per gli eventi di prodotto (vedi standard sopra e `docs/osservabilita.md` nel repo infra)
 - **Deployment**: cluster k3s single-VPS (Hostinger, Düsseldorf), provisioning Ansible, ArgoCD + SOPS/KSOPS, ingresso via Cloudflare Tunnel + Traefik, admin solo via Tailscale. **Dal 2026-09-27 la produzione è su k3s** (dal 2026-10-01 in corso il passaggio a `buddybudget.io` = landing statica in `landing/` su Cloudflare Pages, `app.buddybudget.io` = app: vedi `docs/decision-log.md`); Vercel e Neon sono spenti (rotazione segreti e chiusura definitiva: Task 8 della Fase 7, vedi Stato). Il codice resta portabile anche su serverless (niente processi in memoria di lunga durata, cron come endpoint `/api/cron/*`). Repo infra: `YonderUrik/buddy-budget-infra`.
-- **CI/CD**: GitHub Actions (lint, tsc, test) → immagine su GHCR → la CI aggiorna il tag nel repo infra → ArgoCD fa il rollout. Le migration le applica un Job `PreSync` di ArgoCD prima del rollout.
+- **CI/CD**: GitHub Actions (lint, tsc, test) → immagine su GHCR → a ogni release (versione nuova in `package.json`) la CI crea tag e GitHub Release e aggiorna il tag `X.Y.Z` nel repo infra → ArgoCD fa il rollout. Le migration le applica un Job `PreSync` di ArgoCD prima del rollout.
 
 ## Comandi
 
@@ -121,6 +121,7 @@ pnpm lint     # ESLint
 pnpm test              # vitest (usa DATABASE_URL: DB di sviluppo, o un DB vuoto migrato)
 pnpm db:generate        # genera una migration dallo schema TypeScript (dopo ogni modifica a lib/db/schema)
 pnpm db:migrate         # applica le migration pendenti (DATABASE_URL da env o .env.local)
+pnpm release:prepare <patch|minor|major>  # alza la versione e scrive il CHANGELOG (poi PR di release, vedi docs/rilasci.md)
 pnpm db:mark-baseline   # una tantum: registra la baseline su un DB esistente già allineato
 docker build -t buddy-budget:local .   # immagine dell'app (target migrator: --target migrator)
 ```
@@ -257,6 +258,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 Il log completo è in [`docs/decision-log.md`](docs/decision-log.md) (voci nuove in cima, 3-8 righe). Decisioni ancora vincolanti, in sintesi:
 
+- **2026-10-03** — Versioni lineari 0.x.y: si rilascia con `pnpm release:prepare` + PR di release; tag, GitHub Release e deploy partono solo alla release (non a ogni merge). Vedi `docs/rilasci.md`.
 - **2026-10-01** — Connessioni GoCardless: avvisi di scadenza (7 giorni prima, email + banner) e pulizia giornaliera della lista GoCardless con periodi di grazia (3/7/30 giorni), dry-run di default, mai su utenti con eliminazione programmata.
 - **2026-10-01** — Ogni feature deve essere osservabile (log, evento Umami, metriche/alert se serve, riga "Come verificare in produzione" nella PR): vedi "Osservabilità" sopra.
 - **2026-10-01** — Prezzi di mercato e snapshot del patrimonio a 3 giri al giorno (06:30/17:30/22:30 UTC e 06:50/17:50/23:50 UTC). Sono chiusure di fine giornata, non intraday.

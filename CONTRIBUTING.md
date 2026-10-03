@@ -15,6 +15,7 @@ Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di s
 3. Prima di aprire la PR: `pnpm lint`, `pnpm test`, `pnpm exec tsc --noEmit`.
 4. Una modifica allo schema richiede `pnpm db:generate` e la migration committata. Non si modifica il database a mano.
 5. Compila il modello della PR: dì cosa cambia per chi usa l'app e come l'hai verificato.
+6. Il titolo della PR segue i Conventional Commits (`feat: …` nuova funzione, `fix: …` correzione, `chore:`/`docs:` senza effetto sulla versione): da lì release-please calcola la versione. Vedi [docs/rilasci.md](docs/rilasci.md).
 
 ## Convenzioni in breve
 

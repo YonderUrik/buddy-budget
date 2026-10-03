@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Segnalare una vulnerabilità
     url: https://github.com/YonderUrik/buddy-budget/security/policy
-    about: Non aprire una issue pubblica per problemi di sicurezza: segui le istruzioni di SECURITY.md.
+    about: "Non aprire una issue pubblica per problemi di sicurezza: segui le istruzioni di SECURITY.md."

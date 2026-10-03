@@ -1,5 +1,5 @@
 import type { Instrument } from "@/lib/db/schema/investments";
-import { logger, recordPriceProviderRequest, type Logger } from "@/lib/observability";
+import { logger, recordFxProviderRequest, recordPriceInstruments, recordPriceProviderRequest, type Logger } from "@/lib/observability";
 import type { ProviderBudgetStore } from "./budget";
 import { createChainRunState, runChain, type ChainAttempt, type ChainRunState } from "./chain";
 import { chainFor } from "./chains";
@@ -96,18 +96,32 @@ export async function completeSymbols(
   return { ...derived, ...current };
 }
 
-/** Aggiorna i cambi del periodo dalla prima fonte che risponde; restituisce quanti cambi ha salvato. */
+/**
+ * Aggiorna i cambi del periodo dalla prima fonte che risponde; restituisce quanti cambi ha salvato.
+ * Se nessuna fonte dà cambi registra `market.fx.all_failed` (errore se almeno una ha fallito, avviso se erano tutte vuote).
+ */
 export async function updateFxRates(currencies: string[], from: string, to: string, deps: MarketDataDeps): Promise<number> {
   if (currencies.length === 0) return 0;
   const log = deps.log ?? logger;
+  const outcomes: string[] = [];
   for (const provider of deps.fxProviders ?? FX_PROVIDERS) {
     try {
       const rates = await provider.fetchRates(currencies, from, to, deps.ctx);
-      if (rates.length > 0) return saveFxRates(rates, provider.id);
+      if (rates.length > 0) {
+        recordFxProviderRequest(provider.id, "success");
+        return saveFxRates(rates, provider.id);
+      }
+      recordFxProviderRequest(provider.id, "empty");
+      outcomes.push(`${provider.id}:empty`);
     } catch (error) {
+      recordFxProviderRequest(provider.id, "error");
+      outcomes.push(`${provider.id}:error`);
       log.warn("market.fx.failed", { provider: provider.id, error });
     }
   }
+  const reason = outcomes.join(",");
+  if (outcomes.some((o) => o.endsWith(":error"))) log.error("market.fx.all_failed", { reason, count: currencies.length });
+  else log.warn("market.fx.all_failed", { reason, count: currencies.length });
   return 0;
 }
 
@@ -144,6 +158,9 @@ export async function updateHeldInstruments(
     onProgress?.(index + 1, held.length);
   }
 
+  recordPriceInstruments("updated", summary.updated - summary.fromFallback);
+  recordPriceInstruments("fallback", summary.fromFallback);
+  recordPriceInstruments("failed", summary.failed);
   summary.fxRates = await updateFxRates(await findNeededCurrencies(held), from, to, deps);
   return summary;
 }
@@ -166,15 +183,13 @@ async function updateInstrument(
   log: Logger,
   onBatch?: (saved: number, total: number) => void
 ): Promise<InstrumentUpdateOutcome> {
-  const symbols = await completeSymbols(instrument, storedSymbols);
+  let symbols = await completeSymbols(instrument, storedSymbols);
   const lastClose = purpose === "daily" ? await findLastClose(instrument.id) : null;
-  const result = await runChain({
+  const chainParams = {
     instrument,
-    symbols,
     from,
     to,
     purpose,
-    chain: chainFor(instrument),
     providers: deps.providers ?? PRICE_PROVIDERS,
     ctx: deps.ctx,
     state,
@@ -182,8 +197,21 @@ async function updateInstrument(
     lastClose,
     dayKey: to,
     sleep: deps.sleep,
-  });
+  };
+  let result = await runChain({ ...chainParams, symbols, chain: chainFor(instrument) });
   recordAttempts(result.attempts);
+
+  // Yahoo conosce il fondo ma non la quotazione scelta (es. `.SG`): ritenta una volta con l'ISIN, senza salvarlo.
+  const yahooEmpty = result.attempts.some((a) => a.provider === "yahoo" && a.outcome === "empty");
+  if (!result.source && yahooEmpty && instrument.isin && symbols.yahoo && symbols.yahoo !== instrument.isin) {
+    const retry = await runChain({ ...chainParams, symbols: { yahoo: instrument.isin }, chain: ["yahoo"] });
+    recordAttempts(retry.attempts);
+    if (retry.source) {
+      log.info("market.prices.isin_fallback_used", { symbol: symbols.yahoo, provider: "yahoo" });
+      result = retry;
+      symbols = { ...symbols, yahoo: instrument.isin };
+    }
+  }
   const symbol = result.source ? symbols[result.source] : symbols.yahoo ?? Object.values(symbols)[0];
 
   if (!result.source) {

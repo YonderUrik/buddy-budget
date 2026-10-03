@@ -1,7 +1,7 @@
 import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "prom-client";
 import { APP_BUILD_INFO } from "@/lib/app-version";
 import type { ProviderId } from "@/lib/db/schema/investments";
-import type { ProviderOutcome } from "@/lib/market-data/types";
+import type { FxProviderId, ProviderOutcome } from "@/lib/market-data/types";
 import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
 
 /** Prefisso comune di tutte le metriche applicative. */
@@ -94,6 +94,8 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
+  fxProvider: Counter<"provider" | "outcome">;
+  priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
 }
@@ -168,6 +170,18 @@ function createState(): MetricsState {
     registers: r,
   });
 
+  state.fxProvider = new Counter({
+    name: `${METRIC_PREFIX}fx_provider_requests_total`,
+    help: "Tentativi sulle fonti dei cambi (ecb, frankfurter) per fonte ed esito (success, empty, error).",
+    labelNames: ["provider", "outcome"],
+    registers: r,
+  });
+  state.priceInstruments = new Counter({
+    name: `${METRIC_PREFIX}price_update_instruments_total`,
+    help: "Strumenti posseduti per esito dell'aggiornamento giornaliero dei prezzi (updated, fallback, failed).",
+    labelNames: ["outcome"],
+    registers: r,
+  });
   state.gcCleanup = new Counter({
     name: `${METRIC_PREFIX}gocardless_cleanup_total`,
     help: "Requisition/agreement GoCardless trovate dalla pulizia per tipo di azione e modalità (dry-run o execute).",
@@ -362,6 +376,21 @@ export function recordAuthEvent(event: AuthEvent): void {
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */
 export function recordPriceProviderRequest(provider: ProviderId, outcome: ProviderOutcome): void {
   metrics().priceProvider.inc({ provider, outcome });
+}
+
+/** Esito di un tentativo su una fonte dei cambi. */
+export type FxOutcome = "success" | "empty" | "error";
+/** Esito dell'aggiornamento giornaliero dei prezzi di uno strumento. */
+export type PriceInstrumentOutcome = "updated" | "fallback" | "failed";
+
+/** Registra un tentativo su una fonte dei cambi. */
+export function recordFxProviderRequest(provider: FxProviderId, outcome: FxOutcome): void {
+  metrics().fxProvider.inc({ provider, outcome });
+}
+
+/** Registra quanti strumenti il giro dei prezzi ha aggiornato, aggiornato da una riserva o non è riuscito ad aggiornare. */
+export function recordPriceInstruments(outcome: PriceInstrumentOutcome, count: number): void {
+  if (count > 0) metrics().priceInstruments.inc({ outcome }, count);
 }
 
 /** Registra `count` elementi su cui la pulizia GoCardless ha deciso (dry-run) o agito (execute) per tipo di azione. */

@@ -17,3 +17,4 @@
 - [ ] Se cambia una funzione visibile: `lib/features/catalog.ts` e landing aggiornati (o «nessun impatto sulla landing»)
 - [ ] Nessun dato personale o segreto nel codice, nei test o negli screenshot
 - [ ] Osservabilità: log, evento Umami, metriche, oppure «nessun nuovo segnale»
+- [ ] Se è una PR di release (`pnpm release:prepare`): changelog riletto, versione uguale in `package.json` e `landing/package.json`

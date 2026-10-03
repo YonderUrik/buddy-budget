@@ -136,7 +136,7 @@ describe("syncAccountLink", () => {
     expect(storedTransactions[0].amount).toBe("-20.00");
   });
 
-  it("usa creditorName come description su una spesa (importo negativo), salvando il testo grezzo in rawDescription", async () => {
+  it("usa il creditorName (nome noto normalizzato) come description su una spesa (importo negativo), salvando il testo grezzo in rawDescription", async () => {
     vi.mocked(getAccountBalances).mockResolvedValue({
       balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
       rateLimit: null,
@@ -157,8 +157,34 @@ describe("syncAccountLink", () => {
     await syncAccountLink(link, createMemoryStore());
 
     const [stored] = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
-    expect(stored.description).toBe("ESSELUNGA SPA");
+    expect(stored.description).toBe("Esselunga");
     expect(stored.rawDescription).toBe("PAGAMENTO POS ESSELUNGA VIA ROMA COD.4471");
+  });
+
+  it("senza controparte estrae il nome dal testo grezzo e salva l'MCC della banca", async () => {
+    vi.mocked(getAccountBalances).mockResolvedValue({
+      balance: { balanceAmount: { amount: "100.00", currency: "EUR" }, balanceType: "interimAvailable" },
+      rateLimit: null,
+    });
+    vi.mocked(getAccountTransactions).mockResolvedValue({
+      transactions: [
+        {
+          internalTransactionId: "tx-extracted",
+          transactionAmount: { amount: "-12.50", currency: "EUR" },
+          remittanceInformationUnstructured: "PAGAMENTO POS 4532 SUMUP *BAR ROSSI MILANO IT 12/09",
+          merchantCategoryCode: "5814",
+          bookingDate: "2026-07-01",
+        },
+      ],
+      rateLimit: null,
+    });
+
+    await syncAccountLink(link, createMemoryStore());
+
+    const [stored] = await db.select().from(transactions).where(eq(transactions.accountId, link.accountId));
+    expect(stored.description).toBe("Bar Rossi Milano");
+    expect(stored.rawDescription).toBe("PAGAMENTO POS 4532 SUMUP *BAR ROSSI MILANO IT 12/09");
+    expect(stored.merchantCategoryCode).toBe("5814");
   });
 
   it("usa debtorName come description su un'entrata (importo positivo)", async () => {

@@ -25,6 +25,7 @@ import {
 import { formatCurrency, formatShortDate } from "@/lib/format";
 import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/lib/queries/transactions";
 import type { Transaction } from "@/lib/db/schema/transactions";
+import { mccLabel } from "@/lib/categorization/merchant-name";
 import type { Category } from "@/lib/db/schema/categories";
 import { SplitSlider } from "./split-slider";
 import { CategoryPicker } from "@/components/domain/categories";
@@ -69,6 +70,8 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
     transaction.rawDescription && transaction.rawDescription !== transaction.description
       ? transaction.rawDescription
       : transaction.description;
+
+  const merchantKind = mccLabel(transaction.merchantCategoryCode);
 
   function togglePanel(panel: Exclude<OpenPanel, "none">) {
     setOpenPanel((current) => (current === panel ? "none" : panel));
@@ -123,6 +126,14 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
                 isUncategorized && "border-neg/40 text-neg"
               )}
             />
+            {merchantKind && (
+              <>
+                <span aria-hidden="true" className="hidden sm:inline">·</span>
+                <span className="hidden shrink-0 truncate sm:inline" title="Tipo di esercente indicato dalla banca">
+                  {merchantKind}
+                </span>
+              </>
+            )}
             {!isAuto && (
               <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
                 Manuale

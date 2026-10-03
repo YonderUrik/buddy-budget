@@ -302,9 +302,13 @@ export interface BankTransaction {
   internalTransactionId?: string;
   transactionAmount: { amount: string; currency: string };
   remittanceInformationUnstructured?: string;
+  /** Alternativa a `remittanceInformationUnstructured`: alcune banche lo mandano a righe. */
+  remittanceInformationUnstructuredArray?: string[];
   bookingDate: string;
   creditorName?: string;
   debtorName?: string;
+  /** Codice di categoria dell'esercente (ISO 18245), solo se la banca lo fornisce. */
+  merchantCategoryCode?: string;
 }
 
 /** Transazioni "booked" di un conto esterno (le "pending" non si importano, per evitare doppioni al booking). */

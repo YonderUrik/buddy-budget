@@ -2,6 +2,7 @@ import { Counter, Gauge, Histogram, Registry, collectDefaultMetrics } from "prom
 import { APP_BUILD_INFO } from "@/lib/app-version";
 import type { ProviderId } from "@/lib/db/schema/investments";
 import type { ProviderOutcome } from "@/lib/market-data/types";
+import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
 
 /** Prefisso comune di tutte le metriche applicative. */
 export const METRIC_PREFIX = "buddybudget_";
@@ -89,6 +90,7 @@ interface MetricsState {
   syncDuration: Histogram<"trigger">;
   gcApi: Counter<"endpoint" | "status_class">;
   imported: Counter<"categorized">;
+  merchantNames: Counter<"source">;
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
@@ -138,6 +140,12 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}transactions_imported_total`,
     help: "Transazioni importate da GoCardless, divise per categorizzate automaticamente o no.",
     labelNames: ["categorized"],
+    registers: r,
+  });
+  state.merchantNames = new Counter({
+    name: `${METRIC_PREFIX}transaction_names_total`,
+    help: "Transazioni valutate a ogni sync (finestra rolling inclusa) per origine del nome leggibile (counterparty, alias, pattern, raw, fallback).",
+    labelNames: ["source"],
     registers: r,
   });
   state.cronRuns = new Counter({
@@ -334,6 +342,11 @@ export function recordTransactionsImported(categorized: number, uncategorized: n
   const m = metrics();
   if (categorized > 0) m.imported.inc({ categorized: "true" }, categorized);
   if (uncategorized > 0) m.imported.inc({ categorized: "false" }, uncategorized);
+}
+
+/** Registra quante transazioni importate hanno ottenuto il nome leggibile da una certa fonte (enum chiuso). */
+export function recordMerchantNames(source: MerchantNameSource, count: number): void {
+  if (count > 0) metrics().merchantNames.inc({ source }, count);
 }
 
 /** Registra l'esecuzione di un cron (il "quando" affidabile è nell'heartbeat su Redis). */

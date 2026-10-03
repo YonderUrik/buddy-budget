@@ -35,6 +35,8 @@ export interface LogFields {
   processed?: number;
   total?: number;
   count?: number;
+  /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */
+  nameSource?: string;
   /** Fonte di prezzi di mercato (id statico). */
   provider?: string;
   /** Simbolo di uno strumento comune a tutti gli utenti: mai insieme a quantità o importi dell'utente. */

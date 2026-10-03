@@ -22,6 +22,9 @@ export const transactions = pgTable(
     // GoCardless lo fornisce): usato per il tooltip quando `description` è stata sostituita dal
     // nome pulito creditorName/debtorName, mai per il matching di categorizzazione.
     rawDescription: text("raw_description"),
+    // Codice di categoria dell'esercente (MCC, 4 cifre) fornito dalla banca: solo un'etichetta
+    // informativa, non entra nel matching delle regole.
+    merchantCategoryCode: text("merchant_category_code"),
     // Nota libera dell'utente, editabile su transazioni auto e manuali.
     note: text("note"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),

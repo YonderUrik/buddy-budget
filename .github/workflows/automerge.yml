@@ -1,0 +1,33 @@
+name: Auto-merge PR automatiche
+
+# Abilita l'auto-merge (squash) sulle PR dei bot a basso rischio: aggiornamenti patch di Dependabot e screenshot della
+# landing. GitHub le unisce da solo solo quando tutti i check obbligatori della branch protection sono verdi; la PR di release
+# e gli aggiornamenti minor/major di Dependabot (compresi quelli di sicurezza) restano a mano. Richiede "Allow auto-merge" nelle impostazioni del repo: se è spento il passo
+# fallisce senza bloccare nulla. Non esegue mai codice della PR (pull_request_target, nessun checkout).
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    name: Abilita auto-merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.head.ref == 'bot/landing-screens'
+    steps:
+      - id: meta
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Abilita auto-merge
+        if: github.event.pull_request.head.ref == 'bot/landing-screens' || steps.meta.outputs.update-type == 'version-update:semver-patch'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"

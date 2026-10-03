@@ -13,7 +13,7 @@ export interface NewFeature extends UpcomingFeature {
 
 export const LATEST_FEATURE: NewFeature = {
   name: "Pensione",
-  description: "Il tuo fondo pensione e il TFR: rendimento vero, quanto ti resterebbe prelevando oggi e quanto varrà.",
+  description: "Il tuo fondo pensione e il TFR: rendimento vero, quanto ti resterebbe prelevando oggi e quanto varrà. Importi lo storico da CSV o Excel.",
   summary: "Il tuo fondo pensione, finalmente chiaro.",
   icon: Umbrella,
 };

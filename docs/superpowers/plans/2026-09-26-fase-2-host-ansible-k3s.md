@@ -2,7 +2,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (riga "Fase 2" della tabella Fasi)
 
-**Obiettivo:** portare la VPS vergine (`179.198.212.157`, Ubuntu 24.04 LTS) a un nodo k3s pronto e in sicurezza, ricostruibile da zero con Ansible.
+**Obiettivo:** portare la VPS vergine (`<IP-VPS>`, Ubuntu 24.04 LTS) a un nodo k3s pronto e in sicurezza, ricostruibile da zero con Ansible.
 
 **Stato di partenza verificato** (letto dalla VPS prima di scrivere questo piano):
 - SSH: `PermitRootLogin yes`, `PasswordAuthentication yes` (attivo per un conflitto tra due file di drop-in: `/etc/ssh/sshd_config.d/50-cloud-init.conf` dice `yes`, il `60-cloudimg-settings.conf` dice `no`, ma OpenSSH usa il **primo valore incontrato** e il 50 viene processato prima del 60 — quindi vince "yes"). Porta 22 raggiungibile da internet.
@@ -49,7 +49,7 @@ Eseguo io:
   README.md
   ```
 - `site.yml` include i playbook in ordine (`import_playbook`), ciascuno idempotente e rilanciabile singolarmente.
-- L'inventario ha un solo host oggi (`vps1 ansible_host=179.198.212.157`); aggiungere un secondo nodo in futuro è una riga.
+- L'inventario ha un solo host oggi (`vps1 ansible_host=<IP-VPS>`); aggiungere un secondo nodo in futuro è una riga.
 - La chiave privata usata da Ansible è la tua `~/.ssh/id_ed25519` esistente (nessuna nuova chiave).
 
 **Verifica:** `ansible all -m ping` dal WSL contro l'inventario risponde `pong`.
@@ -60,7 +60,7 @@ Eseguo io:
 
 Crea l'utente `deploy` (sudo **con** password richiesta per comandi interattivi, ma con una regola NOPASSWD ristretta ai soli comandi che Ansible userà per l'automazione — non "sudo ALL NOPASSWD" generico), aggiunge la tua chiave pubblica ai suoi `authorized_keys`. **Non tocca ancora root/password**: resta un secondo modo di accesso, non un sostituto.
 
-**Verifica:** connessione SSH come `deploy@179.198.212.157` con la tua chiave, e `sudo -n true` funziona.
+**Verifica:** connessione SSH come `deploy@<IP-VPS>` con la tua chiave, e `sudo -n true` funziona.
 
 ---
 

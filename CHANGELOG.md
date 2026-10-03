@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.4.0](https://github.com/YonderUrik/buddy-budget/compare/v0.3.0...v0.4.0) (2026-10-03)
+
+
+### Novità
+
+* **pensione:** import delle fotografie da CSV o Excel ([#95](https://github.com/YonderUrik/buddy-budget/issues/95)) ([689f1b8](https://github.com/YonderUrik/buddy-budget/commit/689f1b8fc418d2ebb98ec72658ea88b37ff498c6))
+
 ## [0.3.0](https://github.com/YonderUrik/buddy-budget/compare/v0.2.0...v0.3.0) (2026-10-03)
 
 

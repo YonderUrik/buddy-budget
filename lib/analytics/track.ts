@@ -76,6 +76,8 @@ export interface ProductEvents {
   analytics_guide_reopened: undefined;
   /** Apertura di "Come è calcolato" di un'analitica; `analysis`: quale. */
   analytics_explainer_opened: { analysis: string };
+  /** Apertura/chiusura della «Guida passo passo» di una scheda. */
+  analytics_reading_toggled: { tab: string; state: "aperta" | "chiusa" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

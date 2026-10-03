@@ -26,7 +26,7 @@ I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distr
 ## Configurazione una tantum
 
 - Repo → Settings → Actions → General → *Allow GitHub Actions to create and approve pull requests* (serve a release-please per aprire la PR).
-- `main` richiede la check "Lint, tipi e test" e le PR create col `GITHUB_TOKEN` non fanno partire i workflow: per far girare i check sulla PR di release crea un token (PAT fine-grained con `contents` e `pull requests` in scrittura su questo repo) e salvalo come secret `RELEASE_PLEASE_TOKEN`. Senza, la PR di release si mergia con il bypass da admin.
+- `main` richiede la check "Lint, tipi e test" e le PR create col `GITHUB_TOKEN` non fanno partire i workflow: per far girare i check sulla PR di release crea un token (PAT fine-grained con `contents` e `pull requests` in scrittura su questo repo) e salvalo come secret `RELEASE_PLEASE_TOKEN`. Senza, la PR di release si mergia con il bypass da admin. Lo stesso secret serve al workflow degli screenshot della landing (`bot/landing-screens`): con il solo `GITHUB_TOKEN` la sua PR non avvia CI e "Titolo PR" e va rilanciata a mano.
 
 ## Dove si vede la versione
 

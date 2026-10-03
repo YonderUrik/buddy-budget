@@ -11,7 +11,7 @@ export interface AppScreen {
   /** Identificatore stabile, anche nome del file immagine. */
   id: string;
   /** Voce di sidebar (area) a cui appartiene. */
-  area: "Panoramica" | "Conti" | "Movimenti" | "Investimenti" | "Pensione" | "Debiti";
+  area: "Panoramica" | "Conti" | "Movimenti" | "Investimenti" | "Pensione" | "Debiti" | "Analitiche";
   /** Etichetta breve per le schede della galleria. */
   label: string;
   /** Una riga che dice cosa mostra la schermata. */
@@ -44,6 +44,7 @@ export const SCREENS = [
   { id: "debiti", area: "Debiti", label: "Debiti", route: "/debiti", caption: "Quanto costa ogni debito e quando finisce.", alt: "Debiti: debito totale, costo di ogni finanziamento e scadenze" },
   { id: "lombard", area: "Debiti", label: "Lombard", route: "/debiti/lombard", caption: "Linea di credito contro il portafoglio, con la soglia di allerta.", alt: "Lombard: linea di credito, utilizzo e interessi" },
   { id: "simulatore", area: "Debiti", label: "Simulatore", route: "/debiti/simulatore", caption: "Surroga, estinzione, valanga e palla di neve a confronto.", alt: "Simulatore dei debiti: confronto tra strategie di rimborso", scrollToText: "Surroga", fill: [["Nuovo TAN (%)", "1,8"], ["Numero di rate", "84"], ["Spese della nuova offerta", "600"], ["Penale di estinzione", "0"], ["Extra al mese", "200"]] },
+  { id: "analitiche", area: "Analitiche", label: "Obiettivo FIRE", route: "/analitiche", caption: "Il numero FIRE al netto delle imposte, quanto ne hai già e tra quanti anni lo raggiungi.", alt: "Analitiche: numero FIRE, avanzamento e anni al traguardo" },
 ] as const satisfies readonly AppScreen[];
 
 /** Id di una schermata (tipo chiuso: finisce negli eventi Umami). */
@@ -55,4 +56,4 @@ export function screenSrc(id: ScreenId, theme: ScreenTheme): string {
 }
 
 /** Screenshot del tour, per passo (stesso ordine di `TOUR_STEPS`). */
-export const TOUR_SCREEN_IDS = ["conti", "movimenti", "investimenti", "pensione-scenari", "debiti"] as const;
+export const TOUR_SCREEN_IDS = ["conti", "movimenti", "investimenti", "pensione-scenari", "debiti", "analitiche"] as const;

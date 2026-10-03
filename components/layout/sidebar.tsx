@@ -93,7 +93,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
   { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
-  { label: "Analitiche", href: "/analitiche", icon: BarChart3, comingSoon: true },
+  { label: "Analitiche", href: "/analitiche", icon: BarChart3 },
 ];
 
 /** True se `pathname` corrisponde alla voce `href` o a una sua sotto-route. */

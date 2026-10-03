@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-03T13:11:08.677Z",
+  "capturedAt": "2026-10-03T15:38:08.535Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -83,6 +83,11 @@
       "route": "/debiti/simulatore"
     },
     {
+      "id": "analitiche",
+      "theme": "light",
+      "route": "/analitiche"
+    },
+    {
       "id": "panoramica",
       "theme": "dark",
       "route": "/panoramica"
@@ -156,6 +161,11 @@
       "id": "simulatore",
       "theme": "dark",
       "route": "/debiti/simulatore"
+    },
+    {
+      "id": "analitiche",
+      "theme": "dark",
+      "route": "/analitiche"
     }
   ]
 }

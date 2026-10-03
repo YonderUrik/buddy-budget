@@ -31,6 +31,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Quali investimenti posso tracciare?", answer: "ETF, azioni, BTP e titoli di Stato, fondi e crypto. Vedi il rendimento vero, il confronto con un indice a parità di versamenti, rischio e diversificazione, più i proventi (dividendi e cedole)." },
   { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto, o importa lo storico da un file CSV o Excel, e BuddyBudget ricava versamenti e rendimento, stima quanto ti resterebbe prelevando oggi al netto delle tasse e confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
   { question: "Posso simulare l'estinzione anticipata di un finanziamento o di un mutuo?", answer: "Sì. Inserisci le condizioni del debito e vedi il piano di ammortamento, il TAEG, gli interessi risparmiati e la penale se riduci la rata o la durata, oppure se lo surroghi. C'è anche il Credit Lombard contro il tuo portafoglio." },
+  { question: "Cos'è la sezione Analitiche?", answer: "Una sezione per chi ama i numeri, aperta a chiunque voglia entrarci. Calcola il tuo numero FIRE al netto delle imposte, simula migliaia di futuri possibili del patrimonio, confronta quattro regole di prelievo e misura rischio e costi. Ogni risultato parte da ipotesi che scegli tu ed è spiegato passo passo, con una guida alla prima visita. Sono stime, non previsioni né consulenza." },
   { question: "Dove sono i miei dati e posso portarli via?", answer: "App e database girano su un server in Germania e le connessioni sono cifrate. Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
   { question: "In che lingua e in che valuta funziona?", answer: "Per ora in italiano e in euro. L'app è pensata per più lingue e valute, che arriveranno più avanti." },
   { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
@@ -59,6 +60,9 @@ const ZAINO_SAVING = Math.round(2000 * 0.26 - (2000 - 1200) * 0.26);
 
 /** Mutuo di 120.000 € al 3% su 240 rate, 20.000 € estinti dopo 5 anni senza penale (mutuo prima casa). */
 const EARLY_REPAYMENT_SAVING = Math.round(simulateEarlyRepayment({ principal: 120000, annualRatePct: 3, months: 240, afterMonths: 60, extra: 20000, penaltyPct: 0 }).netSaving);
+
+/** Spesa annua 30.000 € con tasso di prelievo del 3,5%: 30.000 ÷ 0,035 = 857.143 €. */
+const FIRE_EXAMPLE_NUMBER = Math.round(30000 / 0.035);
 
 export interface TourStep {
   kicker: string;
@@ -101,6 +105,13 @@ export const TOUR_STEPS: readonly TourStep[] = [
     text: "Estinguere un finanziamento riducendo la rata o la durata? Surrogarlo? Il confronto è pronto, con interessi risparmiati, penale e costi.",
     bullets: ["Piano di ammortamento e TAEG", "Surroga, valanga e Credit Lombard"],
     figure: { label: "Interessi risparmiati", value: EARLY_REPAYMENT_SAVING, unit: "eur", tone: "pos", note: "Esempio: mutuo di 120.000 € al 3%, 20.000 € estinti dopo 5 anni." },
+  },
+  {
+    kicker: "Approfondisci",
+    title: "Per chi vuole sapere quanto manca alla libertà.",
+    text: "Una sezione a parte, per chi vuole entrarci: il numero FIRE al netto delle imposte, migliaia di scenari di mercato per capire se il patrimonio dura, il confronto tra regole di prelievo, rischio e costi. Ogni numero è spiegato e parte da ipotesi che scegli tu.",
+    bullets: ["Simulazione Monte Carlo e regole di prelievo a confronto", "Rischio, costi e imposta latente, tutto spiegato"],
+    figure: { label: "Numero FIRE", value: FIRE_EXAMPLE_NUMBER, unit: "eur", note: "Esempio: 30.000 € di spesa annua con un tasso di prelievo del 3,5%." },
   },
 ];
 

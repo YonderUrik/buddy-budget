@@ -101,6 +101,14 @@ export function excludeClassFromSeries(series: NetWorthSeriesPoint[], classKey: 
   return series.map((point) => ({ ...point, value: point.value - (point.byClass[classKey] ?? 0) }));
 }
 
+/** Copia della serie con il totale (`value`) ricalcolato sulle sole classi indicate; `byClass` resta intatto, così le altre si possono ancora mostrare. */
+export function restrictSeriesToClasses(series: NetWorthSeriesPoint[], classKeys: string[]): NetWorthSeriesPoint[] {
+  return series.map((point) => ({
+    ...point,
+    value: classKeys.reduce((sum, key) => sum + (point.byClass[key] ?? 0), 0),
+  }));
+}
+
 /** Variazione tra primo e ultimo punto; `deltaPct` è un rapporto (0.5 = +50%). */
 export interface NetWorthChange {
   start: number;

@@ -67,7 +67,7 @@ export const FEATURES: readonly Feature[] = [
   f("credit-lombard", "Debiti", "Credit Lombard", "Linea di credito con saldo variabile, interessi a fine trimestre e soglia di allerta sull'utilizzo.", "new"),
   f("simulatore-dei-debiti", "Debiti", "Simulatore dei debiti", "Surroga o nuova offerta, valanga e palla di neve su più debiti, effetto di un rialzo dell'indice.", "new"),
 
-  f("patrimonio-netto-nel-tempo", "Patrimonio", "Patrimonio netto nel tempo", "Liquidità, investimenti, previdenza e debiti, con lo storico ricostruito.", "live", "/panoramica"),
+  f("patrimonio-netto-nel-tempo", "Patrimonio", "Patrimonio netto nel tempo", "Liquidità, investimenti e previdenza (debiti già sottratti), con lo storico ricostruito. Dalla legenda mostri o nascondi le voci e il totale si aggiorna.", "live", "/panoramica"),
   f("riepilogo-sempre-in-vista", "Patrimonio", "Riepilogo sempre in vista", "Nella barra laterale: patrimonio, portafoglio, watchlist e avvisi.", "live"),
   f("nascondi-importi", "Patrimonio", "Nascondi importi", "Oscura cifre e grafici quando qualcuno guarda lo schermo.", "live"),
   f("pensione", "Patrimonio", "Pensione", "Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse e una stima di quanto varrà. Lo storico lo inserisci a mano o lo importi da CSV o Excel.", "new", "/pensione"),

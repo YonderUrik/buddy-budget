@@ -9,6 +9,8 @@ import { assetClassColor, assetClassLabel } from "./asset-classes";
 
 const ESTIMATED_LABEL = "stimato";
 const TOTAL_LABEL = "Totale";
+/** I debiti non sono un'area del grafico: nel tooltip si dice che sono già dentro il totale. */
+const LABEL_OVERRIDES: Record<string, string> = { debiti: "Debiti (già sottratti)" };
 const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
 
 export interface NetWorthChartTooltipProps {
@@ -37,7 +39,7 @@ export function NetWorthChartTooltip({ active, payload, currency, classes, total
             <li key={key} className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <span className="size-2 rounded-full" style={{ backgroundColor: assetClassColor(key) }} aria-hidden="true" />
-                {assetClassLabel(key)}
+                {LABEL_OVERRIDES[key] ?? assetClassLabel(key)}
               </span>
               <span className="font-mono tabular-nums text-foreground">
                 {formatCurrency(point.byClass[key] ?? 0, currency)}

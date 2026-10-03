@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildNetWorthSeries, computeNetWorthChange, excludeClassFromSeries, deriveLiquidityHistory, getNetWorthPeriodRange, toDateKey, type NetWorthSeriesPoint } from "./net-worth";
+import { buildNetWorthSeries, computeNetWorthChange, excludeClassFromSeries, restrictSeriesToClasses, deriveLiquidityHistory, getNetWorthPeriodRange, toDateKey, type NetWorthSeriesPoint } from "./net-worth";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { Transaction } from "@/lib/db/schema/transactions";
 
@@ -235,6 +235,16 @@ describe("excludeClassFromSeries", () => {
     const [result] = excludeClassFromSeries([point], "previdenza");
     expect(result.value).toBe(600);
     expect(result.byClass).toEqual(point.byClass);
+  });
+});
+
+describe("restrictSeriesToClasses", () => {
+  it("somma solo le classi indicate, senza toccare byClass", () => {
+    const point = { date: "2026-10-01", label: "1 ott", value: 800, byClass: { liquidita: 600, investimenti: 300, debiti: -100 }, isEstimated: false };
+    const [result] = restrictSeriesToClasses([point], ["liquidita", "investimenti"]);
+    expect(result.value).toBe(900);
+    expect(result.byClass).toEqual(point.byClass);
+    expect(restrictSeriesToClasses([point], ["previdenza"])[0].value).toBe(0);
   });
 });
 

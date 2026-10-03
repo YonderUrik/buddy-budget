@@ -1,17 +1,22 @@
+"use client";
+
 /**
  * Card principale della Panoramica: patrimonio netto attuale, variazione nel periodo, selettore periodo e grafico ad
  * aree impilate, un'area per classe di asset (liquidità alla base, investimenti sopra): il bordo superiore è il totale.
  */
 
+import * as React from "react";
 import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
-import type { NetWorthChange, NetWorthPeriod, NetWorthSeriesPoint } from "@/lib/calc/net-worth";
+import { computeNetWorthChange, restrictSeriesToClasses, type NetWorthChange, type NetWorthPeriod, type NetWorthSeriesPoint } from "@/lib/calc/net-worth";
+import { track } from "@/lib/analytics/track";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { assetClassColor, assetClassesInSeries, assetClassLabel } from "./asset-classes";
+import { countedClasses, PENSION_CLASS, toggleHiddenClass, visibleClasses } from "./net-worth-chart.utils";
 import { NetWorthChartTooltip } from "./net-worth-chart-tooltip";
 import { NetWorthPeriodSelector } from "./net-worth-period-selector";
 
@@ -22,11 +27,15 @@ const DEFAULT_CLASS = "liquidita";
 /** Classe in negativo: non si impila (le aree sono i beni), si mostra nel tooltip e nella linea del netto. */
 const LIABILITY_CLASS = "debiti";
 
-/** Classe che l'utente può escludere dal totale: i soldi sono suoi ma non subito disponibili. */
-const PENSION_CLASS = "previdenza";
+/** Previdenza: l'utente può escluderla dal totale (i soldi sono suoi ma non subito disponibili). */
 const PENSION_SWITCH_LABEL = "Includi la previdenza nel totale";
 const PENSION_EXCLUDED_NOTE = "Area grigia: previdenza, non inclusa nel totale";
 const PENSION_EXCLUDED_TOTAL_LABEL = "Totale senza previdenza";
+const PARTIAL_TOTAL_LABEL = "Totale parziale";
+const SHOW_ALL_LABEL = "Mostra tutto";
+const DEBTS_NOTE = "Il patrimonio netto è già al netto dei debiti";
+const LEGEND_LABEL = "Voci del grafico: tocca per mostrarle o nasconderle";
+const TRACKED_CLASSES = ["liquidita", "investimenti", "previdenza"] as const;
 
 const PERIOD_CHANGE_LABELS: Record<NetWorthPeriod, string> = {
   "1mese": "nell'ultimo mese",
@@ -61,19 +70,39 @@ export function NetWorthChartCard({
   pensionIncluded = true,
   onPensionIncludedChange,
 }: NetWorthChartCardProps) {
-  const hasHistory = series.length >= 2;
-  const isNegative = change.delta < 0;
-  const sign = isNegative ? "−" : "+";
-  const pctText = change.deltaPct !== null ? ` (${sign}${Math.abs(change.deltaPct * 100).toFixed(1)}%)` : "";
+  const [hidden, setHidden] = React.useState<ReadonlySet<string>>(() => new Set());
   const presentClasses = assetClassesInSeries(series);
   const hasDebts = presentClasses.includes(LIABILITY_CLASS);
   const assetClasses = presentClasses.filter((key) => key !== LIABILITY_CLASS);
-  const classes = assetClasses.length > 0 ? assetClasses : [DEFAULT_CLASS];
-  const tooltipClasses = hasDebts ? [...classes, LIABILITY_CLASS] : classes;
-  const hasPension = classes.includes(PENSION_CLASS);
+  const allClasses = assetClasses.length > 0 ? assetClasses : [DEFAULT_CLASS];
+  const classes = visibleClasses(allClasses, hidden);
+  const isPartial = classes.length < allClasses.length;
+  const hasPension = allClasses.includes(PENSION_CLASS);
   const pensionExcluded = hasPension && !pensionIncluded;
-  // Senza previdenza il bordo dell'area non è più il totale: serve la linea del netto.
-  const showNetLine = hasDebts || pensionExcluded;
+  // Con voci nascoste il totale è la somma delle sole voci visibili (debiti compresi nel netto solo a grafico completo).
+  const shownSeries = isPartial ? restrictSeriesToClasses(series, countedClasses(classes, pensionIncluded)) : series;
+  const shownChange = isPartial ? computeNetWorthChange(shownSeries) : change;
+  const hasHistory = series.length >= 2;
+  const isNegative = shownChange.delta < 0;
+  const sign = isNegative ? "−" : "+";
+  const pctText = shownChange.deltaPct !== null ? ` (${sign}${Math.abs(shownChange.deltaPct * 100).toFixed(1)}%)` : "";
+  const showDebts = hasDebts && !isPartial;
+  const tooltipClasses = showDebts ? [...classes, LIABILITY_CLASS] : classes;
+  const pensionVisibleExcluded = pensionExcluded && classes.includes(PENSION_CLASS);
+  // Con debiti o con la previdenza esclusa dal totale il bordo dell'area non è il totale: serve la linea del netto.
+  const showNetLine = showDebts || pensionVisibleExcluded;
+  const totalLabel = isPartial ? PARTIAL_TOTAL_LABEL : pensionExcluded ? PENSION_EXCLUDED_TOTAL_LABEL : undefined;
+  const hiddenLabels = allClasses.filter((key) => hidden.has(key)).map((key) => assetClassLabel(key).toLowerCase());
+
+  const handleToggle = (key: string) => {
+    const next = toggleHiddenClass(hidden, key, allClasses);
+    if (next.size === hidden.size) return;
+    setHidden(next);
+    track("net_worth_class_toggled", {
+      assetClass: (TRACKED_CLASSES as readonly string[]).includes(key) ? (key as (typeof TRACKED_CLASSES)[number]) : "altro",
+      visible: !next.has(key),
+    });
+  };
 
   return (
     <Card>
@@ -83,12 +112,17 @@ export function NetWorthChartCard({
             Patrimonio netto
           </CardTitle>
           <p className="font-heading text-4xl font-medium tabular-nums text-foreground">
-            {formatCurrency(change.end, currency, { maximumFractionDigits: 0 })}
+            {formatCurrency(shownChange.end, currency, { maximumFractionDigits: 0 })}
           </p>
+          {isPartial ? (
+            <p className="text-xs font-medium text-muted-foreground">
+              {PARTIAL_TOTAL_LABEL}, nascosto: {hiddenLabels.join(", ")}
+            </p>
+          ) : null}
           {hasHistory ? (
             <p className={cn("text-sm tabular-nums", isNegative ? "text-neg" : "text-pos")}>
               {sign}
-              {formatCurrency(Math.abs(change.delta), currency, { maximumFractionDigits: 0 })}
+              {formatCurrency(Math.abs(shownChange.delta), currency, { maximumFractionDigits: 0 })}
               {pctText} <span className="text-muted-foreground">{PERIOD_CHANGE_LABELS[period]}</span>
             </p>
           ) : (
@@ -107,10 +141,10 @@ export function NetWorthChartCard({
       </CardHeader>
       {hasHistory ? (
         <CardContent>
-          <ChartContainer config={buildChartConfig(classes)} className="max-h-64 w-full">
-            <ComposedChart data={series}>
+          <ChartContainer config={buildChartConfig(allClasses)} className="max-h-64 w-full">
+            <ComposedChart data={shownSeries}>
               <defs>
-                {classes.map((key) => (
+                {allClasses.map((key) => (
                   <linearGradient key={key} id={`${AREA_FILL_ID_PREFIX}${key}`} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.3 : 0.55} />
                     <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.08 : 0.15} />
@@ -119,7 +153,7 @@ export function NetWorthChartCard({
               </defs>
               <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
               <YAxis hide />
-              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} totalLabel={pensionExcluded ? PENSION_EXCLUDED_TOTAL_LABEL : undefined} />} />
+              <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} totalLabel={totalLabel} />} />
               {classes.map((key) => (
                 <Area
                   key={key}
@@ -146,17 +180,52 @@ export function NetWorthChartCard({
               ) : null}
             </ComposedChart>
           </ChartContainer>
-          {classes.length > 1 || showNetLine ? (
-            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              {tooltipClasses.map((key) => (
-                <li key={key} className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: assetClassColor(key) }} aria-hidden="true" />
-                  {assetClassLabel(key)}
-                </li>
-              ))}
-              {showNetLine ? <li className="text-muted-foreground">Linea tratteggiata: patrimonio netto</li> : null}
-              {pensionExcluded ? <li className="text-muted-foreground">{PENSION_EXCLUDED_NOTE}</li> : null}
-            </ul>
+          {allClasses.length > 1 || showNetLine ? (
+            <div className="mt-3 flex flex-col gap-2">
+              {allClasses.length > 1 ? (
+                <ul className="flex flex-wrap gap-2" aria-label={LEGEND_LABEL}>
+                  {allClasses.map((key) => {
+                    const visible = !hidden.has(key);
+                    return (
+                      <li key={key}>
+                        <button
+                          type="button"
+                          aria-pressed={visible}
+                          onClick={() => handleToggle(key)}
+                          className={cn(
+                            "flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                            visible ? "text-foreground hover:bg-muted" : "border-dashed text-muted-foreground hover:bg-muted",
+                          )}
+                        >
+                          <span
+                            className="size-2.5 rounded-full border"
+                            style={{ backgroundColor: visible ? assetClassColor(key) : "transparent", borderColor: assetClassColor(key) }}
+                            aria-hidden="true"
+                          />
+                          <span className={cn(!visible && "line-through")}>{assetClassLabel(key)}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                  {isPartial ? (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => setHidden(new Set())}
+                        className="min-h-9 rounded-full px-3 text-xs font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                      >
+                        {SHOW_ALL_LABEL}
+                      </button>
+                    </li>
+                  ) : null}
+                </ul>
+              ) : null}
+              <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                {showNetLine ? <li>Linea tratteggiata: patrimonio netto</li> : null}
+                {showDebts ? <li>{DEBTS_NOTE}</li> : null}
+                {pensionVisibleExcluded ? <li>{PENSION_EXCLUDED_NOTE}</li> : null}
+              </ul>
+            </div>
           ) : null}
         </CardContent>
       ) : null}

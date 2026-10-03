@@ -31,7 +31,8 @@ This PR provides the backend contract; connecting the upload UI is a separate PR
 
 All statement data is available to callers through `records`, including sections
 that are not modeled as Buddy Budget investment transactions. Private account
-statements are not bundled in the repository; the fixture is synthetic.
+statements are not bundled in the repository. Tests include a compact synthetic
+fixture and a full anonymized annual export; see the fixture directory README.
 
 ## Integration with the existing import APIs
 

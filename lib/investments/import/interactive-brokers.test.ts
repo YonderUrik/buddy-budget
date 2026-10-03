@@ -85,4 +85,23 @@ describe("Interactive Brokers Activity Statement", () => {
     expect(parse(fixture.replace("US Tax,-10", "US Tax,invalid")).operations).toHaveLength(2);
   });
 
+  it("parses the full anonymized annual export without dropping statement sections", () => {
+    const text = readFileSync(new URL("./__fixtures__/interactive-brokers-full.csv", import.meta.url), "utf8");
+    const result = parse(text);
+    const source = parseCsvRecords(text);
+    expect(result.records).toHaveLength(618);
+    expect(result.records.map((r) => [r.section, r.kind, ...r.values])).toEqual(source.map((r) => r.cells));
+    expect(result.operations).toHaveLength(34);
+    expect(result.operations.filter((o) => o.type === "acquisto")).toHaveLength(20);
+    expect(result.operations.filter((o) => o.type === "vendita")).toHaveLength(7);
+    expect(result.operations.filter((o) => o.type === "dividendo")).toHaveLength(7);
+    expect(result.identities).toHaveLength(9);
+    expect(result.identities.every((i) => i.symbol?.startsWith("MOCK") && i.isin?.startsWith("US900"))).toBe(true);
+    expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+    expect(result.operations.find((o) => o.type === "dividendo" && o.key === "isin:US9000000102:CHF")?.taxes).toBeCloseTo(91.24);
+    expect(new Set(result.records.map((r) => r.section))).toEqual(new Set(source.map((r) => r.cells[0])));
+    expect(result.records.some((r) => r.section === "Stock Yield Enhancement Program Securities Lent Interest Details")).toBe(true);
+    expect(result.records.some((r) => r.section === "Notes/Legal Notes")).toBe(true);
+  });
+
 });

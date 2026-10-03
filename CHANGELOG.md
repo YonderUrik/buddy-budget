@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.5.0](https://github.com/YonderUrik/buddy-budget/compare/v0.4.1...v0.5.0) (2026-10-03)
+
+
+### Novità
+
+* **panoramica:** legenda interattiva nel grafico del patrimonio e senza voce Debiti ([#119](https://github.com/YonderUrik/buddy-budget/issues/119)) ([796df6e](https://github.com/YonderUrik/buddy-budget/commit/796df6ede0687064b0a3f04373d9c385d19725dd))
+* sezione Analitiche per strumenti avanzati (FIRE, simulazioni, rischio, costi) ([#122](https://github.com/YonderUrik/buddy-budget/issues/122)) ([2740090](https://github.com/YonderUrik/buddy-budget/commit/2740090da88e6a2dd088988843fb9b7cc8abdcfd))
+
 ## [0.4.1](https://github.com/YonderUrik/buddy-budget/compare/v0.4.0...v0.4.1) (2026-10-03)
 
 

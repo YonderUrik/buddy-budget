@@ -1,5 +1,6 @@
 "use client";
 
+import "./theme-toggle.css";
 import { track } from "@/lib/analytics";
 
 import { THEME_STORAGE_KEY } from "@/lib/theme";

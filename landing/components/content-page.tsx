@@ -3,7 +3,8 @@ import "./content-page.css";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { APP_LINKS } from "@/content/site";
-import { Mark } from "./brand";
+import { PageBar } from "./page-bar";
+import { SiteFooter } from "./site-footer";
 import { CtaLink } from "./cta-link";
 import type { LandingEvents } from "@/lib/analytics";
 
@@ -25,19 +26,7 @@ const NAV = [
 export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, disclaimer = true, wide = false }: { crumbs: readonly Crumb[]; children: ReactNode; ctaTitle: string; ctaText: string; ctaLocation: CtaLocation; disclaimer?: boolean; wide?: boolean }) {
   return (
     <>
-      <header className="legal-bar">
-        <div className="wrap">
-          <Link href="/" className="legal-brand" aria-label="BuddyBudget, torna alla home">
-            <Mark />
-            <span>BuddyBudget</span>
-          </Link>
-          <nav aria-label="Sezioni del sito">
-            {NAV.map((l) => (
-              <Link key={l.href} href={l.href}>{l.label}</Link>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <PageBar label="Sezioni del sito" links={NAV} action={<CtaLink className="btn main sm" href={APP_LINKS.signup} location={ctaLocation} target="signup">Prova gratis</CtaLink>} />
       <main className="cp">
         <div className={`wrap cp-wrap${wide ? " cp-wide" : ""}`}>
           <nav className="cp-crumbs" aria-label="Percorso">
@@ -54,6 +43,7 @@ export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, 
           </aside>
         </div>
       </main>
+      <SiteFooter />
     </>
   );
 }

@@ -36,6 +36,8 @@ export interface ProductEvents {
   /** `existing`: quante fotografie aveva già il fondo (0 = la prima). */
   pension_snapshot_saved: { existing: number };
   pension_snapshot_deleted: undefined;
+  /** Import di fotografie da file: righe aggiunte e aggiornate, e `format` del file (csv, xlsx o testo incollato). */
+  pension_snapshots_imported: { created: number; updated: number; format: "csv" | "xlsx" | "incollato" };
   /** Simulazione locale dell'aliquota in uscita (chip trascinato o mosso da tastiera); `years`: anni di partecipazione simulati. */
   pension_rate_simulated: { years: number };
   investment_benchmark_set: undefined;

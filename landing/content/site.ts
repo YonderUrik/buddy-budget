@@ -29,7 +29,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Come si collega la banca?", answer: "Con l'Open Banking (PSD2), tramite un fornitore regolato. Autorizzi l'accesso presso la tua banca in sola lettura: BuddyBudget vede saldi e movimenti, non può muovere denaro e non conosce le tue credenziali. Il consenso dura al massimo 90 giorni e ti avvisiamo prima che scada." },
   { question: "Calcola le tasse italiane sugli investimenti?", answer: "Sì. Dalle tue operazioni ricava plusvalenze, zaino fiscale a quattro anni, imposta di bollo e l'imposta che pagheresti vendendo oggi. Sono stime pensate per decidere, non sostituiscono il rendiconto del tuo intermediario né un consulente." },
   { question: "Quali investimenti posso tracciare?", answer: "ETF, azioni, BTP e titoli di Stato, fondi e crypto. Vedi il rendimento vero, il confronto con un indice a parità di versamenti, rischio e diversificazione, più i proventi (dividendi e cedole)." },
-  { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto e BuddyBudget ricava versamenti e rendimento, stima quanto ti resterebbe prelevando oggi al netto delle tasse e confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
+  { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto, o importa lo storico da un file CSV o Excel, e BuddyBudget ricava versamenti e rendimento, stima quanto ti resterebbe prelevando oggi al netto delle tasse e confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
   { question: "Posso simulare l'estinzione anticipata di un finanziamento o di un mutuo?", answer: "Sì. Inserisci le condizioni del debito e vedi il piano di ammortamento, il TAEG, gli interessi risparmiati e la penale se riduci la rata o la durata, oppure se lo surroghi. C'è anche il Credit Lombard contro il tuo portafoglio." },
   { question: "Dove sono i miei dati e posso portarli via?", answer: "App e database girano su un server in Germania e le connessioni sono cifrate. Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
   { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
@@ -69,8 +69,8 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     kicker: "Prepara",
     title: "Il fondo pensione, finalmente leggibile.",
-    text: "Il tuo provider mostra solo contributi netti e controvalore? Inserisci i due numeri ogni tanto: BuddyBudget ricava versamenti e rendimento vero, ti dice quanto ti resterebbe prelevando oggi e se convengono di più il fondo o il TFR in azienda.",
-    bullets: ["Stima al netto delle tasse, con una forbice onesta", "Proiezione in termini reali, dentro il patrimonio netto"],
+    text: "Il tuo provider mostra solo contributi netti e controvalore? Inserisci i due numeri ogni tanto, o importa lo storico da CSV o Excel: BuddyBudget ricava versamenti e rendimento vero, ti dice quanto ti resterebbe prelevando oggi e se convengono di più il fondo o il TFR in azienda.",
+    bullets: ["Import dello storico da CSV o Excel", "Stima al netto delle tasse, con una forbice onesta", "Proiezione in termini reali, dentro il patrimonio netto"],
   },
   {
     kicker: "Decidi",

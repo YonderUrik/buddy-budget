@@ -50,6 +50,8 @@ export interface ProductEvents {
   title_commentary_requested: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_imported: { operations: number; format: string };
+  /** File letto nel primo passo dell'import. `provider`: formato (`interactive-brokers`, `yahoo-portfolio`, `generic`); `chosen`: scelto a mano o riconosciuto dal file. */
+  investments_import_file_read: { provider: string; chosen: boolean };
   /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso "Da sistemare". */
   attention_link_clicked: { from: "home" | "sidebar" };
   /** Conferma in un tocco dalla card "Da sistemare" della Panoramica. */

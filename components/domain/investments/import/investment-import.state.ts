@@ -10,18 +10,23 @@ import type { RunImportInput } from "@/lib/validation/investments-import";
 export const IMPORT_STEPS = ["file", "mapping", "instruments", "summary"] as const;
 export type ImportStep = (typeof IMPORT_STEPS)[number];
 
-/** Etichette dei passi nello stepper. */
-export const IMPORT_STEP_LABELS: Record<ImportStep, string> = {
-  file: "File",
-  mapping: "Colonne",
-  instruments: "Strumenti",
-  summary: "Riepilogo",
-};
+/** Etichette dei passi nello stepper: per un rendiconto già strutturato il secondo passo è un controllo, non la mappatura. */
+export function importStepLabel(step: ImportStep, structured: boolean): string {
+  if (step === "mapping") return structured ? "Controllo" : "Colonne";
+  return { file: "File", instruments: "Strumenti", summary: "Riepilogo" }[step];
+}
 
 /** Scelta dell'utente per uno strumento del file. */
 export type InstrumentChoice =
   | { kind: "known"; instrument: Instrument }
-  | { kind: "create"; input: CreateInstrumentInput; label: string; detail: string; type: InstrumentType; confidence: "exact" | "guess" }
+  | {
+      kind: "create";
+      input: CreateInstrumentInput;
+      label: string;
+      detail: string;
+      type: InstrumentType;
+      confidence: "exact" | "guess";
+    }
   | { kind: "skip"; reason: "not_found" | "unavailable" };
 
 /** Scelta iniziale dall'abbinamento del server: se non l'ha trovato, lo strumento resta escluso finché non si sceglie. */
@@ -43,7 +48,7 @@ export function buildImportRequest(
   choices: Record<string, InstrumentChoice>,
   excluded: ReadonlySet<string>,
   dryRun: boolean,
-  preset: string | null
+  preset: string | null,
 ): RunImportInput | null {
   const instruments: RunImportInput["instruments"] = [];
   for (const [key, choice] of Object.entries(choices)) {
@@ -53,7 +58,7 @@ export function buildImportRequest(
   }
   const included = new Set(instruments.map((i) => i.key));
   const operations = rows.flatMap((row) =>
-    row.status === "ok" && included.has(row.identity.key) ? [{ key: row.identity.key, line: row.line, ...row.operation }] : []
+    row.status === "ok" && included.has(row.identity.key) ? [{ key: row.identity.key, line: row.line, ...row.operation }] : [],
   );
   if (operations.length === 0) return null;
   return { dryRun, preset, instruments, operations };

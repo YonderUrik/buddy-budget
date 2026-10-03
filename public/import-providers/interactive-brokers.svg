@@ -1,0 +1,24 @@
+<svg version="1.1" id="svg9835" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="-367.6 277.2 270.6 527.2" style="enable-background:new -367.6 277.2 270.6 527.2;" xml:space="preserve">
+ <style type="text/css">
+  .st0{fill:url(#polygon9702_1_);}
+	.st1{fill:#D81222;}
+ </style>
+ 
+ 
+ <g id="layer1" transform="translate(12.582832,-170.97114)">
+  <g id="g9910" transform="translate(0.50000041,-0.50000076)">
+   <linearGradient id="polygon9702_1_" gradientUnits="userSpaceOnUse" x1="2339.2383" y1="356.8733" x2="2650.6682" y2="356.8733" gradientTransform="matrix(-0.75 0 0 -0.75 1607.0308 1115.2124)">
+    <stop offset="0" style="stop-color:#D81222">
+    </stop>
+    <stop offset="1" style="stop-color:#960B1A">
+    </stop>
+   </linearGradient>
+   <polygon id="polygon9702" class="st0" points="-380.7,975.9 -380.7,719.3 -147.1,975.9">
+   </polygon>
+   <circle id="circle9704" class="st1" cx="-180" cy="781.8" r="69.9">
+   </circle>
+   <polygon id="polygon9706" class="st1" points="-380.7,719.3 -380.7,975.9 -147.1,448.7">
+   </polygon>
+  </g>
+ </g>
+</svg>

@@ -40,6 +40,7 @@ export const FEATURES: readonly Feature[] = [
 
   f("categorizzazione-automatica", "Movimenti", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
   f("proposte-per-somiglianza", "Movimenti", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
+  f("nomi-leggibili", "Movimenti", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
   f("quattro-gruppi-di-spesa", "Movimenti", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
   f("dividi-e-escludi", "Movimenti", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise.", "live"),
   f("budget-per-categoria", "Movimenti", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),

@@ -32,6 +32,7 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
     categoryId: "category-1",
     description: "Transazione",
     rawDescription: null,
+    merchantCategoryCode: null,
     note: null,
     amount: "-10.00",
     excludedAmount: "0.00",

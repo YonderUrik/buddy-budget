@@ -106,6 +106,13 @@
       "when": 1790950271657,
       "tag": "0014_accettazione_termini",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1791008501221,
+      "tag": "0015_mcc_transazioni",
+      "breakpoints": true
     }
   ]
 }

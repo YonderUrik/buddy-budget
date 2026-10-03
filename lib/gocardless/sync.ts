@@ -8,7 +8,8 @@ import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limi
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
-import { logger } from "@/lib/observability";
+import { extractMerchantName, FALLBACK_TRANSACTION_NAME, type MerchantNameSource } from "@/lib/categorization/merchant-name";
+import { logger, recordMerchantNames } from "@/lib/observability";
 
 const MAX_STORED_SYNC_TIMESTAMPS = 4;
 
@@ -107,17 +108,27 @@ export async function syncAccountLink(
     const ruleResolver = await buildRuleResolver(link.userId);
 
     const rows: NewTransaction[] = [];
+    const nameSourceCounts = new Map<MerchantNameSource, number>();
     const ruleIdByExternalId = new Map<string, string>();
     for (const bankTransaction of bankTransactions) {
       const externalId = bankTransaction.internalTransactionId ?? bankTransaction.transactionId;
       if (!externalId) continue;
 
-      const rawDescription = bankTransaction.remittanceInformationUnstructured ?? null;
+      const rawDescription =
+        bankTransaction.remittanceInformationUnstructured ??
+        (bankTransaction.remittanceInformationUnstructuredArray?.join(" ").trim() || null);
       const isExpense = Number(bankTransaction.transactionAmount.amount) < 0;
-      const merchantName = (isExpense ? bankTransaction.creditorName : bankTransaction.debtorName)?.trim();
-      const description = merchantName || rawDescription || "Movimento bancario";
+      const counterpartyName = (isExpense ? bankTransaction.creditorName : bankTransaction.debtorName)?.trim();
+      // Nome che la sync usava prima dell'estrazione: le regole imparate finora sono scritte su di esso,
+      // quindi si prova per primo per non far smettere di funzionare quelle già esistenti.
+      const legacyDescription = counterpartyName || rawDescription || FALLBACK_TRANSACTION_NAME;
+      const extracted = extractMerchantName({ rawText: rawDescription, counterpartyName });
+      nameSourceCounts.set(extracted.source, (nameSourceCounts.get(extracted.source) ?? 0) + 1);
+      const description = extracted.name;
       const amount = Number(bankTransaction.transactionAmount.amount);
-      const resolved = ruleResolver.resolve({ description, amount });
+      const resolved =
+        ruleResolver.resolve({ description: legacyDescription, amount }) ??
+        (description === legacyDescription ? null : ruleResolver.resolve({ description, amount }));
       if (resolved) ruleIdByExternalId.set(externalId, resolved.ruleId);
 
       rows.push({
@@ -126,6 +137,7 @@ export async function syncAccountLink(
         categoryId: resolved?.categoryId ?? fallbackCategoryId,
         description,
         rawDescription,
+        merchantCategoryCode: bankTransaction.merchantCategoryCode?.trim() || null,
         amount: bankTransaction.transactionAmount.amount,
         excludedAmount: (resolved?.excludedAmount ?? 0).toFixed(2),
         date: bankTransaction.bookingDate,
@@ -137,6 +149,11 @@ export async function syncAccountLink(
     let newTransactionsCount = 0;
     let categorizedCount = 0;
     let uncategorizedCount = 0;
+    for (const [source, count] of nameSourceCounts) {
+      recordMerchantNames(source, count);
+      logger.info("gocardless.sync.names_resolved", { nameSource: source, count });
+    }
+
     await reportProgress(onProgress, {
       phase: "saving",
       total: rows.length,

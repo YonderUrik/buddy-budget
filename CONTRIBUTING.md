@@ -4,6 +4,7 @@ Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di s
 
 ## Prima di iniziare
 
+- Partecipando accetti il [Codice di condotta](CODE_OF_CONDUCT.md).
 - Le regole di architettura (layer dei componenti, osservabilità, design token, job in background) sono in [`CLAUDE.md`](CLAUDE.md). Valgono anche per chi non usa un assistente AI.
 - Interfaccia e documentazione sono in italiano; i messaggi di commit e le issue possono essere anche in inglese.
 
@@ -13,7 +14,7 @@ Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di s
 2. Avvia l'ambiente seguendo il [README](README.md#avvio-in-locale).
 3. Prima di aprire la PR: `pnpm lint`, `pnpm test`, `pnpm exec tsc --noEmit`.
 4. Una modifica allo schema richiede `pnpm db:generate` e la migration committata. Non si modifica il database a mano.
-5. Una PR dovrebbe dire cosa cambia per chi usa l'app e come l'hai verificato.
+5. Compila il modello della PR: dì cosa cambia per chi usa l'app e come l'hai verificato.
 
 ## Convenzioni in breve
 

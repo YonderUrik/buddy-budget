@@ -1,0 +1,36 @@
+name: Segnala un bug
+description: Qualcosa non funziona come dovrebbe
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie della segnalazione. **Non incollare dati personali o finanziari reali** (IBAN, importi, nomi, email, token): se servono esempi, inventali.
+        Per una vulnerabilità non usare questo modulo, vedi [SECURITY.md](https://github.com/YonderUrik/buddy-budget/blob/main/SECURITY.md).
+  - type: textarea
+    id: cosa
+    attributes:
+      label: Cosa succede
+      description: Descrivi il problema e cosa ti aspettavi invece.
+    validations:
+      required: true
+  - type: textarea
+    id: passi
+    attributes:
+      label: Come riprodurlo
+      placeholder: |
+        1. Vai su ...
+        2. Clicca ...
+        3. Vedi l'errore ...
+    validations:
+      required: true
+  - type: input
+    id: ambiente
+    attributes:
+      label: Dove l'hai visto
+      description: Browser e sistema, oppure se è un'installazione tua in locale (versione di Node, Postgres).
+  - type: textarea
+    id: extra
+    attributes:
+      label: Altro
+      description: Screenshot (senza dati reali), messaggi d'errore, log.

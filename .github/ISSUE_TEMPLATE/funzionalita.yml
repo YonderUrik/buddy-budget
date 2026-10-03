@@ -1,0 +1,28 @@
+name: Proponi una funzionalità
+description: Un'idea per migliorare BuddyBudget
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Che problema vuoi risolvere
+      description: Descrivi la situazione in cui oggi ti manca qualcosa, prima della soluzione.
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Cosa proponi
+      description: Come immagini che funzioni. Se hai visto la stessa cosa altrove, indicalo.
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Alternative considerate
+  - type: checkboxes
+    id: contributo
+    attributes:
+      label: Contributo
+      options:
+        - label: Mi piacerebbe lavorarci io (ne parliamo qui prima di scrivere codice)

@@ -22,6 +22,7 @@ import {
   userInstrumentPrices,
 } from "@/lib/db/schema/investments";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -127,6 +128,7 @@ async function createUserWithData(): Promise<Fixture> {
 
   const [pensionFund] = await db.insert(pensionFunds).values({ userId, name: `Fondo ${tag}`, adhesionDate: "2022-03-15" }).returning();
   await db.insert(pensionSnapshots).values({ fundId: pensionFund.id, userId, date: "2026-09-30", netContributions: "1000", value: "1040" });
+  await db.insert(analyticsAssumptions).values({ userId, data: { withdrawalRate: 0.03 } });
 
   await redis.set(`net-worth:investments:fingerprint:${userId}`, "x");
   await redisSyncJobStore.createJob({ userId, kind: "manual-sync", accounts: [queuedAccount(autoAccount.id, "Banca")] });
@@ -229,6 +231,7 @@ describe("gestione account (integrazione)", () => {
     expect(parsed.debtEvents).toHaveLength(1);
     expect(parsed.pensionFunds).toHaveLength(1);
     expect(parsed.pensionSnapshots).toHaveLength(1);
+    expect(parsed.analyticsAssumptions.data).toEqual({ withdrawalRate: 0.03 });
   });
 
   it("il reset cancella tutto, ricrea le categorie, riporta all'onboarding e revoca la banca", async () => {
@@ -249,6 +252,7 @@ describe("gestione account (integrazione)", () => {
       pensionFunds: 0,
       netWorthDays: 0,
     });
+    expect(await db.select().from(analyticsAssumptions).where(eq(analyticsAssumptions.userId, f.userId))).toHaveLength(0);
     const [user] = await db.select().from(authUser).where(eq(authUser.id, f.userId));
     expect(user).toMatchObject({ onboardingCompleted: false, currency: "EUR", homePage: "/panoramica", deletionScheduledAt: null });
     expect(await db.select().from(authSession).where(eq(authSession.userId, f.userId))).toHaveLength(2);

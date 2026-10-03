@@ -10,3 +10,4 @@ export * from "./categorization-rules";
 export * from "./investments";
 export * from "./debts";
 export * from "./pension";
+export * from "./analytics";

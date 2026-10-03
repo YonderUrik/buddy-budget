@@ -9,6 +9,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
   instruments,
@@ -87,6 +88,7 @@ async function loadUserData(userId: string) {
     debtEventRows,
     pensionFundRows,
     pensionSnapshotRows,
+    analyticsRows,
   ] = await Promise.all([
     db
       .select({
@@ -349,6 +351,10 @@ async function loadUserData(userId: string) {
       .from(pensionSnapshots)
       .where(eq(pensionSnapshots.userId, userId))
       .orderBy(asc(pensionSnapshots.date)),
+    db
+      .select({ data: analyticsAssumptions.data, walkthroughSeenAt: analyticsAssumptions.walkthroughSeenAt })
+      .from(analyticsAssumptions)
+      .where(eq(analyticsAssumptions.userId, userId)),
   ]);
 
   return {
@@ -375,6 +381,7 @@ async function loadUserData(userId: string) {
     debtEvents: debtEventRows,
     pensionFunds: pensionFundRows,
     pensionSnapshots: pensionSnapshotRows,
+    analyticsAssumptions: analyticsRows[0] ?? null,
   };
 }
 

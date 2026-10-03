@@ -171,6 +171,9 @@ export interface PortfolioRisk {
   /** €STR medio usato nello Sharpe; null se non disponibile (si usa zero). */
   riskFreeRate: number | null;
   benchmark: BenchmarkRisk | null;
+  /** Rendimenti giornalieri osservati (frazioni) e osservazioni per anno: servono alle misure di Analitiche (Sortino, VaR). */
+  returns: number[];
+  perYear: number | null;
 }
 
 /** Media dei tassi alle date osservate (ultimo valore disponibile a ogni data), null se nessuno. */
@@ -254,6 +257,8 @@ export function computePortfolioRisk(params: {
     sharpe,
     riskFreeRate,
     benchmark: benchmarkRisk,
+    returns,
+    perYear,
   };
 }
 
@@ -265,7 +270,7 @@ export interface CorrelationMatrix {
 }
 
 /** Prezzi osservati di uno strumento in valuta utente da `fromKey` (più l'ultimo prima) a `toKey`. */
-function observedPrices(
+export function observedPrices(
   instrument: InstrumentInput,
   priceIndex: PriceIndex,
   fx: FxTable,

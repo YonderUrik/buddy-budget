@@ -59,9 +59,32 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm test
 
+  release:
+    name: Release (release-please)
+    needs: [check, landing]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      # `is_release` è true solo nel run causato dal merge della PR di release: quello che deve distribuire.
+      version: ${{ steps.rp.outputs.version }}
+      is_release: ${{ steps.rp.outputs.release_created == 'true' }}
+    steps:
+      # Legge i titoli delle PR (Conventional Commits) dall'ultimo tag e tiene aperta una PR "chore(main): release X.Y.Z"
+      # con versione (app e landing) e CHANGELOG. Al merge di quella PR crea tag e GitHub Release.
+      # Con RELEASE_PLEASE_TOKEN (PAT) la PR di release riceve anche i check; con GITHUB_TOKEN no (vedi docs/rilasci.md).
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
   image:
     name: Immagine ${{ matrix.image }}
-    needs: check
+    needs: [check, release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -89,6 +112,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-
             type=raw,value=main
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -102,10 +126,14 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
   update-infra-tag:
-    name: Aggiorna tag immagine nel repo infra
-    needs: image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Deploy app (tag versione nel repo infra)
+    needs: [image, release]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
+    # Registra il deploy nella scheda Deployments del repo.
+    environment:
+      name: production
+      url: https://app.buddybudget.io
     steps:
       - uses: actions/checkout@v4
         with:
@@ -115,11 +143,13 @@ jobs:
         with:
           kustomize-version: "5.4.3"
       - name: Aggiorna il tag immagine
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
         run: |
           cd argocd/manifests/app
           kustomize edit set image \
-            ghcr.io/yonderurik/buddy-budget=ghcr.io/yonderurik/buddy-budget:sha-${GITHUB_SHA::7} \
-            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:sha-${GITHUB_SHA::7}
+            ghcr.io/yonderurik/buddy-budget=ghcr.io/yonderurik/buddy-budget:${VERSION} \
+            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:${VERSION}
       - name: Commit e push
         run: |
           git config user.name "github-actions[bot]"
@@ -128,7 +158,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nessuna modifica al tag, skip commit."
           else
-            git commit -m "chore: aggiorna immagine buddy-budget a sha-${GITHUB_SHA::7}"
+            git commit -m "chore: rilascia buddy-budget v${VERSION} (${GITHUB_SHA::7})"
             # Può girare in parallelo al job della landing, che scrive sullo stesso repo (file diverso): rebase e riprova.
             for i in 1 2 3; do git pull --rebase && git push && break || sleep 5; done
           fi
@@ -158,7 +188,7 @@ jobs:
 
   landing-image:
     name: Immagine landing
-    needs: landing
+    needs: [landing, release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -179,6 +209,7 @@ jobs:
           tags: |
             type=sha,prefix=sha-
             type=raw,value=main
+            type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
       - uses: docker/build-push-action@v6
         with:
           context: landing
@@ -189,10 +220,13 @@ jobs:
           cache-to: type=gha,mode=max,scope=buddy-budget-landing
 
   update-infra-tag-landing:
-    name: Aggiorna tag landing nel repo infra
-    needs: landing-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Deploy landing (tag versione nel repo infra)
+    needs: [landing-image, release]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.is_release == 'true'
     runs-on: ubuntu-latest
+    environment:
+      name: landing
+      url: https://buddybudget.io
     steps:
       - uses: actions/checkout@v4
         with:
@@ -202,10 +236,12 @@ jobs:
         with:
           kustomize-version: "5.4.3"
       - name: Aggiorna il tag immagine
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
         run: |
           cd argocd/manifests/landing
           kustomize edit set image \
-            ghcr.io/yonderurik/buddy-budget-landing=ghcr.io/yonderurik/buddy-budget-landing:sha-${GITHUB_SHA::7}
+            ghcr.io/yonderurik/buddy-budget-landing=ghcr.io/yonderurik/buddy-budget-landing:${VERSION}
       - name: Commit e push
         run: |
           git config user.name "github-actions[bot]"
@@ -214,7 +250,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nessuna modifica al tag, skip commit."
           else
-            git commit -m "chore: aggiorna immagine buddy-budget-landing a sha-${GITHUB_SHA::7}"
+            git commit -m "chore: rilascia buddy-budget-landing v${VERSION} (${GITHUB_SHA::7})"
             # Può girare in parallelo al job dell'app, che scrive sullo stesso repo (file diverso): rebase e riprova.
             for i in 1 2 3; do git pull --rebase && git push && break || sleep 5; done
           fi

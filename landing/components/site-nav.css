@@ -1,9 +1,9 @@
 .nav { position: fixed; inset: 0 0 auto 0; z-index: 50; padding-top: env(safe-area-inset-top, 0px); transition: background 0.3s, box-shadow 0.3s; }
 .nav.sc { background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(14px); box-shadow: 0 1px 0 var(--line); }
-.nav.dk { background: color-mix(in srgb, var(--navy) 80%, transparent); backdrop-filter: blur(14px); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08); color: #fff; }
+.nav.dk { background: color-mix(in srgb, var(--navy) 80%, transparent); backdrop-filter: blur(14px); box-shadow: 0 1px 0 color-mix(in srgb, var(--on-navy) 8%, transparent); color: var(--on-navy); }
 .nav.dk .links { color: var(--on-navy2); }
-.nav.dk .links a:hover { color: #fff; }
-.nav.dk .tg, .nav.dk .btn.ghost { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.28); color: #fff; }
+.nav.dk .links a:hover { color: var(--on-navy); }
+.nav.dk .tg, .nav.dk .btn.ghost { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-navy) 28%, transparent); color: var(--on-navy); }
 .nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--f-h); text-decoration: none; letter-spacing: -0.02em; }
 .links { display: flex; gap: 28px; font: 500 15px var(--f-b); color: var(--ink2); }
@@ -11,7 +11,8 @@
 .links a:hover { color: var(--ink); }
 .nr { display: flex; align-items: center; gap: 10px; }
 .nr .btn { height: 40px; padding: 0 18px; font-size: 14px; }
-.tg { width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; box-shadow: inset 0 0 0 1.5px var(--line); cursor: pointer; display: grid; place-items: center; }
-.tg svg { width: 18px; height: 18px; }
 @media (max-width: 1000px) { .links { display: none; } }
 @media (max-width: 600px) { .nr .btn.ghost { display: none; } }
+/* telefoni: il pulsante principale non si comprime mai; si riducono padding e corpo, e sotto i 380px sparisce il cambio tema */
+@media (max-width: 480px) { .nav .btn.main { height: 40px; padding: 0 16px; font-size: 14px; } .nav .nr { gap: 8px; } }
+@media (max-width: 380px) { .nav .tg { display: none; } }

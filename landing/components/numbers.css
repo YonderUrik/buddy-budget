@@ -1,5 +1,0 @@
-.numbers { padding-block: 24px 120px; }
-.numbers dl { margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; border-top: 1px solid var(--line); padding-top: 40px; }
-.numbers dt { font: 600 clamp(44px, 6vw, 88px) / 1 var(--f-h); letter-spacing: -0.045em; font-variant-numeric: tabular-nums; }
-.numbers dd { margin: 12px 0 0; color: var(--ink2); font-size: 16px; max-width: 14em; }
-@media (max-width: 800px) { .numbers dl { grid-template-columns: 1fr 1fr; gap: 40px 24px; } .numbers { padding-bottom: 80px; } }

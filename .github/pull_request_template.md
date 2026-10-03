@@ -17,3 +17,4 @@
 - [ ] Se cambia una funzione visibile: `lib/features/catalog.ts` e landing aggiornati (o «nessun impatto sulla landing»)
 - [ ] Nessun dato personale o segreto nel codice, nei test o negli screenshot
 - [ ] Osservabilità: log, evento Umami, metriche, oppure «nessun nuovo segnale»
+- [ ] Il titolo è in formato Conventional Commits (`feat: …`, `fix: …`, `chore: …`): da lì si calcola la versione (vedi `docs/rilasci.md`)

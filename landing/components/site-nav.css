@@ -13,3 +13,6 @@
 .nr .btn { height: 40px; padding: 0 18px; font-size: 14px; }
 @media (max-width: 1000px) { .links { display: none; } }
 @media (max-width: 600px) { .nr .btn.ghost { display: none; } }
+/* telefoni: il pulsante principale non si comprime mai; si riducono padding e corpo, e sotto i 380px sparisce il cambio tema */
+@media (max-width: 480px) { .nav .btn.main { height: 40px; padding: 0 16px; font-size: 14px; } .nav .nr { gap: 8px; } }
+@media (max-width: 380px) { .nav .tg { display: none; } }

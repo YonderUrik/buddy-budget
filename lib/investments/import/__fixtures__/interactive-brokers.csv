@@ -1,0 +1,31 @@
+Statement,Header,Field Name,Field Value
+Statement,Data,BrokerName,Interactive Brokers Ireland Limited
+Statement,Data,Title,Activity Statement
+Statement,Data,Period,"January 1, 2025 - December 31, 2025"
+Account Information,Header,Field Name,Field Value
+Account Information,Data,Account,U00000000
+Account Information,Data,Base Currency,EUR
+Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,C. Price,Proceeds,Comm/Fee,Basis,Realized P/L,MTM P/L,Code
+Trades,Data,Order,Stocks,USD,TEST,"2025-01-10, 10:00:00","1,000",12.5,12,-12500,-2.5,12502.5,0,0,O
+Trades,Data,Order,Stocks,USD,TEST,"2025-02-10, 10:00:00",-2,15,15,30,-1,-25,4,0,C
+Trades,SubTotal,,Stocks,USD,TEST,,998,,,,-3.5,,,,
+Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,,Proceeds,Comm in EUR,,,MTM in EUR,Code
+Trades,Data,Order,Forex,USD,EUR.USD,"2025-01-10, 10:00:00",100,1.1,,-110,-2,,,0,
+Dividends,Header,Currency,Date,Description,Amount
+Dividends,Data,USD,2025-03-10,TEST(US0378331005) Cash Dividend USD 0.1 per Share (Ordinary Dividend),100
+Dividends,Data,Total,,,100
+Withholding Tax,Header,Currency,Date,Description,Amount,Code
+Withholding Tax,Data,USD,2025-03-10,TEST(US0378331005) Cash Dividend USD 0.1 per Share - US Tax,-15,
+Withholding Tax,Data,USD,2025-03-10,TEST(US0378331005) Cash Dividend USD 0.1 per Share - US Tax,15,
+Withholding Tax,Data,USD,2025-03-10,TEST(US0378331005) Cash Dividend USD 0.1 per Share - US Tax,-10,
+Financial Instrument Information,Header,Asset Category,Symbol,Description,Conid,Security ID,Underlying,Listing Exch,Multiplier,Type,Code
+Financial Instrument Information,Data,Stocks,TEST,"Synthetic ""Test"", Inc.",12345,US0378331005,TEST,NASDAQ,1,COMMON,
+Deposits & Withdrawals,Header,Currency,Settle Date,Description,Amount
+Deposits & Withdrawals,Data,EUR,2025-01-01,Electronic Fund Transfer,2000
+Corporate Actions,Header,Asset Category,Currency,Report Date,Date/Time,Description,Quantity,Proceeds,Value,Realized P/L,Code
+Corporate Actions,Data,Stocks,USD,2025-04-01,"2025-04-01, 00:00:00",TEST Spinoff,10,0,0,0,
+Transaction Fees,Header,Asset Category,Currency,Date/Time,Symbol,Description,Quantity,Trade Price,Amount,Code
+Transaction Fees,Data,Stocks,USD,"2025-02-10, 20:00:00",TEST,Regulatory charge,-2,15,-0.1,
+Future Section,Header,Label,,Label
+Future Section,Data,"First line
+Second line",,kept

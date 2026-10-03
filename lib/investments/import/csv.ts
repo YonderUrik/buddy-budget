@@ -13,8 +13,11 @@ export interface CsvTable {
 }
 
 /** Divide il testo in righe logiche, rispettando i campi tra virgolette che contengono a capo. */
-function splitRecords(text: string, delimiter: string): string[][] {
-  const records: string[][] = [];
+export function parseCsvRecords(text: string, delimiter = ",", strict = false): { line: number; cells: string[] }[] {
+  const records: { line: number; cells: string[] }[] = [];
+  let line = 1;
+  let startLine = 1;
+  let closed = false;
   let record: string[] = [];
   let field = "";
   let quoted = false;
@@ -26,28 +29,41 @@ function splitRecords(text: string, delimiter: string): string[][] {
         i += 1;
       } else if (char === '"') {
         quoted = false;
+        closed = true;
       } else {
         field += char;
+        if (char === "\n" || (char === "\r" && text[i + 1] !== "\n")) line += 1;
       }
       continue;
     }
+    if (strict && closed && char !== delimiter && char !== "\n" && char !== "\r") throw new Error(`CSV non valido alla riga ${line}`);
+    if (strict && char === '"' && field !== "") throw new Error(`CSV non valido alla riga ${line}`);
     if (char === '"' && field === "") quoted = true;
     else if (char === delimiter) {
       record.push(field);
       field = "";
+      closed = false;
     } else if (char === "\n" || char === "\r") {
       if (char === "\r" && text[i + 1] === "\n") i += 1;
       record.push(field);
-      records.push(record);
+      records.push({ line: startLine, cells: record });
+      line += 1;
+      startLine = line;
+      closed = false;
       record = [];
       field = "";
     } else field += char;
   }
+  if (strict && quoted) throw new Error(`Virgolette CSV non chiuse alla riga ${startLine}`);
   if (field !== "" || record.length > 0) {
     record.push(field);
-    records.push(record);
+    records.push({ line: startLine, cells: record });
   }
   return records;
+}
+
+function splitRecords(text: string, delimiter: string): string[][] {
+  return parseCsvRecords(text, delimiter).map((record) => record.cells);
 }
 
 /**

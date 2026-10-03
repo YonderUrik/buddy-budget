@@ -9,6 +9,8 @@ import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { cn } from "@/lib/utils";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
 import { formatYears, money, pct } from "./analytics-format";
+import { GuidedReading } from "./guided-reading";
+import { fireSteps } from "./guided-steps";
 
 export interface FireTabProps {
   base: AnalyticsBase;
@@ -85,6 +87,7 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
 
   return (
     <div className="flex flex-col gap-4">
+      <GuidedReading tab="fire" steps={fireSteps(plan, a, currency, lean)} />
       <AnalyticsCard title="Il tuo numero FIRE" explainer="fire-number">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Metric label="Numero FIRE" value={money(plan.target, currency)} sub={plan.taxShare > 0 ? `${money(plan.fireNumberGross ?? 0, currency)} prima delle imposte` : `spesa ${money(plan.spending, currency)} ÷ ${pct(a.withdrawalRate)}`} />

@@ -14,6 +14,8 @@ import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
 import { money, pct } from "./analytics-format";
 import { parseNumber, toFieldText } from "./assumptions-fields";
+import { GuidedReading } from "./guided-reading";
+import { costsSteps } from "./guided-steps";
 
 export interface CostsTabProps {
   base: AnalyticsBase;
@@ -62,6 +64,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
 
   return (
     <div className="flex flex-col gap-4">
+      <GuidedReading tab="costi" steps={costsSteps(summary, drag, liquidation, currency, DRAG_YEARS)} />
       <AnalyticsCard title="Costi del portafoglio" explainer="costs">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Metric label="Costo annuo" value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? `${pct(summary.annualPct, 2)} del portafoglio` : undefined} />

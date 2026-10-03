@@ -13,6 +13,8 @@ import { runMonteCarlo } from "@/lib/calc/monte-carlo";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
 import { money, pct } from "./analytics-format";
 import { RULE_LABELS } from "./assumptions-panel";
+import { GuidedReading } from "./guided-reading";
+import { simulationSteps } from "./guided-steps";
 
 export interface SimulationTabProps {
   assumptions: AnalyticsAssumptions;
@@ -50,6 +52,7 @@ export function SimulationTab({ assumptions, plan, currency }: SimulationTabProp
 
   return (
     <div className="flex flex-col gap-4">
+      <GuidedReading tab="simulazione" steps={simulationSteps(result, input, assumptions, currency)} />
       <AnalyticsCard title="Probabilità che il patrimonio duri" explainer="montecarlo">
         <SegmentedControl options={RETIRE_OPTIONS} value={retireAt} onChange={setRetireAt} ariaLabel="Quando inizia la pensione" />
         {retireAt === "fire" && plan.yearsToFire === null ? (

@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { AnalyticsCard, MissingData } from "./analytics-card";
 import { money, pct } from "./analytics-format";
 import { RULE_LABELS } from "./assumptions-panel";
+import { GuidedReading } from "./guided-reading";
+import { withdrawalSteps } from "./guided-steps";
 
 export interface WithdrawalTabProps {
   assumptions: AnalyticsAssumptions;
@@ -39,6 +41,7 @@ export function WithdrawalTab({ assumptions, plan, currency }: WithdrawalTabProp
 
   return (
     <div className="flex flex-col gap-4">
+      <GuidedReading tab="prelievi" steps={withdrawalSteps(results, assumptions, plan, currency)} />
       <AnalyticsCard title="Quattro regole a confronto" explainer="rules">
         <p className="text-sm text-muted-foreground">
           Si parte da oggi con {money(plan.wealth, currency)}, spendendo {money(plan.spending ?? 0, currency)} l&apos;anno per {assumptions.retirementYears} anni. Tocca una riga per vedere la sua spesa nel tempo.

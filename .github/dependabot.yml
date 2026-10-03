@@ -1,23 +1,44 @@
 version: 2
+
+# Politica: solo aggiornamenti patch. Minor e major si ignorano per non rompere l'app senza motivo; si fanno a mano e di proposito.
+# `ignore` vale per i version update: gli aggiornamenti di sicurezza di Dependabot arrivano comunque, anche se minor o major.
+# Il prefisso `fix` fa partire una release (release-please) quando cambia una dipendenza di runtime; `chore` per quelle di sviluppo.
 updates:
   - package-ecosystem: npm
     directory: /
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
-    # Minor e patch insieme in una sola PR a settimana; le major restano PR separate da valutare.
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
     groups:
-      minor-and-patch:
-        update-types: [minor, patch]
+      patch:
+        update-types: [patch]
   - package-ecosystem: npm
     directory: /landing
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
     groups:
-      minor-and-patch:
-        update-types: [minor, patch]
+      patch:
+        update-types: [patch]
+  # Le GitHub Actions usano tag di sola major (@v4): ogni aggiornamento è una major, quindi si ignorano e si aggiornano a mano.
+  # Restano gli aggiornamenti di sicurezza.
   - package-ecosystem: github-actions
     directory: /
-    schedule: { interval: weekly }
-    groups:
-      actions-minor-and-patch:
-        update-types: [minor, patch]
+    schedule: { interval: monthly }
+    commit-message:
+      prefix: ci
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]

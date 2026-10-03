@@ -44,4 +44,8 @@ I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distr
 ## Immagini e auto-merge
 
 - Le immagini (app, migrator, landing) si costruiscono e pubblicano solo nel run del merge della PR di release, con tag `sha-…`, `main` e `X.Y.Z`. Un push normale su `main` esegue solo i test e tiene aggiornata la PR di release.
-- `automerge.yml` abilita l auto-merge (squash) sulle PR di Dependabot minor/patch e su `bot/landing-screens`. Serve "Allow auto-merge" nelle impostazioni del repo e le check obbligatorie sulla branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): è la protezione a decidere quando unire. La PR di release e le major restano a mano.
+- `automerge.yml` abilita l auto-merge (squash) sulle PR di Dependabot patch e su `bot/landing-screens`. Serve "Allow auto-merge" nelle impostazioni del repo e le check obbligatorie sulla branch protection (`Lint, tipi e test`, `Titolo in formato Conventional Commits`): è la protezione a decidere quando unire. La PR di release e ogni minor/major restano a mano.
+
+## Dipendenze: solo patch
+
+`dependabot.yml` ignora gli aggiornamenti minor e major (restano quelli di sicurezza) e raggruppa le patch in una PR a settimana per cartella. Le PR hanno il prefisso `fix(deps)` (runtime) o `chore(deps-dev)` (sviluppo): le prime fanno partire una release con release-please, le seconde no. Le GitHub Actions si aggiornano a mano. Per fare di proposito un salto di minor o major si apre una PR normale, o si rimuove temporaneamente la regola `ignore`.

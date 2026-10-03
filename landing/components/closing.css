@@ -12,3 +12,5 @@
 .end .legal-links { display: flex; gap: 18px; }
 .end .legal-links a { color: var(--on-navy2); text-decoration: none; }
 .end .legal-links a:hover { color: #fff; text-decoration: underline; }
+.end footer > span a { color: var(--on-navy2); }
+.end footer > span a:hover { color: #fff; }

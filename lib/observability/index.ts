@@ -12,6 +12,7 @@ export {
   recordGoCardlessSync,
   recordGoCardlessApiRequest,
   recordTransactionsImported,
+  recordMerchantNames,
   recordCronRunMetric,
   recordAuthEvent,
   recordPriceProviderRequest,

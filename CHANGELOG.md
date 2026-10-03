@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.6.0](https://github.com/YonderUrik/buddy-budget/compare/v0.5.0...v0.6.0) (2026-10-03)
+
+
+### Novità
+
+* **analitiche:** guida passo passo con i numeri dell'utente in ogni scheda ([#124](https://github.com/YonderUrik/buddy-budget/issues/124)) ([bd874b1](https://github.com/YonderUrik/buddy-budget/commit/bd874b1aaa55e424582a548f04ce9ff802c16404))
+
 ## [0.5.0](https://github.com/YonderUrik/buddy-budget/compare/v0.4.1...v0.5.0) (2026-10-03)
 
 

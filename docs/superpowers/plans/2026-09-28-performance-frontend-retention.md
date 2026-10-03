@@ -18,7 +18,7 @@
 - Solo Core Web Vitals (LCP, CLS, INP) — niente FCP/TTFB in questo giro.
 - Nessuna scrittura DB, nessun dato personale nel payload RUM.
 - Soglie di alert: valori standard Google (LCP p75 > 2.5s, INP p75 > 200ms, CLS p75 > 0.1), severità `warning` → `#bb-avvisi`, stesso pattern del gruppo `buddybudget` in `argocd/apps/grafana.yaml`.
-- Repo infra: `C:\Users\Daniele\Desktop\buddy-budget-infra` (repo git separato da questo).
+- Repo infra: `<percorso-repo-infra>` (repo git separato da questo).
 
 ## Review Focus
 
@@ -467,7 +467,7 @@ git commit -m "feat: sostituisce @vercel/analytics con RUM custom (Web Vitals ->
 
 ## Task 5: Dashboard Grafana + alert (repo buddy-budget-infra)
 
-**Files (repo `C:\Users\Daniele\Desktop\buddy-budget-infra`):**
+**Files (repo `<percorso-repo-infra>`):**
 - Create: `argocd\manifests\grafana-dashboards\dashboards\performance.json`
 - Create: `docs\runbooks\performance-lenta.md`
 - Modify: `argocd\apps\grafana.yaml`
@@ -583,7 +583,7 @@ In `argocd/apps/grafana.yaml`, dentro `alerting.rules.yaml.groups[0].rules` (gru
                   summary: Il 75% delle pagine impiega più di 2.5s a mostrare il contenuto principale (LCP).
                   description: 'Soglia Google per "buono". Gli utenti percepiscono l''app come lenta al caricamento. Valore attuale: {{ printf "%.2f" $values.A.Value }}s.'
                   runbook_url: https://github.com/YonderUrik/buddy-budget-infra/blob/main/docs/runbooks/performance-lenta.md
-                  dashboard: https://grafana.tail52c123.ts.net/d/bb-performance
+                  dashboard: https://grafana.<tailnet>.ts.net/d/bb-performance
               - uid: bb-inp-lento
                 title: App poco reattiva (INP)
                 condition: C
@@ -619,7 +619,7 @@ In `argocd/apps/grafana.yaml`, dentro `alerting.rules.yaml.groups[0].rules` (gru
                   summary: Il 75% delle interazioni impiega più di 200ms a reagire (INP).
                   description: 'Soglia Google per "buono". L''app sembra "impastata" ai click/tap. Valore attuale: {{ printf "%.0f" $values.A.Value }}ms considerando il valore in secondi *1000.'
                   runbook_url: https://github.com/YonderUrik/buddy-budget-infra/blob/main/docs/runbooks/performance-lenta.md
-                  dashboard: https://grafana.tail52c123.ts.net/d/bb-performance
+                  dashboard: https://grafana.<tailnet>.ts.net/d/bb-performance
               - uid: bb-cls-instabile
                 title: Layout instabile (CLS)
                 condition: C
@@ -655,7 +655,7 @@ In `argocd/apps/grafana.yaml`, dentro `alerting.rules.yaml.groups[0].rules` (gru
                   summary: Il 75% delle pagine sposta elementi visibili mentre carica (CLS).
                   description: 'Soglia Google per "buono". Probabile immagine/font senza dimensioni riservate, o contenuto iniettato sopra quanto già visibile. Valore attuale: {{ printf "%.2f" $values.A.Value }}.'
                   runbook_url: https://github.com/YonderUrik/buddy-budget-infra/blob/main/docs/runbooks/performance-lenta.md
-                  dashboard: https://grafana.tail52c123.ts.net/d/bb-performance
+                  dashboard: https://grafana.<tailnet>.ts.net/d/bb-performance
 ```
 
 - [ ] **Step 4: Scrivi il runbook**
@@ -697,14 +697,14 @@ un'esperienza uguale o migliore di quella riportata.
 
 - [ ] **Step 5: Verifica il rendering YAML**
 
-Run (da `C:\Users\Daniele\Desktop\buddy-budget-infra`): `helm template grafana grafana/grafana -f <(echo "") --dry-run 2>/dev/null; python -c "import yaml,sys; yaml.safe_load(open('argocd/apps/grafana.yaml'))" || (Get-Content argocd/apps/grafana.yaml | ConvertFrom-Yaml)`
+Run (da `<percorso-repo-infra>`): `helm template grafana grafana/grafana -f <(echo "") --dry-run 2>/dev/null; python -c "import yaml,sys; yaml.safe_load(open('argocd/apps/grafana.yaml'))" || (Get-Content argocd/apps/grafana.yaml | ConvertFrom-Yaml)`
 
 In pratica: verifica solo che il file sia YAML valido con un parser disponibile in locale (es. `python -c "import yaml; yaml.safe_load(open('argocd/apps/grafana.yaml', encoding='utf-8'))"` se Python+PyYAML sono disponibili, altrimenti apri il file e controlla a occhio l'indentazione contro le regole esistenti — deve essere identica, 14 spazi per `- uid:`).
 
 - [ ] **Step 6: Commit (nel repo infra)**
 
 ```bash
-cd /c/Users/Daniele/Desktop/buddy-budget-infra
+cd <percorso-repo-infra>
 git add argocd/manifests/grafana-dashboards/dashboards/performance.json argocd/manifests/grafana-dashboards/kustomization.yaml argocd/apps/grafana.yaml docs/runbooks/performance-lenta.md
 git commit -m "feat: dashboard e alert Grafana per i Web Vitals (LCP/INP/CLS)"
 ```
@@ -715,7 +715,7 @@ Nota: questo commit va poi pushato e mergiato su `main` del repo infra perché A
 
 ## Task 6: Documentazione funnel/retention Umami (repo buddy-budget-infra)
 
-**Files (repo `C:\Users\Daniele\Desktop\buddy-budget-infra`):**
+**Files (repo `<percorso-repo-infra>`):**
 - Modify: `docs\osservabilita.md`
 
 **Interfaces:**
@@ -734,7 +734,7 @@ Aggiungi in fondo a `docs/osservabilita.md`:
 ## Funnel e retention utenti (Umami)
 
 Nessuna configurazione da codice: si fa tutto nella UI di Umami
-(`https://umami.tail52c123.ts.net`, solo Tailscale).
+(`https://umami.<tailnet>.ts.net`, solo Tailscale).
 
 ### Funnel onboarding
 
@@ -759,7 +759,7 @@ dalla prima visita.
 - [ ] **Step 3: Commit (nel repo infra)**
 
 ```bash
-cd /c/Users/Daniele/Desktop/buddy-budget-infra
+cd <percorso-repo-infra>
 git add docs/osservabilita.md
 git commit -m "docs: come configurare funnel onboarding e retention in Umami"
 ```

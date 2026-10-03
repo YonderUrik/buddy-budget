@@ -64,6 +64,8 @@ export interface NavItem {
   icon: React.ElementType;
   /** Se true la voce è mostrata disabilitata con badge "Presto" (schermata non ancora disponibile). */
   comingSoon?: boolean;
+  /** Se true la voce compare solo quando l'utente ha acceso "Strumenti avanzati" (prop `showAdvanced` della sidebar). */
+  advanced?: boolean;
 }
 
 /** Sottovoce sotto una voce di navigazione, mostrata solo quando `count > 0` (es. "Da sistemare" sotto Movimenti). */
@@ -93,7 +95,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
   { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
-  { label: "Analitiche", href: "/analitiche", icon: BarChart3, comingSoon: true },
+  { label: "Analitiche", href: "/analitiche", icon: BarChart3, advanced: true },
 ];
 
 /** True se `pathname` corrisponde alla voce `href` o a una sua sotto-route. */
@@ -256,6 +258,8 @@ interface AppSidebarProps {
   subItems?: Record<string, NavSubItem>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
   extra?: React.ReactNode;
+  /** Mostra anche le voci marcate `advanced` (Strumenti avanzati accesi). Default: nascoste. */
+  showAdvanced?: boolean;
 }
 
 export function AppSidebar({
@@ -266,6 +270,7 @@ export function AppSidebar({
   settingsHref = "/impostazioni",
   subItems,
   extra,
+  showAdvanced = false,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
   const router = useRouter();
@@ -337,7 +342,7 @@ export function AppSidebar({
       {/* ── Navigazione ── */}
       <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
         <ul className="flex flex-col gap-0.5" role="list">
-          {items.map((item) => {
+          {items.filter((item) => !item.advanced || showAdvanced).map((item) => {
             const subItem = subItems?.[item.href];
             const showSubItem = subItem !== undefined && subItem.count > 0;
             return (

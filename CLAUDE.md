@@ -198,6 +198,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### In corso
 
+- **Analitiche** (`/analitiche`, 6 schede, solo con "Strumenti avanzati" acceso): implementata sul branch `claude/project-thread-idnurb`, PR in revisione. Migration 0016 (numero da ricontrollare al merge). Rimandato: dataset storici lunghi (backtest, bootstrap, stress di sequenza), fattori, ordine di vendita ottimale, esposizione valutaria, glidepath, TER automatico da Yahoo, pannelli Grafana. Vedi `docs/decision-log.md` 2026-10-03 e `docs/superpowers/specs/2026-10-03-analitiche-design.md`.
 - **Pensione** (`/pensione`, 5 schede): implementata sul branch `claude/project-thread-43tais`, senza PR. Fondi e fotografie (contributi netti + controvalore), rendimento, prelievo oggi, confronto TFR, proiezione, classe "Previdenza" nel patrimonio netto, export/reset, catalogo/landing/login aggiornati. Prima del merge: migration 0013_pensione in produzione (numero da ricontrollare al merge). Rimandato: aliquote per anno di adesione dei contributi (oggi una sola data di adesione), inflazione modificabile, più fondi nella proiezione, import da PDF/CSV del provider, contributi del datore e volontari distinti, modifica delle fotografie dalla UI (oggi si risalva la stessa data). Import delle fotografie da CSV/Excel: vedi `docs/decision-log.md` 2026-10-03 (PR in revisione; nessuna migration). Regole fiscali da validare. Spec `docs/superpowers/specs/2026-10-02-pensione-design.md`.
 
 - **Connessioni GoCardless**: avvisi di scadenza (banner + email, `/conti?rinnova=1`) e cron `gocardless-maintenance` che ripulisce la lista su GoCardless. PR in bozza; il cron parte in **dry-run** e va portato a `execute` a mano (`GOCARDLESS_CLEANUP_MODE` nel Secret) dopo qualche giorno di dry-run. Vedi `docs/decision-log.md` 2026-10-01.
@@ -210,7 +211,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - **Osservabilità Fase C**: accesso in sola lettura per agenti via MCP (mai sulla VPS di produzione).
 - **Fase 7, Task 8 (migrazione VPS)**: non prima di 2 settimane dal cutover (cioè dopo il 2026-10-11) e con conferma esplicita dell'utente: rotazione di tutti i segreti (sono transitati su Vercel), chiusura definitiva di Vercel/Neon, rimozione delle chiavi Umami inutilizzate dall'env (`@vercel/analytics` è già stato tolto con la PR GDPR 3). Piano: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.
 - **Sezione Budget separata**: oggi il budget per categoria vive nella legenda della torta in Movimenti. Serve un brainstorming dedicato (cambio di IA e data-model).
-- **Schermate non implementate**: Pianifica, Analitiche (vedi "Schermate in arrivo").
+- **Schermate non implementate**: Pianifica (vedi "Schermate in arrivo").
 - **i18n**: lingua e valuta sono scelte in onboarding, ma le stringhe sono ancora tutte in italiano; serve scegliere la libreria ed estrarre le stringhe.
 - **Backlog**: tracciato su Slack in `#bb-backlog` (vedi Regole). Lì ci sono anche idee e debiti minori.
 

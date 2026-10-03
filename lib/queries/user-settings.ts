@@ -18,6 +18,8 @@ export interface UserSettings {
   currency: SupportedCurrency;
   homePage: HomePagePath;
   hideAmounts: boolean;
+  /** Strumenti avanzati: mostra la sezione Analitiche. Spenti di default. */
+  advancedAnalytics: boolean;
   /** Quando e quale versione di Termini e Privacy ha accettato (null se mai). */
   legalAcceptedAt: string | null;
   legalAcceptedVersion: string | null;

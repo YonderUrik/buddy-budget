@@ -10,6 +10,7 @@ import { eq, like } from "drizzle-orm";
 import { client, db } from "@/lib/db/client";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { accounts } from "@/lib/db/schema/accounts";
+import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { authSession, authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
@@ -99,7 +100,10 @@ async function main() {
     // Termini già accettati, sempre nella versione in vigore al momento del seed: così il gate di proxy.ts non rimanda a /accetta-termini.
     legalAcceptedAt: new Date(),
     legalAcceptedVersion: LEGAL_VERSION,
+    // Strumenti avanzati accesi e guida già vista: la schermata Analitiche si cattura senza il dialogo di benvenuto.
+    advancedAnalytics: true,
   });
+  await db.insert(analyticsAssumptions).values({ userId: DEMO_USER_ID, walkthroughSeenAt: new Date() });
   await db.insert(authSession).values({
     id: "demo-session",
     userId: DEMO_USER_ID,

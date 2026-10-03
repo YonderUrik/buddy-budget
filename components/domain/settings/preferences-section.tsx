@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Switch } from "@/components/ui/switch";
+import { track } from "@/lib/analytics";
 import { useAnalyticsOptOut } from "@/lib/hooks/use-analytics-opt-out";
 import { HOME_PAGE_OPTIONS, type HomePagePath } from "@/lib/account/home-pages";
 import { SUPPORTED_CURRENCIES, type SupportedCurrency } from "@/lib/validation/currency";
@@ -109,6 +110,20 @@ export function PreferencesSection({ settings }: PreferencesSectionProps) {
         ) : (
           <div className="h-[18.4px] w-[32px]" />
         )}
+      </SettingsRow>
+
+      <SettingsRow
+        label="Strumenti avanzati"
+        hint="Aggiunge la sezione Analitiche: obiettivo FIRE, simulazioni, rischio e costi, spiegati passo passo. Pensata per chi vuole smanettare con i numeri."
+      >
+        <Switch
+          checked={settings.advancedAnalytics}
+          onCheckedChange={(checked) =>
+            update.mutate({ advancedAnalytics: checked }, { onSuccess: () => track(checked ? "analytics_enabled" : "analytics_disabled") })
+          }
+          disabled={update.isPending}
+          aria-label="Strumenti avanzati"
+        />
       </SettingsRow>
 
       <SettingsRow label="Lingua" hint="Presto potrai usare BuddyBudget anche in altre lingue.">

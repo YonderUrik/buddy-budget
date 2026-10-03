@@ -8,6 +8,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debts } from "@/lib/db/schema/debts";
+import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { pensionFunds } from "@/lib/db/schema/pension";
 import {
   instruments,
@@ -136,6 +137,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(debts).where(eq(debts.userId, userId));
   // I fondi di previdenza portano con sé le loro fotografie (cascata).
   await tx.delete(pensionFunds).where(eq(pensionFunds.userId, userId));
+  await tx.delete(analyticsAssumptions).where(eq(analyticsAssumptions.userId, userId));
   await tx.delete(investmentPlans).where(eq(investmentPlans.userId, userId));
   await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
   await tx.delete(investmentTaxCarryforwards).where(eq(investmentTaxCarryforwards.userId, userId));

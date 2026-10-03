@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
-vi.mock("@/lib/observability", () => ({ bindRequestUser: vi.fn(), withRoute: (_name: string, handler: unknown) => handler }));
+vi.mock("@/lib/observability", () => ({ bindRequestUser: vi.fn(), requestLogger: () => ({ info: vi.fn(), warn: vi.fn() }), withRoute: (_name: string, handler: unknown) => handler }));
 import { auth } from "@/lib/auth";
 import { POST } from "./route";
 import { IBKR_MAX_FILE_BYTES } from "@/lib/investments/import/interactive-brokers";

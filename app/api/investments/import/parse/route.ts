@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { IBKR_MAX_FILE_BYTES, parseInteractiveBrokersActivity } from "@/lib/investments/import/interactive-brokers";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Raw CSV body; bounded while streaming, including when Content-Length is absent or incorrect. */
 async function handlePost(request: NextRequest) {
@@ -35,8 +35,14 @@ async function handlePost(request: NextRequest) {
   }
   try {
     const result = parseInteractiveBrokersActivity(text, new Date().toISOString().slice(0, 10));
+    requestLogger().info("investment_import.parse.completed", {
+      provider: result.preset,
+      count: result.operations.length,
+      total: result.records.length,
+    });
     return respond(result);
   } catch (error) {
+    requestLogger().warn("investment_import.parse.rejected", { provider: "interactive-brokers", error });
     return respond({ error: error instanceof Error ? error.message : "File non valido" }, 400);
   }
 }

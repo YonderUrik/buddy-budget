@@ -15,6 +15,7 @@ import type {
 import type { InvestmentData } from "@/lib/investments/data";
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 import type { YahooSearchHit } from "@/lib/market-data/providers/yahoo";
+import type { ActivityStatement } from "@/lib/investments/import/interactive-brokers";
 import type { ImportMatch, ImportResult } from "@/lib/investments/import/types";
 import type { ResolveImportInput, RunImportInput } from "@/lib/validation/investments-import";
 import type {
@@ -283,6 +284,21 @@ export function useSaveManualPriceMutation() {
       return response.json();
     },
     onSuccess: invalidate,
+  });
+}
+
+/** Legge un Activity Statement di Interactive Brokers sul server (sezioni multiple: non è una tabella piatta). Non scrive nulla. */
+export function useParseStatementMutation() {
+  return useMutation({
+    mutationFn: async (csv: string): Promise<ActivityStatement> => {
+      const response = await fetch("/api/investments/import/parse", {
+        method: "POST",
+        headers: { "Content-Type": "text/csv" },
+        body: csv,
+      });
+      if (!response.ok) throw await readError(response, "Impossibile leggere il file");
+      return response.json();
+    },
   });
 }
 

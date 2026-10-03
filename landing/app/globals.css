@@ -14,6 +14,7 @@
   --accent: #15738b;
   --sky: #219ebc;
   --sun: #ffb703;
+  --sun-edge: #d99500;
   --navy: #0b1c2a;
   --on-navy: #f4f6f7;
   --on-navy2: #a1a1aa;
@@ -151,8 +152,8 @@ h2.t { font-size: clamp(38px, 5.8vw, 84px); font-weight: 700; letter-spacing: -0
   font: 600 16px var(--f-b); text-decoration: none; border: 0; cursor: pointer;
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.2s;
 }
-.btn.main { background: var(--sun); color: var(--on-sun); }
-.btn.main:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(255, 183, 3, 0.7); }
+.btn.main { background: var(--sun); color: var(--on-sun); box-shadow: inset 0 0 0 1px var(--sun-edge), 0 6px 16px -8px color-mix(in srgb, var(--sun-edge) 80%, transparent); }
+.btn.main:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--sun-edge), 0 14px 30px -12px color-mix(in srgb, var(--sun) 70%, transparent); }
 .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
 .btn.ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
 .btn svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }

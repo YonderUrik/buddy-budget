@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { APP_LINKS } from "@/content/site";
 import { PageBar } from "./page-bar";
 import { SiteFooter } from "./site-footer";
-import { CtaLink } from "./cta-link";
+import { ARROW_ICON, CtaLink } from "./cta-link";
 import type { LandingEvents } from "@/lib/analytics";
 
 type CtaLocation = LandingEvents["cta_click"]["location"];
@@ -36,12 +36,16 @@ export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, 
           </nav>
           {disclaimer ? <p className="cp-disclaimer" role="note"><strong>Solo a scopo informativo.</strong> I calcoli sono stime semplificate e i testi riassumono norme che cambiano: non sono consulenza fiscale né un riferimento assoluto. Verifica sempre con il tuo intermediario, la normativa in vigore o un consulente.</p> : null}
           {children}
-          <aside className="cp-cta">
+        </div>
+        <aside className="cp-cta">
+          <div className={`wrap cp-wrap${wide ? " cp-wide" : ""}`}>
             <h2>{ctaTitle}</h2>
             <p>{ctaText}</p>
-            <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup">Prova gratis</CtaLink>
-          </aside>
-        </div>
+            <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup">
+              Prova gratis{ARROW_ICON}
+            </CtaLink>
+          </div>
+        </aside>
       </main>
       <SiteFooter />
     </>

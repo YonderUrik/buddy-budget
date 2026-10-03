@@ -12,15 +12,6 @@
 .cp p { margin: 0 0 14px; max-width: 68ch; }
 .cp ul { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; max-width: 68ch; }
 .cp a { color: var(--accent); }
-.cp .note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; font-size: 15px; color: var(--ink2); margin: 24px 0; max-width: 68ch; }
-.cp-cta { margin-top: 88px; padding: 48px 40px; border-radius: 28px; background: var(--navy); color: var(--on-navy); }
-.cp-cta h2 { margin: 0 0 12px; font-size: clamp(28px, 3.6vw, 44px); color: var(--on-navy); }
-.cp-cta p { color: var(--on-navy2); margin-bottom: 22px; }
-.cp-cta a { color: inherit; }
-.cp-cta .btn.main { color: var(--on-sun); }
-.tool { margin-top: 32px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.tool-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
-.tool-card h2 { margin: 0 0 16px; font-size: 18px; }
 .field { display: grid; gap: 6px; margin-bottom: 14px; }
 .field label, .field .lab { font-size: 14px; color: var(--ink2); }
 .field input, .field select { font: 500 16px var(--f-b); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; box-sizing: border-box; }
@@ -35,8 +26,6 @@
 .res { display: grid; gap: 10px; }
 .res .row { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; color: var(--ink2); padding-bottom: 10px; border-bottom: 1px solid var(--line); }
 .res .row b { color: var(--ink); font-family: var(--f-h); font-variant-numeric: tabular-nums; }
-.res .key { border-bottom: 0; padding: 14px 16px; border-radius: 14px; background: var(--bg); border: 1px solid var(--line); }
-.res .key b { font-size: 26px; color: var(--accent); }
 .res .good b { color: var(--a-pos); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink2); }
@@ -47,43 +36,59 @@
 .sched th, .sched td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); color: var(--ink2); }
 .sched th { position: sticky; top: 0; background: var(--surface); color: var(--ink); font-weight: 600; }
 .sched th:first-child, .sched td:first-child { text-align: left; }
-.fn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 24px; }
-.fn-grid .tool-card h3 { margin-top: 0; }
 .cp img.shot { width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); margin-top: 24px; display: block; }
-.related { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; }
-.related a { display: block; text-decoration: none; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; color: var(--ink); font: 600 16px var(--f-h); }
-.related a span { display: block; color: var(--ink2); font: 400 14px/1.5 var(--f-b); margin-top: 6px; }
-.related a:hover { border-color: var(--accent); }
-@media (max-width: 760px) { .tool, .fn-grid { grid-template-columns: 1fr; } .cp-cta { padding: 26px; } }
-.cp-cta { border: 1px solid var(--line); }
 @media (max-width: 600px) { .legal-bar nav { display: none; } }
 .sources ul { font-size: 15px; }
 .sources .note { font-size: 14px; }
-.cp .cp-disclaimer { background: var(--surface); border: 1px solid var(--sun); border-radius: 12px; padding: 12px 16px; font-size: 14px; line-height: 1.55; margin: 0 0 28px; max-width: none; }
-.cp .cp-disclaimer strong { color: var(--ink); }
 
-/* Avviso: striscia compatta con icona, non un riquadro di testo. */
-.cp .cp-disclaimer { display: flex; gap: 12px; align-items: flex-start; background: var(--glow); border: 0; border-radius: 14px; padding: 12px 16px; font-size: 14px; line-height: 1.55; margin: 0 0 28px; max-width: none; }
-.cp .cp-disclaimer::before { content: "i"; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 13px/22px var(--f-h); text-align: center; margin-top: 1px; }
-.cp .note { position: relative; padding-left: 52px; border: 0; background: var(--glow); }
-.cp .note::before { content: "!"; position: absolute; left: 16px; top: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 14px/24px var(--f-h); text-align: center; }
-.tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
-.tips > div { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
-.tips b { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--a-neg); color: var(--surface); font: 700 14px var(--f-h); margin-bottom: 8px; }
-.tips p { margin: 0; font-size: 15px; }
-.fn-card { position: relative; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 24px; transition: border-color 0.25s; }
-.fn-card:hover { border-color: var(--accent); }
-.fn-card svg { width: 44px; height: 44px; padding: 10px; border-radius: 14px; fill: none; stroke: var(--surface); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 14px; }
+/* Avvisi: testo semplice con una piccola icona, nessun riquadro (leggibili anche da telefono). */
+.cp .cp-disclaimer, .cp .note { position: relative; padding: 0 0 0 30px; margin: 0 0 28px; font-size: 14px; line-height: 1.6; color: var(--ink2); max-width: 68ch; background: none; border: 0; }
+.cp .note { margin: 24px 0; }
+.cp .cp-disclaimer strong { color: var(--ink); }
+.cp .cp-disclaimer::before, .cp .note::before { content: "i"; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 12px/20px var(--f-h); text-align: center; }
+.cp .note::before { content: "!"; }
+
+/* Calcolatori: una sola fascia calda, due colonne senza schede dentro. */
+.tool { margin: 32px -24px 0; padding: 32px 24px; border-radius: 32px; background: var(--bg-alt); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px 56px; align-items: start; }
+.tool-card { padding: 0; }
+.tool-card h2 { margin: 0 0 18px; font-size: 20px; }
+.res .key { border-bottom: 0; padding: 16px 0 8px; align-items: baseline; }
+.res .key b { font-size: clamp(32px, 5vw, 44px); letter-spacing: -0.03em; color: var(--accent); }
+@media (max-width: 760px) { .tool { grid-template-columns: 1fr; margin-inline: -20px; padding: 28px 20px; border-radius: 0; } }
+
+/* Funzioni: righe aperte con un filetto, non schede. */
+.fn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 56px; margin-top: 28px; }
+.fn-card { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 2px 16px; padding: 22px 0; border-top: 1px solid var(--line); }
+.fn-card svg { grid-row: 1 / 3; width: 44px; height: 44px; padding: 10px; border-radius: 14px; fill: none; stroke: var(--surface); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .fn-card.tone-acc svg { background: var(--sky); } .fn-card.tone-pos svg { background: var(--a-pos); } .fn-card.tone-sun svg { background: var(--sun); stroke: var(--on-sun); } .fn-card.tone-neg svg { background: var(--a-neg); }
-.fn-card h3 { margin: 0 0 6px; }
+.fn-card h3 { margin: 0; }
 .fn-card p { margin: 0; font-size: 15px; }
-.sources-box { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
-.sources-box summary { cursor: pointer; padding: 14px 18px; font: 600 16px var(--f-h); }
+@media (max-width: 760px) { .fn-grid { grid-template-columns: 1fr; } }
+
+/* Passi e consigli numerati: elenco aperto. */
+.tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; margin: 16px 0; }
+.tips > div { padding: 18px 0 0; border-top: 1px solid var(--line); }
+.tips b { display: block; font: 700 28px / 1 var(--f-h); color: var(--a-neg); margin-bottom: 10px; letter-spacing: -0.03em; }
+.tips p { margin: 0; font-size: 15px; }
+@media (max-width: 760px) { .tips { grid-template-columns: 1fr; gap: 24px; } }
+
+/* Rimandi: righe con freccia. */
+.related { display: grid; margin-top: 16px; border-bottom: 1px solid var(--line); }
+.related a { display: grid; gap: 4px; position: relative; padding: 18px 40px 18px 0; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink); font: 600 17px var(--f-h); }
+.related a::after { content: "→"; position: absolute; right: 4px; top: 50%; translate: 0 -50%; color: var(--accent); transition: right 0.25s var(--ease); }
+.related a:hover::after { right: 0; }
+.related a span { color: var(--ink2); font: 400 14px/1.5 var(--f-b); }
+
+/* Fonti: riga richiudibile, senza riquadro. */
+.sources-box { margin-top: 24px; border-block: 1px solid var(--line); }
+.sources-box summary { cursor: pointer; padding: 16px 0; font: 600 16px var(--f-h); }
 .sources-box summary::marker { color: var(--accent); }
-.sources-box ul, .sources-box .note { margin-inline: 18px; }
 .sources-box .note { margin-bottom: 18px; }
-.cp .tool-card { transition: border-color 0.25s; }
-@media (max-width: 760px) { .tips { grid-template-columns: 1fr; } }
-/* i risultati dei calcolatori stanno su una fascia calda, come le sezioni della home */
-.tool { padding: 24px; margin-inline: -24px; border-radius: 32px; background: var(--bg-alt); }
-@media (max-width: 760px) { .tool { margin-inline: -12px; padding: 12px; border-radius: 24px; } }
+
+/* Invito finale: fascia navy a tutta larghezza che si fonde con il piè di pagina. */
+.cp { padding-bottom: 0; }
+.cp-cta { margin-top: 96px; padding-block: 72px 80px; background: var(--navy); color: var(--on-navy); border-radius: 40px 40px 0 0; }
+.cp-cta h2 { margin: 0 0 14px; color: var(--on-navy); font-size: clamp(30px, 4.4vw, 52px); max-width: 16em; }
+.cp-cta p { color: var(--on-navy2); margin-bottom: 28px; }
+.cp-cta .btn.main { color: var(--on-sun); }
+@media (max-width: 760px) { .cp-cta { margin-top: 64px; padding-block: 56px 64px; border-radius: 28px 28px 0 0; } }

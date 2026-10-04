@@ -11,7 +11,7 @@ App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e val
 - **Ogni feature nuova o cambiata aggiorna la landing** (decisione del 2026-10-01): `lib/features/catalog.ts` è l'unico elenco delle funzioni (landing su buddybudget.io, pannello "In arrivo" del login, test della sidebar). Quando una funzione viene rilasciata, cambia o viene pianificata si aggiorna quel file e si lancia `pnpm sync:features` in `landing/` (la CI fallisce se la copia generata diverge); se cambia il racconto (passi del tour in `landing/content/site.ts`, righe del confronto) si aggiorna anche quello. Una feature non è "completata" finché la landing non la riflette, e la PR lo dichiara (anche solo "nessun impatto sulla landing").
 - **Le schermate della landing sono screenshot dell'app vera** (decisione del 2026-10-01): `landing/public/screens/` si genera con `pnpm demo:seed` + `pnpm capture:screens` (guida `docs/landing-screens.md`). Chi cambia in modo visibile una schermata elencata in `landing/content/screens.ts` rigenera gli screenshot nella stessa PR; il test `screens.test.ts` controlla solo che route e file esistano.
 - **Titoli delle PR in Conventional Commits** (decisione del 2026-10-03): `feat: …` (nuova funzione, alza il minor), `fix: …`/`perf: …` (patch), `refactor:`/`docs:`/`chore:`/`ci:`/`test:`/`build:` (nessuna release); `!` dopo il tipo per i cambi incompatibili. Il titolo diventa il commit di squash e release-please ne ricava versione e CHANGELOG (`docs/rilasci.md`). Una check (`Titolo PR`) lo verifica.
-- **Mantieni questo file aggiornato.** Ogni volta che viene presa una decisione di progetto, cambiata una scelta tecnica, o completata una fase di lavoro rilevante, aggiungi una voce breve (3-8 righe, in cima) a [`docs/decision-log.md`](docs/decision-log.md) e aggiorna "Stato del progetto" qui sotto se cambia lo stato generale. I dettagli di un lavoro vanno nella sua spec/piano in `docs/superpowers/`, non qui. L'obiettivo è che una nuova chat possa leggere questo file e avere subito il contesto, senza dover richiedere all'utente di ripetere spiegazioni già date.
+- **Mantieni questo file aggiornato.** Ogni volta che viene presa una decisione di progetto, cambiata una scelta tecnica, o completata una fase di lavoro rilevante, aggiungi una voce breve (3-8 righe) come **nuovo file** in [`docs/decisioni/`](docs/decisioni/) (`AAAA-MM-GG-titolo.md`, uno per PR: niente più voce in cima a un file condiviso, evita i conflitti tra PR parallele) e aggiorna "Stato del progetto" qui sotto se cambia lo stato generale. I dettagli di un lavoro vanno nella sua spec/piano in `docs/superpowers/`, non qui. L'obiettivo è che una nuova chat possa leggere questo file e avere subito il contesto, senza dover richiedere all'utente di ripetere spiegazioni già date.
 - **Tieni sempre traccia esplicita di tre cose, in "Stato del progetto" e/o nei documenti di spec/piano collegati**: (1) cosa si sta facendo adesso, (2) cosa si è deciso consapevolmente di saltare/rimandare e perché, (3) cosa è previsto in futuro e quando tornarci. Non lasciare che uno scope tagliato o un piano messo in pausa si perda nella conversazione: se un piano viene sospeso (es. per cambiare priorità), aggiorna il suo stato nel file stesso invece di lasciarlo silenziosamente incompleto.
 
 ## Principi di architettura
@@ -148,7 +148,7 @@ landing/                     sito vetrina statico (buddybudget.io), progetto Nex
 docs/
   product-vision.md          visione di prodotto (sintesi)
   functional-spec.md         specifica funzionale per schermata, dedotta dal mockup
-  decision-log.md            log storico delle decisioni (dettaglio per data)
+  decisioni/                 una decisione per file (dal 2026-10-04); decision-log.md è l'archivio precedente
   design-reference/          mockup originale
   superpowers/specs|plans/   spec e piani di ogni feature
 ```
@@ -259,7 +259,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ## Log delle decisioni
 
-Il log completo è in [`docs/decision-log.md`](docs/decision-log.md) (voci nuove in cima, 3-8 righe). Decisioni ancora vincolanti, in sintesi:
+Il log è in [`docs/decisioni/`](docs/decisioni/) (un file per decisione, dal 2026-10-04) e nell'archivio [`docs/decision-log.md`](docs/decision-log.md) (fino al 2026-10-03). Decisioni ancora vincolanti, in sintesi:
 
 - **2026-10-03** — Versioni automatiche 0.x.y con release-please: **i titoli delle PR sono in Conventional Commits** (`feat:`/`fix:`/`chore:`…, anche quelle di Claude), da lì la versione. Il deploy parte solo al merge della PR di release. Vedi `docs/rilasci.md`.
 - **2026-10-01** — Connessioni GoCardless: avvisi di scadenza (7 giorni prima, email + banner) e pulizia giornaliera della lista GoCardless con periodi di grazia (3/7/30 giorni), dry-run di default, mai su utenti con eliminazione programmata.

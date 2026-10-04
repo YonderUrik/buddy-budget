@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Explainer } from "./explainer";
+import type { GlossaryId } from "./glossary";
+import { Term } from "./term";
 import type { ExplainerId } from "./explainers";
 
 export interface AnalyticsCardProps {
@@ -29,14 +31,16 @@ export interface MetricProps {
   value: string;
   sub?: string;
   tone?: "default" | "pos" | "neg";
+  /** Voce del glossario: l'etichetta diventa sottolineata e al tocco spiega il termine. */
+  term?: GlossaryId;
 }
 
 /** Numero in evidenza con etichetta e nota. */
-export function Metric({ label, value, sub, tone = "default" }: MetricProps) {
+export function Metric({ label, value, sub, tone = "default", term }: MetricProps) {
   const color = tone === "pos" ? "text-pos" : tone === "neg" ? "text-neg" : "text-foreground";
   return (
     <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{term ? <Term id={term}>{label}</Term> : label}</p>
       <p className={`font-heading text-xl font-medium tabular-nums ${color}`}>{value}</p>
       {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
     </div>

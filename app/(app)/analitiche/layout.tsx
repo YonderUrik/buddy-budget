@@ -1,34 +1,37 @@
 "use client";
 
-/** Layout di Analitiche: ipotesi, guida iniziale e schede. */
+/** Layout di Analitiche: intestazione, ipotesi (con riepilogo sempre visibile), guida iniziale e le quattro domande. */
 
 import * as React from "react";
-import { usePathname } from "next/navigation";
 import { HelpCircle } from "lucide-react";
-import { ANALYTICS_TABS, AssumptionsPanel, WalkthroughDialog } from "@/components/domain/analytics";
-import { CollapsibleSection, LoadError, SectionTabs } from "@/components/domain/shared";
+import { AssumptionsPanel, WalkthroughDialog, money, pct } from "@/components/domain/analytics";
+import { CollapsibleSection, LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
+import type { AnalyticsAssumptions } from "@/lib/analitiche/assumptions";
+import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
-
-const TAB_EVENT_NAMES = {
-  "/analitiche": "fire",
-  "/analitiche/simulazione": "simulazione",
-  "/analitiche/prelievi": "prelievi",
-  "/analitiche/crescita": "crescita",
-  "/analitiche/rischio": "rischio",
-  "/analitiche/costi": "costi",
-} as const;
 
 const DISCLAIMER =
   "Stime a scopo informativo basate su ipotesi tue, non previsioni né consulenza finanziaria o fiscale. Le regole fiscali sono semplificate: verificale prima di decisioni importanti.";
+
+/** Riga di riepilogo delle ipotesi, visibile anche a sezione chiusa: i numeri su cui poggia tutto il resto. */
+function assumptionsSummary(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency: string): string {
+  const parts = [
+    plan.spending !== null ? `spesa ${money(plan.spending, currency)}` : null,
+    plan.savings !== null ? `risparmio ${money(plan.savings, currency)}` : null,
+    `rendimento ${pct(a.expectedReturn)}`,
+    `prelievo ${pct(a.withdrawalRate)}`,
+  ];
+  return parts.filter(Boolean).join(" · ");
+}
 
 function Header({ onGuide }: { onGuide?: () => void }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
         <h1 className="font-heading text-2xl font-medium text-foreground">Analitiche</h1>
-        <p className="text-sm text-muted-foreground">Obiettivo FIRE, simulazioni, rischio e costi: per chi vuole capire i numeri a fondo</p>
+        <p className="text-sm text-muted-foreground">Quattro domande, una risposta ciascuna. I numeri tecnici sono in «Per esperti».</p>
       </div>
       {onGuide ? (
         <Button variant="outline" size="sm" onClick={onGuide}>
@@ -41,15 +44,13 @@ function Header({ onGuide }: { onGuide?: () => void }) {
 }
 
 function AnalyticsShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   const ctx = useAnalytics();
   const [guideOpen, setGuideOpen] = React.useState(false);
   const autoOpened = React.useRef(false);
 
   React.useEffect(() => {
-    const tab = TAB_EVENT_NAMES[pathname as keyof typeof TAB_EVENT_NAMES];
-    if (tab) track("analytics_tab_viewed", { tab });
-  }, [pathname]);
+    track("analytics_page_viewed");
+  }, []);
 
   const ready = !ctx.isLoading && !ctx.isError && ctx.base && ctx.assumptions && ctx.plan;
   React.useEffect(() => {
@@ -66,7 +67,7 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div className="flex flex-col gap-3">
         <Header
           onGuide={() => {
@@ -74,7 +75,6 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
             setGuideOpen(true);
           }}
         />
-        <SectionTabs tabs={ANALYTICS_TABS} activeHref={pathname} ariaLabel="Sezioni di Analitiche" />
       </div>
       {ctx.isLoading ? (
         <div className="flex flex-col gap-4" aria-busy="true">
@@ -85,7 +85,12 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
         <LoadError message="Impossibile caricare i dati di Analitiche." onRetry={ctx.refetch} />
       ) : (
         <>
-          <CollapsibleSection id="analytics-assumptions" title="Le tue ipotesi" defaultOpen={false}>
+          <CollapsibleSection
+            id="analytics-assumptions"
+            title="Le tue ipotesi"
+            defaultOpen={false}
+            summary={assumptionsSummary(ctx.plan, ctx.assumptions, ctx.base.currency)}
+          >
             <AssumptionsPanel
               // Si rimonta quando le ipotesi salvate cambiano da fuori, per non mostrare bozze vecchie.
               key={JSON.stringify(ctx.assumptions)}

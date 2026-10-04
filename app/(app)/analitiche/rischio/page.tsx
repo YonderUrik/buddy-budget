@@ -1,10 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { RiskTab } from "@/components/domain/analytics";
-import { useAnalytics } from "@/lib/analitiche/analytics-context";
-
-export default function RischioPage() {
-  const { base, assumptions, plan } = useAnalytics();
-  if (!base || !assumptions || !plan) return null;
-  return <RiskTab base={base} assumedVolatility={assumptions.volatility} />;
+/** Le sei schede sono diventate quattro domande in una pagina: i vecchi indirizzi portano alla sezione che le contiene. */
+export default function Page() {
+  redirect("/analitiche#reggera");
 }

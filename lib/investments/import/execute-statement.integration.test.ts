@@ -9,6 +9,7 @@ import { instruments, investmentTransactions, userInstrumentPrices } from "@/lib
 import { createOrReuseInstrument } from "../instruments";
 import { brokerSeries } from "./__fixtures__/broker-series";
 import { parseInteractiveBrokersActivity } from "./interactive-brokers";
+import { deleteStatementImports } from "./delete-statements";
 import { runStatementImport } from "./execute-statement";
 import type { ImportDeps } from "./execute";
 import type { RunImportInput } from "@/lib/validation/investments-import";
@@ -51,11 +52,11 @@ describe("complete statement import", () => {
     expect(results.map((r) => r.inserted).sort()).toEqual([0, 1]);
     expect(await saved()).toHaveLength(1);
   });
-  it("rejects missing history, changed overlapping periods, and broken cash without financial writes", async () => {
+  it("rejects missing history and broken cash without financial writes", async () => {
     expect((await runStatementImport(userId, request(brokerSeries(2024)), deps())).error).toContain("Saldo iniziale");
     expect(await saved()).toHaveLength(0);
     await runStatementImport(userId, request(brokerSeries(2023)), deps());
-    expect((await runStatementImport(userId, request(brokerSeries(2023).replace("Deposit,2000", "Other deposit,2000")), deps())).error).toContain("sovrapposto");
+    expect((await runStatementImport(userId, request(brokerSeries(2023).replace("Deposit,2000", "Other deposit,2000")), deps())).replacement?.statements).toBe(1);
     expect((await runStatementImport(userId, request(brokerSeries(2024).replace("Ending Cash,EUR,1108", "Ending Cash,EUR,1109")), deps())).error).toContain("Cassa");
     expect(await saved()).toHaveLength(1);
   });
@@ -77,4 +78,95 @@ describe("complete statement import", () => {
     const bad = request(brokerSeries(2024)); bad.instruments = bad.instruments.map((i) => ({ key: i.key, instrumentId: owned.find((i) => i.createdByUserId === other)!.id }));
     expect((await runStatementImport(userId, bad, deps())).error).toContain("accessibile");
   });
+  it("replaces an extending YTD statement, previews without mutation, and removes superseded closing prices", async () => {
+    const old = brokerSeries(2023).replace("December 31, 2023", "June 30, 2023");
+    await runStatementImport(userId, request(old), deps());
+    const before = await saved();
+    const updated = brokerSeries(2023).replace("PARENT,10,1001,100,1000,-1", "PARENT,10,1001,105,1050,49").replace("Stock,0,1000", "Stock,0,1050").replace("Total,0,1999", "Total,0,2049");
+    const preview = await runStatementImport(userId, request(updated, true), deps());
+    expect(preview.replacement).toMatchObject({ statements: 1, operations: 1 });
+    expect((await saved())[0].id).toBe(before[0].id);
+    expect((await runStatementImport(userId, request(updated), deps())).inserted).toBe(1);
+    expect(await saved()).toHaveLength(1);
+    const prices = await db.select().from(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId));
+    expect(prices).toHaveLength(1); expect(prices[0].date).toBe("2023-12-31"); expect(Number(prices[0].close)).toBe(105);
+    expect((await runStatementImport(userId, request(updated), deps())).inserted).toBe(0);
+  });
+  it("keeps later imports and their latest cash balance when correcting an older compatible period", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    await runStatementImport(userId, request(brokerSeries(2024)), deps());
+    const corrected = brokerSeries(2023).replace("Deposit,2000", "Corrected description,2000");
+    expect((await runStatementImport(userId, request(corrected), deps())).replacement?.statements).toBe(1);
+    expect(await saved()).toHaveLength(2);
+    expect((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance).toBe("1108.00");
+    const incompatible = corrected.replace("Deposit,2000", "Deposit,2001").replace("Corrected description,2000", "Corrected description,2001").replace("Ending Cash,EUR,999", "Ending Cash,EUR,1000").replace("Cash,0,999", "Cash,0,1000").replace("Total,0,1999", "Total,0,2000");
+    expect((await runStatementImport(userId, request(incompatible), deps())).error).toContain("successivo");
+    expect((await saved()).find((d) => d.from === "2023-01-01")!.statement.cash[0].closing).toBe(999);
+  });
+  it("rejects partial coverage and invalid replacements without deleting the original", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    const id = (await saved())[0].id;
+    expect((await runStatementImport(userId, request(brokerSeries(2023).replace("December 31, 2023", "June 30, 2023")), deps())).error).toContain("parziale");
+    expect((await runStatementImport(userId, request(brokerSeries(2023).replace('10,100,-1000', '11,100,-1000')), deps())).error).toContain("quantità");
+    expect((await saved())[0].id).toBe(id);
+  });
+  it("rolls back removed rows if a replacement insert fails", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    const id = (await saved())[0].id;
+    await expect(runStatementImport(userId, request(brokerSeries(2023).replace('10,100,-1000', '10,1e25,-1000')), deps())).rejects.toThrow();
+    expect((await saved())[0].id).toBe(id);
+    const trades = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    expect(trades).toHaveLength(1); expect(Number(trades[0].price)).toBe(100);
+  });
+  it("deletes only the reviewed suffix and restores the preceding cash balance", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    await runStatementImport(userId, request(brokerSeries(2024)), deps());
+    const docs = await saved(); const latest = docs.find((d) => d.from === "2024-01-01")!;
+    expect((await deleteStatementImports(userId, latest.id, [], deps())).status).toBe(409);
+    expect((await deleteStatementImports(randomUUID(), latest.id, [latest.id], deps())).status).toBe(404);
+    expect((await deleteStatementImports(userId, latest.id, [latest.id], deps())).deletedOperations).toBe(3);
+    expect(await saved()).toHaveLength(1);
+    expect((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance).toBe("999.00");
+    expect((await runStatementImport(userId, request(brokerSeries(2024)), deps())).inserted).toBe(3);
+  });
+  it("requires confirmation of dependent imports before clearing the whole history", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    await runStatementImport(userId, request(brokerSeries(2024)), deps());
+    const docs = await saved(); const first = docs.find((d) => d.from === "2023-01-01")!;
+    expect((await deleteStatementImports(userId, first.id, [first.id], deps())).status).toBe(409);
+    expect(await saved()).toHaveLength(2);
+    expect((await deleteStatementImports(userId, first.id, docs.map((d) => d.id), deps())).deletedStatements).toBe(2);
+    expect(await saved()).toHaveLength(0);
+    expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(0);
+    expect((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance).toBe("0.00");
+    expect((await runStatementImport(userId, request(brokerSeries(2023)), deps())).inserted).toBe(1);
+    const cashAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
+    expect(cashAccounts).toHaveLength(1); expect(cashAccounts[0].balance).toBe("999.00");
+  });
+
+  it("replaces several covered periods and serializes concurrent replacements", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    await runStatementImport(userId, request(brokerSeries(2024)), deps());
+    const combined = brokerSeries(2024)
+      .replace("January 1, 2024 - December 31, 2024", "January 1, 2023 - December 31, 2024")
+      .replace("Starting Cash,EUR,999", "Starting Cash,EUR,0")
+      .replace("Commissions,EUR,-1", "Commissions,EUR,-2")
+      .replace('Trades,Data,Order,Stocks,EUR,CHILD', 'Trades,Data,Order,Stocks,EUR,PARENT,"2023-01-02, 10:00:00",10,100,-1000,-1,1001,O\nTrades,Data,Order,Stocks,EUR,CHILD')
+      + '\nDeposits & Withdrawals,Header,Currency,Settle Date,Description,Amount\nDeposits & Withdrawals,Data,EUR,2023-01-01,Deposit,2000';
+    const results = await Promise.all([runStatementImport(userId, request(combined), deps()), runStatementImport(userId, request(combined), deps())]);
+    expect(results.map((r) => r.inserted).sort()).toEqual([0, 4]);
+    expect(results.find((r) => r.inserted)?.replacement).toMatchObject({ statements: 2, operations: 4 });
+    expect(await saved()).toHaveLength(1);
+    expect((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance).toBe("1108.00");
+  });
+
+  it("does not delete another broker account belonging to the same user", async () => {
+    await runStatementImport(userId, request(brokerSeries(2023, "U90000001")), deps());
+    await runStatementImport(userId, request(brokerSeries(2023, "U90000002")), deps());
+    const selected = (await saved()).find((d) => d.statement.account === "U90000001")!;
+    await deleteStatementImports(userId, selected.id, [selected.id], deps());
+    const retained = await saved(); expect(retained).toHaveLength(1); expect(retained[0].statement.account).toBe("U90000002");
+    expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(1);
+  });
+
 });

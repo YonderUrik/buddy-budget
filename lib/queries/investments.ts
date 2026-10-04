@@ -463,9 +463,23 @@ export function useDismissDividendMutation() {
 
 /** Broker reports are historical snapshots, distinct from live market valuations. */
 export function useBrokerStatementsQuery() {
-  return useQuery({ queryKey: [...INVESTMENTS_QUERY_KEY, "statements"], queryFn: async (): Promise<{ statements: { id: string; portfolioId: string; statement: import("@/lib/investments/import/broker-statement").BrokerStatement }[] }> => {
+  return useQuery({ queryKey: [...INVESTMENTS_QUERY_KEY, "statements"], queryFn: async (): Promise<{ statements: { id: string; portfolioId: string; createdAt: string; statement: import("@/lib/investments/import/broker-statement").BrokerStatement }[] }> => {
     const response = await fetch("/api/investments/statements");
     if (!response.ok) throw await readError(response, "Impossibile leggere i rendiconti");
     return response.json();
   } });
+}
+
+/** Delete the exact set of dependent statement imports reviewed in the confirmation dialog. */
+export function useDeleteStatementImportMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async ({ id, confirmedIds }: { id: string; confirmedIds: string[] }) => {
+      const response = await fetch(`/api/investments/statements/${id}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmedIds }) });
+      if (!response.ok) throw await readError(response, "Impossibile eliminare l'importazione");
+      return response.json();
+    },
+    onSuccess: (result) => { track("investments_import_deleted", { statements: result.deletedStatements, operations: result.deletedOperations }); invalidate(); },
+    onError: () => { invalidate(); },
+  });
 }

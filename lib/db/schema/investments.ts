@@ -14,6 +14,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
+import { accounts } from "./accounts";
 
 /** Tipi di strumento: text + costante invece di enum Postgres, per aggiungerne senza migrazioni. */
 export const INSTRUMENT_TYPES = ["etf", "azione", "obbligazione", "fondo", "crypto", "etc"] as const;
@@ -166,6 +167,8 @@ export const investmentPortfolios = pgTable(
       .references(() => authUser.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     broker: text("broker"),
+    /** Dedicated statement cash account; retained when imported history is cleared. */
+    statementCashAccountId: uuid("statement_cash_account_id").references(() => accounts.id, { onDelete: "set null" }),
     /** Strumento di confronto per il rendimento ("stessi versamenti in un indice"), scelto dall'utente. */
     benchmarkInstrumentId: uuid("benchmark_instrument_id").references(() => instruments.id, { onDelete: "set null" }),
     taxRegime: text("tax_regime").$type<TaxRegime>().notNull().default("amministrato"),

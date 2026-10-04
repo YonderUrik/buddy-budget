@@ -10,7 +10,7 @@ async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
-  const statements = await db.select({ id: brokerStatements.id, portfolioId: brokerStatements.portfolioId, statement: brokerStatements.statement }).from(brokerStatements).where(eq(brokerStatements.userId, session.user.id)).orderBy(desc(brokerStatements.to));
+  const statements = await db.select({ id: brokerStatements.id, portfolioId: brokerStatements.portfolioId, createdAt: brokerStatements.createdAt, statement: brokerStatements.statement }).from(brokerStatements).where(eq(brokerStatements.userId, session.user.id)).orderBy(desc(brokerStatements.to));
   return Response.json({ statements }, { headers: { "Cache-Control": "no-store" } });
 }
 export const GET = withRoute("investments.statements", handleGet);

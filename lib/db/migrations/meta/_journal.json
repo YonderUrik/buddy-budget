@@ -141,6 +141,13 @@
       "when": 1791142144345,
       "tag": "0019_nostalgic_vin_gonzales",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791143537737,
+      "tag": "0020_fearless_deadpool",
+      "breakpoints": true
     }
   ]
 }

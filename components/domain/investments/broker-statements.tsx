@@ -13,12 +13,13 @@ export function BrokerStatements({ compact = false }: { compact?: boolean }) {
   if (query.isLoading) return compact ? null : <p>Caricamento rendiconti…</p>;
   if (query.isError) return <p role="alert">Impossibile leggere i rendiconti. <button onClick={() => query.refetch()}>Riprova</button></p>;
   const documents = query.data?.statements ?? [];
-  if (!documents.length) return compact ? null : <p className="text-sm text-muted-foreground">Importa un Activity Statement per vedere saldi, movimenti di cassa e posizioni riconciliati con il broker.</p>;
+  if (!documents.length) return compact ? null : <div className="space-y-3"><Link href="/investimenti/rendiconti/importazioni" className="text-sm underline">Gestisci importazioni</Link><p className="text-sm text-muted-foreground">Importa un Activity Statement per vedere saldi, movimenti di cassa e posizioni riconciliati con il broker.</p></div>;
   const document = documents.find((s) => s.id === selected) ?? documents[0];
   const s = document.statement;
   const total = s.nav.find((r) => r.label === "Total")?.value ?? 0;
   if (compact) return <section className="rounded-xl border p-4 text-sm"><Link href="/investimenti/rendiconti" className="font-medium underline">Rendiconti Interactive Brokers</Link><p>Ultima chiusura {s.to}: {formatCurrency(total, s.currency)} · include cassa, titoli e ratei. <span className="text-muted-foreground">Per il confronto con IBKR usa i rendiconti; le altre schede usano prezzi correnti e costo medio ponderato.</span></p></section>;
   return <section className="flex flex-col gap-5">
+    <Link href="/investimenti/rendiconti/importazioni" className="text-sm font-medium underline">Gestisci importazioni</Link>
     <label className="text-sm">Rendiconto <select className="ml-2 rounded border bg-background p-2" value={document.id} onChange={(e) => setSelected(e.target.value)}>{documents.map((d) => <option key={d.id} value={d.id}>{d.statement.from} – {d.statement.to} · conto …{d.statement.account.slice(-4)}</option>)}</select></label>
     <p className="text-sm text-muted-foreground">Valori comunicati dal broker alla chiusura, nella valuta indicata. Non sono prezzi di oggi né stime fiscali italiane. I lotti e le rettifiche storiche del broker possono differire dal costo medio usato nelle altre schede.</p>
     <div className="grid gap-3 sm:grid-cols-3">{s.nav.filter((r) => ["Total", "Cash", "Stock"].includes(r.label)).map((r) => <div className="rounded-xl border p-4" key={r.label}><p className="text-sm text-muted-foreground">{r.label === "Total" ? "Valore netto del conto" : r.label === "Cash" ? "Liquidità (anche a debito)" : "Titoli"}</p><p className="text-xl font-medium tabular-nums">{formatCurrency(r.value, s.currency)}</p></div>)}</div>

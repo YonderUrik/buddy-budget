@@ -1,10 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "@fontsource-variable/space-grotesk";
-import "@fontsource-variable/hanken-grotesk";
+import "@fontsource-variable/geist";
 import "./globals.css";
 import { BrandSprite } from "@/components/brand";
-import { SmoothScroll } from "@/components/smooth-scroll";
 import { APP_URL, FAQ, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 
@@ -25,7 +23,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: light)", color: "#fcfcfd" },
     { media: "(prefers-color-scheme: dark)", color: "#0b0b0d" },
   ],
 };
@@ -57,7 +55,7 @@ const JSON_LD = {
 };
 
 /** Imposta tema salvato e `js-motion` prima del primo paint: gli stati iniziali nascosti esistono solo se le animazioni possono partire. */
-const BOOT_SCRIPT = `try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");document.documentElement.dataset.theme=(t==="light"||t==="dark")?t:"dark"}catch(e){document.documentElement.dataset.theme="dark"}
+const BOOT_SCRIPT = `try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}
 if(window.matchMedia("(prefers-reduced-motion: no-preference)").matches)document.documentElement.classList.add("js-motion")`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -69,7 +67,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
         <BrandSprite />
-        <SmoothScroll />
         {children}
         {UMAMI_ID ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} data-domains={UMAMI_DOMAINS} strategy="afterInteractive" /> : null}
       </body>

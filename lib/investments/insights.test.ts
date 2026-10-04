@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { PortfolioSummary, PositionRow } from "@/lib/calc/investments";
-import { computeConcentration, computeCurrencyExposure, computeValueBreakdown, daysUntil, nextPlanDate } from "./insights";
+import { computeConcentration, computeCurrencyExposure, computeValueBreakdown, daysUntil } from "./insights";
 
 function row(name: string, value: number | null, costBasis: number, weight: number | null): PositionRow {
   return {
@@ -53,16 +53,7 @@ describe("insights", () => {
     expect(computeCurrencyExposure([{ key: "EUR", value: 79, share: 0.79 }, { key: "USD", value: 21, share: 0.21 }], "EUR")).toBeCloseTo(0.21);
   });
 
-  it("trova il prossimo versamento del PAC rispettando la frequenza", () => {
-    const today = new Date(2026, 8, 28);
-    const monthly = nextPlanDate({ dayOfMonth: 5, frequency: "mensile", createdAt: new Date(2026, 0, 1) }, today);
-    expect([monthly.getMonth(), monthly.getDate()]).toEqual([9, 5]);
-    const sameMonth = nextPlanDate({ dayOfMonth: 28, frequency: "mensile", createdAt: new Date(2026, 0, 1) }, today);
-    expect([sameMonth.getMonth(), sameMonth.getDate()]).toEqual([8, 28]);
-    const quarterly = nextPlanDate({ dayOfMonth: 5, frequency: "trimestrale", createdAt: new Date(2026, 0, 10) }, today);
-    expect(quarterly.getMonth()).toBe(9);
-    const bimonthly = nextPlanDate({ dayOfMonth: 5, frequency: "bimestrale", createdAt: new Date(2026, 1, 10) }, today);
-    expect(bimonthly.getMonth()).toBe(9);
-    expect(daysUntil(monthly, today)).toBe(7);
+  it("conta i giorni di calendario fino a una data", () => {
+    expect(daysUntil(new Date(2026, 9, 5), new Date(2026, 8, 28))).toBe(7);
   });
 });

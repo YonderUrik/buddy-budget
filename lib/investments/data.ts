@@ -5,7 +5,6 @@ import {
   fxRates,
   instrumentPrices,
   instruments,
-  investmentPlans,
   investmentPortfolios,
   investmentTargets,
   investmentTaxCarryforwards,
@@ -15,7 +14,6 @@ import {
   userInstrumentPrices,
   userInstrumentSettings,
   type Instrument,
-  type InvestmentPlan,
   type InvestmentPortfolio,
   type InvestmentTransaction,
 } from "@/lib/db/schema/investments";
@@ -81,7 +79,6 @@ export interface InvestmentData {
   portfolios: InvestmentPortfolio[];
   instruments: Instrument[];
   transactions: InvestmentTransaction[];
-  plans: InvestmentPlan[];
   prices: PriceInput[];
   manualPrices: ManualPriceInput[];
   fxRates: FxRateInput[];
@@ -114,16 +111,15 @@ function shiftDays(dateKey: string, days: number): string {
 }
 
 /**
- * Operazioni, strumenti, PAC, prezzi e cambi dell'utente. I prezzi partono da `pricesFrom` (meno un margine) o
+ * Operazioni, strumenti, prezzi e cambi dell'utente. I prezzi partono da `pricesFrom` (meno un margine) o
  * dalla prima operazione: il grafico di un periodo corto non scarica anni di storico.
  */
 export async function loadInvestmentData(userId: string, pricesFrom: string | null): Promise<InvestmentData> {
   const [user] = await db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId));
   const currency = user?.currency ?? "EUR";
-  const [portfolios, transactions, plans] = await Promise.all([
+  const [portfolios, transactions] = await Promise.all([
     db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId)).orderBy(asc(investmentPortfolios.createdAt)),
     loadUserTransactions(userId),
-    db.select().from(investmentPlans).where(eq(investmentPlans.userId, userId)).orderBy(asc(investmentPlans.createdAt)),
   ]);
 
   const [instrumentSettings, taxCarryforwards, dismissedDividends] = await Promise.all([
@@ -162,16 +158,13 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
         .where(eq(investmentTargets.portfolioId, portfolios[0].id))
     : [];
   // Gli strumenti in obiettivo ma non ancora posseduti servono per nome e prezzo (suggerimento del prossimo acquisto).
-  const ownedIds = [
-    ...new Set([...transactions.map((t) => t.instrumentId), ...plans.map((p) => p.instrumentId), ...targets.map((t) => t.instrumentId)]),
-  ];
+  const ownedIds = [...new Set([...transactions.map((t) => t.instrumentId), ...targets.map((t) => t.instrumentId)])];
   if (ownedIds.length === 0) {
     return {
       currency,
       portfolios,
       instruments: [],
       transactions,
-      plans,
       prices: [],
       manualPrices: [],
       fxRates: [],
@@ -234,7 +227,6 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
     portfolios,
     instruments: userInstruments,
     transactions,
-    plans,
     prices,
     manualPrices,
     fxRates: rates,

@@ -3,7 +3,7 @@
 /**
  * Form "Registra operazione": acquisto, vendita, dividendo, cedola, rimborso o split (solo il rapporto). Per acquisti e vendite il prezzo si
  * precompila col prezzo dello strumento alla data scelta, finché l'utente non lo cambia. Il cambio compare solo se
- * lo strumento è in un'altra valuta (vuoto = cambio BCE del giorno). Può partire precompilato da un PAC.
+ * lo strumento è in un'altra valuta (vuoto = cambio BCE del giorno). Può partire precompilato.
  * Con `editing` modifica un'operazione esistente: lo strumento è fisso e i campi partono dai valori salvati.
  */
 
@@ -37,7 +37,7 @@ import {
   suggestsMarketPrice,
 } from "./register-operation-form.state";
 
-/** Valori iniziali (es. da un PAC o da un dividendo da registrare). */
+/** Valori iniziali (es. da un suggerimento d'acquisto o da un dividendo da registrare). */
 export interface RegisterOperationInitial {
   instrument: Instrument | null;
   type?: InvestmentTransactionType;
@@ -97,7 +97,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const suggestPrice = fields.price && suggestsMarketPrice(type);
   const priceOnDate = useInstrumentPriceOnDateQuery(suggestPrice ? (instrument?.id ?? null) : null, date);
   const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close) : null;
-  // Senza prezzo alla data resta quello di partenza (es. l'ultimo prezzo stimato dal PAC).
+  // Senza prezzo alla data resta quello di partenza (es. l'ultimo prezzo stimato).
   const price = priceInput ?? suggested ?? numberText(initial?.price);
   const priceHint = suggestPrice && instrument ? priceSuggestionHint(date, priceOnDate.data, priceOnDate.isFetching) : null;
   const grossValue = computeGrossValue(type, parseAmount(quantity), parseAmount(price), parseAmount(gross), instrument?.priceUnit);

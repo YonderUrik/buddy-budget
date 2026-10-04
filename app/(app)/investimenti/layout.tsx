@@ -31,7 +31,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
   const data = overview.data;
   const currency = data?.currency ?? "EUR";
   const suggestions = React.useMemo(
-    () => (data ? usedInstruments(data.transactions, data.plans, new Map(data.instruments.map((i) => [i.id, i]))) : []),
+    () => (data ? usedInstruments(data.transactions, new Map(data.instruments.map((i) => [i.id, i]))) : []),
     [data]
   );
 

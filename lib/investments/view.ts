@@ -14,10 +14,9 @@ import {
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
 import { computePortfolioReturns, type PortfolioReturns } from "@/lib/calc/returns";
 import { startOfDay } from "@/lib/calc/expenses";
-import type { Instrument, InvestmentPlan, InvestmentTransaction } from "@/lib/db/schema/investments";
+import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investments";
 import { buildInvestmentsAnalysis, type InvestmentsAnalysis } from "./analysis-view";
 import type { InvestmentData } from "./data";
-import { PLAN_FREQUENCY_MONTHS } from "./labels";
 import { computeIncomeHistory, type IncomeHistory } from "./income";
 import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
 
@@ -34,9 +33,6 @@ export interface InvestmentsView {
   instruments: Instrument[];
   instrumentsById: Map<string, Instrument>;
   priceIndex: PriceIndex;
-  activePlans: InvestmentPlan[];
-  /** Importo mensile equivalente dei PAC attivi (un PAC trimestrale da 300 vale 100 al mese). */
-  monthlyPlanAmount: number;
   hasTransactions: boolean;
   /** Operazioni per mese, dal più recente, con l'esito di ciascuna. */
   operationMonths: OperationMonthGroup<InvestmentTransaction>[];
@@ -72,15 +68,14 @@ export function toTransactionInputs(data: InvestmentData): InvestmentTransaction
 
 /**
  * Strumenti già usati dall'utente, per sceglierli senza cercarli: prima quelli delle operazioni più recenti, poi
- * quelli dei PAC senza operazioni. Gli id senza strumento corrispondente si saltano.
+ * quelli delle operazioni. Gli id senza strumento corrispondente si saltano.
  */
 export function usedInstruments(
   transactions: Pick<InvestmentTransaction, "instrumentId" | "date">[],
-  plans: Pick<InvestmentPlan, "instrumentId">[],
   instrumentsById: Map<string, Instrument>
 ): Instrument[] {
   const byRecent = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).map((t) => t.instrumentId);
-  const ids = [...new Set([...byRecent, ...plans.map((p) => p.instrumentId)])];
+  const ids = [...new Set(byRecent)];
   return ids.map((id) => instrumentsById.get(id)).filter((i): i is Instrument => i !== undefined);
 }
 
@@ -95,7 +90,6 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
   const summary = computePortfolioSummary({ ...common, todayKey });
   const insights = computeOperationInsights({ ...common, transactions: data.transactions, todayKey });
   const operationMonths = groupOperationsByMonth(insights);
-  const activePlans = data.plans.filter((p) => p.active);
   const instrumentsById = new Map(data.instruments.map((i) => [i.id, i]));
   const analysis = buildInvestmentsAnalysis({
     ...common,
@@ -118,11 +112,9 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     instruments: data.instruments,
     instrumentsById,
     priceIndex,
-    activePlans,
-    monthlyPlanAmount: activePlans.reduce((sum, p) => sum + Number(p.amount) / PLAN_FREQUENCY_MONTHS[p.frequency], 0),
     hasTransactions: transactions.length > 0,
     operationMonths,
-    usedInstruments: usedInstruments(data.transactions, data.plans, instrumentsById),
+    usedInstruments: usedInstruments(data.transactions, instrumentsById),
     returns: computePortfolioReturns({
       ...common,
       period,

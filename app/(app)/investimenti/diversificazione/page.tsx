@@ -14,7 +14,7 @@ import {
   InvestmentsViewGate,
   OverlapCard,
   PortfolioComposition,
-  useRegisterFromPlan,
+  useRegisterPurchase,
 } from "@/components/domain/investments";
 import type { InstrumentType } from "@/lib/db/schema/investments";
 import { CURRENCY_EXPOSURE_THRESHOLD, computeCurrencyExposure } from "@/lib/investments/insights";
@@ -33,7 +33,7 @@ function currencyInsight(exposure: number, currency: string): string {
 
 export default function DiversificazionePage() {
   const { overview, view, today } = useInvestmentsView(INVESTMENTS_DEFAULT_PERIOD);
-  const registerFromPlan = useRegisterFromPlan(view, today);
+  const registerPurchase = useRegisterPurchase(view, today);
   const currency = view?.currency ?? "EUR";
 
   return (
@@ -73,9 +73,8 @@ export default function DiversificazionePage() {
             positions={view.summary.rows.map((r) => ({ instrumentId: r.instrument.id, value: r.value }))}
             instrumentsById={view.instrumentsById}
             suggestions={view.usedInstruments}
-            monthlyPlanAmount={view.monthlyPlanAmount}
             currency={currency}
-            onRegister={(instrumentId, amount) => registerFromPlan({ instrumentId, amount: String(amount) })}
+            onRegister={(instrumentId, amount) => registerPurchase({ instrumentId, amount: String(amount) })}
           />
         </>
       ) : null}

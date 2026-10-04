@@ -15,8 +15,6 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 import { auth } from "@/lib/auth";
 import { POST as createOperation } from "./route";
 import { PATCH as updateOperation, DELETE as deleteOperation } from "./[id]/route";
-import { POST as createPlan } from "../plans/route";
-import { PATCH as updatePlan, DELETE as deletePlan } from "../plans/[id]/route";
 import { GET as overview } from "../overview/route";
 import { PATCH as updatePortfolio } from "../portfolio/route";
 
@@ -29,7 +27,7 @@ function json(method: string, url: string, body: unknown) {
   return new NextRequest(url, { method, body: JSON.stringify(body) });
 }
 
-describe("API operazioni, PAC e panoramica", () => {
+describe("API operazioni e panoramica", () => {
   const userIds: string[] = [];
   let userId: string;
   let eurInstrumentId: string;
@@ -160,18 +158,7 @@ describe("API operazioni, PAC e panoramica", () => {
     expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.id, buy.id))).toHaveLength(1);
   });
 
-  it("crea, modifica ed elimina un PAC", async () => {
-    const created = await (
-      await createPlan(json("POST", "http://localhost/api/investments/plans", { instrumentId: eurInstrumentId, amount: 200, dayOfMonth: 5 }))
-    ).json();
-    expect([created.amount, created.frequency, created.active]).toEqual(["200.00", "mensile", true]);
-    const ctx = { params: Promise.resolve({ id: created.id }) };
-    const paused = await updatePlan(json("PATCH", "http://localhost/x", { active: false, amount: 150 }), ctx);
-    expect(await paused.json()).toMatchObject({ active: false, amount: "150.00" });
-    expect((await deletePlan(new NextRequest("http://localhost/x", { method: "DELETE" }), ctx)).status).toBe(204);
-  });
-
-  it("la panoramica restituisce operazioni, strumenti, PAC e valuta dell'utente", async () => {
+  it("la panoramica restituisce operazioni, strumenti e valuta dell'utente", async () => {
     await operation({ instrumentId: eurInstrumentId, type: "acquisto", date: "2026-09-01", quantity: 10, price: 100 });
     const body = await (await overview(new NextRequest("http://localhost/api/investments/overview?period=1mese"))).json();
     expect(body.currency).toBe("EUR");

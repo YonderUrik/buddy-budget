@@ -208,7 +208,7 @@ export const investmentTransactions = pgTable(
   ]
 );
 
-/** Piani di accumulo: precompilano le operazioni, non le generano. */
+/** @deprecated Piani di accumulo (PAC): funzione rimossa il 2026-10-04, tabella lasciata in attesa di una migration che la elimini. */
 export const investmentPlans = pgTable(
   "investment_plans",
   {

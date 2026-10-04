@@ -8,10 +8,9 @@
 import * as React from "react";
 import { resolvePrice } from "@/lib/calc/investments";
 import { toDateKey } from "@/lib/calc/net-worth";
-import type { InvestmentPlan } from "@/lib/db/schema/investments";
 import type { InvestmentsView } from "@/lib/investments/view";
 import type { RegisterOperationInitial } from "./register-operation-form";
-import { prefillFromPlan } from "./register-operation-form.state";
+import { prefillPurchase } from "./register-operation-form.state";
 
 export interface InvestmentsActions {
   openRegister: (initial: RegisterOperationInitial) => void;
@@ -32,17 +31,17 @@ export function useInvestmentsActions(): InvestmentsActions {
 }
 
 /**
- * Apre "Registra operazione" precompilato da un PAC o da un suggerimento d'acquisto (strumento e importo): quote
+ * Apre "Registra operazione" precompilato da un suggerimento d'acquisto (strumento e importo): quote
  * stimate dall'ultimo prezzo.
  */
-export function useRegisterFromPlan(view: InvestmentsView | null, today: Date) {
+export function useRegisterPurchase(view: InvestmentsView | null, today: Date) {
   const { openRegister } = useInvestmentsActions();
   return React.useCallback(
-    (plan: Pick<InvestmentPlan, "instrumentId" | "amount">) => {
+    (purchase: { instrumentId: string; amount: string }) => {
       if (!view) return;
-      const last = resolvePrice(view.priceIndex, plan.instrumentId, toDateKey(today));
-      const prefill = prefillFromPlan(plan, last?.close ?? null);
-      openRegister({ ...prefill, instrument: view.instrumentsById.get(plan.instrumentId) ?? null });
+      const last = resolvePrice(view.priceIndex, purchase.instrumentId, toDateKey(today));
+      const prefill = prefillPurchase(purchase, last?.close ?? null);
+      openRegister({ ...prefill, instrument: view.instrumentsById.get(purchase.instrumentId) ?? null });
     },
     [view, today, openRegister]
   );

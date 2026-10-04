@@ -35,7 +35,7 @@ export function MosaicInvestmentsTile({ live, className }: MosaicInvestmentsTile
         <StoryCountUp value={investments} duration={1.4} />
       </div>
       <MosaicLineChart values={live.investHistory} height={36} tone={positive ? "pos" : "neg"} className="-mx-1" />
-      <div className="mt-1 text-[11px] text-sidebar-foreground/60">PAC 150 € al mese · ETF, azioni, BTP</div>
+      <div className="mt-1 text-[11px] text-sidebar-foreground/60">ETF, azioni, BTP</div>
     </MosaicTile>
   );
 }

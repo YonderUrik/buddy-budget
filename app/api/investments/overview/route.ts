@@ -10,7 +10,7 @@ const PERIODS: readonly NetWorthPeriod[] = ["1mese", "3mesi", "1anno", "max"];
 export const maxDuration = 60;
 
 /**
- * Dati del portafoglio dell'utente: operazioni, strumenti, PAC, prezzi e cambi dal periodo richiesto in poi.
+ * Dati del portafoglio dell'utente: operazioni, strumenti, prezzi e cambi dal periodo richiesto in poi.
  * I calcoli (posizioni, valore, grafico) si fanno lato client con `lib/calc/investments.ts`, come per Cash flow.
  * Gli strumenti senza profilo (settori, area, primi titoli) o senza storico dividendi li scaricano in background.
  */

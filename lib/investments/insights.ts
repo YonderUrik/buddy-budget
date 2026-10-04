@@ -1,6 +1,4 @@
 import type { CompositionSlice, PortfolioSummary, PositionRow } from "@/lib/calc/investments";
-import type { InvestmentPlan } from "@/lib/db/schema/investments";
-import { PLAN_FREQUENCY_MONTHS } from "./labels";
 
 /** Soglia oltre la quale una singola posizione è segnalata come concentrazione. */
 export const CONCENTRATION_THRESHOLD = 0.5;
@@ -56,24 +54,6 @@ export function computeConcentration(rows: PositionRow[]): ConcentrationInsight 
 /** Quota del portafoglio in valute diverse da quella dell'utente (0-1). */
 export function computeCurrencyExposure(byCurrency: CompositionSlice[], userCurrency: string): number {
   return byCurrency.filter((s) => s.key !== userCurrency).reduce((sum, s) => sum + s.share, 0);
-}
-
-/**
- * Prossima data di versamento del PAC da `today` in poi. La frequenza parte dal mese di creazione del piano
- * (un PAC trimestrale creato a gennaio versa a gennaio, aprile, luglio, ottobre).
- */
-export function nextPlanDate(plan: Pick<InvestmentPlan, "dayOfMonth" | "frequency" | "createdAt">, today: Date): Date {
-  const step = PLAN_FREQUENCY_MONTHS[plan.frequency];
-  const created = new Date(plan.createdAt);
-  const anchor = created.getFullYear() * 12 + created.getMonth();
-  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  for (let offset = 0; offset <= 12; offset += 1) {
-    const monthIndex = start.getFullYear() * 12 + start.getMonth() + offset;
-    if ((((monthIndex - anchor) % step) + step) % step !== 0) continue;
-    const candidate = new Date(Math.floor(monthIndex / 12), monthIndex % 12, plan.dayOfMonth);
-    if (candidate >= start) return candidate;
-  }
-  return new Date(start.getFullYear(), start.getMonth() + step, plan.dayOfMonth);
 }
 
 /** Giorni di calendario da `today` a `date`. */

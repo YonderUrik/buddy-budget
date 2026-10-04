@@ -55,7 +55,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
         dialogDescription={
           <div className="flex flex-col gap-2">
             <p>
-              Vengono cancellati per sempre conti, transazioni, investimenti, piani di accumulo, categorie, regole, budget e
+              Vengono cancellati per sempre conti, transazioni, investimenti, categorie, regole, budget e
               storico del patrimonio. I collegamenti con le banche vengono revocati.
             </p>
             <p>Restano il tuo account e i metodi di accesso. Ripartirai dalla scelta della valuta.</p>

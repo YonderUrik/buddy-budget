@@ -1,4 +1,5 @@
 import "server-only";
+import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { asc, eq } from "drizzle-orm";
 import { strToU8, zipSync } from "fflate";
 import { db } from "@/lib/db/client";
@@ -89,6 +90,7 @@ async function loadUserData(userId: string) {
     pensionFundRows,
     pensionSnapshotRows,
     analyticsRows,
+    brokerStatementRows,
   ] = await Promise.all([
     db
       .select({
@@ -355,9 +357,11 @@ async function loadUserData(userId: string) {
       .select({ data: analyticsAssumptions.data, walkthroughSeenAt: analyticsAssumptions.walkthroughSeenAt })
       .from(analyticsAssumptions)
       .where(eq(analyticsAssumptions.userId, userId)),
+    db.select().from(brokerStatements).where(eq(brokerStatements.userId, userId)),
   ]);
 
   return {
+    brokerStatements: brokerStatementRows,
     user,
     accounts: accountRows,
     bankConnections: connectionRows,

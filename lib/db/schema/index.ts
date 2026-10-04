@@ -11,3 +11,5 @@ export * from "./investments";
 export * from "./debts";
 export * from "./pension";
 export * from "./analytics";
+
+export * from "./broker-statements";

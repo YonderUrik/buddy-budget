@@ -121,6 +121,9 @@ export function computeOperationInsights<T extends InvestmentTransactionInput>(p
       position.costBasis += insight.paid;
       position.openBuys.push(insight);
       splitAdjustedQuantity.set(insight, quantity);
+    } else if (t.type === "rettifica") {
+      position.quantity += quantity;
+      position.costBasis += Number(t.grossAmount ?? 0) * fxRate;
     } else if (t.type === "split") {
       if (quantity > 0) {
         position.quantity *= quantity;
@@ -182,7 +185,7 @@ export function sumOperationTotals(insights: OperationInsight[]): OperationTotal
   let unpricedCount = 0;
   for (const insight of insights) {
     const type = insight.transaction.type;
-    if (type === "split") continue;
+    if (type === "split" || type === "rettifica") continue;
     if (BUY_TYPES.has(type)) bought += insight.paid;
     else if (SELL_TYPES.has(type)) sold += insight.received;
     else income += insight.received;

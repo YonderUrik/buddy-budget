@@ -28,6 +28,7 @@ export const TRANSACTION_TYPE_LABELS: Record<InvestmentTransactionType, string> 
   cedola: "Cedola",
   rimborso: "Rimborso",
   split: "Split",
+  rettifica: "Operazione sul capitale",
 };
 
 /** Etichette della frequenza dei PAC. */

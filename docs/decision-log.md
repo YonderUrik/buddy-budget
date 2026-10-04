@@ -1,5 +1,10 @@
 # Log storico delle decisioni di BuddyBudget
 
+## 2026-10-04 — Import IBKR riconciliato (branch locale)
+
+Il CSV originale viene riletto sul server e salvato integralmente con il rendiconto. L'import richiede continuità dei periodi e corrispondenza di cassa/quantità; reimport concorrenti sono idempotenti. Spinoff interamente ceduti trasferiscono quote e base senza inventare un acquisto. I valori comunicati da IBKR sono consultabili separatamente dai calcoli a costo medio. Strumenti manuali isolati per utente/ISIN/valuta. Nessun push o PR per richiesta dell'utente; specifica e limiti in [ibkr-import.md](ibkr-import.md).
+
+
 Archivio completo (testo originale, non modificato) dello "Stato del progetto" e del "Log delle decisioni" che stavano in `CLAUDE.md` fino al 2026-10-01. Spostato qui per alleggerire `CLAUDE.md` (271 KB), che viene caricato a ogni sessione.
 
 - Il testo è **storico**: frasi come "non ancora mergiato" o "da fare" erano vere alla data della voce e spesso non lo sono più. Lo stato attuale è in `CLAUDE.md` → "Stato del progetto".

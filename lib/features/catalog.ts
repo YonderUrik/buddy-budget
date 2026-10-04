@@ -49,7 +49,7 @@ export const FEATURES: readonly Feature[] = [
   f("da-sistemare", "Movimenti", "Da sistemare", "Un avviso in Panoramica e nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
-  f("operazioni-pac-e-import-csv", "Investimenti", "Operazioni, PAC e import CSV", "Registra acquisti e vendite, programma i PAC, importa da un file: Interactive Brokers, Yahoo Finance o un altro CSV.", "live"),
+  f("operazioni-pac-e-import-csv", "Investimenti", "Operazioni, PAC e import CSV", "Registra acquisti e vendite, programma i PAC, importa da un file: Interactive Brokers (rendiconti, liquidità e posizioni riconciliate), Yahoo Finance o un altro CSV.", "live"),
   f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y».", "live"),
   f("rischio", "Investimenti", "Rischio", "Volatilità, caduta peggiore, Sharpe, beta e correlazione con l'indice.", "live"),

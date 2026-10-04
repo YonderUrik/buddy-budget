@@ -136,7 +136,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
               <SelectValue>{(v: string | null) => (v ? TRANSACTION_TYPE_LABELS[v as InvestmentTransactionType] : "")}</SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {INVESTMENT_TRANSACTION_TYPES.map((t) => (
+              {INVESTMENT_TRANSACTION_TYPES.filter((t) => t !== "rettifica").map((t) => (
                 <SelectItem key={t} value={t}>
                   {TRANSACTION_TYPE_LABELS[t]}
                 </SelectItem>

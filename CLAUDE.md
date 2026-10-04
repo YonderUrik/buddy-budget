@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Import IBKR: correzione locale in corso di revisione (2026-10-04)** sul branch `codex/ibkr-local-validation`, senza push/PR. Rendiconti persistiti con cassa riconciliata, snapshot broker e rettifiche non monetarie; dettagli e limiti in `docs/ibkr-import.md`. La ricostruzione fiscale dei lotti e la sostituzione di periodi già importati restano fuori scope; riesaminarle con un export dei lotti e un flusso esplicito di sostituzione.
+
 Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decision-log.md`](docs/decision-log.md) e nella spec/piano corrispondente in `docs/superpowers/`.
 
 ### Fatto (tutto su `main`, in produzione su k3s)

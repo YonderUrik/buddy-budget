@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import {
+  BrokerStatements,
   InvestmentsViewGate,
   ManualPriceDialog,
   PlansCard,
@@ -33,6 +34,7 @@ export default function InvestimentiPage() {
 
   return (
     <>
+      <BrokerStatements compact />
       <InvestmentsViewGate
         loading={overview.isLoading}
         error={overview.isError || (!overview.isLoading && !view)}

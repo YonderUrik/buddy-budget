@@ -1,0 +1,24 @@
+Statement,Header,Field Name,Field Value
+Statement,Data,BrokerName,Interactive Brokers Ireland Limited
+Statement,Data,Title,Activity Statement
+Statement,Data,Period,"January 1, 2023 - December 31, 2023"
+Account Information,Header,Field Name,Field Value
+Account Information,Data,Account,U90000001
+Account Information,Data,Base Currency,EUR
+Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,Proceeds,Comm/Fee,Basis,Code
+Trades,Data,Order,Stocks,EUR,PARENT,"2023-01-02, 10:00:00",10,100,-1000,-1,1001,O
+Deposits & Withdrawals,Header,Currency,Settle Date,Description,Amount
+Deposits & Withdrawals,Data,EUR,2023-01-01,Deposit,2000
+Financial Instrument Information,Header,Asset Category,Symbol,Description,Security ID
+Financial Instrument Information,Data,Stocks,PARENT,Synthetic Parent,US9000000011
+Financial Instrument Information,Data,Stocks,CHILD,Synthetic Child,US9000000029
+Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Cost Basis,Close Price,Value,Unrealized P/L
+Open Positions,Data,Summary,Stocks,EUR,PARENT,10,1001,100,1000,-1
+Cash Report,Header,Currency Summary,Currency,Total
+Cash Report,Data,Starting Cash,EUR,0
+Cash Report,Data,Commissions,EUR,-1
+Cash Report,Data,Ending Cash,EUR,999
+Net Asset Value,Header,Asset Class,Prior Total,Current Total
+Net Asset Value,Data,Cash,0,999
+Net Asset Value,Data,Stock,0,1000
+Net Asset Value,Data,Total,0,1999

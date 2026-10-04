@@ -12,6 +12,7 @@ export interface ImportIdentity {
   name: string | null;
   currency: string | null;
   symbolIsYahoo: boolean;
+  type?: import("@/lib/db/schema/investments").InstrumentType;
 }
 
 /** Operazione letta da una riga, nella forma dell'API (importi nella valuta dello strumento, costi in quella utente). */

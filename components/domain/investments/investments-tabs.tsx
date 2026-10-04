@@ -25,6 +25,7 @@ export const INVESTMENTS_TABS: readonly InvestmentsTab[] = [
   { href: "/investimenti/titoli", label: "Titoli", icon: Eye },
   { href: "/investimenti/proventi", label: "Proventi", icon: HandCoins },
   { href: "/investimenti/tasse", label: "Tasse", icon: Landmark },
+  { href: "/investimenti/rendiconti", label: "Rendiconti", icon: Landmark },
   { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight },
 ];
 

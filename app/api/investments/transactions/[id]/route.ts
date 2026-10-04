@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { instruments, investmentTransactions } from "@/lib/db/schema/investments";
-import { loadUserTransactions } from "@/lib/investments/data";
+import { findOwnPortfolio, loadUserTransactions } from "@/lib/investments/data";
 import { ensureHistorySafely } from "@/lib/investments/history";
 import { oversoldMessage, toCalcInput, todayKey, toRowValues } from "@/lib/investments/operations";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
@@ -31,6 +31,8 @@ async function handlePatch(request: NextRequest, { params }: Params) {
   const { id } = await params;
   const current = await findOwnTransaction(userId, id);
   if (!current) return Response.json({ error: "Operazione non trovata" }, { status: 404 });
+  const portfolio = await findOwnPortfolio(userId, current.portfolioId);
+  if (portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
 
   const parsed = updateInvestmentTransactionSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
@@ -65,6 +67,8 @@ async function handleDelete(request: NextRequest, { params }: Params) {
   const { id } = await params;
   const current = await findOwnTransaction(userId, id);
   if (!current) return Response.json({ error: "Operazione non trovata" }, { status: 404 });
+  const portfolio = await findOwnPortfolio(userId, current.portfolioId);
+  if (portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
 
   const remaining = (await loadUserTransactions(userId, current.instrumentId)).filter((t) => t.id !== id).map(toCalcInput);
   const message = oversoldMessage(remaining);

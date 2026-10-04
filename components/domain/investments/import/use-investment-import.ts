@@ -35,6 +35,7 @@ export function useInvestmentImport() {
   // Provider scelto nella griglia del primo passo; null = lo riconosce dal file.
   const [provider, setProvider] = React.useState<ImportProviderId | null>(null);
   // Rendiconto già strutturato (Interactive Brokers): sostituisce tabella e mappatura.
+  const [statementCsv, setStatementCsv] = React.useState<string | null>(null);
   const [statement, setStatement] = React.useState<ActivityStatement | null>(null);
   const [mapping, setMapping] = React.useState<ImportMapping | null>(null);
   const [choices, setChoices] = React.useState<Record<string, InstrumentChoice>>({});
@@ -76,6 +77,7 @@ export function useInvestmentImport() {
           return;
         }
         setStatement(parsed);
+        setStatementCsv(text);
         setTable(null);
         setMapping(null);
         setPreset(null);
@@ -97,6 +99,7 @@ export function useInvestmentImport() {
     const initial = initialMapping(parsed);
     track("investments_import_file_read", { provider: detected ?? "generic", chosen: provider !== null });
     setStatement(null);
+    setStatementCsv(null);
     setTable(parsed);
     setFileName(name);
     setPreset(initial.preset);
@@ -120,13 +123,14 @@ export function useInvestmentImport() {
     setError(null);
     try {
       const results = await resolve.mutateAsync({
-        identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo }) => ({
+        identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo, type }) => ({
           key,
           symbol,
           isin,
           name,
           currency,
           symbolIsYahoo,
+          type,
         })),
       });
       setChoices(Object.fromEntries(results.map((r) => [r.key, choiceFromMatch(r.match)])));
@@ -160,6 +164,7 @@ export function useInvestmentImport() {
       setError("Nessuna operazione da importare: scegli almeno uno strumento");
       return;
     }
+    if (statementCsv) request.statementCsv = statementCsv;
     setError(null);
     try {
       const result = await run.mutateAsync(request);

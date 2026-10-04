@@ -121,6 +121,9 @@ export function computeRealizedGains(
     if (t.type === "acquisto") {
       position.quantity += quantity;
       position.cost += quantity * Number(t.price) * multiplier * fx + fees;
+    } else if (t.type === "rettifica") {
+      position.quantity += quantity;
+      position.cost += Number(t.grossAmount ?? 0) * fx;
     } else if (t.type === "split") {
       if (quantity > 0) position.quantity *= quantity;
     } else if (SELL_TYPES.has(t.type)) {

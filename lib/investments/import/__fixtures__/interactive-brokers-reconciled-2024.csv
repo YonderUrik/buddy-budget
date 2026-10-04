@@ -1,0 +1,24 @@
+Statement,Header,Field Name,Field Value
+Statement,Data,BrokerName,Interactive Brokers Ireland Limited
+Statement,Data,Title,Activity Statement
+Statement,Data,Period,"January 1, 2024 - December 31, 2024"
+Account Information,Header,Field Name,Field Value
+Account Information,Data,Account,U90000001
+Account Information,Data,Base Currency,EUR
+Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,Quantity,T. Price,Proceeds,Comm/Fee,Basis,Code
+Trades,Data,Order,Stocks,EUR,CHILD,"2024-02-02, 10:00:00",-2,55,110,-1,-100,C
+Corporate Actions,Header,Asset Category,Currency,Report Date,Date/Time,Description,Quantity,Proceeds,Value,Realized P/L,Code
+Corporate Actions,Data,Stocks,EUR,2024-02-01,"2024-02-01, 00:00:00","PARENT(US9000000011) Spinoff 1 for 5 (CHILD, Synthetic Child, US9000000029)",2,0,0,0,
+Financial Instrument Information,Header,Asset Category,Symbol,Description,Security ID
+Financial Instrument Information,Data,Stocks,PARENT,Synthetic Parent,US9000000011
+Financial Instrument Information,Data,Stocks,CHILD,Synthetic Child,US9000000029
+Open Positions,Header,DataDiscriminator,Asset Category,Currency,Symbol,Quantity,Cost Basis,Close Price,Value,Unrealized P/L
+Open Positions,Data,Summary,Stocks,EUR,PARENT,10,901,100,1000,99
+Cash Report,Header,Currency Summary,Currency,Total
+Cash Report,Data,Starting Cash,EUR,999
+Cash Report,Data,Commissions,EUR,-1
+Cash Report,Data,Ending Cash,EUR,1108
+Net Asset Value,Header,Asset Class,Prior Total,Current Total
+Net Asset Value,Data,Cash,999,1108
+Net Asset Value,Data,Stock,1000,1000
+Net Asset Value,Data,Total,1999,2108

@@ -37,7 +37,7 @@ function failure(rows: PlannedRow[], error?: string): ImportResult {
 }
 
 /** Cambio di ogni operazione nuova; null dove manca anche dopo averlo chiesto alle fonti. */
-async function resolveFxRates(
+export async function resolveFxRates(
   ops: { line: number; date: string; currency: string }[],
   deps: ImportDeps
 ): Promise<Map<number, number | null>> {

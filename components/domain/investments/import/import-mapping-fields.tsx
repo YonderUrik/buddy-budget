@@ -123,7 +123,7 @@ export function ImportMappingFields({ table, mapping, onChange }: ImportMappingF
                 key={value}
                 label={`"${value}"`}
                 value={mapping.typeValues[value.toLowerCase()] ?? "ignora"}
-                options={[...INVESTMENT_TRANSACTION_TYPES, "ignora"] as TypeValueTarget[]}
+                options={[...INVESTMENT_TRANSACTION_TYPES.filter((t) => t !== "rettifica"), "ignora"] as TypeValueTarget[]}
                 labelFor={(v) => TYPE_TARGET_LABELS[v]}
                 onChange={(target) => onChange({ typeValues: { ...mapping.typeValues, [value.toLowerCase()]: target } })}
               />

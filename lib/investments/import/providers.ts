@@ -1,8 +1,9 @@
+import { looksLikeDegiro } from "./degiro";
 import { parseCsv } from "./csv";
 import { detectPreset } from "./presets";
 
 /** Sorgente di un file di import scelta dall'utente (o riconosciuta dal contenuto). */
-export type ImportProviderId = "interactive-brokers" | "yahoo-portfolio" | "generic";
+export type ImportProviderId = "interactive-brokers" | "degiro" | "yahoo-portfolio" | "generic";
 
 /** Scheda di un provider nel primo passo dell'import. */
 export interface ImportProviderInfo {
@@ -19,6 +20,7 @@ export interface ImportProviderInfo {
 }
 
 export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
+  { id: "degiro", name: "DEGIRO", initials: "DG", tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
   {
     id: "interactive-brokers",
     name: "Interactive Brokers",
@@ -61,6 +63,7 @@ export function looksLikeInteractiveBrokers(text: string): boolean {
 
 /** Formato riconosciuto dal contenuto del file: broker conosciuto, export Yahoo, oppure null (CSV generico). */
 export function detectImportProvider(text: string): Exclude<ImportProviderId, "generic"> | null {
+  if (looksLikeDegiro(text)) return "degiro";
   if (looksLikeInteractiveBrokers(text)) return "interactive-brokers";
   try {
     return detectPreset(parseCsv(text).headers)?.id === "yahoo-portfolio" ? "yahoo-portfolio" : null;

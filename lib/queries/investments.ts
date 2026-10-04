@@ -32,7 +32,7 @@ import type {
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
 /** Query da aggiornare quando cambia il portafoglio: anche il patrimonio netto della Panoramica. */
-const KEYS_CHANGED_BY_INVESTMENTS = [INVESTMENTS_QUERY_KEY, ["net-worth-snapshots"]] as const;
+const KEYS_CHANGED_BY_INVESTMENTS = [INVESTMENTS_QUERY_KEY, ["net-worth-snapshots"], ["accounts"]] as const;
 /** Attesa dopo l'ultima battuta prima di cercare sulle fonti. */
 export const INSTRUMENT_SEARCH_DEBOUNCE_MS = 300;
 /** Intervallo di polling mentre lo storico di uno strumento si sta scaricando. */
@@ -406,5 +406,28 @@ export function useDismissDividendMutation() {
       if (!input.restore) track("investment_dividend_dismissed");
       invalidate();
     },
+  });
+}
+
+/** Broker reports are historical snapshots, distinct from live market valuations. */
+export function useBrokerStatementsQuery() {
+  return useQuery({ queryKey: [...INVESTMENTS_QUERY_KEY, "statements"], queryFn: async (): Promise<{ statements: { id: string; accountKey: string; portfolioId: string; createdAt: string; statement: import("@/lib/investments/import/broker-statement").BrokerStatement }[] }> => {
+    const response = await fetch("/api/investments/statements");
+    if (!response.ok) throw await readError(response, "Impossibile leggere i rendiconti");
+    return response.json();
+  } });
+}
+
+/** Delete the exact set of dependent statement imports reviewed in the confirmation dialog. */
+export function useDeleteStatementImportMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async ({ id, confirmedIds }: { id: string; confirmedIds: string[] }) => {
+      const response = await fetch(`/api/investments/statements/${id}`, { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmedIds }) });
+      if (!response.ok) throw await readError(response, "Impossibile eliminare l'importazione");
+      return response.json();
+    },
+    onSuccess: (result) => { track("investments_import_deleted", { statements: result.deletedStatements, operations: result.deletedOperations }); invalidate(); },
+    onError: () => { invalidate(); },
   });
 }

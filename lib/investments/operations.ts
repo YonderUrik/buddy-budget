@@ -43,7 +43,7 @@ export function toRowValues(fields: OperationFields, fxRate: number) {
     date: fields.date,
     quantity: income ? "0" : String(fields.quantity),
     price: income ? "0" : String(fields.price),
-    grossAmount: income ? String(fields.grossAmount ?? 0) : null,
+    grossAmount: income || fields.type === "rettifica" ? String(fields.grossAmount ?? 0) : null,
     fxRate: String(fxRate),
     fees: fields.fees.toFixed(2),
     taxes: fields.taxes.toFixed(2),

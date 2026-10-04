@@ -1,6 +1,7 @@
 import { NextRequest, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { ensureHistorySafely } from "@/lib/investments/history";
+import { runStatementImport } from "@/lib/investments/import/execute-statement";
 import { runImport } from "@/lib/investments/import/execute";
 import { createOrReuseInstrument } from "@/lib/investments/instruments";
 import { getUserCurrency, todayKey } from "@/lib/investments/operations";
@@ -27,7 +28,9 @@ async function handlePost(request: NextRequest) {
   const parsed = runImportSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
 
-  const result = await runImport(userId, parsed.data, {
+  if (!parsed.data.statementCsv && parsed.data.operations.some((o) => o.type === "rettifica")) return Response.json({ error: "Le rettifiche richiedono il CSV originale" }, { status: 400 });
+  const execute = parsed.data.statementCsv ? runStatementImport : runImport;
+  const result = await execute(userId, parsed.data, {
     userCurrency: await getUserCurrency(userId),
     todayKey: todayKey(),
     createInstrument: (input) => createOrReuseInstrument(userId, input, { quoteMeta: quoteMetaOnProviders }),

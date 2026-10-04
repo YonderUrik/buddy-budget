@@ -10,8 +10,9 @@ import type { ActivityStatement } from "@/lib/investments/import/interactive-bro
 import { detectImportProvider, providerMismatchMessage, type ImportProviderId } from "@/lib/investments/import/providers";
 import { statementToRows, statementWarnings } from "@/lib/investments/import/statement-rows";
 import { toDateKey } from "@/lib/calc/net-worth";
+import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { track } from "@/lib/analytics";
-import { useParseStatementMutation, useResolveImportMutation, useRunImportMutation } from "@/lib/queries/investments";
+import { useInvestmentsOverviewQuery, useParseStatementMutation, useResolveImportMutation, useRunImportMutation } from "@/lib/queries/investments";
 import type { ImportResult } from "@/lib/investments/import/types";
 import { IMPORT_MAX_IDENTITIES } from "@/lib/validation/investments-import";
 import {
@@ -28,6 +29,8 @@ import {
  * ricalcolano a ogni modifica della mappatura, così l'anteprima dei valori letti è sempre quella vera.
  */
 export function useInvestmentImport() {
+  const portfolioQuery = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
+  const [portfolioId, setPortfolioId] = React.useState("");
   const [step, setStep] = React.useState<ImportStep>("file");
   const [fileName, setFileName] = React.useState<string | null>(null);
   const [table, setTable] = React.useState<CsvTable | null>(null);
@@ -35,6 +38,7 @@ export function useInvestmentImport() {
   // Provider scelto nella griglia del primo passo; null = lo riconosce dal file.
   const [provider, setProvider] = React.useState<ImportProviderId | null>(null);
   // Rendiconto già strutturato (Interactive Brokers): sostituisce tabella e mappatura.
+  const [statementCsv, setStatementCsv] = React.useState<string | null>(null);
   const [statement, setStatement] = React.useState<ActivityStatement | null>(null);
   const [mapping, setMapping] = React.useState<ImportMapping | null>(null);
   const [choices, setChoices] = React.useState<Record<string, InstrumentChoice>>({});
@@ -68,7 +72,7 @@ export function useInvestmentImport() {
       setError(mismatch);
       return;
     }
-    if (detected === "interactive-brokers") {
+    if (detected === "interactive-brokers" || detected === "degiro") {
       try {
         const parsed = await parseStatement.mutateAsync(text);
         if (parsed.operations.length === 0 && !parsed.issues.some((i) => i.severity === "error")) {
@@ -76,11 +80,12 @@ export function useInvestmentImport() {
           return;
         }
         setStatement(parsed);
+        setStatementCsv(text);
         setTable(null);
         setMapping(null);
         setPreset(null);
-        track("investments_import_file_read", { provider: "interactive-brokers", chosen: provider === "interactive-brokers" });
-        setProvider("interactive-brokers");
+        track("investments_import_file_read", { provider: detected, chosen: provider === detected });
+        setProvider(detected);
         setFileName(name);
         setError(null);
         setStep("mapping");
@@ -97,6 +102,7 @@ export function useInvestmentImport() {
     const initial = initialMapping(parsed);
     track("investments_import_file_read", { provider: detected ?? "generic", chosen: provider !== null });
     setStatement(null);
+    setStatementCsv(null);
     setTable(parsed);
     setFileName(name);
     setPreset(initial.preset);
@@ -120,13 +126,14 @@ export function useInvestmentImport() {
     setError(null);
     try {
       const results = await resolve.mutateAsync({
-        identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo }) => ({
+        identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo, type }) => ({
           key,
           symbol,
           isin,
           name,
           currency,
           symbolIsYahoo,
+          type,
         })),
       });
       setChoices(Object.fromEntries(results.map((r) => [r.key, choiceFromMatch(r.match)])));
@@ -155,11 +162,13 @@ export function useInvestmentImport() {
   }
 
   async function submit(dryRun: boolean) {
-    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? "interactive-brokers" : (preset?.id ?? null));
+    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : (preset?.id ?? null));
     if (!request) {
       setError("Nessuna operazione da importare: scegli almeno uno strumento");
       return;
     }
+    if (statementCsv) request.statementCsv = statementCsv;
+    if (statement && portfolioId) request.portfolioId = portfolioId;
     setError(null);
     try {
       const result = await run.mutateAsync(request);
@@ -179,6 +188,7 @@ export function useInvestmentImport() {
   }
 
   return {
+    portfolioId, setPortfolioId, portfolios: portfolioQuery.data?.portfolios ?? [],
     step,
     fileName,
     table,

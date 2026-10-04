@@ -109,3 +109,7 @@ export { useRegisterPurchase } from "./investments-actions";
 export { InvestmentsViewGate } from "./investments-view-gate";
 export type { InvestmentsViewGateProps } from "./investments-view-gate";
 export * from "./titles";
+
+export { BrokerStatements } from "./broker-statements";
+
+export { ImportManagement } from "./import-management";

@@ -57,10 +57,11 @@ function ImportWizard({ currency, onClose }: { currency: string; onClose: () => 
         {s.step === "file" ? (
           <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} reading={s.reading} />
         ) : null}
+        {s.step === "mapping" && s.statement?.preset === "degiro" && s.portfolios.length > 0 ? <label className="mb-3 block text-sm">Portafoglio di destinazione <select className="ml-2 rounded border bg-background p-2" value={s.portfolioId || (s.portfolios.length === 1 ? s.portfolios[0].id : "")} onChange={(e) => s.setPortfolioId(e.target.value)}>{s.portfolios.length > 1 ? <option value="">Scegli un portafoglio</option> : null}{s.portfolios.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label> : null}
         {s.step === "mapping" && s.statement ? (
           <ImportStatementStep
             fileName={s.fileName}
-            providerName={getImportProvider("interactive-brokers").name}
+            providerName={getImportProvider(s.statement.preset).name}
             rows={s.rows}
             warnings={s.warnings}
           />
@@ -135,7 +136,7 @@ export function InvestmentImportDialog({ open, onOpenChange, currency }: Investm
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
         <DialogHeader>
           <DialogTitle>Importa operazioni</DialogTitle>
-          <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, Yahoo Finance o un altro CSV.</DialogDescription>
+          <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Yahoo Finance o un altro CSV.</DialogDescription>
         </DialogHeader>
         {open ? <ImportWizard currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>

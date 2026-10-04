@@ -14,6 +14,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
+import { accounts } from "./accounts";
 
 /** Tipi di strumento: text + costante invece di enum Postgres, per aggiungerne senza migrazioni. */
 export const INSTRUMENT_TYPES = ["etf", "azione", "obbligazione", "fondo", "crypto", "etc"] as const;
@@ -44,7 +45,7 @@ export const FX_PROVIDER_IDS = ["ecb", "frankfurter"] as const;
 export type FxProviderId = (typeof FX_PROVIDER_IDS)[number];
 
 /** `split`: il rapporto (quote nuove per quota vecchia) sta in `quantity`. */
-export const INVESTMENT_TRANSACTION_TYPES = ["acquisto", "vendita", "dividendo", "cedola", "rimborso", "split"] as const;
+export const INVESTMENT_TRANSACTION_TYPES = ["acquisto", "vendita", "dividendo", "cedola", "rimborso", "split", "rettifica"] as const;
 export type InvestmentTransactionType = (typeof INVESTMENT_TRANSACTION_TYPES)[number];
 
 export const PLAN_FREQUENCIES = ["mensile", "bimestrale", "trimestrale"] as const;
@@ -85,7 +86,10 @@ export const instruments = pgTable(
     createdByUserId: text("created_by_user_id").references(() => authUser.id, { onDelete: "set null" }),
     ...timestamps,
   },
-  (table) => [uniqueIndex("instruments_isin_unique").on(table.isin).where(sql`${table.isin} is not null`)]
+  (table) => [
+    uniqueIndex("instruments_isin_unique").on(table.isin).where(sql`${table.isin} is not null and ${table.createdByUserId} is null`),
+    uniqueIndex("instruments_private_isin_currency_unique").on(table.createdByUserId, table.isin, table.currency).where(sql`${table.isin} is not null and ${table.createdByUserId} is not null`),
+  ]
 );
 
 /** Simbolo dello strumento su ciascuna fonte (ogni fonte usa il suo). */
@@ -163,6 +167,8 @@ export const investmentPortfolios = pgTable(
       .references(() => authUser.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     broker: text("broker"),
+    /** Dedicated statement cash account; retained when imported history is cleared. */
+    statementCashAccountId: uuid("statement_cash_account_id").references(() => accounts.id, { onDelete: "set null" }),
     /** Strumento di confronto per il rendimento ("stessi versamenti in un indice"), scelto dall'utente. */
     benchmarkInstrumentId: uuid("benchmark_instrument_id").references(() => instruments.id, { onDelete: "set null" }),
     taxRegime: text("tax_regime").$type<TaxRegime>().notNull().default("amministrato"),
@@ -185,6 +191,8 @@ export const investmentTransactions = pgTable(
     instrumentId: uuid("instrument_id")
       .notNull()
       .references(() => instruments.id, { onDelete: "restrict" }),
+    /** Source of statement imports, independent of the combined portfolio. */
+    statementAccountKey: text("statement_account_key"),
     type: text("type").$type<InvestmentTransactionType>().notNull(),
     date: date("date").notNull(),
     /** Quote (nominale per le obbligazioni); 0 per dividendi e cedole. */

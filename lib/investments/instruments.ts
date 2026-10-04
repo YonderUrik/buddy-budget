@@ -38,8 +38,10 @@ async function findBySymbol(provider: ProviderId, symbol: string): Promise<Instr
   return row?.instrument ?? null;
 }
 
-async function findByIsin(isin: string): Promise<Instrument | null> {
-  const [row] = await db.select().from(instruments).where(eq(instruments.isin, isin));
+async function findByIsin(isin: string, userId?: string | null, currency?: string): Promise<Instrument | null> {
+  const [row] = await db.select().from(instruments).where(and(eq(instruments.isin, isin),
+    userId ? visibleTo(userId) : isNull(instruments.createdByUserId),
+    currency ? eq(instruments.currency, currency) : undefined));
   return row ?? null;
 }
 
@@ -51,7 +53,7 @@ async function insertInstrument(values: NewInstrument, symbols: Partial<Record<P
     return created;
   } catch (error) {
     if (values.isin) {
-      const existing = await findByIsin(values.isin);
+      const existing = await findByIsin(values.isin, values.createdByUserId, values.currency);
       if (existing) return existing;
     }
     throw error;
@@ -140,7 +142,7 @@ export async function createOrReuseInstrument(
     }
     case "manuale": {
       if (input.isin) {
-        const existing = await findByIsin(input.isin);
+        const existing = await findByIsin(input.isin, userId, input.currency);
         if (existing) return { ok: true, instrument: existing, created: false };
       }
       const created = await insertInstrument(

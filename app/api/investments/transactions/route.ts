@@ -40,6 +40,7 @@ async function handlePost(request: NextRequest) {
     ? await findOwnPortfolio(userId, input.portfolioId)
     : await getOrCreateDefaultPortfolio(userId);
   if (!portfolio) return Response.json({ error: "Portafoglio non trovato" }, { status: 404 });
+  if (portfolio.broker?.startsWith("ibkr:")) return Response.json({ error: "Questo portafoglio si aggiorna importando il rendiconto successivo" }, { status: 409 });
 
   const fxRate =
     input.fxRate ?? (await resolveOperationFxRate(instrument, await getUserCurrency(userId), input.date, fetchFxAround));

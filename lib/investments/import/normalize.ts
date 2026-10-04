@@ -12,6 +12,7 @@ export interface ImportIdentity {
   name: string | null;
   currency: string | null;
   symbolIsYahoo: boolean;
+  type?: import("@/lib/db/schema/investments").InstrumentType;
 }
 
 /** Operazione letta da una riga, nella forma dell'API (importi nella valuta dello strumento, costi in quella utente). */
@@ -26,6 +27,10 @@ export interface ImportOperation {
   note: string | null;
   /** Se presente, tutti gli importi (anche costi) sono in questa valuta (es. file di un broker estero). */
   sourceCurrency?: string;
+  /** Explicit currency of costs when different from the security (DEGIRO fees are EUR). */
+  costCurrency?: string;
+  /** Broker execution FX, when the export supplies a complete matched conversion. */
+  brokerFxToEur?: number;
 }
 
 /** Esito della lettura di una riga del file. `line` è il numero di riga nel file (1 = intestazioni). */

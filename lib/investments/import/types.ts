@@ -20,5 +20,7 @@ export interface ImportResult {
   error?: string;
   inserted: number;
   instrumentsCreated: number;
+  /** Existing broker periods replaced atomically, also reported in previews. */
+  replacement?: { statements: number; operations: number; from: string; to: string };
 }
 

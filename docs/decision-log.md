@@ -1,5 +1,18 @@
 # Log storico delle decisioni di BuddyBudget
 
+## 2026-10-04 — DEGIRO nel portafoglio condiviso
+
+Import Account.csv italiano con riconciliazione multivaluta, commissioni EUR allocate per ordine e cambio broker quando presente. Origine delle operazioni e associazione conto/broker persistite (migration 0021): aggiornamenti e cancellazioni non coinvolgono l’altro broker anche con date sovrapposte. Conservate tutte le righe originali; nessun NAV o snapshot posizioni inventato. Verificato localmente il file reale insieme ai quattro IBKR; fixture pubblica sintetica. Limiti e controlli in [degiro-import.md](degiro-import.md). Solo branch locale, PR rimandata.
+
+## 2026-10-04 — Aggiornamento YTD e gestione importazioni IBKR
+
+Su richiesta dell'utente, nuovi CSV sostituiscono i periodi interamente coperti in una transazione; anteprima esplicita e riconciliazione dei periodi successivi. Gli overlap parziali richiedono un export completo per non inventare snapshot intermedi. Da Rendiconti si gestiscono ed eliminano gli import: rimuovere un periodo richiede conferma dell'elenco dei successivi dipendenti, verificato sotto lock. Saldo ripristinato all'ultima chiusura conservata; catalogo/prezzi mantenuti. Nessun push o PR.
+
+## 2026-10-04 — Import IBKR riconciliato (branch locale)
+
+Il CSV originale viene riletto sul server e salvato integralmente con il rendiconto. L'import richiede continuità dei periodi e corrispondenza di cassa/quantità; reimport concorrenti sono idempotenti. Spinoff interamente ceduti trasferiscono quote e base senza inventare un acquisto. I valori comunicati da IBKR sono consultabili separatamente dai calcoli a costo medio. Strumenti manuali isolati per utente/ISIN/valuta. Nessun push o PR per richiesta dell'utente; specifica e limiti in [ibkr-import.md](ibkr-import.md).
+
+
 Archivio completo (testo originale, non modificato) dello "Stato del progetto" e del "Log delle decisioni" che stavano in `CLAUDE.md` fino al 2026-10-01. Spostato qui per alleggerire `CLAUDE.md` (271 KB), che viene caricato a ogni sessione.
 
 - Il testo è **storico**: frasi come "non ancora mergiato" o "da fare" erano vere alla data della voce e spesso non lo sono più. Lo stato attuale è in `CLAUDE.md` → "Stato del progetto".

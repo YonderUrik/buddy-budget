@@ -23,6 +23,7 @@ const SPLIT_TYPE: InvestmentTransactionType = "split";
  */
 const SAME_DAY_ORDER: Record<InvestmentTransactionType, number> = {
   split: -1,
+  rettifica: 1,
   acquisto: 0,
   dividendo: 1,
   cedola: 1,
@@ -180,11 +181,14 @@ function applyTransaction(position: Position, t: InvestmentTransactionInput, mul
   const taxes = Number(t.taxes) || 0;
 
   if (BUY_TYPES.has(t.type)) {
-    const cost = quantity * price * multiplier * fx + fees;
+    const cost = quantity * price * multiplier * fx + fees + taxes;
     position.quantity += quantity;
     position.costBasis += cost;
     position.investedNet += cost;
     position.totalBought += cost;
+  } else if (t.type === "rettifica") {
+    position.quantity += quantity;
+    position.costBasis += Number(t.grossAmount ?? 0) * fx;
   } else if (t.type === SPLIT_TYPE) {
     if (quantity > 0) position.quantity *= quantity;
   } else if (SELL_TYPES.has(t.type)) {
@@ -236,7 +240,7 @@ export function findOversoldTransaction<T extends InvestmentTransactionInput>(tr
   for (const t of sortTransactions(transactions)) {
     const current = quantities.get(t.instrumentId) ?? 0;
     const quantity = Number(t.quantity);
-    if (BUY_TYPES.has(t.type)) {
+    if (BUY_TYPES.has(t.type) || t.type === "rettifica") {
       quantities.set(t.instrumentId, current + quantity);
     } else if (t.type === SPLIT_TYPE) {
       if (quantity > 0) quantities.set(t.instrumentId, current * quantity);

@@ -21,6 +21,7 @@ function data(): InvestmentData {
     createdAt: NOW,
     updatedAt: NOW,
   };
+
   return {
     currency: "EUR",
     portfolios: [],
@@ -30,6 +31,7 @@ function data(): InvestmentData {
         id: "t1",
         userId: "u",
         portfolioId: "p",
+  statementAccountKey: null,
         instrumentId: "etf",
         type: "acquisto",
         date: "2026-09-01",

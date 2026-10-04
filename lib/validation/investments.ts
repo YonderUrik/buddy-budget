@@ -120,6 +120,7 @@ function checkTypeFields(
   data: { type: InvestmentTransactionType; quantity: number; price: number; grossAmount?: number | null },
   ctx: z.RefinementCtx
 ): void {
+  if (data.type === "rettifica") ctx.addIssue({ code: "custom", message: "Le operazioni sul capitale si gestiscono dal rendiconto del broker" });
   if (POSITION_TYPES.has(data.type)) {
     if (!(data.quantity > 0)) ctx.addIssue({ code: "custom", path: ["quantity"], message: "Quantità non valida" });
     if (!(data.price > 0)) ctx.addIssue({ code: "custom", path: ["price"], message: "Prezzo non valido" });

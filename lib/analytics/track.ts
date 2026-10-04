@@ -56,6 +56,7 @@ export interface ProductEvents {
   price_alert_created: { direction: "sopra" | "sotto" };
   title_commentary_requested: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
+  investments_import_deleted: { statements: number; operations: number };
   investments_imported: { operations: number; format: string };
   /** File letto nel primo passo dell'import. `provider`: formato (`interactive-brokers`, `yahoo-portfolio`, `generic`); `chosen`: scelto a mano o riconosciuto dal file. */
   investments_import_file_read: { provider: string; chosen: boolean };

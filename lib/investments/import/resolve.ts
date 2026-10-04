@@ -30,9 +30,9 @@ async function knownBySymbol(userId: string, provider: "yahoo" | "coingecko", sy
   return row?.instrument ?? null;
 }
 
-async function knownBy(userId: string, field: "isin" | "name", value: string): Promise<Instrument | null> {
+async function knownBy(userId: string, field: "isin" | "name", value: string, currency?: string | null): Promise<Instrument | null> {
   const condition = field === "isin" ? eq(instruments.isin, value) : sql`lower(${instruments.name}) = ${value.toLowerCase()}`;
-  const [row] = await db.select().from(instruments).where(and(condition, visibleTo(userId))).limit(1);
+  const [row] = await db.select().from(instruments).where(and(condition, visibleTo(userId), currency ? eq(instruments.currency, currency) : undefined)).limit(1);
   return row ?? null;
 }
 
@@ -79,8 +79,13 @@ function pickHit(hits: YahooSearchHit[], identity: Identity): { hit: YahooSearch
  */
 export async function resolveIdentity(userId: string, identity: Identity, deps: ResolveDeps): Promise<ImportMatch> {
   if (identity.isin) {
-    const known = await knownBy(userId, "isin", identity.isin);
-    if (known) return { kind: "known", instrument: known };
+    const known = await knownBy(userId, "isin", identity.isin, identity.currency);
+    if (known && (!identity.currency || known.currency === identity.currency)) return { kind: "known", instrument: known };
+  }
+  // Broker ISIN + native currency is more reliable than an arbitrary Yahoo search listing.
+  // Preserve the statement currency and use broker closing prices until an exchange listing is explicitly linked.
+  if (!identity.symbolIsYahoo && identity.isin && identity.currency && identity.name) {
+    return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione") }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto`, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione"), confidence: "exact" };
   }
   const crypto = identity.symbol && !identity.isin ? YAHOO_CRYPTO_SYMBOL.exec(identity.symbol) : null;
   if (crypto && identity.symbolIsYahoo) return resolveCrypto(userId, crypto[1], crypto[2], deps);

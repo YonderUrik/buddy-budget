@@ -40,6 +40,7 @@ export function ImportSummaryStep({ result, rows, newInstruments, done }: Import
           {result.inserted === 1 ? "Importata 1 operazione" : `Importate ${result.inserted} operazioni`}
         </p>
         <p className="max-w-sm text-sm text-muted-foreground">
+          {result.replacement ? `${result.replacement.statements === 1 ? "1 rendiconto precedente sostituito" : `${result.replacement.statements} rendiconti precedenti sostituiti`} (${result.replacement.operations} operazioni). ` : ""}
           {result.instrumentsCreated > 0 ? `${result.instrumentsCreated} strumenti aggiunti. ` : ""}
           {result.counts.duplicate > 0 ? `${result.counts.duplicate} erano già presenti e sono state saltate. ` : ""}
           I prezzi storici si scaricano in background: il grafico si completa entro qualche minuto.
@@ -59,6 +60,7 @@ export function ImportSummaryStep({ result, rows, newInstruments, done }: Import
         <Stat value={result.counts.duplicate} label="già presenti" />
         <Stat value={newInstruments} label="strumenti nuovi" />
       </div>
+      {result.replacement ? <p role="status" className="rounded-lg border p-3 text-sm">Questo file sostituirà {result.replacement.statements === 1 ? "1 rendiconto" : `${result.replacement.statements} rendiconti`} e {result.replacement.operations} operazioni nel periodo {result.replacement.from} – {result.replacement.to}. I periodi esterni restano invariati. Se i controlli falliscono, nessun dato verrà sostituito.</p> : null}
       <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
         {result.counts.duplicate > 0 ? <li>Le operazioni già presenti vengono saltate: puoi reimportare lo stesso file senza creare doppioni.</li> : null}
         {freeShares > 0 ? <li>{freeShares} acquisti a prezzo zero (quote ricevute gratis, es. staking): abbassano il prezzo medio.</li> : null}

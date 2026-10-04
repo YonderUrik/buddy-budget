@@ -30,6 +30,7 @@ export interface LogFields {
   outcome?: string;
   reason?: string;
   inserted?: number;
+  deleted?: number;
   /** Esiti di un import in blocco (conteggi di righe): nuove, aggiornate, saltate perché già presenti, rifiutate. */
   created?: number;
   updated?: number;

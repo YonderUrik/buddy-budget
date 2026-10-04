@@ -2,6 +2,7 @@
 
 /** Grafico "sott'acqua": quanto il portafoglio era sotto il suo massimo precedente, giorno per giorno. */
 
+import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { parseDateOnly } from "@/lib/calc/expenses";
@@ -13,8 +14,12 @@ const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", m
 
 type Point = DrawdownPoint & { label: string };
 
-function axisPct(value: number): string {
-  return `${Math.round(value * 100)}%`;
+/** Etichette dell'asse: un decimale quando la caduta è piccola, così non compaiono tacche tutte uguali ("-1%, -1%"). */
+const AXIS_DECIMALS_BELOW = 0.05;
+
+function makeAxisPct(minDepth: number) {
+  const decimals = Math.abs(minDepth) < AXIS_DECIMALS_BELOW ? 1 : 0;
+  return (value: number) => `${(value * 100).toFixed(decimals).replace(".", ",").replace(/^-/, "−")}%`;
 }
 
 function Tooltip({ active, payload }: { active?: boolean; payload?: { payload: Point }[] }) {
@@ -33,6 +38,7 @@ export interface DrawdownChartProps {
 }
 
 export function DrawdownChart({ series }: DrawdownChartProps) {
+  const axisPct = React.useMemo(() => makeAxisPct(Math.min(...series.map((p) => p.drawdown))), [series]);
   return (
     <ChartContainer config={CHART_CONFIG} className="max-h-40 w-full" aria-label="Perdita dal massimo nel tempo">
       <AreaChart data={series} margin={{ left: 4, right: 8 }}>
@@ -44,7 +50,7 @@ export function DrawdownChart({ series }: DrawdownChartProps) {
         </defs>
         <CartesianGrid vertical={false} strokeDasharray="3 3" />
         <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
-        <YAxis tickLine={false} axisLine={false} width={44} tickFormatter={axisPct} domain={["dataMin", 0]} />
+        <YAxis tickLine={false} axisLine={false} width={48} tickFormatter={axisPct} domain={["dataMin", 0]} />
         <ChartTooltip cursor={false} content={<Tooltip />} />
         <Area type="monotone" dataKey="drawdown" stroke="var(--color-drawdown)" strokeWidth={1.5} fill="url(#drawdown-fill)" isAnimationActive={false} />
       </AreaChart>

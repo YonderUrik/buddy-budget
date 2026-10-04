@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.7.0](https://github.com/YonderUrik/buddy-budget/compare/v0.6.0...v0.7.0) (2026-10-04)
+
+
+### Novità
+
+* posizioni degli investimenti compatte, tabella su desktop e schede espandibili su mobile ([#127](https://github.com/YonderUrik/buddy-budget/issues/127)) ([019fe19](https://github.com/YonderUrik/buddy-budget/commit/019fe19c97c3b405c0225733479dda64361c0744))
+
 ## [0.6.0](https://github.com/YonderUrik/buddy-budget/compare/v0.5.0...v0.6.0) (2026-10-03)
 
 

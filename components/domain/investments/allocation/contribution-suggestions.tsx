@@ -15,7 +15,7 @@ function pct(value: number): string {
 
 export interface ContributionSuggestionsProps {
   analysis: AllocationAnalysis;
-  /** Importo iniziale (es. il totale mensile dei PAC). */
+  /** Importo iniziale (proposto all'apertura). */
   defaultAmount: number;
   instrumentsById: Map<string, Instrument>;
   currency: string;

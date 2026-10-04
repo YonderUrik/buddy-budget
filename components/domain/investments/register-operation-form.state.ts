@@ -1,5 +1,5 @@
 import type { ResolvedPrice } from "@/lib/calc/investments";
-import type { Instrument, InvestmentPlan, InvestmentTransaction, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
+import type { Instrument, InvestmentTransaction, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
 import { formatDateWithYear } from "@/lib/format";
 
 /** Campi visibili nel form a seconda del tipo di operazione. */
@@ -46,14 +46,14 @@ export function computeGrossValue(
   return quantity * price * (unit === "percentuale_nominale" ? 0.01 : 1);
 }
 
-/** Valori iniziali del form per registrare l'esecuzione di un PAC: quote stimate dall'ultimo prezzo, se noto. */
-export function prefillFromPlan(
-  plan: Pick<InvestmentPlan, "instrumentId" | "amount">,
+/** Valori iniziali del form per registrare un acquisto da un importo: quote stimate dall'ultimo prezzo, se noto. */
+export function prefillPurchase(
+  purchase: { instrumentId: string; amount: string },
   lastPrice: number | null
 ): { instrumentId: string; type: InvestmentTransactionType; price: number | null; quantity: number | null } {
-  const amount = Number(plan.amount);
+  const amount = Number(purchase.amount);
   const quantity = lastPrice && lastPrice > 0 ? Math.floor((amount / lastPrice) * 10_000) / 10_000 : null;
-  return { instrumentId: plan.instrumentId, type: "acquisto", price: lastPrice, quantity };
+  return { instrumentId: purchase.instrumentId, type: "acquisto", price: lastPrice, quantity };
 }
 
 /** Data di oggi YYYY-MM-DD in ora locale (per il campo data). */

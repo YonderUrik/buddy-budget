@@ -30,7 +30,7 @@ cd landing && PLAYWRIGHT_MODULE=<percorso di playwright> pnpm capture:screens
 
 `BETTER_AUTH_SECRET` deve essere lo stesso per app e cattura (firma il cookie). Variabili opzionali: `DEMO_APP_URL`, `CHROMIUM_PATH`.
 
-Il workflow GitHub `landing-screens.yml` fa gli stessi passi da solo: parte a ogni push su `main` che tocca UI, calcoli, dati demo o elenco screen (o a mano da Actions) e apre/aggiorna la PR `bot/landing-screens` con le immagini nuove. La PR la apre `GITHUB_TOKEN`, quindi la CI non parte da sola su di essa. Richiede in Settings → Actions → General "Allow GitHub Actions to create and approve pull requests". **Non è ancora stato eseguito su GitHub.**
+Il workflow GitHub `landing-screens.yml` fa gli stessi passi da solo: parte una volta al giorno (05:30 UTC), quando su `main` cambiano elenco screen, script di cattura o dati demo, o a mano da Actions (non a ogni merge: con molte PR ravvicinate si rifaceva ogni volta) e apre/aggiorna la PR `bot/landing-screens` con le immagini nuove. La PR la apre `GITHUB_TOKEN`, quindi la CI non parte da sola su di essa. Richiede in Settings → Actions → General "Allow GitHub Actions to create and approve pull requests". **Non è ancora stato eseguito su GitHub.**
 
 ## Aggiungere una schermata
 

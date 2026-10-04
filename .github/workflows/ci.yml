@@ -47,12 +47,35 @@ jobs:
           if echo "$files" | grep -qE '^\.github/'; then app=true; fi
           echo "app=$app" >> "$GITHUB_OUTPUT"; echo "landing=$landing" >> "$GITHUB_OUTPUT"
 
-  check:
-    name: Lint, tipi e test
+  lint-types:
+    name: Lint e tipi
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm exec tsc --noEmit
+
+  # I test girano contro un Postgres reale e un file alla volta (vitest.config.ts: fileParallelism false), quindi non si
+  # parallelizzano nello stesso job: si dividono in 2 job con un database ciascuno (--shard di vitest).
+  test:
+    name: Test ${{ matrix.shard }}/2
     needs: changes
     if: needs.changes.outputs.app == 'true'
     timeout-minutes: 20
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     services:
       postgres:
         image: postgres:17
@@ -91,10 +114,24 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm exec tsc --noEmit
       - run: pnpm db:migrate
-      - run: pnpm test
+      - run: pnpm test --shard=${{ matrix.shard }}/2
+
+  # Check obbligatoria su main (nome invariato): riassume lint/tipi e i due shard dei test. Se l'app non è cambiata
+  # i job a monte sono saltati e questo non gira, quindi conta come superata come prima.
+  check:
+    name: Lint, tipi e test
+    needs: [changes, lint-types, test]
+    if: always() && needs.changes.outputs.app == 'true'
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          LINT: ${{ needs.lint-types.result }}
+          TEST: ${{ needs.test.result }}
+        run: |
+          echo "lint-types=$LINT test=$TEST"
+          [ "$LINT" = "success" ] && [ "$TEST" = "success" ]
 
   release:
     name: Release (release-please)

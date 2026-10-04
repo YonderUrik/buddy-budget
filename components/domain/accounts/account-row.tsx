@@ -3,73 +3,20 @@
 /**
  * AccountRow
  *
- * Riga singola nella lista Conti. Nome, icona e colore sono editabili inline
- * (salvataggio on-blur/on-change) per qualsiasi conto, anche quelli "auto".
- * Tipo e saldo restano editabili solo per i conti manuali: per un conto auto
- * derivano dalla banca collegata, quindi sono in sola lettura + azione
- * "Scollega" con conferma al posto di "Elimina".
+ * Riga di un conto nella lista Conti: avatar, nome, tipo, stato in parole e saldo. Tutta la riga è un unico bersaglio
+ * (≥ 56 px) che apre i dettagli, dove si modifica o si rimuove il conto; accanto c'è il collegamento ai movimenti.
+ * Non modifica nulla da sola: modifiche, sync e rimozione vivono in `AccountDetailsDialog`.
  */
 
 import * as React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { MoreVertical, Trash2, Link2Off, RefreshCw, ListOrdered } from "lucide-react";
-import { formatCurrency, formatRelativeTime } from "@/lib/format";
-import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
-import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
-import { useSyncAccountMutation } from "@/lib/queries/gocardless";
-import type { UpdateAccountInput } from "@/lib/validation/accounts";
-import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
+import { AlertTriangle, ChevronRight, ListOrdered, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/format";
 import type { Account } from "@/lib/db/schema/accounts";
+import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import { AccountAvatar } from "./account-avatar";
-import { AccountIconColorPicker } from "./account-icon-color-picker";
-import { CurrencyInput } from "./currency-input";
-
-const CUSTOM_TYPE_VALUE = "__custom__";
-
-/** Testo del `title` nativo del bottone sync, spiega perché è disabilitato quando non eleggibile. */
-function buildSyncButtonTitle(
-  syncInfo: AccountRowProps["syncInfo"],
-  needsReconnect: boolean | undefined,
-  syncing: boolean
-): string {
-  if (syncing) return "Sincronizzazione in corso";
-  if (needsReconnect) return "Riconnetti il conto per sincronizzare";
-  if (!syncInfo) return "Info di sincronizzazione non disponibili";
-  if (syncInfo.eligible) return "Sincronizza ora";
-  if (!syncInfo.nextEligibleAt) return "Sync non disponibile";
-  const time = new Intl.DateTimeFormat("it-IT", { hour: "2-digit", minute: "2-digit" }).format(
-    new Date(syncInfo.nextEligibleAt)
-  );
-  return syncInfo.syncsRemainingToday === 0
-    ? `Limite di 4 sync al giorno raggiunto. Prossimo alle ${time}.`
-    : `Prossimo sync disponibile alle ${time}.`;
-}
+import { buildAccountStatus, type AccountStatusTone, type AccountSyncInfo } from "./account-status";
 
 export interface AccountRowProps {
   account: Account;
@@ -77,251 +24,67 @@ export interface AccountRowProps {
   currency: string;
   /** True se il consenso bancario collegato a questo conto è scaduto/in errore. */
   needsReconnect?: boolean;
-  /** Chiamato quando l'utente clicca "Riconnetti". */
-  onReconnect?: () => void;
-  /** Info di sync (solo per conti auto): ultimo sync ed eleggibilità al prossimo sync manuale. */
-  syncInfo?: {
-    lastSyncedAt: string | null;
-    eligible: boolean;
-    nextEligibleAt: string | null;
-    syncsRemainingToday: number;
-  };
+  /** Info di sync (solo per conti collegati). */
+  syncInfo?: AccountSyncInfo;
   /** True se il conto ha un sync in corso (anche partito da un'altra pagina o scheda). */
   syncing?: boolean;
-  /** Se presente, la riga mostra un link ai movimenti di questo conto (es. `/movimenti?conto=<id>`). */
+  /** Se presente, accanto alla riga compare il collegamento ai movimenti di questo conto. */
   movementsHref?: string;
+  /** Chiamato quando l'utente apre i dettagli del conto. */
+  onOpen: () => void;
 }
 
-export function AccountRow({
-  account,
-  currency,
-  needsReconnect,
-  onReconnect,
-  syncInfo,
-  syncing = false,
-  movementsHref,
-}: AccountRowProps) {
+const TONE_CLASS: Record<AccountStatusTone, string> = {
+  ok: "text-text-2",
+  neutral: "text-text-2",
+  progress: "text-primary",
+  warning: "font-medium text-destructive",
+};
+
+export function AccountRow({ account, currency, needsReconnect, syncInfo, syncing, movementsHref, onOpen }: AccountRowProps) {
   const isAuto = account.source === "auto";
-  const updateMutation = useUpdateAccountMutation();
-  const deleteMutation = useDeleteAccountMutation();
-  const syncMutation = useSyncAccountMutation();
-
-  const [name, setName] = React.useState(account.name);
-  const [type, setType] = React.useState(account.type);
-  const [balanceValue, setBalanceValue] = React.useState<number | null>(Number(account.balance));
-  const [color, setColor] = React.useState<AccountColor>(account.color as AccountColor);
-  const [icon, setIcon] = React.useState<AccountIcon>(account.icon as AccountIcon);
-  const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false);
-  const [isCustomType, setIsCustomType] = React.useState(
-    () =>
-      !ACCOUNT_TYPE_OPTIONS.includes(account.type as (typeof ACCOUNT_TYPE_OPTIONS)[number])
-  );
-
-  function commitField(field: keyof UpdateAccountInput, value: string | number | null) {
-    if (field === "balance") {
-      const num = typeof value === "number" ? value : null;
-      if (num === null || num === Number(account.balance)) return;
-      updateMutation.mutate({ id: account.id, input: { balance: num } });
-      return;
-    }
-    if (typeof value === "string" && value === (account[field as "name" | "type"] ?? "")) return;
-    const input: UpdateAccountInput = { [field]: value } as UpdateAccountInput;
-    updateMutation.mutate({ id: account.id, input });
-  }
-
-  function handleAppearanceChange(next: { color: AccountColor; icon: AccountIcon }) {
-    if (next.color !== color) {
-      setColor(next.color);
-      updateMutation.mutate({ id: account.id, input: { color: next.color } });
-    }
-    if (next.icon !== icon) {
-      setIcon(next.icon);
-      updateMutation.mutate({ id: account.id, input: { icon: next.icon } });
-    }
-  }
-
-  function handleDeleteConfirm() {
-    deleteMutation.mutate(account.id);
-    setConfirmDialogOpen(false);
-  }
-
-  const avatar = <AccountAvatar color={color} icon={icon} />;
+  const status = buildAccountStatus({ isAuto, needsReconnect, syncing, syncInfo });
+  const balance = Number(account.balance);
+  const StatusIcon = status.tone === "warning" ? AlertTriangle : status.tone === "progress" ? Loader2 : null;
 
   return (
-    <div className="group relative flex flex-col gap-2 border-b sm:flex-row sm:items-center sm:justify-between sm:gap-3 border-border px-4 py-3 last:border-b-0 hover:bg-muted/10 transition-colors">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <AccountIconColorPicker value={{ color, icon }} onChange={handleAppearanceChange}>
-          {avatar}
-        </AccountIconColorPicker>
-
-        <div className="min-w-0 flex-1 space-y-1">
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => commitField("name", name)}
-            className="h-7 w-full border-0 bg-transparent p-0 font-medium shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:bg-background px-1.5 -mx-1.5 text-sm"
-            aria-label="Nome conto"
-          />
-
-          <div className="flex items-center gap-2">
-            {isAuto ? (
-              <span className="text-xs text-muted-foreground pl-0.5">{account.type}</span>
-            ) : (
-              <div className="flex items-center gap-1.5">
-                <Select
-                  value={isCustomType ? CUSTOM_TYPE_VALUE : type}
-                  onValueChange={(value) => {
-                    if (value === null) return;
-                    if (value === CUSTOM_TYPE_VALUE) {
-                      setIsCustomType(true);
-                      return;
-                    }
-                    setIsCustomType(false);
-                    setType(value);
-                    commitField("type", value);
-                  }}
-                >
-                  <SelectTrigger size="sm" className="h-6 border-0 bg-transparent p-0 pr-1 pl-0.5 shadow-none focus-visible:ring-1 focus-visible:ring-ring text-xs text-muted-foreground font-normal hover:bg-accent/40 w-fit">
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
-                  </SelectContent>
-                </Select>
-                {isCustomType && (
-                  <Input
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    onBlur={() => commitField("type", type)}
-                    placeholder="Tipo personalizzato"
-                    className="h-6 w-28 border-0 bg-transparent p-0 px-1.5 -mx-1.5 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:bg-background text-xs text-muted-foreground"
-                    aria-label="Tipo personalizzato"
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between gap-4 sm:shrink-0 sm:justify-end">
-        <div className="flex flex-col items-start gap-1 sm:items-end">
-          {isAuto ? (
-            <p className="h-7 text-right text-sm font-semibold tabular-nums flex items-center pr-1.5 text-foreground">
-              {formatCurrency(Number(account.balance), currency)}
-            </p>
-          ) : (
-            <CurrencyInput
-              value={balanceValue}
-              onChange={setBalanceValue}
-              onBlur={() => commitField("balance", balanceValue)}
-              currency={currency}
-              className="w-24 text-right text-sm font-semibold sm:w-28 border-0 bg-transparent p-0 shadow-none focus-visible:ring-1 focus-visible:ring-ring focus:bg-background pr-1.5"
-              aria-label="Saldo"
-            />
-          )}
-
-          <div className="flex items-center gap-2">
-            {isAuto && syncInfo && (
-              <span className="text-[10px] text-muted-foreground">
-                {syncInfo.lastSyncedAt
-                  ? `Ultimo sync: ${formatRelativeTime(new Date(syncInfo.lastSyncedAt))}`
-                  : "Mai sincronizzato"}
-              </span>
-            )}
-            {needsReconnect && (
-              <span className="rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] font-semibold text-destructive uppercase">
-                Riconnetti
-              </span>
-            )}
-            <Badge variant={isAuto ? "secondary" : "outline"} className="text-[10px] py-0 px-1.5 h-4 font-normal">
-              {isAuto ? "Auto" : "Manuale"}
-            </Badge>
-          </div>
-        </div>
-
-        {movementsHref && (
-          <Link
-            href={movementsHref}
-            title="Vedi i movimenti di questo conto"
-            aria-label={`Vedi i movimenti di ${account.name}`}
-            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <ListOrdered size={15} aria-hidden="true" />
-          </Link>
-        )}
-
-        {isAuto && (
-          <button
-            type="button"
-            onClick={() => syncMutation.mutate(account.id)}
-            disabled={!syncInfo?.eligible || syncMutation.isPending || syncing || needsReconnect}
-            title={buildSyncButtonTitle(syncInfo, needsReconnect, syncing)}
-            aria-label="Sincronizza ora"
-            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <RefreshCw size={15} className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />
-          </button>
-        )}
-
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer">
-            <MoreVertical size={16} />
-          </DropdownMenuTrigger>
-          <DropdownMenuPortal>
-            <DropdownMenuContent align="end" className="w-36">
-              {needsReconnect && (
-                <DropdownMenuItem onClick={onReconnect}>
-                  <RefreshCw size={14} className="mr-2" />
-                  Riconnetti
-                </DropdownMenuItem>
+    <li className="flex items-stretch border-b border-border last:border-b-0">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`${account.name}, ${account.type}, ${formatCurrency(balance, currency)}. ${status.label}. Apri i dettagli`}
+        className="group flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-left outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      >
+        <AccountAvatar color={account.color as AccountColor} icon={account.icon as AccountIcon} className="size-10" size={18} />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-3">
+            <span className="truncate text-[15px] font-medium text-foreground">{account.name}</span>
+            <span
+              className={cn(
+                "shrink-0 font-heading text-base font-semibold tabular-nums sm:text-lg",
+                balance < 0 ? "text-neg" : "text-foreground"
               )}
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => setConfirmDialogOpen(true)}
-              >
-                {isAuto ? (
-                  <>
-                    <Link2Off size={14} className="mr-2" />
-                    Scollega
-                  </>
-                ) : (
-                  <>
-                    <Trash2 size={14} className="mr-2" />
-                    Elimina
-                  </>
-                )}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenuPortal>
-        </DropdownMenu>
-
-        <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {isAuto ? "Scollegare questo conto?" : "Eliminare questo conto?"}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {isAuto
-                  ? `"${account.name}" verrà scollegato. L'azione non è reversibile.`
-                  : `"${account.name}" verrà eliminato definitivamente, insieme al suo saldo registrato.`}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annulla</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm}>
-                {isAuto ? "Scollega" : "Elimina"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </div>
+            >
+              {formatCurrency(balance, currency)}
+            </span>
+          </span>
+          <span className="block truncate text-sm text-text-2">{account.type}</span>
+          <span className={cn("mt-0.5 flex items-center gap-1 text-[13px]", TONE_CLASS[status.tone])}>
+            {StatusIcon && <StatusIcon size={13} aria-hidden className={cn("shrink-0", status.tone === "progress" && "motion-safe:animate-spin")} />}
+            <span>{status.label}</span>
+          </span>
+        </span>
+        <ChevronRight size={18} aria-hidden className="hidden shrink-0 sm:block text-text-3 transition-transform group-hover:translate-x-0.5" />
+      </button>
+      {movementsHref && (
+        <Link
+          href={movementsHref}
+          aria-label={`Vedi i movimenti di ${account.name}`}
+          className="flex w-12 shrink-0 items-center justify-center rounded-lg text-text-2 outline-none transition-colors hover:bg-muted/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        >
+          <ListOrdered size={18} aria-hidden />
+        </Link>
+      )}
+    </li>
   );
 }

@@ -23,27 +23,23 @@ export function AccountsKpi({ accounts, currency }: AccountsKpiProps) {
   const isNegative = totalLiquidity < 0;
 
   return (
-    <div className="flex flex-col gap-0.5 px-1">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-        Liquidità totale
+    <div className="flex flex-col gap-1">
+      <p className="text-sm font-medium text-text-2">Liquidità totale</p>
+      <span
+        className={cn(
+          "font-heading text-4xl font-semibold tracking-tight tabular-nums",
+          isNegative ? "text-neg" : "text-foreground"
+        )}
+      >
+        {formatCurrency(totalLiquidity, currency)}
+      </span>
+      <p className="text-sm text-text-2">
+        {linkedAccountsCount === 0
+          ? "Nessun conto ancora"
+          : linkedAccountsCount === 1
+          ? "Somma di 1 conto"
+          : `Somma di ${linkedAccountsCount} conti`}
       </p>
-      <div className="flex flex-wrap items-baseline gap-2">
-        <span
-          className={cn(
-            "font-heading text-3xl sm:text-4xl font-semibold tracking-tight tabular-nums",
-            isNegative ? "text-neg" : "text-pos"
-          )}
-        >
-          {formatCurrency(totalLiquidity, currency)}
-        </span>
-        <span className="text-xs text-muted-foreground font-normal">
-          {linkedAccountsCount === 0
-            ? "• nessun conto collegato"
-            : linkedAccountsCount === 1
-            ? "• su 1 conto attivo"
-            : `• su ${linkedAccountsCount} conti attivi`}
-        </span>
-      </div>
     </div>
   );
 }

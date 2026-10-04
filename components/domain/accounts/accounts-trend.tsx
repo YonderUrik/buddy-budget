@@ -39,8 +39,8 @@ export function AccountsTrend({ values, currency, className }: AccountsTrendProp
       : `${delta > 0 ? "+" : "−"}${formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })} negli ultimi 30 giorni`;
 
   return (
-    <div className={cn("flex flex-col items-end gap-1", className)}>
-      <svg viewBox={`0 0 ${TREND_WIDTH} ${TREND_HEIGHT}`} className="w-full max-w-[220px]" role="img" aria-label={summary}>
+    <div className={cn("flex flex-col gap-1", className)}>
+      <svg viewBox={`0 0 ${TREND_WIDTH} ${TREND_HEIGHT}`} className="w-full max-w-[260px]" role="img" aria-label={summary}>
         <polygon
           points={`${TREND_PADDING},${TREND_HEIGHT} ${points.join(" ")} ${TREND_WIDTH - TREND_PADDING},${TREND_HEIGHT}`}
           className="fill-primary/10"
@@ -48,7 +48,7 @@ export function AccountsTrend({ values, currency, className }: AccountsTrendProp
         <polyline points={points.join(" ")} fill="none" strokeWidth={2} strokeLinejoin="round" className="stroke-primary" />
         <circle cx={lastX} cy={lastY} r={3.5} className="fill-primary" />
       </svg>
-      <p className={cn("text-xs tabular-nums", delta < 0 ? "text-neg" : delta > 0 ? "text-pos" : "text-muted-foreground")}>{summary}</p>
+      <p className={cn("text-sm tabular-nums", delta < 0 ? "text-neg" : delta > 0 ? "text-pos" : "text-text-2")}>{summary}</p>
     </div>
   );
 }

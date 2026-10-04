@@ -44,6 +44,10 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(new Date(now.getTime() - 3 * 60 * 60_000), now)).toBe("3 h fa");
   });
 
+  it("usa il singolare per 1 giorno fa", () => {
+    expect(formatRelativeTime(new Date(now.getTime() - 25 * 60 * 60_000), now)).toBe("1 giorno fa");
+  });
+
   it("restituisce i giorni per meno di 7 giorni fa", () => {
     expect(formatRelativeTime(new Date(now.getTime() - 2 * 24 * 60 * 60_000), now)).toBe("2 giorni fa");
   });

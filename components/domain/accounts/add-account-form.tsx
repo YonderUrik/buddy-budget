@@ -99,7 +99,7 @@ export function AddAccountForm({ currency, mode: modeProp, onSuccess }: AddAccou
             onClick={() => setMode(option.value)}
             aria-pressed={mode === option.value}
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+              "rounded-md px-4 py-2.5 text-sm font-medium sm:py-1.5 transition-colors cursor-pointer",
               mode === option.value
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -128,7 +128,7 @@ export function AddAccountForm({ currency, mode: modeProp, onSuccess }: AddAccou
             </AccountIconColorPicker>
             <div className="space-y-0.5">
               <p className="text-xs font-semibold text-foreground">Icona e Colore</p>
-              <p className="text-[10px] text-muted-foreground">Clicca l&apos;icona per personalizzarla</p>
+              <p className="text-xs text-text-2">Tocca l&apos;icona per personalizzarla</p>
             </div>
           </div>
 
@@ -146,7 +146,9 @@ export function AddAccountForm({ currency, mode: modeProp, onSuccess }: AddAccou
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-medium text-foreground">Tipo</label>
+            <label className="text-xs font-medium text-foreground" htmlFor="new-account-type">
+              Tipo
+            </label>
             <Select
               value={isCustomType ? CUSTOM_TYPE_VALUE : type}
               onValueChange={(value) => {
@@ -159,7 +161,7 @@ export function AddAccountForm({ currency, mode: modeProp, onSuccess }: AddAccou
                 setType(value as string);
               }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger id="new-account-type" className="w-full">
                 <SelectValue placeholder="Seleziona tipo conto" />
               </SelectTrigger>
               <SelectContent>

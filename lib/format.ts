@@ -55,7 +55,10 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   if (diffMs < MINUTE_MS) return "adesso";
   if (diffMs < HOUR_MS) return `${Math.floor(diffMs / MINUTE_MS)} min fa`;
   if (diffMs < DAY_MS) return `${Math.floor(diffMs / HOUR_MS)} h fa`;
-  if (diffMs < RELATIVE_TIME_MAX_DAYS * DAY_MS) return `${Math.floor(diffMs / DAY_MS)} giorni fa`;
+  if (diffMs < RELATIVE_TIME_MAX_DAYS * DAY_MS) {
+    const days = Math.floor(diffMs / DAY_MS);
+    return days === 1 ? "1 giorno fa" : `${days} giorni fa`;
+  }
   return new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(date);
 }
 

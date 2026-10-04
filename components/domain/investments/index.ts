@@ -56,6 +56,8 @@ export { ReturnHeatmapGrid, heatmapCellColor } from "./return-heatmap-grid";
 export type { ReturnHeatmapGridProps } from "./return-heatmap-grid";
 export { RiskCard } from "./risk/risk-card";
 export type { RiskCardProps } from "./risk/risk-card";
+export { RiskLevelMeter } from "./risk/risk-level-meter";
+export type { RiskLevelMeterProps } from "./risk/risk-level-meter";
 export { RiskMetric } from "./risk/risk-metric";
 export type { RiskMetricProps } from "./risk/risk-metric";
 export { DrawdownChart } from "./risk/drawdown-chart";

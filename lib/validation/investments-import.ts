@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INVESTMENT_TRANSACTION_TYPES } from "@/lib/db/schema/investments";
+import { INSTRUMENT_TYPES, INVESTMENT_TRANSACTION_TYPES } from "@/lib/db/schema/investments";
 import { createInstrumentSchema, INVESTMENT_NOTE_MAX_LENGTH } from "./investments";
 
 /** Strumenti distinti al massimo per richiesta di abbinamento (ognuno può costare una ricerca sulle fonti). */
@@ -20,6 +20,7 @@ export const resolveImportSchema = z.object({
         name: z.string().trim().max(200).nullable(),
         currency: z.string().regex(/^[A-Z]{3}$/).nullable(),
         symbolIsYahoo: z.boolean(),
+        type: z.enum(INSTRUMENT_TYPES).optional(),
       })
     )
     .min(1)
@@ -35,8 +36,12 @@ function checkImportedOperation(
   op: { type: string; quantity: number; price: number; grossAmount: number | null },
   ctx: z.RefinementCtx
 ): void {
+  if (op.type === "rettifica") {
+    if (op.grossAmount === null || op.price !== 0) ctx.addIssue({ code: "custom", message: "Rettifica di capitale non valida" });
+    return;
+  }
   const income = op.type === "dividendo" || op.type === "cedola";
-  if (income && op.grossAmount === null) ctx.addIssue({ code: "custom", message: "Importo non valido" });
+  if (income && !(op.grossAmount !== null && op.grossAmount > 0)) ctx.addIssue({ code: "custom", message: "Importo non valido" });
   if (!income && !(op.quantity > 0)) ctx.addIssue({ code: "custom", message: "Quantità non valida" });
   if (!income && op.type !== "acquisto" && !(op.price > 0)) ctx.addIssue({ code: "custom", message: "Prezzo non valido" });
 }
@@ -44,6 +49,9 @@ function checkImportedOperation(
 /** Import: a ogni chiave di strumento corrisponde uno strumento già esistente o da creare. */
 export const runImportSchema = z.object({
   dryRun: z.boolean(),
+  portfolioId: z.string().uuid().optional(),
+  /** CSV originale: il server ricalcola le operazioni e riconcilia il rendiconto. */
+  statementCsv: z.string().max(5 * 1024 * 1024).optional(),
   /** Formato del file (solo per l'evento di prodotto). */
   preset: z.string().max(40).nullable().optional(),
   instruments: z
@@ -59,7 +67,7 @@ export const runImportSchema = z.object({
         date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
         quantity: z.number().nonnegative(),
         price: z.number().nonnegative(),
-        grossAmount: z.number().positive().nullable(),
+        grossAmount: z.number().finite().nullable(),
         /** Se presente, tutti gli importi (anche costi) sono nella valuta sorgente dello strumento. */
         sourceCurrency: z.string().regex(/^[A-Z]{3}$/).optional(),
         fees: z.number().nonnegative(),

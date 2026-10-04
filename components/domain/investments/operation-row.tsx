@@ -13,6 +13,7 @@ import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investme
 import type { OperationInsight } from "@/lib/investments/operations-history";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { formatCurrency, formatDateWithYear } from "@/lib/format";
+import { useBrokerStatementsQuery } from "@/lib/queries/investments";
 import { GainText } from "./gain-text";
 
 const QUANTITY_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 6 });
@@ -20,6 +21,7 @@ const REMAINING_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits:
 
 function describe(t: InvestmentTransaction, instrument: Instrument | undefined): string {
   const currency = instrument?.currency ?? "";
+  if (t.type === "rettifica") return `Nessun movimento di cassa · base trasferita ${formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR")}`;
   if (t.type === "split") return `ogni quota diventa ${QUANTITY_FORMAT.format(Number(t.quantity))}`;
   if (t.type === "dividendo" || t.type === "cedola") {
     return `${formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR")} lordi`;
@@ -55,6 +57,9 @@ export interface OperationRowProps {
 
 export function OperationRow({ insight, instrument, currency, deleting, onEdit, onDelete }: OperationRowProps) {
   const t = insight.transaction;
+  const statements = useBrokerStatementsQuery();
+  const reconciled = statements.data?.statements.some((s) => s.portfolioId === t.portfolioId) ?? false;
+  const capitalAdjustment = t.type === "rettifica";
   const amount = t.type === "acquisto" ? insight.paid : insight.received;
   const details = [
     formatDateWithYear(t.date),
@@ -74,12 +79,12 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
         <p className="mt-0.5 text-xs text-muted-foreground">{details.join(" · ")}</p>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5 text-right">
-        {t.type === "split" ? null : (
+        {t.type === "split" || capitalAdjustment ? null : (
           <span className="text-sm font-medium tabular-nums text-foreground">{formatCurrency(amount, currency)}</span>
         )}
         <GainCell insight={insight} currency={currency} />
       </div>
-      {onEdit ? (
+      {onEdit && !capitalAdjustment && !reconciled ? (
         <Button
           variant="ghost"
           size="icon"
@@ -95,7 +100,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
         size="icon"
         className="size-9 shrink-0"
         aria-label="Elimina operazione"
-        disabled={deleting}
+        disabled={deleting || reconciled || capitalAdjustment}
         onClick={() => onDelete(t)}
       >
         <Trash2Icon className="size-4" aria-hidden="true" />

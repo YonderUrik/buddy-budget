@@ -1,0 +1,11 @@
+Data,Ora,Data Valore,Prodotto,ISIN,Descrizione,Borsa,Variazioni,,Saldo,,ID Ordine
+05-01-2023,10:00,05-01-2023,,,Flatex Interest Income,,EUR,"0,00",EUR,"800,00",
+04-01-2023,10:00,04-01-2023,,,Trasferisci sul tuo conto deposito presso flatexDEGIRO Bank: 800 EUR,,,,EUR,"800,00",
+04-01-2023,10:00,04-01-2023,FLATEX EURO BANKACCOUNT,NLFLATEXACNT,Degiro Cash Sweep Transfer,,EUR,"-800,00",EUR,"0,00",
+03-01-2023,10:00,03-01-2023,Synthetic Parent,US9000000011,Dividendo,,EUR,"5,00",EUR,"800,00",
+03-01-2023,10:00,03-01-2023,Synthetic Parent,US9000000011,Ritenuta sul dividendo,,EUR,"-1,00",EUR,"795,00",
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,Imposta sulle Transazioni Finanziarie Italiana,,EUR,"-1,00",EUR,"796,00",c44ec1b9-a7f0-4739-b10a-69124d7bd5de
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,DEGIRO costi di transazione e/o di terze parti,,EUR,"-3,00",EUR,"797,00",c44ec1b9-a7f0-4739-b10a-69124d7bd5de
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,Acquisto 1 Synthetic Parent@100 EUR (US9000000011),,EUR,"-100,00",EUR,"800,00",c44ec1b9-a7f0-4739-b10a-69124d7bd5de
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,Acquisto 1 Synthetic Parent@100 EUR (US9000000011),,EUR,"-100,00",EUR,"900,00",c44ec1b9-a7f0-4739-b10a-69124d7bd5de
+01-01-2023,10:00,01-01-2023,,,Deposito flatex,,EUR,"1000,00",EUR,"1000,00",

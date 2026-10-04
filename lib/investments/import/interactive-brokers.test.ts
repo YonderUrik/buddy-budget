@@ -15,7 +15,7 @@ describe("Interactive Brokers Activity Statement", () => {
     expect(result.operations[1]).toMatchObject({ type: "vendita", quantity: 2, price: 15, fees: 1 });
     expect(result.operations[2]).toMatchObject({ type: "dividendo", grossAmount: 100, taxes: 10 });
     expect(result.identities).toEqual([{ key: "isin:US0378331005:USD", symbol: "TEST", isin: "US0378331005", name: 'Synthetic "Test", Inc.', currency: "USD", symbolIsYahoo: false }]);
-    expect(result.issues.filter((i) => i.severity === "error")).toEqual([]);
+    expect(result.issues.filter((i) => i.severity === "error")).toEqual([expect.objectContaining({ section: "Corporate Actions", line: 26 })]);
     expect(runImportSchema.safeParse({ dryRun: true, instruments: [{ key: result.identities[0].key, create: { source: "manuale", name: "Test", type: "azione", currency: "USD" } }], operations: result.operations }).success).toBe(true);
   });
 

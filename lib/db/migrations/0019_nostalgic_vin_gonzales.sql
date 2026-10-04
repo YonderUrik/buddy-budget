@@ -1,0 +1,3 @@
+DROP INDEX "instruments_isin_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "instruments_private_isin_currency_unique" ON "instruments" USING btree ("created_by_user_id","isin","currency") WHERE "instruments"."isin" is not null and "instruments"."created_by_user_id" is not null;--> statement-breakpoint
+CREATE UNIQUE INDEX "instruments_isin_unique" ON "instruments" USING btree ("isin") WHERE "instruments"."isin" is not null and "instruments"."created_by_user_id" is null;

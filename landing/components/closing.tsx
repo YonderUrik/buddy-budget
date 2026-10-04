@@ -14,10 +14,10 @@ export function Closing() {
     <TrackedSection id="fine" section="fine" className="end" navDark>
       <div className="wrap">
         <Reveal stagger distance={50}>
-          <h2>Scopri quanto <em>vali</em>.</h2>
+          <h2>Parti da un conto, aggiungi il resto quando vuoi.</h2>
           <div className="cta">
             <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup">
-              Prova gratis{ARROW_ICON}
+              Crea un account{ARROW_ICON}
             </CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="closing" target="login">Accedi</CtaLink>
           </div>

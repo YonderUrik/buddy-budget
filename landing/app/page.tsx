@@ -1,23 +1,19 @@
-import { ToolsSection } from "@/components/tools-section";
-import { Faq } from "@/components/faq";
+import { Answers } from "@/components/answers";
 import { Closing } from "@/components/closing";
+import { Faq } from "@/components/faq";
 import { FeaturesSection } from "@/components/features-section";
-import { HeadingReveals } from "@/components/heading-reveals";
 import { Hero } from "@/components/hero";
-import { ProductTour } from "@/components/product-tour";
 import { Security } from "@/components/security";
 import { SiteNav } from "@/components/site-nav";
-import { Story } from "@/components/story";
+import { ToolsSection } from "@/components/tools-section";
 
 export default function HomePage() {
   return (
     <>
       <SiteNav />
-      <HeadingReveals />
       <main>
         <Hero />
-        <Story />
-        <ProductTour />
+        <Answers />
         <FeaturesSection />
         <Security />
         <ToolsSection />

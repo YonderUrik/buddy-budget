@@ -26,8 +26,8 @@ export default function Page() {
       ctaLocation="schermate"
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.schermate}`, inLanguage: "it-IT" }} />
-      <h1>Tutto quello che vedi è l&apos;app</h1>
-      <p className="lead">Niente mockup: sono screenshot dell&apos;app vera, con dati di esempio inventati. Scegli una schermata.</p>
+      <h1>Le schermate dell&apos;app</h1>
+      <p className="lead">Sono screenshot dell&apos;app vera, con dati di esempio inventati. Scegli una schermata.</p>
       <ScreenGallery />
     </ContentPage>
   );

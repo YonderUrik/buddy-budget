@@ -12,9 +12,9 @@ pnpm build        # genera out/
 ## Dove si cambia cosa
 
 - `content/catalog.generated.ts`: **copia generata** del catalogo condiviso `../lib/features/catalog.ts`, che è l'unico elenco delle funzioni (landing, pannello "In arrivo" del login, test della sidebar). Non si modifica a mano: si cambia il catalogo, poi `pnpm sync:features` e si committa. `pnpm check:features` (in CI) fallisce se le due copie divergono. Perché una copia: l'immagine Docker e Turbopack vedono solo `landing/`.
-- `content/site.ts`: titoli, passi del tour, storia, righe del confronto, fondatore.
+- `content/site.ts`: titoli, FAQ, sicurezza, indirizzi. `content/questions.ts`: le domande della home con caso e cifra (calcolate, mai scritte a mano).
 - `content/demo.ts`: dati finti mostrati nella finestra dell'app (nessun dato reale).
-- `components/`: sezioni e animazioni (GSAP + ScrollTrigger, scroll morbido con Lenis). Con `prefers-reduced-motion: reduce` la pagina resta statica.
+- `components/`: sezioni e animazioni (GSAP per gli ingressi). Con `prefers-reduced-motion: reduce` la pagina resta statica.
 
 ## Variabili d'ambiente (tutte pubbliche, lette in fase di build)
 
@@ -32,4 +32,4 @@ Immagine nginx (`Dockerfile`, config in `nginx.conf`) costruita dalla CI e servi
 
 ## Eventi Umami
 
-`cta_click` (location, target), `section_view`, `tour_step_viewed`, `catalog_area_selected`, `simulator_used`, `hide_amounts_toggled`, `source_link_click`, `theme_toggled`. Il tipo chiuso è in `lib/analytics.ts`: props solo categoriche, mai dati personali.
+`cta_click` (location, target), `section_view`, `question_selected`, `question_tool_click`, `catalog_area_selected`, `simulator_used`, `hide_amounts_toggled`, `source_link_click`, `theme_toggled`. Il tipo chiuso è in `lib/analytics.ts`: props solo categoriche, mai dati personali.

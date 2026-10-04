@@ -19,10 +19,10 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ContentPage crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Calcolatori" }, { label: "Zainetto fiscale" }]} ctaTitle="Il tuo zainetto, sempre aggiornato." ctaText="In BuddyBudget le minusvalenze, le scadenze a 4 anni, il bollo e l'imposta di una vendita ipotetica si calcolano dalle tue operazioni, senza rifare il foglio ogni anno." ctaLocation="calcolatore_zainetto">
+    <ContentPage crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Calcolatori" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto si aggiorna da solo." ctaText="In BuddyBudget minusvalenze, scadenze a 4 anni, bollo e imposta di una vendita ipotetica si calcolano dalle tue operazioni. Non c'è un foglio da rifare ogni anno." ctaLocation="calcolatore_zainetto">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebApplication", name: "Calcolatore zainetto fiscale", url: `${SITE_URL}${CONTENT_PATHS.zainetto}`, applicationCategory: "FinanceApplication", operatingSystem: "Web", inLanguage: "it-IT", description: DESCRIPTION, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" } }} />
       <h1>Calcolatore dello zainetto fiscale</h1>
-      <p className="lead">Inserisci la plusvalenza dell&apos;anno e le minusvalenze che ti porti dietro: vedi quali puoi ancora usare, quante ne compensi e quanta imposta paghi davvero.</p>
+      <p className="lead">Inserisci la plusvalenza dell&apos;anno e le minusvalenze che ti porti dietro: vedi quali puoi ancora usare, quante ne compensi e quanta imposta paghi.</p>
       <ZainettoCalculator />
       <p className="note">Stima semplificata: una sola categoria di reddito, nessun arrotondamento di legge, regole dei titoli di Stato non ponderate. Non sostituisce il rendiconto del tuo intermediario né un consulente.</p>
       <h2>Come funziona il calcolo</h2>

@@ -7,7 +7,7 @@ Le immagini dell'app che si vedono su buddybudget.io non sono disegnate: sono **
 1. **Dati di esempio** (`scripts/demo-seed.ts`): crea in un database vuoto un utente fittizio ("Giulia Demo") con conti, ~300 movimenti, investimenti, un mutuo e una linea Lombard. I numeri sono deterministici (stesso risultato a ogni esecuzione) e lo storico del patrimonio è calcolato dal codice vero (`snapshotUser`). Rifiuta di girare su un DB che contiene altri utenti.
 2. **App vera**: `next build && next start` con `DATABASE_URL` che punta a quel DB.
 3. **Cattura** (`landing/scripts/capture-screens.mjs`): Playwright apre ogni schermata elencata in `landing/content/screens.ts`, con un cookie di sessione firmato per l'utente demo, in tema chiaro e scuro, e salva `landing/public/screens/{light,dark}/<id>.jpg` (1280×800 a 1,5x) più `manifest.json`.
-4. **Landing**: il componente `AppShot` mostra l'immagine del tema corrente; galleria, hero e tour usano solo queste immagini.
+4. **Landing**: il componente `AppShot` mostra l'immagine del tema corrente; galleria e risposte della home usano solo queste immagini.
 
 ## Cosa impedisce che diventino false
 

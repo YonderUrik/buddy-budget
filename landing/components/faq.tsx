@@ -8,8 +8,7 @@ export function Faq() {
   return (
     <TrackedSection id="domande" section="domande" className="sec faq band">
       <div className="wrap">
-        <div className="kicker">Domande frequenti</div>
-        <h2 className="t">Prima di iniziare.</h2>
+        <h2 className="t">Domande frequenti.</h2>
         <Reveal>
           <div className="faq-list">
             {FAQ.map((item) => (

@@ -1,17 +1,19 @@
 import type { FeatureArea } from "@/content/catalog.generated";
+import type { QuestionId } from "@/content/questions";
 import type { ScreenId } from "@/content/screens";
 
 /** Sezioni della pagina misurate con `section_view`. */
-export type SectionId = "hero" | "perche" | "prodotto" | "schermate" | "funzioni" | "sicurezza" | "strumenti" | "domande" | "fine";
+export type SectionId = "hero" | "risposte" | "schermate" | "funzioni" | "sicurezza" | "strumenti" | "domande" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).
  * Props solo categoriche: mai dati personali. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface LandingEvents {
-  cta_click: { location: "nav" | "hero" | "closing" | "funzioni" | "schermate" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "guida_zainetto" | "funzione_investimenti"; target: "signup" | "login" | "how_it_works" };
+  cta_click: { location: "nav" | "hero" | "closing" | "funzioni" | "schermate" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "guida_zainetto" | "funzione_investimenti"; target: "signup" | "login" | "calculator" };
   section_view: { section: SectionId };
-  tour_step_viewed: { step: "collega" | "capisci" | "investi" | "prepara" | "decidi" };
+  question_selected: { question: QuestionId };
+  question_tool_click: { question: QuestionId };
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };

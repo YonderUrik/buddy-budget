@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AppShot } from "@/components/app-shot";
 import { ContentPage } from "@/components/content-page";
 import { JsonLd } from "@/components/json-ld";
 import { Sources } from "@/components/sources";
@@ -27,10 +28,9 @@ export default function Page() {
   return (
     <ContentPage crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Funzioni" }, { label: "Investimenti" }]} ctaTitle="Prova gli investimenti con i tuoi dati." ctaText="Collega la banca, aggiungi le operazioni o importa un CSV, e vedi il quadro completo con le tasse già dentro." ctaLocation="funzione_investimenti">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.funzioneInvestimenti}`, inLanguage: "it-IT" }} />
-      <h1>Gli investimenti, con le tasse italiane già dentro</h1>
-      <p className="lead">ETF, azioni, BTP, fondi e crypto in un solo posto, accanto ai tuoi conti e ai tuoi debiti. Il rendimento è quello vero e le tasse sono quelle italiane.</p>
-      {/* eslint-disable-next-line @next/next/no-img-element -- sito statico, immagini non ottimizzate */}
-      <img className="shot" src="/screens/dark/investimenti.jpg" alt="Investimenti: valore del portafoglio, rendimento e posizioni nell'app BuddyBudget" width={1920} height={1200} loading="eager" />
+      <h1>Investimenti, con le tasse italiane</h1>
+      <p className="lead">ETF, azioni, BTP, fondi e crypto in un solo posto, accanto ai tuoi conti e ai tuoi debiti. Il rendimento è calcolato dalle tue operazioni e le tasse seguono le regole italiane.</p>
+      <AppShot id="investimenti" className="cp-shot" priority />
       <div className="fn-grid">
         {BLOCKS.map((b) => (
           <div key={b.title} className={`fn-card tone-${b.tone}`}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={b.icon} /></svg><h3>{b.title}</h3><p>{b.text}</p></div>

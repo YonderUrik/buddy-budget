@@ -26,7 +26,7 @@ const NAV = [
 export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, disclaimer = true, wide = false }: { crumbs: readonly Crumb[]; children: ReactNode; ctaTitle: string; ctaText: string; ctaLocation: CtaLocation; disclaimer?: boolean; wide?: boolean }) {
   return (
     <>
-      <PageBar label="Sezioni del sito" links={NAV} action={<CtaLink className="btn main sm" href={APP_LINKS.signup} location={ctaLocation} target="signup">Prova gratis</CtaLink>} />
+      <PageBar label="Sezioni del sito" links={NAV} action={<CtaLink className="btn main sm" href={APP_LINKS.signup} location={ctaLocation} target="signup">Crea un account</CtaLink>} />
       <main className="cp">
         <div className={`wrap cp-wrap${wide ? " cp-wide" : ""}`}>
           <nav className="cp-crumbs" aria-label="Percorso">
@@ -42,7 +42,7 @@ export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, 
             <h2>{ctaTitle}</h2>
             <p>{ctaText}</p>
             <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup">
-              Prova gratis{ARROW_ICON}
+              Crea un account{ARROW_ICON}
             </CtaLink>
           </div>
         </aside>

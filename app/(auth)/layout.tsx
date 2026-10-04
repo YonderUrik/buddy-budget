@@ -13,10 +13,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="flex flex-col gap-6">
           <div className="max-w-xl">
             <h2 className="font-heading text-4xl font-medium leading-[1.05] tracking-tight text-balance xl:text-5xl">
-              Tutta la tua finanza, in una sola schermata.
+              Conti, investimenti, pensione e debiti insieme.
             </h2>
             <p className="mt-4 text-base leading-relaxed text-sidebar-foreground/75 [@media(max-height:1100px)]:hidden">
-              Conti, movimenti, investimenti, pensione e debiti si leggono insieme: collega le tue banche e vedi dove va ogni euro, e quanto vale davvero ciò che hai.
+              Collega le tue banche e vedi dove va ogni euro. Il patrimonio netto è la somma di conti, investimenti e fondo pensione, meno i debiti.
             </p>
           </div>
 

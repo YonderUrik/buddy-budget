@@ -1,0 +1,29 @@
+.answers { padding-top: 56px; }
+.answers h2.t { max-width: 18em; }
+.qa { list-style: none; margin: 44px 0 0; padding: 0; display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 0 44px; align-items: start; grid-template-rows: repeat(var(--n), auto) 1fr; }
+.qa li { display: contents; }
+.qa button { grid-column: 1; text-align: left; background: none; border: 0; border-left: 3px solid transparent; padding: 16px 20px; font: 500 17px/1.3 var(--f-b); color: var(--ink2); cursor: pointer; transition: color 0.2s, background 0.2s; }
+.qa button:hover { color: var(--ink); }
+.qa li.on button { color: var(--ink); border-left-color: var(--accent); background: var(--bg-alt); }
+.ans { grid-column: 2; grid-row: 1 / -1; min-width: 0; animation: ans-in 0.4s var(--ease); }
+.ans[hidden] { display: none; }
+.ans h3 { font: 600 clamp(24px, 2.6vw, 32px) / 1.15 var(--f-h); letter-spacing: -0.03em; }
+.ans-text { color: var(--ink2); font-size: 18px; max-width: 38em; margin-top: 12px; }
+.ans-case { margin: 22px 0 0; padding: 18px 20px; border-radius: 12px; background: var(--bg-alt); max-width: 38em; }
+.ans-label { font: 600 12px var(--f-b); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.ans-case > p:not(.ans-fig) { margin-top: 6px; font-size: 17px; color: var(--ink); }
+.ans-fig { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 14px; margin-top: 14px; }
+.ans-fig strong { font: 600 clamp(34px, 4vw, 46px) / 1 var(--f-h); letter-spacing: -0.035em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.ans-fig span { font-size: 15px; color: var(--ink2); max-width: 28em; }
+.ans-note { font-size: 14px; color: var(--ink3); margin: 12px 0 0; }
+.ans-tool { display: inline-block; margin: 10px 0 0; color: var(--accent); font-weight: 600; font-size: 15px; text-underline-offset: 3px; }
+.ans .shot { margin-top: 26px; }
+@keyframes ans-in { from { opacity: 0; transform: translateY(8px); } }
+@media (max-width: 900px) {
+  .qa { display: block; }
+  .qa li { display: block; border-top: 1px solid var(--line); }
+  .qa li:last-child { border-bottom: 1px solid var(--line); }
+  .qa button { width: 100%; padding: 18px 4px; }
+  .qa li.on button { background: none; }
+  .ans { padding: 4px 4px 24px; }
+}

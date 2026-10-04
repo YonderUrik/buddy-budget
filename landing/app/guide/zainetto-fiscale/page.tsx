@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ContentPage crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Guide" }, { label: "Zainetto fiscale" }]} ctaTitle="Smetti di tenere il conto a mano." ctaText="BuddyBudget ricostruisce lo zaino fiscale dalle tue operazioni e ti dice quando una minusvalenza sta per scadere." ctaLocation="guida_zainetto">
+    <ContentPage crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Guide" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto lo tiene BuddyBudget." ctaText="BuddyBudget ricostruisce lo zaino fiscale dalle tue operazioni e ti avvisa quando una minusvalenza sta per scadere." ctaLocation="guida_zainetto">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: TITLE, description: DESCRIPTION, inLanguage: "it-IT", mainEntityOfPage: `${SITE_URL}${CONTENT_PATHS.guidaZainetto}`, author: { "@type": "Organization", name: "BuddyBudget" }, publisher: { "@type": "Organization", name: "BuddyBudget" } }} />
       <h1>Zainetto fiscale: cos&apos;è e come recuperare le minusvalenze</h1>
       <p className="lead">Se vendi un investimento in perdita, quella perdita non è tutta persa: per quattro anni puoi usarla per ridurre le tasse sui guadagni futuri. Questo &ldquo;serbatoio&rdquo; di perdite è lo zainetto fiscale.</p>

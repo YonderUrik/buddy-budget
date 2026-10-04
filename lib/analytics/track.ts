@@ -13,6 +13,12 @@ export interface ProductEvents {
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   account_sync_manual: undefined;
+  /** Modifica di un conto dalla finestra dei dettagli; `field`: cosa è cambiato, `kind`: conto manuale o collegato alla banca. */
+  account_updated: { field: "name" | "type" | "balance" | "appearance"; kind: "manuale" | "collegato" };
+  /** Eliminazione di un conto manuale o scollegamento di uno collegato. */
+  account_removed: { kind: "manuale" | "collegato" };
+  /** Apertura dei dettagli di un conto dalla lista (serve a capire se la riga cliccabile viene usata). */
+  account_details_opened: { kind: "manuale" | "collegato" };
   /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
   bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" };
   transaction_added: { direction: "entrata" | "uscita" };

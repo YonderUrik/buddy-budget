@@ -42,90 +42,6 @@ export const FAQ: readonly FaqItem[] = [
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
 export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 
-import { simulateEarlyRepayment } from "@/lib/tools/ammortamento";
-
-/** Cifra d'esempio che compare sulla schermata del passo e conta fino al valore. I numeri sono calcolati o verificabili a mano, mai inventati a occhio. */
-export interface TourFigure {
-  label: string;
-  value: number;
-  /** `eur` aggiunge "€", `ore` aggiunge "h". */
-  unit: "eur" | "ore";
-  note: string;
-  /** `pos` colora la cifra col verde del denaro risparmiato. */
-  tone?: "pos";
-}
-
-/** Plusvalenza 2.000 € con 1.200 € di minusvalenze nello zainetto: 26% su 800 € = 208 € invece di 520 €. */
-const ZAINO_SAVING = Math.round(2000 * 0.26 - (2000 - 1200) * 0.26);
-
-/** Mutuo di 120.000 € al 3% su 240 rate, 20.000 € estinti dopo 5 anni senza penale (mutuo prima casa). */
-const EARLY_REPAYMENT_SAVING = Math.round(simulateEarlyRepayment({ principal: 120000, annualRatePct: 3, months: 240, afterMonths: 60, extra: 20000, penaltyPct: 0 }).netSaving);
-
-/** Spesa annua 30.000 € con tasso di prelievo del 3,5%: 30.000 ÷ 0,035 = 857.143 €. */
-const FIRE_EXAMPLE_NUMBER = Math.round(30000 / 0.035);
-
-export interface TourStep {
-  kicker: string;
-  title: string;
-  text: string;
-  bullets: readonly string[];
-  figure?: TourFigure;
-}
-
-export const TOUR_STEPS: readonly TourStep[] = [
-  {
-    kicker: "Collega",
-    title: "I movimenti arrivano da soli.",
-    text: "Colleghi la banca in sola lettura e ogni movimento entra con il testo grezzo dell'estratto. Per il contante c'è il conto manuale.",
-    bullets: ["Open Banking, aggiornamento ogni 12 ore", "Conti manuali per contanti e risparmi"],
-    figure: { label: "Aggiornamento", value: 12, unit: "ore", note: "Ogni 12 ore, più un pulsante per farlo subito." },
-  },
-  {
-    kicker: "Capisci",
-    title: "Sai dove vanno i soldi.",
-    text: "Confermi un negozio una volta e dalla volta dopo BuddyBudget lo riconosce. Le spese si dividono in quattro gruppi, con un budget per categoria.",
-    bullets: ["Dovute, Volute, Te futuro, Saltuarie", "Regole che vedi e puoi modificare"],
-  },
-  {
-    kicker: "Investi",
-    title: "Quanto rende, e quanto paghi.",
-    text: "Il rendimento vero, confrontato con un indice a parità di versamenti, più rischio e diversificazione. E l'imposta che pagheresti vendendo oggi.",
-    bullets: ["Plusvalenze, zaino fiscale a 4 anni e bollo", "ETF, azioni, BTP, fondi e crypto"],
-    figure: { label: "Imposta risparmiata", value: ZAINO_SAVING, unit: "eur", tone: "pos", note: "Esempio: plusvalenza di 2.000 € con 1.200 € di minusvalenze nello zainetto." },
-  },
-  {
-    kicker: "Prepara",
-    title: "Il fondo pensione, finalmente leggibile.",
-    text: "Il tuo provider mostra solo contributi netti e controvalore? Inserisci i due numeri ogni tanto, o importa lo storico da CSV o Excel: BuddyBudget ricava versamenti e rendimento vero, ti dice quanto ti resterebbe prelevando oggi e se convengono di più il fondo o il TFR in azienda.",
-    bullets: ["Import dello storico da CSV o Excel", "Stima al netto delle tasse, con una forbice onesta", "Proiezione in termini reali, dentro il patrimonio netto"],
-  },
-  {
-    kicker: "Decidi",
-    title: "Scegli con i conti già fatti.",
-    text: "Estinguere un finanziamento riducendo la rata o la durata? Surrogarlo? Il confronto è pronto, con interessi risparmiati, penale e costi.",
-    bullets: ["Piano di ammortamento e TAEG", "Surroga, valanga e Credit Lombard"],
-    figure: { label: "Interessi risparmiati", value: EARLY_REPAYMENT_SAVING, unit: "eur", tone: "pos", note: "Esempio: mutuo di 120.000 € al 3%, 20.000 € estinti dopo 5 anni." },
-  },
-  {
-    kicker: "Approfondisci",
-    title: "Per chi vuole sapere quanto manca alla libertà.",
-    text: "Una sezione a parte, per chi vuole entrarci: il numero FIRE al netto delle imposte, migliaia di scenari di mercato per capire se il patrimonio dura, il confronto tra regole di prelievo, rischio e costi. Ogni numero è spiegato e parte da ipotesi che scegli tu.",
-    bullets: ["Simulazione Monte Carlo e regole di prelievo a confronto", "Rischio, costi e imposta latente, tutto spiegato"],
-    figure: { label: "Numero FIRE", value: FIRE_EXAMPLE_NUMBER, unit: "eur", note: "Esempio: 30.000 € di spesa annua con un tasso di prelievo del 3,5%." },
-  },
-];
-
-export const STORY = {
-  title: "Il tuo patrimonio non sta in un posto solo. BuddyBudget sì.",
-  text: "Conti in banca, titoli sul broker, un mutuo, un foglio di calcolo per le tasse. Ogni pezzo ha la sua app, e nessuna ti dice quanto hai davvero. BuddyBudget li mette insieme e fa i conti con le regole italiane.",
-} as const;
-
-export const STORY_POINTS = [
-  { title: "Tutto sparso.", text: "Conti, titoli e debiti stanno in posti diversi. Qui sono insieme, e il patrimonio netto si aggiorna da solo." },
-  { title: "Le tasse a occhio.", text: "Plusvalenze, zaino fiscale e bollo calcolati dalle tue operazioni, senza un foglio da rifare ogni anno." },
-  { title: "Una pensione che è un grafico.", text: "Quanto hai versato, quanto rende, quanto ti resterebbe: lo ricavi dai due numeri che già vedi, con le tasse in uscita." },
-] as const;
-
 /** Illustrazione animata del riquadro (vedi `SecurityArt`). */
 export type SecurityArtId = "password" | "bank" | "sell" | "control";
 
@@ -138,8 +54,8 @@ export interface SecurityPoint {
 /** Cosa fa BuddyBudget per i dati: solo fatti verificabili nel codice o nell'infrastruttura, niente promesse generiche. */
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
-  title: "I tuoi soldi sono affari tuoi. Anche per noi.",
-  intro: "Un'app che vede i tuoi conti deve meritarsi la fiducia. I server sono in Germania, le connessioni cifrate, e questi sono gli impegni.",
+  title: "Cosa vede BuddyBudget dei tuoi dati, e cosa no.",
+  intro: "I server sono in Germania e le connessioni sono cifrate. Questi sono gli impegni, uno per uno.",
   points: [
     { art: "password", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
     { art: "bank", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },

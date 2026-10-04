@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { SCREENS, SCREEN_THEMES, screenSrc, TOUR_SCREEN_IDS } from "./screens";
+import { SCREENS, SCREEN_THEMES, screenSrc } from "./screens";
 
 const LANDING_ROOT = join(__dirname, "..");
 const APP_PAGES = join(LANDING_ROOT, "..", "app", "(app)");
@@ -34,9 +34,8 @@ describe("schermate della landing", () => {
         expect(existsSync(join(LANDING_ROOT, "public", screenSrc(screen.id, theme))), `${theme}/${screen.id}`).toBe(true);
   });
 
-  it("gli id sono unici e il tour usa schermate esistenti", () => {
+  it("gli id sono unici", () => {
     const ids = SCREENS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const id of TOUR_SCREEN_IDS) expect(ids).toContain(id);
   });
 });

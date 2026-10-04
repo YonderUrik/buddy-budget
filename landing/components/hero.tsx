@@ -1,89 +1,27 @@
-"use client";
-
-import { useRef, type PointerEvent } from "react";
 import "./hero.css";
 import { APP_LINKS } from "@/content/site";
-import Link from "next/link";
 import { CONTENT_PATHS } from "@/content/seo-pages";
-import { track } from "@/lib/analytics";
-import { useSectionView } from "@/lib/use-section-view";
-import { EASE_OUT, gsap, MOTION_OK, useGSAP } from "@/lib/motion/gsap";
-import { AppShot } from "./app-shot";
 import { ARROW_ICON, CtaLink } from "./cta-link";
+import { TrackedSection } from "./tracked-section";
 
-/**
- * Apertura: il titolo entra riga per riga, poi sale la schermata vera dell'app (Panoramica).
- * Scrollando, la finestra si raddrizza e cresce (trasformazioni GPU, nessun layout).
- */
+/** Apertura: una frase che dice cosa fa BuddyBudget, due azioni (creare l'account o provare un calcolatore senza account). */
 export function Hero() {
-  const root = useRef<HTMLElement>(null);
-  useSectionView(root, "hero");
-  const stage = useRef<HTMLDivElement>(null);
-  const tilt = useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      const mm = gsap.matchMedia();
-      mm.add(MOTION_OK, () => {
-        gsap
-          .timeline({ defaults: { ease: EASE_OUT } })
-          .fromTo("h1 .ln > span", { yPercent: 112, y: 0 }, { yPercent: 0, y: 0, duration: 1.4, stagger: 0.14, delay: 0.1 })
-          .fromTo(".hrow > *", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 1, stagger: 0.1 }, "-=1")
-          .fromTo(tilt.current, { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 1.6 }, "-=0.9");
-        gsap.fromTo(
-          tilt.current,
-          { rotateX: 12, scale: 0.93 },
-          { rotateX: 0, scale: 1, ease: "none", scrollTrigger: { trigger: stage.current, start: "top 85%", end: "top 18%", scrub: 0.8 } },
-        );
-      });
-      return () => mm.revert();
-    },
-    { scope: root },
-  );
-
-  const onMove = (e: PointerEvent<HTMLElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-  };
-
   return (
-    <section id="top" className="hero" ref={root} onPointerMove={onMove}>
-      <div>
-        <div className="wrap">
-          <h1 aria-label="Quanto vali, davvero?">
-            <span className="ln"><span>Quanto <em>vali</em>,</span></span>
-            <span className="ln"><span>davvero?</span></span>
-          </h1>
-          <div className="hrow">
-            <p>Conti, investimenti, fondo pensione e debiti in un solo numero: il tuo patrimonio netto, con le tasse italiane già calcolate.</p>
-            <div className="cta">
-              <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
-                Prova gratis{ARROW_ICON}
-              </CtaLink>
-              <a className="btn ghost" href="#prodotto" onClick={() => track("cta_click", { location: "hero", target: "how_it_works" })}>
-                Guarda come funziona
-              </a>
-            </div>
-            <span className="small">
-              Collega la banca in sola lettura. Oppure prova senza account il <Link href={CONTENT_PATHS.zainetto}>calcolatore dello zainetto fiscale</Link>.
-            </span>
-          </div>
-        </div>
-        <div className="stage" ref={stage}>
-          <div className="wrap">
-            <div className="inner">
-              <div className="tilt" ref={tilt}>
-                <AppShot id="panoramica" priority />
-              </div>
-            </div>
-            <div className="duo">
-              <AppShot id="simulatore" />
-              <AppShot id="lombard" />
-            </div>
-          </div>
+    <TrackedSection id="top" section="hero" className="hero">
+      <div className="wrap">
+        <h1>Le domande sui tuoi soldi, senza aprire Excel.</h1>
+        <p className="hero-lede">
+          BuddyBudget tiene insieme conti, investimenti, fondo pensione e debiti, e calcola le tasse con le regole italiane. Per ora è gratuito.
+        </p>
+        <div className="cta">
+          <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
+            Crea un account{ARROW_ICON}
+          </CtaLink>
+          <CtaLink className="btn ghost" href={CONTENT_PATHS.zainetto} location="hero" target="calculator">
+            Prova il calcolatore, senza account
+          </CtaLink>
         </div>
       </div>
-    </section>
+    </TrackedSection>
   );
 }

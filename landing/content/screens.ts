@@ -54,6 +54,3 @@ export type ScreenId = (typeof SCREENS)[number]["id"];
 export function screenSrc(id: ScreenId, theme: ScreenTheme): string {
   return `/screens/${theme}/${id}.jpg`;
 }
-
-/** Screenshot del tour, per passo (stesso ordine di `TOUR_STEPS`). */
-export const TOUR_SCREEN_IDS = ["conti", "movimenti", "investimenti", "pensione-scenari", "debiti", "analitiche"] as const;

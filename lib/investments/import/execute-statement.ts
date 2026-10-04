@@ -3,12 +3,15 @@ import { createHash } from "node:crypto";
 import { and, eq, gte, lte, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
+import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
+import { statementSourceScope } from "./source-scope";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { instruments, investmentPortfolios, investmentTransactions, userInstrumentPrices, type Instrument } from "@/lib/db/schema/investments";
 import type { RunImportInput } from "@/lib/validation/investments-import";
 import { findVisibleInstrument } from "../instruments";
 import { toRowValues } from "../operations";
-import { parseInteractiveBrokersActivity } from "./interactive-brokers";
+import { statementCashComponents } from "./broker-statement";
+import { parseBrokerStatement } from "./parse-statement";
 import { resolveFxRates, type ImportDeps } from "./execute";
 import { planImport } from "./plan";
 import type { ImportResult } from "./types";
@@ -19,14 +22,16 @@ const failed = (error: string): ImportResult => ({ error, rows: [], counts: { ne
 /** Import a full statement atomically after cash, positions and period continuity checks. */
 export async function runStatementImport(userId: string, input: RunImportInput, deps: ImportDeps): Promise<ImportResult> {
   let parsed;
-  try { parsed = parseInteractiveBrokersActivity(input.statementCsv!, deps.todayKey); }
+  try { parsed = parseBrokerStatement(input.statementCsv!, deps.todayKey); }
   catch (e) { return failed(e instanceof Error ? e.message : "Rendiconto non valido"); }
   const statement = parsed.statement;
   if (!statement) return failed("Per l'import completo servono Cash Report e Net Asset Value");
   if (statement.to > deps.todayKey) return failed("Il rendiconto contiene date future");
   const errors = [...statement.issues, ...parsed.issues.filter((i) => i.severity === "error").map((i) => `Riga ${i.line}: ${i.message}`)];
   if (errors.length) return failed(errors.join("; "));
-  const accountKey = hash(statement.account);
+  const provider = parsed.preset;
+  const brokerName = provider === "degiro" ? "DEGIRO" : "Interactive Brokers";
+  const accountKey = hash(provider === "degiro" ? `degiro:${statement.account}` : statement.account);
   const fingerprint = hash(JSON.stringify(parsed.records.map(({ section, kind, values }) => [section, kind, values])));
   const sourceRows = parsed.operations.map((op) => ({ line: op.line, status: "duplicate" as const }));
   const duplicate = (): ImportResult => ({ rows: sourceRows, counts: { new: 0, duplicate: sourceRows.length, error: 0 }, inserted: 0, instrumentsCreated: 0 });
@@ -56,7 +61,8 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     if (instrument && (instrument.currency !== identity.currency || (identity.isin && instrument.isin && instrument.isin !== identity.isin))) return failed(`Strumento o valuta non corrispondenti per ${identity.symbol}`);
     byKey.set(identity.key, instrument);
   }
-  const fx = await resolveFxRates([...parsed.operations.map((o) => ({ line: o.line, date: o.date, currency: o.sourceCurrency })), { line: -1, date: statement.to, currency: statement.currency }], deps);
+  const cashComponents = statementCashComponents(statement);
+  const fx = await resolveFxRates([...parsed.operations.flatMap((o) => [{ line: o.line, date: o.date, currency: o.brokerFxToEur ? "EUR" : o.sourceCurrency }, ...(o.costCurrency || o.brokerFxToEur ? [{ line: -o.line - 2, date: o.date, currency: o.costCurrency ?? "EUR" }] : [])]), ...cashComponents.map((c, i) => ({ line: -1000000 - i, date: statement.to, currency: c.currency }))], deps);
   if ([...fx.values()].some((r) => r === null)) return failed("Cambio storico non disponibile: nessuna operazione salvata");
   const result = await db.transaction(async (tx): Promise<ImportResult> => {
     // Serialize imports per user: concurrent reimports cannot create duplicate portfolios, trades or ledgers.
@@ -86,9 +92,20 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
       const opening = previous?.statement.cash.find((c) => c.currency === cash.currency)?.closing ?? 0;
       if (Math.abs(opening - cash.opening) > 0.0001) return failed(`Saldo iniziale ${cash.currency} diverso dalla chiusura precedente: importa prima lo storico mancante`);
     }
-    const broker = `ibkr:${accountKey}`;
-    let [portfolio] = await tx.select().from(investmentPortfolios).where(and(eq(investmentPortfolios.userId, userId), eq(investmentPortfolios.broker, broker)));
-    const allExisting = portfolio ? await tx.select().from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id))) : [];
+    const broker = `${provider === "degiro" ? "degiro" : "ibkr"}:${accountKey}`;
+    const [source] = await tx.select().from(brokerImportAccounts).where(and(eq(brokerImportAccounts.userId, userId), eq(brokerImportAccounts.accountKey, accountKey)));
+    const establishedPortfolio = source?.portfolioId ?? docs[0]?.portfolioId;
+    if (input.portfolioId && establishedPortfolio && input.portfolioId !== establishedPortfolio) return failed("Questo conto broker è già collegato a un altro portafoglio");
+    const targetId = establishedPortfolio ?? input.portfolioId;
+    const candidates = await tx.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId));
+    let portfolio = targetId ? candidates.find((p) => p.id === targetId) : candidates.find((p) => p.broker === broker);
+    if (targetId && !portfolio) return failed("Portafoglio non accessibile");
+    if (!portfolio && provider === "degiro") {
+      if (candidates.length > 1) return failed("Scegli il portafoglio in cui importare DEGIRO");
+      portfolio = candidates[0];
+    }
+    const sourceFilter = statementSourceScope(accountKey, portfolio?.broker ?? null);
+    const allExisting = portfolio ? await tx.select().from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter)) : [];
     const existing = allExisting.filter((o) => o.date < statement.from);
     const following = allExisting.filter((o) => o.date > statement.to);
     const replacedOperations = allExisting.filter((o) => o.date >= statement.from && o.date <= statement.to).length;
@@ -113,6 +130,7 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
       }
     }
     const expected = new Map(statement.positions.map((p) => [`${p.symbol}:${p.currency}`, p.quantity]));
+    if (statement.positionsReported !== false) {
     for (const [id, quantity] of quantities) {
       const symbol = symbolById.get(id);
       if (!symbol && Math.abs(quantity) > 1e-8) return failed("Posizione esistente non riconosciuta nel rendiconto");
@@ -120,10 +138,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
       if (symbol) expected.delete(symbol);
     }
     if ([...expected.values()].some((q) => Math.abs(q) > 1e-8)) return failed("Il rendiconto contiene posizioni senza storico: importa prima gli acquisti precedenti");
+    }
     // A correction must not invalidate sales or closing quantities in retained later statements.
     const futurePlan = planImport(following.map((o, i) => ({ ...o, line: i + 1, quantity: Number(o.quantity), price: Number(o.price), grossAmount: o.grossAmount === null ? null : Number(o.grossAmount) })), [...existing, ...ops]);
     if (futurePlan.some((r) => r.status === "error")) return failed("La sostituzione renderebbe non valide vendite successive: includi i rendiconti successivi nel nuovo export");
-    for (const doc of later) {
+    for (const doc of later.filter((d) => d.statement.positionsReported !== false)) {
       const totals = new Map(quantities);
       for (const o of following.filter((o) => o.date <= doc.to)) {
         const q = Number(o.quantity); const old = totals.get(o.instrumentId) ?? 0;
@@ -139,26 +158,27 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     }
     const counts = { new: rows.filter((r) => r.status === "new").length, duplicate: rows.filter((r) => r.status === "duplicate").length, error: 0 };
     if (input.dryRun) return { rows, counts, inserted: 0, instrumentsCreated: 0, replacement };
-    if (!portfolio) [portfolio] = await tx.insert(investmentPortfolios).values({ userId, name: `Interactive Brokers · ${statement.account.slice(-4)}`, broker, taxRegime: "dichiarativo" }).returning();
+    if (!portfolio) [portfolio] = await tx.insert(investmentPortfolios).values({ userId, name: provider === "degiro" ? brokerName : `${brokerName} · ${statement.account.slice(-4)}`, broker, taxRegime: "dichiarativo" }).returning();
     // No writes to financial data occur before all validations pass. Deletes and inserts share this transaction.
     if (overlapping.length) {
-      await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), gte(investmentTransactions.date, statement.from), lte(investmentTransactions.date, statement.to)));
+      await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter, gte(investmentTransactions.date, statement.from), lte(investmentTransactions.date, statement.to)));
       for (const doc of overlapping) for (const p of doc.statement.positions) {
         const id = [...symbolById].find(([, symbol]) => symbol === `${p.symbol}:${p.currency}`)?.[0];
         if (id) await tx.delete(userInstrumentPrices).where(and(eq(userInstrumentPrices.userId, userId), eq(userInstrumentPrices.instrumentId, id), eq(userInstrumentPrices.date, doc.to), eq(userInstrumentPrices.close, String(p.price))));
       }
       await tx.delete(brokerStatements).where(and(eq(brokerStatements.userId, userId), eq(brokerStatements.accountKey, accountKey), inArray(brokerStatements.id, overlapping.map((d) => d.id))));
     }
-    const values = ops.filter((_, i) => rows[i].status === "new").map((o) => ({ userId, portfolioId: portfolio.id, instrumentId: o.instrumentId,
-      ...toRowValues({ ...o, fees: o.fees * (fx.get(o.line) ?? 1), taxes: o.taxes * (fx.get(o.line) ?? 1) }, fx.get(o.line) ?? 1) }));
+    const values = ops.filter((_, i) => rows[i].status === "new").map((o) => ({ userId, portfolioId: portfolio!.id, instrumentId: o.instrumentId, statementAccountKey: accountKey,
+      ...toRowValues({ ...o, fees: o.fees * (fx.get(o.costCurrency ? -o.line - 2 : o.line) ?? 1), taxes: o.taxes * (fx.get(o.costCurrency ? -o.line - 2 : o.line) ?? 1) }, o.sourceCurrency === deps.userCurrency ? 1 : o.brokerFxToEur ? o.brokerFxToEur * (fx.get(-o.line - 2) ?? 1) : fx.get(o.line) ?? 1) }));
     for (let i = 0; i < values.length; i += 500) await tx.insert(investmentTransactions).values(values.slice(i, i + 500));
-    let cashAccountId = portfolio.statementCashAccountId ?? previous?.cashAccountId ?? overlapping.find((d) => d.cashAccountId)?.cashAccountId ?? later.find((d) => d.cashAccountId)?.cashAccountId;
-    const balance = ((statement.nav.find((r) => r.label === "Cash")?.value ?? 0) * (fx.get(-1) ?? 1)).toFixed(2);
+    let cashAccountId = source?.cashAccountId ?? (provider === "interactive-brokers" && portfolio.broker === broker ? portfolio.statementCashAccountId : null) ?? previous?.cashAccountId ?? overlapping.find((d) => d.cashAccountId)?.cashAccountId ?? later.find((d) => d.cashAccountId)?.cashAccountId;
+    const balance = cashComponents.reduce((sum, c, i) => sum + c.amount * (fx.get(-1000000 - i) ?? 1), 0).toFixed(2);
     if (!cashAccountId) {
-      const [cashAccount] = await tx.insert(accounts).values({ userId, name: `Interactive Brokers · liquidità …${statement.account.slice(-4)}`, type: "Liquidità broker", balance, icon: "landmark" }).returning();
+      const [cashAccount] = await tx.insert(accounts).values({ userId, name: provider === "degiro" ? `${brokerName} · liquidità` : `${brokerName} · liquidità …${statement.account.slice(-4)}`, type: "Liquidità broker", balance, icon: "landmark" }).returning();
       cashAccountId = cashAccount.id;
     } else if (!later.length) await tx.update(accounts).set({ balance, updatedAt: new Date() }).where(and(eq(accounts.id, cashAccountId), eq(accounts.userId, userId)));
-    await tx.update(investmentPortfolios).set({ statementCashAccountId: cashAccountId }).where(and(eq(investmentPortfolios.id, portfolio.id), eq(investmentPortfolios.userId, userId)));
+    if (provider === "interactive-brokers" && portfolio.broker === broker) await tx.update(investmentPortfolios).set({ statementCashAccountId: cashAccountId }).where(and(eq(investmentPortfolios.id, portfolio.id), eq(investmentPortfolios.userId, userId)));
+    await tx.insert(brokerImportAccounts).values({ userId, accountKey, provider, portfolioId: portfolio.id, cashAccountId }).onConflictDoUpdate({ target: [brokerImportAccounts.userId, brokerImportAccounts.accountKey], set: { cashAccountId } });
     await tx.insert(brokerStatements).values({ userId, portfolioId: portfolio.id, cashAccountId, accountKey, fingerprint, from: statement.from, to: statement.to, statement, records: parsed.records });
     // Broker closing prices provide a real historical valuation even when a provider has no symbol/history.
     for (const p of statement.positions) {

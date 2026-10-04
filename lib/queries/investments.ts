@@ -463,7 +463,7 @@ export function useDismissDividendMutation() {
 
 /** Broker reports are historical snapshots, distinct from live market valuations. */
 export function useBrokerStatementsQuery() {
-  return useQuery({ queryKey: [...INVESTMENTS_QUERY_KEY, "statements"], queryFn: async (): Promise<{ statements: { id: string; portfolioId: string; createdAt: string; statement: import("@/lib/investments/import/broker-statement").BrokerStatement }[] }> => {
+  return useQuery({ queryKey: [...INVESTMENTS_QUERY_KEY, "statements"], queryFn: async (): Promise<{ statements: { id: string; accountKey: string; portfolioId: string; createdAt: string; statement: import("@/lib/investments/import/broker-statement").BrokerStatement }[] }> => {
     const response = await fetch("/api/investments/statements");
     if (!response.ok) throw await readError(response, "Impossibile leggere i rendiconti");
     return response.json();

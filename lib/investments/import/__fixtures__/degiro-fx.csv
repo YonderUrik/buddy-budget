@@ -1,0 +1,6 @@
+Data,Ora,Data Valore,Prodotto,ISIN,Descrizione,Borsa,Variazioni,,Saldo,,ID Ordine
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,Credito FX,,USD,"200,00",USD,"0,00",order-test
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,Prelievo FX,,EUR,"-180,00",EUR,"817,00",order-test
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,DEGIRO costi di transazione e/o di terze parti,,EUR,"-3,00",EUR,"997,00",order-test
+02-01-2023,10:00,02-01-2023,Synthetic Parent,US9000000011,Acquisto 2 Synthetic Parent@100 USD (US9000000011),,USD,"-200,00",USD,"-200,00",order-test
+01-01-2023,10:00,01-01-2023,,,Deposito flatex,,EUR,"1000,00",EUR,"1000,00",

@@ -10,6 +10,9 @@ export interface BrokerPosition {
   symbol: string; currency: string; quantity: number; price: number; value: number; costBasis: number; unrealized: number;
 }
 export interface BrokerStatement {
+  provider?: "interactive-brokers" | "degiro";
+  valuationAvailable?: boolean;
+  positionsReported?: boolean;
   account: string; currency: string; from: string; to: string;
   nav: { label: string; prior: number; value: number }[];
   cash: { currency: string; opening: number; closing: number; calculated: number; difference: number }[];
@@ -111,4 +114,11 @@ export function readBrokerStatement(records: ActivityRecord[]): BrokerStatement 
   }));
   const performance = data.filter((r) => r.section === "Realized & Unrealized Performance Summary").map((r) => ({ symbol: statementValue(r, "Symbol"), currency: statementValue(r, "Currency") || null, values: Object.fromEntries(r.headers.filter((h) => !["Asset Category", "Symbol", "Currency", "Code"].includes(h)).flatMap((h) => { const n = statementNumber(r, h); return n === null ? [] : [[h, n]]; })) }));
   return { account, currency, from, to, nav, cash, positions, ledger, performance, issues };
+}
+
+/** Cash components without double-counting IBKR's already consolidated base-currency NAV. */
+export function statementCashComponents(statement: BrokerStatement): { currency: string; amount: number }[] {
+  return statement.valuationAvailable === false
+    ? statement.cash.filter((c) => Math.abs(c.closing) > 1e-8).map((c) => ({ currency: c.currency, amount: c.closing }))
+    : [{ currency: statement.currency, amount: statement.nav.find((r) => r.label === "Cash")?.value ?? 0 }];
 }

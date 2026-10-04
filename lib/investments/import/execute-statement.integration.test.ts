@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { eq, inArray } from "drizzle-orm";
@@ -8,7 +9,7 @@ import { brokerStatements } from "@/lib/db/schema/broker-statements";
 import { instruments, investmentTransactions, userInstrumentPrices } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "../instruments";
 import { brokerSeries } from "./__fixtures__/broker-series";
-import { parseInteractiveBrokersActivity } from "./interactive-brokers";
+import { parseBrokerStatement } from "./parse-statement";
 import { deleteStatementImports } from "./delete-statements";
 import { runStatementImport } from "./execute-statement";
 import type { ImportDeps } from "./execute";
@@ -17,7 +18,7 @@ import type { RunImportInput } from "@/lib/validation/investments-import";
 const users: string[] = [];
 let userId: string;
 const request = (csv: string, dryRun = false): RunImportInput => {
-  const parsed = parseInteractiveBrokersActivity(csv, "2026-10-04");
+  const parsed = parseBrokerStatement(csv, "2026-10-04");
   return { statementCsv: csv, dryRun, operations: parsed.operations, instruments: parsed.identities.map((i) => ({ key: i.key, create: { source: "manuale", name: i.name!, isin: i.isin!, currency: i.currency!, type: "azione" } })) };
 };
 const deps = (id = userId): ImportDeps => ({ userCurrency: "EUR", todayKey: "2026-10-04", createInstrument: (input) => createOrReuseInstrument(id, input, { quoteMeta: vi.fn() }), fetchFx: vi.fn(async () => {}), ensureHistory: vi.fn(async () => {}) });
@@ -34,6 +35,17 @@ afterAll(async () => {
 });
 
 describe("complete statement import", () => {
+  it("uses DEGIRO execution FX while keeping EUR fees in EUR", async () => {
+    const csv = readFileSync(new URL("./__fixtures__/degiro-fx.csv", import.meta.url), "utf8");
+    const dependencies = deps();
+    expect((await runStatementImport(userId, request(csv), dependencies)).inserted).toBe(1);
+    const [trade] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    expect(Number(trade.fxRate)).toBe(0.9);
+    expect(Number(trade.fees)).toBe(3);
+    expect(Number(trade.price)).toBe(100);
+    expect(Number((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance)).toBe(817);
+    expect(dependencies.fetchFx).not.toHaveBeenCalled();
+  });
   it("previews without writes, imports consecutive periods and preserves broker balances and all closing prices", async () => {
     const first = request(brokerSeries(2023));
     expect((await runStatementImport(userId, { ...first, dryRun: true }, deps())).counts.error).toBe(0);
@@ -167,6 +179,38 @@ describe("complete statement import", () => {
     await deleteStatementImports(userId, selected.id, [selected.id], deps());
     const retained = await saved(); expect(retained).toHaveLength(1); expect(retained[0].statement.account).toBe("U90000002");
     expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(1);
+  });
+
+  it("shares a portfolio while replacements and deletion stay scoped to the originating broker", async () => {
+    const degiro = readFileSync(new URL("./__fixtures__/degiro-account.csv", import.meta.url), "utf8");
+    await runStatementImport(userId, request(brokerSeries(2023)), deps());
+    const ib = (await saved())[0];
+    // Exercise upgrade compatibility with IBKR transactions created before source attribution existed.
+    await db.update(investmentTransactions).set({ statementAccountKey: null }).where(eq(investmentTransactions.userId, userId));
+    const input = { ...request(degiro), portfolioId: ib.portfolioId };
+    expect((await runStatementImport(userId, input, deps())).inserted).toBe(3);
+    const dg = (await saved()).find((d) => d.statement.provider === "degiro")!;
+    expect(dg.portfolioId).toBe(ib.portfolioId); expect(dg.cashAccountId).not.toBe(ib.cashAccountId);
+    expect((await runStatementImport(userId, input, deps())).inserted).toBe(0);
+    const replacement = await runStatementImport(userId, { ...request(degiro.replaceAll("Synthetic Parent", "Synthetic Updated")), portfolioId: ib.portfolioId }, deps());
+    expect(replacement.replacement).toMatchObject({ statements: 1, operations: 3 });
+    expect((await saved()).some((d) => d.id === ib.id)).toBe(true);
+    const dgTradesBefore = (await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).filter((t) => t.statementAccountKey === dg.accountKey).map((t) => t.id).sort();
+    const ibReplacement = await runStatementImport(userId, request(brokerSeries(2023).replace("Deposit,2000", "Corrected deposit,2000")), deps());
+    expect(ibReplacement.replacement).toMatchObject({ statements: 1, operations: 1 });
+    const dgTradesAfter = (await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).filter((t) => t.statementAccountKey === dg.accountKey).map((t) => t.id).sort();
+    expect(dgTradesAfter).toEqual(dgTradesBefore);
+    const freshDg = (await saved()).find((d) => d.statement.provider === "degiro")!;
+    expect((await deleteStatementImports(userId, freshDg.id, [freshDg.id], deps())).deletedOperations).toBe(3);
+    expect(await saved()).toHaveLength(1);
+    expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(1);
+    expect((await db.select().from(accounts).where(eq(accounts.id, ib.cashAccountId!)))[0].balance).toBe("999.00");
+    expect((await runStatementImport(userId, input, deps())).inserted).toBe(3);
+    expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(2);
+    const freshIb = (await saved()).find((d) => d.statement.provider !== "degiro")!;
+    expect((await deleteStatementImports(userId, freshIb.id, [freshIb.id], deps())).deletedOperations).toBe(1);
+    expect((await saved())[0].statement.provider).toBe("degiro");
+    expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(3);
   });
 
 });

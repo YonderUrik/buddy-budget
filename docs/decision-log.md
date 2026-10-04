@@ -1,5 +1,9 @@
 # Log storico delle decisioni di BuddyBudget
 
+## 2026-10-04 — DEGIRO nel portafoglio condiviso
+
+Import Account.csv italiano con riconciliazione multivaluta, commissioni EUR allocate per ordine e cambio broker quando presente. Origine delle operazioni e associazione conto/broker persistite (migration 0021): aggiornamenti e cancellazioni non coinvolgono l’altro broker anche con date sovrapposte. Conservate tutte le righe originali; nessun NAV o snapshot posizioni inventato. Verificato localmente il file reale insieme ai quattro IBKR; fixture pubblica sintetica. Limiti e controlli in [degiro-import.md](degiro-import.md). Solo branch locale, PR rimandata.
+
 ## 2026-10-04 — Aggiornamento YTD e gestione importazioni IBKR
 
 Su richiesta dell'utente, nuovi CSV sostituiscono i periodi interamente coperti in una transazione; anteprima esplicita e riconciliazione dei periodi successivi. Gli overlap parziali richiedono un export completo per non inventare snapshot intermedi. Da Rendiconti si gestiscono ed eliminano gli import: rimuovere un periodo richiede conferma dell'elenco dei successivi dipendenti, verificato sotto lock. Saldo ripristinato all'ultima chiusura conservata; catalogo/prezzi mantenuti. Nessun push o PR.

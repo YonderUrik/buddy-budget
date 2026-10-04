@@ -28,7 +28,7 @@ export interface ActivityIssue {
   message: string;
 }
 export interface ActivityStatement {
-  preset: "interactive-brokers";
+  preset: "interactive-brokers" | "degiro";
   statement?: BrokerStatement | null;
   records: ActivityRecord[];
   identities: ImportIdentity[];

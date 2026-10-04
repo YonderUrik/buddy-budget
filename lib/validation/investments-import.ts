@@ -49,6 +49,7 @@ function checkImportedOperation(
 /** Import: a ogni chiave di strumento corrisponde uno strumento già esistente o da creare. */
 export const runImportSchema = z.object({
   dryRun: z.boolean(),
+  portfolioId: z.string().uuid().optional(),
   /** CSV originale: il server ricalcola le operazioni e riconcilia il rendiconto. */
   statementCsv: z.string().max(5 * 1024 * 1024).optional(),
   /** Formato del file (solo per l'evento di prodotto). */

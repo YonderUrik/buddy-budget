@@ -181,7 +181,7 @@ function applyTransaction(position: Position, t: InvestmentTransactionInput, mul
   const taxes = Number(t.taxes) || 0;
 
   if (BUY_TYPES.has(t.type)) {
-    const cost = quantity * price * multiplier * fx + fees;
+    const cost = quantity * price * multiplier * fx + fees + taxes;
     position.quantity += quantity;
     position.costBasis += cost;
     position.investedNet += cost;

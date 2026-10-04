@@ -115,7 +115,7 @@ export function computeOperationInsights<T extends InvestmentTransactionInput>(p
     };
 
     if (BUY_TYPES.has(t.type)) {
-      insight.paid = quantity * price * multiplier * fxRate + fees;
+      insight.paid = quantity * price * multiplier * fxRate + fees + taxes;
       insight.remainingQuantity = quantity;
       position.quantity += quantity;
       position.costBasis += insight.paid;

@@ -191,6 +191,8 @@ export const investmentTransactions = pgTable(
     instrumentId: uuid("instrument_id")
       .notNull()
       .references(() => instruments.id, { onDelete: "restrict" }),
+    /** Source of statement imports, independent of the combined portfolio. */
+    statementAccountKey: text("statement_account_key"),
     type: text("type").$type<InvestmentTransactionType>().notNull(),
     date: date("date").notNull(),
     /** Quote (nominale per le obbligazioni); 0 per dividendi e cedole. */

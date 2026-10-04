@@ -32,7 +32,7 @@ async function handlePatch(request: NextRequest, { params }: Params) {
   const current = await findOwnTransaction(userId, id);
   if (!current) return Response.json({ error: "Operazione non trovata" }, { status: 404 });
   const portfolio = await findOwnPortfolio(userId, current.portfolioId);
-  if (portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
+  if (current.statementAccountKey || portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
 
   const parsed = updateInvestmentTransactionSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
@@ -68,7 +68,7 @@ async function handleDelete(request: NextRequest, { params }: Params) {
   const current = await findOwnTransaction(userId, id);
   if (!current) return Response.json({ error: "Operazione non trovata" }, { status: 404 });
   const portfolio = await findOwnPortfolio(userId, current.portfolioId);
-  if (portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
+  if (current.statementAccountKey || portfolio?.broker?.startsWith("ibkr:")) return Response.json({ error: "Operazione di un rendiconto riconciliato: non modificabile singolarmente" }, { status: 409 });
 
   const remaining = (await loadUserTransactions(userId, current.instrumentId)).filter((t) => t.id !== id).map(toCalcInput);
   const message = oversoldMessage(remaining);

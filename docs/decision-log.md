@@ -1,5 +1,9 @@
 # Log storico delle decisioni di BuddyBudget
 
+## 2026-10-04 — Ripristino degli import investimento preesistenti
+
+Recupero richiesto dopo duplicazione di import vecchi in produzione: i record storici senza origine non distinguono import e inserimenti manuali. Aggiunto azzeramento completo dello storico investimenti, con anteprima conteggi e frase obbligatoria di conferma. Transazione isolata per utente: operazioni, rendiconti, prezzi personali e snapshot investimenti rimossi; cassa broker collegata azzerata, associazioni conservate per reimport. Banche/movimenti, debiti, pensioni e impostazioni preservati. Nessuna azione eseguita sui dati di produzione.
+
 ## 2026-10-04 — DEGIRO nel portafoglio condiviso
 
 Import Account.csv italiano con riconciliazione multivaluta, commissioni EUR allocate per ordine e cambio broker quando presente. Origine delle operazioni e associazione conto/broker persistite (migration 0021): aggiornamenti e cancellazioni non coinvolgono l’altro broker anche con date sovrapposte. Conservate tutte le righe originali; nessun NAV o snapshot posizioni inventato. Verificato localmente il file reale insieme ai quattro IBKR; fixture pubblica sintetica. Limiti e controlli in [degiro-import.md](degiro-import.md). Solo branch locale, PR rimandata.

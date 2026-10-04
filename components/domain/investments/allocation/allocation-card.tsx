@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { ContributionSuggestions } from "./contribution-suggestions";
 import { TargetsDialog } from "./targets-dialog";
 
-/** Importo proposto per il prossimo versamento se non ci sono PAC attivi. */
+/** Importo proposto per il prossimo versamento. */
 const DEFAULT_CONTRIBUTION = 100;
 
 function pct(value: number): string {
@@ -55,7 +55,6 @@ export interface AllocationCardProps {
   positions: { instrumentId: string; value: number | null }[];
   instrumentsById: Map<string, Instrument>;
   suggestions: Instrument[];
-  monthlyPlanAmount: number;
   currency: string;
   onRegister: (instrumentId: string, amount: number) => void;
 }
@@ -66,7 +65,6 @@ export function AllocationCard({
   positions,
   instrumentsById,
   suggestions,
-  monthlyPlanAmount,
   currency,
   onRegister,
 }: AllocationCardProps) {
@@ -120,7 +118,7 @@ export function AllocationCard({
             ) : null}
             <ContributionSuggestions
               analysis={allocation}
-              defaultAmount={monthlyPlanAmount > 0 ? monthlyPlanAmount : DEFAULT_CONTRIBUTION}
+              defaultAmount={DEFAULT_CONTRIBUTION}
               instrumentsById={instrumentsById}
               currency={currency}
               onRegister={onRegister}

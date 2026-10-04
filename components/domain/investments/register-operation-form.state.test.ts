@@ -4,7 +4,7 @@ import {
   fieldsFor,
   initialFromTransaction,
   localTodayKey,
-  prefillFromPlan,
+  prefillPurchase,
   priceLabel,
   priceSuggestionHint,
   priceText,
@@ -27,9 +27,9 @@ describe("form operazione", () => {
     expect([quantityLabel("percentuale_nominale"), priceLabel("unita")]).toEqual(["Valore nominale", "Prezzo per quota"]);
   });
 
-  it("il PAC precompila quote stimate dall'ultimo prezzo, arrotondate per difetto", () => {
-    expect(prefillFromPlan({ instrumentId: "i", amount: "200.00" }, 110)).toEqual({ instrumentId: "i", type: "acquisto", price: 110, quantity: 1.8181 });
-    expect(prefillFromPlan({ instrumentId: "i", amount: "200.00" }, null).quantity).toBeNull();
+  it("l'acquisto da importo precompila quote stimate dall'ultimo prezzo, arrotondate per difetto", () => {
+    expect(prefillPurchase({ instrumentId: "i", amount: "200.00" }, 110)).toEqual({ instrumentId: "i", type: "acquisto", price: 110, quantity: 1.8181 });
+    expect(prefillPurchase({ instrumentId: "i", amount: "200.00" }, null).quantity).toBeNull();
   });
 
   it("la data di oggi è in ora locale", () => {

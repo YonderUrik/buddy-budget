@@ -7,7 +7,6 @@ import type { ResolvedPrice } from "@/lib/calc/investments";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type {
   Instrument,
-  InvestmentPlan,
   InvestmentPortfolio,
   InvestmentTransaction,
   UserInstrumentPrice,
@@ -21,11 +20,9 @@ import type { ResolveImportInput, RunImportInput } from "@/lib/validation/invest
 import type {
   CreateInstrumentInput,
   CreateInvestmentTransactionInput,
-  CreatePlanInput,
   ManualPriceInput,
   UpdateInvestmentTransactionInput,
   UpdateBreakdownInput,
-  UpdatePlanInput,
   UpdatePortfolioInput,
   UpdateTargetsInput,
   CreateTaxCarryforwardInput,
@@ -53,7 +50,7 @@ function useInvalidateInvestments() {
   };
 }
 
-/** Operazioni, strumenti, PAC, prezzi e cambi dell'utente per il periodo del grafico. */
+/** Operazioni, strumenti, prezzi e cambi dell'utente per il periodo del grafico. */
 export function useInvestmentsOverviewQuery(period: NetWorthPeriod) {
   return useQuery({
     queryKey: [...INVESTMENTS_QUERY_KEY, "overview", period],
@@ -216,55 +213,6 @@ export function useDeleteInvestmentTransactionMutation() {
     mutationFn: async (id: string): Promise<void> => {
       const response = await fetch(`/api/investments/transactions/${id}`, { method: "DELETE" });
       if (!response.ok) throw await readError(response, "Impossibile eliminare l'operazione");
-    },
-    onSuccess: invalidate,
-  });
-}
-
-/** Crea un PAC. */
-export function useCreatePlanMutation() {
-  const invalidate = useInvalidateInvestments();
-  return useMutation({
-    mutationFn: async (input: CreatePlanInput): Promise<InvestmentPlan> => {
-      const response = await fetch("/api/investments/plans", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!response.ok) throw await readError(response, "Impossibile creare il PAC");
-      return response.json();
-    },
-    onSuccess: () => {
-      track("investment_plan_created");
-      invalidate();
-    },
-  });
-}
-
-/** Modifica un PAC (anche sospenderlo). */
-export function useUpdatePlanMutation() {
-  const invalidate = useInvalidateInvestments();
-  return useMutation({
-    mutationFn: async ({ id, input }: { id: string; input: UpdatePlanInput }): Promise<InvestmentPlan> => {
-      const response = await fetch(`/api/investments/plans/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!response.ok) throw await readError(response, "Impossibile modificare il PAC");
-      return response.json();
-    },
-    onSuccess: invalidate,
-  });
-}
-
-/** Elimina un PAC. */
-export function useDeletePlanMutation() {
-  const invalidate = useInvalidateInvestments();
-  return useMutation({
-    mutationFn: async (id: string): Promise<void> => {
-      const response = await fetch(`/api/investments/plans/${id}`, { method: "DELETE" });
-      if (!response.ok) throw await readError(response, "Impossibile eliminare il PAC");
     },
     onSuccess: invalidate,
   });

@@ -126,7 +126,7 @@ Questo documento nasce dall'esecuzione **interattiva** del mockup (`docs/design-
 **Scopo**: portafoglio titoli, transazioni di acquisto/vendita, composizione.
 
 **Cosa si vede**:
-- 3 KPI: Valore portafoglio (con variazione giornaliera), Guadagno totale, Investito (con importo PAC mensile)
+- 3 KPI: Valore portafoglio (con variazione giornaliera), Guadagno totale, Investito
 - Tabella titoli (Strumento, Quote, Prezzo €, Valore, P&L) per VWCE, SWDA, AAPL, AGGH — **Quote e Prezzo sono campi di testo editabili**, con bottone ✕ per rimuovere la riga
 - Riga "aggiungi titolo": Ticker, Nome, Quote, Prezzo, bottone **"+ Aggiungi"**
 - Blocco "Registra una transazione": toggle Acquisto/Vendita, select Strumento, Quote (accetta frazionarie es. 4,4), Prezzo €, Data, "Totale" calcolato, bottone **"+ Registra"**

@@ -13,7 +13,6 @@ import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
   instruments,
-  investmentPlans,
   investmentPortfolios,
   investmentTargets,
   investmentTaxCarryforwards,
@@ -74,7 +73,6 @@ async function loadUserData(userId: string) {
     transactionRows,
     portfolioRows,
     operationRows,
-    planRows,
     manualPriceRows,
     targetRows,
     breakdownRows,
@@ -193,21 +191,6 @@ async function loadUserData(userId: string) {
       .innerJoin(instruments, eq(instruments.id, investmentTransactions.instrumentId))
       .where(eq(investmentTransactions.userId, userId))
       .orderBy(asc(investmentTransactions.date)),
-    db
-      .select({
-        id: investmentPlans.id,
-        portfolioId: investmentPlans.portfolioId,
-        instrumentId: investmentPlans.instrumentId,
-        instrumentName: instruments.name,
-        isin: instruments.isin,
-        amount: investmentPlans.amount,
-        frequency: investmentPlans.frequency,
-        dayOfMonth: investmentPlans.dayOfMonth,
-        active: investmentPlans.active,
-      })
-      .from(investmentPlans)
-      .innerJoin(instruments, eq(instruments.id, investmentPlans.instrumentId))
-      .where(eq(investmentPlans.userId, userId)),
     db
       .select({
         instrumentId: userInstrumentPrices.instrumentId,
@@ -367,7 +350,6 @@ async function loadUserData(userId: string) {
     transactions: transactionRows,
     investmentPortfolios: portfolioRows,
     investmentOperations: operationRows,
-    investmentPlans: planRows,
     manualPrices: manualPriceRows,
     investmentTargets: targetRows,
     instrumentBreakdowns: breakdownRows,
@@ -451,14 +433,6 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Importo lordo (proventi)", value: (o) => decimal(o.grossAmount) },
       { header: "Portafoglio", value: (o) => portfolioName.get(o.portfolioId) },
       { header: "Nota", value: (o) => o.note },
-    ]),
-    "investimenti-pac.csv": toCsv(data.investmentPlans, [
-      { header: "Strumento", value: (p) => p.instrumentName },
-      { header: "ISIN", value: (p) => p.isin },
-      { header: "Importo", value: (p) => decimal(p.amount) },
-      { header: "Frequenza", value: (p) => p.frequency },
-      { header: "Giorno del mese", value: (p) => p.dayOfMonth },
-      { header: "Attivo", value: (p) => p.active },
     ]),
     "investimenti-titoli-seguiti.csv": toCsv(data.watchlist, [
       { header: "Strumento", value: (w) => w.instrumentName },

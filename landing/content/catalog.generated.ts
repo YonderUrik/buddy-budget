@@ -35,9 +35,9 @@ const f = (
 export const FEATURES: readonly Feature[] = [
   f("collegamento-alla-banca", "Conti", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live", "/conti"),
   f("avviso-rinnovo-banca", "Conti", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
-  f("conti-manuali", "Conti", "Conti manuali", "Per il contante o le banche che non si collegano. Si modificano a mano.", "live"),
+  f("conti-manuali", "Conti", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
   f("aggiornamento-automatico-e-manuale", "Conti", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
-  f("conti-raggruppati-per-banca", "Conti", "Conti raggruppati per banca", "Con l'andamento della liquidità degli ultimi 30 giorni.", "live"),
+  f("conti-raggruppati-per-banca", "Conti", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
 
   f("categorizzazione-automatica", "Movimenti", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
   f("proposte-per-somiglianza", "Movimenti", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
@@ -50,10 +50,10 @@ export const FEATURES: readonly Feature[] = [
   f("da-sistemare", "Movimenti", "Da sistemare", "Un avviso in Panoramica e nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
-  f("operazioni-pac-e-import-csv", "Investimenti", "Operazioni, PAC e import CSV", "Registra acquisti e vendite, programma i PAC, importa da un file: Interactive Brokers, Yahoo Finance o un altro CSV.", "live"),
+  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers, Yahoo Finance o un altro CSV.", "live"),
   f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y».", "live"),
-  f("rischio", "Investimenti", "Rischio", "Volatilità, caduta peggiore, Sharpe, beta e correlazione con l'indice.", "live"),
+  f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),
   f("allocazione-obiettivo", "Investimenti", "Allocazione obiettivo", "Con il suggerimento di dove mettere il prossimo versamento.", "live"),
   f("proventi", "Investimenti", "Proventi", "Previsione dei dividendi a 12 mesi e incassi mese per mese.", "live"),

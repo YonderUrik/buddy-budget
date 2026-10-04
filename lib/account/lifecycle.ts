@@ -46,7 +46,6 @@ export interface UserDataSummary {
   rules: number;
   budgets: number;
   investmentOperations: number;
-  investmentPlans: number;
   debts: number;
   pensionFunds: number;
   netWorthDays: number;
@@ -55,7 +54,7 @@ export interface UserDataSummary {
 /** Conta i dati dell'utente tabella per tabella. */
 export async function countUserData(userId: string): Promise<UserDataSummary> {
   const countOf = async (query: Promise<{ value: number }[]>) => (await query)[0]?.value ?? 0;
-  const [acc, conn, tx, cat, rules, bud, ops, plans, debtCount, pensionCount, days] = await Promise.all([
+  const [acc, conn, tx, cat, rules, bud, ops, debtCount, pensionCount, days] = await Promise.all([
     countOf(db.select({ value: count() }).from(accounts).where(eq(accounts.userId, userId))),
     countOf(db.select({ value: count() }).from(bankConnections).where(eq(bankConnections.userId, userId))),
     countOf(db.select({ value: count() }).from(transactions).where(eq(transactions.userId, userId))),
@@ -63,7 +62,6 @@ export async function countUserData(userId: string): Promise<UserDataSummary> {
     countOf(db.select({ value: count() }).from(categorizationRules).where(eq(categorizationRules.userId, userId))),
     countOf(db.select({ value: count() }).from(budgets).where(eq(budgets.userId, userId))),
     countOf(db.select({ value: count() }).from(investmentTransactions).where(eq(investmentTransactions.userId, userId))),
-    countOf(db.select({ value: count() }).from(investmentPlans).where(eq(investmentPlans.userId, userId))),
     countOf(db.select({ value: count() }).from(debts).where(eq(debts.userId, userId))),
     countOf(db.select({ value: count() }).from(pensionFunds).where(eq(pensionFunds.userId, userId))),
     countOf(db.select({ value: countDistinct(netWorthSnapshots.date) }).from(netWorthSnapshots).where(eq(netWorthSnapshots.userId, userId))),
@@ -76,7 +74,6 @@ export async function countUserData(userId: string): Promise<UserDataSummary> {
     rules,
     budgets: bud,
     investmentOperations: ops,
-    investmentPlans: plans,
     debts: debtCount,
     pensionFunds: pensionCount,
     netWorthDays: days,
@@ -138,6 +135,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   // I fondi di previdenza portano con sé le loro fotografie (cascata).
   await tx.delete(pensionFunds).where(eq(pensionFunds.userId, userId));
   await tx.delete(analyticsAssumptions).where(eq(analyticsAssumptions.userId, userId));
+  // Tabella orfana: la funzione PAC è stata rimossa ma i dati restano finché non c'è una migration che la elimina.
   await tx.delete(investmentPlans).where(eq(investmentPlans.userId, userId));
   await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
   await tx.delete(investmentTaxCarryforwards).where(eq(investmentTaxCarryforwards.userId, userId));

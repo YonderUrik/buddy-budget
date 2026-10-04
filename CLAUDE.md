@@ -192,7 +192,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 - **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login con pannello "mosaico", brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
 - **Movimenti** (`/movimenti`: Elenco · Analisi · Categorie · Regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
-- **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, PAC, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
+- **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
 - **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
 - **Infrastruttura**: migrazione Vercel+Neon → VPS k3s completata (Fasi 0-7, cutover il 2026-09-27). Osservabilità Fasi A e B completate (log JSON, metriche, 4 dashboard, 12 alert con runbook, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
 
@@ -265,7 +265,7 @@ Il log completo è in [`docs/decision-log.md`](docs/decision-log.md) (voci nuove
 - **2026-10-01** — Prezzi di mercato e snapshot del patrimonio a 3 giri al giorno (06:30/17:30/22:30 UTC e 06:50/17:50/23:50 UTC). Sono chiusure di fine giornata, non intraday.
 - **2026-09-30** — Sezioni unificate: Transazioni, Cash flow e Categorie sono `/movimenti`. Categorie con board a colonne per gruppo di spesa.
 - **2026-09-30** — Debiti: piano calcolato da condizioni iniziali + registro eventi (come le posizioni di Investimenti); rate segnate a mano, mai automatiche.
-- **2026-09-29** — Investimenti: posizioni sempre calcolate dalle operazioni (costo medio ponderato), mai salvate; il PAC precompila e non genera operazioni. Il patrimonio netto storico degli investimenti si ricalcola da solo quando cambiano i dati.
+- **2026-09-29** — Investimenti: posizioni sempre calcolate dalle operazioni (costo medio ponderato), mai salvate; i PAC (piani di accumulo) sono stati rimossi il 2026-10-04. Il patrimonio netto storico degli investimenti si ricalcola da solo quando cambiano i dati.
 - **2026-09-28** — Fonti di mercato: `browserTlsFetch` per tutte (impronta TLS di Node bloccata da Yahoo).
 - **2026-09-27** — Osservabilità: stato dei cron e dei job su Redis, mai in memoria del pod; canali Slack separati per gravità.
 - **2026-09-27** — Brand: sidebar navy fissa in entrambi i temi; verde/rosso di entrate/uscite non fanno parte del brand.

@@ -117,6 +117,7 @@ async function createUserWithData(): Promise<Fixture> {
     { userId, portfolioId: portfolio.id, instrumentId: commonInstrument.id, type: "acquisto", date: "2026-08-01", quantity: "2", price: "100" },
     { userId, portfolioId: portfolio.id, instrumentId: manualInstrument.id, type: "acquisto", date: "2026-08-01", quantity: "1", price: "500" },
   ]);
+  // Dato orfano di un PAC (funzione rimossa): la cancellazione dell'account deve comunque riuscire.
   await db.insert(investmentPlans).values({ userId, portfolioId: portfolio.id, instrumentId: commonInstrument.id, amount: "150", dayOfMonth: 5 });
   await db.insert(userInstrumentPrices).values({ userId, instrumentId: manualInstrument.id, date: "2026-09-01", close: "510" });
   await db.insert(netWorthSnapshots).values({ userId, date: "2026-09-01", assetClass: "liquidita", amount: "1050", source: "snapshot" });
@@ -183,7 +184,6 @@ describe("gestione account (integrazione)", () => {
       rules: 1,
       budgets: 1,
       investmentOperations: 2,
-      investmentPlans: 1,
       debts: 1,
       pensionFunds: 1,
       netWorthDays: 1,
@@ -205,7 +205,6 @@ describe("gestione account (integrazione)", () => {
         "debiti.csv",
         "investimenti-avvisi-prezzo.csv",
         "investimenti-operazioni.csv",
-        "investimenti-pac.csv",
         "investimenti-titoli-seguiti.csv",
         "patrimonio-netto.csv",
         "previdenza-fondi.csv",
@@ -247,7 +246,6 @@ describe("gestione account (integrazione)", () => {
       rules: 0,
       budgets: 0,
       investmentOperations: 0,
-      investmentPlans: 0,
       debts: 0,
       pensionFunds: 0,
       netWorthDays: 0,

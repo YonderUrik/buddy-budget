@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.8.0](https://github.com/YonderUrik/buddy-budget/compare/v0.7.1...v0.8.0) (2026-10-04)
+
+
+### Novità
+
+* card "Quanto rischia" più chiara, con livello di rischio, frasi semplici e dettagli a scomparsa ([#133](https://github.com/YonderUrik/buddy-budget/issues/133)) ([7858c1f](https://github.com/YonderUrik/buddy-budget/commit/7858c1f45694cbee49fcac2ce9c77a3c46a8b886))
+
 ## [0.7.1](https://github.com/YonderUrik/buddy-budget/compare/v0.7.0...v0.7.1) (2026-10-04)
 
 

@@ -36,7 +36,7 @@ export function GuidedReading({ tab, steps }: GuidedReadingProps) {
           className="flex items-center gap-2 text-left text-sm font-semibold text-foreground"
         >
           <ListOrdered className="size-4 text-primary" aria-hidden="true" />
-          Guida passo passo a questa scheda
+          Guida passo passo a questa analisi
           <span className="font-normal text-muted-foreground">· {steps.length} passi</span>
           <ChevronRight className={`ml-auto size-4 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} aria-hidden="true" />
         </button>

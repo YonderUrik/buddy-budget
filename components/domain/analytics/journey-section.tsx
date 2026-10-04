@@ -4,22 +4,25 @@
 
 import { splitGrowth } from "@/lib/calc/growth-split";
 import { Metric } from "./analytics-card";
+import { GlossedText } from "./glossed-text";
 import { money, pct } from "./analytics-format";
 import { GrowthTab } from "./growth-tab";
 import { journeySentences } from "./plain-answers";
 import { QuestionSection } from "./question-section";
 import type { QuestionSectionData } from "./section-props";
 
-export function JourneySection({ question, index, base, plan }: QuestionSectionData) {
+export function JourneySection({ question, index, base, assumptions, plan }: QuestionSectionData) {
   const { currency } = base;
   const split = splitGrowth(base.growthPoints);
-  const sentences = journeySentences(plan, split.rows.length >= 2 ? split : null, currency);
+  const sentences = journeySentences(plan, split.rows.length >= 2 ? split : null, currency, assumptions.withdrawalRate);
   const progress = Math.min(plan.progress ?? 0, 1);
   return (
     <QuestionSection question={question} index={index} expertHint="da dove arriva la crescita, mese per mese" renderExpert={() => <GrowthTab base={base} />}>
       <div className="flex flex-col gap-1 text-base leading-relaxed text-muted-foreground">
         {sentences.map((s) => (
-          <p key={s}>{s}</p>
+          <p key={s}>
+            <GlossedText text={s} />
+          </p>
         ))}
       </div>
       {plan.target !== null ? (
@@ -35,7 +38,7 @@ export function JourneySection({ question, index, base, plan }: QuestionSectionD
       ) : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Metric label="Il tuo patrimonio" value={money(plan.wealth, currency)} />
-        <Metric label="Numero FIRE" value={plan.target !== null ? money(plan.target, currency) : "—"} sub={plan.taxShare > 0 && plan.fireNumberGross ? `${money(plan.fireNumberGross, currency)} prima delle imposte` : undefined} />
+        <Metric term="numero-fire" label="Numero FIRE" value={plan.target !== null ? money(plan.target, currency) : "—"} sub={plan.taxShare > 0 && plan.fireNumberGross ? `${money(plan.fireNumberGross, currency)} prima delle imposte` : undefined} />
         <Metric
           label="Ti mancano"
           value={plan.target !== null ? money(Math.max(plan.target - plan.wealth, 0), currency) : "—"}

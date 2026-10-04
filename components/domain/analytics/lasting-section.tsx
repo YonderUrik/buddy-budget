@@ -7,6 +7,9 @@ import { buildSimulationInput } from "@/lib/analitiche/simulation";
 import { compareRules } from "@/lib/calc/monte-carlo";
 import { cn } from "@/lib/utils";
 import { MissingData } from "./analytics-card";
+import { GlossedText } from "./glossed-text";
+import type { GlossaryId } from "./glossary";
+import { Term } from "./term";
 import { pct } from "./analytics-format";
 import { lastingAnswer } from "./plain-answers";
 import { QuestionSection } from "./question-section";
@@ -14,6 +17,8 @@ import { RiskTab } from "./risk-tab";
 import type { QuestionSectionData } from "./section-props";
 import { SimulationTab } from "./simulation-tab";
 import { WithdrawalTab } from "./withdrawal-tab";
+
+const RULE_TERMS: Record<string, GlossaryId> = { fissa: "regola-fissa", percentuale: "regola-percentuale", "guyton-klinger": "regola-gk", vanguard: "regola-vanguard" };
 
 const TONE_CLASS = { pos: "bg-pos-soft text-pos", neg: "bg-neg-soft text-neg", default: "bg-muted text-foreground" } as const;
 
@@ -38,18 +43,20 @@ export function LastingSection({ question, index, base, assumptions, plan }: Que
       ) : (
         <>
           <div className="flex flex-col gap-2 text-base leading-relaxed text-muted-foreground">
-            <p className="font-heading text-xl font-medium text-foreground">{answer.headline}</p>
+            <p className="font-heading text-xl font-medium text-foreground">
+              <GlossedText text={answer.headline} />
+            </p>
             <p>{answer.verdict.text}.</p>
             {answer.better ? (
               <p>
-                Cambiando il modo di prelevare la situazione cambia: con la regola «{answer.better.label}» regge nel {pct(answer.better.success, 0)} dei casi.
+                Cambiando il modo di prelevare la situazione cambia: con la regola «{answer.better.label}» il patrimonio regge nel {pct(answer.better.success, 0)} dei casi.
               </p>
             ) : null}
           </div>
           <ul className="flex flex-wrap gap-2" aria-label="Probabilità di successo per regola di prelievo">
             {answer.rules.map((r) => (
               <li key={r.rule} className={cn("rounded-full px-3 py-1 text-xs font-semibold", r.success >= 0.9 ? TONE_CLASS.pos : r.success >= 0.75 ? TONE_CLASS.default : TONE_CLASS.neg)}>
-                {r.label} · {pct(r.success, 0)}
+                <Term id={RULE_TERMS[r.rule]}>{r.label}</Term> · {pct(r.success, 0)}
               </li>
             ))}
           </ul>

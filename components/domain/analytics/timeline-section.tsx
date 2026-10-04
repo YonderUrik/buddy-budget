@@ -7,6 +7,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/
 import { Metric, MissingData } from "./analytics-card";
 import { formatYears, money } from "./analytics-format";
 import { FireTab } from "./fire-tab";
+import { Term } from "./term";
 import { timelineHeadline, timelineScenarios, timelineSeries } from "./plain-answers";
 import { QuestionSection } from "./question-section";
 import type { QuestionSectionData } from "./section-props";
@@ -31,7 +32,7 @@ export function TimelineSection({ question, index, base, assumptions, plan }: Qu
       <div className="flex flex-col gap-1 text-base leading-relaxed text-muted-foreground">
         <p className="font-heading text-xl font-medium text-foreground">{timelineHeadline(plan, today)}</p>
         <p>
-          Con {money(plan.savings ?? 0, currency)} risparmiati l&apos;anno e un rendimento reale del {(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}%, in euro di oggi.
+          Con {money(plan.savings ?? 0, currency)} risparmiati l&apos;anno e un <Term id="rendimento-reale">rendimento reale</Term> del {(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}%, in <Term id="euro-di-oggi">euro di oggi</Term>.
         </p>
       </div>
       <ChartContainer config={CONFIG} className="h-56 w-full">

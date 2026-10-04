@@ -4,6 +4,7 @@
 
 import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { Metric } from "./analytics-card";
+import { GlossedText } from "./glossed-text";
 import { money, pct } from "./analytics-format";
 import { CostsTab } from "./costs-tab";
 import { costsSentences } from "./plain-answers";
@@ -33,14 +34,16 @@ export function CostsSection({ question, index, base, assumptions, plan, saving,
     >
       <div className="flex flex-col gap-1 text-base leading-relaxed text-muted-foreground">
         {sentences.map((s) => (
-          <p key={s}>{s}</p>
+          <p key={s}>
+            <GlossedText text={s} />
+          </p>
         ))}
       </div>
       {summary.totalValue > 0 ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric label="Costo annuo" value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? `${pct(summary.annualPct, 2)} del portafoglio` : undefined} />
-          <Metric label={`Persi in ${COST_DRAG_YEARS} anni`} value={drag.length ? money(drag.at(-1)!.lost, currency) : "—"} tone="neg" sub="a parità di rendimento" />
-          <Metric label="Imposte se vendessi tutto" value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? `${pct(plan.liquidation.taxRatio)} del valore` : undefined} />
+          <Metric term="ter" label="Costo annuo" value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? `${pct(summary.annualPct, 2)} del portafoglio` : undefined} />
+          <Metric term="erosione" label={`Persi in ${COST_DRAG_YEARS} anni`} value={drag.length ? money(drag.at(-1)!.lost, currency) : "—"} tone="neg" sub="a parità di rendimento" />
+          <Metric term="imposte-latenti" label="Imposte se vendessi tutto" value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? `${pct(plan.liquidation.taxRatio)} del valore` : undefined} />
         </div>
       ) : null}
     </QuestionSection>

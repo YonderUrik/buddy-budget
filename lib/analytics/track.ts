@@ -82,6 +82,8 @@ export interface ProductEvents {
   analytics_explainer_opened: { analysis: string };
   /** Apertura/chiusura della «Guida passo passo» di una scheda. */
   analytics_reading_toggled: { tab: string; state: "aperta" | "chiusa" };
+  /** Popup di una parola o cifra sottolineata aperto; `term`: quale voce del glossario. */
+  analytics_term_opened: { term: string };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

@@ -37,12 +37,15 @@ export function successVerdict(success: number): { text: string; tone: Tone } {
 }
 
 /** Domanda 1: a che punto sei e da dove viene la crescita recente. */
-export function journeySentences(plan: AnalyticsPlan, split: GrowthSplit | null, currency: string): string[] {
+export function journeySentences(plan: AnalyticsPlan, split: GrowthSplit | null, currency: string, withdrawalRate?: number): string[] {
   const out: string[] = [];
   if (plan.target !== null) {
     out.push(`Hai ${money(plan.wealth, currency)} su ${money(plan.target, currency)} necessari: ${pct(Math.min(plan.progress ?? 0, 9.99), 0)} del percorso.`);
   } else {
     out.push(`Hai ${money(plan.wealth, currency)}. Per sapere quanto ti serve indica la spesa annua nelle ipotesi.`);
+  }
+  if (plan.target !== null && plan.spending !== null && withdrawalRate !== undefined) {
+    out.push(`Il numero FIRE è la tua spesa annua (${money(plan.spending, currency)}) divisa per il tasso di prelievo (${pct(withdrawalRate)}).`);
   }
   if (split && split.rows.length >= 2) {
     const share = split.savingsShare;

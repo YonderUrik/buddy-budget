@@ -28,3 +28,7 @@ export type { RiskTabProps } from "./risk-tab";
 export { CostsTab } from "./costs-tab";
 export type { CostsTabProps } from "./costs-tab";
 export { money, pct } from "./analytics-format";
+export { Term } from "./term";
+export type { TermProps } from "./term";
+export { GLOSSARY } from "./glossary";
+export type { GlossaryId } from "./glossary";

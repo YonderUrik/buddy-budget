@@ -1,11 +1,13 @@
 /**
  * components/domain/analytics — barrel file
  *
- * Sezione Analitiche: ipotesi, guida iniziale e le sei schede.
+ * Sezione Analitiche: ipotesi, guida iniziale e le quattro domande (con i dettagli tecnici di sei analisi).
  */
 
-export { ANALYTICS_TABS } from "./analytics-tabs";
-export type { AnalyticsTab } from "./analytics-tabs";
+export { ANALYTICS_QUESTIONS } from "./analytics-questions";
+export type { AnalyticsQuestion } from "./analytics-questions";
+export { QuestionsView } from "./questions-view";
+export type { QuestionsViewProps } from "./questions-view";
 export { AssumptionsPanel } from "./assumptions-panel";
 export type { AssumptionsPanelProps } from "./assumptions-panel";
 export { WalkthroughDialog } from "./walkthrough-dialog";
@@ -25,3 +27,8 @@ export { RiskTab } from "./risk-tab";
 export type { RiskTabProps } from "./risk-tab";
 export { CostsTab } from "./costs-tab";
 export type { CostsTabProps } from "./costs-tab";
+export { money, pct } from "./analytics-format";
+export { Term } from "./term";
+export type { TermProps } from "./term";
+export { GLOSSARY } from "./glossary";
+export type { GlossaryId } from "./glossary";

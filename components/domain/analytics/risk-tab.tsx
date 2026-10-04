@@ -24,14 +24,14 @@ export function RiskTab({ base, assumedVolatility }: RiskTabProps) {
       <AnalyticsCard title="Rischio del portafoglio" explainer="risk">
         {risk.fewData ? <p className="text-sm text-neg">Meno di un anno di dati: i numeri sono indicativi.</p> : null}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Metric label="Volatilità annua" value={dash(risk.volatility, (v) => pct(v))} sub={`ipotizzata ${pct(assumedVolatility, 0)}`} />
-          <Metric label="Peggior calo" value={dash(risk.maxDrawdown, (v) => `−${pct(v)}`)} tone="neg" sub="dal picco al minimo" />
-          <Metric label="Sharpe" value={dash(risk.sharpe, (v) => num(v))} sub="rendimento per unità di rischio" />
-          <Metric label="Sortino" value={dash(risk.sortino, (v) => num(v))} sub="conta solo i ribassi" />
-          <Metric label="Calmar" value={dash(risk.calmar, (v) => num(v))} sub={risk.annualReturn !== null ? `rendimento annuo ${pct(risk.annualReturn)}` : undefined} />
-          <Metric label="VaR 95% (giorno)" value={risk.tail ? `−${pct(risk.tail.var)}` : "—"} tone="neg" sub="nel 5% dei giorni peggiori si perde almeno" />
-          <Metric label="CVaR 95% (giorno)" value={risk.tail ? `−${pct(risk.tail.cvar)}` : "—"} tone="neg" sub="perdita media in quei giorni" />
-          <Metric label="Posizioni effettive" value={risk.concentration ? num(risk.concentration.effectiveN, 1) : "—"} sub="1 = tutto su un titolo" />
+          <Metric term="volatilita" label="Volatilità annua" value={dash(risk.volatility, (v) => pct(v))} sub={`ipotizzata ${pct(assumedVolatility, 0)}`} />
+          <Metric term="peggior-calo" label="Peggior calo" value={dash(risk.maxDrawdown, (v) => `−${pct(v)}`)} tone="neg" sub="dal picco al minimo" />
+          <Metric term="sharpe" label="Sharpe" value={dash(risk.sharpe, (v) => num(v))} sub="rendimento per unità di rischio" />
+          <Metric term="sortino" label="Sortino" value={dash(risk.sortino, (v) => num(v))} sub="conta solo i ribassi" />
+          <Metric term="calmar" label="Calmar" value={dash(risk.calmar, (v) => num(v))} sub={risk.annualReturn !== null ? `rendimento annuo ${pct(risk.annualReturn)}` : undefined} />
+          <Metric term="var" label="VaR 95% (giorno)" value={risk.tail ? `−${pct(risk.tail.var)}` : "—"} tone="neg" sub="nel 5% dei giorni peggiori si perde almeno" />
+          <Metric term="cvar" label="CVaR 95% (giorno)" value={risk.tail ? `−${pct(risk.tail.cvar)}` : "—"} tone="neg" sub="perdita media in quei giorni" />
+          <Metric term="posizioni-effettive" label="Posizioni effettive" value={risk.concentration ? num(risk.concentration.effectiveN, 1) : "—"} sub="1 = tutto su un titolo" />
         </div>
         {risk.volatility !== null && Math.abs(risk.volatility - assumedVolatility) > 0.05 ? (
           <p className="text-sm text-muted-foreground">

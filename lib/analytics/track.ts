@@ -13,6 +13,12 @@ export interface ProductEvents {
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
   account_sync_manual: undefined;
+  /** Modifica di un conto dalla finestra dei dettagli; `field`: cosa è cambiato, `kind`: conto manuale o collegato alla banca. */
+  account_updated: { field: "name" | "type" | "balance" | "appearance"; kind: "manuale" | "collegato" };
+  /** Eliminazione di un conto manuale o scollegamento di uno collegato. */
+  account_removed: { kind: "manuale" | "collegato" };
+  /** Apertura dei dettagli di un conto dalla lista (serve a capire se la riga cliccabile viene usata). */
+  account_details_opened: { kind: "manuale" | "collegato" };
   /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
   bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" };
   transaction_added: { direction: "entrata" | "uscita" };
@@ -25,7 +31,6 @@ export interface ProductEvents {
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
   investment_operation_added: { type: InvestmentTransactionType };
   investment_operation_updated: { type: InvestmentTransactionType };
-  investment_plan_created: undefined;
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" | "linea_di_credito" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" | "draw" | "repay" | "interest_charged" };
   /** `filter`: quali filtri erano attivi quando l'utente ha collegato la transazione alla rata. */

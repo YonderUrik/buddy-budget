@@ -19,7 +19,6 @@ export function dataSummaryItems(summary: UserDataSummary): DataSummaryItem[] {
     item(summary.rules, "regola di categorizzazione", "regole di categorizzazione"),
     item(summary.budgets, "budget", "budget"),
     item(summary.investmentOperations, "operazione di investimento", "operazioni di investimento"),
-    item(summary.investmentPlans, "piano di accumulo", "piani di accumulo"),
     item(summary.debts, "debito", "debiti"),
     item(summary.pensionFunds, "fondo pensione", "fondi pensione"),
     item(summary.netWorthDays, "giorno di storico del patrimonio", "giorni di storico del patrimonio"),

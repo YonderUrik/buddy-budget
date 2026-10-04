@@ -21,19 +21,7 @@ function data(): InvestmentData {
     createdAt: NOW,
     updatedAt: NOW,
   };
-  const plan = (id: string, amount: string, frequency: "mensile" | "trimestrale", active: boolean) => ({
-    id,
-    userId: "u",
-    portfolioId: "p",
-  statementAccountKey: null,
-    instrumentId: "etf",
-    amount,
-    frequency,
-    dayOfMonth: 5,
-    active,
-    createdAt: NOW,
-    updatedAt: NOW,
-  });
+
   return {
     currency: "EUR",
     portfolios: [],
@@ -58,7 +46,6 @@ function data(): InvestmentData {
         updatedAt: NOW,
       },
     ],
-    plans: [plan("a", "200.00", "mensile", true), plan("b", "300.00", "trimestrale", true), plan("c", "999.00", "mensile", false)],
     prices: [{ instrumentId: "etf", date: "2026-09-18", close: "110", source: "yahoo" }],
     manualPrices: [],
     fxRates: [],
@@ -76,17 +63,15 @@ function data(): InvestmentData {
 }
 
 describe("buildInvestmentsView", () => {
-  it("calcola riepilogo, serie, composizione e importo mensile dei PAC attivi", () => {
+  it("calcola riepilogo, serie, composizione ", () => {
     const view = buildInvestmentsView(data(), "1mese", NOW);
     expect(view.summary.totalValue).toBeCloseTo(1100);
     expect(view.series.at(-1)?.value).toBeCloseTo(1100);
     expect(view.byType).toEqual([{ key: "etf", value: 1100, share: 1 }]);
-    expect(view.activePlans).toHaveLength(2);
-    expect(view.monthlyPlanAmount).toBeCloseTo(300);
     expect(view.hasTransactions).toBe(true);
   });
 
-  it("propone gli strumenti già usati, dal più recente, poi quelli dei soli PAC", () => {
+  it("propone gli strumenti già usati, dal più recente", () => {
     const base = data().instruments[0];
     const byId = new Map(["a", "b", "c"].map((id) => [id, { ...base, id }]));
     const used = usedInstruments(
@@ -96,10 +81,9 @@ describe("buildInvestmentsView", () => {
         { instrumentId: "a", date: "2026-03-01" },
         { instrumentId: "sparito", date: "2026-09-10" },
       ],
-      [{ instrumentId: "c" }, { instrumentId: "a" }],
       byId
     );
-    expect(used.map((i) => i.id)).toEqual(["b", "a", "c"]);
+    expect(used.map((i) => i.id)).toEqual(["b", "a"]);
     expect(buildInvestmentsView(data(), "1mese", NOW).usedInstruments.map((i) => i.id)).toEqual(["etf"]);
   });
 });

@@ -6,7 +6,6 @@ import {
   INSTRUMENT_TYPES,
   TAX_REGIMES,
   INVESTMENT_TRANSACTION_TYPES,
-  PLAN_FREQUENCIES,
   PRICE_ALERT_DIRECTIONS,
   PRICE_UNITS,
   type InvestmentTransactionType,
@@ -14,8 +13,6 @@ import {
 
 /** Lunghezza massima della nota di un'operazione (come per le transazioni). */
 export const INVESTMENT_NOTE_MAX_LENGTH = 500;
-/** Il giorno del PAC si ferma al 28 per esistere in tutti i mesi. */
-export const PLAN_MAX_DAY_OF_MONTH = 28;
 /** Aliquote italiane sui redditi finanziari: ordinaria e titoli di Stato. */
 export const TAX_RATES = ["0.26", "0.125"] as const;
 
@@ -145,25 +142,6 @@ export const updateInvestmentTransactionSchema = transactionFields
   .omit({ portfolioId: true, instrumentId: true })
   .superRefine(checkTypeFields);
 export type UpdateInvestmentTransactionInput = z.infer<typeof updateInvestmentTransactionSchema>;
-
-export const createPlanSchema = z.object({
-  portfolioId: z.string().uuid().optional(),
-  instrumentId: z.string().uuid(),
-  amount: z.number().positive(),
-  frequency: z.enum(PLAN_FREQUENCIES).default("mensile"),
-  dayOfMonth: z.number().int().min(1).max(PLAN_MAX_DAY_OF_MONTH),
-});
-export type CreatePlanInput = z.infer<typeof createPlanSchema>;
-
-export const updatePlanSchema = z
-  .object({
-    amount: z.number().positive().optional(),
-    frequency: z.enum(PLAN_FREQUENCIES).optional(),
-    dayOfMonth: z.number().int().min(1).max(PLAN_MAX_DAY_OF_MONTH).optional(),
-    active: z.boolean().optional(),
-  })
-  .refine((data) => Object.keys(data).length > 0, { message: "Nessun campo da aggiornare" });
-export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;
 
 export const manualPriceSchema = z.object({ date: dateKey, close: z.number().positive() });
 export type ManualPriceInput = z.infer<typeof manualPriceSchema>;

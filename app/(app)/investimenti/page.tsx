@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Scheda Portafoglio di Investimenti, la più essenziale: quanto vale e quanto ha guadagnato, le posizioni e i PAC.
+ * Scheda Portafoglio di Investimenti, la più essenziale: quanto vale e quanto ha guadagnato, e le posizioni.
  * Performance, diversificazione, proventi, tasse e operazioni hanno le loro schede; titolo, schede e dialog
  * "Registra"/"Importa" sono nel layout.
  */
@@ -11,11 +11,9 @@ import {
   BrokerStatements,
   InvestmentsViewGate,
   ManualPriceDialog,
-  PlansCard,
   PortfolioHeroCard,
   PositionsList,
-  useRegisterFromPlan,
-} from "@/components/domain/investments";
+  } from "@/components/domain/investments";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { computeConcentration, computeValueBreakdown } from "@/lib/investments/insights";
@@ -28,7 +26,6 @@ export default function InvestimentiPage() {
   const { overview, view, today } = useInvestmentsView(period);
   const instrumentIds = React.useMemo(() => view?.instruments.map((i) => i.id) ?? [], [view]);
   const backfill = useBackfillStatusQuery(instrumentIds);
-  const registerFromPlan = useRegisterFromPlan(view, today);
   const [priceInstrument, setPriceInstrument] = React.useState<Instrument | null>(null);
   const currency = view?.currency ?? "EUR";
 
@@ -62,15 +59,6 @@ export default function InvestimentiPage() {
           </>
         ) : null}
       </InvestmentsViewGate>
-      {view ? (
-        <PlansCard
-          plans={overview.data?.plans ?? []}
-          instrumentsById={view.instrumentsById}
-          currency={currency}
-          today={today}
-          onRegisterExecution={registerFromPlan}
-        />
-      ) : null}
       <ManualPriceDialog instrument={priceInstrument} onClose={() => setPriceInstrument(null)} />
     </>
   );

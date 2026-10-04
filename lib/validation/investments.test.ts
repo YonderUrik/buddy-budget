@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   createInstrumentSchema,
   createInvestmentTransactionSchema,
-  createPlanSchema,
   isValidIsin,
 } from "./investments";
 
@@ -46,12 +45,5 @@ describe("createInvestmentTransactionSchema", () => {
   it("applica i default di commissioni e imposte e svuota la nota vuota", () => {
     const parsed = createInvestmentTransactionSchema.parse({ instrumentId: INSTRUMENT_ID, type: "acquisto", date: "2026-09-25", quantity: 1.5, price: 10, note: "" });
     expect([parsed.fees, parsed.taxes, parsed.note]).toEqual([0, 0, null]);
-  });
-});
-
-describe("createPlanSchema", () => {
-  it("il giorno del PAC va da 1 a 28", () => {
-    expect(createPlanSchema.safeParse({ instrumentId: INSTRUMENT_ID, amount: 200, dayOfMonth: 31 }).success).toBe(false);
-    expect(createPlanSchema.parse({ instrumentId: INSTRUMENT_ID, amount: 200, dayOfMonth: 5 }).frequency).toBe("mensile");
   });
 });

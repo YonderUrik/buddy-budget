@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.9.0](https://github.com/YonderUrik/buddy-budget/compare/v0.8.0...v0.9.0) (2026-10-04)
+
+
+### Novità
+
+* reconcile and manage IBKR and DEGIRO portfolio imports ([#140](https://github.com/YonderUrik/buddy-budget/issues/140)) ([876782b](https://github.com/YonderUrik/buddy-budget/commit/876782be45c653799dbb170d3aff8beb1b084c40))
+
 ## [0.8.0](https://github.com/YonderUrik/buddy-budget/compare/v0.7.1...v0.8.0) (2026-10-04)
 
 

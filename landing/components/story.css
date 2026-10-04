@@ -1,7 +1,0 @@
-.story { padding-block: 200px 140px; }
-.why { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 72px; align-items: end; margin-top: 28px; }
-.why .t { max-width: 14em; font-size: clamp(34px, 4.4vw, 64px); }
-.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px; margin-top: 96px; border-top: 1px solid var(--line); padding-top: 36px; }
-.trio h3 { font: 600 22px var(--f-h); letter-spacing: -0.02em; margin-bottom: 10px; }
-.trio p { color: var(--ink2); font-size: 16px; }
-@media (max-width: 1000px) { .trio { grid-template-columns: 1fr; gap: 32px; margin-top: 64px; } .story { padding-block: 120px 80px; } .why { grid-template-columns: 1fr; gap: 24px; } }

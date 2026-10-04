@@ -13,7 +13,6 @@ export function Security() {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security band">
       <div className="wrap" style={{ paddingTop: 0 }}>
-        <div className="kicker">{SECURITY.kicker}</div>
         <h2 className="t">{SECURITY.title}</h2>
         <p className="sec-intro">{SECURITY.intro}</p>
         <div className="sec-layout">

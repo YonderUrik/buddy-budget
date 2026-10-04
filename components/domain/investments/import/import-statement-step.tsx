@@ -26,7 +26,7 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings }: 
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
         {fileName ? <span className="font-medium text-foreground">{fileName}</span> : "Testo incollato"}
-        {` · formato riconosciuto: ${providerName}. Importo azioni ed ETF (acquisti, vendite) e dividendi.`}
+        {` · formato riconosciuto: ${providerName}. Importo operazioni e movimenti di cassa, conservando i dati originali. Verifico i saldi e le posizioni quando presenti nel file.`}
       </p>
       <ImportRowsPreview rows={rows} />
       {warnings.length > 0 ? (

@@ -16,10 +16,10 @@ export interface NavLink {
 }
 
 export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
-  { href: "#prodotto", label: "Prodotto" },
+  { href: "#risposte", label: "Domande" },
   { href: "#funzioni", label: "Funzioni" },
-  { href: "#strumenti", label: "Strumenti" },
   { href: "#sicurezza", label: "Sicurezza" },
+  { href: "#strumenti", label: "Strumenti" },
 ];
 
 /** Barra fissa in alto. Passa allo stile scuro quando sta sopra una sezione `data-nav-dark`. */
@@ -62,7 +62,7 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS }: { links?: readonly NavLin
         <div className="nr">
           <ThemeToggle />
           <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">Accedi</CtaLink>
-          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">Prova gratis</CtaLink>
+          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">Crea un account</CtaLink>
         </div>
       </div>
     </header>

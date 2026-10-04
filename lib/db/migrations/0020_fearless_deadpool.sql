@@ -1,0 +1,2 @@
+ALTER TABLE "investment_portfolios" ADD COLUMN "statement_cash_account_id" uuid;--> statement-breakpoint
+ALTER TABLE "investment_portfolios" ADD CONSTRAINT "investment_portfolios_statement_cash_account_id_accounts_id_fk" FOREIGN KEY ("statement_cash_account_id") REFERENCES "public"."accounts"("id") ON DELETE set null ON UPDATE no action;

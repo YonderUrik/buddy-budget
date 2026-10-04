@@ -24,3 +24,4 @@
 .legal-bar .btn.sm { height: 44px; padding: 0 20px; font-size: 15px; }
 @media (max-width: 480px) { .legal-bar .btn.sm { height: 40px; padding: 0 16px; font-size: 14px; } .legal-actions { gap: 8px; } }
 @media (max-width: 380px) { .legal-brand span { display: none; } }
+@media (max-width: 600px) { .legal-bar nav { margin-left: 8px; gap: 12px; font-size: 14px; min-width: 0; } .legal-brand span { display: none; } }

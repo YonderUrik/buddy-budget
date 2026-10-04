@@ -6,24 +6,28 @@ function row(lastPrice: PositionRow["lastPrice"]): PositionRow {
   return { instrument: { currency: "EUR" }, lastPrice } as unknown as PositionRow;
 }
 
+function price(date: string, origin: string): PositionRow["lastPrice"] {
+  return { close: 10, date, origin } as unknown as PositionRow["lastPrice"];
+}
+
 describe("priceNote", () => {
   it("segnala l'assenza di prezzo", () => {
     expect(priceNote(row(null), "2026-10-04")).toMatchObject({ price: null, stale: true, hint: null });
   });
 
   it("non segnala un prezzo recente", () => {
-    const note = priceNote(row({ close: 10, date: "2026-10-02", origin: "automatico" } as PositionRow["lastPrice"]), "2026-10-04");
+    const note = priceNote(row(price("2026-10-02", "automatico")), "2026-10-04");
     expect(note.stale).toBe(false);
     expect(note.hint).toBeNull();
   });
 
   it("suggerisce il prezzo a mano quando un prezzo automatico è fermo", () => {
-    const note = priceNote(row({ close: 10, date: "2026-09-20", origin: "automatico" } as PositionRow["lastPrice"]), "2026-10-04");
+    const note = priceNote(row(price("2026-09-20", "automatico")), "2026-10-04");
     expect(note).toMatchObject({ stale: true, hint: STALE_AUTO_PRICE_HINT });
   });
 
   it("non suggerisce nulla per un prezzo manuale vecchio, ma ne mostra l'origine", () => {
-    const note = priceNote(row({ close: 10, date: "2026-09-20", origin: "manuale" } as PositionRow["lastPrice"]), "2026-10-04");
+    const note = priceNote(row(price("2026-09-20", "manuale")), "2026-10-04");
     expect(note.stale).toBe(true);
     expect(note.hint).toBeNull();
     expect(note.detail).toContain("manuale");

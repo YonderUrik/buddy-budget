@@ -15,6 +15,35 @@ function pct(value: number): string {
   return `${(value * 100).toFixed(1).replace(".", ",")}%`;
 }
 
+/** Soglie dell'oscillazione annua (volatilità) per il livello di rischio: obbligazioni ~5%, azionario mondiale ~15%. */
+export const RISK_LEVEL_LOW = 0.08;
+export const RISK_LEVEL_MEDIUM = 0.15;
+export const RISK_LEVEL_HIGH = 0.25;
+
+export type RiskLevel = 1 | 2 | 3 | 4;
+
+export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = { 1: "Basso", 2: "Medio", 3: "Alto", 4: "Molto alto" };
+
+/** Livello di rischio da 1 a 4 in base all'oscillazione annua. */
+export function riskLevel(volatility: number): RiskLevel {
+  if (volatility < RISK_LEVEL_LOW) return 1;
+  if (volatility < RISK_LEVEL_MEDIUM) return 2;
+  if (volatility < RISK_LEVEL_HIGH) return 3;
+  return 4;
+}
+
+const RISK_LEVEL_TEXT: Record<RiskLevel, string> = {
+  1: "Il valore si muove poco: di solito sale e scende di pochi punti.",
+  2: "Il valore si muove in modo moderato, come ci si aspetta da un mix di azioni e obbligazioni.",
+  3: "Il valore si muove parecchio, come un portafoglio quasi tutto azionario.",
+  4: "Il valore si muove moltissimo: può cambiare di molto anche in pochi mesi.",
+};
+
+/** Frase di sintesi sotto il livello di rischio. */
+export function riskLevelInsight(level: RiskLevel): string {
+  return RISK_LEVEL_TEXT[level];
+}
+
 /** Oscillazione tipica in un anno (una deviazione standard: circa due anni su tre). */
 export function volatilityInsight(volatility: number, benchmarkVolatility: number | null, benchmarkName: string | null): string {
   const base = `In un anno normale il valore può muoversi di circa ±${pct(volatility)} (due anni su tre).`;

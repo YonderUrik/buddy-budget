@@ -53,7 +53,7 @@ export const FEATURES: readonly Feature[] = [
   f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers, Yahoo Finance o un altro CSV.", "live"),
   f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y».", "live"),
-  f("rischio", "Investimenti", "Rischio", "Volatilità, caduta peggiore, Sharpe, beta e correlazione con l'indice.", "live"),
+  f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),
   f("allocazione-obiettivo", "Investimenti", "Allocazione obiettivo", "Con il suggerimento di dove mettere il prossimo versamento.", "live"),
   f("proventi", "Investimenti", "Proventi", "Previsione dei dividendi a 12 mesi e incassi mese per mese.", "live"),

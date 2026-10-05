@@ -24,7 +24,19 @@ export function TransactionsPeriodSummary({ expenses, income, currency, splitCou
 
   return (
     <>
-    <dl className="grid grid-cols-3 gap-3 border-b border-border px-4 py-3">
+    <p className="flex flex-wrap items-baseline gap-x-3 border-b border-border px-4 py-2 text-xs text-muted-foreground tabular-nums sm:hidden">
+      <span>
+        Spese <b className="font-medium text-foreground">{formatCurrency(expenses.speseEffettive, currency)}</b>
+      </span>
+      <span>
+        Entrate <b className="font-medium text-pos">{formatCurrency(income.entrateEffettive, currency)}</b>
+      </span>
+      <span>
+        Saldo <b className={cn("font-medium", net < 0 ? "text-neg" : "text-foreground")}>{formatCurrency(net, currency)}</b>
+      </span>
+      {totalExcluded > 0 && <span>Esclusi {formatCurrency(totalExcluded, currency)}</span>}
+    </p>
+    <dl className="hidden grid-cols-3 gap-3 border-b border-border px-4 py-3 sm:grid">
       <div className="min-w-0">
         <dt className="text-xs text-muted-foreground">Spese</dt>
         <dd className="truncate font-heading text-lg font-medium tabular-nums text-foreground">
@@ -60,7 +72,7 @@ export function TransactionsPeriodSummary({ expenses, income, currency, splitCou
       </div>
     </dl>
     {splitCount > 0 && onToggleSplitOnly && (
-      <div className="flex items-center justify-between gap-3 border-b border-border bg-primary/5 px-4 py-2 text-sm">
+      <div className="hidden items-center justify-between gap-3 border-b border-border bg-primary/5 px-4 py-2 text-sm sm:flex">
         <p className="min-w-0 text-foreground">
           <span className="font-medium tabular-nums">{splitCount}</span> {splitCount === 1 ? "movimento diviso" : "movimenti divisi"}:{" "}
           <span className="font-medium tabular-nums text-primary">{formatCurrency(totalExcluded, currency)}</span> esclusi dal conteggio

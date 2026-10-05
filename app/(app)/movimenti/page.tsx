@@ -5,6 +5,7 @@
 import * as React from "react";
 import {
   ExpensesFilterBar,
+  MovementsQuickFilters,
   SwipeHint,
   TransactionRow,
   TransactionsDayHeader,
@@ -62,6 +63,11 @@ export default function MovimentiElencoPage() {
     .filter((t) => !showUncategorizedOnly || isUncategorized(t.categoryId))
     .filter((t) => !showSplitOnly || Number(t.excludedAmount) !== 0);
   const dayGroups = groupTransactionsByDay(visible);
+
+  function toggleSplitOnly() {
+    track("movements_split_filter_toggled", { state: showSplitOnly ? "disattivo" : "attivo" });
+    setShowSplitOnly((v) => !v);
+  }
   const hasActiveFilter = categoryFilter !== null || searchText.trim() !== "";
 
   return (
@@ -90,16 +96,29 @@ export default function MovimentiElencoPage() {
         <LoadError message="Impossibile caricare le transazioni." onRetry={() => refetch()} />
       ) : (
         <>
+          <MovementsQuickFilters
+            type={listTypeFilter}
+            onTypeChange={setListTypeFilter}
+            uncategorizedCount={uncategorizedCount}
+            uncategorizedActive={showUncategorizedOnly}
+            onToggleUncategorized={() => setShowUncategorizedOnly((v) => !v)}
+            splitCount={splitCount}
+            splitActive={showSplitOnly}
+            onToggleSplit={toggleSplitOnly}
+          />
+
           {uncategorizedCount > 0 && (
-            <UncategorizedCallout
-              count={uncategorizedCount}
-              filterActive={showUncategorizedOnly}
-              onToggleFilter={() => setShowUncategorizedOnly((v) => !v)}
-            />
+            <div className="hidden sm:block">
+              <UncategorizedCallout
+                count={uncategorizedCount}
+                filterActive={showUncategorizedOnly}
+                onToggleFilter={() => setShowUncategorizedOnly((v) => !v)}
+              />
+            </div>
           )}
 
           <Card className="gap-0 p-0">
-            <div className="border-b border-border px-4 py-3">
+            <div className="hidden border-b border-border px-4 py-3 sm:block">
               <TransactionsTypeToggle value={listTypeFilter} onChange={setListTypeFilter} stretch className="sm:w-fit" />
             </div>
             <TransactionsPeriodSummary
@@ -108,10 +127,7 @@ export default function MovimentiElencoPage() {
               currency={currency}
               splitCount={splitCount}
               splitOnly={showSplitOnly}
-              onToggleSplitOnly={() => {
-                track("movements_split_filter_toggled", { state: showSplitOnly ? "disattivo" : "attivo" });
-                setShowSplitOnly((v) => !v);
-              }}
+              onToggleSplitOnly={toggleSplitOnly}
             />
             {visible.length === 0 ? (
               <p className="p-6 text-sm text-muted-foreground">

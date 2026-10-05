@@ -19,6 +19,7 @@ import { useCategoryUsageQuery } from "@/lib/queries/categories";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { dismissSwipeHint } from "./swipe-hint";
 import { TransactionDetailSheet, type TransactionDetailFocus } from "./transaction-detail-sheet";
 import { useSwipeReveal } from "./use-swipe-reveal";
 import { useTransactionCategory } from "./use-transaction-category";
@@ -66,6 +67,11 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
       : transaction.description;
   const merchantKind = mccLabel(transaction.merchantCategoryCode);
   const swipeOpen = swipe.side !== "closed";
+
+  // Il primo swipe riuscito chiude per sempre il suggerimento in cima all'elenco.
+  React.useEffect(() => {
+    if (swipeOpen) dismissSwipeHint();
+  }, [swipeOpen]);
 
   function openSheet(focus: TransactionDetailFocus, via: "tocco" | "swipe" | "pulsante") {
     swipe.close();
@@ -145,7 +151,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           transition: swipe.dragging ? "none" : "transform 200ms ease-out",
         }}
         className={cn(
-          "relative flex touch-pan-y items-center gap-3 bg-card px-4 py-3 sm:cursor-default",
+          "relative flex touch-pan-y items-center gap-2.5 bg-card px-3 py-2.5 sm:cursor-default sm:gap-3 sm:px-4 sm:py-3",
           isUncategorized && "bg-[linear-gradient(var(--neg-soft),var(--neg-soft))]",
           swipeOpen && "shadow-md"
         )}
@@ -155,7 +161,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             color={currentCategory.color as CategoryColor}
             icon={currentCategory.icon as CategoryIcon}
             size={20}
-            className="size-10 shrink-0"
+            className="size-9 shrink-0 sm:size-10"
           />
         )}
 
@@ -169,12 +175,8 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             <span className="block truncate text-sm font-medium text-foreground" title={descriptionTitle}>
               {transaction.description}
             </span>
-            {/* Mobile: la categoria è testo (si cambia dal dettaglio o con lo swipe). */}
+            {/* Mobile: la categoria è testo (si cambia dal dettaglio o con lo swipe); la data non serve, c'è l'intestazione del giorno. */}
             <span className="flex items-center gap-1.5 text-xs text-muted-foreground sm:hidden">
-              <time dateTime={transaction.date} className="shrink-0 tabular-nums">
-                {formatShortDate(transaction.date)}
-              </time>
-              <span aria-hidden="true">·</span>
               <span className={cn("truncate", isUncategorized && "font-semibold text-neg")}>
                 {currentCategory?.name ?? "Senza categoria"}
               </span>

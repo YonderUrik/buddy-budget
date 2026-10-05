@@ -24,29 +24,30 @@ function readDismissed(): boolean {
   }
 }
 
+/** Chiude il suggerimento per sempre (es. dopo il primo swipe riuscito: l'utente ha già capito il gesto). */
+export function dismissSwipeHint() {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, "1");
+  } catch {
+    // Il suggerimento tornerà alla prossima visita: nessun danno.
+  }
+  listeners.forEach((listener) => listener());
+}
+
 export function SwipeHint() {
   // Sul server (e in idratazione) si considera chiuso, così non c'è uno scarto tra HTML e client.
   const dismissed = React.useSyncExternalStore(subscribe, readDismissed, () => true);
   if (dismissed) return null;
 
-  function dismiss() {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, "1");
-    } catch {
-      // Il suggerimento tornerà alla prossima visita: nessun danno.
-    }
-    listeners.forEach((listener) => listener());
-  }
-
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-muted px-3 py-2 text-sm text-muted-foreground sm:hidden">
-      <MoveHorizontalIcon className="size-4 shrink-0" aria-hidden="true" />
+    <div className="flex items-center gap-2 text-xs text-muted-foreground sm:hidden">
+      <MoveHorizontalIcon className="size-3.5 shrink-0" aria-hidden="true" />
       <p className="flex-1">
-        Scorri una riga: a sinistra <strong className="text-foreground">Dividi</strong>, a destra{" "}
-        <strong className="text-foreground">Categoria</strong>. Tocca per il dettaglio.
+        Scorri una riga: <strong className="font-semibold text-foreground">Dividi</strong> a sinistra,{" "}
+        <strong className="font-semibold text-foreground">Categoria</strong> a destra.
       </p>
-      <Button type="button" variant="ghost" size="sm" className="h-9" onClick={dismiss}>
-        Ho capito
+      <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={dismissSwipeHint}>
+        Ok
       </Button>
     </div>
   );

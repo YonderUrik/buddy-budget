@@ -5,6 +5,11 @@
  * riepilogo. Lo stato vive in `useInvestmentImport`; chiudere il dialog lo azzera (il contenuto si smonta).
  */
 
+import { useState } from "react";
+import { orderStatementFiles, type PreparedStatementFile } from "@/lib/investments/import/batch";
+import { detectImportProvider } from "@/lib/investments/import/providers";
+import { useParseStatementMutation } from "@/lib/queries/investments";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getImportProvider } from "@/lib/investments/import/providers";
@@ -40,8 +45,8 @@ function Stepper({ current, structured }: { current: ImportStep; structured: boo
   );
 }
 
-function ImportWizard({ currency, onClose }: { currency: string; onClose: () => void }) {
-  const s = useInvestmentImport();
+function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi" }: { currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
+  const s = useInvestmentImport(initialFile);
   const validRows = s.rows.filter((r) => r.status === "ok").length;
   const included = s.identities.filter((i) => {
     const choice = s.choices[i.key];
@@ -55,7 +60,7 @@ function ImportWizard({ currency, onClose }: { currency: string; onClose: () => 
 
       <div className="min-h-0 overflow-y-auto">
         {s.step === "file" ? (
-          <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} reading={s.reading} />
+          <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} />
         ) : null}
         {s.step === "mapping" && s.statement?.preset === "degiro" && s.portfolios.length > 0 ? <label className="mb-3 block text-sm">Portafoglio di destinazione <select className="ml-2 rounded border bg-background p-2" value={s.portfolioId || (s.portfolios.length === 1 ? s.portfolios[0].id : "")} onChange={(e) => s.setPortfolioId(e.target.value)}>{s.portfolios.length > 1 ? <option value="">Scegli un portafoglio</option> : null}{s.portfolios.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label> : null}
         {s.step === "mapping" && s.statement ? (
@@ -97,11 +102,11 @@ function ImportWizard({ currency, onClose }: { currency: string; onClose: () => 
       <div className="flex justify-between gap-2">
         {s.done ? (
           <Button className="ml-auto" onClick={onClose}>
-            Chiudi
+            {finishLabel}
           </Button>
         ) : (
           <>
-            <Button variant="ghost" onClick={s.step === "file" ? onClose : s.back} disabled={s.running}>
+            <Button variant="ghost" onClick={s.step === "file" ? onClose : s.back} disabled={s.running || (!!initialFile && s.step === "mapping")}>
               {s.step === "file" ? "Annulla" : "Indietro"}
             </Button>
             {s.step === "mapping" ? (
@@ -115,11 +120,11 @@ function ImportWizard({ currency, onClose }: { currency: string; onClose: () => 
               </Button>
             ) : null}
             {s.step === "summary" && s.result ? (
-              <Button onClick={s.confirm} disabled={s.result.counts.new === 0 || s.result.counts.error > 0 || s.running}>
+              <Button onClick={s.result.counts.new === 0 && initialFile ? onClose : s.confirm} disabled={(s.result.counts.new === 0 && !initialFile) || s.result.counts.error > 0 || s.running}>
                 {s.running
                   ? "Importo…"
                   : s.result.counts.new === 0
-                    ? "Niente di nuovo da importare"
+                    ? initialFile ? "Già importato · continua" : "Niente di nuovo da importare"
                     : `Importa ${s.result.counts.new} ${s.result.counts.new === 1 ? "operazione" : "operazioni"}`}
               </Button>
             ) : null}
@@ -130,6 +135,31 @@ function ImportWizard({ currency, onClose }: { currency: string; onClose: () => 
   );
 }
 
+/** Keep every selected statement separate, including previews, failures and completed-file progress. */
+function ImportSession({ currency, onClose }: { currency: string; onClose: () => void }) {
+  const [files, setFiles] = useState<PreparedStatementFile[]>([]);
+  const [index, setIndex] = useState(0);
+  const parse = useParseStatementMutation();
+  async function loadFiles(selected: File[]) {
+    const prepared: PreparedStatementFile[] = [];
+    for (const file of selected) {
+      const text = await file.text();
+      const provider = detectImportProvider(text);
+      if (provider !== "interactive-brokers" && provider !== "degiro") throw new Error(`${file.name}: l'import multiplo supporta rendiconti IBKR e DEGIRO. Importa gli altri CSV singolarmente.`);
+      try { prepared.push({ name: file.name, text, parsed: await parse.mutateAsync(text) }); }
+      catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : "File non valido"}`); }
+    }
+    const ordered = orderStatementFiles(prepared);
+    for (const file of ordered) track("investments_import_file_read", { provider: file.parsed.preset, chosen: false });
+    setFiles(ordered); setIndex(0);
+  }
+  if (files.length && index === files.length) return <div className="space-y-4"><p role="status">Tutti i {files.length} file sono stati elaborati. I file già importati sono stati saltati senza creare doppioni.</p><Button onClick={onClose}>Chiudi</Button></div>;
+  return <>
+    {files.length ? <div className="space-y-2 text-sm"><p role="status">File {index + 1} di {files.length}: {files[index].name}</p><p className="text-muted-foreground">Controlla e conferma ogni rendiconto. Ogni file è salvato separatamente: se interrompi, quelli già completati restano importati.</p><ol className="max-h-24 overflow-y-auto">{files.map((file, i) => <li key={i}>{i < index ? "✓ Elaborato" : i === index ? "In corso" : "In attesa"} · {file.name}</li>)}</ol></div> : null}
+    <ImportWizard key={files.length ? index : "single"} currency={currency} initialFile={files[index]} onFiles={loadFiles} onClose={files.length ? () => setIndex((i) => i + 1) : onClose} finishLabel={files.length ? "File successivo" : "Chiudi"} />
+  </>;
+}
+
 export function InvestmentImportDialog({ open, onOpenChange, currency }: InvestmentImportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -138,7 +168,7 @@ export function InvestmentImportDialog({ open, onOpenChange, currency }: Investm
           <DialogTitle>Importa operazioni</DialogTitle>
           <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Yahoo Finance o un altro CSV.</DialogDescription>
         </DialogHeader>
-        {open ? <ImportWizard currency={currency} onClose={() => onOpenChange(false)} /> : null}
+        {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>
     </Dialog>
   );

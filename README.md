@@ -86,7 +86,7 @@ L'immagine Docker si costruisce con `docker build -t buddy-budget:local .` (targ
 
 ## Documentazione
 
-- [`docs/decision-log.md`](docs/decision-log.md): perché sono state prese le decisioni, in ordine di data
+- [`docs/decisioni/`](docs/decisioni/) e [`docs/decision-log.md`](docs/decision-log.md) (archivio): perché sono state prese le decisioni, in ordine di data
 - [`docs/product-vision.md`](docs/product-vision.md) e [`docs/functional-spec.md`](docs/functional-spec.md): visione e specifica per schermata
 - [`docs/superpowers/specs/`](docs/superpowers/specs) e [`plans/`](docs/superpowers/plans): spec e piani di ogni feature
 - [`docs/landing-screens.md`](docs/landing-screens.md): come si generano gli screenshot

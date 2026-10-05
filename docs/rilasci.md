@@ -49,3 +49,10 @@ I merge normali costruiscono le immagini (`sha-…`, `main`) ma **non** le distr
 ## Dipendenze: solo patch
 
 `dependabot.yml` ignora gli aggiornamenti minor e major (restano quelli di sicurezza) e raggruppa le patch in una PR a settimana per cartella. Le PR hanno il prefisso `fix(deps)` (runtime) o `chore(deps-dev)` (sviluppo): le prime fanno partire una release con release-please, le seconde no. Le GitHub Actions si aggiornano a mano. Per fare di proposito un salto di minor o major si apre una PR normale, o si rimuove temporaneamente la regola `ignore`.
+
+## Ordine dei job su `main` (dal 2026-10-04)
+
+- Un run per commit su `main` (`concurrency` con lo SHA): i merge ravvicinati non si scartano più a vicenda, quindi il run di una release non può saltare.
+- `release` (release-please) non aspetta i test. Le immagini partono subito dopo, in parallelo ai test; il **deploy** (tag nel repo infra) parte solo se le check sono passate (o saltate perché i file dell'app/landing non sono cambiati) e non è mai fallita né annullata una dipendenza.
+- Su `main` il job "Cosa è cambiato" confronta con il commit precedente, come sulle PR: un merge di sola landing o documenti non rifà lint e test dell'app.
+- I job di deploy hanno un gruppo `deploy-infra-*`: se due release arrivano ravvicinate, la più vecchia in attesa si scarta. Inoltre il tag in infra non torna mai a una versione più vecchia di quella già presente.

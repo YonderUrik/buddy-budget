@@ -45,6 +45,8 @@ export interface ProductEvents {
   pension_snapshots_imported: { created: number; updated: number; format: "csv" | "xlsx" | "incollato" };
   /** Simulazione locale dell'aliquota in uscita (chip trascinato o mosso da tastiera); `years`: anni di partecipazione simulati. */
   pension_rate_simulated: { years: number };
+  investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
+  investment_broker_overlay_changed: { enabled: boolean };
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;

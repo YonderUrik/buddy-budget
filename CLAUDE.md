@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Vista broker (2026-10-05)**: filtri temporanei per broker condivisi tra le schede Investimenti e confronto TWR sovrapposto in Performance. Nessuna cancellazione o modifica del patrimonio generale. Dettagli in `docs/decisioni/2026-10-05-filtri-broker-e-confronto.md`; inclusi nella PR di gestione import.
+
 **Recupero import duplicati (2026-10-04)**: pulsante di reset completo dello storico investimenti con anteprima e conferma digitata, inclusi vecchi import senza origine. Branch `codex/reset-investment-imports`; nessun reset eseguito in produzione. Dettagli in `docs/ibkr-import.md`.
 
 **Import IBKR e DEGIRO: correzione locale in corso di revisione (2026-10-04)** sul branch `codex/ibkr-local-validation`; PR autorizzata dall’utente, in apertura. Rendiconti persistiti con cassa riconciliata, snapshot broker e rettifiche non monetarie; dettagli e limiti in `docs/ibkr-import.md` e `docs/degiro-import.md`. DEGIRO Account.csv si importa nello stesso portafoglio con origine e cassa separate; sostituzione e cancellazione restano isolate per broker. Aggiornamenti YTD sostituiscono atomicamente periodi interamente coperti; gestione importazioni con cancellazione delle dipendenze confermate. Restano fuori scope la ricostruzione fiscale dei lotti e gli overlap parziali; servono rispettivamente il dettaglio lotti e un export che copra i periodi coinvolti.

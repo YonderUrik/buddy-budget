@@ -1,5 +1,6 @@
 import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { authUser } from "@/lib/db/schema/auth";
 import {
   fxRates,
@@ -76,6 +77,7 @@ export async function loadUserTransactions(userId: string, instrumentId?: string
 /** Tutto quello che serve a calcolare il portafoglio di un utente lato client. */
 export interface InvestmentData {
   currency: string;
+  brokerSources?: { accountKey: string; provider: string }[];
   portfolios: InvestmentPortfolio[];
   instruments: Instrument[];
   transactions: InvestmentTransaction[];
@@ -117,9 +119,10 @@ function shiftDays(dateKey: string, days: number): string {
 export async function loadInvestmentData(userId: string, pricesFrom: string | null): Promise<InvestmentData> {
   const [user] = await db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId));
   const currency = user?.currency ?? "EUR";
-  const [portfolios, transactions] = await Promise.all([
+  const [portfolios, transactions, brokerSources] = await Promise.all([
     db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId)).orderBy(asc(investmentPortfolios.createdAt)),
     loadUserTransactions(userId),
+    db.select({ accountKey: brokerImportAccounts.accountKey, provider: brokerImportAccounts.provider }).from(brokerImportAccounts).where(eq(brokerImportAccounts.userId, userId)),
   ]);
 
   const [instrumentSettings, taxCarryforwards, dismissedDividends] = await Promise.all([
@@ -162,6 +165,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   if (ownedIds.length === 0) {
     return {
       currency,
+      brokerSources,
       portfolios,
       instruments: [],
       transactions,
@@ -224,6 +228,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
 
   return {
     currency,
+    brokerSources,
     portfolios,
     instruments: userInstruments,
     transactions,

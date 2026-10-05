@@ -15,6 +15,8 @@ export interface InvestmentsTab {
   label: string;
   /** Icona decorativa prima dell'etichetta (facoltativa). */
   icon?: LucideIcon;
+  /** Altri indirizzi che tengono attiva questa scheda (es. i rendiconti dentro Operazioni). */
+  alsoActiveOn?: readonly string[];
 }
 
 /** Schede di default: una per tema, la prima con solo l'essenziale. */
@@ -25,8 +27,7 @@ export const INVESTMENTS_TABS: readonly InvestmentsTab[] = [
   { href: "/investimenti/titoli", label: "Titoli", icon: Eye },
   { href: "/investimenti/proventi", label: "Proventi", icon: HandCoins },
   { href: "/investimenti/tasse", label: "Tasse", icon: Landmark },
-  { href: "/investimenti/rendiconti", label: "Rendiconti", icon: Landmark },
-  { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight },
+  { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight, alsoActiveOn: ["/investimenti/rendiconti"] },
 ];
 
 /** Dimensione delle icone delle schede, in pixel: piccole, per non competere con il testo. */
@@ -38,9 +39,13 @@ export interface InvestmentsTabsProps {
 }
 
 /** Una scheda è attiva sul suo indirizzo e sulle sue sotto-pagine (es. la pagina di un titolo), tranne la prima che è la radice. */
-export function isTabActive(tabHref: string, pathname: string, rootHref: string = INVESTMENTS_TABS[0].href): boolean {
-  if (pathname === tabHref) return true;
-  return tabHref !== rootHref && pathname.startsWith(`${tabHref}/`);
+export function isTabActive(
+  tabHref: string,
+  pathname: string,
+  rootHref: string = INVESTMENTS_TABS[0].href,
+  alsoActiveOn: readonly string[] = []
+): boolean {
+  return [tabHref, ...alsoActiveOn].some((href) => pathname === href || (href !== rootHref && pathname.startsWith(`${href}/`)));
 }
 
 export function InvestmentsTabs({ activeHref, tabs = INVESTMENTS_TABS }: InvestmentsTabsProps) {
@@ -53,7 +58,7 @@ export function InvestmentsTabs({ activeHref, tabs = INVESTMENTS_TABS }: Investm
     <nav aria-label="Sezioni di Investimenti" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-1 border-b sm:w-full">
         {tabs.map((tab) => {
-          const active = isTabActive(tab.href, activeHref);
+          const active = isTabActive(tab.href, activeHref, undefined, tab.alsoActiveOn);
           const Icon = tab.icon;
           return (
             <li key={tab.href}>

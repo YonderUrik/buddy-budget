@@ -1,4 +1,13 @@
-import { BrokerStatements } from "@/components/domain/investments";
+"use client";
 
-/** Historical broker statements with reconciled cash and original valuations. */
-export default function RendicontiPage() { return <BrokerStatements />; }
+import { BrokerStatements, OperationsViewSwitch } from "@/components/domain/investments";
+
+/** Rendiconti storici del broker con liquidità riconciliata e valutazioni originali; vivono dentro la scheda Operazioni. */
+export default function RendicontiPage() {
+  return (
+    <>
+      <OperationsViewSwitch value="rendiconti" />
+      <BrokerStatements />
+    </>
+  );
+}

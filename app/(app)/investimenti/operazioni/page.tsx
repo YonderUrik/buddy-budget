@@ -1,10 +1,10 @@
 "use client";
 
-/** Scheda Operazioni di Investimenti: tutte le operazioni per mese, con l'esito di ciascuna, i totali la modifica e l'eliminazione. */
+/** Scheda Operazioni di Investimenti (con i rendiconti del broker, se importati): tutte le operazioni per mese, con l'esito di ciascuna, i totali la modifica e l'eliminazione. */
 
 import * as React from "react";
 import { toast } from "sonner";
-import { EditOperationDialog, InvestmentsViewGate, InvestmentTransactionsList } from "@/components/domain/investments";
+import { EditOperationDialog, InvestmentsViewGate, InvestmentTransactionsList, OperationsViewSwitch } from "@/components/domain/investments";
 import type { InvestmentTransaction } from "@/lib/db/schema/investments";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useDeleteInvestmentTransactionMutation } from "@/lib/queries/investments";
@@ -23,6 +23,7 @@ export default function OperazioniPage() {
       empty={!!view && !view.hasTransactions}
       onRetry={() => overview.refetch()}
     >
+      <OperationsViewSwitch value="operazioni" />
       {view ? (
         <InvestmentTransactionsList
           months={view.operationMonths}

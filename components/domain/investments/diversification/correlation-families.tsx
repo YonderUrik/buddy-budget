@@ -5,6 +5,7 @@
 
 import type { CorrelationMatrix as Matrix } from "@/lib/calc/risk";
 import type { Instrument } from "@/lib/db/schema/investments";
+import { InstrumentLabel } from "../instrument-label";
 import { correlationFamilies } from "@/lib/investments/plain-labels";
 
 export interface CorrelationFamiliesProps {
@@ -12,13 +13,16 @@ export interface CorrelationFamiliesProps {
   instrumentsById: Map<string, Instrument>;
 }
 
-function Chip({ name }: { name: string }) {
-  return <li className="rounded-full border bg-background px-3 py-1 text-sm text-foreground">{name}</li>;
+function Chip({ instrument }: { instrument: Instrument | undefined }) {
+  return (
+    <li className="flex max-w-full items-center rounded-full border bg-background py-1 pl-1.5 pr-3 text-sm text-foreground">
+      {instrument ? <InstrumentLabel instrument={instrument} /> : "—"}
+    </li>
+  );
 }
 
 export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFamiliesProps) {
   const { families, independent } = correlationFamilies(matrix);
-  const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
   return (
     <div className="flex flex-col gap-3">
       {families.map((family, index) => (
@@ -32,7 +36,7 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
           </p>
           <ul className="flex flex-wrap gap-2">
             {family.map((id) => (
-              <Chip key={id} name={nameOf(id)} />
+              <Chip key={id} instrument={instrumentsById.get(id)} />
             ))}
           </ul>
         </div>
@@ -45,7 +49,7 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
           </p>
           <ul className="flex flex-wrap gap-2">
             {independent.map((id) => (
-              <Chip key={id} name={nameOf(id)} />
+              <Chip key={id} instrument={instrumentsById.get(id)} />
             ))}
           </ul>
         </div>

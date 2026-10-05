@@ -10,6 +10,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { correlationLabel, correlationPairs } from "@/lib/investments/plain-labels";
 import { cn } from "@/lib/utils";
 import { Disclosure } from "../disclosure";
+import { InstrumentLabel } from "../instrument-label";
 import { CorrelationMatrix } from "./correlation-matrix";
 
 /** Coppie mostrate prima di "Mostra tutte". */
@@ -24,11 +25,14 @@ function decimal(value: number): string {
   return value.toFixed(2).replace(".", ",");
 }
 
+function PairName({ instrument }: { instrument: Instrument | undefined }) {
+  return instrument ? <InstrumentLabel instrument={instrument} className="max-w-full" /> : <span>—</span>;
+}
+
 export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsProps) {
   const [showAll, setShowAll] = React.useState(false);
   const pairs = correlationPairs(matrix);
   const visible = showAll ? pairs : pairs.slice(0, PAIRS_VISIBLE);
-  const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
   return (
     <div className="flex flex-col gap-3">
       <ul className="flex flex-col gap-2">
@@ -36,8 +40,9 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
           const verdict = correlationLabel(pair.value);
           return (
             <li key={`${pair.aId}-${pair.bId}`} className="flex flex-col gap-1.5 rounded-xl border p-3">
-              <p className="text-sm text-foreground">
-                {nameOf(pair.aId)} <span className="text-muted-foreground">e</span> {nameOf(pair.bId)}
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-foreground">
+                <PairName instrument={instrumentsById.get(pair.aId)} /> <span className="text-muted-foreground">e</span>{" "}
+                <PairName instrument={instrumentsById.get(pair.bId)} />
               </p>
               <p className="text-xs text-muted-foreground">
                 {verdict.label} <span className="tabular-nums">({decimal(pair.value)})</span>

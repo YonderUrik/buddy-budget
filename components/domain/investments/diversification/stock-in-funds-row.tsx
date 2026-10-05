@@ -1,11 +1,14 @@
 /** Un'azione che hai sia direttamente sia dentro i tuoi ETF: barra con le due parti e il totale. */
 
+import type { Instrument } from "@/lib/db/schema/investments";
+import { InstrumentLabel } from "../instrument-label";
 import { formatCurrency } from "@/lib/format";
 import type { StockInsideFunds } from "@/lib/investments/overlap";
 
 export interface StockInFundsRowProps {
   item: StockInsideFunds;
   nameOf: (id: string) => string;
+  instrumentOf: (id: string) => Pick<Instrument, "id" | "name" | "type"> | undefined;
   currency: string;
 }
 
@@ -13,13 +16,14 @@ function money(value: number, currency: string): string {
   return formatCurrency(value, currency, { maximumFractionDigits: 0 });
 }
 
-export function StockInFundsRow({ item, nameOf, currency }: StockInFundsRowProps) {
+export function StockInFundsRow({ item, nameOf, instrumentOf, currency }: StockInFundsRowProps) {
+  const stock = instrumentOf(item.stockId);
   const via = item.totalValue - item.directValue;
   const directShare = item.totalValue > 0 ? item.directValue / item.totalValue : 1;
   return (
     <li className="flex flex-col gap-2 rounded-xl border p-3">
       <p className="text-sm text-foreground">
-        <span className="font-medium">{nameOf(item.stockId)}</span> pesa in tutto{" "}
+        <span className="font-medium">{stock ? <InstrumentLabel instrument={stock} className="max-w-full" /> : "—"}</span> pesa in tutto{" "}
         <span className="font-medium tabular-nums">{money(item.totalValue, currency)}</span>, perché la hai anche dentro{" "}
         {item.funds.length === 1 ? "un ETF" : `${item.funds.length} ETF`}.
       </p>

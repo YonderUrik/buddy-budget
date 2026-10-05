@@ -12,6 +12,7 @@ import type { TitleStats } from "@/lib/investments/title-stats";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
+import { InstrumentIcon } from "../instrument-icon";
 import { formatPrice } from "./title-format";
 
 export interface TitleHeaderProps {
@@ -32,14 +33,17 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
         <ArrowLeftIcon size={14} aria-hidden="true" /> Titoli
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="font-heading text-xl font-medium text-foreground">{instrument.name}</h2>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span>{INSTRUMENT_TYPE_SINGULAR[instrument.type]}</span>
-            {instrument.isin ? <span className="tabular-nums">{instrument.isin}</span> : null}
-            <span>{instrument.currency}</span>
-            {held ? <Badge variant="secondary">Posseduto</Badge> : null}
-          </p>
+        <div className="flex min-w-0 items-start gap-3">
+          <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} className="mt-0.5" />
+          <div className="min-w-0">
+            <h2 className="font-heading text-xl font-medium text-foreground">{instrument.name}</h2>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>{INSTRUMENT_TYPE_SINGULAR[instrument.type]}</span>
+              {instrument.isin ? <span className="tabular-nums">{instrument.isin}</span> : null}
+              <span>{instrument.currency}</span>
+              {held ? <Badge variant="secondary">Posseduto</Badge> : null}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-1.5" disabled={watchPending} aria-pressed={watching} onClick={onToggleWatch}>

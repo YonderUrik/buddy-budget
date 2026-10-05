@@ -1,0 +1,8 @@
+# 2026-10-05 — Elenco di Movimenti: gesture e «Dividi» in primo piano (mobile first)
+
+- **Scelta**: tra tre alternative (D «Scorri», E «Condiviso», F «Dettaglio») Daniele ha scelto D, con due prestiti da E: pulsante «Dividi» sempre visibile su desktop e colonna «Tua quota». Prototipi e confronto in `movimenti/proposte/` (cartella del progetto).
+- **Righe**: su mobile si scorre (swipe, solo touch/penna; `use-swipe-reveal.ts`): a sinistra «Dividi» e «Dettaglio», a destra «Categoria». Il tocco apre il dettaglio. Ogni gesto ha un equivalente a pulsante (le azioni dietro la riga sono nascoste a tastiera e screen reader perché il dettaglio le contiene tutte). Un suggerimento in cima spiega il gesto e si chiude per sempre (`localStorage`).
+- **Dettaglio** (`transaction-detail-sheet.tsx`): foglio dal basso su mobile (si chiude trascinando la maniglia), pannello laterale da `sm`. Contiene categoria, «Dividi», nota, e per le manuali modifica ed eliminazione. Sostituisce i pannelli inline e il popover della nota.
+- **«Dividi»**: scorciatoie Niente/½/⅓/¼, importo libero, barra «tua quota / esclusa» con anteprima, salvataggio a ogni scelta. L'elenco è raggruppato per giorno (con totale effettivo) e il riepilogo mostra «N movimenti divisi: X esclusi dal conteggio» con filtro.
+- **Eventi Umami**: `transaction_detail_opened {via, focus}`, `transaction_split_mode {mode}`, `movements_split_filter_toggled {state}` (`transaction_split` resta).
+- **Rimandato**: restyling mobile di Analisi (grafici a scorrimento), Categorie («Sposta in…» al posto del solo trascinamento) e Regole (swipe per modifica/elimina), come nel prototipo D; nuova barra di navigazione in basso. Screenshot della landing: li rigenera il workflow giornaliero.

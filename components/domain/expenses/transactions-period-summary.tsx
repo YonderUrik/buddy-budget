@@ -11,13 +11,19 @@ export interface TransactionsPeriodSummaryProps {
   expenses: ExpensesSummary;
   income: IncomeSummary;
   currency: string;
+  /** Quante transazioni del periodo sono divise; se > 0 compare la riga "esclusi dal conteggio" con il filtro. */
+  splitCount?: number;
+  /** true = la lista mostra solo le transazioni divise. */
+  splitOnly?: boolean;
+  onToggleSplitOnly?: () => void;
 }
 
-export function TransactionsPeriodSummary({ expenses, income, currency }: TransactionsPeriodSummaryProps) {
+export function TransactionsPeriodSummary({ expenses, income, currency, splitCount = 0, splitOnly = false, onToggleSplitOnly }: TransactionsPeriodSummaryProps) {
   const totalExcluded = expenses.escluse + income.escluse;
   const net = income.entrateEffettive - expenses.speseEffettive;
 
   return (
+    <>
     <dl className="grid grid-cols-3 gap-3 border-b border-border px-4 py-3">
       <div className="min-w-0">
         <dt className="text-xs text-muted-foreground">Spese</dt>
@@ -53,5 +59,25 @@ export function TransactionsPeriodSummary({ expenses, income, currency }: Transa
         </dd>
       </div>
     </dl>
+    {splitCount > 0 && onToggleSplitOnly && (
+      <div className="flex items-center justify-between gap-3 border-b border-border bg-primary/5 px-4 py-2 text-sm">
+        <p className="min-w-0 text-foreground">
+          <span className="font-medium tabular-nums">{splitCount}</span> {splitCount === 1 ? "movimento diviso" : "movimenti divisi"}:{" "}
+          <span className="font-medium tabular-nums text-primary">{formatCurrency(totalExcluded, currency)}</span> esclusi dal conteggio
+        </p>
+        <button
+          type="button"
+          onClick={onToggleSplitOnly}
+          aria-pressed={splitOnly}
+          className={cn(
+            "h-9 shrink-0 rounded-full border border-border bg-card px-3 text-xs font-medium",
+            splitOnly && "border-primary bg-primary text-primary-foreground"
+          )}
+        >
+          {splitOnly ? "Mostra tutte" : "Mostra solo queste"}
+        </button>
+      </div>
+    )}
+    </>
   );
 }

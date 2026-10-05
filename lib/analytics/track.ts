@@ -26,6 +26,12 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
+  /** Come è stata scelta la divisione: `mode` = scorciatoia usata (niente, metà, un terzo, un quarto) o importo libero. */
+  transaction_split_mode: { mode: "niente" | "meta" | "terzo" | "quarto" | "libero" };
+  /** Apertura del dettaglio di una transazione; `via`: tocco sulla riga, uno swipe o un pulsante (Dividi/Dettaglio). */
+  transaction_detail_opened: { via: "tocco" | "swipe" | "pulsante"; focus: "dettaglio" | "dividi" | "categoria" };
+  /** Uso del filtro/avviso «Divise» nell'elenco di Movimenti; `state`: lo stato dopo il clic. */
+  movements_split_filter_toggled: { state: "attivo" | "disattivo" };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };

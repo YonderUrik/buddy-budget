@@ -42,7 +42,7 @@ export const FEATURES: readonly Feature[] = [
   f("proposte-per-somiglianza", "Movimenti", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
   f("nomi-leggibili", "Movimenti", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
   f("quattro-gruppi-di-spesa", "Movimenti", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
-  f("dividi-e-escludi", "Movimenti", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise.", "live"),
+  f("dividi-e-escludi", "Movimenti", "Dividi e escludi", "Scorri o tocca un movimento e scegli quanto è davvero tua spesa: metà, un terzo o un importo libero. Rimborsi, giroconti e spese condivise restano fuori dai conteggi.", "live"),
   f("budget-per-categoria", "Movimenti", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
   f("analisi-e-cash-flow", "Movimenti", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/movimenti"),
   f("ricerca-filtri-e-note", "Movimenti", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),

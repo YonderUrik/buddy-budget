@@ -5,7 +5,9 @@
 import * as React from "react";
 import {
   ExpensesFilterBar,
+  SwipeHint,
   TransactionRow,
+  TransactionsDayHeader,
   TransactionsPeriodSummary,
   TransactionsTypeToggle,
   UncategorizedCallout,
@@ -13,6 +15,7 @@ import {
 import { AccountFilterChip, movementsFetchWindow, useMovements } from "@/components/domain/movements";
 import { LoadError } from "@/components/domain/shared";
 import { Card } from "@/components/ui/card";
+import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import {
   computeIncomeSummary,
@@ -24,6 +27,7 @@ import {
   isIncome,
   type TransactionDirection,
 } from "@/lib/calc/expenses";
+import { groupTransactionsByDay } from "@/lib/calc/transaction-groups";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
@@ -36,6 +40,7 @@ export default function MovimentiElencoPage() {
   const currency = session?.user.currency ?? "EUR";
   const { period, referenceDate, categoryFilter, setCategoryFilter, searchText, setSearchText, accountFilter, setAccountFilter } = useMovements();
   const [showUncategorizedOnly, setShowUncategorizedOnly] = React.useState(false);
+  const [showSplitOnly, setShowSplitOnly] = React.useState(false);
   const [listTypeFilter, setListTypeFilter] = React.useState<TransactionDirection>("tutte");
 
   const { from, to } = movementsFetchWindow(referenceDate);
@@ -52,12 +57,17 @@ export default function MovimentiElencoPage() {
     (t) => t.date >= toDateString(range.from) && t.date <= toDateString(range.to)
   );
   const uncategorizedCount = inPeriod.filter((t) => isUncategorized(t.categoryId)).length;
-  const visible = showUncategorizedOnly ? inPeriod.filter((t) => isUncategorized(t.categoryId)) : inPeriod;
+  const splitCount = inPeriod.filter((t) => Number(t.excludedAmount) !== 0).length;
+  const visible = inPeriod
+    .filter((t) => !showUncategorizedOnly || isUncategorized(t.categoryId))
+    .filter((t) => !showSplitOnly || Number(t.excludedAmount) !== 0);
+  const dayGroups = groupTransactionsByDay(visible);
   const hasActiveFilter = categoryFilter !== null || searchText.trim() !== "";
 
   return (
     <>
       <AccountFilterChip accountId={accountFilter} onClear={() => setAccountFilter(null)} />
+      <SwipeHint />
       <ExpensesFilterBar
         categories={safeCategories}
         categoryId={categoryFilter}
@@ -96,18 +106,31 @@ export default function MovimentiElencoPage() {
               expenses={computeSummary(filtered.filter(isExpense), range)}
               income={computeIncomeSummary(filtered.filter(isIncome), range)}
               currency={currency}
+              splitCount={splitCount}
+              splitOnly={showSplitOnly}
+              onToggleSplitOnly={() => {
+                track("movements_split_filter_toggled", { state: showSplitOnly ? "disattivo" : "attivo" });
+                setShowSplitOnly((v) => !v);
+              }}
             />
             {visible.length === 0 ? (
               <p className="p-6 text-sm text-muted-foreground">
-                {showUncategorizedOnly
+                {showSplitOnly
+                  ? "Nessuna transazione divisa in questo periodo."
+                  : showUncategorizedOnly
                   ? "Nessuna transazione da categorizzare in questo periodo."
                   : hasActiveFilter
                     ? "Nessuna transazione corrisponde ai filtri applicati in questo periodo."
                     : "Nessuna transazione in questo periodo. Registrane una con “Aggiungi”."}
               </p>
             ) : (
-              visible.map((transaction) => (
-                <TransactionRow key={transaction.id} transaction={transaction} categories={safeCategories} currency={currency} />
+              dayGroups.map((group) => (
+                <section key={group.date} aria-label={group.date}>
+                  <TransactionsDayHeader date={group.date} net={group.net} currency={currency} />
+                  {group.transactions.map((transaction) => (
+                    <TransactionRow key={transaction.id} transaction={transaction} categories={safeCategories} currency={currency} />
+                  ))}
+                </section>
               ))
             )}
           </Card>

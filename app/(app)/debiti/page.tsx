@@ -1,12 +1,14 @@
 "use client";
 
-/** Panoramica dei debiti: quanto resta e quanto costa, quanto costa ciascun debito, quando finiscono e le prossime rate. */
+/**
+ * Panoramica dei debiti, in ordine di cosa serve: le prossime rate (da segnare), dove si pagano più interessi, come uscirne
+ * prima con un extra e l'elenco dei debiti che porta al dettaglio.
+ */
 
 import * as React from "react";
-import { DebtsCostCard, DebtsCreditLinesCard, DebtsNextDueCard, DebtsSummaryCard, DebtsTimelineCard, DebtsViewGate } from "@/components/domain/debts";
+import { DebtsExitCard, DebtsInterestCard, DebtsListCard, DebtsUpcomingCard, DebtsViewGate } from "@/components/domain/debts";
 import { authClient } from "@/lib/auth/client";
-import { todayIso } from "@/lib/debts/dates";
-import { buildDebtTimeline } from "@/lib/debts/timeline";
+import { yearlyInterestShares } from "@/lib/debts/overview-insights";
 import { useDebtsQuery } from "@/lib/queries/debts";
 
 export default function DebitiPage() {
@@ -14,18 +16,21 @@ export default function DebitiPage() {
   const currency = session?.user.currency ?? "EUR";
   const query = useDebtsQuery();
   const data = query.data;
-  const timeline = React.useMemo(() => (data ? buildDebtTimeline(data.debts, todayIso()) : null), [data]);
+  const interest = React.useMemo(() => (data ? yearlyInterestShares(data.debts, data.creditLines) : null), [data]);
 
   return (
     <DebtsViewGate loading={query.isLoading} error={query.isError} empty={data?.debts.length === 0 && data.creditLines.length === 0} onRetry={() => query.refetch()}>
-      {data ? (
-        <>
-          <DebtsSummaryCard overview={data.overview} currency={currency} />
-          <DebtsCostCard debts={data.debts} currency={currency} />
-          <DebtsCreditLinesCard lines={data.creditLines} currency={currency} />
-          <DebtsTimelineCard timeline={timeline} currency={currency} />
-          <DebtsNextDueCard items={data.overview.nextDue} currency={currency} />
-        </>
+      {data && interest ? (
+        <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-2">
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <DebtsUpcomingCard items={data.overview.nextDue} debts={data.debts} currency={currency} />
+            <DebtsInterestCard interest={interest} currency={currency} />
+          </div>
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <DebtsExitCard debts={data.debts} currency={currency} />
+            <DebtsListCard debts={data.debts} creditLines={data.creditLines} currency={currency} totalDebt={data.overview.totalDebt} />
+          </div>
+        </div>
       ) : null}
     </DebtsViewGate>
   );

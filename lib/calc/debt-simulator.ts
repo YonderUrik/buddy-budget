@@ -100,6 +100,15 @@ export interface PayoffResult {
   endDate: IsoDate;
   /** Nomi dei debiti nell'ordine in cui si chiudono. */
   closeOrder: string[];
+  /** Per ogni debito (nell'ordine di chiusura) il mese in cui si chiude e la data corrispondente. */
+  closings: PayoffClosing[];
+}
+
+export interface PayoffClosing {
+  id: string;
+  name: string;
+  months: number;
+  endDate: IsoDate;
 }
 
 /** Tetto di mesi simulati: oltre, il debito non si chiude (rata troppo bassa). */
@@ -113,6 +122,7 @@ export const MAX_PAYOFF_MONTHS = 600;
 export function simulatePayoff(loans: PayoffLoan[], monthlyExtra: number, strategy: PayoffStrategy | "none", today: IsoDate): PayoffResult {
   const state = loans.filter((l) => l.residual > 0).map((l) => ({ ...l, balance: l.residual }));
   const closeOrder: string[] = [];
+  const closings: PayoffClosing[] = [];
   let totalInterest = 0;
   let freed = 0;
   let months = 0;
@@ -139,12 +149,13 @@ export function simulatePayoff(loans: PayoffLoan[], monthlyExtra: number, strate
     for (const loan of state) {
       if (loan.balance <= 0.005 && !closeOrder.includes(loan.name)) {
         closeOrder.push(loan.name);
+        closings.push({ id: loan.id, name: loan.name, months, endDate: addMonthsClamped(today, months) });
         loan.balance = 0;
         freed += loan.installment;
       }
     }
   }
-  return { strategy, months, totalInterest: round2(totalInterest), endDate: addMonthsClamped(today, months), closeOrder };
+  return { strategy, months, totalInterest: round2(totalInterest), endDate: addMonthsClamped(today, months), closeOrder, closings };
 }
 
 /** Le tre simulazioni affiancate: senza extra, valanga (tasso più alto prima) e palla di neve (residuo più piccolo prima). */

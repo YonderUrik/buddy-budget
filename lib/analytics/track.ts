@@ -33,6 +33,10 @@ export interface ProductEvents {
   investment_operation_updated: { type: InvestmentTransactionType };
   debt_added: { startMode: "nuovo" | "origine" | "fotografia" | "linea_di_credito" };
   debt_event_added: { type: "payment" | "rate_change" | "balance_correction" | "early_repayment" | "draw" | "repay" | "interest_charged" };
+  /** Scelta di un'ipotesi nel foglio "E se…" di un debito (`kind`: quale) o di una linea di credito. */
+  debt_simulation_opened: { kind: "extra" | "estinzione" | "surroga" };
+  /** Primo uso dello slider "Come uscirne prima" nella panoramica dei debiti. */
+  debt_exit_plan_used: undefined;
   /** `filter`: quali filtri erano attivi quando l'utente ha collegato la transazione alla rata. */
   debt_installment_transaction_linked: { filter: "nessuno" | "testo" | "categoria" | "entrambi" };
   pension_fund_added: undefined;

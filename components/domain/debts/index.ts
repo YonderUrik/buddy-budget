@@ -1,26 +1,31 @@
 /**
  * components/domain/debts — barrel file
  *
- * Schermata Debiti: schede, panoramica e finanziamenti.
+ * Schermata Debiti: panoramica (prossime rate, interessi, piano per uscirne), dettaglio dei finanziamenti con simulazione e linee di credito.
  */
 
-export { DEBTS_TABS } from "./debts-tabs";
-export type { DebtsTab } from "./debts-tabs";
 export { DebtsActionsProvider, useDebtsActions } from "./debts-actions";
 export type { DebtsActions } from "./debts-actions";
 export { DebtsViewGate } from "./debts-view-gate";
 export type { DebtsViewGateProps } from "./debts-view-gate";
-export { DebtsSummaryCard } from "./debts-summary-card";
-export type { DebtsSummaryCardProps } from "./debts-summary-card";
-export { DebtsCostCard, sortByCost, COST_REFERENCE_AMOUNT } from "./debts-cost-card";
-export type { DebtsCostCardProps } from "./debts-cost-card";
-export { DebtsTimelineCard } from "./debts-timeline-card";
-export type { DebtsTimelineCardProps } from "./debts-timeline-card";
-export { DebtsNextDueCard } from "./debts-next-due-card";
-export type { DebtsNextDueCardProps } from "./debts-next-due-card";
-export { formatMonthYear, summarySentence } from "./debts-format";
-export { DebtSelector, repaidShare } from "./debt-selector";
-export type { DebtSelectorProps } from "./debt-selector";
+export { formatDuration, formatMonthYear } from "./debts-format";
+export { DebtsUpcomingCard, dueText, daysBetween } from "./debts-upcoming-card";
+export type { DebtsUpcomingCardProps } from "./debts-upcoming-card";
+export { DebtsInterestCard } from "./debts-interest-card";
+export type { DebtsInterestCardProps } from "./debts-interest-card";
+export { DebtsExitCard } from "./debts-exit-card";
+export type { DebtsExitCardProps } from "./debts-exit-card";
+export { DebtsListCard } from "./debts-list-card";
+export type { DebtsListCardProps } from "./debts-list-card";
+export { DebtRing } from "./debt-ring";
+export type { DebtRingProps } from "./debt-ring";
+export { DebtSimulationPanel } from "./debt-simulation-panel";
+export type { DebtSimulationPanelProps } from "./debt-simulation-panel";
+export { DebtExtraSim } from "./debt-extra-sim";
+export { DebtRefinanceSim } from "./debt-refinance-sim";
+export { CreditLineRateSim } from "./credit-line-rate-sim";
+export { DebtFacts, repaidShare } from "./debt-facts";
+export type { DebtFactsProps } from "./debt-facts";
 export { DebtDetail } from "./debt-detail";
 export type { DebtDetailProps } from "./debt-detail";
 export { DebtPlanTable, visibleRowRange } from "./debt-plan-table";
@@ -43,8 +48,6 @@ export { CreditLineFormFields } from "./credit-line-form-fields";
 export type { CreditLineFormFieldsProps } from "./credit-line-form-fields";
 export { CreditLineSettingsDialog } from "./credit-line-settings-dialog";
 export type { CreditLineSettingsDialogProps } from "./credit-line-settings-dialog";
-export { CreditLineSelector } from "./credit-line-selector";
-export type { CreditLineSelectorProps } from "./credit-line-selector";
 export { CreditLineDetail } from "./credit-line-detail";
 export type { CreditLineDetailProps } from "./credit-line-detail";
 export { CreditLineUsage, thresholdPosition, usageAlertText } from "./credit-line-usage";
@@ -55,11 +58,5 @@ export { CreditLineChart } from "./credit-line-chart";
 export type { CreditLineChartProps } from "./credit-line-chart";
 export { CreditLineCharges, CHARGES_VISIBLE } from "./credit-line-charges";
 export type { CreditLineChargesProps } from "./credit-line-charges";
-export { DebtsCreditLinesCard } from "./debts-credit-lines-card";
-export type { DebtsCreditLinesCardProps } from "./debts-credit-lines-card";
 export { CreditLinePortfolioCard } from "./credit-line-portfolio-card";
 export type { CreditLinePortfolioCardProps } from "./credit-line-portfolio-card";
-export { SimulatorEarlyCard } from "./simulator-early-card";
-export { SimulatorRefinanceCard } from "./simulator-refinance-card";
-export { SimulatorPayoffCard } from "./simulator-payoff-card";
-export { SimulatorCreditRateCard } from "./simulator-credit-rate-card";

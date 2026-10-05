@@ -65,7 +65,7 @@ export const FEATURES: readonly Feature[] = [
   f("rate-cambio-tasso-e-correzioni", "Debiti", "Rate, cambio tasso e correzioni", "Segna le rate pagate, cambia il tasso o correggi il residuo.", "live"),
   f("estinzione-anticipata", "Debiti", "Estinzione anticipata", "Rata o durata, con penale, interessi risparmiati ed extra mensile.", "live"),
   f("credit-lombard", "Debiti", "Credit Lombard", "Linea di credito con saldo variabile, interessi a fine trimestre e soglia di allerta sull'utilizzo.", "new"),
-  f("simulatore-dei-debiti", "Debiti", "Simulatore dei debiti", "Surroga o nuova offerta, valanga e palla di neve su più debiti, effetto di un rialzo dell'indice.", "new"),
+  f("simulatore-dei-debiti", "Debiti", "Simulatore dei debiti", "Dentro ogni finanziamento: quanto risparmi versando di più, estinguendo una parte o passando a un'altra banca. In panoramica il percorso per uscire prima dai debiti e, sulle linee di credito, cosa succede se l'indice sale.", "new"),
 
   f("patrimonio-netto-nel-tempo", "Patrimonio", "Patrimonio netto nel tempo", "Liquidità, investimenti e previdenza (debiti già sottratti), con lo storico ricostruito. Dalla legenda mostri o nascondi le voci e il totale si aggiorna.", "live", "/panoramica"),
   f("riepilogo-sempre-in-vista", "Patrimonio", "Riepilogo sempre in vista", "Nella barra laterale: patrimonio, portafoglio, watchlist e avvisi.", "live"),

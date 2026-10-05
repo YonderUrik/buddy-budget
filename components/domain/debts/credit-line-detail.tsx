@@ -22,6 +22,7 @@ import { useDeleteDebtEventMutation, useDeleteDebtMutation } from "@/lib/queries
 import { CreditLineChart } from "./credit-line-chart";
 import { CreditLineCharges } from "./credit-line-charges";
 import { CreditLineFacts } from "./credit-line-facts";
+import { CreditLineRateSim } from "./credit-line-rate-sim";
 import { CreditLineSettingsDialog } from "./credit-line-settings-dialog";
 import { CreditLineUsage } from "./credit-line-usage";
 import { DebtEventDialog, type DebtEventDialogKind } from "./debt-event-dialog";
@@ -82,6 +83,7 @@ export function CreditLineDetail({ line, currency, onDeleted }: CreditLineDetail
       <CardContent className="flex flex-col gap-5">
         <CreditLineUsage line={line} currency={currency} />
         <CreditLineFacts line={line} currency={currency} />
+        <CreditLineRateSim line={line} currency={currency} />
         <section aria-label="Andamento dell'utilizzato" className="flex flex-col gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quanto hai utilizzato nel tempo</h3>
           <CreditLineChart line={line} currency={currency} />

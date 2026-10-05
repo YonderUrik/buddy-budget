@@ -8,11 +8,13 @@
 import * as React from "react";
 import { toast } from "sonner";
 import {
+  Disclosure,
   InstrumentSettingsDialog,
   InstrumentTaxListCard,
   LossCarryforwardCard,
   SaleSimulatorCard,
   TaxOpportunitiesCard,
+  TaxDisclaimer,
   TaxRegimeCard,
   TaxYearCard,
 } from "@/components/domain/investments";
@@ -52,7 +54,6 @@ export default function TassePage() {
       {view.report.years.length > 0 ? (
         <TaxYearCard years={view.report.years} regime={view.regime} currency={currency} currentYear={view.currentYear} />
       ) : null}
-      <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
       {view.sellable.length > 0 ? (
         <SaleSimulatorCard
           positions={view.sellable}
@@ -64,8 +65,12 @@ export default function TassePage() {
           currency={currency}
         />
       ) : null}
-      <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />
-      <InstrumentTaxListCard instruments={view.instruments} resolved={view.resolved} onEdit={setEditing} />
+      <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
+      <Disclosure title="Per esperti" summary="Cose da sapere e aliquote strumento per strumento">
+        <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />
+        <InstrumentTaxListCard instruments={view.instruments} resolved={view.resolved} onEdit={setEditing} />
+      </Disclosure>
+      <TaxDisclaimer />
       <InstrumentSettingsDialog instrument={editing} setting={editing ? view.settingsById.get(editing.id) : undefined} onClose={() => setEditing(null)} />
     </>
   );

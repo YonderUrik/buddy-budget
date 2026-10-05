@@ -68,6 +68,20 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
   const max = Math.max(...byExpiry.map((e) => e.amount), 0);
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
 
+  const empty = total === 0 && carryforwards.length === 0 && cryptoByExpiry.length === 0;
+  if (empty && !adding) {
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Zaino delle minusvalenze vuoto.</span> Nessuna minusvalenza da compensare.
+        </p>
+        <Button variant="outline" size="sm" onClick={() => setAdding(true)}>
+          Aggiungi minusvalenza pregressa
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-1">

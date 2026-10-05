@@ -7,6 +7,7 @@
 
 import * as React from "react";
 import { InfoHint, SegmentedControl } from "@/components/domain/shared";
+import { Disclosure } from "../disclosure";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TaxYear } from "@/lib/calc/taxes";
 import type { TaxRegime } from "@/lib/db/schema/investments";
@@ -32,6 +33,16 @@ function Row({ label, value, hint, tone }: { label: string; value: string; hint?
         {hint ? <InfoHint label={`Cos'è: ${label}`}>{hint}</InfoHint> : null}
       </dt>
       <dd className={tone === "pos" ? "tabular-nums text-pos" : tone === "neg" ? "tabular-nums text-neg" : "tabular-nums text-foreground"}>{value}</dd>
+    </div>
+  );
+}
+
+/** Un numero del riepilogo: etichetta piccola sopra, importo in evidenza. */
+function SummaryTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-muted/60 px-3 py-2.5">
+      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dd className="mt-0.5 font-heading text-base font-medium tabular-nums text-foreground sm:text-lg">{value}</dd>
     </div>
   );
 }
@@ -67,6 +78,12 @@ export function TaxYearCard({ years, regime, currency, currentYear }: TaxYearCar
               : `Hai registrato ${format(year.withheld)} di imposte trattenute sulle vendite, ${format(Math.abs(gap))} ${gap > 0 ? "in meno" : "in più"} della stima (crypto escluse): controlla le imposte delle vendite o l'aliquota degli strumenti.`}
           </p>
         ) : null}
+        <dl className="grid grid-cols-3 gap-3" aria-label="Riepilogo delle imposte">
+          <SummaryTile label="Sulle vendite" value={format(year.estimatedTax)} />
+          <SummaryTile label="Sui proventi" value={format(year.incomeWithheld)} />
+          <SummaryTile label={year.year === currentYear ? "Bollo stimato" : "Bollo"} value={format(year.bollo)} />
+        </dl>
+        <Disclosure title="Tutte le voci" summary="Plusvalenze, minusvalenze, zaino, proventi" bare>
         <dl className="grid gap-x-8 sm:grid-cols-2">
           <div className="divide-y divide-border">
             <Row label="Plusvalenze" value={format(year.gains)} tone={year.gains > 0 ? "pos" : undefined} hint="Guadagni da vendite e rimborsi di azioni, obbligazioni ed ETC: si possono compensare con lo zaino." />
@@ -99,6 +116,7 @@ export function TaxYearCard({ years, regime, currency, currentYear }: TaxYearCar
             />
           </div>
         </dl>
+        </Disclosure>
         {year.nonHarmonizedCount > 0 ? (
           <p className="text-xs text-muted-foreground">
             Hai venduto in guadagno ETF non armonizzati: in realtà sono tassati all&apos;aliquota IRPEF in dichiarazione, qui sono stimati al 26%.

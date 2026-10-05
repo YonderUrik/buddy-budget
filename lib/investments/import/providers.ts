@@ -30,10 +30,16 @@ export interface ImportProviderInfo {
   keywords?: string[];
   /** Percorso di un logo in `public/`, solo se ne abbiamo il permesso d'uso. */
   logoSrc?: string;
+  /** Variante del logo per il tema scuro (testo chiaro); se c'è, il logo si mostra senza tessera bianca e cambia col tema. */
+  logoSrcDark?: string;
 }
 
 export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
-  { id: "degiro", name: "DEGIRO", initials: "DG", group: "broker", keywords: ["flatex", "account.csv"], tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
+  { id: "degiro", name: "DEGIRO", initials: "DG",
+    // Logo fornito dal proprietario del progetto (varianti per tema chiaro e scuro); il marchio resta di DEGIRO, usato solo per indicare la fonte del file.
+    logoSrc: "/import-providers/degiro.svg",
+    logoSrcDark: "/import-providers/degiro-dark.svg",
+    group: "broker", keywords: ["flatex", "account.csv"], tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
   {
     id: "interactive-brokers",
     name: "Interactive Brokers",

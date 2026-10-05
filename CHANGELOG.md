@@ -2,6 +2,20 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.11.0](https://github.com/YonderUrik/buddy-budget/compare/v0.10.0...v0.11.0) (2026-10-05)
+
+
+### Novità
+
+* scheda Diversificazione ridisegnata con mappa, icone e sovrapposizioni in parole ([#150](https://github.com/YonderUrik/buddy-budget/issues/150)) ([ac78add](https://github.com/YonderUrik/buddy-budget/commit/ac78add880172ae260b4633b01637c16d92c4d1b))
+
+## [0.10.0](https://github.com/YonderUrik/buddy-budget/compare/v0.9.0...v0.10.0) (2026-10-04)
+
+
+### Novità
+
+* **analitiche:** quattro domande in una pagina al posto di sei schede ([#131](https://github.com/YonderUrik/buddy-budget/issues/131)) ([34a70c6](https://github.com/YonderUrik/buddy-budget/commit/34a70c65ce8d84733fb2729d55cfbe63c5bfe59e))
+
 ## [0.9.0](https://github.com/YonderUrik/buddy-budget/compare/v0.8.0...v0.9.0) (2026-10-04)
 
 

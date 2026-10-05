@@ -23,16 +23,19 @@ export function ExposureSourcesList({ rows, onEdit }: ExposureSourcesListProps) 
   const [showAll, setShowAll] = React.useState(false);
   const visible = showAll ? rows : rows.slice(0, EXPOSURE_ROWS_LIMIT);
   return (
-    <section className="flex flex-col gap-2" aria-label="Da dove vengono i dati">
-      <p className="text-sm font-medium text-foreground">Da dove vengono i dati</p>
-      <ul className="flex flex-col divide-y rounded-lg border">
+    <div className="flex flex-col gap-2">
+      <ul className="flex flex-col divide-y rounded-lg border" aria-label="Fonte dei dati di ogni posizione">
         {visible.map((row) => (
           <li key={row.instrument.id} className="flex items-center gap-3 px-3 py-2">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm text-foreground">{row.instrument.name}</p>
+              <p className="truncate text-sm text-foreground">
+                {row.instrument.name} <span className="tabular-nums text-muted-foreground">· {sharePct(row.share)}</span>
+              </p>
               <p className="text-xs text-muted-foreground">
-                {sharePct(row.share)} · Area: {EXPOSURE_SOURCE_LABELS[row.exposure.areaSource]} · Settore:{" "}
-                {EXPOSURE_SOURCE_LABELS[row.exposure.sectorSource]}
+                Area: {EXPOSURE_SOURCE_LABELS[row.exposure.areaSource]}
+                <br className="sm:hidden" />
+                <span className="hidden sm:inline"> · </span>
+                Settore: {EXPOSURE_SOURCE_LABELS[row.exposure.sectorSource]}
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => onEdit(row)}>
@@ -46,6 +49,6 @@ export function ExposureSourcesList({ rows, onEdit }: ExposureSourcesListProps) 
           {showAll ? "Mostra meno" : `Mostra tutte (${rows.length})`}
         </Button>
       ) : null}
-    </section>
+    </div>
   );
 }

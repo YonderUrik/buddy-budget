@@ -1,16 +1,17 @@
 name: Screenshot landing
 
-# Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md). Parte da sola quando su main
-# cambia ciò che si vede nelle schermate (UI, calcoli, dati demo, elenco screen) e apre una PR con le immagini
-# nuove; si può anche avviare a mano. Con RELEASE_PLEASE_TOKEN (PAT) la PR fa partire CI e "Titolo PR" da sola;
-# con il solo GITHUB_TOKEN no, e serve un "Re-run" a mano (vedi docs/rilasci.md).
+# Rigenera gli screenshot dell'app per la landing (vedi docs/landing-screens.md) e apre una PR con le immagini nuove.
+# Non gira a ogni merge: con molte PR ravvicinate si rifaceva ogni volta (~3 minuti, più la CI della PR del bot).
+# Parte una volta al giorno, quando cambia la definizione delle schermate (elenco, script, dati demo) e a mano.
+# Chi cambia in modo visibile una schermata rigenera comunque gli screenshot nella sua PR (CLAUDE.md).
+# Con RELEASE_PLEASE_TOKEN (PAT) la PR fa partire CI e "Titolo PR" da sola; con il solo GITHUB_TOKEN no, e serve un
+# "Re-run" a mano (vedi docs/rilasci.md).
 on:
+  schedule:
+    - cron: "30 5 * * *"
   push:
     branches: [main]
     paths:
-      - "app/**"
-      - "components/**"
-      - "lib/**"
       - "scripts/demo-seed.ts"
       - "landing/content/screens.ts"
       - "landing/scripts/capture-screens.mjs"

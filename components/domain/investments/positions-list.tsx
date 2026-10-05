@@ -7,6 +7,7 @@
  * dello storico.
  */
 
+import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { PositionRow } from "@/lib/calc/investments";
 import type { ConcentrationInsight } from "@/lib/investments/insights";
@@ -18,6 +19,8 @@ import { concentrationText, percent } from "./positions-format";
 
 export { STALE_PRICE_DAYS } from "./positions-format";
 
+/** Il servizio dei loghi va citato (condizione del piano gratuito). */
+const LOGO_SERVICE_URL = "https://logo.dev";
 const COLUMN_LABELS = ["Strumento", "Posizione", "Ultimo prezzo", "Valore", "Utile", "Peso", ""];
 
 export interface PositionsListProps {
@@ -30,6 +33,7 @@ export interface PositionsListProps {
 }
 
 export function PositionsList({ rows, concentration, currency, todayKey, backfill, onManualPrice }: PositionsListProps) {
+  const [logosShown, setLogosShown] = React.useState(false);
   const loading = new Set(backfill.filter((b) => b.status === "running" && !b.interrupted).map((b) => b.instrumentId));
   const insight = concentrationText(concentration);
   const weighted = rows.filter((r) => r.weight !== null);
@@ -75,9 +79,18 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
                   todayKey={todayKey}
                   loadingHistory={loading.has(row.instrument.id)}
                   onManualPrice={onManualPrice}
+                  onRemoteLogo={() => setLogosShown(true)}
                 />
               ))}
             </ul>
+            {logosShown ? (
+              <p className="px-6 pt-3 text-xs text-muted-foreground">
+                Loghi forniti da{" "}
+                <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                  Logo.dev
+                </a>
+              </p>
+            ) : null}
           </>
         )}
       </CardContent>

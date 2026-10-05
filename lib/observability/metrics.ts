@@ -94,6 +94,7 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
+  logoRequests: Counter<"source" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
@@ -167,6 +168,13 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}price_provider_requests_total`,
     help: "Tentativi sulle fonti di prezzi di mercato per fonte ed esito (success, empty, error, skipped...).",
     labelNames: ["provider", "outcome"],
+    registers: r,
+  });
+
+  state.logoRequests = new Counter({
+    name: `${METRIC_PREFIX}logo_requests_total`,
+    help: "Richieste al servizio di loghi degli strumenti non servite dalla cache, per origine (issuer, isin) ed esito (hit, miss, error).",
+    labelNames: ["source", "outcome"],
     registers: r,
   });
 
@@ -376,6 +384,15 @@ export function recordAuthEvent(event: AuthEvent): void {
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */
 export function recordPriceProviderRequest(provider: ProviderId, outcome: ProviderOutcome): void {
   metrics().priceProvider.inc({ provider, outcome });
+}
+
+/** Origine ed esito di una richiesta al servizio di loghi. */
+export type LogoSourceKind = "issuer" | "isin";
+export type LogoRequestOutcome = "hit" | "miss" | "error";
+
+/** Registra una richiesta al servizio di loghi che non è stata servita dalla cache. */
+export function recordLogoRequest(source: LogoSourceKind, outcome: LogoRequestOutcome): void {
+  metrics().logoRequests.inc({ source, outcome });
 }
 
 /** Esito di un tentativo su una fonte dei cambi. */

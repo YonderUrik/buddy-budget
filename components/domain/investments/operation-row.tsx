@@ -15,6 +15,7 @@ import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
 import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import { useBrokerStatementsQuery } from "@/lib/queries/investments";
 import { GainText } from "./gain-text";
+import { InstrumentIcon } from "./instrument-icon";
 
 const QUANTITY_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 6 });
 const REMAINING_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 4 });
@@ -69,6 +70,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
   ].filter(Boolean);
   return (
     <li className="flex items-center gap-3 px-4 py-3 sm:px-6">
+      {instrument ? <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} size="sm" className="hidden sm:flex" /> : null}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <Badge variant={t.type === "vendita" || t.type === "rimborso" ? "outline" : "secondary"}>

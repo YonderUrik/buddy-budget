@@ -13,7 +13,7 @@ import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleListItem } from "@/lib/investments/titles-list";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
-import { INSTRUMENT_TYPE_COLOR } from "../instrument-colors";
+import { InstrumentIcon } from "../instrument-icon";
 import { formatPrice } from "./title-format";
 import { TitleSparkline } from "./title-sparkline";
 
@@ -41,11 +41,7 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
                   href={`${hrefBase}/${instrument.id}`}
                   className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
                 >
-                  <span
-                    className="h-9 w-1 shrink-0 rounded-full"
-                    style={{ background: INSTRUMENT_TYPE_COLOR[instrument.type] }}
-                    aria-hidden="true"
-                  />
+                  <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{instrument.name}</p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">

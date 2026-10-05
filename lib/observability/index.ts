@@ -17,6 +17,7 @@ export {
   recordAuthEvent,
   recordPriceProviderRequest,
   recordFxProviderRequest,
+  recordLogoRequest,
   recordPriceInstruments,
   recordGoCardlessCleanup,
   recordConsentNotice,

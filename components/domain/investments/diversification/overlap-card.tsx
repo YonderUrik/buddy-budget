@@ -25,6 +25,7 @@ export interface OverlapCardProps {
 
 export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCardProps) {
   const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
+  const instrumentOf = (id: string) => instrumentsById.get(id);
   const insight = analysis.correlations ? correlationInsight(analysis.correlations) : null;
   const hasOverlaps = analysis.overlaps.length > 0 || analysis.stocksInFunds.length > 0;
   return (
@@ -42,10 +43,10 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
           {hasOverlaps ? (
             <ul className="flex flex-col gap-2">
               {analysis.overlaps.map((o) => (
-                <OverlapPairRow key={`${o.aId}-${o.bId}`} overlap={o} nameOf={nameOf} />
+                <OverlapPairRow key={`${o.aId}-${o.bId}`} overlap={o} instrumentOf={instrumentOf} />
               ))}
               {analysis.stocksInFunds.map((s) => (
-                <StockInFundsRow key={s.stockId} item={s} nameOf={nameOf} currency={currency} />
+                <StockInFundsRow key={s.stockId} item={s} nameOf={nameOf} instrumentOf={instrumentOf} currency={currency} />
               ))}
             </ul>
           ) : (

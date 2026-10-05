@@ -12,6 +12,7 @@ import type { MarketSearchItem, SearchResultGroup } from "@/lib/investments/sear
 import { INSTRUMENT_TYPE_LABELS, INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import { cn } from "@/lib/utils";
 import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
+import { InstrumentIcon } from "./instrument-icon";
 
 export interface InstrumentSearchResultsProps {
   /** Strumenti già presenti nell'app che corrispondono alla ricerca. */
@@ -40,14 +41,24 @@ export function InstrumentTypeTag({ type }: { type: InstrumentType }) {
   );
 }
 
-function ResultButton(props: { title: string; detail: string; tag?: React.ReactNode; onClick: () => void; disabled?: boolean }) {
+function ResultButton(props: {
+  title: string;
+  detail: string;
+  type: InstrumentType;
+  /** Con l'id si prova anche il logo del server (solo per strumenti già presenti nell'app). */
+  instrumentId?: string;
+  tag?: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       onClick={props.onClick}
       disabled={props.disabled}
-      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none disabled:opacity-50"
+      className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left hover:bg-muted focus-visible:bg-muted focus-visible:outline-none disabled:opacity-50"
     >
+      <InstrumentIcon type={props.type} name={props.title} instrumentId={props.instrumentId} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm text-foreground">{props.title}</span>
         <span className="truncate text-xs text-muted-foreground">{props.detail}</span>
@@ -100,6 +111,8 @@ export function InstrumentSearchResults({
             <ResultButton
               key={i.id}
               title={i.name}
+              type={i.type}
+              instrumentId={i.id}
               detail={[i.currency, i.isin].filter(Boolean).join(" · ")}
               tag={<InstrumentTypeTag type={i.type} />}
               onClick={() => onChoose(i)}
@@ -133,7 +146,7 @@ export function InstrumentSearchResults({
           <div className="ml-2 flex flex-col gap-0.5 border-l-2 pl-1" style={{ borderLeftColor: INSTRUMENT_TYPE_COLOR[group.type] }}>
             {group.items.map((item) => {
               const view = itemView(item, cryptoCurrency);
-              return <ResultButton key={view.key} title={view.title} detail={view.detail} disabled={disabled} onClick={() => onAdd(item)} />;
+              return <ResultButton key={view.key} title={view.title} detail={view.detail} type={group.type} disabled={disabled} onClick={() => onAdd(item)} />;
             })}
           </div>
         </div>

@@ -12,6 +12,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency } from "@/lib/format";
 import type { IncomeInstrumentRow } from "@/lib/investments/dividends";
 import { formatSignedPct } from "../gain-text";
+import { InstrumentIcon } from "../instrument-icon";
 import { formatPct } from "../percent";
 
 export interface IncomeInstrumentsCardProps {
@@ -50,7 +51,10 @@ export function IncomeInstrumentsCard({ rows, instrumentsById, currency, onEditC
             return (
               <li key={row.instrumentId} className="flex flex-col gap-2 py-3">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="truncate text-sm font-medium text-foreground">{instrument.name}</p>
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} size="sm" />
+                    <span className="truncate text-sm font-medium text-foreground">{instrument.name}</span>
+                  </span>
                   {isBond ? (
                     <Button variant="outline" size="sm" onClick={() => onEditCoupons(instrument)}>
                       {row.hasCouponTerms ? "Cedole" : "Inserisci cedole"}

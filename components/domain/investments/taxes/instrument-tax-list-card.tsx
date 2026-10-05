@@ -8,6 +8,7 @@ import { isFund } from "@/lib/calc/taxes";
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { ResolvedTaxSettings, TaxRateSource } from "@/lib/investments/tax-settings";
 import { formatPct } from "../percent";
+import { InstrumentIcon } from "../instrument-icon";
 
 const SOURCE_LABELS: Record<TaxRateSource, string> = {
   manuale: "impostata da te",
@@ -35,12 +36,15 @@ export function InstrumentTaxListCard({ instruments, resolved, onEdit }: Instrum
             const settings = resolved.get(instrument.id)!;
             return (
               <li key={instrument.id} className="flex items-center justify-between gap-3 py-2">
-                <div className="min-w-0 text-sm">
-                  <p className="truncate text-foreground">{instrument.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatPct(settings.taxRate)} · {SOURCE_LABELS[settings.taxRateSource]}
-                    {isFund(instrument.type) ? ` · ${settings.harmonized ? "armonizzato" : "non armonizzato"}` : ""}
-                  </p>
+                <div className="flex min-w-0 items-center gap-2.5 text-sm">
+                  <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} size="sm" />
+                  <div className="min-w-0">
+                    <p className="truncate text-foreground">{instrument.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatPct(settings.taxRate)} · {SOURCE_LABELS[settings.taxRateSource]}
+                      {isFund(instrument.type) ? ` · ${settings.harmonized ? "armonizzato" : "non armonizzato"}` : ""}
+                    </p>
+                  </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => onEdit(instrument)}>
                   Modifica

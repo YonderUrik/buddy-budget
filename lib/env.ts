@@ -32,6 +32,8 @@ export const serverEnvSchema = z.object({
   STOOQ_API_KEY: z.string().optional(),
   TWELVEDATA_API_KEY: z.string().optional(),
   COINGECKO_API_KEY: z.string().optional(),
+  /** Chiave pubblica (`pk_…`) di Logo.dev per i loghi degli strumenti; assente = solo icone locali. */
+  LOGODEV_PUBLISHABLE_KEY: z.string().optional(),
   OPENFIGI_API_KEY: z.string().optional(),
 });
 

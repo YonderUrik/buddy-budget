@@ -16,6 +16,7 @@ import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { formatSignedCurrency, formatSignedPct } from "./gain-text";
 import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
+import { InstrumentIcon } from "./instrument-icon";
 import { percent, PRICE_FORMAT, priceNote, QUANTITY_FORMAT } from "./positions-format";
 
 /** Colonne della tabella desktop: la testata in `PositionsList` usa la stessa definizione. */
@@ -27,13 +28,15 @@ export interface PositionRowViewProps {
   todayKey: string;
   loadingHistory: boolean;
   onManualPrice: (row: PositionRow) => void;
+  /** Un logo remoto è stato mostrato in questa riga. */
+  onRemoteLogo?: () => void;
 }
 
 function gainClass(gain: number | null): string {
   return gain === null ? "text-muted-foreground" : gain < 0 ? "text-neg" : "text-pos";
 }
 
-export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice }: PositionRowViewProps) {
+export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice, onRemoteLogo }: PositionRowViewProps) {
   const [open, setOpen] = React.useState(false);
   const detailsId = React.useId();
   const note = priceNote(row, todayKey);
@@ -70,7 +73,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
           aria-controls={detailsId}
           onClick={() => setOpen((v) => !v)}
         >
-          <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: color }} aria-hidden="true" />
+          <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} onRemoteLogo={onRemoteLogo} />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
               <span className="truncate font-medium text-foreground" title={row.instrument.name}>
@@ -123,11 +126,11 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
         <div className="hidden @3xl:block">{manualPriceButton}</div>
       </div>
 
-      {note.hint ? <p className="hidden pb-2 pl-5.5 text-xs text-neg @3xl:block">{note.hint}</p> : null}
+      {note.hint ? <p className="hidden pb-2 pl-12 text-xs text-neg @3xl:block">{note.hint}</p> : null}
 
       {/* Dettagli sotto md */}
       <div id={detailsId} hidden={!open} className="@3xl:hidden">
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pb-3 pl-5.5 text-sm">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pb-3 pl-12 text-sm">
           <div>
             <dt className="text-xs text-muted-foreground">Quantità</dt>
             <dd className="tabular-nums">{quantity}</dd>

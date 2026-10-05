@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.12.0](https://github.com/YonderUrik/buddy-budget/compare/v0.11.0...v0.12.0) (2026-10-05)
+
+
+### Novità
+
+* icone degli strumenti in Posizioni (crypto, marchi azionari, sigle degli emittenti) ([#154](https://github.com/YonderUrik/buddy-budget/issues/154)) ([de26a47](https://github.com/YonderUrik/buddy-budget/commit/de26a4715e8d5ca6b530f056a94308164d55c866))
+
 ## [0.11.0](https://github.com/YonderUrik/buddy-budget/compare/v0.10.0...v0.11.0) (2026-10-05)
 
 

@@ -13,6 +13,8 @@ import { ImportProviderPicker } from "./import-provider-picker";
 export interface ImportFileStepProps {
   provider: ImportProviderId | null;
   onProviderChange: (provider: ImportProviderId | null) => void;
+  /** Provider scelto dopo aver usato la ricerca (misura). */
+  onProviderSearched?: (provider: ImportProviderId) => void;
   onLoad: (text: string, fileName: string | null) => void;
   /** Il file scelto è in lettura sul server. */
   reading?: boolean;
@@ -34,7 +36,7 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
-export function ImportFileStep({ provider, onProviderChange, onLoad, reading = false }: ImportFileStepProps) {
+export function ImportFileStep({ provider, onProviderChange, onProviderSearched, onLoad, reading = false }: ImportFileStepProps) {
   const id = React.useId();
   const [pasted, setPasted] = React.useState("");
   const [dragging, setDragging] = React.useState(false);
@@ -47,7 +49,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, reading = f
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">Da dove arriva il file?</p>
-        <ImportProviderPicker value={provider} onChange={onProviderChange} />
+        <ImportProviderPicker value={provider} onChange={onProviderChange} onSearchedChoice={onProviderSearched} />
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {provider
             ? getImportProvider(provider).howTo

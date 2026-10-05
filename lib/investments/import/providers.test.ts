@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseInteractiveBrokersActivity } from "./interactive-brokers";
-import { detectImportProvider, providerMismatchMessage } from "./providers";
+import {
+  detectImportProvider,
+  filterImportProviders,
+  groupImportProviders,
+  IMPORT_PROVIDERS,
+  providerMismatchMessage,
+} from "./providers";
 import { statementToRows, statementWarnings } from "./statement-rows";
 import { runImportSchema } from "@/lib/validation/investments-import";
 
@@ -41,5 +47,18 @@ describe("provider di import", () => {
       operations: ok,
     });
     expect(parsed.success).toBe(true);
+  });
+
+  it("cerca un provider per nome, sigla o parola chiave", () => {
+    expect(filterImportProviders(IMPORT_PROVIDERS, "").length).toBe(IMPORT_PROVIDERS.length);
+    expect(filterImportProviders(IMPORT_PROVIDERS, "ibkr").map((p) => p.id)).toEqual(["interactive-brokers"]);
+    expect(filterImportProviders(IMPORT_PROVIDERS, " DEGiro ").map((p) => p.id)).toEqual(["degiro"]);
+    expect(filterImportProviders(IMPORT_PROVIDERS, "xyz")).toEqual([]);
+  });
+
+  it("raggruppa i provider senza gruppi vuoti", () => {
+    const groups = groupImportProviders(IMPORT_PROVIDERS);
+    expect(groups.map((g) => g.id)).toEqual(["broker", "app", "csv"]);
+    expect(groupImportProviders(IMPORT_PROVIDERS.filter((p) => p.group === "app")).map((g) => g.id)).toEqual(["app"]);
   });
 });

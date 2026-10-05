@@ -65,6 +65,11 @@ export function useInvestmentImport() {
     setError(null);
   }
 
+  /** Misura quanto serve la ricerca nell'elenco dei provider. */
+  function trackProviderSearch(chosen: ImportProviderId) {
+    track("investments_import_provider_searched", { provider: chosen });
+  }
+
   async function loadText(text: string, name: string | null) {
     const detected = detectImportProvider(text);
     const mismatch = provider ? providerMismatchMessage(provider, detected) : null;
@@ -209,6 +214,7 @@ export function useInvestmentImport() {
     running: run.isPending,
     result,
     selectProvider,
+    trackProviderSearch,
     loadText,
     updateMapping,
     goToInstruments,

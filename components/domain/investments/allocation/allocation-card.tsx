@@ -6,16 +6,11 @@
  */
 
 import * as React from "react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
-import {
-  ALLOCATION_TOLERANCE,
-  roundedCurrentWeights,
-  type AllocationAnalysis,
-  type AllocationRow,
-  type TargetInput,
-} from "@/lib/investments/allocation";
+import { ALLOCATION_TOLERANCE, roundedCurrentWeights, type AllocationAnalysis, type AllocationRow, type TargetInput } from "@/lib/investments/allocation";
 import { cn } from "@/lib/utils";
 import { ContributionSuggestions } from "./contribution-suggestions";
 import { TargetsDialog } from "./targets-dialog";
@@ -40,7 +35,10 @@ function AllocationBar({ row }: { row: AllocationRow }) {
   return (
     <div className="relative h-2 w-full rounded-full bg-muted" aria-hidden="true">
       <div
-        className={cn("absolute inset-y-0 left-0 rounded-full", row.status === "in_linea" ? "bg-primary" : row.status === "sotto" ? "bg-[var(--swatch-amber)]" : "bg-[var(--swatch-violet)]")}
+        className={cn(
+          "absolute inset-y-0 left-0 rounded-full",
+          row.status === "in_linea" ? "bg-primary" : row.status === "sotto" ? "bg-[var(--swatch-amber)]" : "bg-[var(--swatch-violet)]"
+        )}
         style={{ width: `${(row.currentWeight / max) * 100}%` }}
       />
       {row.inTarget ? <div className="absolute -inset-y-1 w-0.5 rounded bg-foreground" style={{ left: `${(row.targetWeight / max) * 100}%` }} /> : null}
@@ -59,23 +57,17 @@ export interface AllocationCardProps {
   onRegister: (instrumentId: string, amount: number) => void;
 }
 
-export function AllocationCard({
-  allocation,
-  targets,
-  positions,
-  instrumentsById,
-  suggestions,
-  currency,
-  onRegister,
-}: AllocationCardProps) {
+export function AllocationCard({ allocation, targets, positions, instrumentsById, suggestions, currency, onRegister }: AllocationCardProps) {
   const [editing, setEditing] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const panelId = React.useId();
   const initial = targets.length > 0 ? targets : roundedCurrentWeights(positions);
   const outOfLine = allocation?.rows.filter((r) => r.status !== "in_linea") ?? [];
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Allocazione obiettivo</CardTitle>
             <p className="text-sm text-muted-foreground">
@@ -87,21 +79,27 @@ export function AllocationCard({
             </p>
           </div>
           {allocation ? (
-            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-              Modifica
-            </Button>
+            <div className="flex shrink-0 items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+                Modifica
+              </Button>
+              <Button variant="outline" size="sm" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((v) => !v)}>
+                {open ? "Chiudi" : "Dettaglio"}
+                <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
+              </Button>
+            </div>
           ) : null}
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+      <CardContent id={panelId} className={cn("flex flex-col gap-5", allocation && !open && "hidden")}>
         {allocation ? (
           <>
             <ul className="flex flex-col gap-3">
               {allocation.rows.map((row) => (
                 <li key={row.instrumentId} className="flex flex-col gap-1.5">
-                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <div className="flex flex-col gap-0.5 text-sm sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
                     <span className="min-w-0 truncate text-foreground">{instrumentsById.get(row.instrumentId)?.name ?? "—"}</span>
-                    <span className="shrink-0 tabular-nums text-muted-foreground">
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground sm:text-sm">
                       {pct(row.currentWeight)}
                       {row.inTarget ? ` su ${pct(row.targetWeight)}` : ""} ·{" "}
                       <span className={cn(row.status === "in_linea" ? "text-muted-foreground" : "font-medium text-foreground")}>{driftText(row)}</span>

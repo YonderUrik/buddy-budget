@@ -1,0 +1,42 @@
+import {
+  Banknote,
+  Bitcoin,
+  Building2,
+  CircleHelp,
+  Cpu,
+  Droplets,
+  Factory,
+  Gem,
+  HeartPulse,
+  Landmark,
+  Pickaxe,
+  RadioTower,
+  ScrollText,
+  Shapes,
+  ShoppingBag,
+  ShoppingCart,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import type { SectorKey } from "@/lib/investments/exposure-keys";
+
+/** Icona di ogni settore: aiuta a riconoscerlo a colpo d'occhio, non sostituisce l'etichetta. */
+export const SECTOR_ICON: Record<SectorKey, LucideIcon> = {
+  tecnologia: Cpu,
+  finanza: Landmark,
+  salute: HeartPulse,
+  industria: Factory,
+  consumi_ciclici: ShoppingBag,
+  consumi_difensivi: ShoppingCart,
+  comunicazioni: RadioTower,
+  energia: Zap,
+  materiali: Pickaxe,
+  servizi_pubblici: Droplets,
+  immobiliare: Building2,
+  obbligazioni: ScrollText,
+  liquidita: Banknote,
+  materie_prime: Gem,
+  crypto: Bitcoin,
+  altro: Shapes,
+  non_classificato: CircleHelp,
+};

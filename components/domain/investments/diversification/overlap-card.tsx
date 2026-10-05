@@ -1,25 +1,17 @@
 /**
- * Card "Sovrapposizioni": ETF che investono nelle stesse aziende, azioni che possiedi anche dentro un ETF e quanto le
- * posizioni si muovono insieme (correlazioni).
+ * Card "Sovrapposizioni": ETF che sono in pratica lo stesso investimento, azioni che possiedi anche dentro un ETF e
+ * quanto le posizioni si muovono insieme, tutto in linguaggio semplice (le soglie sono in `plain-labels.ts`).
  */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
-import { formatCurrency } from "@/lib/format";
 import type { InvestmentsAnalysis } from "@/lib/investments/analysis-view";
-import type { FundOverlap, OverlapMethod } from "@/lib/investments/overlap";
 import { correlationInsight } from "@/lib/investments/risk-insights";
-import { CorrelationMatrix } from "./correlation-matrix";
-
-const METHOD_NOTE: Record<OverlapMethod, string> = {
-  stesso_indice: "replicano lo stesso indice",
-  aree_indici: "stima dagli indici che replicano",
-  primi_titoli: "almeno, contando solo i primi 10 titoli",
-};
-
-function pct(share: number): string {
-  return `${Math.round(share * 100)}%`;
-}
+import { Disclosure } from "../disclosure";
+import { CorrelationFamilies } from "./correlation-families";
+import { CorrelationPairs } from "./correlation-pairs";
+import { OverlapPairRow } from "./overlap-pair-row";
+import { StockInFundsRow } from "./stock-in-funds-row";
 
 function decimal(value: number): string {
   return value.toFixed(2).replace(".", ",");
@@ -32,38 +24,28 @@ export interface OverlapCardProps {
 }
 
 export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCardProps) {
-  const name = (id: string) => instrumentsById.get(id)?.name ?? "—";
+  const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
   const insight = analysis.correlations ? correlationInsight(analysis.correlations) : null;
   const hasOverlaps = analysis.overlaps.length > 0 || analysis.stocksInFunds.length > 0;
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sovrapposizioni</CardTitle>
-        <p className="text-sm text-muted-foreground">Posizioni che, sotto sotto, sono la stessa scommessa</p>
+        <p className="text-sm text-muted-foreground">Quando due posizioni sono, in pratica, la stessa scommessa</p>
       </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        <section className="flex flex-col gap-2" aria-label="Stesse aziende">
-          <p className="text-sm font-medium text-foreground">Stesse aziende in più posizioni</p>
+      <CardContent className="flex flex-col gap-8">
+        <section className="flex flex-col gap-3" aria-label="Investimenti doppi">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Investimenti doppi</h3>
+            <p className="text-sm text-muted-foreground">Fondi che contengono in buona parte le stesse aziende.</p>
+          </div>
           {hasOverlaps ? (
-            <ul className="flex flex-col gap-2 text-sm">
-              {analysis.overlaps.map((o: FundOverlap) => (
-                <li key={`${o.aId}-${o.bId}`} className="flex flex-col">
-                  <span className="text-foreground">
-                    {name(o.aId)} e {name(o.bId)}: <span className="font-medium tabular-nums">{pct(o.share)}</span> in comune
-                  </span>
-                  <span className="text-xs text-muted-foreground">{METHOD_NOTE[o.method]}</span>
-                </li>
+            <ul className="flex flex-col gap-2">
+              {analysis.overlaps.map((o) => (
+                <OverlapPairRow key={`${o.aId}-${o.bId}`} overlap={o} nameOf={nameOf} />
               ))}
               {analysis.stocksInFunds.map((s) => (
-                <li key={s.stockId} className="flex flex-col">
-                  <span className="text-foreground">
-                    {name(s.stockId)}: oltre alle azioni che hai, ce l&apos;hai anche dentro {s.funds.length === 1 ? "un ETF" : `${s.funds.length} ETF`}. In
-                    tutto circa <span className="font-medium tabular-nums">{formatCurrency(s.totalValue, currency, { maximumFractionDigits: 0 })}</span>
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {s.funds.map((f) => `${(f.weightInFund * 100).toFixed(1).replace(".", ",")}% di ${name(f.fundId)}`).join(" · ")}
-                  </span>
-                </li>
+                <StockInFundsRow key={s.stockId} item={s} nameOf={nameOf} currency={currency} />
               ))}
             </ul>
           ) : (
@@ -72,19 +54,23 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
         </section>
 
         {analysis.correlations ? (
-          <section className="flex flex-col gap-2" aria-label="Correlazioni">
-            <p className="text-sm font-medium text-foreground">Quanto si muovono insieme</p>
-            {insight ? (
+          <section className="flex flex-col gap-3" aria-label="Quanto si muovono insieme">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Quanto si muovono insieme</h3>
               <p className="text-sm text-muted-foreground">
-                {insight.high
-                  ? `${name(insight.aId)} e ${name(insight.bId)} si muovono quasi insieme (${decimal(insight.value)}): diversificano poco tra loro.`
-                  : `La coppia più legata è ${name(insight.aId)} e ${name(insight.bId)} (${decimal(insight.value)}).`}{" "}
-                In media {decimal(insight.average)}: più è vicino a 0, più le posizioni si compensano.
+                {insight
+                  ? `In media ${decimal(insight.average)}: più è vicino a 0, più le posizioni si compensano quando il mercato scende.`
+                  : "Servono almeno 20 giorni di prezzi in comune per confrontare due posizioni."}
               </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">Servono almeno 20 giorni di prezzi in comune per confrontare due posizioni.</p>
-            )}
-            <CorrelationMatrix matrix={analysis.correlations} instrumentsById={instrumentsById} />
+            </div>
+            {insight ? (
+              <>
+                <CorrelationFamilies matrix={analysis.correlations} instrumentsById={instrumentsById} />
+                <Disclosure title="Tutte le coppie" summary="Quanto si muove insieme ogni coppia di posizioni">
+                  <CorrelationPairs matrix={analysis.correlations} instrumentsById={instrumentsById} />
+                </Disclosure>
+              </>
+            ) : null}
           </section>
         ) : null}
       </CardContent>

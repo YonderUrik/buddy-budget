@@ -28,13 +28,15 @@ export interface PositionRowViewProps {
   todayKey: string;
   loadingHistory: boolean;
   onManualPrice: (row: PositionRow) => void;
+  /** Un logo remoto è stato mostrato in questa riga. */
+  onRemoteLogo?: () => void;
 }
 
 function gainClass(gain: number | null): string {
   return gain === null ? "text-muted-foreground" : gain < 0 ? "text-neg" : "text-pos";
 }
 
-export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice }: PositionRowViewProps) {
+export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice, onRemoteLogo }: PositionRowViewProps) {
   const [open, setOpen] = React.useState(false);
   const detailsId = React.useId();
   const note = priceNote(row, todayKey);
@@ -71,7 +73,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
           aria-controls={detailsId}
           onClick={() => setOpen((v) => !v)}
         >
-          <InstrumentIcon type={row.instrument.type} name={row.instrument.name} />
+          <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} onRemoteLogo={onRemoteLogo} />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
               <span className="truncate font-medium text-foreground" title={row.instrument.name}>

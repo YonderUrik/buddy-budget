@@ -11,6 +11,8 @@ export interface FundIssuer {
   /** Sigla di una o due lettere mostrata nell'icona (non è il marchio dell'emittente). */
   initials: string;
   swatch: string;
+  /** Sito dell'emittente: con questo, e non con l'ISIN del fondo, si chiede il logo al servizio di loghi (vedi `logos/logo-source.ts`). */
+  domain: string;
   /** Inizi del nome normalizzato con cui si riconosce l'emittente. */
   prefixes: string[];
 }
@@ -21,21 +23,21 @@ export interface FundIssuer {
  * veri basta aggiungere `logoSrc` qui e i file in `public/instrument-icons/issuers/` quando l'uso sarà autorizzato.
  */
 export const FUND_ISSUERS: FundIssuer[] = [
-  { id: "ishares", name: "iShares (BlackRock)", initials: "iS", swatch: "var(--swatch-blue)", prefixes: ["ishares", "blackrock"] },
-  { id: "vanguard", name: "Vanguard", initials: "V", swatch: "var(--swatch-rose)", prefixes: ["vanguard"] },
-  { id: "xtrackers", name: "Xtrackers (DWS)", initials: "X", swatch: "var(--swatch-teal)", prefixes: ["xtrackers", "db x trackers", "dws"] },
-  { id: "spdr", name: "SPDR (State Street)", initials: "S", swatch: "var(--swatch-violet)", prefixes: ["spdr", "state street"] },
-  { id: "amundi", name: "Amundi", initials: "A", swatch: "var(--swatch-orange)", prefixes: ["amundi", "lyxor", "cpr"] },
-  { id: "invesco", name: "Invesco", initials: "In", swatch: "var(--swatch-emerald)", prefixes: ["invesco"] },
-  { id: "wisdomtree", name: "WisdomTree", initials: "W", swatch: "var(--swatch-amber)", prefixes: ["wisdomtree", "etfs"] },
-  { id: "vaneck", name: "VanEck", initials: "VE", swatch: "var(--swatch-teal)", prefixes: ["vaneck"] },
-  { id: "ubs", name: "UBS", initials: "U", swatch: "var(--swatch-rose)", prefixes: ["ubs"] },
-  { id: "hsbc", name: "HSBC", initials: "H", swatch: "var(--swatch-rose)", prefixes: ["hsbc"] },
-  { id: "jpmorgan", name: "J.P. Morgan", initials: "JP", swatch: "var(--swatch-slate)", prefixes: ["jpmorgan", "j p morgan", "jp morgan"] },
-  { id: "bnp", name: "BNP Paribas", initials: "BN", swatch: "var(--swatch-emerald)", prefixes: ["bnp paribas"] },
-  { id: "globalx", name: "Global X", initials: "GX", swatch: "var(--swatch-blue)", prefixes: ["global x"] },
-  { id: "franklin", name: "Franklin Templeton", initials: "F", swatch: "var(--swatch-blue)", prefixes: ["franklin"] },
-  { id: "fineco", name: "Fineco", initials: "Fi", swatch: "var(--swatch-blue)", prefixes: ["fineco"] },
+  { id: "ishares", name: "iShares (BlackRock)", initials: "iS", swatch: "var(--swatch-blue)", domain: "ishares.com", prefixes: ["ishares", "blackrock"] },
+  { id: "vanguard", name: "Vanguard", initials: "V", swatch: "var(--swatch-rose)", domain: "vanguard.com", prefixes: ["vanguard"] },
+  { id: "xtrackers", name: "Xtrackers (DWS)", initials: "X", swatch: "var(--swatch-teal)", domain: "dws.com", prefixes: ["xtrackers", "db x trackers", "dws"] },
+  { id: "spdr", name: "SPDR (State Street)", initials: "S", swatch: "var(--swatch-violet)", domain: "ssga.com", prefixes: ["spdr", "state street"] },
+  { id: "amundi", name: "Amundi", initials: "A", swatch: "var(--swatch-orange)", domain: "amundi.com", prefixes: ["amundi", "lyxor", "cpr"] },
+  { id: "invesco", name: "Invesco", initials: "In", swatch: "var(--swatch-emerald)", domain: "invesco.com", prefixes: ["invesco"] },
+  { id: "wisdomtree", name: "WisdomTree", initials: "W", swatch: "var(--swatch-amber)", domain: "wisdomtree.eu", prefixes: ["wisdomtree", "etfs"] },
+  { id: "vaneck", name: "VanEck", initials: "VE", swatch: "var(--swatch-teal)", domain: "vaneck.com", prefixes: ["vaneck"] },
+  { id: "ubs", name: "UBS", initials: "U", swatch: "var(--swatch-rose)", domain: "ubs.com", prefixes: ["ubs"] },
+  { id: "hsbc", name: "HSBC", initials: "H", swatch: "var(--swatch-rose)", domain: "hsbc.com", prefixes: ["hsbc"] },
+  { id: "jpmorgan", name: "J.P. Morgan", initials: "JP", swatch: "var(--swatch-slate)", domain: "jpmorgan.com", prefixes: ["jpmorgan", "j p morgan", "jp morgan"] },
+  { id: "bnp", name: "BNP Paribas", initials: "BN", swatch: "var(--swatch-emerald)", domain: "bnpparibas.com", prefixes: ["bnp paribas"] },
+  { id: "globalx", name: "Global X", initials: "GX", swatch: "var(--swatch-blue)", domain: "globalxetfs.eu", prefixes: ["global x"] },
+  { id: "franklin", name: "Franklin Templeton", initials: "F", swatch: "var(--swatch-blue)", domain: "franklintempleton.com", prefixes: ["franklin"] },
+  { id: "fineco", name: "Fineco", initials: "Fi", swatch: "var(--swatch-blue)", domain: "fineco.it", prefixes: ["fineco"] },
 ];
 
 /** Cosa mostrare per uno strumento: un'immagine, un marchio vettoriale o una sigla. */

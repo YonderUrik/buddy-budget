@@ -61,6 +61,36 @@ export function correlationPairs(matrix: CorrelationMatrix): CorrelationPair[] {
   return pairs.sort((x, y) => y.value - x.value);
 }
 
+/** Da questa correlazione due posizioni finiscono nella stessa "famiglia" (si muovono in pratica insieme). */
+export const FAMILY_CORRELATION = 0.75;
+
+export interface CorrelationFamilies {
+  /** Gruppi di almeno due posizioni legate tra loro, dal più numeroso. */
+  families: string[][];
+  /** Posizioni che non si muovono con nessun'altra. */
+  independent: string[];
+}
+
+/** Raggruppa le posizioni legate da una correlazione ≥ soglia (a catena: se A≈B e B≈C stanno insieme). */
+export function correlationFamilies(matrix: CorrelationMatrix, threshold = FAMILY_CORRELATION): CorrelationFamilies {
+  const ids = matrix.instrumentIds;
+  const parent = ids.map((_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  for (let i = 0; i < ids.length; i += 1) {
+    for (let j = i + 1; j < ids.length; j += 1) {
+      const value = matrix.values[i]?.[j];
+      if (typeof value === "number" && value >= threshold) parent[find(i)] = find(j);
+    }
+  }
+  const groups = new Map<number, string[]>();
+  ids.forEach((id, i) => groups.set(find(i), [...(groups.get(find(i)) ?? []), id]));
+  const all = [...groups.values()];
+  return {
+    families: all.filter((g) => g.length > 1).sort((a, b) => b.length - a.length),
+    independent: all.filter((g) => g.length === 1).map((g) => g[0]),
+  };
+}
+
 /** Codici dei punti della mappa (`world-dot-map.generated.ts`) → area dell'app. */
 export const WORLD_DOT_AREA_CODES: Record<string, AreaKey> = {
   n: "nord_america",

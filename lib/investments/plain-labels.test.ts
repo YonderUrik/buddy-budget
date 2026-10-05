@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { correlationLabel, correlationPairs, overlapLabel } from "./plain-labels";
+import { correlationFamilies, correlationLabel, correlationPairs, overlapLabel } from "./plain-labels";
 
 describe("overlapLabel", () => {
   it("distingue doppione, buona parte e parte in comune", () => {
@@ -32,5 +32,21 @@ describe("correlationPairs", () => {
       { aId: "a", bId: "c", value: 0.9 },
       { aId: "a", bId: "b", value: 0.2 },
     ]);
+  });
+});
+
+describe("correlationFamilies", () => {
+  it("raggruppa a catena le posizioni legate e lascia sole le altre", () => {
+    const result = correlationFamilies({
+      instrumentIds: ["a", "b", "c", "d"],
+      values: [
+        [1, 0.9, 0.1, 0],
+        [0.9, 1, 0.8, 0.1],
+        [0.1, 0.8, 1, null],
+        [0, 0.1, null, 1],
+      ],
+    });
+    expect(result.families).toEqual([["a", "b", "c"]]);
+    expect(result.independent).toEqual(["d"]);
   });
 });

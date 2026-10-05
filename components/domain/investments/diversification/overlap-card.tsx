@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { InvestmentsAnalysis } from "@/lib/investments/analysis-view";
 import { correlationInsight } from "@/lib/investments/risk-insights";
+import { Disclosure } from "../disclosure";
+import { CorrelationFamilies } from "./correlation-families";
 import { CorrelationPairs } from "./correlation-pairs";
 import { OverlapPairRow } from "./overlap-pair-row";
 import { StockInFundsRow } from "./stock-in-funds-row";
@@ -61,7 +63,14 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
                   : "Servono almeno 20 giorni di prezzi in comune per confrontare due posizioni."}
               </p>
             </div>
-            {insight ? <CorrelationPairs matrix={analysis.correlations} instrumentsById={instrumentsById} /> : null}
+            {insight ? (
+              <>
+                <CorrelationFamilies matrix={analysis.correlations} instrumentsById={instrumentsById} />
+                <Disclosure title="Tutte le coppie" summary="Quanto si muove insieme ogni coppia di posizioni">
+                  <CorrelationPairs matrix={analysis.correlations} instrumentsById={instrumentsById} />
+                </Disclosure>
+              </>
+            ) : null}
           </section>
         ) : null}
       </CardContent>

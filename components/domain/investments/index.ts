@@ -116,3 +116,5 @@ export { ImportManagement } from "./import-management";
 
 export { BrokerSelector } from "./broker-selector";
 export { BrokerComparisonCard } from "./broker-comparison-card";
+
+export { BrokerCashCard } from "./broker-cash-card";

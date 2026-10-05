@@ -113,3 +113,18 @@ describe("broker selection and comparison", () => {
     expect(brokerComparison(filterInvestmentBrokers(mixed(), new Set(["degiro"])), "1mese", NOW).lines.map((l) => l.label)).toEqual(["Interactive Brokers"]);
   });
 });
+
+it("filters cash including cash-only brokers without changing securities valuations or the source", () => {
+  const original = mixed();
+  original.brokerCash = [
+    { accountId: "a", provider: "interactive-brokers", balance: -100, name: "IB", statementDate: null },
+    { accountId: "b", provider: "degiro", balance: 800, name: "DG", statementDate: null },
+  ];
+  const selected = filterInvestmentBrokers(original, new Set(["degiro"]));
+  expect(selected.brokerCash?.map((c) => c.balance)).toEqual([-100]);
+  expect(buildInvestmentsView(original, "1mese", NOW).summary.totalValue).toBeCloseTo(1650);
+  expect(original.brokerCash).toHaveLength(2);
+  original.transactions = [];
+  expect(investmentBrokerGroups(original)).toHaveLength(2);
+  expect(filterInvestmentBrokers(original, new Set(["degiro", "interactive-brokers"])).brokerCash).toEqual([]);
+});

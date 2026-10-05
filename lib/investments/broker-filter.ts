@@ -21,6 +21,9 @@ export function investmentBrokerGroups(data: InvestmentData): BrokerGroup[] {
     const group = groups.get(id) ?? { id, label: LABELS[id] ?? "Altro conto broker", operations: 0 };
     group.operations += 1; groups.set(id, group);
   }
+  for (const cash of data.brokerCash ?? []) {
+    if (!groups.has(cash.provider)) groups.set(cash.provider, { id: cash.provider, label: LABELS[cash.provider] ?? "Altro conto broker", operations: 0 });
+  }
   return [...groups.values()].sort((a, b) => a.label.localeCompare(b.label));
 }
 
@@ -29,5 +32,5 @@ export function filterInvestmentBrokers(data: InvestmentData, disabled: Readonly
   if (!disabled.size) return data;
   const transactions = data.transactions.filter((t) => !disabled.has(transactionBroker(data, t)));
   const ids = new Set(transactions.map((t) => t.instrumentId));
-  return { ...data, transactions, instruments: data.instruments.filter((i) => ids.has(i.id)), targets: data.targets.filter((t) => ids.has(t.instrumentId)) };
+  return { ...data, brokerCash: data.brokerCash?.filter((cash) => !disabled.has(cash.provider)), transactions, instruments: data.instruments.filter((i) => ids.has(i.id)), targets: data.targets.filter((t) => ids.has(t.instrumentId)) };
 }

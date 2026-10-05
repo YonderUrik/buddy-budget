@@ -46,6 +46,7 @@ function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { 
 }
 
 export interface PortfolioHeroCardProps {
+  title?: string;
   summary: PortfolioSummary;
   breakdown: ValueBreakdown;
   series: PortfolioSeriesPoint[];
@@ -54,7 +55,7 @@ export interface PortfolioHeroCardProps {
   currency: string;
 }
 
-export function PortfolioHeroCard({ summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ title = "Il tuo portafoglio", summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
@@ -64,7 +65,7 @@ export function PortfolioHeroCard({ summary, breakdown, series, period, onPeriod
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Il tuo portafoglio</CardTitle>
+          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <p className="font-heading text-4xl font-medium tabular-nums text-foreground sm:text-5xl">{format(summary.totalValue)}</p>
             {summary.dayChange !== null && summary.dayChangePct !== null ? (

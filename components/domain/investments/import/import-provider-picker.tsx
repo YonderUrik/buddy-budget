@@ -48,8 +48,12 @@ function ProviderRow({
     >
       <ProviderBadge provider={provider} />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-sm font-medium text-foreground">{provider.name}</span>
-        <span className="truncate text-xs text-muted-foreground">{provider.tagline}</span>
+        <span className="text-sm font-medium text-foreground">
+          {provider.name}
+        </span>
+        <span className="truncate text-xs text-muted-foreground">
+          {provider.tagline}
+        </span>
       </span>
       {trailing}
     </button>
@@ -67,11 +71,19 @@ export function ImportProviderPicker({
 
   if (selected) {
     return (
-      <div role="group" aria-label="Provider scelto" className="flex items-center gap-2 rounded-xl border border-primary bg-primary/5 p-3">
+      <div
+        role="group"
+        aria-label="Provider scelto"
+        className="flex items-center gap-2 rounded-xl border border-primary bg-primary/5 p-3"
+      >
         <ProviderBadge provider={selected} />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-sm font-medium text-foreground">{selected.name}</span>
-          <span className="truncate text-xs text-muted-foreground">{selected.tagline}</span>
+          <span className="text-sm font-medium text-foreground">
+            {selected.name}
+          </span>
+          <span className="truncate text-xs text-muted-foreground">
+            {selected.tagline}
+          </span>
         </span>
         <Button variant="ghost" size="sm" onClick={() => onChange(null)}>
           Cambia
@@ -90,10 +102,17 @@ export function ImportProviderPicker({
   };
 
   return (
-    <div role="group" aria-label="Da dove arriva il file" className="flex flex-col gap-3">
+    <div
+      role="group"
+      aria-label="Da dove arriva il file"
+      className="flex flex-col gap-3"
+    >
       {searchable ? (
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <SearchIcon
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
           <Input
             type="search"
             value={query}
@@ -104,29 +123,50 @@ export function ImportProviderPicker({
           />
         </div>
       ) : null}
-      {groups.length === 0 ? (
-        <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-          Nessun provider con questo nome. Prova «Altro CSV»: indichi tu le colonne.
-        </p>
-      ) : (
-        groups.map((group) => (
-          <section key={group.id} className="flex flex-col gap-1.5" aria-label={group.label}>
-            {searchable ? (
-              <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{group.label}</h3>
-            ) : null}
-            <div className={cn("grid gap-1.5", providers.length >= PROVIDER_SEARCH_THRESHOLD && "sm:grid-cols-2")}>
-              {group.providers.map((provider) => (
-                <ProviderRow
-                  key={provider.id}
-                  provider={provider}
-                  onClick={() => choose(provider.id)}
-                  trailing={<ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
-                />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
+      <div
+        className={cn(
+          "flex flex-col gap-3",
+          // Con molti provider l'elenco ha un'altezza massima e scorre da solo: il caricamento del file resta sempre in vista.
+          searchable &&
+            "max-h-[36vh] overflow-y-auto overscroll-contain pr-1 sm:max-h-64",
+        )}
+      >
+        {groups.length === 0 ? (
+          <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+            Nessun provider con questo nome. Prova «Altro CSV»: indichi tu le
+            colonne.
+          </p>
+        ) : (
+          groups.map((group) => (
+            <section
+              key={group.id}
+              className="flex flex-col gap-1.5"
+              aria-label={group.label}
+            >
+              {searchable ? (
+                <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {group.label}
+                </h3>
+              ) : null}
+              <div className="grid gap-1.5">
+                {group.providers.map((provider) => (
+                  <ProviderRow
+                    key={provider.id}
+                    provider={provider}
+                    onClick={() => choose(provider.id)}
+                    trailing={
+                      <ChevronRightIcon
+                        className="size-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    }
+                  />
+                ))}
+              </div>
+            </section>
+          ))
+        )}
+      </div>
     </div>
   );
 }

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.14.1](https://github.com/YonderUrik/buddy-budget/compare/v0.14.0...v0.14.1) (2026-10-06)
+
+
+### Correzioni
+
+* nomi lunghi dei debiti non allargano più la pagina su telefono ([#164](https://github.com/YonderUrik/buddy-budget/issues/164)) ([124dd56](https://github.com/YonderUrik/buddy-budget/commit/124dd566f893d2247dd0038825987e87030f34be))
+
 ## [0.14.0](https://github.com/YonderUrik/buddy-budget/compare/v0.13.1...v0.14.0) (2026-10-06)
 
 

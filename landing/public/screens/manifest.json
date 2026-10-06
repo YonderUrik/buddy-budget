@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-05T12:32:33.084Z",
+  "capturedAt": "2026-10-06T07:08:29.316Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -73,14 +73,9 @@
       "route": "/debiti"
     },
     {
-      "id": "lombard",
-      "theme": "light",
-      "route": "/debiti/lombard"
-    },
-    {
       "id": "simulatore",
       "theme": "light",
-      "route": "/debiti/simulatore"
+      "route": "/debiti/finanziamenti"
     },
     {
       "id": "analitiche",
@@ -153,14 +148,9 @@
       "route": "/debiti"
     },
     {
-      "id": "lombard",
-      "theme": "dark",
-      "route": "/debiti/lombard"
-    },
-    {
       "id": "simulatore",
       "theme": "dark",
-      "route": "/debiti/simulatore"
+      "route": "/debiti/finanziamenti"
     },
     {
       "id": "analitiche",

@@ -92,7 +92,7 @@ export default function PanoramicaPage() {
     return { value: summary.totalValue, positions: summary.rows.length, paid, marketGain: market };
   }, [investmentsQuery.data, today]);
   const debtsData = debtsQuery.data?.overview;
-  const debts = debtsData && debtsData.totalDebt > 0 ? { total: debtsData.totalDebt, count: debtsData.openCount + debtsData.creditLineCount } : null;
+  const debts = debtsData && debtsData.totalDebt > 0 ? { total: debtsData.totalDebt, count: debtsData.openCount } : null;
   const pensionFunds = pensionQuery.data?.funds ?? [];
   const pensionValue = pensionTotalOn(pensionFunds, toDateKey(today));
   const pension = pensionValue > 0 ? { value: pensionValue, funds: pensionFunds.filter((f) => f.snapshots.length > 0).length } : null;

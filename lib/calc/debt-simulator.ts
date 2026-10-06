@@ -1,6 +1,6 @@
 /**
- * Simulatore di Debiti: confronti "e se" puri, senza scrivere nulla. Surroga (offerta nuova contro condizioni attuali),
- * rialzo dell'indice su una linea di credito e strategie di estinzione con più debiti (valanga / palla di neve).
+ * Simulatore di Debiti: confronti "e se" puri, senza scrivere nulla. Surroga (offerta nuova contro condizioni attuali)
+ * e strategie di estinzione con più debiti (valanga / palla di neve).
  */
 
 import { addMonthsClamped, installmentAmount, round2, type IsoDate } from "./amortization";
@@ -56,30 +56,6 @@ export function compareRefinance(current: Pick<LoanPlanTotals, "residual" | "cur
   };
 }
 
-// --- Rialzo dell'indice su una linea di credito -----------------------------------------------------------------------
-
-/** Punti di indice in più simulati sulla linea di credito. */
-export const RATE_SHOCK_POINTS = [0.5, 1, 2] as const;
-
-export interface RateShockRow {
-  points: number;
-  rate: number;
-  monthlyCost: number;
-  yearlyCost: number;
-  /** Costo annuo in più rispetto a oggi. */
-  extraYearly: number;
-}
-
-/** Costo di interessi su `used` se il tasso totale salisse di 0,5 / 1 / 2 punti. */
-export function creditLineRateScenarios(used: number, currentRate: number, shocks: readonly number[] = RATE_SHOCK_POINTS): RateShockRow[] {
-  const yearly = (rate: number) => round2((used * rate) / 100);
-  const base = yearly(currentRate);
-  return shocks.map((points) => {
-    const rate = round2(currentRate + points);
-    return { points, rate, monthlyCost: round2(yearly(rate) / 12), yearlyCost: yearly(rate), extraYearly: round2(yearly(rate) - base) };
-  });
-}
-
 // --- Strategie di estinzione ------------------------------------------------------------------------------------------
 
 export type PayoffStrategy = "avalanche" | "snowball";
@@ -100,6 +76,15 @@ export interface PayoffResult {
   endDate: IsoDate;
   /** Nomi dei debiti nell'ordine in cui si chiudono. */
   closeOrder: string[];
+  /** Per ogni debito (nell'ordine di chiusura) il mese in cui si chiude e la data corrispondente. */
+  closings: PayoffClosing[];
+}
+
+export interface PayoffClosing {
+  id: string;
+  name: string;
+  months: number;
+  endDate: IsoDate;
 }
 
 /** Tetto di mesi simulati: oltre, il debito non si chiude (rata troppo bassa). */
@@ -113,6 +98,7 @@ export const MAX_PAYOFF_MONTHS = 600;
 export function simulatePayoff(loans: PayoffLoan[], monthlyExtra: number, strategy: PayoffStrategy | "none", today: IsoDate): PayoffResult {
   const state = loans.filter((l) => l.residual > 0).map((l) => ({ ...l, balance: l.residual }));
   const closeOrder: string[] = [];
+  const closings: PayoffClosing[] = [];
   let totalInterest = 0;
   let freed = 0;
   let months = 0;
@@ -139,12 +125,13 @@ export function simulatePayoff(loans: PayoffLoan[], monthlyExtra: number, strate
     for (const loan of state) {
       if (loan.balance <= 0.005 && !closeOrder.includes(loan.name)) {
         closeOrder.push(loan.name);
+        closings.push({ id: loan.id, name: loan.name, months, endDate: addMonthsClamped(today, months) });
         loan.balance = 0;
         freed += loan.installment;
       }
     }
   }
-  return { strategy, months, totalInterest: round2(totalInterest), endDate: addMonthsClamped(today, months), closeOrder };
+  return { strategy, months, totalInterest: round2(totalInterest), endDate: addMonthsClamped(today, months), closeOrder, closings };
 }
 
 /** Le tre simulazioni affiancate: senza extra, valanga (tasso più alto prima) e palla di neve (residuo più piccolo prima). */

@@ -24,6 +24,7 @@ import { useBulkPayDebtMutation, useDeleteDebtEventMutation, useDeleteDebtMutati
 import { DebtEventDialog, type DebtEventDialogKind } from "./debt-event-dialog";
 import { DebtEventsList } from "./debt-events-list";
 import { DebtFacts } from "./debt-facts";
+import { DebtSimulationPanel } from "./debt-simulation-panel";
 import { DebtPendingBanner } from "./debt-pending-banner";
 import { DebtPlanTable } from "./debt-plan-table";
 import { EarlyRepaymentDialog } from "./early-repayment-dialog";
@@ -85,6 +86,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
             )
           }
         />
+        {debt.plan.totals.finished ? null : <DebtSimulationPanel debt={debt} currency={currency} onOpenEarly={() => setEarlyOpen(true)} />}
         <section aria-label="Piano delle rate" className="flex flex-col gap-2">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Piano delle rate</h3>
           <DebtPlanTable rows={debt.plan.rows} currency={currency} today={today} onPay={setPayRow} />

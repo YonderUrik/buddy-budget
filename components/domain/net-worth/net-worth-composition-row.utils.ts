@@ -38,7 +38,7 @@ export interface InvestmentsComposition {
 
 /** Riepilogo dei debiti per la composizione (null se l'utente non ne ha). */
 export interface DebtsComposition {
-  /** Debito complessivo oggi (positivo): residuo dei finanziamenti più utilizzato delle linee di credito. */
+  /** Debito complessivo oggi (positivo): residuo dei finanziamenti. */
   total: number;
   count: number;
 }

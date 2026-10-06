@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comparePayoffStrategies, compareRefinance, creditLineRateScenarios, simulatePayoff, type PayoffLoan } from "./debt-simulator";
+import { comparePayoffStrategies, compareRefinance, simulatePayoff, type PayoffLoan } from "./debt-simulator";
 
 const today = "2026-10-01";
 
@@ -17,14 +17,6 @@ describe("compareRefinance", () => {
     const r = compareRefinance(current, today, { annualRate: 12, installments: 24, upfrontCosts: 0, penalty: 0 });
     expect(r.netSaving).toBeLessThan(0);
     expect(r.breakEvenMonths).toBeNull();
-  });
-});
-
-describe("creditLineRateScenarios", () => {
-  it("scala il costo con i punti in più", () => {
-    const rows = creditLineRateScenarios(10000, 4);
-    expect(rows[0]).toMatchObject({ points: 0.5, rate: 4.5, yearlyCost: 450, extraYearly: 50 });
-    expect(rows[2].monthlyCost).toBeCloseTo(50, 2);
   });
 });
 

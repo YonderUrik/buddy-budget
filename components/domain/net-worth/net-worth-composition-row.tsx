@@ -6,7 +6,9 @@
 
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
+import { Pie, PieChart } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { assetClassColor } from "./asset-classes";
@@ -16,6 +18,8 @@ export interface NetWorthCompositionRowProps {
   items: NetWorthCompositionItem[];
   currency: string;
   title?: string;
+  /** Classi aggiuntive sulla card (es. per toglierle il riquadro quando sta aperta sulla pagina). */
+  className?: string;
 }
 
 function percent(ratio: number): string {
@@ -31,36 +35,46 @@ function investedSentence(share: number): string {
   return `Il ${percent(share)} è investito, il resto è liquidità.`;
 }
 
-export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio" }: NetWorthCompositionRowProps) {
+export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio", className }: NetWorthCompositionRowProps) {
   if (items.length === 0) return null;
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const colorFor = assetClassColor;
   const investedShare = computeInvestedShare(items);
   const assetCount = items.filter((i) => !i.isLiability).length;
-  const showBar = assetCount > 1 && items.some((i) => i.share > 0);
+  const pieItems = items.filter((i) => !i.isLiability && i.share > 0);
+  const showPie = assetCount > 1 && pieItems.length > 0;
+  const pieData = pieItems.map((item) => ({ name: item.label, value: item.share, fill: colorFor(item.key) }));
+  const pieConfig: ChartConfig = Object.fromEntries(pieItems.map((item) => [item.label, { label: item.label, color: colorFor(item.key) }]));
+  const pieSummary = `Composizione del patrimonio: ${pieItems.map((item) => `${item.label} ${percent(item.share)}`).join(", ")}.`;
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="gap-1">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
-        {investedShare !== null ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
+        <CardTitle className="font-heading text-lg font-medium text-foreground">{title}</CardTitle>
+        {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {showBar ? (
-          <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
-            {items
-              .filter((i) => i.share > 0)
-              .map((item) => (
-                <div key={item.key} className="h-full" style={{ flexGrow: item.share, backgroundColor: colorFor(item.key) }} />
-              ))}
+      <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+        {showPie ? (
+          <div className="relative size-48 shrink-0" role="img" aria-label={pieSummary}>
+            <ChartContainer config={pieConfig} className="aspect-square size-48">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={62} outerRadius={90} paddingAngle={2} cornerRadius={4} stroke="none" isAnimationActive={false} />
+              </PieChart>
+            </ChartContainer>
+            {investedShare !== null ? (
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-heading text-3xl font-medium tabular-nums text-foreground">{percent(investedShare)}</span>
+                <span className="text-sm text-muted-foreground">investito</span>
+              </div>
+            ) : null}
           </div>
         ) : null}
-        <ul className="-mx-2 flex flex-col">
+        <ul className="flex w-full min-w-0 flex-1 flex-col gap-2">
           {items.map((item) => (
             <li key={item.key}>
               <Link
                 href={item.href}
-                className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                className="flex min-h-14 items-center gap-3 rounded-xl bg-muted/60 px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: colorFor(item.key) }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
@@ -78,11 +92,11 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                 <span className="text-right">
                   <span className="block font-heading text-base font-medium tabular-nums text-foreground">{format(item.amount)}</span>
                   {item.highlight ? (
-                    <span className={cn("block text-xs tabular-nums", item.highlight.amount < 0 ? "text-neg" : "text-pos")}>
+                    <span className={cn("block whitespace-nowrap text-xs tabular-nums", item.highlight.amount < 0 ? "text-neg" : "text-pos")}>
                       {item.highlight.amount < 0 ? "−" : "+"}
                       {format(Math.abs(item.highlight.amount))}
                       {item.highlight.ratio !== null ? ` (${signedPercent(item.highlight.ratio)})` : ""}{" "}
-                      <span className="text-muted-foreground">{item.highlight.label}</span>
+                      <span className="hidden text-muted-foreground sm:inline">{item.highlight.label}</span>
                     </span>
                   ) : null}
                 </span>

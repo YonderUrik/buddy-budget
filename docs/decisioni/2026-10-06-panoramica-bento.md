@@ -1,0 +1,10 @@
+# Panoramica con una voce (direzione A, rivista)
+
+Data: 2026-10-06
+
+Scelta la direzione A tra 4 proposte (mockup in `/mnt/project-files/panoramica/`; B e D restano idee per dopo). Dopo la prima versione a tessere uguali, Daniele l'ha trovata senza identità: la Panoramica ora si apre con un saluto e 2-3 frasi calcolate (mese contro il solito, prossima rata entro 14 giorni, movimenti da categorizzare), il grafico del patrimonio resta l'unico riquadro, e le altre parti sono sezioni aperte sulla pagina (mese con curva cumulata contro il solito, «Da sistemare», prossime rate come agenda, investimenti con barra versato/guadagno), ognuna con icona nel colore del suo ambito.
+Accessibilità: testo minimo 14 px, bersagli da 44 px, grafici con `role="img"` e descrizione, curva animata solo senza «riduci movimento», segni +/− e icone oltre al colore. Nuovo evento Umami `overview_tile_clicked`. Rimossa la card «Questo mese» a tre cifre. Nessuna migration. Screenshot della landing da rigenerare dal bot dopo il merge.
+
+Ispirazione da Wealthfolio (screenshot di Daniele, solo spunti di forma, non i suoi colori): grafico a tutta larghezza con una sola linea e sfumatura, importo con i decimali attenuati, selettore del periodo centrato sotto il grafico, righe morbide per le classi di asset, due colonne. Il grafico ha due viste: «Totale» (default) e «Per classe» (le aree impilate con legenda a bottoni, invariate).
+
+Seconda revisione: «Dove sta il patrimonio» è un grafico a ciambella (quota investito al centro, righe morbide accanto; i debiti restano fuori dalla torta). «Da sistemare» è stato rimosso del tutto dalla Panoramica su richiesta di Daniele (card, frase nel saluto, eventi Umami collegati); resta l'avviso nella sidebar e la pagina `/categorizza`.

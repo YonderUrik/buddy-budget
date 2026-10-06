@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Gestione importazioni (2026-10-06)**: scheda Rendiconti rimossa; Gestisci importazioni ora in Operazioni, accessibile anche senza transazioni. Vecchi link reindirizzati. Nessuna modifica ai dati importati.
+
 **Vista broker (2026-10-05)**: filtri temporanei per broker condivisi tra le schede Investimenti e confronto TWR sovrapposto in Performance. Nessuna cancellazione o modifica del patrimonio generale. Dettagli in `docs/decisioni/2026-10-05-filtri-broker-e-confronto.md`; inclusi nella PR di gestione import.
 
 **Recupero import duplicati (2026-10-04)**: pulsante di reset completo dello storico investimenti con anteprima e conferma digitata, inclusi vecchi import senza origine. Branch `codex/reset-investment-imports`; nessun reset eseguito in produzione. Dettagli in `docs/ibkr-import.md`.

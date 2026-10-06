@@ -1,4 +1,6 @@
-import { ImportManagement } from "@/components/domain/investments";
+import { redirect } from "next/navigation";
 
-/** Import history and replacement/deletion controls. */
-export default function ImportManagementPage() { return <ImportManagement />; }
+/** Preserve bookmarks after moving import management into Operations. */
+export default function LegacyStatementsPage() {
+  redirect("/investimenti/operazioni");
+}

@@ -1,4 +1,6 @@
-import { BrokerStatements } from "@/components/domain/investments";
+import { redirect } from "next/navigation";
 
-/** Historical broker statements with reconciled cash and original valuations. */
-export default function RendicontiPage() { return <BrokerStatements />; }
+/** Preserve bookmarks after moving import management into Operations. */
+export default function LegacyStatementsPage() {
+  redirect("/investimenti/operazioni");
+}

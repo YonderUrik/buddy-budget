@@ -1,9 +1,9 @@
-# Simulazione senza costi e imposte nel Portafoglio
+# Costi e imposte nel Portafoglio
 
 Data: 2026-10-06
 
-Due interruttori indipendenti nella card esistente, inizialmente attivi: disattivando costi o imposte registrati si aggiornano valore e grafico simulati. Rimossi tabella e testo esplicativo esteso su richiesta dell’utente.
-Ogni addebito risparmiato viene reinvestito alla chiusura della propria data e cresce ai rendimenti giornalieri osservati del portafoglio nei giorni successivi, mantenendo identiche le operazioni reali. Senza portafoglio investito il risparmio resta liquido.
-La simulazione parte sempre dal primo investimento, indipendentemente dal periodo visibile. Flussi investiti e posizioni effettive restano invariati; i rimborsi hanno segno opposto. Nessuna modifica ai saldi salvati.
-Sono inclusi solo gli oneri registrati sulle operazioni (valuta utente); oneri autonomi del broker, TER e imposte non registrate restano fuori dal perimetro. Mancando la valorizzazione la simulazione è disabilitata.
-Test dei quattro stati, reinvestimento, indipendenza dal periodo, rimborsi, liquidazione completa e date future. Feature su branch locale distinto dalla PR di navigazione.
+Interruttori indipendenti accanto al grafico e card distinta per costi registrati, imposte registrate, stima aggiuntiva e totale, con link alla scheda Tasse.
+`investmentTaxReport` è condivisa da Portafoglio e `buildTaxView`: stessi dati, aliquote, regime e compensazioni delle minusvalenze; nessun secondo motore fiscale. Il residuo annuale della stima dopo le ritenute registrate evita il doppio conteggio.
+La simulazione reinveste gli oneri registrati esclusi dal giorno di addebito ai rendimenti giornalieri osservati. Le imposte stimate aggiuntive vengono invece sottratte quando il toggle imposte è attivo. Nell’amministrato sono distribuite sulle vendite secondo il report; per dichiarativo/crypto si collocano a fine anno (oggi per l’anno aperto), senza rappresentare la data effettiva del versamento fiscale.
+Il Portafoglio carica tutti i prezzi per mantenere identico il valore simulato cambiando periodo. Senza portafoglio investito il risparmio resta liquido. Mancando valorizzazione la simulazione è disabilitata; nessuna modifica ai saldi salvati.
+Oneri autonomi del broker e TER non registrati esclusi; bollo separato nella tab Tasse ed esplicitamente escluso qui. Test di parità fra le viste, perdite, minusvalenze pregresse, aliquote personalizzate, reinvestimento e quattro combinazioni degli interruttori.

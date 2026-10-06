@@ -1,3 +1,4 @@
+import { investmentTaxReport } from "./tax-report";
 import { buildFxTable, convertAmount, type FxTable } from "@/lib/calc/fx";
 import {
   buildPriceIndex,
@@ -8,7 +9,7 @@ import {
 } from "@/lib/calc/investments";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { startOfDay } from "@/lib/calc/expenses";
-import { computeBollo, computeTaxReport, type BolloYear, type TaxInstrument, type TaxReport } from "@/lib/calc/taxes";
+import { computeBollo, type BolloYear, type TaxInstrument, type TaxReport } from "@/lib/calc/taxes";
 import type { Instrument, TaxRegime } from "@/lib/db/schema/investments";
 import type { InvestmentData } from "./data";
 import { computeTaxOpportunities, type TaxOpportunities } from "./tax-insights";
@@ -68,13 +69,7 @@ export function buildTaxView(data: InvestmentData, today: Date): TaxView {
   const fx = buildFxTable(data.fxRates);
   const regime = data.portfolios[0]?.taxRegime ?? "amministrato";
   const taxInstruments = toTaxInstruments(data.instruments, data.instrumentSettings);
-  const report = computeTaxReport({
-    transactions,
-    instruments: taxInstruments,
-    regime,
-    manualLosses: data.taxCarryforwards.map((c) => ({ year: c.year, amount: Number(c.amount) })),
-    todayKey,
-  });
+  const report = investmentTaxReport(data, transactions, todayKey);
   const first = transactions.map((t) => t.date).sort()[0];
   const daily = first
     ? computeDailyPortfolioValues({ transactions, instruments: data.instruments, priceIndex, fx, userCurrency: data.currency, fromKey: first, toKey: todayKey })

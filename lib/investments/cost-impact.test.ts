@@ -1,7 +1,8 @@
+import { computeTaxReport } from "@/lib/calc/taxes";
 import { expect, it } from "vitest";
 import { buildFxTable } from "@/lib/calc/fx";
 import { buildPriceIndex, type InvestmentTransactionInput } from "@/lib/calc/investments";
-import { computeCostImpact, simulateCostExclusions } from "./cost-impact";
+import { computeCostImpact as computeImpact, simulateCostExclusions } from "./cost-impact";
 
 const tx = (extra: Partial<InvestmentTransactionInput>): InvestmentTransactionInput => ({
   id: "buy", instrumentId: "a", type: "acquisto", date: "2026-01-01", quantity: "10", price: "100", fxRate: "1", fees: "10", taxes: "0", grossAmount: null, ...extra,
@@ -11,12 +12,16 @@ function inputs(transactions: InvestmentTransactionInput[]) {
     priceIndex: buildPriceIndex([{ instrumentId: "a", date: "2026-01-01", close: "100", source: "yahoo" }, { instrumentId: "a", date: "2026-02-01", close: "110", source: "yahoo" }], []),
     fx: buildFxTable([]), userCurrency: "EUR", period: "max" as const, today: new Date("2026-02-01T12:00:00Z") };
 }
+function computeCostImpact(params: Parameters<typeof computeImpact>[0], unpriced: boolean) {
+  const report = computeTaxReport({ transactions: params.transactions, instruments: params.instruments.map((instrument) => ({ ...instrument, taxRate: .26, harmonized: true })), regime: "amministrato", todayKey: "2026-02-01" });
+  return computeImpact(params, unpriced, report);
+}
 it("reinvests saved costs and taxes from payment date at subsequent actual performance", () => {
   const params = inputs([tx({ taxes: "5" })]);
   const result = computeCostImpact(params, false);
   expect(result.fees).toBe(10);
   expect(result.taxes).toBe(5);
-  expect(result.additions["2026-01-01"]).toEqual({ fees: 10, taxes: 5 });
+  expect(result.additions["2026-01-01"]).toEqual({ fees: 10, taxes: 5, estimatedTaxes: 0 });
   expect(result.additions["2026-02-01"].fees).toBeCloseTo(11);
   expect(result.additions["2026-02-01"].taxes).toBeCloseTo(5.5);
 });
@@ -59,4 +64,30 @@ it("saved money also follows portfolio losses rather than earning a fixed positi
   const result = computeCostImpact(params, false);
   expect(result.additions["2026-02-01"].fees).toBeCloseTo(8);
   expect(result.additions["2026-02-01"].taxes).toBeCloseTo(4);
+});
+
+it("estimates 26% of sale profit after commissions and deducts only unrecorded tax in the baseline", () => {
+  const params = inputs([tx({}), tx({ id: "sale", type: "vendita", date: "2026-02-01", price: "110", fees: "2" })]);
+  const impact = computeCostImpact(params, false);
+  // 1100 proceeds - 2 sale fees - 1010 acquisition cost = 88 gain.
+  expect(impact.estimatedTaxes).toBeCloseTo(22.88);
+  expect(impact.taxes).toBeCloseTo(22.88);
+  expect(simulateCostExclusions(impact, [], 1000, true, true).value).toBeCloseTo(977.12);
+  expect(simulateCostExclusions(impact, [], 1000, true, false).value).toBe(1000);
+});
+it("does not double count tax already withheld and tops up only the missing amount", () => {
+  const sale = tx({ id: "sale", type: "vendita", date: "2026-02-01", price: "110", fees: "2", taxes: "22.88" });
+  const covered = computeCostImpact(inputs([tx({}), sale]), false);
+  expect(covered.estimatedTaxes).toBe(0);
+  expect(covered.taxes).toBeCloseTo(22.88);
+  const partial = computeCostImpact(inputs([tx({}), { ...sale, taxes: "10" }]), false);
+  expect(partial.estimatedTaxes).toBeCloseTo(12.88);
+  expect(partial.taxes).toBeCloseTo(22.88);
+});
+it("does not tax losses or unsold gains and uses the cost basis of partial sales", () => {
+  expect(computeCostImpact(inputs([tx({})]), false).estimatedTaxes).toBe(0);
+  const loss = tx({ id: "loss", type: "vendita", date: "2026-02-01", price: "80", fees: "0" });
+  expect(computeCostImpact(inputs([tx({}), loss]), false).estimatedTaxes).toBe(0);
+  const half = { ...loss, price: "110", quantity: "5", fees: "1" };
+  expect(computeCostImpact(inputs([tx({}), half]), false).estimatedTaxes).toBeCloseTo(11.44);
 });

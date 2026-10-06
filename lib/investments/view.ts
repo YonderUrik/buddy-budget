@@ -1,3 +1,4 @@
+import { investmentTaxReport } from "./tax-report";
 import { computeCostImpact, type CostImpact } from "./cost-impact";
 import { buildFxTable } from "@/lib/calc/fx";
 import {
@@ -125,7 +126,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     operationMonths,
     usedInstruments: usedInstruments(data.transactions, instrumentsById),
     returns,
-    costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0),
+    costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0, investmentTaxReport(data, transactions, todayKey)),
     benchmark: data.benchmark,
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),

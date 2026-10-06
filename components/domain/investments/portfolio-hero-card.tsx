@@ -88,14 +88,7 @@ export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes
         <NetWorthPeriodSelector value={period} onChange={onPeriodChange} />
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        {costImpact ? (
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeFees} onCheckedChange={onIncludeFeesChange} disabled={!costImpact.available} />Costi {formatCurrency(costImpact.fees, currency)}</label>
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeTaxes} onCheckedChange={onIncludeTaxesChange} disabled={!costImpact.available} />Imposte {formatCurrency(costImpact.taxes, currency)}</label>
-            <span className="text-xs text-muted-foreground">Oneri registrati · dall’inizio</span>
-          </div>
-        ) : null}
-        {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} con gli oneri esclusi reinvestiti.</p> : null}
+        {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} rispetto al valore registrato.</p> : null}
         {!simulation.active ? <>
         <p className="max-w-prose text-balance text-base text-foreground">
           Per quello che possiedi hai pagato <span className="font-semibold tabular-nums">{format(breakdown.paid)}</span>: il mercato ha{" "}
@@ -122,6 +115,12 @@ export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes
         </p>
         <ValueBreakdownBar breakdown={breakdown} currency={currency} />
         </> : null}
+        {costImpact ? (
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeFees} onCheckedChange={onIncludeFeesChange} disabled={!costImpact.available} />Includi costi</label>
+            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeTaxes} onCheckedChange={onIncludeTaxesChange} disabled={!costImpact.available} />Includi imposte</label>
+          </div>
+        ) : null}
         {hasHistory ? (
           <div className="flex flex-col gap-2">
             <ChartContainer config={CHART_CONFIG} className="max-h-56 w-full">

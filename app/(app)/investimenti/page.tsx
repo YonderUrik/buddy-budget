@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import {
+  CostDetailsCard,
   InvestmentsViewGate,
   ManualPriceDialog,
   PortfolioHeroCard,
@@ -53,6 +54,7 @@ export default function InvestimentiPage() {
               onPeriodChange={setPeriod}
               currency={currency}
             />
+            <CostDetailsCard impact={view.costImpact} currency={currency} />
             <PositionsList
               rows={view.summary.rows}
               concentration={computeConcentration(view.summary.rows)}

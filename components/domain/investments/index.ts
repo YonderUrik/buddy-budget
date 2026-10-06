@@ -116,3 +116,4 @@ export * from "./titles";
 
 
 export { ImportManagement } from "./import-management";
+export { CostDetailsCard } from "./cost-details-card";

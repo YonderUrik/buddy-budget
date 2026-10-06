@@ -10,7 +10,7 @@ La corrispondenza di cassa, quantità e periodi è necessaria prima del salvatag
 
 ## Gestione importazioni
 
-Da Rendiconti → Gestisci importazioni: elenco per periodo, conto e data di caricamento; aggiornamento mediante nuovo CSV e cancellazione con conferma esplicita. La cancellazione di un periodo include i successivi dello stesso conto, perché dipendono dallo storico: l'elenco esatto è verificato nuovamente sul server sotto lock. Saldi e operazioni si aggiornano nella stessa transazione. La liquidità torna al precedente rendiconto o a zero; il conto vuoto, il catalogo e i prezzi storici restano disponibili. Il collegamento conto–portafoglio è persistente, quindi reimportare dopo una cancellazione riusa il conto di liquidità. Nessun dato di altri utenti o conti viene eliminato. Gli import generici precedenti non hanno metadati di batch e restano nella scheda Operazioni.
+Da Operazioni → Gestisci importazioni: elenco per periodo, conto e data di caricamento; aggiornamento mediante nuovo CSV e cancellazione con conferma esplicita. La cancellazione di un periodo include i successivi dello stesso conto, perché dipendono dallo storico: l'elenco esatto è verificato nuovamente sul server sotto lock. Saldi e operazioni si aggiornano nella stessa transazione. La liquidità torna al precedente rendiconto o a zero; il conto vuoto, il catalogo e i prezzi storici restano disponibili. Il collegamento conto–portafoglio è persistente, quindi reimportare dopo una cancellazione riusa il conto di liquidità. Nessun dato di altri utenti o conti viene eliminato. Gli import generici precedenti non hanno metadati di batch e restano nella scheda Operazioni.
 
 ## Identità e operazioni sul capitale
 
@@ -39,9 +39,13 @@ Le API usano `withRoute`; import riuscito: `investments.import.completed`, conte
 
 Catalogo funzioni, copia landing e otto screenshot delle schede investimenti aggiornati usando esclusivamente il database demo sintetico. Prima del rilascio applicare le migration versionate; nessuna modifica a produzione eseguita durante questa verifica locale.
 
+### Gestione importazioni in Operazioni
+
+La gestione dei CSV importati è nella scheda Operazioni, in «Gestisci importazioni» (sezione espandibile chiusa inizialmente) sopra l’elenco delle transazioni, anche quando non ci sono operazioni. La scheda Rendiconti e il suo riepilogo nel Portafoglio sono stati rimossi; i vecchi link reindirizzano a Operazioni. Lo storico dei documenti e le funzioni di sostituzione e cancellazione restano disponibili senza modificare i dati salvati.
+
 ## Riparti da zero dopo import preesistenti
 
-Da **Rendiconti → Gestisci importazioni → Rimuovi tutti gli import e azzera gli investimenti**, il riepilogo mostra quante operazioni, rendiconti, prezzi personali e conti broker saranno interessati. È obbligatorio digitare `AZZERA INVESTIMENTI`. I vecchi CSV non avevano una provenienza: per rimuovere anche quei duplicati il reset elimina **tutte** le operazioni di investimento, incluse quelle manuali e di altri CSV. Non è un reset dell'intero account.
+Da **Operazioni → Gestisci importazioni → Rimuovi tutti gli import e azzera gli investimenti**, il riepilogo mostra quante operazioni, rendiconti, prezzi personali e conti broker saranno interessati. È obbligatorio digitare `AZZERA INVESTIMENTI`. I vecchi CSV non avevano una provenienza: per rimuovere anche quei duplicati il reset elimina **tutte** le operazioni di investimento, incluse quelle manuali e di altri CSV. Non è un reset dell'intero account.
 
 Il server verifica l'impronta dei dati mostrati e rifiuta conferme obsolete. Reset atomico con lo stesso lock degli import; niente conversioni o richieste esterne. Rimuove anche gli snapshot della classe investimenti (compreso oggi), azzera solo i conti cassa esplicitamente collegati e aggiorna il totale liquidità di oggi. Conserva portafogli, associazioni ai conti cassa, strumenti, prezzi condivisi, impostazioni e minusvalenze inserite a mano. I precedenti snapshot aggregati della liquidità non vengono riscritti: non contengono la quota attribuibile al singolo broker.
 

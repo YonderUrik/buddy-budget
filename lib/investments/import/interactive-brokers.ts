@@ -186,7 +186,7 @@ export function parseInteractiveBrokersActivity(text: string, todayKey: string):
     const key = `isin:${isin}:${currency}`;
     identities.set(key, { key, isin, symbol, name, currency, symbolIsYahoo: false });
     operations.push({ key, line: r.line, sourceCurrency: currency, type: "rettifica", date, quantity, price: 0, grossAmount: basis, fees: 0, taxes: 0,
-      note: "Spinoff (nessun esborso): costo complessivo ricostruito dai lotti interamente ceduti nel rendiconto. Per il risultato del broker consultare Rendiconti." });
+      note: "Spinoff (nessun esborso): costo complessivo ricostruito dai lotti interamente ceduti nel rendiconto. Per il risultato del broker consultare il rendiconto originale." });
     // Separate synthetic row ID for the parent's non-cash basis transfer.
     operations.push({ key: parent.key, line: records.at(-1)!.line + r.line, sourceCurrency: currency, type: "rettifica", date, quantity: 0, price: 0, grossAmount: -basis, fees: 0, taxes: 0, note: `Spinoff: trasferimento base di costo a ${symbol} (riga ${r.line})` });
     handledActions.add(r.line);

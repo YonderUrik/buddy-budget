@@ -9,7 +9,7 @@ import { createDebtEventSchema } from "@/lib/validation/debts";
 
 type Params = { params: Promise<{ id: string }> };
 
-/** Registra un evento (rata, cambio tasso, correzione, estinzione; per le linee di credito utilizzo, rimborso, interessi addebitati) su un debito dell'utente. */
+/** Registra un evento (rata, cambio tasso, correzione, estinzione) su un debito dell'utente. */
 async function handlePost(request: NextRequest, { params }: Params) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });

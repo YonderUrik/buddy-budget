@@ -1,18 +1,17 @@
-/** "I tuoi debiti": una riga per finanziamento e linea di credito, con avanzamento; porta al dettaglio. */
+/** "I tuoi debiti": una riga per finanziamento, con avanzamento; porta al dettaglio. */
 
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { CreditLineView, DebtView } from "@/lib/debts/view";
+import type { DebtView } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { formatMonthYear } from "./debts-format";
 import { repaidShare } from "./debt-facts";
 
 export interface DebtsListCardProps {
   debts: DebtView[];
-  creditLines: CreditLineView[];
   currency: string;
-  /** Debito totale (finanziamenti più utilizzato delle linee), mostrato in testa. */
+  /** Debito totale (residuo dei finanziamenti), mostrato in testa. */
   totalDebt: number;
 }
 
@@ -36,14 +35,14 @@ function Row({ href, name, detail, amount, share }: { href: string; name: string
   );
 }
 
-export function DebtsListCard({ debts, creditLines, currency, totalDebt }: DebtsListCardProps) {
+export function DebtsListCard({ debts, currency, totalDebt }: DebtsListCardProps) {
   const money = (value: number) => formatCurrency(value, currency, { maximumFractionDigits: 0 });
   return (
     <Card>
       <CardHeader className="gap-1">
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">I tuoi debiti</CardTitle>
         <p className="font-heading text-3xl font-medium tabular-nums text-foreground">{money(totalDebt)}</p>
-        <p className="text-sm text-muted-foreground">ancora da restituire, tra finanziamenti e linee di credito</p>
+        <p className="text-sm text-muted-foreground">ancora da restituire, tra i tuoi finanziamenti</p>
       </CardHeader>
       <CardContent>
         <ul className="divide-y">
@@ -55,16 +54,6 @@ export function DebtsListCard({ debts, creditLines, currency, totalDebt }: Debts
               detail={debt.plan.totals.finished ? "Estinto" : `finisce a ${formatMonthYear(debt.plan.totals.endDate)}${debt.apr !== null ? ` · ${percent(debt.apr)} TAEG` : ""}`}
               amount={money(debt.plan.totals.residual)}
               share={repaidShare(debt)}
-            />
-          ))}
-          {creditLines.map((line) => (
-            <Row
-              key={line.id}
-              href={`/debiti/lombard?id=${line.id}`}
-              name={line.name}
-              detail={`linea di credito · ${Math.round(line.plan.usageRatio * 100)}% del fido · ${percent(line.plan.currentRate)}`}
-              amount={money(line.plan.used)}
-              share={line.plan.usageRatio}
             />
           ))}
         </ul>

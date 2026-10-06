@@ -1,7 +1,7 @@
 /**
  * components/domain/debts — barrel file
  *
- * Schermata Debiti: panoramica (prossime rate, interessi, piano per uscirne), dettaglio dei finanziamenti con simulazione e linee di credito.
+ * Schermata Debiti: panoramica (prossime rate, interessi, piano per uscirne), dettaglio dei finanziamenti con simulazione.
  */
 
 export { DebtsActionsProvider, useDebtsActions } from "./debts-actions";
@@ -23,7 +23,6 @@ export { DebtSimulationPanel } from "./debt-simulation-panel";
 export type { DebtSimulationPanelProps } from "./debt-simulation-panel";
 export { DebtExtraSim } from "./debt-extra-sim";
 export { DebtRefinanceSim } from "./debt-refinance-sim";
-export { CreditLineRateSim } from "./credit-line-rate-sim";
 export { DebtFacts, repaidShare } from "./debt-facts";
 export type { DebtFactsProps } from "./debt-facts";
 export { DebtDetail } from "./debt-detail";
@@ -40,23 +39,3 @@ export { EarlyRepaymentDialog } from "./early-repayment-dialog";
 export type { EarlyRepaymentDialogProps } from "./early-repayment-dialog";
 export { EarlyRepaymentCompare, EarlyRepaymentMonthly } from "./early-repayment-compare";
 export type { EarlyRepaymentCompareProps, EarlyRepaymentMonthlyProps } from "./early-repayment-compare";
-export { AddDebtKindStep, KIND_OPTIONS } from "./add-debt-kind-step";
-export type { AddDebtKind, AddDebtKindStepProps } from "./add-debt-kind-step";
-export { AddCreditLineForm } from "./add-credit-line-form";
-export type { AddCreditLineFormProps } from "./add-credit-line-form";
-export { CreditLineFormFields } from "./credit-line-form-fields";
-export type { CreditLineFormFieldsProps } from "./credit-line-form-fields";
-export { CreditLineSettingsDialog } from "./credit-line-settings-dialog";
-export type { CreditLineSettingsDialogProps } from "./credit-line-settings-dialog";
-export { CreditLineDetail } from "./credit-line-detail";
-export type { CreditLineDetailProps } from "./credit-line-detail";
-export { CreditLineUsage, thresholdPosition, usageAlertText } from "./credit-line-usage";
-export type { CreditLineUsageProps } from "./credit-line-usage";
-export { CreditLineFacts } from "./credit-line-facts";
-export type { CreditLineFactsProps } from "./credit-line-facts";
-export { CreditLineChart } from "./credit-line-chart";
-export type { CreditLineChartProps } from "./credit-line-chart";
-export { CreditLineCharges, CHARGES_VISIBLE } from "./credit-line-charges";
-export type { CreditLineChargesProps } from "./credit-line-charges";
-export { CreditLinePortfolioCard } from "./credit-line-portfolio-card";
-export type { CreditLinePortfolioCardProps } from "./credit-line-portfolio-card";

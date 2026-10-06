@@ -1,6 +1,6 @@
 /**
- * Simulatore di Debiti: confronti "e se" puri, senza scrivere nulla. Surroga (offerta nuova contro condizioni attuali),
- * rialzo dell'indice su una linea di credito e strategie di estinzione con più debiti (valanga / palla di neve).
+ * Simulatore di Debiti: confronti "e se" puri, senza scrivere nulla. Surroga (offerta nuova contro condizioni attuali)
+ * e strategie di estinzione con più debiti (valanga / palla di neve).
  */
 
 import { addMonthsClamped, installmentAmount, round2, type IsoDate } from "./amortization";
@@ -54,30 +54,6 @@ export function compareRefinance(current: Pick<LoanPlanTotals, "residual" | "cur
     netSaving: round2(current.interestRemaining - newInterest - switchCosts),
     breakEvenMonths: switchCosts > 0 && monthlySaving > 0 ? Math.ceil(switchCosts / monthlySaving) : null,
   };
-}
-
-// --- Rialzo dell'indice su una linea di credito -----------------------------------------------------------------------
-
-/** Punti di indice in più simulati sulla linea di credito. */
-export const RATE_SHOCK_POINTS = [0.5, 1, 2] as const;
-
-export interface RateShockRow {
-  points: number;
-  rate: number;
-  monthlyCost: number;
-  yearlyCost: number;
-  /** Costo annuo in più rispetto a oggi. */
-  extraYearly: number;
-}
-
-/** Costo di interessi su `used` se il tasso totale salisse di 0,5 / 1 / 2 punti. */
-export function creditLineRateScenarios(used: number, currentRate: number, shocks: readonly number[] = RATE_SHOCK_POINTS): RateShockRow[] {
-  const yearly = (rate: number) => round2((used * rate) / 100);
-  const base = yearly(currentRate);
-  return shocks.map((points) => {
-    const rate = round2(currentRate + points);
-    return { points, rate, monthlyCost: round2(yearly(rate) / 12), yearlyCost: yearly(rate), extraYearly: round2(yearly(rate) - base) };
-  });
 }
 
 // --- Strategie di estinzione ------------------------------------------------------------------------------------------

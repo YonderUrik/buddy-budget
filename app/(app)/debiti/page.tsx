@@ -16,10 +16,10 @@ export default function DebitiPage() {
   const currency = session?.user.currency ?? "EUR";
   const query = useDebtsQuery();
   const data = query.data;
-  const interest = React.useMemo(() => (data ? yearlyInterestShares(data.debts, data.creditLines) : null), [data]);
+  const interest = React.useMemo(() => (data ? yearlyInterestShares(data.debts) : null), [data]);
 
   return (
-    <DebtsViewGate loading={query.isLoading} error={query.isError} empty={data?.debts.length === 0 && data.creditLines.length === 0} onRetry={() => query.refetch()}>
+    <DebtsViewGate loading={query.isLoading} error={query.isError} empty={data?.debts.length === 0} onRetry={() => query.refetch()}>
       {data && interest ? (
         <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-4 sm:gap-6">
@@ -28,7 +28,7 @@ export default function DebitiPage() {
           </div>
           <div className="flex flex-col gap-4 sm:gap-6">
             <DebtsExitCard debts={data.debts} currency={currency} />
-            <DebtsListCard debts={data.debts} creditLines={data.creditLines} currency={currency} totalDebt={data.overview.totalDebt} />
+            <DebtsListCard debts={data.debts} currency={currency} totalDebt={data.overview.totalDebt} />
           </div>
         </div>
       ) : null}

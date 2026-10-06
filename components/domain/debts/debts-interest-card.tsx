@@ -9,14 +9,14 @@ import { cn } from "@/lib/utils";
 export interface DebtsInterestCardProps {
   interest: YearlyInterest;
   currency: string;
-  /** Dove porta un finanziamento / una linea (riceve l'id). */
-  hrefFor?: (kind: "loan" | "credit_line", id: string) => string;
+  /** Dove porta un finanziamento (riceve l'id). */
+  hrefFor?: (id: string) => string;
 }
 
 /** Tinte del colore primario, dalla più scura: legano la fetta della barra alla sua riga. */
 const SEGMENT_CLASSES = ["bg-primary", "bg-primary/70", "bg-primary/45", "bg-primary/25"] as const;
 
-const defaultHref = (kind: "loan" | "credit_line", id: string) => `/debiti/${kind === "loan" ? "finanziamenti" : "lombard"}?id=${id}`;
+const defaultHref = (id: string) => `/debiti/finanziamenti?id=${id}`;
 
 export function DebtsInterestCard({ interest, currency, hrefFor = defaultHref }: DebtsInterestCardProps) {
   if (interest.items.length === 0) return null;
@@ -40,7 +40,7 @@ export function DebtsInterestCard({ interest, currency, hrefFor = defaultHref }:
         <ul className="divide-y">
           {interest.items.map((item, index) => (
             <li key={item.id}>
-              <Link href={hrefFor(item.kind, item.id)} className="flex items-center gap-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Link href={hrefFor(item.id)} className="flex items-center gap-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <span className={cn("size-3 shrink-0 rounded-sm", tone(index))} aria-hidden="true" />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{item.name}</span>
                 <span className="font-heading text-sm font-medium tabular-nums text-foreground">{money(item.yearly)}</span>

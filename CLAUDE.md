@@ -205,7 +205,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 - **Connessioni GoCardless**: avvisi di scadenza (banner + email, `/conti?rinnova=1`) e cron `gocardless-maintenance` che ripulisce la lista su GoCardless. PR in bozza; il cron parte in **dry-run** e va portato a `execute` a mano (`GOCARDLESS_CLEANUP_MODE` nel Secret) dopo qualche giorno di dry-run. Vedi `docs/decision-log.md` 2026-10-01.
 - **Debiti ridisegnata (2026-10-05)**: panoramica "Priorità e azioni" e Simulatore integrato nei finanziamenti (voce in `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`); PR in bozza.
-- **Debiti**: Fasi 3 (credit Lombard) e 4 (patrimonio netto, Lombard contro il portafoglio, scheda Simulatore) implementate, PR #43 in revisione. Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
+- **Debiti**: Fasi 3-4 (credit Lombard) sostituite dalla ridisegnata sopra; il credit Lombard è stato rimosso dall'app il 2026-10-06 (vedi `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`.
 
 ### Previsto
 

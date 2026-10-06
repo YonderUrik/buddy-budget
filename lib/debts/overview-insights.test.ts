@@ -24,13 +24,13 @@ const view = buildDebtsView(
 
 describe("yearlyInterestShares", () => {
   it("ordina dal più alto e le quote sommano a 1", () => {
-    const { items, total } = yearlyInterestShares(view.debts, view.creditLines);
+    const { items, total } = yearlyInterestShares(view.debts);
     expect(items.map((i) => i.name)).toEqual(["Mutuo", "Caro"]);
     expect(items.reduce((s, i) => s + i.share, 0)).toBeCloseTo(1, 6);
     expect(total).toBeCloseTo(items[0].yearly + items[1].yearly, 6);
   });
   it("senza debiti il totale è zero", () => {
-    expect(yearlyInterestShares([], [])).toEqual({ items: [], total: 0 });
+    expect(yearlyInterestShares([])).toEqual({ items: [], total: 0 });
   });
 });
 

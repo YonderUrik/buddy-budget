@@ -6,12 +6,11 @@
 import type { IsoDate } from "@/lib/calc/amortization";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { comparePayoffStrategies, type PayoffLoan } from "@/lib/calc/debt-simulator";
-import type { CreditLineView, DebtView } from "./view";
+import type { DebtView } from "./view";
 
 export interface InterestShare {
   id: string;
   name: string;
-  kind: "loan" | "credit_line";
   /** Interessi di un anno al residuo e al tasso di oggi. */
   yearly: number;
   /** Quota sul totale (0-1). */
@@ -23,13 +22,12 @@ export interface YearlyInterest {
   total: number;
 }
 
-/** Interessi di un anno su ogni finanziamento aperto e linea di credito, dal più alto al più basso. */
-export function yearlyInterestShares(debts: DebtView[], creditLines: CreditLineView[]): YearlyInterest {
+/** Interessi di un anno su ogni finanziamento aperto dal più alto al più basso. */
+export function yearlyInterestShares(debts: DebtView[]): YearlyInterest {
   const raw = [
     ...debts
       .filter((d) => !d.plan.totals.finished && d.plan.totals.residual > 0)
-      .map((d) => ({ id: d.id, name: d.name, kind: "loan" as const, yearly: (d.plan.totals.residual * d.annualRate) / 100 })),
-    ...creditLines.filter((l) => l.plan.used > 0).map((l) => ({ id: l.id, name: l.name, kind: "credit_line" as const, yearly: l.plan.yearlyCostAtCurrent })),
+      .map((d) => ({ id: d.id, name: d.name, yearly: (d.plan.totals.residual * d.annualRate) / 100 })),
   ].filter((r) => r.yearly > 0);
   const total = raw.reduce((sum, r) => sum + r.yearly, 0);
   const items = raw.sort((a, b) => b.yearly - a.yearly).map((r) => ({ ...r, share: total > 0 ? r.yearly / total : 0 }));

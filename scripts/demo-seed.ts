@@ -307,24 +307,6 @@ async function main() {
       }))
     );
   }
-  await db.insert(debts).values({
-    userId: DEMO_USER_ID,
-    kind: "credit_line",
-    name: "Credit Lombard",
-    startMode: "nuovo",
-    principal: "6000.00",
-    annualRate: "2.4000",
-    installments: 0,
-    firstInstallmentDate: iso(daysAgo(150)),
-    creditLimit: "15000.00",
-    spread: "1.2000",
-    indexLabel: "Euribor 3M",
-    interestFrequency: "quarterly",
-    dayCount: "360",
-    capitalizeInterest: false,
-    alertThresholdType: "percent",
-    alertThresholdValue: "80.00",
-  });
 
   // Previdenza: un fondo aperto da 4 anni, con solo TFR versato ogni trimestre (valori inventati).
   const [pensionFund] = await db

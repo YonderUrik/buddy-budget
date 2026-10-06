@@ -6,7 +6,9 @@
 
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
+import { Pie, PieChart } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { assetClassColor } from "./asset-classes";
@@ -39,25 +41,35 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
   const colorFor = assetClassColor;
   const investedShare = computeInvestedShare(items);
   const assetCount = items.filter((i) => !i.isLiability).length;
-  const showBar = assetCount > 1 && items.some((i) => i.share > 0);
+  const pieItems = items.filter((i) => !i.isLiability && i.share > 0);
+  const showPie = assetCount > 1 && pieItems.length > 0;
+  const pieData = pieItems.map((item) => ({ name: item.label, value: item.share, fill: colorFor(item.key) }));
+  const pieConfig: ChartConfig = Object.fromEntries(pieItems.map((item) => [item.label, { label: item.label, color: colorFor(item.key) }]));
+  const pieSummary = `Composizione del patrimonio: ${pieItems.map((item) => `${item.label} ${percent(item.share)}`).join(", ")}.`;
 
   return (
     <Card className={className}>
       <CardHeader className="gap-1">
         <CardTitle className="font-heading text-lg font-medium text-foreground">{title}</CardTitle>
-        {investedShare !== null ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
+        {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {showBar ? (
-          <div className="flex h-2.5 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
-            {items
-              .filter((i) => i.share > 0)
-              .map((item) => (
-                <div key={item.key} className="h-full" style={{ flexGrow: item.share, backgroundColor: colorFor(item.key) }} />
-              ))}
+      <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+        {showPie ? (
+          <div className="relative size-48 shrink-0" role="img" aria-label={pieSummary}>
+            <ChartContainer config={pieConfig} className="aspect-square size-48">
+              <PieChart>
+                <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={62} outerRadius={90} paddingAngle={2} cornerRadius={4} stroke="none" isAnimationActive={false} />
+              </PieChart>
+            </ChartContainer>
+            {investedShare !== null ? (
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-heading text-3xl font-medium tabular-nums text-foreground">{percent(investedShare)}</span>
+                <span className="text-sm text-muted-foreground">investito</span>
+              </div>
+            ) : null}
           </div>
         ) : null}
-        <ul className="flex flex-col gap-2">
+        <ul className="flex w-full min-w-0 flex-1 flex-col gap-2">
           {items.map((item) => (
             <li key={item.key}>
               <Link

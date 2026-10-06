@@ -39,6 +39,12 @@ describe("buildAttentionRows", () => {
     expect(rows.find((r) => r.groupKey === "a")?.isNew).toBe(false);
   });
 
+  it("porta con sé proposta, merchant, descrizioni e direzione", () => {
+    const [row] = buildAttentionRows([group("b", ["2"], "cat")], new Set());
+    expect(row).toMatchObject({ merchantKey: "b", transactionDescriptions: ["b"], isIncome: false });
+    expect(row.suggestion?.source).toBe("regola");
+  });
+
   it("non fallisce senza gruppi", () => {
     expect(buildAttentionRows([], new Set())).toEqual([]);
   });

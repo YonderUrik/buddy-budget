@@ -1,7 +1,7 @@
-import type { SuggestionGroup } from "@/lib/categorization/suggest";
+import type { CategorizeSuggestion, SuggestionGroup } from "@/lib/categorization/suggest";
 
 /** Quante righe mostra la card: le altre restano dietro "Categorizza tutte". */
-export const ATTENTION_CARD_MAX_ROWS = 2;
+export const ATTENTION_CARD_MAX_ROWS = 3;
 
 export interface AttentionRowData {
   groupKey: string;
@@ -12,6 +12,14 @@ export interface AttentionRowData {
   isNew: boolean;
   /** Categoria proposta da regole o storico, se c'è. */
   suggestedCategoryId: string | null;
+  /** Proposta completa (origine, motivo, confidenza), se c'è. */
+  suggestion: CategorizeSuggestion | null;
+  /** Chiave del merchant: serve a creare la regola quando si conferma. */
+  merchantKey: string;
+  /** Descrizione grezza di ogni transazione del gruppo, per mostrarle a richiesta. */
+  transactionDescriptions: string[];
+  /** Gruppo di entrate: cambia l'elenco di categorie selezionabili. */
+  isIncome: boolean;
 }
 
 /**
@@ -33,6 +41,10 @@ export function buildAttentionRows(
         totalAmount: group.totalAmount,
         isNew: group.transactionIds.some((id) => newTransactionIds.has(id)),
         suggestedCategoryId: group.suggestion?.suggestedCategoryId ?? null,
+        suggestion: group.suggestion,
+        merchantKey: group.merchantKey,
+        transactionDescriptions: group.transactionDescriptions,
+        isIncome: group.totalAmount > 0,
       } satisfies AttentionRowData,
     }))
     .sort(

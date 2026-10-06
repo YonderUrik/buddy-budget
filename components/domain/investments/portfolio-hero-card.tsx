@@ -7,6 +7,7 @@
 
 import { simulateCostExclusions } from "@/lib/investments/cost-impact";
 import type { BrokerCash } from "@/lib/investments/broker-cash";
+import { InfoHint } from "@/components/domain/shared";
 import { Switch } from "@/components/ui/switch";
 import type { CostImpact } from "@/lib/investments/cost-impact";
 import { Area, AreaChart, Line, XAxis, YAxis } from "recharts";
@@ -24,6 +25,10 @@ const CHART_CONFIG = {
   value: { label: "Valore", color: "var(--primary)" },
   invested: { label: "Versato", color: "var(--muted-foreground)" },
 } satisfies ChartConfig;
+const REINVESTMENT_HELP = {
+  fees: "Simula quanto varrebbe oggi il portafoglio se costi e commissioni fossero rimasti investiti, crescendo nel tempo con il rendimento del portafoglio.",
+  taxes: "Simula quanto varrebbe oggi il portafoglio se le imposte fossero rimaste investite, crescendo nel tempo con il rendimento del portafoglio. Include le imposte registrate e le stime della scheda Tasse, con compensazione delle minusvalenze; bollo escluso.",
+} as const;
 const AREA_FILL_ID = "portfolio-hero-fill";
 const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
 
@@ -135,8 +140,14 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
         </> : null}
         {costImpact ? (
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeFees} onCheckedChange={(checked) => onIncludeFeesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti costi</label>
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeTaxes} onCheckedChange={(checked) => onIncludeTaxesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti imposte</label>
+            <div className="flex items-center gap-1">
+              <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeFees} onCheckedChange={(checked) => onIncludeFeesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti costi</label>
+              <InfoHint label="Come funziona Reinvesti costi?">{REINVESTMENT_HELP.fees}</InfoHint>
+            </div>
+            <div className="flex items-center gap-1">
+              <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeTaxes} onCheckedChange={(checked) => onIncludeTaxesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti imposte</label>
+              <InfoHint label="Come funziona Reinvesti imposte?">{REINVESTMENT_HELP.taxes}</InfoHint>
+            </div>
           </div>
         ) : null}
         {hasHistory ? (

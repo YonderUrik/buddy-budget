@@ -6,3 +6,4 @@
 - Ambito attuale: grafico della scheda Portafoglio. Gli altri selettori mantengono i periodi esistenti.
 - Evento Umami `investment_chart_period_changed` con solo categoria del periodo, senza date o importi. Nessuna nuova API o dipendenza esterna.
 - Catalogo e screenshot della landing aggiornati; test dei limiti calendario e della conservazione delle posizioni precedenti, verifica browser desktop/mobile con dati sintetici.
+- Icone informative accanto a Reinvesti costi e Reinvesti imposte: popover accessibile da tastiera e touch, separato dal toggle; spiega il reinvestimento al rendimento del portafoglio e distingue le imposte stimate.

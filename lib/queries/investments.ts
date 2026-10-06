@@ -32,7 +32,7 @@ import type {
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
 /** Query da aggiornare quando cambia il portafoglio: anche il patrimonio netto della Panoramica. */
-const KEYS_CHANGED_BY_INVESTMENTS = [INVESTMENTS_QUERY_KEY, ["net-worth-snapshots"], ["accounts"]] as const;
+const KEYS_CHANGED_BY_INVESTMENTS = [INVESTMENTS_QUERY_KEY, ["net-worth-snapshots"], ["accounts"], ["transactions"], ["categories"]] as const;
 /** Attesa dopo l'ultima battuta prima di cercare sulle fonti. */
 export const INSTRUMENT_SEARCH_DEBOUNCE_MS = 300;
 /** Intervallo di polling mentre lo storico di uno strumento si sta scaricando. */

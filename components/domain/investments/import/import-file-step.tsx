@@ -95,7 +95,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
       </label>
 
       {fileError ? <p role="alert" className="text-sm text-destructive">{fileError}</p> : null}
-      <p className="text-xs text-muted-foreground">Più file insieme: rendiconti IBKR e DEGIRO, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
+      <p className="text-xs text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
       <details className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <summary className="cursor-pointer">Oppure incolla il contenuto</summary>
         <label htmlFor={`${id}-paste`} className="sr-only">

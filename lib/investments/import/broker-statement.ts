@@ -10,7 +10,7 @@ export interface BrokerPosition {
   symbol: string; currency: string; quantity: number; price: number; value: number; costBasis: number; unrealized: number;
 }
 export interface BrokerStatement {
-  provider?: "interactive-brokers" | "degiro";
+  provider?: "interactive-brokers" | "degiro" | "trade-republic";
   valuationAvailable?: boolean;
   positionsReported?: boolean;
   account: string; currency: string; from: string; to: string;

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.15.1](https://github.com/YonderUrik/buddy-budget/compare/v0.15.0...v0.15.1) (2026-10-06)
+
+
+### Correzioni
+
+* simplify cash information in portfolio overview ([#170](https://github.com/YonderUrik/buddy-budget/issues/170)) ([6195e41](https://github.com/YonderUrik/buddy-budget/commit/6195e414a6085b620d9b4236b989b452ac0c3186))
+
 ## [0.15.0](https://github.com/YonderUrik/buddy-budget/compare/v0.14.1...v0.15.0) (2026-10-06)
 
 

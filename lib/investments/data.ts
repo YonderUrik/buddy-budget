@@ -1,5 +1,9 @@
 import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
+import { accounts } from "@/lib/db/schema/accounts";
+import { brokerStatements } from "@/lib/db/schema/broker-statements";
+import { resolveBrokerCash, type BrokerCash } from "./broker-cash";
 import { authUser } from "@/lib/db/schema/auth";
 import {
   fxRates,
@@ -76,6 +80,8 @@ export async function loadUserTransactions(userId: string, instrumentId?: string
 /** Tutto quello che serve a calcolare il portafoglio di un utente lato client. */
 export interface InvestmentData {
   currency: string;
+  brokerCash?: BrokerCash[];
+  brokerSources?: { accountKey: string; provider: string }[];
   portfolios: InvestmentPortfolio[];
   instruments: Instrument[];
   transactions: InvestmentTransaction[];
@@ -117,10 +123,15 @@ function shiftDays(dateKey: string, days: number): string {
 export async function loadInvestmentData(userId: string, pricesFrom: string | null): Promise<InvestmentData> {
   const [user] = await db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId));
   const currency = user?.currency ?? "EUR";
-  const [portfolios, transactions] = await Promise.all([
+  const [portfolios, transactions, brokerSources, cashAccounts, cashStatements] = await Promise.all([
     db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId)).orderBy(asc(investmentPortfolios.createdAt)),
     loadUserTransactions(userId),
+    db.select({ accountKey: brokerImportAccounts.accountKey, provider: brokerImportAccounts.provider, cashAccountId: brokerImportAccounts.cashAccountId }).from(brokerImportAccounts).where(eq(brokerImportAccounts.userId, userId)),
+    db.select({ id: accounts.id, name: accounts.name, balance: accounts.balance }).from(accounts).where(eq(accounts.userId, userId)),
+    db.select({ cashAccountId: brokerStatements.cashAccountId, to: brokerStatements.to }).from(brokerStatements).where(eq(brokerStatements.userId, userId)),
   ]);
+
+  const brokerCash = resolveBrokerCash(brokerSources, portfolios, cashAccounts, cashStatements);
 
   const [instrumentSettings, taxCarryforwards, dismissedDividends] = await Promise.all([
     db
@@ -162,6 +173,8 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   if (ownedIds.length === 0) {
     return {
       currency,
+      brokerSources,
+      brokerCash,
       portfolios,
       instruments: [],
       transactions,
@@ -224,6 +237,8 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
 
   return {
     currency,
+    brokerSources,
+    brokerCash,
     portfolios,
     instruments: userInstruments,
     transactions,

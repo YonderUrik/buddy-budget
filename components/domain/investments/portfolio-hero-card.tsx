@@ -6,6 +6,7 @@
  */
 
 import { simulateCostExclusions } from "@/lib/investments/cost-impact";
+import type { BrokerCash } from "@/lib/investments/broker-cash";
 import { Switch } from "@/components/ui/switch";
 import type { CostImpact } from "@/lib/investments/cost-impact";
 import { Area, AreaChart, Line, XAxis, YAxis } from "recharts";
@@ -49,6 +50,9 @@ function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { 
 }
 
 export interface PortfolioHeroCardProps {
+  cash?: BrokerCash[];
+  includeCash?: boolean;
+  onIncludeCashChange?: (include: boolean) => void;
   costImpact?: CostImpact;
   includeFees?: boolean;
   includeTaxes?: boolean;
@@ -62,9 +66,11 @@ export interface PortfolioHeroCardProps {
   currency: string;
 }
 
-export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCashChange, costImpact, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const simulation = simulateCostExclusions(costImpact, series, summary.totalValue, includeFees, includeTaxes);
+  const cashTotal = cash.reduce((total, account) => total + account.balance, 0);
+  const displayedValue = simulation.value + (includeCash ? cashTotal : 0);
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
   const hasHistory = series.length >= 2;
@@ -75,7 +81,7 @@ export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes
         <div className="flex flex-col gap-1">
           <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Il tuo portafoglio</CardTitle>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="font-heading text-4xl font-medium tabular-nums text-foreground sm:text-5xl">{format(simulation.value)}</p>
+            <p className="font-heading text-4xl font-medium tabular-nums text-foreground sm:text-5xl">{format(displayedValue)}</p>
             {!simulation.active && summary.dayChange !== null && summary.dayChangePct !== null ? (
               <p className={cn("text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
                 {summary.dayChange < 0 ? "−" : "+"}
@@ -85,9 +91,37 @@ export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes
             ) : null}
           </div>
         </div>
-        <NetWorthPeriodSelector value={period} onChange={onPeriodChange} />
+        <div className="flex flex-wrap items-center gap-4">
+          {cash.length > 0 && onIncludeCashChange ? (
+            <label className="flex cursor-pointer items-center gap-2 text-sm">
+              <Switch size="sm" checked={includeCash} onCheckedChange={onIncludeCashChange} />
+              Includi liquidità
+            </label>
+          ) : null}
+          <NetWorthPeriodSelector value={period} onChange={onPeriodChange} />
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
+        {cash.length > 0 ? (
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>{includeCash ? `Titoli ${format(summary.totalValue)} · Liquidità ${format(cashTotal)}` : "Solo titoli · liquidità esclusa dal totale"}</p>
+            {includeCash ? (
+              <details>
+                <summary className="cursor-pointer">Dettaglio liquidità broker</summary>
+                <ul className="mt-2 space-y-1">
+                  {cash.map((account) => (
+                    <li key={account.accountId}>
+                      {account.name}: {formatCurrency(account.balance, currency)}
+                      {account.statementDate ? ` · ultimo rendiconto ${account.statementDate.split("-").reverse().join("/")}` : " · saldo del conto collegato"}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs">Saldo dei conti collegati, aggiornato con gli import e già incluso nel patrimonio complessivo.</p>
+              </details>
+            ) : null}
+            <p className="text-xs">Grafico, variazioni e rendimenti si riferiscono ai soli titoli.</p>
+          </div>
+        ) : null}
         {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} rispetto al valore registrato.</p> : null}
         {!simulation.active ? <>
         <p className="max-w-prose text-balance text-base text-foreground">

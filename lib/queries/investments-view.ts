@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useBrokerSelection } from "@/lib/investments/broker-selection";
+import { filterInvestmentBrokers } from "@/lib/investments/broker-filter";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { buildInvestmentsView } from "@/lib/investments/view";
@@ -12,10 +14,18 @@ import { useInvestmentsOverviewQuery } from "./investments";
  */
 export function useInvestmentsView(period: NetWorthPeriod, fullHistory = false) {
   const today = React.useMemo(() => startOfDay(new Date()), []);
-  const overview = useInvestmentsOverviewQuery(fullHistory ? "max" : period);
+  const overview = useFilteredInvestmentsOverview(fullHistory ? "max" : period);
   const view = React.useMemo(
     () => (overview.data ? buildInvestmentsView(overview.data, period, today) : null),
     [overview.data, period, today]
   );
   return { overview, view, today };
+}
+
+/** Apply the section's view-only broker selection without contaminating shared server-query caches. */
+export function useFilteredInvestmentsOverview(period: NetWorthPeriod) {
+  const overview = useInvestmentsOverviewQuery(period);
+  const { disabled } = useBrokerSelection();
+  const data = React.useMemo(() => overview.data ? filterInvestmentBrokers(overview.data, disabled) : undefined, [overview.data, disabled]);
+  return { ...overview, data };
 }

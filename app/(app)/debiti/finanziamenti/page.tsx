@@ -34,7 +34,7 @@ function FinanziamentiContent() {
                     key={d.id}
                     href={`/debiti/finanziamenti?id=${d.id}`}
                     aria-current={d.id === selected.id ? "page" : undefined}
-                    className={cn("rounded-full border px-3 py-1 text-sm", d.id === selected.id ? "border-primary bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:text-foreground")}
+                    className={cn("max-w-full truncate rounded-full border px-3 py-1 text-sm", d.id === selected.id ? "border-primary bg-primary/10 font-medium text-primary" : "text-muted-foreground hover:text-foreground")}
                   >
                     {d.name}
                   </Link>

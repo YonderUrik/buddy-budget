@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.19.0](https://github.com/YonderUrik/buddy-budget/compare/v0.18.0...v0.19.0) (2026-10-06)
+
+
+### Novità
+
+* import Trade Republic investments and account transactions ([#178](https://github.com/YonderUrik/buddy-budget/issues/178)) ([6349fd6](https://github.com/YonderUrik/buddy-budget/commit/6349fd62b5485dfb2dc0b324d6431c6ccbd4d2b3))
+
 ## [0.18.0](https://github.com/YonderUrik/buddy-budget/compare/v0.17.0...v0.18.0) (2026-10-06)
 
 

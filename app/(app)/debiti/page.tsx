@@ -21,12 +21,12 @@ export default function DebitiPage() {
   return (
     <DebtsViewGate loading={query.isLoading} error={query.isError} empty={data?.debts.length === 0} onRetry={() => query.refetch()}>
       {data && interest ? (
-        <div className="grid items-start gap-4 sm:gap-6 lg:grid-cols-2">
-          <div className="flex flex-col gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 items-start gap-4 sm:gap-6 lg:grid-cols-2">
+          <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
             <DebtsUpcomingCard items={data.overview.nextDue} debts={data.debts} currency={currency} />
             <DebtsInterestCard interest={interest} currency={currency} />
           </div>
-          <div className="flex flex-col gap-4 sm:gap-6">
+          <div className="flex min-w-0 flex-col gap-4 sm:gap-6">
             <DebtsExitCard debts={data.debts} currency={currency} />
             <DebtsListCard debts={data.debts} currency={currency} totalDebt={data.overview.totalDebt} />
           </div>

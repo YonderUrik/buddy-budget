@@ -1,12 +1,19 @@
 /**
  * components/domain/overview — barrel file
  *
- * Tessere della Panoramica (mese, scadenze, investimenti) che affiancano grafico, composizione e "Da sistemare".
+ * Parti della Panoramica: voce di apertura e sezioni aperte (mese, rate, investimenti) che affiancano grafico,
+ * composizione e "Da sistemare".
  */
 
-export { MonthPaceCard } from "./month-pace-card";
-export type { MonthPaceCardProps } from "./month-pace-card";
-export { UpcomingDuesCard, UPCOMING_DUES_LIMIT } from "./upcoming-dues-card";
-export type { UpcomingDue, UpcomingDuesCardProps } from "./upcoming-dues-card";
-export { InvestmentsPulseCard } from "./investments-pulse-card";
-export type { InvestmentsPulseCardProps } from "./investments-pulse-card";
+export { OverviewVoice } from "./overview-voice";
+export type { OverviewVoiceProps } from "./overview-voice";
+export { SectionHeading } from "./section-heading";
+export type { SectionHeadingProps } from "./section-heading";
+export { MonthPaceSection } from "./month-pace-section";
+export type { MonthPaceSectionProps } from "./month-pace-section";
+export { MonthPaceChart } from "./month-pace-chart";
+export type { MonthPaceChartProps } from "./month-pace-chart";
+export { UpcomingDuesSection, UPCOMING_DUES_LIMIT } from "./upcoming-dues-section";
+export type { UpcomingDue, UpcomingDuesSectionProps } from "./upcoming-dues-section";
+export { InvestmentsPulseSection } from "./investments-pulse-section";
+export type { InvestmentsPulseSectionProps } from "./investments-pulse-section";

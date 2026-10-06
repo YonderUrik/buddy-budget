@@ -43,6 +43,16 @@ describe("computeMonthPace", () => {
     expect(pace.daysInMonth).toBe(31);
   });
 
+  it("costruisce le curve cumulate del mese e del solito", () => {
+    const pace = computeMonthPace([tx("2026-10-02", "-100.00"), tx("2026-10-04", "-20.00"), tx("2026-09-03", "-60.00"), tx("2026-09-20", "-40.00")], [], today);
+    expect(pace.current).toEqual([0, 100, 100, 120, 120, 120]);
+    expect(pace.typical).toHaveLength(31);
+    expect(pace.typical?.[1]).toBe(0);
+    expect(pace.typical?.[2]).toBe(60);
+    expect(pace.typical?.[19]).toBe(100);
+    expect(pace.typical?.[30]).toBe(100);
+  });
+
   it("senza storico non stima il solito", () => {
     expect(computeMonthPace([tx("2026-10-02", "-10.00")], [], today).typicalSoFar).toBeNull();
   });

@@ -108,7 +108,7 @@ export function NetWorthChartCard({
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Patrimonio netto
           </CardTitle>
           <p className="font-heading text-4xl font-medium tabular-nums text-foreground">
@@ -133,7 +133,7 @@ export function NetWorthChartCard({
         {hasPension && onPensionIncludedChange ? (
           <div className="flex w-full items-center gap-2">
             <Switch id="pension-in-net-worth" size="sm" checked={pensionIncluded} onCheckedChange={onPensionIncludedChange} />
-            <Label htmlFor="pension-in-net-worth" className="text-xs font-normal text-muted-foreground">
+            <Label htmlFor="pension-in-net-worth" className="text-sm font-normal text-muted-foreground">
               {PENSION_SWITCH_LABEL}
             </Label>
           </div>
@@ -193,7 +193,7 @@ export function NetWorthChartCard({
                           aria-pressed={visible}
                           onClick={() => handleToggle(key)}
                           className={cn(
-                            "flex min-h-9 items-center gap-1.5 rounded-full border px-3 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                            "flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                             visible ? "text-foreground hover:bg-muted" : "border-dashed text-muted-foreground hover:bg-muted",
                           )}
                         >
@@ -212,7 +212,7 @@ export function NetWorthChartCard({
                       <button
                         type="button"
                         onClick={() => setHidden(new Set())}
-                        className="min-h-9 rounded-full px-3 text-xs font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        className="min-h-11 rounded-full px-3 text-sm font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                       >
                         {SHOW_ALL_LABEL}
                       </button>
@@ -220,7 +220,7 @@ export function NetWorthChartCard({
                   ) : null}
                 </ul>
               ) : null}
-              <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {showNetLine ? <li>Linea tratteggiata: patrimonio netto</li> : null}
                 {showDebts ? <li>{DEBTS_NOTE}</li> : null}
                 {pensionVisibleExcluded ? <li>{PENSION_EXCLUDED_NOTE}</li> : null}

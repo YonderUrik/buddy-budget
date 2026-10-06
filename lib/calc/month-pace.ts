@@ -18,6 +18,23 @@ export interface MonthPace {
   budgetSpent: number;
   dayOfMonth: number;
   daysInMonth: number;
+  /** Spesa cumulata del mese corrente, un valore per ogni giorno da 1 a oggi. */
+  current: number[];
+  /** Spesa cumulata media dei mesi precedenti, un valore per ogni giorno del mese (null senza storico). */
+  typical: number[] | null;
+}
+
+/** Spesa effettiva cumulata giorno per giorno nel mese che inizia a `monthStart`, fino a `lastDay` compreso. */
+function cumulativeByDay(transactions: Transaction[], monthStart: Date, lastDay: number): number[] {
+  const perDay = new Array<number>(lastDay).fill(0);
+  for (const t of transactions) {
+    if (Number(t.amount) >= 0) continue;
+    const [y, m, d] = t.date.split("-").map(Number);
+    if (y !== monthStart.getFullYear() || m - 1 !== monthStart.getMonth() || d > lastDay) continue;
+    perDay[d - 1] += Math.abs(Number(t.amount)) - Math.abs(Number(t.excludedAmount));
+  }
+  let total = 0;
+  return perDay.map((value) => (total += value));
 }
 
 /**
@@ -33,13 +50,20 @@ export function computeMonthPace(transactions: Transaction[], budgets: Budget[],
   const { entrateEffettive: income } = computeIncomeSummary(transactions, elapsed);
 
   const past: number[] = [];
+  const pastCurves: number[][] = [];
+  const daysInMonth = endOfMonth(day).getDate();
   for (let back = 1; back <= MONTH_PACE_LOOKBACK; back += 1) {
     const from = addMonths(monthStart, -back);
     const lastDay = endOfMonth(from).getDate();
     const to = new Date(from.getFullYear(), from.getMonth(), Math.min(day.getDate(), lastDay));
     const full = { from, to: endOfMonth(from) };
     const hasData = computeSummary(transactions, full).uscite > 0;
-    if (hasData) past.push(computeSummary(transactions, { from, to }).speseEffettive);
+    if (hasData) {
+      past.push(computeSummary(transactions, { from, to }).speseEffettive);
+      // La curva di un mese più corto si prolunga col suo ultimo valore, così le medie hanno sempre `daysInMonth` punti.
+      const curve = cumulativeByDay(transactions, from, lastDay);
+      pastCurves.push(Array.from({ length: daysInMonth }, (_, i) => curve[Math.min(i, lastDay - 1)]));
+    }
   }
   const typicalSoFar = past.length > 0 ? past.reduce((a, b) => a + b, 0) / past.length : null;
 
@@ -50,6 +74,8 @@ export function computeMonthPace(transactions: Transaction[], budgets: Budget[],
     elapsed
   );
 
+  const typical = pastCurves.length > 0 ? Array.from({ length: daysInMonth }, (_, i) => pastCurves.reduce((sum, c) => sum + c[i], 0) / pastCurves.length) : null;
+
   return {
     spentSoFar,
     typicalSoFar,
@@ -57,6 +83,8 @@ export function computeMonthPace(transactions: Transaction[], budgets: Budget[],
     budgetTotal,
     budgetSpent,
     dayOfMonth: day.getDate(),
-    daysInMonth: endOfMonth(day).getDate(),
+    daysInMonth,
+    current: cumulativeByDay(transactions, monthStart, day.getDate()),
+    typical,
   };
 }

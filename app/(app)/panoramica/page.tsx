@@ -11,7 +11,7 @@ import {
   NetWorthChartCard,
   NetWorthCompositionRow,
 } from "@/components/domain/net-worth";
-import { InvestmentsPulseCard, MonthPaceCard, UpcomingDuesCard } from "@/components/domain/overview";
+import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { LoadError } from "@/components/domain/shared";
 import { buttonVariants } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
@@ -29,6 +29,7 @@ import {
 import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
+import { useAttentionQuery } from "@/lib/queries/attention";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
@@ -67,6 +68,7 @@ export default function PanoramicaPage() {
   // Il mese corrente più i precedenti: servono a dire se si spende più del solito a questo punto del mese.
   const monthRange = React.useMemo(() => ({ from: addMonths(startOfMonth(today), -MONTH_PACE_LOOKBACK), to: endOfMonth(today) }), [today]);
 
+  const attentionQuery = useAttentionQuery();
   const accountsQuery = useAccountsQuery();
   const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today));
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
@@ -130,10 +132,16 @@ export default function PanoramicaPage() {
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Panoramica</h1>
-        <p className="text-sm text-muted-foreground">{headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}</p>
-      </div>
+      <OverviewVoice
+        firstName={session?.user.name?.split(" ")[0]}
+        dateLabel={headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}
+        pace={pace}
+        monthLabel={monthLabel}
+        currency={currency}
+        nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
+        uncategorizedCount={attentionQuery.data?.uncategorizedCount ?? 0}
+        today={today}
+      />
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
 
@@ -169,33 +177,37 @@ export default function PanoramicaPage() {
                 onPensionIncludedChange={setPensionIncluded}
               />
             </div>
-            <div className="lg:col-span-2 lg:self-start">
-              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio" />
+            <div className="lg:col-span-2">
+              <NetWorthCompositionRow
+                items={compositionItems}
+                currency={currency}
+                title="Dove sta il patrimonio"
+                className="bg-transparent ring-0 lg:px-2"
+              />
             </div>
-            <div className="lg:col-span-3 lg:has-[+div:empty]:col-span-6">
-              <MonthPaceCard pace={pace} monthLabel={monthLabel} currency={currency} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })} className="h-full" />
-            </div>
-            <div className="empty:hidden lg:col-span-3">
+          </div>
+          <div className="grid grid-cols-1 gap-x-12 gap-y-10 border-t pt-8 lg:grid-cols-5">
+            <MonthPaceSection
+              pace={pace}
+              monthLabel={monthLabel}
+              currency={currency}
+              onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })}
+              className="lg:col-span-3"
+            />
+            <div className="flex flex-col gap-8 lg:col-span-2">
               <AttentionSection currency={currency} />
-            </div>
-            {dues.length > 0 ? (
-              <div className={investments ? "lg:col-span-3" : "lg:col-span-6"}>
-                <UpcomingDuesCard dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} className="h-full" />
-              </div>
-            ) : null}
-            {investments ? (
-              <div className={dues.length > 0 ? "lg:col-span-3" : "lg:col-span-6"}>
-                <InvestmentsPulseCard
+              <UpcomingDuesSection dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} />
+              {investments ? (
+                <InvestmentsPulseSection
                   value={investments.value}
                   paid={investments.paid}
                   marketGain={investments.marketGain}
                   positions={investments.positions}
                   currency={currency}
                   onLinkClick={() => track("overview_tile_clicked", { tile: TILE_INVESTMENTS })}
-                  className="h-full"
                 />
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </div>
         </>
       )}

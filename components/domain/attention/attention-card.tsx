@@ -50,7 +50,7 @@ function AttentionRow({
 }) {
   const hasSuggestion = row.suggestedCategoryName !== null;
   return (
-    <li className="flex flex-col gap-2 border-t px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
+    <li className="flex flex-col gap-2 border-t px-4 py-3 @lg/attention:flex-row @lg/attention:items-center @lg/attention:gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="truncate text-sm font-medium text-foreground">{row.label}</span>
         {row.transactionCount > 1 && (
@@ -62,7 +62,7 @@ function AttentionRow({
           </span>
         )}
       </div>
-      <div className="flex items-center justify-between gap-3 sm:justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3 @lg/attention:justify-end">
         <span
           className={cn(
             "text-sm font-semibold tabular-nums",
@@ -105,7 +105,7 @@ export function AttentionCard({
   const linkLabel = uncategorizedCount > 0 ? "Categorizza tutte" : "Vedi i movimenti";
 
   return (
-    <Card className="gap-0 py-0">
+    <Card className="@container/attention gap-0 py-0">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex min-w-0 flex-wrap items-baseline gap-x-3">
           <h2 className="font-heading text-sm font-semibold text-foreground">Da sistemare</h2>

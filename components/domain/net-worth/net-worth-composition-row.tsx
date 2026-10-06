@@ -16,6 +16,8 @@ export interface NetWorthCompositionRowProps {
   items: NetWorthCompositionItem[];
   currency: string;
   title?: string;
+  /** Classi aggiuntive sulla card (es. per toglierle il riquadro quando sta aperta sulla pagina). */
+  className?: string;
 }
 
 function percent(ratio: number): string {
@@ -31,7 +33,7 @@ function investedSentence(share: number): string {
   return `Il ${percent(share)} è investito, il resto è liquidità.`;
 }
 
-export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio" }: NetWorthCompositionRowProps) {
+export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio", className }: NetWorthCompositionRowProps) {
   if (items.length === 0) return null;
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const colorFor = assetClassColor;
@@ -40,9 +42,9 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
   const showBar = assetCount > 1 && items.some((i) => i.share > 0);
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader className="gap-1">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
+        <CardTitle className="font-heading text-lg font-medium text-foreground">{title}</CardTitle>
         {investedShare !== null ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">

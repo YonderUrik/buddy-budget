@@ -49,8 +49,8 @@ export const FEATURES: readonly Feature[] = [
   f("da-sistemare", "Movimenti", "Da sistemare", "Un avviso in Panoramica e nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
-  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers e DEGIRO nello stesso portafoglio (cassa riconciliata, aggiornamento dei periodi sovrapposti e gestione separata degli import per broker), Yahoo Finance o un altro CSV.", "live"),
-  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione.", "live"),
+  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers e DEGIRO nello stesso portafoglio (selezione multipla dei rendiconti, cassa riconciliata includibile nel totale con un interruttore, aggiornamento dei periodi sovrapposti e gestione separata degli import per broker e ripristino completo dello storico), Yahoo Finance o un altro CSV.", "live"),
+  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione. Includi o escludi i broker dalla vista combinata e sovrapponi i loro rendimenti per confrontarli.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y».", "live"),
   f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),

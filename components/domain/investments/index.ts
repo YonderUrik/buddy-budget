@@ -117,3 +117,6 @@ export * from "./titles";
 export { BrokerStatements } from "./broker-statements";
 
 export { ImportManagement } from "./import-management";
+
+export { BrokerSelector } from "./broker-selector";
+export { BrokerComparisonCard } from "./broker-comparison-card";

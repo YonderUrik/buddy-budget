@@ -49,6 +49,8 @@ export interface ProductEvents {
   pension_snapshots_imported: { created: number; updated: number; format: "csv" | "xlsx" | "incollato" };
   /** Simulazione locale dell'aliquota in uscita (chip trascinato o mosso da tastiera); `years`: anni di partecipazione simulati. */
   pension_rate_simulated: { years: number };
+  investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
+  investment_broker_overlay_changed: { enabled: boolean };
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
@@ -60,6 +62,7 @@ export interface ProductEvents {
   price_alert_created: { direction: "sopra" | "sotto" };
   title_commentary_requested: undefined;
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
+  investments_import_reset: { operations: number; statements: number };
   investments_import_deleted: { statements: number; operations: number };
   investments_imported: { operations: number; format: string };
   /** File letto nel primo passo dell'import. `provider`: formato (`interactive-brokers`, `yahoo-portfolio`, `generic`); `chosen`: scelto a mano o riconosciuto dal file. */

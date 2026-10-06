@@ -7,6 +7,7 @@ import { DownloadIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getImportProvider, type ImportProviderId } from "@/lib/investments/import/providers";
+import { validateImportFiles } from "@/lib/investments/import/batch";
 import { templateCsv } from "@/lib/investments/import/presets";
 import { ImportProviderPicker } from "./import-provider-picker";
 
@@ -14,6 +15,7 @@ export interface ImportFileStepProps {
   provider: ImportProviderId | null;
   onProviderChange: (provider: ImportProviderId | null) => void;
   onLoad: (text: string, fileName: string | null) => void;
+  onFiles?: (files: File[]) => Promise<void>;
   /** Il file scelto è in lettura sul server. */
   reading?: boolean;
 }
@@ -34,13 +36,23 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
-export function ImportFileStep({ provider, onProviderChange, onLoad, reading = false }: ImportFileStepProps) {
+export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false }: ImportFileStepProps) {
   const id = React.useId();
   const [pasted, setPasted] = React.useState("");
   const [dragging, setDragging] = React.useState(false);
 
-  async function readFile(file: File | undefined) {
-    if (file) onLoad(await file.text(), file.name);
+  const [fileError, setFileError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  async function readFiles(list: FileList | null) {
+    if (!list?.length || reading || loading) return;
+    setFileError(null); setLoading(true);
+    try {
+      const files = Array.from(list);
+      validateImportFiles(files);
+      if (files.length > 1 && onFiles) await onFiles(files);
+      else onLoad(await files[0].text(), files[0].name);
+    } catch (e) { setFileError(e instanceof Error ? e.message : "Impossibile leggere i file"); }
+    finally { setLoading(false); }
   }
 
   return (
@@ -64,22 +76,26 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, reading = f
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          void readFile(e.dataTransfer.files[0]);
+          void readFiles(e.dataTransfer.files);
         }}
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 ${dragging ? "border-primary bg-primary/5" : ""}`}
       >
         <UploadIcon className="size-5 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-foreground">{reading ? "Leggo il file…" : "Scegli un file CSV"}</span>
-        <span className="text-xs text-muted-foreground">{reading ? "Un attimo" : "oppure trascinalo qui"}</span>
+        <span className="text-sm font-medium text-foreground">{reading || loading ? "Leggo i file…" : "Scegli uno o più file CSV"}</span>
+        <span className="text-xs text-muted-foreground">{reading || loading ? "Un attimo" : "oppure trascinali qui · massimo 20 file"}</span>
         <input
           id={`${id}-file`}
           type="file"
+          multiple={!!onFiles}
+          disabled={reading || loading}
           accept=".csv,.txt,text/csv"
           className="sr-only"
-          onChange={(e) => void readFile(e.target.files?.[0])}
+          onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
 
+      {fileError ? <p role="alert" className="text-sm text-destructive">{fileError}</p> : null}
+      <p className="text-xs text-muted-foreground">Più file insieme: rendiconti IBKR e DEGIRO, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
       <details className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <summary className="cursor-pointer">Oppure incolla il contenuto</summary>
         <label htmlFor={`${id}-paste`} className="sr-only">

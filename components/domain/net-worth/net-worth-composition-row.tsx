@@ -57,12 +57,12 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
               ))}
           </div>
         ) : null}
-        <ul className="-mx-2 flex flex-col">
+        <ul className="flex flex-col gap-2">
           {items.map((item) => (
             <li key={item.key}>
               <Link
                 href={item.href}
-                className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                className="flex min-h-14 items-center gap-3 rounded-xl bg-muted/60 px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               >
                 <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: colorFor(item.key) }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
@@ -80,11 +80,11 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                 <span className="text-right">
                   <span className="block font-heading text-base font-medium tabular-nums text-foreground">{format(item.amount)}</span>
                   {item.highlight ? (
-                    <span className={cn("block text-xs tabular-nums", item.highlight.amount < 0 ? "text-neg" : "text-pos")}>
+                    <span className={cn("block whitespace-nowrap text-xs tabular-nums", item.highlight.amount < 0 ? "text-neg" : "text-pos")}>
                       {item.highlight.amount < 0 ? "−" : "+"}
                       {format(Math.abs(item.highlight.amount))}
                       {item.highlight.ratio !== null ? ` (${signedPercent(item.highlight.ratio)})` : ""}{" "}
-                      <span className="text-muted-foreground">{item.highlight.label}</span>
+                      <span className="hidden text-muted-foreground sm:inline">{item.highlight.label}</span>
                     </span>
                   ) : null}
                 </span>

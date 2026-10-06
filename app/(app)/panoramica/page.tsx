@@ -165,35 +165,20 @@ export default function PanoramicaPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-6">
-            <div className="lg:col-span-4">
-              <NetWorthChartCard
-                series={series}
-                change={change}
-                period={period}
-                onPeriodChange={setPeriod}
-                currency={currency}
-                pensionIncluded={pensionIncluded}
-                onPensionIncludedChange={setPensionIncluded}
-              />
+          <NetWorthChartCard
+            series={series}
+            change={change}
+            period={period}
+            onPeriodChange={setPeriod}
+            currency={currency}
+            pensionIncluded={pensionIncluded}
+            onPensionIncludedChange={setPensionIncluded}
+          />
+          <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+            <div className="flex flex-col gap-10 lg:col-span-3">
+              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio" className="bg-transparent p-0 ring-0" />
+              <MonthPaceSection pace={pace} monthLabel={monthLabel} currency={currency} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })} />
             </div>
-            <div className="lg:col-span-2">
-              <NetWorthCompositionRow
-                items={compositionItems}
-                currency={currency}
-                title="Dove sta il patrimonio"
-                className="bg-transparent ring-0 lg:px-2"
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-x-12 gap-y-10 border-t pt-8 lg:grid-cols-5">
-            <MonthPaceSection
-              pace={pace}
-              monthLabel={monthLabel}
-              currency={currency}
-              onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })}
-              className="lg:col-span-3"
-            />
             <div className="flex flex-col gap-8 lg:col-span-2">
               <AttentionSection currency={currency} />
               <UpcomingDuesSection dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} />

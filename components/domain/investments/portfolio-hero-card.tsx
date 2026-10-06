@@ -105,21 +105,6 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
         {cash.length > 0 ? (
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>{includeCash ? `Titoli ${format(summary.totalValue)} · Liquidità ${format(cashTotal)}` : "Solo titoli · liquidità esclusa dal totale"}</p>
-            {includeCash ? (
-              <details>
-                <summary className="cursor-pointer">Dettaglio liquidità broker</summary>
-                <ul className="mt-2 space-y-1">
-                  {cash.map((account) => (
-                    <li key={account.accountId}>
-                      {account.name}: {formatCurrency(account.balance, currency)}
-                      {account.statementDate ? ` · ultimo rendiconto ${account.statementDate.split("-").reverse().join("/")}` : " · saldo del conto collegato"}
-                    </li>
-                  ))}
-                </ul>
-                <p className="mt-2 text-xs">Saldo dei conti collegati, aggiornato con gli import e già incluso nel patrimonio complessivo.</p>
-              </details>
-            ) : null}
-            <p className="text-xs">Grafico, variazioni e rendimenti si riferiscono ai soli titoli.</p>
           </div>
         ) : null}
         {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} rispetto al valore registrato.</p> : null}

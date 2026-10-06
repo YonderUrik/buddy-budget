@@ -35,7 +35,7 @@ import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";
-import { formatCurrency, formatShortDate } from "@/lib/format";
+import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
@@ -125,7 +125,7 @@ export default function PanoramicaPage() {
   );
   const monthLabel = MONTH_NAME_FORMAT.format(today);
   const dues = debtsData?.nextDue ?? [];
-  const debtsFootnote = debtsData ? `Residuo dei debiti: ${formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 })}${debtsData.debtFreeDate ? `, fino al ${formatShortDate(debtsData.debtFreeDate)}` : ""}` : undefined;
+  const debtsFootnote = debtsData ? `Residuo dei debiti: ${formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 })}${debtsData.debtFreeDate ? `, ultima rata il ${formatDateWithYear(debtsData.debtFreeDate)}` : ""}` : undefined;
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
   return (

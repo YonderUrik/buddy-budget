@@ -6,10 +6,9 @@
  */
 
 import * as React from "react";
-import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
+import { Area, CartesianGrid, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { computeNetWorthChange, restrictSeriesToClasses, type NetWorthChange, type NetWorthPeriod, type NetWorthSeriesPoint } from "@/lib/calc/net-worth";
 import { track } from "@/lib/analytics/track";
@@ -33,6 +32,7 @@ const PENSION_EXCLUDED_NOTE = "Area grigia: previdenza, non inclusa nel totale";
 const PENSION_EXCLUDED_TOTAL_LABEL = "Totale senza previdenza";
 const PARTIAL_TOTAL_LABEL = "Totale parziale";
 const SHOW_ALL_LABEL = "Mostra tutto";
+const NET_LINE_NOTE = "Linea scura: patrimonio netto";
 const DEBTS_NOTE = "Il patrimonio netto è già al netto dei debiti";
 const LEGEND_LABEL = "Voci del grafico: tocca per mostrarle o nasconderle";
 const TRACKED_CLASSES = ["liquidita", "investimenti", "previdenza"] as const;
@@ -104,14 +104,19 @@ export function NetWorthChartCard({
     });
   };
 
+  const lastPoint = shownSeries[shownSeries.length - 1];
+  const chartSummary = hasHistory
+    ? `Patrimonio netto ${PERIOD_CHANGE_LABELS[period]}: da ${formatCurrency(shownChange.start, currency, { maximumFractionDigits: 0 })} a ${formatCurrency(shownChange.end, currency, { maximumFractionDigits: 0 })}.`
+    : "";
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+    <section aria-labelledby="net-worth-title" className="flex flex-col gap-4">
+      <div className="flex flex-row flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <h2 id="net-worth-title" className="text-base font-medium text-muted-foreground">
             Patrimonio netto
-          </CardTitle>
-          <p className="font-heading text-4xl font-medium tabular-nums text-foreground">
+          </h2>
+          <p className="font-heading text-5xl font-medium tabular-nums text-foreground">
             {formatCurrency(shownChange.end, currency, { maximumFractionDigits: 0 })}
           </p>
           {isPartial ? (
@@ -138,20 +143,22 @@ export function NetWorthChartCard({
             </Label>
           </div>
         ) : null}
-      </CardHeader>
+      </div>
       {hasHistory ? (
-        <CardContent>
-          <ChartContainer config={buildChartConfig(allClasses)} className="max-h-64 w-full">
-            <ComposedChart data={shownSeries}>
+        <div>
+          <p className="sr-only">{chartSummary}</p>
+          <ChartContainer config={buildChartConfig(allClasses)} className="aspect-auto h-56 w-full sm:h-72">
+            <ComposedChart data={shownSeries} accessibilityLayer>
+              <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="2 4" />
               <defs>
                 {allClasses.map((key) => (
                   <linearGradient key={key} id={`${AREA_FILL_ID_PREFIX}${key}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.3 : 0.55} />
-                    <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.08 : 0.15} />
+                    <stop offset="0%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.22 : 0.4} />
+                    <stop offset="100%" stopColor={`var(--color-${key})`} stopOpacity={key === PENSION_CLASS && pensionExcluded ? 0.05 : 0.08} />
                   </linearGradient>
                 ))}
               </defs>
-              <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={32} tickMargin={8} tick={{ fontSize: 13 }} />
               <YAxis hide />
               <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} totalLabel={totalLabel} />} />
               {classes.map((key) => (
@@ -162,7 +169,7 @@ export function NetWorthChartCard({
                   name={key}
                   stackId={STACK_ID}
                   stroke={`var(--color-${key})`}
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   strokeDasharray={key === PENSION_CLASS && pensionExcluded ? "2 3" : undefined}
                   fill={`url(#${AREA_FILL_ID_PREFIX}${key})`}
                 />
@@ -173,8 +180,7 @@ export function NetWorthChartCard({
                   dataKey="value"
                   name="netto"
                   stroke="var(--foreground)"
-                  strokeWidth={2}
-                  strokeDasharray="4 3"
+                  strokeWidth={2.5}
                   dot={false}
                 />
               ) : null}
@@ -203,6 +209,11 @@ export function NetWorthChartCard({
                             aria-hidden="true"
                           />
                           <span className={cn(!visible && "line-through")}>{assetClassLabel(key)}</span>
+                          {lastPoint ? (
+                            <span className="font-heading font-medium tabular-nums text-foreground">
+                              {formatCurrency(lastPoint.byClass[key] ?? 0, currency, { maximumFractionDigits: 0 })}
+                            </span>
+                          ) : null}
                         </button>
                       </li>
                     );
@@ -221,14 +232,14 @@ export function NetWorthChartCard({
                 </ul>
               ) : null}
               <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                {showNetLine ? <li>Linea tratteggiata: patrimonio netto</li> : null}
+                {showNetLine ? <li>{NET_LINE_NOTE}</li> : null}
                 {showDebts ? <li>{DEBTS_NOTE}</li> : null}
                 {pensionVisibleExcluded ? <li>{PENSION_EXCLUDED_NOTE}</li> : null}
               </ul>
             </div>
           ) : null}
-        </CardContent>
+        </div>
       ) : null}
-    </Card>
+    </section>
   );
 }

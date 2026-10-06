@@ -41,4 +41,4 @@ Catalogo funzioni, copia landing e otto screenshot delle schede investimenti agg
 
 ### Gestione importazioni in Operazioni
 
-La gestione dei CSV importati è nella scheda Operazioni, sopra l’elenco delle transazioni, anche quando non ci sono operazioni. La scheda Rendiconti e il suo riepilogo nel Portafoglio sono stati rimossi; i vecchi link reindirizzano a Operazioni. Lo storico dei documenti e le funzioni di sostituzione e cancellazione restano disponibili senza modificare i dati salvati.
+La gestione dei CSV importati è nella scheda Operazioni, in «Gestisci importazioni» (sezione espandibile chiusa inizialmente) sopra l’elenco delle transazioni, anche quando non ci sono operazioni. La scheda Rendiconti e il suo riepilogo nel Portafoglio sono stati rimossi; i vecchi link reindirizzano a Operazioni. Lo storico dei documenti e le funzioni di sostituzione e cancellazione restano disponibili senza modificare i dati salvati.

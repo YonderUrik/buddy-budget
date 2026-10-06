@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.13.0](https://github.com/YonderUrik/buddy-budget/compare/v0.12.0...v0.13.0) (2026-10-06)
+
+
+### Novità
+
+* Debiti ridisegnata con priorità e azioni, Simulatore dentro i finanziamenti, via il credit Lombard ([#158](https://github.com/YonderUrik/buddy-budget/issues/158)) ([784fd0f](https://github.com/YonderUrik/buddy-budget/commit/784fd0fbe302cc825e79293652539eb08e9c051e))
+
 ## [0.12.0](https://github.com/YonderUrik/buddy-budget/compare/v0.11.0...v0.12.0) (2026-10-05)
 
 

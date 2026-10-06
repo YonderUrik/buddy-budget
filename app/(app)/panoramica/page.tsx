@@ -5,7 +5,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { RenewalBanner, buildRenewalAlerts, computeAccountsKpi } from "@/components/domain/accounts";
-import { AttentionSection } from "@/components/domain/attention";
 import {
   buildCompositionItems,
   NetWorthChartCard,
@@ -29,7 +28,6 @@ import {
 import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
-import { useAttentionQuery } from "@/lib/queries/attention";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
@@ -68,7 +66,6 @@ export default function PanoramicaPage() {
   // Il mese corrente più i precedenti: servono a dire se si spende più del solito a questo punto del mese.
   const monthRange = React.useMemo(() => ({ from: addMonths(startOfMonth(today), -MONTH_PACE_LOOKBACK), to: endOfMonth(today) }), [today]);
 
-  const attentionQuery = useAttentionQuery();
   const accountsQuery = useAccountsQuery();
   const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today));
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
@@ -139,7 +136,6 @@ export default function PanoramicaPage() {
         monthLabel={monthLabel}
         currency={currency}
         nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
-        uncategorizedCount={attentionQuery.data?.uncategorizedCount ?? 0}
         today={today}
       />
 
@@ -180,7 +176,6 @@ export default function PanoramicaPage() {
               <MonthPaceSection pace={pace} monthLabel={monthLabel} currency={currency} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })} />
             </div>
             <div className="flex flex-col gap-8 lg:col-span-2">
-              <AttentionSection currency={currency} />
               <UpcomingDuesSection dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} />
               {investments ? (
                 <InvestmentsPulseSection

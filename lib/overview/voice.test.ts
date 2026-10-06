@@ -8,22 +8,21 @@ const text = (lines: ReturnType<typeof buildVoiceLines>) => lines.map((l) => l.s
 
 describe("buildVoiceLines", () => {
   it("dice quanto sopra il solito e cita scadenza vicina e movimenti", () => {
-    const lines = buildVoiceLines({ pace: basePace, monthLabel: "ottobre", currency: "EUR", nextDue: { name: "Prestito auto", date: "2026-10-12", amount: 277 }, uncategorizedCount: 6, today });
+    const lines = buildVoiceLines({ pace: basePace, monthLabel: "ottobre", currency: "EUR", nextDue: { name: "Prestito auto", date: "2026-10-12", amount: 277 }, today });
     const t = text(lines);
     expect(t[0]).toContain("sopra il solito");
     expect(t[0]).toContain("423");
     expect(t[1]).toContain("scade il 12 ottobre");
-    expect(t[2]).toBe("6 movimenti aspettano una categoria.");
   });
 
-  it("senza storico non confronta; scadenze lontane e nessun movimento da categorizzare non compaiono", () => {
-    const lines = buildVoiceLines({ pace: { ...basePace, typicalSoFar: null }, monthLabel: "ottobre", currency: "EUR", nextDue: { name: "Mutuo", date: "2026-12-05", amount: 365 }, uncategorizedCount: 0, today });
+  it("senza storico non confronta; le scadenze lontane non compaiono", () => {
+    const lines = buildVoiceLines({ pace: { ...basePace, typicalSoFar: null }, monthLabel: "ottobre", currency: "EUR", nextDue: { name: "Mutuo", date: "2026-12-05", amount: 365 }, today });
     expect(lines).toHaveLength(1);
     expect(text(lines)[0]).toContain("finora hai speso");
   });
 
   it("in linea entro la tolleranza", () => {
-    const lines = buildVoiceLines({ pace: { ...basePace, spentSoFar: 580 }, monthLabel: "ottobre", currency: "EUR", nextDue: null, uncategorizedCount: 0, today });
+    const lines = buildVoiceLines({ pace: { ...basePace, spentSoFar: 580 }, monthLabel: "ottobre", currency: "EUR", nextDue: null, today });
     expect(text(lines)[0]).toContain("in linea");
   });
 

@@ -2,7 +2,7 @@
  * components/domain/overview — barrel file
  *
  * Parti della Panoramica: voce di apertura e sezioni aperte (mese, rate, investimenti) che affiancano grafico,
- * composizione e "Da sistemare".
+ * e composizione.
  */
 
 export { OverviewVoice } from "./overview-voice";

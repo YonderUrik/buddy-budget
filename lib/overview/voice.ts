@@ -19,8 +19,6 @@ export interface VoiceInput {
   currency: string;
   /** Prossima rata in scadenza, se c'è. */
   nextDue: { name: string; date: string; amount: number } | null;
-  /** Movimenti in attesa di una categoria. */
-  uncategorizedCount: number;
   today: Date;
 }
 
@@ -39,11 +37,11 @@ export function greetingFor(hour: number): string {
 }
 
 /**
- * Le frasi con cui la Panoramica "parla": come va il mese rispetto al solito, la prossima scadenza vicina e i movimenti
- * da categorizzare. Una frase compare solo se ha qualcosa da dire; senza storico non si inventa un confronto.
+ * Le frasi con cui la Panoramica "parla": come va il mese rispetto al solito, e la prossima scadenza vicina.
+ * Una frase compare solo se ha qualcosa da dire; senza storico non si inventa un confronto.
  */
 export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
-  const { pace, monthLabel, currency, nextDue, uncategorizedCount, today } = input;
+  const { pace, monthLabel, currency, nextDue, today } = input;
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
   const lines: VoiceLine[] = [];
 
@@ -73,13 +71,6 @@ export function buildVoiceLines(input: VoiceInput): VoiceLine[] {
       const when = days < 0 ? "è scaduta" : days === 0 ? "scade oggi" : `scade il ${DAY_MONTH.format(new Date(`${nextDue.date}T00:00:00`))}`;
       lines.push({ key: "due", segments: [{ text: `La rata ${nextDue.name} ${when}: ` }, { text: money(nextDue.amount), strong: true }, { text: "." }] });
     }
-  }
-
-  if (uncategorizedCount > 0) {
-    lines.push({
-      key: "attention",
-      segments: [{ text: uncategorizedCount === 1 ? "1 movimento aspetta" : `${uncategorizedCount} movimenti aspettano`, strong: true }, { text: " una categoria." }],
-    });
   }
   return lines;
 }

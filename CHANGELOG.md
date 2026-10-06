@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.16.0](https://github.com/YonderUrik/buddy-budget/compare/v0.15.1...v0.16.0) (2026-10-06)
+
+
+### Novità
+
+* add YTD and custom portfolio chart intervals ([#172](https://github.com/YonderUrik/buddy-budget/issues/172)) ([bc333ee](https://github.com/YonderUrik/buddy-budget/commit/bc333eea48128fd1f272ea6980c14dcda0b3c1c7))
+
 ## [0.15.1](https://github.com/YonderUrik/buddy-budget/compare/v0.15.0...v0.15.1) (2026-10-06)
 
 

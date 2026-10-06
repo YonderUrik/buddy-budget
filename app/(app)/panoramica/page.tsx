@@ -5,18 +5,18 @@
 import * as React from "react";
 import Link from "next/link";
 import { RenewalBanner, buildRenewalAlerts, computeAccountsKpi } from "@/components/domain/accounts";
-import { AttentionSection } from "@/components/domain/attention";
 import {
   buildCompositionItems,
-  MonthSummaryCard,
   NetWorthChartCard,
   NetWorthCompositionRow,
 } from "@/components/domain/net-worth";
+import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { LoadError } from "@/components/domain/shared";
 import { buttonVariants } from "@/components/ui/button";
+import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
-import { computeMonthlySeries } from "@/lib/calc/cashflow";
-import { endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
+import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
+import { computeMonthPace, MONTH_PACE_LOOKBACK } from "@/lib/calc/month-pace";
 import {
   buildNetWorthSeries,
   computeNetWorthChange,
@@ -28,11 +28,13 @@ import {
 import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
+import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";
+import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
@@ -44,6 +46,11 @@ const INVESTMENTS_PERIOD: NetWorthPeriod = "1mese";
 /** Porta in Conti e vi apre subito il flusso di rinnovo (il valore dice da dove si arriva). */
 const RENEW_PATH = "/conti?rinnova=";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
+const MONTH_NAME_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "long" });
+/** Dove porta ogni tessera: il valore va nell'evento `overview_tile_clicked`. */
+const TILE_MONTH = "mese";
+const TILE_DUES = "scadenze";
+const TILE_INVESTMENTS = "investimenti";
 const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
   weekday: "long",
   day: "numeric",
@@ -56,11 +63,14 @@ export default function PanoramicaPage() {
   const currency = session?.user.currency ?? "EUR";
   const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
   const today = React.useMemo(() => startOfDay(new Date()), []);
-  const monthRange = React.useMemo(() => ({ from: startOfMonth(today), to: endOfMonth(today) }), [today]);
+  // Il mese corrente più i precedenti: servono a dire se si spende più del solito a questo punto del mese.
+  const monthRange = React.useMemo(() => ({ from: addMonths(startOfMonth(today), -MONTH_PACE_LOOKBACK), to: endOfMonth(today) }), [today]);
 
   const accountsQuery = useAccountsQuery();
   const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today));
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
+  // I budget sono opzionali: senza, la tessera del mese salta la barra.
+  const budgetsQuery = useBudgetsQuery();
   const investmentsQuery = useInvestmentsOverviewQuery(INVESTMENTS_PERIOD);
   // Un errore sui debiti non blocca la Panoramica: semplicemente non compaiono.
   const debtsQuery = useDebtsQuery();
@@ -108,15 +118,26 @@ export default function PanoramicaPage() {
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
   const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null);
-  const [currentMonth] = computeMonthlySeries(monthTransactionsQuery.data ?? [], monthRange);
+  const pace = React.useMemo(
+    () => computeMonthPace(monthTransactionsQuery.data ?? [], budgetsQuery.data ?? [], today),
+    [monthTransactionsQuery.data, budgetsQuery.data, today]
+  );
+  const monthLabel = MONTH_NAME_FORMAT.format(today);
+  const dues = debtsData?.nextDue ?? [];
+  const debtsFootnote = debtsData ? `Residuo dei debiti: ${formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 })}${debtsData.debtFreeDate ? `, ultima rata il ${formatDateWithYear(debtsData.debtFreeDate)}` : ""}` : undefined;
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Panoramica</h1>
-        <p className="text-sm text-muted-foreground">{headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}</p>
-      </div>
+    <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+      <OverviewVoice
+        firstName={session?.user.name?.split(" ")[0]}
+        dateLabel={headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}
+        pace={pace}
+        monthLabel={monthLabel}
+        currency={currency}
+        nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
+        today={today}
+      />
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
 
@@ -149,13 +170,25 @@ export default function PanoramicaPage() {
             pensionIncluded={pensionIncluded}
             onPensionIncludedChange={setPensionIncluded}
           />
-          <AttentionSection currency={currency} />
-          <NetWorthCompositionRow items={compositionItems} currency={currency} />
-          <MonthSummaryCard
-            entrate={currentMonth?.entrate ?? 0}
-            uscite={currentMonth?.uscite ?? 0}
-            currency={currency}
-          />
+          <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+            <div className="flex flex-col gap-10 lg:col-span-3">
+              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio" className="bg-transparent p-0 ring-0" />
+              <MonthPaceSection pace={pace} monthLabel={monthLabel} currency={currency} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })} />
+            </div>
+            <div className="flex flex-col gap-8 lg:col-span-2">
+              <UpcomingDuesSection dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} />
+              {investments ? (
+                <InvestmentsPulseSection
+                  value={investments.value}
+                  paid={investments.paid}
+                  marketGain={investments.marketGain}
+                  positions={investments.positions}
+                  currency={currency}
+                  onLinkClick={() => track("overview_tile_clicked", { tile: TILE_INVESTMENTS })}
+                />
+              ) : null}
+            </div>
+          </div>
         </>
       )}
     </div>

@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.15.0](https://github.com/YonderUrik/buddy-budget/compare/v0.14.1...v0.15.0) (2026-10-06)
+
+
+### Novità
+
+* simulate reinvested investment costs and taxes ([#169](https://github.com/YonderUrik/buddy-budget/issues/169)) ([d70f166](https://github.com/YonderUrik/buddy-budget/commit/d70f16664bf3cea2daf3900debd54e2c05a13840))
+
+
+### Refactoring
+
+* move investment import management into operations ([#163](https://github.com/YonderUrik/buddy-budget/issues/163)) ([65c4468](https://github.com/YonderUrik/buddy-budget/commit/65c4468f9a1ba59f9f87b5a1f4f9e33d7778f094))
+
 ## [0.14.1](https://github.com/YonderUrik/buddy-budget/compare/v0.14.0...v0.14.1) (2026-10-06)
 
 

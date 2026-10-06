@@ -2,6 +2,10 @@
 
 /** Card "Mese per mese": dividendi e cedole registrati in un anno, netto più ritenute (= lordo), con i totali. */
 
+import { IncomePayments } from "./income-payments";
+import type { IncomePayment } from "@/lib/investments/income";
+import type { Instrument } from "@/lib/db/schema/investments";
+import { track } from "@/lib/analytics";
 import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,17 +14,17 @@ import type { IncomeYearDetail } from "@/lib/investments/dividends";
 import { formatPct, shortMonthLabel } from "../percent";
 import { MonthBars } from "./month-bars";
 
-/** Anni selezionabili (dal più recente). */
-export const INCOME_YEARS_SHOWN = 5;
-
 export interface IncomeMonthsCardProps {
   years: IncomeYearDetail[];
+  payments: IncomePayment[];
+  instrumentsById: Map<string, Instrument>;
   currency: string;
 }
 
-export function IncomeMonthsCard({ years, currency }: IncomeMonthsCardProps) {
-  const options = years.slice(0, INCOME_YEARS_SHOWN).map((y) => ({ value: String(y.year), label: String(y.year) }));
+export function IncomeMonthsCard({ years, payments, instrumentsById, currency }: IncomeMonthsCardProps) {
+  const options = years.map((y) => ({ value: String(y.year), label: String(y.year) }));
   const [selected, setSelected] = React.useState(options[0]?.value ?? "");
+  const [expanded, setExpanded] = React.useState(false);
   const year = years.find((y) => String(y.year) === selected) ?? years[0];
   if (!year) return null;
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
@@ -28,8 +32,8 @@ export function IncomeMonthsCard({ years, currency }: IncomeMonthsCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mese per mese</CardTitle>
-        {options.length > 1 ? <SegmentedControl options={options} value={String(year.year)} onChange={setSelected} ariaLabel="Anno" /> : null}
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dividendi incassati</CardTitle>
+        {options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel="Anno" /> : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <dl className="grid grid-cols-3 gap-3 text-sm">
@@ -56,7 +60,7 @@ export function IncomeMonthsCard({ years, currency }: IncomeMonthsCardProps) {
             label: shortMonthLabel(m.month),
             primary: Math.max(m.net, 0),
             secondary: m.withheld,
-            title: `${shortMonthLabel(m.month)} ${year.year}: ${format(m.net)} netti, ${format(m.withheld)} di ritenute`,
+            title: `${shortMonthLabel(m.month)} ${year.year} · ${payments.filter((p) => p.date.startsWith(`${year.year}-${String(m.month).padStart(2, "0")}`)).length} pagamenti\nLordo: ${formatCurrency(m.gross, currency)}\nImposte e costi: ${formatCurrency(m.withheld, currency)}\nNetto: ${formatCurrency(m.net, currency)}`,
           }))}
         />
         <p className="flex items-center gap-4 text-xs text-muted-foreground">
@@ -67,6 +71,10 @@ export function IncomeMonthsCard({ years, currency }: IncomeMonthsCardProps) {
             <span className="size-2.5 rounded-sm bg-muted-foreground/30" aria-hidden="true" /> Ritenute e costi
           </span>
         </p>
+        <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
+          <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti del {year.year}</summary>
+          <IncomePayments payments={payments.filter((payment) => payment.date.startsWith(String(year.year)))} currency={currency} instrumentsById={instrumentsById} />
+        </details>
       </CardContent>
     </Card>
   );

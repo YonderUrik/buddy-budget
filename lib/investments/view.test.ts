@@ -122,3 +122,13 @@ it("respects the same annual loss compensation as the Taxes tab in dichiarativo"
   expect(view.costImpact.additions["2026-09-03"].estimatedTaxes).toBe(0);
   expect(view.costImpact.additions["2026-09-20"].estimatedTaxes).toBeCloseTo(26);
 });
+
+it("limits chart dates inclusively while preserving earlier positions and current totals", () => {
+  const input = data();
+  const full = buildInvestmentsView(input, "max", NOW);
+  const range = buildInvestmentsView(input, "max", NOW, { from: "2026-09-10", to: "2026-09-12" });
+  expect(range.series.map((point) => point.date)).toEqual(["2026-09-10", "2026-09-11", "2026-09-12"]);
+  expect(range.series[0].value).toBe(1000);
+  expect(range.summary.totalValue).toBe(full.summary.totalValue);
+  expect(range.costImpact).toEqual(full.costImpact);
+});

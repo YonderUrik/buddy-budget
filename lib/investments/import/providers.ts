@@ -21,8 +21,8 @@ export interface ImportProviderInfo {
 }
 
 export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
-  { id: "trade-republic", name: "Trade Republic", initials: "TR", tagline: "Investimenti e pagamenti con carta", howTo: "Carica Transaction export.csv con lo storico completo del conto principale: investimenti, carta, bonifici, interessi e bonus. Il saldo è calcolato dai movimenti partendo da zero; il file non contiene un saldo certificato né il numero del conto. Usa questa fonte per un solo conto Trade Republic e aggiorna sempre con lo storico completo." },
-  { id: "degiro", name: "DEGIRO", initials: "DG", tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
+  { id: "trade-republic", name: "Trade Republic", initials: "TR", logoSrc: "/import-providers/trade-republic.svg", tagline: "Investimenti e pagamenti con carta", howTo: "Carica Transaction export.csv con lo storico completo del conto principale: investimenti, carta, bonifici, interessi e bonus. Il saldo è calcolato dai movimenti partendo da zero; il file non contiene un saldo certificato né il numero del conto. Usa questa fonte per un solo conto Trade Republic e aggiorna sempre con lo storico completo." },
+  { id: "degiro", name: "DEGIRO", initials: "DG", logoSrc: "/import-providers/degiro.svg", tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
   {
     id: "interactive-brokers",
     name: "Interactive Brokers",

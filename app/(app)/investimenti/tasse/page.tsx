@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { useFilteredInvestmentsOverview } from "@/lib/queries/investments-view";
 import { toast } from "sonner";
 import {
   InstrumentSettingsDialog,
@@ -20,12 +21,12 @@ import { LoadError } from "@/components/domain/shared";
 import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { buildTaxView } from "@/lib/investments/tax-view";
-import { useInvestmentsOverviewQuery, useUpdatePortfolioMutation } from "@/lib/queries/investments";
+import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
 
 export default function TassePage() {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   // Il bollo usa il valore a fine di ogni anno: serve tutto lo storico dei prezzi.
-  const overview = useInvestmentsOverviewQuery("max");
+  const overview = useFilteredInvestmentsOverview("max");
   const view = React.useMemo(() => (overview.data ? buildTaxView(overview.data, today) : null), [overview.data, today]);
   const updatePortfolio = useUpdatePortfolioMutation();
   const [editing, setEditing] = React.useState<Instrument | null>(null);

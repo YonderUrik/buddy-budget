@@ -6,19 +6,20 @@
  */
 
 import * as React from "react";
-import { InvestmentsViewGate, ReturnHeatmapCard, ReturnsCard, RiskCard } from "@/components/domain/investments";
+import { useFilteredInvestmentsOverview } from "@/lib/queries/investments-view";
+import { BrokerComparisonCard, InvestmentsViewGate, ReturnHeatmapCard, ReturnsCard, RiskCard } from "@/components/domain/investments";
 import { NetWorthPeriodSelector } from "@/components/domain/net-worth";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { historyDailyReturns } from "@/lib/investments/return-heatmap-view";
-import { useBackfillStatusQuery, useInvestmentsOverviewQuery } from "@/lib/queries/investments";
+import { useBackfillStatusQuery } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
 
 export default function PerformancePage() {
   const [period, setPeriod] = React.useState<NetWorthPeriod>(INVESTMENTS_DEFAULT_PERIOD);
   const { overview, view, today } = useInvestmentsView(period);
   // La heatmap copre tutto lo storico: usa i dati del periodo "max" (stessa cache se il periodo è già Max).
-  const fullHistory = useInvestmentsOverviewQuery("max");
+  const fullHistory = useFilteredInvestmentsOverview("max");
   const historyReturns = React.useMemo(() => (fullHistory.data ? historyDailyReturns(fullHistory.data, today) : null), [fullHistory.data, today]);
   // Il benchmark: il suo storico si scarica quando lo si sceglie, e a fine recupero la pagina si aggiorna.
   const backfillIds = React.useMemo(
@@ -48,6 +49,7 @@ export default function PerformancePage() {
             <p className="text-sm text-muted-foreground">Rendimento e rischio nel periodo</p>
             <NetWorthPeriodSelector value={period} onChange={setPeriod} />
           </div>
+          {overview.data ? <BrokerComparisonCard data={overview.data} period={period} today={today} /> : null}
           {view.returns ? (
             <ReturnsCard
               returns={view.returns}

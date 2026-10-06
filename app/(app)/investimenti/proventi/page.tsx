@@ -6,6 +6,7 @@
  */
 
 import * as React from "react";
+import { useFilteredInvestmentsOverview } from "@/lib/queries/investments-view";
 import { toast } from "sonner";
 import {
   IncomeForecastCard,
@@ -22,7 +23,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import type { MissingIncome } from "@/lib/investments/dividends";
 import { buildIncomeView } from "@/lib/investments/income-view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
-import { useDismissDividendMutation, useInvestmentsOverviewQuery } from "@/lib/queries/investments";
+import { useDismissDividendMutation } from "@/lib/queries/investments";
 
 /** Mentre gli storici dividendi si scaricano in background, la pagina si aggiorna ogni tanto (al massimo qualche volta). */
 const PENDING_REFRESH_MS = 4000;
@@ -30,7 +31,7 @@ const PENDING_REFRESH_MAX = 6;
 
 export default function ProventiPage() {
   const today = React.useMemo(() => startOfDay(new Date()), []);
-  const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
+  const overview = useFilteredInvestmentsOverview(INVESTMENTS_DEFAULT_PERIOD);
   const view = React.useMemo(() => (overview.data ? buildIncomeView(overview.data, today) : null), [overview.data, today]);
   const { openRegister } = useInvestmentsActions();
   const dismiss = useDismissDividendMutation();

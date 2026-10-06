@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import type { PreparedStatementFile } from "@/lib/investments/import/batch";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { parseCsv, type CsvTable } from "@/lib/investments/import/csv";
 import { missingFields, type ImportMapping } from "@/lib/investments/import/mapping";
@@ -28,18 +29,18 @@ import {
  * Stato del wizard di import: file letto, mappatura, abbinamento degli strumenti, anteprima e import. Le righe si
  * ricalcolano a ogni modifica della mappatura, così l'anteprima dei valori letti è sempre quella vera.
  */
-export function useInvestmentImport() {
+export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   const portfolioQuery = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [portfolioId, setPortfolioId] = React.useState("");
-  const [step, setStep] = React.useState<ImportStep>("file");
-  const [fileName, setFileName] = React.useState<string | null>(null);
+  const [step, setStep] = React.useState<ImportStep>(initialFile ? "mapping" : "file");
+  const [fileName, setFileName] = React.useState<string | null>(initialFile?.name ?? null);
   const [table, setTable] = React.useState<CsvTable | null>(null);
   const [preset, setPreset] = React.useState<ImportPreset | null>(null);
   // Provider scelto nella griglia del primo passo; null = lo riconosce dal file.
-  const [provider, setProvider] = React.useState<ImportProviderId | null>(null);
+  const [provider, setProvider] = React.useState<ImportProviderId | null>(initialFile?.parsed.preset ?? null);
   // Rendiconto già strutturato (Interactive Brokers): sostituisce tabella e mappatura.
-  const [statementCsv, setStatementCsv] = React.useState<string | null>(null);
-  const [statement, setStatement] = React.useState<ActivityStatement | null>(null);
+  const [statementCsv, setStatementCsv] = React.useState<string | null>(initialFile?.text ?? null);
+  const [statement, setStatement] = React.useState<ActivityStatement | null>(initialFile?.parsed ?? null);
   const [mapping, setMapping] = React.useState<ImportMapping | null>(null);
   const [choices, setChoices] = React.useState<Record<string, InstrumentChoice>>({});
   const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(new Set());

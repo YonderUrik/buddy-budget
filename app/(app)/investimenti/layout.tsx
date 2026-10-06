@@ -6,10 +6,12 @@
  */
 
 import * as React from "react";
+import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
 import { usePathname } from "next/navigation";
 import { Plus, Upload } from "lucide-react";
 import {
   InvestmentImportDialog,
+  BrokerSelector,
   InvestmentsActionsProvider,
   InvestmentsTabs,
   RegisterOperationForm,
@@ -36,7 +38,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
   );
 
   return (
-    <InvestmentsActionsProvider value={actions}>
+    <BrokerSelectionProvider><InvestmentsActionsProvider value={actions}>
       <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
         <div className="flex flex-col gap-3">
           <div className="flex items-start justify-between gap-3">
@@ -55,6 +57,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
           </div>
           <InvestmentsTabs activeHref={pathname} />
         </div>
+        {data && !pathname.includes("/rendiconti") && !pathname.includes("/titoli") ? <BrokerSelector data={data} /> : null}
         {children}
       </div>
 
@@ -74,6 +77,6 @@ export default function InvestimentiLayout({ children }: { children: React.React
         </DialogContent>
       </Dialog>
       <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
-    </InvestmentsActionsProvider>
+    </InvestmentsActionsProvider></BrokerSelectionProvider>
   );
 }

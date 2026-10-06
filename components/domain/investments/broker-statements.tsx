@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrokerSelection } from "@/lib/investments/broker-selection";
 import { useState } from "react";
 import Link from "next/link";
 import { useBrokerStatementsQuery } from "@/lib/queries/investments";
@@ -9,7 +10,9 @@ import { formatCurrency } from "@/lib/format";
 /** Broker's reported closing figures; never mix them with today's estimated market values. */
 export function BrokerStatements({ compact = false }: { compact?: boolean }) {
   const query = useBrokerStatementsQuery();
+  const { disabled } = useBrokerSelection();
   const [selected, setSelected] = useState("");
+  if (compact && disabled.size) return null;
   if (query.isLoading) return compact ? null : <p>Caricamento rendiconti…</p>;
   if (query.isError) return <p role="alert">Impossibile leggere i rendiconti. <button onClick={() => query.refetch()}>Riprova</button></p>;
   const documents = query.data?.statements ?? [];

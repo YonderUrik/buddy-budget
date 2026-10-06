@@ -431,3 +431,35 @@ export function useDeleteStatementImportMutation() {
     onError: () => { invalidate(); },
   });
 }
+
+export interface InvestmentResetPreview {
+  revision: string;
+  operations: number;
+  untrackedOperations: number;
+  statements: number;
+  prices: number;
+  cashAccounts: number;
+}
+
+/** Always fetch a fresh confirmation preview when the recovery dialog opens. */
+export function useInvestmentResetPreview() {
+  return useMutation({ mutationFn: async (): Promise<InvestmentResetPreview> => {
+    const response = await fetch("/api/investments/import/reset", { cache: "no-store" });
+    if (!response.ok) throw await readError(response, "Impossibile preparare il ripristino");
+    return response.json();
+  } });
+}
+
+/** Reset legacy and current investment imports after explicit full-history confirmation. */
+export function useResetInvestmentsMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async (input: { revision: string; confirmation: string }) => {
+      const response = await fetch("/api/investments/import/reset", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      if (!response.ok) throw await readError(response, "Impossibile azzerare gli investimenti");
+      return response.json();
+    },
+    onSuccess: (result) => { track("investments_import_reset", { operations: result.deletedOperations, statements: result.deletedStatements }); invalidate(); },
+    onError: invalidate,
+  });
+}

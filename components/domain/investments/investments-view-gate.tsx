@@ -5,6 +5,8 @@
  * "Importa"). Quando i dati ci sono, mostra i figli.
  */
 
+import { useBrokerSelection } from "@/lib/investments/broker-selection";
+import { track } from "@/lib/analytics";
 import type { ReactNode } from "react";
 import { LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
@@ -29,6 +31,7 @@ export function InvestmentsViewGate({
   errorMessage = "Impossibile caricare gli investimenti.",
   children,
 }: InvestmentsViewGateProps) {
+  const { disabled, showAll } = useBrokerSelection();
   const { openRegister, openImport } = useInvestmentsActions();
   if (loading) {
     return (
@@ -39,6 +42,7 @@ export function InvestmentsViewGate({
     );
   }
   if (error) return <LoadError message={errorMessage} onRetry={onRetry} />;
+  if (empty && disabled.size) return <div className="space-y-3 rounded-xl border p-6 text-center"><p>Nessuna operazione per i broker selezionati.</p><Button variant="outline" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all" }); }}>Mostra tutti i broker</Button></div>;
   if (empty) {
     return (
       <div className="rounded-xl border border-dashed p-8 text-center">

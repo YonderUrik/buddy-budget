@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.18.0](https://github.com/YonderUrik/buddy-budget/compare/v0.17.0...v0.18.0) (2026-10-06)
+
+
+### Novità
+
+* panoramica a tessere con ritmo del mese, scadenze e investimenti ([#176](https://github.com/YonderUrik/buddy-budget/issues/176)) ([1d158c9](https://github.com/YonderUrik/buddy-budget/commit/1d158c9270ddd361c6f99ba50799f0c7daee71ff))
+
 ## [0.17.0](https://github.com/YonderUrik/buddy-budget/compare/v0.16.0...v0.17.0) (2026-10-06)
 
 

@@ -12,7 +12,7 @@ import {
   ManualPriceDialog,
   PortfolioHeroCard,
   PositionsList,
-  } from "@/components/domain/investments";
+} from "@/components/domain/investments";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { computeConcentration, computeValueBreakdown } from "@/lib/investments/insights";
@@ -39,6 +39,7 @@ export default function InvestimentiPage() {
         {view ? (
           <>
             <PortfolioHeroCard
+              costImpact={view.costImpact}
               summary={view.summary}
               breakdown={computeValueBreakdown(view.summary)}
               series={view.series}

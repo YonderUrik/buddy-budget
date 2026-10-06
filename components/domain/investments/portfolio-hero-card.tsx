@@ -5,6 +5,8 @@
  * la barra che lo scompone e l'andamento nel tempo del valore contro quanto hai versato.
  */
 
+import { CostImpactSummary } from "./cost-impact-summary";
+import type { CostImpact } from "@/lib/investments/cost-impact";
 import { Area, AreaChart, Line, XAxis, YAxis } from "recharts";
 import { NetWorthPeriodSelector } from "@/components/domain/net-worth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,6 +48,7 @@ function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { 
 }
 
 export interface PortfolioHeroCardProps {
+  costImpact?: CostImpact;
   summary: PortfolioSummary;
   breakdown: ValueBreakdown;
   series: PortfolioSeriesPoint[];
@@ -54,7 +57,7 @@ export interface PortfolioHeroCardProps {
   currency: string;
 }
 
-export function PortfolioHeroCard({ summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ costImpact, summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
@@ -132,6 +135,7 @@ export function PortfolioHeroCard({ summary, breakdown, series, period, onPeriod
         ) : (
           <p className="text-sm text-muted-foreground">L&apos;andamento comparirà quando ci saranno almeno due giorni di prezzi.</p>
         )}
+        {costImpact ? <CostImpactSummary impact={costImpact} currency={currency} /> : null}
       </CardContent>
     </Card>
   );

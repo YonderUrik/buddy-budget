@@ -1,3 +1,4 @@
+import { transactions } from "@/lib/db/schema/transactions";
 import "server-only";
 import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -32,6 +33,7 @@ export async function deleteStatementImports(userId: string, id: string, confirm
     // Preserve the link for portfolios imported before the persistent cash-account field existed.
     if (selected.cashAccountId && provider === "interactive-brokers") await tx.update(investmentPortfolios).set({ statementCashAccountId: selected.cashAccountId }).where(and(eq(investmentPortfolios.id, selected.portfolioId), eq(investmentPortfolios.userId, userId)));
     const removed = await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, selected.portfolioId), statementSourceScope(selected.accountKey, portfolio?.broker ?? null), gte(investmentTransactions.date, selected.from))).returning({ id: investmentTransactions.id });
+    if (provider === "trade-republic" && selected.cashAccountId) await tx.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.accountId, selected.cashAccountId), gte(transactions.date, selected.from), sql`${transactions.externalId} like 'trade-republic:%'`));
     await tx.delete(brokerStatements).where(and(eq(brokerStatements.userId, userId), inArray(brokerStatements.id, affected.map((d) => d.id))));
     if (selected.cashAccountId) await tx.update(accounts).set({ balance: balance.toFixed(2), updatedAt: new Date() }).where(and(eq(accounts.userId, userId), eq(accounts.id, selected.cashAccountId)));
     // Catalogue instruments and historical prices remain useful independently of owning a position.

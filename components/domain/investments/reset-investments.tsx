@@ -37,7 +37,7 @@ export function ResetInvestments() {
       <AlertDialogContent className="max-h-[85dvh] overflow-y-auto data-[size=default]:sm:max-w-xl">
         <AlertDialogHeader>
           <AlertDialogTitle>Azzerare tutto lo storico investimenti?</AlertDialogTitle>
-          <AlertDialogDescription>I vecchi import non sono distinguibili dalle operazioni manuali. Questa azione elimina tutte le operazioni di investimento, anche quelle inserite a mano, tutti i rendiconti e i prezzi personali. Cancella lo storico del valore degli investimenti e azzera la liquidità dei conti collegati agli import. Non è annullabile: per ripristinare i dati servono i CSV originali.</AlertDialogDescription>
+          <AlertDialogDescription>I vecchi import non sono distinguibili dalle operazioni manuali. Questa azione elimina tutte le operazioni di investimento, anche quelle inserite a mano, tutti i rendiconti e i prezzi personali, inclusi i movimenti del conto importati da Trade Republic. Cancella lo storico del valore degli investimenti e azzera la liquidità dei conti collegati agli import. Non è annullabile: per ripristinare i dati servono i CSV originali.</AlertDialogDescription>
         </AlertDialogHeader>
         <p className="text-sm">Conti bancari e relativi movimenti, budget, debiti e pensioni restano invariati. Portafogli, strumenti e impostazioni restano disponibili.</p>
         {preview.isPending ? <p role="status">Preparazione del riepilogo…</p> : null}

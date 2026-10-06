@@ -2,6 +2,9 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { and, eq, gte, lte, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { transactions } from "@/lib/db/schema/transactions";
+import { categories } from "@/lib/db/schema/categories";
+import { FALLBACK_CATEGORY_NAME } from "@/lib/categorization/fallback";
 import { accounts } from "@/lib/db/schema/accounts";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { statementSourceScope } from "./source-scope";
@@ -30,10 +33,11 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
   const errors = [...statement.issues, ...parsed.issues.filter((i) => i.severity === "error").map((i) => `Riga ${i.line}: ${i.message}`)];
   if (errors.length) return failed(errors.join("; "));
   const provider = parsed.preset;
-  const brokerName = provider === "degiro" ? "DEGIRO" : "Interactive Brokers";
-  const accountKey = hash(provider === "degiro" ? `degiro:${statement.account}` : statement.account);
+  const brokerName = provider === "trade-republic" ? "Trade Republic" : provider === "degiro" ? "DEGIRO" : "Interactive Brokers";
+  const cashMovements = parsed.cashMovements ?? [];
+  const accountKey = hash(provider !== "interactive-brokers" ? `${provider}:${statement.account}` : statement.account);
   const fingerprint = hash(JSON.stringify(parsed.records.map(({ section, kind, values }) => [section, kind, values])));
-  const sourceRows = parsed.operations.map((op) => ({ line: op.line, status: "duplicate" as const }));
+  const sourceRows = [...parsed.operations, ...cashMovements].map((op) => ({ line: op.line, status: "duplicate" as const }));
   const duplicate = (): ImportResult => ({ rows: sourceRows, counts: { new: 0, duplicate: sourceRows.length, error: 0 }, inserted: 0, instrumentsCreated: 0 });
   const existingDocs = await db.select().from(brokerStatements).where(and(eq(brokerStatements.userId, userId), eq(brokerStatements.accountKey, accountKey)));
   if (existingDocs.some((s) => s.fingerprint === fingerprint)) return duplicate();
@@ -62,13 +66,14 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     byKey.set(identity.key, instrument);
   }
   const cashComponents = statementCashComponents(statement);
-  const fx = await resolveFxRates([...parsed.operations.flatMap((o) => [{ line: o.line, date: o.date, currency: o.brokerFxToEur ? "EUR" : o.sourceCurrency }, ...(o.costCurrency || o.brokerFxToEur ? [{ line: -o.line - 2, date: o.date, currency: o.costCurrency ?? "EUR" }] : [])]), ...cashComponents.map((c, i) => ({ line: -1000000 - i, date: statement.to, currency: c.currency }))], deps);
+  const fx = await resolveFxRates([...parsed.operations.flatMap((o) => [{ line: o.line, date: o.date, currency: o.brokerFxToEur ? "EUR" : o.sourceCurrency }, ...(o.costCurrency || o.brokerFxToEur ? [{ line: -o.line - 2, date: o.date, currency: o.costCurrency ?? "EUR" }] : [])]), ...cashMovements.map((c) => ({ line: c.line, date: c.date, currency: c.currency })), ...cashComponents.map((c, i) => ({ line: -1000000 - i, date: statement.to, currency: c.currency }))], deps);
   if ([...fx.values()].some((r) => r === null)) return failed("Cambio storico non disponibile: nessuna operazione salvata");
   const result = await db.transaction(async (tx): Promise<ImportResult> => {
     // Serialize imports per user: concurrent reimports cannot create duplicate portfolios, trades or ledgers.
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 91473)`);
     const docs = await tx.select().from(brokerStatements).where(and(eq(brokerStatements.userId, userId), eq(brokerStatements.accountKey, accountKey)));
     if (docs.some((s) => s.fingerprint === fingerprint)) return duplicate();
+    if (provider === "trade-republic" && docs.some((s) => statement.from > s.from || statement.to < s.to)) return failed("Trade Republic: carica lo storico completo, includendo tutti i periodi già importati");
     const overlapping = docs.filter((s) => s.from <= statement.to && s.to >= statement.from);
     if (overlapping.some((s) => s.from < statement.from || s.to > statement.to)) return failed("Sovrapposizione parziale: esporta un rendiconto che copra interamente i periodi da sostituire");
     const previous = docs.filter((s) => s.to < statement.from).sort((a, b) => b.to.localeCompare(a.to))[0];
@@ -92,7 +97,7 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
       const opening = previous?.statement.cash.find((c) => c.currency === cash.currency)?.closing ?? 0;
       if (Math.abs(opening - cash.opening) > 0.0001) return failed(`Saldo iniziale ${cash.currency} diverso dalla chiusura precedente: importa prima lo storico mancante`);
     }
-    const broker = `${provider === "degiro" ? "degiro" : "ibkr"}:${accountKey}`;
+    const broker = `${provider === "interactive-brokers" ? "ibkr" : provider}:${accountKey}`;
     const [source] = await tx.select().from(brokerImportAccounts).where(and(eq(brokerImportAccounts.userId, userId), eq(brokerImportAccounts.accountKey, accountKey)));
     const establishedPortfolio = source?.portfolioId ?? docs[0]?.portfolioId;
     if (input.portfolioId && establishedPortfolio && input.portfolioId !== establishedPortfolio) return failed("Questo conto broker è già collegato a un altro portafoglio");
@@ -156,9 +161,10 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
       }
       if ([...wanted.values()].some((q) => Math.abs(q) > 1e-8)) return failed("Posizioni successive non riconciliate");
     }
-    const counts = { new: rows.filter((r) => r.status === "new").length, duplicate: rows.filter((r) => r.status === "duplicate").length, error: 0 };
-    if (input.dryRun) return { rows, counts, inserted: 0, instrumentsCreated: 0, replacement };
-    if (!portfolio) [portfolio] = await tx.insert(investmentPortfolios).values({ userId, name: provider === "degiro" ? brokerName : `${brokerName} · ${statement.account.slice(-4)}`, broker, taxRegime: "dichiarativo" }).returning();
+    const resultRows = [...rows, ...cashMovements.map((m) => ({ line: m.line, status: "new" as const }))];
+    const counts = { new: resultRows.filter((r) => r.status === "new").length, duplicate: rows.filter((r) => r.status === "duplicate").length, error: 0 };
+    if (input.dryRun) return { rows: resultRows, counts, inserted: 0, instrumentsCreated: 0, replacement };
+    if (!portfolio) [portfolio] = await tx.insert(investmentPortfolios).values({ userId, name: provider !== "interactive-brokers" ? brokerName : `${brokerName} · ${statement.account.slice(-4)}`, broker, taxRegime: "dichiarativo" }).returning();
     // No writes to financial data occur before all validations pass. Deletes and inserts share this transaction.
     if (overlapping.length) {
       await tx.delete(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolio.id), sourceFilter, gte(investmentTransactions.date, statement.from), lte(investmentTransactions.date, statement.to)));
@@ -174,9 +180,23 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
     let cashAccountId = source?.cashAccountId ?? (provider === "interactive-brokers" && portfolio.broker === broker ? portfolio.statementCashAccountId : null) ?? previous?.cashAccountId ?? overlapping.find((d) => d.cashAccountId)?.cashAccountId ?? later.find((d) => d.cashAccountId)?.cashAccountId;
     const balance = cashComponents.reduce((sum, c, i) => sum + c.amount * (fx.get(-1000000 - i) ?? 1), 0).toFixed(2);
     if (!cashAccountId) {
-      const [cashAccount] = await tx.insert(accounts).values({ userId, name: provider === "degiro" ? `${brokerName} · liquidità` : `${brokerName} · liquidità …${statement.account.slice(-4)}`, type: "Liquidità broker", balance, icon: "landmark" }).returning();
+      const [cashAccount] = await tx.insert(accounts).values({ userId, name: provider !== "interactive-brokers" ? `${brokerName} · liquidità` : `${brokerName} · liquidità …${statement.account.slice(-4)}`, type: "Liquidità broker", balance, icon: "landmark" }).returning();
       cashAccountId = cashAccount.id;
     } else if (!later.length) await tx.update(accounts).set({ balance, updatedAt: new Date() }).where(and(eq(accounts.id, cashAccountId), eq(accounts.userId, userId)));
+    if (cashMovements.length) {
+      // The account is dedicated to this source. Keep user categorization and notes on repeated exports.
+      let [fallback] = await tx.select().from(categories).where(and(eq(categories.userId, userId), eq(categories.isFallback, true)));
+      if (!fallback) [fallback] = await tx.insert(categories).values({ userId, name: FALLBACK_CATEGORY_NAME, type: "voluta", color: "red", icon: "help-circle", isFallback: true }).returning();
+      const importedIds = cashMovements.map((m) => m.externalId);
+      await tx.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.accountId, cashAccountId), sql`${transactions.externalId} like 'trade-republic:%'`, sql`${transactions.externalId} not in (${sql.join(importedIds.map((id) => sql`${id}`), sql`, `)})`));
+      const cashValues = cashMovements.map((m) => ({ userId, accountId: cashAccountId!, categoryId: fallback.id, date: m.date, amount: (m.amount * (fx.get(m.line) ?? 1)).toFixed(2), externalId: m.externalId, description: m.description, rawDescription: m.rawDescription, merchantCategoryCode: m.merchantCategoryCode, source: "manuale" as const }));
+      for (let i = 0; i < cashValues.length; i += 500) await tx.insert(transactions).values(cashValues.slice(i, i + 500)).onConflictDoUpdate({ target: [transactions.accountId, transactions.externalId], set: {
+        date: sql`excluded.date`, amount: sql`excluded.amount`, description: sql`excluded.description`, rawDescription: sql`excluded.raw_description`, merchantCategoryCode: sql`excluded.merchant_category_code`,
+        excludedAmount: sql`case when sign(${transactions.excludedAmount}) = sign(excluded.amount) then sign(excluded.amount) * least(abs(${transactions.excludedAmount}), abs(excluded.amount)) else 0 end`, updatedAt: new Date(),
+      } });
+    } else if (provider === "trade-republic") {
+      await tx.delete(transactions).where(and(eq(transactions.userId, userId), eq(transactions.accountId, cashAccountId), sql`${transactions.externalId} like 'trade-republic:%'`));
+    }
     if (provider === "interactive-brokers" && portfolio.broker === broker) await tx.update(investmentPortfolios).set({ statementCashAccountId: cashAccountId }).where(and(eq(investmentPortfolios.id, portfolio.id), eq(investmentPortfolios.userId, userId)));
     await tx.insert(brokerImportAccounts).values({ userId, accountKey, provider, portfolioId: portfolio.id, cashAccountId }).onConflictDoUpdate({ target: [brokerImportAccounts.userId, brokerImportAccounts.accountKey], set: { cashAccountId } });
     await tx.insert(brokerStatements).values({ userId, portfolioId: portfolio.id, cashAccountId, accountKey, fingerprint, from: statement.from, to: statement.to, statement, records: parsed.records });
@@ -185,7 +205,7 @@ export async function runStatementImport(userId: string, input: RunImportInput, 
       const id = [...symbolById].find(([, symbol]) => symbol === `${p.symbol}:${p.currency}`)?.[0];
       if (id) await tx.insert(userInstrumentPrices).values({ userId, instrumentId: id, date: statement.to, close: String(p.price) }).onConflictDoUpdate({ target: [userInstrumentPrices.userId, userInstrumentPrices.instrumentId, userInstrumentPrices.date], set: { close: String(p.price) } });
     }
-    return { rows, counts, inserted: values.length, instrumentsCreated, replacement };
+    return { rows: resultRows, counts, inserted: values.length + cashMovements.length, instrumentsCreated, replacement };
   });
   if (!input.dryRun && result.inserted > 0) for (const instrument of byKey.values()) if (instrument) await deps.ensureHistory(instrument, statement.from);
   return result;

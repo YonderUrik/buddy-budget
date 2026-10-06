@@ -14,7 +14,7 @@ export function validateImportFiles(files: readonly { size: number }[]): void {
 /** Import IBKR histories first, then DEGIRO into the existing portfolio; chronological within each account. */
 export function orderStatementFiles(files: PreparedStatementFile[]): PreparedStatementFile[] {
   for (const file of files) {
-    if (!file.parsed.operations.length) throw new Error(`${file.name}: nessuna operazione da importare. Carica un rendiconto con acquisti, vendite o proventi.`);
+    if (!file.parsed.operations.length && !file.parsed.cashMovements?.length) throw new Error(`${file.name}: nessuna operazione da importare. Carica un rendiconto con acquisti, vendite o proventi.`);
     if (!file.parsed.statement) throw new Error(`${file.name}: serve un rendiconto completo.`);
     const errors = [...file.parsed.statement.issues, ...file.parsed.issues.filter((i) => i.severity === "error").map((i) => i.message)];
     if (errors.length) throw new Error(`${file.name}: ${errors[0]}`);

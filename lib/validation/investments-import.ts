@@ -56,7 +56,6 @@ export const runImportSchema = z.object({
   preset: z.string().max(40).nullable().optional(),
   instruments: z
     .array(z.union([z.object({ key, instrumentId: z.string().uuid() }), z.object({ key, create: createInstrumentSchema })]))
-    .min(1)
     .max(IMPORT_MAX_IDENTITIES),
   operations: z
     .array(
@@ -76,7 +75,6 @@ export const runImportSchema = z.object({
       })
       .superRefine(checkImportedOperation)
     )
-    .min(1, "Nessuna operazione da importare")
     .max(IMPORT_MAX_OPERATIONS, `Al massimo ${IMPORT_MAX_OPERATIONS} operazioni per import`),
-});
+}).refine((input) => !!input.statementCsv || (input.instruments.length > 0 && input.operations.length > 0), { message: "Nessuna operazione da importare" });
 export type RunImportInput = z.infer<typeof runImportSchema>;

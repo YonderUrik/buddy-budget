@@ -28,7 +28,8 @@ export interface ActivityIssue {
   message: string;
 }
 export interface ActivityStatement {
-  preset: "interactive-brokers" | "degiro";
+  preset: "interactive-brokers" | "degiro" | "trade-republic";
+  cashMovements?: import("./trade-republic").TradeRepublicCashMovement[];
   statement?: BrokerStatement | null;
   records: ActivityRecord[];
   identities: ImportIdentity[];

@@ -1,3 +1,4 @@
+import { transactions } from "@/lib/db/schema/transactions";
 import "server-only";
 import { createHash } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
@@ -18,8 +19,9 @@ async function readResetState(tx: Tx, userId: string) {
   const prices = await tx.select().from(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId)).orderBy(userInstrumentPrices.id);
   const ids = [...new Set([...statements.map((s) => s.cashAccountId), ...sources.map((s) => s.cashAccountId), ...portfolios.map((p) => p.statementCashAccountId)].filter((id): id is string => !!id))];
   const cash = ids.length ? await tx.select().from(accounts).where(and(eq(accounts.userId, userId), inArray(accounts.id, ids))).orderBy(accounts.id) : [];
-  const revision = createHash("sha256").update(JSON.stringify({ userId, operations, statements, sources, portfolios, prices, cash })).digest("hex");
-  return { operations, statements, sources, portfolios, prices, cash, revision };
+  const cashTransactions = ids.length ? await tx.select().from(transactions).where(and(eq(transactions.userId, userId), inArray(transactions.accountId, ids), sql`${transactions.externalId} like 'trade-republic:%'`)).orderBy(transactions.id) : [];
+  const revision = createHash("sha256").update(JSON.stringify({ userId, operations, statements, sources, portfolios, prices, cash, cashTransactions })).digest("hex");
+  return { operations, statements, sources, portfolios, prices, cash, cashTransactions, revision };
 }
 
 /** Review the full investment-history reset, including legacy imports with no provenance. */
@@ -39,6 +41,7 @@ export async function resetInvestmentHistory(userId: string, revision: string, t
     // Legacy documents may predate the persistent source/cash association.
     for (const s of state.statements) await tx.insert(brokerImportAccounts).values({ userId, accountKey: s.accountKey, provider: s.statement.provider ?? "interactive-brokers", portfolioId: s.portfolioId, cashAccountId: s.cashAccountId }).onConflictDoNothing();
     await tx.delete(investmentTransactions).where(eq(investmentTransactions.userId, userId));
+    if (state.cashTransactions.length) await tx.delete(transactions).where(and(eq(transactions.userId, userId), inArray(transactions.id, state.cashTransactions.map((t) => t.id))));
     await tx.delete(brokerStatements).where(eq(brokerStatements.userId, userId));
     await tx.delete(userInstrumentPrices).where(eq(userInstrumentPrices.userId, userId));
     await tx.delete(netWorthSnapshots).where(and(eq(netWorthSnapshots.userId, userId), eq(netWorthSnapshots.assetClass, "investimenti")));

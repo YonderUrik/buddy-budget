@@ -87,6 +87,7 @@ export async function resolveIdentity(userId: string, identity: Identity, deps: 
   if (!identity.symbolIsYahoo && identity.isin && identity.currency && identity.name) {
     return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione") }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto`, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione"), confidence: "exact" };
   }
+  if (identity.type === "crypto" && identity.symbol && identity.currency && !identity.isin && !identity.symbolIsYahoo) return resolveCrypto(userId, identity.symbol, identity.currency, deps);
   const crypto = identity.symbol && !identity.isin ? YAHOO_CRYPTO_SYMBOL.exec(identity.symbol) : null;
   if (crypto && identity.symbolIsYahoo) return resolveCrypto(userId, crypto[1], crypto[2], deps);
   if (identity.symbol && identity.symbolIsYahoo) {

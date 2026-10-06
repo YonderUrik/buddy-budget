@@ -17,6 +17,7 @@ export function ProviderBadge({ provider, className }: ProviderBadgeProps) {
         "flex h-10 shrink-0 items-center justify-center overflow-hidden rounded-lg font-heading text-sm font-semibold text-foreground",
         // Un logo ha sfondo chiaro in entrambi i temi (i marchi sono pensati per fondi bianchi) e un po' più di larghezza.
         provider.logoSrc ? "w-16 bg-white" : "w-10 bg-muted",
+        (provider.id === "degiro" || provider.id === "trade-republic") && provider.logoSrc && "w-32 max-w-full",
         className,
       )}
     >

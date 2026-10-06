@@ -73,10 +73,10 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
       setError(mismatch);
       return;
     }
-    if (detected === "interactive-brokers" || detected === "degiro") {
+    if (detected === "interactive-brokers" || detected === "degiro" || detected === "trade-republic") {
       try {
         const parsed = await parseStatement.mutateAsync(text);
-        if (parsed.operations.length === 0 && !parsed.issues.some((i) => i.severity === "error")) {
+        if (parsed.operations.length === 0 && !parsed.cashMovements?.length && !parsed.issues.some((i) => i.severity === "error")) {
           setError("Nel rendiconto non ci sono acquisti, vendite o dividendi di azioni ed ETF da importare");
           return;
         }
@@ -125,6 +125,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
     }
     if (table && mapping) saveMapping(table, mapping);
     setError(null);
+    if (identities.length === 0 && statement?.cashMovements?.length) { setStep("instruments"); return; }
     try {
       const results = await resolve.mutateAsync({
         identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo, type }) => ({
@@ -163,7 +164,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   }
 
   async function submit(dryRun: boolean) {
-    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : (preset?.id ?? null));
+    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : (preset?.id ?? null)) ?? (statement?.cashMovements?.length ? { dryRun, preset: statement.preset, instruments: [], operations: [] } : null);
     if (!request) {
       setError("Nessuna operazione da importare: scegli almeno uno strumento");
       return;

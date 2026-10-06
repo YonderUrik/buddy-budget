@@ -47,7 +47,8 @@ function Stepper({ current, structured }: { current: ImportStep; structured: boo
 
 function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi" }: { currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
   const s = useInvestmentImport(initialFile);
-  const validRows = s.rows.filter((r) => r.status === "ok").length;
+  const cashCount = s.statement?.cashMovements?.length ?? 0;
+  const validRows = s.rows.filter((r) => r.status === "ok").length + cashCount;
   const included = s.identities.filter((i) => {
     const choice = s.choices[i.key];
     return choice && choice.kind !== "skip" && !s.excluded.has(i.key);
@@ -69,6 +70,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
             providerName={getImportProvider(s.statement.preset).name}
             rows={s.rows}
             warnings={s.warnings}
+            cashMovements={s.statement.cashMovements}
           />
         ) : null}
         {s.step === "mapping" && s.table && s.mapping ? (
@@ -82,7 +84,8 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
             onChange={s.updateMapping}
           />
         ) : null}
-        {s.step === "instruments" ? (
+        {s.step === "instruments" && s.identities.length === 0 ? <p className="text-sm text-muted-foreground">Questo file contiene solo movimenti del conto: non ci sono strumenti da abbinare. Prosegui al riepilogo per importarli tutti.</p> : null}
+        {s.step === "instruments" && s.identities.length > 0 ? (
           <ImportInstrumentsStep
             identities={s.identities}
             choices={s.choices}
@@ -115,7 +118,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
               </Button>
             ) : null}
             {s.step === "instruments" ? (
-              <Button onClick={s.preview} disabled={included.length === 0 || s.running}>
+              <Button onClick={s.preview} disabled={(included.length === 0 && cashCount === 0) || s.running}>
                 {s.running ? "Controllo…" : "Avanti"}
               </Button>
             ) : null}
@@ -145,7 +148,7 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
     for (const file of selected) {
       const text = await file.text();
       const provider = detectImportProvider(text);
-      if (provider !== "interactive-brokers" && provider !== "degiro") throw new Error(`${file.name}: l'import multiplo supporta rendiconti IBKR e DEGIRO. Importa gli altri CSV singolarmente.`);
+      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") throw new Error(`${file.name}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.`);
       try { prepared.push({ name: file.name, text, parsed: await parse.mutateAsync(text) }); }
       catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : "File non valido"}`); }
     }
@@ -166,7 +169,7 @@ export function InvestmentImportDialog({ open, onOpenChange, currency }: Investm
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
         <DialogHeader>
           <DialogTitle>Importa operazioni</DialogTitle>
-          <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Yahoo Finance o un altro CSV.</DialogDescription>
+          <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Trade Republic, Yahoo Finance o un altro CSV.</DialogDescription>
         </DialogHeader>
         {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>

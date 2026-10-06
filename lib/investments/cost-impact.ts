@@ -41,7 +41,7 @@ export function computeCostImpact(params: ReturnInputs, unpriced: boolean, repor
   const base = toDateKey(addDays(parseDateOnly(first), -1));
   const points = computeDailyPortfolioValues({ ...params, transactions, fromKey: base, toKey: to });
   const returns = computeDailyReturns(points[0].value, toDailyFlows(points));
-  let savedFees = 0; let savedTaxes = 0; let estimatedTaxDrag = 0;
+  let savedFees = 0; let savedTaxes = 0; let savedEstimatedTaxes = 0;
   for (const day of returns) {
     // Without an invested portfolio there is no observed return: retain the saved amount as cash.
     const growth = 1 + (day.ret ?? 0);
@@ -49,9 +49,9 @@ export function computeCostImpact(params: ReturnInputs, unpriced: boolean, repor
     const paid = charges.get(day.date);
     savedFees = savedFees * growth + (paid?.fees ?? 0);
     savedTaxes = savedTaxes * growth + (paid?.taxes ?? 0);
-    estimatedTaxDrag = estimatedTaxDrag * growth + (paid?.estimatedTaxes ?? 0);
-    if (!Number.isFinite(estimatedTaxDrag) || !Number.isFinite(savedFees) || !Number.isFinite(savedTaxes)) return result;
-    result.additions[day.date] = { fees: savedFees, taxes: savedTaxes, estimatedTaxes: estimatedTaxDrag };
+    savedEstimatedTaxes = savedEstimatedTaxes * growth + (paid?.estimatedTaxes ?? 0);
+    if (!Number.isFinite(savedEstimatedTaxes) || !Number.isFinite(savedFees) || !Number.isFinite(savedTaxes)) return result;
+    result.additions[day.date] = { fees: savedFees, taxes: savedTaxes, estimatedTaxes: savedEstimatedTaxes };
   }
   result.available = true;
   return result;
@@ -59,9 +59,9 @@ export function computeCostImpact(params: ReturnInputs, unpriced: boolean, repor
 
 /** Apply independent cost/tax switches to the same observed series without mutating actual balances. */
 export function simulateCostExclusions(impact: CostImpact | undefined, series: PortfolioSeriesPoint[], value: number, includeFees: boolean, includeTaxes: boolean) {
-  const active = !!impact?.available && (!includeFees || !includeTaxes || impact.estimatedTaxes > 0);
+  const active = !!impact?.available && (!includeFees || !includeTaxes);
   if (!active) return { active: false, series, value, extra: 0 };
-  const addition = (day?: { fees: number; taxes: number; estimatedTaxes: number }) => (includeFees ? 0 : day?.fees ?? 0) + (includeTaxes ? -(day?.estimatedTaxes ?? 0) : day?.taxes ?? 0);
+  const addition = (day?: { fees: number; taxes: number; estimatedTaxes: number }) => (includeFees ? 0 : day?.fees ?? 0) + (includeTaxes ? 0 : (day?.taxes ?? 0) + (day?.estimatedTaxes ?? 0));
   const extra = addition(Object.values(impact.additions).at(-1));
   return { active: true, value: value + extra, extra,
     series: series.map((point) => ({ ...point, value: point.value + addition(impact.additions[point.date]) })) };

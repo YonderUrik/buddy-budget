@@ -117,8 +117,8 @@ export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes
         </> : null}
         {costImpact ? (
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeFees} onCheckedChange={onIncludeFeesChange} disabled={!costImpact.available} />Includi costi</label>
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeTaxes} onCheckedChange={onIncludeTaxesChange} disabled={!costImpact.available} />Includi imposte</label>
+            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeFees} onCheckedChange={(checked) => onIncludeFeesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti costi</label>
+            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeTaxes} onCheckedChange={(checked) => onIncludeTaxesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti imposte</label>
           </div>
         ) : null}
         {hasHistory ? (

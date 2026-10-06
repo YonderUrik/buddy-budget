@@ -66,14 +66,14 @@ it("saved money also follows portfolio losses rather than earning a fixed positi
   expect(result.additions["2026-02-01"].taxes).toBeCloseTo(4);
 });
 
-it("estimates 26% of sale profit after commissions and deducts only unrecorded tax in the baseline", () => {
+it("uses tax report estimates as additional reinvested savings without reducing the actual baseline", () => {
   const params = inputs([tx({}), tx({ id: "sale", type: "vendita", date: "2026-02-01", price: "110", fees: "2" })]);
   const impact = computeCostImpact(params, false);
   // 1100 proceeds - 2 sale fees - 1010 acquisition cost = 88 gain.
   expect(impact.estimatedTaxes).toBeCloseTo(22.88);
   expect(impact.taxes).toBeCloseTo(22.88);
-  expect(simulateCostExclusions(impact, [], 1000, true, true).value).toBeCloseTo(977.12);
-  expect(simulateCostExclusions(impact, [], 1000, true, false).value).toBe(1000);
+  expect(simulateCostExclusions(impact, [], 1000, true, true).value).toBe(1000);
+  expect(simulateCostExclusions(impact, [], 1000, true, false).value).toBeCloseTo(1022.88);
 });
 it("does not double count tax already withheld and tops up only the missing amount", () => {
   const sale = tx({ id: "sale", type: "vendita", date: "2026-02-01", price: "110", fees: "2", taxes: "22.88" });
@@ -90,4 +90,18 @@ it("does not tax losses or unsold gains and uses the cost basis of partial sales
   expect(computeCostImpact(inputs([tx({}), loss]), false).estimatedTaxes).toBe(0);
   const half = { ...loss, price: "110", quantity: "5", fees: "1" };
   expect(computeCostImpact(inputs([tx({}), half]), false).estimatedTaxes).toBeCloseTo(11.44);
+});
+
+it("adds both paid and estimated taxes once, grows them and never subtracts estimates from the actual value", () => {
+  const impact = { fees: 10, taxes: 30, estimatedTaxes: 20, available: true, additions: {
+    "2026-01-01": { fees: 10, taxes: 10, estimatedTaxes: 20 },
+    "2026-02-01": { fees: 11, taxes: 11, estimatedTaxes: 22 },
+  } };
+  const series = [{ date: "2026-02-01", label: "Feb", value: 1100, bought: 1000, invested: 1000, income: 0 }];
+  expect(simulateCostExclusions(impact, series, 1100, true, true)).toMatchObject({ active: false, value: 1100, extra: 0 });
+  expect(simulateCostExclusions(impact, series, 1100, false, true).value).toBe(1111);
+  expect(simulateCostExclusions(impact, series, 1100, true, false).value).toBe(1133);
+  const both = simulateCostExclusions(impact, series, 1100, false, false);
+  expect(both.value).toBe(1144);
+  expect(both.series[0].value).toBe(1144);
 });

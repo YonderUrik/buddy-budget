@@ -120,61 +120,10 @@ describe("buildDebtsView", () => {
     expect(overview.residualSeries.every((p, i, all) => i === 0 || p.date > all[i - 1].date)).toBe(true);
   });
 
-  describe("linee di credito", () => {
-    const line = (overrides: Partial<Debt> = {}) =>
-      debt({
-        id: "l1",
-        kind: "credit_line",
-        name: "Lombard",
-        principal: "10000.00",
-        annualRate: "3.0000",
-        installments: 0,
-        firstInstallmentDate: "2026-01-01",
-        creditLimit: "50000.00",
-        spread: "2.0000",
-        indexLabel: "Euribor 3M",
-        interestFrequency: "monthly",
-        dayCount: "365",
-        capitalizeInterest: false,
-        ...overrides,
-      });
-
-    it("sono separate dai finanziamenti e l'utilizzato entra nel debito totale", () => {
-      const { debts, creditLines, overview } = buildDebtsView([debt({ startMode: "fotografia", firstInstallmentDate: "2026-10-05" }), line()], [], "2026-09-30");
-      expect(debts).toHaveLength(1);
-      expect(creditLines).toHaveLength(1);
-      expect(overview.creditUsed).toBe(10000);
-      expect(overview.creditLimit).toBe(50000);
-      expect(overview.totalDebt).toBeCloseTo(overview.totalResidual + 10000, 2);
-      expect(overview.creditLineCount).toBe(1);
-      expect(overview.creditMonthlyCost).toBe(41.67);
-    });
-
-    it("applica gli eventi della linea e ignora quelli dei finanziamenti", () => {
-      const events = [
-        event({ id: "e1", debtId: "l1", type: "draw", amount: "5000.00", installmentNumber: null, date: "2026-02-01" }),
-        event({ id: "e2", debtId: "l1", type: "rate_change", amount: null, rate: "4.0000", installmentNumber: null, date: "2026-03-01" }),
-      ];
-      const view = buildDebtsView([line()], events, "2026-09-30").creditLines[0];
-      expect(view.plan.used).toBe(15000);
-      expect(view.plan.currentRate).toBe(6);
-      expect(view.events).toHaveLength(2);
-    });
-
-    it("scatta l'allerta alla soglia dell'utente e sale nel riepilogo; senza soglia non scatta mai", () => {
-      const withThreshold = buildDebtsView([line({ alertThresholdType: "percent", alertThresholdValue: "20.00" })], [], "2026-09-30");
-      expect(withThreshold.creditLines[0].alertTriggered).toBe(true);
-      expect(withThreshold.overview.creditAlerts).toEqual([{ debtId: "l1", name: "Lombard" }]);
-      const noThreshold = buildDebtsView([line()], [], "2026-09-30");
-      expect(noThreshold.creditLines[0].alertTriggered).toBe(false);
-      const above = buildDebtsView([line({ alertThresholdType: "amount", alertThresholdValue: "20000.00" })], [], "2026-09-30");
-      expect(above.creditLines[0].alertTriggered).toBe(false);
-    });
-
-    it("la serie del debito complessivo tiene l'utilizzato delle linee costante", () => {
-      const { overview } = buildDebtsView([debt({ startMode: "fotografia", firstInstallmentDate: "2026-10-05", installments: 6 }), line()], [], "2026-09-30");
-      expect(overview.residualSeries.at(-1)?.residual).toBe(10000);
-      expect(overview.residualSeries[0].residual).toBeCloseTo(overview.totalDebt, 2);
-    });
+  it("ignora le righe di una linea di credito (funzione rimossa)", () => {
+    const legacy = { ...debt({ id: "l1", kind: "credit_line" as const }) };
+    const view = buildDebtsView([legacy], [], "2026-09-30");
+    expect(view.debts).toHaveLength(0);
+    expect(view.overview.totalDebt).toBe(0);
   });
 });

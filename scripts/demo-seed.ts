@@ -286,24 +286,27 @@ async function main() {
       return { debtId: mortgage.id, userId: DEMO_USER_ID, type: "payment" as const, date: iso(d), installmentNumber: i + 1 };
     })
   );
-  await db.insert(debts).values({
-    userId: DEMO_USER_ID,
-    kind: "credit_line",
-    name: "Credit Lombard",
-    startMode: "nuovo",
-    principal: "6000.00",
-    annualRate: "2.4000",
-    installments: 0,
-    firstInstallmentDate: iso(daysAgo(150)),
-    creditLimit: "15000.00",
-    spread: "1.2000",
-    indexLabel: "Euribor 3M",
-    interestFrequency: "quarterly",
-    dayCount: "360",
-    capitalizeInterest: false,
-    alertThresholdType: "percent",
-    alertThresholdValue: "80.00",
-  });
+  // Altri due finanziamenti più piccoli e più cari, perché la panoramica confronti i debiti (rate già pagate fino al mese scorso).
+  const smallLoans = [
+    { name: "Prestito auto", principal: "14000.00", annualRate: "6.9000", installments: 60, paid: 14, day: 12 },
+    { name: "Cucina e lavatrice", principal: "2400.00", annualRate: "11.9000", installments: 24, paid: 9, day: 20 },
+  ];
+  for (const loan of smallLoans) {
+    const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - loan.paid, loan.day));
+    const [row] = await db
+      .insert(debts)
+      .values({ userId: DEMO_USER_ID, kind: "loan", name: loan.name, startMode: "origine", principal: loan.principal, annualRate: loan.annualRate, installments: loan.installments, firstInstallmentDate: iso(start) })
+      .returning();
+    await db.insert(debtEvents).values(
+      Array.from({ length: loan.paid }, (_, i) => ({
+        debtId: row.id,
+        userId: DEMO_USER_ID,
+        type: "payment" as const,
+        date: iso(new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, loan.day))),
+        installmentNumber: i + 1,
+      }))
+    );
+  }
 
   // Previdenza: un fondo aperto da 4 anni, con solo TFR versato ogni trimestre (valori inventati).
   const [pensionFund] = await db

@@ -51,7 +51,7 @@ export const FEATURES: readonly Feature[] = [
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
   f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers e DEGIRO nello stesso portafoglio (cassa riconciliata, aggiornamento dei periodi sovrapposti e gestione degli import per broker in un menu espandibile nella scheda Operazioni), Yahoo Finance o un altro CSV.", "live"),
-  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione. Costi e imposte registrati sulle operazioni, con confronto del rendimento prima e dopo gli addebiti.", "live"),
+  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Del portafoglio e dei tuoi soldi, al netto dell'inflazione. Disattiva costi e imposte registrati, indipendentemente, per simulare il valore e il grafico con gli importi risparmiati reinvestiti al rendimento del portafoglio.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y».", "live"),
   f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),

@@ -1,43 +1,57 @@
-import { periodStartKey } from "@/lib/calc/investments";
-import { toDateKey } from "@/lib/calc/net-worth";
-import { computePortfolioReturns } from "@/lib/calc/returns";
+import { computeDailyPortfolioValues, periodStartKey, type PortfolioSeriesPoint } from "@/lib/calc/investments";
+import { addDays, toDateKey } from "@/lib/calc/net-worth";
+import { parseDateOnly } from "@/lib/calc/expenses";
+import { computeDailyReturns, toDailyFlows, type computePortfolioReturns } from "@/lib/calc/returns";
 
 type ReturnInputs = Parameters<typeof computePortfolioReturns>[0];
-export interface CostTotals { fees: number; taxes: number; total: number }
 export interface CostImpact {
-  from: string | null;
-  to: string;
-  period: CostTotals;
-  lifetime: CostTotals;
-  grossReturn: number | null;
-  netReturn: number | null;
-  feeImpact: number | null;
-  taxImpact: number | null;
-  totalImpact: number | null;
+  fees: number;
+  taxes: number;
+  /** Saved charges invested at each day's close and grown at subsequent observed portfolio returns. */
+  additions: Record<string, { fees: number; taxes: number }>;
+  available: boolean;
 }
 
-/** Recorded transaction charges are already in user currency. Compare identical holdings with charges removed, never deduct them twice. */
-export function computeCostImpact(params: ReturnInputs, netReturn: number | null, unpriced: boolean): CostImpact {
+/** Reinvest recorded charges from their payment dates using actual daily portfolio performance, independently of the visible chart window. */
+export function computeCostImpact(params: ReturnInputs, unpriced: boolean): CostImpact {
   const to = toDateKey(params.today);
-  const from = periodStartKey(params.transactions, params.period, params.today);
-  const eligible = params.transactions.filter((t) => t.date <= to && t.type !== "split" && t.type !== "rettifica");
-  const sum = (rows: typeof eligible): CostTotals => {
-    const fees = rows.reduce((total, t) => total + Number(t.fees), 0);
-    const taxes = rows.reduce((total, t) => total + Number(t.taxes), 0);
-    return { fees, taxes, total: fees + taxes };
-  };
-  const period = sum(eligible.filter((t) => from !== null && t.date >= from));
-  const lifetime = sum(eligible);
-  const result: CostImpact = { from, to, period, lifetime, grossReturn: null, netReturn: null, feeImpact: null, taxImpact: null, totalImpact: null };
-  if (unpriced || netReturn === null || from === null || from > to) return result;
-  const simulate = (removeFees: boolean) => computePortfolioReturns({
-    ...params, benchmark: null, inflation: null,
-    transactions: params.transactions.map((t) => t.date >= from && t.date <= to
-      ? { ...t, fees: removeFees ? "0" : t.fees, taxes: "0" } : t),
-  })?.twr ?? null;
-  const afterFees = simulate(false);
-  const gross = simulate(true);
-  if (gross === null || afterFees === null || ![gross, afterFees, netReturn].every(Number.isFinite)) return result;
-  return { ...result, grossReturn: gross, netReturn,
-    feeImpact: afterFees - gross, taxImpact: netReturn - afterFees, totalImpact: netReturn - gross };
+  const transactions = params.transactions.filter((t) => t.date <= to);
+  const charges = new Map<string, { fees: number; taxes: number }>();
+  let fees = 0; let taxes = 0;
+  for (const t of transactions) {
+    if (t.type === "split" || t.type === "rettifica") continue;
+    const day = charges.get(t.date) ?? { fees: 0, taxes: 0 };
+    day.fees += Number(t.fees); day.taxes += Number(t.taxes);
+    fees += Number(t.fees); taxes += Number(t.taxes);
+    charges.set(t.date, day);
+  }
+  const result: CostImpact = { fees, taxes, additions: {}, available: false };
+  const first = periodStartKey(transactions, "max", params.today);
+  if (!first || unpriced) return result;
+  const base = toDateKey(addDays(parseDateOnly(first), -1));
+  const points = computeDailyPortfolioValues({ ...params, transactions, fromKey: base, toKey: to });
+  const returns = computeDailyReturns(points[0].value, toDailyFlows(points));
+  let savedFees = 0; let savedTaxes = 0;
+  for (const day of returns) {
+    // Without an invested portfolio there is no observed return: retain the saved amount as cash.
+    const growth = 1 + (day.ret ?? 0);
+    if (!Number.isFinite(growth) || growth < 0) return result;
+    const paid = charges.get(day.date);
+    savedFees = savedFees * growth + (paid?.fees ?? 0);
+    savedTaxes = savedTaxes * growth + (paid?.taxes ?? 0);
+    if (!Number.isFinite(savedFees) || !Number.isFinite(savedTaxes)) return result;
+    result.additions[day.date] = { fees: savedFees, taxes: savedTaxes };
+  }
+  result.available = true;
+  return result;
+}
+
+/** Apply independent cost/tax switches to the same observed series without mutating actual balances. */
+export function simulateCostExclusions(impact: CostImpact | undefined, series: PortfolioSeriesPoint[], value: number, includeFees: boolean, includeTaxes: boolean) {
+  const active = !!impact?.available && (!includeFees || !includeTaxes);
+  if (!active) return { active: false, series, value, extra: 0 };
+  const addition = (day?: { fees: number; taxes: number }) => (includeFees ? 0 : day?.fees ?? 0) + (includeTaxes ? 0 : day?.taxes ?? 0);
+  const extra = addition(Object.values(impact.additions).at(-1));
+  return { active: true, value: value + extra, extra,
+    series: series.map((point) => ({ ...point, value: point.value + addition(impact.additions[point.date]) })) };
 }

@@ -125,7 +125,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     operationMonths,
     usedInstruments: usedInstruments(data.transactions, instrumentsById),
     returns,
-    costImpact: computeCostImpact({ ...common, period, today }, returns?.twr ?? null, summary.unpricedCount > 0),
+    costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0),
     benchmark: data.benchmark,
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),

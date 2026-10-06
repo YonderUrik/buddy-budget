@@ -21,8 +21,10 @@ import { useBackfillStatusQuery } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
 
 export default function InvestimentiPage() {
+  const [includeFees, setIncludeFees] = React.useState(true);
+  const [includeTaxes, setIncludeTaxes] = React.useState(true);
   const [period, setPeriod] = React.useState<NetWorthPeriod>(INVESTMENTS_DEFAULT_PERIOD);
-  const { overview, view, today } = useInvestmentsView(period);
+  const { overview, view, today } = useInvestmentsView(period, true);
   const instrumentIds = React.useMemo(() => view?.instruments.map((i) => i.id) ?? [], [view]);
   const backfill = useBackfillStatusQuery(instrumentIds);
   const [priceInstrument, setPriceInstrument] = React.useState<Instrument | null>(null);
@@ -40,6 +42,10 @@ export default function InvestimentiPage() {
           <>
             <PortfolioHeroCard
               costImpact={view.costImpact}
+              includeFees={includeFees}
+              includeTaxes={includeTaxes}
+              onIncludeFeesChange={setIncludeFees}
+              onIncludeTaxesChange={setIncludeTaxes}
               summary={view.summary}
               breakdown={computeValueBreakdown(view.summary)}
               series={view.series}

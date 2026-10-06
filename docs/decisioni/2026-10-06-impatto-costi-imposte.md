@@ -1,9 +1,9 @@
-# Costi e imposte nel Portafoglio
+# Simulazione senza costi e imposte nel Portafoglio
 
 Data: 2026-10-06
 
-Sezione espandibile nella card esistente: commissioni e imposte effettivamente registrate, nel periodo del grafico e dall’inizio.
-Confronto TWR degli stessi titoli e prezzi rimuovendo gli addebiti del periodo; prima l’effetto dei costi, poi quello delle imposte, con somma in punti percentuali. Nessuna doppia sottrazione o reinvestimento simulato.
-Importi già in valuta utente, rimborsi con segno conservato; escluse operazioni future e rettifiche non monetarie. Impatto nascosto senza valorizzazione sufficiente.
-Gli oneri autonomi del conto broker, il TER e le imposte stimate/non registrate sono esclusi e dichiarati in UI: integrarli richiede riconciliazione con gli oneri già attribuiti alle operazioni e uno storico cash completo.
-Verifica con fixture sintetiche e browser locale; nessuna modifica ai saldi o ai dati importati. Feature su branch locale distinto dalla PR di navigazione.
+Due interruttori indipendenti nella card esistente, inizialmente attivi: disattivando costi o imposte registrati si aggiornano valore e grafico simulati. Rimossi tabella e testo esplicativo esteso su richiesta dell’utente.
+Ogni addebito risparmiato viene reinvestito alla chiusura della propria data e cresce ai rendimenti giornalieri osservati del portafoglio nei giorni successivi, mantenendo identiche le operazioni reali. Senza portafoglio investito il risparmio resta liquido.
+La simulazione parte sempre dal primo investimento, indipendentemente dal periodo visibile. Flussi investiti e posizioni effettive restano invariati; i rimborsi hanno segno opposto. Nessuna modifica ai saldi salvati.
+Sono inclusi solo gli oneri registrati sulle operazioni (valuta utente); oneri autonomi del broker, TER e imposte non registrate restano fuori dal perimetro. Mancando la valorizzazione la simulazione è disabilitata.
+Test dei quattro stati, reinvestimento, indipendenza dal periodo, rimborsi, liquidazione completa e date future. Feature su branch locale distinto dalla PR di navigazione.

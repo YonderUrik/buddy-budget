@@ -5,7 +5,8 @@
  * la barra che lo scompone e l'andamento nel tempo del valore contro quanto hai versato.
  */
 
-import { CostImpactSummary } from "./cost-impact-summary";
+import { simulateCostExclusions } from "@/lib/investments/cost-impact";
+import { Switch } from "@/components/ui/switch";
 import type { CostImpact } from "@/lib/investments/cost-impact";
 import { Area, AreaChart, Line, XAxis, YAxis } from "recharts";
 import { NetWorthPeriodSelector } from "@/components/domain/net-worth";
@@ -49,6 +50,10 @@ function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { 
 
 export interface PortfolioHeroCardProps {
   costImpact?: CostImpact;
+  includeFees?: boolean;
+  includeTaxes?: boolean;
+  onIncludeFeesChange?: (value: boolean) => void;
+  onIncludeTaxesChange?: (value: boolean) => void;
   summary: PortfolioSummary;
   breakdown: ValueBreakdown;
   series: PortfolioSeriesPoint[];
@@ -57,8 +62,9 @@ export interface PortfolioHeroCardProps {
   currency: string;
 }
 
-export function PortfolioHeroCard({ costImpact, summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ costImpact, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
+  const simulation = simulateCostExclusions(costImpact, series, summary.totalValue, includeFees, includeTaxes);
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
   const hasHistory = series.length >= 2;
@@ -69,8 +75,8 @@ export function PortfolioHeroCard({ costImpact, summary, breakdown, series, peri
         <div className="flex flex-col gap-1">
           <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Il tuo portafoglio</CardTitle>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="font-heading text-4xl font-medium tabular-nums text-foreground sm:text-5xl">{format(summary.totalValue)}</p>
-            {summary.dayChange !== null && summary.dayChangePct !== null ? (
+            <p className="font-heading text-4xl font-medium tabular-nums text-foreground sm:text-5xl">{format(simulation.value)}</p>
+            {!simulation.active && summary.dayChange !== null && summary.dayChangePct !== null ? (
               <p className={cn("text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
                 {summary.dayChange < 0 ? "−" : "+"}
                 {format(Math.abs(summary.dayChange))} ({pctText(summary.dayChangePct)})
@@ -82,6 +88,15 @@ export function PortfolioHeroCard({ costImpact, summary, breakdown, series, peri
         <NetWorthPeriodSelector value={period} onChange={onPeriodChange} />
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
+        {costImpact ? (
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeFees} onCheckedChange={onIncludeFeesChange} disabled={!costImpact.available} />Costi {formatCurrency(costImpact.fees, currency)}</label>
+            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={includeTaxes} onCheckedChange={onIncludeTaxesChange} disabled={!costImpact.available} />Imposte {formatCurrency(costImpact.taxes, currency)}</label>
+            <span className="text-xs text-muted-foreground">Oneri registrati · dall’inizio</span>
+          </div>
+        ) : null}
+        {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} con gli oneri esclusi reinvestiti.</p> : null}
+        {!simulation.active ? <>
         <p className="max-w-prose text-balance text-base text-foreground">
           Per quello che possiedi hai pagato <span className="font-semibold tabular-nums">{format(breakdown.paid)}</span>: il mercato ha{" "}
           {gaining ? "aggiunto" : "tolto"}{" "}
@@ -106,10 +121,11 @@ export function PortfolioHeroCard({ costImpact, summary, breakdown, series, peri
           ) : null}
         </p>
         <ValueBreakdownBar breakdown={breakdown} currency={currency} />
+        </> : null}
         {hasHistory ? (
           <div className="flex flex-col gap-2">
             <ChartContainer config={CHART_CONFIG} className="max-h-56 w-full">
-              <AreaChart data={series}>
+              <AreaChart data={simulation.series}>
                 <defs>
                   <linearGradient id={AREA_FILL_ID} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.25} />
@@ -135,7 +151,6 @@ export function PortfolioHeroCard({ costImpact, summary, breakdown, series, peri
         ) : (
           <p className="text-sm text-muted-foreground">L&apos;andamento comparirà quando ci saranno almeno due giorni di prezzi.</p>
         )}
-        {costImpact ? <CostImpactSummary impact={costImpact} currency={currency} /> : null}
       </CardContent>
     </Card>
   );

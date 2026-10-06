@@ -186,7 +186,7 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
-**Impatto costi e imposte (2026-10-06)**: sezione espandibile nel Portafoglio con importi registrati nel periodo e dall’inizio, confronto TWR prima/dopo e impatto in punti percentuali. Perimetro: oneri delle operazioni; commissioni autonome del conto, TER e imposte non registrate esclusi e indicati in UI. Branch locale `codex/portfolio-cost-impact`.
+**Impatto costi e imposte (2026-10-06)**: due interruttori indipendenti nel Portafoglio per costi e imposte; esclusione simula risparmi reinvestiti dal giorno di addebito al rendimento giornaliero osservato, aggiornando totale e grafico. Perimetro: oneri delle operazioni; commissioni autonome del conto, TER e imposte non registrate esclusi e indicati in UI. Branch locale `codex/portfolio-cost-impact`.
 
 **Gestione importazioni (2026-10-06)**: scheda Rendiconti rimossa; Gestisci importazioni ora in Operazioni, accessibile anche senza transazioni. Vecchi link reindirizzati. Nessuna modifica ai dati importati.
 

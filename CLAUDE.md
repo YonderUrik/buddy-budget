@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Impatto costi e imposte (2026-10-06)**: due interruttori indipendenti accanto al grafico e card di dettaglio nel Portafoglio; imposte dal medesimo calcolo della scheda Tasse, con regime, aliquote e compensazioni; i toggle «Reinvesti costi» e «Reinvesti imposte», inizialmente spenti, aggiungono al valore reale i risparmi reinvestiti dal giorno di addebito al rendimento giornaliero osservato, aggiornando totale e grafico. Perimetro: oneri registrati sulle operazioni e imposte sulle vendite stimate dalla scheda Tasse; oneri autonomi del conto, TER e bollo esclusi. PR #169; branch `codex/portfolio-cost-impact`.
+
 **Gestione importazioni (2026-10-06)**: scheda Rendiconti rimossa; Gestisci importazioni ora in Operazioni, accessibile anche senza transazioni. Vecchi link reindirizzati. Nessuna modifica ai dati importati.
 
 **Vista broker (2026-10-05)**: filtri temporanei per broker condivisi tra le schede Investimenti e confronto TWR sovrapposto in Performance. Nessuna cancellazione o modifica del patrimonio generale. Dettagli in `docs/decisioni/2026-10-05-filtri-broker-e-confronto.md`; inclusi nella PR di gestione import.

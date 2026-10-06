@@ -83,7 +83,7 @@ export function usedInstruments(
 }
 
 /** Calcola tutto ciò che mostra la pagina Investimenti a partire dai dati grezzi dell'API. */
-export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date): InvestmentsView {
+export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date, chartRange?: { from: string; to: string }): InvestmentsView {
   const transactions = toTransactionInputs(data);
   const instruments: InstrumentInput[] = data.instruments;
   const priceIndex = buildPriceIndex(data.prices, data.manualPrices, transactions);
@@ -116,7 +116,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
   return {
     currency: data.currency,
     summary,
-    series: buildPortfolioSeries({ ...common, period, today }),
+    series: buildPortfolioSeries({ ...common, period, today, range: chartRange }),
     byType: computeComposition(summary.rows, "type"),
     byCurrency: computeComposition(summary.rows, "currency"),
     instruments: data.instruments,

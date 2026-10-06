@@ -7,3 +7,6 @@
 - Barre mensili con dettagli al passaggio del mouse e al focus/touch. Le previsioni rimangono separate dagli incassi registrati.
 - Evento Umami `investment_dividends_details_opened` con sola origine categorica; nessuna nuova API o dipendenza esterna.
 - Catalogo e schermate landing aggiornati; verifiche su valute, rettifiche, pagamenti futuri e strumenti venduti.
+
+- Semplificazione richiesta: rimossa dalla tab la card riepilogativa «Dividendi e cedole» con confronto annuale e classifica. Grafico mensile in apertura, pagamenti annuali sotto il grafico, righe strumenti compatte ed espandibili. Proposte da registrare e previsioni raccolte in sezioni chiuse inizialmente.
+- Questa semplificazione riguarda solo la tab Dividendi, non presente tra gli screenshot della landing; riepilogo nel portafoglio e catalogo funzionale invariati.

@@ -5,6 +5,7 @@
  * oggi), crescita del dividendo per quota negli ultimi anni. Per le obbligazioni, tasso e scadenza delle cedole.
  */
 
+import { ChevronDown } from "lucide-react";
 import { IncomePayments } from "./income-payments";
 import type { IncomePayment } from "@/lib/investments/income";
 import { track } from "@/lib/analytics";
@@ -52,28 +53,32 @@ export function IncomeInstrumentsCard({ rows, payments, instrumentsById, currenc
             const instrument = instrumentsById.get(row.instrumentId);
             if (!instrument) return null;
             const isBond = instrument.type === "obbligazione";
+            const instrumentPayments = payments.filter((payment) => payment.instrumentId === row.instrumentId);
             return (
-              <li key={row.instrumentId} className="flex flex-col gap-2 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="flex min-w-0 items-center gap-2.5">
-                    <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} size="sm" />
-                    <span className="truncate text-sm font-medium text-foreground">{instrument.name}</span>
-                  </span>
-                  {isBond ? (
-                    <Button variant="outline" size="sm" onClick={() => onEditCoupons(instrument)}>
-                      {row.hasCouponTerms ? "Cedole" : "Inserisci cedole"}
-                    </Button>
-                  ) : null}
-                </div>
-                <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-                  <Metric label="Ultimi 12 mesi" value={formatCurrency(row.trailingNet, currency, { maximumFractionDigits: 0 })} />
-                  <Metric label="Sul costo" value={row.yieldOnCost !== null && row.trailingNet > 0 ? formatPct(row.yieldOnCost) : "—"} />
-                  <Metric label="Attuale" value={row.currentYield !== null && row.forecastGross > 0 ? formatPct(row.currentYield) : "—"} />
-                  <Metric label="Crescita" value={row.growth ? `${formatSignedPct(row.growth.rate)}/anno` : "—"} />
-                </dl>
-                <details onToggle={(event) => { if (event.currentTarget.open) track("investment_dividends_details_opened", { source: "instrument" }); }}>
-                  <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti di {instrument.name} ({payments.filter((payment) => payment.instrumentId === row.instrumentId).length})</summary>
-                  <IncomePayments payments={payments.filter((payment) => payment.instrumentId === row.instrumentId)} currency={currency} />
+              <li key={row.instrumentId}>
+                <details className="group" onToggle={(event) => { if (event.currentTarget.open) track("investment_dividends_details_opened", { source: "instrument" }); }}>
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-md py-4 focus-visible:outline-2">
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} size="sm" />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{instrument.name}</span>
+                        <span className="text-xs text-muted-foreground">{instrumentPayments.length} {instrumentPayments.length === 1 ? "pagamento" : "pagamenti"}</span>
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-3">
+                      <span className="text-right"><span className="block text-sm tabular-nums">{formatCurrency(row.trailingNet, currency)}</span><span className="text-xs text-muted-foreground">ultimi 12 mesi</span></span>
+                      <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+                    </span>
+                  </summary>
+                  <div className="space-y-4 border-t pb-3 pt-4">
+                    <dl className="grid grid-cols-3 gap-2 text-sm">
+                      <Metric label="Sul costo" value={row.yieldOnCost !== null && row.trailingNet > 0 ? formatPct(row.yieldOnCost) : "—"} />
+                      <Metric label="Attuale" value={row.currentYield !== null && row.forecastGross > 0 ? formatPct(row.currentYield) : "—"} />
+                      <Metric label="Crescita" value={row.growth ? `${formatSignedPct(row.growth.rate)}/anno` : "—"} />
+                    </dl>
+                    {isBond ? <Button variant="outline" size="sm" onClick={() => onEditCoupons(instrument)}>{row.hasCouponTerms ? "Cedole" : "Inserisci cedole"}</Button> : null}
+                    <IncomePayments payments={instrumentPayments} currency={currency} />
+                  </div>
                 </details>
               </li>
             );

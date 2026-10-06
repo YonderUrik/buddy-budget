@@ -32,7 +32,7 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
   return (
     <Card>
       <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mese per mese</CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dividendi incassati</CardTitle>
         {options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel="Anno" /> : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -53,10 +53,6 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
             <dd className="font-heading text-lg font-medium tabular-nums text-pos">{format(year.net)}</dd>
           </div>
         </dl>
-        <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
-          <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti del {year.year}</summary>
-          <IncomePayments payments={payments.filter((payment) => payment.date.startsWith(String(year.year)))} currency={currency} instrumentsById={instrumentsById} />
-        </details>
         <MonthBars
           ariaLabel={`Incassi del ${year.year} per mese`}
           bars={year.months.map((m) => ({
@@ -75,6 +71,10 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
             <span className="size-2.5 rounded-sm bg-muted-foreground/30" aria-hidden="true" /> Ritenute e costi
           </span>
         </p>
+        <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
+          <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti del {year.year}</summary>
+          <IncomePayments payments={payments.filter((payment) => payment.date.startsWith(String(year.year)))} currency={currency} instrumentsById={instrumentsById} />
+        </details>
       </CardContent>
     </Card>
   );

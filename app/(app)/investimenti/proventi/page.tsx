@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Scheda Proventi di Investimenti: riepilogo di dividendi e cedole, previsione dei prossimi 12 mesi, proventi da
+ * Scheda Dividendi di Investimenti: riepilogo di dividendi e cedole, previsione dei prossimi 12 mesi, proventi da
  * registrare, incassi mese per mese e per strumento.
  */
 
@@ -10,7 +10,6 @@ import { useFilteredInvestmentsOverview } from "@/lib/queries/investments-view";
 import { toast } from "sonner";
 import {
   IncomeForecastCard,
-  IncomeHistoryCard,
   IncomeInstrumentsCard,
   IncomeMonthsCard,
   InstrumentSettingsDialog,
@@ -29,7 +28,7 @@ import { useDismissDividendMutation } from "@/lib/queries/investments";
 const PENDING_REFRESH_MS = 4000;
 const PENDING_REFRESH_MAX = 6;
 
-export default function ProventiPage() {
+export default function DividendiPage() {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(INVESTMENTS_DEFAULT_PERIOD);
   const view = React.useMemo(() => (overview.data ? buildIncomeView(overview.data, today) : null), [overview.data, today]);
@@ -79,7 +78,7 @@ export default function ProventiPage() {
       </div>
     );
   }
-  if (overview.isError || !view) return <LoadError message="Impossibile caricare i proventi." onRetry={() => overview.refetch()} />;
+  if (overview.isError || !view) return <LoadError message="Impossibile caricare i dividendi." onRetry={() => overview.refetch()} />;
   if (!view.hasTransactions) {
     return (
       <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
@@ -98,24 +97,34 @@ export default function ProventiPage() {
           Scarico lo storico dei dividendi di {pending === 1 ? "uno strumento" : `${pending} strumenti`}…
         </p>
       ) : null}
-      {view.history.count > 0 ? <IncomeHistoryCard income={view.history} instrumentsById={view.instrumentsById} currency={currency} /> : null}
-      {view.missing.length > 0 ? (
-        <MissingIncomeCard
-          missing={view.missing}
-          instrumentsById={view.instrumentsById}
-          currency={currency}
-          onRegister={register}
-          onDismiss={(item) => ignore([item])}
-          onDismissOld={ignore}
-          dismissingKey={dismissingKey}
-          todayKey={view.todayKey}
-        />
-      ) : null}
-      <IncomeForecastCard forecast={view.forecast} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
-      {view.byMonth.length > 0 ? <IncomeMonthsCard years={view.byMonth} currency={currency} /> : null}
+      {view.byMonth.length > 0 ? <IncomeMonthsCard payments={view.history.payments} instrumentsById={view.instrumentsById} years={view.byMonth} currency={currency} /> : null}
       {view.byInstrument.length > 0 ? (
-        <IncomeInstrumentsCard rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
+        <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
       ) : null}
+      {view.byMonth.length === 0 ? <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">Nessun dividendo o cedola registrato.</p> : null}
+      {view.missing.length > 0 ? (
+        <details className="rounded-xl border px-4 py-3">
+          <summary className="cursor-pointer text-sm font-medium">Da registrare ({view.missing.length})</summary>
+          <div className="pt-4">
+            <MissingIncomeCard
+              missing={view.missing}
+              instrumentsById={view.instrumentsById}
+              currency={currency}
+              onRegister={register}
+              onDismiss={(item) => ignore([item])}
+              onDismissOld={ignore}
+              dismissingKey={dismissingKey}
+              todayKey={view.todayKey}
+            />
+          </div>
+        </details>
+      ) : null}
+      <details className="rounded-xl border px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium">Previsioni · prossimi 12 mesi</summary>
+        <div className="pt-4">
+          <IncomeForecastCard forecast={view.forecast} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
+        </div>
+      </details>
       <InstrumentSettingsDialog
         instrument={couponsFor}
         setting={couponsFor ? overview.data?.instrumentSettings.find((s) => s.instrumentId === couponsFor.id) : undefined}

@@ -1,8 +1,12 @@
+"use client";
+
 /**
  * Card "Dividendi e cedole": quanto hai incassato negli ultimi 12 mesi, il rendimento da proventi sul costo, gli
  * anni a confronto e gli strumenti che pagano di più. Importi netti, in valuta utente.
  */
 
+import { IncomePayments } from "./income/income-payments";
+import { track } from "@/lib/analytics";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency } from "@/lib/format";
@@ -38,14 +42,21 @@ export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeH
           .<span className="text-muted-foreground"> Da sempre: {format(income.total)}.</span>
         </p>
         <div className="grid gap-6 sm:grid-cols-2">
-          <ul className="flex flex-col gap-2" aria-label="Proventi per anno">
+          <ul className="flex flex-col gap-2" aria-label="Dividendi per anno">
             {income.years.map((year) => (
-              <li key={year.year} className="grid grid-cols-[3rem_1fr_auto] items-center gap-3 text-sm">
+              <li key={year.year} className="text-sm">
+                <details onToggle={(event) => { if (event.currentTarget.open) track("investment_dividends_details_opened", { source: "year" }); }}>
+                <summary className="cursor-pointer rounded-md py-2 focus-visible:outline-2" aria-label={`Dettaglio dividendi ${year.year}`}>
+                <span className="inline-grid w-[calc(100%-1rem)] grid-cols-[3rem_1fr_auto] items-center gap-3" title={`${year.year}: ${formatCurrency(year.amount, currency)} netti · ${income.payments.filter((p) => p.date.startsWith(String(year.year))).length} pagamenti`}>
                 <span className="tabular-nums text-muted-foreground">{year.year}</span>
                 <span className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
                   <span className="block h-full rounded-full bg-pos" style={{ width: `${maxYear > 0 ? (year.amount / maxYear) * 100 : 0}%` }} />
                 </span>
                 <span className="tabular-nums text-foreground">{format(year.amount)}</span>
+                </span>
+                </summary>
+                <IncomePayments payments={income.payments.filter((payment) => payment.date.startsWith(String(year.year)))} currency={currency} instrumentsById={instrumentsById} />
+                </details>
               </li>
             ))}
           </ul>

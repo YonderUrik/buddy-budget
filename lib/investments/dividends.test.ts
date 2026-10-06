@@ -205,3 +205,14 @@ describe("dividendGrowth e incomeByInstrument", () => {
     expect(rows[0].currentYield).toBeCloseTo(0.04);
   });
 });
+
+it("keeps old payments visible for sold instruments and excludes future-only income", () => {
+  const data = input({ transactions: [
+    op("enel", "dividendo", "2022-01-01", 0, { grossAmount: "10" }),
+    op("aapl", "dividendo", "2027-01-01", 0, { grossAmount: "10" }),
+  ] });
+  const result = incomeByInstrument(data, [], forecastIncome(data));
+  expect(result.map((row) => row.instrumentId)).toEqual(["enel"]);
+  expect(result[0].trailingNet).toBe(0);
+  expect(result[0].yieldOnCost).toBeNull();
+});

@@ -56,7 +56,7 @@ export const FEATURES: readonly Feature[] = [
   f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),
   f("allocazione-obiettivo", "Investimenti", "Allocazione obiettivo", "Con il suggerimento di dove mettere il prossimo versamento.", "live"),
-  f("proventi", "Investimenti", "Proventi", "Previsione dei dividendi a 12 mesi e incassi mese per mese.", "live"),
+  f("proventi", "Investimenti", "Dividendi", "Riepilogo nel portafoglio, previsione a 12 mesi e incassi mese per mese. Pagamenti con date e dettaglio per strumento, anni espandibili e grafici con informazioni su lordo, ritenute e netto.", "live"),
   f("tasse-italiane", "Investimenti", "Tasse italiane", "Plus e minus, zaino a 4 anni, titoli di Stato, crypto e bollo.", "live"),
   f("simulatore-prima-di-vendere", "Investimenti", "Simulatore «Prima di vendere»", "Ricalcola le tasse con la vendita in più, prima di farla.", "live"),
   f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo con grafico e avvisi di prezzo via email.", "live"),

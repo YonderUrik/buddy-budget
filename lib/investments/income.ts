@@ -23,8 +23,21 @@ export interface IncomeByInstrument {
   total: number;
 }
 
+/** Pagamento registrato, con importi nella valuta dell'utente. */
+export interface IncomePayment {
+  id: string;
+  instrumentId: string;
+  date: string;
+  kind: "dividendo" | "cedola";
+  gross: number;
+  taxes: number;
+  fees: number;
+  net: number;
+}
+
 /** Storico di dividendi e cedole, in valuta utente e al netto di imposte e commissioni. */
 export interface IncomeHistory {
+  payments: IncomePayment[];
   total: number;
   /** Ultimi 12 mesi. */
   trailing: number;
@@ -57,11 +70,14 @@ export function computeIncomeHistory<T extends InvestmentTransactionInput>(
   let total = 0;
   let trailing = 0;
   let count = 0;
+  const payments: IncomePayment[] = [];
 
   for (const insight of insights) {
     const t = insight.transaction;
     if (!INCOME_TYPES.has(t.type) || t.date > todayKey) continue;
     const amount = insight.received;
+    payments.push({ id: t.id, instrumentId: t.instrumentId, date: t.date, kind: t.type as IncomePayment["kind"],
+      gross: Number(t.grossAmount ?? 0) * (Number(t.fxRate) || 1), taxes: Number(t.taxes) || 0, fees: Number(t.fees) || 0, net: amount });
     const recent = t.date > trailingFrom;
     count += 1;
     total += amount;
@@ -82,6 +98,7 @@ export function computeIncomeHistory<T extends InvestmentTransactionInput>(
   }
 
   return {
+    payments: payments.sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id)),
     total,
     trailing,
     yieldOnCost: costBasis > 0 ? trailing / costBasis : null,

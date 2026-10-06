@@ -120,3 +120,6 @@ export { CostDetailsCard } from "./cost-details-card";
 
 export { BrokerSelector } from "./broker-selector";
 export { BrokerComparisonCard } from "./broker-comparison-card";
+
+export { DividendsSummaryCard } from "./dividends-summary-card";
+export type { DividendsSummaryCardProps } from "./dividends-summary-card";

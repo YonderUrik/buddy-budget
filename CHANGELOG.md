@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.13.1](https://github.com/YonderUrik/buddy-budget/compare/v0.13.0...v0.13.1) (2026-10-06)
+
+
+### Correzioni
+
+* il piano di ammortamento su telefono è una lista di schede, senza scroll orizzontale ([#161](https://github.com/YonderUrik/buddy-budget/issues/161)) ([15a22f5](https://github.com/YonderUrik/buddy-budget/commit/15a22f55c391c7f0430ebc19da1cd64e80093fe5))
+
 ## [0.13.0](https://github.com/YonderUrik/buddy-budget/compare/v0.12.0...v0.13.0) (2026-10-06)
 
 

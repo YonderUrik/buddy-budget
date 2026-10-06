@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.14.0](https://github.com/YonderUrik/buddy-budget/compare/v0.13.1...v0.14.0) (2026-10-06)
+
+
+### Novità
+
+* manage investment imports and compare broker portfolios ([#148](https://github.com/YonderUrik/buddy-budget/issues/148)) ([a0c4441](https://github.com/YonderUrik/buddy-budget/commit/a0c4441aed309fa20ecab54c501cf885241dabb6))
+
 ## [0.13.1](https://github.com/YonderUrik/buddy-budget/compare/v0.13.0...v0.13.1) (2026-10-06)
 
 

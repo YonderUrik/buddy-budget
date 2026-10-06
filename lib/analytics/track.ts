@@ -7,6 +7,7 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface ProductEvents {
+  investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
   onboarding_completed: { currency: SupportedCurrency };
   account_created: undefined;
   budget_set: undefined;

@@ -10,12 +10,11 @@ import type { BrokerCash } from "@/lib/investments/broker-cash";
 import { Switch } from "@/components/ui/switch";
 import type { CostImpact } from "@/lib/investments/cost-impact";
 import { Area, AreaChart, Line, XAxis, YAxis } from "recharts";
-import { NetWorthPeriodSelector } from "@/components/domain/net-worth";
+import { PortfolioPeriodSelector, type PortfolioPeriodSelectorProps } from "./portfolio-period-selector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { parseDateOnly } from "@/lib/calc/expenses";
 import type { PortfolioSeriesPoint, PortfolioSummary } from "@/lib/calc/investments";
-import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { ValueBreakdown } from "@/lib/investments/insights";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -49,7 +48,7 @@ function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { 
   );
 }
 
-export interface PortfolioHeroCardProps {
+export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProps, "value" | "onChange"> {
   cash?: BrokerCash[];
   includeCash?: boolean;
   onIncludeCashChange?: (include: boolean) => void;
@@ -61,19 +60,19 @@ export interface PortfolioHeroCardProps {
   summary: PortfolioSummary;
   breakdown: ValueBreakdown;
   series: PortfolioSeriesPoint[];
-  period: NetWorthPeriod;
-  onPeriodChange: (period: NetWorthPeriod) => void;
+  period: PortfolioPeriodSelectorProps["value"];
+  onPeriodChange: PortfolioPeriodSelectorProps["onChange"];
   currency: string;
 }
 
-export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCashChange, costImpact, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCashChange, costImpact, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const simulation = simulateCostExclusions(costImpact, series, summary.totalValue, includeFees, includeTaxes);
   const cashTotal = cash.reduce((total, account) => total + account.balance, 0);
   const displayedValue = simulation.value + (includeCash ? cashTotal : 0);
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
-  const hasHistory = series.length >= 2;
+  const hasHistory = series.length > 0;
 
   return (
     <Card>
@@ -98,7 +97,7 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
               Includi liquidità
             </label>
           ) : null}
-          <NetWorthPeriodSelector value={period} onChange={onPeriodChange} />
+          <PortfolioPeriodSelector value={period} onChange={onPeriodChange} range={range} today={today} onRangeChange={onRangeChange} />
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
@@ -153,7 +152,7 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
                 <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} />
                 <YAxis hide domain={["dataMin", "dataMax"]} />
                 <ChartTooltip cursor={false} content={<Tooltip currency={currency} />} />
-                <Area type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} fill={`url(#${AREA_FILL_ID})`} />
+                <Area type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={series.length === 1} fill={`url(#${AREA_FILL_ID})`} />
                 <Line type="stepAfter" dataKey="invested" stroke="var(--color-invested)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
               </AreaChart>
             </ChartContainer>
@@ -167,7 +166,7 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
             </p>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">L&apos;andamento comparirà quando ci saranno almeno due giorni di prezzi.</p>
+          <p className="text-sm text-muted-foreground">Nessun dato disponibile nel periodo selezionato.</p>
         )}
       </CardContent>
     </Card>

@@ -38,3 +38,7 @@ Verifica aggiuntiva gestione importazioni: 13 test di integrazione coprono sosti
 Le API usano `withRoute`; import riuscito: `investments.import.completed`, conteggio inserimenti; gli errori di riconciliazione sono risposte 422, senza salvare movimenti. Il wizard mantiene l'evento Umami di import esistente; cancellazione osservabile con log `investments.import.deleted` e Umami `investments_import_deleted` (solo conteggi). Nessun nuovo job/cron/metrica. La deroga sincrona esistente resta: transazione locale breve, storico prezzi in background; la disponibilità dei cambi può richiedere un primo recupero.
 
 Catalogo funzioni, copia landing e otto screenshot delle schede investimenti aggiornati usando esclusivamente il database demo sintetico. Prima del rilascio applicare le migration versionate; nessuna modifica a produzione eseguita durante questa verifica locale.
+
+### Gestione importazioni in Operazioni
+
+La gestione dei CSV importati è nella scheda Operazioni, sopra l’elenco delle transazioni, anche quando non ci sono operazioni. La scheda Rendiconti e il suo riepilogo nel Portafoglio sono stati rimossi; i vecchi link reindirizzano a Operazioni. Lo storico dei documenti e le funzioni di sostituzione e cancellazione restano disponibili senza modificare i dati salvati.

@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Gestione importazioni (2026-10-06)**: scheda Rendiconti rimossa; Gestisci importazioni ora in Operazioni, accessibile anche senza transazioni. Vecchi link reindirizzati. Nessuna modifica ai dati importati.
+
 **Import IBKR e DEGIRO: correzione locale in corso di revisione (2026-10-04)** sul branch `codex/ibkr-local-validation`; PR autorizzata dall’utente, in apertura. Rendiconti persistiti con cassa riconciliata, snapshot broker e rettifiche non monetarie; dettagli e limiti in `docs/ibkr-import.md` e `docs/degiro-import.md`. DEGIRO Account.csv si importa nello stesso portafoglio con origine e cassa separate; sostituzione e cancellazione restano isolate per broker. Aggiornamenti YTD sostituiscono atomicamente periodi interamente coperti; gestione importazioni con cancellazione delle dipendenze confermate. Restano fuori scope la ricostruzione fiscale dei lotti e gli overlap parziali; servono rispettivamente il dettaglio lotti e un export che copra i periodi coinvolti.
 
 Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decision-log.md`](docs/decision-log.md) e nella spec/piano corrispondente in `docs/superpowers/`.

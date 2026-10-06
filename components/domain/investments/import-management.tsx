@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { useBrokerStatementsQuery, useDeleteStatementImportMutation } from "@/lib/queries/investments";
@@ -27,8 +26,7 @@ export function ImportManagement() {
   }
   return <section className="flex flex-col gap-4">
     <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-medium">Gestisci importazioni</h2><Button onClick={openImport}>Nuova importazione</Button></div>
-    <p className="text-sm text-muted-foreground">Rendiconti Interactive Brokers e DEGIRO. Per aggiornare un periodo, importa un nuovo CSV che copra interamente i rendiconti da sostituire: l’anteprima mostra cosa cambia. Gli altri import CSV restano gestibili dalla scheda Operazioni.</p>
-    <Link className="text-sm underline" href="/investimenti/rendiconti">Vedi saldi e posizioni dei rendiconti</Link>
+    <p className="text-sm text-muted-foreground">Rendiconti Interactive Brokers e DEGIRO. Per aggiornare un periodo, importa un nuovo CSV che copra interamente i rendiconti da sostituire: l’anteprima mostra cosa cambia. Le singole operazioni, anche degli altri import CSV, sono elencate sotto.</p>
     {query.isLoading ? <p>Caricamento importazioni…</p> : query.isError ? <p role="alert">Impossibile caricare le importazioni. <button onClick={() => query.refetch()}>Riprova</button></p> : !documents.length ? <p>Nessun rendiconto importato.</p> : <ul className="divide-y rounded-lg border">{documents.map((d) => <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-medium">{d.statement.from} – {d.statement.to}</p><p className="text-sm text-muted-foreground">{d.statement.provider === "degiro" ? "DEGIRO" : `Interactive Brokers · conto …${d.statement.account.slice(-4)}`} · importato il {new Date(d.createdAt).toLocaleString("it-IT")}</p></div><div className="flex gap-2"><Button variant="outline" onClick={openImport}>Aggiorna CSV</Button><Button variant="destructive" onClick={() => review(d.id)} aria-label={`Elimina importazione ${d.statement.from} – ${d.statement.to}`}>Elimina</Button></div></li>)}</ul>}
     {deletion.isSuccess && !selection ? <p role="status">Importazioni eliminate. Saldi e posizioni aggiornati.</p> : null}
     <AlertDialog open={selection !== null} onOpenChange={(open) => { if (!open && !deletion.isPending) setSelection(null); }}>

@@ -40,7 +40,35 @@ export function DebtPlanTable({ rows, currency, today, onPay }: DebtPlanTablePro
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="overflow-x-auto">
+      {/* Telefono: una scheda per rata, senza scroll laterale. */}
+      <ul className="divide-y sm:hidden">
+        {visible.map((row) => (
+          <li key={row.number} className={cn("flex flex-col gap-1.5 py-3", row.status === "pagata" && "text-muted-foreground")}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-sm font-medium tabular-nums">
+                Rata {row.number} · {formatDateWithYear(row.dueDate)}
+              </span>
+              <span className="font-heading text-base font-medium tabular-nums">{money(row.payment?.amount ?? row.installment)}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Capitale {money(row.capital)} · interessi {money(row.interest)} · residuo {money(row.residual)}
+            </p>
+            <div className="flex items-center gap-2">
+              {row.status === "pagata" ? (
+                <span className={cn("inline-block rounded-full px-2 py-0.5 text-xs", INSTALLMENT_STATUS_CLASS.pagata)}>{INSTALLMENT_STATUS_LABELS.pagata}</span>
+              ) : (
+                <Button variant="outline" size="sm" className="h-8 px-3 text-xs" onClick={() => onPay(row)}>
+                  Segna pagata
+                </Button>
+              )}
+              {row.status !== "pagata" && row.status !== "da_pagare" ? (
+                <span className={cn("inline-block rounded-full px-2 py-0.5 text-xs", INSTALLMENT_STATUS_CLASS[row.status])}>{INSTALLMENT_STATUS_LABELS[row.status]}</span>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[34rem] text-sm">
           <thead>
             <tr className="border-b text-left text-xs text-muted-foreground">

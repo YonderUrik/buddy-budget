@@ -75,6 +75,8 @@ export interface ProductEvents {
   /** Clic su una voce della legenda del patrimonio netto per mostrarla o nasconderla; `visible`: lo stato dopo il clic. */
   net_worth_class_toggled: { assetClass: "liquidita" | "investimenti" | "previdenza" | "altro"; visible: boolean };
   attention_quick_confirmed: { groups: number };
+  /** Clic su una tessera della Panoramica; `tile`: quale (mese, scadenze, investimenti). */
+  overview_tile_clicked: { tile: "mese" | "scadenze" | "investimenti" };
   /** `context`: onboarding (nuovo account) o aggiornamento (nuova versione dei documenti per un utente esistente). */
   terms_accepted: { context: "onboarding" | "aggiornamento" };
   /** Clic su una richiesta privacy (apre la bozza di email al titolare); `type`: quale diritto. */

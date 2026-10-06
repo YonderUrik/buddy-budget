@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.17.0](https://github.com/YonderUrik/buddy-budget/compare/v0.16.0...v0.17.0) (2026-10-06)
+
+
+### Novità
+
+* add dividend summaries and payment details ([#174](https://github.com/YonderUrik/buddy-budget/issues/174)) ([b6249cd](https://github.com/YonderUrik/buddy-budget/commit/b6249cd85c5233177f66c43855f5a534cf53cfb0))
+
 ## [0.16.0](https://github.com/YonderUrik/buddy-budget/compare/v0.15.1...v0.16.0) (2026-10-06)
 
 

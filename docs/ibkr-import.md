@@ -63,4 +63,4 @@ Verifica: due broker nello stesso portafoglio/strumento, esclusione e riattivazi
 
 ### Liquidità nella vista Investimenti
 
-La scheda Portafoglio mostra il totale titoli + saldo dei conti broker collegati e il dettaglio cash con data dell’ultimo rendiconto. I filtri broker agiscono su entrambi; i saldi negativi riducono il totale. Ogni conto viene contato una sola volta, anche con più rendiconti o collegamenti precedenti. Il patrimonio generale include già questi conti nella liquidità e non viene modificato. Grafici, rendimenti e pesi delle posizioni continuano a riferirsi ai soli titoli.
+La card Portafoglio offre «Includi liquidità», attivo inizialmente: acceso mostra titoli + saldo dei conti broker collegati, spento solo titoli. Il dettaglio cash con data dell’ultimo rendiconto è espandibile nella stessa card. I filtri broker agiscono su entrambi; i saldi negativi riducono il totale. Ogni conto viene contato una sola volta, anche con più rendiconti o collegamenti precedenti. Il patrimonio generale include già questi conti nella liquidità e non viene modificato. Grafici, rendimenti e pesi delle posizioni continuano a riferirsi ai soli titoli.

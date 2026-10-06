@@ -9,7 +9,6 @@
 import * as React from "react";
 import {
   BrokerStatements,
-  BrokerCashCard,
   InvestmentsViewGate,
   ManualPriceDialog,
   PortfolioHeroCard,
@@ -23,6 +22,7 @@ import { useBackfillStatusQuery } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
 
 export default function InvestimentiPage() {
+  const [includeCash, setIncludeCash] = React.useState(true);
   const [period, setPeriod] = React.useState<NetWorthPeriod>(INVESTMENTS_DEFAULT_PERIOD);
   const { overview, view, today } = useInvestmentsView(period);
   const instrumentIds = React.useMemo(() => view?.instruments.map((i) => i.id) ?? [], [view]);
@@ -42,27 +42,26 @@ export default function InvestimentiPage() {
       >
         {view ? (
           <>
-            <BrokerCashCard cash={cash} securitiesValue={view.summary.totalValue} currency={currency} incomplete={view.summary.unpricedCount > 0} />
+            <PortfolioHeroCard
+              cash={cash}
+              includeCash={includeCash}
+              onIncludeCashChange={setIncludeCash}
+              summary={view.summary}
+              breakdown={computeValueBreakdown(view.summary)}
+              series={view.series}
+              period={period}
+              onPeriodChange={setPeriod}
+              currency={currency}
+            />
             {view.hasTransactions ? (
-              <>
-                <PortfolioHeroCard
-                  title={cash.length ? "I tuoi titoli" : undefined}
-                  summary={view.summary}
-                  breakdown={computeValueBreakdown(view.summary)}
-                  series={view.series}
-                  period={period}
-                  onPeriodChange={setPeriod}
-                  currency={currency}
-                />
-                <PositionsList
-                  rows={view.summary.rows}
-                  concentration={computeConcentration(view.summary.rows)}
-                  currency={currency}
-                  todayKey={toDateKey(today)}
-                  backfill={backfill.data ?? []}
-                  onManualPrice={(row) => setPriceInstrument(view.instrumentsById.get(row.instrument.id) ?? null)}
-                />
-              </>
+              <PositionsList
+                rows={view.summary.rows}
+                concentration={computeConcentration(view.summary.rows)}
+                currency={currency}
+                todayKey={toDateKey(today)}
+                backfill={backfill.data ?? []}
+                onManualPrice={(row) => setPriceInstrument(view.instrumentsById.get(row.instrument.id) ?? null)}
+              />
             ) : null}
           </>
         ) : null}

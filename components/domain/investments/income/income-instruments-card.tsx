@@ -5,6 +5,9 @@
  * oggi), crescita del dividendo per quota negli ultimi anni. Per le obbligazioni, tasso e scadenza delle cedole.
  */
 
+import { IncomePayments } from "./income-payments";
+import type { IncomePayment } from "@/lib/investments/income";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoHint } from "@/components/domain/shared";
@@ -17,6 +20,7 @@ import { formatPct } from "../percent";
 
 export interface IncomeInstrumentsCardProps {
   rows: IncomeInstrumentRow[];
+  payments: IncomePayment[];
   instrumentsById: Map<string, Instrument>;
   currency: string;
   onEditCoupons: (instrument: Instrument) => void;
@@ -31,7 +35,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function IncomeInstrumentsCard({ rows, instrumentsById, currency, onEditCoupons }: IncomeInstrumentsCardProps) {
+export function IncomeInstrumentsCard({ rows, payments, instrumentsById, currency, onEditCoupons }: IncomeInstrumentsCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-1">
@@ -67,6 +71,10 @@ export function IncomeInstrumentsCard({ rows, instrumentsById, currency, onEditC
                   <Metric label="Attuale" value={row.currentYield !== null && row.forecastGross > 0 ? formatPct(row.currentYield) : "—"} />
                   <Metric label="Crescita" value={row.growth ? `${formatSignedPct(row.growth.rate)}/anno` : "—"} />
                 </dl>
+                <details onToggle={(event) => { if (event.currentTarget.open) track("investment_dividends_details_opened", { source: "instrument" }); }}>
+                  <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti di {instrument.name} ({payments.filter((payment) => payment.instrumentId === row.instrumentId).length})</summary>
+                  <IncomePayments payments={payments.filter((payment) => payment.instrumentId === row.instrumentId)} currency={currency} />
+                </details>
               </li>
             );
           })}

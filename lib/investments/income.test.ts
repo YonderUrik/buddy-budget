@@ -50,3 +50,13 @@ describe("computeIncomeHistory", () => {
     expect(history.count).toBe(0);
   });
 });
+
+it("preserves dated payments, FX, charges and signed corrections, excluding future payments", () => {
+  const paid = insight("paid", "usd", "dividendo", "2024-02-01", 68);
+  paid.transaction = { ...paid.transaction, grossAmount: "100", fxRate: "0.8", taxes: "10", fees: "2" };
+  const correction = insight("correction", "usd", "dividendo", "2024-02-02", -5);
+  const history = computeIncomeHistory([paid, correction, insight("future", "usd", "dividendo", "2027-01-01", 100)], 0, "2026-10-06");
+  expect(history.payments.map((p) => p.id)).toEqual(["correction", "paid"]);
+  expect(history.payments[1]).toMatchObject({ date: "2024-02-01", gross: 80, taxes: 10, fees: 2, net: 68 });
+  expect(history.payments.reduce((sum, p) => sum + p.net, 0)).toBe(history.total);
+});

@@ -11,6 +11,7 @@ import { portfolioChartRange, type PortfolioChartPeriod, type PortfolioChartRang
 import * as React from "react";
 import {
   CostDetailsCard,
+  DividendsSummaryCard,
   InvestmentsViewGate,
   ManualPriceDialog,
   PortfolioHeroCard,
@@ -67,6 +68,7 @@ export default function InvestimentiPage() {
               onRangeChange={(range) => { setCustomRange(range); track("investment_chart_period_changed", { period: "custom" }); }}
               currency={currency}
             />
+            <DividendsSummaryCard income={view.income} currency={currency} />
             <CostDetailsCard impact={view.costImpact} currency={currency} />
             {view.hasTransactions ? (
               <PositionsList

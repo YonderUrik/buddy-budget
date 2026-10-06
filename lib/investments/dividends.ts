@@ -419,8 +419,9 @@ export function incomeByInstrument(
       .filter((t) => t.date > trailingFrom && t.date <= input.todayKey)
       .reduce((s, t) => s + Number(t.grossAmount ?? 0) * (Number(t.fxRate) || 1) - (Number(t.taxes) || 0) - (Number(t.fees) || 0), 0);
     const forecastGross = forecast.events.filter((e) => e.instrumentId === id && e.kind !== "rimborso").reduce((s, e) => s + e.gross, 0);
-    const pays = trailingNet > 0 || forecastGross > 0 || ctx.events.length > 0 || ctx.terms !== null || ctx.instrument.type === "obbligazione";
-    if (!row && trailingNet === 0) continue;
+    const hasPayments = ctx.income.some((t) => t.date <= input.todayKey);
+    const pays = hasPayments || trailingNet > 0 || forecastGross > 0 || ctx.events.length > 0 || ctx.terms !== null || ctx.instrument.type === "obbligazione";
+    if (!row && !hasPayments) continue;
     if (!pays) continue;
     result.push({
       instrumentId: id,

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Scheda Proventi di Investimenti: riepilogo di dividendi e cedole, previsione dei prossimi 12 mesi, proventi da
+ * Scheda Dividendi di Investimenti: riepilogo di dividendi e cedole, previsione dei prossimi 12 mesi, proventi da
  * registrare, incassi mese per mese e per strumento.
  */
 
@@ -29,7 +29,7 @@ import { useDismissDividendMutation } from "@/lib/queries/investments";
 const PENDING_REFRESH_MS = 4000;
 const PENDING_REFRESH_MAX = 6;
 
-export default function ProventiPage() {
+export default function DividendiPage() {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(INVESTMENTS_DEFAULT_PERIOD);
   const view = React.useMemo(() => (overview.data ? buildIncomeView(overview.data, today) : null), [overview.data, today]);
@@ -79,7 +79,7 @@ export default function ProventiPage() {
       </div>
     );
   }
-  if (overview.isError || !view) return <LoadError message="Impossibile caricare i proventi." onRetry={() => overview.refetch()} />;
+  if (overview.isError || !view) return <LoadError message="Impossibile caricare i dividendi." onRetry={() => overview.refetch()} />;
   if (!view.hasTransactions) {
     return (
       <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
@@ -112,9 +112,9 @@ export default function ProventiPage() {
         />
       ) : null}
       <IncomeForecastCard forecast={view.forecast} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
-      {view.byMonth.length > 0 ? <IncomeMonthsCard years={view.byMonth} currency={currency} /> : null}
+      {view.byMonth.length > 0 ? <IncomeMonthsCard payments={view.history.payments} instrumentsById={view.instrumentsById} years={view.byMonth} currency={currency} /> : null}
       {view.byInstrument.length > 0 ? (
-        <IncomeInstrumentsCard rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
+        <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
       ) : null}
       <InstrumentSettingsDialog
         instrument={couponsFor}

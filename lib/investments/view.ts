@@ -23,7 +23,6 @@ import { computeIncomeHistory, type IncomeHistory } from "./income";
 import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
 
 /** Il rendimento reale si mostra solo su periodi lunghi: Eurostat pubblica con circa un mese di ritardo. */
-const REAL_RETURN_PERIODS: ReadonlySet<NetWorthPeriod> = new Set(["1anno", "max"]);
 
 /** Dati della pagina Investimenti già calcolati: la UI li riceve pronti. */
 export interface InvestmentsView {
@@ -105,13 +104,16 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     riskFreeRates: data.riskFreeRates.length > 0 ? data.riskFreeRates : null,
     period,
     today,
+    range: chartRange,
   });
   const returns = computePortfolioReturns({
     ...common,
     period,
     today,
     benchmark: data.benchmark,
-    inflation: REAL_RETURN_PERIODS.has(period) && data.inflation.length > 0 ? data.inflation : null,
+    range: chartRange,
+    dailySeries: true,
+    inflation: data.inflation.length > 0 ? data.inflation : null,
   });
   return {
     currency: data.currency,

@@ -14,16 +14,16 @@ const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--cha
 const percent = (value: number) => `${value.toLocaleString("it-IT", { maximumFractionDigits: 2 })}%`;
 
 /** Broker returns overlaid in the same currency and period, using the app's existing TWR calculation. */
-export function BrokerComparisonCard({ data, period, today }: { data: InvestmentData; period: NetWorthPeriod; today: Date }) {
+export function BrokerComparisonCard({ data, period, today, range }: { data: InvestmentData; period: NetWorthPeriod; today: Date; range?: { from: string; to: string } }) {
   const { overlay, setOverlay } = useBrokerSelection();
   const hasBrokers = useMemo(() => investmentBrokerGroups(data).some((g) => g.id !== "manual"), [data]);
-  const comparison = useMemo(() => overlay && hasBrokers ? brokerComparison(data, period, today) : null, [data, period, today, overlay, hasBrokers]);
+  const comparison = useMemo(() => overlay && hasBrokers ? brokerComparison(data, period, today, range) : null, [data, period, today, range, overlay, hasBrokers]);
   if (!hasBrokers) return null;
   const config: ChartConfig = Object.fromEntries((comparison?.lines ?? []).map((line, index) => [line.key, { label: line.label, color: line.key === "combined" ? "var(--foreground)" : COLORS[index % COLORS.length] }]));
   return <Card>
     <CardHeader><CardTitle>Confronto tra broker</CardTitle><label className="flex items-center gap-2 text-sm"><input type="checkbox" className="accent-primary" checked={overlay} onChange={(e) => { setOverlay(e.target.checked); track("investment_broker_overlay_changed", { enabled: e.target.checked }); }} />Sovrapponi i rendimenti dei broker selezionati</label></CardHeader>
     {comparison ? <CardContent className="space-y-3">
-      <p className="text-xs text-muted-foreground">Rendimento percentuale corretto per acquisti e vendite, nella valuta del portafoglio. Il totale combinato è ricalcolato, non è la somma delle percentuali. Ogni linea mostra soltanto lo storico disponibile nel periodo; con Max i broker possono iniziare in date diverse. Sono calcoli dell’app, non valori certificati dai broker.</p>
+      <p className="text-xs text-muted-foreground">Rendimento TWR cumulato nel periodo del grafico, corretto per acquisti e vendite, nella valuta del portafoglio. Il totale combinato è ricalcolato, non è la somma delle percentuali. Ogni linea mostra soltanto lo storico disponibile nel periodo; con Max i broker possono iniziare in date diverse. Sono calcoli dell’app, non valori certificati dai broker.</p>
       {comparison.points.length > 1 ? <ChartContainer config={config} className="h-64 w-full"><LineChart data={comparison.points}>
         <XAxis dataKey="time" type="number" scale="time" domain={["dataMin", "dataMax"]} tickFormatter={(value: number) => new Date(value).toLocaleDateString("it-IT", { day: "numeric", month: "short", ...(period === "max" ? { year: "2-digit" as const } : {}) })} tickLine={false} axisLine={false} minTickGap={30} />
         <YAxis tickFormatter={percent} width={60} tickLine={false} axisLine={false} />

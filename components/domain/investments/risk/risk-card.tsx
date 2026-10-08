@@ -38,7 +38,7 @@ function drawdownText(drawdown: MaxDrawdown): string {
   if (drawdown.depth === 0) return "Nel periodo non è mai sceso sotto il massimo precedente.";
   const fall = `Tra il ${formatDateWithYear(drawdown.peakDate)} e il ${formatDateWithYear(drawdown.troughDate)} è sceso del ${pct(-drawdown.depth)} dal massimo`;
   if (drawdown.recoveryDate) return `${fall}; ci ha messo ${daysBetween(drawdown.troughDate, drawdown.recoveryDate)} giorni a tornarci.`;
-  return `${fall} e non ci è ancora tornato: oggi è a ${formatSignedPct(drawdown.current)}.`;
+  return `${fall} e non ci è ancora tornato: a fine periodo è a ${formatSignedPct(drawdown.current)}.`;
 }
 
 function riskFreeNote(risk: PortfolioRisk, currency: string): string {
@@ -50,16 +50,17 @@ function riskFreeNote(risk: PortfolioRisk, currency: string): string {
 export interface RiskCardProps {
   risk: PortfolioRisk;
   period: NetWorthPeriod;
+  periodLabel?: string;
   /** Nome dell'indice di confronto scelto nella card dei rendimenti, o null. */
   benchmarkName: string | null;
   currency: string;
 }
 
-export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProps) {
+export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }: RiskCardProps) {
   const header = (
     <CardHeader>
       <CardTitle className="text-base font-semibold">Quanto rischia</CardTitle>
-      <p className="text-sm text-muted-foreground">{PERIOD_LABELS[period]}</p>
+      <p className="text-sm text-muted-foreground">{periodLabel ?? PERIOD_LABELS[period]}</p>
     </CardHeader>
   );
 
@@ -118,7 +119,7 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
         </div>
 
         {!benchmarkName ? (
-          <p className="text-sm text-muted-foreground">Scegli un indice di confronto in &ldquo;Quanto sta rendendo&rdquo; per vedere quanto lo segui.</p>
+          <p className="text-sm text-muted-foreground">Scegli un indice di confronto in &ldquo;Rendimenti del periodo&rdquo; per vedere quanto lo segui.</p>
         ) : null}
         {risk.fewData ? (
           <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">

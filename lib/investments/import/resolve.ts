@@ -98,6 +98,22 @@ async function resolveByIsinFallback(userId: string, identity: Identity, deps: R
 }
 
 /**
+ * Per gli strumenti del rendiconto, che restano manuali con i prezzi del broker: dice se esiste una quotazione
+ * (verificata su Yahoo, nella valuta del file) da collegare dopo l'import con «Cerca la quotazione».
+ */
+async function quotationHint(isin: string, currency: string, deps: ResolveDeps): Promise<string> {
+  if (!deps.searchByIsin) return "";
+  try {
+    const found = await deps.searchByIsin(isin, currency);
+    if (found.status === "unavailable") return "";
+    const hit = found.hits[0];
+    return hit ? ` · quotazione trovata: ${hit.symbol}, collegabile dopo l'import da «Cerca la quotazione»` : " · nessuna quotazione trovata";
+  } catch {
+    return "";
+  }
+}
+
+/**
  * Abbina uno strumento del file: prima il catalogo (ISIN, simbolo Yahoo, nome identico), poi le fonti. I simboli
  * crypto di Yahoo (`ETH-EUR`) vanno su CoinGecko, che è la fonte delle crypto nell'app.
  */
@@ -109,7 +125,8 @@ export async function resolveIdentity(userId: string, identity: Identity, deps: 
   // Broker ISIN + native currency is more reliable than an arbitrary Yahoo search listing.
   // Preserve the statement currency and use broker closing prices until an exchange listing is explicitly linked.
   if (!identity.symbolIsYahoo && identity.isin && identity.currency && identity.name) {
-    return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione") }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto`, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione"), confidence: "exact" };
+    const quotation = await quotationHint(identity.isin, identity.currency, deps);
+    return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione") }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto${quotation}`, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione"), confidence: "exact" };
   }
   if (identity.type === "crypto" && identity.symbol && identity.currency && !identity.isin && !identity.symbolIsYahoo) return resolveCrypto(userId, identity.symbol, identity.currency, deps);
   const crypto = identity.symbol && !identity.isin ? YAHOO_CRYPTO_SYMBOL.exec(identity.symbol) : null;

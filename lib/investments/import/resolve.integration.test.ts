@@ -42,4 +42,14 @@ describe("resolveIdentity: ripiego OpenFIGI per gli ISIN", () => {
     expect(match.kind).toBe("proposal");
     expect(called).toBe(false);
   });
+
+  it("negli strumenti del rendiconto resta manuale ma dice se esiste una quotazione da collegare", async () => {
+    const fromStatement = { ...identity, name: "ISHARES CORE MSCI WORLD" };
+    const found = await resolveIdentity("test-user", fromStatement, deps({ searchByIsin: async () => ({ status: "ok", hits: [HIT] }) }));
+    expect(found).toMatchObject({ kind: "proposal", input: { source: "manuale" }, detail: expect.stringContaining("quotazione trovata: SWDA.MI") });
+    const missing = await resolveIdentity("test-user", fromStatement, deps({ searchByIsin: async () => ({ status: "empty", hits: [] }) }));
+    expect(missing).toMatchObject({ detail: expect.stringContaining("nessuna quotazione trovata") });
+    const down = await resolveIdentity("test-user", fromStatement, deps({ searchByIsin: async () => ({ status: "unavailable", hits: [] }) }));
+    expect(down).toMatchObject({ input: { source: "manuale" }, detail: expect.not.stringContaining("quotazione") });
+  });
 });

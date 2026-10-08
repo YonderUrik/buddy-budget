@@ -44,7 +44,8 @@ export default function DiversificazionePage() {
       onRetry={() => overview.refetch()}
     >
       {view ? (
-        <>
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+          <div className="flex flex-col gap-10 lg:col-span-3">
           <PortfolioComposition
             currency={currency}
             groups={[
@@ -64,9 +65,8 @@ export default function DiversificazionePage() {
             ]}
           />
           {view.analysis.exposureRows.length > 0 ? <DiversificationCard analysis={view.analysis} currency={currency} /> : null}
-          {view.analysis.exposureRows.length > 1 ? (
-            <OverlapCard analysis={view.analysis} instrumentsById={view.instrumentsById} currency={currency} />
-          ) : null}
+          </div>
+          <div className="flex flex-col gap-10 lg:col-span-2">
           <AllocationCard
             allocation={view.analysis.allocation}
             targets={view.analysis.targets}
@@ -76,7 +76,11 @@ export default function DiversificazionePage() {
             currency={currency}
             onRegister={(instrumentId, amount) => registerPurchase({ instrumentId, amount: String(amount) })}
           />
-        </>
+          {view.analysis.exposureRows.length > 1 ? (
+            <OverlapCard analysis={view.analysis} instrumentsById={view.instrumentsById} currency={currency} />
+          ) : null}
+          </div>
+        </div>
       ) : null}
     </InvestmentsViewGate>
   );

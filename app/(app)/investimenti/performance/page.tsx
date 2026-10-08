@@ -49,20 +49,26 @@ export default function PerformancePage() {
             <p className="text-sm text-muted-foreground">Rendimento e rischio nel periodo</p>
             <NetWorthPeriodSelector value={period} onChange={setPeriod} />
           </div>
-          {overview.data ? <BrokerComparisonCard data={overview.data} period={period} today={today} /> : null}
-          {view.returns ? (
-            <ReturnsCard
-              returns={view.returns}
-              period={period}
-              benchmark={view.benchmark}
-              benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
-              benchmarkBackfill={benchmarkBackfill}
-              currency={currency}
-            />
-          ) : null}
-          {view.analysis.risk ? (
-            <RiskCard risk={view.analysis.risk} period={period} benchmarkName={view.benchmark?.name ?? null} currency={currency} />
-          ) : null}
+          <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+            <div className="flex flex-col gap-10 lg:col-span-3">
+              {overview.data ? <BrokerComparisonCard data={overview.data} period={period} today={today} /> : null}
+              {view.returns ? (
+                <ReturnsCard
+                  returns={view.returns}
+                  period={period}
+                  benchmark={view.benchmark}
+                  benchmarkFirstPriceDate={view.benchmarkFirstPriceDate}
+                  benchmarkBackfill={benchmarkBackfill}
+                  currency={currency}
+                />
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-10 lg:col-span-2">
+              {view.analysis.risk ? (
+                <RiskCard risk={view.analysis.risk} period={period} benchmarkName={view.benchmark?.name ?? null} currency={currency} />
+              ) : null}
+            </div>
+          </div>
           {historyReturns && historyReturns.length > 0 ? <ReturnHeatmapCard daily={historyReturns} currency={currency} today={today} /> : null}
         </>
       ) : null}

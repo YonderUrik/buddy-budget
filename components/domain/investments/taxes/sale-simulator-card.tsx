@@ -6,7 +6,6 @@
  */
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { InvestmentTransactionInput } from "@/lib/calc/investments";
@@ -17,6 +16,8 @@ import type { SellablePosition } from "@/lib/investments/tax-view";
 import { parseAmount } from "@/lib/validation/accounts";
 import { formatSignedCurrency } from "../gain-text";
 import { OperationFormField as Field } from "../operation-form-field";
+import { CalculatorIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 const CATEGORY_TEXT: Record<TaxCategory, string> = {
   diversi: "Reddito diverso: compensabile con lo zaino.",
@@ -69,11 +70,8 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
   const format = (amount: number) => formatCurrency(amount, currency);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prima di vendere</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <PanelSection icon={CalculatorIcon} title="Prima di vendere" color="var(--swatch-indigo)">
+      <div className="flex flex-col gap-4">
         <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
           <Field label="Posizione">
             <Select
@@ -131,7 +129,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
         ) : (
           <p className="text-sm text-muted-foreground">Inserisci quante quote vuoi vendere.</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

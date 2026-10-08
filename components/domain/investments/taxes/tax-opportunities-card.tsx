@@ -5,10 +5,11 @@
  * vendita metterebbe minusvalenze nello zaino. Informativa: non è un consiglio di vendita.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency } from "@/lib/format";
 import type { TaxOpportunities } from "@/lib/investments/tax-insights";
+import { LightbulbIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 /** Posizioni elencate per gruppo. */
 export const OPPORTUNITY_ROWS_LIMIT = 4;
@@ -27,11 +28,8 @@ export function TaxOpportunitiesCard({ opportunities, instrumentsById, currency,
   if (expiringThisYear <= 0 && losses.length === 0) return null;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Da sapere</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4 text-sm">
+    <PanelSection icon={LightbulbIcon} title="Da sapere" color="var(--swatch-amber)">
+      <div className="flex flex-col gap-4 text-sm">
         {expiringThisYear > 0 ? (
           <div className="flex flex-col gap-1.5">
             <p className="text-foreground">
@@ -69,7 +67,7 @@ export function TaxOpportunitiesCard({ opportunities, instrumentsById, currency,
           </div>
         ) : null}
         <p className="text-xs text-muted-foreground">Informazioni per capire l&apos;effetto fiscale, non un consiglio di vendita.</p>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

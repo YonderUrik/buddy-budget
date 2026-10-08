@@ -3,7 +3,6 @@
  * quanto le posizioni si muovono insieme, tutto in linguaggio semplice (le soglie sono in `plain-labels.ts`).
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { InvestmentsAnalysis } from "@/lib/investments/analysis-view";
 import { correlationInsight } from "@/lib/investments/risk-insights";
@@ -12,6 +11,8 @@ import { CorrelationFamilies } from "./correlation-families";
 import { CorrelationPairs } from "./correlation-pairs";
 import { OverlapPairRow } from "./overlap-pair-row";
 import { StockInFundsRow } from "./stock-in-funds-row";
+import { LayersIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 function decimal(value: number): string {
   return value.toFixed(2).replace(".", ",");
@@ -29,12 +30,9 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
   const insight = analysis.correlations ? correlationInsight(analysis.correlations) : null;
   const hasOverlaps = analysis.overlaps.length > 0 || analysis.stocksInFunds.length > 0;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sovrapposizioni</CardTitle>
-        <p className="text-sm text-muted-foreground">Quando due posizioni sono, in pratica, la stessa scommessa</p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-8">
+    <PanelSection icon={LayersIcon} title="Sovrapposizioni" color="var(--swatch-violet)">
+      <p className="text-sm text-muted-foreground">Quando due posizioni sono, in pratica, la stessa scommessa</p>
+      <div className="flex flex-col gap-8">
         <section className="flex flex-col gap-3" aria-label="Investimenti doppi">
           <div>
             <h3 className="text-sm font-medium text-foreground">Investimenti doppi</h3>
@@ -74,7 +72,7 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
             ) : null}
           </section>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

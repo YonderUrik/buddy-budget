@@ -3,10 +3,11 @@
  * costo annuo e patrimonio. Mostra solo le voci disponibili e dice cosa significano; se la fonte non risponde lo dice.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TitleFundamentals } from "@/lib/market-data/fundamentals";
 import { formatPct } from "../percent";
 import { formatCompactAmount, formatRatio } from "./title-format";
+import { GaugeIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 interface Row {
   label: string;
@@ -44,32 +45,28 @@ export function TitleFundamentalsCard({ fundamentals, status, currency }: TitleF
   if (status === "unsupported") return null;
   const rows = fundamentals ? fundamentalsRows(fundamentals, currency) : [];
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Numeri chiave</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {status === "unavailable"
-              ? "Yahoo non ha risposto o non ha questi dati per il titolo. Riprova più tardi."
-              : "Nessun dato disponibile per questo titolo."}
-          </p>
-        ) : (
-          <>
-            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-              {rows.map((row) => (
-                <div key={row.label}>
-                  <dt className="text-xs text-muted-foreground">{row.label}</dt>
-                  <dd className="text-base font-medium tabular-nums text-foreground">{row.value}</dd>
-                  <p className="text-xs text-muted-foreground">{row.hint}</p>
-                </div>
-              ))}
-            </dl>
-            <p className="mt-4 text-xs text-muted-foreground">Fonte: Yahoo Finance, aggiornata una volta al giorno. Dati non ufficiali, da usare come orientamento.</p>
-          </>
-        )}
-      </CardContent>
-    </Card>
+    <PanelSection icon={GaugeIcon} title="Numeri chiave" color="var(--swatch-indigo)">
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {status === "unavailable"
+            ? "Yahoo non ha risposto o non ha questi dati per il titolo. Riprova più tardi."
+            : "Nessun dato disponibile per questo titolo."}
+        </p>
+      ) : (
+        <>
+          <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+            {rows.map((row) => (
+              <div key={row.label}>
+                <dt className="text-xs text-muted-foreground">{row.label}</dt>
+                <dd className="text-base font-medium tabular-nums text-foreground">{row.value}</dd>
+                <p className="text-xs text-muted-foreground">{row.hint}</p>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-4 text-xs text-muted-foreground">Fonte: Yahoo Finance, aggiornata una volta al giorno. Dati non ufficiali, da usare come orientamento.</p>
+        </>
+      )}
+    
+    </PanelSection>
   );
 }

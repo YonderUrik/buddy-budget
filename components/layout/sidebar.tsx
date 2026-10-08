@@ -30,7 +30,6 @@ import {
   TrendingUp,
   Umbrella,
   CreditCard,
-  Target,
   BarChart3,
   ChevronLeft,
   ChevronRight,
@@ -90,7 +89,6 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
   { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
-  { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
   { label: "Analitiche", href: "/analitiche", icon: BarChart3 },
 ];
 

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.30.1](https://github.com/YonderUrik/buddy-budget/compare/v0.30.0...v0.30.1) (2026-10-08)
+
+
+### Correzioni
+
+* l'import non collega la quotazione se l'ISIN esiste in un'altra valuta ([#217](https://github.com/YonderUrik/buddy-budget/issues/217)) ([09bd483](https://github.com/YonderUrik/buddy-budget/commit/09bd4837e3b315dad709c7a4ca96f237d157613e))
+
 ## [0.30.0](https://github.com/YonderUrik/buddy-budget/compare/v0.29.0...v0.30.0) (2026-10-08)
 
 

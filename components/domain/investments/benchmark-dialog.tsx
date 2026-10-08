@@ -19,7 +19,7 @@ export interface BenchmarkDialogProps {
 
 export function BenchmarkDialog({ open, onOpenChange, current, currency }: BenchmarkDialogProps) {
   const update = useUpdatePortfolioMutation();
-  const create = useCreateInstrumentMutation();
+  const create = useCreateInstrumentMutation({ deferHistory: true });
   const pending = create.isPending || update.isPending;
 
   function save(benchmarkInstrumentId: string | null) {
@@ -80,6 +80,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
           onChange={(instrument) => { create.reset(); save(instrument.id); }}
           defaultCurrency={currency}
           disabled={pending}
+          deferHistory
           placeholder="Oppure cerca un altro strumento"
         />
         {pending ? <p role="status" className="text-sm text-muted-foreground">Salvo e scarico i prezzi…</p> : null}

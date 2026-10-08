@@ -28,6 +28,8 @@ export interface InstrumentPickerProps {
   placeholder?: string;
   /** Blocca la selezione durante il salvataggio del chiamante. */
   disabled?: boolean;
+  /** Il chiamante avvia il recupero storico dopo aver salvato la selezione. */
+  deferHistory?: boolean;
   className?: string;
 }
 
@@ -49,12 +51,13 @@ export function InstrumentPicker({
   suggestions = [],
   placeholder = "Cerca per nome, ticker o ISIN",
   disabled = false,
+  deferHistory = false,
   className,
 }: InstrumentPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const search = useInstrumentSearchQuery(query);
-  const create = useCreateInstrumentMutation();
+  const create = useCreateInstrumentMutation({ deferHistory });
   const suggestionRank = new Map(suggestions.map((i, index) => [i.id, index]));
   const known = [...(search.data?.known ?? [])].sort(
     (a, b) => (suggestionRank.get(a.id) ?? Infinity) - (suggestionRank.get(b.id) ?? Infinity)

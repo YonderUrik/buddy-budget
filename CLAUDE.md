@@ -219,7 +219,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### Rimandato consapevolmente
 
-- **Investimenti**: OpenFIGI per ISIN→ticker, più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
+- **Investimenti**: più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
 - **Debiti**: aggiornamento automatico Euribor, valute estere, tasso misto/cap, debiti informali, push sulle scadenze, quota capitale/interessi nel Cash flow, modifica dei dati di un debito dalla UI, ordinamento dei debiti.
 - **Impostazioni**: cambio email, scollegare Google, notifiche email, import dell'export.
 - **Sidebar**: popover al passaggio del mouse sul chip compresso, sezione "Prossimi eventi", sezioni riordinabili, eventuale sidebar a gruppi (alternativa B).

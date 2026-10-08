@@ -16,7 +16,7 @@ import {
   isFakeMarketData,
 } from "./fake";
 import { refreshCryptoCatalog, searchCryptoCached } from "./crypto-catalog";
-import { fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
+import { fetchOpenFigiListings, fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
 import {
   getCachedYahooSearch,
   redisBackfillStore,
@@ -176,4 +176,10 @@ export async function ensureDividendsSafely(instruments: Instrument[], schedule:
 export function fundamentalsOnProviders(instrument: Pick<Instrument, "id" | "type" | "priceMode">) {
   const deps = marketDataDeps();
   return loadFundamentals(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
+}
+
+/** Quotazioni di un ISIN su OpenFIGI (vuote con `MARKET_DATA_FAKE=1`). Usa il `fetch` normale: non serve il TLS da browser. */
+export async function listingsOnOpenFigi(isin: string) {
+  if (isFakeMarketData()) return [];
+  return fetchOpenFigiListings(isin, { fetch: globalThis.fetch, env: process.env });
 }

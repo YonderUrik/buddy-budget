@@ -6,13 +6,15 @@
  */
 
 import * as React from "react";
-import { PiggyBankIcon } from "lucide-react";
+import { LightbulbIcon, PiggyBankIcon } from "lucide-react";
+import { PanelSection } from "@/components/domain/investments";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import type { DebtView } from "@/lib/debts/view";
 import { DebtExtraSim } from "./debt-extra-sim";
 import { DebtRefinanceSim } from "./debt-refinance-sim";
+import { DEBTS_COLORS } from "./debts-theme";
 
 type SimulationKind = "extra" | "estinzione" | "surroga";
 
@@ -36,8 +38,7 @@ export function DebtSimulationPanel({ debt, currency, onOpenEarly }: DebtSimulat
     track("debt_simulation_opened", { kind: next });
   };
   return (
-    <section aria-label="Simula" className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">E se…</h3>
+    <PanelSection icon={LightbulbIcon} title="E se…" color={DEBTS_COLORS.simulate}>
       <SegmentedControl options={OPTIONS} value={kind} onChange={select} ariaLabel="Ipotesi da simulare" stretch />
       {kind === "extra" ? <DebtExtraSim debt={debt} currency={currency} /> : null}
       {kind === "estinzione" ? (
@@ -50,6 +51,6 @@ export function DebtSimulationPanel({ debt, currency, onOpenEarly }: DebtSimulat
         </div>
       ) : null}
       {kind === "surroga" ? <DebtRefinanceSim debt={debt} currency={currency} /> : null}
-    </section>
+    </PanelSection>
   );
 }

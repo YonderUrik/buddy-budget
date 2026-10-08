@@ -9,13 +9,14 @@ import * as React from "react";
 import { Trash2Icon } from "lucide-react";
 import { InfoHint } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { lossesByExpiry, type LossEntry } from "@/lib/calc/taxes";
 import { formatCurrency } from "@/lib/format";
 import type { InvestmentData } from "@/lib/investments/data";
 import { useCreateTaxCarryforwardMutation, useDeleteTaxCarryforwardMutation } from "@/lib/queries/investments";
 import { parseAmount } from "@/lib/validation/accounts";
+import { BackpackIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 export interface LossCarryforwardCardProps {
   losses: LossEntry[];
@@ -69,15 +70,14 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center gap-1">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Zaino delle minusvalenze</CardTitle>
+    <PanelSection icon={BackpackIcon} title="Zaino delle minusvalenze" color="var(--swatch-indigo)"
+      action={
         <InfoHint label="Cos'è lo zaino">
           Le minusvalenze di un anno si possono usare fino al 31 dicembre del quarto anno dopo, per non pagare tasse sulle plusvalenze di
           azioni, obbligazioni ed ETC (non sui guadagni degli ETF). Gli importi sono portati all&apos;aliquota del 26%.
         </InfoHint>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      }>
+      <div className="flex flex-col gap-4">
         <p className="max-w-prose text-base text-foreground">
           {total > 0 ? (
             <>
@@ -140,7 +140,7 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
             </Button>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

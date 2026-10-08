@@ -8,7 +8,8 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LinkIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 import { useLinkQuotationMutation, useQuotationCandidatesQuery } from "@/lib/queries/titles";
 
 export interface TitleQuotationCardProps {
@@ -24,11 +25,7 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
   const data = candidates.data;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prezzi automatici</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <PanelSection icon={LinkIcon} title="Prezzi automatici" color="var(--swatch-teal)" className="gap-3">
         <p className="text-sm text-muted-foreground">
           Questo titolo ha solo i prezzi del rendiconto ({isin}). Collegalo a una quotazione in {currency} per avere prezzi aggiornati ogni giorno, rendimenti,
           settori e sovrapposizioni.
@@ -46,9 +43,9 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
             {candidates.error.message}
           </p>
         ) : data?.status === "ok" ? (
-          <ul className="flex flex-col divide-y rounded-lg border">
+          <ul className="flex flex-col divide-y">
             {data.candidates.map((candidate) => (
-              <li key={candidate.symbol} className="flex items-center gap-3 px-3 py-2.5">
+              <li key={candidate.symbol} className="flex items-center gap-3 py-2.5">
                 <div className="min-w-0 flex-1 text-sm">
                   <p className="font-medium text-foreground">{candidate.symbol}</p>
                   <p className="text-xs text-muted-foreground">
@@ -71,7 +68,6 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
             {link.error.message}
           </p>
         ) : null}
-      </CardContent>
-    </Card>
+    </PanelSection>
   );
 }

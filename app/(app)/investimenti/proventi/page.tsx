@@ -97,15 +97,16 @@ export default function DividendiPage() {
           Scarico lo storico dei dividendi di {pending === 1 ? "uno strumento" : `${pending} strumenti`}…
         </p>
       ) : null}
-      {view.byMonth.length > 0 ? <IncomeMonthsCard payments={view.history.payments} instrumentsById={view.instrumentsById} years={view.byMonth} currency={currency} /> : null}
-      {view.byInstrument.length > 0 ? (
-        <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
-      ) : null}
-      {view.byMonth.length === 0 ? <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">Nessun dividendo o cedola registrato.</p> : null}
-      {view.missing.length > 0 ? (
-        <details className="rounded-xl border px-4 py-3">
-          <summary className="cursor-pointer text-sm font-medium">Da registrare ({view.missing.length})</summary>
-          <div className="pt-4">
+      <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+        <div className="flex flex-col gap-10 lg:col-span-3">
+          {view.byMonth.length > 0 ? <IncomeMonthsCard payments={view.history.payments} instrumentsById={view.instrumentsById} years={view.byMonth} currency={currency} /> : null}
+          {view.byInstrument.length > 0 ? (
+            <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
+          ) : null}
+          {view.byMonth.length === 0 ? <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">Nessun dividendo o cedola registrato.</p> : null}
+        </div>
+        <div className="flex flex-col gap-10 lg:col-span-2">
+          {view.missing.length > 0 ? (
             <MissingIncomeCard
               missing={view.missing}
               instrumentsById={view.instrumentsById}
@@ -116,15 +117,10 @@ export default function DividendiPage() {
               dismissingKey={dismissingKey}
               todayKey={view.todayKey}
             />
-          </div>
-        </details>
-      ) : null}
-      <details className="rounded-xl border px-4 py-3">
-        <summary className="cursor-pointer text-sm font-medium">Previsioni · prossimi 12 mesi</summary>
-        <div className="pt-4">
+          ) : null}
           <IncomeForecastCard forecast={view.forecast} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
         </div>
-      </details>
+      </div>
       <InstrumentSettingsDialog
         instrument={couponsFor}
         setting={couponsFor ? overview.data?.instrumentSettings.find((s) => s.instrumentId === couponsFor.id) : undefined}

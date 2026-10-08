@@ -3,8 +3,9 @@
 /** Card del regime fiscale del portafoglio (amministrato o dichiarativo), con cosa cambia e l'avvertenza sulle stime. */
 
 import { SegmentedControl } from "@/components/domain/shared";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TaxRegime } from "@/lib/db/schema/investments";
+import { LandmarkIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 const OPTIONS = [
   { value: "amministrato", label: "Amministrato" },
@@ -26,23 +27,22 @@ export interface TaxRegimeCardProps {
 
 export function TaxRegimeCard({ regime, onChange, saving }: TaxRegimeCardProps) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Regime fiscale</CardTitle>
+    <PanelSection icon={LandmarkIcon} title="Regime fiscale" color="var(--swatch-slate)"
+      action={
         <SegmentedControl
           options={OPTIONS}
           value={regime}
           onChange={(value) => !saving && value !== regime && onChange(value)}
           ariaLabel="Regime fiscale del portafoglio"
         />
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2 text-sm">
+      }>
+      <div className="flex flex-col gap-2 text-sm">
         <p className="max-w-prose text-foreground">{EXPLANATIONS[regime]}</p>
         <p className="max-w-prose text-muted-foreground">
           Le crypto seguono sempre le regole della dichiarazione. Sono stime per capire i numeri secondo le regole italiane, non un
           calcolo fiscale: per la dichiarazione fai riferimento al broker o a un commercialista.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

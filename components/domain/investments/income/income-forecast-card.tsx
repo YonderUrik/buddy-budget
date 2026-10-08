@@ -7,12 +7,13 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import type { IncomeForecast, ProjectedIncome } from "@/lib/investments/dividends";
 import { shortMonthLabel } from "../percent";
 import { MonthBars } from "./month-bars";
+import { CalendarClockIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 /** Prossimi incassi mostrati prima di "Mostra tutti". */
 export const FORECAST_EVENTS_LIMIT = 6;
@@ -47,11 +48,8 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
   const missingTerms = forecast.bondsWithoutTerms.map((id) => instrumentsById.get(id)).filter((i): i is Instrument => i !== undefined);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prossimi 12 mesi</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <PanelSection icon={CalendarClockIcon} title="Prossimi 12 mesi" color="var(--swatch-amber)">
+      <div className="flex flex-col gap-5">
         {forecast.events.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             Nessun incasso previsto: i tuoi strumenti non hanno staccato dividendi nell&apos;ultimo anno (es. ETF ad accumulazione).
@@ -114,7 +112,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
             </ul>
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

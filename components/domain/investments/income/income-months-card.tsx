@@ -8,11 +8,12 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { track } from "@/lib/analytics";
 import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import type { IncomeYearDetail } from "@/lib/investments/dividends";
 import { formatPct, shortMonthLabel } from "../percent";
 import { MonthBars } from "./month-bars";
+import { BanknoteIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 export interface IncomeMonthsCardProps {
   years: IncomeYearDetail[];
@@ -30,12 +31,11 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dividendi incassati</CardTitle>
-        {options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel="Anno" /> : null}
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <PanelSection icon={BanknoteIcon} title="Dividendi incassati" color="var(--swatch-amber)"
+      action={
+        options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel="Anno" /> : null
+      }>
+      <div className="flex flex-col gap-4">
         <dl className="grid grid-cols-3 gap-3 text-sm">
           <div>
             <dt className="text-xs text-muted-foreground">Lordo</dt>
@@ -75,7 +75,7 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
           <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti del {year.year}</summary>
           <IncomePayments payments={payments.filter((payment) => payment.date.startsWith(String(year.year)))} currency={currency} instrumentsById={instrumentsById} />
         </details>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

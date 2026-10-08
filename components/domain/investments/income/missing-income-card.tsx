@@ -8,10 +8,11 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import type { MissingIncome } from "@/lib/investments/dividends";
+import { CircleAlertIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 /** Proposte mostrate prima di "Mostra tutte". */
 export const MISSING_INCOME_LIMIT = 5;
@@ -58,11 +59,8 @@ export function MissingIncomeCard({
   const count = missing.length;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Da registrare</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <PanelSection icon={CircleAlertIcon} title="Da registrare" color="var(--neg)">
+      <div className="flex flex-col gap-3">
         <p className="max-w-prose text-sm text-muted-foreground">
           {count === 1 ? "Un provento" : `${count} proventi`}
           {" che probabilmente hai incassato: avevi le quote il giorno dello stacco, ma non c'è"} un dividendo o una cedola registrati vicino a quella data. Controlla l&apos;importo netto sull&apos;estratto del broker.
@@ -110,7 +108,7 @@ export function MissingIncomeCard({
             </Button>
           ) : null}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

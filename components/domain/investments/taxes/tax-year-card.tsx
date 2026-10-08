@@ -7,10 +7,11 @@
 
 import * as React from "react";
 import { InfoHint, SegmentedControl } from "@/components/domain/shared";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TaxYear } from "@/lib/calc/taxes";
 import type { TaxRegime } from "@/lib/db/schema/investments";
 import { formatCurrency } from "@/lib/format";
+import { ReceiptTextIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 /** Anni selezionabili (dal più recente). */
 export const TAX_YEARS_SHOWN = 5;
@@ -46,16 +47,13 @@ export function TaxYearCard({ years, regime, currency, currentYear }: TaxYearCar
   const gap = year.estimatedTax - year.taxOnCrypto - year.withheld;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {year.year === currentYear ? "Quest'anno" : `Anno ${year.year}`}
-        </CardTitle>
-        {recent.length > 1 ? (
+    <PanelSection icon={ReceiptTextIcon} title={year.year === currentYear ? "Quest'anno" : `Anno ${year.year}`} color="var(--neg)"
+      action={
+        recent.length > 1 ? (
           <SegmentedControl options={recent.map((y) => ({ value: String(y.year), label: String(y.year) }))} value={String(year.year)} onChange={setSelected} ariaLabel="Anno" />
-        ) : null}
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+        ) : null
+      }>
+      <div className="flex flex-col gap-4">
         <p className="max-w-prose text-base text-foreground">
           Imposte stimate su quanto hai venduto: <span className="font-semibold tabular-nums">{format(year.estimatedTax)}</span>
           {regime === "dichiarativo" && year.estimatedTax > 0 ? <span className="text-muted-foreground">, da versare in dichiarazione.</span> : "."}
@@ -104,7 +102,7 @@ export function TaxYearCard({ years, regime, currency, currentYear }: TaxYearCar
             Hai venduto in guadagno ETF non armonizzati: in realtà sono tassati all&apos;aliquota IRPEF in dichiarazione, qui sono stimati al 26%.
           </p>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

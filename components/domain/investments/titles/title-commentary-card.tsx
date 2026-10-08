@@ -7,8 +7,8 @@
 
 import { SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCommentaryMutation } from "@/lib/queries/titles";
+import { PanelSection } from "../panel-section";
 
 export interface TitleCommentaryCardProps {
   instrumentId: string;
@@ -18,15 +18,14 @@ export function TitleCommentaryCard({ instrumentId }: TitleCommentaryCardProps) 
   const commentary = useCommentaryMutation(instrumentId);
   const text = commentary.data?.text ?? null;
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between gap-3">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Commento</CardTitle>
+    <PanelSection icon={SparklesIcon} title="Commento" color="var(--swatch-violet)"
+      action={
         <Button variant="outline" size="sm" className="gap-1.5" disabled={commentary.isPending} onClick={() => commentary.mutate()}>
           <SparklesIcon size={14} aria-hidden="true" />
           {commentary.isPending ? "Sto scrivendo…" : text ? "Riscrivi" : "Genera commento"}
         </Button>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
+      }>
+      <div className="flex flex-col gap-2">
         {text ? (
           <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">{text}</p>
         ) : commentary.isError ? (
@@ -41,7 +40,7 @@ export function TitleCommentaryCard({ instrumentId }: TitleCommentaryCardProps) 
         <p className="text-xs text-muted-foreground">
           Generato automaticamente da dati di prezzo e numeri chiave: può sbagliare e non è una raccomandazione di investimento.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

@@ -7,10 +7,11 @@
 
 import { IncomePayments } from "./income/income-payments";
 import { track } from "@/lib/analytics";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatCurrency } from "@/lib/format";
 import type { IncomeHistory } from "@/lib/investments/income";
+import { HandCoinsIcon } from "lucide-react";
+import { PanelSection } from "./panel-section";
 
 function pct(ratio: number): string {
   return `${(ratio * 100).toFixed(1).replace(".", ",")}%`;
@@ -27,11 +28,8 @@ export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeH
   const maxYear = Math.max(...income.years.map((y) => y.amount), 0);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dividendi e cedole</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <PanelSection icon={HandCoinsIcon} title="Dividendi e cedole" color="var(--swatch-amber)">
+      <div className="flex flex-col gap-5">
         <p className="max-w-prose text-base text-foreground">
           Negli ultimi 12 mesi hai incassato <span className="font-semibold tabular-nums text-pos">{format(income.trailing)}</span> netti
           {income.yieldOnCost !== null && income.trailing > 0 ? (
@@ -72,7 +70,7 @@ export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeH
             </ul>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

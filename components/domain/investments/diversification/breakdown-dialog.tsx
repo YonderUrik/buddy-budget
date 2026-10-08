@@ -8,13 +8,17 @@
 import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {Dialog, DialogContent} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { ExposureRow } from "@/lib/investments/analysis-view";
 import { EXPOSURE_SOURCE_LABELS } from "@/lib/investments/exposure";
 import { AREA_LABELS, MANUAL_AREA_KEYS, MANUAL_SECTOR_KEYS, SECTOR_LABELS } from "@/lib/investments/exposure-keys";
 import { useUpdateBreakdownMutation } from "@/lib/queries/investments";
 import { cn } from "@/lib/utils";
+import { GlobeIcon } from "lucide-react";
+import { PanelDialogHeader } from "../dialog-parts";
+import { PercentIcon } from "lucide-react";
+import { DialogActions, DialogSection, DialogSections } from "../dialog-parts";
 
 type Dimension = "areas" | "sectors";
 
@@ -118,17 +122,15 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
   const isManual = source === "manuale" && !current.reset;
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Correggi {row.instrument.name}</DialogTitle>
-        <DialogDescription>
-          Metti le percentuali che trovi nella scheda dell&apos;emittente (KID o sito del fondo). Quello che manca a 100% resta
-          &ldquo;non classificato&rdquo;. La correzione vale solo per te.
-        </DialogDescription>
-      </DialogHeader>
+      <PanelDialogHeader icon={GlobeIcon} title={<>Correggi {row.instrument.name}</>} description="Metti le percentuali che trovi nella scheda dell&apos;emittente (KID o sito del fondo). Quello che manca a 100% resta &ldquo;non classificato&rdquo;. La correzione vale solo per te." color="var(--swatch-blue)" />
+      <DialogSections>
+      <DialogSection
+        title="Percentuali"
+        icon={PercentIcon}
+        color="var(--swatch-blue)"
+        description={current.reset ? "Tornerà ai dati automatici quando salvi." : `Ora: ${EXPOSURE_SOURCE_LABELS[current.dirty ? "manuale" : source]}.`}
+      >
       <SegmentedControl options={DIMENSION_OPTIONS} value={dimension} onChange={setDimension} ariaLabel="Cosa correggere" stretch />
-      <p className="text-xs text-muted-foreground">
-        {current.reset ? "Tornerà ai dati automatici quando salvi." : `Ora: ${EXPOSURE_SOURCE_LABELS[current.dirty ? "manuale" : source]}.`}
-      </p>
       <div className="grid max-h-72 grid-cols-2 gap-x-4 gap-y-2 overflow-y-auto pr-1">
         {KEYS[dimension].map((key) => (
           <label key={key} className="flex items-center justify-between gap-2 text-sm text-foreground">
@@ -150,8 +152,10 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
         Totale {sum.toFixed(1).replace(".", ",")}%
         {sum < 100 - SUM_TOLERANCE_PERCENT ? ` · non classificato ${(100 - sum).toFixed(1).replace(".", ",")}%` : ""}
       </p>
+      </DialogSection>
+      </DialogSections>
       {update.isError ? <p className="text-sm text-destructive">{update.error.message}</p> : null}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <DialogActions>
         {isManual || current.dirty ? (
           <Button variant="ghost" className="text-muted-foreground" onClick={resetDimension} disabled={update.isPending}>
             Torna all&apos;automatico
@@ -167,7 +171,7 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
             {update.isPending ? "Salvo…" : "Salva"}
           </Button>
         </div>
-      </div>
+      </DialogActions>
     </>
   );
 }

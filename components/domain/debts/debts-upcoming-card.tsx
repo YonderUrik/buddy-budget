@@ -3,8 +3,8 @@
 /** Prossime rate dei finanziamenti con il pulsante per segnarle pagate senza entrare nel debito; una rata scaduta è evidenziata. */
 
 import * as React from "react";
-import { CheckIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarClockIcon, CheckIcon } from "lucide-react";
+import { PanelSection } from "@/components/domain/investments";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { todayIso } from "@/lib/debts/dates";
 import { findDueRow } from "@/lib/debts/overview-insights";
@@ -12,6 +12,7 @@ import type { DebtDueItem, DebtView } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { PayInstallmentDialog } from "./pay-installment-dialog";
+import { DEBTS_COLORS } from "./debts-theme";
 
 export interface DebtsUpcomingCardProps {
   items: DebtDueItem[];
@@ -40,20 +41,16 @@ export function DebtsUpcomingCard({ items, debts, currency }: DebtsUpcomingCardP
   if (items.length === 0) return null;
   const today = todayIso();
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prossime rate</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className="divide-y">
+    <PanelSection icon={CalendarClockIcon} title="Prossime rate" color={DEBTS_COLORS.dues}>
+      <ul>
           {items.map((item, index) => {
             const [, month, day] = item.date.split("-").map(Number);
             const days = daysBetween(today, item.date);
             const debt = debts.find((d) => d.id === item.debtId);
             const row = debt ? findDueRow(debt, item.date) : undefined;
             return (
-              <li key={`${item.debtId}-${item.date}`} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <span className={cn("flex size-11 shrink-0 flex-col items-center justify-center rounded-xl bg-muted leading-tight", index === 0 && !item.overdue && "bg-primary/10 text-primary", item.overdue && "bg-neg-soft text-neg")}>
+              <li key={`${item.debtId}-${item.date}`} className="flex items-center gap-3 border-b py-3 last:border-b-0">
+                <span className={cn("flex size-11 shrink-0 flex-col items-center justify-center rounded-xl border leading-tight text-muted-foreground", index === 0 && !item.overdue && "border-transparent bg-primary/10 text-primary", item.overdue && "border-transparent bg-neg-soft text-neg")}>
                   <span className="font-heading text-base font-medium">{day}</span>
                   <span className="text-[11px] font-semibold">{MONTH_ABBR[month - 1]}</span>
                 </span>
@@ -74,9 +71,8 @@ export function DebtsUpcomingCard({ items, debts, currency }: DebtsUpcomingCardP
               </li>
             );
           })}
-        </ul>
-      </CardContent>
+      </ul>
       <PayInstallmentDialog debtId={pay?.debtId ?? ""} row={pay?.row ?? null} currency={currency} onOpenChange={(open) => !open && setPay(null)} />
-    </Card>
+    </PanelSection>
   );
 }

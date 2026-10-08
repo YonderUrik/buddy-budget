@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDownIcon, DatabaseIcon } from "lucide-react";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
@@ -49,8 +50,12 @@ export function ImportManagement() {
     try { await deletion.mutateAsync({ id: selection.id, confirmedIds: selection.ids }); setSelection(null); }
     catch { /* Mutation error stays visible in the dialog. */ }
   }
-  return <details className="rounded-lg border p-4">
-    <summary className="cursor-pointer font-medium focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Gestisci importazioni</summary>
+  return <details className="group">
+    <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+      <span className="grid size-9 place-items-center rounded-full" style={{ color: "var(--swatch-slate)", backgroundColor: "color-mix(in oklab, var(--swatch-slate) 16%, transparent)" }} aria-hidden="true"><DatabaseIcon className="size-[18px]" /></span>
+      <h2 className="font-heading text-lg font-medium text-foreground">Gestisci importazioni</h2>
+      <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+    </summary>
     <div className="mt-4 flex flex-col gap-4">
     <div className="flex flex-wrap items-center gap-3"><Button onClick={openImport}>Nuova importazione</Button><Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">Carica un CSV personale →</Link></div>
     <p className="text-sm text-muted-foreground">Tutti i caricamenti, dal più recente: rendiconti dei broker e CSV personali. Prima di eliminare, controlla le operazioni e gli eventuali altri caricamenti interessati nella conferma.</p>
@@ -58,10 +63,10 @@ export function ImportManagement() {
     {query.isError && <p role="alert">Impossibile caricare i rendiconti. <button onClick={() => query.refetch()}>Riprova</button></p>}
     {personal.isError && <p role="alert">Impossibile caricare i CSV personali. <button onClick={() => personal.refetch()}>Riprova</button></p>}
     {!query.isLoading && !personal.isPending && !query.isError && !personal.isError && !imports.length && <p>Nessuna importazione.</p>}
-    {!!imports.length && <ul className="divide-y rounded-lg border" aria-label="Tutte le importazioni">{imports.map(item => {
+    {!!imports.length && <ul className="divide-y" aria-label="Tutte le importazioni">{imports.map(item => {
       const name = item.kind === "personal" ? sourceNames.get(item.job.formatId) ?? "CSV personale" : item.document.statement.provider === "trade-republic" ? "Trade Republic" : item.document.statement.provider === "degiro" ? "DEGIRO" : `Interactive Brokers · conto …${item.document.statement.account.slice(-4)}`;
       const date = new Date(item.createdAt).toLocaleString("it-IT");
-      return <li key={`${item.kind}:${item.id}`} className="flex flex-wrap items-center justify-between gap-3 p-4">
+      return <li key={`${item.kind}:${item.id}`} className="flex flex-wrap items-center justify-between gap-3 py-3">
         <div><p className="font-medium">{name}</p><p className="text-sm text-muted-foreground">{item.kind === "personal" ? `CSV personale · ${personalImportLabels[item.job.status] ?? item.job.status}` : `${item.document.statement.from} – ${item.document.statement.to}`} · caricato il {date}</p></div>
         <div className="flex items-center gap-2">
           {item.kind === "personal" ? <Link href={`/importazioni?job=${item.id}`} className="text-sm font-medium text-primary hover:underline" aria-label={`Apri importazione ${name} del ${date}`}>Apri importazione →</Link> : <Button variant="outline" onClick={openImport}>Aggiorna CSV</Button>}

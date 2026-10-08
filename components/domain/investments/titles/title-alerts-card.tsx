@@ -9,7 +9,6 @@ import * as React from "react";
 import { BellIcon, BellRingIcon, Trash2Icon } from "lucide-react";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PriceAlertDirection, UserPriceAlert } from "@/lib/db/schema/investments";
@@ -17,6 +16,7 @@ import { ALERT_DIRECTION_LABELS } from "@/lib/investments/alerts";
 import { formatShortDate } from "@/lib/format";
 import { useCreateAlertMutation, useDeleteAlertMutation } from "@/lib/queries/titles";
 import { formatPrice } from "./title-format";
+import { PanelSection } from "../panel-section";
 
 const DIRECTION_OPTIONS: { value: PriceAlertDirection; label: string }[] = [
   { value: "sopra", label: "Sale sopra" },
@@ -52,11 +52,8 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Avvisi di prezzo</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <PanelSection icon={BellIcon} title="Avvisi di prezzo" color="var(--swatch-amber)">
+      <div className="flex flex-col gap-4">
         {alerts.length > 0 ? (
           <ul className="flex flex-col divide-y rounded-lg border">
             {alerts.map((alert) => {
@@ -121,7 +118,7 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
             ) : null}
           </form>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

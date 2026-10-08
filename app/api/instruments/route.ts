@@ -20,6 +20,12 @@ async function handlePost(request: NextRequest) {
   const outcome = await createOrReuseInstrument(session.user.id, parsed.data, { quoteMeta: quoteMetaOnProviders });
   if (!outcome.ok) return Response.json({ error: outcome.error }, { status: outcome.status });
 
+  // Il benchmark avvia lo storico completo nel PATCH del portafoglio: evitare un download
+  // iniziale concorrente di 30 giorni, che impedirebbe al secondo di acquisire il lock.
+  if (request.nextUrl.searchParams.get("history") === "deferred") {
+    return Response.json(outcome.instrument, { status: outcome.created ? 201 : 200 });
+  }
+
   const from = new Date(Date.now() - INITIAL_HISTORY_DAYS * 86_400_000).toISOString().slice(0, 10);
   try {
     await ensureHistory(outcome.instrument, from, after);

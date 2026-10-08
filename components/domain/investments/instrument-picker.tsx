@@ -26,6 +26,8 @@ export interface InstrumentPickerProps {
   suggestions?: Instrument[];
   /** Testo del bottone quando nessuno strumento è scelto. */
   placeholder?: string;
+  /** Blocca la selezione durante il salvataggio del chiamante. */
+  disabled?: boolean;
   className?: string;
 }
 
@@ -46,6 +48,7 @@ export function InstrumentPicker({
   defaultCurrency,
   suggestions = [],
   placeholder = "Cerca per nome, ticker o ISIN",
+  disabled = false,
   className,
 }: InstrumentPickerProps) {
   const [open, setOpen] = React.useState(false);
@@ -73,6 +76,7 @@ export function InstrumentPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        disabled={disabled}
         className={cn(
           "flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-left text-sm",
           className

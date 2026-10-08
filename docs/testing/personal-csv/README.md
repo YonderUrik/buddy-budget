@@ -74,3 +74,9 @@ Prova reale successiva alla migration 0024: nuovo caricamento Trade Republic con
 ![Importazione eliminata](11-deleted.jpg)
 
 Lo stesso CSV è stato quindi ricaricato e confermato nuovamente usando il parser conservato. Un nuovo import cancellabile resta disponibile nell’account locale per la prova manuale.
+
+### Filtro broker dopo la cancellazione
+
+I conti vuoti conservati per reimportare non aggiungono più un broker al filtro: deve restare almeno un’operazione, un rendiconto o un saldo non nullo. Verificato dopo refresh completo: solo DEGIRO e Interactive Brokers, senza Trade Republic eliminato. Nove test filtro/liquidità passati, inclusi saldo negativo, rendiconto a saldo zero e operazioni ancora presenti; TypeScript ed ESLint passati.
+
+![Filtro broker aggiornato](12-broker-filter-after-delete.jpg)

@@ -128,3 +128,21 @@ it("filters cash including cash-only brokers without changing securities valuati
   expect(investmentBrokerGroups(original)).toHaveLength(2);
   expect(filterInvestmentBrokers(original, new Set(["degiro", "interactive-brokers"])).brokerCash).toEqual([]);
 });
+
+
+it("hides retained empty broker accounts after deletion while preserving active or cash-only history", () => {
+  const original = mixed();
+  original.brokerCash = [
+    { accountId: "tr", provider: "trade-republic", balance: 0, name: "TR", statementDate: null },
+  ];
+  expect(investmentBrokerGroups(original).map(g => g.id)).toEqual(["degiro", "interactive-brokers"]);
+  original.brokerCash[0].statementDate = "2026-09-30";
+  expect(investmentBrokerGroups(original).map(g => g.id)).toContain("trade-republic");
+  original.brokerCash[0].statementDate = null;
+  original.brokerCash[0].balance = -12;
+  expect(investmentBrokerGroups(original).map(g => g.id)).toContain("trade-republic");
+  original.brokerCash[0].balance = 0;
+  original.brokerSources!.push({ accountKey: "tr", provider: "trade-republic" });
+  original.transactions.push({ ...original.transactions[0], id: "tr-operation", statementAccountKey: "tr" });
+  expect(investmentBrokerGroups(original).find(g => g.id === "trade-republic")?.operations).toBe(1);
+});

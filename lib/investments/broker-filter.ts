@@ -22,6 +22,8 @@ export function investmentBrokerGroups(data: InvestmentData): BrokerGroup[] {
     group.operations += 1; groups.set(id, group);
   }
   for (const cash of data.brokerCash ?? []) {
+    // Empty accounts are retained for reimport, but are not active broker history.
+    if (cash.balance === 0 && cash.statementDate === null) continue;
     if (!groups.has(cash.provider)) groups.set(cash.provider, { id: cash.provider, label: LABELS[cash.provider] ?? "Altro conto broker", operations: 0 });
   }
   return [...groups.values()].sort((a, b) => a.label.localeCompare(b.label));

@@ -176,7 +176,7 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 
 Elenco, area, descrizioni e stato (`live` / `new` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, che aggiunge solo l'icona) e la landing, che ne tiene una copia generata (`landing/content/catalog.generated.ts`, aggiornata con `pnpm sync:features` in `landing/`; la CI controlla l'allineamento). Il pannello del login mostra le funzionalità `soon` che hanno `appPath` (le schermate). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
 
-Quando si implementa una schermata pianificata (oggi: Pianifica, Analitiche):
+Quando si implementa una schermata pianificata (oggi: nessuna; Pianifica è stata tolta il 2026-10-08):
 
 1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: **togliere `comingSoon: true`** e verificare che `href` corrisponda alla route reale.
 2. `lib/features/catalog.ts`: passare la voce da `soon` a `new` o `live` (e aggiornare la descrizione se serve); togliere l'icona da `UPCOMING_ICONS` nel file dati del login; poi `pnpm sync:features` in `landing/`.
@@ -224,7 +224,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - **Osservabilità Fase C**: accesso in sola lettura per agenti via MCP (mai sulla VPS di produzione).
 - **Fase 7, Task 8 (migrazione VPS)**: non prima di 2 settimane dal cutover (cioè dopo il 2026-10-11) e con conferma esplicita dell'utente: rotazione di tutti i segreti (sono transitati su Vercel), chiusura definitiva di Vercel/Neon, rimozione delle chiavi Umami inutilizzate dall'env (`@vercel/analytics` è già stato tolto con la PR GDPR 3). Piano: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.
 - **Sezione Budget separata**: oggi il budget per categoria vive nella legenda della torta in Movimenti. Serve un brainstorming dedicato (cambio di IA e data-model).
-- **Schermate non implementate**: Pianifica (vedi "Schermate in arrivo").
+- **Schermate non implementate**: nessuna (la sezione Pianifica è stata rimossa il 2026-10-08, vedi `docs/decisioni/2026-10-08-menu-senza-pianifica-e-badge-movimenti.md`).
 - **i18n**: lingua e valuta sono scelte in onboarding, ma le stringhe sono ancora tutte in italiano; serve scegliere la libreria ed estrarre le stringhe.
 - **Backlog**: tracciato su Slack in `#bb-backlog` (vedi Regole). Lì ci sono anche idee e debiti minori.
 

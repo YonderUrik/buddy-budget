@@ -1,0 +1,5 @@
+# 2026-10-08 — Menu: via Pianifica, "Da sistemare" diventa un badge su Movimenti
+
+- **Pianifica** era solo una voce "Presto" in sidebar, nel catalogo e nel pannello "In arrivo" del login: nessuna route, tabella o dato. Rimossa da `NAV_ITEMS`, da `lib/features/catalog.ts` (landing risincronizzata) e dal pannello del login, che senza funzionalità `soon` con schermata non mostra più la riga. Nessuna migration.
+- **"Da sistemare"** non è più una sottovoce sotto Movimenti: il conteggio (transazioni nuove o da categorizzare) è un badge accanto alla voce Movimenti (pallino sull'icona con la sidebar compatta). Il componente è `NavBadge` in `components/layout/sidebar.tsx`, passato da `AttentionShell` via `navBadges`: facile da spostare quando Movimenti e Conti si uniranno in `/liquidita`.
+- La card in Panoramica e la pagina `/categorizza` restano; il clic sul badge porta a Movimenti, da lì il callout porta a Categorizza. L'evento Umami `attention_link_clicked` resta solo con `from: "home"` (non c'è più il clic dalla sidebar verso Categorizza). Il log `transactions.attention` è invariato.

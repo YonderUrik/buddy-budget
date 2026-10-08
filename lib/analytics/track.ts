@@ -69,8 +69,8 @@ export interface ProductEvents {
   investments_imported: { operations: number; format: string };
   /** File letto nel primo passo dell'import. `provider`: formato (`interactive-brokers`, `yahoo-portfolio`, `generic`); `chosen`: scelto a mano o riconosciuto dal file. */
   investments_import_file_read: { provider: string; chosen: boolean };
-  /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso "Da sistemare". */
-  attention_link_clicked: { from: "home" | "sidebar" };
+  /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso in Panoramica. */
+  attention_link_clicked: { from: "home" };
   /** Clic su una voce della legenda del patrimonio netto per mostrarla o nasconderla; `visible`: lo stato dopo il clic. */
   net_worth_class_toggled: { assetClass: "liquidita" | "investimenti" | "previdenza" | "altro"; visible: boolean };
   /** Clic su una tessera della Panoramica; `tile`: quale (mese, scadenze, investimenti). */

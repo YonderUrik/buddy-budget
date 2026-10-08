@@ -1,10 +1,11 @@
 import { looksLikeTradeRepublic } from "./trade-republic";
 import { looksLikeDegiro } from "./degiro";
+import { looksLikeFineco } from "./fineco";
 import { parseCsv } from "./csv";
 import { detectPreset } from "./presets";
 
 /** Sorgente di un file di import scelta dall'utente (o riconosciuta dal contenuto). */
-export type ImportProviderId = "interactive-brokers" | "degiro" | "yahoo-portfolio" | "trade-republic" | "generic";
+export type ImportProviderId = "interactive-brokers" | "degiro" | "yahoo-portfolio" | "trade-republic" | "fineco" | "generic";
 
 /** Scheda di un provider nel primo passo dell'import. */
 export interface ImportProviderInfo {
@@ -23,6 +24,15 @@ export interface ImportProviderInfo {
 export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
   { id: "trade-republic", name: "Trade Republic", initials: "TR", logoSrc: "/import-providers/trade-republic.svg", tagline: "Investimenti e pagamenti con carta", howTo: "Carica Transaction export.csv con lo storico completo del conto principale: investimenti, carta, bonifici, interessi e bonus. Il saldo è calcolato dai movimenti partendo da zero; il file non contiene un saldo certificato né il numero del conto. Usa questa fonte per un solo conto Trade Republic e aggiorna sempre con lo storico completo." },
   { id: "degiro", name: "DEGIRO", initials: "DG", logoSrc: "/import-providers/degiro.svg", tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
+  {
+    id: "fineco",
+    name: "Fineco",
+    initials: "FB",
+    // Nessun logo finché non ne abbiamo uno con licenza chiara: resta la sigla neutra.
+    tagline: "Movimenti Dossier Titoli (Excel)",
+    howTo:
+      "In FinecoX apri il dossier titoli → Movimenti → cerca il periodo che ti serve ed esporta in Excel (.xlsx). Importo acquisti, vendite e, se presenti, dividendi e cedole; il file non ha il saldo né le posizioni, quindi la liquidità non cambia. Usa «Data operazione», non la data valuta.",
+  },
   {
     id: "interactive-brokers",
     name: "Interactive Brokers",
@@ -67,6 +77,7 @@ export function looksLikeInteractiveBrokers(text: string): boolean {
 export function detectImportProvider(text: string): Exclude<ImportProviderId, "generic"> | null {
   if (looksLikeTradeRepublic(text)) return "trade-republic";
   if (looksLikeDegiro(text)) return "degiro";
+  if (looksLikeFineco(text)) return "fineco";
   if (looksLikeInteractiveBrokers(text)) return "interactive-brokers";
   try {
     return detectPreset(parseCsv(text).headers)?.id === "yahoo-portfolio" ? "yahoo-portfolio" : null;

@@ -98,7 +98,7 @@ export async function maintainJobs() {
     const [user] = await db.select({ email: authUser.email }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject: pending.status === "imported" ? "Il tuo CSV è stato importato" : "Non è stato possibile importare il tuo CSV", text: pending.status === "imported" ? `Importazione completata. Trovi i dati in Movimenti e Investimenti: ${url}` : `Importazione non riuscita. Nessun movimento è stato salvato. Apri BuddyBudget per vedere il motivo: ${url}` }, { idempotencyKey: `personal-csv-${pending.id}` });
+    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject: pending.status === "imported" ? "Il tuo CSV è stato importato" : "Non è stato possibile importare il tuo CSV", text: pending.status === "imported" ? `Importazione completata. Trovi i dati in Liquidità e Investimenti: ${url}` : `Importazione non riuscita. Nessun movimento è stato salvato. Apri BuddyBudget per vedere il motivo: ${url}` }, { idempotencyKey: `personal-csv-${pending.id}` });
     if (result.error) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));
   } catch { logger.warn("personal_import.email_failed", { jobId: pending.id, reason: "delivery_failed" }); }

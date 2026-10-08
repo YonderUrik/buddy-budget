@@ -26,12 +26,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Landmark,
-  ArrowLeftRight,
+  Wallet,
   TrendingUp,
   Umbrella,
   CreditCard,
-  Target,
   BarChart3,
   ChevronLeft,
   ChevronRight,
@@ -66,7 +64,7 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-/** Sottovoce sotto una voce di navigazione, mostrata solo quando `count > 0` (es. "Da sistemare" sotto Movimenti). */
+/** Sottovoce sotto una voce di navigazione, mostrata solo quando `count > 0` (es. "Da sistemare" sotto Liquidità). */
 export interface NavSubItem {
   label: string;
   href: string;
@@ -87,12 +85,10 @@ const COMING_SOON_LABEL = "Presto";
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Panoramica", href: "/panoramica", icon: LayoutDashboard },
-  { label: "Conti", href: "/conti", icon: Landmark },
-  { label: "Movimenti", href: "/movimenti", icon: ArrowLeftRight },
+  { label: "Liquidità", href: "/liquidita", icon: Wallet },
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
   { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
-  { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
   { label: "Analitiche", href: "/analitiche", icon: BarChart3 },
 ];
 
@@ -252,7 +248,7 @@ interface AppSidebarProps {
   onClose?: () => void;
   /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
   settingsHref?: string;
-  /** Sottovoci con contatore, per `href` della voce padre (es. `{ "/movimenti": { label: "Da sistemare", href: "/categorizza", count: 9 } }`). */
+  /** Sottovoci con contatore, per `href` della voce padre (es. `{ "/liquidita": { label: "Da sistemare", href: "/categorizza", count: 9 } }`). */
   subItems?: Record<string, NavSubItem>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
   extra?: React.ReactNode;

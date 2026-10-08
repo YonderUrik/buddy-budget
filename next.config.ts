@@ -42,10 +42,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: "/spese", destination: "/movimenti", permanent: true },
-      { source: "/transazioni", destination: "/movimenti", permanent: true },
-      { source: "/cash-flow", destination: "/movimenti/analisi", permanent: true },
-      { source: "/categorie", destination: "/movimenti/categorie", permanent: true },
+      { source: "/spese", destination: "/liquidita", permanent: true },
+      { source: "/transazioni", destination: "/liquidita", permanent: true },
+      { source: "/cash-flow", destination: "/liquidita/analisi", permanent: true },
+      { source: "/categorie", destination: "/liquidita/categorie", permanent: true },
+      { source: "/movimenti", destination: "/liquidita", permanent: true },
+      { source: "/movimenti/:tab(analisi|categorie|regole)", destination: "/liquidita/:tab", permanent: true },
+      { source: "/conti", destination: "/liquidita/conti", permanent: true },
     ];
   },
 };

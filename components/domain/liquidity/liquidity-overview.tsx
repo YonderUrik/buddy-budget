@@ -67,7 +67,7 @@ export function LiquidityOverview() {
     }
     const liquidity = (snapshotsQuery.data ?? []).filter((row) => row.assetClass === "liquidita");
     const series = buildNetWorthSeries(liquidity, { liquidita: total }, period, today);
-    return { points: series.map((p) => ({ label: p.label, value: p.value })), delta: series.length > 1 ? computeNetWorthChange(series).delta : null };
+    return { points: series.map((p) => ({ label: p.date, value: p.value })), delta: series.length > 1 ? computeNetWorthChange(series).delta : null };
   }, [selected, transactions, snapshotsQuery.data, total, period, today]);
 
   const pace = React.useMemo(() => computeMonthPace(transactions, budgets, today), [transactions, budgets, today]);

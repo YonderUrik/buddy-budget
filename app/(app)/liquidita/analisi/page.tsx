@@ -117,6 +117,8 @@ export default function LiquiditaAnalisiPage() {
             reference={typical ?? undefined}
             description={`Spese cumulate: ${money(spent)}${typical ? `, contro ${money(typical[Math.max(curve.length - 1, 0)] ?? 0)} di solito a questo punto` : ""}.`}
             height={200}
+            formatValue={money}
+            referenceLabel="Di solito"
           />
         </div>
         {typical && <p className="mt-2 text-sm text-text-2">La linea tratteggiata è la tua spesa media nello stesso tratto di mese.</p>}

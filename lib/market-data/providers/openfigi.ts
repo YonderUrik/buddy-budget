@@ -28,10 +28,14 @@ const ISIN_PATTERN = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 export interface OpenFigiListing {
   yahooSymbol: string;
   exchCode: string;
+  /** Nome dello strumento secondo OpenFIGI (maiuscolo, abbreviato), se c'è. */
+  name: string | null;
+  /** Tipo secondo OpenFIGI (`Common Stock`, `Mutual Fund`, `ETP`...), se c'è. */
+  securityType: string | null;
 }
 
 interface MappingResponseItem {
-  data?: { ticker?: string; exchCode?: string }[];
+  data?: { ticker?: string; exchCode?: string; name?: string; securityType2?: string; securityType?: string }[];
   warning?: string;
   error?: string;
 }
@@ -65,7 +69,13 @@ export async function fetchOpenFigiListings(isin: string, ctx: ProviderContext):
       const ticker = entry.ticker?.trim().toUpperCase().replace("/", "-");
       if (suffix === undefined || !entry.exchCode || !ticker || !TICKER_PATTERN.test(ticker)) continue;
       const yahooSymbol = suffix ? `${ticker}.${suffix}` : ticker;
-      if (!listings.has(yahooSymbol)) listings.set(yahooSymbol, { yahooSymbol, exchCode: entry.exchCode });
+      if (listings.has(yahooSymbol)) continue;
+      listings.set(yahooSymbol, {
+        yahooSymbol,
+        exchCode: entry.exchCode,
+        name: entry.name?.trim() || null,
+        securityType: entry.securityType2?.trim() || entry.securityType?.trim() || null,
+      });
     }
   }
   return [...listings.values()].sort((a, b) => EXCHANGE_ORDER.indexOf(a.exchCode) - EXCHANGE_ORDER.indexOf(b.exchCode));

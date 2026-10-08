@@ -3,18 +3,7 @@ import { db } from "@/lib/db/client";
 import { instruments, type Instrument } from "@/lib/db/schema/investments";
 import { saveSymbols } from "@/lib/market-data/store";
 import { deriveSymbols } from "@/lib/market-data/symbols";
-import type { OpenFigiListing } from "@/lib/market-data/providers/openfigi";
-
-/** Quotazioni proposte al massimo all'utente: le altre sono varianti poco usate della stessa borsa. */
-export const MAX_QUOTATION_CANDIDATES = 3;
-/** Simboli verificati su Yahoo al massimo per richiesta (una chiamata ciascuno, in fila: Yahoo va in raffreddamento se lo si martella). */
-export const MAX_QUOTATION_CHECKS = 8;
-
-/** Dipendenze di rete: elenco delle quotazioni di un ISIN (OpenFIGI) e valuta/borsa di un simbolo (Yahoo). */
-export interface LinkQuotationDeps {
-  listings(isin: string): Promise<OpenFigiListing[]>;
-  quoteMeta(symbol: string): Promise<{ currency: string | null; exchange: string | null } | null>;
-}
+import { verifyIsinListings, type IsinListingsDeps } from "./isin-listings";
 
 /** Quotazione verificata su Yahoo, con la stessa valuta dello strumento. */
 export interface QuotationCandidate {
@@ -45,29 +34,15 @@ export function canLinkQuotation(instrument: Instrument, userId: string): boolea
 export async function findQuotationCandidates(
   instrument: Instrument,
   userId: string,
-  deps: LinkQuotationDeps
+  deps: IsinListingsDeps
 ): Promise<QuotationCandidatesResult> {
   if (!canLinkQuotation(instrument, userId)) return { status: "not_eligible" };
-  let listings: OpenFigiListing[];
-  try {
-    listings = await deps.listings(instrument.isin!);
-  } catch {
-    return { status: "unavailable" };
-  }
-  const candidates: QuotationCandidate[] = [];
-  let failures = 0;
-  const toCheck = listings.slice(0, MAX_QUOTATION_CHECKS);
-  for (const listing of toCheck) {
-    if (candidates.length >= MAX_QUOTATION_CANDIDATES) break;
-    try {
-      const meta = await deps.quoteMeta(listing.yahooSymbol);
-      if (meta?.currency === instrument.currency) candidates.push({ symbol: listing.yahooSymbol, exchange: meta.exchange, currency: meta.currency });
-    } catch {
-      failures += 1;
-    }
-  }
-  if (candidates.length > 0) return { status: "ok", candidates };
-  return failures > 0 && failures === toCheck.length ? { status: "unavailable" } : { status: "empty" };
+  const result = await verifyIsinListings(instrument.isin!, instrument.currency, deps);
+  if (result.status !== "ok") return { status: result.status };
+  return {
+    status: "ok",
+    candidates: result.listings.map(({ listing, exchange, currency }) => ({ symbol: listing.yahooSymbol, exchange, currency })),
+  };
 }
 
 export type LinkQuotationOutcome =
@@ -83,7 +58,7 @@ export async function linkQuotation(
   instrument: Instrument,
   userId: string,
   yahooSymbol: string,
-  deps: LinkQuotationDeps
+  deps: IsinListingsDeps
 ): Promise<LinkQuotationOutcome> {
   if (!canLinkQuotation(instrument, userId)) return { ok: false, status: 409, error: "Questo strumento ha già i prezzi automatici o non ha un ISIN" };
   const found = await findQuotationCandidates(instrument, userId, deps);

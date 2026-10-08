@@ -6,7 +6,7 @@ import { fakeContext } from "./test-utils";
 const BODY = JSON.stringify([
   {
     data: [
-      { ticker: "IWDA", exchCode: "NA" },
+      { ticker: "IWDA", exchCode: "NA", name: "ISHARES CORE MSCI WORLD", securityType2: "Mutual Fund" },
       { ticker: "SWDA", exchCode: "LN" },
       { ticker: "EUNL", exchCode: "GR" },
       { ticker: "EUNL", exchCode: "GY" },
@@ -22,6 +22,13 @@ describe("openfigi", () => {
   it("tiene solo le borse gestite, nell'ordine di preferenza e senza doppioni", async () => {
     const listings = await fetchOpenFigiListings("IE00B4L5Y983", fakeContext(BODY));
     expect(listings.map((l) => l.yahooSymbol)).toEqual(["SWDA.MI", "EUNL.DE", "IWDA.AS", "SWDA.L"]);
+  });
+
+  it("riporta nome e tipo di OpenFIGI", async () => {
+    const [first] = await fetchOpenFigiListings("IE00B4L5Y983", fakeContext(BODY));
+    expect(first).toMatchObject({ yahooSymbol: "SWDA.MI", name: null, securityType: null });
+    const listings = await fetchOpenFigiListings("IE00B4L5Y983", fakeContext(BODY));
+    expect(listings.find((l) => l.yahooSymbol === "IWDA.AS")).toMatchObject({ name: "ISHARES CORE MSCI WORLD", securityType: "Mutual Fund" });
   });
 
   it("scrive i ticker con barra come su Yahoo e lascia i titoli USA senza suffisso", async () => {

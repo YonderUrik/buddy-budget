@@ -2,14 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/db/client", () => ({ db: {} }));
 
 import type { Instrument } from "@/lib/db/schema/investments";
-import { canLinkQuotation, findQuotationCandidates, type LinkQuotationDeps } from "./link-quotation";
+import type { IsinListingsDeps } from "./isin-listings";
+import { canLinkQuotation, findQuotationCandidates } from "./link-quotation";
 
 const USER = "user-1";
 const manual = { id: "i1", isin: "IE00B4L5Y983", currency: "EUR", priceMode: "manuale", createdByUserId: USER, type: "etf" } as Instrument;
 
-function deps(meta: Record<string, string | null>, listings = Object.keys(meta)): LinkQuotationDeps {
+function deps(meta: Record<string, string | null>, listings = Object.keys(meta)): IsinListingsDeps {
   return {
-    listings: vi.fn(async () => listings.map((yahooSymbol) => ({ yahooSymbol, exchCode: "IM" }))),
+    listings: vi.fn(async () => listings.map((yahooSymbol) => ({ yahooSymbol, exchCode: "IM", name: null, securityType: null }))),
     quoteMeta: vi.fn(async (symbol: string) => (symbol in meta ? { currency: meta[symbol], exchange: "Milan" } : null)),
   };
 }
@@ -43,7 +44,7 @@ describe("findQuotationCandidates", () => {
   it("segnala la fonte non raggiungibile invece di dire che non c'è niente", async () => {
     const down = { ...deps({}), listings: vi.fn(async () => { throw new Error("down"); }) };
     expect(await findQuotationCandidates(manual, USER, down)).toEqual({ status: "unavailable" });
-    const yahooDown: LinkQuotationDeps = { listings: async () => [{ yahooSymbol: "SWDA.MI", exchCode: "IM" }], quoteMeta: async () => { throw new Error("429"); } };
+    const yahooDown: IsinListingsDeps = { listings: async () => [{ yahooSymbol: "SWDA.MI", exchCode: "IM", name: null, securityType: null }], quoteMeta: async () => { throw new Error("429"); } };
     expect(await findQuotationCandidates(manual, USER, yahooDown)).toEqual({ status: "unavailable" });
   });
 

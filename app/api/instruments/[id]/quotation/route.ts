@@ -5,7 +5,8 @@ import { db } from "@/lib/db/client";
 import { investmentTransactions } from "@/lib/db/schema/investments";
 import { ensureHistorySafely } from "@/lib/investments/history";
 import { findVisibleInstrument } from "@/lib/investments/instruments";
-import { canLinkQuotation, findQuotationCandidates, linkQuotation, type LinkQuotationDeps } from "@/lib/investments/link-quotation";
+import type { IsinListingsDeps } from "@/lib/investments/isin-listings";
+import { canLinkQuotation, findQuotationCandidates, linkQuotation } from "@/lib/investments/link-quotation";
 import { listingsOnOpenFigi, quoteMetaOnProviders } from "@/lib/market-data/runtime";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { linkQuotationSchema } from "@/lib/validation/investments";
@@ -13,7 +14,7 @@ import { linkQuotationSchema } from "@/lib/validation/investments";
 // Le conferme su Yahoo sono in fila (una chiamata per quotazione) e il recupero dello storico gira in after().
 export const maxDuration = 300;
 
-const deps: LinkQuotationDeps = { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders };
+const deps: IsinListingsDeps = { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders };
 
 /**
  * Quotazioni a cui si può collegare uno strumento manuale con ISIN: OpenFIGI propone, Yahoo conferma l'esistenza e

@@ -28,6 +28,7 @@ import {
 } from "./redis-stores";
 import { findInstrumentsWithoutProfile, PROFILE_ON_DEMAND_LIMIT, refreshInstrumentProfile } from "./profiles";
 import { redis } from "@/lib/redis/client";
+import { searchByIsinOnOpenFigi } from "@/lib/investments/isin-listings";
 import { DIVIDENDS_ON_DEMAND_LIMIT, findInstrumentsWithoutDividends, refreshInstrumentDividends } from "./dividends";
 import { loadFundamentals } from "./fundamentals";
 import { findFirstPriceDate, loadSymbols } from "./store";
@@ -183,4 +184,9 @@ export function fundamentalsOnProviders(instrument: Pick<Instrument, "id" | "typ
 export async function listingsOnOpenFigi(isin: string) {
   if (isFakeMarketData()) return fakeListings();
   return fetchOpenFigiListings(isin, { fetch: globalThis.fetch, env: process.env });
+}
+
+/** Cerca per ISIN su OpenFIGI e conferma su Yahoo: ripiego quando la ricerca Yahoo non trova l'ISIN. */
+export async function searchByIsinOnProviders(isin: string, currency: string | null) {
+  return searchByIsinOnOpenFigi(isin, currency, { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders });
 }

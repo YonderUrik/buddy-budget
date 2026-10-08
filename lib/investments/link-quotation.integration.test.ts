@@ -4,13 +4,14 @@ import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { instrumentSymbols, instruments, type Instrument } from "@/lib/db/schema/investments";
 import { createOrReuseInstrument } from "./instruments";
-import { linkQuotation, type LinkQuotationDeps } from "./link-quotation";
+import type { IsinListingsDeps } from "./isin-listings";
+import { linkQuotation } from "./link-quotation";
 
 const ISIN = "IE00B4L5Y983";
-const deps: LinkQuotationDeps = {
+const deps: IsinListingsDeps = {
   listings: async () => [
-    { yahooSymbol: "SWDA.MI", exchCode: "IM" },
-    { yahooSymbol: "SWDA.L", exchCode: "LN" },
+    { yahooSymbol: "SWDA.MI", exchCode: "IM", name: null, securityType: null },
+    { yahooSymbol: "SWDA.L", exchCode: "LN", name: null, securityType: null },
   ],
   quoteMeta: async (symbol) => ({ currency: symbol.endsWith(".L") ? "USD" : "EUR", exchange: "Milan" }),
 };

@@ -40,3 +40,5 @@ export { AccountLine } from "./account-line";
 export type { AccountLineProps } from "./account-line";
 export { ManagementSwitch } from "./management-switch";
 export type { ManagementSwitchProps, ManagementSwitchOption } from "./management-switch";
+export { SpendByGroup } from "./spend-by-group";
+export type { SpendByGroupProps, SpendGroup, SpendCategory } from "./spend-by-group";

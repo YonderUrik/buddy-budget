@@ -9,7 +9,6 @@ import { CategoryBoard, DistributeColorsButton } from "@/components/domain/categ
 import { LIQUIDITY_HREF, ManagementSwitch, SectionTitle } from "@/components/domain/liquidity";
 import { LoadError } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
-import { authClient } from "@/lib/auth/client";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 
 const OPTIONS = [
@@ -20,8 +19,6 @@ const OPTIONS = [
 export default function LiquiditaCategoriePage() {
   const pathname = usePathname();
   const { data: categories, isLoading, isError, refetch } = useCategoriesQuery();
-  const { data: session } = authClient.useSession();
-  const currency = session?.user.currency ?? "EUR";
 
   React.useEffect(() => track("liquidity_tab_viewed", { tab: "categorie" }), []);
 
@@ -39,7 +36,7 @@ export default function LiquiditaCategoriePage() {
         ) : isError ? (
           <LoadError message="Impossibile caricare le categorie." onRetry={() => refetch()} />
         ) : (
-          <CategoryBoard categories={categories ?? []} currency={currency} />
+          <CategoryBoard categories={categories ?? []} />
         )}
       </section>
     </div>

@@ -5,21 +5,21 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDownToLineIcon, PieChartIcon, PiggyBankIcon } from "lucide-react";
-import { CategoryAvatar } from "@/components/domain/categories";
 import { LoadError } from "@/components/domain/shared";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import {
-  CategoryDonut,
   LIQUIDITY_HREF,
   PeriodStepper,
   SectionTitle,
   SoftRow,
+  SpendByGroup,
   TrendChart,
   liquidityFetchWindow,
   useLiquidity,
+  type SpendGroup,
 } from "@/components/domain/liquidity";
 import { track } from "@/lib/analytics";
+import { EXPENSE_GROUP_KEYS, GROUP_DISPLAY, UNCATEGORIZED_GROUP_KEY, type CategoryGroupKey } from "@/lib/categories/groups";
 import { authClient } from "@/lib/auth/client";
 import { computeAccumulatedSavings, computeIncomeSources } from "@/lib/calc/cashflow";
 import {
@@ -38,10 +38,6 @@ import { formatCurrency } from "@/lib/format";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
-import type { CategoryColor } from "@/lib/validation/categories";
-
-/** Quante categorie compaiono come righe; il resto confluisce in "Altro". */
-const TOP_CATEGORIES = 5;
 
 export default function LiquiditaAnalisiPage() {
   const router = useRouter();
@@ -72,19 +68,30 @@ export default function LiquiditaAnalisiPage() {
     () => computeCategoryBreakdown(scoped.filter(isExpense), categories, period, referenceDate, today).filter((c) => c.amount > 0).sort((a, b) => b.amount - a.amount),
     [scoped, categories, period, referenceDate, today]
   );
-  const top = breakdown.slice(0, TOP_CATEGORIES);
-  const otherAmount = breakdown.slice(TOP_CATEGORIES).reduce((sum, c) => sum + c.amount, 0);
-  const slices = [
-    ...top.map((c) => ({ key: c.categoryId, label: c.name, value: c.amount, color: SWATCH_CHART_COLOR[c.color as CategoryColor] ?? "var(--swatch-slate)" })),
-    ...(otherAmount > 0 ? [{ key: "altro", label: "Altro", value: otherAmount, color: "var(--text-3)" }] : []),
-  ];
+  const heaviest = breakdown[0];
+  const groups = React.useMemo<SpendGroup[]>(
+    () =>
+      ([...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY] as CategoryGroupKey[])
+        .map((key) => {
+          const items = breakdown.filter((c) => c.group === key);
+          return {
+            key,
+            label: GROUP_DISPLAY[key].label,
+            color: GROUP_DISPLAY[key].colorVar,
+            amount: items.reduce((sum, c) => sum + c.amount, 0),
+            categories: items.map((c) => ({ id: c.categoryId, name: c.name, color: c.color, icon: c.icon, amount: c.amount })),
+          };
+        })
+        .filter((g) => g.amount > 0)
+        .sort((x, y) => y.amount - x.amount),
+    [breakdown]
+  );
   const sources = computeIncomeSources(scoped, categories, range);
   const savings = computeAccumulatedSavings(scoped, getTrendRange(period, referenceDate));
   const saved = savings.length > 0 ? savings[savings.length - 1].cumulative : 0;
 
   const delta = spent - spentBefore;
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
-  const heaviest = top[0];
   const sentence =
     spent === 0
       ? "In questo periodo non ci sono ancora spese."
@@ -117,34 +124,17 @@ export default function LiquiditaAnalisiPage() {
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <section aria-label="Dove vanno i soldi">
           <SectionTitle icon={PieChartIcon} title="Dove vanno i soldi" color="var(--swatch-teal)" />
-          {slices.length === 0 ? (
+          {groups.length === 0 ? (
             <p className="text-text-2">Nessuna spesa da mostrare in questo periodo.</p>
           ) : (
-            <div className="flex flex-wrap items-center gap-8">
-              <CategoryDonut slices={slices} currency={currency} centerLabel="di spese" />
-              <ul className="flex min-w-60 flex-1 flex-col gap-1.5">
-                {top.map((c) => (
-                  <li key={c.categoryId}>
-                    <button
-                      type="button"
-                      className="w-full text-left"
-                      onClick={() => {
-                        setCategoryId(c.categoryId);
-                        router.push(LIQUIDITY_HREF);
-                      }}
-                    >
-                      <SoftRow
-                        start={<CategoryAvatar color={c.color as CategoryColor} icon={c.icon as never} size={17} className="size-10" />}
-                        title={c.name}
-                        hint={`${Math.round((c.amount / spent) * 100)}% delle spese · vedi i movimenti`}
-                        end={<span className="font-heading font-semibold tabular-nums">{money(c.amount)}</span>}
-                      />
-                    </button>
-                  </li>
-                ))}
-                {otherAmount > 0 && <SoftRow title="Altro" hint="Le categorie più piccole" end={<span className="font-heading font-semibold tabular-nums">{money(otherAmount)}</span>} />}
-              </ul>
-            </div>
+            <SpendByGroup
+              groups={groups}
+              currency={currency}
+              onPickCategory={(id) => {
+                setCategoryId(id);
+                router.push(LIQUIDITY_HREF);
+              }}
+            />
           )}
         </section>
         <div className="flex flex-col gap-8">

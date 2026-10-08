@@ -57,11 +57,14 @@ export async function verifyIsinListings(isin: string, currency: string | null, 
   return failures > 0 && failures === toCheck.length ? { status: "unavailable" } : { status: "empty" };
 }
 
-/** Tipo proposto dal tipo e dal nome di OpenFIGI: l'utente lo vede e può cambiare strumento. */
+/**
+ * Tipo proposto dal tipo di OpenFIGI. Quotare in borsa un "Mutual Fund" di OpenFIGI (così sono classificati anche gli
+ * ETF UCITS) vuol dire quasi sempre un ETF: l'utente lo vede nella proposta "da controllare" e può cambiare strumento.
+ */
 export function instrumentTypeFromFigi(listing: Pick<OpenFigiListing, "name" | "securityType">): InstrumentType {
   const type = listing.securityType?.toLowerCase() ?? "";
   if (type.includes("common stock") || type.includes("depositary receipt")) return "azione";
-  if (/\b(ETF|UCITS|ETP)\b/i.test(listing.name ?? "") || type === "etp") return "etf";
+  if (type.includes("mutual fund") || type === "etp" || /\b(ETF|UCITS|ETP)\b/i.test(listing.name ?? "")) return "etf";
   if (type.includes("fund")) return "fondo";
   return "azione";
 }

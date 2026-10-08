@@ -31,14 +31,15 @@ describe("verifyIsinListings", () => {
 describe("searchByIsinOnOpenFigi", () => {
   it("restituisce risultati nello stile della ricerca Yahoo, con nome e tipo di OpenFIGI", async () => {
     const result = await searchByIsinOnOpenFigi("IE00B4L5Y983", "EUR", deps({ "SWDA.MI": "EUR" }));
-    expect(result.hits).toEqual([{ symbol: "SWDA.MI", name: "ISHARES CORE MSCI WORLD", exchange: "Milan", exchangeLabel: "Milan", type: "fondo" }]);
+    expect(result.hits).toEqual([{ symbol: "SWDA.MI", name: "ISHARES CORE MSCI WORLD", exchange: "Milan", exchangeLabel: "Milan", type: "etf" }]);
   });
 });
 
 describe("instrumentTypeFromFigi", () => {
   it("ricava il tipo dal tipo e dal nome di OpenFIGI", () => {
     expect(instrumentTypeFromFigi({ name: "ADOBE INC", securityType: "Common Stock" })).toBe("azione");
-    expect(instrumentTypeFromFigi({ name: "ISHARES CORE MSCI WORLD UCITS ETF", securityType: "Mutual Fund" })).toBe("etf");
+    expect(instrumentTypeFromFigi({ name: "ISHARES CORE MSCI WORLD", securityType: "Mutual Fund" })).toBe("etf");
+    expect(instrumentTypeFromFigi({ name: "WISDOMTREE PHYSICAL GOLD", securityType: "ETP" })).toBe("etf");
     expect(instrumentTypeFromFigi({ name: "SOME FUND", securityType: "Open-End Fund" })).toBe("fondo");
     expect(instrumentTypeFromFigi({ name: null, securityType: null })).toBe("azione");
   });

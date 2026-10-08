@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.28.0](https://github.com/YonderUrik/buddy-budget/compare/v0.27.0...v0.28.0) (2026-10-08)
+
+
+### Novità
+
+* l'import da rendiconto collega in automatico la quotazione trovata ([#211](https://github.com/YonderUrik/buddy-budget/issues/211)) ([007cc14](https://github.com/YonderUrik/buddy-budget/commit/007cc14c55f9a5b7c004e065056a47aa85fef107))
+
 ## [0.27.0](https://github.com/YonderUrik/buddy-budget/compare/v0.26.0...v0.27.0) (2026-10-08)
 
 

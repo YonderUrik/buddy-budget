@@ -13,7 +13,7 @@ export default function PensioneScenariPage() {
   const simulation = useRateSimulation({ adhesionDate: adhesion, today, last });
   if (!last || !performance || !tfr) return <PensionNoSnapshots />;
   return (
-    <>
+    <div className="flex flex-col gap-10">
       <PensionWithdrawalCard scenarios={simulation.scenarios} baseline={simulation.baseline} isSimulated={simulation.isSimulated} value={last.value} currency={currency} />
       <PensionTfrCompareCard fundValue={last.value} fundAnnualReturn={performance.annualReturn} comparison={tfr} inflationRate={ASSUMED_INFLATION} currency={currency} />
       {adhesion ? (
@@ -30,6 +30,6 @@ export default function PensioneScenariPage() {
           onReset={simulation.reset}
         />
       ) : null}
-    </>
+    </div>
   );
 }

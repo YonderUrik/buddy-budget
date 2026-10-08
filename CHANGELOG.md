@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.25.0](https://github.com/YonderUrik/buddy-budget/compare/v0.24.0...v0.25.0) (2026-10-08)
+
+
+### Novità
+
+* logo Fineco nella scelta del provider di import ([#205](https://github.com/YonderUrik/buddy-budget/issues/205)) ([f5618a8](https://github.com/YonderUrik/buddy-budget/commit/f5618a8e23dde5a5c50df91974acad2be21a5fff))
+
 ## [0.24.0](https://github.com/YonderUrik/buddy-budget/compare/v0.23.2...v0.24.0) (2026-10-08)
 
 

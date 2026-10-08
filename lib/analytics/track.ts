@@ -8,6 +8,8 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  */
 export interface ProductEvents {
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };
+  /** Fetta della torta "Dove sta il patrimonio" bloccata con un clic (solo la classe di asset). */
+  overview_composition_slice_selected: { assetClass: "liquidita" | "investimenti" | "previdenza" };
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
   onboarding_completed: { currency: SupportedCurrency };
   account_created: undefined;

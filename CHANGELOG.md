@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.20.0](https://github.com/YonderUrik/buddy-budget/compare/v0.19.0...v0.20.0) (2026-10-08)
+
+
+### Novità
+
+* torta del patrimonio in Panoramica con etichette sobrie e interazione ([#185](https://github.com/YonderUrik/buddy-budget/issues/185)) ([b2dbf7d](https://github.com/YonderUrik/buddy-budget/commit/b2dbf7d5f26168c5c79457dfe7fa30603417b985))
+
 ## [0.19.0](https://github.com/YonderUrik/buddy-budget/compare/v0.18.0...v0.19.0) (2026-10-06)
 
 

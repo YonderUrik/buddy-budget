@@ -76,3 +76,20 @@ export async function linkQuotation(
   if (!updated) return { ok: false, status: 409, error: "Lo strumento è già stato collegato" };
   return { ok: true, instrument: updated, candidate };
 }
+
+/**
+ * Collega in automatico uno strumento manuale con ISIN alla prima quotazione verificata (la preferita), come l'utente
+ * farebbe da «Cerca la quotazione». Non lancia mai: se non c'è nulla da collegare o le fonti non rispondono restituisce
+ * `null` e lo strumento resta com'era.
+ */
+export async function autoLinkQuotation(instrument: Instrument, userId: string, deps: IsinListingsDeps): Promise<LinkQuotationOutcome & { ok: true } | null> {
+  if (!canLinkQuotation(instrument, userId)) return null;
+  try {
+    const found = await findQuotationCandidates(instrument, userId, deps);
+    if (found.status !== "ok") return null;
+    const outcome = await linkQuotation(instrument, userId, found.candidates[0].symbol, deps);
+    return outcome.ok ? outcome : null;
+  } catch {
+    return null;
+  }
+}

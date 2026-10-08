@@ -24,6 +24,7 @@ describe("personal import API", () => {
     expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test" }))).status).toBe(400);
     expect((await remove(req("DELETE", {}, "/d42c811b-f061-4a42-8023-0c84c8e1ce85", "https://other.example"))).status).toBe(403);
     expect((await remove(req("DELETE", {}, "/d42c811b-f061-4a42-8023-0c84c8e1ce85"))).status).toBe(400);
+    expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test", consent: true, consentVersion: "openrouter-zdr-v1" }))).status).toBe(400);
     expect(enqueue).not.toHaveBeenCalled();
   });
   it("previews and deletes only under the authenticated owner with the reviewed token", async () => {
@@ -34,7 +35,7 @@ describe("personal import API", () => {
     expect(deletePersonalImport).toHaveBeenCalledWith("owner", id, token);
   });
   it("enqueues under the authenticated owner and hides unknown previews", async () => {
-    expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test", consent: true }))).status).toBe(202);
+    expect((await POST(req("POST", { csv: "a,b\nx,y", name: "Test", consent: true, consentVersion: "openrouter-raw-zdr-v2" }))).status).toBe(202);
     expect(enqueue).toHaveBeenCalledWith("owner", expect.objectContaining({ name: "Test" }));
     expect((await preview(req("GET", undefined, "/d42c811b-f061-4a42-8023-0c84c8e1ce85"))).status).toBe(404);
     expect(getPreview).toHaveBeenCalledWith("owner", "d42c811b-f061-4a42-8023-0c84c8e1ce85");

@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { enqueue, listImports } from "@/lib/personal-import/jobs";
 import { ImportError, MAX_BYTES } from "@/lib/personal-import/contract";
-const inputSchema = z.object({ csv: z.string().min(1).max(MAX_BYTES), name: z.string().trim().min(1).max(80), formatId: z.uuid().optional(), regenerate: z.boolean().optional(), consent: z.literal(true) });
+const inputSchema = z.object({ csv: z.string().min(1).max(MAX_BYTES), name: z.string().trim().min(1).max(80), formatId: z.uuid().optional(), regenerate: z.boolean().optional(), consent: z.literal(true), consentVersion: z.literal("openrouter-raw-zdr-v2") });
 export const GET = withRoute("personal_import.list", async (request: NextRequest) => {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });

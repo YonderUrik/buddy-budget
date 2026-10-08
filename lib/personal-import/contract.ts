@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { detectDelimiter, parseCsvRecords } from "@/lib/investments/import/csv";
 import { parseDate } from "@/lib/investments/import/values";
 import { isValidIsin } from "@/lib/validation/investments";
 
@@ -20,17 +19,16 @@ export const parserSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("mapping"), dateColumn: z.number().int().min(0), amountColumn: z.number().int().min(0), descriptionColumn: z.number().int().min(0), currencyColumn: z.number().int().min(0).nullable(), currency: z.string().regex(/^[A-Z]{3}$/), dateOrder: z.enum(["ymd", "dmy", "mdy"]), decimal: z.enum([".", ","]) }),
 ]);
 export type PersonalParser = z.infer<typeof parserSchema>;
-export function readTable(csv: string) {
+export type PersonalTable = { delimiter: string; headers: string[]; rows: string[][]; layout?: "table" | "document"; rawCsv?: string; sourceLines?: number[] };
+/** Preserve the file verbatim. Lines are only references for review/coverage, never CSV parsing. */
+export function readRawFile(csv: string): PersonalTable {
   if (Buffer.byteLength(csv) > MAX_BYTES) throw new ImportError("Il file supera 25 MB");
-  if (csv.includes("\uFFFD") || csv.includes("\0")) throw new ImportError("Esporta il CSV con codifica UTF-8");
-  const delimiter = detectDelimiter(csv);
-  const records = parseCsvRecords(csv.replace(/^\uFEFF/, ""), delimiter, true).filter(r => r.cells.some(c => c.trim()));
-  const headers = records.shift()?.cells;
-  if (!headers || headers.length < 2 || headers.length > 100 || !records.length || records.length > MAX_ROWS) throw new ImportError("CSV non valido: servono intestazioni e da 1 a 50000 righe");
-  if (records.some(r => r.cells.length !== headers.length)) throw new ImportError("Le righe hanno un numero di colonne diverso dalle intestazioni");
-  return { delimiter, headers, rows: records.map(r => r.cells) };
+  if (!csv.trim()) throw new ImportError("Il file è vuoto");
+  const lines = csv.split(/\r\n|\n|\r/);
+  if (lines.at(-1) === "") lines.pop();
+  if (lines.length > MAX_ROWS) throw new ImportError("Il file supera 50000 righe");
+  return { delimiter: "", layout: "document", headers: ["Riga originale"], rows: lines.map(line => [line]), sourceLines: lines.map((_, i) => i + 1), rawCsv: csv };
 }
-export type PersonalTable = ReturnType<typeof readTable>;
 export function validateOutcomes(raw: unknown, table: PersonalTable): Outcome[] {
   const outcomes = z.array(outcomeSchema).max(MAX_ROWS).parse(raw);
   if (outcomes.length !== table.rows.length || new Set(outcomes.map(o => o.row)).size !== table.rows.length || outcomes.some(o => o.row >= table.rows.length)) throw new ImportError("Il parser non rende conto di tutte le righe");

@@ -16,7 +16,7 @@ import { exportPersonalImports } from "./export";
 const send = vi.hoisted(() => vi.fn().mockResolvedValue({ data: { id: "synthetic" }, error: null }));
 vi.mock("resend", () => ({ Resend: class { emails = { send }; } }));
 vi.mock("./generate", async importOriginal => ({ ...await importOriginal<typeof import("./generate")>(), generateParser: vi.fn() }));
-const code = `function(t){return t.rows.map((r,row)=>r[1]==='ERROR'?{row,kind:'error',reason:'Unknown operation'}:r[1]==='NOTE'?{row,kind:'ignore',reason:'Metadata'}:r[1]==='CASH'?{row,kind:'cash',date:r[0],amount:Number(r[2]),description:r[3],currency:'EUR',transfer:false}:{row,kind:'investment',date:r[0],currency:'EUR',description:r[3],type:r[1]==='BUY'?'acquisto':'vendita',name:r[3],isin:null,instrumentType:'azione',quantity:Number(r[2]),price:100,grossAmount:null,fees:0,taxes:0})}`;
+const code = `function(t){return t.rows.map((line,row)=>{const r=line[0].split(',');return r[0]==='Date'?{row,kind:'ignore',reason:'Header'}:r[1]==='ERROR'?{row,kind:'error',reason:'Unknown operation'}:r[1]==='NOTE'?{row,kind:'ignore',reason:'Metadata'}:r[1]==='CASH'?{row,kind:'cash',date:r[0],amount:Number(r[2]),description:r[3],currency:'EUR',transfer:false}:{row,kind:'investment',date:r[0],currency:'EUR',description:r[3],type:r[1]==='BUY'?'acquisto':'vendita',name:r[3],isin:null,instrumentType:'azione',quantity:Number(r[2]),price:100,grossAmount:null,fees:0,taxes:0}})}`;
 const csv = 'Date,Type,Value,Description\n2024-01-01,CASH,1000,Deposit\n2024-01-02,BUY,1,Example shares\n2024-01-03,CASH,-5,Shop';
 let userId: string; const users: string[] = [];
 beforeEach(async () => {
@@ -41,7 +41,7 @@ describe("personal CSV durable flow", () => {
   it("creates an encrypted private job, previews without writes and atomically imports cash and investments once", async () => {
     const id = await prepare();
     expect((await readJob(id)).status).toBe("ready"); expect((await readJob(id)).encryptedCsv).toBeNull();
-    expect(await cash()).toHaveLength(0); expect((await getPreview(userId, id)).records).toHaveLength(3);
+    expect(await cash()).toHaveLength(0); expect((await getPreview(userId, id)).records).toHaveLength(4);
     const results = await Promise.all([confirmImport(userId, id), confirmImport(userId, id)]);
     expect(results.map(r => r.inserted).sort()).toEqual([0, 3]);
     expect(await cash()).toHaveLength(3);
@@ -54,7 +54,7 @@ describe("personal CSV durable flow", () => {
     const formatId = (await readJob(id)).formatId;
     const next = await prepare(csv.replace('2024-01-01,CASH', '2023-12-31,NOTE,0,Metadata\n2024-01-01,CASH') + '\n2024-01-04,CASH,-2,New shop', formatId);
     expect(generateParser).toHaveBeenCalledTimes(1);
-    expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, duplicates: 3 });
+    expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, duplicates: 4 });
     expect(await cash()).toHaveLength(4);
   });
   it("denies another user list, preview, reuse and confirmation", async () => {
@@ -116,7 +116,7 @@ describe("personal CSV durable flow", () => {
     const duplicate = await prepare(csv, formatId); await confirmImport(userId, duplicate);
     const plan = await previewPersonalImportDeletion(userId, duplicate); expect(plan).toMatchObject({ cashCount: 0, investmentCount: 0 });
     await deletePersonalImport(userId, duplicate, plan.token); expect(await cash()).toHaveLength(3);
-    const next = await prepare(csv, formatId); expect(await confirmImport(userId, next)).toMatchObject({ inserted: 0, duplicates: 3 });
+    const next = await prepare(csv, formatId); expect(await confirmImport(userId, next)).toMatchObject({ inserted: 0, duplicates: 4 });
   });
   it("rejects a stale confirmation and prevents deleting purchases needed by later sales", async () => {
     const first = await prepare(); await confirmImport(userId, first);

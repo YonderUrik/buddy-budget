@@ -4,11 +4,11 @@ import { and, eq, lte, inArray, sql } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
-import { personalImportJobs as jobs, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
+import { personalImportJobs as jobs, personalParsers as parsers, personalFormats as formats } from "@/lib/db/schema/personal-imports";
 import { logger } from "@/lib/observability";
-import { readTable, parserSchema } from "./contract";
+import { readRawFile, parserSchema } from "./contract";
 import { seal, unseal, digest } from "./crypto";
-import { signatureOf } from "./jobs";
+import { RAW_PARSER_VERSION } from "./jobs";
 import { executeParser } from "./sandbox";
 import { getUserCurrency, todayKey } from "@/lib/investments/operations";
 import { resolveFxRates } from "@/lib/investments/import/execute";
@@ -30,10 +30,11 @@ export async function processOne() {
   let phase = "read";
   try {
     if (job.attempts > 3 || !job.encryptedCsv) throw new Error("Tentativi esauriti");
-    const table = readTable(unseal(job.encryptedCsv, job.userId));
+    const table = readRawFile(unseal(job.encryptedCsv, job.userId));
     const [saved] = job.parserId ? await db.select().from(parsers).where(and(eq(parsers.id, job.parserId), eq(parsers.formatId, job.formatId))) : [];
     phase = "generate";
-    const generated = saved ? { parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model } : await generateParser(table);
+    const [source] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, job.userId)));
+    const generated = saved ? { parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model } : await generateParser(table, source?.name);
     phase = "execute";
     const outcomes = await executeParser(generated.parser, table);
     const repeated = await executeParser(generated.parser, table);
@@ -46,7 +47,7 @@ export async function processOne() {
     });
     if ([...fx.values()].some(rate => rate === null || !Number.isFinite(rate) || rate <= 0)) throw new Error("Cambio storico non disponibile");
     const occurrences = new Map<string, number>();
-    const records = table.rows.map((row, i) => { const hash = digest(JSON.stringify(row)); const n = (occurrences.get(hash) ?? 0) + 1; occurrences.set(hash, n); return { key: `${hash}:${n}`, source: row, outcome: outcomes[i], rate: fx.get(i) ?? null }; });
+    const records = table.rows.map((row, i) => { const hash = digest(JSON.stringify(row)); const n = (occurrences.get(hash) ?? 0) + 1; occurrences.set(hash, n); return { key: `${hash}:${n}`, source: row, line: table.sourceLines?.[i], outcome: outcomes[i], rate: fx.get(i) ?? null }; });
     const errors = outcomes.filter(o => o.kind === "error");
     phase = "persist";
     await db.transaction(async tx => {
@@ -54,7 +55,7 @@ export async function processOne() {
       if (!current) return;
       let parserId = saved?.id;
       if (!errors.length && !parserId) {
-        const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: signatureOf(table), encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
+        const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
       }
       await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify({ headers: table.headers, currency, records }), job.userId), error: errors.length ? "Alcune righe richiedono verifica. Correggi il file o rigenera il formato." : null, lease: null, leaseUntil: null }).where(owned);
     });

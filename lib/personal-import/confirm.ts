@@ -11,7 +11,7 @@ import { getUserCurrency, toRowValues } from "@/lib/investments/operations";
 import { findOversoldTransaction } from "@/lib/calc/investments";
 import { digest, unseal } from "./crypto";
 import { ImportError, validateOutcomes, type Outcome } from "./contract";
-export type Preview = { headers: string[]; currency: string; records: { key: string; source: string[]; outcome: Outcome; rate: number | null }[] };
+export type Preview = { headers: string[]; currency: string; records: { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null }[] };
 export function outcomeHash(outcome: Outcome) {
   const { row: _row, ...fields } = outcome;
   void _row;

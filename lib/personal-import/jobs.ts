@@ -2,11 +2,13 @@ import "server-only";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { personalFormats as formats, personalParsers as parsers, personalImportJobs as jobs } from "@/lib/db/schema/personal-imports";
-import { digest, seal, unseal } from "./crypto";
-import { ImportError, readTable } from "./contract";
-export const signatureOf = (table: ReturnType<typeof readTable>) => digest(JSON.stringify([table.delimiter, table.headers.map(h => h.trim())]));
+import { seal, unseal } from "./crypto";
+import { ImportError, readRawFile } from "./contract";
+// Raw-file parsers are selected only within the source explicitly chosen by this user.
+export const RAW_PARSER_VERSION = "raw-csv-v1";
 export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean }) {
-  const table = readTable(input.csv), signature = signatureOf(table);
+  readRawFile(input.csv);
+  const signature = RAW_PARSER_VERSION;
   return db.transaction(async tx => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
     const recent = await tx.select({ status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), gte(jobs.createdAt, new Date(Date.now() - 86400000))));
@@ -15,7 +17,7 @@ export async function enqueue(userId: string, input: { csv: string; name: string
     if (input.formatId && !format) throw new ImportError("Formato non disponibile");
     if (!format) [format] = await tx.insert(formats).values({ userId, name: input.name }).returning();
     const [parser] = input.regenerate ? [] : await tx.select().from(parsers).where(and(eq(parsers.formatId, format.id), eq(parsers.signature, signature))).orderBy(desc(parsers.createdAt)).limit(1);
-    const [job] = await tx.insert(jobs).values({ userId, formatId: format.id, parserId: parser?.id, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id });
+    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v2", formatId: format.id, parserId: parser?.id, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id });
     return job;
   });
 }

@@ -80,3 +80,13 @@ Lo stesso CSV è stato quindi ricaricato e confermato nuovamente usando il parse
 I conti vuoti conservati per reimportare non aggiungono più un broker al filtro: deve restare almeno un’operazione, un rendiconto o un saldo non nullo. Verificato dopo refresh completo: solo DEGIRO e Interactive Brokers, senza Trade Republic eliminato. Nove test filtro/liquidità passati, inclusi saldo negativo, rendiconto a saldo zero e operazioni ancora presenti; TypeScript ed ESLint passati.
 
 ![Filtro broker aggiornato](12-broker-filter-after-delete.jpg)
+
+## File raw interpretato dall’AI
+
+Rimosso il parsing CSV preliminare: l’input del modello contiene solo `rawCsv` (testo originale invariato) e `sourceName`. Nessuna ricerca di intestazioni, delimitatori o colonne, nessuna regola Bitpanda. Il parser generato interpreta il documento; i riferimenti alle righe servono all’anteprima e al controllo che ogni riga abbia un esito. Consenso aggiornato: anche dati personali nel file sono inclusi, con ZDR obbligatorio.
+
+Prova reale dal browser con il file Bitpanda fornito dall’utente: il modello DeepSeek ha generato il parser in circa 24 secondi; **51 righe, 45 operazioni, 6 esclusioni motivate, nessun errore di parsing** (5 righe introduttive e 1 intestazione). Anteprima disponibile per la revisione dell’utente, nessuna conferma finanziaria eseguita. Questo verifica l’analisi del formato, non certifica la correttezza finanziaria del parser generato. Il file privato e il codice generato non sono inclusi nel repository.
+
+27 test dedicati passati, inclusa verifica che il payload del modello sia esattamente il file raw e il nome della fonte; TypeScript ed ESLint passati.
+
+![Anteprima da file raw](13-raw-file-preview.jpg)

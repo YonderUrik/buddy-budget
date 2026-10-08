@@ -65,7 +65,7 @@ export function buildCompositionItems(
   if (accounts.length > 0) {
     const amount = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
     const detail = accounts.length === 1 ? "1 conto" : `${accounts.length} conti`;
-    items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/conti" });
+    items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/liquidita/conti" });
   }
   if (investments) {
     const detail = investments.positions === 1 ? "1 posizione" : `${investments.positions} posizioni`;

@@ -26,7 +26,7 @@ describe("buildCompositionItems", () => {
 
   it("una voce Liquidità con totale, numero di conti e peso pieno, che porta a Conti", () => {
     expect(buildCompositionItems([makeAccount("100.50"), makeAccount("-20.50")])).toEqual([
-      { key: "liquidita", label: "Liquidità", detail: "2 conti", amount: 80, share: 1, href: "/conti" },
+      { key: "liquidita", label: "Liquidità", detail: "2 conti", amount: 80, share: 1, href: "/liquidita/conti" },
     ]);
   });
 

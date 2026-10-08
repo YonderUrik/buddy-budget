@@ -19,7 +19,7 @@ export interface MonthPaceSectionProps {
   className?: string;
 }
 
-export function MonthPaceSection({ pace, monthLabel, currency, href = "/movimenti/analisi", onLinkClick, className }: MonthPaceSectionProps) {
+export function MonthPaceSection({ pace, monthLabel, currency, href = "/liquidita/analisi", onLinkClick, className }: MonthPaceSectionProps) {
   const format = (value: number) => formatCurrency(value, currency, { maximumFractionDigits: 0 });
   const budgetUsed = pace.budgetTotal && pace.budgetTotal > 0 ? Math.min(1, pace.budgetSpent / pace.budgetTotal) : null;
   const overBudget = pace.budgetTotal !== null && pace.budgetSpent > pace.budgetTotal;

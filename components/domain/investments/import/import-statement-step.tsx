@@ -29,7 +29,7 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
         {fileName ? <span className="font-medium text-foreground">{fileName}</span> : "Testo incollato"}
         {` · formato riconosciuto: ${providerName}. Importo operazioni e movimenti di cassa, conservando i dati originali. Verifico i saldi e le posizioni quando presenti nel file.`}
       </p>
-      {cashMovements ? <div className="rounded-lg border p-3 text-sm">
+      {cashMovements ? <div className="rounded-lg bg-muted/50 p-3 text-sm">
         <p>{rows.filter((r) => r.status === "ok").length} operazioni di investimento e {cashMovements.length} movimenti del conto: pagamenti con carta, bonifici, interessi e bonus.</p>
         <p className="mt-1 text-muted-foreground">I movimenti del conto saranno disponibili in Movimenti, da categorizzare. Il saldo viene calcolato dallo storico completo partendo da zero: il CSV non contiene un saldo ufficiale.</p>
         <ul className="mt-2 space-y-1">{cashMovements.slice(0, 5).map((m) => <li key={m.externalId}>{m.date} · {m.description} · {m.amount.toFixed(2)} {m.currency}</li>)}</ul>
@@ -37,7 +37,7 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
       </div> : null}
       {rows.length > 0 ? <ImportRowsPreview rows={rows} /> : null}
       {warnings.length > 0 ? (
-        <div className="flex flex-col gap-1.5 rounded-lg border p-3 text-sm">
+        <div className="flex flex-col gap-1.5 rounded-lg bg-muted/50 p-3 text-sm">
           <p className="flex items-center gap-1.5 font-medium text-foreground">
             <AlertTriangleIcon className="size-4 text-muted-foreground" aria-hidden="true" />
             {warnings.length} {warnings.length === 1 ? "voce non importata" : "voci non importate"}: da controllare a mano

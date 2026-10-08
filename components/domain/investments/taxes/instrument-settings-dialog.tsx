@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {Dialog, DialogContent} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isFund } from "@/lib/calc/taxes";
@@ -17,6 +17,10 @@ import { useUpdateInstrumentSettingsMutation } from "@/lib/queries/investments";
 import { parseAmount } from "@/lib/validation/accounts";
 import { OperationFormField as Field } from "../operation-form-field";
 import { formatPct } from "../percent";
+import { SlidersHorizontalIcon } from "lucide-react";
+import { PanelDialogHeader } from "../dialog-parts";
+import { CalendarClockIcon, LandmarkIcon } from "lucide-react";
+import { DialogActions, DialogSection, DialogSections } from "../dialog-parts";
 
 const AUTO = "auto";
 const RATE_LABELS: Record<string, string> = { "0.26": "26% (ordinaria)", "0.125": "12,5% (titoli di Stato)" };
@@ -85,10 +89,9 @@ function SettingsForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <DialogHeader>
-        <DialogTitle>{instrument.name}</DialogTitle>
-        <DialogDescription>Valgono solo per te: servono a stimare tasse e proventi.</DialogDescription>
-      </DialogHeader>
+      <PanelDialogHeader icon={SlidersHorizontalIcon} title={instrument.name} description="Valgono solo per te: servono a stimare tasse e proventi." color="var(--swatch-slate)" />
+      <DialogSections>
+      <DialogSection title="Imposte" icon={LandmarkIcon} color="var(--neg)">
       <Field label="Aliquota">
         <Select value={rate} onValueChange={(v) => v && setRate(v)}>
           <SelectTrigger className="w-full" aria-label="Aliquota">
@@ -115,9 +118,9 @@ function SettingsForm({
           </Select>
         </Field>
       ) : null}
+      </DialogSection>
       {isBond ? (
-        <fieldset className="flex flex-col gap-3 rounded-lg border p-3">
-          <legend className="px-1 text-sm font-medium text-foreground">Cedole</legend>
+        <DialogSection title="Cedole" icon={CalendarClockIcon} color="var(--swatch-amber)">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Tasso annuo lordo (%)" htmlFor={`${id}-rate`}>
               <Input id={`${id}-rate`} inputMode="decimal" value={couponRate} onChange={(e) => setCouponRate(e.target.value)} placeholder="Es. 3,85" />
@@ -141,10 +144,11 @@ function SettingsForm({
             <Input id={`${id}-maturity`} type="date" value={maturity} onChange={(e) => setMaturity(e.target.value)} />
           </Field>
           <p className="text-xs text-muted-foreground">Le date delle cedole si contano a ritroso dalla scadenza.</p>
-        </fieldset>
+        </DialogSection>
       ) : null}
+      </DialogSections>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <div className="flex flex-wrap justify-between gap-2">
+      <DialogActions>
         <Button
           type="button"
           variant="ghost"
@@ -156,7 +160,7 @@ function SettingsForm({
         <Button type="submit" disabled={save.isPending}>
           {save.isPending ? "Salvataggio…" : "Salva"}
         </Button>
-      </div>
+      </DialogActions>
     </form>
   );
 }

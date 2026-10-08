@@ -28,7 +28,7 @@ export function ResetInvestments() {
       setOpen(false);
     } catch { /* Keep the dialog open with the error and a fresh-review action. */ }
   }
-  return <div className="rounded-xl border p-4">
+  return <div className="rounded-xl bg-muted/50 p-4">
     <h3 className="font-medium">Riparti da zero</h3>
     <p className="my-2 text-sm text-muted-foreground">Numeri duplicati dopo un vecchio import? Azzera lo storico investimenti e poi importa nuovamente i CSV completi, dal più vecchio al più recente.</p>
     <Button variant="destructive" className="h-auto whitespace-normal text-left" onClick={review}>Rimuovi tutti gli import e azzera gli investimenti</Button>

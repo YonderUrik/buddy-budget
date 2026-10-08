@@ -1,4 +1,4 @@
-/** Stato e handler del drag & drop tra gruppi, condivisi dalle due viste della board (Compatta e Dettaglio). */
+/** Stato e handler del drag & drop tra gruppi, condivisi dalle due viste della board (le colonne della board). */
 
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryType } from "@/lib/categories/groups";

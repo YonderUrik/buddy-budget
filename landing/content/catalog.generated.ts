@@ -6,7 +6,7 @@
  * Quando una funzione viene rilasciata, cambia stato o nasce, si aggiorna QUI e si lancia il sync.
  */
 
-export const FEATURE_AREAS = ["Conti", "Movimenti", "Investimenti", "Debiti", "Patrimonio", "Account"] as const;
+export const FEATURE_AREAS = ["Liquidità", "Investimenti", "Debiti", "Patrimonio", "Account"] as const;
 export type FeatureArea = (typeof FEATURE_AREAS)[number];
 
 /** `live` disponibile, `new` rilasciata da poco (badge "Nuovo"), `soon` pianificata (badge "Presto"). */
@@ -33,21 +33,23 @@ const f = (
 ): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
 
 export const FEATURES: readonly Feature[] = [
-  f("collegamento-alla-banca", "Conti", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live", "/conti"),
-  f("avviso-rinnovo-banca", "Conti", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
-  f("conti-manuali", "Conti", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
-  f("aggiornamento-automatico-e-manuale", "Conti", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
-  f("conti-raggruppati-per-banca", "Conti", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
+  f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live"),
+  f("avviso-rinnovo-banca", "Liquidità", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
+  f("liquidita-unica", "Liquidità", "Conti e movimenti in un posto solo", "Saldo totale, andamento e movimenti di tutti i conti in un'unica schermata, filtrabile per conto con un tocco.", "new"),
+  f("categoria-con-un-tocco", "Liquidità", "Categoria con un tocco", "Tocchi l'icona di un movimento, scegli la categoria e, se vuoi, ricordala per i prossimi: si annulla con un tocco.", "new"),
+  f("conti-manuali", "Liquidità", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
+  f("aggiornamento-automatico-e-manuale", "Liquidità", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
+  f("conti-raggruppati-per-banca", "Liquidità", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
 
-  f("categorizzazione-automatica", "Movimenti", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
-  f("proposte-per-somiglianza", "Movimenti", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
-  f("nomi-leggibili", "Movimenti", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
-  f("quattro-gruppi-di-spesa", "Movimenti", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
-  f("dividi-e-escludi", "Movimenti", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise.", "live"),
-  f("budget-per-categoria", "Movimenti", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
-  f("analisi-e-cash-flow", "Movimenti", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/movimenti"),
-  f("ricerca-filtri-e-note", "Movimenti", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
-  f("da-sistemare", "Movimenti", "Da sistemare", "Un avviso in Panoramica e un contatore su Movimenti nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
+  f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
+  f("proposte-per-somiglianza", "Liquidità", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
+  f("nomi-leggibili", "Liquidità", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
+  f("quattro-gruppi-di-spesa", "Liquidità", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
+  f("dividi-e-escludi", "Liquidità", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise: scegli Metà, Un terzo o un importo, e vedi subito quanto è tuo.", "live"),
+  f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
+  f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),
+  f("ricerca-filtri-e-note", "Liquidità", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
+  f("da-sistemare", "Liquidità", "Da sistemare", "Un avviso in Panoramica e un contatore su Liquidità nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
   f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers e DEGIRO nello stesso portafoglio (selezione multipla dei rendiconti, cassa riconciliata includibile nel totale con un interruttore, aggiornamento dei periodi sovrapposti e gestione degli import per broker in un menu espandibile nella scheda Operazioni e ripristino completo dello storico), Trade Republic (investimenti, pagamenti con carta e movimenti del conto), Yahoo Finance o un altro CSV.", "live"),

@@ -23,7 +23,7 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
   const [index, setIndex] = React.useState(0);
 
   React.useEffect(() => {
-    if (reduceMotion || UPCOMING_FEATURES.length === 0) return;
+    if (reduceMotion || UPCOMING_FEATURES.length < 2) return;
     const id = window.setInterval(
       () => setIndex((i) => (i + 1) % UPCOMING_FEATURES.length),
       UPCOMING_FEATURE_INTERVAL_MS
@@ -32,7 +32,6 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
   }, [reduceMotion]);
 
   const current = UPCOMING_FEATURES[index];
-  // Nessuna schermata pianificata: niente riga "In arrivo".
   if (!current) return null;
 
   return (

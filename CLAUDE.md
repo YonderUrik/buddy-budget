@@ -131,7 +131,7 @@ docker build -t buddy-budget:local .   # immagine dell'app (target migrator: --t
 ```
 app/                         route App Router
   (auth)/                    login, onboarding (senza AppShell)
-  (app)/                     schermate con AppShell: panoramica, conti, movimenti (elenco/analisi/categorie/regole),
+  (app)/                     schermate con AppShell: panoramica, liquidita (movimenti/analisi/conti/categorie/regole),
                              categorizza, investimenti (6 schede + titoli), debiti, impostazioni, style-guide
   api/                       route handler (tutti con withRoute), cron in api/cron/*
   globals.css                design token (CSS variables) e theme Tailwind
@@ -176,7 +176,7 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 
 Elenco, area, descrizioni e stato (`live` / `new` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, che aggiunge solo l'icona) e la landing, che ne tiene una copia generata (`landing/content/catalog.generated.ts`, aggiornata con `pnpm sync:features` in `landing/`; la CI controlla l'allineamento). Il pannello del login mostra le funzionalità `soon` che hanno `appPath` (le schermate). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
 
-Quando si implementa una schermata pianificata (oggi: nessuna; Pianifica è stata tolta il 2026-10-08):
+Quando si implementa una schermata pianificata (oggi: Pianifica, Analitiche):
 
 1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: **togliere `comingSoon: true`** e verificare che `href` corrisponda alla route reale.
 2. `lib/features/catalog.ts`: passare la voce da `soon` a `new` o `live` (e aggiornare la descrizione se serve); togliere l'icona da `UPCOMING_ICONS` nel file dati del login; poi `pnpm sync:features` in `landing/`.
@@ -185,6 +185,8 @@ Quando si implementa una schermata pianificata (oggi: nessuna; Pianifica è stat
 Una schermata o feature nuova non è "completata" finché il catalogo non è aggiornato, insieme a "Stato del progetto" qui sotto.
 
 ## Stato del progetto
+
+**Liquidità (2026-10-08)**: Conti e Movimenti unificati in `/liquidita` (Movimenti · Analisi · Conti · Categorie e regole) con lo stile della Panoramica come standard, Dividi con scorciatoie e categoria cambiabile dall'icona; voce in `docs/decisioni/2026-10-08-liquidita.md`. PR in bozza sul branch `claude/project-thread-6pd4uu`. Rimandati: redesign di Categorie e Regole (oggi riusano board e gestore esistenti) e dei moduli di modifica.
 
 **Impatto costi e imposte (2026-10-06)**: due interruttori indipendenti accanto al grafico e card di dettaglio nel Portafoglio; imposte dal medesimo calcolo della scheda Tasse, con regime, aliquote e compensazioni; i toggle «Reinvesti costi» e «Reinvesti imposte», inizialmente spenti, aggiungono al valore reale i risparmi reinvestiti dal giorno di addebito al rendimento giornaliero osservato, aggiornando totale e grafico. Perimetro: oneri registrati sulle operazioni e imposte sulle vendite stimate dalla scheda Tasse; oneri autonomi del conto, TER e bollo esclusi. PR #169; branch `codex/portfolio-cost-impact`.
 
@@ -203,7 +205,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 ### Fatto (tutto su `main`, in produzione su k3s)
 
 - **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login con pannello "mosaico", brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
-- **Movimenti** (`/movimenti`: Elenco · Analisi · Categorie · Regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
+- **Movimenti** (`/liquidita`: Movimenti · Analisi · Conti · Categorie e regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
 - **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
 - **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
 - **Infrastruttura**: migrazione Vercel+Neon → VPS k3s completata (Fasi 0-7, cutover il 2026-09-27). Osservabilità Fasi A e B completate (log JSON, metriche, 4 dashboard, 12 alert con runbook, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
@@ -224,7 +226,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - **Osservabilità Fase C**: accesso in sola lettura per agenti via MCP (mai sulla VPS di produzione).
 - **Fase 7, Task 8 (migrazione VPS)**: non prima di 2 settimane dal cutover (cioè dopo il 2026-10-11) e con conferma esplicita dell'utente: rotazione di tutti i segreti (sono transitati su Vercel), chiusura definitiva di Vercel/Neon, rimozione delle chiavi Umami inutilizzate dall'env (`@vercel/analytics` è già stato tolto con la PR GDPR 3). Piano: `docs/superpowers/plans/2026-09-27-fase-7-cutover.md`.
 - **Sezione Budget separata**: oggi il budget per categoria vive nella legenda della torta in Movimenti. Serve un brainstorming dedicato (cambio di IA e data-model).
-- **Schermate non implementate**: nessuna (la sezione Pianifica è stata rimossa il 2026-10-08, vedi `docs/decisioni/2026-10-08-menu-senza-pianifica-e-badge-movimenti.md`).
+- **Schermate non implementate**: Pianifica (vedi "Schermate in arrivo").
 - **i18n**: lingua e valuta sono scelte in onboarding, ma le stringhe sono ancora tutte in italiano; serve scegliere la libreria ed estrarre le stringhe.
 - **Backlog**: tracciato su Slack in `#bb-backlog` (vedi Regole). Lì ci sono anche idee e debiti minori.
 

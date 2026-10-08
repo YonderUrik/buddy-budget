@@ -4,9 +4,9 @@
  */
 export const HOME_PAGE_OPTIONS = [
   { path: "/panoramica", label: "Panoramica" },
-  { path: "/conti", label: "Conti" },
-  { path: "/movimenti", label: "Movimenti" },
-  { path: "/movimenti/analisi", label: "Analisi dei movimenti" },
+  { path: "/liquidita", label: "Liquidità" },
+  { path: "/liquidita/conti", label: "Conti" },
+  { path: "/liquidita/analisi", label: "Analisi dei movimenti" },
   { path: "/investimenti", label: "Investimenti" },
 ] as const;
 
@@ -20,7 +20,15 @@ export function isHomePagePath(value: unknown): value is HomePagePath {
   return typeof value === "string" && HOME_PAGE_OPTIONS.some((option) => option.path === value);
 }
 
+/** Pagine iniziali salvate prima dell'unione di Conti e Movimenti in Liquidità, con la pagina che le sostituisce. */
+const LEGACY_HOME_PAGES: Record<string, HomePagePath> = {
+  "/conti": "/liquidita/conti",
+  "/movimenti": "/liquidita",
+  "/movimenti/analisi": "/liquidita/analisi",
+};
+
 /** Pagina iniziale dell'utente, con ripiego sul default se il valore salvato non è (più) valido. */
 export function resolveHomePage(value: string | null | undefined): HomePagePath {
+  if (typeof value === "string" && value in LEGACY_HOME_PAGES) return LEGACY_HOME_PAGES[value];
   return isHomePagePath(value) ? value : DEFAULT_HOME_PAGE;
 }

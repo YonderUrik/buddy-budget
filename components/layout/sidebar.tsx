@@ -26,8 +26,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Landmark,
-  ArrowLeftRight,
+  Wallet,
   TrendingUp,
   Umbrella,
   CreditCard,
@@ -65,7 +64,7 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-/** Badge con contatore accanto a una voce di navigazione (es. i movimenti da sistemare su Movimenti), mostrato solo con `count > 0`. */
+/** Badge con contatore accanto a una voce di navigazione (es. i movimenti da sistemare su Liquidità), mostrato solo con `count > 0`. */
 export interface NavBadge {
   count: number;
   /** Testo del badge (es. "99+"); default: `count`. */
@@ -83,8 +82,7 @@ const COMING_SOON_LABEL = "Presto";
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Panoramica", href: "/panoramica", icon: LayoutDashboard },
-  { label: "Conti", href: "/conti", icon: Landmark },
-  { label: "Movimenti", href: "/movimenti", icon: ArrowLeftRight },
+  { label: "Liquidità", href: "/liquidita", icon: Wallet },
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
   { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
@@ -233,7 +231,7 @@ interface AppSidebarProps {
   onClose?: () => void;
   /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
   settingsHref?: string;
-  /** Badge con contatore, per `href` della voce (es. `{ "/movimenti": { count: 9 } }`). */
+  /** Badge con contatore, per `href` della voce (es. `{ "/liquidita": { count: 9 } }`). */
   badges?: Record<string, NavBadge>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
   extra?: React.ReactNode;

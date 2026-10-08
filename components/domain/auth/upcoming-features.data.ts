@@ -4,7 +4,7 @@
  * si cambia lo stato nel catalogo e si toglie l'icona da `UPCOMING_ICONS`.
  */
 
-import { Circle, type LucideIcon } from "lucide-react";
+import { Target, type LucideIcon } from "lucide-react";
 
 import { featuresByStatus } from "@/lib/features";
 
@@ -23,7 +23,7 @@ export const UPCOMING_FEATURES: UpcomingFeature[] = featuresByStatus("soon")
   .map((feature) => ({
   name: feature.name,
   description: feature.description,
-  icon: UPCOMING_ICONS[feature.id] ?? Circle,
+  icon: UPCOMING_ICONS[feature.id] ?? Target,
 }));
 
 /** Tempo di permanenza di ciascuna funzionalità nel ticker, in millisecondi. */

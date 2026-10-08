@@ -6,9 +6,9 @@ import { formatBadgeCount } from "@/lib/attention";
 import { useAttentionQuery } from "@/lib/queries/attention";
 
 /** Voce di navigazione che mostra il badge dei movimenti da sistemare. */
-const ATTENTION_PARENT_HREF = "/movimenti";
+const ATTENTION_PARENT_HREF = "/liquidita";
 
-/** AppShell con il badge dei movimenti da sistemare (nuovi o da categorizzare) accanto a Movimenti. */
+/** AppShell con il badge dei movimenti da sistemare (nuovi o da categorizzare) accanto a Liquidità. */
 export function AttentionShell({ children, sidebarExtra }: { children: React.ReactNode; sidebarExtra?: React.ReactNode }) {
   const { data } = useAttentionQuery();
   const count = data?.totalCount ?? 0;

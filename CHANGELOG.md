@@ -2,6 +2,27 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.21.0](https://github.com/YonderUrik/buddy-budget/compare/v0.20.0...v0.21.0) (2026-10-08)
+
+
+### Novità
+
+* unisce Conti e Movimenti nella sezione Liquidità ([#186](https://github.com/YonderUrik/buddy-budget/issues/186)) ([dd81dca](https://github.com/YonderUrik/buddy-budget/commit/dd81dcaf6f199e0db0c2f9b5d5b63f46635b03ff))
+
+
+### Correzioni
+
+* **deps:** bump next from 16.3.7 to 16.3.8 ([#188](https://github.com/YonderUrik/buddy-budget/issues/188)) ([d00191a](https://github.com/YonderUrik/buddy-budget/commit/d00191a3b1804e1de37a5d3ad25cc97883e2f527))
+* **deps:** bump next from 16.3.7 to 16.3.8 in /landing ([#189](https://github.com/YonderUrik/buddy-budget/issues/189)) ([d60f318](https://github.com/YonderUrik/buddy-budget/commit/d60f318a1b65af103a2ae2ad095f0542f0999837))
+* rimuovi la sezione Pianifica ([#193](https://github.com/YonderUrik/buddy-budget/issues/193)) ([ba6c6f8](https://github.com/YonderUrik/buddy-budget/commit/ba6c6f881cf8caf8f7c64a080bab9a3a16892d43))
+
+## [0.20.0](https://github.com/YonderUrik/buddy-budget/compare/v0.19.0...v0.20.0) (2026-10-08)
+
+
+### Novità
+
+* torta del patrimonio in Panoramica con etichette sobrie e interazione ([#185](https://github.com/YonderUrik/buddy-budget/issues/185)) ([b2dbf7d](https://github.com/YonderUrik/buddy-budget/commit/b2dbf7d5f26168c5c79457dfe7fa30603417b985))
+
 ## [0.19.0](https://github.com/YonderUrik/buddy-budget/compare/v0.18.0...v0.19.0) (2026-10-06)
 
 

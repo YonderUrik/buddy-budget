@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget",
-  "version": "0.11.0",
+  "version": "0.24.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@11.5.0",
@@ -17,7 +17,8 @@
     "db:clear": "tsx --env-file=.env.local lib/db/clear.ts",
     "db:migrate-category-groups": "tsx --env-file=.env.local lib/db/migrate-category-groups.ts",
     "db:reset-categories": "tsx --env-file=.env.local lib/db/reset-categories.ts",
-    "db:mark-baseline": "tsx --env-file-if-exists=.env.local lib/db/mark-baseline.ts"
+    "db:mark-baseline": "tsx --env-file-if-exists=.env.local lib/db/mark-baseline.ts",
+    "worker:csv": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/personal-csv-worker.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -30,10 +31,11 @@
     "ioredis": "^5.11.1",
     "lucide-react": "^1.23.0",
     "motion": "^13.4.6",
-    "next": "16.3.7",
+    "next": "16.3.8",
     "next-themes": "^0.4.6",
     "postgres": "^3.4.9",
     "prom-client": "^15.1.3",
+    "quickjs-emscripten": "^0.32.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-number-format": "^5.4.5",

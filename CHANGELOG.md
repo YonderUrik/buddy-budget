@@ -2,6 +2,144 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.24.0](https://github.com/YonderUrik/buddy-budget/compare/v0.23.2...v0.24.0) (2026-10-08)
+
+
+### Novità
+
+* import Fineco (Movimenti Dossier Titoli) negli Investimenti ([#203](https://github.com/YonderUrik/buddy-budget/issues/203)) ([4049090](https://github.com/YonderUrik/buddy-budget/commit/40490908d448be8f6206440527634e391f1bb404))
+
+## [0.23.2](https://github.com/YonderUrik/buddy-budget/compare/v0.23.1...v0.23.2) (2026-10-08)
+
+
+### Correzioni
+
+* import Trade Republic con ricezioni gratuite di crypto e imposte in ritardo ([#201](https://github.com/YonderUrik/buddy-budget/issues/201)) ([d6fde91](https://github.com/YonderUrik/buddy-budget/commit/d6fde91a359ac74b03e8c85d415346ee88998d24))
+
+## [0.23.1](https://github.com/YonderUrik/buddy-budget/compare/v0.23.0...v0.23.1) (2026-10-08)
+
+
+### Correzioni
+
+* torta interattiva e tooltip nei grafici di Liquidità ([#198](https://github.com/YonderUrik/buddy-budget/issues/198)) ([d2421a5](https://github.com/YonderUrik/buddy-budget/commit/d2421a5fde169f19455c78910ae602d0d52e9821))
+
+## [0.23.0](https://github.com/YonderUrik/buddy-budget/compare/v0.22.0...v0.23.0) (2026-10-08)
+
+
+### Novità
+
+* rimuove Pianifica e trasforma Da sistemare in un badge su Movimenti ([#183](https://github.com/YonderUrik/buddy-budget/issues/183)) ([4300840](https://github.com/YonderUrik/buddy-budget/commit/4300840358343cb9f5ef81f74ab198008013ebf8))
+
+## [0.22.0](https://github.com/YonderUrik/buddy-budget/compare/v0.21.0...v0.22.0) (2026-10-08)
+
+
+### Novità
+
+* **import:** add private AI-generated CSV parsers ([#181](https://github.com/YonderUrik/buddy-budget/issues/181)) ([895c51a](https://github.com/YonderUrik/buddy-budget/commit/895c51ac117760ff550e180c8fe3d57491875c03))
+
+## [0.21.0](https://github.com/YonderUrik/buddy-budget/compare/v0.20.0...v0.21.0) (2026-10-08)
+
+
+### Novità
+
+* unisce Conti e Movimenti nella sezione Liquidità ([#186](https://github.com/YonderUrik/buddy-budget/issues/186)) ([dd81dca](https://github.com/YonderUrik/buddy-budget/commit/dd81dcaf6f199e0db0c2f9b5d5b63f46635b03ff))
+
+
+### Correzioni
+
+* **deps:** bump next from 16.3.7 to 16.3.8 ([#188](https://github.com/YonderUrik/buddy-budget/issues/188)) ([d00191a](https://github.com/YonderUrik/buddy-budget/commit/d00191a3b1804e1de37a5d3ad25cc97883e2f527))
+* **deps:** bump next from 16.3.7 to 16.3.8 in /landing ([#189](https://github.com/YonderUrik/buddy-budget/issues/189)) ([d60f318](https://github.com/YonderUrik/buddy-budget/commit/d60f318a1b65af103a2ae2ad095f0542f0999837))
+* rimuovi la sezione Pianifica ([#193](https://github.com/YonderUrik/buddy-budget/issues/193)) ([ba6c6f8](https://github.com/YonderUrik/buddy-budget/commit/ba6c6f881cf8caf8f7c64a080bab9a3a16892d43))
+
+## [0.20.0](https://github.com/YonderUrik/buddy-budget/compare/v0.19.0...v0.20.0) (2026-10-08)
+
+
+### Novità
+
+* torta del patrimonio in Panoramica con etichette sobrie e interazione ([#185](https://github.com/YonderUrik/buddy-budget/issues/185)) ([b2dbf7d](https://github.com/YonderUrik/buddy-budget/commit/b2dbf7d5f26168c5c79457dfe7fa30603417b985))
+
+## [0.19.0](https://github.com/YonderUrik/buddy-budget/compare/v0.18.0...v0.19.0) (2026-10-06)
+
+
+### Novità
+
+* import Trade Republic investments and account transactions ([#178](https://github.com/YonderUrik/buddy-budget/issues/178)) ([6349fd6](https://github.com/YonderUrik/buddy-budget/commit/6349fd62b5485dfb2dc0b324d6431c6ccbd4d2b3))
+
+## [0.18.0](https://github.com/YonderUrik/buddy-budget/compare/v0.17.0...v0.18.0) (2026-10-06)
+
+
+### Novità
+
+* panoramica a tessere con ritmo del mese, scadenze e investimenti ([#176](https://github.com/YonderUrik/buddy-budget/issues/176)) ([1d158c9](https://github.com/YonderUrik/buddy-budget/commit/1d158c9270ddd361c6f99ba50799f0c7daee71ff))
+
+## [0.17.0](https://github.com/YonderUrik/buddy-budget/compare/v0.16.0...v0.17.0) (2026-10-06)
+
+
+### Novità
+
+* add dividend summaries and payment details ([#174](https://github.com/YonderUrik/buddy-budget/issues/174)) ([b6249cd](https://github.com/YonderUrik/buddy-budget/commit/b6249cd85c5233177f66c43855f5a534cf53cfb0))
+
+## [0.16.0](https://github.com/YonderUrik/buddy-budget/compare/v0.15.1...v0.16.0) (2026-10-06)
+
+
+### Novità
+
+* add YTD and custom portfolio chart intervals ([#172](https://github.com/YonderUrik/buddy-budget/issues/172)) ([bc333ee](https://github.com/YonderUrik/buddy-budget/commit/bc333eea48128fd1f272ea6980c14dcda0b3c1c7))
+
+## [0.15.1](https://github.com/YonderUrik/buddy-budget/compare/v0.15.0...v0.15.1) (2026-10-06)
+
+
+### Correzioni
+
+* simplify cash information in portfolio overview ([#170](https://github.com/YonderUrik/buddy-budget/issues/170)) ([6195e41](https://github.com/YonderUrik/buddy-budget/commit/6195e414a6085b620d9b4236b989b452ac0c3186))
+
+## [0.15.0](https://github.com/YonderUrik/buddy-budget/compare/v0.14.1...v0.15.0) (2026-10-06)
+
+
+### Novità
+
+* simulate reinvested investment costs and taxes ([#169](https://github.com/YonderUrik/buddy-budget/issues/169)) ([d70f166](https://github.com/YonderUrik/buddy-budget/commit/d70f16664bf3cea2daf3900debd54e2c05a13840))
+
+
+### Refactoring
+
+* move investment import management into operations ([#163](https://github.com/YonderUrik/buddy-budget/issues/163)) ([65c4468](https://github.com/YonderUrik/buddy-budget/commit/65c4468f9a1ba59f9f87b5a1f4f9e33d7778f094))
+
+## [0.14.1](https://github.com/YonderUrik/buddy-budget/compare/v0.14.0...v0.14.1) (2026-10-06)
+
+
+### Correzioni
+
+* nomi lunghi dei debiti non allargano più la pagina su telefono ([#164](https://github.com/YonderUrik/buddy-budget/issues/164)) ([124dd56](https://github.com/YonderUrik/buddy-budget/commit/124dd566f893d2247dd0038825987e87030f34be))
+
+## [0.14.0](https://github.com/YonderUrik/buddy-budget/compare/v0.13.1...v0.14.0) (2026-10-06)
+
+
+### Novità
+
+* manage investment imports and compare broker portfolios ([#148](https://github.com/YonderUrik/buddy-budget/issues/148)) ([a0c4441](https://github.com/YonderUrik/buddy-budget/commit/a0c4441aed309fa20ecab54c501cf885241dabb6))
+
+## [0.13.1](https://github.com/YonderUrik/buddy-budget/compare/v0.13.0...v0.13.1) (2026-10-06)
+
+
+### Correzioni
+
+* il piano di ammortamento su telefono è una lista di schede, senza scroll orizzontale ([#161](https://github.com/YonderUrik/buddy-budget/issues/161)) ([15a22f5](https://github.com/YonderUrik/buddy-budget/commit/15a22f55c391c7f0430ebc19da1cd64e80093fe5))
+
+## [0.13.0](https://github.com/YonderUrik/buddy-budget/compare/v0.12.0...v0.13.0) (2026-10-06)
+
+
+### Novità
+
+* Debiti ridisegnata con priorità e azioni, Simulatore dentro i finanziamenti, via il credit Lombard ([#158](https://github.com/YonderUrik/buddy-budget/issues/158)) ([784fd0f](https://github.com/YonderUrik/buddy-budget/commit/784fd0fbe302cc825e79293652539eb08e9c051e))
+
+## [0.12.0](https://github.com/YonderUrik/buddy-budget/compare/v0.11.0...v0.12.0) (2026-10-05)
+
+
+### Novità
+
+* icone degli strumenti in Posizioni (crypto, marchi azionari, sigle degli emittenti) ([#154](https://github.com/YonderUrik/buddy-budget/issues/154)) ([de26a47](https://github.com/YonderUrik/buddy-budget/commit/de26a4715e8d5ca6b530f056a94308164d55c866))
+
 ## [0.11.0](https://github.com/YonderUrik/buddy-budget/compare/v0.10.0...v0.11.0) (2026-10-05)
 
 

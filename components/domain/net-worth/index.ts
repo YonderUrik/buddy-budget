@@ -14,8 +14,6 @@ export { NetWorthCompositionRow } from "./net-worth-composition-row";
 export type { NetWorthCompositionRowProps } from "./net-worth-composition-row";
 export { buildCompositionItems, computeInvestedShare, MARKET_HIGHLIGHT_LABEL } from "./net-worth-composition-row.utils";
 export type { CompositionHighlight, DebtsComposition, InvestmentsComposition, NetWorthCompositionItem, PensionComposition } from "./net-worth-composition-row.utils";
-export { MonthSummaryCard } from "./month-summary-card";
-export type { MonthSummaryCardProps } from "./month-summary-card";
 export {
   ASSET_CLASS_COLORS,
   ASSET_CLASS_LABELS,
@@ -25,3 +23,5 @@ export {
   assetClassesInSeries,
   FALLBACK_ASSET_CLASS_COLOR,
 } from "./asset-classes";
+export { MoneyHero, splitMoney } from "./money-hero";
+export type { MoneyHeroProps } from "./money-hero";

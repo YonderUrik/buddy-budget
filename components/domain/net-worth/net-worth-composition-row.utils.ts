@@ -38,7 +38,7 @@ export interface InvestmentsComposition {
 
 /** Riepilogo dei debiti per la composizione (null se l'utente non ne ha). */
 export interface DebtsComposition {
-  /** Debito complessivo oggi (positivo): residuo dei finanziamenti più utilizzato delle linee di credito. */
+  /** Debito complessivo oggi (positivo): residuo dei finanziamenti. */
   total: number;
   count: number;
 }
@@ -65,7 +65,7 @@ export function buildCompositionItems(
   if (accounts.length > 0) {
     const amount = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
     const detail = accounts.length === 1 ? "1 conto" : `${accounts.length} conti`;
-    items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/conti" });
+    items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/liquidita/conti" });
   }
   if (investments) {
     const detail = investments.positions === 1 ? "1 posizione" : `${investments.positions} posizioni`;

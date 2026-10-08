@@ -320,3 +320,17 @@
   filter: blur(10px);
   pointer-events: none;
 }
+
+/* Panoramica: la curva del mese si disegna una volta all'apertura, solo se l'utente non ha chiesto meno animazioni. */
+@media (prefers-reduced-motion: no-preference) {
+  .month-pace-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: month-pace-draw 900ms cubic-bezier(0.16, 1, 0.3, 1) 150ms forwards;
+  }
+}
+@keyframes month-pace-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}

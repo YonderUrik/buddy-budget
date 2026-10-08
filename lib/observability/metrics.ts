@@ -75,6 +75,7 @@ export type ConsentNoticeOutcome = "sent" | "failed";
  * di un valore inventato.
  */
 export interface AsyncGaugeDeps {
+  personalImports?: () => Promise<{ pending: number; overdue: number; failed: number; emailPending: number }>;
   dependencies?: () => Promise<Record<DependencyName, boolean>>;
   cronLastSuccess?: () => Promise<Partial<Record<CronName, number | null>>>;
   syncJobs?: () => Promise<{ active: number; stale: number }>;
@@ -94,6 +95,7 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
+  logoRequests: Counter<"source" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
@@ -105,6 +107,11 @@ function createState(): MetricsState {
   collectDefaultMetrics({ register: registry, prefix: `${METRIC_PREFIX}process_` });
   const state = { registry, deps: {} } as MetricsState;
   const r = [registry];
+  for (const kind of ["pending", "overdue", "failed", "emailPending"] as const) {
+    new Gauge({ name: `${METRIC_PREFIX}personal_csv_${kind}`, help: `Personal CSV jobs: ${kind}`, registers: r,
+      async collect() { const read = state.deps.personalImports; if (!read) return; this.set((await read())[kind]); },
+    });
+  }
 
   state.httpRequests = new Counter({
     name: `${METRIC_PREFIX}http_requests_total`,
@@ -167,6 +174,13 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}price_provider_requests_total`,
     help: "Tentativi sulle fonti di prezzi di mercato per fonte ed esito (success, empty, error, skipped...).",
     labelNames: ["provider", "outcome"],
+    registers: r,
+  });
+
+  state.logoRequests = new Counter({
+    name: `${METRIC_PREFIX}logo_requests_total`,
+    help: "Richieste al servizio di loghi degli strumenti non servite dalla cache, per origine (issuer, isin) ed esito (hit, miss, error).",
+    labelNames: ["source", "outcome"],
     registers: r,
   });
 
@@ -376,6 +390,15 @@ export function recordAuthEvent(event: AuthEvent): void {
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */
 export function recordPriceProviderRequest(provider: ProviderId, outcome: ProviderOutcome): void {
   metrics().priceProvider.inc({ provider, outcome });
+}
+
+/** Origine ed esito di una richiesta al servizio di loghi. */
+export type LogoSourceKind = "issuer" | "isin";
+export type LogoRequestOutcome = "hit" | "miss" | "error";
+
+/** Registra una richiesta al servizio di loghi che non è stata servita dalla cache. */
+export function recordLogoRequest(source: LogoSourceKind, outcome: LogoRequestOutcome): void {
+  metrics().logoRequests.inc({ source, outcome });
 }
 
 /** Esito di un tentativo su una fonte dei cambi. */

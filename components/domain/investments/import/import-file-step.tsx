@@ -2,18 +2,23 @@
 
 /** Primo passo dell'import: carica un file CSV o incollane il contenuto; offre il modello da compilare. */
 
+import Link from "next/link";
 import * as React from "react";
 import { DownloadIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getImportProvider, type ImportProviderId } from "@/lib/investments/import/providers";
+import { validateImportFiles } from "@/lib/investments/import/batch";
 import { templateCsv } from "@/lib/investments/import/presets";
+import { gridToCsv } from "@/lib/investments/import/fineco";
+import { readXlsx } from "@/lib/pension/import/xlsx";
 import { ImportProviderPicker } from "./import-provider-picker";
 
 export interface ImportFileStepProps {
   provider: ImportProviderId | null;
   onProviderChange: (provider: ImportProviderId | null) => void;
   onLoad: (text: string, fileName: string | null) => void;
+  onFiles?: (files: File[]) => Promise<void>;
   /** Il file scelto è in lettura sul server. */
   reading?: boolean;
 }
@@ -34,13 +39,27 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
-export function ImportFileStep({ provider, onProviderChange, onLoad, reading = false }: ImportFileStepProps) {
+export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false }: ImportFileStepProps) {
   const id = React.useId();
   const [pasted, setPasted] = React.useState("");
   const [dragging, setDragging] = React.useState(false);
 
-  async function readFile(file: File | undefined) {
-    if (file) onLoad(await file.text(), file.name);
+  const [fileError, setFileError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  async function readFiles(list: FileList | null) {
+    if (!list?.length || reading || loading) return;
+    setFileError(null); setLoading(true);
+    try {
+      const files = Array.from(list);
+      validateImportFiles(files);
+      if (files.length > 1 && onFiles) await onFiles(files);
+      else if (/\.xlsx$/i.test(files[0].name)) {
+        // Fineco esporta in Excel: il foglio diventa testo e passa dallo stesso percorso dei CSV.
+        const sheet = readXlsx(new Uint8Array(await files[0].arrayBuffer()));
+        onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
+      } else onLoad(await files[0].text(), files[0].name);
+    } catch (e) { setFileError(e instanceof Error ? e.message : "Impossibile leggere i file"); }
+    finally { setLoading(false); }
   }
 
   return (
@@ -48,6 +67,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, reading = f
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">Da dove arriva il file?</p>
         <ImportProviderPicker value={provider} onChange={onProviderChange} />
+        <Link href="/importazioni" className="rounded-lg border p-3 text-sm hover:bg-muted">CSV non supportato? Crea il tuo formato con AI →</Link>
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {provider
             ? getImportProvider(provider).howTo
@@ -64,22 +84,26 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, reading = f
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          void readFile(e.dataTransfer.files[0]);
+          void readFiles(e.dataTransfer.files);
         }}
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 ${dragging ? "border-primary bg-primary/5" : ""}`}
       >
         <UploadIcon className="size-5 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-foreground">{reading ? "Leggo il file…" : "Scegli un file CSV"}</span>
-        <span className="text-xs text-muted-foreground">{reading ? "Un attimo" : "oppure trascinalo qui"}</span>
+        <span className="text-sm font-medium text-foreground">{reading || loading ? "Leggo i file…" : "Scegli uno o più file CSV o Excel"}</span>
+        <span className="text-xs text-muted-foreground">{reading || loading ? "Un attimo" : "oppure trascinali qui · massimo 20 file"}</span>
         <input
           id={`${id}-file`}
           type="file"
-          accept=".csv,.txt,text/csv"
+          multiple={!!onFiles}
+          disabled={reading || loading}
+          accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           className="sr-only"
-          onChange={(e) => void readFile(e.target.files?.[0])}
+          onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
 
+      {fileError ? <p role="alert" className="text-sm text-destructive">{fileError}</p> : null}
+      <p className="text-xs text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Fineco e gli altri file si importano uno alla volta.</p>
       <details className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <summary className="cursor-pointer">Oppure incolla il contenuto</summary>
         <label htmlFor={`${id}-paste`} className="sr-only">

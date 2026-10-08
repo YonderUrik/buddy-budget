@@ -87,3 +87,48 @@ describe("buildInvestmentsView", () => {
     expect(buildInvestmentsView(data(), "1mese", NOW).usedInstruments.map((i) => i.id)).toEqual(["etf"]);
   });
 });
+
+it("uses the Taxes tab report including loss offsets, carryforwards and instrument rates", async () => {
+  const { buildTaxView } = await import("./tax-view");
+  const input = data();
+  input.instruments[0].type = "azione";
+  const buy = input.transactions[0];
+  input.transactions = [buy,
+    { ...buy, id: "loss", type: "vendita", date: "2026-09-02", quantity: "5", price: "80" },
+    { ...buy, id: "profit", type: "vendita", date: "2026-09-03", quantity: "5", price: "140" },
+  ];
+  // Loss 100 offsets gain 200: only 100 is taxable.
+  expect(buildTaxView(input, NOW).report.years[0].estimatedTax).toBeCloseTo(26);
+  expect(buildInvestmentsView(input, "max", NOW).costImpact.estimatedTaxes).toBeCloseTo(26);
+  input.taxCarryforwards = [{ id: "loss", year: 2025, amount: "100", note: null }];
+  expect(buildInvestmentsView(input, "max", NOW).costImpact.estimatedTaxes).toBeCloseTo(0);
+  input.taxCarryforwards = [];
+  input.instrumentSettings = [{ instrumentId: "etf", taxRate: "0.125", taxHarmonized: true, couponRate: null, couponFrequency: null, maturityDate: null }];
+  expect(buildInvestmentsView(input, "max", NOW).costImpact.estimatedTaxes).toBeCloseTo(buildTaxView(input, NOW).report.years[0].estimatedTax);
+});
+
+it("respects the same annual loss compensation as the Taxes tab in dichiarativo", async () => {
+  const { buildTaxView } = await import("./tax-view");
+  const input = data(); input.instruments[0].type = "azione";
+  input.portfolios = [{ id: "p", userId: "u", name: "Portfolio", broker: null, statementCashAccountId: null, benchmarkInstrumentId: null, taxRegime: "dichiarativo", createdAt: NOW, updatedAt: NOW }];
+  const buy = input.transactions[0];
+  input.transactions = [buy,
+    { ...buy, id: "profit", type: "vendita", date: "2026-09-02", quantity: "5", price: "140" },
+    { ...buy, id: "loss", type: "vendita", date: "2026-09-03", quantity: "5", price: "80" },
+  ];
+  const view = buildInvestmentsView(input, "max", NOW);
+  expect(view.costImpact.estimatedTaxes).toBeCloseTo(26);
+  expect(view.costImpact.estimatedTaxes).toBeCloseTo(buildTaxView(input, NOW).report.years[0].estimatedTax);
+  expect(view.costImpact.additions["2026-09-03"].estimatedTaxes).toBe(0);
+  expect(view.costImpact.additions["2026-09-20"].estimatedTaxes).toBeCloseTo(26);
+});
+
+it("limits chart dates inclusively while preserving earlier positions and current totals", () => {
+  const input = data();
+  const full = buildInvestmentsView(input, "max", NOW);
+  const range = buildInvestmentsView(input, "max", NOW, { from: "2026-09-10", to: "2026-09-12" });
+  expect(range.series.map((point) => point.date)).toEqual(["2026-09-10", "2026-09-11", "2026-09-12"]);
+  expect(range.series[0].value).toBe(1000);
+  expect(range.summary.totalValue).toBe(full.summary.totalValue);
+  expect(range.costImpact).toEqual(full.costImpact);
+});

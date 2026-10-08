@@ -1,3 +1,5 @@
+import { investmentTaxReport } from "./tax-report";
+import { computeCostImpact, type CostImpact } from "./cost-impact";
 import { buildFxTable } from "@/lib/calc/fx";
 import {
   buildPortfolioSeries,
@@ -25,6 +27,7 @@ const REAL_RETURN_PERIODS: ReadonlySet<NetWorthPeriod> = new Set(["1anno", "max"
 
 /** Dati della pagina Investimenti già calcolati: la UI li riceve pronti. */
 export interface InvestmentsView {
+  costImpact: CostImpact;
   currency: string;
   summary: PortfolioSummary;
   series: PortfolioSeriesPoint[];
@@ -80,7 +83,7 @@ export function usedInstruments(
 }
 
 /** Calcola tutto ciò che mostra la pagina Investimenti a partire dai dati grezzi dell'API. */
-export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date): InvestmentsView {
+export function buildInvestmentsView(data: InvestmentData, period: NetWorthPeriod, today: Date, chartRange?: { from: string; to: string }): InvestmentsView {
   const transactions = toTransactionInputs(data);
   const instruments: InstrumentInput[] = data.instruments;
   const priceIndex = buildPriceIndex(data.prices, data.manualPrices, transactions);
@@ -103,10 +106,17 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     period,
     today,
   });
+  const returns = computePortfolioReturns({
+    ...common,
+    period,
+    today,
+    benchmark: data.benchmark,
+    inflation: REAL_RETURN_PERIODS.has(period) && data.inflation.length > 0 ? data.inflation : null,
+  });
   return {
     currency: data.currency,
     summary,
-    series: buildPortfolioSeries({ ...common, period, today }),
+    series: buildPortfolioSeries({ ...common, period, today, range: chartRange }),
     byType: computeComposition(summary.rows, "type"),
     byCurrency: computeComposition(summary.rows, "currency"),
     instruments: data.instruments,
@@ -115,13 +125,8 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     hasTransactions: transactions.length > 0,
     operationMonths,
     usedInstruments: usedInstruments(data.transactions, instrumentsById),
-    returns: computePortfolioReturns({
-      ...common,
-      period,
-      today,
-      benchmark: data.benchmark,
-      inflation: REAL_RETURN_PERIODS.has(period) && data.inflation.length > 0 ? data.inflation : null,
-    }),
+    returns,
+    costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0, investmentTaxReport(data, transactions, todayKey)),
     benchmark: data.benchmark,
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),

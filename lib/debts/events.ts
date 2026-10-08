@@ -3,8 +3,7 @@ import { db } from "@/lib/db/client";
 import { transactions } from "@/lib/db/schema/transactions";
 import type { Debt, DebtEvent } from "@/lib/db/schema/debts";
 import type { CreateDebtEventInput } from "@/lib/validation/debts";
-import { balanceOn } from "@/lib/calc/credit-line";
-import { addDaysIso, todayIso } from "./dates";
+import { todayIso } from "./dates";
 import { buildDebtsView } from "./view";
 
 /**
@@ -12,8 +11,8 @@ import { buildDebtsView } from "./view";
  * pagata, un cambio tasso o una correzione devono cadere prima dell'ultima rata. Restituisce il messaggio d'errore o null.
  */
 export function checkEventApplicable(debt: Debt, events: DebtEvent[], input: CreateDebtEventInput): string | null {
-  if (debt.kind === "credit_line") return checkCreditLineEvent(debt, events, input);
-  if (!LOAN_EVENT_TYPES.includes(input.type)) return "Questo evento vale solo per una linea di credito";
+  if (debt.kind !== "loan") return "Questo debito non accetta eventi";
+  if (!LOAN_EVENT_TYPES.includes(input.type)) return "Questo evento non vale per un finanziamento";
   if (input.type === "balance_correction" && input.amount <= 0) return "Il residuo deve essere maggiore di zero";
   const { debts } = buildDebtsView([debt], events, todayIso());
   const rows = debts[0].plan.rows;
@@ -29,23 +28,6 @@ export function checkEventApplicable(debt: Debt, events: DebtEvent[], input: Cre
 }
 
 const LOAN_EVENT_TYPES: CreateDebtEventInput["type"][] = ["payment", "rate_change", "balance_correction", "early_repayment"];
-const CREDIT_LINE_EVENT_TYPES: CreateDebtEventInput["type"][] = ["draw", "repay", "interest_charged", "rate_change", "balance_correction"];
-
-/**
- * Controlla un evento su una linea di credito: tipo ammesso, data tra l'apertura e domani (tolleranza per il fuso), e un
- * rimborso non oltre il saldo utilizzato in quel giorno.
- */
-function checkCreditLineEvent(debt: Debt, events: DebtEvent[], input: CreateDebtEventInput): string | null {
-  if (!CREDIT_LINE_EVENT_TYPES.includes(input.type)) return "Questo evento vale solo per un finanziamento";
-  if (input.date < debt.firstInstallmentDate) return "La data è prima dell'apertura della linea";
-  if (input.date > addDaysIso(todayIso(), 1)) return "La data è nel futuro";
-  if (input.type === "repay") {
-    const { creditLines } = buildDebtsView([debt], events, todayIso());
-    if (input.amount > balanceOn(creditLines[0].plan.balanceSeries, input.date) + 0.005) return "Il rimborso supera il saldo utilizzato in quel giorno";
-  }
-  return null;
-}
-
 /** True se la transazione esiste ed è dell'utente. */
 export async function ownsTransaction(userId: string, transactionId: string): Promise<boolean> {
   const [row] = await db

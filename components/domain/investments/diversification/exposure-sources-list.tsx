@@ -6,6 +6,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import type { ExposureRow } from "@/lib/investments/analysis-view";
 import { EXPOSURE_SOURCE_LABELS } from "@/lib/investments/exposure";
+import { InstrumentIcon } from "../instrument-icon";
 
 /** Posizioni mostrate prima di "Mostra tutte". */
 export const EXPOSURE_ROWS_LIMIT = 5;
@@ -27,6 +28,7 @@ export function ExposureSourcesList({ rows, onEdit }: ExposureSourcesListProps) 
       <ul className="flex flex-col divide-y rounded-lg border" aria-label="Fonte dei dati di ogni posizione">
         {visible.map((row) => (
           <li key={row.instrument.id} className="flex items-center gap-3 px-3 py-2">
+            <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm text-foreground">
                 {row.instrument.name} <span className="tabular-nums text-muted-foreground">· {sharePct(row.share)}</span>

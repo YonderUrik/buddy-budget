@@ -26,7 +26,7 @@ function stepValueOn(points: StepPoint[], date: string): number {
 }
 
 /**
- * Storico giornaliero del debito complessivo (residuo dei finanziamenti + utilizzato delle linee di credito) come
+ * Storico giornaliero del debito complessivo (residuo dei finanziamenti) come
  * righe della classe "debiti" con importo negativo, dal primo debito a ieri (oggi lo fornisce il valore corrente).
  * Non si salva nulla: i piani sono calcolati da condizioni ed eventi, quindi lo storico segue ogni modifica.
  */
@@ -35,7 +35,6 @@ export function buildDebtHistoryRows(view: DebtsViewData, todayKey: string, from
     ...view.debts.map((d) =>
       [...d.plan.residualSeries].sort((a, b) => a.date.localeCompare(b.date)).map((p) => ({ date: p.date, value: p.residual }))
     ),
-    ...view.creditLines.map((l) => l.plan.balanceSeries.map((p) => ({ date: p.date, value: p.balance }))),
   ].filter((s) => s.length > 0);
   if (series.length === 0) return [];
 

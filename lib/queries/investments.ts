@@ -32,7 +32,7 @@ import type {
 
 const INVESTMENTS_QUERY_KEY = ["investments"] as const;
 /** Query da aggiornare quando cambia il portafoglio: anche il patrimonio netto della Panoramica. */
-const KEYS_CHANGED_BY_INVESTMENTS = [INVESTMENTS_QUERY_KEY, ["net-worth-snapshots"], ["accounts"]] as const;
+const KEYS_CHANGED_BY_INVESTMENTS = [INVESTMENTS_QUERY_KEY, ["net-worth-snapshots"], ["accounts"], ["transactions"], ["categories"]] as const;
 /** Attesa dopo l'ultima battuta prima di cercare sulle fonti. */
 export const INSTRUMENT_SEARCH_DEBOUNCE_MS = 300;
 /** Intervallo di polling mentre lo storico di uno strumento si sta scaricando. */
@@ -429,5 +429,37 @@ export function useDeleteStatementImportMutation() {
     },
     onSuccess: (result) => { track("investments_import_deleted", { statements: result.deletedStatements, operations: result.deletedOperations }); invalidate(); },
     onError: () => { invalidate(); },
+  });
+}
+
+export interface InvestmentResetPreview {
+  revision: string;
+  operations: number;
+  untrackedOperations: number;
+  statements: number;
+  prices: number;
+  cashAccounts: number;
+}
+
+/** Always fetch a fresh confirmation preview when the recovery dialog opens. */
+export function useInvestmentResetPreview() {
+  return useMutation({ mutationFn: async (): Promise<InvestmentResetPreview> => {
+    const response = await fetch("/api/investments/import/reset", { cache: "no-store" });
+    if (!response.ok) throw await readError(response, "Impossibile preparare il ripristino");
+    return response.json();
+  } });
+}
+
+/** Reset legacy and current investment imports after explicit full-history confirmation. */
+export function useResetInvestmentsMutation() {
+  const invalidate = useInvalidateInvestments();
+  return useMutation({
+    mutationFn: async (input: { revision: string; confirmation: string }) => {
+      const response = await fetch("/api/investments/import/reset", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      if (!response.ok) throw await readError(response, "Impossibile azzerare gli investimenti");
+      return response.json();
+    },
+    onSuccess: (result) => { track("investments_import_reset", { operations: result.deletedOperations, statements: result.deletedStatements }); invalidate(); },
+    onError: invalidate,
   });
 }

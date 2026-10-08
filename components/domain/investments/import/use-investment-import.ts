@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import type { PreparedStatementFile } from "@/lib/investments/import/batch";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { parseCsv, type CsvTable } from "@/lib/investments/import/csv";
 import { missingFields, type ImportMapping } from "@/lib/investments/import/mapping";
 import { collectIdentities, normalizeRows } from "@/lib/investments/import/normalize";
+import { finecoMapping, parseFinecoTable } from "@/lib/investments/import/fineco";
 import { initialMapping, type ImportPreset } from "@/lib/investments/import/presets";
 import type { ActivityStatement } from "@/lib/investments/import/interactive-brokers";
 import { detectImportProvider, providerMismatchMessage, type ImportProviderId } from "@/lib/investments/import/providers";
@@ -28,18 +30,18 @@ import {
  * Stato del wizard di import: file letto, mappatura, abbinamento degli strumenti, anteprima e import. Le righe si
  * ricalcolano a ogni modifica della mappatura, così l'anteprima dei valori letti è sempre quella vera.
  */
-export function useInvestmentImport() {
+export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   const portfolioQuery = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [portfolioId, setPortfolioId] = React.useState("");
-  const [step, setStep] = React.useState<ImportStep>("file");
-  const [fileName, setFileName] = React.useState<string | null>(null);
+  const [step, setStep] = React.useState<ImportStep>(initialFile ? "mapping" : "file");
+  const [fileName, setFileName] = React.useState<string | null>(initialFile?.name ?? null);
   const [table, setTable] = React.useState<CsvTable | null>(null);
   const [preset, setPreset] = React.useState<ImportPreset | null>(null);
   // Provider scelto nella griglia del primo passo; null = lo riconosce dal file.
-  const [provider, setProvider] = React.useState<ImportProviderId | null>(null);
+  const [provider, setProvider] = React.useState<ImportProviderId | null>(initialFile?.parsed.preset ?? null);
   // Rendiconto già strutturato (Interactive Brokers): sostituisce tabella e mappatura.
-  const [statementCsv, setStatementCsv] = React.useState<string | null>(null);
-  const [statement, setStatement] = React.useState<ActivityStatement | null>(null);
+  const [statementCsv, setStatementCsv] = React.useState<string | null>(initialFile?.text ?? null);
+  const [statement, setStatement] = React.useState<ActivityStatement | null>(initialFile?.parsed ?? null);
   const [mapping, setMapping] = React.useState<ImportMapping | null>(null);
   const [choices, setChoices] = React.useState<Record<string, InstrumentChoice>>({});
   const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(new Set());
@@ -72,10 +74,10 @@ export function useInvestmentImport() {
       setError(mismatch);
       return;
     }
-    if (detected === "interactive-brokers" || detected === "degiro") {
+    if (detected === "interactive-brokers" || detected === "degiro" || detected === "trade-republic") {
       try {
         const parsed = await parseStatement.mutateAsync(text);
-        if (parsed.operations.length === 0 && !parsed.issues.some((i) => i.severity === "error")) {
+        if (parsed.operations.length === 0 && !parsed.cashMovements?.length && !parsed.issues.some((i) => i.severity === "error")) {
           setError("Nel rendiconto non ci sono acquisti, vendite o dividendi di azioni ed ETF da importare");
           return;
         }
@@ -87,6 +89,28 @@ export function useInvestmentImport() {
         track("investments_import_file_read", { provider: detected, chosen: provider === detected });
         setProvider(detected);
         setFileName(name);
+        setError(null);
+        setStep("mapping");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Impossibile leggere il file");
+      }
+      return;
+    }
+    if (detected === "fineco") {
+      try {
+        const finecoTable = parseFinecoTable(text);
+        if (finecoTable.rows.length === 0) {
+          setError("Nel file Fineco non ci sono movimenti da importare");
+          return;
+        }
+        track("investments_import_file_read", { provider: "fineco", chosen: provider === "fineco" });
+        setStatement(null);
+        setStatementCsv(null);
+        setTable(finecoTable);
+        setFileName(name);
+        setPreset(null);
+        setProvider("fineco");
+        setMapping(finecoMapping(finecoTable));
         setError(null);
         setStep("mapping");
       } catch (e) {
@@ -124,6 +148,7 @@ export function useInvestmentImport() {
     }
     if (table && mapping) saveMapping(table, mapping);
     setError(null);
+    if (identities.length === 0 && statement?.cashMovements?.length) { setStep("instruments"); return; }
     try {
       const results = await resolve.mutateAsync({
         identities: identities.map(({ key, symbol, isin, name, currency, symbolIsYahoo, type }) => ({
@@ -162,7 +187,7 @@ export function useInvestmentImport() {
   }
 
   async function submit(dryRun: boolean) {
-    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : (preset?.id ?? null));
+    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : table && provider === "fineco" ? "fineco" : (preset?.id ?? null)) ?? (statement?.cashMovements?.length ? { dryRun, preset: statement.preset, instruments: [], operations: [] } : null);
     if (!request) {
       setError("Nessuna operazione da importare: scegli almeno uno strumento");
       return;

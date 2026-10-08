@@ -9,6 +9,10 @@ export type { PortfolioHeroCardProps } from "./portfolio-hero-card";
 export { ValueBreakdownBar } from "./value-breakdown-bar";
 export type { ValueBreakdownBarProps } from "./value-breakdown-bar";
 export { INSTRUMENT_TYPE_COLOR, CURRENCY_COLORS } from "./instrument-colors";
+export { InstrumentIcon } from "./instrument-icon";
+export type { InstrumentIconProps, InstrumentIconSize } from "./instrument-icon";
+export { InstrumentLabel } from "./instrument-label";
+export type { InstrumentLabelProps } from "./instrument-label";
 export { PortfolioComposition } from "./portfolio-composition";
 export type { CompositionGroup, PortfolioCompositionProps } from "./portfolio-composition";
 export { PositionsList, STALE_PRICE_DAYS } from "./positions-list";
@@ -110,6 +114,12 @@ export { InvestmentsViewGate } from "./investments-view-gate";
 export type { InvestmentsViewGateProps } from "./investments-view-gate";
 export * from "./titles";
 
-export { BrokerStatements } from "./broker-statements";
 
 export { ImportManagement } from "./import-management";
+export { CostDetailsCard } from "./cost-details-card";
+
+export { BrokerSelector } from "./broker-selector";
+export { BrokerComparisonCard } from "./broker-comparison-card";
+
+export { DividendsSummaryCard } from "./dividends-summary-card";
+export type { DividendsSummaryCardProps } from "./dividends-summary-card";

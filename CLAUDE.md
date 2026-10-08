@@ -131,7 +131,7 @@ docker build -t buddy-budget:local .   # immagine dell'app (target migrator: --t
 ```
 app/                         route App Router
   (auth)/                    login, onboarding (senza AppShell)
-  (app)/                     schermate con AppShell: panoramica, conti, movimenti (elenco/analisi/categorie/regole),
+  (app)/                     schermate con AppShell: panoramica, liquidita (movimenti/analisi/conti/categorie/regole),
                              categorizza, investimenti (6 schede + titoli), debiti, impostazioni, style-guide
   api/                       route handler (tutti con withRoute), cron in api/cron/*
   globals.css                design token (CSS variables) e theme Tailwind
@@ -186,6 +186,18 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Liquidità (2026-10-08)**: Conti e Movimenti unificati in `/liquidita` (Movimenti · Analisi · Conti · Categorie e regole) con lo stile della Panoramica come standard, Dividi con scorciatoie e categoria cambiabile dall'icona; voce in `docs/decisioni/2026-10-08-liquidita.md`. PR in bozza sul branch `claude/project-thread-6pd4uu`. Rimandati: redesign di Categorie e Regole (oggi riusano board e gestore esistenti) e dei moduli di modifica.
+
+**Impatto costi e imposte (2026-10-06)**: due interruttori indipendenti accanto al grafico e card di dettaglio nel Portafoglio; imposte dal medesimo calcolo della scheda Tasse, con regime, aliquote e compensazioni; i toggle «Reinvesti costi» e «Reinvesti imposte», inizialmente spenti, aggiungono al valore reale i risparmi reinvestiti dal giorno di addebito al rendimento giornaliero osservato, aggiornando totale e grafico. Perimetro: oneri registrati sulle operazioni e imposte sulle vendite stimate dalla scheda Tasse; oneri autonomi del conto, TER e bollo esclusi. PR #169; branch `codex/portfolio-cost-impact`.
+
+**Gestione importazioni (2026-10-06)**: scheda Rendiconti rimossa; Gestisci importazioni ora in Operazioni, accessibile anche senza transazioni. Vecchi link reindirizzati. Nessuna modifica ai dati importati.
+
+**Vista broker (2026-10-05)**: filtri temporanei per broker condivisi tra le schede Investimenti e confronto TWR sovrapposto in Performance. Nessuna cancellazione o modifica del patrimonio generale. Dettagli in `docs/decisioni/2026-10-05-filtri-broker-e-confronto.md`; inclusi nella PR di gestione import.
+
+**Recupero import duplicati (2026-10-04)**: pulsante di reset completo dello storico investimenti con anteprima e conferma digitata, inclusi vecchi import senza origine. Branch `codex/reset-investment-imports`; nessun reset eseguito in produzione. Dettagli in `docs/ibkr-import.md`.
+
+**Liquidità broker negli Investimenti (2026-10-05)**: interruttore «Includi liquidità» nella card Portafoglio per totale titoli + cash, dettaglio espandibile saldi e data rendiconto, filtri per broker anche sui conti senza titoli. Nessun doppio conteggio nel patrimonio; grafici e rendimenti restano dei titoli. PR #148 in revisione.
+
 **Import IBKR e DEGIRO: correzione locale in corso di revisione (2026-10-04)** sul branch `codex/ibkr-local-validation`; PR autorizzata dall’utente, in apertura. Rendiconti persistiti con cassa riconciliata, snapshot broker e rettifiche non monetarie; dettagli e limiti in `docs/ibkr-import.md` e `docs/degiro-import.md`. DEGIRO Account.csv si importa nello stesso portafoglio con origine e cassa separate; sostituzione e cancellazione restano isolate per broker. Aggiornamenti YTD sostituiscono atomicamente periodi interamente coperti; gestione importazioni con cancellazione delle dipendenze confermate. Restano fuori scope la ricostruzione fiscale dei lotti e gli overlap parziali; servono rispettivamente il dettaglio lotti e un export che copra i periodi coinvolti.
 
 Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decision-log.md`](docs/decision-log.md) e nella spec/piano corrispondente in `docs/superpowers/`.
@@ -193,7 +205,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 ### Fatto (tutto su `main`, in produzione su k3s)
 
 - **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login con pannello "mosaico", brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
-- **Movimenti** (`/movimenti`: Elenco · Analisi · Categorie · Regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
+- **Movimenti** (`/liquidita`: Movimenti · Analisi · Conti · Categorie e regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
 - **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
 - **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
 - **Infrastruttura**: migrazione Vercel+Neon → VPS k3s completata (Fasi 0-7, cutover il 2026-09-27). Osservabilità Fasi A e B completate (log JSON, metriche, 4 dashboard, 12 alert con runbook, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
@@ -204,7 +216,8 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - **Pensione** (`/pensione`, 5 schede): implementata sul branch `claude/project-thread-43tais`, senza PR. Fondi e fotografie (contributi netti + controvalore), rendimento, prelievo oggi, confronto TFR, proiezione, classe "Previdenza" nel patrimonio netto, export/reset, catalogo/landing/login aggiornati. Prima del merge: migration 0013_pensione in produzione (numero da ricontrollare al merge). Rimandato: aliquote per anno di adesione dei contributi (oggi una sola data di adesione), inflazione modificabile, più fondi nella proiezione, import da PDF/CSV del provider, contributi del datore e volontari distinti, modifica delle fotografie dalla UI (oggi si risalva la stessa data). Import delle fotografie da CSV/Excel: vedi `docs/decision-log.md` 2026-10-03 (PR in revisione; nessuna migration). Regole fiscali da validare. Spec `docs/superpowers/specs/2026-10-02-pensione-design.md`.
 
 - **Connessioni GoCardless**: avvisi di scadenza (banner + email, `/conti?rinnova=1`) e cron `gocardless-maintenance` che ripulisce la lista su GoCardless. PR in bozza; il cron parte in **dry-run** e va portato a `execute` a mano (`GOCARDLESS_CLEANUP_MODE` nel Secret) dopo qualche giorno di dry-run. Vedi `docs/decision-log.md` 2026-10-01.
-- **Debiti**: Fasi 3 (credit Lombard) e 4 (patrimonio netto, Lombard contro il portafoglio, scheda Simulatore) implementate, PR #43 in revisione. Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`. Quando una fase cambia stato, aggiornare questa riga.
+- **Debiti ridisegnata (2026-10-05)**: panoramica "Priorità e azioni" e Simulatore integrato nei finanziamenti (voce in `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`); PR in bozza.
+- **Debiti**: Fasi 3-4 (credit Lombard) sostituite dalla ridisegnata sopra; il credit Lombard è stato rimosso dall'app il 2026-10-06 (vedi `docs/decisioni/2026-10-05-debiti-priorita-e-azioni.md`). Spec `docs/superpowers/specs/2026-09-30-debiti-design.md`.
 
 ### Previsto
 

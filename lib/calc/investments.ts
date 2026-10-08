@@ -500,12 +500,15 @@ export function buildPortfolioSeries(params: {
   userCurrency: string;
   period: NetWorthPeriod;
   today: Date;
+  range?: { from: string; to: string };
 }): PortfolioSeriesPoint[] {
   const { transactions, period, today } = params;
-  const fromKey = periodStartKey(transactions, period, today);
+  const fromKey = params.range?.from ?? periodStartKey(transactions, period, today);
   if (fromKey === null) return [];
   const todayKey = toDateKey(startOfDay(today));
-  return samplePeriodSeries(computeDailyPortfolioValues({ ...params, fromKey, toKey: todayKey }), period);
+  const toKey = params.range ? (params.range.to < todayKey ? params.range.to : todayKey) : todayKey;
+  if (fromKey > toKey) return [];
+  return samplePeriodSeries(computeDailyPortfolioValues({ ...params, fromKey, toKey }), params.range ? "3mesi" : period);
 }
 
 /** Fetta della composizione del portafoglio. */

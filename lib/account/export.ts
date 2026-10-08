@@ -1,3 +1,4 @@
+import { exportPersonalImports } from "@/lib/personal-import/export";
 import "server-only";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
@@ -91,6 +92,7 @@ async function loadUserData(userId: string) {
     analyticsRows,
     brokerStatementRows,
     brokerAccountRows,
+    personalImports,
   ] = await Promise.all([
     db
       .select({
@@ -344,9 +346,11 @@ async function loadUserData(userId: string) {
       .where(eq(analyticsAssumptions.userId, userId)),
     db.select().from(brokerStatements).where(eq(brokerStatements.userId, userId)),
     db.select().from(brokerImportAccounts).where(eq(brokerImportAccounts.userId, userId)),
+    exportPersonalImports(userId),
   ]);
 
   return {
+    personalImports,
     brokerStatements: brokerStatementRows,
     brokerImportAccounts: brokerAccountRows,
     user,

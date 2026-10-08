@@ -6,7 +6,8 @@
  */
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUpIcon } from "lucide-react";
+import { PanelSection } from "./panel-section";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { PortfolioReturns } from "@/lib/calc/returns";
 import type { Instrument } from "@/lib/db/schema/investments";
@@ -52,12 +53,9 @@ export function ReturnsCard({ returns, period, benchmark, benchmarkFirstPriceDat
   const { real } = returns;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quanto sta rendendo</CardTitle>
-        <p className="text-sm text-muted-foreground">{PERIOD_LABELS[period]}</p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <>
+    <PanelSection icon={TrendingUpIcon} title="Quanto sta rendendo" description={PERIOD_LABELS[period]}>
+      <div className="flex flex-col gap-5">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <ReturnMetric
             label="Il portafoglio"
@@ -92,8 +90,9 @@ export function ReturnsCard({ returns, period, benchmark, benchmarkFirstPriceDat
           retrying={retry.isPending}
         />
         {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmark?.name ?? null : null} /> : null}
-      </CardContent>
-      <BenchmarkDialog open={choosing} onOpenChange={setChoosing} current={benchmark} currency={currency} />
-    </Card>
+      </div>
+    </PanelSection>
+    <BenchmarkDialog open={choosing} onOpenChange={setChoosing} current={benchmark} currency={currency} />
+    </>
   );
 }

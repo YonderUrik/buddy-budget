@@ -4,9 +4,10 @@
  */
 
 import type { ReactNode } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { CompositionSlice } from "@/lib/calc/investments";
 import { formatCurrency } from "@/lib/format";
+import { ChartPieIcon } from "lucide-react";
+import { PanelSection } from "./panel-section";
 
 export interface CompositionGroup {
   title: string;
@@ -36,12 +37,9 @@ function formatShare(share: number): string {
 
 export function PortfolioComposition({ groups, currency, title = "Composizione", subtitle = null, children }: PortfolioCompositionProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
-        {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
+    <PanelSection icon={ChartPieIcon} title={title} color="var(--primary)">
+      {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+      <div className="flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
           {groups.map((group) => (
             <section key={group.title} className="flex flex-col gap-3" aria-label={group.title}>
@@ -74,7 +72,7 @@ export function PortfolioComposition({ groups, currency, title = "Composizione",
           ))}
         </div>
         {children}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

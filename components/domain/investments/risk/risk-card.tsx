@@ -5,7 +5,8 @@
  * scomparsa. Stesso periodo della card dei rendimenti.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ShieldAlertIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { MaxDrawdown, PortfolioRisk } from "@/lib/calc/risk";
 import { daysBetween } from "@/lib/calc/returns";
@@ -56,35 +57,23 @@ export interface RiskCardProps {
 }
 
 export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProps) {
-  const header = (
-    <CardHeader>
-      <CardTitle className="text-base font-semibold">Quanto rischia</CardTitle>
-      <p className="text-sm text-muted-foreground">{PERIOD_LABELS[period]}</p>
-    </CardHeader>
-  );
-
   if (risk.volatility === null) {
     return (
-      <Card>
-        {header}
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.
-          </p>
-        </CardContent>
-      </Card>
+      <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
+        <p className="text-sm text-muted-foreground">
+          Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.
+        </p>
+      </PanelSection>
     );
   }
 
   const bench = risk.benchmark;
-  const columns = benchmarkName ? "sm:grid-cols-2 xl:grid-cols-4" : "sm:grid-cols-3";
-  return (
-    <Card>
-      {header}
-      <CardContent className="flex flex-col gap-5">
+    return (
+    <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
+      <div className="flex flex-col gap-5">
         <RiskLevelMeter level={riskLevel(risk.volatility)} />
 
-        <div className={`grid grid-cols-1 gap-5 border-t pt-5 max-sm:[&>*:not(:first-child)]:border-t max-sm:[&>*:not(:first-child)]:pt-5 ${columns}`}>
+        <div className={`grid grid-cols-1 gap-5 border-t pt-5 [&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:pt-5 `}>
           <RiskMetric
             label="Quanto oscilla"
             value={`±${pct(risk.volatility)}`}
@@ -141,7 +130,7 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
             </RiskDetails>
           ) : null}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

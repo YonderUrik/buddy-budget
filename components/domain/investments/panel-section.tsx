@@ -18,15 +18,24 @@ export interface PanelSectionProps extends Pick<SectionHeadingProps, "href" | "l
   color?: string;
   /** Frase sotto l'intestazione (es. il periodo a cui si riferiscono i numeri). */
   description?: React.ReactNode;
+  /** Controllo a destra dell'intestazione (es. un pulsante o un selettore); non si combina con `href`. */
+  action?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
 }
 
-export function PanelSection({ icon, title, color = PANEL_DEFAULT_COLOR, description, children, className, ...link }: PanelSectionProps) {
+export function PanelSection({ icon, title, color = PANEL_DEFAULT_COLOR, description, action, children, className, ...link }: PanelSectionProps) {
   const id = React.useId();
   return (
     <section aria-labelledby={id} className={cn("flex min-w-0 flex-col gap-3", className)}>
-      <SectionHeading id={id} icon={icon} title={title} color={color} {...link} />
+      {action ? (
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <SectionHeading id={id} icon={icon} title={title} color={color} {...link} />
+          {action}
+        </div>
+      ) : (
+        <SectionHeading id={id} icon={icon} title={title} color={color} {...link} />
+      )}
       {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       {children}
     </section>

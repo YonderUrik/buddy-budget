@@ -3,7 +3,7 @@ vi.mock("@/lib/db/client", () => ({ db: {} }));
 
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { IsinListingsDeps } from "./isin-listings";
-import { canLinkQuotation, findQuotationCandidates } from "./link-quotation";
+import { autoLinkQuotation, canLinkQuotation, findQuotationCandidates } from "./link-quotation";
 
 const USER = "user-1";
 const manual = { id: "i1", isin: "IE00B4L5Y983", currency: "EUR", priceMode: "manuale", createdByUserId: USER, type: "etf" } as Instrument;
@@ -60,5 +60,15 @@ describe("findQuotationCandidates", () => {
     const result = await findQuotationCandidates(manual, USER, d);
     expect(result.status === "ok" && result.candidates).toHaveLength(3);
     expect(d.quoteMeta).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("autoLinkQuotation", () => {
+  it("non fa nulla (e non lancia) se non c'è una quotazione verificata o la fonte non risponde", async () => {
+    expect(await autoLinkQuotation(manual, USER, deps({ "SWDA.L": "USD" }))).toBeNull();
+    expect(await autoLinkQuotation(manual, USER, { ...deps({}), listings: async () => { throw new Error("down"); } })).toBeNull();
+    const d = deps({ "SWDA.MI": "EUR" });
+    expect(await autoLinkQuotation({ ...manual, priceMode: "auto" }, USER, d)).toBeNull();
+    expect(d.listings).not.toHaveBeenCalled();
   });
 });

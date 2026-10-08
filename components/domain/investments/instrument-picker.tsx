@@ -26,6 +26,10 @@ export interface InstrumentPickerProps {
   suggestions?: Instrument[];
   /** Testo del bottone quando nessuno strumento è scelto. */
   placeholder?: string;
+  /** Blocca la selezione durante il salvataggio del chiamante. */
+  disabled?: boolean;
+  /** Il chiamante avvia il recupero storico dopo aver salvato la selezione. */
+  deferHistory?: boolean;
   className?: string;
 }
 
@@ -46,12 +50,14 @@ export function InstrumentPicker({
   defaultCurrency,
   suggestions = [],
   placeholder = "Cerca per nome, ticker o ISIN",
+  disabled = false,
+  deferHistory = false,
   className,
 }: InstrumentPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const search = useInstrumentSearchQuery(query);
-  const create = useCreateInstrumentMutation();
+  const create = useCreateInstrumentMutation({ deferHistory });
   const suggestionRank = new Map(suggestions.map((i, index) => [i.id, index]));
   const known = [...(search.data?.known ?? [])].sort(
     (a, b) => (suggestionRank.get(a.id) ?? Infinity) - (suggestionRank.get(b.id) ?? Infinity)
@@ -73,6 +79,7 @@ export function InstrumentPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
+        disabled={disabled}
         className={cn(
           "flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-left text-sm",
           className

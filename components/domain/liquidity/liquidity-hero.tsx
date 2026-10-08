@@ -60,7 +60,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
         </p>
       )}
       <div className="-mx-4 mt-2 sm:-mx-6">
-        <TrendChart points={points} description={description} height={260} />
+        <TrendChart points={points} description={description} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>
       <div className="mt-3 flex justify-center">
         <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" />

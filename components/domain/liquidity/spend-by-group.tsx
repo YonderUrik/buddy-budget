@@ -40,19 +40,37 @@ export interface SpendByGroupProps {
 
 const DEFAULT_VISIBLE = 5;
 
-function GroupBlock({ group, total, currency, visible, onPickCategory }: { group: SpendGroup; total: number; currency: string; visible: number; onPickCategory?: (id: string) => void }) {
-  const [open, setOpen] = React.useState(false);
+interface GroupBlockProps {
+  group: SpendGroup;
+  total: number;
+  currency: string;
+  visible: number;
+  open: boolean;
+  /** Gruppo in evidenza (passaggio sulla fetta o blocco). */
+  highlighted: boolean;
+  /** Gruppo bloccato con un clic: bordo di richiamo. */
+  locked: boolean;
+  onToggle: () => void;
+  onHoverChange: (key: string | null) => void;
+  onPickCategory?: (id: string) => void;
+}
+
+function GroupBlock({ group, total, currency, visible, open, highlighted, locked, onToggle, onHoverChange, onPickCategory }: GroupBlockProps) {
   const [all, setAll] = React.useState(false);
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
   const shown = all ? group.categories : group.categories.slice(0, visible);
   const panelId = `spend-group-${group.key}`;
   return (
-    <li className="rounded-2xl bg-foreground/[0.04]">
+    <li
+      className={cn("rounded-2xl bg-foreground/[0.04] transition-colors", highlighted && "bg-foreground/[0.09]", locked && "ring-1 ring-ring")}
+      onMouseEnter={() => onHoverChange(group.key)}
+      onMouseLeave={() => onHoverChange(null)}
+    >
       <button
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((v) => !v)}
+        onClick={onToggle}
         className="flex min-h-14 w-full items-center gap-3.5 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-ring"
       >
         <span className="size-3.5 shrink-0 rounded-full" style={{ backgroundColor: group.color }} aria-hidden="true" />
@@ -99,16 +117,46 @@ function GroupBlock({ group, total, currency, visible, onPickCategory }: { group
 }
 
 export function SpendByGroup({ groups, currency, visibleCategories = DEFAULT_VISIBLE, onPickCategory }: SpendByGroupProps) {
+  const [hoveredKey, setHoveredKey] = React.useState<string | null>(null);
+  const [lockedKey, setLockedKey] = React.useState<string | null>(null);
+  const [openKeys, setOpenKeys] = React.useState<ReadonlySet<string>>(new Set());
   const total = groups.reduce((sum, g) => sum + g.amount, 0);
   const slices = groups.map((g) => ({ key: g.key, label: g.label, value: g.amount, color: g.color }));
+  const focusKey = hoveredKey ?? lockedKey;
+  const toggleOpen = (key: string, force?: boolean) =>
+    setOpenKeys((current) => {
+      const next = new Set(current);
+      const shouldOpen = force ?? !next.has(key);
+      if (shouldOpen) next.add(key);
+      else next.delete(key);
+      return next;
+    });
+  // Il clic su una fetta la blocca e ne apre il gruppo; un secondo clic sblocca.
+  const selectSlice = (key: string) => {
+    const unlocking = lockedKey === key;
+    setLockedKey(unlocking ? null : key);
+    toggleOpen(key, !unlocking);
+  };
   return (
     <div className="flex flex-wrap items-center gap-8">
       <div className="self-start">
-        <CategoryDonut slices={slices} currency={currency} centerLabel="di spese" />
+        <CategoryDonut slices={slices} currency={currency} centerLabel="di spese" focusKey={focusKey} onHoverChange={setHoveredKey} onSelect={selectSlice} />
       </div>
       <ul className="flex min-w-60 flex-1 flex-col gap-1.5">
         {groups.map((g) => (
-          <GroupBlock key={g.key} group={g} total={total} currency={currency} visible={visibleCategories} onPickCategory={onPickCategory} />
+          <GroupBlock
+            key={g.key}
+            group={g}
+            total={total}
+            currency={currency}
+            visible={visibleCategories}
+            open={openKeys.has(g.key)}
+            highlighted={focusKey === g.key}
+            locked={lockedKey === g.key}
+            onToggle={() => toggleOpen(g.key)}
+            onHoverChange={setHoveredKey}
+            onPickCategory={onPickCategory}
+          />
         ))}
       </ul>
     </div>

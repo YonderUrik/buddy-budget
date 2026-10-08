@@ -7,18 +7,16 @@ import { FileSpreadsheet, Clock3, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePrivacy } from "@/components/privacy-provider";
 import { Input } from "@/components/ui/input";
+import { personalImportLabels as labels, usePersonalImportsQuery } from "@/lib/queries/personal-imports";
 import { track } from "@/lib/analytics";
 import type { Preview } from "@/lib/personal-import/confirm";
 
-type Job = { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null };
-type Listing = { formats: { id: string; name: string }[]; jobs: Job[] };
 async function api<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/personal-imports${path}`, body === undefined ? { cache: "no-store" } : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error ?? "Operazione non riuscita. Riprova.");
   return data;
 }
-const labels: Record<string, string> = { queued: "In attesa di analisi", processing: "Stiamo analizzando il CSV", ready: "Pronto da verificare", review_failed: "Ci sono righe da verificare", failed: "Analisi non riuscita", imported: "Importato", expired: "File scaduto" };
 function PreviewPanel({ id, ready, onImported }: { id: string; ready: boolean; onImported: () => void }) {
   const { hidden } = usePrivacy();
   const [page, setPage] = useState(0), [checked, setChecked] = useState(false);
@@ -52,7 +50,7 @@ function PersonalImports() {
   const [selected, setSelected] = useState<string | null>(params.get("job"));
   const [formatId, setFormatId] = useState(""), [name, setName] = useState(""), [file, setFile] = useState<File | null>(null), [consent, setConsent] = useState(false), [regenerate, setRegenerate] = useState(false);
   const client = useQueryClient();
-  const listing = useQuery({ queryKey: ["personal-imports"], queryFn: () => api<Listing>(""), refetchInterval: 10000 });
+  const listing = usePersonalImportsQuery();
   const upload = useMutation({ mutationFn: async () => {
     if (!file || file.size > 25 * 1024 * 1024) throw new Error("Scegli un CSV di massimo 25 MB");
     const source = listing.data?.formats.find(f => f.id === formatId)?.name ?? name;

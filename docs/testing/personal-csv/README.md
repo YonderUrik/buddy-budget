@@ -54,3 +54,9 @@ Il codice del parser utilizzato nel test è stato generato dal modello, non corr
 
 ### Operazioni d'investimento
 ![Investimenti](07-investments.jpg)
+
+### CSV personali in Gestisci importazioni
+
+Verificati elenco con fonte/stato/data e collegamento all'importazione corretta da Investimenti → Operazioni → Gestisci importazioni. TypeScript ed ESLint passati.
+
+![Gestione CSV personali](08-management.jpg)

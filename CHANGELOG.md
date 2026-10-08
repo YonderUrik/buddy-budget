@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.23.1](https://github.com/YonderUrik/buddy-budget/compare/v0.23.0...v0.23.1) (2026-10-08)
+
+
+### Correzioni
+
+* torta interattiva e tooltip nei grafici di Liquidità ([#198](https://github.com/YonderUrik/buddy-budget/issues/198)) ([d2421a5](https://github.com/YonderUrik/buddy-budget/commit/d2421a5fde169f19455c78910ae602d0d52e9821))
+
 ## [0.23.0](https://github.com/YonderUrik/buddy-budget/compare/v0.22.0...v0.23.0) (2026-10-08)
 
 

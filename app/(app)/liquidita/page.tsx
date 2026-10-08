@@ -2,6 +2,7 @@
 
 /** Liquidità · Movimenti: frase del mese, cifra eroe, chip dei conti, elenco a giorni e colonna "Il mese". */
 
+import Link from "next/link";
 import * as React from "react";
 import { LoadError } from "@/components/domain/shared";
 import {
@@ -73,6 +74,7 @@ export default function LiquiditaPage() {
   return (
     <div className="flex flex-col gap-8">
       <LiquidityOverview />
+      <Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">Importa un CSV personale →</Link>
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-2">
           <MovementsToolbar

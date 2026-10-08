@@ -7,6 +7,9 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface ProductEvents {
+  personal_csv_requested: { reuse: boolean };
+  personal_csv_deleted: { cash: number; investments: number };
+  personal_csv_imported: { rows: number };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };
   /** Fetta della torta "Dove sta il patrimonio" bloccata con un clic (solo la classe di asset). */
   overview_composition_slice_selected: { assetClass: "liquidita" | "investimenti" | "previdenza" };

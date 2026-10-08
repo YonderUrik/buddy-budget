@@ -2,6 +2,7 @@
 
 /** Primo passo dell'import: carica un file CSV o incollane il contenuto; offre il modello da compilare. */
 
+import Link from "next/link";
 import * as React from "react";
 import { DownloadIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">Da dove arriva il file?</p>
         <ImportProviderPicker value={provider} onChange={onProviderChange} />
+        <Link href="/importazioni" className="rounded-lg border p-3 text-sm hover:bg-muted">CSV non supportato? Crea il tuo formato con AI →</Link>
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {provider
             ? getImportProvider(provider).howTo

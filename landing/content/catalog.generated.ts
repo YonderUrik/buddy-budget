@@ -33,6 +33,7 @@ const f = (
 ): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
 
 export const FEATURES: readonly Feature[] = [
+  f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica un CSV della tua banca o broker: analisi in background, formato privato riutilizzabile, importazione automatica di pagamenti e investimenti e avviso email.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live"),
   f("avviso-rinnovo-banca", "Liquidità", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
   f("liquidita-unica", "Liquidità", "Conti e movimenti in un posto solo", "Saldo totale, andamento e movimenti di tutti i conti in un'unica schermata, filtrabile per conto con un tocco.", "new"),
@@ -40,6 +41,7 @@ export const FEATURES: readonly Feature[] = [
   f("conti-manuali", "Liquidità", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
   f("aggiornamento-automatico-e-manuale", "Liquidità", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
   f("conti-raggruppati-per-banca", "Liquidità", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
+
 
   f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
   f("proposte-per-somiglianza", "Liquidità", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),

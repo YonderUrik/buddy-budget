@@ -1,5 +1,7 @@
 import { afterAll, describe, expect, it } from "vitest";
-import { client } from "@/lib/db/client";
+import { eq } from "drizzle-orm";
+import { client, db } from "@/lib/db/client";
+import { instruments } from "@/lib/db/schema/investments";
 import { resolveIdentity, type ResolveDeps } from "./resolve";
 
 const identity = { key: "k1", symbol: null, isin: "IE00B4L5Y983", name: null, currency: "EUR", symbolIsYahoo: false } as const;
@@ -53,5 +55,16 @@ describe("resolveIdentity: ripiego OpenFIGI per gli ISIN", () => {
     }
     const throwing = await resolveIdentity("test-user", fromStatement, deps({ searchByIsin: async () => { throw new Error("boom"); } }));
     expect(throwing).toMatchObject({ input: { source: "manuale" } });
+  });
+
+  it("se l'ISIN esiste già come strumento comune in un'altra valuta non collega la quotazione: resta manuale nella valuta del file", async () => {
+    const tesla = { ...identity, isin: "US88160R1014", name: "Tesla", currency: "EUR" };
+    const [usd] = await db.insert(instruments).values({ isin: tesla.isin, name: "Tesla", type: "azione", currency: "USD" }).returning();
+    try {
+      const match = await resolveIdentity("test-user", tesla, deps({ searchByIsin: async () => ({ status: "ok", hits: [{ ...HIT, symbol: "TL0.DE" }] }) }));
+      expect(match).toMatchObject({ kind: "proposal", input: { source: "manuale", currency: "EUR" } });
+    } finally {
+      await db.delete(instruments).where(eq(instruments.id, usd.id));
+    }
   });
 });

@@ -105,6 +105,10 @@ async function resolveByIsinFallback(userId: string, identity: Identity, deps: R
 async function linkedQuotation(userId: string, identity: Identity, deps: ResolveDeps): Promise<ImportMatch | null> {
   if (!identity.isin || !deps.searchByIsin) return null;
   try {
+    // Un ISIN ha un solo strumento comune, con la sua valuta: se è un'altra (Tesla in USD, rendiconto in EUR) la
+    // quotazione non si può collegare senza cambiare i prezzi, e lo strumento resta manuale nella valuta del file.
+    const sameIsin = await knownBy(userId, "isin", identity.isin);
+    if (sameIsin && sameIsin.currency !== identity.currency) return null;
     const found = await deps.searchByIsin(identity.isin, identity.currency);
     const hit = found.hits[0];
     if (found.status !== "ok" || !hit) return null;

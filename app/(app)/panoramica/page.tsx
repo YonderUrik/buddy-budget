@@ -172,7 +172,12 @@ export default function PanoramicaPage() {
           />
           <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
             <div className="flex flex-col gap-10 lg:col-span-3">
-              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio" className="bg-transparent p-0 ring-0" />
+              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio"
+                className="bg-transparent p-0 ring-0"
+                onSliceSelect={(key) => {
+                  if (key === "liquidita" || key === "investimenti" || key === "previdenza") track("overview_composition_slice_selected", { assetClass: key });
+                }}
+              />
               <MonthPaceSection pace={pace} monthLabel={monthLabel} currency={currency} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_MONTH })} />
             </div>
             <div className="flex flex-col gap-8 lg:col-span-2">

@@ -3,10 +3,10 @@
  * (non una cifra sola) perché la base su cui si paga l'imposta in uscita va confermata da un professionista.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { InfoHint } from "@/components/domain/shared";
+import { WalletIcon } from "lucide-react";
 import type { WithdrawalReason, WithdrawalScenario } from "@/lib/calc/pension";
 import { formatPercent, money } from "./pension-format";
+import { PensionSection } from "./pension-section";
 
 export interface PensionWithdrawalCardProps {
   scenarios: WithdrawalScenario[];
@@ -30,17 +30,19 @@ const RANGE_HINT =
 export function PensionWithdrawalCard({ scenarios, value, currency, baseline, isSimulated = false }: PensionWithdrawalCardProps) {
   const total = Math.max(value, 1);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Se prelevassi oggi <InfoHint label="Come si stima il netto">{RANGE_HINT}</InfoHint>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
+    <PensionSection
+      icon={WalletIcon}
+      title="Se prelevassi oggi"
+      color="var(--swatch-orange)"
+      hint={{ label: "Come si stima il netto", text: RANGE_HINT }}
+      description={
+        <>
           {isSimulated ? <strong className="font-medium text-foreground">Simulazione dell&apos;aliquota in corso (vedi «Quando l&apos;aliquota scende»). </strong> : null}
           Quanto ti resterebbe al netto delle tasse, in tre ipotesi. È una stima, non consulenza fiscale.
-        </p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+        </>
+      }
+    >
+      <div className="flex flex-col gap-6">
         {scenarios.map((scenario) => {
           const label = REASON_LABELS[scenario.reason];
           const lowShare = (scenario.netLow / total) * 100;
@@ -49,27 +51,34 @@ export function PensionWithdrawalCard({ scenarios, value, currency, baseline, is
           return (
             <div key={scenario.reason} className="flex flex-col gap-2">
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-                <p className="text-sm font-medium text-foreground">{label.title}</p>
-                <p className="font-heading text-lg font-medium tabular-nums text-foreground">
-                  {money(scenario.netLow, currency)} <span className="text-muted-foreground">–</span> {money(scenario.netHigh, currency)}
+                <p className="font-semibold text-foreground">{label.title}</p>
+                <p className="font-heading text-xl font-medium tabular-nums text-foreground">
+                  {money(scenario.netLow, currency)} <span className="text-text-2">–</span> {money(scenario.netHigh, currency)}
                 </p>
               </div>
               <div className="flex h-3.5 overflow-hidden rounded-full bg-neg/25" role="img" aria-label={`Netto tra ${money(scenario.netLow, currency)} e ${money(scenario.netHigh, currency)} su ${money(value, currency)}`}>
                 <span className="h-full bg-primary" style={{ width: `${lowShare}%` }} />
                 <span className="h-full bg-primary/45" style={{ width: `${Math.max(0, highShare - lowShare)}%` }} />
               </div>
-              <p className="text-xs text-muted-foreground">{label.detail} · aliquota {formatPercent(scenario.rate)}
-                {delta !== 0 ? <span className={delta > 0 ? "text-pos" : "text-neg"}> · {delta > 0 ? "+" : "−"}{money(Math.abs(delta), currency)} rispetto a oggi</span> : null}
+              <p className="text-sm text-text-2">
+                {label.detail} · aliquota {formatPercent(scenario.rate)}
+                {delta !== 0 ? (
+                  <span className={delta > 0 ? "text-pos" : "text-neg"}>
+                    {" "}
+                    · {delta > 0 ? "+" : "−"}
+                    {money(Math.abs(delta), currency)} rispetto a oggi
+                  </span>
+                ) : null}
               </p>
             </div>
           );
         })}
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-2">
           <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />Netto sicuro</li>
           <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary/45" aria-hidden="true" />Netto possibile</li>
           <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-neg/40" aria-hidden="true" />Tasse</li>
         </ul>
-      </CardContent>
-    </Card>
+      </div>
+    </PensionSection>
   );
 }

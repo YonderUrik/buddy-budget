@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.22.0](https://github.com/YonderUrik/buddy-budget/compare/v0.21.0...v0.22.0) (2026-10-08)
+
+
+### Novità
+
+* **import:** add private AI-generated CSV parsers ([#181](https://github.com/YonderUrik/buddy-budget/issues/181)) ([895c51a](https://github.com/YonderUrik/buddy-budget/commit/895c51ac117760ff550e180c8fe3d57491875c03))
+
 ## [0.21.0](https://github.com/YonderUrik/buddy-budget/compare/v0.20.0...v0.21.0) (2026-10-08)
 
 

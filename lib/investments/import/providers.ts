@@ -28,7 +28,8 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     id: "fineco",
     name: "Fineco",
     initials: "FB",
-    // Nessun logo finché non ne abbiamo uno con licenza chiara: resta la sigla neutra.
+    // Logo fornito dal proprietario del progetto; il marchio resta di FinecoBank, usato solo per indicare la fonte del file.
+    logoSrc: "/import-providers/fineco.png",
     tagline: "Movimenti Dossier Titoli (Excel)",
     howTo:
       "In FinecoX apri il dossier titoli → Movimenti → cerca il periodo che ti serve ed esporta in Excel (.xlsx). Importo acquisti, vendite e, se presenti, dividendi e cedole; il file non ha il saldo né le posizioni, quindi la liquidità non cambia. Usa «Data operazione», non la data valuta.",

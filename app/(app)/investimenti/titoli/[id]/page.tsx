@@ -43,7 +43,7 @@ export default function TitoloPage() {
   const data = analysis.data;
   const { instrument } = data;
   return (
-    <div className="flex flex-col gap-4 sm:gap-5">
+    <div className="flex flex-col gap-6 sm:gap-8">
       <TitleHeader
         instrument={instrument}
         stats={data.stats}
@@ -53,24 +53,30 @@ export default function TitoloPage() {
         onToggleWatch={() => watch.mutate({ instrumentId: instrument.id, watch: !data.watching })}
         onRegister={() => openRegister({ instrument })}
       />
-      <TitlePriceChart
-        series={data.series}
-        currency={instrument.currency}
-        period={period}
-        onPeriodChange={setPeriod}
-        backfilling={data.backfilling}
-      />
-      {data.position ? <TitlePositionCard position={data.position} currency={instrument.currency} /> : null}
-      {data.stats ? <TitleStatsCard stats={data.stats} currency={instrument.currency} /> : null}
-      <TitleFundamentalsCard fundamentals={data.fundamentals} status={data.fundamentalsStatus} currency={instrument.currency} />
-      <TitleAlertsCard
-        instrumentId={instrument.id}
-        currency={instrument.currency}
-        alerts={data.alerts}
-        lastClose={data.stats?.lastClose ?? null}
-        supported={instrument.priceMode === "auto"}
-      />
-      {data.commentaryAvailable && data.stats ? <TitleCommentaryCard instrumentId={instrument.id} /> : null}
+      <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+        <div className="flex flex-col gap-10 lg:col-span-3">
+          <TitlePriceChart
+            series={data.series}
+            currency={instrument.currency}
+            period={period}
+            onPeriodChange={setPeriod}
+            backfilling={data.backfilling}
+          />
+          {data.stats ? <TitleStatsCard stats={data.stats} currency={instrument.currency} /> : null}
+          <TitleFundamentalsCard fundamentals={data.fundamentals} status={data.fundamentalsStatus} currency={instrument.currency} />
+        </div>
+        <div className="flex flex-col gap-10 lg:col-span-2">
+          {data.position ? <TitlePositionCard position={data.position} currency={instrument.currency} /> : null}
+          <TitleAlertsCard
+            instrumentId={instrument.id}
+            currency={instrument.currency}
+            alerts={data.alerts}
+            lastClose={data.stats?.lastClose ?? null}
+            supported={instrument.priceMode === "auto"}
+          />
+          {data.commentaryAvailable && data.stats ? <TitleCommentaryCard instrumentId={instrument.id} /> : null}
+        </div>
+      </div>
     </div>
   );
 }

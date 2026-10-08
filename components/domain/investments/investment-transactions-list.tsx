@@ -9,7 +9,8 @@
 import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeftRightIcon } from "lucide-react";
+import { PanelSection } from "./panel-section";
 import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investments";
 import {
   operationYears,
@@ -60,52 +61,51 @@ export function InvestmentTransactionsList({
   ];
 
   return (
-    <Card>
-      <CardHeader className="gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Operazioni</CardTitle>
-          {years.length > 1 ? (
-            <div className="max-w-full overflow-x-auto">
-              <SegmentedControl options={yearOptions} value={selectedYear} onChange={setYear} ariaLabel="Anno delle operazioni" />
-            </div>
-          ) : null}
+    <PanelSection
+      icon={ArrowLeftRightIcon}
+      title="Operazioni"
+      color="var(--swatch-indigo)"
+      action={
+        years.length > 1 ? (
+          <div className="max-w-full overflow-x-auto">
+            <SegmentedControl options={yearOptions} value={selectedYear} onChange={setYear} ariaLabel="Anno delle operazioni" />
+          </div>
+        ) : null
+      }
+    >
+      {months.length > 0 ? (
+        <>
+          <OperationsTotals totals={totals} currency={currency} />
+          <p className="text-sm text-muted-foreground">
+            Per un acquisto il guadagno è quanto valgono oggi le quote ancora possedute rispetto a quanto le hai pagate;
+            per una vendita è il guadagno realizzato.
+          </p>
+        </>
+      ) : null}
+      {months.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nessuna operazione registrata.</p>
+      ) : (
+        <div className="-mx-4 border-t border-border sm:-mx-6">
+          {visible.map((group) => (
+            <OperationMonthGroup
+              key={group.key}
+              group={group}
+              instrumentsById={instrumentsById}
+              currency={currency}
+              deletingId={deletingId}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          ))}
         </div>
-        {months.length > 0 ? (
-          <>
-            <OperationsTotals totals={totals} currency={currency} />
-            <p className="text-xs text-muted-foreground">
-              Per un acquisto il guadagno è quanto valgono oggi le quote ancora possedute rispetto a quanto le hai pagate;
-              per una vendita è il guadagno realizzato.
-            </p>
-          </>
-        ) : null}
-      </CardHeader>
-      <CardContent className="p-0">
-        {months.length === 0 ? (
-          <p className="px-6 pb-6 text-sm text-muted-foreground">Nessuna operazione registrata.</p>
-        ) : (
-          <div className="border-t border-border">
-            {visible.map((group) => (
-              <OperationMonthGroup
-                key={group.key}
-                group={group}
-                instrumentsById={instrumentsById}
-                currency={currency}
-                deletingId={deletingId}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))}
-          </div>
-        )}
-        {filtered.length > RECENT_OPERATION_MONTHS_LIMIT ? (
-          <div className="border-t border-border px-4 py-2 sm:px-6">
-            <Button variant="link" className="px-0" onClick={onToggleShowAll}>
-              {showAll ? "Mostra solo i mesi più recenti" : `Mostra tutti i mesi (${filtered.length})`}
-            </Button>
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
+      )}
+      {filtered.length > RECENT_OPERATION_MONTHS_LIMIT ? (
+        <div>
+          <Button variant="link" className="px-0" onClick={onToggleShowAll}>
+            {showAll ? "Mostra solo i mesi più recenti" : `Mostra tutti i mesi (${filtered.length})`}
+          </Button>
+        </div>
+      ) : null}
+    </PanelSection>
   );
 }

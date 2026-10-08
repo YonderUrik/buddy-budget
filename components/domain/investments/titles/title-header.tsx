@@ -57,7 +57,7 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
       </div>
       {stats ? (
         <div>
-          <p className="font-heading text-3xl font-medium tabular-nums text-foreground">{formatPrice(stats.lastClose, instrument.currency)}</p>
+          <p className="font-heading text-5xl font-medium tabular-nums text-foreground">{formatPrice(stats.lastClose, instrument.currency)}</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {stats.dayChange !== null ? (
               <span className={cn("tabular-nums", stats.dayChange < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.dayChange)}</span>

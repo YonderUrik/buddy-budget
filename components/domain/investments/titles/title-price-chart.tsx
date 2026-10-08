@@ -4,7 +4,8 @@
 
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { SegmentedControl } from "@/components/domain/shared";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartSplineIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { parseDateOnly } from "@/lib/calc/expenses";
 import { TITLE_CHART_PERIODS, type CloseInput, type TitleChartPeriod } from "@/lib/investments/title-stats";
@@ -39,21 +40,20 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
   const color = up ? "var(--pos)" : "var(--neg)";
   const config = { close: { label: "Chiusura", color } } satisfies ChartConfig;
   return (
-    <Card>
-      <CardHeader className="gap-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Andamento</CardTitle>
-          <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" stretch className="sm:w-auto" />
-        </div>
-      </CardHeader>
-      <CardContent>
+    <PanelSection
+      icon={ChartSplineIcon}
+      title="Andamento"
+      color={color}
+      action={<SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" stretch className="sm:w-auto" />}
+    >
+      <div>
         {series.length < 2 ? (
           <p className="py-10 text-center text-sm text-muted-foreground" role="status">
             {backfilling ? "Sto scaricando lo storico dei prezzi…" : "Non ci sono ancora abbastanza prezzi per il grafico."}
           </p>
         ) : (
           <>
-            <ChartContainer config={config} className="h-56 w-full">
+            <ChartContainer config={config} className="-mx-4 h-56 w-[calc(100%+2rem)] sm:-mx-6 sm:h-72 sm:w-[calc(100%+3rem)] lg:mx-0 lg:w-full">
               <AreaChart data={series} margin={{ left: 4, right: 8 }}>
                 <defs>
                   <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
@@ -77,7 +77,7 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
             {backfilling ? <p className="mt-2 text-xs text-muted-foreground">Sto ancora scaricando lo storico: il grafico si completa da solo.</p> : null}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

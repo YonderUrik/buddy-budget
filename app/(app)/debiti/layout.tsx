@@ -17,7 +17,7 @@ export default function DebitiLayout({ children }: { children: React.ReactNode }
 
   return (
     <DebtsActionsProvider value={actions}>
-      <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
         <div className="flex flex-col gap-3">
           <div className="flex items-start justify-between gap-3">
             <div>

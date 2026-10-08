@@ -1,10 +1,11 @@
 /** Card "La tua posizione" sul titolo: quote, prezzo medio, valore e variazione dell'ultima chiusura rispetto al prezzo medio. */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { TitlePosition } from "@/lib/investments/title-view";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
 import { formatPrice } from "./title-format";
+import { BriefcaseIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 const QUANTITY_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 6 });
 
@@ -17,12 +18,11 @@ export interface TitlePositionCardProps {
 
 export function TitlePositionCard({ position, currency, action }: TitlePositionCardProps) {
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between gap-3">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">La tua posizione</CardTitle>
-        {action}
-      </CardHeader>
-      <CardContent>
+    <PanelSection icon={BriefcaseIcon} title="La tua posizione" color="var(--primary)"
+      action={
+        action
+      }>
+      <div>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
           <div>
             <dt className="text-xs text-muted-foreground">Quote</dt>
@@ -53,7 +53,7 @@ export function TitlePositionCard({ position, currency, action }: TitlePositionC
         <p className="mt-3 text-xs text-muted-foreground">
           Valori nella valuta del titolo ({currency}), senza cambio né tasse. Il guadagno completo è nelle schede Portafoglio e Tasse.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

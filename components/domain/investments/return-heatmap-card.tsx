@@ -7,7 +7,8 @@
 
 import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarRangeIcon } from "lucide-react";
+import { PanelSection } from "./panel-section";
 import { HEATMAP_LEVELS, type HeatmapCell, type HeatmapGrouping } from "@/lib/calc/return-heatmap";
 import type { DailyReturn } from "@/lib/calc/returns";
 import { heatmapFromDaily } from "@/lib/investments/return-heatmap-view";
@@ -61,15 +62,14 @@ export function ReturnHeatmapCard({ daily, currency, today }: ReturnHeatmapCardP
         }.`;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Rendimento nel tempo</CardTitle>
-          <p className="text-sm text-muted-foreground">{summary}</p>
-        </div>
-        <SegmentedControl options={GROUPING_OPTIONS} value={grouping} onChange={changeGrouping} ariaLabel="Raggruppa i rendimenti per" />
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <PanelSection
+      icon={CalendarRangeIcon}
+      title="Rendimento nel tempo"
+      color="var(--swatch-teal)"
+      description={summary}
+      action={<SegmentedControl options={GROUPING_OPTIONS} value={grouping} onChange={changeGrouping} ariaLabel="Raggruppa i rendimenti per" />}
+    >
+      <div className="flex flex-col gap-3">
         <ReturnHeatmapGrid heatmap={heatmap} onInspect={setInspected} selectedKey={inspected?.key ?? null} />
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-muted-foreground">
           <p aria-live="polite" className="min-h-4 tabular-nums">
@@ -102,7 +102,7 @@ export function ReturnHeatmapCard({ daily, currency, today }: ReturnHeatmapCardP
             <span>Guadagno</span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

@@ -89,7 +89,7 @@ export interface EarlyRepaymentMonthlyProps {
 export function EarlyRepaymentMonthly({ preview, currency }: EarlyRepaymentMonthlyProps) {
   const { result } = preview;
   return (
-    <div className="rounded-lg border border-border p-3">
+    <div>
       <p className="mb-2 text-sm font-medium text-foreground">Con {formatCurrency(preview.amount, currency)} in più ogni mese</p>
       <dl className="flex flex-col gap-1">
         <Row label="Finisci" value={`${formatMonthYear(result.endDate)} · ${monthsLabel(result.monthsSaved)}`} />

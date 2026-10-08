@@ -9,6 +9,8 @@ export type { DebtsActions } from "./debts-actions";
 export { DebtsViewGate } from "./debts-view-gate";
 export type { DebtsViewGateProps } from "./debts-view-gate";
 export { formatDuration, formatMonthYear } from "./debts-format";
+export { DebtsHero } from "./debts-hero";
+export type { DebtsHeroProps } from "./debts-hero";
 export { DebtsUpcomingCard, dueText, daysBetween } from "./debts-upcoming-card";
 export type { DebtsUpcomingCardProps } from "./debts-upcoming-card";
 export { DebtsInterestCard } from "./debts-interest-card";

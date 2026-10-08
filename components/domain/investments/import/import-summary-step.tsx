@@ -24,7 +24,7 @@ const MAX_LISTED_ERRORS = 8;
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div className="flex flex-col rounded-lg border px-3 py-2">
+    <div className="flex flex-col rounded-lg bg-muted/50 px-3 py-2">
       <span className="font-heading text-xl font-medium tabular-nums text-foreground">{value}</span>
       <span className="text-xs text-muted-foreground">{label}</span>
     </div>
@@ -60,7 +60,7 @@ export function ImportSummaryStep({ result, rows, newInstruments, done }: Import
         <Stat value={result.counts.duplicate} label="già presenti" />
         <Stat value={newInstruments} label="strumenti nuovi" />
       </div>
-      {result.replacement ? <p role="status" className="rounded-lg border p-3 text-sm">Questo file sostituirà {result.replacement.statements === 1 ? "1 rendiconto" : `${result.replacement.statements} rendiconti`} e {result.replacement.operations} operazioni nel periodo {result.replacement.from} – {result.replacement.to}. I periodi esterni restano invariati. Se i controlli falliscono, nessun dato verrà sostituito.</p> : null}
+      {result.replacement ? <p role="status" className="rounded-lg bg-muted/50 p-3 text-sm">Questo file sostituirà {result.replacement.statements === 1 ? "1 rendiconto" : `${result.replacement.statements} rendiconti`} e {result.replacement.operations} operazioni nel periodo {result.replacement.from} – {result.replacement.to}. I periodi esterni restano invariati. Se i controlli falliscono, nessun dato verrà sostituito.</p> : null}
       <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
         {result.counts.duplicate > 0 ? <li>Le operazioni già presenti vengono saltate: puoi reimportare lo stesso file senza creare doppioni.</li> : null}
         {freeShares > 0 ? <li>{freeShares} acquisti a prezzo zero (quote ricevute gratis, es. staking): abbassano il prezzo medio.</li> : null}

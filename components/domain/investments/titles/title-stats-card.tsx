@@ -3,12 +3,13 @@
  * nella forbice a 52 settimane, volatilità e caduta massima dell'ultimo anno, ognuna con una frase che la spiega.
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TITLE_RETURN_PERIODS, type TitleReturnPeriod, type TitleStats } from "@/lib/investments/title-stats";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
 import { formatPct } from "../percent";
 import { formatPrice } from "./title-format";
+import { ChartNoAxesColumnIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 const RETURN_LABELS: Record<TitleReturnPeriod, string> = { "1M": "1 mese", "3M": "3 mesi", "6M": "6 mesi", "1A": "1 anno", YTD: "Da inizio anno" };
 
@@ -35,11 +36,8 @@ function RangeBar({ low, high, last, currency }: { low: number; high: number; la
 export function TitleStatsCard({ stats, currency }: TitleStatsCardProps) {
   const returns = TITLE_RETURN_PERIODS.filter((p) => stats.returns[p] !== undefined);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">In numeri</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <PanelSection icon={ChartNoAxesColumnIcon} title="In numeri" color="var(--primary)">
+      <div className="flex flex-col gap-5">
         {returns.length > 0 ? (
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-5">
             {returns.map((period) => {
@@ -92,7 +90,7 @@ export function TitleStatsCard({ stats, currency }: TitleStatsCardProps) {
             ) : null}
           </dl>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

@@ -68,18 +68,24 @@ export default function InvestimentiPage() {
               onRangeChange={(range) => { setCustomRange(range); track("investment_chart_period_changed", { period: "custom" }); }}
               currency={currency}
             />
-            <DividendsSummaryCard income={view.income} currency={currency} />
-            <CostDetailsCard impact={view.costImpact} currency={currency} />
-            {view.hasTransactions ? (
-              <PositionsList
-                rows={view.summary.rows}
-                concentration={computeConcentration(view.summary.rows)}
-                currency={currency}
-                todayKey={toDateKey(today)}
-                backfill={backfill.data ?? []}
-                onManualPrice={(row) => setPriceInstrument(view.instrumentsById.get(row.instrument.id) ?? null)}
-              />
-            ) : null}
+            <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+              <div className="flex flex-col gap-10 lg:col-span-3">
+                {view.hasTransactions ? (
+                  <PositionsList
+                    rows={view.summary.rows}
+                    concentration={computeConcentration(view.summary.rows)}
+                    currency={currency}
+                    todayKey={toDateKey(today)}
+                    backfill={backfill.data ?? []}
+                    onManualPrice={(row) => setPriceInstrument(view.instrumentsById.get(row.instrument.id) ?? null)}
+                  />
+                ) : null}
+              </div>
+              <div className="flex flex-col gap-10 lg:col-span-2">
+                <DividendsSummaryCard income={view.income} currency={currency} />
+                <CostDetailsCard impact={view.costImpact} currency={currency} />
+              </div>
+            </div>
           </>
         ) : null}
       </InvestmentsViewGate>

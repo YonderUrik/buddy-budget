@@ -8,7 +8,7 @@
 import * as React from "react";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {Dialog, DialogContent} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { TargetInput } from "@/lib/investments/allocation";
@@ -16,6 +16,10 @@ import { useUpdateTargetsMutation } from "@/lib/queries/investments";
 import { MAX_TARGETS } from "@/lib/validation/investments";
 import { cn } from "@/lib/utils";
 import { InstrumentPicker } from "../instrument-picker";
+import { TargetIcon } from "lucide-react";
+import { PanelDialogHeader } from "../dialog-parts";
+import { ScaleIcon } from "lucide-react";
+import { DialogActions, DialogSection, DialogSections } from "../dialog-parts";
 
 /** Tolleranza sulla somma in punti percentuali (campi a un decimale). */
 const SUM_TOLERANCE_PERCENT = 0.01;
@@ -92,13 +96,9 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
 
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>Obiettivo di allocazione</DialogTitle>
-        <DialogDescription>
-          Quanto vuoi che pesi ogni strumento sul totale. Serve per vedere quanto ti sei allontanato e dove mettere il prossimo
-          versamento.
-        </DialogDescription>
-      </DialogHeader>
+      <PanelDialogHeader icon={TargetIcon} title="Obiettivo di allocazione" description="Quanto vuoi che pesi ogni strumento sul totale. Serve per vedere quanto ti sei allontanato e dove mettere il prossimo versamento." color="var(--swatch-emerald)" />
+      <DialogSections>
+      <DialogSection title="Pesi" icon={ScaleIcon} color="var(--swatch-emerald)">
       <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto pr-1">
         {rows.map((row, index) => (
           <li key={row.instrument.id} className="flex items-center gap-2">
@@ -141,8 +141,10 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
           </Button>
         ) : null}
       </div>
+      </DialogSection>
+      </DialogSections>
       {update.isError ? <p className="text-sm text-destructive">{update.error.message}</p> : null}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <DialogActions>
         {hasSaved ? (
           <Button variant="ghost" className="text-muted-foreground" disabled={update.isPending} onClick={() => save([])}>
             Togli l&apos;obiettivo
@@ -161,7 +163,7 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
             {update.isPending ? "Salvo…" : "Salva"}
           </Button>
         </div>
-      </div>
+      </DialogActions>
     </>
   );
 }

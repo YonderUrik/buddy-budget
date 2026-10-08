@@ -11,7 +11,6 @@ import { EyeIcon, PlusIcon } from "lucide-react";
 import { InstrumentPicker, TitleListCard } from "@/components/domain/investments";
 import { LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
@@ -43,15 +42,15 @@ export default function TitoliPage() {
       ) : list.isError ? (
         <LoadError message="Impossibile caricare i titoli." onRetry={() => void list.refetch()} />
       ) : items.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
+        <div className="rounded-xl border border-dashed">
+          <div className="flex flex-col items-center gap-3 py-10 text-center">
             <EyeIcon size={28} className="text-muted-foreground" aria-hidden="true" />
             <p className="max-w-sm text-sm text-muted-foreground">
               Non segui ancora nessun titolo. Cerca un ETF, un&apos;azione o una crypto per vederne l&apos;andamento e ricevere un avviso quando arriva a un prezzo.
             </p>
             <Button onClick={() => setAddOpen(true)}>Cerca un titolo</Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
         <TitleListCard items={items} />
       )}

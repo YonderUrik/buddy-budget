@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-08T12:12:31.125Z",
+  "capturedAt": "2026-10-08T14:33:23.060Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -15,22 +15,22 @@
     {
       "id": "conti",
       "theme": "light",
-      "route": "/conti"
+      "route": "/liquidita/conti"
     },
     {
       "id": "movimenti",
       "theme": "light",
-      "route": "/movimenti"
+      "route": "/liquidita"
     },
     {
       "id": "analisi",
       "theme": "light",
-      "route": "/movimenti/analisi"
+      "route": "/liquidita/analisi"
     },
     {
       "id": "categorie",
       "theme": "light",
-      "route": "/movimenti/categorie"
+      "route": "/liquidita/categorie"
     },
     {
       "id": "categorizza",
@@ -90,22 +90,22 @@
     {
       "id": "conti",
       "theme": "dark",
-      "route": "/conti"
+      "route": "/liquidita/conti"
     },
     {
       "id": "movimenti",
       "theme": "dark",
-      "route": "/movimenti"
+      "route": "/liquidita"
     },
     {
       "id": "analisi",
       "theme": "dark",
-      "route": "/movimenti/analisi"
+      "route": "/liquidita/analisi"
     },
     {
       "id": "categorie",
       "theme": "dark",
-      "route": "/movimenti/categorie"
+      "route": "/liquidita/categorie"
     },
     {
       "id": "categorizza",

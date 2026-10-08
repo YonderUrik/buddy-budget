@@ -44,7 +44,7 @@ const NET_WORTH_FETCH_FROM = "2000-01-01";
 /** Per il valore di oggi degli investimenti basta l'ultimo mese di prezzi. */
 const INVESTMENTS_PERIOD: NetWorthPeriod = "1mese";
 /** Porta in Conti e vi apre subito il flusso di rinnovo (il valore dice da dove si arriva). */
-const RENEW_PATH = "/conti?rinnova=";
+const RENEW_PATH = "/liquidita/conti?rinnova=";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
 const MONTH_NAME_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "long" });
 /** Dove porta ogni tessera: il valore va nell'evento `overview_tile_clicked`. */
@@ -155,7 +155,7 @@ export default function PanoramicaPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Aggiungi o collega un conto per vedere il tuo patrimonio netto.
           </p>
-          <Link href="/conti" className={buttonVariants({ className: "mt-4" })}>
+          <Link href="/liquidita/conti" className={buttonVariants({ className: "mt-4" })}>
             Aggiungi un conto
           </Link>
         </div>

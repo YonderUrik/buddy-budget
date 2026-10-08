@@ -30,6 +30,12 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
+  /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
+  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "categorie" | "regole" };
+  /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
+  liquidity_account_filtered: { scope: "conto" | "tutti" };
+  /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */
+  liquidity_category_remembered: { remembered: boolean };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };

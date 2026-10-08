@@ -4,7 +4,7 @@ import { getAppUrl } from "@/lib/env";
 import { hashUserId, logger, recordConsentNotice, type ConsentNoticeKind } from "@/lib/observability";
 
 /** Percorso (relativo all'app) a cui portano le email: apre direttamente il flusso di rinnovo in Conti. */
-export const RENEW_PATH = "/conti?rinnova=1";
+export const RENEW_PATH = "/liquidita/conti?rinnova=1";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" });
 

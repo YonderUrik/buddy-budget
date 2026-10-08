@@ -10,7 +10,7 @@
 
 export { AppShell } from "@/components/layout/app-shell";
 export { AppSidebar, NAV_ITEMS } from "@/components/layout/sidebar";
-export type { NavItem, NavSubItem } from "@/components/layout/sidebar";
+export type { NavItem, NavBadge } from "@/components/layout/sidebar";
 export { AppVersionLabel } from "@/components/layout/app-version-label";
 export { MobileTopbar } from "@/components/layout/mobile-topbar";
 export { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";

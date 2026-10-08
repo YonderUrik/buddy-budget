@@ -4,6 +4,8 @@
  * Componenti della schermata Investimenti.
  */
 
+export { PanelSection, PANEL_DEFAULT_COLOR } from "./panel-section";
+export type { PanelSectionProps } from "./panel-section";
 export { PortfolioHeroCard } from "./portfolio-hero-card";
 export type { PortfolioHeroCardProps } from "./portfolio-hero-card";
 export { ValueBreakdownBar } from "./value-breakdown-bar";

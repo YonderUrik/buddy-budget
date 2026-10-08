@@ -243,7 +243,12 @@ jobs:
           fi
           kustomize edit set image \
             ghcr.io/yonderurik/buddy-budget=ghcr.io/yonderurik/buddy-budget:${VERSION} \
-            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:${VERSION}
+            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:${VERSION} \
+            ghcr.io/yonderurik/buddy-budget-csv-worker=ghcr.io/yonderurik/buddy-budget-csv-worker:${VERSION}
+          # The infra PR stages this Deployment at zero until its first image is published.
+          if [ -f csv-worker.yaml ]; then
+            kustomize edit set replicas buddy-budget-csv-worker=1
+          fi
       - name: Commit e push
         run: |
           git config user.name "github-actions[bot]"

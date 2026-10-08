@@ -11,19 +11,19 @@ async function handleGet(request: NextRequest) {
   const appUrl = getAppUrl();
   const ref = request.nextUrl.searchParams.get("ref");
   if (!ref) {
-    return Response.redirect(`${appUrl}/conti?bankError=missing_ref`, 302);
+    return Response.redirect(`${appUrl}/liquidita/conti?bankError=missing_ref`, 302);
   }
 
   try {
     const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.id, ref));
     if (!connection || !connection.requisitionId) {
-      return Response.redirect(`${appUrl}/conti?bankError=not_found`, 302);
+      return Response.redirect(`${appUrl}/liquidita/conti?bankError=not_found`, 302);
     }
 
     const requisition = await getRequisition(connection.requisitionId);
     if (requisition.status !== "LN") {
       await db.update(bankConnections).set({ status: "error" }).where(eq(bankConnections.id, connection.id));
-      return Response.redirect(`${appUrl}/conti?bankError=consent_failed`, 302);
+      return Response.redirect(`${appUrl}/liquidita/conti?bankError=consent_failed`, 302);
     }
 
     // Il consenso dura da quando l'utente lo dà (non da quando abbiamo creato la requisition): da qui parte il conto alla rovescia.
@@ -38,7 +38,7 @@ async function handleGet(request: NextRequest) {
     // deve sempre atterrare su un redirect leggibile, mai su una pagina di errore grezza.
     // Il ref arriva dal browser (non fidato): non lo si logga, basta il requestId.
     requestLogger().error("gocardless.callback.failed", { error });
-    return Response.redirect(`${appUrl}/conti?bankError=gocardless_unavailable`, 302);
+    return Response.redirect(`${appUrl}/liquidita/conti?bankError=gocardless_unavailable`, 302);
   }
 }
 

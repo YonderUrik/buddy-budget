@@ -11,7 +11,7 @@ export interface AppScreen {
   /** Identificatore stabile, anche nome del file immagine. */
   id: string;
   /** Voce di sidebar (area) a cui appartiene. */
-  area: "Panoramica" | "Conti" | "Movimenti" | "Investimenti" | "Pensione" | "Debiti" | "Analitiche";
+  area: "Panoramica" | "Liquidità" | "Investimenti" | "Pensione" | "Debiti" | "Analitiche";
   /** Etichetta breve per le schede della galleria. */
   label: string;
   /** Una riga che dice cosa mostra la schermata. */
@@ -30,11 +30,11 @@ export interface AppScreen {
 
 export const SCREENS = [
   { id: "panoramica", area: "Panoramica", label: "Panoramica", route: "/panoramica", caption: "Patrimonio netto nel tempo, per liquidità, investimenti, previdenza e debiti.", alt: "Panoramica: patrimonio netto, grafico nel tempo e ripartizione per classe di asset" },
-  { id: "conti", area: "Conti", label: "Conti", route: "/conti", caption: "Banca collegata e conti manuali, con la liquidità dell'ultimo mese.", alt: "Conti: conto collegato alla banca e conti manuali con saldi" },
-  { id: "movimenti", area: "Movimenti", label: "Movimenti", route: "/movimenti", caption: "Ogni movimento con la sua categoria; quelli da sistemare in evidenza.", alt: "Movimenti: elenco delle transazioni con categorie e importi", clickFirst: "Anno" },
-  { id: "analisi", area: "Movimenti", label: "Analisi", route: "/movimenti/analisi", caption: "Entrate, uscite, netto e risparmio, mese per mese.", alt: "Analisi: entrate contro uscite per mese e indicatori di risparmio", clickFirst: "Anno" },
-  { id: "categorie", area: "Movimenti", label: "Categorie", route: "/movimenti/categorie", caption: "Quattro gruppi di spesa: Dovute, Volute, Te futuro, Saltuarie.", alt: "Categorie divise nei quattro gruppi di spesa" },
-  { id: "categorizza", area: "Movimenti", label: "Categorizza", route: "/categorizza", caption: "Conferma un negozio una volta, le volte dopo lo riconosce.", alt: "Categorizza: proposte di categoria per i movimenti da sistemare" },
+  { id: "conti", area: "Liquidità", label: "Conti", route: "/liquidita/conti", caption: "Banca collegata e conti manuali, con la liquidità dell'ultimo mese.", alt: "Conti: conto collegato alla banca e conti manuali con saldi" },
+  { id: "movimenti", area: "Liquidità", label: "Movimenti", route: "/liquidita", caption: "Saldo, andamento e movimenti di tutti i conti; la categoria si cambia con un tocco.", alt: "Movimenti: elenco delle transazioni con categorie e importi" },
+  { id: "analisi", area: "Liquidità", label: "Analisi", route: "/liquidita/analisi", caption: "Entrate, uscite, netto e risparmio, mese per mese.", alt: "Analisi: entrate contro uscite per mese e indicatori di risparmio", clickFirst: "Anno" },
+  { id: "categorie", area: "Liquidità", label: "Categorie", route: "/liquidita/categorie", caption: "Quattro gruppi di spesa: Dovute, Volute, Te futuro, Saltuarie.", alt: "Categorie divise nei quattro gruppi di spesa" },
+  { id: "categorizza", area: "Liquidità", label: "Categorizza", route: "/categorizza", caption: "Conferma un negozio una volta, le volte dopo lo riconosce.", alt: "Categorizza: proposte di categoria per i movimenti da sistemare" },
   { id: "investimenti", area: "Investimenti", label: "Portafoglio", route: "/investimenti", caption: "Valore, versato e guadagno del mercato, posizione per posizione.", alt: "Investimenti: valore del portafoglio, versato contro mercato e posizioni" },
   { id: "performance", area: "Investimenti", label: "Performance", route: "/investimenti/performance", caption: "Rendimento vero, contro un indice e al netto dell'inflazione.", alt: "Performance: rendimento del portafoglio a confronto con un indice" },
   { id: "diversificazione", area: "Investimenti", label: "Diversificazione", route: "/investimenti/diversificazione", caption: "Per area e settore, guardando dentro gli ETF.", alt: "Diversificazione: ripartizione del portafoglio per area e settore" },

@@ -7,7 +7,7 @@ import { track } from "@/lib/analytics";
 import { useAttentionQuery } from "@/lib/queries/attention";
 
 /** Voce padre sotto cui compare "Da sistemare" e schermata a cui porta. */
-const ATTENTION_PARENT_HREF = "/movimenti";
+const ATTENTION_PARENT_HREF = "/liquidita";
 const ATTENTION_TARGET_HREF = "/categorizza";
 const ATTENTION_LABEL = "Da sistemare";
 

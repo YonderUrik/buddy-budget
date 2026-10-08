@@ -8,11 +8,12 @@
  */
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartPieIcon } from "lucide-react";
 import type { PositionRow } from "@/lib/calc/investments";
 import type { ConcentrationInsight } from "@/lib/investments/insights";
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 import { cn } from "@/lib/utils";
+import { PanelSection } from "./panel-section";
 import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
 import { PositionRowView, POSITIONS_GRID_COLUMNS } from "./position-row";
 import { concentrationText, percent } from "./positions-format";
@@ -38,62 +39,56 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
   const insight = concentrationText(concentration);
   const weighted = rows.filter((r) => r.weight !== null);
   return (
-    <Card className="@container">
-      <CardHeader className="gap-2">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Posizioni</CardTitle>
-        {insight ? <p className="text-sm text-foreground">{insight}</p> : null}
-        {weighted.length > 1 ? (
-          <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Peso di ogni posizione nel portafoglio">
-            {weighted.map((r) => (
-              <div
-                key={r.instrument.id}
-                className="h-full min-w-0.5"
-                style={{ flexGrow: r.weight ?? 0, backgroundColor: INSTRUMENT_TYPE_COLOR[r.instrument.type] }}
-                title={`${r.instrument.name} · ${percent(r.weight ?? 0)}`}
-              />
+    <PanelSection icon={ChartPieIcon} title="Posizioni" className="@container" description={insight}>
+      {weighted.length > 1 ? (
+        <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Peso di ogni posizione nel portafoglio">
+          {weighted.map((r) => (
+            <div
+              key={r.instrument.id}
+              className="h-full min-w-0.5"
+              style={{ flexGrow: r.weight ?? 0, backgroundColor: INSTRUMENT_TYPE_COLOR[r.instrument.type] }}
+              title={`${r.instrument.name} · ${percent(r.weight ?? 0)}`}
+            />
+          ))}
+        </div>
+      ) : null}
+      {rows.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nessuna posizione aperta.</p>
+      ) : (
+        <>
+          <div
+            className={cn("hidden items-center gap-x-4 border-b border-border px-4 pb-2 text-xs font-medium text-muted-foreground @3xl:grid sm:px-6", POSITIONS_GRID_COLUMNS)}
+            aria-hidden="true"
+          >
+            {COLUMN_LABELS.map((label, i) => (
+              <span key={i} className={i === 3 || i === 4 ? "text-right" : undefined}>
+                {label}
+              </span>
             ))}
           </div>
-        ) : null}
-      </CardHeader>
-      <CardContent className="p-0">
-        {rows.length === 0 ? (
-          <p className="px-6 pb-6 text-sm text-muted-foreground">Nessuna posizione aperta.</p>
-        ) : (
-          <>
-            <div
-              className={cn("hidden items-center gap-x-4 border-b border-border px-6 pb-2 text-xs font-medium text-muted-foreground @3xl:grid", POSITIONS_GRID_COLUMNS)}
-              aria-hidden="true"
-            >
-              {COLUMN_LABELS.map((label, i) => (
-                <span key={i} className={i === 3 || i === 4 ? "text-right" : undefined}>
-                  {label}
-                </span>
-              ))}
-            </div>
-            <ul className="divide-y divide-border">
-              {rows.map((row) => (
-                <PositionRowView
-                  key={row.instrument.id}
-                  row={row}
-                  currency={currency}
-                  todayKey={todayKey}
-                  loadingHistory={loading.has(row.instrument.id)}
-                  onManualPrice={onManualPrice}
-                  onRemoteLogo={() => setLogosShown(true)}
-                />
-              ))}
-            </ul>
-            {logosShown ? (
-              <p className="px-6 pt-3 text-xs text-muted-foreground">
-                Loghi forniti da{" "}
-                <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                  Logo.dev
-                </a>
-              </p>
-            ) : null}
-          </>
-        )}
-      </CardContent>
-    </Card>
+          <ul className="-mx-4 divide-y divide-border sm:-mx-6">
+            {rows.map((row) => (
+              <PositionRowView
+                key={row.instrument.id}
+                row={row}
+                currency={currency}
+                todayKey={todayKey}
+                loadingHistory={loading.has(row.instrument.id)}
+                onManualPrice={onManualPrice}
+                onRemoteLogo={() => setLogosShown(true)}
+              />
+            ))}
+          </ul>
+          {logosShown ? (
+            <p className="text-xs text-muted-foreground">
+              Loghi forniti da{" "}
+              <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                Logo.dev
+              </a>
+            </p>
+          ) : null}
+        </>
+      )}
+    </PanelSection>
   );
 }

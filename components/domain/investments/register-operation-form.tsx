@@ -20,6 +20,8 @@ import {
   useUpdateInvestmentTransactionMutation,
 } from "@/lib/queries/investments";
 import { parseAmount } from "@/lib/validation/accounts";
+import { ArrowLeftRightIcon, CoinsIcon } from "lucide-react";
+import { DialogActions, DialogSection, DialogSections } from "./dialog-parts";
 import { InstrumentPicker } from "./instrument-picker";
 import { OperationFormField as Field } from "./operation-form-field";
 import { OperationPriceField } from "./operation-price-field";
@@ -128,81 +130,90 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Field label="Tipo">
-          <Select value={type} onValueChange={(v) => v && setType(v as InvestmentTransactionType)}>
-            <SelectTrigger className="w-full" aria-label="Tipo di operazione">
-              <SelectValue>{(v: string | null) => (v ? TRANSACTION_TYPE_LABELS[v as InvestmentTransactionType] : "")}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {INVESTMENT_TRANSACTION_TYPES.filter((t) => t !== "rettifica").map((t) => (
-                <SelectItem key={t} value={t}>
-                  {TRANSACTION_TYPE_LABELS[t]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
-        <Field label="Data" htmlFor={`${id}-date`}>
-          <Input id={`${id}-date`} type="date" value={date} max={localTodayKey()} onChange={(e) => setDate(e.target.value)} />
-        </Field>
-      </div>
-      <Field label="Strumento">
-        {editing ? (
-          <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? "Strumento"}</p>
-        ) : (
-          <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
-        )}
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        {fields.quantity ? (
-          <Field label={type === "split" ? SPLIT_RATIO_LABEL : quantityLabel(instrument?.priceUnit)} htmlFor={`${id}-qty`}>
-            <Input id={`${id}-qty`} inputMode="decimal" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-          </Field>
-        ) : null}
-        {fields.price ? (
-          <OperationPriceField
-            id={`${id}-price`}
-            label={`${priceLabel(instrument?.priceUnit)}${instrument ? ` (${instrument.currency})` : ""}`}
-            value={price}
-            onChange={setPriceInput}
-            hint={priceHint}
-            restoreValue={priceInput !== null && suggested !== null && parseAmount(priceInput) !== parseAmount(suggested) ? suggested : null}
-            onRestore={() => setPriceInput(null)}
-          />
-        ) : null}
-        {fields.grossAmount ? (
-          <Field label={`Importo lordo${instrument ? ` (${instrument.currency})` : ""}`} htmlFor={`${id}-gross`}>
-            <Input id={`${id}-gross`} inputMode="decimal" value={gross} onChange={(e) => setGross(e.target.value)} />
-          </Field>
-        ) : null}
-        {fields.costs ? (
-          <>
-            <Field label={`Commissioni (${currency})`} htmlFor={`${id}-fees`}>
-              <Input id={`${id}-fees`} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" />
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <DialogSections>
+        <DialogSection title="Operazione" icon={ArrowLeftRightIcon} color="var(--swatch-indigo)">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Tipo">
+              <Select value={type} onValueChange={(v) => v && setType(v as InvestmentTransactionType)}>
+                <SelectTrigger className="w-full" aria-label="Tipo di operazione">
+                  <SelectValue>{(v: string | null) => (v ? TRANSACTION_TYPE_LABELS[v as InvestmentTransactionType] : "")}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {INVESTMENT_TRANSACTION_TYPES.filter((t) => t !== "rettifica").map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {TRANSACTION_TYPE_LABELS[t]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
-            <Field label={`Imposte trattenute (${currency})`} htmlFor={`${id}-taxes`}>
-              <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder="0" />
+            <Field label="Data" htmlFor={`${id}-date`}>
+              <Input id={`${id}-date`} type="date" value={date} max={localTodayKey()} onChange={(e) => setDate(e.target.value)} />
             </Field>
-          </>
-        ) : null}
-        {needsFx ? (
-          <Field label={`Cambio 1 ${instrument.currency} = ? ${currency}`} htmlFor={`${id}-fx`}>
-            <Input id={`${id}-fx`} inputMode="decimal" value={fxRate} onChange={(e) => setFxRate(e.target.value)} placeholder="BCE del giorno" />
+          </div>
+          <Field label="Strumento">
+            {editing ? (
+              <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? "Strumento"}</p>
+            ) : (
+              <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
+            )}
           </Field>
-        ) : null}
-      </div>
-      {type === "split" ? <p className="text-sm text-muted-foreground">{SPLIT_RATIO_HINT}</p> : null}
-      {grossValue !== null && instrument ? (
-        <p className="text-sm text-muted-foreground">
-          Controvalore: <span className="font-mono tabular-nums text-foreground">{formatCurrency(grossValue, instrument.currency)}</span>
-        </p>
-      ) : null}
+        </DialogSection>
+        <DialogSection title="Importi" icon={CoinsIcon} color="var(--swatch-amber)" description={type === "split" ? SPLIT_RATIO_HINT : undefined}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {fields.quantity ? (
+              <Field label={type === "split" ? SPLIT_RATIO_LABEL : quantityLabel(instrument?.priceUnit)} htmlFor={`${id}-qty`}>
+                <Input id={`${id}-qty`} inputMode="decimal" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+              </Field>
+            ) : null}
+            {fields.price ? (
+              <OperationPriceField
+                id={`${id}-price`}
+                label={`${priceLabel(instrument?.priceUnit)}${instrument ? ` (${instrument.currency})` : ""}`}
+                value={price}
+                onChange={setPriceInput}
+                hint={priceHint}
+                restoreValue={priceInput !== null && suggested !== null && parseAmount(priceInput) !== parseAmount(suggested) ? suggested : null}
+                onRestore={() => setPriceInput(null)}
+              />
+            ) : null}
+            {fields.grossAmount ? (
+              <Field label={`Importo lordo${instrument ? ` (${instrument.currency})` : ""}`} htmlFor={`${id}-gross`}>
+                <Input id={`${id}-gross`} inputMode="decimal" value={gross} onChange={(e) => setGross(e.target.value)} />
+              </Field>
+            ) : null}
+            {fields.costs ? (
+              <>
+                <Field label={`Commissioni (${currency})`} htmlFor={`${id}-fees`}>
+                  <Input id={`${id}-fees`} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" />
+                </Field>
+                <Field label={`Imposte trattenute (${currency})`} htmlFor={`${id}-taxes`}>
+                  <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder="0" />
+                </Field>
+              </>
+            ) : null}
+            {needsFx ? (
+              <Field label={`Cambio 1 ${instrument.currency} = ? ${currency}`} htmlFor={`${id}-fx`}>
+                <Input id={`${id}-fx`} inputMode="decimal" value={fxRate} onChange={(e) => setFxRate(e.target.value)} placeholder="BCE del giorno" />
+              </Field>
+            ) : null}
+          </div>
+        </DialogSection>
+      </DialogSections>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      <Button type="submit" disabled={save.isPending || !instrument}>
-        {editing ? (save.isPending ? "Salvataggio…" : "Salva modifiche") : save.isPending ? "Registrazione…" : "Registra operazione"}
-      </Button>
+      <DialogActions>
+        <p className="text-sm text-muted-foreground">
+          {grossValue !== null && instrument ? (
+            <>
+              Controvalore <span className="font-heading text-base font-medium tabular-nums text-foreground">{formatCurrency(grossValue, instrument.currency)}</span>
+            </>
+          ) : null}
+        </p>
+        <Button type="submit" disabled={save.isPending || !instrument}>
+          {editing ? (save.isPending ? "Salvataggio…" : "Salva modifiche") : save.isPending ? "Registrazione…" : "Registra operazione"}
+        </Button>
+      </DialogActions>
     </form>
   );
 }

@@ -4,10 +4,12 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {Dialog, DialogContent} from "@/components/ui/dialog";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { InstrumentPicker } from "./instrument-picker";
+import { GitCompareArrowsIcon } from "lucide-react";
+import { PanelDialogHeader } from "./dialog-parts";
 
 export interface BenchmarkDialogProps {
   open: boolean;
@@ -32,13 +34,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
       }}
     >
       <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Confronta con un indice</DialogTitle>
-          <DialogDescription>
-            Mettiamo gli stessi soldi, negli stessi giorni, in un altro strumento e vediamo quanto avresti oggi. Di solito si
-            sceglie un ETF azionario globale ad accumulazione (i dividendi sono già nel prezzo).
-          </DialogDescription>
-        </DialogHeader>
+        <PanelDialogHeader icon={GitCompareArrowsIcon} title="Confronta con un indice" description="Mettiamo gli stessi soldi, negli stessi giorni, in un altro strumento e vediamo quanto avresti oggi. Di solito si sceglie un ETF azionario globale ad accumulazione (i dividendi sono già nel prezzo)." color="var(--swatch-indigo)" />
         <InstrumentPicker value={current} onChange={(instrument) => save(instrument.id)} defaultCurrency={currency} />
         {update.isPending ? <p className="text-sm text-muted-foreground">Salvo e scarico i prezzi…</p> : null}
         {update.isError ? <p className="text-sm text-destructive">{update.error.message}</p> : null}

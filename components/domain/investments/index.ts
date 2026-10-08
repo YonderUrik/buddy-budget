@@ -4,6 +4,8 @@
  * Componenti della schermata Investimenti.
  */
 
+export { DialogActions, DialogSection, DialogSections, DialogSteps, PanelDialogHeader } from "./dialog-parts";
+export type { DialogActionsProps, DialogSectionProps, DialogSectionsProps, DialogStepsProps, PanelDialogHeaderProps } from "./dialog-parts";
 export { PanelSection, PANEL_DEFAULT_COLOR } from "./panel-section";
 export type { PanelSectionProps } from "./panel-section";
 export { PortfolioHeroCard } from "./portfolio-hero-card";

@@ -3,12 +3,13 @@
 /** Primo passo dell'import: carica un file CSV o incollane il contenuto; offre il modello da compilare. */
 
 import * as React from "react";
-import { DownloadIcon, UploadIcon } from "lucide-react";
+import { DownloadIcon, BuildingIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { getImportProvider, type ImportProviderId } from "@/lib/investments/import/providers";
 import { validateImportFiles } from "@/lib/investments/import/batch";
 import { templateCsv } from "@/lib/investments/import/presets";
+import { DialogSection, DialogSections } from "../dialog-parts";
 import { ImportProviderPicker } from "./import-provider-picker";
 
 export interface ImportFileStepProps {
@@ -56,16 +57,16 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-foreground">Da dove arriva il file?</p>
+    <DialogSections>
+      <DialogSection title="Da dove arriva il file?" icon={BuildingIcon} color="var(--swatch-indigo)">
         <ImportProviderPicker value={provider} onChange={onProviderChange} />
-        <p className="text-xs text-muted-foreground" aria-live="polite">
+        <p className="text-sm text-muted-foreground" aria-live="polite">
           {provider
             ? getImportProvider(provider).howTo
             : "Non sai quale scegliere? Carica il file: se è di un provider conosciuto lo riconosco da solo."}
         </p>
-      </div>
+      </DialogSection>
+      <DialogSection title="Carica il file" icon={UploadIcon} color="var(--primary)">
       <label
         htmlFor={`${id}-file`}
         onDragOver={(e) => {
@@ -95,7 +96,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
       </label>
 
       {fileError ? <p role="alert" className="text-sm text-destructive">{fileError}</p> : null}
-      <p className="text-xs text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
+      <p className="text-sm text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
       <details className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <summary className="cursor-pointer">Oppure incolla il contenuto</summary>
         <label htmlFor={`${id}-paste`} className="sr-only">
@@ -127,6 +128,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
           e compilalo con le tue operazioni.
         </div>
       ) : null}
-    </div>
+      </DialogSection>
+    </DialogSections>
   );
 }

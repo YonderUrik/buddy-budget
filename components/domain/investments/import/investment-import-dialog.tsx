@@ -11,9 +11,10 @@ import { detectImportProvider } from "@/lib/investments/import/providers";
 import { useParseStatementMutation } from "@/lib/queries/investments";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getImportProvider } from "@/lib/investments/import/providers";
-import { cn } from "@/lib/utils";
+import { UploadIcon } from "lucide-react";
+import { DialogActions, DialogSteps, PanelDialogHeader } from "../dialog-parts";
 import { ImportFileStep } from "./import-file-step";
 import { ImportInstrumentsStep } from "./import-instruments-step";
 import { ImportMappingStep } from "./import-mapping-step";
@@ -30,19 +31,7 @@ export interface InvestmentImportDialogProps {
 }
 
 function Stepper({ current, structured }: { current: ImportStep; structured: boolean }) {
-  const index = IMPORT_STEPS.indexOf(current);
-  return (
-    <ol className="flex gap-1.5" aria-label="Passi dell'import">
-      {IMPORT_STEPS.map((step, i) => (
-        <li key={step} className="flex flex-1 flex-col gap-1" aria-current={i === index ? "step" : undefined}>
-          <span className={cn("h-1 rounded-full", i <= index ? "bg-primary" : "bg-muted")} />
-          <span className={cn("text-xs", i === index ? "font-medium text-foreground" : "text-muted-foreground")}>
-            {importStepLabel(step, structured)}
-          </span>
-        </li>
-      ))}
-    </ol>
-  );
+  return <DialogSteps steps={IMPORT_STEPS.map((step) => importStepLabel(step, structured))} current={IMPORT_STEPS.indexOf(current)} ariaLabel="Passi dell'import" />;
 }
 
 function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi" }: { currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
@@ -56,7 +45,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
   const newInstruments = included.filter((i) => s.choices[i.key]?.kind === "create").length;
 
   return (
-    <div className="flex min-h-0 flex-col gap-4">
+    <div className="flex min-h-0 flex-col gap-5">
       {!s.done ? <Stepper current={s.step} structured={s.statement !== null} /> : null}
 
       <div className="min-h-0 overflow-y-auto">
@@ -102,7 +91,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 
       {s.error ? <p className="text-sm text-destructive">{s.error}</p> : null}
 
-      <div className="flex justify-between gap-2">
+      <DialogActions>
         {s.done ? (
           <Button className="ml-auto" onClick={onClose}>
             {finishLabel}
@@ -133,7 +122,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
             ) : null}
           </>
         )}
-      </div>
+      </DialogActions>
     </div>
   );
 }
@@ -167,10 +156,7 @@ export function InvestmentImportDialog({ open, onOpenChange, currency }: Investm
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
-        <DialogHeader>
-          <DialogTitle>Importa operazioni</DialogTitle>
-          <DialogDescription>Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Trade Republic, Yahoo Finance o un altro CSV.</DialogDescription>
-        </DialogHeader>
+        <PanelDialogHeader icon={UploadIcon} title="Importa operazioni" description="Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Trade Republic, Yahoo Finance o un altro CSV." color="var(--primary)" />
         {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>
     </Dialog>

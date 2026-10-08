@@ -14,11 +14,12 @@ import {
   BrokerSelector,
   InvestmentsActionsProvider,
   InvestmentsTabs,
+  PanelDialogHeader,
   RegisterOperationForm,
   type RegisterOperationInitial,
 } from "@/components/domain/investments";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usedInstruments } from "@/lib/investments/view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
@@ -63,9 +64,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
 
       <Dialog open={registerInitial !== null} onOpenChange={(open) => !open && setRegisterInitial(null)}>
         <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Registra operazione</DialogTitle>
-          </DialogHeader>
+          <PanelDialogHeader icon={Plus} title="Registra operazione" description="Un acquisto, una vendita, un dividendo o un altro movimento del portafoglio." color="var(--swatch-indigo)" />
           {registerInitial ? (
             <RegisterOperationForm
               currency={currency}

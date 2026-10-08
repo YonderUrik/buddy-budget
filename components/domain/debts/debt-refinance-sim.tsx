@@ -20,7 +20,7 @@ export interface DebtRefinanceSimProps {
 
 function Side({ title, rows }: { title: string; rows: { label: string; value: string }[] }) {
   return (
-    <div className="rounded-lg border p-3">
+    <div className="border-t pt-3">
       <p className="mb-2 text-sm font-medium text-foreground">{title}</p>
       <dl className="flex flex-col gap-1">
         {rows.map((row) => (

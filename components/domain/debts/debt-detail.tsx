@@ -3,7 +3,7 @@
 /** Dettaglio di un finanziamento: cifre, avviso sulle rate da confermare, piano rata per rata, registro eventi e azioni. */
 
 import * as React from "react";
-import { PercentIcon, PiggyBankIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
+import { CalendarRangeIcon, HistoryIcon, PercentIcon, PiggyBankIcon, SlidersHorizontalIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -16,10 +16,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PanelSection } from "@/components/domain/investments";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
+import { cn } from "@/lib/utils";
 import { useBulkPayDebtMutation, useDeleteDebtEventMutation, useDeleteDebtMutation } from "@/lib/queries/debts";
 import { DebtEventDialog, type DebtEventDialogKind } from "./debt-event-dialog";
 import { DebtEventsList } from "./debt-events-list";
@@ -30,6 +31,7 @@ import { DebtPlanTable } from "./debt-plan-table";
 import { EarlyRepaymentDialog } from "./early-repayment-dialog";
 import { PayInstallmentDialog } from "./pay-installment-dialog";
 import { START_MODE_LABELS } from "./debt-status";
+import { DEBTS_COLORS } from "./debts-theme";
 
 export interface DebtDetailProps {
   debt: DebtView;
@@ -49,10 +51,10 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
   const deleteDebt = useDeleteDebtMutation();
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-2">
+    <div className="flex flex-col gap-8 sm:gap-10">
+      <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <CardTitle className="font-heading text-lg font-medium text-foreground">{debt.name}</CardTitle>
+          <h2 className="font-heading text-xl font-medium text-foreground">{debt.name}</h2>
           <p className="text-xs text-muted-foreground">{START_MODE_LABELS[debt.startMode]}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -73,33 +75,37 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
             Elimina
           </Button>
         </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
-        <DebtFacts debt={debt} currency={currency} />
-        <DebtPendingBanner
-          plan={debt.plan}
-          pending={bulk.isPending}
-          onMarkAll={(upTo) =>
-            bulk.mutate(
-              { debtId: debt.id, upToInstallment: upTo },
-              { onSuccess: ({ count }) => toast.success(count === 1 ? "Una rata segnata come pagata" : `${count} rate segnate come pagate`), onError: (e) => toast.error(e.message) }
-            )
-          }
-        />
-        {debt.plan.totals.finished ? null : <DebtSimulationPanel debt={debt} currency={currency} onOpenEarly={() => setEarlyOpen(true)} />}
-        <section aria-label="Piano delle rate" className="flex flex-col gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Piano delle rate</h3>
-          <DebtPlanTable rows={debt.plan.rows} currency={currency} today={today} onPay={setPayRow} />
-        </section>
-        <section aria-label="Eventi" className="flex flex-col gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cosa hai registrato</h3>
-          <DebtEventsList
-            events={debt.events}
-            currency={currency}
-            onDelete={(eventId) => deleteEvent.mutate({ debtId: debt.id, eventId }, { onError: (e) => toast.error(e.message) })}
-          />
-        </section>
-      </CardContent>
+      </header>
+      <DebtFacts debt={debt} currency={currency} />
+      <DebtPendingBanner
+        plan={debt.plan}
+        pending={bulk.isPending}
+        onMarkAll={(upTo) =>
+          bulk.mutate(
+            { debtId: debt.id, upToInstallment: upTo },
+            { onSuccess: ({ count }) => toast.success(count === 1 ? "Una rata segnata come pagata" : `${count} rate segnate come pagate`), onError: (e) => toast.error(e.message) }
+          )
+        }
+      />
+      <div className="grid grid-cols-1 items-start gap-x-10 gap-y-10 lg:grid-cols-5">
+        {debt.plan.totals.finished ? null : (
+          <div className="min-w-0 lg:col-span-3">
+            <DebtSimulationPanel debt={debt} currency={currency} onOpenEarly={() => setEarlyOpen(true)} />
+          </div>
+        )}
+        <div className={cn("min-w-0", debt.plan.totals.finished ? "lg:col-span-5" : "lg:col-span-2")}>
+          <PanelSection icon={HistoryIcon} title="Cosa hai registrato" color={DEBTS_COLORS.events}>
+            <DebtEventsList
+              events={debt.events}
+              currency={currency}
+              onDelete={(eventId) => deleteEvent.mutate({ debtId: debt.id, eventId }, { onError: (e) => toast.error(e.message) })}
+            />
+          </PanelSection>
+        </div>
+      </div>
+      <PanelSection icon={CalendarRangeIcon} title="Piano delle rate" color={DEBTS_COLORS.plan}>
+        <DebtPlanTable rows={debt.plan.rows} currency={currency} today={today} onPay={setPayRow} />
+      </PanelSection>
 
       <PayInstallmentDialog debtId={debt.id} row={payRow} currency={currency} onOpenChange={(open) => !open && setPayRow(null)} />
       <EarlyRepaymentDialog debt={debt} currency={currency} open={earlyOpen} onOpenChange={setEarlyOpen} />
@@ -120,6 +126,6 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </div>
   );
 }

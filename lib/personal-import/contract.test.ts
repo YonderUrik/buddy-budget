@@ -20,6 +20,7 @@ describe("personal CSV validation and sandbox", () => {
   });
   it("requires exactly one outcome per row and validates real dates and amounts", () => {
     expect(validateOutcomes([cash], table)).toEqual([cash]);
+    expect(validateOutcomes([{ ...cash, amount: 0 }], table)[0]).toMatchObject({ amount: 0 });
     for (const output of [[], [cash, cash], [{ ...cash, row: 1 }], [{ ...cash, date: "2024-02-30" }], [{ ...cash, date: "2099-01-01" }], [{ ...cash, amount: Infinity }]]) expect(() => validateOutcomes(output, table)).toThrow();
   });
   it("runs a declarative mapping and refuses malformed financial numbers", async () => {
@@ -53,6 +54,16 @@ describe("personal CSV validation and sandbox", () => {
     await generateParser(table);
     const body = JSON.parse(fetcher.mock.calls[0][1].body);
     expect(body.model).toBe("configured/model"); expect(body.provider).toMatchObject({ zdr: true, data_collection: "deny" });
-    expect(body.max_tokens).toBeLessThanOrEqual(10000);
+    expect(body.max_tokens).toBeLessThanOrEqual(32768);
   });
+  it("reserves output for DeepSeek and rejects truncated completions explicitly", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "synthetic-key"); vi.stubEnv("OPENROUTER_MODEL", "deepseek/deepseek-v4.1-flash");
+    const fetcher = vi.fn().mockResolvedValue(Response.json({ choices: [{ finish_reason: "length", message: { content: null } }] })); vi.stubGlobal("fetch", fetcher);
+    await expect(generateParser(table)).rejects.toThrow("budget di generazione");
+    const body = JSON.parse(fetcher.mock.calls[0][1].body);
+    expect(body.reasoning).toEqual({ enabled: false, exclude: true });
+    expect(body.provider.zdr).toBe(true);
+    expect(body.max_tokens).toBe(32768);
+  });
+
 });

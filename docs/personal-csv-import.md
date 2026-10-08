@@ -8,7 +8,7 @@ L’interfaccia mostra circa un’ora e il relativo orario locale di completamen
 
 App e worker: `DATABASE_URL`, `PERSONAL_CSV_ENCRYPTION_KEY` (32 byte casuali in base64). Generarla una volta con `openssl rand -base64 32`; conservarla come secret e in backup. La rotazione richiede ricifrare i dati con vecchia e nuova chiave; sostituirla direttamente rende i parser esistenti illeggibili.
 
-Modello scelto: [DeepSeek V4.1 Flash](https://openrouter.ai/deepseek/deepseek-v4.1-flash), configurato con `OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash`. Resta modificabile tramite variabile ambiente.
+Modello scelto: [DeepSeek V4.1 Flash](https://openrouter.ai/deepseek/deepseek-v4.1-flash), configurato con `OPENROUTER_MODEL=deepseek/deepseek-v4.1-flash`. Resta modificabile tramite variabile ambiente. Per DeepSeek il worker disabilita il ragionamento opzionale, che sul CSV completo può consumare tutto il budget senza produrre codice e riserva 32.768 token complessivi alla generazione (timeout 240 secondi); una risposta troncata viene segnalata esplicitamente senza importare dati.
 
 Solo worker: `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `RESEND_API_KEY`, `RESEND_FROM`, `APP_URL`; eventuali credenziali dei provider cambi già previsti dal progetto. Il modello deve supportare JSON mode tramite un provider che accetta `zdr: true`, `data_collection: deny`, `require_parameters: true`. Non c’è fallback a provider con conservazione dei dati. Il contesto del modello deve contenere l’intero CSV; se il provider rifiuta l’input, il job fallisce con un messaggio esplicito, senza troncare il file. La chiave OpenRouter non serve nel pod web.
 

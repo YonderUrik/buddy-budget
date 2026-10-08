@@ -21,20 +21,24 @@ export async function processOne() {
   const job = await db.transaction(async tx => {
     const [candidate] = await tx.select().from(jobs).where(sql`(${jobs.status} = 'queued' AND ${jobs.availableAt} <= now() OR ${jobs.status} = 'processing' AND ${jobs.leaseUntil} < now()) AND ${jobs.expiresAt} > now()`).orderBy(jobs.createdAt).limit(1).for("update", { skipLocked: true });
     if (!candidate) return null;
-    const [claimed] = await tx.update(jobs).set({ status: "processing", lease, leaseUntil: new Date(Date.now() + 5 * 60000), attempts: candidate.attempts + 1 }).where(eq(jobs.id, candidate.id)).returning();
+    const [claimed] = await tx.update(jobs).set({ status: "processing", error: null, lease, leaseUntil: new Date(Date.now() + 5 * 60000), attempts: candidate.attempts + 1 }).where(eq(jobs.id, candidate.id)).returning();
     return claimed;
   });
   if (!job) return false;
   const owned = and(eq(jobs.id, job.id), eq(jobs.lease, lease), eq(jobs.status, "processing"));
   logger.info("personal_import.started", { jobId: job.id });
+  let phase = "read";
   try {
     if (job.attempts > 3 || !job.encryptedCsv) throw new Error("Tentativi esauriti");
     const table = readTable(unseal(job.encryptedCsv, job.userId));
     const [saved] = job.parserId ? await db.select().from(parsers).where(and(eq(parsers.id, job.parserId), eq(parsers.formatId, job.formatId))) : [];
+    phase = "generate";
     const generated = saved ? { parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model } : await generateParser(table);
+    phase = "execute";
     const outcomes = await executeParser(generated.parser, table);
     const repeated = await executeParser(generated.parser, table);
     if (JSON.stringify(outcomes) !== JSON.stringify(repeated)) throw new Error("Parser non deterministico");
+    phase = "fx";
     const currency = await getUserCurrency(job.userId);
     const fx = await resolveFxRates(outcomes.flatMap(o => o.kind === "cash" || o.kind === "investment" ? [{ line: o.row, date: o.date, currency: o.currency }] : []), {
       userCurrency: currency, todayKey: todayKey(), createInstrument: async () => { throw new Error("unused"); }, ensureHistory: async () => {},
@@ -44,6 +48,7 @@ export async function processOne() {
     const occurrences = new Map<string, number>();
     const records = table.rows.map((row, i) => { const hash = digest(JSON.stringify(row)); const n = (occurrences.get(hash) ?? 0) + 1; occurrences.set(hash, n); return { key: `${hash}:${n}`, source: row, outcome: outcomes[i], rate: fx.get(i) ?? null }; });
     const errors = outcomes.filter(o => o.kind === "error");
+    phase = "persist";
     await db.transaction(async tx => {
       const [current] = await tx.select().from(jobs).where(owned).for("update");
       if (!current) return;
@@ -57,7 +62,7 @@ export async function processOne() {
   } catch (error) {
     const terminal = job.attempts >= 3 || error instanceof ModelInputError;
     await db.update(jobs).set({ status: terminal ? "failed" : "queued", error: error instanceof ModelInputError ? error.message : "Analisi non riuscita. Verifica il CSV e riprova; nessun movimento è stato importato.", availableAt: new Date(Date.now() + job.attempts * 60000), encryptedCsv: terminal ? null : job.encryptedCsv, lease: null, leaseUntil: null }).where(owned);
-    logger.warn("personal_import.failed", { jobId: job.id, reason: "analysis_failed" });
+    logger.warn("personal_import.failed", { jobId: job.id, reason: "analysis_failed", phase });
   }
   return true;
 }

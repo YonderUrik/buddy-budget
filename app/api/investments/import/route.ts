@@ -1,17 +1,24 @@
 import { NextRequest, after } from "next/server";
+import { and, eq, min } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db/client";
+import { investmentTransactions } from "@/lib/db/schema/investments";
 import { ensureHistorySafely } from "@/lib/investments/history";
 import { runStatementImport } from "@/lib/investments/import/execute-statement";
 import { runImport } from "@/lib/investments/import/execute";
 import { createOrReuseInstrument } from "@/lib/investments/instruments";
+import type { IsinListingsDeps } from "@/lib/investments/isin-listings";
+import { autoLinkQuotation } from "@/lib/investments/link-quotation";
 import { getUserCurrency, todayKey } from "@/lib/investments/operations";
-import { marketDataDeps, quoteMetaOnProviders } from "@/lib/market-data/runtime";
+import { listingsOnOpenFigi, marketDataDeps, quoteMetaOnProviders } from "@/lib/market-data/runtime";
 import { updateFxRates } from "@/lib/market-data/update";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { runImportSchema } from "@/lib/validation/investments-import";
 
 // Il recupero dello storico degli strumenti importati gira in after().
 export const maxDuration = 300;
+
+const quotationDeps: IsinListingsDeps = { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders };
 
 /**
  * Import in blocco di operazioni lette da un file. `dryRun: true` restituisce solo l'anteprima (nuove, doppioni,
@@ -41,7 +48,18 @@ async function handlePost(request: NextRequest) {
         requestLogger().warn("market.fx.failed", { error });
       }
     },
-    ensureHistory: (instrument, from) => ensureHistorySafely(instrument, from, after),
+    ensureHistory: async (instrument, from) => {
+      // Uno strumento manuale con ISIN già nel catalogo dell'utente si collega alla quotazione verificata, come dal
+      // pulsante «Cerca la quotazione»; lo storico riparte dalla sua prima operazione, anche precedente al file.
+      const linked = await autoLinkQuotation(instrument, userId, quotationDeps);
+      if (!linked) return ensureHistorySafely(instrument, from, after);
+      requestLogger().info("instrument.quotation.linked", { provider: "yahoo", symbol: linked.candidate.symbol });
+      const [first] = await db
+        .select({ date: min(investmentTransactions.date) })
+        .from(investmentTransactions)
+        .where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.instrumentId, instrument.id)));
+      return ensureHistorySafely(linked.instrument, first?.date && first.date < from ? first.date : from, after);
+    },
   });
 
   if (result.error) return Response.json(result, { status: 422 });

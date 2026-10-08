@@ -1,15 +1,11 @@
 "use client";
 
-/**
- * Card "Quanto sta rendendo": rendimento del portafoglio (TWR), dei tuoi soldi (money-weighted), al netto
- * dell'inflazione e confronto con un indice a parità di versamenti, sullo stesso periodo della card principale.
- */
-
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { PortfolioReturns } from "@/lib/calc/returns";
 import type { Instrument } from "@/lib/db/schema/investments";
+import { formatDateWithYear } from "@/lib/format";
+import type { PortfolioChartRange } from "@/lib/investments/chart-period";
 import { formatMonthLabel } from "@/lib/investments/operations-history";
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
 import { benchmarkWait, timingInsight } from "@/lib/investments/returns-insights";
@@ -20,80 +16,68 @@ import { formatSignedPct } from "./gain-text";
 import { ReturnMetric } from "./return-metric";
 import { ReturnsChart } from "./returns-chart";
 
-/** "fino a settembre 2026", "fino ad agosto 2026": "ad" davanti ai mesi che iniziano per vocale. */
-function untilMonth(month: string): string {
-  const label = formatMonthLabel(month).toLowerCase();
-  return `fino ${/^[aeiou]/.test(label) ? "ad" : "a"} ${label}`;
-}
-
-const PERIOD_LABELS: Record<NetWorthPeriod, string> = {
-  "1mese": "Nell'ultimo mese",
-  "3mesi": "Negli ultimi 3 mesi",
-  "1anno": "Nell'ultimo anno",
-  max: "Dalla prima operazione",
-};
-
 export interface ReturnsCardProps {
   returns: PortfolioReturns;
-  period: NetWorthPeriod;
+  inspected: PortfolioReturns | null;
+  onInspect: (date: string | null) => void;
+  onSelectRange: (range: PortfolioChartRange) => void;
   benchmark: Instrument | null;
-  /** Primo prezzo caricato del benchmark, per spiegare un confronto che non parte. */
   benchmarkFirstPriceDate: string | null;
-  /** Stato del recupero dello storico del benchmark: undefined finché non è stato letto. */
   benchmarkBackfill: BackfillStateView | null | undefined;
   currency: string;
 }
 
-export function ReturnsCard({ returns, period, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency }: ReturnsCardProps) {
+/** Tipi di rendimento espliciti; i numeri seguono la data ispezionata senza spostare il grafico. */
+export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency }: ReturnsCardProps) {
   const [choosing, setChoosing] = React.useState(false);
   const retry = useUpdatePortfolioMutation();
-  const wait = benchmarkWait({ backfill: benchmarkBackfill, firstPriceDate: benchmarkFirstPriceDate, baseKey: returns.baseKey });
-  const insight = timingInsight(returns.twr, returns.moneyWeighted);
-  const { real } = returns;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Quanto sta rendendo</CardTitle>
-        <p className="text-sm text-muted-foreground">{PERIOD_LABELS[period]}</p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          <ReturnMetric
-            label="Il portafoglio"
-            value={returns.twr}
-            annual={returns.twrAnnual}
-            hint="Quanto hanno reso gli strumenti che hai scelto, a prescindere da quando e quanto hai versato. È il numero da confrontare con un indice o un fondo."
-          />
-          <ReturnMetric
-            label="I tuoi soldi"
-            value={returns.moneyWeighted}
-            annual={returns.moneyWeightedAnnual}
-            hint="Il rendimento che hai ottenuto davvero: tiene conto di quando hai messo i soldi. Se hai versato molto poco prima di un calo è più basso di quello del portafoglio."
-          />
-          {real ? (
-            <ReturnMetric
-              label="Tolta l'inflazione"
-              value={real.value}
-              note={`Inflazione ${formatSignedPct(real.inflation)} ${untilMonth(real.throughMonth)}`}
-              hint="Il rendimento del portafoglio al netto dell'aumento dei prezzi in Italia (indice Eurostat). Se è positivo, con quei soldi oggi compri più cose di prima."
-            />
-          ) : null}
-        </div>
-        {insight ? <p className="text-sm text-muted-foreground">{insight}</p> : null}
-        <BenchmarkSummary
-          status={returns.benchmarkStatus}
-          comparison={returns.benchmark}
-          benchmarkName={benchmark?.name ?? null}
-          currency={currency}
-          wait={wait}
-          onChoose={() => setChoosing(true)}
-          onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })}
-          retrying={retry.isPending}
+  const values = inspected ?? returns;
+  const wait = benchmarkWait({ backfill: benchmarkBackfill, firstPriceDate: benchmarkFirstPriceDate, baseKey: values.baseKey });
+  const insight = timingInsight(values.twr, values.moneyWeighted);
+  const dates = values.days === 0 ? `Valore iniziale al ${formatDateWithYear(values.baseKey)}`
+    : `${formatDateWithYear(values.fromKey)} – ${formatDateWithYear(values.toKey)}`;
+  const { real } = values;
+  return <Card>
+    <CardHeader>
+      <CardTitle className="text-base font-semibold">Rendimenti del periodo</CardTitle>
+      <p className="text-sm text-muted-foreground" data-testid="performance-summary-period">
+        {inspected ? "Anteprima dal grafico" : "Periodo del grafico"} · {dates}
+      </p>
+      <p className="text-xs text-muted-foreground">Importi e rendimenti in {currency}. Passa su un numero per capire cosa misura.</p>
+    </CardHeader>
+    <CardContent className="flex flex-col gap-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <ReturnMetric
+          label="Portafoglio · TWR"
+          value={values.twr}
+          annual={values.twrAnnual}
+          periodLabel={dates}
+          description="La performance degli investimenti. È la linea del grafico."
+          hint="Il rendimento ponderato per il tempo (TWR) concatena i rendimenti giornalieri e neutralizza acquisti e vendite. Misura la performance degli strumenti, senza dare più peso ai giorni in cui avevi più soldi investiti. È il valore da confrontare con un indice."
         />
-        {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmark?.name ?? null : null} /> : null}
-      </CardContent>
-      <BenchmarkDialog open={choosing} onOpenChange={setChoosing} current={benchmark} currency={currency} />
-    </Card>
-  );
+        <ReturnMetric
+          label="I tuoi versamenti · MWR"
+          value={values.moneyWeighted}
+          annual={values.moneyWeightedAnnual}
+          periodLabel={dates}
+          description="Tiene conto di quanto e quando hai investito."
+          hint="Il rendimento ponderato per il denaro (MWR), calcolato con XIRR e riportato alla durata del periodo, considera importi e date dei tuoi movimenti. Può differire dal TWR se hai investito di più prima di un rialzo o di un calo. Non è la linea del grafico. Se non esiste un tasso calcolabile, mostriamo un trattino."
+        />
+        <ReturnMetric
+          label="Potere d’acquisto · Reale"
+          value={real?.value ?? null}
+          periodLabel={dates}
+          note={real ? `Inflazione ${formatSignedPct(real.inflation)} fino a ${formatMonthLabel(real.throughMonth).toLowerCase()}` : "Dati sull’inflazione insufficienti per questo intervallo."}
+          description="Il TWR dopo l’effetto dell’inflazione."
+          hint="Corregge il rendimento TWR per l’aumento dei prezzi in Italia (indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico."
+        />
+      </div>
+      <p className="min-h-5 text-sm text-muted-foreground">{insight ?? "TWR e MWR misurano aspetti diversi dello stesso periodo."}</p>
+      <BenchmarkSummary status={values.benchmarkStatus} comparison={values.benchmark} asOf={values.toKey}
+        benchmarkName={benchmark?.name ?? null} currency={currency} wait={wait}
+        onChoose={() => setChoosing(true)} onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })} retrying={retry.isPending} />
+      {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmark?.name ?? null : null} onInspect={onInspect} onSelectRange={onSelectRange} /> : null}
+    </CardContent>
+    <BenchmarkDialog open={choosing} onOpenChange={setChoosing} current={benchmark} currency={currency} />
+  </Card>;
 }

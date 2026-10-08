@@ -221,6 +221,47 @@ describe("computePortfolioReturns", () => {
     expect(returns.twrAnnual).toBeNull();
   });
 
+  it("ricalcola TWR, MWR e benchmark sull’intervallo, escludendo prezzi e flussi successivi", () => {
+    const common = { transactions, instruments: [ETF], priceIndex, fx, userCurrency: "EUR", period: "max" as const, today, benchmark: INDEX };
+    const selected = computePortfolioReturns({ ...common, range: { from: "2025-06-01", to: "2025-12-31" } })!;
+    expect(selected.fromKey).toBe("2025-06-01");
+    expect(selected.baseKey).toBe("2025-05-31");
+    expect(selected.toKey).toBe("2025-12-31");
+    expect(selected.twr).toBeCloseTo(0.1);
+    expect(selected.benchmark!.portfolioValue).toBeCloseTo(2200);
+    expect(selected.benchmark!.simulatedValue).toBeCloseTo(2100);
+    expect(selected.benchmark!.twr).toBe(0);
+    expect(selected.moneyWeighted).not.toBe(computePortfolioReturns(common)!.moneyWeighted);
+    expect(selected.twrAnnual).toBeNull();
+    expect(selected.daily[0].date).toBe("2025-06-01");
+    expect(selected.daily.at(-1)!.date).toBe("2025-12-31");
+    expect(selected.series.at(-1)!.portfolio).toBeCloseTo(selected.twr!);
+  });
+
+  it("l’anteprima segue ogni punto del grafico, inclusa la base, senza cambiare l’inizio", () => {
+    const common = { transactions, instruments: [ETF], priceIndex, fx, userCurrency: "EUR", period: "max" as const, today, benchmark: INDEX,
+      range: { from: "2025-06-01", to: "2026-01-02" }, dailySeries: true };
+    const full = computePortfolioReturns(common)!;
+    for (const point of full.series) {
+      const inspected = computePortfolioReturns({ ...common, asOf: point.date })!;
+      expect(inspected.baseKey).toBe(full.baseKey);
+      expect(inspected.toKey).toBe(point.date);
+      expect(inspected.twr).toBeCloseTo(point.portfolio);
+      expect(inspected.benchmark!.twr).toBeCloseTo(point.benchmark!);
+    }
+    const base = computePortfolioReturns({ ...common, asOf: full.baseKey })!;
+    expect(base.twr).toBe(0);
+    expect(base.moneyWeighted).toBeNull();
+    expect(base.days).toBe(0);
+    expect(base.benchmark!.portfolioValue).toBe(1000);
+    expect(full.toKey).toBe("2026-01-02");
+  });
+
+  it("un intervallo senza operazioni non inventa rendimenti", () => {
+    expect(computePortfolioReturns({ transactions, instruments: [ETF], priceIndex, fx, userCurrency: "EUR", period: "max", today,
+      range: { from: "2024-01-01", to: "2024-12-31" } })).toBeNull();
+  });
+
   it("senza operazioni non c'è niente da calcolare", () => {
     expect(
       computePortfolioReturns({ transactions: [], instruments: [ETF], priceIndex: new Map(), fx, userCurrency: "EUR", period: "max", today })

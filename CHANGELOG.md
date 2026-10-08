@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.26.0](https://github.com/YonderUrik/buddy-budget/compare/v0.25.0...v0.26.0) (2026-10-08)
+
+
+### Novità
+
+* collega gli strumenti importati a una quotazione con OpenFIGI ([#207](https://github.com/YonderUrik/buddy-budget/issues/207)) ([242ca1f](https://github.com/YonderUrik/buddy-budget/commit/242ca1fac8bebca7288ddd7e469bf247c4d1692c))
+
 ## [0.25.0](https://github.com/YonderUrik/buddy-budget/compare/v0.24.0...v0.25.0) (2026-10-08)
 
 

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.23.0](https://github.com/YonderUrik/buddy-budget/compare/v0.22.0...v0.23.0) (2026-10-08)
+
+
+### Novità
+
+* rimuove Pianifica e trasforma Da sistemare in un badge su Movimenti ([#183](https://github.com/YonderUrik/buddy-budget/issues/183)) ([4300840](https://github.com/YonderUrik/buddy-budget/commit/4300840358343cb9f5ef81f74ab198008013ebf8))
+
 ## [0.22.0](https://github.com/YonderUrik/buddy-budget/compare/v0.21.0...v0.22.0) (2026-10-08)
 
 

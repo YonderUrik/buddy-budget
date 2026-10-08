@@ -105,6 +105,14 @@ export function fakeQuoteMeta(symbol: string): { currency: string; exchange: str
   return { currency: "EUR", exchange: suffix === "MI" ? "MIL" : "GER" };
 }
 
+/** Quotazioni finte di qualunque ISIN: Milano (EUR) e Londra (GBP), per provare il collegamento in sviluppo. */
+export function fakeListings(): { yahooSymbol: string; exchCode: string; name: string | null; securityType: string | null }[] {
+  return [
+    { yahooSymbol: "SWDA.MI", exchCode: "IM", name: "ISHARES CORE MSCI WORLD", securityType: "Mutual Fund" },
+    { yahooSymbol: "SWDA.L", exchCode: "LN", name: "ISHARES CORE MSCI WORLD", securityType: "Mutual Fund" },
+  ];
+}
+
 /** Crypto finte per la ricerca. */
 export function fakeCryptoSearch(query: string): { id: string; name: string; symbol: string }[] {
   const all = [

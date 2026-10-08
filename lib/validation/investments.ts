@@ -251,3 +251,7 @@ export const createPriceAlertSchema = z.object({
   targetPrice: z.number().positive().max(1e12),
 });
 export type CreatePriceAlertInput = z.infer<typeof createPriceAlertSchema>;
+
+/** Collegamento di uno strumento manuale a una quotazione Yahoo (il server la riconferma). */
+export const linkQuotationSchema = z.object({ yahooSymbol: z.string().trim().min(1).max(40) });
+export type LinkQuotationInput = z.infer<typeof linkQuotationSchema>;

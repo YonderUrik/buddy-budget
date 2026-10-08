@@ -12,6 +12,8 @@ export { TitlePositionCard } from "./title-position-card";
 export type { TitlePositionCardProps } from "./title-position-card";
 export { TitleAlertsCard, parseTargetInput } from "./title-alerts-card";
 export type { TitleAlertsCardProps } from "./title-alerts-card";
+export { TitleQuotationCard } from "./title-quotation-card";
+export type { TitleQuotationCardProps } from "./title-quotation-card";
 export { TitleCommentaryCard } from "./title-commentary-card";
 export type { TitleCommentaryCardProps } from "./title-commentary-card";
 export { TitleSparkline } from "./title-sparkline";

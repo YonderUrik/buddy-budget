@@ -9,7 +9,7 @@ import { AppShot } from "./app-shot";
 import { TrackedSection } from "./tracked-section";
 
 /** Ordine e titoli dei gruppi, come la sidebar dell'app. */
-const AREAS = ["Panoramica", "Conti", "Movimenti", "Investimenti", "Pensione", "Debiti", "Analitiche"] as const;
+const AREAS = ["Panoramica", "Liquidità", "Investimenti", "Pensione", "Debiti", "Analitiche"] as const;
 
 /**
  * Galleria di tutte le schermate dell'app: sono screenshot veri (vedi `docs/landing-screens.md`), non disegni.

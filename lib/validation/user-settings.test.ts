@@ -4,7 +4,7 @@ import { updateUserSettingsSchema } from "./user-settings";
 describe("updateUserSettingsSchema", () => {
   it("accetta aggiornamenti parziali validi e toglie gli spazi dal nome", () => {
     expect(updateUserSettingsSchema.parse({ name: "  Anna  " })).toEqual({ name: "Anna" });
-    expect(updateUserSettingsSchema.parse({ currency: "CHF", homePage: "/conti" })).toEqual({ currency: "CHF", homePage: "/conti" });
+    expect(updateUserSettingsSchema.parse({ currency: "CHF", homePage: "/liquidita/conti" })).toEqual({ currency: "CHF", homePage: "/liquidita/conti" });
   });
 
   it.each([

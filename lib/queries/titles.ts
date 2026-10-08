@@ -114,3 +114,42 @@ export function useCommentaryMutation(instrumentId: string) {
     onSuccess: () => track("title_commentary_requested"),
   });
 }
+
+/** Esito della ricerca delle quotazioni di uno strumento manuale. */
+export type QuotationCandidatesResponse =
+  | { status: "ok"; candidates: { symbol: string; exchange: string | null; currency: string }[] }
+  | { status: "empty" | "unavailable" };
+
+/** Quotazioni proposte per collegare uno strumento manuale (si carica solo quando `enabled`, cioè a richiesta). */
+export function useQuotationCandidatesQuery(instrumentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...TITLES_KEY, "quotation", instrumentId],
+    enabled,
+    staleTime: 5 * 60_000,
+    queryFn: async (): Promise<QuotationCandidatesResponse> => {
+      const response = await fetch(`/api/instruments/${instrumentId}/quotation`);
+      if (!response.ok) throw await readError(response, "Impossibile cercare le quotazioni");
+      return response.json();
+    },
+  });
+}
+
+/** Collega lo strumento manuale a una quotazione: da lì i prezzi sono automatici. */
+export function useLinkQuotationMutation(instrumentId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (yahooSymbol: string) => {
+      const response = await fetch(`/api/instruments/${instrumentId}/quotation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ yahooSymbol }),
+      });
+      if (!response.ok) throw await readError(response, "Impossibile collegare la quotazione");
+    },
+    onSuccess: () => {
+      track("instrument_quotation_linked");
+      // Prezzi, rendimenti e diversificazione cambiano: si ricarica tutta la sezione investimenti.
+      return queryClient.invalidateQueries({ queryKey: ["investments"] });
+    },
+  });
+}

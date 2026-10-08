@@ -35,7 +35,11 @@ function ChoiceDescription({ choice }: { choice: InstrumentChoice | undefined })
   if (choice.kind === "known") {
     return (
       <p className="text-sm text-foreground">
-        {choice.instrument.name} <span className="text-muted-foreground">· già tra i tuoi strumenti</span>
+        {choice.instrument.name}{" "}
+        <span className="text-muted-foreground">
+          · già tra i tuoi strumenti
+          {choice.instrument.priceMode === "manuale" && choice.instrument.isin ? " con prezzi manuali: all'import provo a collegare la quotazione" : ""}
+        </span>
       </p>
     );
   }

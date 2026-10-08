@@ -35,6 +35,7 @@ export function parseTradeRepublic(text: string, today: string): ActivityStateme
   const cashMovements: TradeRepublicCashMovement[] = [];
   const seen = new Set<string>();
   const dates: string[] = [];
+  let freeReceipts = 0;
   for (const r of rows) {
     const fail = (message: string): never => { throw new Error(`Riga ${r.line}: ${message}`); };
     if (r.cells.length !== headers.length) fail("numero colonne non valido");
@@ -46,7 +47,7 @@ export function parseTradeRepublic(text: string, today: string): ActivityStateme
       return Number(raw);
     };
     const date = parseDate(v("date"), "ymd");
-    if (!date || date > today || !/^\d{4}-\d{2}-\d{2}T/.test(v("datetime")) || !Number.isFinite(Date.parse(v("datetime"))) || Math.abs(Date.parse(v("datetime").slice(0, 10)) - Date.parse(date)) > 86400000) fail("data non valida o futura");
+    if (!date || date > today || !/^\d{4}-\d{2}-\d{2}T/.test(v("datetime")) || !Number.isFinite(Date.parse(v("datetime"))) || Date.parse(date) - Date.parse(v("datetime").slice(0, 10)) > 86400000) fail("data non valida o futura");
     dates.push(date!);
     if (v("account_type") !== "DEFAULT") fail("tipo di conto non supportato: esporta il conto principale separatamente");
     const id = v("transaction_id");
@@ -54,13 +55,25 @@ export function parseTradeRepublic(text: string, today: string): ActivityStateme
     seen.add(id);
     const currency = v("currency");
     if (!/^[A-Z]{3}$/.test(currency)) fail("valuta non valida");
-    const amount = n("amount"), fee = n("fee", true), tax = n("tax", true);
     const type = v("type");
+    // Crypto delivered for free (staking rewards, transfers in) carries no cash leg: amount, fee and tax are empty.
+    const freeReceipt = v("category") === "DELIVERY" && type === "FREE_RECEIPT";
+    const amount = n("amount", freeReceipt), fee = n("fee", true), tax = n("tax", true);
     const description = v("name") || v("counterparty_name") || v("payment_reference") || v("description") || type;
     // amount is the gross cash leg; fee and tax are separate signed cash components.
     const net = amount + fee + tax;
     ledger.push({ line: r.line, date: date!, currency, amount: net, kind: type, description });
-    if (v("category") === "TRADING") {
+    if (freeReceipt) {
+      if (v("asset_class") !== "CRYPTO") fail(`classe di investimento non supportata: ${v("asset_class")}`);
+      if (amount || fee || tax) fail("ricezione gratuita con importi di cassa");
+      const symbol = v("symbol"), quantity = n("shares"), price = n("price");
+      if (!symbol || quantity <= 0 || price <= 0) fail("simbolo, quantità o prezzo non validi");
+      const key = `crypto:${symbol}:${currency}`;
+      identities.set(key, { key, symbol, isin: null, currency, name: v("name"), symbolIsYahoo: false, type: "crypto" });
+      // Recorded as a purchase at the market price of the day, without moving cash.
+      operations.push({ key, line: r.line, date: date!, type: "acquisto", quantity, price, grossAmount: null, fees: 0, taxes: 0, sourceCurrency: currency, note: "Ricevuta gratuita (staking o trasferimento in ingresso)" });
+      freeReceipts++;
+    } else if (v("category") === "TRADING") {
       if (!["BUY", "SELL"].includes(type)) fail(`operazione investimento non supportata: ${type}`);
       const asset = v("asset_class");
       if (!["STOCK", "FUND", "CRYPTO"].includes(asset)) fail(`classe di investimento non supportata: ${asset}`);
@@ -82,7 +95,7 @@ export function parseTradeRepublic(text: string, today: string): ActivityStateme
     const closing = ledger.filter((r) => r.currency === currency).reduce((sum, r) => sum + r.amount, 0);
     return { currency, opening: 0, closing, calculated: closing, difference: 0 };
   });
-  return { preset: "trade-republic", identities: [...identities.values()], operations, cashMovements, issues: [], records: csv.map((r, i) => ({ line: r.line, section: "Trade Republic", kind: i ? "Data" : "Header", headers, values: r.cells })), statement: {
+  return { preset: "trade-republic", identities: [...identities.values()], operations, cashMovements, issues: freeReceipts ? [{ line: 0, section: "Trade Republic", severity: "warning", message: `${freeReceipts} ricezioni gratuite di crypto (staking o trasferimenti) registrate come acquisti al prezzo di mercato, senza movimenti di cassa` }] : [], records: csv.map((r, i) => ({ line: r.line, section: "Trade Republic", kind: i ? "Data" : "Header", headers, values: r.cells })), statement: {
     provider: "trade-republic", account: "Trade Republic", currency: "EUR", from: dates[0], to: dates.at(-1)!, valuationAvailable: false, positionsReported: false,
     nav: [], cash, ledger, positions: [], performance: [], issues: [],
   } };

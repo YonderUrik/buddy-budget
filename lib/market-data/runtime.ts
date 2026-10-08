@@ -11,6 +11,7 @@ import {
   FAKE_PROFILE_PROVIDER,
   FAKE_RATE_PROVIDER,
   fakeCryptoSearch,
+  fakeListings,
   fakeQuoteMeta,
   fakeSearch,
   isFakeMarketData,
@@ -178,8 +179,8 @@ export function fundamentalsOnProviders(instrument: Pick<Instrument, "id" | "typ
   return loadFundamentals(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
 }
 
-/** Quotazioni di un ISIN su OpenFIGI (vuote con `MARKET_DATA_FAKE=1`). Usa il `fetch` normale: non serve il TLS da browser. */
+/** Quotazioni di un ISIN su OpenFIGI (finte con `MARKET_DATA_FAKE=1`). Usa il `fetch` normale: non serve il TLS da browser. */
 export async function listingsOnOpenFigi(isin: string) {
-  if (isFakeMarketData()) return [];
+  if (isFakeMarketData()) return fakeListings();
   return fetchOpenFigiListings(isin, { fetch: globalThis.fetch, env: process.env });
 }

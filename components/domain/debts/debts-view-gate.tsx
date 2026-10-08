@@ -3,9 +3,11 @@
 /** Stati comuni delle schede di Debiti: caricamento, errore e nessun debito (con invito ad aggiungerne uno). */
 
 import type { ReactNode } from "react";
+import { LandmarkIcon } from "lucide-react";
 import { LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { useDebtsActions } from "./debts-actions";
+import { DEBTS_COLORS } from "./debts-theme";
 
 export interface DebtsViewGateProps {
   loading: boolean;
@@ -24,7 +26,7 @@ export function DebtsViewGate({ loading, error, empty, onRetry, children }: Debt
   const { openAdd } = useDebtsActions();
   if (loading) {
     return (
-      <div className="flex flex-col gap-6" aria-busy="true">
+      <div className="flex flex-col gap-8" aria-busy="true">
         <div className="h-44 animate-pulse rounded-xl bg-muted" />
         <div className="h-64 animate-pulse rounded-xl bg-muted" />
       </div>
@@ -33,7 +35,10 @@ export function DebtsViewGate({ loading, error, empty, onRetry, children }: Debt
   if (error) return <LoadError message="Impossibile caricare i debiti." onRetry={onRetry} />;
   if (empty) {
     return (
-      <div className="rounded-xl border border-dashed p-8 text-center">
+      <div className="flex flex-col items-center py-10 text-center">
+        <span className="mb-3 grid size-12 place-items-center rounded-full" style={{ color: DEBTS_COLORS.list, backgroundColor: `color-mix(in oklab, ${DEBTS_COLORS.list} 16%, transparent)` }} aria-hidden="true">
+          <LandmarkIcon className="size-6" />
+        </span>
         <p className="font-heading text-lg font-medium text-foreground">{EMPTY_TITLE}</p>
         <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{EMPTY_TEXT}</p>
         <Button className="mt-4" onClick={openAdd}>

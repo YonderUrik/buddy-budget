@@ -4,7 +4,9 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LandmarkIcon } from "lucide-react";
+import { DialogSteps, PanelDialogHeader } from "@/components/domain/investments";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { emptyAddDebtForm, type AddDebtFormState } from "@/lib/debts/add-form";
 import { AddDebtDetailsForm } from "./add-debt-details-form";
 import { AddDebtStartStep } from "./add-debt-start-step";
@@ -14,6 +16,8 @@ export interface AddDebtDialogProps {
   onOpenChange: (open: boolean) => void;
   currency: string;
 }
+
+const STEPS = ["Come parte", "I dati"] as const;
 
 const STEP_COPY = {
   start: { title: "Aggiungi un debito", description: "Il finanziamento parte adesso o è già in corso?" },
@@ -29,10 +33,8 @@ function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => v
   };
   return (
     <>
-      <DialogHeader>
-        <DialogTitle>{STEP_COPY[step].title}</DialogTitle>
-        <DialogDescription>{STEP_COPY[step].description}</DialogDescription>
-      </DialogHeader>
+      <PanelDialogHeader icon={LandmarkIcon} title={STEP_COPY[step].title} description={STEP_COPY[step].description} />
+      <DialogSteps steps={STEPS} current={state ? 1 : 0} ariaLabel="Passi per aggiungere un debito" />
       {step === "start" ? <AddDebtStartStep onChoose={(mode) => setState(emptyAddDebtForm(mode))} /> : null}
       {step === "details" && state ? (
         <AddDebtDetailsForm state={state} onChange={setState} currency={currency} onBack={() => setState(null)} onCreated={done} />
@@ -44,7 +46,7 @@ function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => v
 export function AddDebtDialog({ open, onOpenChange, currency }: AddDebtDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-lg gap-5 overflow-y-auto">
         {/* Il flusso si rimonta a ogni apertura: niente dati rimasti dall'ultima volta. */}
         {open ? <AddDebtFlow currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>

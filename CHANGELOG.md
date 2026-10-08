@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.24.0](https://github.com/YonderUrik/buddy-budget/compare/v0.23.2...v0.24.0) (2026-10-08)
+
+
+### Novità
+
+* import Fineco (Movimenti Dossier Titoli) negli Investimenti ([#203](https://github.com/YonderUrik/buddy-budget/issues/203)) ([4049090](https://github.com/YonderUrik/buddy-budget/commit/40490908d448be8f6206440527634e391f1bb404))
+
 ## [0.23.2](https://github.com/YonderUrik/buddy-budget/compare/v0.23.1...v0.23.2) (2026-10-08)
 
 

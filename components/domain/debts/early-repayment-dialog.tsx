@@ -6,9 +6,10 @@
  */
 
 import * as React from "react";
-import { CheckIcon, PiggyBankIcon } from "lucide-react";
+import { BanknoteIcon, CheckIcon, GitCompareArrowsIcon, PiggyBankIcon } from "lucide-react";
+import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SegmentedControl } from "@/components/domain/shared";
@@ -69,48 +70,59 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <SegmentedControl options={MODE_OPTIONS} value={mode} onChange={changeMode} ariaLabel="Quante volte" stretch />
-      <div className="grid grid-cols-2 gap-3">
-        <DebtFormField label={mode === "once" ? "Importo che estingui" : "Extra ogni mese"} htmlFor={`${id}-amount`}>
-          <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        </DebtFormField>
-        {mode === "once" ? (
-          <DebtFormField label="Data" htmlFor={`${id}-date`}>
-            <Input id={`${id}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </DebtFormField>
-        ) : null}
-      </div>
-      {mode === "once" ? (
-        <DebtFormField label="Penale di estinzione (facoltativa)" htmlFor={`${id}-penalty`} hint="La trovi nel contratto: spesso fino all'1% della somma">
-          <div className="flex gap-2">
-            <Input id={`${id}-penalty`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} />
-            <Select value={penaltyUnit} onValueChange={(v) => setPenaltyUnit(v as PenaltyUnit)}>
-              <SelectTrigger className="w-40" aria-label="Unità della penale">
-                <SelectValue>{UNIT_LABELS[penaltyUnit]}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {(Object.keys(UNIT_LABELS) as PenaltyUnit[]).map((unit) => (
-                  <SelectItem key={unit} value={unit}>
-                    {UNIT_LABELS[unit]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <div className="flex flex-col gap-5">
+      <DialogSections>
+        <DialogSection title="Quanto e quando" icon={BanknoteIcon}>
+          <SegmentedControl options={MODE_OPTIONS} value={mode} onChange={changeMode} ariaLabel="Quante volte" stretch />
+          <div className="grid grid-cols-2 gap-3">
+            <DebtFormField label={mode === "once" ? "Importo che estingui" : "Extra ogni mese"} htmlFor={`${id}-amount`}>
+              <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            </DebtFormField>
+            {mode === "once" ? (
+              <DebtFormField label="Data" htmlFor={`${id}-date`}>
+                <Input id={`${id}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              </DebtFormField>
+            ) : null}
           </div>
-        </DebtFormField>
-      ) : null}
+          {mode === "once" ? (
+            <DebtFormField label="Penale di estinzione (facoltativa)" htmlFor={`${id}-penalty`} hint="La trovi nel contratto: spesso fino all'1% della somma">
+              <div className="flex gap-2">
+                <Input id={`${id}-penalty`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} />
+                <Select value={penaltyUnit} onValueChange={(v) => setPenaltyUnit(v as PenaltyUnit)}>
+                  <SelectTrigger className="w-40" aria-label="Unità della penale">
+                    <SelectValue>{UNIT_LABELS[penaltyUnit]}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(UNIT_LABELS) as PenaltyUnit[]).map((unit) => (
+                      <SelectItem key={unit} value={unit}>
+                        {UNIT_LABELS[unit]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </DebtFormField>
+          ) : null}
+        </DialogSection>
 
-      {preview.kind === "error" ? <p className="text-sm text-neg" role="alert">{preview.message}</p> : null}
-      {preview.kind === "once" ? <EarlyRepaymentCompare preview={preview} currency={currency} selected={effect} onSelect={setEffect} /> : null}
-      {preview.kind === "monthly" ? <EarlyRepaymentMonthly preview={preview} currency={currency} /> : null}
-      {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+        {preview.kind !== "empty" || error ? (
+          <DialogSection title="Cosa cambia" icon={GitCompareArrowsIcon}>
+            {preview.kind === "error" ? <p className="text-sm text-neg" role="alert">{preview.message}</p> : null}
+            {preview.kind === "once" ? <EarlyRepaymentCompare preview={preview} currency={currency} selected={effect} onSelect={setEffect} /> : null}
+            {preview.kind === "monthly" ? <EarlyRepaymentMonthly preview={preview} currency={currency} /> : null}
+            {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+          </DialogSection>
+        ) : null}
+      </DialogSections>
 
       {mode === "once" ? (
-        <Button type="button" onClick={register} disabled={mutation.isPending || preview.kind !== "once" || !effect}>
-          {effect && !mutation.isPending ? <CheckIcon aria-hidden="true" /> : null}
-          {mutation.isPending ? "Salvo…" : effect ? "Registra come fatto" : "Scegli un'alternativa per registrarla"}
-        </Button>
+        <DialogActions>
+          <span />
+          <Button type="button" onClick={register} disabled={mutation.isPending || preview.kind !== "once" || !effect}>
+            {effect && !mutation.isPending ? <CheckIcon aria-hidden="true" /> : null}
+            {mutation.isPending ? "Salvo…" : effect ? "Registra come fatto" : "Scegli un'alternativa per registrarla"}
+          </Button>
+        </DialogActions>
       ) : null}
     </div>
   );
@@ -120,13 +132,7 @@ export function EarlyRepaymentDialog({ debt, currency, open, onOpenChange }: Ear
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <PiggyBankIcon size={18} className="text-primary" aria-hidden="true" />
-            Estinzione anticipata
-          </DialogTitle>
-          <DialogDescription>{DESCRIPTION}</DialogDescription>
-        </DialogHeader>
+        <PanelDialogHeader icon={PiggyBankIcon} title="Estinzione anticipata" description={DESCRIPTION} />
         {open ? <EarlyRepaymentForm debt={debt} currency={currency} onDone={() => onOpenChange(false)} /> : null}
       </DialogContent>
     </Dialog>

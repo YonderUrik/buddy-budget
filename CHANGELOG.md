@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.23.2](https://github.com/YonderUrik/buddy-budget/compare/v0.23.1...v0.23.2) (2026-10-08)
+
+
+### Correzioni
+
+* import Trade Republic con ricezioni gratuite di crypto e imposte in ritardo ([#201](https://github.com/YonderUrik/buddy-budget/issues/201)) ([d6fde91](https://github.com/YonderUrik/buddy-budget/commit/d6fde91a359ac74b03e8c85d415346ee88998d24))
+
 ## [0.23.1](https://github.com/YonderUrik/buddy-budget/compare/v0.23.0...v0.23.1) (2026-10-08)
 
 

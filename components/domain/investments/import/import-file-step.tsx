@@ -2,6 +2,7 @@
 
 /** Primo passo dell'import: carica un file CSV o incollane il contenuto; offre il modello da compilare. */
 
+import Link from "next/link";
 import * as React from "react";
 import { DownloadIcon, BuildingIcon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { getImportProvider, type ImportProviderId } from "@/lib/investments/impo
 import { validateImportFiles } from "@/lib/investments/import/batch";
 import { templateCsv } from "@/lib/investments/import/presets";
 import { DialogSection, DialogSections } from "../dialog-parts";
+import { gridToCsv } from "@/lib/investments/import/fineco";
+import { readXlsx } from "@/lib/pension/import/xlsx";
 import { ImportProviderPicker } from "./import-provider-picker";
 
 export interface ImportFileStepProps {
@@ -51,7 +54,11 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
       const files = Array.from(list);
       validateImportFiles(files);
       if (files.length > 1 && onFiles) await onFiles(files);
-      else onLoad(await files[0].text(), files[0].name);
+      else if (/\.xlsx$/i.test(files[0].name)) {
+        // Fineco esporta in Excel: il foglio diventa testo e passa dallo stesso percorso dei CSV.
+        const sheet = readXlsx(new Uint8Array(await files[0].arrayBuffer()));
+        onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
+      } else onLoad(await files[0].text(), files[0].name);
     } catch (e) { setFileError(e instanceof Error ? e.message : "Impossibile leggere i file"); }
     finally { setLoading(false); }
   }
@@ -60,6 +67,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
     <DialogSections>
       <DialogSection title="Da dove arriva il file?" icon={BuildingIcon} color="var(--swatch-indigo)">
         <ImportProviderPicker value={provider} onChange={onProviderChange} />
+        <Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">CSV non supportato? Crea il tuo formato con AI →</Link>
         <p className="text-sm text-muted-foreground" aria-live="polite">
           {provider
             ? getImportProvider(provider).howTo
@@ -82,21 +90,21 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 ${dragging ? "border-primary bg-primary/5" : ""}`}
       >
         <UploadIcon className="size-5 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-foreground">{reading || loading ? "Leggo i file…" : "Scegli uno o più file CSV"}</span>
+        <span className="text-sm font-medium text-foreground">{reading || loading ? "Leggo i file…" : "Scegli uno o più file CSV o Excel"}</span>
         <span className="text-xs text-muted-foreground">{reading || loading ? "Un attimo" : "oppure trascinali qui · massimo 20 file"}</span>
         <input
           id={`${id}-file`}
           type="file"
           multiple={!!onFiles}
           disabled={reading || loading}
-          accept=".csv,.txt,text/csv"
+          accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           className="sr-only"
           onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
 
       {fileError ? <p role="alert" className="text-sm text-destructive">{fileError}</p> : null}
-      <p className="text-sm text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
+      <p className="text-sm text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Fineco e gli altri file si importano uno alla volta.</p>
       <details className="flex flex-col gap-1.5 text-xs text-muted-foreground">
         <summary className="cursor-pointer">Oppure incolla il contenuto</summary>
         <label htmlFor={`${id}-paste`} className="sr-only">

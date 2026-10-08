@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { searchKnownInstruments } from "@/lib/investments/instruments";
-import { searchCryptoOnProviders, searchInstrumentsOnProviders } from "@/lib/market-data/runtime";
+import { searchByIsinOnProviders, searchCryptoOnProviders, searchInstrumentsOnProviders } from "@/lib/market-data/runtime";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { isValidIsin } from "@/lib/validation/investments";
 
@@ -36,9 +36,18 @@ async function handleGet(request: NextRequest) {
     }),
   ]);
   const upper = query.toUpperCase();
+  // Yahoo non trova l'ISIN da solo: OpenFIGI propone le quotazioni e Yahoo le conferma.
+  let marketHits = market ?? [];
+  if (market !== null && marketHits.length === 0 && known.length === 0 && isValidIsin(upper)) {
+    const byIsin = await searchByIsinOnProviders(upper, null).catch(() => null);
+    if (byIsin) {
+      marketHits = byIsin.hits;
+      log.info("instruments.search.isin_fallback", { outcome: byIsin.status, count: byIsin.hits.length });
+    }
+  }
   return Response.json({
     known,
-    market: market ?? [],
+    market: marketHits,
     crypto: (crypto ?? []).slice(0, 5),
     isin: isValidIsin(upper) ? upper : null,
     // Una fonte che non ha risposto non è "nessun risultato": la UI lo dice, invece di un elenco vuoto muto.

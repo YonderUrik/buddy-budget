@@ -24,5 +24,14 @@ export function createScrapeDeps(): AsyncGaugeDeps {
     cronLastSuccess: () => redisOpsStore.getCronSuccesses(),
     syncJobs: () => redisOpsStore.countJobs(Date.now()),
     usage: () => readUsageSnapshot(),
+    personalImports: async () => {
+      const [row] = await client`select
+        count(*) filter (where status in ('queued','processing','ready'))::int as pending,
+        count(*) filter (where status in ('queued','processing','ready') and estimated_at < now())::int as overdue,
+        count(*) filter (where status in ('failed','review_failed') and created_at > now() - interval '24 hours')::int as failed,
+        count(*) filter (where status in ('imported','failed','review_failed') and notified_at is null)::int as email_pending
+        from personal_import_jobs`;
+      return { pending: row.pending, overdue: row.overdue, failed: row.failed, emailPending: row.email_pending };
+    },
   };
 }

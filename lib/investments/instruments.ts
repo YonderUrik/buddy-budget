@@ -29,12 +29,13 @@ export async function searchKnownInstruments(userId: string, query: string, limi
     .limit(limit);
 }
 
+/** Strumento comune (non manuale) con quel simbolo: i manuali collegati a una quotazione restano privati. */
 async function findBySymbol(provider: ProviderId, symbol: string): Promise<Instrument | null> {
   const [row] = await db
     .select({ instrument: instruments })
     .from(instrumentSymbols)
     .innerJoin(instruments, eq(instrumentSymbols.instrumentId, instruments.id))
-    .where(and(eq(instrumentSymbols.provider, provider), eq(instrumentSymbols.symbol, symbol)));
+    .where(and(eq(instrumentSymbols.provider, provider), eq(instrumentSymbols.symbol, symbol), isNull(instruments.createdByUserId)));
   return row?.instrument ?? null;
 }
 

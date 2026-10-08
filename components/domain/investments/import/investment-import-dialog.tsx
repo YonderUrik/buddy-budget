@@ -156,7 +156,7 @@ export function InvestmentImportDialog({ open, onOpenChange, currency }: Investm
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
-        <PanelDialogHeader icon={UploadIcon} title="Importa operazioni" description="Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Trade Republic, Yahoo Finance o un altro CSV." color="var(--primary)" />
+        <PanelDialogHeader icon={UploadIcon} title="Importa operazioni" description="Scegli da dove arriva il file: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance o un altro CSV." color="var(--primary)" />
         {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>
     </Dialog>

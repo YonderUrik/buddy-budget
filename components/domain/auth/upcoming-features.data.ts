@@ -15,9 +15,7 @@ export interface UpcomingFeature {
 }
 
 /** Icona di ogni funzionalità `soon`, per id del catalogo. */
-const UPCOMING_ICONS: Record<string, LucideIcon> = {
-  pianifica: Target,
-};
+const UPCOMING_ICONS: Record<string, LucideIcon> = {};
 
 /** Il pannello mostra le funzionalità `soon` che sono una schermata (hanno `appPath`), non quelle trasversali. */
 export const UPCOMING_FEATURES: UpcomingFeature[] = featuresByStatus("soon")

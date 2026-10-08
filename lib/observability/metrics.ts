@@ -75,6 +75,7 @@ export type ConsentNoticeOutcome = "sent" | "failed";
  * di un valore inventato.
  */
 export interface AsyncGaugeDeps {
+  personalImports?: () => Promise<{ pending: number; overdue: number; failed: number; emailPending: number }>;
   dependencies?: () => Promise<Record<DependencyName, boolean>>;
   cronLastSuccess?: () => Promise<Partial<Record<CronName, number | null>>>;
   syncJobs?: () => Promise<{ active: number; stale: number }>;
@@ -106,6 +107,11 @@ function createState(): MetricsState {
   collectDefaultMetrics({ register: registry, prefix: `${METRIC_PREFIX}process_` });
   const state = { registry, deps: {} } as MetricsState;
   const r = [registry];
+  for (const kind of ["pending", "overdue", "failed", "emailPending"] as const) {
+    new Gauge({ name: `${METRIC_PREFIX}personal_csv_${kind}`, help: `Personal CSV jobs: ${kind}`, registers: r,
+      async collect() { const read = state.deps.personalImports; if (!read) return; this.set((await read())[kind]); },
+    });
+  }
 
   state.httpRequests = new Counter({
     name: `${METRIC_PREFIX}http_requests_total`,

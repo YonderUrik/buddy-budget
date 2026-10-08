@@ -30,10 +30,16 @@ describe("isRecentLogin", () => {
 
 describe("pagina iniziale", () => {
   it("accetta solo le pagine previste", () => {
-    expect(isHomePagePath("/movimenti")).toBe(true);
+    expect(isHomePagePath("/liquidita")).toBe(true);
     expect(isHomePagePath("/impostazioni")).toBe(false);
     expect(isHomePagePath("https://evil.example")).toBe(false);
     expect(isHomePagePath(42)).toBe(false);
+  });
+
+  it("rimanda alla nuova pagina chi aveva salvato Conti o Movimenti", () => {
+    expect(resolveHomePage("/conti")).toBe("/liquidita/conti");
+    expect(resolveHomePage("/movimenti")).toBe("/liquidita");
+    expect(resolveHomePage("/movimenti/analisi")).toBe("/liquidita/analisi");
   });
 
   it("ripiega sul default con valori mancanti o non più validi", () => {

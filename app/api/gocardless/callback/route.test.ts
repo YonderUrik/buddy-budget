@@ -43,7 +43,7 @@ describe("GET /api/gocardless/callback", () => {
   it("senza ref, redirige a /conti con errore", async () => {
     const response = await GET(new NextRequest("http://localhost/api/gocardless/callback"));
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toContain("/conti?bankError=missing_ref");
+    expect(response.headers.get("location")).toContain("/liquidita/conti?bankError=missing_ref");
   });
 
   it("con requisition linkata (status LN), redirige alla pagina di selezione e marca 'linked'", async () => {
@@ -73,7 +73,7 @@ describe("GET /api/gocardless/callback", () => {
     vi.mocked(getRequisition).mockResolvedValue({ id: "req-2", status: "RJ", link: "", accounts: [] });
 
     const response = await GET(new NextRequest(`http://localhost/api/gocardless/callback?ref=${connection.id}`));
-    expect(response.headers.get("location")).toContain("/conti?bankError=consent_failed");
+    expect(response.headers.get("location")).toContain("/liquidita/conti?bankError=consent_failed");
 
     const [updated] = await db.select().from(bankConnections).where(eq(bankConnections.id, connection.id));
     expect(updated.status).toBe("error");

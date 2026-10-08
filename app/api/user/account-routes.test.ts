@@ -100,9 +100,9 @@ describe("API gestione account", () => {
 
     expect((await patchSettings(req("/api/user/settings", "PATCH", { currency: "XYZ" }))).status).toBe(400);
     expect((await patchSettings(req("/api/user/settings", "PATCH", { onboardingCompleted: false }))).status).toBe(400);
-    expect((await patchSettings(req("/api/user/settings", "PATCH", { name: " Anna ", currency: "CHF", homePage: "/conti" }))).status).toBe(204);
+    expect((await patchSettings(req("/api/user/settings", "PATCH", { name: " Anna ", currency: "CHF", homePage: "/liquidita/conti" }))).status).toBe(204);
     const [row] = await db.select().from(authUser).where(eq(authUser.id, user.id));
-    expect(row).toMatchObject({ name: "Anna", currency: "CHF", homePage: "/conti", onboardingCompleted: true });
+    expect(row).toMatchObject({ name: "Anna", currency: "CHF", homePage: "/liquidita/conti", onboardingCompleted: true });
   });
 
   it("sessioni: elenca solo quelle valide, senza token, e non chiude sessioni altrui", async () => {

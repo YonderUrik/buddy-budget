@@ -14,6 +14,7 @@ import {
   TitleHeader,
   TitlePositionCard,
   TitlePriceChart,
+  TitleQuotationCard,
   TitleStatsCard,
   useInvestmentsActions,
 } from "@/components/domain/investments";
@@ -60,6 +61,9 @@ export default function TitoloPage() {
         onPeriodChange={setPeriod}
         backfilling={data.backfilling}
       />
+      {instrument.priceMode === "manuale" && instrument.isin && instrument.createdByUserId ? (
+        <TitleQuotationCard instrumentId={instrument.id} isin={instrument.isin} currency={instrument.currency} />
+      ) : null}
       {data.position ? <TitlePositionCard position={data.position} currency={instrument.currency} /> : null}
       {data.stats ? <TitleStatsCard stats={data.stats} currency={instrument.currency} /> : null}
       <TitleFundamentalsCard fundamentals={data.fundamentals} status={data.fundamentalsStatus} currency={instrument.currency} />

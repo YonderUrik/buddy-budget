@@ -69,6 +69,8 @@ export interface ProductEvents {
   instrument_breakdown_saved: undefined;
   investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };
   instrument_settings_saved: undefined;
+  /** Strumento importato (solo ISIN, prezzi manuali) collegato a una quotazione con prezzi automatici. */
+  instrument_quotation_linked: undefined;
   tax_carryforward_added: undefined;
   investment_dividend_dismissed: undefined;
   title_watched: undefined;

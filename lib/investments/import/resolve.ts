@@ -14,6 +14,8 @@ type Identity = ResolveImportInput["identities"][number];
 export interface ResolveDeps {
   searchMarket(query: string): Promise<YahooSearchHit[]>;
   searchCrypto(query: string): Promise<{ id: string; name: string; symbol: string }[]>;
+  /** Ripiego per un ISIN che Yahoo non trova: OpenFIGI propone le quotazioni, Yahoo le conferma (opzionale). */
+  searchByIsin?(isin: string, currency: string | null): Promise<{ status: "ok" | "empty" | "unavailable"; hits: YahooSearchHit[] }>;
 }
 
 /** Simbolo crypto nello stile Yahoo: `BTC-EUR` → base `BTC`, valuta `EUR`. */
@@ -74,6 +76,28 @@ function pickHit(hits: YahooSearchHit[], identity: Identity): { hit: YahooSearch
 }
 
 /**
+ * Ripiego per uno strumento con ISIN che la ricerca Yahoo non ha trovato: OpenFIGI propone le quotazioni e Yahoo le
+ * conferma (nella valuta del file, se c'è). Sempre "da controllare": il nome e il tipo vengono da OpenFIGI.
+ */
+async function resolveByIsinFallback(userId: string, identity: Identity, deps: ResolveDeps): Promise<ImportMatch> {
+  if (!identity.isin || !deps.searchByIsin) return { kind: "none", reason: "not_found" };
+  const found = await deps.searchByIsin(identity.isin, identity.currency);
+  if (found.status === "unavailable") return { kind: "none", reason: "unavailable" };
+  const hit = found.hits[0];
+  if (!hit) return { kind: "none", reason: "not_found" };
+  const known = await knownBySymbol(userId, "yahoo", hit.symbol);
+  if (known) return { kind: "known", instrument: known };
+  return {
+    kind: "proposal",
+    input: { source: "yahoo", yahooSymbol: hit.symbol, name: identity.name ?? hit.name, type: identity.type ?? hit.type, isin: identity.isin },
+    label: identity.name ?? hit.name,
+    detail: `${hit.symbol} · ${hit.exchangeLabel} · trovato dall'ISIN`,
+    type: identity.type ?? hit.type,
+    confidence: "guess",
+  };
+}
+
+/**
  * Abbina uno strumento del file: prima il catalogo (ISIN, simbolo Yahoo, nome identico), poi le fonti. I simboli
  * crypto di Yahoo (`ETH-EUR`) vanno su CoinGecko, che è la fonte delle crypto nell'app.
  */
@@ -105,10 +129,12 @@ export async function resolveIdentity(userId: string, identity: Identity, deps: 
   try {
     hits = await deps.searchMarket(query);
   } catch {
-    return { kind: "none", reason: "unavailable" };
+    // Yahoo non risponde: per un ISIN si prova comunque la strada OpenFIGI, che conferma su Yahoo solo se risponde.
+    const fallback = await resolveByIsinFallback(userId, identity, deps);
+    return fallback.kind === "none" ? { kind: "none", reason: "unavailable" } : fallback;
   }
   const picked = pickHit(hits, identity);
-  if (!picked) return { kind: "none", reason: "not_found" };
+  if (!picked) return resolveByIsinFallback(userId, identity, deps);
   const { hit, confidence } = picked;
   const known = await knownBySymbol(userId, "yahoo", hit.symbol);
   if (known) return { kind: "known", instrument: known };

@@ -98,18 +98,28 @@ async function resolveByIsinFallback(userId: string, identity: Identity, deps: R
 }
 
 /**
- * Per gli strumenti del rendiconto, che restano manuali con i prezzi del broker: dice se esiste una quotazione
- * (verificata su Yahoo, nella valuta del file) da collegare dopo l'import con «Cerca la quotazione».
+ * Per gli strumenti del rendiconto: cerca una quotazione dell'ISIN (OpenFIGI, confermata da Yahoo nella valuta del
+ * file). Se c'è, lo strumento nasce con i prezzi automatici (stessa regola di «Cerca la quotazione»), altrimenti
+ * `null` e resta manuale con i prezzi del broker. Mai bloccante: se le fonti non rispondono il titolo resta manuale.
  */
-async function quotationHint(isin: string, currency: string, deps: ResolveDeps): Promise<string> {
-  if (!deps.searchByIsin) return "";
+async function linkedQuotation(userId: string, identity: Identity, deps: ResolveDeps): Promise<ImportMatch | null> {
+  if (!identity.isin || !deps.searchByIsin) return null;
   try {
-    const found = await deps.searchByIsin(isin, currency);
-    if (found.status === "unavailable") return "";
+    const found = await deps.searchByIsin(identity.isin, identity.currency);
     const hit = found.hits[0];
-    return hit ? ` · quotazione trovata: ${hit.symbol}, collegabile dopo l'import da «Cerca la quotazione»` : " · nessuna quotazione trovata";
+    if (found.status !== "ok" || !hit) return null;
+    const known = await knownBySymbol(userId, "yahoo", hit.symbol);
+    if (known && known.currency === identity.currency) return { kind: "known", instrument: known };
+    return {
+      kind: "proposal",
+      input: { source: "yahoo", yahooSymbol: hit.symbol, name: identity.name ?? hit.name, type: identity.type ?? hit.type, isin: identity.isin },
+      label: identity.name ?? hit.name,
+      detail: `${hit.symbol} · ${hit.exchangeLabel} · quotazione collegata dall'ISIN`,
+      type: identity.type ?? hit.type,
+      confidence: "guess",
+    };
   } catch {
-    return "";
+    return null;
   }
 }
 
@@ -123,10 +133,12 @@ export async function resolveIdentity(userId: string, identity: Identity, deps: 
     if (known && (!identity.currency || known.currency === identity.currency)) return { kind: "known", instrument: known };
   }
   // Broker ISIN + native currency is more reliable than an arbitrary Yahoo search listing.
-  // Preserve the statement currency and use broker closing prices until an exchange listing is explicitly linked.
+  // A verified exchange listing for the ISIN (same currency as the statement) is linked automatically; otherwise the
+  // instrument stays manual and keeps the statement currency and the broker closing prices.
   if (!identity.symbolIsYahoo && identity.isin && identity.currency && identity.name) {
-    const quotation = await quotationHint(identity.isin, identity.currency, deps);
-    return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione") }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto${quotation}`, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione"), confidence: "exact" };
+    const linked = await linkedQuotation(userId, identity, deps);
+    if (linked) return linked;
+    return { kind: "proposal", input: { source: "manuale", isin: identity.isin, name: identity.name, currency: identity.currency, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione") }, label: identity.name, detail: `${identity.isin} · ${identity.currency} · prezzi dal rendiconto`, type: identity.type ?? (/\b(ETF|UCITS)\b/i.test(identity.name) ? "etf" : "azione"), confidence: "exact" };
   }
   if (identity.type === "crypto" && identity.symbol && identity.currency && !identity.isin && !identity.symbolIsYahoo) return resolveCrypto(userId, identity.symbol, identity.currency, deps);
   const crypto = identity.symbol && !identity.isin ? YAHOO_CRYPTO_SYMBOL.exec(identity.symbol) : null;

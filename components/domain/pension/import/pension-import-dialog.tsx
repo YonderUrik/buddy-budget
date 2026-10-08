@@ -5,6 +5,7 @@
  * Non scrive nulla finché non si conferma al riepilogo; chiudere il dialog azzera il wizard (il contenuto si smonta).
  */
 
+import { FileUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { ExistingSnapshot } from "@/lib/pension/import/plan";
@@ -34,8 +35,8 @@ function Stepper({ current }: { current: PensionImportStep }) {
     <ol className="flex gap-1.5" aria-label="Passi dell'import">
       {PENSION_IMPORT_STEPS.map((step, i) => (
         <li key={step} className="flex flex-1 flex-col gap-1" aria-current={i === index ? "step" : undefined}>
-          <span className={cn("h-1 rounded-full", i <= index ? "bg-primary" : "bg-muted")} />
-          <span className={cn("text-xs", i === index ? "font-medium text-foreground" : "text-muted-foreground")}>{STEP_LABELS[step]}</span>
+          <span className={cn("h-1 rounded-full", i <= index ? "bg-primary" : "bg-foreground/10")} />
+          <span className={cn("text-sm", i === index ? "font-semibold text-foreground" : "text-text-2")}>{STEP_LABELS[step]}</span>
         </li>
       ))}
     </ol>
@@ -49,16 +50,16 @@ function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImpo
   const blocked = s.plan.counts.error > 0 || Boolean(s.plan.error);
 
   return (
-    <div className="flex min-h-0 flex-col gap-4">
+    <div className="flex min-h-0 flex-col gap-5">
       {!s.done ? <Stepper current={s.step} /> : null}
-      <div className="min-h-0 overflow-y-auto">
+      <div key={s.step} className="min-h-0 overflow-y-auto">
         {s.step === "file" ? <PensionImportFileStep onFile={(f) => void s.loadFile(f)} onText={s.loadText} /> : null}
         {s.step === "columns" && s.table && s.mapping ? (
           <PensionImportMappingStep fileName={s.fileName} table={s.table} mapping={s.mapping} rows={s.rows} missing={s.missing} currency={currency} onChange={s.updateMapping} />
         ) : null}
         {s.step === "summary" ? <PensionImportSummaryStep plan={s.plan} currency={currency} discarded={discarded} done={s.done} /> : null}
       </div>
-      {s.error ? <p className="text-sm text-destructive">{s.error}</p> : null}
+      {s.error ? <p className="text-sm text-neg">{s.error}</p> : null}
       <div className="flex justify-between gap-2">
         {s.done ? (
           <Button className="ml-auto" onClick={onClose}>
@@ -90,9 +91,18 @@ export function PensionImportDialog({ open, onOpenChange, fundName, ...wizard }:
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
-        <DialogHeader>
-          <DialogTitle>Importa le fotografie</DialogTitle>
-          <DialogDescription>Da un file CSV o Excel, nel fondo «{fundName}».</DialogDescription>
+        <DialogHeader className="flex-row items-center gap-3">
+          <span
+            className="grid size-10 shrink-0 place-items-center rounded-full"
+            style={{ color: "var(--primary)", backgroundColor: "color-mix(in oklab, var(--primary) 16%, transparent)" }}
+            aria-hidden="true"
+          >
+            <FileUpIcon className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <DialogTitle className="font-heading text-xl font-medium">Importa le fotografie</DialogTitle>
+            <DialogDescription>Da un file CSV o Excel, nel fondo «{fundName}».</DialogDescription>
+          </div>
         </DialogHeader>
         {open ? <Wizard {...wizard} onClose={() => onOpenChange(false)} /> : null}
       </DialogContent>

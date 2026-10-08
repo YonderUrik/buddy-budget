@@ -29,14 +29,14 @@ export function PensionAddFundForm({ today, onSubmit, pending = false, errorMess
       className="flex flex-col gap-3"
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+        <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
           Nome del fondo
           <Input value={name} placeholder="es. Piano pensione Moneyfarm" maxLength={80} onChange={(e) => setName(e.target.value)} />
         </label>
-        <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+        <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
           Prima adesione a una forma pensionistica
           <Input type="date" value={adhesionDate} max={today} onChange={(e) => setAdhesionDate(e.target.value)} />
-          <span>Conta la prima in assoluto, anche in un&apos;altra azienda: decide l&apos;aliquota in uscita.</span>
+          <span className="text-xs">Conta la prima in assoluto, anche in un&apos;altra azienda: decide l&apos;aliquota in uscita.</span>
         </label>
       </div>
       {errorMessage ? <p role="alert" className="text-sm text-neg">{errorMessage}</p> : null}

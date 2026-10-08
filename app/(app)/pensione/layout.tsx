@@ -18,15 +18,15 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col gap-3">
         <div>
           <h1 className="font-heading text-2xl font-medium text-foreground">Pensione</h1>
-          <p className="text-sm text-muted-foreground">Il tuo fondo pensione: quanto rende, quanto ti resterebbe e dove arriverà</p>
+          <p className="text-sm text-text-2">Il tuo fondo pensione: quanto rende, quanto ti resterebbe e dove arriverà</p>
         </div>
         {view.funds.length > 1 && view.fund ? <PensionFundSelector funds={view.funds} value={view.fund.id} onChange={view.selectFund} /> : null}
         {view.fund ? <SectionTabs tabs={PENSION_TABS} activeHref={pathname} ariaLabel="Sezioni di Pensione" /> : null}
       </div>
       {view.isLoading ? (
         <div className="flex flex-col gap-4" aria-busy="true">
-          <div className="h-52 animate-pulse rounded-xl bg-muted" />
-          <div className="h-32 animate-pulse rounded-xl bg-muted" />
+          <div className="h-52 animate-pulse rounded-2xl bg-foreground/[0.04]" />
+          <div className="h-32 animate-pulse rounded-2xl bg-foreground/[0.04]" />
         </div>
       ) : view.isError ? (
         <LoadError message="Impossibile caricare i dati della pensione." onRetry={view.refetch} />
@@ -40,7 +40,7 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
       ) : (
         <>
           {children}
-          <p className="text-xs text-muted-foreground">Stime a scopo informativo, non consulenza finanziaria o fiscale: regole e aliquote vanno verificate con un professionista.</p>
+          <p className="text-xs text-text-2">Stime a scopo informativo, non consulenza finanziaria o fiscale: regole e aliquote vanno verificate con un professionista.</p>
         </>
       )}
     </div>

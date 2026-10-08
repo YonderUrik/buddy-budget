@@ -3,10 +3,11 @@
 /** Anno per anno: quanto hai versato e quanto ha reso il fondo, in barre impilate (il rendimento negativo scende sotto lo zero). */
 
 import { Bar, BarChart, ReferenceLine, XAxis, YAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartNoAxesColumnIcon } from "lucide-react";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { YearBreakdown } from "@/lib/calc/pension";
 import { formatSignedPercent, money } from "./pension-format";
+import { PensionSection } from "./pension-section";
 import { PensionYearlyTooltip } from "./pension-yearly-tooltip";
 
 export interface PensionYearlyCardProps {
@@ -19,6 +20,8 @@ const CHART_CONFIG: ChartConfig = {
   gainPos: { label: "Rendimento", color: "var(--pos)" },
   gainNeg: { label: "Perdita", color: "var(--neg)" },
 };
+
+const CHART_HEIGHT = 240;
 
 export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
   const data = years.map((row) => ({
@@ -33,49 +36,52 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
   const best = years.length > 0 ? years.reduce((a, b) => (b.gain > a.gain ? b : a)) : null;
   const worst = years.length > 0 ? years.reduce((a, b) => (b.gain < a.gain ? b : a)) : null;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Anno per anno</CardTitle>
-        <p className="text-sm text-muted-foreground">Quanto hai versato e quanto ha reso il fondo in ogni anno, anche in percentuale: rendimento diviso per il valore a inizio anno più i versamenti. * anno in corso, non annualizzato.</p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <ChartContainer config={CHART_CONFIG} className="max-h-60 w-full">
-          <BarChart data={data} stackOffset="sign">
-            <XAxis dataKey="label" tickLine={false} axisLine={false} />
-            <YAxis hide />
-            <ReferenceLine y={0} stroke="var(--border)" />
-            <ChartTooltip cursor={false} content={<PensionYearlyTooltip currency={currency} />} />
-            <Bar dataKey="contributions" stackId="a" fill="var(--color-contributions)" radius={[0, 0, 0, 0]} />
-            <Bar dataKey="gainPos" stackId="a" fill="var(--color-gainPos)" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="gainNeg" stackId="a" fill="var(--color-gainNeg)" radius={[0, 0, 4, 4]} />
-          </BarChart>
-        </ChartContainer>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+    <PensionSection
+      icon={ChartNoAxesColumnIcon}
+      title="Anno per anno"
+      color="var(--swatch-green)"
+      description="Quanto hai versato e quanto ha reso il fondo in ogni anno, anche in percentuale: rendimento diviso per il valore a inizio anno più i versamenti. * anno in corso, non annualizzato."
+    >
+      <div className="flex flex-col gap-4">
+        <div className="-mx-4 sm:-mx-6">
+          <ChartContainer config={CHART_CONFIG} className="w-full" style={{ height: CHART_HEIGHT }}>
+            <BarChart data={data} stackOffset="sign" margin={{ left: 0, right: 0 }}>
+              <XAxis dataKey="label" tickLine={false} axisLine={false} padding={{ left: 16, right: 16 }} />
+              <YAxis hide />
+              <ReferenceLine y={0} stroke="var(--border)" />
+              <ChartTooltip cursor={false} content={<PensionYearlyTooltip currency={currency} />} />
+              <Bar dataKey="contributions" stackId="a" fill="var(--color-contributions)" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="gainPos" stackId="a" fill="var(--color-gainPos)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="gainNeg" stackId="a" fill="var(--color-gainNeg)" radius={[0, 0, 4, 4]} />
+            </BarChart>
+          </ChartContainer>
+        </div>
+        <ul className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-text-2">
           <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />Versato</li>
           <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-pos" aria-hidden="true" />Rendimento</li>
           <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-neg" aria-hidden="true" />Perdita</li>
         </ul>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs" aria-label="Rendimento percentuale per anno">
+        <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm" aria-label="Rendimento percentuale per anno">
           {data.map((row) => (
             <li key={row.label} className="flex items-baseline gap-1.5">
-              <span className="text-muted-foreground">{row.label}</span>
-              <span className={`font-medium tabular-nums ${row.returnRate === null ? "text-muted-foreground" : row.gain < 0 ? "text-neg" : "text-pos"}`}>{row.returnRate !== null ? formatSignedPercent(row.returnRate) : "n.d."}</span>
+              <span className="text-text-2">{row.label}</span>
+              <span className={`font-semibold tabular-nums ${row.returnRate === null ? "text-text-2" : row.gain < 0 ? "text-neg" : "text-pos"}`}>{row.returnRate !== null ? formatSignedPercent(row.returnRate) : "n.d."}</span>
             </li>
           ))}
         </ul>
         {best && worst && years.length > 1 ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-              <p className="text-xs text-muted-foreground">Anno migliore</p>
-              <p className="font-heading text-lg font-medium tabular-nums text-pos">{best.year} · {best.gain >= 0 ? "+" : "−"}{money(Math.abs(best.gain), currency)}{best.returnRate !== null ? <span className="text-sm text-muted-foreground"> ({formatSignedPercent(best.returnRate)})</span> : null}</p>
+          <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+            <div className="border-t border-border pt-3">
+              <dt className="text-sm text-text-2">Anno migliore</dt>
+              <dd className="font-heading text-xl font-medium tabular-nums text-pos">{best.year} · {best.gain >= 0 ? "+" : "−"}{money(Math.abs(best.gain), currency)}{best.returnRate !== null ? <span className="text-sm text-text-2"> ({formatSignedPercent(best.returnRate)})</span> : null}</dd>
             </div>
-            <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-              <p className="text-xs text-muted-foreground">Anno peggiore</p>
-              <p className={`font-heading text-lg font-medium tabular-nums ${worst.gain < 0 ? "text-neg" : "text-foreground"}`}>{worst.year} · {worst.gain >= 0 ? "+" : "−"}{money(Math.abs(worst.gain), currency)}{worst.returnRate !== null ? <span className="text-sm text-muted-foreground"> ({formatSignedPercent(worst.returnRate)})</span> : null}</p>
+            <div className="border-t border-border pt-3">
+              <dt className="text-sm text-text-2">Anno peggiore</dt>
+              <dd className={`font-heading text-xl font-medium tabular-nums ${worst.gain < 0 ? "text-neg" : "text-foreground"}`}>{worst.year} · {worst.gain >= 0 ? "+" : "−"}{money(Math.abs(worst.gain), currency)}{worst.returnRate !== null ? <span className="text-sm text-text-2"> ({formatSignedPercent(worst.returnRate)})</span> : null}</dd>
             </div>
-          </div>
+          </dl>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PensionSection>
   );
 }

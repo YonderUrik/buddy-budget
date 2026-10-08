@@ -5,10 +5,12 @@
  * azienda e proiezione.
  */
 
-export { PensionSummaryCard } from "./pension-summary-card";
-export type { PensionSummaryCardProps } from "./pension-summary-card";
-export { PensionChartCard } from "./pension-chart-card";
-export type { PensionChartCardProps } from "./pension-chart-card";
+export { PensionHero } from "./pension-hero";
+export type { PensionHeroProps } from "./pension-hero";
+export { PensionTrendChart } from "./pension-trend-chart";
+export type { PensionTrendChartProps } from "./pension-trend-chart";
+export { PensionSection } from "./pension-section";
+export type { PensionSectionProps } from "./pension-section";
 export { PensionSnapshotsCard } from "./pension-snapshots-card";
 export type { PensionSnapshotsCardProps } from "./pension-snapshots-card";
 export { PensionWithdrawalCard } from "./pension-withdrawal-card";
@@ -21,14 +23,12 @@ export { PensionProfileCard } from "./pension-profile-card";
 export type { PensionProfileCardProps } from "./pension-profile-card";
 export { PENSION_TABS } from "./pension-tabs";
 export type { PensionTab } from "./pension-tabs";
-export { PensionInsightCards } from "./pension-insight-cards";
-export type { PensionInsightCardsProps } from "./pension-insight-cards";
+export { PensionInsights } from "./pension-insights";
+export type { PensionInsightsProps } from "./pension-insights";
 export { PensionYearlyCard } from "./pension-yearly-card";
 export type { PensionYearlyCardProps } from "./pension-yearly-card";
 export { PensionTaxCard } from "./pension-tax-card";
 export type { PensionTaxCardProps } from "./pension-tax-card";
-export { PensionRing } from "./pension-ring";
-export type { PensionRingProps } from "./pension-ring";
 export { PensionEmptyState } from "./pension-empty-state";
 export type { PensionEmptyStateProps } from "./pension-empty-state";
 export { PensionAddFundForm } from "./pension-add-fund-form";

@@ -116,7 +116,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
             </div>
           </div>
         ) : null}
-        <ul className="flex w-full min-w-0 flex-1 flex-col gap-2">
+        <ul className="flex w-full min-w-0 flex-1 flex-col divide-y divide-border/60">
           {items.map((item) => (
             <li key={item.key}>
               <Link
@@ -126,12 +126,12 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                 onFocus={() => setHoveredKey(item.key)}
                 onBlur={() => setHoveredKey(null)}
                 className={cn(
-                  "flex min-h-14 items-center gap-3 rounded-xl bg-muted/60 px-4 py-3 transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
-                  focusKey === item.key && "bg-muted",
-                  lockedKey === item.key && "ring-1 ring-ring",
+                  "flex min-h-12 items-center gap-3 rounded-lg px-2 py-2.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                  focusKey === item.key && "bg-muted/60",
+                  lockedKey === item.key && "bg-muted/60 ring-1 ring-ring",
                 )}
               >
-                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: colorFor(item.key) }} aria-hidden="true" />
+                <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: colorFor(item.key) }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-medium text-foreground">{item.label}</span>
                   <span className="block text-xs text-muted-foreground">
@@ -145,7 +145,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                   </span>
                 </span>
                 <span className="text-right">
-                  <span className="block font-heading text-base font-medium tabular-nums text-foreground">{format(item.amount)}</span>
+                  <span className="block text-sm font-medium tabular-nums text-foreground">{format(item.amount)}</span>
                   {item.highlight ? (
                     <span className={cn("block whitespace-nowrap text-xs tabular-nums", item.highlight.amount < 0 ? "text-neg" : "text-pos")}>
                       {item.highlight.amount < 0 ? "−" : "+"}
@@ -155,7 +155,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                     </span>
                   ) : null}
                 </span>
-                <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground/50" aria-hidden="true" />
               </Link>
             </li>
           ))}

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.30.0](https://github.com/YonderUrik/buddy-budget/compare/v0.29.0...v0.30.0) (2026-10-08)
+
+
+### Novità
+
+* Investimenti, tutte le schede, nello stile della Panoramica ([#184](https://github.com/YonderUrik/buddy-budget/issues/184)) ([410104e](https://github.com/YonderUrik/buddy-budget/commit/410104e3e4f316241d7f3db560087eb130f7a42f))
+
 ## [0.29.0](https://github.com/YonderUrik/buddy-budget/compare/v0.28.0...v0.29.0) (2026-10-08)
 
 

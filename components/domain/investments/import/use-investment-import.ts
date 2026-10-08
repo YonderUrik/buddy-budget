@@ -6,6 +6,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { parseCsv, type CsvTable } from "@/lib/investments/import/csv";
 import { missingFields, type ImportMapping } from "@/lib/investments/import/mapping";
 import { collectIdentities, normalizeRows } from "@/lib/investments/import/normalize";
+import { finecoMapping, parseFinecoTable } from "@/lib/investments/import/fineco";
 import { initialMapping, type ImportPreset } from "@/lib/investments/import/presets";
 import type { ActivityStatement } from "@/lib/investments/import/interactive-brokers";
 import { detectImportProvider, providerMismatchMessage, type ImportProviderId } from "@/lib/investments/import/providers";
@@ -95,6 +96,28 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
       }
       return;
     }
+    if (detected === "fineco") {
+      try {
+        const finecoTable = parseFinecoTable(text);
+        if (finecoTable.rows.length === 0) {
+          setError("Nel file Fineco non ci sono movimenti da importare");
+          return;
+        }
+        track("investments_import_file_read", { provider: "fineco", chosen: provider === "fineco" });
+        setStatement(null);
+        setStatementCsv(null);
+        setTable(finecoTable);
+        setFileName(name);
+        setPreset(null);
+        setProvider("fineco");
+        setMapping(finecoMapping(finecoTable));
+        setError(null);
+        setStep("mapping");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Impossibile leggere il file");
+      }
+      return;
+    }
     const parsed = parseCsv(text);
     if (parsed.headers.length < 2 || parsed.rows.length === 0) {
       setError("Il file non sembra un CSV con intestazioni e almeno una riga");
@@ -164,7 +187,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   }
 
   async function submit(dryRun: boolean) {
-    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : (preset?.id ?? null)) ?? (statement?.cashMovements?.length ? { dryRun, preset: statement.preset, instruments: [], operations: [] } : null);
+    const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : table && provider === "fineco" ? "fineco" : (preset?.id ?? null)) ?? (statement?.cashMovements?.length ? { dryRun, preset: statement.preset, instruments: [], operations: [] } : null);
     if (!request) {
       setError("Nessuna operazione da importare: scegli almeno uno strumento");
       return;

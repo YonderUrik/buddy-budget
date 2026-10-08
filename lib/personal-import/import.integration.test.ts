@@ -24,6 +24,7 @@ beforeEach(async () => {
   vi.stubEnv("RESEND_API_KEY", "synthetic"); vi.stubEnv("RESEND_FROM", "test@example.test"); vi.stubEnv("APP_URL", "http://localhost:3000");
   userId = randomUUID(); users.push(userId);
   await db.insert(authUser).values({ id: userId, name: 'Synthetic personal CSV', email: `${userId}@example.test`, currency: "EUR" });
+  await db.update(jobs).set({ status: "expired", notifiedAt: new Date() }).where(inArray(jobs.userId, users.filter(u => u !== userId)));
   vi.mocked(generateParser).mockReset().mockResolvedValue({ parser: { kind: "javascript", code }, model: "synthetic/model" }); send.mockClear();
 });
 afterAll(async () => {
@@ -48,6 +49,25 @@ describe("personal CSV durable flow", () => {
     expect((await db.select().from(accounts).where(eq(accounts.userId, userId)))[0].balance).toBe("895.00");
     expect(await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId, userId))).toHaveLength(1);
     expect((await readJob(id)).encryptedPreview).toBeNull();
+  });
+  it("automatically saves a durable ready job once and emails only after completion", async () => {
+    const id = await prepare();
+    await db.update(jobs).set({ notifiedAt: new Date() }).where(inArray(jobs.userId, users.filter(u => u !== userId)));
+    await maintainJobs();
+    expect((await readJob(id)).status).toBe("imported");
+    expect(await cash()).toHaveLength(3);
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ subject: "Il tuo CSV è stato importato" }), expect.anything());
+    await maintainJobs();
+    expect(await cash()).toHaveLength(3);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(generateParser).toHaveBeenCalledTimes(1);
+  });
+  it("automatically rejects invalid history without partial financial writes", async () => {
+    const id = await prepare(csv.replace(',BUY,', ',SELL,'));
+    await maintainJobs();
+    expect(await readJob(id)).toMatchObject({ status: "review_failed", error: expect.stringContaining("più quote") });
+    expect(await cash()).toHaveLength(0);
+    expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(0);
   });
   it("reuses a private parser without AI and detects duplicate rows even when row numbers change", async () => {
     const id = await prepare(); await confirmImport(userId, id);

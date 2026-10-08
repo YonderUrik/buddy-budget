@@ -146,3 +146,12 @@ it("hides retained empty broker accounts after deletion while preserving active 
   original.transactions.push({ ...original.transactions[0], id: "tr-operation", statementAccountKey: "tr" });
   expect(investmentBrokerGroups(original).find(g => g.id === "trade-republic")?.operations).toBe(1);
 });
+
+it("uses each personal import source name and filters sources independently", () => {
+  const input = data();
+  input.personalSources = [{ id: "one", name: "My broker" }, { id: "two", name: "Second broker" }];
+  input.portfolios = input.personalSources.map((source, i) => ({ id: i ? "p2" : "p", userId: "u", name: "Renamed portfolio", broker: `personal:${source.id}`, statementCashAccountId: null, benchmarkInstrumentId: null, taxRegime: "dichiarativo", createdAt: NOW, updatedAt: NOW }));
+  input.transactions.push({ ...input.transactions[0], id: "t2", portfolioId: "p2" });
+  expect(investmentBrokerGroups(input)).toEqual([{ id: "personal:one", label: "My broker", operations: 1 }, { id: "personal:two", label: "Second broker", operations: 1 }]);
+  expect(filterInvestmentBrokers(input, new Set(["personal:one"])).transactions.map(t => t.id)).toEqual(["t2"]);
+});

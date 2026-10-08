@@ -90,3 +90,11 @@ Prova reale dal browser con il file Bitpanda fornito dall’utente: il modello D
 27 test dedicati passati, inclusa verifica che il payload del modello sia esattamente il file raw e il nome della fonte; TypeScript ed ESLint passati.
 
 ![Anteprima da file raw](13-raw-file-preview.jpg)
+
+## Salvataggio automatico e nome fonte
+
+Rimossa la conferma umana: dopo l’analisi il worker salva automaticamente in una transazione idempotente. Lo stato persistente `ready` permette di riprendere il salvataggio dopo un riavvio. Email di successo solo dopo `imported`; errori di validazione bloccano tutto. 22 test mirati passati (14 integrazione CSV e 8 filtro broker), TypeScript ed ESLint passati.
+
+Il browser locale mostra **Bitpanda** nel filtro broker, usando il nome del formato personale. Il precedente job di test in anteprima è stato respinto dal controllo di interpretazione diversa di righe già importate; l’import Bitpanda più recente resta presente, senza sovrascritture automatiche. Il salvataggio automatico riuscito e il momento dell’email sono coperti dai test di integrazione con provider simulato.
+
+![Nome fonte nel filtro](14-personal-source-name.jpg)

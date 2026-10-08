@@ -84,7 +84,7 @@ export async function confirmImport(userId: string, id: string) {
     if (accountId && financial.length) await tx.update(accounts).set({ balance: sql`${accounts.balance} + ${(deltaCents / 100).toFixed(2)}`, updatedAt: new Date() }).where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
     for (let i = 0; i < fresh.length; i += 500) await tx.insert(receipts).values(fresh.slice(i, i + 500).map(r => ({ formatId: format.id, recordKey: r.key, outcomeHash: outcomeHash(r.outcome) })));
     await tx.update(formats).set({ accountId, portfolioId }).where(eq(formats.id, format.id));
-    await tx.update(jobs).set({ status: "imported", encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key) } }).where(eq(jobs.id, id));
+    await tx.update(jobs).set({ status: "imported", notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key) } }).where(eq(jobs.id, id));
     return { inserted: financial.length, duplicates: preview.records.length - fresh.length };
   });
 }

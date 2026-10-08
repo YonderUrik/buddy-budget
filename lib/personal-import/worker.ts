@@ -6,7 +6,8 @@ import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { personalImportJobs as jobs, personalParsers as parsers, personalFormats as formats } from "@/lib/db/schema/personal-imports";
 import { logger } from "@/lib/observability";
-import { readRawFile, parserSchema } from "./contract";
+import { confirmImport } from "./confirm";
+import { ImportError, readRawFile, parserSchema } from "./contract";
 import { seal, unseal, digest } from "./crypto";
 import { RAW_PARSER_VERSION } from "./jobs";
 import { executeParser } from "./sandbox";
@@ -70,9 +71,23 @@ export async function processOne() {
 
 export async function maintainJobs() {
   await db.update(jobs).set({ encryptedCsv: null, encryptedPreview: null, status: "expired", lease: null, leaseUntil: null }).where(and(lte(jobs.expiresAt, new Date()), sql`${jobs.status} not in ('imported', 'expired')`));
+  // Ready is durable: a restart after analysis resumes the atomic import without another AI call.
+  const [ready] = await db.select().from(jobs).where(and(eq(jobs.status, "ready"), lte(jobs.availableAt, new Date()))).orderBy(jobs.createdAt).limit(1);
+  if (ready) {
+    try {
+      const result = await confirmImport(ready.userId, ready.id);
+      logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted });
+    } catch (error) {
+      await db.update(jobs).set(error instanceof ImportError
+        ? { status: "review_failed", error: error.message, notifiedAt: null }
+        : { availableAt: new Date(Date.now() + 60000) }
+      ).where(and(eq(jobs.id, ready.id), eq(jobs.status, "ready")));
+      logger.warn("personal_import.save_failed", { jobId: ready.id, reason: error instanceof ImportError ? "validation_failed" : "retry_pending" });
+    }
+  }
   // Atomic notification claim; independent retries never rerun the parser or import financial data.
   const pending = await db.transaction(async tx => {
-    const [job] = await tx.select().from(jobs).where(and(inArray(jobs.status, ["ready", "review_failed", "failed"]), sql`${jobs.notifiedAt} is null`, lte(jobs.notifyAfter, new Date()))).limit(1).for("update", { skipLocked: true });
+    const [job] = await tx.select().from(jobs).where(and(inArray(jobs.status, ["imported", "review_failed", "failed"]), sql`${jobs.notifiedAt} is null`, lte(jobs.notifyAfter, new Date()))).limit(1).for("update", { skipLocked: true });
     if (!job) return null;
     await tx.update(jobs).set({ notifyAfter: new Date(Date.now() + 15 * 60000) }).where(eq(jobs.id, job.id));
     return job;
@@ -83,7 +98,7 @@ export async function maintainJobs() {
     const [user] = await db.select({ email: authUser.email }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject: pending.status === "ready" ? "Il tuo CSV è pronto da verificare" : "Il tuo CSV richiede una verifica", text: `L'analisi del tuo CSV è terminata. Apri BuddyBudget per controllare il risultato: ${url}\nNessun movimento viene importato senza la tua conferma.` }, { idempotencyKey: `personal-csv-${pending.id}` });
+    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject: pending.status === "imported" ? "Il tuo CSV è stato importato" : "Non è stato possibile importare il tuo CSV", text: pending.status === "imported" ? `Importazione completata. Trovi i dati in Movimenti e Investimenti: ${url}` : `Importazione non riuscita. Nessun movimento è stato salvato. Apri BuddyBudget per vedere il motivo: ${url}` }, { idempotencyKey: `personal-csv-${pending.id}` });
     if (result.error) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));
   } catch { logger.warn("personal_import.email_failed", { jobId: pending.id, reason: "delivery_failed" }); }

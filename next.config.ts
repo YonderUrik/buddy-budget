@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
   // Build autosufficiente in .next/standalone (server.js + sole dipendenze usate): base dell'immagine Docker.
   // Vercel la ignora, quindi il deploy attuale non cambia.
   output: "standalone",
+  // Personal CSV: 25 MiB plus JSON escaping; the route enforces the actual CSV size.
+  experimental: { proxyClientMaxBodySize: "51mb" },
   env: {
     NEXT_PUBLIC_APP_VERSION: buildInfo.version,
     NEXT_PUBLIC_APP_COMMIT: buildInfo.commit,

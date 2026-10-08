@@ -1,0 +1,1 @@
+ALTER TABLE "personal_import_jobs" ADD COLUMN "consent_version" text DEFAULT 'openrouter-zdr-v1' NOT NULL;

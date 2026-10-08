@@ -33,6 +33,7 @@ const f = (
 ): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
 
 export const FEATURES: readonly Feature[] = [
+  f("csv-personali-ai", "Movimenti", "CSV personali con AI", "Carica un CSV della tua banca o broker: analisi in background, formato privato riutilizzabile, avviso email e anteprima da confermare prima di importare pagamenti e investimenti.", "new"),
   f("collegamento-alla-banca", "Conti", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live", "/conti"),
   f("avviso-rinnovo-banca", "Conti", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
   f("conti-manuali", "Conti", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),

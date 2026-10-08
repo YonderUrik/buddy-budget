@@ -7,6 +7,8 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface ProductEvents {
+  personal_csv_requested: { reuse: boolean };
+  personal_csv_imported: { rows: number };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
   onboarding_completed: { currency: SupportedCurrency };

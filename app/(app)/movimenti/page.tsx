@@ -2,6 +2,7 @@
 
 /** Movimenti · Elenco: riepilogo del periodo e lista delle transazioni, con filtri categoria/testo e tipo (Tutte/Uscite/Entrate). */
 
+import Link from "next/link";
 import * as React from "react";
 import {
   ExpensesFilterBar,
@@ -57,6 +58,7 @@ export default function MovimentiElencoPage() {
 
   return (
     <>
+      <Link href="/importazioni" className="mb-3 inline-block text-sm font-medium text-primary hover:underline">Importa un CSV personale →</Link>
       <AccountFilterChip accountId={accountFilter} onClear={() => setAccountFilter(null)} />
       <ExpensesFilterBar
         categories={safeCategories}

@@ -1,0 +1,1 @@
+ALTER TABLE "personal_import_jobs" ADD COLUMN "import_ledger" jsonb;

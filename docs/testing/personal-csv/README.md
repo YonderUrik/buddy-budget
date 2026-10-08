@@ -60,3 +60,17 @@ Il codice del parser utilizzato nel test è stato generato dal modello, non corr
 Verificati elenco con fonte/stato/data e collegamento all'importazione corretta da Investimenti → Operazioni → Gestisci importazioni. TypeScript ed ESLint passati.
 
 ![Gestione CSV personali](08-management.jpg)
+
+## Lista unificata e cancellazione per caricamento
+
+La sezione CSV personali separata mostrata nello screenshot 08 è stata sostituita da un unico elenco cronologico con i rendiconti broker. I vecchi dati personali di prova locali sono stati rimossi su richiesta dell’utente; nessun percorso speciale di cancellazione per vecchi import è stato aggiunto.
+
+26 test dedicati passati: inclusi cancellazione del singolo caricamento, conservazione degli upload successivi e dei parser, reimportazione, doppioni, autorizzazione API, conferma obsoleta e rifiuto di cancellare acquisti necessari a vendite successive. TypeScript ed ESLint passati.
+
+Prova reale successiva alla migration 0024: nuovo caricamento Trade Republic confermato dal browser, anteprima di cancellazione con **885 movimenti di cassa e 17 investimenti**, cancellazione confermata dal browser. Verifica DB: zero movimenti, investimenti, ricevute e job del formato; saldo del conto **0,00 €**, parser conservati. I sei rendiconti degli importatori supportati restano nell’elenco.
+
+![Lista unificata](09-unified-list.jpg)
+![Conferma cancellazione](10-delete-confirmation.jpg)
+![Importazione eliminata](11-deleted.jpg)
+
+Lo stesso CSV è stato quindi ricaricato e confermato nuovamente usando il parser conservato. Un nuovo import cancellabile resta disponibile nell’account locale per la prova manuale.

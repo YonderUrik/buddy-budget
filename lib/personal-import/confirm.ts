@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { personalFormats as formats, personalImportJobs as jobs, personalImportReceipts as receipts } from "@/lib/db/schema/personal-imports";
@@ -54,7 +55,7 @@ export async function confirmImport(userId: string, id: string) {
       if (!instrument) [instrument] = await tx.insert(instruments).values({ createdByUserId: userId, name: o.name, isin: o.isin, type: o.instrumentType, currency: o.currency, priceMode: "manuale" }).returning();
       instrumentCache.set(identityKey, instrument);
       if (instrument.type !== o.instrumentType) throw new ImportError("Il tipo di uno strumento non coincide con lo storico");
-      tradeValues.push({ userId, portfolioId: portfolioId!, instrumentId: instrument.id, ...toRowValues({ ...o, fees: o.fees * r.rate!, taxes: o.taxes * r.rate!, note: o.description }, r.rate!) });
+      tradeValues.push({ id: randomUUID(), userId, portfolioId: portfolioId!, instrumentId: instrument.id, ...toRowValues({ ...o, fees: o.fees * r.rate!, taxes: o.taxes * r.rate!, note: o.description }, r.rate!) });
     }
     if (portfolioId && tradeValues.length) {
       const existing = await tx.select().from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), eq(investmentTransactions.portfolioId, portfolioId)));
@@ -76,14 +77,14 @@ export async function confirmImport(userId: string, id: string) {
       const cents = Math.round(amount * r.rate! * 100);
       if (!Number.isSafeInteger(cents) || Math.abs(cents) >= 1e12) throw new ImportError("Importo fuori limite");
       deltaCents += cents;
-      cashValues.push({ userId, accountId: accountId!, categoryId: categoryId!, description: o.description, date: o.date, amount: (cents / 100).toFixed(2), excludedAmount: o.kind === "investment" || o.transfer ? (cents / 100).toFixed(2) : "0", source: "manuale", externalId: `personal:${format.id}:${r.key}` });
+      cashValues.push({ id: randomUUID(), userId, accountId: accountId!, categoryId: categoryId!, description: o.description, date: o.date, amount: (cents / 100).toFixed(2), excludedAmount: o.kind === "investment" || o.transfer ? (cents / 100).toFixed(2) : "0", source: "manuale", externalId: `personal:${format.id}:${r.key}` });
     }
     for (let i = 0; i < tradeValues.length; i += 500) await tx.insert(investmentTransactions).values(tradeValues.slice(i, i + 500));
     for (let i = 0; i < cashValues.length; i += 500) await tx.insert(transactions).values(cashValues.slice(i, i + 500));
     if (accountId && financial.length) await tx.update(accounts).set({ balance: sql`${accounts.balance} + ${(deltaCents / 100).toFixed(2)}`, updatedAt: new Date() }).where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
     for (let i = 0; i < fresh.length; i += 500) await tx.insert(receipts).values(fresh.slice(i, i + 500).map(r => ({ formatId: format.id, recordKey: r.key, outcomeHash: outcomeHash(r.outcome) })));
     await tx.update(formats).set({ accountId, portfolioId }).where(eq(formats.id, format.id));
-    await tx.update(jobs).set({ status: "imported", encryptedCsv: null, encryptedPreview: null }).where(eq(jobs.id, id));
+    await tx.update(jobs).set({ status: "imported", encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key) } }).where(eq(jobs.id, id));
     return { inserted: financial.length, duplicates: preview.records.length - fresh.length };
   });
 }

@@ -8,6 +8,7 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
  */
 export interface ProductEvents {
   personal_csv_requested: { reuse: boolean };
+  personal_csv_deleted: { cash: number; investments: number };
   personal_csv_imported: { rows: number };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };

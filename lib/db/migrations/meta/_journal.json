@@ -169,6 +169,13 @@
       "when": 1791448331725,
       "tag": "0023_zippy_praxagora",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1791454495033,
+      "tag": "0024_unique_vertigo",
+      "breakpoints": true
     }
   ]
 }

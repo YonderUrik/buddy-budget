@@ -38,3 +38,9 @@ Saldo iniziale zero: occorre storico completo oppure correzione manuale del sald
 Eventi strutturati `personal_import.*` solo con stato, conteggi e job ID, mai nome fonte, CSV o risposta modello. Umami registra richiesta/riuso/conferma e numero righe. `/api/metrics` espone gauge `buddybudget_personal_csv_pending`, `_overdue`, `_failed`, `_emailPending`: allertare quando overdue/emailPending crescono o il worker non è disponibile. Applicare le regole nel repository infra insieme al Deployment.
 
 Test: `pnpm exec vitest run lib/personal-import`, con Postgres locale e provider/email simulati. Coprono sandbox (loop, regex, memoria, accesso host), cifratura, schema, isolamento utenti, riuso, doppioni, concorrenza, recupero lease, retry, email, TTL, rollback atomico e portabilità. La prova reale di OpenRouter richiede i due secret del worker; non fa parte dei test automatici.
+
+## Gestione e cancellazione
+
+In **Investimenti → Operazioni → Gestisci importazioni** rendiconti broker e CSV personali sono nella stessa lista, ordinata per data di caricamento. Ogni CSV personale ha un collegamento al dettaglio e il comando Elimina, anche prima della conferma dell’importazione.
+
+La migration 0024 aggiunge al job gli ID dei movimenti e degli investimenti effettivamente creati e le ricevute di deduplicazione del singolo caricamento. La cancellazione mostra prima i conteggi, verifica nuovamente la conferma sul server e rimuove i soli dati di quell’upload in una transazione. Aggiorna i saldi dei conti attuali, preserva formati/parser, conti e strumenti, e libera le ricevute per consentire la reimportazione. Un upload composto solo da doppioni non possiede i movimenti originali e non li cancella. Se altre vendite dipendono dagli acquisti da rimuovere, la cancellazione viene bloccata finché non vengono eliminate le operazioni dipendenti. I caricamenti ancora in analisi vengono rimossi e il worker non può più pubblicarne il risultato.

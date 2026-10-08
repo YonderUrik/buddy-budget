@@ -1,4 +1,4 @@
-import { pgTable, text, uuid, timestamp, integer, index, unique } from "drizzle-orm/pg-core";
+import { pgTable, jsonb, text, uuid, timestamp, integer, index, unique } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 import { accounts } from "./accounts";
 import { investmentPortfolios } from "./investments";
@@ -17,6 +17,7 @@ export const personalImportJobs = pgTable("personal_import_jobs", {
   formatId: uuid("format_id").notNull().references(() => personalFormats.id, { onDelete: "cascade" }), parserId: uuid("parser_id").references(() => personalParsers.id, { onDelete: "set null" }),
   consentVersion: text("consent_version").notNull().default("openrouter-zdr-v1"),
   status: text("status").notNull().default("queued"), encryptedCsv: text("encrypted_csv"), encryptedPreview: text("encrypted_preview"),
+  importLedger: jsonb("import_ledger").$type<{ cashIds: string[]; tradeIds: string[]; receiptKeys: string[] }>(),
   error: text("error"), attempts: integer("attempts").notNull().default(0), lease: uuid("lease"), leaseUntil: timestamp("lease_until", { withTimezone: true }),
   availableAt: timestamp("available_at", { withTimezone: true }).notNull().defaultNow(),
   estimatedAt: timestamp("estimated_at", { withTimezone: true }).notNull(), expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

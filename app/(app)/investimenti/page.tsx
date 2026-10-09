@@ -51,10 +51,11 @@ export default function InvestimentiPage() {
           <>
             <PortfolioHeroCard
               costImpact={view.costImpact}
+              periodGain={view.periodGain}
               includeFees={includeFees}
               includeTaxes={includeTaxes}
-              onIncludeFeesChange={setIncludeFees}
-              onIncludeTaxesChange={setIncludeTaxes}
+              onIncludeFeesChange={(value) => { setIncludeFees(value); track("investment_reinvest_toggled", { kind: "costi", reinvested: !value }); }}
+              onIncludeTaxesChange={(value) => { setIncludeTaxes(value); track("investment_reinvest_toggled", { kind: "imposte", reinvested: !value }); }}
               cash={cash}
               includeCash={includeCash}
               onIncludeCashChange={setIncludeCash}

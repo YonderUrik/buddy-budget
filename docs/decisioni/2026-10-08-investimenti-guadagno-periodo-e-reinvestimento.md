@@ -1,0 +1,7 @@
+# 2026-10-08 — Investimenti: guadagno del periodo e switch di reinvestimento comprensibili
+
+- **Bug**: nel Portafoglio il guadagno («il mercato ha aggiunto…») era sempre quello dall'inizio, anche cambiando periodo. Ora, per ogni periodo diverso da «Max», la frase mostra il **guadagno nel periodo**: variazione di valore al netto di ciò che hai versato e ritirato nel periodo, proventi inclusi (`lib/investments/period-gain.ts`, stessa base dei rendimenti giornalieri di Performance). Con «Max» resta la lettura attuale (pagato / aggiunto dal mercato / già incassato).
+- **Definizione**: `valore finale − valore alla chiusura del giorno prima del periodo − (acquisti − vendite e rimborsi) + dividendi e cedole`; la percentuale è il rendimento del periodo a parità di versamenti (TWR). Vale anche per «Da inizio anno» e «Personalizzato».
+- **Switch**: «Reinvesti costi/imposte» diventano due righe «Rimetti i costi/le imposte nel portafoglio» con, sempre visibile, quanto hai pagato e quanto varresti oggi in più; da accesi mostrano l'effetto sul totale, e il grafico affianca il «Valore registrato» al valore simulato. Logica di calcolo invariata.
+- **Osservabilità**: evento Umami `investment_reinvest_toggled` (tipo e stato, nessun importo); nessuna route o log server nuovi.
+- **Rimandato**: con la simulazione attiva la frase sul guadagno resta nascosta (come prima); i rendimenti di Performance per «Da inizio anno»/«Personalizzato» usano ancora «Max» (fuori scope).

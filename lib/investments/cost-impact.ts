@@ -57,12 +57,29 @@ export function computeCostImpact(params: ReturnInputs, unpriced: boolean, repor
   return result;
 }
 
+type CostAddition = { fees: number; taxes: number; estimatedTaxes: number };
+
+/** Quanto in più varrebbe il portafoglio a fine giornata `dateKey` se i costi e/o le imposte scelti fossero rimasti investiti. */
+export function reinvestedAmount(impact: CostImpact | undefined, dateKey: string, includeFees: boolean, includeTaxes: boolean): number {
+  if (!impact?.available) return 0;
+  return reinvestedFrom(impact.additions[dateKey], includeFees, includeTaxes);
+}
+
+function reinvestedFrom(day: CostAddition | undefined, includeFees: boolean, includeTaxes: boolean): number {
+  return (includeFees ? 0 : day?.fees ?? 0) + (includeTaxes ? 0 : (day?.taxes ?? 0) + (day?.estimatedTaxes ?? 0));
+}
+
+/** Effetto di oggi di ciascuna scelta presa da sola, per mostrarlo accanto all'interruttore prima di attivarlo. */
+export function reinvestmentEffects(impact: CostImpact | undefined): { fees: number; taxes: number } {
+  const last = impact?.available ? Object.values(impact.additions).at(-1) : undefined;
+  return { fees: reinvestedFrom(last, false, true), taxes: reinvestedFrom(last, true, false) };
+}
+
 /** Apply independent cost/tax switches to the same observed series without mutating actual balances. */
 export function simulateCostExclusions(impact: CostImpact | undefined, series: PortfolioSeriesPoint[], value: number, includeFees: boolean, includeTaxes: boolean) {
   const active = !!impact?.available && (!includeFees || !includeTaxes);
   if (!active) return { active: false, series, value, extra: 0 };
-  const addition = (day?: { fees: number; taxes: number; estimatedTaxes: number }) => (includeFees ? 0 : day?.fees ?? 0) + (includeTaxes ? 0 : (day?.taxes ?? 0) + (day?.estimatedTaxes ?? 0));
-  const extra = addition(Object.values(impact.additions).at(-1));
+  const extra = reinvestedFrom(Object.values(impact.additions).at(-1), includeFees, includeTaxes);
   return { active: true, value: value + extra, extra,
-    series: series.map((point) => ({ ...point, value: point.value + addition(impact.additions[point.date]) })) };
+    series: series.map((point) => ({ ...point, value: point.value + reinvestedAmount(impact, point.date, includeFees, includeTaxes) })) };
 }

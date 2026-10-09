@@ -5,9 +5,11 @@
  * la barra che lo scompone e l'andamento nel tempo del valore contro quanto hai versato.
  */
 
+import { ReinvestmentPanel } from "./reinvestment-panel";
+import { PeriodGainSummary } from "./period-gain-summary";
+import type { PeriodGain } from "@/lib/investments/period-gain";
 import { simulateCostExclusions } from "@/lib/investments/cost-impact";
 import type { BrokerCash } from "@/lib/investments/broker-cash";
-import { InfoHint } from "@/components/domain/shared";
 import { Switch } from "@/components/ui/switch";
 import type { CostImpact } from "@/lib/investments/cost-impact";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
@@ -25,11 +27,8 @@ import { ValueBreakdownBar } from "./value-breakdown-bar";
 const CHART_CONFIG = {
   value: { label: "Valore", color: "var(--primary)" },
   invested: { label: "Versato", color: "var(--muted-foreground)" },
+  registered: { label: "Valore registrato", color: "var(--foreground)" },
 } satisfies ChartConfig;
-const REINVESTMENT_HELP = {
-  fees: "Simula quanto varrebbe oggi il portafoglio se costi e commissioni fossero rimasti investiti, crescendo nel tempo con il rendimento del portafoglio.",
-  taxes: "Simula quanto varrebbe oggi il portafoglio se le imposte fossero rimaste investite, crescendo nel tempo con il rendimento del portafoglio. Include le imposte registrate e le stime della scheda Tasse, con compensazione delle minusvalenze; bollo escluso.",
-} as const;
 /** Margini del dominio verticale: la linea riempie l'altezza invece di partire da zero (come in Panoramica). */
 const CHART_DOMAIN_LOW = 0.9;
 const CHART_DOMAIN_HIGH = 1.01;
@@ -62,6 +61,8 @@ export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProp
   includeCash?: boolean;
   onIncludeCashChange?: (include: boolean) => void;
   costImpact?: CostImpact;
+  /** Guadagno del periodo scelto: se presente e il periodo non è «Tutto», sostituisce la frase sul guadagno totale. */
+  periodGain?: PeriodGain | null;
   includeFees?: boolean;
   includeTaxes?: boolean;
   onIncludeFeesChange?: (value: boolean) => void;
@@ -74,13 +75,15 @@ export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProp
   currency: string;
 }
 
-export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCashChange, costImpact, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCashChange, costImpact, periodGain, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const simulation = simulateCostExclusions(costImpact, series, summary.totalValue, includeFees, includeTaxes);
   const cashTotal = cash.reduce((total, account) => total + account.balance, 0);
   const displayedValue = simulation.value + (includeCash ? cashTotal : 0);
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
+  const showPeriodGain = !!periodGain && period !== "max";
+  const chartData = simulation.active ? simulation.series.map((point, i) => ({ ...point, registered: series[i]?.value })) : series;
   const hasHistory = series.length > 0;
 
   return (
@@ -111,6 +114,7 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
       </div>
       {!simulation.active ? (
         <div className="flex max-w-3xl flex-col gap-3">
+          {showPeriodGain && periodGain ? <PeriodGainSummary gain={periodGain} currency={currency} /> : (
           <p className="max-w-prose text-balance text-base text-foreground">
             Per quello che possiedi hai pagato <span className="font-semibold tabular-nums">{format(breakdown.paid)}</span>: il mercato ha{" "}
             {gaining ? "aggiunto" : "tolto"}{" "}
@@ -134,26 +138,18 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
               </span>
             ) : null}
           </p>
-          <ValueBreakdownBar breakdown={breakdown} currency={currency} />
+          )}
+          {showPeriodGain ? null : <ValueBreakdownBar breakdown={breakdown} currency={currency} />}
         </div>
       ) : null}
       {costImpact ? (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-          <div className="flex items-center gap-1">
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeFees} onCheckedChange={(checked) => onIncludeFeesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti costi</label>
-            <InfoHint label="Come funziona Reinvesti costi?">{REINVESTMENT_HELP.fees}</InfoHint>
-          </div>
-          <div className="flex items-center gap-1">
-            <label className="flex cursor-pointer items-center gap-2"><Switch size="sm" checked={!includeTaxes} onCheckedChange={(checked) => onIncludeTaxesChange?.(!checked)} disabled={!costImpact.available} />Reinvesti imposte</label>
-            <InfoHint label="Come funziona Reinvesti imposte?">{REINVESTMENT_HELP.taxes}</InfoHint>
-          </div>
-        </div>
+        <ReinvestmentPanel impact={costImpact} currency={currency} includeFees={includeFees} includeTaxes={includeTaxes} onIncludeFeesChange={onIncludeFeesChange} onIncludeTaxesChange={onIncludeTaxesChange} />
       ) : null}
       {hasHistory ? (
         <div className="flex flex-col gap-3">
           <div className="-mx-4 sm:-mx-6">
             <ChartContainer config={CHART_CONFIG} className="aspect-auto h-60 w-full sm:h-80">
-              <AreaChart data={simulation.series} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
                 <defs>
                   <linearGradient id={AREA_FILL_ID} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="var(--color-value)" stopOpacity={0.3} />
@@ -164,14 +160,20 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
                 <YAxis hide domain={[(min: number) => min * CHART_DOMAIN_LOW, (max: number) => max * CHART_DOMAIN_HIGH]} />
                 <ChartTooltip cursor={{ stroke: "var(--border)" }} content={<Tooltip currency={currency} />} />
                 <Area type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={series.length === 1} fill={`url(#${AREA_FILL_ID})`} activeDot={{ r: 4 }} />
+                {simulation.active ? <Line type="monotone" dataKey="registered" stroke="var(--color-registered)" strokeWidth={1.5} dot={false} isAnimationActive={false} /> : null}
                 <Line type="stepAfter" dataKey="invested" stroke="var(--color-invested)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
               </AreaChart>
             </ChartContainer>
           </div>
           <p className="flex justify-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="h-0.5 w-4 rounded-full bg-primary" aria-hidden="true" /> Valore
+              <span className="h-0.5 w-4 rounded-full bg-primary" aria-hidden="true" /> Valore{simulation.active ? " simulato" : ""}
             </span>
+            {simulation.active ? (
+              <span className="flex items-center gap-1.5">
+                <span className="h-0.5 w-4 rounded-full bg-foreground" aria-hidden="true" /> Valore registrato (senza simulazione)
+              </span>
+            ) : null}
             <span className="flex items-center gap-1.5">
               <span className="w-4 border-t border-dashed border-muted-foreground" aria-hidden="true" /> Versato (acquisti meno vendite)
             </span>

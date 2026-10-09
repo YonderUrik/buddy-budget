@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ChartPie, Eye, HandCoins, Landmark, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, ChartPie, HandCoins, Landmark, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface InvestmentsTab {
@@ -22,7 +22,6 @@ export const INVESTMENTS_TABS: readonly InvestmentsTab[] = [
   { href: "/investimenti", label: "Portafoglio", icon: Wallet },
   { href: "/investimenti/performance", label: "Performance", icon: TrendingUp },
   { href: "/investimenti/diversificazione", label: "Diversificazione", icon: ChartPie },
-  { href: "/investimenti/titoli", label: "Titoli", icon: Eye },
   { href: "/investimenti/proventi", label: "Dividendi", icon: HandCoins },
   { href: "/investimenti/tasse", label: "Tasse", icon: Landmark },
   { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight },

@@ -14,6 +14,7 @@ export interface ProductEvents {
   /** Fetta della torta "Dove sta il patrimonio" bloccata con un clic (solo la classe di asset). */
   overview_composition_slice_selected: { assetClass: "liquidita" | "investimenti" | "previdenza" };
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
+  investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
   onboarding_completed: { currency: SupportedCurrency };
   account_created: undefined;
   budget_set: undefined;

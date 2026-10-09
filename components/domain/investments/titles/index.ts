@@ -17,3 +17,7 @@ export type { TitleQuotationCardProps } from "./title-quotation-card";
 export { TitleCommentaryCard } from "./title-commentary-card";
 export type { TitleCommentaryCardProps } from "./title-commentary-card";
 export { TitleSparkline } from "./title-sparkline";
+export { TitleSearch } from "./title-search";
+export type { TitleSearchProps } from "./title-search";
+export { WatchedTitlesSection } from "./watched-titles-section";
+export type { WatchedTitlesSectionProps } from "./watched-titles-section";

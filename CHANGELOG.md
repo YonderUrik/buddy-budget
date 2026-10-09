@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.36.0](https://github.com/YonderUrik/buddy-budget/compare/v0.35.0...v0.36.0) (2026-10-09)
+
+
+### Novità
+
+* il grafico del login scorre come un nastro ([#236](https://github.com/YonderUrik/buddy-budget/issues/236)) ([147b2b3](https://github.com/YonderUrik/buddy-budget/commit/147b2b37e99dc555a4daf8920f762bc4e52fda12))
+
 ## [0.35.0](https://github.com/YonderUrik/buddy-budget/compare/v0.34.1...v0.35.0) (2026-10-09)
 
 

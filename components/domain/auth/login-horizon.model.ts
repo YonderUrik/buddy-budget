@@ -8,8 +8,6 @@
 export const HORIZON_POINTS = 24;
 /** Quanti periodi al secondo scorrono. */
 export const HORIZON_SCROLL_SPEED = 0.45;
-/** Intervallo tra due punti annotati, in periodi. */
-export const HORIZON_MILESTONE_EVERY = 9;
 /** Importo intero con il punto come separatore delle migliaia, identico su server e browser (Intl cambia tra ICU). */
 export function formatThousands(value: number): string {
   return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");

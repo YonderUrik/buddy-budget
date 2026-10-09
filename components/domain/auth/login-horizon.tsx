@@ -15,8 +15,6 @@ import { LoginHorizonAmount } from "./login-horizon-amount";
 import { LoginHorizonChart } from "./login-horizon-chart";
 import { createHorizonSeries, formatThousands, HORIZON_POINTS, HORIZON_START_K } from "./login-horizon.model";
 
-/** Cosa spiega la linea: fatti di esempio che scorrono con i punti annotati. */
-const MILESTONES = ["Primo investimento", "Rata del mutuo pagata", "Stipendio e risparmio"];
 const CHART_LABEL = "Patrimonio netto";
 const HERO_CAPTION = "Patrimonio netto · dati di esempio";
 const HERO_TITLE = "Conti, investimenti, pensione e debiti in un solo grafico.";
@@ -48,7 +46,6 @@ export function LoginHorizon({ header, aside, children, className }: LoginHorizo
       <LoginHorizonChart
         series={series}
         label={CHART_LABEL}
-        milestones={MILESTONES}
         onPeriod={setPeriod}
         className="absolute inset-x-0 bottom-0 h-[30%] lg:h-[58%]"
       />

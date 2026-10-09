@@ -2,7 +2,7 @@
 
 /** Testata di Liquidità: titolo, sottotitolo, pulsante "Aggiungi" (movimento o conto) e le schede della sezione. */
 
-import { LandmarkIcon, PlusIcon, ReceiptTextIcon } from "lucide-react";
+import { FileSpreadsheetIcon, LandmarkIcon, PlusIcon, ReceiptTextIcon } from "lucide-react";
 import { SectionTabs, type SectionTab } from "@/components/domain/shared";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,9 +14,11 @@ export interface LiquidityHeaderProps {
   activeHref: string;
   onAddTransaction: () => void;
   onAddAccount: () => void;
+  /** Apre l'import di un file CSV o Excel. */
+  onImport: () => void;
 }
 
-export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, onAddAccount }: LiquidityHeaderProps) {
+export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, onAddAccount, onImport }: LiquidityHeaderProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
@@ -29,12 +31,15 @@ export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, 
             <PlusIcon className="size-4" aria-hidden="true" />
             <span className="hidden sm:inline">Aggiungi</span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-52">
+          <DropdownMenuContent align="end" className="min-w-60">
             <DropdownMenuItem className="min-h-11 gap-2" onClick={onAddTransaction}>
               <ReceiptTextIcon className="size-4" aria-hidden="true" /> Un movimento
             </DropdownMenuItem>
             <DropdownMenuItem className="min-h-11 gap-2" onClick={onAddAccount}>
-              <LandmarkIcon className="size-4" aria-hidden="true" /> Un conto
+              <LandmarkIcon className="size-4" aria-hidden="true" /> Un conto o una banca
+            </DropdownMenuItem>
+            <DropdownMenuItem className="min-h-11 gap-2" onClick={onImport}>
+              <FileSpreadsheetIcon className="size-4" aria-hidden="true" /> Importa da CSV o Excel
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

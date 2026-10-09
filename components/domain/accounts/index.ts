@@ -16,6 +16,8 @@ export { AccountRow } from "./account-row";
 export type { AccountRowProps } from "./account-row";
 export { AddAccountForm } from "./add-account-form";
 export type { AddAccountFormProps } from "./add-account-form";
+export { ConnectBankFlow, BANK_COUNTRY_OPTIONS } from "./connect-bank-flow";
+export type { ConnectBankFlowProps } from "./connect-bank-flow";
 export { CurrencyInput } from "./currency-input";
 export type { CurrencyInputProps } from "./currency-input";
 export { AccountsTrend, buildTrendPoints } from "./accounts-trend";

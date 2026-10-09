@@ -6,7 +6,7 @@
 .steps-k { font: 600 12px var(--f-b); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3); }
 .steps-list h3 { font: 600 clamp(19px, 1.8vw, 22px) / 1.2 var(--f-h); letter-spacing: -0.02em; }
 .steps-list p { color: var(--ink2); font-size: 16px; margin-bottom: 14px; }
-.steps-list .ts { margin-top: auto; height: 220px; }
+.steps-list .ts { margin-top: auto; }
 @media (max-width: 900px) {
   .steps-list { grid-template-columns: 1fr; gap: 44px; }
   .steps-line { display: none; }

@@ -9,7 +9,7 @@ import { ToolShot } from "./tool-shot";
 import { TrackedSection } from "./tracked-section";
 
 /**
- * "Si parte in tre passi": collega o importa, vedi il quadro, decidi. Ogni passo ha il ritaglio della schermata vera.
+ * "Si parte in tre passi": collega o importa, vedi il quadro, decidi. Ogni passo ha la schermata vera, senza la barra laterale.
  * La linea che unisce i numeri si disegna scorrendo; i passi entrano in sequenza.
  */
 export function Steps({ content = STEPS }: { content?: typeof STEPS }) {
@@ -44,7 +44,7 @@ export function Steps({ content = STEPS }: { content?: typeof STEPS }) {
               <span className="steps-k">Passo {i + 1}</span>
               <h3>{s.title}</h3>
               <p>{s.text}</p>
-              <ToolShot id={s.shot.id} zoom={s.shot.zoom} x={s.shot.x} y={s.shot.y} />
+              <ToolShot id={s.shot.id} />
             </li>
           ))}
         </ol>

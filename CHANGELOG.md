@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.34.1](https://github.com/YonderUrik/buddy-budget/compare/v0.34.0...v0.34.1) (2026-10-09)
+
+
+### Refactoring
+
+* importazioni compatte e pagina I tuoi CSV nello stile della Panoramica ([#230](https://github.com/YonderUrik/buddy-budget/issues/230)) ([c1994c1](https://github.com/YonderUrik/buddy-budget/commit/c1994c159d00e12dad6e818f1a97ad20f3753641))
+
 ## [0.34.0](https://github.com/YonderUrik/buddy-budget/compare/v0.33.1...v0.34.0) (2026-10-09)
 
 

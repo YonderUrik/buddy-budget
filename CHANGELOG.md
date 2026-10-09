@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.38.0](https://github.com/YonderUrik/buddy-budget/compare/v0.37.0...v0.38.0) (2026-10-09)
+
+
+### Novità
+
+* nuova landing con regole italiane, metodo, confronto, pagine interne allineate e llms.txt ([#240](https://github.com/YonderUrik/buddy-budget/issues/240)) ([b50803d](https://github.com/YonderUrik/buddy-budget/commit/b50803d6c8a124919de1cb2a9083693a21fc1372))
+
 ## [0.37.0](https://github.com/YonderUrik/buddy-budget/compare/v0.36.0...v0.37.0) (2026-10-09)
 
 

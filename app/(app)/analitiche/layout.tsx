@@ -1,37 +1,24 @@
 "use client";
 
-/** Layout di Analitiche: intestazione, ipotesi (con riepilogo sempre visibile), guida iniziale e le quattro domande. */
+/** Layout di Analitiche: intestazione, guida iniziale e caricamento dei dati; il corpo (cursori e risposte) è la pagina. */
 
 import * as React from "react";
 import { HelpCircle } from "lucide-react";
-import { AssumptionsPanel, WalkthroughDialog, money, pct } from "@/components/domain/analytics";
-import { CollapsibleSection, LoadError } from "@/components/domain/shared";
+import { WalkthroughDialog } from "@/components/domain/analytics";
+import { LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
-import type { AnalyticsAssumptions } from "@/lib/analitiche/assumptions";
-import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
 
 const DISCLAIMER =
   "Stime a scopo informativo basate su ipotesi tue, non previsioni né consulenza finanziaria o fiscale. Le regole fiscali sono semplificate: verificale prima di decisioni importanti.";
-
-/** Riga di riepilogo delle ipotesi, visibile anche a sezione chiusa: i numeri su cui poggia tutto il resto. */
-function assumptionsSummary(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency: string): string {
-  const parts = [
-    plan.spending !== null ? `spesa ${money(plan.spending, currency)}` : null,
-    plan.savings !== null ? `risparmio ${money(plan.savings, currency)}` : null,
-    `rendimento ${pct(a.expectedReturn)}`,
-    `prelievo ${pct(a.withdrawalRate)}`,
-  ];
-  return parts.filter(Boolean).join(" · ");
-}
 
 function Header({ onGuide }: { onGuide?: () => void }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
         <h1 className="font-heading text-2xl font-medium text-foreground">Analitiche</h1>
-        <p className="text-sm text-muted-foreground">Quattro domande, una risposta ciascuna. I numeri tecnici sono in «Per esperti».</p>
+        <p className="text-sm text-muted-foreground">Muovi le ipotesi e guarda cosa cambia. I numeri tecnici sono in «Per esperti».</p>
       </div>
       {onGuide ? (
         <Button variant="outline" size="sm" onClick={onGuide}>
@@ -85,24 +72,6 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
         <LoadError message="Impossibile caricare i dati di Analitiche." onRetry={ctx.refetch} />
       ) : (
         <>
-          <CollapsibleSection
-            id="analytics-assumptions"
-            title="Le tue ipotesi"
-            defaultOpen={false}
-            summary={assumptionsSummary(ctx.plan, ctx.assumptions, ctx.base.currency)}
-          >
-            <AssumptionsPanel
-              // Si rimonta quando le ipotesi salvate cambiano da fuori, per non mostrare bozze vecchie.
-              key={JSON.stringify(ctx.assumptions)}
-              assumptions={ctx.assumptions}
-              plan={ctx.plan}
-              currency={ctx.base.currency}
-              pensionValue={ctx.base.wealth.pension}
-              saving={ctx.saving}
-              error={ctx.saveError}
-              onSave={ctx.saveAssumptions}
-            />
-          </CollapsibleSection>
           {children}
           <p className="text-xs text-muted-foreground">{DISCLAIMER}</p>
         </>

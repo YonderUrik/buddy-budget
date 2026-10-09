@@ -43,7 +43,7 @@ export const SCREENS = [
   { id: "pensione-scenari", area: "Pensione", label: "Se ritiri oggi", route: "/pensione/scenari", caption: "Quanto ti resterebbe oggi al netto delle tasse e il confronto con il TFR in azienda.", alt: "Pensione: stima netta di un prelievo oggi e confronto con il TFR lasciato in azienda" },
   { id: "debiti", area: "Debiti", label: "Debiti", route: "/debiti", caption: "Le prossime rate, dove paghi più interessi e come uscirne prima.", alt: "Debiti: prossime rate, interessi in un anno per debito e percorso per estinguerli prima" },
   { id: "simulatore", area: "Debiti", label: "Simulazione", route: "/debiti/finanziamenti", caption: "Finanziamento con le ipotesi «E se…»: versare di più, estinguere, cambiare banca.", alt: "Dettaglio di un finanziamento con residuo, anello di avanzamento e simulazione", scrollToText: "E se…" },
-  { id: "analitiche", area: "Analitiche", label: "Quattro domande", route: "/analitiche", caption: "Quanta strada hai fatto, quando puoi smettere di lavorare, se il patrimonio reggerà: una risposta chiara per domanda.", alt: "Analitiche: le quattro domande con avanzamento verso il numero FIRE e anno del traguardo" },
+  { id: "analitiche", area: "Analitiche", label: "E se…", route: "/analitiche", caption: "L'anno in cui puoi smettere di lavorare, che si sposta mentre muovi risparmio, spesa, rendimento e prelievo.", alt: "Analitiche: l'anno del traguardo, quattro cursori per provare le ipotesi e il grafico del patrimonio verso il numero FIRE" },
 ] as const satisfies readonly AppScreen[];
 
 /** Id di una schermata (tipo chiuso: finisce negli eventi Umami). */

@@ -75,7 +75,7 @@ export const FEATURES: readonly Feature[] = [
   f("riepilogo-sempre-in-vista", "Patrimonio", "Riepilogo sempre in vista", "Nella barra laterale: patrimonio, portafoglio, watchlist e avvisi.", "live"),
   f("nascondi-importi", "Patrimonio", "Nascondi importi", "Oscura cifre e grafici quando qualcuno guarda lo schermo.", "live"),
   f("pensione", "Patrimonio", "Pensione", "Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse e una stima di quanto varrà. Lo storico lo inserisci a mano o lo importi da CSV o Excel.", "new", "/pensione"),
-  f("analitiche", "Patrimonio", "Analitiche", "Quattro domande, una risposta ciascuna: quanta strada hai fatto, quando puoi smettere di lavorare, se il patrimonio reggerà, quanto ti costa. In «Per esperti» il numero FIRE al netto delle tasse, simulazioni Monte Carlo, regole di prelievo, rischio e imposte latenti, da ipotesi che decidi tu.", "new", "/analitiche"),
+  f("analitiche", "Patrimonio", "Analitiche", "L'anno in cui puoi smettere di lavorare, con quattro cursori per provare «e se…» (risparmio, spesa, rendimento, prelievo) senza salvare nulla, e quattro risposte: quanta strada hai fatto, quando arrivi, se il patrimonio reggerà, quanto ti costa. In «Per esperti» il numero FIRE al netto delle tasse, simulazioni Monte Carlo, regole di prelievo, rischio e imposte latenti, da ipotesi che decidi tu.", "new", "/analitiche"),
 
   f("accesso-semplice", "Account", "Accesso semplice", "Link via email o Google, senza password da ricordare.", "live"),
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),

@@ -20,7 +20,7 @@ export interface CostsSectionProps extends QuestionSectionData {
   onSaveTer: (terByInstrument: Record<string, number>) => Promise<void>;
 }
 
-export function CostsSection({ question, index, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
+export function CostsSection({ question, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
   const { currency } = base;
   const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })));
   const drag = summary.annualPct !== null ? costDrag(summary.totalValue, assumptions.expectedReturn, summary.annualPct, COST_DRAG_YEARS) : [];
@@ -28,7 +28,7 @@ export function CostsSection({ question, index, base, assumptions, plan, saving,
   return (
     <QuestionSection
       question={question}
-      index={index}
+     
       expertHint="costo di ogni fondo (TER), erosione, imposte"
       renderExpert={() => <CostsTab base={base} assumptions={assumptions} plan={plan} saving={saving} error={error} onSaveTer={onSaveTer} />}
     >

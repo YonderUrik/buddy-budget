@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.31.0](https://github.com/YonderUrik/buddy-budget/compare/v0.30.1...v0.31.0) (2026-10-09)
+
+
+### Novità
+
+* Investimenti, il titolo si apre dalle Posizioni o con la ricerca; via la scheda Titoli ([#222](https://github.com/YonderUrik/buddy-budget/issues/222)) ([a59b50d](https://github.com/YonderUrik/buddy-budget/commit/a59b50dff81dd3617d9f93919e811a28b2e4ca8d))
+
+
+### Refactoring
+
+* Pensione nello stile della Panoramica ([#218](https://github.com/YonderUrik/buddy-budget/issues/218)) ([5d5d532](https://github.com/YonderUrik/buddy-budget/commit/5d5d5326bb219a50ed3411b5b2c113e6b1f16877))
+
 ## [0.30.1](https://github.com/YonderUrik/buddy-budget/compare/v0.30.0...v0.30.1) (2026-10-08)
 
 

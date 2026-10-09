@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.34.0](https://github.com/YonderUrik/buddy-budget/compare/v0.33.1...v0.34.0) (2026-10-09)
+
+
+### Novità
+
+* sidebar con scadenze e obiettivo FIRE, barra in basso su mobile e moduli configurabili ([#231](https://github.com/YonderUrik/buddy-budget/issues/231)) ([fe3fbaa](https://github.com/YonderUrik/buddy-budget/commit/fe3fbaa4e1fe9ce364e871d2b7948b006e61ee9b))
+
 ## [0.33.1](https://github.com/YonderUrik/buddy-budget/compare/v0.33.0...v0.33.1) (2026-10-09)
 
 

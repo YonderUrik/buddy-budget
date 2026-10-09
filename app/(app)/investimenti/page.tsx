@@ -29,7 +29,6 @@ import { useInvestmentsView } from "@/lib/queries/investments-view";
 export default function InvestimentiPage() {
   const [includeFees, setIncludeFees] = React.useState(true);
   const [includeTaxes, setIncludeTaxes] = React.useState(true);
-  const [includeCash, setIncludeCash] = React.useState(true);
   const [period, setPeriod] = React.useState<PortfolioChartPeriod>(INVESTMENTS_DEFAULT_PERIOD);
   const [todayKey] = React.useState(() => toDateKey(new Date()));
   const [customRange, setCustomRange] = React.useState<PortfolioChartRange>({ from: `${todayKey.slice(0, 4)}-01-01`, to: todayKey });
@@ -53,13 +52,12 @@ export default function InvestimentiPage() {
           <>
             <PortfolioHeroCard
               costImpact={view.costImpact}
+              periodGain={view.periodGain}
               includeFees={includeFees}
               includeTaxes={includeTaxes}
-              onIncludeFeesChange={setIncludeFees}
-              onIncludeTaxesChange={setIncludeTaxes}
+              onIncludeFeesChange={(value) => { setIncludeFees(value); track("investment_reinvest_toggled", { kind: "costi", reinvested: !value }); }}
+              onIncludeTaxesChange={(value) => { setIncludeTaxes(value); track("investment_reinvest_toggled", { kind: "imposte", reinvested: !value }); }}
               cash={cash}
-              includeCash={includeCash}
-              onIncludeCashChange={setIncludeCash}
               summary={view.summary}
               breakdown={computeValueBreakdown(view.summary)}
               series={view.series}

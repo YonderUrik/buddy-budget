@@ -2,9 +2,7 @@
 
 /** Domanda 3, «Il patrimonio reggerà?»: probabilità di durare smettendo oggi, confronto tra regole e rischio. */
 
-import * as React from "react";
-import { buildSimulationInput } from "@/lib/analitiche/simulation";
-import { compareRules } from "@/lib/calc/monte-carlo";
+import type { MonteCarloResult } from "@/lib/calc/monte-carlo";
 import { cn } from "@/lib/utils";
 import { MissingData } from "./analytics-card";
 import { GlossedText } from "./glossed-text";
@@ -22,12 +20,13 @@ const RULE_TERMS: Record<string, GlossaryId> = { fissa: "regola-fissa", percentu
 
 const TONE_CLASS = { pos: "bg-pos-soft text-pos", neg: "bg-neg-soft text-neg", default: "bg-muted text-foreground" } as const;
 
-export function LastingSection({ question, index, base, assumptions, plan }: QuestionSectionData) {
+export interface LastingSectionProps extends QuestionSectionData {
+  /** Confronto tra regole di prelievo già calcolato (lo calcola chi sceglie le ipotesi, così non si rifà due volte); null se manca la spesa. */
+  results: MonteCarloResult[] | null;
+}
+
+export function LastingSection({ question, base, assumptions, plan, results }: LastingSectionProps) {
   const { currency } = base;
-  const results = React.useMemo(() => {
-    const input = buildSimulationInput(plan, assumptions, "oggi");
-    return input ? compareRules(input) : null;
-  }, [plan, assumptions]);
   const answer = results ? lastingAnswer(results, assumptions.rule, assumptions.retirementYears) : null;
   const expert = () => (
     <div className="flex flex-col gap-6">
@@ -37,7 +36,7 @@ export function LastingSection({ question, index, base, assumptions, plan }: Que
     </div>
   );
   return (
-    <QuestionSection question={question} index={index} expertHint="probabilità di successo, regole di prelievo, rischio del portafoglio" renderExpert={expert}>
+    <QuestionSection question={question} expertHint="probabilità di successo, regole di prelievo, rischio del portafoglio" renderExpert={expert}>
       {!answer ? (
         <MissingData>Per simulare serve la tua spesa annua. Scrivila nelle ipotesi, oppure registra almeno 3 mesi di movimenti.</MissingData>
       ) : (

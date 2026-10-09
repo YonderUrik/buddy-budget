@@ -98,7 +98,7 @@ export const QUESTIONS: readonly Question[] = [
     id: "fire",
     question: "Quanto mi serve per smettere di lavorare?",
     headline: "Il numero FIRE, al netto delle tasse.",
-    text: "Una pagina con quattro domande: quanta strada hai fatto, quando puoi smettere, se il patrimonio dura, quanto costa. I dettagli (scenari di mercato, regole di prelievo, rischio) si aprono in «Per esperti». Parte da ipotesi che scegli tu.",
+    text: "Un anno di arrivo che si sposta mentre muovi risparmio, spesa, rendimento e prelievo, e quattro risposte: quanta strada hai fatto, quando puoi smettere, se il patrimonio dura, quanto costa. I dettagli (scenari di mercato, regole di prelievo, rischio) si aprono in «Per esperti». Parte da ipotesi che scegli tu.",
     situation: "Spendi 30.000 € l'anno e con un prelievo del 3,5% il conto è semplice: 30.000 ÷ 0,035.",
     figure: { value: FIRE_NUMBER, unit: "eur", note: "il capitale necessario, in euro di oggi." },
     note: "Una stima, non una previsione.",

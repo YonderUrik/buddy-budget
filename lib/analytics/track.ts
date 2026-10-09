@@ -99,8 +99,14 @@ export interface ProductEvents {
   landing_link_clicked: { from: "logo" | "back_link" };
   /** Pagina di Analitiche aperta (sostituisce le sei schede, dal 2026-10-04). */
   analytics_page_viewed: undefined;
-  /** Voce dell'indice delle domande cliccata; `question`: quale. */
-  analytics_question_nav: { question: "dove-sono" | "quando" | "reggera" | "costi" };
+  /** Scheda di risposta scelta (sostituisce l'indice delle domande); `view`: quale. */
+  analytics_view_selected: { view: "dove-sono" | "quando" | "reggera" | "costi" };
+  /** Un cursore «e se…» lasciato; `field`: quale ipotesi. */
+  analytics_scenario_changed: { field: "annualSavings" | "annualSpending" | "expectedReturn" | "withdrawalRate" };
+  /** Cursori riportati alle ipotesi salvate. */
+  analytics_scenario_reset: undefined;
+  /** Valori dei cursori salvati come ipotesi; `fields`: quanti. */
+  analytics_scenario_saved: { fields: number };
   /** Apertura/chiusura di «Per esperti» di una domanda. */
   analytics_expert_toggled: { question: "dove-sono" | "quando" | "reggera" | "costi"; state: "aperta" | "chiusa" };
   /** Ipotesi salvate; `fields`: quanti campi sono cambiati. */

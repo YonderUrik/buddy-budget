@@ -1,13 +1,13 @@
 /**
  * components/domain/analytics — barrel file
  *
- * Sezione Analitiche: ipotesi, guida iniziale e le quattro domande (con i dettagli tecnici di sei analisi).
+ * Sezione Analitiche: cursori «e se…», guida iniziale e le quattro domande (con i dettagli tecnici di sei analisi).
  */
 
 export { ANALYTICS_QUESTIONS } from "./analytics-questions";
 export type { AnalyticsQuestion } from "./analytics-questions";
-export { QuestionsView } from "./questions-view";
-export type { QuestionsViewProps } from "./questions-view";
+export { ScenarioView } from "./scenario-view";
+export type { ScenarioViewProps } from "./scenario-view";
 export { AssumptionsPanel } from "./assumptions-panel";
 export type { AssumptionsPanelProps } from "./assumptions-panel";
 export { WalkthroughDialog } from "./walkthrough-dialog";

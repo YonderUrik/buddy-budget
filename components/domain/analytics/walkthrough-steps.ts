@@ -9,7 +9,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
   {
     title: "Quattro domande, una risposta ciascuna",
     body: [
-      "Analitiche è la parte di Buddy Budget per chi vuole ragionare sui numeri. È una sola pagina da leggere dall'alto: ogni sezione risponde a una domanda con una frase e un grafico.",
+      "Analitiche è la parte di Buddy Budget per chi vuole ragionare sui numeri. In alto vedi l'anno in cui puoi smettere di lavorare e quattro cursori per provare «e se…»; sotto, quattro schede rispondono ciascuna a una domanda con una frase e un grafico.",
       "Ogni risultato è una stima basata su ipotesi che decidi tu. Non è una previsione e non è una consulenza: serve a capire quali scelte contano di più.",
     ],
   },
@@ -23,7 +23,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
   {
     title: "Quando posso smettere di lavorare?",
     body: [
-      "Il grafico mostra come sale il patrimonio fino al numero FIRE e l'anno in cui lo raggiungi. Sotto, due «e se…»: spendere un po' meno o risparmiare un po' di più.",
+      "Il grafico mostra come sale il patrimonio fino al numero FIRE e l'anno in cui lo raggiungi; la linea tratteggiata è il percorso con le ipotesi salvate, per vedere cosa cambia muovendo i cursori.",
       "Se un'ipotesi cambia molto la data, fidati meno del risultato.",
     ],
   },
@@ -43,7 +43,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
   {
     title: "Le ipotesi e «Per esperti»",
     body: [
-      "In cima trovi «Le tue ipotesi» con il riepilogo sempre visibile: spesa e risparmio, se li lasci vuoti, vengono dai tuoi movimenti degli ultimi 12 mesi. Cambiale quando vuoi: tutte le risposte si aggiornano insieme.",
+      "I cursori (risparmio, spesa, rendimento, prelievo) provano un'ipotesi senza salvarla: l'anno e le risposte si aggiornano subito e ti dicono quanto guadagni o perdi rispetto a quelle salvate. «Salva queste ipotesi» le rende definitive, «Ripristina» le annulla. Spesa e risparmio, se non li hai scritti tu, vengono dai tuoi movimenti degli ultimi 12 mesi; le altre ipotesi sono in «Tutte le ipotesi».",
       "In fondo a ogni domanda, «Per esperti» apre l'analisi completa con la guida passo passo, la formula e i limiti. Puoi riaprire questa guida dal pulsante «Guida».",
     ],
   },

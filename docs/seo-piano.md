@@ -63,6 +63,14 @@ Regole: ogni pagina con title/description propri, canonical, JSON-LD adatto (`Ar
    - Directory di software (AlternativeTo, Capterra/G2 solo quando c'è una base utenti).
 6. **Misurazione**: Umami sulla landing già traccia le visite; aggiungi in Search Console l'utente di servizio solo se vorrai automatizzare report (opzionale).
 
+## 4-bis. Assistenti AI (ChatGPT, Claude, Perplexity, Gemini) — 2026-10-09
+
+- `/llms.txt` (formato llmstxt.org) generato a ogni build da FAQ, regole italiane, metodo dei gruppi e catalogo funzioni (`landing/content/llms.ts`): non può divergere dal sito.
+- `robots.txt` ammette per nome i crawler AI (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended…).
+- Contenuti citabili: frasi brevi con il fatto e la fonte ufficiale (sezione «Le regole italiane»), tabella HTML vera per il confronto, FAQ in testo semplice.
+- Da fare: verificare ogni mese le citazioni (chiedere agli assistenti «app per tenere conti e tasse sugli ETF in Italia»), Bing Webmaster Tools (lo usano diversi assistenti), una pagina per domanda.
+- Nota: secondo fonti di settore i rich result FAQ di Google non compaiono più da maggio 2026; il markup FAQPage resta, innocuo.
+
 ## 5. Cosa NON fare
 - Niente testo generato in massa o pagine duplicate per città/parola chiave: Google penalizza i contenuti sottili.
 - Niente scambio o acquisto di backlink.

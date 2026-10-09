@@ -1,4 +1,14 @@
-.hero { padding-block: 152px 56px; }
-.hero h1 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.05; max-width: 15em; }
+.hero { position: relative; padding-block: 152px 40px; overflow: clip; }
+/* alone azzurro dietro la schermata: lo stesso --glow dell'apertura, nessun colore nuovo */
+.hero::before { content: ""; position: absolute; inset: 38% -10% auto; height: 70%; background: radial-gradient(50% 50% at 50% 50%, var(--glow), transparent 70%); pointer-events: none; }
+.hero .wrap { position: relative; }
+.hero-copy { max-width: 46em; }
+.hero h1 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.05; max-width: 17em; }
 .hero-lede { font-size: clamp(18px, 1.7vw, 21px); color: var(--ink2); max-width: 36em; margin: 22px 0 30px; line-height: 1.55; }
-@media (max-width: 1000px) { .hero { padding-block: 120px 40px; } }
+.hero-facts { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px 22px; color: var(--ink2); font-size: 15px; }
+.hero-facts li { display: inline-flex; align-items: center; gap: 8px; }
+.hero-facts svg { color: var(--accent); flex: none; }
+.hero-shot { margin-top: 64px; perspective: 1600px; }
+.hero-shot > .shot { transform-origin: 50% 0; will-change: transform; }
+@media (max-width: 1000px) { .hero { padding-block: 120px 24px; } .hero-shot { margin-top: 44px; } }
+@media (max-width: 600px) { .hero-facts { font-size: 14px; gap: 8px 16px; } }

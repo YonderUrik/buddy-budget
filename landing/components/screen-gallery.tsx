@@ -13,7 +13,7 @@ const AREAS = ["Panoramica", "Liquidità", "Investimenti", "Pensione", "Debiti",
 
 /**
  * Galleria di tutte le schermate dell'app: sono screenshot veri (vedi `docs/landing-screens.md`), non disegni.
- * Si sceglie la schermata dalle schede raggruppate per area; la sua didascalia dice cosa mostra.
+ * Si sceglie la schermata dalle schede raggruppate per area, sopra l'immagine; la didascalia sopra lo screenshot dice cosa mostra.
  */
 export function ScreenGallery() {
   const [selected, setSelected] = useState<ScreenId>("panoramica");
@@ -45,23 +45,23 @@ export function ScreenGallery() {
 
   return (
     <TrackedSection id="schermate" section="schermate" className="gal">
-      <div className="gal-grid">
-        <nav className="gal-nav" aria-label="Schermate dell'app">
-          {AREAS.map((area) => (
-            <div key={area} className="gal-area">
-              <div className="gal-area-t">{area}</div>
+      <nav className="gal-nav" aria-label="Schermate dell'app">
+        {AREAS.map((area) => (
+          <div key={area} className="gal-area" role="group" aria-label={area}>
+            <span className="gal-area-t">{area}</span>
+            <div className="gal-area-b">
               {SCREENS.filter((s) => s.area === area).map((s) => (
                 <button key={s.id} type="button" className="gal-tab" aria-pressed={s.id === selected} onClick={() => select(s.id)}>
                   {s.label}
                 </button>
               ))}
             </div>
-          ))}
-        </nav>
-        <div className="gal-view" ref={view}>
-          <AppShot id={current.id} />
-          <p className="gal-cap" aria-live="polite">{current.caption}</p>
-        </div>
+          </div>
+        ))}
+      </nav>
+      <div className="gal-view" ref={view}>
+        <p className="gal-cap" aria-live="polite"><b>{current.label}</b>{current.caption}</p>
+        <AppShot id={current.id} />
       </div>
     </TrackedSection>
   );

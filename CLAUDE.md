@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Landing nuova (2026-10-09)**: home ristrutturata dopo l'analisi dei competitor (fatti in apertura, tre passi, regole italiane con fonti, quattro gruppi, per chi è, confronto) e `/llms.txt` + crawler AI ammessi; voce in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. PR in bozza sul branch `claude/project-thread-kflwwq`. Rimandati: pagine per domanda, `/sicurezza`, confronti, glossario, Lighthouse.
+
 **Sidebar (2026-10-09)**: moduli «Prossime scadenze» e «Obiettivo FIRE» accanto al riepilogo, barra in basso su mobile e sezione Impostazioni → «Barra laterale» per accendere/spegnere tutto (per dispositivo, localStorage); voce in `docs/decisioni/2026-10-09-sidebar-moduli-e-barra-mobile.md`. PR in bozza sul branch `claude/project-thread-mwh38f`. Rimandati: moduli riordinabili, preferenze sull'account.
 
 **Analitiche (2026-10-09)**: dalla proposta C scelta da Daniele, cursori «e se…» (risparmio, spesa, rendimento, prelievo) con anno del traguardo e quattro schede-risposta nello stile della Panoramica; voce in `docs/decisioni/2026-10-09-analitiche-cursori.md`. PR in bozza sul branch `claude/project-thread-qx2vob`. Rimandati: restyling dei dettagli «Per esperti», Rischio come risposta propria.

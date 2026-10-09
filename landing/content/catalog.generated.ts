@@ -33,7 +33,7 @@ const f = (
 ): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
 
 export const FEATURES: readonly Feature[] = [
-  f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica un CSV della tua banca o broker: analisi in background, formato privato riutilizzabile, importazione automatica di pagamenti e investimenti e avviso email.", "new"),
+  f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background, ricordiamo il formato per le volte dopo e ti avvisiamo per email a import finito.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live"),
   f("avviso-rinnovo-banca", "Liquidità", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
   f("liquidita-unica", "Liquidità", "Conti e movimenti in un posto solo", "Saldo totale, andamento e movimenti di tutti i conti in un'unica schermata, filtrabile per conto con un tocco.", "new"),
@@ -54,13 +54,13 @@ export const FEATURES: readonly Feature[] = [
   f("da-sistemare", "Liquidità", "Da sistemare", "Un avviso in Panoramica e un contatore su Liquidità nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
-  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers e DEGIRO nello stesso portafoglio (selezione multipla dei rendiconti, cassa riconciliata includibile nel totale con un interruttore, aggiornamento dei periodi sovrapposti e gestione degli import per broker in un menu espandibile nella scheda Operazioni e ripristino completo dello storico), Trade Republic (investimenti, pagamenti con carta e movimenti del conto), Fineco (movimenti del dossier titoli in Excel), Yahoo Finance o un altro CSV.", "live"),
-  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Grafico del portafoglio con periodo YTD e intervallo personalizzato. Rendimenti del portafoglio e dei tuoi soldi, al netto dell'inflazione. Includi o escludi i broker dalla vista combinata e sovrapponi i loro rendimenti per confrontarli. Attiva «Reinvesti costi» e «Reinvesti imposte» nel grafico per aggiungere al valore reale il risparmio rivalutato al rendimento del portafoglio; card di dettaglio con le stesse stime della scheda Tasse, incluse le compensazioni delle minusvalenze.", "live"),
+  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite o importa i file del tuo broker: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance o un altro CSV. Più broker convivono nello stesso portafoglio e gli import si gestiscono uno per uno.", "live"),
+  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Il rendimento del portafoglio e dei tuoi soldi, anche al netto dell'inflazione, per qualsiasi periodo e per broker. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y».", "live"),
   f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),
   f("allocazione-obiettivo", "Investimenti", "Allocazione obiettivo", "Con il suggerimento di dove mettere il prossimo versamento.", "live"),
-  f("proventi", "Investimenti", "Dividendi", "Riepilogo nel portafoglio, previsione a 12 mesi e incassi mese per mese. Pagamenti con date e dettaglio per strumento, anni espandibili e grafici con informazioni su lordo, ritenute e netto.", "live"),
+  f("proventi", "Investimenti", "Dividendi", "Proventi incassati e previsti nei prossimi 12 mesi, mese per mese e per strumento, con lordo, ritenute e netto.", "live"),
   f("tasse-italiane", "Investimenti", "Tasse italiane", "Plus e minus, zaino a 4 anni, titoli di Stato, crypto e bollo.", "live"),
   f("simulatore-prima-di-vendere", "Investimenti", "Simulatore «Prima di vendere»", "Ricalcola le tasse con la vendita in più, prima di farla.", "live"),
   f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo, che si apre dalle posizioni o con la ricerca, con grafico, watchlist e avvisi di prezzo via email.", "live"),
@@ -75,7 +75,7 @@ export const FEATURES: readonly Feature[] = [
   f("riepilogo-sempre-in-vista", "Patrimonio", "Riepilogo sempre in vista", "Nella barra laterale: patrimonio, portafoglio, watchlist e avvisi.", "live"),
   f("nascondi-importi", "Patrimonio", "Nascondi importi", "Oscura cifre e grafici quando qualcuno guarda lo schermo.", "live"),
   f("pensione", "Patrimonio", "Pensione", "Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse e una stima di quanto varrà. Lo storico lo inserisci a mano o lo importi da CSV o Excel.", "new", "/pensione"),
-  f("analitiche", "Patrimonio", "Analitiche", "L'anno in cui puoi smettere di lavorare, con quattro cursori per provare «e se…» (risparmio, spesa, rendimento, prelievo) senza salvare nulla, e quattro risposte: quanta strada hai fatto, quando arrivi, se il patrimonio reggerà, quanto ti costa. In «Per esperti» il numero FIRE al netto delle tasse, simulazioni Monte Carlo, regole di prelievo, rischio e imposte latenti, da ipotesi che decidi tu.", "new", "/analitiche"),
+  f("analitiche", "Patrimonio", "Analitiche", "L'anno in cui puoi smettere di lavorare, con quattro cursori «e se…» su risparmio, spesa, rendimento e prelievo. Per chi vuole di più: numero FIRE al netto delle tasse, simulazioni Monte Carlo e regole di prelievo.", "new", "/analitiche"),
 
   f("accesso-semplice", "Account", "Accesso semplice", "Link via email o Google, senza password da ricordare.", "live"),
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),

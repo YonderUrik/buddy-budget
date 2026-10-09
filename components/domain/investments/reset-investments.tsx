@@ -28,10 +28,10 @@ export function ResetInvestments() {
       setOpen(false);
     } catch { /* Keep the dialog open with the error and a fresh-review action. */ }
   }
-  return <div className="rounded-xl bg-muted/50 p-4">
-    <h3 className="font-medium">Riparti da zero</h3>
-    <p className="my-2 text-sm text-muted-foreground">Numeri duplicati dopo un vecchio import? Azzera lo storico investimenti e poi importa nuovamente i CSV completi, dal più vecchio al più recente.</p>
-    <Button variant="destructive" className="h-auto whitespace-normal text-left" onClick={review}>Rimuovi tutti gli import e azzera gli investimenti</Button>
+  return <div className="flex flex-col items-start gap-2">
+    <h3 className="text-sm font-semibold text-foreground">Riparti da zero</h3>
+    <p className="text-sm text-muted-foreground">Numeri duplicati dopo un vecchio import? Azzera lo storico investimenti e poi importa nuovamente i CSV completi, dal più vecchio al più recente. Si eliminano anche le operazioni inserite a mano.</p>
+    <Button variant="outline" className="h-auto whitespace-normal text-left text-destructive" onClick={review}>Rimuovi tutti gli import e azzera gli investimenti</Button>
     {reset.isSuccess && !open ? <p role="status" className="mt-3 text-sm">Investimenti azzerati. Ora puoi reimportare i rendiconti completi.</p> : null}
     <AlertDialog open={open} onOpenChange={(value) => { if (!reset.isPending) setOpen(value); }}>
       <AlertDialogContent className="max-h-[85dvh] overflow-y-auto data-[size=default]:sm:max-w-xl">

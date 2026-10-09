@@ -10,11 +10,21 @@ import type { RunImportInput } from "@/lib/validation/investments-import";
 export const IMPORT_STEPS = ["file", "mapping", "instruments", "summary"] as const;
 export type ImportStep = (typeof IMPORT_STEPS)[number];
 
-/** Etichette dei passi nello stepper: per un rendiconto già strutturato il secondo passo è un controllo, non la mappatura. */
-export function importStepLabel(step: ImportStep, structured: boolean): string {
-  if (step === "mapping") return structured ? "Controllo" : "Colonne";
-  return { file: "File", instruments: "Strumenti", summary: "Riepilogo" }[step];
-}
+/** Etichette dei passi nello stepper: sempre le stesse, con un verbo che dice cosa si fa in ciascuno. */
+export const IMPORT_STEP_LABELS: Record<ImportStep, string> = {
+  file: "File",
+  mapping: "Anteprima",
+  instruments: "Strumenti",
+  summary: "Conferma",
+};
+
+/** Una frase che dice cosa si fa in ogni passo, sotto lo stepper. */
+export const IMPORT_STEP_HINTS: Record<ImportStep, string> = {
+  file: "Carica il file esportato dal tuo broker.",
+  mapping: "Controlla cosa ho letto dal file. Non è ancora stato importato nulla.",
+  instruments: "Verifica che ogni titolo del file sia quello giusto.",
+  summary: "Ultimo controllo: poi importo tutto in una volta.",
+};
 
 /** Scelta dell'utente per uno strumento del file. */
 export type InstrumentChoice =
@@ -100,4 +110,38 @@ export function saveMapping(table: CsvTable, mapping: ImportMapping): void {
 export function attentionRank(choice: InstrumentChoice | undefined): number {
   if (!choice || choice.kind === "skip") return 0;
   return choice.kind === "create" && choice.confidence === "guess" ? 1 : 2;
+}
+
+/** Tono con cui si presenta lo stato di uno strumento: pronto, da controllare, da scegliere a mano o con prezzi manuali. */
+export type ChoiceTone = "ready" | "check" | "missing" | "manual";
+
+/** Stato di uno strumento spiegato a parole: titolo breve (cosa è successo) e frase (cosa significa e cosa fare). */
+export interface ChoiceStatus {
+  tone: ChoiceTone;
+  title: string;
+  text: string;
+}
+
+/** Racconta l'abbinamento di uno strumento senza cambiarlo: è solo la lettura umana di `InstrumentChoice`. */
+export function describeChoice(choice: InstrumentChoice | undefined): ChoiceStatus {
+  if (!choice || choice.kind === "skip") {
+    return choice?.reason === "unavailable"
+      ? { tone: "missing", title: "Fonti non raggiungibili", text: "Non sono riuscito a cercarlo ora. Cercalo qui sotto oppure lascialo fuori dall'import." }
+      : { tone: "missing", title: "Non trovato", text: "Non l'ho trovato né tra i tuoi strumenti né sulle fonti di prezzo. Cercalo qui sotto oppure lascialo fuori dall'import." };
+  }
+  if (choice.kind === "known") {
+    const manual = choice.instrument.priceMode === "manuale" && choice.instrument.isin;
+    return {
+      tone: "ready",
+      title: "Già tra i tuoi strumenti",
+      text: manual ? "Ha i prezzi manuali: durante l'import provo a collegare la quotazione automatica." : "Uso quello che hai già: le operazioni si aggiungono alla sua storia.",
+    };
+  }
+  if (choice.input.source === "manuale") {
+    return { tone: "manual", title: "Nuovo, con i prezzi del broker", text: "Non c'è una quotazione automatica compatibile (per esempio perché è in un'altra valuta): lo aggiungo con i prezzi del file e potrai collegarla dopo." };
+  }
+  if (choice.confidence === "guess") {
+    return { tone: "check", title: "Da controllare", text: "Ho scelto la quotazione più probabile tra più risultati: verifica che sia quella giusta, o cambiala." };
+  }
+  return { tone: "ready", title: "Nuovo, collegato in automatico", text: "Lo aggiungo ai tuoi strumenti con la quotazione trovata, e scarico i prezzi storici." };
 }

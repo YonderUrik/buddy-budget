@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.32.0](https://github.com/YonderUrik/buddy-budget/compare/v0.31.0...v0.32.0) (2026-10-09)
+
+
+### Novità
+
+* nuovo flusso e testi del dialog Importa operazioni ([#223](https://github.com/YonderUrik/buddy-budget/issues/223)) ([da46687](https://github.com/YonderUrik/buddy-budget/commit/da466871fd27d5abadcc2a7153339d7be4fb1570))
+
+
+### Correzioni
+
+* il guadagno degli Investimenti segue il periodo scelto e gli switch di reinvestimento spiegano l'effetto ([#221](https://github.com/YonderUrik/buddy-budget/issues/221)) ([3e8b761](https://github.com/YonderUrik/buddy-budget/commit/3e8b7615ead91973b0aa459e83d30efc790f7ff9))
+
 ## [0.31.0](https://github.com/YonderUrik/buddy-budget/compare/v0.30.1...v0.31.0) (2026-10-09)
 
 

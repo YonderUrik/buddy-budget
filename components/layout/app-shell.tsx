@@ -27,10 +27,22 @@
  */
 
 import { useEffect } from "react";
-import { AppSidebar, type NavBadge } from "@/components/layout/sidebar";
+import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
+import { BOTTOM_NAV_HEIGHT_REM, BottomNav } from "@/components/layout/bottom-nav";
+import { track } from "@/lib/analytics";
+import { useBottomNav } from "@/lib/hooks/use-sidebar-preferences";
 import { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
 import { cn } from "@/lib/utils";
+
+/** Nome della scheda per le statistiche d'uso, dall'href della voce (tipo chiuso: mai percorsi o id). */
+const BOTTOM_NAV_TABS: Record<string, "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro"> = {
+  "/panoramica": "panoramica",
+  "/liquidita": "liquidita",
+  "/investimenti": "investimenti",
+  "/debiti": "debiti",
+  altro: "altro",
+};
 
 // ---------------------------------------------------------------------------
 // Inner shell (accede al context, deve stare dentro SidebarProvider)
@@ -44,7 +56,16 @@ interface InnerShellProps {
 }
 
 function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShellProps) {
-  const { collapsed, mobileOpen, closeMobile } = useSidebar();
+  const { collapsed, mobileOpen, closeMobile, openMobile } = useSidebar();
+  const [bottomNav] = useBottomNav();
+
+  // Chi sta in basso sulla pagina (pannello dei sync) sa di quanto alzarsi grazie a questa variabile.
+  useEffect(() => {
+    document.documentElement.style.setProperty("--bottom-nav-offset", bottomNav ? `${BOTTOM_NAV_HEIGHT_REM}rem` : "0px");
+    return () => {
+      document.documentElement.style.removeProperty("--bottom-nav-offset");
+    };
+  }, [bottomNav]);
 
   // Chiude il drawer mobile se la finestra viene allargata oltre il breakpoint.
   useEffect(() => {
@@ -67,7 +88,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar />
+      <MobileTopbar showMenuButton={!bottomNav} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -94,8 +115,20 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
           tabIndex={-1}
         >
           {children}
+          {/* Spazio sotto il contenuto per la barra in basso (solo mobile). */}
+          {bottomNav ? <div className="md:hidden" style={{ height: `calc(${BOTTOM_NAV_HEIGHT_REM}rem + env(safe-area-inset-bottom))` }} aria-hidden="true" /> : null}
         </main>
       </div>
+
+      {bottomNav ? (
+        <BottomNav
+          items={NAV_ITEMS}
+          activeHref={activeHref}
+          badges={navBadges}
+          onOpenMore={openMobile}
+          onTabClick={(key) => track("bottom_nav_clicked", { tab: BOTTOM_NAV_TABS[key] ?? "altro" })}
+        />
+      ) : null}
 
       {/* ── Drawer mobile ── */}
       {/* Overlay */}

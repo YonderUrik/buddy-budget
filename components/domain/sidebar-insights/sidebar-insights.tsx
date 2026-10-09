@@ -38,6 +38,10 @@ export interface SidebarInsightsProps {
   titlesHref?: string;
   /** Pagina che elenca tutti i titoli (posizioni e seguiti): il Portafoglio di Investimenti. */
   titlesListHref?: string;
+  /** Sezioni da mostrare (preferenza dell'utente); quelle non indicate sono visibili. */
+  show?: Partial<Record<"oggi" | "portafoglio" | "watchlist", boolean>>;
+  /** Mostra l'occhio «nascondi importi» nella prima sezione visibile; da spegnere se un'altra istanza sopra lo mostra già. */
+  privacyToggle?: boolean;
 }
 
 const SECTION_LINK_CLASS = "block rounded-md px-1.5 py-1 text-xs font-semibold text-primary hover:underline";
@@ -82,6 +86,8 @@ export function SidebarInsights({
   onNavigate,
   titlesHref = "/investimenti/titoli",
   titlesListHref = "/investimenti",
+  show,
+  privacyToggle = true,
 }: SidebarInsightsProps) {
   const [pensionIncluded] = usePensionInNetWorth();
   if (loading) {
@@ -93,7 +99,10 @@ export function SidebarInsights({
     );
   }
   if (!summary) return null;
-  const { currency, netWorth, portfolio, watchlist } = summary;
+  const { currency } = summary;
+  const netWorth = show?.oggi === false ? null : summary.netWorth;
+  const portfolio = show?.portafoglio === false ? null : summary.portfolio;
+  const watchlist = show?.watchlist === false ? [] : summary.watchlist;
   if (!netWorth && !portfolio && watchlist.length === 0) return null;
 
   if (collapsed) {
@@ -123,7 +132,7 @@ export function SidebarInsights({
       : null;
   const eyeInFirstSection = netWorth ? "oggi" : portfolio ? "portafoglio" : "watchlist";
   const eye = (owner: string) =>
-    owner === eyeInFirstSection ? <PrivacyToggle hidden={hidden} onToggle={onToggleHidden} /> : undefined;
+    privacyToggle && owner === eyeInFirstSection ? <PrivacyToggle hidden={hidden} onToggle={onToggleHidden} /> : undefined;
   const watchAlerts = watchlist.reduce((sum, w) => sum + w.triggeredAlerts, 0);
 
   return (

@@ -1,0 +1,7 @@
+# 2026-10-09 — Sidebar: moduli a scelta e barra in basso su mobile
+
+- La sidebar desktop resta com'è (voci, riepilogo, utente) e guadagna due moduli: **Prossime scadenze** (rate dei finanziamenti e collegamenti bancari da rinnovare, max 4) e **Obiettivo FIRE** (barra di avanzamento, quanto manca, anni stimati). Ordine: Oggi, Scadenze, FIRE, Portafoglio, Watchlist: i moduli brevi stanno sopra quelli lunghi, così restano visibili anche sui portatili bassi.
+- L'obiettivo FIRE usa `buildAnalyticsBase` + `resolvePlan` di Analitiche, quindi stessi dati e stesse ipotesi (cifre uguali); è la query più pesante della sidebar (`/api/sidebar/fire`), perciò cache lato client di 1 ora e nessuna richiesta se il modulo è spento.
+- Su mobile (< 768px) una **barra in basso** (Panoramica, Liquidità con badge, Investimenti, Debiti, «Altro») sostituisce l'hamburger; «Altro» apre il drawer completo (Pensione, Analitiche, riepilogo, scadenze, profilo). Il pannello dei sync si alza sopra la barra tramite `--bottom-nav-offset`.
+- **Tutto è configurabile** da Impostazioni → «Barra laterale»: ogni modulo (anche Patrimonio, Portafoglio, Watchlist) e la barra in basso si accendono/spengono. Scelta **per dispositivo in localStorage** (come tema e «previdenza nel totale»), non per account: niente migration; se servirà averla su tutti i dispositivi si sposta in una colonna dell'utente.
+- Rimandati: moduli riordinabili, altri moduli (budget del mese, avvisi di prezzo scattati), voci della barra in basso personalizzabili, scadenze da altre fonti (bollo, imposte).

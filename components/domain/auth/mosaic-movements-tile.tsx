@@ -10,6 +10,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { MOSAIC_TIMING, type MosaicFeedItem } from "./login-mosaic.model";
+import { ReceiptTextIcon } from "lucide-react";
 import { MosaicTile } from "./mosaic-tile";
 import { STORY_EASE } from "./story-motion";
 
@@ -33,7 +34,7 @@ function MovementRow({ item }: { item: MosaicFeedItem }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
       transition={{ duration: 0.5, ease: STORY_EASE, layout: { duration: 0.45, ease: STORY_EASE } }}
-      className="relative h-11 shrink-0 overflow-hidden border-b border-sidebar-foreground/10 last:border-b-0"
+      className="relative h-11 shrink-0 overflow-hidden border-b border-border last:border-b-0"
     >
       <AnimatePresence mode="wait" initial={false}>
         {resolved ? (
@@ -53,7 +54,7 @@ function MovementRow({ item }: { item: MosaicFeedItem }) {
             />
             <span className="min-w-0 flex-1 leading-tight">
               <span className="block truncate text-[13px] font-medium">{event.merchant}</span>
-              <span className="block truncate text-[11px] text-sidebar-foreground/60">{event.category}</span>
+              <span className="block truncate text-[11px] text-text-3">{event.category}</span>
             </span>
             <span className={cn("text-[13px] font-medium tabular-nums", isIncome && "text-pos")}>
               {isIncome ? "+" : ""}
@@ -66,7 +67,7 @@ function MovementRow({ item }: { item: MosaicFeedItem }) {
             exit={{ opacity: 0, filter: "blur(4px)", transition: { duration: 0.2 } }}
             className="relative flex h-full items-center"
           >
-            <span className="truncate font-mono text-[11px] text-sidebar-foreground/55">{event.raw}</span>
+            <span className="truncate font-mono text-[11px] text-text-3">{event.raw}</span>
             <motion.span
               aria-hidden="true"
               className="absolute inset-y-1 w-1/3 bg-gradient-to-r from-transparent via-primary/30 to-transparent"
@@ -88,7 +89,7 @@ export interface MosaicMovementsTileProps {
 
 export function MosaicMovementsTile({ feed, className }: MosaicMovementsTileProps) {
   return (
-    <MosaicTile title="Movimenti" aside="in automatico" index={1} pulse={feed[0]?.key} className={className}>
+    <MosaicTile title="Movimenti" icon={ReceiptTextIcon} color="var(--swatch-violet)" aside="in automatico" index={1} pulse={feed[0]?.key} className={className}>
       <ul className="mt-2 flex min-h-[8.5rem] flex-1 flex-col overflow-hidden [mask-image:linear-gradient(to_bottom,black_72%,transparent)]">
         <AnimatePresence initial={false}>
           {feed.map((item) => (

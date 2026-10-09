@@ -4,6 +4,7 @@
 
 import { cn } from "@/lib/utils";
 import { MosaicLineChart } from "./mosaic-line-chart";
+import { TrendingUpIcon } from "lucide-react";
 import { MosaicTile } from "./mosaic-tile";
 import { StoryCountUp } from "./story-count-up";
 import type { MosaicLive } from "./login-mosaic.model";
@@ -21,6 +22,8 @@ export function MosaicInvestmentsTile({ live, className }: MosaicInvestmentsTile
   return (
     <MosaicTile
       title="Investimenti"
+      icon={TrendingUpIcon}
+      color="var(--swatch-blue)"
       index={2}
       pulse={live.step}
       className={className}
@@ -31,11 +34,11 @@ export function MosaicInvestmentsTile({ live, className }: MosaicInvestmentsTile
         </span>
       }
     >
-      <div className="mt-1 font-heading text-xl font-semibold tracking-tight">
+      <div className="mt-1 font-heading text-2xl font-medium tracking-tight">
         <StoryCountUp value={investments} duration={1.4} />
       </div>
       <MosaicLineChart values={live.investHistory} height={36} tone={positive ? "pos" : "neg"} className="-mx-1" />
-      <div className="mt-1 text-[11px] text-sidebar-foreground/60">ETF, azioni, BTP</div>
+      <div className="mt-1 text-[11px] text-text-3">ETF, azioni, BTP</div>
     </MosaicTile>
   );
 }

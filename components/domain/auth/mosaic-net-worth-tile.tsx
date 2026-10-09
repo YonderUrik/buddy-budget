@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/lib/format";
 import { MosaicLineChart } from "./mosaic-line-chart";
+import { LandmarkIcon } from "lucide-react";
 import { MosaicTile } from "./mosaic-tile";
 import { StoryCountUp } from "./story-count-up";
 import { liquidity, netWorth, type MosaicLive } from "./login-mosaic.model";
@@ -30,8 +31,8 @@ function CompositionLegend({
   return (
     <span className="flex items-center gap-1.5 text-xs">
       <span className={cn("size-2 rounded-full", colorClass)} />
-      <span className="text-sidebar-foreground/60">{label}</span>
-      <span className={cn("ml-auto font-medium", negative ? "text-neg" : "text-sidebar-foreground")}>
+      <span className="text-text-3">{label}</span>
+      <span className={cn("ml-auto font-medium", negative ? "text-neg" : "text-foreground")}>
         {negative ? "− " : ""}
         <StoryCountUp value={value} duration={0.9} />
       </span>
@@ -49,6 +50,8 @@ export function MosaicNetWorthTile({ live, className }: MosaicNetWorthTileProps)
   return (
     <MosaicTile
       title="Patrimonio netto"
+      icon={LandmarkIcon}
+      color="var(--primary)"
       index={0}
       pulse={step}
       className={className}
@@ -66,10 +69,10 @@ export function MosaicNetWorthTile({ live, className }: MosaicNetWorthTileProps)
         </span>
       }
     >
-      <div className="mt-1.5 grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-center gap-4">
+      <div className="mt-3 grid flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-center gap-4">
         <div className="flex flex-col">
           <div className="flex items-baseline gap-2">
-            <span className="font-heading text-3xl font-semibold tracking-tight">
+            <span className="font-heading text-4xl font-medium tracking-tight">
               <StoryCountUp value={net} duration={1.6} />
             </span>
           </div>

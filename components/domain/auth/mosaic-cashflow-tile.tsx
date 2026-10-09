@@ -3,6 +3,7 @@
 /** Tessera "Cash flow": entrate e uscite degli ultimi mesi; le barre del mese in corso crescono con i movimenti. */
 
 import { motion } from "motion/react";
+import { ArrowLeftRightIcon } from "lucide-react";
 import { MosaicTile } from "./mosaic-tile";
 import {
   MOSAIC_CASHFLOW_SCALE,
@@ -42,6 +43,8 @@ export function MosaicCashflowTile({ live, className }: MosaicCashflowTileProps)
   return (
     <MosaicTile
       title="Cash flow"
+      icon={ArrowLeftRightIcon}
+      color="var(--swatch-teal)"
       index={5}
       pulse={monthIn + monthOut > 0 ? live.step : undefined}
       className={className}
@@ -59,7 +62,7 @@ export function MosaicCashflowTile({ live, className }: MosaicCashflowTileProps)
           </div>
         ))}
       </div>
-      <div className="mt-1 flex gap-1.5 text-[10px] text-sidebar-foreground/50">
+      <div className="mt-1 flex gap-1.5 text-[10px] text-text-3">
         {months.map((m) => (
           <span key={m.label} className="flex-1 text-center">
             {m.label}

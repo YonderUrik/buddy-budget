@@ -41,7 +41,7 @@ export function LoginMosaic({ className }: LoginMosaicProps) {
 
       <MotionConfig reducedMotion="user">
         <div aria-hidden="true">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-x-10 gap-y-8">
             <MosaicNetWorthTile live={live} className="col-span-2" />
             <MosaicMovementsTile feed={live.feed} className="row-span-2" />
             <MosaicInvestmentsTile live={live} />

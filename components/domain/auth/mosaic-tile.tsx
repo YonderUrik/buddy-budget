@@ -1,74 +1,66 @@
-"use client";
-
 /**
- * Tessera del mosaico del login: entra con una molla (scaglionata per `index`), segue il puntatore con un riflesso
- * e, quando cambia `pulse`, emette un anello che si dissolve per segnalare che i suoi dati sono appena cambiati.
+ * Sezione del mosaico del login, nello stile della Panoramica: nessun riquadro, solo icona su fondo tinto e titolo.
+ * Entra con una molla (scaglionata per `index`) e, quando cambia `pulse`, l'icona emette un anello che si dissolve
+ * per segnalare che i suoi dati sono appena cambiati.
  */
 
 import * as React from "react";
+import type { LucideIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
-/** Ritardo tra l'ingresso di una tessera e la successiva, in secondi. */
+/** Ritardo tra l'ingresso di una sezione e la successiva, in secondi. */
 const TILE_STAGGER_S = 0.09;
 
 export interface MosaicTileProps {
   title: string;
+  icon: LucideIcon;
+  /** Token CSS del colore dell'ambito (es. `var(--swatch-teal)`): tinge l'icona e il suo fondo. */
+  color: string;
   /** Testo a destra dell'intestazione. */
   aside?: React.ReactNode;
   /** Posizione nell'ordine di ingresso. */
   index: number;
-  /** Cambia valore quando i dati della tessera cambiano: scatena l'anello. */
-  pulse?: number;
+  /** Cambia valore quando i dati della sezione cambiano: scatena l'anello. */
+  pulse?: number | string;
   className?: string;
   children: React.ReactNode;
 }
 
-export function MosaicTile({ title, aside, index, pulse, className, children }: MosaicTileProps) {
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty("--mx", `${event.clientX - rect.left}px`);
-    event.currentTarget.style.setProperty("--my", `${event.clientY - rect.top}px`);
-  };
-
+export function MosaicTile({ title, icon: Icon, color, aside, index, pulse, className, children }: MosaicTileProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 22, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 170, damping: 20, delay: index * TILE_STAGGER_S }}
-      whileHover={{ y: -2 }}
-      onPointerMove={handlePointerMove}
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-xl border border-sidebar-foreground/15 bg-sidebar-foreground/[0.04] p-3.5",
-        className,
-      )}
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 170, damping: 22, delay: index * TILE_STAGGER_S }}
+      className={cn("flex flex-col", className)}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background:
-            "radial-gradient(150px circle at var(--mx, 50%) var(--my, 50%), color-mix(in oklab, var(--primary) 18%, transparent), transparent 70%)",
-        }}
-      />
-      <AnimatePresence>
-        {pulse ? (
-          <motion.span
-            key={pulse}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <span
+            className="relative grid size-8 place-items-center rounded-full"
+            style={{ color, backgroundColor: `color-mix(in oklab, ${color} 16%, transparent)` }}
             aria-hidden="true"
-            initial={{ opacity: 0.9 }}
-            animate={{ opacity: 0 }}
-            transition={{ duration: 1.1 }}
-            className="pointer-events-none absolute inset-0 rounded-xl border border-primary"
-          />
-        ) : null}
-      </AnimatePresence>
-
-      <div className="relative flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-wider text-sidebar-foreground/60">
-        <span>{title}</span>
-        {aside ? <span className="normal-case tracking-normal">{aside}</span> : null}
+          >
+            <Icon className="size-4" />
+            <AnimatePresence>
+              {pulse ? (
+                <motion.span
+                  key={pulse}
+                  initial={{ opacity: 0.9, scale: 1 }}
+                  animate={{ opacity: 0, scale: 1.5 }}
+                  transition={{ duration: 1.1 }}
+                  className="pointer-events-none absolute inset-0 rounded-full border"
+                  style={{ borderColor: color }}
+                />
+              ) : null}
+            </AnimatePresence>
+          </span>
+          <h3 className="font-heading text-base font-medium text-foreground">{title}</h3>
+        </div>
+        {aside ? <span className="text-xs text-text-3">{aside}</span> : null}
       </div>
-      <div className="relative flex flex-1 flex-col">{children}</div>
-    </motion.div>
+      <div className="flex flex-1 flex-col">{children}</div>
+    </motion.section>
   );
 }

@@ -3,6 +3,7 @@
 /** Tessera "Debiti": residuo che scende a ogni rata, barra del capitale rimborsato e un "rata pagata" che compare. */
 
 import { AnimatePresence, motion } from "motion/react";
+import { CreditCardIcon } from "lucide-react";
 import { MosaicTile } from "./mosaic-tile";
 import { StoryCountUp } from "./story-count-up";
 import { MOSAIC_DEBT, debtPaidShare, type MosaicLive } from "./login-mosaic.model";
@@ -20,13 +21,15 @@ export function MosaicDebtTile({ live, className }: MosaicDebtTileProps) {
   return (
     <MosaicTile
       title="Debiti"
+      icon={CreditCardIcon}
+      color="var(--neg)"
       aside="finanziamento"
       index={3}
       pulse={justPaid ?? undefined}
       className={className}
     >
       <div className="mt-1 flex items-center gap-2">
-        <span className="font-heading text-xl font-semibold tracking-tight">
+        <span className="font-heading text-2xl font-medium tracking-tight">
           <StoryCountUp value={debt} duration={1.2} />
         </span>
         <AnimatePresence>
@@ -44,7 +47,7 @@ export function MosaicDebtTile({ live, className }: MosaicDebtTileProps) {
           ) : null}
         </AnimatePresence>
       </div>
-      <div className="mt-2 h-2 overflow-hidden rounded-full bg-sidebar-foreground/10">
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
         <motion.div
           className="h-full rounded-full bg-neg"
           initial={{ width: 0 }}
@@ -52,7 +55,7 @@ export function MosaicDebtTile({ live, className }: MosaicDebtTileProps) {
           transition={{ duration: 1.2, delay: 0.5, ease: "easeOut" }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between text-[11px] text-sidebar-foreground/60">
+      <div className="mt-1.5 flex justify-between text-[11px] text-text-3">
         <span>
           Rata{" "}
           <AnimatePresence mode="popLayout" initial={false}>
@@ -61,7 +64,7 @@ export function MosaicDebtTile({ live, className }: MosaicDebtTileProps) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
-              className="inline-block font-medium text-sidebar-foreground"
+              className="inline-block font-medium text-foreground"
             >
               {installment}
             </motion.span>

@@ -59,6 +59,8 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
   const valueRef = React.useRef<HTMLSpanElement>(null);
   const milestoneRefs = React.useRef(new Map<number, HTMLDivElement>());
   const lastPeriod = React.useRef(HORIZON_START_K);
+  /** Scorrimento corrente: i punti annotati appena montati si posizionano da qui, senza saltare in un fotogramma. */
+  const scrollRef = React.useRef(HORIZON_START_K);
   const [period, setPeriod] = React.useState(HORIZON_START_K);
 
   const padY = width >= DESKTOP_MIN_WIDTH ? PAD_DESKTOP : PAD_MOBILE;
@@ -66,6 +68,18 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
   const step = width / HORIZON_POINTS;
 
   const yOf = React.useCallback((level: number) => padY + (height - padY * 2) * (1 - level), [padY, height]);
+
+  /** Posiziona un punto annotato per lo scorrimento `s`; sfuma ai bordi (a destra lascia spazio all'etichetta finale). */
+  const placeMilestone = React.useCallback(
+    (element: HTMLDivElement, k: number, s: number) => {
+      const x = (k - s) * step;
+      element.style.transform = `translate(${x}px, ${yOf(horizonLevel(k))}px)`;
+      element.style.opacity = String(
+        Math.max(0, Math.min(1, (x - MILESTONE_FADE_PX / 2) / MILESTONE_FADE_PX, (width - RIGHT_CLEARANCE_PX - x) / MILESTONE_FADE_PX)),
+      );
+    },
+    [step, yOf, width],
+  );
 
   const paint = React.useCallback(
     (s: number) => {
@@ -84,12 +98,8 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
       if (labelRef.current) labelRef.current.style.top = `${endY - LABEL_OFFSET_Y}px`;
       if (valueRef.current) valueRef.current.textContent = `${formatThousands(horizonValue(Math.floor(s) + HORIZON_POINTS))} €`;
 
-      milestoneRefs.current.forEach((element, k) => {
-        const x = (k - s) * step;
-        element.style.transform = `translate(${x}px, ${yOf(horizonLevel(k))}px)`;
-        // Sfuma vicino ai bordi: a destra lascia spazio all'etichetta finale, a sinistra esce senza tagli netti.
-        element.style.opacity = String(Math.max(0, Math.min(1, (x - MILESTONE_FADE_PX / 2) / MILESTONE_FADE_PX, (width - RIGHT_CLEARANCE_PX - x) / MILESTONE_FADE_PX)));
-      });
+      scrollRef.current = s;
+      milestoneRefs.current.forEach((element, k) => placeMilestone(element, k, s));
 
       const whole = Math.floor(s);
       if (whole !== lastPeriod.current) {
@@ -98,7 +108,7 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
         onPeriod?.(whole);
       }
     },
-    [width, height, step, yOf, onPeriod],
+    [width, height, step, yOf, onPeriod, placeMilestone],
   );
 
   // Stato fermo (e primo disegno): posizione di partenza. Con reduced motion non scorre mai.
@@ -170,11 +180,12 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
             <div
               key={k}
               ref={(element) => {
-                if (element) milestoneRefs.current.set(k, element);
-                else milestoneRefs.current.delete(k);
+                if (element) {
+                  milestoneRefs.current.set(k, element);
+                  placeMilestone(element, k, scrollRef.current);
+                } else milestoneRefs.current.delete(k);
               }}
-              className="absolute left-0 top-0"
-              style={{ transform: `translate(${(k - period) * step}px, ${yOf(horizonLevel(k))}px)` }}
+              className="absolute left-0 top-0 opacity-0 will-change-transform"
             >
               <span className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary bg-background" />
               <span className="absolute -translate-x-1/2 whitespace-nowrap text-xs text-text-2" style={{ top: -MILESTONE_LABEL_GAP }}>

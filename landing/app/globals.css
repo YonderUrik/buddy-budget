@@ -170,3 +170,5 @@ h2.t { font-size: clamp(28px, 3.6vw, 44px); font-weight: 600; letter-spacing: -0
   *, *::before, *::after { animation-duration: 0.01s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
   .btn, .btn svg, .tools-card, .gal-tab, .areas button { transition-property: color, background-color, box-shadow, opacity !important; transition-duration: 0.15s !important; }
 }
+/* testo solo per lettori di schermo */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

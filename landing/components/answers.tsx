@@ -54,7 +54,7 @@ export function Answers({ questions = QUESTIONS }: { questions?: readonly Questi
     track("question_selected", { question: questions[i].id });
   };
   return (
-    <TrackedSection id="risposte" section="risposte" className="sec answers">
+    <TrackedSection id="risposte" section="risposte" className="sec answers band">
       <div className="wrap">
         <h2 className="t">Cosa puoi chiederti, e cosa risponde.</h2>
         <ol className="qa" style={{ "--n": questions.length } as CSSProperties}>

@@ -1,0 +1,28 @@
+.grp { margin-top: 48px; }
+.grp-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; color: var(--ink2); font-size: 15px; margin-bottom: 12px; }
+.grp-head b { font: 600 clamp(24px, 2.6vw, 32px) var(--f-h); color: var(--ink); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.grp-bar { display: flex; gap: 4px; height: 22px; border-radius: 99px; overflow: hidden; background: var(--a-soft); }
+.grp-seg { width: var(--w); flex: 0 1 auto; min-width: 0; }
+/* colori dei gruppi = quelli dell'app (token --a-*); l'avanzo usa il colore primario */
+.g-dovute { background: var(--a-dov); }
+.g-volute { background: var(--a-vol); }
+.g-futuro { background: var(--a-fut); }
+.g-saltuarie { background: var(--a-sal); }
+.g-avanzo { background: var(--a-primary); }
+.grp-legend { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; }
+.grp-legend li { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+.grp-name { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+.grp-name i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.grp-legend b { font: 600 20px var(--f-h); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; grid-column: 1; }
+.grp-pct { color: var(--ink3); font-size: 14px; font-variant-numeric: tabular-nums; grid-column: 2; grid-row: 1; }
+.grp-legend p { grid-column: 1 / -1; color: var(--ink2); font-size: 15px; line-height: 1.5; }
+.grp-note { margin-top: 20px; color: var(--ink3); font-size: 14px; }
+
+/* animazione: i segmenti partono vuoti e si riempiono in sequenza quando la barra è in vista (solo con js-motion) */
+.js-motion .grp-seg { width: 0; transition: width 0.9s var(--ease) calc(var(--i) * 0.12s); }
+.js-motion .grp.live .grp-seg { width: var(--w); }
+.js-motion .grp-legend li { opacity: 0; translate: 0 12px; transition: opacity 0.6s var(--ease) calc(0.3s + var(--i) * 0.1s), translate 0.6s var(--ease) calc(0.3s + var(--i) * 0.1s); }
+.js-motion .grp.live .grp-legend li { opacity: 1; translate: 0 0; }
+
+@media (max-width: 1000px) { .grp-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .grp-legend { grid-template-columns: 1fr; } .grp-bar { height: 18px; } }

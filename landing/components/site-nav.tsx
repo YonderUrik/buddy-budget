@@ -17,9 +17,9 @@ export interface NavLink {
 
 export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
   { href: "#risposte", label: "Domande" },
+  { href: "#italia", label: "Tasse italiane" },
   { href: "#funzioni", label: "Funzioni" },
   { href: "#sicurezza", label: "Sicurezza" },
-  { href: "#strumenti", label: "Strumenti" },
 ];
 
 /** Barra fissa in alto. Passa allo stile scuro quando sta sopra una sezione `data-nav-dark`. */

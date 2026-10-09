@@ -11,7 +11,7 @@ import { ToolShot } from "./tool-shot";
 const STATUS_LABEL: Partial<Record<FeatureStatus, string>> = { new: "Nuovo", soon: "In arrivo" };
 
 /**
- * Tutte le funzioni, area per area, dal catalogo condiviso. Ogni area ha la sua icona, una frase, un ritaglio dell'app vera
+ * Tutte le funzioni, area per area, dal catalogo condiviso. Ogni area ha la sua icona, una frase, la schermata vera dell'app
  * e le funzioni in schede. Tutto il testo è nell'HTML (niente schede da aprire): serve anche ai motori di ricerca.
  */
 export function FeatureAreas() {
@@ -34,7 +34,7 @@ export function FeatureAreas() {
                   </Link>
                 ) : null}
               </div>
-              {meta.shot ? <ToolShot {...meta.shot} /> : null}
+              {meta.shot ? <ToolShot id={meta.shot.id} /> : null}
             </div>
             <Reveal stagger className="fa-grid">
               {features.map((f) => (

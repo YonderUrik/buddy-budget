@@ -1,6 +1,6 @@
 /**
  * Presentazione delle aree nella pagina «Tutte le funzioni»: icona (la stessa della sidebar dell'app), una frase
- * d'introduzione, un ritaglio di uno screenshot vero e un eventuale approfondimento. Le funzioni vere e proprie
+ * d'introduzione, una schermata vera e un eventuale approfondimento. Le funzioni vere e proprie
  * vengono dal catalogo condiviso (`catalog.generated.ts`): qui c'è solo il contorno.
  */
 import type { FeatureArea } from "./catalog.generated";
@@ -13,7 +13,7 @@ export interface AreaMeta {
   slug: string;
   icon: HomeIcon;
   intro: string;
-  shot?: { id: ScreenId; zoom: number; x: number; y: number };
+  shot?: { id: ScreenId };
   more?: { href: string; label: string };
 }
 
@@ -22,27 +22,27 @@ export const AREA_META: Record<FeatureArea, AreaMeta> = {
     slug: "liquidita",
     icon: "wallet",
     intro: "Conti collegati in sola lettura o tenuti a mano, movimenti con la categoria giusta e le spese divise nei quattro gruppi.",
-    shot: { id: "movimenti", zoom: 1.6, x: 19, y: 18 },
+    shot: { id: "movimenti" },
   },
   Investimenti: {
     slug: "investimenti",
     icon: "trending",
     intro: "Il rendimento calcolato dalle tue operazioni, il confronto con un indice, il rischio e le tasse secondo le regole italiane.",
-    shot: { id: "investimenti", zoom: 1.6, x: 19, y: 15 },
+    shot: { id: "investimenti" },
     more: { href: CONTENT_PATHS.funzioneInvestimenti, label: "Gli investimenti nel dettaglio" },
   },
   Debiti: {
     slug: "debiti",
     icon: "card",
     intro: "Mutui e finanziamenti con il piano delle rate, il TAEG e la simulazione di un'estinzione anticipata.",
-    shot: { id: "debiti", zoom: 1.3, x: 19, y: 11 },
+    shot: { id: "debiti" },
     more: { href: CONTENT_PATHS.ammortamento, label: "Calcolatore della rata" },
   },
   Patrimonio: {
     slug: "patrimonio",
     icon: "dashboard",
     intro: "Il quadro d'insieme: il patrimonio netto giorno per giorno, il fondo pensione e l'anno in cui puoi smettere di lavorare.",
-    shot: { id: "panoramica", zoom: 1.6, x: 19, y: 21 },
+    shot: { id: "panoramica" },
   },
   Account: {
     slug: "account",

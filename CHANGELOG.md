@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.33.0](https://github.com/YonderUrik/buddy-budget/compare/v0.32.0...v0.33.0) (2026-10-09)
+
+
+### Novità
+
+* Analitiche con cursori «e se…» nello stile della Panoramica ([#225](https://github.com/YonderUrik/buddy-budget/issues/225)) ([bb327f9](https://github.com/YonderUrik/buddy-budget/commit/bb327f9c026bac2f41535f693ee6a4176d98125f))
+
 ## [0.32.0](https://github.com/YonderUrik/buddy-budget/compare/v0.31.0...v0.32.0) (2026-10-09)
 
 

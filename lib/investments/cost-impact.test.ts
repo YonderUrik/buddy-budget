@@ -2,7 +2,7 @@ import { computeTaxReport } from "@/lib/calc/taxes";
 import { expect, it } from "vitest";
 import { buildFxTable } from "@/lib/calc/fx";
 import { buildPriceIndex, type InvestmentTransactionInput } from "@/lib/calc/investments";
-import { computeCostImpact as computeImpact, simulateCostExclusions } from "./cost-impact";
+import { computeCostImpact as computeImpact, reinvestmentEffects, simulateCostExclusions } from "./cost-impact";
 
 const tx = (extra: Partial<InvestmentTransactionInput>): InvestmentTransactionInput => ({
   id: "buy", instrumentId: "a", type: "acquisto", date: "2026-01-01", quantity: "10", price: "100", fxRate: "1", fees: "10", taxes: "0", grossAmount: null, ...extra,
@@ -104,4 +104,11 @@ it("adds both paid and estimated taxes once, grows them and never subtracts esti
   const both = simulateCostExclusions(impact, series, 1100, false, false);
   expect(both.value).toBe(1144);
   expect(both.series[0].value).toBe(1144);
+});
+it("shows each switch's effect alone and ignores an unavailable impact", () => {
+  const impact = computeCostImpact(inputs([tx({ taxes: "5" })]), false);
+  const effects = reinvestmentEffects(impact);
+  expect(effects.fees).toBeCloseTo(11);
+  expect(effects.taxes).toBeCloseTo(5.5);
+  expect(reinvestmentEffects({ ...impact, available: false })).toEqual({ fees: 0, taxes: 0 });
 });

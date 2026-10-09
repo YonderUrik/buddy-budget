@@ -8,11 +8,25 @@
 .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--f-h); text-decoration: none; letter-spacing: -0.02em; }
 .links { display: flex; gap: 28px; font: 500 15px var(--f-b); color: var(--ink2); }
 .links a { text-decoration: none; transition: color 0.2s; }
-.links a:hover { color: var(--ink); }
+.links a:hover, .links a[aria-current="page"] { color: var(--ink); }
 .nr { display: flex; align-items: center; gap: 10px; }
 .nr .btn { height: 40px; padding: 0 18px; font-size: 14px; }
-@media (max-width: 1000px) { .links { display: none; } }
+/* Menu da telefono: pulsante nella barra e pannello che si apre sotto. */
+.menu-btn { display: none; width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent; color: inherit; box-shadow: inset 0 0 0 1.5px var(--line); cursor: pointer; place-items: center; }
+.nav.dk .menu-btn { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-navy) 28%, transparent); }
+.menu { border-top: 1px solid var(--line); background: var(--bg); box-shadow: 0 24px 40px -28px var(--shadow-win); }
+.menu[hidden] { display: none; }
+.menu .wrap { display: grid; grid-template-columns: 1fr; justify-content: stretch; height: auto; gap: 0; padding-block: 8px 20px; }
+.menu a { padding: 14px 0; border-bottom: 1px solid var(--line); font: 600 18px var(--f-h); color: var(--ink); text-decoration: none; }
+.menu a[aria-current="page"] { color: var(--accent); }
+.menu-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 6px; }
+.menu .menu-login { border-bottom: 0; color: var(--ink2); font: 500 16px var(--f-b); }
+.menu .tg { display: grid; }
+@media (max-width: 1000px) { .links { display: none; } .menu-btn { display: grid; } }
+@media (min-width: 1001px) { .menu { display: none; } }
 @media (max-width: 600px) { .nr .btn.ghost { display: none; } }
 /* telefoni: il pulsante principale non si comprime mai; si riducono padding e corpo, e sotto i 380px sparisce il cambio tema */
 @media (max-width: 480px) { .nav .btn.main { height: 40px; padding: 0 16px; font-size: 14px; } .nav .nr { gap: 8px; } }
-@media (max-width: 380px) { .nav .tg { display: none; } }
+/* telefoni: il cambio tema passa nel menu */
+@media (max-width: 480px) { .nr > .tg { display: none; } }
+@media (max-width: 360px) { .nav .brand { font-size: 0; gap: 0; } }

@@ -3,7 +3,7 @@ import type { QuestionId } from "@/content/questions";
 import type { ScreenId } from "@/content/screens";
 
 /** Sezioni della pagina misurate con `section_view`. */
-export type SectionId = "hero" | "risposte" | "schermate" | "funzioni" | "sicurezza" | "strumenti" | "domande" | "fine";
+export type SectionId = "hero" | "passi" | "risposte" | "italia" | "gruppi" | "schermate" | "funzioni" | "sicurezza" | "perchi" | "confronto" | "strumenti" | "domande" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).

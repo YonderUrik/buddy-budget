@@ -12,7 +12,7 @@ const SAMPLE_PER_AREA = 3;
 export function FeaturesSection() {
   const { total, available } = featureCounts();
   return (
-    <TrackedSection id="funzioni" section="funzioni" className="sec sec-features band">
+    <TrackedSection id="funzioni" section="funzioni" className="sec sec-features">
       <div className="wrap">
         <h2 className="t">Cosa c&apos;è dentro.</h2>
         <p className="lede">{available} funzioni già disponibili, altre {total - available} in arrivo. Qui le aree; nell&apos;elenco completo c&apos;è ogni funzione.</p>

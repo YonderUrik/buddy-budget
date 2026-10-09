@@ -1,0 +1,31 @@
+.cmp-wrap { margin-top: 44px; overflow-x: auto; border-radius: 24px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.cmp { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 15.5px; }
+.cmp th, .cmp td { text-align: left; padding: 16px 20px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.cmp tbody tr:last-child > * { border-bottom: 0; }
+.cmp thead th { font: 600 14px var(--f-b); color: var(--ink2); }
+.cmp thead th.us { color: var(--accent); }
+.cmp tbody th { font-weight: 600; width: 28%; }
+.cmp td { color: var(--ink2); }
+/* colonna di BuddyBudget appena tinta, per guidare l'occhio senza gridare */
+.cmp .us { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.cmp-mark { display: inline-flex; width: 24px; height: 24px; border-radius: 8px; align-items: center; justify-content: center; vertical-align: -6px; margin-right: 10px; }
+.cmp-mark.v-si { color: var(--a-pos); background: var(--a-pos-soft); }
+.cmp-mark.v-no { color: var(--ink3); background: var(--a-soft); }
+.cmp-mark.v-parziale { color: var(--a-vol); background: color-mix(in srgb, var(--a-vol) 14%, transparent); }
+.cmp-note { font-size: 14.5px; }
+
+/* telefono: ogni riga diventa una scheda con le tre risposte una sotto l'altra, la colonna BuddyBudget per ultima */
+@media (max-width: 700px) {
+  .cmp-wrap { overflow: visible; background: none; box-shadow: none; border-radius: 0; }
+  .cmp, .cmp tbody, .cmp tr, .cmp th, .cmp td { display: block; min-width: 0; }
+  .cmp thead { display: none; }
+  .cmp tbody { display: grid; gap: 12px; }
+  .cmp tr { border-radius: 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+  .cmp tbody th { width: auto; padding: 16px 18px 8px; border: 0; }
+  .cmp td { display: grid; grid-template-columns: 36px 1fr; grid-template-areas: "m c" "m n"; padding: 8px 18px; border: 0; }
+  .cmp td::before { content: attr(data-col); grid-area: c; font-size: 13px; font-weight: 600; color: var(--ink3); }
+  .cmp td.us::before { color: var(--accent); }
+  .cmp td.us { padding-bottom: 14px; }
+  .cmp-mark { grid-area: m; margin: 2px 0 0; }
+  .cmp-note { grid-area: n; }
+}

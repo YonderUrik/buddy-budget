@@ -1,0 +1,13 @@
+.steps-list { position: relative; list-style: none; margin: 56px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+/* linea tra le icone dei passi: parte sotto la prima e arriva sotto l'ultima, si disegna con lo scroll */
+.steps-line { position: absolute; top: 21px; left: 22px; right: calc((100% - 56px) / 3 - 22px); height: 1px; background: linear-gradient(90deg, var(--accent), var(--line)); transform-origin: 0 50%; }
+.steps-list li { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.steps-n { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--surface); color: var(--accent); box-shadow: 0 0 0 1px var(--line), 0 8px 20px -14px var(--shadow-win); margin-bottom: 14px; }
+.steps-k { font: 600 12px var(--f-b); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink3); }
+.steps-list h3 { font: 600 clamp(19px, 1.8vw, 22px) / 1.2 var(--f-h); letter-spacing: -0.02em; }
+.steps-list p { color: var(--ink2); font-size: 16px; margin-bottom: 14px; }
+.steps-list .ts { margin-top: auto; height: 220px; }
+@media (max-width: 900px) {
+  .steps-list { grid-template-columns: 1fr; gap: 44px; }
+  .steps-line { display: none; }
+}

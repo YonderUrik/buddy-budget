@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Importazioni fatte, nella scheda Operazioni: cosa è stato caricato (per broker, con periodo, data e stato), come
- * aggiornarlo (importando un file più recente) e come eliminarlo con una conferma che elenca cosa viene tolto.
+ * Importazioni fatte, in fondo alla scheda Operazioni: una spiegazione e un elenco chiuso di default (per broker, con
+ * periodo, data e stato), con l'aggiornamento (file più recente) e l'eliminazione con conferma che elenca cosa viene tolto.
  */
 
 import { useState } from "react";
@@ -16,6 +16,7 @@ import { ImportDeleteDialog } from "./import-delete-dialog";
 import { buildImportHistory, formatImportDate, formatImportPeriod, groupImports } from "./import-history";
 import { ImportHistoryList } from "./import-history-list";
 import { ResetInvestments } from "./reset-investments";
+import { Disclosure } from "./disclosure";
 import { PanelSection } from "./panel-section";
 import { useInvestmentsActions } from "./investments-actions";
 
@@ -64,15 +65,16 @@ export function ImportManagement() {
 
   const groups = groupImports(showAll ? history : history.slice(0, VISIBLE_IMPORTS));
   const brokerSource = selection ? history.find((h) => h.id === selection.id)?.source : null;
-  const description = loading ? "Caricamento…" : history.length > 0 ? `${history.length === 1 ? "1 importazione" : `${history.length} importazioni`} · ultima il ${formatImportDate(history[0].createdAt)}` : undefined;
+  const sourceCount = new Set(history.map((h) => h.source)).size;
+  const summary = history.length > 0 ? `${plural(history.length, "file caricato", "file caricati")} da ${plural(sourceCount, "origine", "origini")} · ultimo il ${formatImportDate(history[0].createdAt)}` : undefined;
 
   return (
     <PanelSection
       icon={DatabaseIcon}
       title="Importazioni"
       color="var(--swatch-slate)"
-      description={description}
-      action={<Button onClick={openImport}><UploadIcon className="size-4" aria-hidden="true" /> Importa un file</Button>}
+      description={IMPORT_EXPLANATION}
+      action={<Button variant="outline" size="sm" onClick={openImport}><UploadIcon className="size-4" aria-hidden="true" /> Importa un file</Button>}
     >
       {loading ? <p role="status" className="text-sm text-muted-foreground">Caricamento importazioni…</p> : null}
       {query.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i rendiconti. <button type="button" className="font-medium underline" onClick={() => query.refetch()}>Riprova</button></p> : null}
@@ -80,8 +82,12 @@ export function ImportManagement() {
       {!loading && !failed && history.length === 0 ? (
         <p className="text-sm text-muted-foreground">Non hai ancora importato nessun file: con «Importa un file» carichi il rendiconto del tuo broker.</p>
       ) : null}
+      {deletionPreview.isPending ? <p role="status" className="text-sm text-muted-foreground">Verifico cosa verrebbe eliminato…</p> : null}
+      {deletionPreview.error ? <p role="alert" className="text-sm text-destructive">{deletionPreview.error.message}</p> : null}
+      {(deletion.isSuccess && !selection) || personalDeletion.isSuccess ? <p role="status" className="text-sm text-foreground">Importazione eliminata. Saldi e posizioni sono aggiornati.</p> : null}
+
       {history.length > 0 ? (
-        <>
+        <Disclosure bare title="Vedi e gestisci i file caricati" summary={summary}>
           <ImportHistoryList groups={groups} busy={deletionPreview.isPending} onDelete={onDelete} />
           {history.length > VISIBLE_IMPORTS ? (
             <Button variant="ghost" size="sm" className="self-start" onClick={() => setShowAll((v) => !v)}>
@@ -89,19 +95,15 @@ export function ImportManagement() {
             </Button>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            Per aggiornare un periodo importa un file più recente: sostituisce i rendiconti che si sovrappongono e salta le operazioni già presenti.</p>
-        </>
+            <span className="font-medium text-foreground">Annullare un&apos;importazione:</span> «Elimina» toglie le operazioni e i saldi che quel file aveva portato; ti mostro cosa sparisce prima di confermare e puoi sempre reimportare il file.</p>
+          <details className="group">
+            <summary className="min-h-11 cursor-pointer list-none content-center text-sm font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
+              Opzioni avanzate <span className="font-normal">· ripartire da zero</span>
+            </summary>
+            <div className="pt-2"><ResetInvestments /></div>
+          </details>
+        </Disclosure>
       ) : null}
-      {deletionPreview.isPending ? <p role="status" className="text-sm text-muted-foreground">Verifico cosa verrebbe eliminato…</p> : null}
-      {deletionPreview.error ? <p role="alert" className="text-sm text-destructive">{deletionPreview.error.message}</p> : null}
-      {(deletion.isSuccess && !selection) || personalDeletion.isSuccess ? <p role="status" className="text-sm text-foreground">Importazione eliminata. Saldi e posizioni sono aggiornati.</p> : null}
-
-      <details className="group">
-        <summary className="min-h-11 cursor-pointer list-none content-center text-sm font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
-          Opzioni avanzate <span className="font-normal">· ripartire da zero</span>
-        </summary>
-        <div className="pt-2"><ResetInvestments /></div>
-      </details>
 
       <ImportDeleteDialog
         open={personalSelection !== null}
@@ -134,6 +136,13 @@ export function ImportManagement() {
       />
     </PanelSection>
   );
+}
+
+/** Cosa sono le importazioni, sempre visibile sotto il titolo. */
+const IMPORT_EXPLANATION = "I file dei broker che hai caricato. Per aggiornare un periodo importa un file più recente: sostituisce i rendiconti che si sovrappongono e salta le operazioni già presenti.";
+
+function plural(n: number, one: string, many: string): string {
+  return `${n} ${n === 1 ? one : many}`;
 }
 
 /** Importazioni mostrate prima di «Mostra tutte». */

@@ -260,39 +260,17 @@
   }
 }
 
-/* ── Scrollbar custom per la sidebar nav ── */
+/* ── Sidebar nav: scorre senza barra visibile ── */
 /*
- * Obiettivo: scrollbar sottile (4px), tono sul colore del bordo sidebar,
- * visibile solo quando la nav ha contenuto che supera l'altezza.
- * Usa la scrollbar-width API CSS moderna + il fallback webkit per Chrome/Edge/Safari.
+ * Con finestre basse il riepilogo sotto le voci supera l'altezza e la nav scorre da sola. Una seconda barra
+ * accanto a quella della pagina (doppio scroll) è rumore: la nav resta scorrevole con rotella e tocco,
+ * ma non disegna la barra.
  */
 .sidebar-nav {
-  /* Firefox: scrollbar sottile, thumb colorato con il token border */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.2s ease;
+  scrollbar-width: none;
 }
-.sidebar-nav:hover {
-  scrollbar-color: var(--sidebar-border) transparent;
-}
-
-/* Chrome / Edge / Safari */
 .sidebar-nav::-webkit-scrollbar {
-  width: 4px;
-}
-.sidebar-nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 9999px;
-  transition: background 0.2s ease;
-}
-.sidebar-nav:hover::-webkit-scrollbar-thumb {
-  background: var(--sidebar-border);
-}
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+  display: none;
 }
 
 /* ── Scrollbar custom generica (sottile ed elegante) ── */

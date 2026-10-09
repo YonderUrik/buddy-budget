@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.38.1](https://github.com/YonderUrik/buddy-budget/compare/v0.38.0...v0.38.1) (2026-10-09)
+
+
+### Correzioni
+
+* schermate intere nei passi e in Tutte le funzioni ([#243](https://github.com/YonderUrik/buddy-budget/issues/243)) ([94b24c3](https://github.com/YonderUrik/buddy-budget/commit/94b24c3f2cd1b51e157aa5f3748c328eac9a6614))
+
 ## [0.38.0](https://github.com/YonderUrik/buddy-budget/compare/v0.37.0...v0.38.0) (2026-10-09)
 
 

@@ -30,6 +30,8 @@ export interface ProductEvents {
   account_removed: { kind: "manuale" | "collegato" };
   /** Apertura dei dettagli di un conto dalla lista (serve a capire se la riga cliccabile viene usata). */
   account_details_opened: { kind: "manuale" | "collegato" };
+  /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
+  account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
   /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
   bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" | "sidebar" };
   transaction_added: { direction: "entrata" | "uscita" };

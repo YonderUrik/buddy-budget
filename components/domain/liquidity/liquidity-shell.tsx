@@ -6,24 +6,31 @@
  */
 
 import * as React from "react";
-import { usePathname, useSearchParams } from "next/navigation";
-import { AddAccountForm } from "@/components/domain/accounts";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ReceiptTextIcon } from "lucide-react";
 import { AddTransactionForm } from "@/components/domain/expenses";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PanelDialogHeader } from "@/components/domain/investments";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery } from "@/lib/queries/categories";
+import { AddAccountDialog } from "./add-account-dialog";
+import { DialogCloseButton } from "./dialog-close-button";
+import { LIQUIDITY_DIALOG_CLASS } from "./dialog-layout";
 import { LiquidityActionsProvider } from "./liquidity-actions";
 import { LiquidityProvider } from "./liquidity-context";
 import { LiquidityHeader } from "./liquidity-header";
 import { LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_TABS } from "./liquidity-nav";
 
+const IMPORT_HREF = "/importazioni";
 const SUBTITLE = "Conti, saldi e movimenti in un posto solo";
 
 function Frame({ children }: { children: React.ReactNode }) {
   useMarkMovementsSeen();
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: categories } = useCategoriesQuery();
@@ -55,30 +62,28 @@ function Frame({ children }: { children: React.ReactNode }) {
   return (
     <LiquidityActionsProvider value={actions}>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6">
-        <LiquidityHeader subtitle={SUBTITLE} tabs={LIQUIDITY_TABS} activeHref={pathname} onAddTransaction={actions.addTransaction} onAddAccount={addAccount} />
+        <LiquidityHeader subtitle={SUBTITLE} tabs={LIQUIDITY_TABS} activeHref={pathname} onAddTransaction={actions.addTransaction} onAddAccount={addAccount} onImport={() => router.push(IMPORT_HREF)} />
         {children}
       </div>
       <Dialog open={addTransactionOpen} onOpenChange={setAddTransactionOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nuovo movimento</DialogTitle>
-          </DialogHeader>
-          <AddTransactionForm categories={categories ?? []} currency={currency} stacked onSuccess={() => setAddTransactionOpen(false)} />
-        </DialogContent>
-      </Dialog>
-      <Dialog open={accountDialog.open} onOpenChange={(open) => setAccountDialog((s) => ({ ...s, open }))}>
-        <DialogContent className="max-h-[92dvh] max-w-md overflow-y-auto p-0">
-          <DialogHeader className="p-6 pb-2">
-            <DialogTitle>Nuovo conto</DialogTitle>
-          </DialogHeader>
-          <AddAccountForm
-            key={accountDialog.renew ? "rinnovo" : "nuovo"}
+        <DialogContent className={cn(LIQUIDITY_DIALOG_CLASS)}>
+          <DialogCloseButton />
+          <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title="Nuovo movimento" description="Una spesa o un'entrata su un conto manuale." />
+          <AddTransactionForm
+            categories={categories ?? []}
             currency={currency}
-            mode={accountDialog.renew ? "collega-banca" : undefined}
-            onSuccess={() => setAccountDialog({ open: false, renew: false })}
+            stacked
+            onSuccess={() => setAddTransactionOpen(false)}
+            onAddAccount={() => { setAddTransactionOpen(false); addAccount(); }}
           />
         </DialogContent>
       </Dialog>
+      <AddAccountDialog
+        open={accountDialog.open}
+        onOpenChange={(open) => setAccountDialog((s) => ({ ...s, open }))}
+        currency={currency}
+        renew={accountDialog.renew}
+      />
     </LiquidityActionsProvider>
   );
 }

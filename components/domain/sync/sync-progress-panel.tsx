@@ -28,7 +28,7 @@ export function SyncProgressPanel({ jobs, onDismiss, categorizeHref = "/categori
   return (
     <section
       aria-label={PANEL_LABEL}
-      className="fixed inset-x-4 bottom-4 z-50 flex flex-col gap-2 sm:left-auto sm:right-4 sm:w-96"
+      className="fixed inset-x-4 bottom-[calc(1rem+var(--bottom-nav-offset,0px)+env(safe-area-inset-bottom))] z-50 md:bottom-4 flex flex-col gap-2 sm:left-auto sm:right-4 sm:w-96"
     >
       {jobs.map((job) => (
         <SyncJobCard key={job.id} job={job} onDismiss={onDismiss} categorizeHref={categorizeHref} />

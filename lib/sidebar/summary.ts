@@ -33,7 +33,7 @@ function shortLabel(instrument: Instrument, yahooSymbol: string | undefined): st
   return instrument.name;
 }
 
-async function liquidity(userId: string): Promise<number> {
+export async function liquidity(userId: string): Promise<number> {
   const rows = await db.select({ balance: accounts.balance }).from(accounts).where(eq(accounts.userId, userId));
   return rows.reduce((sum, r) => sum + Number(r.balance), 0);
 }

@@ -1,6 +1,7 @@
 import type { CategoryType } from "@/lib/categories/groups";
 import type { InvestmentTransactionType } from "@/lib/db/schema/investments";
 import type { SupportedCurrency } from "@/lib/validation/currency";
+import type { SidebarModuleId } from "@/lib/sidebar/modules";
 
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
@@ -30,7 +31,7 @@ export interface ProductEvents {
   /** Apertura dei dettagli di un conto dalla lista (serve a capire se la riga cliccabile viene usata). */
   account_details_opened: { kind: "manuale" | "collegato" };
   /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
-  bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" };
+  bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" | "sidebar" };
   transaction_added: { direction: "entrata" | "uscita" };
   transaction_category_changed: { source: "row" | "categorizza" };
   categorization_applied: { groups: number };
@@ -121,6 +122,12 @@ export interface ProductEvents {
   analytics_reading_toggled: { tab: string; state: "aperta" | "chiusa" };
   /** Popup di una parola o cifra sottolineata aperto; `term`: quale voce del glossario. */
   analytics_term_opened: { term: string };
+  /** Modulo della barra laterale acceso o spento dalle Impostazioni (`barra_in_basso`: la navigazione mobile). */
+  sidebar_module_toggled: { module: SidebarModuleId | "barra_in_basso"; enabled: boolean };
+  /** Clic su un elemento dei moduli della barra laterale (scadenza o obiettivo FIRE). */
+  sidebar_module_clicked: { module: "scadenze" | "fire" };
+  /** Tocco su una scheda della barra in basso su mobile. */
+  bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

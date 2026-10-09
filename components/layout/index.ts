@@ -16,3 +16,5 @@ export { MobileTopbar } from "@/components/layout/mobile-topbar";
 export { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
 export { SidebarSlotProvider, useSidebarSlot } from "@/components/layout/sidebar-slot";
 export type { SidebarSlotState } from "@/components/layout/sidebar-slot";
+export { BottomNav, BOTTOM_NAV_HREFS } from "@/components/layout/bottom-nav";
+export type { BottomNavProps } from "@/components/layout/bottom-nav";

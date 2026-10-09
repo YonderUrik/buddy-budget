@@ -1,6 +1,6 @@
 "use client";
 
-/** Pagina Impostazioni: profilo, preferenze, sessioni attive, esportazione dei dati, privacy e zona pericolosa. */
+/** Pagina Impostazioni: profilo, preferenze, barra laterale, sessioni attive, esportazione dei dati, privacy e zona pericolosa. */
 
 import {
   DangerZoneSection,
@@ -9,6 +9,7 @@ import {
   PrivacySection,
   ProfileSection,
   SessionsSection,
+  SidebarSection,
   useRecentLogin,
 } from "@/components/domain/settings";
 import { LoadError } from "@/components/domain/shared";
@@ -36,6 +37,7 @@ export default function ImpostazioniPage() {
         <>
           <ProfileSection settings={settings} />
           <PreferencesSection settings={settings} />
+          <SidebarSection />
           <SessionsSection />
           <DataSection settings={settings} recentLogin={recentLogin} />
           <PrivacySection settings={settings} />

@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Sidebar (2026-10-09)**: moduli «Prossime scadenze» e «Obiettivo FIRE» accanto al riepilogo, barra in basso su mobile e sezione Impostazioni → «Barra laterale» per accendere/spegnere tutto (per dispositivo, localStorage); voce in `docs/decisioni/2026-10-09-sidebar-moduli-e-barra-mobile.md`. PR in bozza sul branch `claude/project-thread-mwh38f`. Rimandati: moduli riordinabili, preferenze sull'account.
+
 **Analitiche (2026-10-09)**: dalla proposta C scelta da Daniele, cursori «e se…» (risparmio, spesa, rendimento, prelievo) con anno del traguardo e quattro schede-risposta nello stile della Panoramica; voce in `docs/decisioni/2026-10-09-analitiche-cursori.md`. PR in bozza sul branch `claude/project-thread-qx2vob`. Rimandati: restyling dei dettagli «Per esperti», Rischio come risposta propria.
 
 **Liquidità (2026-10-08)**: Conti e Movimenti unificati in `/liquidita` (Movimenti · Analisi · Conti · Categorie e regole) con lo stile della Panoramica come standard, Dividi con scorciatoie e categoria cambiabile dall'icona; voce in `docs/decisioni/2026-10-08-liquidita.md`. PR in bozza sul branch `claude/project-thread-6pd4uu`. Rimandati: redesign di Categorie e Regole (oggi riusano board e gestore esistenti) e dei moduli di modifica.

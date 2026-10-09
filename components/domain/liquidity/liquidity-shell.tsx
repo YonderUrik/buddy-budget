@@ -37,7 +37,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   }, []);
   const actions = React.useMemo(() => ({ addAccount, renew, addTransaction: () => setAddTransactionOpen(true) }), [addAccount, renew]);
 
-  // Il link dell'email (?rinnova=1) e quello della Panoramica (?rinnova=panoramica) aprono subito il rinnovo, una volta sola.
+  // Il link dell'email (?rinnova=1) e quello della Panoramica (?rinnova=panoramica, ?rinnova=sidebar) aprono subito il rinnovo, una volta sola.
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const origin = params.get("rinnova");
@@ -46,7 +46,7 @@ function Frame({ children }: { children: React.ReactNode }) {
     const query = params.toString();
     window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
     const timer = window.setTimeout(() => {
-      track("bank_renew_started", { source: origin === "panoramica" ? "panoramica" : "email" });
+      track("bank_renew_started", { source: origin === "panoramica" || origin === "sidebar" ? origin : "email" });
       setAccountDialog({ open: true, renew: true });
     }, 0);
     return () => window.clearTimeout(timer);

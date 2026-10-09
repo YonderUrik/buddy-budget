@@ -29,9 +29,11 @@ import { useSidebar } from "@/components/layout/sidebar-context";
 interface MobileTopbarProps {
   /** Nome del brand mostrato nella topbar. Default: "BuddyBudget". */
   brandName?: string;
+  /** Mostra l'hamburger che apre il menu; da spegnere quando la navigazione sta nella barra in basso. Default: true. */
+  showMenuButton?: boolean;
 }
 
-export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
+export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true }: MobileTopbarProps) {
   const { openMobile } = useSidebar();
 
   return (
@@ -44,7 +46,8 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       ].join(" ")}
       aria-label="Barra di navigazione"
     >
-      {/* Hamburger */}
+      {/* Hamburger (senza, un riquadro vuoto mantiene il brand al centro) */}
+      {showMenuButton ? (
       <button
         onClick={openMobile}
         className={[
@@ -57,6 +60,9 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       >
         <Menu className="size-5" aria-hidden="true" />
       </button>
+      ) : (
+        <span className="size-9" aria-hidden="true" />
+      )}
 
       {/* Brand */}
       <span className="flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground">

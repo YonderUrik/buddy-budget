@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.33.1](https://github.com/YonderUrik/buddy-budget/compare/v0.33.0...v0.33.1) (2026-10-09)
+
+
+### Correzioni
+
+* la sidebar non mostra più una seconda barra di scroll accanto a quella della pagina ([#228](https://github.com/YonderUrik/buddy-budget/issues/228)) ([3de61b8](https://github.com/YonderUrik/buddy-budget/commit/3de61b8f393aee33a8206bdf5706c68d4b9f2239))
+
 ## [0.33.0](https://github.com/YonderUrik/buddy-budget/compare/v0.32.0...v0.33.0) (2026-10-09)
 
 

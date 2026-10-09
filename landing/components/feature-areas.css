@@ -4,7 +4,7 @@
 .fa-jump small { font: 500 13px var(--f-b); color: var(--ink3); }
 
 .fa { margin-top: 88px; scroll-margin-top: 96px; }
-.fa-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 40px; align-items: end; }
+.fa-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: center; }
 .fa-head.no-shot { grid-template-columns: minmax(0, 1fr); }
 .fa-head p { color: var(--ink2); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 12px 0 0; }
 /* icona su fondo tinto: lo stesso schema delle sezioni aperte della Panoramica */
@@ -14,7 +14,6 @@
 .fa-more { display: inline-block; margin-top: 16px; font-weight: 600; font-size: 15px; text-decoration: none; }
 .fa-more em { font-style: normal; display: inline-block; transition: translate 0.25s var(--ease); }
 .fa-more:hover em { translate: 4px 0; }
-.fa .ts { height: 240px; }
 
 /* colonne e non griglia: le descrizioni hanno lunghezze molto diverse e una griglia lascerebbe buchi */
 .fa-grid { margin-top: 28px; columns: 3; column-gap: 12px; }
@@ -29,6 +28,5 @@
 @media (max-width: 760px) {
   .fa { margin-top: 64px; }
   .fa-head { grid-template-columns: 1fr; gap: 24px; }
-  .fa .ts { height: 200px; }
   .fa-grid { columns: 1; }
 }

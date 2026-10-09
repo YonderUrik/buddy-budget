@@ -33,8 +33,8 @@ export interface Step {
   icon: HomeIcon;
   title: string;
   text: string;
-  /** Ritaglio di uno screenshot vero: schermata e punto in alto a sinistra (in % dello screenshot), con ingrandimento. */
-  shot: { id: ScreenId; zoom: number; x: number; y: number };
+  /** Schermata vera mostrata accanto al passo (senza la barra laterale dell'app). */
+  shot: { id: ScreenId };
 }
 
 export const STEPS = {
@@ -45,19 +45,19 @@ export const STEPS = {
       icon: "link",
       title: "Collega la banca o importa",
       text: "Il conto si collega in sola lettura con l'Open Banking. Le operazioni del broker arrivano dai file che già scarichi, per esempio da Interactive Brokers, DEGIRO, Trade Republic e Fineco.",
-      shot: { id: "conti", zoom: 1.8, x: 20, y: 20 },
+      shot: { id: "conti" },
     },
     {
       icon: "dashboard",
       title: "Vedi il quadro intero",
       text: "Saldi di tutti i conti, spese del mese, portafoglio, fondo pensione e debiti residui, fino al patrimonio netto.",
-      shot: { id: "movimenti", zoom: 1.8, x: 20, y: 19 },
+      shot: { id: "movimenti" },
     },
     {
       icon: "calculator",
       title: "Decidi con le cifre",
       text: "Quanto pagheresti vendendo oggi, quanto risparmi estinguendo una parte del mutuo, in che anno puoi smettere di lavorare.",
-      shot: { id: "tasse", zoom: 1.75, x: 20, y: 19 },
+      shot: { id: "tasse" },
     },
   ] satisfies readonly Step[],
 } as const;

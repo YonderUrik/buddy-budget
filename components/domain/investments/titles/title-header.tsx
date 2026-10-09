@@ -26,11 +26,11 @@ export interface TitleHeaderProps {
   backHref?: string;
 }
 
-export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti/titoli" }: TitleHeaderProps) {
+export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti" }: TitleHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
       <Link href={backHref} className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeftIcon size={14} aria-hidden="true" /> Titoli
+        <ArrowLeftIcon size={14} aria-hidden="true" /> Portafoglio
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">

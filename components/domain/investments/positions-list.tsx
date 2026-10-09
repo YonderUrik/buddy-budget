@@ -31,15 +31,19 @@ export interface PositionsListProps {
   todayKey: string;
   backfill: BackfillStateView[];
   onManualPrice: (row: PositionRow) => void;
+  /** Controllo a destra dell'intestazione (es. la ricerca di un titolo). */
+  action?: React.ReactNode;
+  /** Base dell'indirizzo della pagina di un titolo (default `/investimenti/titoli`). */
+  titleHrefBase?: string;
 }
 
-export function PositionsList({ rows, concentration, currency, todayKey, backfill, onManualPrice }: PositionsListProps) {
+export function PositionsList({ rows, concentration, currency, todayKey, backfill, onManualPrice, action, titleHrefBase }: PositionsListProps) {
   const [logosShown, setLogosShown] = React.useState(false);
   const loading = new Set(backfill.filter((b) => b.status === "running" && !b.interrupted).map((b) => b.instrumentId));
   const insight = concentrationText(concentration);
   const weighted = rows.filter((r) => r.weight !== null);
   return (
-    <PanelSection icon={ChartPieIcon} title="Posizioni" className="@container" description={insight}>
+    <PanelSection icon={ChartPieIcon} title="Posizioni" className="@container" description={insight} action={action}>
       {weighted.length > 1 ? (
         <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Peso di ogni posizione nel portafoglio">
           {weighted.map((r) => (
@@ -75,6 +79,7 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
                 todayKey={todayKey}
                 loadingHistory={loading.has(row.instrument.id)}
                 onManualPrice={onManualPrice}
+                hrefBase={titleHrefBase}
                 onRemoteLogo={() => setLogosShown(true)}
               />
             ))}

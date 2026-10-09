@@ -34,8 +34,10 @@ export interface SidebarInsightsProps {
   collapsed: boolean;
   /** Chiamata quando si segue un link (chiude il drawer mobile). */
   onNavigate?: () => void;
-  /** Base degli indirizzi dei titoli e pagina Investimenti. */
+  /** Base degli indirizzi dei titoli. */
   titlesHref?: string;
+  /** Pagina che elenca tutti i titoli (posizioni e seguiti): il Portafoglio di Investimenti. */
+  titlesListHref?: string;
 }
 
 const SECTION_LINK_CLASS = "block rounded-md px-1.5 py-1 text-xs font-semibold text-primary hover:underline";
@@ -79,6 +81,7 @@ export function SidebarInsights({
   collapsed,
   onNavigate,
   titlesHref = "/investimenti/titoli",
+  titlesListHref = "/investimenti",
 }: SidebarInsightsProps) {
   const [pensionIncluded] = usePensionInNetWorth();
   if (loading) {
@@ -187,7 +190,7 @@ export function SidebarInsights({
             ))}
           </div>
           {portfolio.holdings.length > MAX_HOLDINGS_SHOWN ? (
-            <Link href={titlesHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
               Mostra tutti ({portfolio.holdings.length}) →
             </Link>
           ) : null}
@@ -225,7 +228,7 @@ export function SidebarInsights({
             ))}
           </div>
           {watchlist.length > MAX_WATCHLIST_SHOWN ? (
-            <Link href={titlesHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
               Mostra tutti ({watchlist.length}) →
             </Link>
           ) : null}

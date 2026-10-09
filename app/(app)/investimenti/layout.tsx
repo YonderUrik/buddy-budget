@@ -24,6 +24,9 @@ import { usedInstruments } from "@/lib/investments/view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 
+/** Le pagine dei singoli titoli vivono sotto questo indirizzo e appartengono alla scheda Portafoglio. */
+const TITLE_PAGES_BASE = "/investimenti/titoli/";
+
 export default function InvestimentiLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
@@ -56,7 +59,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
               </Button>
             </div>
           </div>
-          <InvestmentsTabs activeHref={pathname} />
+          <InvestmentsTabs activeHref={pathname.startsWith(TITLE_PAGES_BASE) ? "/investimenti" : pathname} />
         </div>
         {data && !pathname.includes("/rendiconti") && !pathname.includes("/titoli") ? <BrokerSelector data={data} /> : null}
         {children}

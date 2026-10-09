@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import Link from "next/link";
 import { AlertTriangleIcon, ChevronDownIcon, PencilLineIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,13 +31,15 @@ export interface PositionRowViewProps {
   onManualPrice: (row: PositionRow) => void;
   /** Un logo remoto è stato mostrato in questa riga. */
   onRemoteLogo?: () => void;
+  /** Base dell'indirizzo della pagina di un titolo (default `/investimenti/titoli`). */
+  hrefBase?: string;
 }
 
 function gainClass(gain: number | null): string {
   return gain === null ? "text-muted-foreground" : gain < 0 ? "text-neg" : "text-pos";
 }
 
-export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice, onRemoteLogo }: PositionRowViewProps) {
+export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice, onRemoteLogo, hrefBase = "/investimenti/titoli" }: PositionRowViewProps) {
   const [open, setOpen] = React.useState(false);
   const detailsId = React.useId();
   const note = priceNote(row, todayKey);
@@ -49,6 +52,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
   const gainText =
     gain === null ? "senza prezzo" : `${formatSignedCurrency(gain, currency)}${row.unrealizedGainPct !== null ? ` · ${formatSignedPct(row.unrealizedGainPct)}` : ""}`;
   const weight = row.weight !== null ? percent(row.weight) : "—";
+  const titleHref = `${hrefBase}/${row.instrument.id}`;
   const manualPriceButton = (
     <Button
       variant="ghost"
@@ -63,38 +67,40 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
   );
 
   return (
-    <li className="relative px-4 sm:px-6">
+    <li className="relative px-4 transition-colors hover:bg-muted/40 sm:px-6">
       <div className={cn("grid items-center gap-x-4", POSITIONS_GRID_COLUMNS)}>
-        {/* Strumento: sotto md è il pulsante che apre i dettagli */}
+        {/* Strumento: il nome porta alla pagina del titolo; sotto md il pulsante a destra apre i dettagli */}
+        <div className="flex min-w-0 items-center gap-1">
+          <Link href={titleHref} className="flex min-w-0 flex-1 items-center gap-3 py-3 text-left @3xl:py-2.5">
+            <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} onRemoteLogo={onRemoteLogo} />
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2">
+                <span className="truncate font-medium text-foreground" title={row.instrument.name}>
+                  {row.instrument.name}
+                </span>
+                {loadingHistory ? <Badge variant="secondary">Storico in caricamento</Badge> : null}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {INSTRUMENT_TYPE_SINGULAR[row.instrument.type]}
+                <span className="@3xl:hidden"> · {weight}</span>
+              </span>
+            </span>
+            <span className="text-right @3xl:hidden">
+              <span className="block font-heading font-medium tabular-nums text-foreground">{value}</span>
+              <span className={cn("block text-xs tabular-nums", gainClass(gain))}>{gainText}</span>
+            </span>
+          </Link>
         <button
           type="button"
-          className="flex min-w-0 items-center gap-3 py-3 text-left @3xl:pointer-events-none @3xl:py-2.5"
+          className="-mr-2 flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted @3xl:hidden"
           aria-expanded={open}
           aria-controls={detailsId}
+          aria-label={`Dettagli di ${row.instrument.name}`}
           onClick={() => setOpen((v) => !v)}
         >
-          <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} onRemoteLogo={onRemoteLogo} />
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-2">
-              <span className="truncate font-medium text-foreground" title={row.instrument.name}>
-                {row.instrument.name}
-              </span>
-              {loadingHistory ? <Badge variant="secondary">Storico in caricamento</Badge> : null}
-            </span>
-            <span className="block truncate text-xs text-muted-foreground">
-              {INSTRUMENT_TYPE_SINGULAR[row.instrument.type]}
-              <span className="@3xl:hidden"> · {weight}</span>
-            </span>
-          </span>
-          <span className="text-right @3xl:hidden">
-            <span className="block font-heading font-medium tabular-nums text-foreground">{value}</span>
-            <span className={cn("block text-xs tabular-nums", gainClass(gain))}>{gainText}</span>
-          </span>
-          <ChevronDownIcon
-            className={cn("size-4 shrink-0 text-muted-foreground transition-transform @3xl:hidden", open && "rotate-180")}
-            aria-hidden="true"
-          />
+          <ChevronDownIcon className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
         </button>
+        </div>
 
         {/* Colonne solo desktop */}
         <div className="hidden min-w-0 whitespace-nowrap @3xl:block">

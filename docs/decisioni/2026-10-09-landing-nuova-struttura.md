@@ -6,3 +6,5 @@ Dall'analisi dei competitor (Claude Doc «Landing page: analisi competitor e pia
 Per gli assistenti AI: `/llms.txt` generato a ogni build dalle stesse fonti della pagina (`content/llms.ts`) e crawler AI ammessi per nome in `robots.txt`.
 Scelte: nessuna recensione, numero di utenti o promessa di risparmio finché non ci sono dati veri; la sezione dei calcolatori confluisce nelle regole italiane.
 Aperto (fasi successive, vedi il documento): una pagina per ogni domanda, pagina `/sicurezza`, confronti, glossario fiscale, pagine funzione Pensione e Debiti, changelog pubblico; misura Lighthouse.
+
+Pagine interne allineate alla home: un solo menu (`SiteNav`) su tutte le pagine, «Tutte le funzioni» per area con icona, ritaglio dell'app e schede (tutto il catalogo nell'HTML, non più una scheda alla volta), icone tinte e avviso fiscale in fondo nelle pagine di contenuto, galleria delle schermate con le schede sopra l'immagine. Privacy, Termini, Cookie e 404 cambiano solo nel menu.

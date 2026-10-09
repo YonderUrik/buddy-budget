@@ -8,7 +8,7 @@
 .brand { display: flex; align-items: center; gap: 10px; font: 700 19px var(--f-h); text-decoration: none; letter-spacing: -0.02em; }
 .links { display: flex; gap: 28px; font: 500 15px var(--f-b); color: var(--ink2); }
 .links a { text-decoration: none; transition: color 0.2s; }
-.links a:hover { color: var(--ink); }
+.links a:hover, .links a[aria-current="page"] { color: var(--ink); }
 .nr { display: flex; align-items: center; gap: 10px; }
 .nr .btn { height: 40px; padding: 0 18px; font-size: 14px; }
 @media (max-width: 1000px) { .links { display: none; } }

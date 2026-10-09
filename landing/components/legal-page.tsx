@@ -1,19 +1,13 @@
 import "./legal-page.css";
-import { LEGAL_DRAFT, LEGAL_PATHS, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
-import { PageBar } from "./page-bar";
+import { LEGAL_DRAFT, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
+import { SiteNav } from "./site-nav";
 import { SiteFooter } from "./site-footer";
-
-const LEGAL_NAV = [
-  { href: LEGAL_PATHS.privacy, label: "Privacy" },
-  { href: LEGAL_PATHS.termini, label: "Termini" },
-  { href: LEGAL_PATHS.cookie, label: "Cookie" },
-] as const;
 
 /** Pagina di un documento legale: intestazione con marchio, avviso di bozza, indice e sezioni numerate. */
 export function LegalPage({ doc }: { doc: LegalDocument }) {
   return (
     <>
-      <PageBar label="Documenti legali" links={LEGAL_NAV} current={`/${doc.slug}`} />
+      <SiteNav />
       <main className="legal">
         <div className="wrap legal-wrap">
           {LEGAL_DRAFT ? (

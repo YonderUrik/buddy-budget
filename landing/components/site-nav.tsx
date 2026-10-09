@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import "./site-nav.css";
+import { CONTENT_PATHS } from "@/content/seo-pages";
 import { APP_LINKS } from "@/content/site";
 import { Mark } from "./brand";
 import { CtaLink } from "./cta-link";
@@ -15,15 +17,17 @@ export interface NavLink {
   label: string;
 }
 
+/** Un solo menu per tutto il sito: indirizzi assoluti, così funziona uguale dalla home e dalle pagine interne. */
 export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
-  { href: "#risposte", label: "Domande" },
-  { href: "#italia", label: "Tasse italiane" },
-  { href: "#funzioni", label: "Funzioni" },
-  { href: "#sicurezza", label: "Sicurezza" },
+  { href: CONTENT_PATHS.funzioni, label: "Funzioni" },
+  { href: "/#italia", label: "Tasse italiane" },
+  { href: CONTENT_PATHS.zainetto, label: "Calcolatori" },
+  { href: CONTENT_PATHS.schermate, label: "Schermate" },
+  { href: "/#sicurezza", label: "Sicurezza" },
 ];
 
-/** Barra fissa in alto. Passa allo stile scuro quando sta sopra una sezione `data-nav-dark`. */
-export function SiteNav({ links = DEFAULT_NAV_LINKS }: { links?: readonly NavLink[] }) {
+/** Barra fissa in alto, la stessa in ogni pagina. Passa allo stile scuro quando sta sopra una sezione `data-nav-dark`; `current` evidenzia la voce della pagina aperta. */
+export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readonly NavLink[]; current?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [dark, setDark] = useState(false);
   const ref = useRef<HTMLElement>(null);
@@ -50,13 +54,13 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS }: { links?: readonly NavLin
   return (
     <header ref={ref} className={`nav${scrolled ? " sc" : ""}${dark ? " dk" : ""}`}>
       <div className="wrap">
-        <a className="brand" href="#top">
+        <Link className="brand" href="/" aria-label="BuddyBudget, home">
           <Mark />
           BuddyBudget
-        </a>
+        </Link>
         <nav className="links" aria-label="Sezioni">
           {links.map((l) => (
-            <a key={l.href} href={l.href}>{l.label}</a>
+            <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined}>{l.label}</Link>
           ))}
         </nav>
         <div className="nr">

@@ -10,7 +10,8 @@ import { CONTENT_PATHS, SOURCES, type Source } from "./seo-pages";
 export type HomeIcon =
   | "gift" | "server" | "landmark" | "download" | "code"
   | "link" | "dashboard" | "calculator"
-  | "backpack" | "scale" | "stamp" | "landmark-gov" | "umbrella" | "house";
+  | "backpack" | "scale" | "stamp" | "landmark-gov" | "umbrella" | "house"
+  | "wallet" | "trending" | "card" | "user" | "shield" | "pie";
 
 export interface HeroFact {
   icon: HomeIcon;

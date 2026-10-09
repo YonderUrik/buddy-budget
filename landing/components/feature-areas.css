@@ -1,0 +1,34 @@
+.fa-jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
+.fa-jump a { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); text-decoration: none; font: 600 15px var(--f-h); transition: box-shadow 0.2s; }
+.fa-jump a:hover { box-shadow: inset 0 0 0 1px var(--accent); }
+.fa-jump small { font: 500 13px var(--f-b); color: var(--ink3); }
+
+.fa { margin-top: 88px; scroll-margin-top: 96px; }
+.fa-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 40px; align-items: end; }
+.fa-head.no-shot { grid-template-columns: minmax(0, 1fr); }
+.fa-head p { color: var(--ink2); font-size: 17px; line-height: 1.6; max-width: 46ch; margin: 12px 0 0; }
+/* icona su fondo tinto: lo stesso schema delle sezioni aperte della Panoramica */
+.fa-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); margin-bottom: 16px; }
+.cp .fa h2 { margin: 0; font-size: clamp(26px, 3vw, 34px); }
+.fa h2 small { font: 500 15px var(--f-b); color: var(--ink3); letter-spacing: 0; margin-left: 4px; }
+.fa-more { display: inline-block; margin-top: 16px; font-weight: 600; font-size: 15px; text-decoration: none; }
+.fa-more em { font-style: normal; display: inline-block; transition: translate 0.25s var(--ease); }
+.fa-more:hover em { translate: 4px 0; }
+.fa .ts { height: 240px; }
+
+/* colonne e non griglia: le descrizioni hanno lunghezze molto diverse e una griglia lascerebbe buchi */
+.fa-grid { margin-top: 28px; columns: 3; column-gap: 12px; }
+.fa-card { break-inside: avoid; margin-bottom: 12px; padding: 20px 22px; border-radius: 18px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.cp .fa-card h3 { margin: 0; font-size: 16.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.cp .fa-card p { margin: 6px 0 0; font-size: 15px; line-height: 1.55; }
+.fa-tag { font: 600 11px var(--f-b); letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; }
+.fa-tag.new { background: var(--sun); color: var(--on-sun); }
+.fa-tag.soon { box-shadow: inset 0 0 0 1px var(--line); color: var(--ink3); }
+
+@media (max-width: 1000px) { .fa-grid { columns: 2; } }
+@media (max-width: 760px) {
+  .fa { margin-top: 64px; }
+  .fa-head { grid-template-columns: 1fr; gap: 24px; }
+  .fa .ts { height: 200px; }
+  .fa-grid { columns: 1; }
+}

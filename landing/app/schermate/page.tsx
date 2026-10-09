@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ContentPage
+    <ContentPage current={CONTENT_PATHS.schermate}
       wide
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Schermate" }]}
@@ -27,7 +27,7 @@ export default function Page() {
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.schermate}`, inLanguage: "it-IT" }} />
       <h1>Le schermate dell&apos;app</h1>
-      <p className="lead">Sono screenshot dell&apos;app vera, con dati di esempio inventati. Scegli una schermata.</p>
+      <p className="lead">Screenshot dell&apos;app vera, con i dati di una persona inventata. Scegli un&apos;area e una schermata.</p>
       <ScreenGallery />
     </ContentPage>
   );

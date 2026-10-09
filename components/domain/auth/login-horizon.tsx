@@ -17,6 +17,12 @@ import { LoginHorizonChart } from "./login-horizon-chart";
 import { MOSAIC_INITIAL_STATE, MOSAIC_NET_POINTS, netWorth } from "./login-mosaic.model";
 import { useMosaicLive } from "./use-mosaic-live";
 
+/** Cosa spiega la linea: tre fatti di esempio, indice del punto nella serie di 24. */
+const MILESTONES = [
+  { index: 5, label: "Primo investimento" },
+  { index: 12, label: "Rata del mutuo pagata" },
+  { index: 17, label: "Stipendio e risparmio" },
+];
 const CHART_LABEL = "Patrimonio netto";
 const HERO_CAPTION = "Patrimonio netto · dati di esempio";
 const HERO_TITLE = "Conti, investimenti, pensione e debiti in un solo grafico.";
@@ -56,6 +62,7 @@ export function LoginHorizon({ header, aside, children, className }: LoginHorizo
       <LoginHorizonChart
         values={history}
         label={CHART_LABEL}
+        milestones={MILESTONES}
         className="absolute inset-x-0 bottom-0 h-[30%] lg:h-[58%]"
       />
 

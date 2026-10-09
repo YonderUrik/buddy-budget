@@ -18,7 +18,6 @@ export default function OperazioniPage() {
 
   return (
     <>
-      <ImportManagement />
       <InvestmentsViewGate
         loading={overview.isLoading}
         error={overview.isError || (!overview.isLoading && !view)}
@@ -44,6 +43,7 @@ export default function OperazioniPage() {
           onClose={() => setEditing(null)}
         />
       </InvestmentsViewGate>
+      <ImportManagement />
     </>
   );
 }

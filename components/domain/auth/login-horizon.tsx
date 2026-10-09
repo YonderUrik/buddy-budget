@@ -4,35 +4,22 @@
  * LoginHorizon
  *
  * Scena delle pagine di autenticazione: il patrimonio netto di esempio come numero grande e come grafico a tutta
- * larghezza sul fondo, il form (`children`) a sinistra e le aree dell'app in fila sotto. Il grafico si aggiorna con i
- * movimenti di esempio di `useMosaicLive`; con `prefers-reduced-motion` resta fermo. Su mobile restano form e grafico.
+ * larghezza sul fondo che scorre come un nastro (`LoginHorizonChart`), il form (`children`) a sinistra e le aree
+ * dell'app in fila sotto. Numero e variazione seguono l'ultimo periodo del grafico. Su mobile restano form e grafico.
  */
 
 import * as React from "react";
-import { useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { LoginAreas } from "./login-areas";
 import { LoginHorizonAmount } from "./login-horizon-amount";
 import { LoginHorizonChart } from "./login-horizon-chart";
-import { MOSAIC_INITIAL_STATE, MOSAIC_NET_POINTS, netWorth } from "./login-mosaic.model";
-import { useMosaicLive } from "./use-mosaic-live";
+import { formatThousands, HORIZON_POINTS, HORIZON_START_K, horizonValue } from "./login-horizon.model";
 
-/** Cosa spiega la linea: tre fatti di esempio, indice del punto nella serie di 24. */
-const MILESTONES = [
-  { index: 5, label: "Primo investimento" },
-  { index: 12, label: "Rata del mutuo pagata" },
-  { index: 17, label: "Stipendio e risparmio" },
-];
+/** Cosa spiega la linea: fatti di esempio che scorrono con i punti annotati. */
+const MILESTONES = ["Primo investimento", "Rata del mutuo pagata", "Stipendio e risparmio"];
 const CHART_LABEL = "Patrimonio netto";
 const HERO_CAPTION = "Patrimonio netto · dati di esempio";
 const HERO_TITLE = "Conti, investimenti, pensione e debiti in un solo grafico.";
-/** Andamento di esempio dell'ultimo anno: fisso e regolare, solo l'ultimo punto segue il patrimonio vivo. */
-const BASE_HISTORY = Array.from({ length: MOSAIC_NET_POINTS }, (_, i) => {
-  const t = i / (MOSAIC_NET_POINTS - 1);
-  const trend = 0.84 + 0.16 * t;
-  const wiggle = 0.012 * Math.sin(i * 1.7) * (1 - t * 0.6);
-  return Math.round(netWorth(MOSAIC_INITIAL_STATE) * (trend + wiggle));
-});
 const CHANGE_LABEL = "rispetto a un anno fa";
 
 export interface LoginHorizonProps {
@@ -46,11 +33,9 @@ export interface LoginHorizonProps {
 }
 
 export function LoginHorizon({ header, aside, children, className }: LoginHorizonProps) {
-  const reduceMotion = useReducedMotion() ?? false;
-  const live = useMosaicLive(!reduceMotion);
-  const net = netWorth(live.state);
-  const history = React.useMemo(() => [...BASE_HISTORY.slice(0, -1), net], [net]);
-  const change = net - BASE_HISTORY[0];
+  const [period, setPeriod] = React.useState(HORIZON_START_K);
+  const net = horizonValue(period + HORIZON_POINTS);
+  const change = net - horizonValue(period);
 
   return (
     <div className={cn("relative flex min-h-dvh flex-col overflow-hidden bg-background", className)}>
@@ -60,9 +45,9 @@ export function LoginHorizon({ header, aside, children, className }: LoginHorizo
       </p>
 
       <LoginHorizonChart
-        values={history}
         label={CHART_LABEL}
         milestones={MILESTONES}
+        onPeriod={setPeriod}
         className="absolute inset-x-0 bottom-0 h-[30%] lg:h-[58%]"
       />
 
@@ -77,7 +62,7 @@ export function LoginHorizon({ header, aside, children, className }: LoginHorizo
           <p className="mt-3 text-base">
             <span className={cn("font-semibold", change >= 0 ? "text-pos" : "text-neg")}>
               {change >= 0 ? "▲ +" : "▼ −"}
-              {Math.abs(Math.round(change)).toLocaleString("it-IT")} €
+              {formatThousands(Math.abs(change))} €
             </span>{" "}
             <span className="text-text-2">{CHANGE_LABEL}</span>
           </p>

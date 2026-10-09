@@ -1,13 +1,18 @@
 "use client";
 
 /**
- * Ultimo passo dell'import: cosa succederà (operazioni nuove, già presenti e saltate, errori che bloccano, strumenti
- * da aggiungere) e, dopo la conferma, l'esito.
+ * Ultimo passo dell'import: cosa succederà alla conferma (operazioni nuove, già presenti e saltate, titoli da
+ * aggiungere, errori che bloccano) e, dopo la conferma, cosa è successo e dove trovare i dati.
  */
 
-import { AlertTriangleIcon, CheckCircle2Icon } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2Icon, CheckIcon } from "lucide-react";
+import { explainRowMessage } from "@/lib/investments/import/messages";
 import type { ImportRow } from "@/lib/investments/import/normalize";
 import type { ImportResult } from "@/lib/investments/import/types";
+import { DialogSection, DialogSections } from "../dialog-parts";
+import { ImportNotice } from "./import-notice";
+import { PreviewNumbers } from "./import-preview-parts";
 
 export interface ImportSummaryStepProps {
   result: ImportResult;
@@ -17,35 +22,63 @@ export interface ImportSummaryStepProps {
   newInstruments: number;
   /** L'import è stato eseguito (non è più un'anteprima). */
   done: boolean;
+  /** Il file contiene anche movimenti del conto (finiscono in Liquidità). */
+  hasCashMovements?: boolean;
+  /** Il file è un rendiconto di un broker: i dati originali restano conservati e gestibili da «Gestisci importazioni». */
+  keepsOriginal?: boolean;
+  /** Chiamata quando si segue un link di «Cosa fare ora»: serve a chiudere il dialog. */
+  onNavigate?: () => void;
 }
 
 /** Errori elencati per riga. */
-const MAX_LISTED_ERRORS = 8;
+const MAX_LISTED_ERRORS = 5;
 
-function Stat({ value, label }: { value: number; label: string }) {
+function plural(n: number, one: string, many: string): string {
+  return n === 1 ? `1 ${one}` : `${n} ${many}`;
+}
+
+function Fact({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col rounded-lg bg-muted/50 px-3 py-2">
-      <span className="font-heading text-xl font-medium tabular-nums text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
-    </div>
+    <li className="flex gap-2 text-sm text-muted-foreground">
+      <CheckIcon className="mt-0.5 size-4 shrink-0 text-pos" aria-hidden="true" />
+      <span>{children}</span>
+    </li>
   );
 }
 
-export function ImportSummaryStep({ result, rows, newInstruments, done }: ImportSummaryStepProps) {
+export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashMovements = false, keepsOriginal = false, onNavigate }: ImportSummaryStepProps) {
   if (done) {
     return (
-      <div className="flex flex-col items-center gap-2 py-6 text-center">
-        <CheckCircle2Icon className="size-8 text-pos" aria-hidden="true" />
-        <p className="font-heading text-lg font-medium text-foreground">
-          {result.inserted === 1 ? "Importata 1 operazione" : `Importate ${result.inserted} operazioni`}
-        </p>
-        <p className="max-w-sm text-sm text-muted-foreground">
-          {result.replacement ? `${result.replacement.statements === 1 ? "1 rendiconto precedente sostituito" : `${result.replacement.statements} rendiconti precedenti sostituiti`} (${result.replacement.operations} operazioni). ` : ""}
-          {result.instrumentsCreated > 0 ? `${result.instrumentsCreated} strumenti aggiunti. ` : ""}
-          {result.counts.duplicate > 0 ? `${result.counts.duplicate} erano già presenti e sono state saltate. ` : ""}
-          I prezzi storici si scaricano in background: il grafico si completa entro qualche minuto.
-        </p>
-      </div>
+      <DialogSections>
+        <section className="flex flex-col items-center gap-2 py-4 text-center">
+          <CheckCircle2Icon className="size-10 text-pos" aria-hidden="true" />
+          <p className="font-heading text-3xl font-medium tabular-nums text-foreground">{result.inserted}</p>
+          <p className="text-sm text-muted-foreground">{result.inserted === 1 ? "operazione importata" : "operazioni importate"}</p>
+        </section>
+        <DialogSection title="Cosa è successo">
+          <ul className="flex flex-col gap-1.5">
+            {result.replacement ? <Fact>{plural(result.replacement.statements, "rendiconto precedente sostituito", "rendiconti precedenti sostituiti")} ({result.replacement.operations} operazioni, dal {result.replacement.from} al {result.replacement.to}).</Fact> : null}
+            {result.instrumentsCreated > 0 ? <Fact>{plural(result.instrumentsCreated, "strumento nuovo aggiunto", "strumenti nuovi aggiunti")} ai tuoi strumenti.</Fact> : null}
+            {result.counts.duplicate > 0 ? <Fact>{plural(result.counts.duplicate, "operazione era già presente ed è stata saltata", "operazioni erano già presenti e sono state saltate")}: nessun doppione.</Fact> : null}
+            {keepsOriginal ? <Fact>I dati originali del file sono conservati, così puoi sostituirli o cancellarli da «Gestisci importazioni».</Fact> : null}
+          </ul>
+        </DialogSection>
+        <DialogSection title="Cosa fare ora">
+          <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+            <li>
+              Trovi le operazioni in{" "}
+              <Link href="/investimenti/operazioni" onClick={onNavigate} className="font-medium text-primary hover:underline">Investimenti → Operazioni</Link>.
+            </li>
+            {hasCashMovements ? (
+              <li>
+                I movimenti del conto sono in{" "}
+                <Link href="/liquidita" onClick={onNavigate} className="font-medium text-primary hover:underline">Liquidità → Movimenti</Link>, da categorizzare.
+              </li>
+            ) : null}
+            <li>I prezzi storici si scaricano in background: il grafico si completa entro qualche minuto.</li>
+          </ul>
+        </DialogSection>
+      </DialogSections>
     );
   }
 
@@ -54,35 +87,41 @@ export function ImportSummaryStep({ result, rows, newInstruments, done }: Import
   const freeShares = rows.filter((r) => r.status === "ok" && r.operation.price === 0 && r.operation.type === "acquisto").length;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-2">
-        <Stat value={result.counts.new} label="da importare" />
-        <Stat value={result.counts.duplicate} label="già presenti" />
-        <Stat value={newInstruments} label="strumenti nuovi" />
-      </div>
-      {result.replacement ? <p role="status" className="rounded-lg bg-muted/50 p-3 text-sm">Questo file sostituirà {result.replacement.statements === 1 ? "1 rendiconto" : `${result.replacement.statements} rendiconti`} e {result.replacement.operations} operazioni nel periodo {result.replacement.from} – {result.replacement.to}. I periodi esterni restano invariati. Se i controlli falliscono, nessun dato verrà sostituito.</p> : null}
-      <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-        {result.counts.duplicate > 0 ? <li>Le operazioni già presenti vengono saltate: puoi reimportare lo stesso file senza creare doppioni.</li> : null}
-        {freeShares > 0 ? <li>{freeShares} acquisti a prezzo zero (quote ricevute gratis, es. staking): abbassano il prezzo medio.</li> : null}
-        {discarded > 0 ? <li>{discarded} righe del file sono state scartate al passo Colonne.</li> : null}
-      </ul>
+    <DialogSections>
+      <DialogSection>
+        {errors.length === 0 ? (
+          <PreviewNumbers
+            items={[
+              { value: result.counts.new, label: result.counts.new === 1 ? "operazione da importare" : "operazioni da importare" },
+              { value: result.counts.duplicate, label: "già presenti, saltate" },
+              { value: newInstruments, label: newInstruments === 1 ? "strumento nuovo" : "strumenti nuovi" },
+            ]}
+          />
+        ) : null}
+        {result.counts.new === 0 && errors.length === 0 ? <ImportNotice tone="info" title="Non c'è niente di nuovo da importare">Tutte le operazioni di questo file sono già presenti: puoi caricarlo di nuovo senza creare doppioni.</ImportNotice> : null}
+        {result.replacement ? (
+          <ImportNotice tone="info" title={`Sostituisco ${plural(result.replacement.statements, "rendiconto", "rendiconti")} (${result.replacement.operations} operazioni)`}>
+            Il nuovo file copre il periodo {result.replacement.from} – {result.replacement.to} e prende il posto di quello che c&apos;era. I periodi fuori da questo intervallo restano invariati. Se un controllo fallisce, non viene sostituito nulla.
+          </ImportNotice>
+        ) : null}
+        <ul className="flex flex-col gap-1.5">
+          {result.counts.duplicate > 0 ? <Fact>Le operazioni già presenti vengono saltate: puoi reimportare lo stesso file senza creare doppioni.</Fact> : null}
+          {freeShares > 0 ? <Fact>{plural(freeShares, "acquisto a prezzo zero", "acquisti a prezzo zero")} (quote ricevute gratis, per esempio staking): abbassano il prezzo medio.</Fact> : null}
+          {discarded > 0 ? <Fact>{plural(discarded, "riga del file non viene importata", "righe del file non vengono importate")}: le hai viste nell&apos;anteprima.</Fact> : null}
+        </ul>
+      </DialogSection>
       {errors.length > 0 ? (
-        <div className="flex flex-col gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3">
-          <p className="flex items-center gap-1.5 text-sm font-medium text-destructive">
-            <AlertTriangleIcon className="size-4" aria-hidden="true" />
-            {errors.length === 1 ? "1 riga da correggere" : `${errors.length} righe da correggere`}: finché ci sono errori non si importa nulla
-          </p>
-          <ul className="flex flex-col gap-0.5 text-xs text-foreground">
-            {errors.slice(0, MAX_LISTED_ERRORS).map((row) => (
-              <li key={row.line}>
-                Riga {row.line}: {row.message}
-              </li>
-            ))}
-            {errors.length > MAX_LISTED_ERRORS ? <li>…e altre {errors.length - MAX_LISTED_ERRORS}</li> : null}
-          </ul>
-          <p className="text-xs text-muted-foreground">Correggi il file o escludi lo strumento al passo precedente.</p>
-        </div>
+        <DialogSection title={errors.length === 1 ? "1 riga da correggere" : `${errors.length} righe da correggere`} description="Finché ci sono errori non importo nulla, così non resta un import a metà.">
+          <div className="flex flex-col gap-3">
+            {errors.slice(0, MAX_LISTED_ERRORS).map((row) => {
+              const e = explainRowMessage(row.message ?? "Riga non valida");
+              return <ImportNotice key={row.line} tone="error" title={`Riga ${row.line}: ${e.text}`} hint={e.hint} detail={row.message ?? undefined} />;
+            })}
+            {errors.length > MAX_LISTED_ERRORS ? <p className="text-sm text-muted-foreground">…e altre {errors.length - MAX_LISTED_ERRORS} righe.</p> : null}
+          </div>
+          <p className="text-sm text-muted-foreground">Correggi il file e ricaricalo, oppure torna indietro ed escludi lo strumento interessato.</p>
+        </DialogSection>
       ) : null}
-    </div>
+    </DialogSections>
   );
 }

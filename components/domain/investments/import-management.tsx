@@ -1,15 +1,22 @@
 "use client";
 
+/**
+ * Importazioni fatte, nella scheda Operazioni: cosa è stato caricato (per broker, con periodo, data e stato), come
+ * aggiornarlo (importando un file più recente) e come eliminarlo con una conferma che elenca cosa viene tolto.
+ */
+
 import { useState } from "react";
-import { ChevronDownIcon, DatabaseIcon } from "lucide-react";
-import Link from "next/link";
+import { DatabaseIcon, UploadIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
-import { personalImportLabels, usePersonalImportsQuery } from "@/lib/queries/personal-imports";
+import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { useBrokerStatementsQuery, useDeleteStatementImportMutation } from "@/lib/queries/investments";
+import { ImportDeleteDialog } from "./import-delete-dialog";
+import { buildImportHistory, formatImportDate, formatImportPeriod, groupImports } from "./import-history";
+import { ImportHistoryList } from "./import-history-list";
 import { ResetInvestments } from "./reset-investments";
+import { PanelSection } from "./panel-section";
 import { useInvestmentsActions } from "./investments-actions";
 
 type DeletionPreview = { token: string; name: string; cashCount: number; investmentCount: number; uploads: { id: string; createdAt: string }[] };
@@ -20,7 +27,7 @@ async function personalRequest(id: string, token?: string): Promise<DeletionPrev
   return data;
 }
 
-/** Review broker imports and explicitly confirm deletion of a statement and its dependent later history. */
+/** Importazioni fatte e loro gestione; per i rendiconti dei broker l'eliminazione include i caricamenti successivi che ne dipendono. */
 export function ImportManagement() {
   const query = useBrokerStatementsQuery();
   const personal = usePersonalImportsQuery();
@@ -32,68 +39,102 @@ export function ImportManagement() {
   const deletionPreview = useMutation({ mutationFn: (id: string) => personalRequest(id), onSuccess: (preview, id) => { personalDeletion.reset(); setPersonalSelection({ id, preview }); } });
   const deletion = useDeleteStatementImportMutation();
   const { openImport } = useInvestmentsActions();
-  const [selection, setSelection] = useState<{ id: string; ids: string[]; periods: string[] } | null>(null);
+  const [selection, setSelection] = useState<{ id: string; ids: string[]; items: string[] } | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const documents = query.data?.statements ?? [];
-  const imports = [
-    ...documents.map(document => ({ kind: "broker" as const, id: document.id, createdAt: document.createdAt, document })),
-    ...(personal.data?.jobs ?? []).map(job => ({ kind: "personal" as const, id: job.id, createdAt: job.createdAt, job })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const sourceNames = new Map(personal.data?.formats.map(format => [format.id, format.name]) ?? []);
+  const history = buildImportHistory(documents, personal.data);
+  const loading = query.isLoading || personal.isPending;
+  const failed = query.isError || personal.isError;
+
   function review(id: string) {
     deletion.reset();
     const selected = documents.find((d) => d.id === id)!;
     const affected = documents.filter((d) => d.accountKey === selected.accountKey && d.statement.from >= selected.statement.from);
-    setSelection({ id, ids: affected.map((d) => d.id), periods: affected.map((d) => `${d.statement.from} – ${d.statement.to}`) });
+    setSelection({ id, ids: affected.map((d) => d.id), items: affected.map((d) => formatImportPeriod(d.statement.from, d.statement.to)) });
   }
   async function confirm() {
     if (!selection) return;
     try { await deletion.mutateAsync({ id: selection.id, confirmedIds: selection.ids }); setSelection(null); }
     catch { /* Mutation error stays visible in the dialog. */ }
   }
-  return <details className="group">
-    <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
-      <span className="grid size-9 place-items-center rounded-full" style={{ color: "var(--swatch-slate)", backgroundColor: "color-mix(in oklab, var(--swatch-slate) 16%, transparent)" }} aria-hidden="true"><DatabaseIcon className="size-[18px]" /></span>
-      <h2 className="font-heading text-lg font-medium text-foreground">Gestisci importazioni</h2>
-      <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
-    </summary>
-    <div className="mt-4 flex flex-col gap-4">
-    <div className="flex flex-wrap items-center gap-3"><Button onClick={openImport}>Nuova importazione</Button><Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">Carica un CSV personale →</Link></div>
-    <p className="text-sm text-muted-foreground">Tutti i caricamenti, dal più recente: rendiconti dei broker e CSV personali. Prima di eliminare, controlla le operazioni e gli eventuali altri caricamenti interessati nella conferma.</p>
-    {(query.isLoading || personal.isPending) && <p role="status">Caricamento importazioni…</p>}
-    {query.isError && <p role="alert">Impossibile caricare i rendiconti. <button onClick={() => query.refetch()}>Riprova</button></p>}
-    {personal.isError && <p role="alert">Impossibile caricare i CSV personali. <button onClick={() => personal.refetch()}>Riprova</button></p>}
-    {!query.isLoading && !personal.isPending && !query.isError && !personal.isError && !imports.length && <p>Nessuna importazione.</p>}
-    {!!imports.length && <ul className="divide-y" aria-label="Tutte le importazioni">{imports.map(item => {
-      const name = item.kind === "personal" ? sourceNames.get(item.job.formatId) ?? "CSV personale" : item.document.statement.provider === "trade-republic" ? "Trade Republic" : item.document.statement.provider === "degiro" ? "DEGIRO" : `Interactive Brokers · conto …${item.document.statement.account.slice(-4)}`;
-      const date = new Date(item.createdAt).toLocaleString("it-IT");
-      return <li key={`${item.kind}:${item.id}`} className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <div><p className="font-medium">{name}</p><p className="text-sm text-muted-foreground">{item.kind === "personal" ? `CSV personale · ${personalImportLabels[item.job.status] ?? item.job.status}` : `${item.document.statement.from} – ${item.document.statement.to}`} · caricato il {date}</p></div>
-        <div className="flex items-center gap-2">
-          {item.kind === "personal" ? <Link href={`/importazioni?job=${item.id}`} className="text-sm font-medium text-primary hover:underline" aria-label={`Apri importazione ${name} del ${date}`}>Apri importazione →</Link> : <Button variant="outline" onClick={openImport}>Aggiorna CSV</Button>}
-          <Button variant="destructive" disabled={deletionPreview.isPending} onClick={() => item.kind === "personal" ? deletionPreview.mutate(item.id) : review(item.id)} aria-label={`Elimina importazione ${name} del ${date}`}>Elimina</Button>
-        </div>
-      </li>;
-    })}</ul>}
-    {deletionPreview.isPending && <p role="status">Verifica dei dati da eliminare…</p>}
-    {deletionPreview.error && <p role="alert" className="text-sm text-destructive">{deletionPreview.error.message}</p>}
-    {(deletion.isSuccess && !selection || personalDeletion.isSuccess) && <p role="status">Importazioni eliminate. Saldi e posizioni aggiornati.</p>}
-    <AlertDialog open={personalSelection !== null} onOpenChange={open => { if (!open && !personalDeletion.isPending) setPersonalSelection(null); }}>
-      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Eliminare l’importazione {personalSelection?.preview.name}?</AlertDialogTitle><AlertDialogDescription>
-        Verranno rimossi {personalSelection?.preview.cashCount} movimenti di cassa (inclusi i regolamenti degli investimenti) e {personalSelection?.preview.investmentCount} operazioni di investimento. I saldi saranno aggiornati. Il formato personale, i conti e gli strumenti restano disponibili; potrai reimportare il CSV.
-      </AlertDialogDescription></AlertDialogHeader>
-        <ul className="max-h-48 overflow-y-auto text-sm">{personalSelection?.preview.uploads.map(upload => <li key={upload.id}>Caricamento del {new Date(upload.createdAt).toLocaleString("it-IT")}</li>)}</ul>
-        {personalDeletion.error && <p role="alert" className="text-sm text-destructive">{personalDeletion.error.message}</p>}
-        <AlertDialogFooter><AlertDialogCancel disabled={personalDeletion.isPending}>Annulla</AlertDialogCancel><Button variant="destructive" disabled={personalDeletion.isPending} onClick={() => { if (personalSelection) personalDeletion.mutate({ id: personalSelection.id, token: personalSelection.preview.token }); }}>{personalDeletion.isPending ? "Eliminazione…" : "Elimina i dati elencati"}</Button></AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-    <ResetInvestments />
-    <AlertDialog open={selection !== null} onOpenChange={(open) => { if (!open && !deletion.isPending) setSelection(null); }}>
-      <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Eliminare le importazioni elencate?</AlertDialogTitle><AlertDialogDescription>Verranno eliminati i rendiconti elencati e le relative operazioni, inclusi i movimenti del conto Trade Republic, compresi i periodi successivi che dipendono dai loro saldi. La liquidità torna all’ultima chiusura conservata, oppure a zero. Strumenti e prezzi storici restano disponibili. Puoi ripristinare lo storico importando nuovamente i CSV.</AlertDialogDescription></AlertDialogHeader>
-        <ul className="max-h-48 overflow-y-auto text-sm">{selection?.periods.map((period) => <li key={period}>{period}</li>)}</ul>
-        {deletion.error ? <p role="alert" className="text-sm text-destructive">{deletion.error.message}</p> : null}
-        <AlertDialogFooter><AlertDialogCancel disabled={deletion.isPending}>Annulla</AlertDialogCancel><Button variant="destructive" disabled={deletion.isPending} onClick={confirm}>{deletion.isPending ? "Eliminazione…" : "Elimina le importazioni elencate"}</Button></AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-    </div>
-  </details>;
+  function onDelete(kind: "broker" | "personal", id: string) {
+    if (kind === "personal") deletionPreview.mutate(id);
+    else review(id);
+  }
+
+  const groups = groupImports(showAll ? history : history.slice(0, VISIBLE_IMPORTS));
+  const brokerSource = selection ? history.find((h) => h.id === selection.id)?.source : null;
+  const description = loading ? "Caricamento…" : history.length > 0 ? `${history.length === 1 ? "1 importazione" : `${history.length} importazioni`} · ultima il ${formatImportDate(history[0].createdAt)}` : undefined;
+
+  return (
+    <PanelSection
+      icon={DatabaseIcon}
+      title="Importazioni"
+      color="var(--swatch-slate)"
+      description={description}
+      action={<Button onClick={openImport}><UploadIcon className="size-4" aria-hidden="true" /> Importa un file</Button>}
+    >
+      {loading ? <p role="status" className="text-sm text-muted-foreground">Caricamento importazioni…</p> : null}
+      {query.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i rendiconti. <button type="button" className="font-medium underline" onClick={() => query.refetch()}>Riprova</button></p> : null}
+      {personal.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i CSV personali. <button type="button" className="font-medium underline" onClick={() => personal.refetch()}>Riprova</button></p> : null}
+      {!loading && !failed && history.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Non hai ancora importato nessun file: con «Importa un file» carichi il rendiconto del tuo broker.</p>
+      ) : null}
+      {history.length > 0 ? (
+        <>
+          <ImportHistoryList groups={groups} busy={deletionPreview.isPending} onDelete={onDelete} />
+          {history.length > VISIBLE_IMPORTS ? (
+            <Button variant="ghost" size="sm" className="self-start" onClick={() => setShowAll((v) => !v)}>
+              {showAll ? "Mostra meno" : `Mostra tutte (${history.length})`}
+            </Button>
+          ) : null}
+          <p className="text-sm text-muted-foreground">
+            Per aggiornare un periodo importa un file più recente: sostituisce i rendiconti che si sovrappongono e salta le operazioni già presenti.</p>
+        </>
+      ) : null}
+      {deletionPreview.isPending ? <p role="status" className="text-sm text-muted-foreground">Verifico cosa verrebbe eliminato…</p> : null}
+      {deletionPreview.error ? <p role="alert" className="text-sm text-destructive">{deletionPreview.error.message}</p> : null}
+      {(deletion.isSuccess && !selection) || personalDeletion.isSuccess ? <p role="status" className="text-sm text-foreground">Importazione eliminata. Saldi e posizioni sono aggiornati.</p> : null}
+
+      <details className="group">
+        <summary className="min-h-11 cursor-pointer list-none content-center text-sm font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
+          Opzioni avanzate <span className="font-normal">· ripartire da zero</span>
+        </summary>
+        <div className="pt-2"><ResetInvestments /></div>
+      </details>
+
+      <ImportDeleteDialog
+        open={personalSelection !== null}
+        title={`Eliminare l'importazione «${personalSelection?.preview.name ?? ""}»?`}
+        intro="I dati caricati con questo formato personale vengono tolti dal tuo patrimonio."
+        items={personalSelection?.preview.uploads.map((u) => `Caricamento del ${formatImportDate(u.createdAt)}`) ?? []}
+        removes={[
+          `${personalSelection?.preview.cashCount ?? 0} movimenti di cassa (inclusi i regolamenti degli investimenti)`,
+          `${personalSelection?.preview.investmentCount ?? 0} operazioni di investimento`,
+        ]}
+        keeps={["Il formato personale, i conti e gli strumenti", "Puoi reimportare il CSV quando vuoi: i saldi si aggiornano di nuovo"]}
+        pending={personalDeletion.isPending}
+        error={personalDeletion.error?.message}
+        confirmLabel="Elimina l'importazione"
+        onConfirm={() => { if (personalSelection) personalDeletion.mutate({ id: personalSelection.id, token: personalSelection.preview.token }); }}
+        onCancel={() => setPersonalSelection(null)}
+      />
+      <ImportDeleteDialog
+        open={selection !== null}
+        title={selection && selection.ids.length > 1 ? `Eliminare ${selection.ids.length} importazioni di ${brokerSource ?? "questo conto"}?` : `Eliminare l'importazione di ${brokerSource ?? "questo conto"}?`}
+        intro={selection && selection.ids.length > 1 ? "Insieme a quella scelta vanno tolti i caricamenti successivi dello stesso conto, perché i loro saldi partono da questo." : "Il rendiconto e le sue operazioni vengono tolti dal portafoglio."}
+        items={selection?.items ?? []}
+        removes={[brokerSource?.startsWith("Trade Republic") ? "Le operazioni di questi rendiconti e i movimenti del conto importati con loro" : "Le operazioni di questi rendiconti", "La liquidità torna all'ultima chiusura conservata, o a zero"]}
+        keeps={["Strumenti e prezzi storici", "Puoi ripristinare tutto importando di nuovo i file originali"]}
+        pending={deletion.isPending}
+        error={deletion.error?.message}
+        confirmLabel={selection && selection.ids.length > 1 ? `Elimina ${selection.ids.length} importazioni` : "Elimina l'importazione"}
+        onConfirm={confirm}
+        onCancel={() => setSelection(null)}
+      />
+    </PanelSection>
+  );
 }
+
+/** Importazioni mostrate prima di «Mostra tutte». */
+const VISIBLE_IMPORTS = 6;

@@ -4,8 +4,12 @@
  * Componenti delle pagine di autenticazione e onboarding.
  */
 
-export { LoginMosaic } from "./login-mosaic";
-export type { LoginMosaicProps } from "./login-mosaic";
+export { LoginHorizon } from "./login-horizon";
+export type { LoginHorizonProps } from "./login-horizon";
+export { LoginAreas } from "./login-areas";
+export type { LoginAreasProps } from "./login-areas";
+export { LOGIN_AREAS } from "./login-areas.data";
+export type { LoginArea } from "./login-areas.data";
 export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";

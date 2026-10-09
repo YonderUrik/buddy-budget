@@ -10,7 +10,6 @@ import { PeriodGainSummary } from "./period-gain-summary";
 import type { PeriodGain } from "@/lib/investments/period-gain";
 import { simulateCostExclusions } from "@/lib/investments/cost-impact";
 import type { BrokerCash } from "@/lib/investments/broker-cash";
-import { Switch } from "@/components/ui/switch";
 import type { CostImpact } from "@/lib/investments/cost-impact";
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { Area, AreaChart, Line, XAxis, YAxis } from "recharts";
@@ -58,8 +57,6 @@ function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { 
 
 export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProps, "value" | "onChange"> {
   cash?: BrokerCash[];
-  includeCash?: boolean;
-  onIncludeCashChange?: (include: boolean) => void;
   costImpact?: CostImpact;
   /** Guadagno del periodo scelto: se presente e il periodo non è «Tutto», sostituisce la frase sul guadagno totale. */
   periodGain?: PeriodGain | null;
@@ -75,11 +72,11 @@ export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProp
   currency: string;
 }
 
-export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCashChange, costImpact, periodGain, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
+export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const simulation = simulateCostExclusions(costImpact, series, summary.totalValue, includeFees, includeTaxes);
   const cashTotal = cash.reduce((total, account) => total + account.balance, 0);
-  const displayedValue = simulation.value + (includeCash ? cashTotal : 0);
+  const displayedValue = simulation.value;
   const gaining = breakdown.market >= 0;
   const marketPct = breakdown.paid > 0 ? breakdown.market / breakdown.paid : null;
   const showPeriodGain = !!periodGain && period !== "max";
@@ -101,16 +98,10 @@ export function PortfolioHeroCard({ cash = [], includeCash = true, onIncludeCash
             </p>
           ) : null}
           {cash.length > 0 ? (
-            <p className="text-sm text-muted-foreground">{includeCash ? `Titoli ${format(summary.totalValue)} · Liquidità ${format(cashTotal)}` : "Solo titoli · liquidità esclusa dal totale"}</p>
+            <p className="text-sm text-muted-foreground">Solo titoli. In più hai {format(cashTotal)} di liquidità sui broker (totale {format(summary.totalValue + cashTotal)}).</p>
           ) : null}
           {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} rispetto al valore registrato.</p> : null}
         </div>
-        {cash.length > 0 && onIncludeCashChange ? (
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
-            <Switch size="sm" checked={includeCash} onCheckedChange={onIncludeCashChange} />
-            Includi liquidità
-          </label>
-        ) : null}
       </div>
       {!simulation.active ? (
         <div className="flex max-w-3xl flex-col gap-3">

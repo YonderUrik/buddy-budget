@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileSpreadsheet, Clock3, CheckCircle2, UploadIcon, ListChecksIcon, SearchCheckIcon } from "lucide-react";
 import { PanelSection } from "@/components/domain/investments";
+import { ImportSteps, personalImportStep } from "@/components/domain/personal-import";
 import { Button } from "@/components/ui/button";
 import { usePrivacy } from "@/components/privacy-provider";
 import { Input } from "@/components/ui/input";
@@ -53,9 +54,10 @@ function PersonalImports() {
     const source = listing.data?.formats.find(f => f.id === formatId)?.name ?? name;
     return api<{ id: string }>("", { name: source, csv: await file.text(), formatId: formatId || undefined, regenerate, consent, consentVersion: "openrouter-raw-zdr-v2" });
   }, onSuccess: result => { track("personal_csv_requested", { reuse: !!formatId }); setSelected(result.id); void client.invalidateQueries({ queryKey: ["personal-imports"] }); } });
-  const selectedJob = listing.data?.jobs.find(j => j.id === selected);
+  const selectedJob = listing.data?.jobs.find(j => j.id === selected) ?? (selected ? undefined : listing.data?.jobs.find(j => ["queued", "processing", "ready"].includes(j.status)));
   return <main className="mx-auto w-full max-w-5xl space-y-8 p-4 sm:p-6">
-    <header className="space-y-2"><Link href="/liquidita" className="text-sm text-muted-foreground hover:underline">← Liquidità</Link><h1 className="flex items-center gap-2 font-heading text-2xl font-semibold"><FileSpreadsheet className="size-6 text-muted-foreground" aria-hidden="true" />I tuoi CSV</h1><p className="text-sm text-muted-foreground">Per le banche e i broker che BuddyBudget non supporta ancora. Carichi il file, lo analizziamo con l’AI e ne ricaviamo un formato personale che riusi ogni volta; quando l’analisi finisce ti avvisiamo per email e i dati compaiono in Liquidità e Investimenti.</p></header>
+    <header className="space-y-2"><Link href="/liquidita" className="text-sm text-muted-foreground hover:underline">← Liquidità</Link><h1 className="flex items-center gap-2 font-heading text-2xl font-semibold"><FileSpreadsheet className="size-6 text-muted-foreground" aria-hidden="true" />I tuoi CSV</h1><p className="text-sm text-muted-foreground">Per le banche e i broker che BuddyBudget non supporta ancora. Il formato che ne ricaviamo resta tuo e lo riusi a ogni nuovo file, senza altre analisi.</p></header>
+    <ImportSteps current={personalImportStep(selectedJob?.status)} />
     <PanelSection icon={UploadIcon} title="Carica un file" className="gap-4"><form className="space-y-4" onSubmit={e => { e.preventDefault(); upload.mutate(); }}>
       <label className="block space-y-1 text-sm"><span>Formato</span><select value={formatId} onChange={e => { setFormatId(e.target.value); setRegenerate(false); }} className="block w-full rounded-md border bg-background p-2"><option value="">Nuova banca o broker</option>{listing.data?.formats.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}</select></label>
       {!formatId && <label className="block space-y-1 text-sm"><span>Da dove hai ottenuto il CSV?</span><Input value={name} onChange={e => setName(e.target.value)} placeholder="Nome della banca o del broker" maxLength={80} required /></label>}
@@ -67,7 +69,7 @@ function PersonalImports() {
       {upload.error && <p role="alert" className="text-sm text-destructive">{upload.error.message}</p>}
     </form></PanelSection>
     {selectedJob && ["queued", "processing", "ready"].includes(selectedJob.status) && <PanelSection icon={Clock3} title={selectedJob.status === "ready" ? "Stiamo salvando le tue operazioni" : "Stiamo analizzando il tuo file"} color="var(--swatch-indigo)"><div role="status" className="space-y-2 text-sm"><p>Puoi chiudere questa pagina. Riceverai un’email quando avremo finito.</p><p className="text-sm text-muted-foreground">Tempo stimato: 1 ora · Completamento previsto: {new Date(selectedJob.estimatedAt).toLocaleString("it-IT")}. È una stima, non una scadenza garantita.</p>{new Date(selectedJob.estimatedAt) < new Date() && <p className="text-sm">L’analisi sta richiedendo più tempo del previsto. Ti avviseremo appena sarà pronta.</p>}</div></PanelSection>}
-    {selectedJob?.status === "imported" && <p role="status" className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-5 text-pos" aria-hidden="true" />Importazione completata. Trovi i dati in Liquidità e Investimenti.</p>}
+    {selectedJob?.status === "imported" && <p role="status" className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"><span className="flex items-center gap-2 font-medium"><CheckCircle2 className="size-5 text-pos" aria-hidden="true" />Importazione completata.</span><Link href="/liquidita" className="font-medium text-primary hover:underline">Vai a Liquidità</Link><Link href="/investimenti/operazioni" className="font-medium text-primary hover:underline">Vai alle operazioni</Link></p>}
     {selectedJob?.status === "review_failed" && <PreviewPanel key={selectedJob.id} id={selectedJob.id} />}
     <PanelSection icon={ListChecksIcon} title="Le tue importazioni" color="var(--swatch-slate)" description={listing.data?.jobs.length === 0 ? "I file caricati e il loro stato compariranno qui." : undefined}>
       {listing.isPending && <p role="status" className="text-sm text-muted-foreground">Caricamento…</p>}

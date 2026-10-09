@@ -15,15 +15,45 @@ export interface ImportProviderInfo {
   initials: string;
   /** Una riga su cosa si carica. */
   tagline: string;
-  /** Come ottenere il file dal provider. */
-  howTo: string;
+  /** Passi numerati per ottenere il file dal provider (mostrati dopo aver scelto la scheda). */
+  exportSteps: string[];
+  /** Cosa importiamo e cosa no, in una o due frasi. */
+  note: string;
+  /** Nome del file che ci si aspetta di caricare, se il provider ne usa uno fisso. */
+  fileLabel?: string;
   /** Percorso di un logo in `public/`, solo se ne abbiamo il permesso d'uso. */
   logoSrc?: string;
 }
 
 export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
-  { id: "trade-republic", name: "Trade Republic", initials: "TR", logoSrc: "/import-providers/trade-republic.svg", tagline: "Investimenti e pagamenti con carta", howTo: "Carica Transaction export.csv con lo storico completo del conto principale: investimenti, carta, bonifici, interessi e bonus. Il saldo è calcolato dai movimenti partendo da zero; il file non contiene un saldo certificato né il numero del conto. Usa questa fonte per un solo conto Trade Republic e aggiorna sempre con lo storico completo." },
-  { id: "degiro", name: "DEGIRO", initials: "DG", logoSrc: "/import-providers/degiro.svg", tagline: "Estratto conto Account.csv", howTo: "Da DEGIRO esporta l'estratto conto completo in CSV, in italiano. Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO." },
+  {
+    id: "trade-republic",
+    name: "Trade Republic",
+    initials: "TR",
+    logoSrc: "/import-providers/trade-republic.svg",
+    tagline: "Investimenti e pagamenti con carta",
+    fileLabel: "Transaction export.csv",
+    exportSteps: [
+      "Scarica da Trade Republic l'esportazione delle transazioni: il file si chiama «Transaction export.csv».",
+      "Scegli lo storico completo del conto principale, non solo l'ultimo periodo.",
+      "Caricalo qui sotto così com'è, senza aprirlo e risalvarlo con Excel.",
+    ],
+    note: "Importo investimenti, pagamenti con carta, bonifici, interessi e bonus. Il saldo è calcolato dai movimenti partendo da zero: il file non contiene un saldo certificato né il numero del conto. Usa questa fonte per un solo conto Trade Republic e aggiorna sempre con lo storico completo.",
+  },
+  {
+    id: "degiro",
+    name: "DEGIRO",
+    initials: "DG",
+    logoSrc: "/import-providers/degiro.svg",
+    tagline: "Estratto conto Account.csv",
+    fileLabel: "Account.csv",
+    exportSteps: [
+      "Accedi a DEGIRO dal sito, con la lingua impostata su italiano.",
+      "Apri Attività → Estratto conto e scegli il periodo più ampio possibile.",
+      "Premi Esporta, scegli CSV e carica qui il file «Account.csv».",
+    ],
+    note: "Include movimenti, commissioni e cambi. Il file non contiene una valutazione del portafoglio né il numero del conto: usa questa fonte per un solo conto DEGIRO.",
+  },
   {
     id: "fineco",
     name: "Fineco",
@@ -31,8 +61,13 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     // Logo fornito dal proprietario del progetto; il marchio resta di FinecoBank, usato solo per indicare la fonte del file.
     logoSrc: "/import-providers/fineco.png",
     tagline: "Movimenti Dossier Titoli (Excel)",
-    howTo:
-      "In FinecoX apri il dossier titoli → Movimenti → cerca il periodo che ti serve ed esporta in Excel (.xlsx). Importo acquisti, vendite e, se presenti, dividendi e cedole; il file non ha il saldo né le posizioni, quindi la liquidità non cambia. Usa «Data operazione», non la data valuta.",
+    fileLabel: "File Excel (.xlsx)",
+    exportSteps: [
+      "In FinecoX apri il dossier titoli e vai su Movimenti.",
+      "Cerca il periodo che ti serve ed esporta in Excel (.xlsx).",
+      "Carica qui il file Excel scaricato.",
+    ],
+    note: "Importo acquisti, vendite e, se presenti, dividendi e cedole. Il file non ha il saldo né le posizioni, quindi la liquidità non cambia. Uso «Data operazione», non la data valuta.",
   },
   {
     id: "interactive-brokers",
@@ -41,8 +76,13 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     // Simbolo fornito dal proprietario del progetto; il marchio resta di Interactive Brokers, usato solo per indicare la fonte del file.
     logoSrc: "/import-providers/interactive-brokers.svg",
     tagline: "Activity Statement in CSV",
-    howTo:
-      "Nel portale: Rendiconti → Rendiconti di attività (Activity Statement) → Annuale o Personalizzato → formato CSV. Il file deve essere in inglese.",
+    fileLabel: "Activity Statement (.csv)",
+    exportSteps: [
+      "Nel portale apri Rendiconti → Rendiconti di attività (Activity Statement).",
+      "Scegli Annuale o Personalizzato, con il periodo che ti serve.",
+      "Come formato scegli CSV e come lingua inglese, poi carica il file qui.",
+    ],
+    note: "Puoi caricare più rendiconti insieme: li ordino per conto e periodo e salto quelli già importati.",
   },
   {
     id: "yahoo-portfolio",
@@ -51,15 +91,26 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     // Wordmark da SVG Logos (CC0 sulla raccolta; il marchio resta di Yahoo, usato solo per indicare la fonte del file).
     logoSrc: "/import-providers/yahoo.svg",
     tagline: "Export del portafoglio",
-    howTo: "Su Yahoo Finance apri il portafoglio → Altro (⋯) → Esporta portafoglio, e carica il CSV scaricato.",
+    fileLabel: "File CSV",
+    exportSteps: [
+      "Su Yahoo Finance apri il tuo portafoglio.",
+      "Premi Altro (⋯) → Esporta portafoglio.",
+      "Carica qui il CSV scaricato.",
+    ],
+    note: "I simboli di Yahoo sono già quelli delle quotazioni, quindi gli strumenti si abbinano da soli. Controlla l'anteprima prima di confermare.",
   },
   {
     id: "generic",
     name: "Altro CSV",
     initials: "CSV",
     tagline: "Broker o modello BuddyBudget",
-    howTo:
-      "Carica un CSV qualsiasi: al passo successivo indichi quale colonna è la data, il prezzo e così via. Puoi anche scaricare il modello da compilare.",
+    fileLabel: "File CSV",
+    exportSteps: [
+      "Esporta le operazioni dal tuo broker in CSV, oppure scarica il modello e compilalo.",
+      "Caricalo qui sotto.",
+      "Al passo successivo indichi quale colonna è la data, il prezzo e così via: lo ricordo per la prossima volta.",
+    ],
+    note: "Va bene qualsiasi CSV con una riga per operazione.",
   },
 ];
 

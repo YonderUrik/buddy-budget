@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.37.0](https://github.com/YonderUrik/buddy-budget/compare/v0.36.0...v0.37.0) (2026-10-09)
+
+
+### Novità
+
+* flussi di aggiunta di Liquidità più chiari e accessibili (conto, banca, movimento, import CSV/Excel) ([#238](https://github.com/YonderUrik/buddy-budget/issues/238)) ([91edced](https://github.com/YonderUrik/buddy-budget/commit/91edced70eee716180d96eb1b05eec0277b4899e))
+
 ## [0.36.0](https://github.com/YonderUrik/buddy-budget/compare/v0.35.0...v0.36.0) (2026-10-09)
 
 

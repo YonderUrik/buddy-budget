@@ -24,3 +24,7 @@ Su richiesta dell'utente («sembra messa lì a caso») la sezione in Operazioni 
 - **Riparti da zero** spostato in «Opzioni avanzate», senza riquadro e con il pulsante non più pieno rosso.
 
 Rimandato: numero di operazioni per importazione e vista di cosa contiene (richiedono un'estensione dell'API `/api/investments/statements`), annullamento dell'ultima importazione.
+
+## Semplificazione (richiesta dell'utente)
+
+Tolti «Altro CSV» dall'elenco dei broker, il modello da scaricare, il campo «incolla il contenuto» e le frasi ripetute (anteprima, elenco importazioni). Al loro posto, in cima al primo passo, un riquadro «Novità» che porta a «Crea il tuo formato con l'AI» (`/importazioni`). Un CSV non riconosciuto continua a passare dalla mappatura delle colonne: non è più presentato come scelta, ma resta come ripiego.

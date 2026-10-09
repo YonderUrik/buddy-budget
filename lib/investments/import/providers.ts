@@ -99,19 +99,6 @@ export const IMPORT_PROVIDERS: ImportProviderInfo[] = [
     ],
     note: "I simboli di Yahoo sono già quelli delle quotazioni, quindi gli strumenti si abbinano da soli. Controlla l'anteprima prima di confermare.",
   },
-  {
-    id: "generic",
-    name: "Altro CSV",
-    initials: "CSV",
-    tagline: "Broker o modello BuddyBudget",
-    fileLabel: "File CSV",
-    exportSteps: [
-      "Esporta le operazioni dal tuo broker in CSV, oppure scarica il modello e compilalo.",
-      "Caricalo qui sotto.",
-      "Al passo successivo indichi quale colonna è la data, il prezzo e così via: lo ricordo per la prossima volta.",
-    ],
-    note: "Va bene qualsiasi CSV con una riga per operazione.",
-  },
 ];
 
 /** Scheda di un provider per id. */

@@ -43,7 +43,6 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
         {operations === 0 && !cashMovements?.length ? (
           <ImportNotice tone="error" title="Non ci sono operazioni da importare in questo file" hint="Controlla di aver esportato il periodo giusto e di aver scelto il file del broker corretto." />
         ) : null}
-        <p className="text-sm text-muted-foreground">Conservo anche i dati originali del file e, quando ci sono, verifico saldi e posizioni.</p>
       </DialogSection>
       {destination ? <DialogSection>{destination}</DialogSection> : null}
       {operations > 0 ? (

@@ -20,7 +20,7 @@ export const IMPORT_STEP_LABELS: Record<ImportStep, string> = {
 
 /** Una frase che dice cosa si fa in ogni passo, sotto lo stepper. */
 export const IMPORT_STEP_HINTS: Record<ImportStep, string> = {
-  file: "Scegli il broker e carica il file che hai esportato.",
+  file: "Carica il file esportato dal tuo broker.",
   mapping: "Controlla cosa ho letto dal file. Non è ancora stato importato nulla.",
   instruments: "Verifica che ogni titolo del file sia quello giusto.",
   summary: "Ultimo controllo: poi importo tutto in una volta.",

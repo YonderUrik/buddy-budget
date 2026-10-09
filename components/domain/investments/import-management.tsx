@@ -7,7 +7,6 @@
 
 import { useState } from "react";
 import { DatabaseIcon, UploadIcon } from "lucide-react";
-import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
@@ -79,9 +78,7 @@ export function ImportManagement() {
       {query.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i rendiconti. <button type="button" className="font-medium underline" onClick={() => query.refetch()}>Riprova</button></p> : null}
       {personal.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i CSV personali. <button type="button" className="font-medium underline" onClick={() => personal.refetch()}>Riprova</button></p> : null}
       {!loading && !failed && history.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Non hai ancora importato nessun file. Con «Importa un file» carichi il rendiconto del tuo broker; per un CSV tutto tuo c&apos;è{" "}
-          <Link href="/importazioni" className="font-medium text-primary hover:underline">il formato personale</Link>.
-        </p>
+        <p className="text-sm text-muted-foreground">Non hai ancora importato nessun file: con «Importa un file» carichi il rendiconto del tuo broker.</p>
       ) : null}
       {history.length > 0 ? (
         <>
@@ -92,9 +89,7 @@ export function ImportManagement() {
             </Button>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            Per aggiornare un periodo importa un file più recente: sostituisce i rendiconti che si sovrappongono e salta le operazioni già presenti.{" "}
-            <Link href="/importazioni" className="font-medium text-primary hover:underline">Carica un CSV personale →</Link>
-          </p>
+            Per aggiornare un periodo importa un file più recente: sostituisce i rendiconti che si sovrappongono e salta le operazioni già presenti.</p>
         </>
       ) : null}
       {deletionPreview.isPending ? <p role="status" className="text-sm text-muted-foreground">Verifico cosa verrebbe eliminato…</p> : null}

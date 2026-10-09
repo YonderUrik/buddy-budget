@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.35.0](https://github.com/YonderUrik/buddy-budget/compare/v0.34.1...v0.35.0) (2026-10-09)
+
+
+### Novità
+
+* login «Orizzonte» nello stile della Panoramica ([#232](https://github.com/YonderUrik/buddy-budget/issues/232)) ([82482da](https://github.com/YonderUrik/buddy-budget/commit/82482da7e7aa5d55595500e7d1e302e497bbe875))
+
 ## [0.34.1](https://github.com/YonderUrik/buddy-budget/compare/v0.34.0...v0.34.1) (2026-10-09)
 
 

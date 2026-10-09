@@ -10,7 +10,7 @@
 .g-saltuarie { background: var(--a-sal); }
 .g-avanzo { background: var(--a-primary); }
 .grp-legend { list-style: none; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; }
-.grp-legend li { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+.grp-legend li { display: grid; grid-template-columns: 1fr auto; align-items: baseline; align-content: start; gap: 4px 8px; padding-top: 16px; border-top: 1px solid var(--line); }
 .grp-name { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
 .grp-name i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
 .grp-legend b { font: 600 20px var(--f-h); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; grid-column: 1; }

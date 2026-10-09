@@ -111,7 +111,7 @@ export const ITALY = {
       icon: "house",
       rule: "Il mutuo per la casa si può estinguere in anticipo senza penali.",
       app: "Simula l'estinzione parziale: rata più bassa o durata più corta, e quanto risparmi di interessi.",
-      link: { href: CONTENT_PATHS.ammortamento, label: "Calcolatore del piano di ammortamento" },
+      link: { href: CONTENT_PATHS.ammortamento, label: "Calcolatore della rata" },
       source: SOURCES.guidaMutuo,
     },
   ] satisfies readonly ItalyRule[],

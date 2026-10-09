@@ -16,16 +16,23 @@ import {
   HORIZON_POINTS,
   HORIZON_SCROLL_SPEED,
   HORIZON_START_K,
-  horizonLevel,
-  horizonValue,
+  type HorizonSeries,
   smoothPath,
 } from "./login-horizon.model";
 import { STORY_EASE } from "./story-motion";
 import { useElementSize } from "./use-element-size";
 
-/** Margine sopra e sotto la linea: su desktop lascia libera la fila delle aree e c'è posto per l'etichetta. */
-const PAD_DESKTOP = 112;
+/** Margine sotto la linea (lascia libera la fila delle aree) e minimo sopra (c'è posto per l'etichetta). */
+const PAD_BOTTOM_DESKTOP = 112;
+const PAD_TOP_DESKTOP = 112;
 const PAD_MOBILE = 64;
+/** Altezza della pagina (da cima) sotto cui su desktop deve stare la linea: sopra c'è il form (fino alle note legali). */
+const FORM_CLEARANCE_PX = 600;
+/** Altezza minima dell'area in cui disegnare la linea, per non schiacciarla su schermi bassi. */
+const MIN_PLOT_PX = 70;
+/** Limiti della serie (vedi `WALK_MIN`/`WALK_MAX` nel modello) usati per riempire l'altezza disponibile. */
+const LEVEL_MIN = 0.1;
+const LEVEL_MAX = 0.9;
 const DESKTOP_MIN_WIDTH = 1024;
 /** Disegno iniziale della linea (secondi); lo scorrimento parte dopo. */
 const DRAW_S = 1.8;
@@ -38,6 +45,8 @@ const MILESTONE_FADE_PX = 120;
 const RIGHT_CLEARANCE_PX = 200;
 
 export interface LoginHorizonChartProps {
+  /** Serie dei livelli (condivisa col numero grande, così i due restano coerenti). */
+  series: HorizonSeries;
   /** Etichetta del punto finale. */
   label: string;
   /** Testi dei punti annotati, a rotazione. */
@@ -47,7 +56,7 @@ export interface LoginHorizonChartProps {
   className?: string;
 }
 
-export function LoginHorizonChart({ label, milestones = [], onPeriod, className }: LoginHorizonChartProps) {
+export function LoginHorizonChart({ series, label, milestones = [], onPeriod, className }: LoginHorizonChartProps) {
   const reduceMotion = useReducedMotion() ?? false;
   const [ref, { width, height }] = useElementSize<HTMLDivElement>();
   const clipId = React.useId();
@@ -63,22 +72,39 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
   const scrollRef = React.useRef(HORIZON_START_K);
   const [period, setPeriod] = React.useState(HORIZON_START_K);
 
-  const padY = width >= DESKTOP_MIN_WIDTH ? PAD_DESKTOP : PAD_MOBILE;
-  const showMilestones = width >= DESKTOP_MIN_WIDTH && milestones.length > 0;
+  const [pageHeight, setPageHeight] = React.useState(0);
+  React.useEffect(() => {
+    const page = ref.current?.parentElement;
+    if (!page) return;
+    const observer = new ResizeObserver(() => setPageHeight(page.clientHeight));
+    observer.observe(page);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  const isDesktop = width >= DESKTOP_MIN_WIDTH;
+  const padBottom = isDesktop ? PAD_BOTTOM_DESKTOP : PAD_MOBILE;
+  // Su desktop la linea non sale sopra il form: il suo tetto è sotto `FORM_CLEARANCE_PX` dalla cima della pagina.
+  const padTop = isDesktop
+    ? Math.min(Math.max(PAD_TOP_DESKTOP, FORM_CLEARANCE_PX - (pageHeight - height)), height - padBottom - MIN_PLOT_PX)
+    : PAD_MOBILE;
+  const showMilestones = isDesktop && milestones.length > 0;
   const step = width / HORIZON_POINTS;
 
-  const yOf = React.useCallback((level: number) => padY + (height - padY * 2) * (1 - level), [padY, height]);
+  const yOf = React.useCallback(
+    (level: number) => padTop + (height - padTop - padBottom) * (1 - (level - LEVEL_MIN) / (LEVEL_MAX - LEVEL_MIN)),
+    [padTop, padBottom, height],
+  );
 
   /** Posiziona un punto annotato per lo scorrimento `s`; sfuma ai bordi (a destra lascia spazio all'etichetta finale). */
   const placeMilestone = React.useCallback(
     (element: HTMLDivElement, k: number, s: number) => {
       const x = (k - s) * step;
-      element.style.transform = `translate(${x}px, ${yOf(horizonLevel(k))}px)`;
+      element.style.transform = `translate(${x}px, ${yOf(series.levelAt(k))}px)`;
       element.style.opacity = String(
         Math.max(0, Math.min(1, (x - MILESTONE_FADE_PX / 2) / MILESTONE_FADE_PX, (width - RIGHT_CLEARANCE_PX - x) / MILESTONE_FADE_PX)),
       );
     },
-    [step, yOf, width],
+    [step, yOf, width, series],
   );
 
   const paint = React.useCallback(
@@ -87,16 +113,16 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
       const first = Math.floor(s) - EDGE_POINTS;
       const last = Math.floor(s) + HORIZON_POINTS + EDGE_POINTS;
       const points: { x: number; y: number }[] = [];
-      for (let k = first; k <= last; k++) points.push({ x: (k - s) * step, y: yOf(horizonLevel(k)) });
+      for (let k = first; k <= last; k++) points.push({ x: (k - s) * step, y: yOf(series.levelAt(k)) });
       const line = smoothPath(points);
       lineRef.current?.setAttribute("d", line);
       areaRef.current?.setAttribute("d", `${line} L${points[points.length - 1].x},${height} L${points[0].x},${height} Z`);
 
-      const endLevel = horizonLevel(s + HORIZON_POINTS);
+      const endLevel = series.curveAt(s + HORIZON_POINTS);
       const endY = yOf(endLevel);
       dotRef.current?.setAttribute("cy", String(endY));
       if (labelRef.current) labelRef.current.style.top = `${endY - LABEL_OFFSET_Y}px`;
-      if (valueRef.current) valueRef.current.textContent = `${formatThousands(horizonValue(Math.floor(s) + HORIZON_POINTS))} €`;
+      if (valueRef.current) valueRef.current.textContent = `${formatThousands(series.valueAt(Math.floor(s) + HORIZON_POINTS))} €`;
 
       scrollRef.current = s;
       milestoneRefs.current.forEach((element, k) => placeMilestone(element, k, s));
@@ -108,7 +134,7 @@ export function LoginHorizonChart({ label, milestones = [], onPeriod, className 
         onPeriod?.(whole);
       }
     },
-    [width, height, step, yOf, onPeriod, placeMilestone],
+    [width, height, step, yOf, onPeriod, placeMilestone, series],
   );
 
   // Stato fermo (e primo disegno): posizione di partenza. Con reduced motion non scorre mai.

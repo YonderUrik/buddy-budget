@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { LoginAreas } from "./login-areas";
 import { LoginHorizonAmount } from "./login-horizon-amount";
 import { LoginHorizonChart } from "./login-horizon-chart";
-import { formatThousands, HORIZON_POINTS, HORIZON_START_K, horizonValue } from "./login-horizon.model";
+import { createHorizonSeries, formatThousands, HORIZON_POINTS, HORIZON_START_K } from "./login-horizon.model";
 
 /** Cosa spiega la linea: fatti di esempio che scorrono con i punti annotati. */
 const MILESTONES = ["Primo investimento", "Rata del mutuo pagata", "Stipendio e risparmio"];
@@ -33,9 +33,10 @@ export interface LoginHorizonProps {
 }
 
 export function LoginHorizon({ header, aside, children, className }: LoginHorizonProps) {
+  const [series] = React.useState(() => createHorizonSeries());
   const [period, setPeriod] = React.useState(HORIZON_START_K);
-  const net = horizonValue(period + HORIZON_POINTS);
-  const change = net - horizonValue(period);
+  const net = series.valueAt(period + HORIZON_POINTS);
+  const change = net - series.valueAt(period);
 
   return (
     <div className={cn("relative flex min-h-dvh flex-col overflow-hidden bg-background", className)}>
@@ -45,6 +46,7 @@ export function LoginHorizon({ header, aside, children, className }: LoginHorizo
       </p>
 
       <LoginHorizonChart
+        series={series}
         label={CHART_LABEL}
         milestones={MILESTONES}
         onPeriod={setPeriod}

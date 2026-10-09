@@ -37,8 +37,8 @@ export interface Step {
 }
 
 export const STEPS = {
-  title: "Si parte in tre passi.",
-  lede: "Non serve inserire tutto il primo giorno: un conto basta per cominciare.",
+  title: "Come si comincia.",
+  lede: "Dal primo conto alla prima decisione, senza dover inserire tutto il primo giorno.",
   steps: [
     {
       icon: "link",
@@ -75,7 +75,7 @@ export interface ItalyRule {
 export const ITALY = {
   kicker: "Fatto per l'Italia",
   title: "Le regole italiane, già nei conti.",
-  lede: "Le app di budget straniere non conoscono lo zainetto fiscale né il TFR. Qui sono il punto di partenza. Sono stime per decidere: il conteggio definitivo lo fanno l'intermediario o un professionista.",
+  lede: "Zainetto fiscale, aliquote, bollo, TFR: regole che un'app pensata per un altro paese non conosce. Qui entrano nei calcoli, come stime per decidere; il conteggio definitivo lo fanno l'intermediario o un professionista.",
   rules: [
     {
       icon: "backpack",
@@ -130,8 +130,8 @@ export interface SpendingGroup {
 /** Un mese di esempio diviso nei quattro gruppi di spesa dell'app, più l'avanzo (ciò che resta dopo i gruppi). */
 export const GROUPS = {
   kicker: "Il metodo",
-  title: "Quattro gruppi al posto di cento categorie.",
-  lede: "Ogni spesa finisce in uno di quattro gruppi. Basta un'occhiata per capire se il mese è andato come volevi.",
+  title: "Le spese in quattro gruppi.",
+  lede: "Le categorie restano, ma ognuna appartiene a uno di quattro gruppi. Basta un'occhiata per capire se il mese è andato come volevi.",
   income: 2400,
   incomeLabel: "Entrate del mese",
   groups: [
@@ -146,15 +146,15 @@ export const GROUPS = {
 
 /** Per chi è e per chi no: due colonne oneste, per non far registrare chi non troverebbe ciò che cerca. */
 export const FIT = {
-  title: "Per chi è, e per chi no.",
-  yesTitle: "Fa per te se",
+  title: "Fa per te?",
+  yesTitle: "Sì, se",
   yes: [
     "hai conti, investimenti e magari un mutuo sparsi in posti diversi",
     "investi in ETF o BTP e vuoi sapere quanto pagheresti di tasse prima di vendere",
     "hai un fondo pensione e non sai se rende più del TFR",
     "oggi tieni i conti su un foglio Excel e ti costa tempo aggiornarlo",
   ],
-  noTitle: "Non fa per te se",
+  noTitle: "No, se",
   no: [
     "cerchi consigli su cosa comprare: BuddyBudget non fa consulenza",
     "vuoi pagare o investire dall'app: non è una banca né un broker",
@@ -173,8 +173,8 @@ export interface CompareRow {
 
 /** Confronto con le due alternative più comuni, senza nominare marchi: un foglio di calcolo e un'app che traccia solo le spese. */
 export const COMPARE = {
-  title: "Rispetto a un foglio di calcolo, e a un'app di sole spese.",
-  lede: "Le due alternative più comuni. Nessuna delle due è sbagliata: dipende da quanto vuoi tenere insieme.",
+  title: "Foglio di calcolo, app di spese o BuddyBudget.",
+  lede: "Le due alternative più comuni vanno bene entrambe. La differenza sta in quanto vuoi tenere insieme.",
   columns: ["Foglio di calcolo", "App di sole spese", "BuddyBudget"] as const,
   rows: [
     { label: "Movimenti dalla banca", cells: [["no", "copiati a mano"], ["parziale", "dipende dall'app"], ["si", "Open Banking, in sola lettura"]] },

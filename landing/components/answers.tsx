@@ -56,7 +56,7 @@ export function Answers({ questions = QUESTIONS }: { questions?: readonly Questi
   return (
     <TrackedSection id="risposte" section="risposte" className="sec answers band">
       <div className="wrap">
-        <h2 className="t">Cosa puoi chiederti, e cosa risponde.</h2>
+        <h2 className="t">Le domande che ti fai, con la risposta.</h2>
         <ol className="qa" style={{ "--n": questions.length } as CSSProperties}>
           {questions.map((q, i) => {
             const on = i === active;

@@ -18,7 +18,7 @@ export function Hero() {
     <TrackedSection id="top" section="hero" className="hero">
       <div className="wrap">
         <div className="hero-copy">
-          <h1>Le domande sui tuoi soldi, senza aprire Excel.</h1>
+          <h1>Quanto hai, quanto paghi di tasse, quando puoi smettere di lavorare.</h1>
           <p className="hero-lede">
             Conti, spese, investimenti, fondo pensione e debiti in un&apos;app sola, con le tasse calcolate secondo le regole italiane.
           </p>

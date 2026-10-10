@@ -197,6 +197,7 @@ describe("gestione account (integrazione)", () => {
     expect(Object.keys(files).sort()).toEqual(
       [
         "LEGGIMI.txt",
+        "abbonamenti.csv",
         "budget.csv",
         "categorie.csv",
         "conti.csv",

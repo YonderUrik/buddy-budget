@@ -45,6 +45,12 @@ export interface LogFields {
   processed?: number;
   total?: number;
   count?: number;
+  /** Abbonamenti: scelta dell'utente (enum chiuso `SubscriptionAction`) e conteggi per stato nel rilevamento. */
+  action?: string;
+  detected?: number;
+  confirmed?: number;
+  pending?: number;
+  stopped?: number;
   /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */
   nameSource?: string;
   /** Fonte di prezzi di mercato (id statico). */

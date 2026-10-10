@@ -15,6 +15,8 @@ export {
   recordMerchantNames,
   recordCronRunMetric,
   recordAuthEvent,
+  recordSubscriptionAction,
+  recordSubscriptionsDetect,
   recordSupportReport,
   recordPriceProviderRequest,
   recordFxProviderRequest,

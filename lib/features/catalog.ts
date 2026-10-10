@@ -50,6 +50,7 @@ export const FEATURES: readonly Feature[] = [
   f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
   f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),
   f("ricerca-filtri-e-note", "Liquidità", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
+  f("abbonamenti", "Liquidità", "Abbonamenti", "Trova da solo gli addebiti che tornano (streaming, palestra, assicurazione annuale) e li confermi con un tocco. Vedi quanto pesano al mese e all'anno, il prossimo addebito, gli aumenti di prezzo e quelli che non vengono più addebitati. Il riconoscimento è un calcolo sui tuoi movimenti, senza AI, e le tue scelte restano memorizzate.", "new"),
   f("da-sistemare", "Liquidità", "Da sistemare", "Un avviso in Panoramica e un contatore su Liquidità nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),

@@ -46,11 +46,18 @@ export interface ProductEvents {
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
-  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "categorie" | "regole" };
+  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "abbonamenti" | "categorie" | "regole" };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
   liquidity_account_filtered: { scope: "conto" | "tutti" };
   /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */
   liquidity_category_remembered: { remembered: boolean };
+  /** Scelta su un abbonamento: confermato, escluso («non è un abbonamento»), terminato o rimesso tra i rilevati; `origin`: rilevato o aggiunto a mano. */
+  subscription_decided: { decision: "confermato" | "escluso" | "terminato" | "ripristinato"; origin: "rilevato" | "manuale" };
+  subscription_added: { cadence: "settimanale" | "mensile" | "trimestrale" | "semestrale" | "annuale" };
+  subscription_updated: undefined;
+  subscription_removed: undefined;
+  /** Dettaglio di un abbonamento aperto dalla lista; `decision`: lo stato in cui era. */
+  subscription_details_opened: { decision: "da-confermare" | "confermato" | "escluso" | "terminato" };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };

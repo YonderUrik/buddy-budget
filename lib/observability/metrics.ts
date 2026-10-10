@@ -28,7 +28,11 @@ export interface UsageSnapshot {
   usersWithFeature: Record<UsageFeature, number>;
   /** Righe totali per tipo di dato. */
   records: Record<UsageRecordKind, number>;
+  /** Utenti per passo dei primi passi (dati veri, esclusi quelli d'esempio) e per stato della checklist. */
+  activation: Record<ActivationStep, number>;
 }
+export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" | "completa" | "chiusa" | "demo_attiva";
+export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed";
 export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
@@ -103,6 +107,7 @@ interface MetricsState {
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
+  startEvents: Counter<"event">;
 }
 
 function createState(): MetricsState {
@@ -212,6 +217,12 @@ function createState(): MetricsState {
     labelNames: ["action", "mode"],
     registers: r,
   });
+  state.startEvents = new Counter({
+    name: `${METRIC_PREFIX}start_events_total`,
+    help: "Eventi dei primi passi: dati d'esempio avviati o azzerati, checklist chiusa, riaperta o completata.",
+    labelNames: ["event"],
+    registers: r,
+  });
   state.consentNotices = new Counter({
     name: `${METRIC_PREFIX}gocardless_consent_notices_total`,
     help: "Email di avviso sul consenso bancario (in scadenza o scaduto) per esito dell'invio.",
@@ -309,6 +320,7 @@ function createState(): MetricsState {
   usageGauge("users_new", "Utenti registrati nella finestra indicata (7d, 30d).", "window", (u) => u.newUsers);
   usageGauge("users_active", "Utenti con una sessione attiva nella finestra indicata (24h, 7d, 30d).", "window", (u) => u.activeUsers);
   usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza).", "feature", (u) => u.usersWithFeature);
+  usageGauge("users_activation", "Utenti per passo dei primi passi fatto (conto, import, investimento, obiettivo), checklist completa o chiusa, e con dati d'esempio attivi.", "step", (u) => u.activation);
   usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti, fotografie della previdenza).", "kind", (u) => u.records);
 
   return state;
@@ -439,4 +451,9 @@ export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode
 /** Registra l'invio di un avviso email sul consenso bancario. */
 export function recordConsentNotice(kind: ConsentNoticeKind, outcome: ConsentNoticeOutcome): void {
   metrics().consentNotices.inc({ kind, outcome });
+}
+
+/** Registra un evento dei primi passi (demo avviata/azzerata, checklist chiusa/riaperta/completata). */
+export function recordStartEvent(event: StartEvent): void {
+  metrics().startEvents.inc({ event });
 }

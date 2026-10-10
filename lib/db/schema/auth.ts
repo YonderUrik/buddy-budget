@@ -21,6 +21,10 @@ export const authUser = pgTable("auth_user", {
   legalAcceptedVersion: text("legal_accepted_version"),
   /** Ultima visita alle schermate dei movimenti: le transazioni importate dopo questo istante sono "nuove" (avviso "Da sistemare"). */
   movementsSeenAt: timestamp("movements_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Quando l'utente ha chiuso la checklist «Primi passi» della Panoramica (null = visibile finché non è completa). */
+  startChecklistDismissedAt: timestamp("start_checklist_dismissed_at", { withTimezone: true }),
+  /** Quando la checklist «Primi passi» è risultata completa per la prima volta (serve a registrarlo una sola volta). */
+  startChecklistCompletedAt: timestamp("start_checklist_completed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

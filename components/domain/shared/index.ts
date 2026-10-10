@@ -16,3 +16,5 @@ export { CollapsibleSection, COLLAPSIBLE_STORAGE_PREFIX } from "./collapsible-se
 export type { CollapsibleSectionProps } from "./collapsible-section";
 export { SectionTabs, isSectionTabActive } from "./section-tabs";
 export type { SectionTab, SectionTabsProps } from "./section-tabs";
+export { EmptyState } from "./empty-state";
+export type { EmptyStateAction, EmptyStateProps } from "./empty-state";

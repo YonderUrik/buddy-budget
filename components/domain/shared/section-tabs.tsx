@@ -2,11 +2,14 @@
 
 /**
  * Schede di una sezione come link veri (ogni scheda ha il suo URL), con la scheda attiva evidenziata e portata in vista
- * su mobile. La prima scheda è la radice: le altre restano attive anche sulle loro sotto-pagine.
+ * su mobile. La prima scheda è la radice: le altre restano attive anche sulle loro sotto-pagine. La linea sotto la
+ * scheda attiva scivola con una molla quando si cambia scheda.
  */
 
 import * as React from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
+import { SPRING_BOUNCY } from "@/lib/motion/springs";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +36,7 @@ export function isSectionTabActive(tabHref: string, pathname: string, rootHref: 
 }
 
 export function SectionTabs({ tabs, activeHref, ariaLabel }: SectionTabsProps) {
+  const indicatorId = `section-tab-${ariaLabel}`;
   const activeRef = React.useRef<HTMLAnchorElement>(null);
   React.useEffect(() => {
     activeRef.current?.scrollIntoView({ block: "nearest", inline: "center" });
@@ -51,10 +55,18 @@ export function SectionTabs({ tabs, activeHref, ariaLabel }: SectionTabsProps) {
                 ref={active ? activeRef : undefined}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "-mb-px inline-flex min-h-10 items-center gap-1.5 border-b-2 px-3 text-sm font-medium transition-colors",
-                  active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                  "relative -mb-px inline-flex min-h-10 items-center gap-1.5 px-3 text-sm font-medium transition-colors",
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
+                {active ? (
+                  <motion.span
+                    layoutId={indicatorId}
+                    transition={SPRING_BOUNCY}
+                    aria-hidden="true"
+                    className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary"
+                  />
+                ) : null}
                 {Icon ? (
                   <Icon
                     size={SECTION_TAB_ICON_SIZE}

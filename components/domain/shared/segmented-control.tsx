@@ -1,7 +1,13 @@
 "use client";
 
-/** Controllo segmentato (scelta singola tra poche opzioni, es. tab o toggle di tipo). Generico sul tipo del valore. */
+/**
+ * Controllo segmentato (scelta singola tra poche opzioni, es. tab o toggle di tipo). Generico sul tipo del valore.
+ * Lo sfondo della scelta attiva scivola con una molla da un'opzione all'altra.
+ */
 
+import * as React from "react";
+import { motion } from "motion/react";
+import { SPRING_BOUNCY } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 
 export interface SegmentedControlOption<T extends string> {
@@ -28,6 +34,7 @@ export function SegmentedControl<T extends string>({
   stretch = false,
   className,
 }: SegmentedControlProps<T>) {
+  const pillId = React.useId();
   return (
     <div role="group" aria-label={ariaLabel} className={cn(
         "items-center gap-1 rounded-lg bg-muted p-1",
@@ -41,14 +48,20 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(option.value)}
           aria-pressed={value === option.value}
           className={cn(
-            "min-h-9 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors sm:min-h-8",
+            "relative min-h-9 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors sm:min-h-8",
             stretch && "flex-1 px-2",
-            value === option.value
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+            value === option.value ? "text-foreground" : "text-muted-foreground hover:text-foreground"
           )}
         >
-          {option.label}
+          {value === option.value ? (
+            <motion.span
+              layoutId={pillId}
+              transition={SPRING_BOUNCY}
+              aria-hidden="true"
+              className="absolute inset-0 rounded-md bg-background shadow-sm"
+            />
+          ) : null}
+          <span className="relative">{option.label}</span>
         </button>
       ))}
     </div>

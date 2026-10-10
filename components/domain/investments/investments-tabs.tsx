@@ -1,14 +1,12 @@
 "use client";
 
 /**
- * Schede di Investimenti come link veri (ogni scheda ha il suo URL), con la scheda attiva evidenziata. Ogni scheda può
- * avere una piccola icona prima dell'etichetta: decorativa, il nome resta il testo del link.
+ * Schede di Investimenti come link veri (ogni scheda ha il suo URL): le stesse `SectionTabs` delle altre sezioni, con le
+ * schede di Investimenti come default. Ogni scheda può avere una piccola icona decorativa prima dell'etichetta.
  */
 
-import * as React from "react";
-import Link from "next/link";
 import { ArrowLeftRight, ChartPie, HandCoins, Landmark, TrendingUp, Wallet, type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { SectionTabs } from "@/components/domain/shared";
 
 export interface InvestmentsTab {
   href: string;
@@ -35,48 +33,6 @@ export interface InvestmentsTabsProps {
   tabs?: readonly InvestmentsTab[];
 }
 
-/** Una scheda è attiva sul suo indirizzo e sulle sue sotto-pagine (es. la pagina di un titolo), tranne la prima che è la radice. */
-export function isTabActive(tabHref: string, pathname: string, rootHref: string = INVESTMENTS_TABS[0].href): boolean {
-  if (pathname === tabHref) return true;
-  return tabHref !== rootHref && pathname.startsWith(`${tabHref}/`);
-}
-
 export function InvestmentsTabs({ activeHref, tabs = INVESTMENTS_TABS }: InvestmentsTabsProps) {
-  const activeRef = React.useRef<HTMLAnchorElement>(null);
-  // Su mobile le schede scorrono: la scheda attiva va portata in vista (es. aprendo direttamente /investimenti/tasse).
-  React.useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: "nearest", inline: "center" });
-  }, [activeHref]);
-  return (
-    <nav aria-label="Sezioni di Investimenti" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <ul className="flex w-max gap-1 border-b sm:w-full">
-        {tabs.map((tab) => {
-          const active = isTabActive(tab.href, activeHref);
-          const Icon = tab.icon;
-          return (
-            <li key={tab.href}>
-              <Link
-                href={tab.href}
-                ref={active ? activeRef : undefined}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "-mb-px inline-flex min-h-10 items-center gap-1.5 border-b-2 px-3 text-sm font-medium transition-colors",
-                  active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {Icon ? (
-                  <Icon
-                    size={INVESTMENTS_TAB_ICON_SIZE}
-                    aria-hidden="true"
-                    className={cn("shrink-0", active ? "text-primary" : "text-muted-foreground/70")}
-                  />
-                ) : null}
-                {tab.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
-  );
+  return <SectionTabs tabs={tabs} activeHref={activeHref} ariaLabel="Sezioni di Investimenti" />;
 }

@@ -3,6 +3,7 @@ import { HERO_FACTS, OPEN_SOURCE_FACT } from "@/content/home";
 import { APP_LINKS, SOURCE_URL } from "@/content/site";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { AppShot } from "./app-shot";
+import { BlurWords } from "./blur-words";
 import { ARROW_ICON, CtaLink } from "./cta-link";
 import { HeroShot } from "./hero-shot";
 import { HomeIcon } from "./home-icon";
@@ -18,7 +19,7 @@ export function Hero() {
     <TrackedSection id="top" section="hero" className="hero">
       <div className="wrap">
         <div className="hero-copy">
-          <h1>Quanto hai, quanto paghi di tasse, quando puoi smettere di lavorare.</h1>
+          <BlurWords as="h1">Quanto hai, quanto paghi di tasse, quando puoi smettere di lavorare.</BlurWords>
           <p className="hero-lede">
             Conti, spese, investimenti, fondo pensione e debiti in un&apos;app sola, con le tasse calcolate secondo le regole italiane.
           </p>

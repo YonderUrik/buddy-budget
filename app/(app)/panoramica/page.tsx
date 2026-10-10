@@ -38,6 +38,7 @@ import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
+import { useHydrated } from "@/lib/hooks/use-hydrated";
 
 /** Inizio della finestra di fetch degli snapshot: tutto lo storico, così il cambio periodo non richiede nuove richieste. */
 const NET_WORTH_FETCH_FROM = "2000-01-01";
@@ -60,6 +61,8 @@ const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
 
 export default function PanoramicaPage() {
   const { data: session } = authClient.useSession();
+  // Il nome arriva dalla sessione nel browser: lo mostriamo dopo l'idratazione, così l'HTML del server coincide.
+  const hydrated = useHydrated();
   const currency = session?.user.currency ?? "EUR";
   const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
   const today = React.useMemo(() => startOfDay(new Date()), []);
@@ -130,7 +133,7 @@ export default function PanoramicaPage() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <OverviewVoice
-        firstName={session?.user.name?.split(" ")[0]}
+        firstName={hydrated ? session?.user.name?.split(" ")[0] : undefined}
         dateLabel={headerDate.charAt(0).toUpperCase() + headerDate.slice(1)}
         pace={pace}
         monthLabel={monthLabel}

@@ -93,13 +93,13 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
             <ChoiceBody icon={FileSpreadsheetIcon} color="var(--swatch-amber)" title="Importa un file CSV o Excel" description="Carica l'estratto conto: lo leggiamo e crei il conto con i suoi movimenti." />
           </Link>
         </div>
-      ) : (
+      ) : view === "banca" ? (
         <button type="button" onClick={() => setView("scelta")} className="-mt-2 inline-flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:min-h-9">
           <ArrowLeftIcon className="size-4" aria-hidden="true" /> Cambia modo
         </button>
-      )}
+      ) : null}
       {view === "banca" ? <ConnectBankFlow onChooseManual={() => setView("manuale")} /> : null}
-      {view === "manuale" ? <AddAccountForm currency={currency} onSuccess={onClose} /> : null}
+      {view === "manuale" ? <AddAccountForm currency={currency} onSuccess={onClose} onExit={() => setView("scelta")} /> : null}
     </>
   );
 }

@@ -15,6 +15,7 @@ import { getUserCurrency, todayKey } from "@/lib/investments/operations";
 import { resolveFxRates } from "@/lib/investments/import/execute";
 import { updateFxRates } from "@/lib/market-data/update";
 import { marketDataDeps } from "@/lib/market-data/runtime";
+import { personalImportEmailContent } from "./emails";
 import { generateParser, ModelInputError } from "./generate";
 
 export async function processOne() {
@@ -98,7 +99,8 @@ export async function maintainJobs() {
     const [user] = await db.select({ email: authUser.email }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject: pending.status === "imported" ? "Il tuo CSV è stato importato" : "Non è stato possibile importare il tuo CSV", text: pending.status === "imported" ? `Importazione completata. Trovi i dati in Liquidità e Investimenti: ${url}` : `Importazione non riuscita. Nessun movimento è stato salvato. Apri BuddyBudget per vedere il motivo: ${url}` }, { idempotencyKey: `personal-csv-${pending.id}` });
+    const { subject, text, html } = personalImportEmailContent(pending.status === "imported", { jobUrl: url, appUrl: process.env.APP_URL });
+    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}` });
     if (result.error) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));
   } catch { logger.warn("personal_import.email_failed", { jobId: pending.id, reason: "delivery_failed" }); }

@@ -9,6 +9,7 @@ import { authUser, authSession, authAccount, authVerification } from "@/lib/db/s
 import { categories } from "@/lib/db/schema/categories";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
+import { magicLinkEmailContent } from "./emails";
 import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
@@ -34,8 +35,7 @@ export const auth = betterAuth({
         const { error } = await resend.emails.send({
           from: process.env.RESEND_FROM!,
           to: email,
-          subject: "Il tuo link di accesso a BuddyBudget",
-          text: `Clicca qui per accedere: ${url}\n\nIl link scade tra ${MAGIC_LINK_EXPIRES_MINUTES} minuti.`,
+          ...magicLinkEmailContent({ url, expiresInMinutes: MAGIC_LINK_EXPIRES_MINUTES, appUrl: new URL(url).origin }),
         });
         if (error) {
           recordAuthEvent("magic_link_failed");

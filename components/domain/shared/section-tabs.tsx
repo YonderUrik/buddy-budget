@@ -43,7 +43,7 @@ export function SectionTabs({ tabs, activeHref, ariaLabel }: SectionTabsProps) {
   }, [activeHref]);
   const rootHref = tabs[0]?.href ?? "";
   return (
-    <nav aria-label={ariaLabel} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <nav aria-label={ariaLabel} className="scrollbar-hidden -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
       <ul className="flex w-max gap-1 border-b sm:w-full">
         {tabs.map((tab) => {
           const active = isSectionTabActive(tab.href, activeHref, rootHref);

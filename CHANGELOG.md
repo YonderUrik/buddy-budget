@@ -2,6 +2,20 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.46.0](https://github.com/YonderUrik/buddy-budget/compare/v0.45.0...v0.46.0) (2026-10-10)
+
+
+### Novità
+
+* costi e imposte del Portafoglio in un pulsante con popover, schede senza barra orizzontale ([#267](https://github.com/YonderUrik/buddy-budget/issues/267)) ([3add343](https://github.com/YonderUrik/buddy-budget/commit/3add3435c85e1c1571ee21932afefabb7ecc7898))
+
+## [0.45.0](https://github.com/YonderUrik/buddy-budget/compare/v0.44.2...v0.45.0) (2026-10-10)
+
+
+### Novità
+
+* **landing:** Markdown per gli agenti (Accept: text/markdown) e Content-Signal in robots.txt ([#268](https://github.com/YonderUrik/buddy-budget/issues/268)) ([d0b92e1](https://github.com/YonderUrik/buddy-budget/commit/d0b92e13dd7bb1e5ee63f175d58f1ff6062fa490))
+
 ## [0.44.2](https://github.com/YonderUrik/buddy-budget/compare/v0.44.1...v0.44.2) (2026-10-10)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget",
-  "version": "0.44.2",
+  "version": "0.46.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "packageManager": "pnpm@11.5.0",

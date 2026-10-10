@@ -20,7 +20,7 @@ export interface SectionTabsSegmentedProps {
 export function SectionTabsSegmented({ tabs, activeIndex, ariaLabel }: SectionTabsSegmentedProps) {
   const thumbId = React.useId();
   return (
-    <nav aria-label={ariaLabel} className="max-w-full overflow-x-auto">
+    <nav aria-label={ariaLabel} className="scrollbar-hidden max-w-full overflow-x-auto">
       <ul className="inline-flex w-max items-center gap-1 rounded-lg bg-muted p-1">
         {tabs.map((tab, index) => {
           const active = index === activeIndex;

@@ -1,37 +1,41 @@
 import "./features-section.css";
 import Link from "next/link";
-import { FEATURE_AREAS, featureCounts, featuresByArea } from "@/content/catalog.generated";
+import { FEATURE_AREAS, type FeatureArea } from "@/content/catalog.generated";
+import { AREA_META } from "@/content/feature-areas";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { ARROW_ICON } from "./cta-link";
+import { HomeIcon } from "./home-icon";
+import { Reveal } from "./reveal";
+import { ToolShot } from "./tool-shot";
 import { TrackedSection } from "./tracked-section";
 
-/** Funzioni mostrate per area prima del rimando all'elenco completo. */
-const SAMPLE_PER_AREA = 3;
+/** Aree mostrate in home: quelle con una schermata vera (Account resta nella pagina delle funzioni). */
+const HOME_AREAS: readonly FeatureArea[] = FEATURE_AREAS.filter((a) => AREA_META[a].shot);
 
-/** "Cosa c'è dentro": le aree dell'app con qualche funzione ciascuna, tratte dal catalogo (unica fonte), e il rimando all'elenco completo. */
+/**
+ * Le aree dell'app, ognuna con la sua schermata vera, una frase e il rimando alla pagina delle funzioni.
+ * Testi e schermate vengono da `AREA_META` (stessa fonte della pagina funzioni): nessun conteggio, nessun elenco da mantenere qui.
+ */
 export function FeaturesSection() {
-  const { total, available } = featureCounts();
   return (
     <TrackedSection id="funzioni" section="funzioni" className="sec sec-features">
       <div className="wrap">
-        <h2 className="t">Cosa c&apos;è dentro.</h2>
-        <p className="lede">{available} funzioni già disponibili, altre {total - available} in arrivo. Qui le aree; nell&apos;elenco completo c&apos;è ogni funzione.</p>
-        <div className="areas-list">
-          {FEATURE_AREAS.map((area) => {
-            const features = featuresByArea(area).filter((f) => f.status !== "soon");
+        <h2 className="t">Le aree dell&apos;app.</h2>
+        <p className="lede">Si usano una alla volta: parti da quella che ti serve e aggiungi le altre quando vuoi. Insieme compongono il patrimonio netto.</p>
+        <Reveal stagger className="areas-grid">
+          {HOME_AREAS.map((area) => {
+            const meta = AREA_META[area];
             return (
-              <section key={area}>
+              <Link key={area} href={`${CONTENT_PATHS.funzioni}#${meta.slug}`} className="area-card">
+                {meta.shot ? <ToolShot id={meta.shot.id} /> : null}
+                <span className="area-ic" aria-hidden="true"><HomeIcon name={meta.icon} size={20} /></span>
                 <h3>{area}</h3>
-                <ul>
-                  {features.slice(0, SAMPLE_PER_AREA).map((f) => (
-                    <li key={f.id}>{f.name}</li>
-                  ))}
-                </ul>
-                <span className="areas-more">{features.length > SAMPLE_PER_AREA ? `e altre ${features.length - SAMPLE_PER_AREA}` : " "}</span>
-              </section>
+                <p>{meta.intro}</p>
+                <span className="area-go">Vedi le funzioni{ARROW_ICON}</span>
+              </Link>
             );
           })}
-        </div>
+        </Reveal>
         <div className="cta" style={{ marginTop: 40 }}>
           <Link className="btn ghost" href={CONTENT_PATHS.funzioni}>Tutte le funzioni{ARROW_ICON}</Link>
           <Link className="btn ghost" href={CONTENT_PATHS.schermate}>Tutte le schermate{ARROW_ICON}</Link>

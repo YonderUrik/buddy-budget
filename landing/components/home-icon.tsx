@@ -1,6 +1,6 @@
 import {
-  Backpack, Calculator, Code, CreditCard, Download, Gift, House, Landmark, LayoutDashboard, Link2, PieChart, Scale, Server, ShieldCheck, Stamp,
-  TrendingUp, Umbrella, University, UserRound, Wallet,
+  Backpack, Ban, Calculator, Code, CreditCard, Database, Download, Eye, FileText, Gift, House, KeyRound, Landmark, LayoutDashboard, Link2, PieChart, Scale, Server,
+  ShieldCheck, SlidersHorizontal, Stamp, TrendingUp, Umbrella, University, UserRound, Wallet,
   type LucideIcon,
 } from "lucide-react";
 import type { HomeIcon as HomeIconName } from "@/content/home";
@@ -27,6 +27,12 @@ const ICONS: Record<HomeIconName, LucideIcon> = {
   user: UserRound,
   shield: ShieldCheck,
   pie: PieChart,
+  key: KeyRound,
+  eye: Eye,
+  ban: Ban,
+  sliders: SlidersHorizontal,
+  "file-text": FileText,
+  database: Database,
 };
 
 /** Icona decorativa delle sezioni della home, con la misura e lo spessore del tratto usati nell'app. */

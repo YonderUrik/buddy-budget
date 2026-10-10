@@ -1,10 +1,9 @@
 import "./security.css";
-import "./security-art.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
-import { SECURITY, SOURCE_URL } from "@/content/site";
+import { SECURITY } from "@/content/site";
 import { Reveal } from "./reveal";
-import { SecurityCard } from "./security-card";
+import { HomeIcon } from "./home-icon";
 import { ServerMap } from "./server-map";
 import { TrackedSection } from "./tracked-section";
 
@@ -19,16 +18,15 @@ export function Security() {
         <ServerMap />
         <Reveal stagger className="sec-grid">
           {SECURITY.points.map((point) => (
-            <SecurityCard key={point.title} point={point} />
+            <article key={point.title} className="sec-point">
+              <span className="sec-ic" aria-hidden="true"><HomeIcon name={point.icon} size={22} /></span>
+              <h3>{point.title}</h3>
+              <p>{point.text}</p>
+            </article>
           ))}
         </Reveal>
         </div>
         <p className="fine">
-          {SOURCE_URL ? (
-            <>
-              {SECURITY.sourceNote} <a href={SOURCE_URL} rel="noopener">leggilo su GitHub</a>.{" "}
-            </>
-          ) : null}
           {SECURITY.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
         </p>
       </div>

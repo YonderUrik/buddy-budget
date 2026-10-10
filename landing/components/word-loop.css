@@ -1,4 +1,6 @@
 .word-loop { position: relative; display: inline-block; vertical-align: bottom; white-space: nowrap; }
 .word-loop-item { position: absolute; left: 0; top: 0; opacity: 0; }
 .word-loop-item.is-first { position: relative; opacity: 1; }
+.word-loop.is-stacked { display: grid; white-space: normal; vertical-align: baseline; }
+.word-loop.is-stacked > .word-loop-item { grid-area: 1 / 1; position: static; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

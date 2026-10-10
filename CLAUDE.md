@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Abbonamenti (2026-10-10)**: scheda «Abbonamenti» in Liquidità (`/liquidita/abbonamenti`): addebiti ricorrenti rilevati dai movimenti (cadenza, importo, giorno), da confermare o scartare, con totale al mese e all'anno, prossimo addebito, aumenti di prezzo e abbonamenti non più addebitati; aggiunta manuale; scelte salvate (migration 0025). Voce in `docs/decisioni/2026-10-10-abbonamenti.md`. PR in bozza sul branch `claude/project-thread-5fqfo3`. Rimandati: legame con le rate dei Debiti, scadenze in sidebar, avvisi email/push, pannello Grafana.
+
 **Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.
 
 **Landing nuova (2026-10-09)**: home ristrutturata dopo l'analisi dei competitor (fatti in apertura, tre passi, regole italiane con fonti, quattro gruppi, per chi è, confronto) e `/llms.txt` + crawler AI ammessi; voce in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. PR in bozza sul branch `claude/project-thread-kflwwq`. Rimandati: pagine per domanda, `/sicurezza`, confronti, glossario, Lighthouse.

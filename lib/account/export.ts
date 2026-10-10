@@ -9,6 +9,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { authUser } from "@/lib/db/schema/auth";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { budgets } from "@/lib/db/schema/budgets";
+import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
@@ -72,6 +73,7 @@ async function loadUserData(userId: string) {
     connectionRows,
     categoryRows,
     budgetRows,
+    subscriptionRows,
     ruleRows,
     transactionRows,
     portfolioRows,
@@ -138,6 +140,10 @@ async function loadUserData(userId: string) {
       .select({ categoryId: budgets.categoryId, monthlyAmount: budgets.monthlyAmount, updatedAt: budgets.updatedAt })
       .from(budgets)
       .where(eq(budgets.userId, userId)),
+    db
+      .select({ key: subscriptions.key, name: subscriptions.name, status: subscriptions.status, origin: subscriptions.origin, amount: subscriptions.amount, cadence: subscriptions.cadence, nextDate: subscriptions.nextDate, categoryId: subscriptions.categoryId })
+      .from(subscriptions)
+      .where(eq(subscriptions.userId, userId)),
     db
       .select({
         id: categorizationRules.id,
@@ -358,6 +364,7 @@ async function loadUserData(userId: string) {
     bankConnections: connectionRows,
     categories: categoryRows,
     budgets: budgetRows,
+    subscriptions: subscriptionRows,
     rules: ruleRows,
     transactions: transactionRows,
     investmentPortfolios: portfolioRows,
@@ -422,6 +429,15 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
     "budget.csv": toCsv(data.budgets, [
       { header: "Categoria", value: (b) => categoryName.get(b.categoryId) },
       { header: "Budget mensile", value: (b) => decimal(b.monthlyAmount) },
+    ]),
+    "abbonamenti.csv": toCsv(data.subscriptions, [
+      { header: "Nome", value: (s) => s.name ?? s.key },
+      { header: "Stato", value: (s) => s.status },
+      { header: "Origine", value: (s) => s.origin },
+      { header: "Importo", value: (s) => decimal(s.amount) },
+      { header: "Cadenza", value: (s) => s.cadence },
+      { header: "Prossimo addebito", value: (s) => s.nextDate },
+      { header: "Categoria", value: (s) => (s.categoryId ? categoryName.get(s.categoryId) : null) },
     ]),
     "regole-categorizzazione.csv": toCsv(data.rules, [
       { header: "Tipo", value: (r) => r.matchType },

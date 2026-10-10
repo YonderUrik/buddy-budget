@@ -18,6 +18,8 @@ export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "r
 export type SupportReportKind = "problema" | "domanda" | "idea";
 export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
+/** Scelte dell'utente sugli abbonamenti (enum chiuso, mai il nome dell'abbonamento). */
+export type SubscriptionAction = "confirmed" | "excluded" | "ended" | "restored" | "added" | "updated" | "removed";
 
 /** Numeri aggregati di utilizzo (nessun dato personale: solo conteggi), letti dal DB allo scrape. */
 export interface UsageSnapshot {
@@ -29,7 +31,7 @@ export interface UsageSnapshot {
   /** Righe totali per tipo di dato. */
   records: Record<UsageRecordKind, number>;
 }
-export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension";
+export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
@@ -97,6 +99,8 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   supportReports: Counter<"kind" | "outcome">;
+  subscriptionActions: Counter<"action">;
+  subscriptionsDetect: Histogram<string>;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
@@ -177,6 +181,19 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}support_reports_total`,
     help: "Segnalazioni di supporto inviate dagli utenti per tipo ed esito (sent, failed, rate_limited).",
     labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+
+  state.subscriptionActions = new Counter({
+    name: `${METRIC_PREFIX}subscription_actions_total`,
+    help: "Scelte degli utenti sugli abbonamenti (confermato, escluso, terminato, ripristinato, aggiunto, modificato, rimosso).",
+    labelNames: ["action"],
+    registers: r,
+  });
+  state.subscriptionsDetect = new Histogram({
+    name: `${METRIC_PREFIX}subscriptions_detect_duration_seconds`,
+    help: "Durata del rilevamento degli abbonamenti per richiesta (lettura delle transazioni compresa).",
+    buckets: DURATION_BUCKETS_SECONDS,
     registers: r,
   });
 
@@ -308,7 +325,7 @@ function createState(): MetricsState {
   usageGauge("users", "Utenti per stato: registered (tutti), onboarded (onboarding finito), deactivated (in attesa di eliminazione).", "state", (u) => u.users);
   usageGauge("users_new", "Utenti registrati nella finestra indicata (7d, 30d).", "window", (u) => u.newUsers);
   usageGauge("users_active", "Utenti con una sessione attiva nella finestra indicata (24h, 7d, 30d).", "window", (u) => u.activeUsers);
-  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza).", "feature", (u) => u.usersWithFeature);
+  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza, abbonamenti confermati).", "feature", (u) => u.usersWithFeature);
   usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti, fotografie della previdenza).", "kind", (u) => u.records);
 
   return state;
@@ -400,6 +417,16 @@ export function recordAuthEvent(event: AuthEvent): void {
 /** Registra l'esito di una segnalazione di supporto. */
 export function recordSupportReport(kind: SupportReportKind, outcome: SupportReportOutcome): void {
   metrics().supportReports.inc({ kind, outcome });
+}
+
+/** Registra una scelta dell'utente sugli abbonamenti. */
+export function recordSubscriptionAction(action: SubscriptionAction): void {
+  metrics().subscriptionActions.inc({ action });
+}
+
+/** Registra la durata di un rilevamento degli abbonamenti. */
+export function recordSubscriptionsDetect(durationMs: number): void {
+  metrics().subscriptionsDetect.observe(durationMs / 1000);
 }
 
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */

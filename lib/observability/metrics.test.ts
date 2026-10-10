@@ -99,7 +99,7 @@ describe("metriche applicative", () => {
         users: { registered: 12, onboarded: 10, deactivated: 1 },
         newUsers: { "7d": 3, "30d": 9 },
         activeUsers: { "24h": 2, "7d": 6, "30d": 8 },
-        usersWithFeature: { accounts: 9, bank_connection: 4, transactions: 8, budgets: 3, rules: 2, investments: 5, debts: 1, pension: 2 },
+        usersWithFeature: { accounts: 9, bank_connection: 4, transactions: 8, budgets: 3, rules: 2, investments: 5, debts: 1, pension: 2, subscriptions: 3 },
         records: { accounts: 20, transactions: 4000, investment_operations: 150, debts: 2, pension_snapshots: 12 },
       }),
     });

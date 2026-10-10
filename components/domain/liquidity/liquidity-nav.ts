@@ -1,4 +1,4 @@
-import { BarChart3, Landmark, ListOrdered, Tags } from "lucide-react";
+import { BarChart3, Landmark, ListOrdered, Repeat, Tags } from "lucide-react";
 import type { SectionTab } from "@/components/domain/shared";
 
 /** Radice della sezione Liquidità. */
@@ -11,8 +11,9 @@ export const LIQUIDITY_TABS: readonly SectionTab[] = [
   { href: LIQUIDITY_HREF, label: "Movimenti", icon: ListOrdered },
   { href: `${LIQUIDITY_HREF}/analisi`, label: "Analisi", icon: BarChart3 },
   { href: `${LIQUIDITY_HREF}/conti`, label: "Conti", icon: Landmark },
+  { href: `${LIQUIDITY_HREF}/abbonamenti`, label: "Abbonamenti", icon: Repeat },
   { href: `${LIQUIDITY_HREF}/categorie`, label: "Categorie e regole", icon: Tags },
 ];
 
 /** Schede in cui il conto selezionato non filtra nulla (la gestione di categorie e regole è globale). */
-export const LIQUIDITY_GLOBAL_HREFS = [`${LIQUIDITY_HREF}/categorie`, `${LIQUIDITY_HREF}/regole`] as const;
+export const LIQUIDITY_GLOBAL_HREFS = [`${LIQUIDITY_HREF}/abbonamenti`, `${LIQUIDITY_HREF}/categorie`, `${LIQUIDITY_HREF}/regole`] as const;

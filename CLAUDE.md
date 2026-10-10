@@ -186,7 +186,7 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
-**Primi passi (2026-10-10)**: checklist «Primi passi» in Panoramica che si compila dai dati veri, «Esplora con dati d'esempio» azzerabile (conti `is_demo`, mai mischiati: i dati veri sono bloccati finché la demo è attiva) e stati vuoti con azione in Movimenti, Conti, Investimenti e Debiti; voce in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0025. PR in bozza sul branch `claude/project-thread-ec9i5w`. Rimandati: riaprire la checklist dalla UI, demo con investimenti, guardia su import personalizzati.
+**Primi passi (2026-10-10)**: checklist «Primi passi» in Panoramica che si compila dai dati veri, «Esplora con dati d'esempio» azzerabile (conti `is_demo`, mai mischiati: i dati veri sono bloccati finché la demo è attiva) e stati vuoti con azione in Movimenti, Conti, Investimenti e Debiti; voce in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0026. PR in bozza sul branch `claude/project-thread-ec9i5w`. Rimandati: riaprire la checklist dalla UI, demo con investimenti, guardia su import personalizzati.
 
 **Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.
 

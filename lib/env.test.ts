@@ -40,6 +40,13 @@ describe("parseServerEnv", () => {
     expect(env.ALPHAVANTAGE_API_KEY).toBe("av");
   });
 
+  it("si avvia senza Google, Resend e GoCardless (self-hosting)", () => {
+    const { GOOGLE_CLIENT_ID: _g, GOOGLE_CLIENT_SECRET: _gs, RESEND_API_KEY: _r, RESEND_FROM: _f, GOCARDLESS_SECRET_ID: _i, GOCARDLESS_SECRET_KEY: _k, ...minimal } = VALID_ENV;
+    expect(() => parseServerEnv(minimal)).not.toThrow();
+    // docker compose passa le variabili vuote come stringa vuota
+    expect(parseServerEnv({ ...minimal, RESEND_API_KEY: "", GOOGLE_CLIENT_ID: "", GOCARDLESS_SECRET_KEY: "" }).RESEND_API_KEY).toBeUndefined();
+  });
+
   it("elenca in ordine alfabetico tutte le variabili mancanti", () => {
     const { APP_URL: _a, REDIS_URL: _r, ...rest } = VALID_ENV;
     expect(() => parseServerEnv(rest)).toThrow("Variabili d'ambiente mancanti o non valide: APP_URL, REDIS_URL");

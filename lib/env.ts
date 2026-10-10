@@ -3,6 +3,9 @@ import { z } from "zod";
 /** Lunghezza minima del segreto condiviso con chi chiama gli endpoint cron. */
 export const CRON_SECRET_MIN_LENGTH = 32;
 
+/** Stringa non vuota facoltativa: `""` (variabile dichiarata ma vuota, tipico di docker compose) vale come assente. */
+const optionalSecret = z.preprocess((value) => (value === "" ? undefined : value), z.string().min(1).optional());
+
 /**
  * Variabili d'ambiente richieste dal server. OLLAMA_*, LOG_LEVEL, METRICS_TOKEN e le chiavi delle fonti prezzi sono opzionali: se assenti il livello
  * assistente della categorizzazione è semplicemente spento (stato normale, non un guasto).
@@ -15,12 +18,15 @@ export const serverEnvSchema = z.object({
   // refusi plausibili che romperebbero in silenzio i redirect (GoCardless, magic link).
   BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
   APP_URL: z.url({ protocol: /^https?$/ }),
-  GOOGLE_CLIENT_ID: z.string().min(1),
-  GOOGLE_CLIENT_SECRET: z.string().min(1),
-  RESEND_API_KEY: z.string().min(1),
-  RESEND_FROM: z.string().min(1),
-  GOCARDLESS_SECRET_ID: z.string().min(1),
-  GOCARDLESS_SECRET_KEY: z.string().min(1),
+  // Integrazioni esterne (opzionali, per il self-hosting): senza Google il pulsante non funziona, senza Resend il
+  // magic link finisce nei log del server (vedi lib/auth/magic-link-log.ts) e le altre email non partono, senza
+  // GoCardless non si collegano banche (restano conti manuali e import CSV).
+  GOOGLE_CLIENT_ID: optionalSecret,
+  GOOGLE_CLIENT_SECRET: optionalSecret,
+  RESEND_API_KEY: optionalSecret,
+  RESEND_FROM: optionalSecret,
+  GOCARDLESS_SECRET_ID: optionalSecret,
+  GOCARDLESS_SECRET_KEY: optionalSecret,
   CRON_SECRET: z.string().min(CRON_SECRET_MIN_LENGTH),
   OLLAMA_BASE_URL: z.string().optional(),
   OLLAMA_MODEL: z.string().optional(),

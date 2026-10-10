@@ -137,6 +137,13 @@ export interface ProductEvents {
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
   more_menu_clicked: { target: "sezione" | "impostazioni" | "tema" | "importi" | "esci" | "informativa" | "quadro" };
+  /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
+  notifications_toggled: { kind: "digest" | "budget" | "deadlines"; enabled: boolean };
+  notifications_frequency_changed: { frequency: "settimanale" | "mensile" };
+  /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
+  notifications_test_sent: undefined;
+  /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
+  notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "all" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

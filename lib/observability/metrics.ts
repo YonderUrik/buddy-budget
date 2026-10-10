@@ -15,6 +15,8 @@ export type SyncOutcome = "synced" | "limited" | "expired" | "error";
 export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
+export type SupportReportKind = "problema" | "domanda" | "idea";
+export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
 
 /** Numeri aggregati di utilizzo (nessun dato personale: solo conteggi), letti dal DB allo scrape. */
@@ -94,6 +96,7 @@ interface MetricsState {
   merchantNames: Counter<"source">;
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
+  supportReports: Counter<"kind" | "outcome">;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
@@ -167,6 +170,13 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}auth_events_total`,
     help: "Eventi di autenticazione (invio magic link, accessi, rate limit).",
     labelNames: ["event"],
+    registers: r,
+  });
+
+  state.supportReports = new Counter({
+    name: `${METRIC_PREFIX}support_reports_total`,
+    help: "Segnalazioni di supporto inviate dagli utenti per tipo ed esito (sent, failed, rate_limited).",
+    labelNames: ["kind", "outcome"],
     registers: r,
   });
 
@@ -385,6 +395,11 @@ export function recordCronRunMetric(cron: CronName, outcome: CronOutcome): void 
 /** Registra un evento di autenticazione. */
 export function recordAuthEvent(event: AuthEvent): void {
   metrics().authEvents.inc({ event });
+}
+
+/** Registra l'esito di una segnalazione di supporto. */
+export function recordSupportReport(kind: SupportReportKind, outcome: SupportReportOutcome): void {
+  metrics().supportReports.inc({ kind, outcome });
 }
 
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */

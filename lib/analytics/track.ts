@@ -8,6 +8,12 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface ProductEvents {
+  /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
+  support_report_sent: { kind: "problema" | "domanda" | "idea"; withContext: boolean };
+  /** Clic su un collegamento esterno di «Aiuto» (GitHub, novità, sicurezza). */
+  support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" };
+  /** Domanda aperta tra le risposte rapide di «Aiuto». */
+  support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };
   personal_csv_deleted: { cash: number; investments: number };
   personal_csv_imported: { rows: number };

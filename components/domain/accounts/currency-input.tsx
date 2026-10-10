@@ -16,6 +16,8 @@ export interface CurrencyInputProps {
   /** Id dell'input numerico, per associarlo a una <label htmlFor>. */
   id?: string;
   "aria-label"?: string;
+  /** Marca l'input come primo campo su cui portare il focus quando compare un passo di un form a passi. */
+  "data-autofocus"?: boolean;
 }
 
 export function CurrencyInput({
@@ -26,6 +28,7 @@ export function CurrencyInput({
   className,
   id,
   "aria-label": ariaLabel,
+  "data-autofocus": dataAutofocus,
 }: CurrencyInputProps) {
   const symbol = getCurrencySymbol(currency);
 
@@ -48,6 +51,7 @@ export function CurrencyInput({
           className
         )}
         aria-label={ariaLabel}
+        data-autofocus={dataAutofocus ? "" : undefined}
       />
     </div>
   );

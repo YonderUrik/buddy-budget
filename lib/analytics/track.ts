@@ -3,6 +3,9 @@ import type { InvestmentTransactionType } from "@/lib/db/schema/investments";
 import type { SupportedCurrency } from "@/lib/validation/currency";
 import type { SidebarModuleId } from "@/lib/sidebar/modules";
 
+/** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
+export type FormFlow = "onboarding" | "account_manual";
+
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
@@ -38,6 +41,10 @@ export interface ProductEvents {
   account_details_opened: { kind: "manuale" | "collegato" };
   /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
   account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
+  /** Un passo di un form a passi è stato completato (`step` parte da 1): serve a vedere dove ci si ferma. */
+  form_step_completed: { flow: FormFlow; step: number };
+  /** «Indietro» in un form a passi, dal passo `step` (parte da 1). */
+  form_step_back: { flow: FormFlow; step: number };
   /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
   bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" | "sidebar" };
   transaction_added: { direction: "entrata" | "uscita" };

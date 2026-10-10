@@ -136,6 +136,7 @@ export interface ProductEvents {
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
+  amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
   theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "tema" | "importi" | "esci" | "informativa" | "quadro" };
   account_data_exported: undefined;

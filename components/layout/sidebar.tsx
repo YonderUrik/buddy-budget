@@ -36,17 +36,19 @@ import {
   LogOut,
   Settings,
   LifeBuoy,
+  Eye,
 } from "lucide-react";
 
 import { ThemeSubmenu, type ThemeChoice } from "@/components/theme-submenu";
 import { track } from "@/lib/analytics";
-import { PrivacyToggle } from "@/components/privacy-toggle";
+import { usePrivacy } from "@/components/privacy-provider";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import { authClient } from "@/lib/auth/client";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -255,6 +257,7 @@ export function AppSidebar({
   extra,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
+  const { hidden, toggle: toggleHidden } = usePrivacy();
   const router = useRouter();
   const pathname = usePathname();
   const { data: sessionData } = authClient.useSession();
@@ -399,6 +402,17 @@ export function AppSidebar({
               <LifeBuoy className="mr-2 size-4" aria-hidden="true" />
               Aiuto e segnalazioni
             </DropdownMenuItem>
+            <DropdownMenuCheckboxItem
+              checked={hidden}
+              onCheckedChange={(checked) => {
+                toggleHidden();
+                track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
+              }}
+              className="cursor-pointer"
+            >
+              <Eye className="mr-2 size-4" aria-hidden="true" />
+              Nascondi gli importi
+            </DropdownMenuCheckboxItem>
             <ThemeSubmenu
               onChange={(choice) =>
                 track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
@@ -410,11 +424,6 @@ export function AppSidebar({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* Nascondi importi (il tema sta nel menu utente) */}
-        <div className={cn("flex mb-2", isCollapsed ? "justify-center" : "px-1")}>
-          <PrivacyToggle />
-        </div>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
         {!forceExpanded && (

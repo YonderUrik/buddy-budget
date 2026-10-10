@@ -10,7 +10,7 @@
  * Contiene:
  * - Brand/logo testuale
  * - Hamburger button (apre il drawer via SidebarContext)
- * - PrivacyToggle (il tema si cambia dal menu utente nel drawer o da «Altro»)
+ * Tema e «Nascondi importi» stanno nel menu utente del drawer o in «Altro».
  *
  * Riusabilità: accetta `brandName` e `brandHref` come prop per essere
  * adattata ad altre app senza modifiche al componente.
@@ -18,7 +18,6 @@
 
 import Image from "next/image";
 import { Menu } from "lucide-react";
-import { PrivacyToggle } from "@/components/privacy-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 
 // ---------------------------------------------------------------------------
@@ -76,9 +75,8 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true 
         {brandName}
       </span>
 
-      <div className="flex items-center gap-1">
-        <PrivacyToggle />
-      </div>
+      {/* Riquadro vuoto: tiene il brand al centro */}
+      <span className="size-9" aria-hidden="true" />
     </header>
   );
 }

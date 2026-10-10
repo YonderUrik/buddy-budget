@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.
+
 **Landing nuova (2026-10-09)**: home ristrutturata dopo l'analisi dei competitor (fatti in apertura, tre passi, regole italiane con fonti, quattro gruppi, per chi è, confronto) e `/llms.txt` + crawler AI ammessi; voce in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. PR in bozza sul branch `claude/project-thread-kflwwq`. Rimandati: pagine per domanda, `/sicurezza`, confronti, glossario, Lighthouse.
 
 **Sidebar (2026-10-09)**: moduli «Prossime scadenze» e «Obiettivo FIRE» accanto al riepilogo, barra in basso su mobile e sezione Impostazioni → «Barra laterale» per accendere/spegnere tutto (per dispositivo, localStorage); voce in `docs/decisioni/2026-10-09-sidebar-moduli-e-barra-mobile.md`. PR in bozza sul branch `claude/project-thread-mwh38f`. Rimandati: moduli riordinabili, preferenze sull'account.
@@ -261,7 +263,6 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - Il matching per similarità nel wizard "Categorizza automaticamente" non scarta le parole generiche (es. "pagamento pos"); ogni suggerimento resta comunque confermato a mano.
 - Nel PATCH di una transazione che cambia direzione via `categoryId` senza inviare `excludedAmount`, il valore salvato per la vecchia direzione può far rifiutare l'aggiornamento (fail-safe, nessuna corruzione).
 - `resolveDbSsl` può lanciare su URL Postgres multi-host; lo stage `migrator` del Dockerfile non forza TLS; il cron GoCardless non ha un budget di tempo dentro `maxDuration`.
-- `InvestmentsTabs` ha ancora una copia propria del componente schede (`SectionTabs` è quello condiviso): da unificare.
 - La maschera di "nascondi importi" copre solo ciò che passa da `formatCurrency` (restano in chiaro quantità, percentuali e alcuni formatter locali).
 - better-auth scrive i propri errori interni su console, fuori dal nostro `logger`: da rivalutare guardando i log in Loki.
 

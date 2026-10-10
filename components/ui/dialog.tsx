@@ -4,6 +4,9 @@ import * as React from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
+import { animateFromOrigin, trackDialogOrigins } from "@/lib/motion/dialog-origin"
+
+trackDialogOrigins()
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -37,14 +40,26 @@ function DialogOverlay({
   )
 }
 
+/** Pannello del dialog: si apre crescendo dall'elemento che l'ha aperto (vedi `animateFromOrigin`). */
 function DialogContent({
   className,
+  ref,
   ...props
 }: DialogPrimitive.Popup.Props) {
+  // Ref a callback: scatta quando il pannello entra nel DOM, cioè all'apertura (il componente esiste anche da chiuso).
+  const popupRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+      if (node) animateFromOrigin(node)
+    },
+    [ref]
+  )
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
+        ref={popupRef}
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-6 text-popover-foreground shadow-lg ring-1 ring-foreground/10 duration-100 outline-none max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",

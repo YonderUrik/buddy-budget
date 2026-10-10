@@ -6,7 +6,11 @@ import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL } from "@/content/site";
 import { ARROW_ICON, CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
 import { SourceLink } from "./source-link";
+import { WordLoop } from "./word-loop";
 import { TrackedSection } from "./tracked-section";
+
+/** Cosa si sa sempre con BuddyBudget: frasi che si alternano nel titolo di chiusura. */
+const CLOSING_PHRASES = ["quanto spendi", "quante tasse paghi", "come va il portafoglio", "quando finisce il mutuo"] as const;
 
 /** Chiusura: invito a creare l'account e piè di pagina. */
 export function Closing() {
@@ -14,7 +18,15 @@ export function Closing() {
     <TrackedSection id="fine" section="fine" className="end" navDark>
       <div className="wrap">
         <Reveal stagger distance={50}>
-          <h2>Parti da un conto, aggiungi il resto quando vuoi.</h2>
+          <h2>
+            Sai sempre
+            <br />
+            <span className="loop-line">
+              <WordLoop phrases={CLOSING_PHRASES} className="loop" />.
+            </span>
+            <br />
+            Parti da un conto, aggiungi il resto quando vuoi.
+          </h2>
           <div className="cta">
             <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup">
               Crea un account{ARROW_ICON}

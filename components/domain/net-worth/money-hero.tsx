@@ -1,5 +1,11 @@
-/** Importo in evidenza con i decimali attenuati ("30.673" grande, ",12 €" tenue). Con gli importi nascosti mostra la maschera. */
+"use client";
 
+/**
+ * Importo in evidenza con i decimali attenuati ("30.673" grande, ",12 €" tenue). Quando il valore cambia (periodo,
+ * filtro, cursore) le cifre scorrono. Con gli importi nascosti mostra la maschera.
+ */
+
+import { AnimatedNumber } from "@/components/motion";
 import { AMOUNT_MASK, formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +26,11 @@ export function splitMoney(value: number, currency: string, locale = "it-IT"): {
   return { main: head.map((p) => p.value).join(""), tail: tail.map((p) => p.value).join("") };
 }
 
-export function MoneyHero({ value, currency, locale, className }: MoneyHeroProps) {
+export function MoneyHero({ value, currency, locale = "it-IT", className }: MoneyHeroProps) {
   if (formatCurrency(0, currency) === AMOUNT_MASK) return <p className={cn("font-heading font-medium", className)}>{AMOUNT_MASK}</p>;
-  const { main, tail } = splitMoney(value, currency, locale);
   return (
     <p className={cn("font-heading font-medium tabular-nums text-foreground", className)}>
-      {main}
-      <span className="text-[0.55em] text-muted-foreground">{tail}</span>
+      <AnimatedNumber value={value} format={{ style: "currency", currency }} locales={locale} mutedTail />
     </p>
   );
 }

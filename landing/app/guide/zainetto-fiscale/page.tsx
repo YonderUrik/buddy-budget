@@ -8,7 +8,9 @@ import { Sources } from "@/components/sources";
 import { CONTENT_DRAFT, CONTENT_PATHS, SOURCES } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
-const TITLE = "Zainetto fiscale: cos'è e come recuperare le minusvalenze";
+const H1 = "Zainetto fiscale: cos'è e come recuperare le minusvalenze";
+/** Diverso dall'h1 di proposito: un title identico all'h1 spreca la seconda occasione di descrivere la pagina. */
+const TITLE = "Zainetto fiscale: guida alle minusvalenze, con esempi";
 const DESCRIPTION = "Che cos'è lo zainetto fiscale, come funzionano i 4 anni per compensare le minusvalenze di azioni e ETF, con esempi numerici e un calcolatore gratuito.";
 
 export const metadata: Metadata = {
@@ -21,8 +23,8 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <ContentPage kicker="Guida" crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Guide" }, { label: "Zainetto fiscale" }]} ctaTitle="Lo zainetto lo tiene BuddyBudget." ctaText="BuddyBudget ricostruisce lo zaino fiscale dalle tue operazioni e ti avvisa quando una minusvalenza sta per scadere." ctaLocation="guida_zainetto">
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: TITLE, description: DESCRIPTION, inLanguage: "it-IT", mainEntityOfPage: `${SITE_URL}${CONTENT_PATHS.guidaZainetto}`, author: { "@type": "Organization", name: "BuddyBudget" }, publisher: { "@type": "Organization", name: "BuddyBudget" } }} />
-      <h1>Zainetto fiscale: cos&apos;è e come recuperare le minusvalenze</h1>
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "Article", headline: H1, description: DESCRIPTION, inLanguage: "it-IT", mainEntityOfPage: `${SITE_URL}${CONTENT_PATHS.guidaZainetto}`, author: { "@type": "Organization", name: "BuddyBudget" }, publisher: { "@type": "Organization", name: "BuddyBudget" } }} />
+      <h1>{H1}</h1>
       <p className="lead">Se vendi un investimento in perdita, quella perdita non è tutta persa: per quattro anni puoi usarla per ridurre le tasse sui guadagni futuri. Questo &ldquo;serbatoio&rdquo; di perdite è lo zainetto fiscale.</p>
       <h2>Che cos&apos;è</h2>
       <p>Quando vendi azioni, ETF o altri strumenti e incassi più di quanto hai pagato, hai una plusvalenza e paghi di norma il 26%. Se incassi meno, hai una minusvalenza. Le minusvalenze possono compensare le plusvalenze della stessa categoria, riducendo l&apos;imposta. Quelle che non riesci a usare subito restano &ldquo;nello zainetto&rdquo;.</p>

@@ -38,7 +38,8 @@ import {
   LifeBuoy,
 } from "lucide-react";
 
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeSubmenu, type ThemeChoice } from "@/components/theme-submenu";
+import { track } from "@/lib/analytics";
 import { PrivacyToggle } from "@/components/privacy-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
@@ -76,6 +77,9 @@ export interface NavBadge {
 
 /** Etichetta del badge per le voci non ancora disponibili. */
 const COMING_SOON_LABEL = "Presto";
+
+/** Nome categorico della scelta di tema per l'evento di prodotto. */
+const THEME_EVENT_CHOICE = { light: "chiaro", dark: "scuro", system: "sistema" } as const satisfies Record<ThemeChoice, string>;
 
 /**
  * Le voci di navigazione dell'applicazione.
@@ -395,6 +399,11 @@ export function AppSidebar({
               <LifeBuoy className="mr-2 size-4" aria-hidden="true" />
               Aiuto e segnalazioni
             </DropdownMenuItem>
+            <ThemeSubmenu
+              onChange={(choice) =>
+                track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
+              }
+            />
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
               <LogOut className="mr-2 size-4" aria-hidden="true" />
               Esci
@@ -402,14 +411,8 @@ export function AppSidebar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Toggle tema */}
-        <div
-          className={cn(
-            "flex mb-2",
-            isCollapsed ? "flex-col items-center gap-1" : "items-center justify-between px-1"
-          )}
-        >
-          <ThemeToggle compact={isCollapsed} surface="sidebar" />
+        {/* Nascondi importi (il tema sta nel menu utente) */}
+        <div className={cn("flex mb-2", isCollapsed ? "justify-center" : "px-1")}>
           <PrivacyToggle />
         </div>
 

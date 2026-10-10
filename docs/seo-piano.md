@@ -21,7 +21,7 @@ Resta da fare (non in questa PR):
 - **Una sola pagina indicizzabile**: è il limite principale. Una landing singola compete solo sulla parola chiave di marca e su poche generiche. Servono pagine dedicate (sezione 3).
 - **H1**: è un claim di marca. Si può tenere, ma ogni pagina nuova deve avere H1 con la parola chiave.
 - **Core Web Vitals**: non misurabili da qui (il sandbox non raggiunge il sito). Da controllare con PageSpeed Insights / Search Console; sospetti: GSAP + Lenis (JS iniziale), 2 font variabili, hero con screenshot JPEG da 1920×1200 (valutare `srcset`/dimensioni minori, `fetchpriority=high` solo sul primo).
-- **Pagine legali**: restano `noindex` finché non confermate (`LEGAL_DRAFT`).
+- **Pagine legali**: dal 2026-10-10 definitive, indicizzabili e nella sitemap (restano da far rivedere a un professionista).
 
 ## 2. Parole chiave per intento
 

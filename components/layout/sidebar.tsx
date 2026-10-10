@@ -36,16 +36,19 @@ import {
   LogOut,
   Settings,
   LifeBuoy,
+  Eye,
 } from "lucide-react";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-import { PrivacyToggle } from "@/components/privacy-toggle";
+import { ThemeSubmenu, type ThemeChoice } from "@/components/theme-submenu";
+import { track } from "@/lib/analytics";
+import { usePrivacy } from "@/components/privacy-provider";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
 import { authClient } from "@/lib/auth/client";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -76,6 +79,9 @@ export interface NavBadge {
 
 /** Etichetta del badge per le voci non ancora disponibili. */
 const COMING_SOON_LABEL = "Presto";
+
+/** Nome categorico della scelta di tema per l'evento di prodotto. */
+const THEME_EVENT_CHOICE = { light: "chiaro", dark: "scuro", system: "sistema" } as const satisfies Record<ThemeChoice, string>;
 
 /**
  * Le voci di navigazione dell'applicazione.
@@ -251,6 +257,7 @@ export function AppSidebar({
   extra,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
+  const { hidden, toggle: toggleHidden } = usePrivacy();
   const router = useRouter();
   const pathname = usePathname();
   const { data: sessionData } = authClient.useSession();
@@ -395,23 +402,28 @@ export function AppSidebar({
               <LifeBuoy className="mr-2 size-4" aria-hidden="true" />
               Aiuto e segnalazioni
             </DropdownMenuItem>
+            <DropdownMenuCheckboxItem
+              checked={hidden}
+              onCheckedChange={(checked) => {
+                toggleHidden();
+                track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
+              }}
+              className="cursor-pointer"
+            >
+              <Eye className="mr-2 size-4" aria-hidden="true" />
+              Nascondi gli importi
+            </DropdownMenuCheckboxItem>
+            <ThemeSubmenu
+              onChange={(choice) =>
+                track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
+              }
+            />
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
               <LogOut className="mr-2 size-4" aria-hidden="true" />
               Esci
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* Toggle tema */}
-        <div
-          className={cn(
-            "flex mb-2",
-            isCollapsed ? "flex-col items-center gap-1" : "items-center justify-between px-1"
-          )}
-        >
-          <ThemeToggle compact={isCollapsed} surface="sidebar" />
-          <PrivacyToggle />
-        </div>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
         {!forceExpanded && (

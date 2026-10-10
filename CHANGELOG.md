@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.43.0](https://github.com/YonderUrik/buddy-budget/compare/v0.42.0...v0.43.0) (2026-10-10)
+
+
+### Novità
+
+* testi animati, numeri che scorrono e transizioni elastiche ([#254](https://github.com/YonderUrik/buddy-budget/issues/254)) ([fe04b38](https://github.com/YonderUrik/buddy-budget/commit/fe04b38266320b4cf5510c44b6dbd3ccb122e9c7))
+
 ## [0.42.0](https://github.com/YonderUrik/buddy-budget/compare/v0.41.0...v0.42.0) (2026-10-10)
 
 

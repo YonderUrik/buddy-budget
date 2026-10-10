@@ -26,12 +26,13 @@ export async function latestClose(instrumentId: string): Promise<{ date: string;
   return row ? { date: row.date, close: Number(row.close) } : null;
 }
 
-async function sendAlertEmail(to: string, content: { subject: string; text: string }): Promise<boolean> {
+async function sendAlertEmail(to: string, content: { subject: string; text: string; html: string }): Promise<boolean> {
   const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
     from: process.env.RESEND_FROM!,
     to,
     subject: content.subject,
     text: content.text,
+    html: content.html,
   });
   return !error;
 }

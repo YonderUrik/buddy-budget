@@ -3,6 +3,7 @@
  * serale che li legge e li segna sta in `alerts-run.ts`.
  */
 
+import { renderEmail } from "@/lib/email";
 import type { PriceAlertDirection } from "@/lib/db/schema/investments";
 
 export const ALERT_DIRECTION_LABELS: Record<PriceAlertDirection, string> = { sopra: "sale sopra", sotto: "scende sotto" };
@@ -38,18 +39,21 @@ export interface AlertEmailParams {
   instrumentId: string;
 }
 
-/** Oggetto e testo dell'email di un avviso scattato. Pura, per poterla testare. */
-export function alertEmailContent(params: AlertEmailParams): { subject: string; text: string } {
+/** Oggetto, testo e HTML dell'email di un avviso scattato. Pura, per poterla testare. */
+export function alertEmailContent(params: AlertEmailParams): { subject: string; text: string; html: string } {
   const target = formatAlertPrice(params.targetPrice, params.currency);
   const close = formatAlertPrice(params.closePrice, params.currency);
   const verb = ALERT_DIRECTION_LABELS[params.direction];
   return {
     subject: `Avviso di prezzo: ${params.instrumentName} ${verb} ${target}`,
-    text:
-      `${params.instrumentName} ${verb} ${target}.\n\n` +
-      `Ultima chiusura: ${close} (${params.closeDate}).\n\n` +
-      `Guarda il titolo: ${params.appUrl}/investimenti/titoli/${params.instrumentId}\n\n` +
-      `L'avviso è scattato una volta e non si ripete: puoi crearne uno nuovo dalla pagina del titolo.\n` +
-      `Questa non è una raccomandazione di investimento.`,
+    ...renderEmail(
+      {
+        title: "Avviso di prezzo",
+        lead: `${params.instrumentName} ${verb} ${target}. Ultima chiusura: **${close}** (${params.closeDate}).`,
+        cta: { label: "Guarda il titolo", url: `${params.appUrl}/investimenti/titoli/${params.instrumentId}` },
+        footnote: "L'avviso è scattato una volta e non si ripete: puoi crearne uno nuovo dalla pagina del titolo. Questa non è una raccomandazione di investimento.",
+      },
+      { appUrl: params.appUrl },
+    ),
   };
 }

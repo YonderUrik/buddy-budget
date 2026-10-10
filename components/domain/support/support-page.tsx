@@ -2,14 +2,15 @@
 
 /** Pagina «Aiuto e segnalazioni»: risposte rapide, form per scriverci e collegamenti a GitHub. Stile Panoramica: sezioni aperte con icona. */
 
-import { HelpCircle, GitBranch, MessageSquare } from "lucide-react";
+import { HelpCircle, MessageSquare } from "lucide-react";
+import { GithubIcon } from "./github-icon";
 import { FaqList } from "./faq-list";
 import { GithubLinks } from "./github-links";
 import { ReportForm } from "./report-form";
 import { useReportContext } from "./use-report-context";
 import { REPORT_KINDS, type ReportKind } from "@/lib/support";
 
-function Section({ id, icon: Icon, title, description, children }: { id: string; icon: typeof HelpCircle; title: string; description: string; children: React.ReactNode }) {
+function Section({ id, icon: Icon, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
   return (
     <section aria-labelledby={id} className="flex flex-col gap-4">
       <header className="flex items-start gap-3">
@@ -48,7 +49,7 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
       <Section id="aiuto-scrivici" icon={MessageSquare} title="Scrivici" description="Non hai trovato quello che cerchi? Ti rispondiamo via email.">
         <ReportForm context={context} initialKind={initialKind} />
       </Section>
-      <Section id="aiuto-github" icon={GitBranch} title="Su GitHub" description="BuddyBudget è open source: puoi seguire e segnalare anche da lì.">
+      <Section id="aiuto-github" icon={GithubIcon} title="Su GitHub" description="BuddyBudget è open source: puoi seguire e segnalare anche da lì.">
         <GithubLinks context={context} />
       </Section>
     </div>

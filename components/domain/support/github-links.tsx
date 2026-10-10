@@ -3,6 +3,7 @@
 /** Collegamenti al repository open source: segnalare su GitHub, vedere cosa è già aperto, novità e sicurezza. */
 
 import { ExternalLink } from "lucide-react";
+import { GithubIcon } from "./github-icon";
 import { track } from "@/lib/analytics";
 import { REPO_URL, githubIssueUrl, type ReportContext } from "@/lib/support";
 
@@ -38,6 +39,7 @@ export function GithubLinks({ context }: GithubLinksProps) {
             className="group flex min-h-11 flex-col justify-center rounded-md py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <span className="flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:underline">
+              {link.id === "issue" && <GithubIcon className="size-4" />}
               {link.label}
               <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden="true" />
               <span className="sr-only">(si apre in una nuova scheda)</span>

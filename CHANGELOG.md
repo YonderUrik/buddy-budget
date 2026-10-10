@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.44.0](https://github.com/YonderUrik/buddy-budget/compare/v0.43.1...v0.44.0) (2026-10-10)
+
+
+### Novità
+
+* **landing:** aree dell'app, punti di sicurezza senza illustrazioni e blocco Codice aperto ([#259](https://github.com/YonderUrik/buddy-budget/issues/259)) ([bbce329](https://github.com/YonderUrik/buddy-budget/commit/bbce329a2dba7772d53cdd94c839845a941113ed))
+
 ## [0.43.1](https://github.com/YonderUrik/buddy-budget/compare/v0.43.0...v0.43.1) (2026-10-10)
 
 

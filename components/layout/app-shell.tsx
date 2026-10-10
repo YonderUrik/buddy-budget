@@ -7,7 +7,8 @@
  * - `SidebarProvider` — fornisce lo stato collapsed/mobile al sottoalbero
  * - `MobileTopbar` — visibile solo su mobile (< 768px)
  * - `AppSidebar` — sidebar desktop (nascosta su mobile, icon-only su tablet)
- * - Drawer mobile — `AppSidebar` con `forceExpanded`, overlay e animazione
+ * - Drawer mobile — `AppSidebar` con `forceExpanded`, overlay e animazione (solo senza barra in basso)
+ * - Menu «Altro» — vista a tutto schermo aperta dalla barra in basso
  * - `<main>` — contenuto della pagina, che si adatta alla larghezza sidebar
  *
  * Uso:
@@ -26,10 +27,11 @@
  * - Desktop ≥ 1024px → sidebar espansa (collassabile manualmente)
  */
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
-import { BOTTOM_NAV_HEIGHT_REM, BottomNav } from "@/components/layout/bottom-nav";
+import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
+import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
 import { track } from "@/lib/analytics";
 import { useBottomNav } from "@/lib/hooks/use-sidebar-preferences";
 import { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
@@ -56,8 +58,11 @@ interface InnerShellProps {
 }
 
 function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShellProps) {
-  const { collapsed, mobileOpen, closeMobile, openMobile } = useSidebar();
+  const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const openMore = useCallback(() => setMoreOpen(true), []);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
 
   // Chi sta in basso sulla pagina (pannello dei sync) sa di quanto alzarsi grazie a questa variabile.
   useEffect(() => {
@@ -71,19 +76,22 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const handler = (e: MediaQueryListEvent) => {
-      if (e.matches) closeMobile();
+      if (e.matches) {
+        closeMobile();
+        closeMore();
+      }
     };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, [closeMobile]);
+  }, [closeMobile, closeMore]);
 
   // Blocca lo scroll del body quando il drawer mobile è aperto.
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    document.body.style.overflow = mobileOpen || moreOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileOpen]);
+  }, [mobileOpen, moreOpen]);
 
   return (
     <div className="flex h-dvh flex-col bg-background">
@@ -125,44 +133,61 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
           items={NAV_ITEMS}
           activeHref={activeHref}
           badges={navBadges}
-          onOpenMore={openMobile}
+          onOpenMore={openMore}
           onTabClick={(key) => track("bottom_nav_clicked", { tab: BOTTOM_NAV_TABS[key] ?? "altro" })}
         />
       ) : null}
 
-      {/* ── Drawer mobile ── */}
-      {/* Overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/50 md:hidden",
-          "transition-opacity duration-300",
-          mobileOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        )}
-        onClick={closeMobile}
-        aria-hidden="true"
-      />
-
-      {/* Pannello drawer */}
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 md:hidden",
-          "transition-transform duration-300 ease-in-out",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu di navigazione"
-      >
-        <AppSidebar
-          forceExpanded
+      {/* ── Menu «Altro» a tutto schermo (barra in basso) ── */}
+      {bottomNav ? (
+        <MobileMoreMenu
+          open={moreOpen}
+          onClose={closeMore}
+          items={NAV_ITEMS.filter((i) => !(BOTTOM_NAV_HREFS as readonly string[]).includes(i.href))}
           activeHref={activeHref}
-          onClose={closeMobile}
           badges={navBadges}
           extra={sidebarExtra}
+          onAction={(target) => track("more_menu_clicked", { target })}
         />
-      </div>
+      ) : null}
+
+      {!bottomNav ? (
+        <>
+        {/* ── Drawer mobile (con l'hamburger, se la barra in basso è spenta) ── */}
+        {/* Overlay */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/50 md:hidden",
+            "transition-opacity duration-300",
+            mobileOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          )}
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+
+        {/* Pannello drawer */}
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 md:hidden",
+            "transition-transform duration-300 ease-in-out",
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu di navigazione"
+        >
+          <AppSidebar
+            forceExpanded
+            activeHref={activeHref}
+            onClose={closeMobile}
+            badges={navBadges}
+            extra={sidebarExtra}
+          />
+        </div>
+        </>
+      ) : null}
     </div>
   );
 }

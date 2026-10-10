@@ -27,5 +27,6 @@ RUN pnpm build
 FROM nginxinc/nginx-unprivileged:1.27-alpine AS runner
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/out /usr/share/nginx/html
+COPY --from=build /app/out/_markdown-tokens.conf /etc/nginx/conf.d/markdown-tokens.conf
 EXPOSE 3000
 HEALTHCHECK CMD wget -qO- http://127.0.0.1:3000/healthz || exit 1

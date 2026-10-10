@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.44.2](https://github.com/YonderUrik/buddy-budget/compare/v0.44.1...v0.44.2) (2026-10-10)
+
+
+### Correzioni
+
+* **landing:** favicon quadrata e favicon.ico per Google ([#262](https://github.com/YonderUrik/buddy-budget/issues/262)) ([c37b8bf](https://github.com/YonderUrik/buddy-budget/commit/c37b8bff5abe1d2e5ed72e3219635ff4fb308c77))
+
 ## [0.44.1](https://github.com/YonderUrik/buddy-budget/compare/v0.44.0...v0.44.1) (2026-10-10)
 
 

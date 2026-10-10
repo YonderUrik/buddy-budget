@@ -80,6 +80,10 @@ pnpm db:generate  # nuova migration dopo una modifica a lib/db/schema
 
 Lo schema del database cambia solo tramite migration versionate (`pnpm db:generate`, poi `pnpm db:migrate`).
 
+## Self-hosting
+
+App, Postgres e Redis partono con un solo `docker compose up -d`: guida in [`docs/self-hosting.md`](docs/self-hosting.md) (avvio in 5 minuti, aggiornamento, backup, HTTPS). Email, Google e banche sono facoltativi.
+
 ## Deploy
 
 L'immagine Docker si costruisce con `docker build -t buddy-budget:local .` (target `migrator` per le migration). In produzione l'app gira su un cluster k3s con GitOps (ArgoCD), gestito nel repository di infrastruttura separato `buddy-budget-infra`. Il codice non dipende da quell'infrastruttura: i cron sono endpoint `/api/cron/*` chiamati con `CRON_SECRET`.

@@ -27,8 +27,10 @@ export async function latestClose(instrumentId: string): Promise<{ date: string;
 }
 
 async function sendAlertEmail(to: string, content: { subject: string; text: string; html: string }): Promise<boolean> {
+  // Senza Resend (self-hosting) l'avviso scatta lo stesso e resta visibile nell'app, ma non parte nessuna email.
+  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) return false;
   const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
-    from: process.env.RESEND_FROM!,
+    from: process.env.RESEND_FROM,
     to,
     subject: content.subject,
     text: content.text,

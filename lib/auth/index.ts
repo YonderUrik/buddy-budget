@@ -10,11 +10,21 @@ import { categories } from "@/lib/db/schema/categories";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
 import { magicLinkEmailContent } from "./emails";
+import { logMagicLink } from "./magic-link-log";
 import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
+function getResend(): Resend | null {
+  return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+}
+
+/** Google è attivo solo con entrambe le credenziali; altrimenti resta solo il magic link. */
+const googleProvider =
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? { google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET } }
+    : {};
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -30,6 +40,13 @@ export const auth = betterAuth({
     magicLink({
       expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
       sendMagicLink: async ({ email, url }) => {
+        const resend = getResend();
+        if (!resend) {
+          // Self-hosting senza email: il link compare nei log del container (`docker compose logs app`).
+          logMagicLink(url);
+          recordAuthEvent("magic_link_sent");
+          return;
+        }
         // Resend non lancia in caso di errore: restituisce `{ error }`. Lo trasformiamo in eccezione
         // così better-auth risponde con errore e la UI non mostra "controlla la tua email" a vuoto.
         const { error } = await resend.emails.send({
@@ -47,12 +64,7 @@ export const auth = betterAuth({
       },
     }),
   ],
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-  },
+  socialProviders: googleProvider,
   // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.
   session: {
     expiresIn: SESSION_EXPIRES_IN_DAYS * 24 * 60 * 60,

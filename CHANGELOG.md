@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.39.0](https://github.com/YonderUrik/buddy-budget/compare/v0.38.1...v0.39.0) (2026-10-10)
+
+
+### Novità
+
+* template grafico per le email transazionali ([#246](https://github.com/YonderUrik/buddy-budget/issues/246)) ([56aef9a](https://github.com/YonderUrik/buddy-budget/commit/56aef9a68592dbab6870c5289254d2699e7a3999))
+
 ## [0.38.1](https://github.com/YonderUrik/buddy-budget/compare/v0.38.0...v0.38.1) (2026-10-09)
 
 

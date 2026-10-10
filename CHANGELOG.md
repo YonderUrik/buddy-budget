@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.41.0](https://github.com/YonderUrik/buddy-budget/compare/v0.40.0...v0.41.0) (2026-10-10)
+
+
+### Novità
+
+* Investimenti più pulito su mobile e rimozione del confronto tra broker ([#247](https://github.com/YonderUrik/buddy-budget/issues/247)) ([d330969](https://github.com/YonderUrik/buddy-budget/commit/d330969610222e3214a28646b8252c589f5b2eb7))
+
 ## [0.40.0](https://github.com/YonderUrik/buddy-budget/compare/v0.39.0...v0.40.0) (2026-10-10)
 
 

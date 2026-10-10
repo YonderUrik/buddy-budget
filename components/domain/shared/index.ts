@@ -14,5 +14,5 @@ export { ProgressBar } from "./progress-bar";
 export type { ProgressBarProps, ProgressBarState } from "./progress-bar";
 export { CollapsibleSection, COLLAPSIBLE_STORAGE_PREFIX } from "./collapsible-section";
 export type { CollapsibleSectionProps } from "./collapsible-section";
-export { SectionTabs, isSectionTabActive } from "./section-tabs";
+export { SectionTabs, isSectionTabActive, activeSectionTabIndex } from "./section-tabs";
 export type { SectionTab, SectionTabsProps } from "./section-tabs";

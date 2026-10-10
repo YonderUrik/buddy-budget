@@ -5,7 +5,7 @@
  */
 import { FEATURE_AREAS, featuresByArea } from "./catalog.generated";
 import { GROUPS, ITALY } from "./home";
-import { LEGAL_DRAFT, LEGAL_PATHS } from "./legal";
+import { LEGAL_PATHS } from "./legal";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "./seo-pages";
 import { APP_URL, FAQ, SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOURCE_LICENSE, SOURCE_URL } from "./site";
 
@@ -53,9 +53,7 @@ export function buildLlmsTxt(): string {
   }
   lines.push("## Domande frequenti", "");
   for (const q of FAQ) lines.push(`### ${q.question}`, "", q.answer, "");
-  if (!LEGAL_DRAFT) {
-    lines.push("## Optional", "");
-    lines.push(`- [Privacy](${SITE_URL}${LEGAL_PATHS.privacy})`, `- [Termini](${SITE_URL}${LEGAL_PATHS.termini})`, "");
-  }
+  lines.push("## Optional", "");
+  lines.push(`- [Privacy](${SITE_URL}${LEGAL_PATHS.privacy})`, `- [Termini](${SITE_URL}${LEGAL_PATHS.termini})`, `- [Cookie](${SITE_URL}${LEGAL_PATHS.cookie})`, "");
   return `${lines.join("\n").trimEnd()}\n`;
 }

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.43.1](https://github.com/YonderUrik/buddy-budget/compare/v0.43.0...v0.43.1) (2026-10-10)
+
+
+### Correzioni
+
+* **deps:** bump @number-flow/react ([#257](https://github.com/YonderUrik/buddy-budget/issues/257)) ([3c91793](https://github.com/YonderUrik/buddy-budget/commit/3c91793612700a588fbbbe2fe9a86a9817089f82))
+
 ## [0.43.0](https://github.com/YonderUrik/buddy-budget/compare/v0.42.0...v0.43.0) (2026-10-10)
 
 

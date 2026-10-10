@@ -14,6 +14,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
 import { analyticsAssumptions } from "@/lib/db/schema/analytics";
+import { notificationPreferences } from "@/lib/db/schema/notifications";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
   instruments,
@@ -95,6 +96,7 @@ async function loadUserData(userId: string) {
     brokerStatementRows,
     brokerAccountRows,
     personalImports,
+    notificationRows,
   ] = await Promise.all([
     db
       .select({
@@ -353,6 +355,15 @@ async function loadUserData(userId: string) {
     db.select().from(brokerStatements).where(eq(brokerStatements.userId, userId)),
     db.select().from(brokerImportAccounts).where(eq(brokerImportAccounts.userId, userId)),
     exportPersonalImports(userId),
+    db
+      .select({
+        digestEnabled: notificationPreferences.digestEnabled,
+        digestFrequency: notificationPreferences.digestFrequency,
+        budgetAlertsEnabled: notificationPreferences.budgetAlertsEnabled,
+        deadlineAlertsEnabled: notificationPreferences.deadlineAlertsEnabled,
+      })
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, userId)),
   ]);
 
   return {
@@ -383,6 +394,7 @@ async function loadUserData(userId: string) {
     pensionFunds: pensionFundRows,
     pensionSnapshots: pensionSnapshotRows,
     analyticsAssumptions: analyticsRows[0] ?? null,
+    notificationPreferences: notificationRows[0] ?? null,
   };
 }
 

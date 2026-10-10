@@ -29,6 +29,8 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-island: var(--island);
+  --color-island-foreground: var(--island-foreground);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -152,6 +154,12 @@
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #15738b;
+  /* Isola dei lavori in corso: sempre scura, in entrambi i temi (come l'isola dei telefoni). */
+  --island: #0f0f12;
+  --island-foreground: #f4f4f5;
+  --island-muted: #a1a1aa;
+  --island-pos: #7bb79b;
+  --island-neg: #e3a194;
 }
 
 .dark {
@@ -311,4 +319,43 @@
   to {
     stroke-dashoffset: 0;
   }
+}
+
+/* Testo che luccica mentre un'operazione è in corso (componente TextShimmer). Senza movimento resta testo secondario. */
+.text-shimmer {
+  color: var(--muted-foreground);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .text-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      var(--muted-foreground) 0%,
+      var(--muted-foreground) 40%,
+      var(--foreground) 50%,
+      var(--muted-foreground) 60%,
+      var(--muted-foreground) 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: text-shimmer 1.8s linear infinite;
+  }
+}
+@keyframes text-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* Dentro l'isola dei lavori in corso i colori di testo diventano quelli chiari dell'isola (anche per TextShimmer). */
+.island-ink {
+  --foreground: var(--island-foreground);
+  --muted-foreground: var(--island-muted);
+  --pos: var(--island-pos);
+  --neg: var(--island-neg);
+  color: var(--island-foreground);
 }

@@ -9,3 +9,12 @@ come servizio in rete, deve conservare questa nota di copyright e l'attribuzione
 (Daniele Roccaforte, progetto BuddyBudget) in modo ragionevolmente visibile, per esempio nel repository, in
 una pagina "Informazioni" o a piè di pagina. Le versioni modificate devono essere contrassegnate come tali e
 non presentate come l'originale (sezione 7(c)).
+
+Componenti di terze parti (licenza MIT)
+
+Alcuni componenti animati (components/motion, isola dei sync) sono riscritti prendendo spunto da librerie
+con licenza MIT, di cui si riconosce la paternità:
+- Motion Primitives (https://motion-primitives.com), Copyright (c) Ibelick: Text Morph, Text Effect, Text Shimmer.
+- Magic UI (https://magicui.design), Copyright (c) Magic UI: Text Animate, Animated List.
+- Cult UI (https://cult-ui.com), Copyright (c) Nolly: Dynamic Island.
+- NumberFlow (https://number-flow.barvian.me), Copyright (c) Maxwell Barvian: usato come dipendenza (@number-flow/react).

@@ -13,3 +13,6 @@
 .end h2 em { font-style: normal; color: var(--sky); }
 .end footer > span a { color: var(--on-navy2); }
 .end footer > span a:hover { color: var(--on-navy); }
+.end h2 .loop { color: var(--sky); }
+/* Frase che cambia su una riga sua, punto compreso: l'altezza del titolo resta ferma. */
+.end h2 .loop-line { white-space: nowrap; }

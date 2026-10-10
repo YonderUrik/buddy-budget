@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import { useFilteredInvestmentsOverview } from "@/lib/queries/investments-view";
-import { BrokerComparisonCard, InvestmentsViewGate, ReturnHeatmapCard, ReturnsCard, RiskCard } from "@/components/domain/investments";
+import { InvestmentsViewGate, ReturnHeatmapCard, ReturnsCard, RiskCard } from "@/components/domain/investments";
 import { NetWorthPeriodSelector } from "@/components/domain/net-worth";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
@@ -45,13 +45,13 @@ export default function PerformancePage() {
     >
       {view ? (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-muted-foreground">Rendimento e rischio nel periodo</p>
+          <div className="flex flex-col gap-10">
+          <div className="flex flex-wrap items-center justify-between gap-2 max-lg:order-2 max-lg:justify-center">
+            <p className="text-sm text-muted-foreground max-lg:hidden">Rendimento e rischio nel periodo</p>
             <NetWorthPeriodSelector value={period} onChange={setPeriod} />
           </div>
-          <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+          <div className="grid grid-cols-1 gap-x-10 gap-y-10 max-lg:order-1 lg:grid-cols-5">
             <div className="flex flex-col gap-10 lg:col-span-3">
-              {overview.data ? <BrokerComparisonCard data={overview.data} period={period} today={today} /> : null}
               {view.returns ? (
                 <ReturnsCard
                   returns={view.returns}
@@ -69,7 +69,8 @@ export default function PerformancePage() {
               ) : null}
             </div>
           </div>
-          {historyReturns && historyReturns.length > 0 ? <ReturnHeatmapCard daily={historyReturns} currency={currency} today={today} /> : null}
+          {historyReturns && historyReturns.length > 0 ? <div className="max-lg:order-3"><ReturnHeatmapCard daily={historyReturns} currency={currency} today={today} /></div> : null}
+          </div>
         </>
       ) : null}
     </InvestmentsViewGate>

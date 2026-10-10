@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { InvestmentData } from "./data";
 import { buildInvestmentsView } from "./view";
 import { filterInvestmentBrokers, investmentBrokerGroups, transactionBroker } from "./broker-filter";
-import { brokerComparison } from "./broker-comparison";
 const NOW = new Date("2026-09-20T12:00:00Z");
 
 function data(): InvestmentData {
@@ -94,23 +93,6 @@ describe("broker selection and comparison", () => {
     expect(transactionBroker(legacy, legacy.transactions[0])).toBe("interactive-brokers");
     legacy.transactions[0].statementAccountKey = "unknown";
     expect(transactionBroker(legacy, legacy.transactions[0])).toBe("source:unknown");
-  });
-  it("does not invent zero-return history before a broker first appears", () => {
-    const input = mixed(); input.transactions[1].date = "2026-09-10";
-    const result = brokerComparison(input, "max", NOW);
-    const degiro = result.lines.find((line) => line.label === "DEGIRO")!;
-    const early = result.points.filter((point) => point.date < "2026-09-10");
-    expect(early.length).toBeGreaterThan(0);
-    expect(early.every((point) => point[degiro.key] === undefined)).toBe(true);
-  });
-  it("overlays percentage returns and recalculates the combined return instead of adding percentages", () => {
-    const comparison = brokerComparison(mixed(), "1mese", NOW);
-    expect(comparison.lines).toHaveLength(3);
-    for (const line of comparison.lines) expect(line.twr).toBeCloseTo(0.1);
-    const final = comparison.points.at(-1)!;
-    expect(final.combined).toBeCloseTo(10);
-    expect(comparison.points.map((p) => p.date)).toEqual(comparison.points.map((p) => p.date).sort());
-    expect(brokerComparison(filterInvestmentBrokers(mixed(), new Set(["degiro"])), "1mese", NOW).lines.map((l) => l.label)).toEqual(["Interactive Brokers"]);
   });
 });
 

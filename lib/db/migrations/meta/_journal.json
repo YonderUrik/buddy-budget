@@ -178,10 +178,10 @@
       "breakpoints": true
     },
     {
-      "idx": 25,
+      "idx": 27,
       "version": "7",
       "when": 1791650833033,
-      "tag": "0025_abbonamenti",
+      "tag": "0027_abbonamenti",
       "breakpoints": true
     }
   ]

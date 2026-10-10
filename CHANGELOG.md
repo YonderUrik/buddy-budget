@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.40.0](https://github.com/YonderUrik/buddy-budget/compare/v0.39.0...v0.40.0) (2026-10-10)
+
+
+### Novità
+
+* menu «Altro» a tutto schermo su mobile ([#249](https://github.com/YonderUrik/buddy-budget/issues/249)) ([27a55cc](https://github.com/YonderUrik/buddy-budget/commit/27a55cc22f5f32916258a0120413cd3aaeb44bc3))
+
 ## [0.39.0](https://github.com/YonderUrik/buddy-budget/compare/v0.38.1...v0.39.0) (2026-10-10)
 
 

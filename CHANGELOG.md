@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.48.0](https://github.com/YonderUrik/buddy-budget/compare/v0.47.0...v0.48.0) (2026-10-10)
+
+
+### Novità
+
+* tema e «Nascondi importi» passano nel menu utente ([#269](https://github.com/YonderUrik/buddy-budget/issues/269)) ([3c5ab01](https://github.com/YonderUrik/buddy-budget/commit/3c5ab0154c4628380181c7b9720f8ba0116961fe))
+
 ## [0.47.0](https://github.com/YonderUrik/buddy-budget/compare/v0.46.0...v0.47.0) (2026-10-10)
 
 

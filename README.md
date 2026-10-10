@@ -98,7 +98,7 @@ Il progetto è in sviluppo attivo da una persona sola, con l'aiuto di un assiste
 
 ## Contribuire e sicurezza
 
-Vedi [`CONTRIBUTING.md`](CONTRIBUTING.md) e il [Codice di condotta](CODE_OF_CONDUCT.md). Per segnalare una vulnerabilità, non aprire una issue pubblica: leggi [`SECURITY.md`](SECURITY.md).
+Vedi [`CONTRIBUTING.md`](CONTRIBUTING.md) e il [Codice di condotta](CODE_OF_CONDUCT.md). Stato e limiti dell'accessibilità: [`ACCESSIBILITY.md`](ACCESSIBILITY.md). Per segnalare una vulnerabilità, non aprire una issue pubblica: leggi [`SECURITY.md`](SECURITY.md).
 
 ## English summary
 

@@ -22,6 +22,7 @@ Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di s
 - Colori, font e raggi vengono solo dai token in `app/globals.css`, mai valori hardcoded.
 - Il codice server non usa `console.*`: si logga con `lib/observability`, senza dati personali (email, IBAN, importi, descrizioni).
 - La logica di calcolo vive in `lib/calc/` come funzioni pure, con test.
+- L'interfaccia deve restare accessibile (tastiera, etichette, contrasto, movimento ridotto): la checklist è in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
 - Una nuova funzione si aggiunge a `lib/features/catalog.ts`.
 
 ## Licenza dei contributi

@@ -10,7 +10,7 @@ import { WordLoop } from "./word-loop";
 import { TrackedSection } from "./tracked-section";
 
 /** Cosa si sa sempre con BuddyBudget: frasi che si alternano nel titolo di chiusura. */
-const CLOSING_PHRASES = ["quanto spendi", "quante tasse paghi", "quanto rende il portafoglio", "quando finisce il mutuo"] as const;
+const CLOSING_PHRASES = ["quanto spendi", "quante tasse paghi", "come va il portafoglio", "quando finisce il mutuo"] as const;
 
 /** Chiusura: invito a creare l'account e piè di pagina. */
 export function Closing() {
@@ -19,7 +19,12 @@ export function Closing() {
       <div className="wrap">
         <Reveal stagger distance={50}>
           <h2>
-            Sai sempre <WordLoop phrases={CLOSING_PHRASES} className="loop" />.<br />
+            Sai sempre
+            <br />
+            <span className="loop-line">
+              <WordLoop phrases={CLOSING_PHRASES} className="loop" />.
+            </span>
+            <br />
             Parti da un conto, aggiungi il resto quando vuoi.
           </h2>
           <div className="cta">

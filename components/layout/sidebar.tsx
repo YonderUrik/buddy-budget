@@ -35,6 +35,7 @@ import {
   ChevronRight,
   LogOut,
   Settings,
+  LifeBuoy,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -231,6 +232,8 @@ interface AppSidebarProps {
   onClose?: () => void;
   /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
   settingsHref?: string;
+  /** Pagina «Aiuto e segnalazioni», raggiungibile dal menu dell'avatar; porta con sé la pagina corrente come contesto. */
+  supportHref?: string;
   /** Badge con contatore, per `href` della voce (es. `{ "/liquidita": { count: 9 } }`). */
   badges?: Record<string, NavBadge>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
@@ -243,6 +246,7 @@ export function AppSidebar({
   activeHref,
   onClose,
   settingsHref = "/impostazioni",
+  supportHref = "/aiuto",
   badges,
   extra,
 }: AppSidebarProps) {
@@ -380,6 +384,16 @@ export function AppSidebar({
             >
               <Settings className="mr-2 size-4" aria-hidden="true" />
               Impostazioni
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
+                onClose?.();
+              }}
+              className="cursor-pointer"
+            >
+              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />
+              Aiuto e segnalazioni
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
               <LogOut className="mr-2 size-4" aria-hidden="true" />

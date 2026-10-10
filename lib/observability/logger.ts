@@ -56,6 +56,8 @@ export interface LogFields {
   /** Sessioni e token di verifica scaduti eliminati dal cron di conservazione (conteggi). */
   sessionsPurged?: number;
   verificationsPurged?: number;
+  /** Tipo di email di riepilogo/avviso (`digest`, `budget`, `deadlines`, `test`) o ambito di una disiscrizione. */
+  kind?: string;
   error?: unknown;
 }
 

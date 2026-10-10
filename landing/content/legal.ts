@@ -23,6 +23,9 @@ const BANK_CONSENT_DAYS = 90;
 const LOG_DAYS = 30;
 /** Anteprima cifrata di un import CSV con AI (`expiresAt` in lib/personal-import/jobs.ts). */
 const CSV_PREVIEW_DAYS = 7;
+/** Registro degli invii delle email di riepilogo e avviso (`NOTIFICATION_LOG_RETENTION_DAYS` nell'app). */
+const NOTIFICATION_LOG_DAYS = 90;
+
 /** Segnalazioni al supporto: tempo massimo di conservazione dopo la chiusura. */
 const SUPPORT_MONTHS = 12;
 
@@ -77,7 +80,8 @@ export const PRIVACY: LegalDocument = {
       paragraphs: ["Per ogni finalità indichiamo la base giuridica prevista dall'articolo 6 del GDPR."],
       items: [
         "Fornirti il servizio (account, conti, transazioni, investimenti, debiti, pensione, import e sincronizzazione bancaria, export dei dati): esecuzione del contratto, art. 6.1.b.",
-        "Inviarti email di servizio (link di accesso, avvisi di scadenza del collegamento bancario, esito degli import, conferme di disattivazione): esecuzione del contratto, art. 6.1.b. Non inviamo email promozionali.",
+        "Inviarti email di servizio (link di accesso, avvisi di scadenza del collegamento bancario, esito degli import, conferme di disattivazione): esecuzione del contratto, art. 6.1.b. Queste email non si possono disattivare perché servono a usare l'account.",
+        "Inviarti, solo se li attivi in Impostazioni → Notifiche, il riepilogo periodico (con le cifre di entrate, spese e budget che vedi già nell'app) e gli avvisi sui budget e sulle rate in scadenza: il tuo consenso, art. 6.1.a. Sono spenti finché non li scegli, ogni email ha il link per disattivarla con un clic (senza accedere) e puoi cambiare idea quando vuoi. Non inviamo email promozionali né consigli personalizzati.",
         "Analizzare con l'intelligenza artificiale un file di import non riconosciuto: il tuo consenso esplicito, art. 6.1.a, che dai prima di caricare il file e puoi non dare usando gli altri tipi di import o l'inserimento manuale. Il consenso non è condizione per usare il resto del servizio.",
         "Rispondere ai messaggi inviati dalla pagina Aiuto: esecuzione del contratto, art. 6.1.b, per le richieste legate al tuo account; legittimo interesse, art. 6.1.f, per idee e segnalazioni generiche.",
         "Sicurezza, prevenzione degli abusi, diagnosi di errori e continuità del servizio (sessioni, log, backup): legittimo interesse, art. 6.1.f, bilanciato dal fatto che i log sono pseudonimizzati e di breve durata.",
@@ -114,7 +118,7 @@ export const PRIVACY: LegalDocument = {
         "Hostinger: server (VPS) in Germania, dove girano app e database.",
         "Cloudflare: instradamento del traffico, DNS e archiviazione (R2) delle copie di sicurezza del database.",
         "GoCardless: lettura dei conti bancari che colleghi, ai sensi di PSD2.",
-        "Resend: invio delle email di servizio (usa il tuo indirizzo email) e consegna dei messaggi che scrivi al supporto.",
+        "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
         "OpenRouter e il fornitore del modello che questo seleziona: solo se usi l'import con intelligenza artificiale, con il tuo consenso (vedi la sezione dedicata).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",
         "Strumenti di monitoraggio, avvisi tecnici e statistiche anonime (Umami), che gestiamo sui nostri server e che non ricevono dati finanziari né contenuti tuoi.",
@@ -138,6 +142,7 @@ export const PRIVACY: LegalDocument = {
         `Import con intelligenza artificiale: file cancellato al termine dell'elaborazione, anteprima al massimo ${CSV_PREVIEW_DAYS} giorni, regole di lettura fino all'eliminazione dell'account.`,
         `Registri tecnici (log): ${LOG_DAYS} giorni.`,
         `Messaggi al supporto: nella casella di posta del titolare, il tempo necessario a rispondere e comunque non oltre ${SUPPORT_MONTHS} mesi dalla chiusura della richiesta. Eliminando l'account non vengono cancellati in automatico: puoi chiederne la cancellazione scrivendo a ${LEGAL_OWNER.email}.`,
+        `Email di riepilogo e avvisi: le preferenze finché l'account esiste; il registro degli invii (solo chiavi tecniche per non ripetere lo stesso avviso, senza importi) ${NOTIFICATION_LOG_DAYS} giorni.`,
         "Registro dell'accettazione dei Termini: finché l'account esiste.",
         "Statistiche d'uso anonime: non sono dati personali, quindi non hanno scadenza legata al tuo account.",
       ],

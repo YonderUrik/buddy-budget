@@ -12,7 +12,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
@@ -53,6 +53,7 @@ export const CRON_NAMES: readonly CronName[] = [
   "market_prices",
   "account_deletion",
   "gocardless_maintenance",
+  "notifications",
 ];
 
 /** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
@@ -70,6 +71,12 @@ export type CleanupAction =
 /** Avvisi di consenso bancario (scadenza vicina o scaduto) per esito dell'invio email. */
 export type ConsentNoticeKind = "expiring" | "expired";
 export type ConsentNoticeOutcome = "sent" | "failed";
+
+/** Email non di servizio (riepilogo, avvisi budget e scadenze) per esito: `dry_run` conta senza inviare, `capped` = rimandata dal tetto di frequenza. */
+export type NotificationEmailKind = "digest" | "budget" | "deadlines" | "test";
+export type NotificationEmailOutcome = "sent" | "failed" | "dry_run" | "capped" | "empty";
+/** Da dove arriva una disiscrizione: link nell'email, one-click del client di posta (RFC 8058) o preferenze in app. */
+export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -103,6 +110,8 @@ interface MetricsState {
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
+  notificationEmails: Counter<"kind" | "outcome">;
+  notificationUnsubscribes: Counter<"kind" | "source">;
 }
 
 function createState(): MetricsState {
@@ -216,6 +225,18 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}gocardless_consent_notices_total`,
     help: "Email di avviso sul consenso bancario (in scadenza o scaduto) per esito dell'invio.",
     labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+  state.notificationEmails = new Counter({
+    name: `${METRIC_PREFIX}notification_emails_total`,
+    help: "Email di riepilogo e avvisi (budget, scadenze) per tipo ed esito dell'invio.",
+    labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+  state.notificationUnsubscribes = new Counter({
+    name: `${METRIC_PREFIX}notification_unsubscribes_total`,
+    help: "Disiscrizioni dalle email di riepilogo e avvisi, per tipo (o all) e provenienza.",
+    labelNames: ["kind", "source"],
     registers: r,
   });
 
@@ -434,6 +455,16 @@ export function recordPriceInstruments(outcome: PriceInstrumentOutcome, count: n
 /** Registra `count` elementi su cui la pulizia GoCardless ha deciso (dry-run) o agito (execute) per tipo di azione. */
 export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode, count = 1): void {
   if (count > 0) metrics().gcCleanup.inc({ action, mode }, count);
+}
+
+/** Registra l'esito di una email di riepilogo o di avviso. */
+export function recordNotificationEmail(kind: NotificationEmailKind, outcome: NotificationEmailOutcome): void {
+  metrics().notificationEmails.inc({ kind, outcome });
+}
+
+/** Registra una disiscrizione (`kind` = tipo di email o `all`). */
+export function recordNotificationUnsubscribe(kind: NotificationEmailKind | "all", source: NotificationUnsubscribeSource): void {
+  metrics().notificationUnsubscribes.inc({ kind, source });
 }
 
 /** Registra l'invio di un avviso email sul consenso bancario. */

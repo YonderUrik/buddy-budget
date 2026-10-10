@@ -18,3 +18,5 @@ export { SidebarSlotProvider, useSidebarSlot } from "@/components/layout/sidebar
 export type { SidebarSlotState } from "@/components/layout/sidebar-slot";
 export { BottomNav, BOTTOM_NAV_HREFS } from "@/components/layout/bottom-nav";
 export type { BottomNavProps } from "@/components/layout/bottom-nav";
+export { MobileMoreMenu, MORE_MENU_HINTS } from "@/components/layout/mobile-more-menu";
+export type { MobileMoreMenuProps, MoreMenuAction } from "@/components/layout/mobile-more-menu";

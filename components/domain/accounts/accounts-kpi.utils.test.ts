@@ -6,6 +6,7 @@ function makeAccount(overrides: Partial<Account>): Account {
   return {
     id: crypto.randomUUID(),
     userId: "user-1",
+    isDemo: false,
     name: "Conto",
     type: "Conto corrente",
     balance: "0.00",

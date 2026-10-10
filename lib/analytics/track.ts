@@ -24,6 +24,17 @@ export interface ProductEvents {
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
+  /** Clic sull'azione di un passo della checklist «Primi passi» della Panoramica. */
+  start_step_clicked: { step: "conto" | "import" | "investimento" | "obiettivo" };
+  /** Checklist chiusa; `done`: quanti passi su quattro erano già fatti. */
+  start_checklist_dismissed: { done: number };
+  start_checklist_reopened: undefined;
+  /** Tutti i passi fatti, registrato una sola volta per utente. */
+  start_checklist_completed: undefined;
+  /** «Esplora con dati d'esempio» avviato. */
+  demo_started: undefined;
+  /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
+  demo_cleared: { from: "banner" | "panoramica" };
   onboarding_completed: { currency: SupportedCurrency };
   account_created: undefined;
   budget_set: undefined;

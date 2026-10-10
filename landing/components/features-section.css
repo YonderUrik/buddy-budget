@@ -1,8 +1,11 @@
-.areas-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; margin-top: 44px; }
-.areas-list section { padding: 20px 0 22px; border-top: 1px solid var(--line); }
-.areas-list h3 { font: 600 20px var(--f-h); letter-spacing: -0.02em; }
-.areas-list ul { list-style: none; margin: 10px 0 0; padding: 0; color: var(--ink2); font-size: 16px; }
-.areas-list li { padding: 3px 0; }
-.areas-more { display: block; margin-top: 6px; font-size: 14px; color: var(--ink3); }
-@media (max-width: 900px) { .areas-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .areas-list { grid-template-columns: 1fr; } }
+.areas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; margin-top: 48px; }
+.area-card { display: block; color: inherit; text-decoration: none; }
+.area-card .ts { border-radius: 16px; }
+.area-ic { display: grid; place-items: center; width: 40px; height: 40px; margin-top: 20px; border-radius: 12px; color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.area-card h3 { margin: 14px 0 6px; font: 600 22px / 1.2 var(--f-h); letter-spacing: -0.02em; }
+.area-card p { margin: 0; max-width: 34em; color: var(--ink2); font-size: 16px; }
+.area-go { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font: 600 15px var(--f-b); color: var(--accent); }
+.area-go svg { width: 16px; height: 16px; transition: transform 0.35s var(--ease); }
+.area-card:hover .area-go svg { transform: translateX(3px); }
+@media (max-width: 760px) { .areas-grid { grid-template-columns: 1fr; gap: 36px; } }
+@media (prefers-reduced-motion: reduce) { .area-go svg { transition: none; } }

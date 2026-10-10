@@ -1,4 +1,5 @@
 /** Indirizzi e testi della landing. Gli URL arrivano dall'env, con default di produzione. */
+import type { HomeIcon } from "./home";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudget.io";
@@ -42,11 +43,9 @@ export const FAQ: readonly FaqItem[] = [
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
 export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 
-/** Illustrazione animata del riquadro (vedi `SecurityArt`). */
-export type SecurityArtId = "password" | "bank" | "sell" | "control";
-
 export interface SecurityPoint {
-  art: SecurityArtId;
+  /** Icona del punto (vedi `HomeIcon`). */
+  icon: HomeIcon;
   title: string;
   text: string;
 }
@@ -57,11 +56,24 @@ export const SECURITY = {
   title: "Cosa vede BuddyBudget dei tuoi dati, e cosa no.",
   intro: "I server sono in Germania e le connessioni sono cifrate. Questi sono gli impegni, uno per uno.",
   points: [
-    { art: "password", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
-    { art: "bank", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
-    { art: "sell", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
-    { art: "control", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
+    { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
+    { icon: "eye", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
+    { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
+    { icon: "sliders", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
   ] satisfies readonly SecurityPoint[],
   legalNote: "Maggiori dettagli nella",
-  sourceNote: "Il codice dell'app è pubblico:",
+} as const;
+
+/** Blocco «Codice aperto» (dopo la sicurezza): mostrato solo con `SOURCE_URL`. Ogni punto è verificabile leggendo il repository. */
+export const OPEN_SOURCE = {
+  kicker: "Codice aperto",
+  title: "Il codice dell'app è pubblico e lo puoi leggere.",
+  intro: "BuddyBudget è open source con licenza AGPL-3.0. Chi vuole controllare come funziona può leggere il codice, senza fidarsi della nostra parola.",
+  cta: "Apri il codice su GitHub",
+  repoName: "YonderUrik/buddy-budget",
+  points: [
+    { icon: "calculator", title: "Come sono fatti i calcoli", text: "Rendimenti, tasse, piani di ammortamento: le formule sono nel codice, con i test." },
+    { icon: "database", title: "Cosa viene salvato", text: "Lo schema del database elenca ogni dato conservato, campo per campo." },
+    { icon: "scale", title: "Le regole italiane", text: "Aliquote, zainetto fiscale e bollo si leggono per quello che sono, non come scatola chiusa." },
+  ] satisfies readonly { icon: HomeIcon; title: string; text: string }[],
 } as const;

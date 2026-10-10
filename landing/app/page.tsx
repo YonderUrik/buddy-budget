@@ -7,6 +7,7 @@ import { Fit } from "@/components/fit";
 import { Groups } from "@/components/groups";
 import { Hero } from "@/components/hero";
 import { ItalyRules } from "@/components/italy-rules";
+import { OpenSource } from "@/components/open-source";
 import { Security } from "@/components/security";
 import { SiteNav } from "@/components/site-nav";
 import { Steps } from "@/components/steps";
@@ -24,6 +25,7 @@ export default function HomePage() {
         <Groups />
         <FeaturesSection />
         <Security />
+        <OpenSource />
         <Fit />
         <Compare />
         <Faq />

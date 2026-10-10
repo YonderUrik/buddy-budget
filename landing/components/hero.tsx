@@ -16,7 +16,7 @@ const HERO_QUESTIONS = [
   "quanto ti resta a fine mese?",
   "quante tasse paghi sui tuoi ETF?",
   "quando potrai smettere di lavorare?",
-  "se il fondo pensione ti conviene?",
+  "se il fondo pensione ti conviene davvero?",
   "quanto ti costano i tuoi debiti?",
 ] as const;
 

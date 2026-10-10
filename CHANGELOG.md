@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.44.1](https://github.com/YonderUrik/buddy-budget/compare/v0.44.0...v0.44.1) (2026-10-10)
+
+
+### Correzioni
+
+* **deps:** proxy-addr 2.0.8 (alert Dependabot 127) ([#263](https://github.com/YonderUrik/buddy-budget/issues/263)) ([22e0691](https://github.com/YonderUrik/buddy-budget/commit/22e0691fdc4c964ebfdcf221c49b56a820e560da))
+
 ## [0.44.0](https://github.com/YonderUrik/buddy-budget/compare/v0.43.1...v0.44.0) (2026-10-10)
 
 

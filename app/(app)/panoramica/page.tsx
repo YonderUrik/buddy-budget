@@ -13,6 +13,7 @@ import {
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { DemoOfferSection, StartChecklistSection } from "@/components/domain/start";
+import { WhatsNewSection } from "@/components/domain/whats-new";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
@@ -170,6 +171,7 @@ export default function PanoramicaPage() {
       ) : (
         <>
           {startStatus ? <StartChecklistSection status={startStatus} /> : null}
+          <WhatsNewSection />
           <NetWorthChartCard
             series={series}
             change={change}

@@ -1,15 +1,14 @@
 "use client";
 
 /**
- * Modulo di caricamento di un CSV o Excel personale, in tre passi aperti: da dove arriva, il file, il consenso all'analisi AI.
+ * Modulo di caricamento di un CSV o Excel personale, in tre passi: da dove arriva, il file, il consenso all'analisi AI.
  * Un file Excel diventa testo CSV nel browser (stesso lettore di Pensione e Investimenti); il server riceve sempre CSV.
  */
 
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BuildingIcon, FileSpreadsheetIcon, ShieldCheckIcon, UploadIcon, XIcon } from "lucide-react";
-import { DialogSection, DialogSections } from "@/components/domain/investments";
-import { Button } from "@/components/ui/button";
+import { FileSpreadsheetIcon, UploadIcon, XIcon } from "lucide-react";
+import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { track } from "@/lib/analytics";
@@ -23,6 +22,7 @@ export const PERSONAL_IMPORT_MAX_ROWS = 50_000;
 const CONSENT_VERSION = "openrouter-raw-zdr-v2";
 const NEW_FORMAT = "__new__";
 const FIELD_CLASS = "h-11 sm:h-9";
+const PERSONAL_IMPORT_STEPS = 3;
 
 interface LoadedFile {
   name: string;
@@ -56,6 +56,7 @@ export interface PersonalImportUploadProps {
 
 export function PersonalImportUpload({ formats, onQueued }: PersonalImportUploadProps) {
   const id = React.useId();
+  const flow = useStepFlow(PERSONAL_IMPORT_STEPS);
   const client = useQueryClient();
   const [formatId, setFormatId] = React.useState(NEW_FORMAT);
   const [name, setName] = React.useState("");
@@ -103,11 +104,28 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
   if (!file) missing.push("scegli il file");
   if (!consent) missing.push("dai il consenso all'analisi");
   const ready = missing.length === 0;
+  // Cosa manca nel passo corrente (il consenso è l'ultimo): il pulsante si accende passo per passo.
+  const stepMissing = flow.index === 0 ? missing.filter((m) => m.startsWith("scrivi")) : flow.index === 1 ? missing.filter((m) => m.startsWith("scegli il file")) : missing.filter((m) => m.startsWith("dai"));
+  const stepReady = stepMissing.length === 0;
+
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!stepReady) return;
+    if (!flow.isLast) {
+      track("form_step_completed", { flow: "personal_import", step: flow.index + 1 });
+      flow.next();
+      return;
+    }
+    if (ready) upload.mutate();
+  }
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); if (ready) upload.mutate(); }} className="flex flex-col gap-6">
-      <DialogSections>
-        <DialogSection title="1 · Da dove arriva il file?" icon={BuildingIcon} color="var(--swatch-indigo)" description={formats.length > 0 ? "Scegli un formato che hai già creato, oppure descrivine uno nuovo." : "Il nome della tua banca o del tuo broker: serve a riconoscere il formato la prossima volta."}>
+    <form onSubmit={onSubmit} className="flex flex-col gap-6">
+      <StepProgress index={flow.index} count={flow.count} label="Passi dell'importazione" />
+      <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-4">
+        {flow.index === 0 ? (
+        <>
+          <StepHeading title="Da dove arriva il file?" description={formats.length > 0 ? "Scegli un formato che hai già creato, oppure descrivine uno nuovo." : "Il nome della tua banca o del tuo broker: serve a riconoscere il formato la prossima volta."} />
           {formats.length > 0 ? (
             <div className="flex flex-col gap-1.5">
               <label htmlFor={`${id}-format`} className="text-sm font-medium text-foreground">Formato</label>
@@ -133,9 +151,12 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
               <span>Rileggi il formato con l&apos;AI <span className="text-muted-foreground">(se il file è cambiato o il risultato precedente non era giusto)</span></span>
             </label>
           )}
-        </DialogSection>
+        </>
+      ) : null}
 
-        <DialogSection title="2 · Il file" icon={FileSpreadsheetIcon} color="var(--primary)" description={`CSV o Excel (.xlsx), fino a ${formatFileSize(PERSONAL_IMPORT_MAX_BYTES)} e ${PERSONAL_IMPORT_MAX_ROWS.toLocaleString("it-IT")} righe.`}>
+        {flow.index === 1 ? (
+        <>
+          <StepHeading title="Carica il file" description={`CSV o Excel (.xlsx), fino a ${formatFileSize(PERSONAL_IMPORT_MAX_BYTES)} e ${PERSONAL_IMPORT_MAX_ROWS.toLocaleString("it-IT")} righe.`} />
           {file ? (
             <div className="flex items-center gap-3 rounded-xl border p-3">
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
@@ -162,9 +183,12 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
             </label>
           )}
           {fileError ? <p id={`${id}-file-error`} role="alert" className="text-sm text-destructive">{fileError}</p> : null}
-        </DialogSection>
+        </>
+      ) : null}
 
-        <DialogSection title="3 · Consenso" icon={ShieldCheckIcon} color="var(--swatch-green)" description="Per capire le colonne di un formato nuovo, il file viene letto da un modello AI.">
+        {flow.index === 2 ? (
+        <>
+          <StepHeading title="Ultimo passo: il consenso" description="Per capire le colonne di un formato nuovo, il file viene letto da un modello AI." />
           <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
             <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primary" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             <span>Acconsento all&apos;analisi AI del file. Se riuso un formato già creato, nessun dato va all&apos;AI.</span>
@@ -176,14 +200,22 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
               <p>File e anteprima sono cifrati e restano disponibili per 7 giorni; il file originale viene eliminato al termine dell&apos;analisi. Il formato che ne ricaviamo è privato. Pagamenti e investimenti si salvano da soli al termine dei controlli.</p>
             </div>
           </details>
-        </DialogSection>
-      </DialogSections>
+        </>
+      ) : null}
+      </StepStage>
 
       <div className="flex flex-col gap-2">
-        <Button type="submit" disabled={!ready || upload.isPending} aria-describedby={ready ? undefined : `${id}-missing`} className="h-11 w-full cursor-pointer sm:h-9 sm:w-fit">
-          {upload.isPending ? "Carico il file…" : "Importa il file"}
-        </Button>
-        {!ready ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">Per continuare: {missing.join(", ")}.</p> : null}
+        <StepActions
+          backLabel={flow.isFirst ? undefined : "Indietro"}
+          onBack={() => {
+            track("form_step_back", { flow: "personal_import", step: flow.index + 1 });
+            flow.back();
+          }}
+          primaryLabel={flow.isLast ? (upload.isPending ? "Carico il file…" : "Importa il file") : "Continua"}
+          pending={upload.isPending}
+          disabled={!stepReady}
+        />
+        {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">Per continuare: {stepMissing.join(", ")}.</p> : null}
         {upload.error ? <p role="alert" className="text-sm text-destructive">{upload.error.message}</p> : null}
       </div>
     </form>

@@ -2,7 +2,8 @@
 
 /** Dialog "Modifica operazione": riusa il form di registrazione con i valori salvati. Lo strumento non si cambia. */
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { FormDialogContent } from "@/components/domain/shared";
+import { Dialog } from "@/components/ui/dialog";
 import type { Instrument, InvestmentTransaction } from "@/lib/db/schema/investments";
 import { PencilIcon } from "lucide-react";
 import { PanelDialogHeader } from "./dialog-parts";
@@ -20,7 +21,7 @@ export interface EditOperationDialogProps {
 export function EditOperationDialog({ transaction, instrument, currency, onClose }: EditOperationDialogProps) {
   return (
     <Dialog open={transaction !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+      <FormDialogContent>
         <PanelDialogHeader icon={PencilIcon} title="Modifica operazione" description="Lo strumento non si cambia: per un altro strumento elimina e registra di nuovo." color="var(--swatch-indigo)" />
         {transaction ? (
           <RegisterOperationForm
@@ -31,7 +32,7 @@ export function EditOperationDialog({ transaction, instrument, currency, onClose
             onSuccess={onClose}
           />
         ) : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

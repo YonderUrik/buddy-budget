@@ -6,9 +6,9 @@
  */
 
 import * as React from "react";
-import { SegmentedControl } from "@/components/domain/shared";
+import { SegmentedControl, FormDialogContent } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { ExposureRow } from "@/lib/investments/analysis-view";
 import { EXPOSURE_SOURCE_LABELS } from "@/lib/investments/exposure";
@@ -69,7 +69,7 @@ export interface BreakdownDialogProps {
 export function BreakdownDialog({ row, onClose }: BreakdownDialogProps) {
   return (
     <Dialog open={row !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">{row ? <BreakdownForm key={row.instrument.id} row={row} onClose={onClose} /> : null}</DialogContent>
+      <FormDialogContent>{row ? <BreakdownForm key={row.instrument.id} row={row} onClose={onClose} /> : null}</FormDialogContent>
     </Dialog>
   );
 }

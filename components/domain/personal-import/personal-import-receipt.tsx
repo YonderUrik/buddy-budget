@@ -9,6 +9,8 @@ import Link from "next/link";
 import * as React from "react";
 import { AlertCircleIcon, CheckCircle2Icon, CheckIcon, CircleDashedIcon, FileSpreadsheetIcon, LoaderCircleIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { TextShimmer } from "@/components/motion";
+import { ProgressBar } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import type { PersonalImportListing } from "@/lib/queries/personal-imports";
 import { cn } from "@/lib/utils";
@@ -65,7 +67,7 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
             <span className={cn("grid size-6 shrink-0 place-items-center rounded-full", done ? "bg-pos-soft text-pos" : "bg-muted")} aria-hidden="true">
               <Icon className={cn("size-3.5", active && "animate-spin motion-reduce:animate-none")} />
             </span>
-            <span className={active ? "font-medium" : undefined}>{label}</span>
+            <span className={active ? "font-medium" : undefined}>{active ? <TextShimmer>{label}…</TextShimmer> : label}</span>
             <span className="sr-only">{done ? "fatto" : active ? "in corso" : "in attesa"}</span>
           </li>
         );
@@ -112,6 +114,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
       </div>
 
       <Stages stage={stage} failed={failed} />
+      {!imported && !failed ? <ProgressBar state={{ kind: "indeterminate" }} label="Importazione in corso" /> : null}
 
       {imported && results ? (
         <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">

@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * Importazioni fatte, in fondo alla scheda Operazioni: una spiegazione e un elenco chiuso di default (per broker, con
+ * Importazioni fatte, nel dialog «Importazioni» dell'intestazione di Investimenti: un elenco chiuso di default (per broker, con
  * periodo, data e stato), con l'aggiornamento (file più recente) e l'eliminazione con conferma che elenca cosa viene tolto.
  */
 
+import * as React from "react";
 import { useState } from "react";
 import { DatabaseIcon, UploadIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,7 +30,7 @@ async function personalRequest(id: string, token?: string): Promise<DeletionPrev
 }
 
 /** Importazioni fatte e loro gestione; per i rendiconti dei broker l'eliminazione include i caricamenti successivi che ne dipendono. */
-export function ImportManagement() {
+export function ImportManagement({ embedded = false }: { embedded?: boolean } = {}) {
   const query = useBrokerStatementsQuery();
   const personal = usePersonalImportsQuery();
   const client = useQueryClient();
@@ -68,14 +69,9 @@ export function ImportManagement() {
   const sourceCount = new Set(history.map((h) => h.source)).size;
   const summary = history.length > 0 ? `${plural(history.length, "file caricato", "file caricati")} da ${plural(sourceCount, "origine", "origini")} · ultimo il ${formatImportDate(history[0].createdAt)}` : undefined;
 
+  const Shell = embedded ? EmbeddedShell : PanelShell;
   return (
-    <PanelSection
-      icon={DatabaseIcon}
-      title="Importazioni"
-      color="var(--swatch-slate)"
-      description={IMPORT_EXPLANATION}
-      action={<Button variant="outline" size="sm" onClick={openImport}><UploadIcon className="size-4" aria-hidden="true" /> Importa un file</Button>}
-    >
+    <Shell onImport={openImport}>
       {loading ? <p role="status" className="text-sm text-muted-foreground">Caricamento importazioni…</p> : null}
       {query.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i rendiconti. <button type="button" className="font-medium underline" onClick={() => query.refetch()}>Riprova</button></p> : null}
       {personal.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i CSV personali. <button type="button" className="font-medium underline" onClick={() => personal.refetch()}>Riprova</button></p> : null}
@@ -134,6 +130,20 @@ export function ImportManagement() {
         onConfirm={confirm}
         onCancel={() => setSelection(null)}
       />
+    </Shell>
+  );
+}
+
+/** Contenitore dentro il dialog: niente intestazione, il titolo è quello del dialog. */
+function EmbeddedShell({ children }: { children: React.ReactNode; onImport: () => void }) {
+  return <div className="flex flex-col gap-4">{children}</div>;
+}
+
+/** Contenitore come sezione di pagina, con il pulsante «Importa un file». */
+function PanelShell({ children, onImport }: { children: React.ReactNode; onImport: () => void }) {
+  return (
+    <PanelSection icon={DatabaseIcon} title="Importazioni" color="var(--swatch-slate)" description={IMPORT_EXPLANATION} action={<Button variant="outline" size="sm" onClick={onImport}><UploadIcon className="size-4" aria-hidden="true" /> Importa un file</Button>}>
+      {children}
     </PanelSection>
   );
 }

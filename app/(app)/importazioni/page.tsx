@@ -46,8 +46,8 @@ function PersonalImports() {
       {reportJob ? <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} /> : null}
       {selectedJob?.status === "review_failed" ? <PersonalImportPreview key={selectedJob.id} id={selectedJob.id} /> : null}
 
-      {receipt ? null : <PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} />}
-      <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>
+      {receipt ? null : <div id="nuovo-import" className="scroll-mt-6"><PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} /></div>}
+      <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList onRetry={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>
     </main>
   );
 }

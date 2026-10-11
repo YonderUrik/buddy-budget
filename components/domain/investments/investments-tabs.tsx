@@ -24,7 +24,7 @@ export const INVESTMENTS_TABS: readonly InvestmentsTab[] = [
   { href: "/investimenti/diversificazione", label: "Diversificazione", icon: ChartPie, description: "Come è distribuito il portafoglio" },
   { href: "/investimenti/proventi", label: "Dividendi", icon: HandCoins, description: "Cedole e proventi incassati" },
   { href: "/investimenti/tasse", label: "Tasse", icon: Landmark, description: "Stime fiscali e minusvalenze" },
-  { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight, description: "Acquisti, vendite e importazioni" },
+  { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight, description: "Acquisti e vendite registrati" },
 ];
 
 /** Dimensione delle icone delle schede, in pixel: piccole, per non competere con il testo. */

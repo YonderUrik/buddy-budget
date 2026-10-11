@@ -31,6 +31,7 @@ export {
   resetYahooSession,
   searchYahoo,
   setYahooSessionStore,
+  type YahooQuoteMeta,
   type YahooSearchHit,
   type YahooSessionStore,
 } from "./yahoo";

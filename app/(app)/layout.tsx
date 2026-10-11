@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { PrivacyBoundary, PrivacyProvider } from "@/components/privacy-provider";
 import { DemoBannerContainer } from "@/components/domain/start";
+import { PersonalImportIsland } from "@/components/domain/personal-import";
 import { SyncProgressIndicator } from "@/components/domain/sync";
 import { auth } from "@/lib/auth";
 import { AttentionShell } from "./attention-shell";
@@ -17,7 +18,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </PrivacyBoundary>
       </AttentionShell>
-      <SyncProgressIndicator />
+      <SyncProgressIndicator>
+        <PersonalImportIsland />
+      </SyncProgressIndicator>
     </PrivacyProvider>
   );
 }

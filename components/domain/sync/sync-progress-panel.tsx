@@ -11,13 +11,15 @@ export interface SyncProgressPanelProps {
   onDismiss: (jobId: string) => void;
   /** Destinazione del link mostrato quando restano movimenti da categorizzare. */
   categorizeHref?: string;
+  /** Altre isole da impilare sotto quelle dei sync (per esempio le importazioni). */
+  children?: React.ReactNode;
 }
 
 /**
  * Contenitore flottante dei job di sync: un'isola per job, in basso (al centro su mobile, a destra su desktop).
  * Le isole entrano ed escono con una molla; ognuna si chiude solo a job concluso.
  */
-export function SyncProgressPanel({ jobs, onDismiss, categorizeHref = "/categorizza" }: SyncProgressPanelProps) {
+export function SyncProgressPanel({ jobs, onDismiss, categorizeHref = "/categorizza", children }: SyncProgressPanelProps) {
   return (
     <section
       aria-label={PANEL_LABEL}
@@ -28,6 +30,7 @@ export function SyncProgressPanel({ jobs, onDismiss, categorizeHref = "/categori
           <SyncIsland key={job.id} job={job} onDismiss={onDismiss} categorizeHref={categorizeHref} />
         ))}
       </AnimatePresence>
+      {children}
     </section>
   );
 }

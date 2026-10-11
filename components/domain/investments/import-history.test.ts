@@ -17,7 +17,7 @@ describe("buildImportHistory", () => {
   it("unisce i CSV personali con il nome del formato e ordina dal più recente", () => {
     const items = buildImportHistory(
       [{ id: "a", createdAt: "2026-01-01T00:00:00Z", statement: statement() }],
-      { formats: [{ id: "f", name: "Banca X" }], jobs: [{ id: "j", formatId: "f", status: "imported", estimatedAt: "", expiresAt: "", createdAt: "2026-02-01T00:00:00Z", error: null, notifiedAt: null }] },
+      { formats: [{ id: "f", name: "Banca X" }], jobs: [{ id: "j", formatId: "f", status: "imported", estimatedAt: "", expiresAt: "", createdAt: "2026-02-01T00:00:00Z", error: null, notifiedAt: null, results: null }] },
     );
     expect(items.map((i) => i.source)).toEqual(["Banca X", "DEGIRO"]);
     expect(items[0].status.tone).toBe("ok");

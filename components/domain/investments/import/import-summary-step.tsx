@@ -75,6 +75,13 @@ export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashM
                 <Link href="/liquidita" onClick={onNavigate} className="font-medium text-primary hover:underline">Liquidità → Movimenti</Link>, da categorizzare.
               </li>
             ) : null}
+            {keepsOriginal ? (
+              <li>
+                Il file è nella lista delle importazioni: da{" "}
+                <Link href="/investimenti/operazioni" onClick={onNavigate} className="font-medium text-primary hover:underline">Gestisci importazioni</Link>{" "}
+                puoi vederlo, sostituirlo o cancellarlo.
+              </li>
+            ) : null}
             <li>I prezzi storici si scaricano in background: il grafico si completa entro qualche minuto.</li>
           </ul>
         </DialogSection>

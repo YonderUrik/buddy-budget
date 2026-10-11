@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Scheda Tasse di Investimenti: regime fiscale, cifre per anno (plus/minus, ETF, imposte, bollo), zaino delle
- * minusvalenze, simulatore "Prima di vendere", cose da sapere e aliquote degli strumenti. Stime, non calcolo fiscale.
+ * Scheda Tasse di Investimenti: cifre per anno (plus/minus, ETF, imposte, bollo), zaino delle
+ * minusvalenze, simulatore "Prima di vendere", cose da sapere, aliquote degli strumenti e, in fondo, il regime. Stime, non calcolo fiscale.
  */
 
 import * as React from "react";
@@ -13,7 +13,7 @@ import {
   LossCarryforwardCard,
   SaleSimulatorCard,
   TaxOpportunitiesCard,
-  TaxRegimeCard,
+  TaxRegimeNote,
   TaxYearCard,
 } from "@/components/domain/investments";
 import { LoadError } from "@/components/domain/shared";
@@ -64,14 +64,16 @@ export default function TassePage() {
           <InstrumentTaxListCard instruments={view.instruments} resolved={view.resolved} onEdit={setEditing} />
         </div>
         <div className="flex flex-col gap-10 lg:col-span-2">
-          <TaxRegimeCard
-            regime={view.regime}
-            saving={updatePortfolio.isPending}
-            onChange={(taxRegime) => updatePortfolio.mutate({ taxRegime }, { onError: (e) => errorToast(e.message) })}
-          />
           <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
           <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />
         </div>
+      </div>
+      <div className="mt-10">
+        <TaxRegimeNote
+          regime={view.regime}
+          saving={updatePortfolio.isPending}
+          onChange={(taxRegime) => updatePortfolio.mutate({ taxRegime }, { onError: (e) => errorToast(e.message) })}
+        />
       </div>
       <InstrumentSettingsDialog instrument={editing} setting={editing ? view.settingsById.get(editing.id) : undefined} onClose={() => setEditing(null)} />
     </>

@@ -2,15 +2,17 @@
 
 import type * as React from "react";
 import { AppShell, type NavBadge } from "@/components/layout";
+import { useQuickReport } from "@/components/domain/support";
 import { formatBadgeCount } from "@/lib/attention";
 import { useAttentionQuery } from "@/lib/queries/attention";
 
 /** Voce di navigazione che mostra il badge dei movimenti da sistemare. */
 const ATTENTION_PARENT_HREF = "/liquidita";
 
-/** AppShell con il badge dei movimenti da sistemare (nuovi o da categorizzare) accanto a Liquidità. */
+/** AppShell con il badge dei movimenti da sistemare (nuovi o da categorizzare) accanto a Liquidità e il pulsante «Scrivici». */
 export function AttentionShell({ children, sidebarExtra }: { children: React.ReactNode; sidebarExtra?: React.ReactNode }) {
   const { data } = useAttentionQuery();
+  const openReport = useQuickReport();
   const count = data?.totalCount ?? 0;
   const navBadges: Record<string, NavBadge> = {
     [ATTENTION_PARENT_HREF]: {
@@ -20,7 +22,7 @@ export function AttentionShell({ children, sidebarExtra }: { children: React.Rea
     },
   };
   return (
-    <AppShell sidebarExtra={sidebarExtra} navBadges={navBadges}>
+    <AppShell sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={() => openReport({ source: "pulsante" })}>
       {children}
     </AppShell>
   );

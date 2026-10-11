@@ -15,7 +15,10 @@ import {
   REPORT_MESSAGE_MIN_LENGTH,
   SUPPORT_EMAIL,
   type ReportContext,
+  type ReportError,
+  type ReportInput,
   type ReportKind,
+  type ReportSource,
 } from "@/lib/support";
 
 const KIND_OPTIONS = REPORT_KINDS.map((value) => ({ value, label: REPORT_KIND_LABELS[value] }));
@@ -32,25 +35,27 @@ export interface ReportFormProps {
   initialKind?: ReportKind;
   /** Versione per il foglio rapido: niente etichetta, area di testo più bassa. */
   compact?: boolean;
-  /** Nasconde la scelta del tipo (es. quando si apre da un errore: è un problema). */
-  hideKind?: boolean;
+  /** Da dove parte la segnalazione (per log e Umami). Default: la pagina Aiuto. */
+  source?: ReportSource;
+  /** Errore da allegare: il tipo è «problema» e la scelta del tipo sparisce. */
+  error?: ReportError;
 }
 
-async function postReport(body: { kind: ReportKind; message: string; context?: ReportContext }): Promise<{ reference: string }> {
+async function postReport(body: ReportInput): Promise<{ reference: string }> {
   const res = await fetch("/api/support", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = (await res.json().catch(() => null)) as { reference?: string; error?: string } | null;
   if (!res.ok || !data?.reference) throw new Error(data?.error ?? "Non siamo riusciti a inviare la segnalazione.");
   return { reference: data.reference };
 }
 
-export function ReportForm({ context, initialKind = "problema", compact = false, hideKind = false }: ReportFormProps) {
-  const [kind, setKind] = React.useState<ReportKind>(initialKind);
+export function ReportForm({ context, initialKind = "problema", compact = false, source = "pagina", error }: ReportFormProps) {
+  const [kind, setKind] = React.useState<ReportKind>(error ? "problema" : initialKind);
   const [message, setMessage] = React.useState("");
   const [withContext, setWithContext] = React.useState(true);
   const mutation = useMutation({
     mutationFn: postReport,
     onSuccess: () => {
-      track("support_report_sent", { kind, withContext });
+      track("support_report_sent", { kind, withContext, source, area: error?.area });
       setMessage("");
     },
   });
@@ -77,10 +82,10 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
       onSubmit={(event) => {
         event.preventDefault();
         if (tooShort || mutation.isPending) return;
-        mutation.mutate({ kind, message: message.trim(), context: withContext ? context : undefined });
+        mutation.mutate({ kind, message: message.trim(), context: withContext ? context : undefined, source, error });
       }}
     >
-      {hideKind ? null : <SegmentedControl options={KIND_OPTIONS} value={kind} onChange={setKind} ariaLabel="Di cosa si tratta" stretch />}
+      {error ? null : <SegmentedControl options={KIND_OPTIONS} value={kind} onChange={setKind} ariaLabel="Di cosa si tratta" stretch />}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="support-message" className={compact ? "sr-only" : "text-sm font-medium text-foreground"}>
           Racconta

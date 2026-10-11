@@ -7,7 +7,6 @@
 
 import * as React from "react";
 import { useFilteredInvestmentsOverview } from "@/lib/queries/investments-view";
-import { toast } from "sonner";
 import {
   InstrumentSettingsDialog,
   InstrumentTaxListCard,
@@ -22,6 +21,7 @@ import { startOfDay } from "@/lib/calc/expenses";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { buildTaxView } from "@/lib/investments/tax-view";
 import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
+import { errorToast } from "@/lib/support/request-report";
 
 export default function TassePage() {
   const today = React.useMemo(() => startOfDay(new Date()), []);
@@ -67,7 +67,7 @@ export default function TassePage() {
           <TaxRegimeCard
             regime={view.regime}
             saving={updatePortfolio.isPending}
-            onChange={(taxRegime) => updatePortfolio.mutate({ taxRegime }, { onError: (e) => toast.error(e.message) })}
+            onChange={(taxRegime) => updatePortfolio.mutate({ taxRegime }, { onError: (e) => errorToast(e.message) })}
           />
           <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
           <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />

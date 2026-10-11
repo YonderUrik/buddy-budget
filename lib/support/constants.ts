@@ -9,6 +9,45 @@ export const REPORT_KIND_LABELS: Record<ReportKind, string> = {
   idea: "Un'idea",
 };
 
+/** Da dove parte la segnalazione: pagina Aiuto, pulsante «Scrivici» o link sotto un errore. */
+export const REPORT_SOURCES = ["pagina", "pulsante", "errore"] as const;
+export type ReportSource = (typeof REPORT_SOURCES)[number];
+
+/** Operazione fallita quando la segnalazione parte da un errore: enum chiuso, finisce in log e Umami. */
+export const REPORT_ERROR_AREAS = [
+  "import_movimenti",
+  "import_investimenti",
+  "sync_banca",
+  "collega_banca",
+  "movimento",
+  "operazione",
+  "conto",
+  "debito",
+  "abbonamento",
+  "pensione",
+  "caricamento",
+  "salvataggio",
+] as const;
+export type ReportErrorArea = (typeof REPORT_ERROR_AREAS)[number];
+
+export const REPORT_ERROR_AREA_LABELS: Record<ReportErrorArea, string> = {
+  import_movimenti: "Importazione dei movimenti",
+  import_investimenti: "Importazione degli investimenti",
+  sync_banca: "Aggiornamento dalla banca",
+  collega_banca: "Collegamento della banca",
+  movimento: "Salvataggio di un movimento",
+  operazione: "Salvataggio di un'operazione",
+  conto: "Salvataggio di un conto",
+  debito: "Salvataggio di un debito",
+  abbonamento: "Salvataggio di un abbonamento",
+  pensione: "Salvataggio della pensione",
+  caricamento: "Caricamento della pagina",
+  salvataggio: "Salvataggio",
+};
+
+/** Lunghezza massima del messaggio d'errore allegato alla segnalazione. */
+export const REPORT_ERROR_MAX_LENGTH = 300;
+
 export const REPORT_MESSAGE_MIN_LENGTH = 10;
 export const REPORT_MESSAGE_MAX_LENGTH = 4000;
 /** Segnalazioni ammesse per utente nella finestra `REPORT_RATE_WINDOW_SECONDS`. */

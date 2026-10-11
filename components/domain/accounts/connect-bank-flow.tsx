@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries/gocardless";
 import type { Institution } from "@/lib/queries/gocardless";
+import { ErrorWithReport, ReportErrorLink } from "@/components/domain/support";
 
 export const BANK_COUNTRY_OPTIONS = [
   { code: "IT", label: "Italia" },
@@ -135,7 +136,10 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
         <div role="alert" className="flex flex-col items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
           <p className="font-medium text-foreground">Non riesco a caricare l&apos;elenco delle banche.</p>
           <p className="text-muted-foreground">Succede se la connessione cade o il servizio è occupato. Non hai perso nulla.</p>
-          <button type="button" onClick={() => void refetch()} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">Riprova</button>
+          <div className="flex flex-wrap items-center gap-x-4">
+            <button type="button" onClick={() => void refetch()} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">Riprova</button>
+            <ReportErrorLink area="collega_banca" error="Non riesco a caricare l'elenco delle banche." />
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-start gap-1 rounded-xl border border-dashed p-4 text-sm">
@@ -174,7 +178,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
 
       <p role="status" className="sr-only">{busy ? `Ti porto sul sito di ${chosenName ?? "la banca"}…` : ""}</p>
       {busy ? <p className="text-sm text-muted-foreground" aria-hidden="true">Ti porto sul sito di {chosenName ?? "la banca"}…</p> : null}
-      {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+      {error ? <ErrorWithReport area="collega_banca" error={error} /> : null}
     </div>
   );
 }

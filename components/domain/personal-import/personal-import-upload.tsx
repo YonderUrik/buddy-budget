@@ -5,7 +5,6 @@
  * Un file Excel diventa testo CSV nel browser (stesso lettore di Pensione e Investimenti); il server riceve sempre CSV.
  */
 
-import { ReportErrorLink } from "@/components/domain/support";
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileSpreadsheetIcon, UploadIcon, XIcon } from "lucide-react";
@@ -18,6 +17,7 @@ import { readXlsx, XLSX_MAX_FILE_BYTES } from "@/lib/pension/import/xlsx";
 import { cn } from "@/lib/utils";
 import { personalImportApi } from "./personal-import-api";
 import type { PersonalImportReceiptFile } from "./personal-import-receipt";
+import { ErrorWithReport } from "@/components/domain/support";
 
 export const PERSONAL_IMPORT_MAX_BYTES = 25 * 1024 * 1024;
 export const PERSONAL_IMPORT_MAX_ROWS = 50_000;
@@ -191,9 +191,8 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
             </label>
           )}
           {fileError ? (
-            <div className="flex flex-col items-start gap-0.5">
-              <p id={`${id}-file-error`} role="alert" className="text-sm text-destructive">{fileError}</p>
-              <ReportErrorLink area="Importazione movimenti: file non accettato" error={fileError} />
+            <div id={`${id}-file-error`}>
+              <ErrorWithReport area="import_movimenti" error={fileError} />
             </div>
           ) : null}
         </>
@@ -229,12 +228,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
           disabled={!stepReady}
         />
         {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">Per continuare: {stepMissing.join(", ")}.</p> : null}
-        {upload.error ? (
-          <div className="flex flex-col items-start gap-0.5">
-            <p role="alert" className="text-sm text-destructive">{upload.error.message}</p>
-            <ReportErrorLink area="Importazione movimenti: caricamento non riuscito" error={upload.error.message} />
-          </div>
-        ) : null}
+        {upload.error ? <ErrorWithReport area="import_movimenti" error={upload.error.message} /> : null}
       </div>
     </form>
   );

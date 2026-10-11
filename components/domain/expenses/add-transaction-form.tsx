@@ -22,6 +22,7 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useCreateTransactionMutation } from "@/lib/queries/transactions";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/lib/db/schema/categories";
+import { ErrorWithReport } from "@/components/domain/support";
 
 export interface AddTransactionFormProps {
   categories: Category[];
@@ -294,7 +295,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
       <p role="status" className={cn("flex items-center gap-1.5 text-sm text-muted-foreground", added === 0 && "sr-only")}>
         {added > 0 ? <><CheckCircle2Icon className="size-4 text-pos" aria-hidden="true" /> {added === 1 ? "Movimento aggiunto." : `${added} movimenti aggiunti.`} Puoi inserirne un altro.</> : null}
       </p>
-      {errors.form ? <p role="alert" className="text-sm text-destructive">{errors.form}</p> : null}
+      {errors.form ? <ErrorWithReport area="movimento" error={errors.form} /> : null}
     </form>
   );
 }

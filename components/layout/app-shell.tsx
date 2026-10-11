@@ -30,7 +30,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
-import { QuickReportProvider, useQuickReport } from "@/components/domain/support";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
 import { SectionTransition } from "@/components/layout/section-transition";
@@ -57,14 +56,13 @@ interface InnerShellProps {
   activeHref?: string;
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
+  onOpenSupport?: () => void;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: InnerShellProps) {
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
-  const openReport = useQuickReport();
-  const openSupport = useCallback(() => openReport(), [openReport]);
   const openMore = useCallback(() => setMoreOpen(true), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
 
@@ -100,7 +98,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={openSupport} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -112,7 +110,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={openSupport} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -209,18 +207,20 @@ interface AppShellProps {
   sidebarExtra?: React.ReactNode;
   /** Sottovoci con contatore sotto le voci della sidebar, per `href` della voce padre. */
   navBadges?: Record<string, NavBadge>;
+  /** Apre il foglio «Scrivici»: mostra il pulsante in sidebar e nella barra in alto su telefono. */
+  onOpenSupport?: () => void;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: AppShellProps) {
   return (
     <SidebarProvider>
-      <QuickReportProvider><InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport}>
         {children}
-      </InnerShell></QuickReportProvider>
+      </InnerShell>
     </SidebarProvider>
   );
 }

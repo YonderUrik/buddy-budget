@@ -14,6 +14,7 @@ import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { track } from "@/lib/analytics";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { SwipeCard } from "./swipe-card";
 import { SwipeTour } from "./swipe-tour";
 import { useSwipeDeck } from "./use-swipe-deck";
@@ -46,7 +47,9 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
   const [changing, setChanging] = React.useState(false);
   const [remember, setRemember] = React.useState(false);
   const suggestion = group.suggestion;
-  const suggestedName = suggestion ? categories.find((c) => c.id === suggestion.suggestedCategoryId)?.name : undefined;
+  const suggested = suggestion ? categories.find((c) => c.id === suggestion.suggestedCategoryId) : undefined;
+  const suggestedName = suggested?.name;
+  const suggestedAppearance = suggested ? { icon: suggested.icon as CategoryIcon, color: suggested.color as CategoryColor } : undefined;
 
   const confirm = React.useCallback(() => {
     if (!suggestion) return;
@@ -90,8 +93,8 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
   }, [suggestion, changing, canUndo, confirm, skipCard, undoCard]);
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
-      <p className="text-center text-xs text-muted-foreground tabular-nums" aria-live="polite">
+    <div className="mx-auto flex w-full max-w-sm flex-col gap-4 max-md:flex-1">
+      <p className="text-center text-xs text-muted-foreground tabular-nums max-md:-mb-2" aria-live="polite">
         {remaining === 1 ? "Ultima carta" : `${remaining} esercenti da categorizzare`}
       </p>
       <SwipeCard
@@ -100,6 +103,7 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
         categories={categories}
         categoryUsage={categoryUsage}
         suggestedName={suggestedName}
+        suggestedAppearance={suggestedAppearance}
         changing={changing}
         remember={remember}
         onRememberChange={setRemember}
@@ -108,7 +112,7 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
         onSkip={skipCard}
         onPick={pick}
       />
-      <div className="flex items-center justify-center gap-3">
+      <div className="flex items-center justify-center gap-3 max-md:pb-1">
         <Button type="button" variant="ghost" size="icon" onClick={undoCard} disabled={!canUndo} aria-label="Annulla l'ultima scelta" title="Annulla (Z)">
           <Undo2Icon />
         </Button>

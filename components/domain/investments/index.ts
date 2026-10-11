@@ -120,6 +120,8 @@ export * from "./titles";
 
 
 export { ImportManagement } from "./import-management";
+export { ImportManagementDialog } from "./import-management-dialog";
+export type { ImportManagementDialogProps } from "./import-management-dialog";
 export { CostDetailsCard } from "./cost-details-card";
 
 export { BrokerSelector } from "./broker-selector";

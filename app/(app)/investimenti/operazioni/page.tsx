@@ -1,10 +1,10 @@
 "use client";
 
-/** Scheda Operazioni di Investimenti: tutte le operazioni per mese, con l'esito di ciascuna, i totali la modifica e l'eliminazione. */
+/** Scheda Operazioni di Investimenti: tutte le operazioni per mese, con il guadagno di ciascuna, i totali, la modifica e l'eliminazione. Le importazioni fatte sono nel dialog dell'intestazione. */
 
 import * as React from "react";
 import { toast } from "sonner";
-import { EditOperationDialog, ImportManagement, InvestmentsViewGate, InvestmentTransactionsList } from "@/components/domain/investments";
+import { EditOperationDialog, InvestmentsViewGate, InvestmentTransactionsList } from "@/components/domain/investments";
 import type { InvestmentTransaction } from "@/lib/db/schema/investments";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useDeleteInvestmentTransactionMutation } from "@/lib/queries/investments";
@@ -43,7 +43,6 @@ export default function OperazioniPage() {
           onClose={() => setEditing(null)}
         />
       </InvestmentsViewGate>
-      <ImportManagement />
     </>
   );
 }

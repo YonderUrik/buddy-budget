@@ -9,8 +9,9 @@ import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
 import { usePathname } from "next/navigation";
-import { Plus, Upload } from "lucide-react";
+import { DatabaseIcon, Plus, Upload } from "lucide-react";
 import {
+  ImportManagementDialog,
   InvestmentImportDialog,
   BrokerSelector,
   InvestmentsActionsProvider,
@@ -33,7 +34,8 @@ export default function InvestimentiLayout({ children }: { children: React.React
   const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
   const [importOpen, setImportOpen] = React.useState(false);
-  const actions = React.useMemo(() => ({ openRegister: setRegisterInitial, openImport: () => setImportOpen(true) }), []);
+  const [managementOpen, setManagementOpen] = React.useState(false);
+  const actions = React.useMemo(() => ({ openRegister: setRegisterInitial, openImport: () => setImportOpen(true), openImportManagement: () => setManagementOpen(true) }), []);
 
   const data = overview.data;
   const currency = data?.currency ?? "EUR";
@@ -52,6 +54,9 @@ export default function InvestimentiLayout({ children }: { children: React.React
               <p className="text-sm text-muted-foreground">Prezzi di chiusura aggiornati ogni sera</p>
             </div>
             <div className="flex gap-2">
+              <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
+                <DatabaseIcon size={16} aria-hidden="true" />
+              </Button>
               <Button variant="outline" className="gap-1.5" onClick={() => setImportOpen(true)}>
                 <Upload size={15} aria-hidden="true" /> Importa
               </Button>
@@ -79,6 +84,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
           ) : null}
         </FormDialogContent>
       </Dialog>
+      <ImportManagementDialog open={managementOpen} onOpenChange={setManagementOpen} />
       <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
     </InvestmentsActionsProvider></BrokerSelectionProvider>
   );

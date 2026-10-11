@@ -1,6 +1,7 @@
 /** Totali di un insieme di operazioni: acquistato, venduto, proventi e guadagno (con la sua percentuale). */
 
 import type { OperationTotals } from "@/lib/investments/operations-history";
+import { InfoHint } from "@/components/domain/shared";
 import { formatCurrency } from "@/lib/format";
 import { formatSignedPct, GainText } from "./gain-text";
 
@@ -26,7 +27,12 @@ export function OperationsTotals({ totals, currency }: OperationsTotalsProps) {
           </div>
         ))}
         <div>
-          <dt className="text-xs text-muted-foreground">Guadagno</dt>
+          <dt className="flex items-center gap-0.5 text-xs text-muted-foreground">
+            Guadagno
+            <InfoHint label="Come si calcola il guadagno">
+              Per un acquisto è quanto valgono oggi le quote ancora possedute rispetto a quanto le hai pagate; per una vendita è il guadagno realizzato.
+            </InfoHint>
+          </dt>
           <dd className="font-heading text-lg font-medium">
             <GainText gain={totals.gain} currency={currency} />
           </dd>

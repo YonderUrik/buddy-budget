@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-11T19:33:38.092Z",
+  "capturedAt": "2026-10-11T19:50:40.987Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -12,7 +12,7 @@
       "theme": "light",
       "route": "/panoramica",
       "width": 1920,
-      "height": 2250
+      "height": 2231
     },
     {
       "id": "conti",
@@ -22,11 +22,18 @@
       "height": 1200
     },
     {
+      "id": "movimenti",
+      "theme": "light",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
       "id": "analisi",
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1769
+      "height": 1799
     },
     {
       "id": "abbonamenti",
@@ -61,7 +68,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1838
+      "height": 1862
     },
     {
       "id": "diversificazione",
@@ -75,7 +82,7 @@
       "theme": "light",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 1992
+      "height": 1913
     },
     {
       "id": "pensione",
@@ -90,6 +97,20 @@
       "route": "/pensione/scenari",
       "width": 1920,
       "height": 1875
+    },
+    {
+      "id": "debiti",
+      "theme": "light",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1647
+    },
+    {
+      "id": "simulatore",
+      "theme": "light",
+      "route": "/debiti/finanziamenti",
+      "width": 1920,
+      "height": 1500
     },
     {
       "id": "analitiche",
@@ -103,7 +124,7 @@
       "theme": "dark",
       "route": "/panoramica",
       "width": 1920,
-      "height": 2250
+      "height": 2231
     },
     {
       "id": "conti",
@@ -113,11 +134,18 @@
       "height": 1200
     },
     {
+      "id": "movimenti",
+      "theme": "dark",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
       "id": "analisi",
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1769
+      "height": 1799
     },
     {
       "id": "abbonamenti",
@@ -152,7 +180,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1838
+      "height": 1862
     },
     {
       "id": "diversificazione",
@@ -166,7 +194,7 @@
       "theme": "dark",
       "route": "/investimenti/tasse",
       "width": 1920,
-      "height": 1992
+      "height": 1913
     },
     {
       "id": "pensione",
@@ -183,53 +211,25 @@
       "height": 1875
     },
     {
+      "id": "debiti",
+      "theme": "dark",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1647
+    },
+    {
+      "id": "simulatore",
+      "theme": "dark",
+      "route": "/debiti/finanziamenti",
+      "width": 1920,
+      "height": 1500
+    },
+    {
       "id": "analitiche",
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
       "height": 1412
-    },
-    {
-      "id": "movimenti",
-      "theme": "light",
-      "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
-    },
-    {
-      "id": "debiti",
-      "theme": "light",
-      "route": "/debiti",
-      "width": 1920,
-      "height": 1647
-    },
-    {
-      "id": "simulatore",
-      "theme": "light",
-      "route": "/debiti/finanziamenti",
-      "width": 1920,
-      "height": 1500
-    },
-    {
-      "id": "movimenti",
-      "theme": "dark",
-      "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
-    },
-    {
-      "id": "debiti",
-      "theme": "dark",
-      "route": "/debiti",
-      "width": 1920,
-      "height": 1647
-    },
-    {
-      "id": "simulatore",
-      "theme": "dark",
-      "route": "/debiti/finanziamenti",
-      "width": 1920,
-      "height": 1500
     }
   ]
 }

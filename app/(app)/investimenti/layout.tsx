@@ -52,19 +52,17 @@ export default function InvestimentiLayout({ children }: { children: React.React
         {isTitlePage ? null : (
           <div className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
-              <div>
-                <h1 className="font-heading text-2xl font-medium text-foreground">Investimenti</h1>
-                <p className="text-sm text-muted-foreground">Prezzi di chiusura aggiornati ogni sera</p>
-              </div>
-              <div className="flex gap-2">
+              <h1 className="min-w-0 font-heading text-2xl font-medium text-foreground">Investimenti</h1>
+              <div className="flex shrink-0 gap-2">
                 <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
                   <DatabaseIcon size={16} aria-hidden="true" />
                 </Button>
-                <Button variant="outline" className="gap-1.5" onClick={() => setImportOpen(true)}>
-                  <Upload size={15} aria-hidden="true" /> Importa
+                {/* Su mobile solo icone: con le etichette la testata era più larga dello schermo e la pagina scorreva di lato. */}
+                <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label="Importa">
+                  <Upload size={15} aria-hidden="true" /> <span className="hidden sm:inline">Importa</span>
                 </Button>
-                <Button className="gap-1.5 shadow-xs" onClick={() => setRegisterInitial({ instrument: null })}>
-                  <Plus size={15} aria-hidden="true" /> Registra
+                <Button className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label="Registra operazione">
+                  <Plus size={15} aria-hidden="true" /> <span className="hidden sm:inline">Registra</span>
                 </Button>
               </div>
             </div>

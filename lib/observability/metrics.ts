@@ -75,6 +75,27 @@ export type CleanupAction =
   | "skipped_linked"
   | "capped"
   | "failed";
+/** Perché si libera subito una connessione GoCardless rimasta senza conti: conto scollegato o consenso rinnovato. */
+export type GoCardlessReleaseTrigger = "account_removed" | "renewed";
+export type GoCardlessReleaseOutcome = "released" | "failed";
+/** Esito di una richiesta di collegamento: avviata, bloccata da un limite, rifiutata da GoCardless (402) o fallita. */
+export type GoCardlessConnectOutcome =
+  | "started"
+  | "user_limit"
+  | "user_attempts"
+  | "global_limit"
+  | "provider_limit"
+  | "provider_refused"
+  | "failed";
+/** Posti GoCardless letti allo scrape: requisition vive, consensi recenti, posti usati (il maggiore dei due), limiti e utenti oltre il limite per utente. */
+export interface GoCardlessCapacityReading {
+  live: number;
+  recent: number;
+  used: number;
+  limit_global: number;
+  limit_provider: number;
+  users_over_limit: number;
+}
 /** Modalità del cron sugli account inattivi (`dry-run` conta soltanto: niente email, niente eliminazioni). */
 export type InactivityMode = "dry-run" | "execute";
 /** Cosa ha deciso/fatto il cron: `warned` = email di preavviso, `deleted` = account eliminato, `returned` = rientrato prima della scadenza, `exempt` = protetto, `capped` = rimandato dal tetto, `failed`. */
@@ -101,6 +122,7 @@ export interface AsyncGaugeDeps {
   cronLastSuccess?: () => Promise<Partial<Record<CronName, number | null>>>;
   syncJobs?: () => Promise<{ active: number; stale: number }>;
   usage?: () => Promise<UsageSnapshot>;
+  gocardlessCapacity?: () => Promise<GoCardlessCapacityReading>;
 }
 
 interface MetricsState {
@@ -127,6 +149,8 @@ interface MetricsState {
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
+  gcRelease: Counter<"trigger" | "outcome">;
+  gcConnect: Counter<"kind" | "outcome">;
   inactiveAccounts: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
@@ -280,6 +304,18 @@ function createState(): MetricsState {
     labelNames: ["action", "mode"],
     registers: r,
   });
+  state.gcRelease = new Counter({
+    name: `${METRIC_PREFIX}gocardless_releases_total`,
+    help: "Connessioni GoCardless liberate subito (requisition eliminata) per motivo (conto scollegato, rinnovo) ed esito.",
+    labelNames: ["trigger", "outcome"],
+    registers: r,
+  });
+  state.gcConnect = new Counter({
+    name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
+    help: "Richieste di collegamento bancario per tipo (nuova banca o rinnovo) ed esito (avviata, bloccata da un limite, rifiutata da GoCardless, fallita).",
+    labelNames: ["kind", "outcome"],
+    registers: r,
+  });
   state.inactiveAccounts = new Counter({
     name: `${METRIC_PREFIX}inactive_accounts_total`,
     help: "Account inattivi per azione del cron (warned, deleted, returned, exempt, capped, failed) e modalità (dry-run o execute).",
@@ -369,6 +405,23 @@ function createState(): MetricsState {
         const { active, stale } = await read();
         this.set({ state: "active" }, active);
         this.set({ state: "stale" }, stale);
+      } catch {
+        // assenza del dato per questo scrape
+      }
+    },
+  });
+
+  new Gauge({
+    name: `${METRIC_PREFIX}gocardless_capacity`,
+    help: "Posti dei collegamenti GoCardless: live (requisition vive), recent (consensi negli ultimi 31 giorni), used (il maggiore), limit_global, limit_provider, users_over_limit.",
+    labelNames: ["measure"],
+    registers: r,
+    async collect() {
+      this.reset();
+      const read = state.deps.gocardlessCapacity;
+      if (!read) return;
+      try {
+        for (const [measure, n] of Object.entries(await read())) this.set({ measure }, n);
       } catch {
         // assenza del dato per questo scrape
       }
@@ -561,6 +614,16 @@ export function recordPriceInstruments(outcome: PriceInstrumentOutcome, count: n
 /** Registra `count` elementi su cui la pulizia GoCardless ha deciso (dry-run) o agito (execute) per tipo di azione. */
 export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode, count = 1): void {
   if (count > 0) metrics().gcCleanup.inc({ action, mode }, count);
+}
+
+/** Registra una connessione GoCardless liberata subito (o il tentativo fallito, che resta alla pulizia giornaliera). */
+export function recordGoCardlessRelease(trigger: GoCardlessReleaseTrigger, outcome: GoCardlessReleaseOutcome): void {
+  metrics().gcRelease.inc({ trigger, outcome });
+}
+
+/** Registra l'esito di una richiesta di collegamento bancario. */
+export function recordGoCardlessConnect(kind: "new" | "renewal", outcome: GoCardlessConnectOutcome): void {
+  metrics().gcConnect.inc({ kind, outcome });
 }
 
 /** Registra `count` account su cui il cron degli inattivi ha deciso (dry-run) o agito (execute) per tipo di azione. */

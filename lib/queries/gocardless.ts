@@ -7,6 +7,14 @@ import { buildSyncErrorMessage } from "@/lib/gocardless/sync-messages";
 import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";
 import { SYNC_JOBS_QUERY_KEY } from "@/lib/queries/sync-jobs";
 import { track } from "@/lib/analytics";
+import type { CapacityBlockReason } from "@/lib/gocardless/capacity";
+
+/** Risposta di `GET /api/gocardless/capacity`. */
+export interface CapacityStatus {
+  canConnectNew: boolean;
+  reason: CapacityBlockReason | null;
+  renewableInstitutionIds: string[];
+}
 
 export interface Institution {
   id: string;
@@ -38,6 +46,21 @@ export interface ExternalAccount {
 export interface ConnectionAccountsResponse {
   externalAccounts: ExternalAccount[];
   existingAutoAccounts: { id: string; name: string }[];
+}
+
+export const BANK_CAPACITY_QUERY_KEY = ["gocardless", "capacity"] as const;
+
+/** Se l'utente può collegare una banca nuova (posti e limite per persona) e quali banche può rinnovare. */
+export function useBankCapacityQuery(enabled = true) {
+  return useQuery({
+    queryKey: BANK_CAPACITY_QUERY_KEY,
+    queryFn: async (): Promise<CapacityStatus> => {
+      const response = await fetch("/api/gocardless/capacity");
+      if (!response.ok) throw new Error("Impossibile verificare i collegamenti disponibili");
+      return response.json();
+    },
+    enabled,
+  });
 }
 
 /** Elenca gli istituti bancari GoCardless disponibili in un paese. */
@@ -116,6 +139,7 @@ export function useFinalizeConnectionMutation(connectionId: string) {
       track("bank_connect_completed", { accounts: input.selections.length });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.invalidateQueries({ queryKey: ["gocardless", "connections", "status"] });
+      queryClient.invalidateQueries({ queryKey: BANK_CAPACITY_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },
   });

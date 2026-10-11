@@ -13,6 +13,8 @@ import { AddAccountForm, ConnectBankFlow } from "@/components/domain/accounts";
 import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
+import { useBankCapacityQuery } from "@/lib/queries/gocardless";
+import { BANK_UNAVAILABLE_COPY } from "./bank-capacity.data";
 
 export type AddAccountView = "scelta" | "banca" | "manuale";
 
@@ -28,9 +30,11 @@ interface ChoiceProps {
   title: string;
   description: string;
   badge?: string;
+  /** Scelta non disponibile: l'etichetta diventa neutra e la freccia sparisce. */
+  unavailable?: boolean;
 }
 
-function ChoiceBody({ icon: Icon, color, title, description, badge }: ChoiceProps) {
+function ChoiceBody({ icon: Icon, color, title, description, badge, unavailable = false }: ChoiceProps) {
   return (
     <>
       <span className="grid size-11 shrink-0 place-items-center rounded-full" style={{ color, backgroundColor: `color-mix(in oklab, ${color} 16%, transparent)` }} aria-hidden="true">
@@ -39,16 +43,16 @@ function ChoiceBody({ icon: Icon, color, title, description, badge }: ChoiceProp
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
           {title}
-          {badge ? <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{badge}</span> : null}
+          {badge ? <span className={unavailable ? "rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground" : "rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"}>{badge}</span> : null}
         </span>
         <span className="text-sm text-muted-foreground">{description}</span>
       </span>
-      <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      {unavailable ? null : <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
     </>
   );
 }
 
-const CHOICE_CLASS = "flex min-h-[4.5rem] w-full cursor-pointer items-center gap-3.5 rounded-xl border bg-background p-3.5 text-left transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
+const CHOICE_CLASS = "flex min-h-[4.5rem] w-full cursor-pointer items-center gap-3.5 rounded-xl border bg-background p-3.5 text-left transition-colors hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:bg-muted/30 disabled:hover:bg-muted/30";
 
 export interface AddAccountDialogProps {
   open: boolean;
@@ -71,6 +75,16 @@ export function AddAccountDialog({ open, onOpenChange, currency, renew = false }
 function AddAccountSession({ currency, renew, onClose }: { currency: string; renew: boolean; onClose: () => void }) {
   const [view, setView] = React.useState<AddAccountView>(renew ? "banca" : "scelta");
   const copy = VIEW_COPY[view];
+  // Il rinnovo non passa da qui: per la banca già collegata resta possibile anche a posti finiti (lo decide il server).
+  const { data: capacity } = useBankCapacityQuery(!renew);
+  const blockedReason = !renew && capacity && !capacity.canConnectNew ? capacity.reason : null;
+  const unavailable = blockedReason ? BANK_UNAVAILABLE_COPY[blockedReason] : null;
+  const seenReason = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!blockedReason || seenReason.current === blockedReason) return;
+    seenReason.current = blockedReason;
+    track("bank_connect_unavailable_seen", { reason: blockedReason });
+  }, [blockedReason]);
   const go = (next: "banca" | "manuale") => {
     track("account_add_path_chosen", { path: next });
     setView(next);
@@ -80,8 +94,12 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
             <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? "Rinnova il collegamento" : copy.title} description={renew && view === "banca" ? "Scegli di nuovo la tua banca per rinnovare il consenso." : copy.description} />
       {view === "scelta" ? (
         <div className="flex flex-col gap-3">
-          <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")}>
-            <ChoiceBody icon={ZapIcon} color="var(--primary)" title="Collega la tua banca" badge="Automatico" description="Saldi e movimenti si aggiornano da soli, in sola lettura." />
+          <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")} disabled={unavailable !== null}>
+            {unavailable ? (
+              <ChoiceBody icon={ZapIcon} color="var(--text-3)" title="Collega la tua banca" badge={unavailable.badge} description={unavailable.description} unavailable />
+            ) : (
+              <ChoiceBody icon={ZapIcon} color="var(--primary)" title="Collega la tua banca" badge="Automatico" description="Saldi e movimenti si aggiornano da soli, in sola lettura." />
+            )}
           </button>
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>
             <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title="Conto manuale" description="Per contanti, carte prepagate o banche che non si collegano." />

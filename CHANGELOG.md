@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.50.2](https://github.com/YonderUrik/buddy-budget/compare/v0.50.1...v0.50.2) (2026-10-11)
+
+
+### Correzioni
+
+* **landing:** redirect nginx senza porta interna e senza slash finale ([#291](https://github.com/YonderUrik/buddy-budget/issues/291)) ([fb4b18e](https://github.com/YonderUrik/buddy-budget/commit/fb4b18e8df79925653f1702cd099d9fd57724ec6))
+
 ## [0.50.1](https://github.com/YonderUrik/buddy-budget/compare/v0.50.0...v0.50.1) (2026-10-11)
 
 

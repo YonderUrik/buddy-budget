@@ -11,11 +11,11 @@ export function OpenSource() {
   if (!SOURCE_URL) return null;
   return (
     <TrackedSection id="codice" section="codice" className="sec sec-os">
-      <div className="wrap" style={{ paddingTop: 0 }}>
+      <div className="wrap">
         <div className="os-layout">
           <Reveal className="os-text">
-            <span className="kicker">{OPEN_SOURCE.kicker}</span>
-            <h2 className="t" style={{ marginTop: 12 }}>{OPEN_SOURCE.title}</h2>
+            <span className="ref">Codice!A1</span>
+            <h2 className="t">{OPEN_SOURCE.title}</h2>
             <p className="lede">{OPEN_SOURCE.intro}</p>
             <div className="cta">
               <SourceLink href={SOURCE_URL} location="sezione" className="btn main os-btn">
@@ -25,7 +25,7 @@ export function OpenSource() {
               <span className="os-license">{SOURCE_LICENSE}</span>
             </div>
           </Reveal>
-          <Reveal className="os-repo" distance={28}>
+          <Reveal className="os-repo cell" distance={28}>
             <div className="os-repo-head">
               <GithubMark className="os-mark" />
               <span className="os-repo-name">{OPEN_SOURCE.repoName}</span>

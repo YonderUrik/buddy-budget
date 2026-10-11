@@ -2,40 +2,32 @@ import "./closing.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
+import { CLOSING } from "@/content/sheet";
 import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL } from "@/content/site";
 import { ARROW_ICON, CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
 import { SourceLink } from "./source-link";
-import { WordLoop } from "./word-loop";
 import { TrackedSection } from "./tracked-section";
 
-/** Cosa si sa sempre con BuddyBudget: frasi che si alternano nel titolo di chiusura. */
-const CLOSING_PHRASES = ["quanto spendi", "quante tasse paghi", "come va il portafoglio", "quando finisce il mutuo"] as const;
-
-/** Chiusura: invito a creare l'account e piè di pagina. */
-export function Closing() {
+/** Chiusura: il foglio si chiude (la formula =CHIUDI), invito a creare l'account e piè di pagina. */
+export function Closing({ content = CLOSING }: { content?: typeof CLOSING }) {
   return (
-    <TrackedSection id="fine" section="fine" className="end" navDark>
+    <TrackedSection id="fine" section="fine" className="end">
       <div className="wrap">
-        <Reveal stagger distance={50}>
-          <h2>
-            Sai sempre
-            <br />
-            <span className="loop-line">
-              <WordLoop phrases={CLOSING_PHRASES} className="loop" />.
-            </span>
-            <br />
-            Parti da un conto, aggiungi il resto quando vuoi.
-          </h2>
+        <Reveal className="end-panel cell">
+          <div>
+            <code className="end-fx">{content.formula}</code>
+            <h2>{content.title}</h2>
+            <p className="end-note">{content.note}</p>
+          </div>
           <div className="cta">
             <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup">
-              Crea un account{ARROW_ICON}
+              Crea un account gratis{ARROW_ICON}
             </CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="closing" target="login">Accedi</CtaLink>
           </div>
-          <p className="small">Accedi con un link via email o con Google. Nessuna password da ricordare.</p>
         </Reveal>
-        <footer>
+        <footer className="end-foot">
           <span>© BuddyBudget · creato da Daniele</span>
           <span>Le schermate del sito usano dati di esempio inventati</span>
           {SOURCE_URL && (
@@ -43,14 +35,14 @@ export function Closing() {
               Open source ({SOURCE_LICENSE}) · <SourceLink href={SOURCE_URL}>Vedi il codice</SourceLink>
             </span>
           )}
-          <nav className="legal-links" aria-label="Strumenti e guide">
+          <nav aria-label="Strumenti e guide">
             <Link href={CONTENT_PATHS.funzioni}>Funzioni</Link>
             <Link href={CONTENT_PATHS.schermate}>Schermate</Link>
             <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale</Link>
             <Link href={CONTENT_PATHS.ammortamento}>Ammortamento</Link>
             <Link href={CONTENT_PATHS.guidaZainetto}>Guida</Link>
           </nav>
-          <nav className="legal-links" aria-label="Documenti legali">
+          <nav aria-label="Documenti legali">
             <Link href={LEGAL_PATHS.privacy}>Privacy</Link>
             <Link href={LEGAL_PATHS.termini}>Termini</Link>
             <Link href={LEGAL_PATHS.cookie}>Cookie</Link>

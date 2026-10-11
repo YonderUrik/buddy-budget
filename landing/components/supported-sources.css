@@ -1,0 +1,16 @@
+/* «Funziona con»: card dei broker con logo e, accanto, paesi delle banche e alternative come pillole. */
+.ss { padding-block: 72px; }
+.ss-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px; margin-top: 36px; }
+.ss-block h3 { font: 600 12px var(--f-b); color: var(--ink3); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 12px; }
+.ss-block h3:not(:first-child) { margin-top: 28px; }
+.ss-block ul { list-style: none; margin: 0; padding: 0; }
+.ss-brokers ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.ss-brokers li { padding: 14px; display: grid; gap: 4px; align-content: start; }
+.ss-logo { height: 44px; display: flex; align-items: center; justify-content: center; background: var(--logo-bg); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; margin-bottom: 8px; }
+.ss-logo img { max-height: 26px; max-width: 100%; width: auto; height: auto; }
+.ss-name { font-weight: 600; }
+.ss-detail { font: 500 12.5px var(--f-m); color: var(--ink3); }
+.ss-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.ss-tags li { padding: 6px 14px; border-radius: 999px; font-size: 15px; }
+@media (max-width: 900px) { .ss-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .ss-brokers ul { grid-template-columns: 1fr 1fr; } .ss-brokers ul { gap: 8px; } .ss-brokers li { padding: 12px; } }

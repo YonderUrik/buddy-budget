@@ -4,9 +4,10 @@
  * italiane, catalogo funzioni), così non può dire cose diverse dal sito. Si rigenera a ogni build.
  */
 import { FEATURE_AREAS, featuresByArea } from "./catalog.generated";
-import { GROUPS, ITALY } from "./home";
+import { ITALY } from "./home";
 import { LEGAL_PATHS } from "./legal";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "./seo-pages";
+import { DETAILS, SUPPORTED } from "./sheet";
 import { APP_URL, FAQ, SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOURCE_LICENSE, SOURCE_URL } from "./site";
 
 /** Pagine pubbliche descritte nel file, con la riga che dice a cosa servono. */
@@ -36,8 +37,13 @@ export function buildLlmsTxt(): string {
   );
   lines.push("## Regole italiane già calcolate", "");
   for (const r of ITALY.rules) lines.push(`- ${r.rule} ${r.app}${r.source ? ` Fonte: ${r.source.href}` : ""}`);
-  lines.push("", "## Il metodo dei quattro gruppi", "");
-  for (const g of GROUPS.groups) lines.push(`- **${g.name}**: ${g.text}`);
+  lines.push("", "## Fonti supportate", "");
+  for (const b of SUPPORTED.brokers) lines.push(`- **${b.name}**: ${b.detail}`);
+  lines.push(`- **Banche (Open Banking, sola lettura)**: ${SUPPORTED.countries.join(", ")}`);
+  for (const d of DETAILS.tabs) {
+    lines.push("", `## ${d.title}`, "", d.lede, "");
+    for (const [label, text] of d.specs) lines.push(`- **${label}**: ${text}`);
+  }
   lines.push("", "## Funzioni", "");
   for (const area of FEATURE_AREAS) {
     const features = featuresByArea(area).filter((f) => f.status !== "soon");

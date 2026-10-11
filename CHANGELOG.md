@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.61.1](https://github.com/YonderUrik/buddy-budget/compare/v0.61.0...v0.61.1) (2026-10-11)
+
+
+### Correzioni
+
+* **landing:** il foglio si apre nell'app dalla cella del totale, schede più facili da toccare e screenshot leggeri sui telefoni ([#338](https://github.com/YonderUrik/buddy-budget/issues/338)) ([f4b791b](https://github.com/YonderUrik/buddy-budget/commit/f4b791b45038388c438be3d1dd1c9b10a4644c5e))
+
 ## [0.61.0](https://github.com/YonderUrik/buddy-budget/compare/v0.60.0...v0.61.0) (2026-10-11)
 
 

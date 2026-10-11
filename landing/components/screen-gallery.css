@@ -1,11 +1,11 @@
 /* Schede per area in riga sopra lo screenshot, che così usa tutta la larghezza della pagina. */
-.gal-nav { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 36px; padding: 18px 20px; border-radius: 20px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.gal-nav { display: flex; flex-wrap: wrap; gap: 16px 28px; margin-top: 36px; padding: 18px 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); }
 .gal-area { display: grid; gap: 8px; }
 .gal-area-t { font: 600 11px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink3); }
 .gal-area-b { display: flex; flex-wrap: wrap; gap: 4px; }
-.gal-tab { border: 0; background: transparent; padding: 7px 12px; border-radius: 999px; color: var(--ink2); font: 500 15px var(--f-b); cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
-.gal-tab:hover { background: var(--bg); color: var(--ink); }
-.gal-tab[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 600; }
+.gal-tab { border: 0; background: transparent; padding: 7px 12px; border-radius: var(--r-sm); color: var(--ink2); font: 500 15px var(--f-b); cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s; }
+.gal-tab:hover { background: var(--head); color: var(--ink); }
+.gal-tab[aria-pressed="true"] { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--accent); font-weight: 600; }
 .gal-view { margin-top: 32px; }
 .cp .gal-cap { margin: 0 0 20px; font-size: 17px; color: var(--ink2); max-width: 60em; }
 .gal-cap b { color: var(--ink); font-family: var(--f-h); margin-right: 10px; }

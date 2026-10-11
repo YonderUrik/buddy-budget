@@ -14,7 +14,7 @@ export function OpenSource() {
       <div className="wrap">
         <div className="os-layout">
           <Reveal className="os-text">
-            <span className="ref">Codice!A1</span>
+            <span className="ref">Codice aperto</span>
             <h2 className="t">{OPEN_SOURCE.title}</h2>
             <p className="lede">{OPEN_SOURCE.intro}</p>
             <div className="cta">

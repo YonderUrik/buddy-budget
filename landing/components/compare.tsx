@@ -24,7 +24,7 @@ export function Compare({ content = COMPARE }: { content?: typeof COMPARE }) {
   return (
     <TrackedSection id="confronto" section="confronto" className="sec compare">
       <div className="wrap">
-        <span className="ref">Confronto!A1</span>
+        <span className="ref">Confronto</span>
         <h2 className="t">{content.title}</h2>
         <p className="lede">{content.lede}</p>
         <Reveal className="cmp-wrap">

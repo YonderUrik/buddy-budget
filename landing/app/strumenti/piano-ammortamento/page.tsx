@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <ContentPage kicker="Calcolatore gratuito, senza account" crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Calcolatori" }, { label: "Piano di ammortamento" }]} ctaTitle="I tuoi debiti in un posto solo." ctaText="BuddyBudget calcola il TAEG e confronta estinzione anticipata e surroga, con interessi risparmiati, penale e costi. Il debito entra nel patrimonio netto." ctaLocation="calcolatore_ammortamento">
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebApplication", name: "Calcolatore piano di ammortamento", url: `${SITE_URL}${CONTENT_PATHS.ammortamento}`, applicationCategory: "FinanceApplication", operatingSystem: "Web", inLanguage: "it-IT", description: DESCRIPTION, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" } }} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Calcolatore piano di ammortamento", url: `${SITE_URL}${CONTENT_PATHS.ammortamento}`, inLanguage: "it-IT", description: DESCRIPTION, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
       <h1>Calcolatore del piano di ammortamento</h1>
       <p className="lead">Importo, tasso e durata: ottieni la rata, quanto paghi di interessi e il piano completo, mese per mese. Poi prova a estinguere una parte del capitale.</p>
       <AmmortamentoCalculator />

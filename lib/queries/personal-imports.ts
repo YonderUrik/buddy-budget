@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export type PersonalImportListing = {
   formats: { id: string; name: string }[];
-  jobs: { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null }[];
+  jobs: { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null; results: { cash: number; investments: number } | null }[];
 };
 
 export const personalImportLabels: Record<string, string> = {

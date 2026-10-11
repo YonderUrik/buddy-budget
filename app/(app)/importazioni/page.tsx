@@ -7,12 +7,15 @@ import { ArrowLeftIcon, FileSpreadsheet } from "lucide-react";
 import {
   PersonalImportList,
   PersonalImportPreview,
+  PersonalImportReceipt,
   PersonalImportProgress,
+  type PersonalImportReceiptFile,
   PersonalImportUpload,
   isActiveJob,
 } from "@/components/domain/personal-import";
 import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
 
+const LIST_ID = "le-tue-importazioni";
 const PAGE_TITLE = "Importa da CSV o Excel";
 
 /** Import di un estratto conto o di un rendiconto non ancora supportato: l'AI ricava il formato, che resta dell'utente. */
@@ -20,6 +23,8 @@ function PersonalImports() {
   const params = useSearchParams();
   const [selected, setSelected] = useState<string | null>(params.get("job"));
   const listing = usePersonalImportsQuery();
+  // File appena inviato: sostituisce il modulo con «File ricevuto» finché non se ne carica un altro.
+  const [receipt, setReceipt] = useState<{ jobId: string; file: PersonalImportReceiptFile } | null>(null);
   const jobs = listing.data?.jobs;
   const selectedJob = jobs?.find((j) => j.id === selected) ?? (selected ? undefined : jobs?.find(isActiveJob));
 
@@ -36,12 +41,18 @@ function PersonalImports() {
         <p className="text-text-2">Per le banche e i broker che BuddyBudget non supporta ancora. L&apos;AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.</p>
       </header>
 
-      {selectedJob && isActiveJob(selectedJob) ? <PersonalImportProgress job={selectedJob} /> : null}
-      {selectedJob?.status === "imported" ? <PersonalImportProgress job={selectedJob} /> : null}
+      {receipt ? (
+        <PersonalImportReceipt file={receipt.file} job={jobs?.find((j) => j.id === receipt.jobId)} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} />
+      ) : (
+        <>
+          {selectedJob && isActiveJob(selectedJob) ? <PersonalImportProgress job={selectedJob} /> : null}
+          {selectedJob?.status === "imported" ? <PersonalImportProgress job={selectedJob} /> : null}
+        </>
+      )}
       {selectedJob?.status === "review_failed" ? <PersonalImportPreview key={selectedJob.id} id={selectedJob.id} /> : null}
 
-      <PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={setSelected} />
-      <PersonalImportList listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} />
+      {receipt ? null : <PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} />}
+      <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>
     </main>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
-/** Pagina Impostazioni: profilo, preferenze, notifiche, barra laterale, sessioni attive, esportazione dei dati, privacy e zona pericolosa. */
+/** Pagina Impostazioni: cinque gruppi (account, aspetto e uso, notifiche e assistente, privacy e dati, zona pericolosa). */
+
+import * as React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import {
   DangerZoneSection,
@@ -11,43 +14,103 @@ import {
   PrivacySection,
   ProfileSection,
   SessionsSection,
+  SettingsHub,
   SidebarSection,
+  parseSettingsGroup,
   useRecentLogin,
+  type SettingsGroupId,
 } from "@/components/domain/settings";
 import { LoadError } from "@/components/domain/shared";
+import { track } from "@/lib/analytics";
 import { useUserSettingsQuery } from "@/lib/queries/user-settings";
 
-export default function ImpostazioniPage() {
+/** Vecchi indirizzi con ancora (es. nelle email già inviate) → gruppo che oggi contiene quella sezione. */
+const LEGACY_HASH_GROUPS: Record<string, SettingsGroupId> = {
+  "#impostazioni-notifiche": "notifiche",
+  "#impostazioni-assistente-categorie": "notifiche",
+  "#impostazioni-privacy": "privacy",
+  "#impostazioni-dati": "privacy",
+  "#impostazioni-barra-laterale": "aspetto",
+  "#impostazioni-preferenze": "aspetto",
+  "#impostazioni-profilo": "account",
+  "#impostazioni-sessioni": "account",
+  "#impostazioni-zona-pericolosa": "pericolo",
+};
+
+function ImpostazioniContent() {
   const { data: settings, isLoading, isError, refetch } = useUserSettingsQuery();
   const recentLogin = useRecentLogin(settings?.recentLoginUntil);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const selected = parseSettingsGroup(searchParams.get("sezione"));
+
+  React.useEffect(() => {
+    const group = LEGACY_HASH_GROUPS[window.location.hash];
+    if (group && !selected) router.replace(`${pathname}?sezione=${group}${window.location.hash}`);
+  }, [selected, pathname, router]);
+
+  function select(id: SettingsGroupId | null) {
+    router.push(id ? `${pathname}?sezione=${id}` : pathname, { scroll: true });
+    if (id) track("settings_group_opened", { group: id });
+  }
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div>
         <h1 className="font-heading text-2xl font-medium text-foreground">Impostazioni</h1>
         <p className="text-sm text-muted-foreground">Il tuo profilo, le preferenze e il controllo sui tuoi dati.</p>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-5" aria-busy="true">
-          <div className="h-48 animate-pulse rounded-xl bg-muted" />
-          <div className="h-64 animate-pulse rounded-xl bg-muted" />
+        <div className="flex flex-col gap-3" aria-busy="true">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
+          ))}
         </div>
       ) : isError || !settings ? (
         <LoadError message="Impossibile caricare le impostazioni." onRetry={() => refetch()} />
       ) : (
-        <>
-          <ProfileSection settings={settings} />
-          <PreferencesSection settings={settings} />
-          <NotificationsSection email={settings.email} />
-          <AiCategorizationSection />
-          <SidebarSection />
-          <SessionsSection />
-          <DataSection settings={settings} recentLogin={recentLogin} />
-          <PrivacySection settings={settings} />
-          <DangerZoneSection settings={settings} recentLogin={recentLogin} />
-        </>
+        <SettingsHub
+          selected={selected}
+          onSelect={select}
+          content={{
+            account: (
+              <>
+                <ProfileSection settings={settings} />
+                <SessionsSection />
+              </>
+            ),
+            aspetto: (
+              <>
+                <PreferencesSection settings={settings} />
+                <SidebarSection />
+              </>
+            ),
+            notifiche: (
+              <>
+                <NotificationsSection email={settings.email} />
+                <AiCategorizationSection />
+              </>
+            ),
+            privacy: (
+              <>
+                <PrivacySection settings={settings} />
+                <DataSection settings={settings} recentLogin={recentLogin} />
+              </>
+            ),
+            pericolo: <DangerZoneSection settings={settings} recentLogin={recentLogin} />,
+          }}
+        />
       )}
     </div>
+  );
+}
+
+export default function ImpostazioniPage() {
+  return (
+    <React.Suspense fallback={<div className="mx-auto h-64 max-w-5xl p-4 sm:p-6" aria-busy="true" />}>
+      <ImpostazioniContent />
+    </React.Suspense>
   );
 }

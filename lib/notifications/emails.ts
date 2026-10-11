@@ -22,7 +22,7 @@ export interface BuiltEmail {
 }
 
 /** Percorso delle preferenze in Impostazioni (sezione Notifiche). */
-export const NOTIFICATION_SETTINGS_PATH = "/impostazioni#impostazioni-notifiche";
+export const NOTIFICATION_SETTINGS_PATH = "/impostazioni?sezione=notifiche#impostazioni-notifiche";
 
 function footerFor(kind: NotificationKind, ctx: EmailContext): EmailFooter {
   return { kind: "optional", reason: NOTIFICATION_KIND_INFO[kind].reason, unsubscribeUrl: ctx.unsubscribeUrl, preferencesUrl: ctx.preferencesUrl };

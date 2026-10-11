@@ -1,4 +1,6 @@
-/** Sezione della pagina Impostazioni: titolo, descrizione opzionale e contenuto in una card. */
+/** Sezione della pagina Impostazioni: icona colorata, titolo, descrizione opzionale, anteprima opzionale e contenuto, senza riquadro. */
+
+import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -7,26 +9,33 @@ export interface SettingsSectionProps {
   description?: React.ReactNode;
   /** Id del titolo, per collegarlo alla sezione (`aria-labelledby`). */
   id: string;
-  /** Variante "danger" per la zona pericolosa (bordo e titolo rossi). */
+  /** Icona nel riquadro colorato accanto al titolo. */
+  icon?: LucideIcon;
+  /** Anteprima di ciò che le opzioni cambiano (vedi `SettingsPreview`), sopra le opzioni. */
+  preview?: React.ReactNode;
+  /** Variante "danger" per la zona pericolosa (icona e titolo rossi). */
   tone?: "default" | "danger";
   children: React.ReactNode;
 }
 
-export function SettingsSection({ title, description, id, tone = "default", children }: SettingsSectionProps) {
+export function SettingsSection({ title, description, id, icon: Icon, preview, tone = "default", children }: SettingsSectionProps) {
+  const danger = tone === "danger";
   return (
-    <section
-      aria-labelledby={id}
-      className={cn(
-        "flex flex-col gap-4 rounded-xl bg-card p-4 ring-1 sm:p-5",
-        tone === "danger" ? "ring-neg/40" : "ring-foreground/10"
-      )}
-    >
-      <header className="flex flex-col gap-1">
-        <h2 id={id} className={cn("font-heading text-lg font-medium", tone === "danger" ? "text-neg" : "text-foreground")}>
-          {title}
-        </h2>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+    <section aria-labelledby={id} className="flex flex-col gap-4">
+      <header className="flex items-start gap-3">
+        {Icon ? (
+          <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl", danger ? "bg-neg-soft text-neg" : "bg-primary/10 text-primary")}>
+            <Icon className="size-[18px]" aria-hidden="true" />
+          </span>
+        ) : null}
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h3 id={id} className={cn("font-heading text-base font-medium", danger ? "text-neg" : "text-foreground")}>
+            {title}
+          </h3>
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        </div>
       </header>
+      {preview}
       {children}
     </section>
   );

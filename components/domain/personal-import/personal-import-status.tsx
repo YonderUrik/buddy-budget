@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { CheckCircle2, Clock3, ListChecksIcon } from "lucide-react";
-import { DialogSteps, PanelSection } from "@/components/domain/investments";
+import { DialogSteps, PanelSection } from "@/components/domain/investments/light";
 import { personalImportLabels as labels, type PersonalImportListing } from "@/lib/queries/personal-imports";
 import { cn } from "@/lib/utils";
 

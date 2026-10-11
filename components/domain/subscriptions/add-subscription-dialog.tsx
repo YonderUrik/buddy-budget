@@ -4,7 +4,7 @@
 
 import * as React from "react";
 import { RepeatIcon } from "lucide-react";
-import { DialogActions, PanelDialogHeader } from "@/components/domain/investments";
+import { DialogActions, PanelDialogHeader } from "@/components/domain/investments/light";
 import { FormDialogContent } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";

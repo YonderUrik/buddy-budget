@@ -8,7 +8,7 @@ import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { PercentIcon, SlidersHorizontalIcon } from "lucide-react";
-import { DialogActions, PanelDialogHeader } from "@/components/domain/investments";
+import { DialogActions, PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { parseAmount } from "@/lib/debts/add-form";

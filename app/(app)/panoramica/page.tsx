@@ -72,7 +72,7 @@ export default function PanoramicaPage() {
   const monthRange = React.useMemo(() => ({ from: addMonths(startOfMonth(today), -MONTH_PACE_LOOKBACK), to: endOfMonth(today) }), [today]);
 
   const accountsQuery = useAccountsQuery();
-  const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today));
+  const snapshotsQuery = useNetWorthSnapshotsQuery(NET_WORTH_FETCH_FROM, toDateKey(today), { compact: true });
   const monthTransactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
   // I budget sono opzionali: senza, la tessera del mese salta la barra.
   const budgetsQuery = useBudgetsQuery();

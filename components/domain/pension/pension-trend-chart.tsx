@@ -40,8 +40,8 @@ export function PensionTrendChart({ snapshots, currency, height = DEFAULT_HEIGHT
           <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={36} padding={{ left: 16, right: 16 }} />
           <YAxis hide domain={[0, "auto"]} />
           <ChartTooltip cursor={false} content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => String(point.label ?? "")} />} />
-          <Area type="stepAfter" dataKey="netContributions" stroke="var(--color-netContributions)" strokeWidth={2} fill="url(#pension-contributions-fill)" />
-          <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2.6} dot={false} />
+          <Area isAnimationActive={false} type="stepAfter" dataKey="netContributions" stroke="var(--color-netContributions)" strokeWidth={2} fill="url(#pension-contributions-fill)" />
+          <Line isAnimationActive={false} type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2.6} dot={false} />
         </ComposedChart>
       </ChartContainer>
       <ul className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-text-2">

@@ -6,8 +6,8 @@ import * as React from "react";
 import { computeAccountsKpi } from "@/components/domain/accounts";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
-import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
-import { computeMonthPace, MONTH_PACE_LOOKBACK } from "@/lib/calc/month-pace";
+import { startOfDay } from "@/lib/calc/expenses";
+import { computeMonthPace } from "@/lib/calc/month-pace";
 import {
   buildNetWorthSeries,
   computeNetWorthChange,
@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 import { useAttentionQuery } from "@/lib/queries/attention";
 import { AccountChips } from "./account-chips";
 import { useLiquidityActions } from "./liquidity-actions";
-import { useLiquidity } from "./liquidity-context";
+import { liquidityFetchWindow, useLiquidity } from "./liquidity-context";
 import { LiquidityHero } from "./liquidity-hero";
 import type { TrendPoint } from "./trend-chart";
 
@@ -46,14 +46,15 @@ export function LiquidityOverview() {
   const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
 
   const accountsQuery = useAccountsQuery();
-  const snapshotsQuery = useNetWorthSnapshotsQuery("2000-01-01", toDateKey(today));
+  const snapshotsQuery = useNetWorthSnapshotsQuery("2000-01-01", toDateKey(today), { compact: true });
   const connectionsQuery = useBankConnectionsStatusQuery();
   const connections = React.useMemo(() => connectionsQuery.data ?? [], [connectionsQuery.data]);
   const budgetsQuery = useBudgetsQuery();
   const budgets = React.useMemo(() => budgetsQuery.data ?? [], [budgetsQuery.data]);
   const attention = useAttentionQuery().data;
-  const monthRange = React.useMemo(() => ({ from: addMonths(startOfMonth(today), -MONTH_PACE_LOOKBACK), to: endOfMonth(today) }), [today]);
-  const transactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
+  // Stessa finestra dell'elenco movimenti: una sola richiesta condivisa dalla cache invece di due con intervalli diversi.
+  const { from: fetchFrom, to: fetchTo } = liquidityFetchWindow(today);
+  const transactionsQuery = useTransactionsQuery(fetchFrom, fetchTo, "tutte");
   const transactions = React.useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
 
   const accounts = React.useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);

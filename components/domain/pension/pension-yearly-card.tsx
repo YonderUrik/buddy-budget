@@ -50,9 +50,9 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
               <YAxis hide />
               <ReferenceLine y={0} stroke="var(--border)" />
               <ChartTooltip cursor={false} content={<PensionYearlyTooltip currency={currency} />} />
-              <Bar dataKey="contributions" stackId="a" fill="var(--color-contributions)" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="gainPos" stackId="a" fill="var(--color-gainPos)" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="gainNeg" stackId="a" fill="var(--color-gainNeg)" radius={[0, 0, 4, 4]} />
+              <Bar isAnimationActive={false} dataKey="contributions" stackId="a" fill="var(--color-contributions)" radius={[0, 0, 0, 0]} />
+              <Bar isAnimationActive={false} dataKey="gainPos" stackId="a" fill="var(--color-gainPos)" radius={[4, 4, 0, 0]} />
+              <Bar isAnimationActive={false} dataKey="gainNeg" stackId="a" fill="var(--color-gainNeg)" radius={[0, 0, 4, 4]} />
             </BarChart>
           </ChartContainer>
         </div>

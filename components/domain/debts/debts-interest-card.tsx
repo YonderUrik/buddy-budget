@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { CoinsIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
-import { PanelSection } from "@/components/domain/investments";
+import { PanelSection } from "@/components/domain/investments/light";
 import type { YearlyInterest } from "@/lib/debts/overview-insights";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";

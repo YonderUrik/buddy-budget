@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import { BanknoteIcon, CheckIcon, GitCompareArrowsIcon, PiggyBankIcon } from "lucide-react";
-import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
+import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments/light";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

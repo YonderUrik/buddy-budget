@@ -30,7 +30,7 @@ import { findInstrumentsWithoutProfile, PROFILE_ON_DEMAND_LIMIT, refreshInstrume
 import { redis } from "@/lib/redis/client";
 import { searchByIsinOnOpenFigi } from "@/lib/investments/isin-listings";
 import { DIVIDENDS_ON_DEMAND_LIMIT, findInstrumentsWithoutDividends, refreshInstrumentDividends } from "./dividends";
-import { loadFundamentals } from "./fundamentals";
+import { loadFundamentals, loadStatements } from "./fundamentals";
 import { findFirstPriceDate, loadSymbols } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
@@ -178,6 +178,12 @@ export async function ensureDividendsSafely(instruments: Instrument[], schedule:
 export function fundamentalsOnProviders(instrument: Pick<Instrument, "id" | "type" | "priceMode">) {
   const deps = marketDataDeps();
   return loadFundamentals(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
+}
+
+/** Bilanci di un'azione (Yahoo, o finti con `MARKET_DATA_FAKE=1`), con cache giornaliera su Redis. */
+export function statementsOnProviders(instrument: Pick<Instrument, "id" | "type" | "priceMode">) {
+  const deps = marketDataDeps();
+  return loadStatements(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
 }
 
 /** Quotazioni di un ISIN su OpenFIGI (finte con `MARKET_DATA_FAKE=1`). Usa il `fetch` normale: non serve il TLS da browser. */

@@ -123,6 +123,7 @@ interface MetricsState {
   categorizationSuggestions: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
+  fundamentalsRequests: Counter<"kind" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
@@ -251,6 +252,13 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}logo_requests_total`,
     help: "Richieste al servizio di loghi degli strumenti non servite dalla cache, per origine (issuer, isin) ed esito (hit, miss, error).",
     labelNames: ["source", "outcome"],
+    registers: r,
+  });
+
+  state.fundamentalsRequests = new Counter({
+    name: `${METRIC_PREFIX}fundamentals_requests_total`,
+    help: "Richieste a Yahoo per numeri chiave e bilanci dei titoli non servite dalla cache, per tipo (snapshot, statements) ed esito (ok, empty, error).",
+    labelNames: ["kind", "outcome"],
     registers: r,
   });
 
@@ -524,6 +532,15 @@ export type LogoRequestOutcome = "hit" | "miss" | "error";
 /** Registra una richiesta al servizio di loghi che non è stata servita dalla cache. */
 export function recordLogoRequest(source: LogoSourceKind, outcome: LogoRequestOutcome): void {
   metrics().logoRequests.inc({ source, outcome });
+}
+
+/** Tipo ed esito di una richiesta di dati fondamentali (numeri chiave o bilanci) di un titolo. */
+export type FundamentalsKind = "snapshot" | "statements";
+export type FundamentalsOutcome = "ok" | "empty" | "error";
+
+/** Registra una richiesta di dati fondamentali a Yahoo non servita dalla cache. */
+export function recordFundamentalsRequest(kind: FundamentalsKind, outcome: FundamentalsOutcome): void {
+  metrics().fundamentalsRequests.inc({ kind, outcome });
 }
 
 /** Esito di un tentativo su una fonte dei cambi. */

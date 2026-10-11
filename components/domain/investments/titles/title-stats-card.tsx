@@ -1,6 +1,6 @@
 /**
  * Card "In numeri": variazione su 1 mese / 3 mesi / 6 mesi / 1 anno / da inizio anno, posizione dell'ultima chiusura
- * nella forbice a 52 settimane, volatilità e caduta massima dell'ultimo anno, ognuna con una frase che la spiega.
+ * nella forbice a 52 settimane. Volatilità e caduta massima stanno in «Quanto rischia».
  */
 
 import { TITLE_RETURN_PERIODS, type TitleReturnPeriod, type TitleStats } from "@/lib/investments/title-stats";
@@ -68,28 +68,6 @@ export function TitleStatsCard({ stats, currency }: TitleStatsCardProps) {
           </div>
         ) : null}
 
-        {stats.volatility !== null || stats.maxDrawdown !== null ? (
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {stats.volatility !== null ? (
-              <div>
-                <dt className="text-xs text-muted-foreground">Volatilità annua</dt>
-                <dd className="text-base font-medium tabular-nums text-foreground">{formatPct(stats.volatility)}</dd>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Di norma il prezzo si muove di circa {formatPct(stats.volatility, 0)} in un anno, in su o in giù.
-                </p>
-              </div>
-            ) : null}
-            {stats.maxDrawdown !== null ? (
-              <div>
-                <dt className="text-xs text-muted-foreground">Caduta massima (1 anno)</dt>
-                <dd className={cn("text-base font-medium tabular-nums", stats.maxDrawdown < -0.005 ? "text-neg" : "text-foreground")}>
-                  {stats.maxDrawdown < -0.005 ? formatSignedPct(stats.maxDrawdown) : "Nessuna"}
-                </dd>
-                <p className="mt-0.5 text-xs text-muted-foreground">Il peggior calo dal massimo precedente nell&apos;ultimo anno.</p>
-              </div>
-            ) : null}
-          </dl>
-        ) : null}
       </div>
     </PanelSection>
   );

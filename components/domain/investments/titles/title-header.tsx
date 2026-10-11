@@ -1,6 +1,9 @@
 "use client";
 
-/** Testata della pagina di un titolo: nome, tipo, ultima chiusura con variazione, e le azioni Segui / Registra. */
+/**
+ * Testata della pagina di un titolo: nome, tipo, codici, ultima chiusura grande (decimali attenuati) con variazione
+ * del giorno e dell'anno, e le azioni Segui / Registra.
+ */
 
 import Link from "next/link";
 import { ArrowLeftIcon, EyeIcon, EyeOffIcon, PlusIcon } from "lucide-react";
@@ -9,11 +12,16 @@ import { Button } from "@/components/ui/button";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleStats } from "@/lib/investments/title-stats";
+import { AnimatedNumber } from "@/components/motion";
 import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
 import { InstrumentIcon } from "../instrument-icon";
-import { formatPrice } from "./title-format";
+
+/** Decimali del prezzo: quattro sotto 10 (come gli avvisi), altrimenti due. */
+function priceFormat(value: number, currency: string) {
+  return { style: "currency" as const, currency, minimumFractionDigits: 2, maximumFractionDigits: Math.abs(value) < 10 ? 4 : 2 };
+}
 
 export interface TitleHeaderProps {
   instrument: Instrument;
@@ -24,9 +32,11 @@ export interface TitleHeaderProps {
   onToggleWatch: () => void;
   onRegister: () => void;
   backHref?: string;
+  /** Etichette in più accanto al tipo (es. categoria del fondo). */
+  tags?: string[];
 }
 
-export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti" }: TitleHeaderProps) {
+export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti", tags = [] }: TitleHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
       <Link href={backHref} className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
@@ -41,6 +51,11 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
               <span>{INSTRUMENT_TYPE_SINGULAR[instrument.type]}</span>
               {instrument.isin ? <span className="tabular-nums">{instrument.isin}</span> : null}
               <span>{instrument.currency}</span>
+              {tags.map((tag) => (
+                <Badge key={tag} variant="outline">
+                  {tag}
+                </Badge>
+              ))}
               {held ? <Badge variant="secondary">Posseduto</Badge> : null}
             </p>
           </div>
@@ -57,12 +72,20 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
       </div>
       {stats ? (
         <div>
-          <p className="font-heading text-5xl font-medium tabular-nums text-foreground">{formatPrice(stats.lastClose, instrument.currency)}</p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
+          <p className="font-heading text-5xl font-medium text-foreground sm:text-6xl">
+            <AnimatedNumber value={stats.lastClose} format={priceFormat(stats.lastClose, instrument.currency)} mutedTail />
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
             {stats.dayChange !== null ? (
-              <span className={cn("tabular-nums", stats.dayChange < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.dayChange)}</span>
+              <>
+                <span className={cn("tabular-nums", stats.dayChange < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.dayChange)}</span> nel giorno ·{" "}
+              </>
             ) : null}
-            {stats.dayChange !== null ? " · " : ""}
+            {stats.returns["1A"] !== undefined ? (
+              <>
+                <span className={cn("tabular-nums", stats.returns["1A"] < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.returns["1A"])}</span> in un anno ·{" "}
+              </>
+            ) : null}
             chiusura del {formatShortDate(stats.lastDate)}
           </p>
         </div>

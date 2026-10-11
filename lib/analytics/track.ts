@@ -114,6 +114,8 @@ export interface ProductEvents {
   title_watched: undefined;
   price_alert_created: { direction: "sopra" | "sotto" };
   title_commentary_requested: undefined;
+  /** Popover «come si calcola» di un indicatore nella pagina titolo; `indicator`: chiave statica (pe, roe, ter...). */
+  title_indicator_opened: { indicator: string };
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_import_reset: { operations: number; statements: number };
   investments_import_deleted: { statements: number; operations: number };

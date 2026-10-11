@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Pagina di un titolo (Fase 6): grafico delle chiusure, statistiche, numeri chiave, la tua posizione, avvisi di
- * prezzo e commento opzionale. Da qui si segue il titolo o si registra un'operazione.
+ * Pagina di un titolo: prezzo e numeri in breve, grafico con i tuoi acquisti, la tua posizione, quanto rischia e gli
+ * avvisi; sotto, per tipo, gli indicatori fondamentali (azioni) o composizione e costi (ETF e fondi). Da qui si
+ * segue il titolo o si registra un'operazione.
  */
 
 import * as React from "react";
@@ -10,11 +11,14 @@ import { useParams } from "next/navigation";
 import {
   TitleAlertsCard,
   TitleCommentaryCard,
-  TitleFundamentalsCard,
+  TitleDetailSections,
   TitleHeader,
+  TitleInsideFunds,
+  TitleKeyFacts,
   TitlePositionCard,
   TitlePriceChart,
   TitleQuotationCard,
+  TitleRiskSection,
   TitleStatsCard,
   useInvestmentsActions,
 } from "@/components/domain/investments";
@@ -31,9 +35,10 @@ export default function TitoloPage() {
 
   if (analysis.isLoading) {
     return (
-      <div className="flex flex-col gap-4" aria-busy="true">
-        <div className="h-24 animate-pulse rounded-xl bg-muted" />
-        <div className="h-72 animate-pulse rounded-xl bg-muted" />
+      <div className="flex flex-col gap-6" aria-busy="true">
+        <div className="h-36 animate-pulse rounded-xl bg-muted" />
+        <div className="h-20 animate-pulse rounded-xl bg-muted" />
+        <div className="h-80 animate-pulse rounded-xl bg-muted" />
       </div>
     );
   }
@@ -54,6 +59,14 @@ export default function TitoloPage() {
         onToggleWatch={() => watch.mutate({ instrumentId: instrument.id, watch: !data.watching })}
         onRegister={() => openRegister({ instrument })}
       />
+      <TitleKeyFacts
+        type={instrument.type}
+        currency={instrument.currency}
+        stats={data.stats}
+        fundamentals={data.fundamentals}
+        stock={data.stock}
+        dividends={data.dividends}
+      />
       <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
         <div className="flex flex-col gap-10 lg:col-span-3">
           <TitlePriceChart
@@ -62,15 +75,18 @@ export default function TitoloPage() {
             period={period}
             onPeriodChange={setPeriod}
             backfilling={data.backfilling}
+            purchases={data.position?.purchases}
+            averagePrice={data.position?.averagePrice ?? null}
           />
           {instrument.priceMode === "manuale" && instrument.isin && instrument.createdByUserId ? (
             <TitleQuotationCard instrumentId={instrument.id} isin={instrument.isin} currency={instrument.currency} />
           ) : null}
           {data.stats ? <TitleStatsCard stats={data.stats} currency={instrument.currency} /> : null}
-          <TitleFundamentalsCard fundamentals={data.fundamentals} status={data.fundamentalsStatus} currency={instrument.currency} />
         </div>
         <div className="flex flex-col gap-10 lg:col-span-2">
           {data.position ? <TitlePositionCard position={data.position} currency={instrument.currency} /> : null}
+          {data.stats ? <TitleRiskSection stats={data.stats} /> : null}
+          <TitleInsideFunds funds={data.insideFunds} />
           <TitleAlertsCard
             instrumentId={instrument.id}
             currency={instrument.currency}
@@ -78,9 +94,10 @@ export default function TitoloPage() {
             lastClose={data.stats?.lastClose ?? null}
             supported={instrument.priceMode === "auto"}
           />
-          {data.commentaryAvailable && data.stats ? <TitleCommentaryCard instrumentId={instrument.id} /> : null}
         </div>
       </div>
+      <TitleDetailSections data={data} />
+      {data.commentaryAvailable && data.stats ? <TitleCommentaryCard instrumentId={instrument.id} /> : null}
     </div>
   );
 }

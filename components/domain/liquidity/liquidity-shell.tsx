@@ -72,7 +72,6 @@ function Frame({ children }: { children: React.ReactNode }) {
           <AddTransactionForm
             categories={categories ?? []}
             currency={currency}
-            stacked
             onSuccess={() => setAddTransactionOpen(false)}
             onAddAccount={() => { setAddTransactionOpen(false); addAccount(); }}
           />

@@ -1,6 +1,6 @@
 # Form a passi: una domanda alla volta (2026-10-10)
 
 - **Decisione**: i form lunghi diventano percorsi lineari, un passo alla volta, con «Passo X di N», «Indietro» sempre disponibile e focus sul primo campo del passo. Componenti comuni in `components/domain/shared/step-flow.tsx` (`useStepFlow`, `StepProgress`, `StepStage`, `StepHeading`, `StepActions`); transizione con `motion` (già adottato), molle di `lib/motion/springs`, solo dissolvenza con il movimento ridotto.
-- **Prima PR**: onboarding (valuta, poi conferme legali) e nuovo conto manuale (nome e tipo, poi saldo con icona e colore facoltativi). Le conferme legali restano tre, invariate.
-- **Rimandati** (PR successive): movimento, operazione di investimento, import, debiti, pensione, segnalazioni.
+- **Tutti insieme nella stessa PR** (richiesta di Daniele): onboarding (valuta, conferme), nuovo conto manuale (nome e tipo, saldo), nuovo movimento (importo, descrizione e categoria, conto e data), nuova operazione di investimento (tipo e strumento, data e importi, costi se ci sono), import investimenti (primo passo solo con il file, guida broker a richiesta), import CSV personale (da dove, file, consenso), nuovo debito (come parte, nome, dati, spese e anteprima), nuovo fondo pensione (nome, adesione). «Segna pagata»: collegamento della transazione nascosto sotto «facoltativo».
+- **Invariati**: modifica di un'operazione (una schermata, già nota a chi la apre), form di segnalazione (già a tre elementi), altre finestre di Debiti (rata, estinzione, evento: pochi campi precompilati).
 - **Osservabilità**: eventi Umami `form_step_completed` e `form_step_back` (`flow`, `step`); nessun nuovo log o metrica lato server.

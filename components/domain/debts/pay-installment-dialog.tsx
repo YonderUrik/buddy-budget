@@ -56,9 +56,15 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
             </DebtFormField>
           </div>
         </DialogSection>
-        <DialogSection title="Transazione collegata (facoltativo)" icon={LinkIcon} description="Solo un promemoria: non cambia la transazione.">
-          <DebtTransactionPicker dueDate={row.dueDate} expectedAmount={row.installment} value={transactionId} onChange={setTransactionId} currency={currency} />
-        </DialogSection>
+        <details className="group rounded-xl border p-3" open={transactionId !== null}>
+          <summary className="flex min-h-9 cursor-pointer list-none items-center gap-2 text-sm font-medium text-foreground">
+            <LinkIcon className="size-4 text-muted-foreground" aria-hidden="true" /> Collega una transazione <span className="font-normal text-muted-foreground">(facoltativo)</span>
+          </summary>
+          <p className="mt-2 text-sm text-muted-foreground">Solo un promemoria: non cambia la transazione.</p>
+          <div className="mt-3">
+            <DebtTransactionPicker dueDate={row.dueDate} expectedAmount={row.installment} value={transactionId} onChange={setTransactionId} currency={currency} />
+          </div>
+        </details>
       </DialogSections>
       {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
       <DialogActions>

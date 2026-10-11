@@ -4,7 +4,7 @@ import type { SupportedCurrency } from "@/lib/validation/currency";
 import type { SidebarModuleId } from "@/lib/sidebar/modules";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
-export type FormFlow = "onboarding" | "account_manual";
+export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import";
 
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,

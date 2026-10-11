@@ -428,3 +428,34 @@
     background-position: 100% 0;
   }
 }
+
+/* Riflesso che attraversa un testo in colore primario un paio di volte e poi si ferma (novità della Panoramica). */
+@media (prefers-reduced-motion: no-preference) {
+  .text-sweep-once {
+    background-image: linear-gradient(100deg, var(--primary) 0%, var(--primary) 40%, var(--foreground) 50%, var(--primary) 60%, var(--primary) 100%);
+    background-size: 250% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: text-shimmer 1.6s linear 0.9s 2 backwards;
+  }
+  .draw-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    animation: draw-underline 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+@keyframes draw-underline {
+  to {
+    background-size: 100% 1px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .draw-underline {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}

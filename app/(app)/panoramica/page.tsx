@@ -41,6 +41,7 @@ import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { NEW_ACCOUNT_HREF } from "@/lib/start";
 import { useStartQuery } from "@/lib/queries/start";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
+const NOV = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("nov") : null;
 import { useHydrated } from "@/lib/hooks/use-hydrated";
 
 /** Inizio della finestra di fetch degli snapshot: tutto lo storico, così il cambio periodo non richiede nuove richieste. */
@@ -145,6 +146,8 @@ export default function PanoramicaPage() {
         currency={currency}
         nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
         today={today}
+        dateAside={NOV === "a" ? <WhatsNewSection variant="chip" /> : null}
+        trailing={NOV === "b" ? <WhatsNewSection variant="line" /> : null}
       />
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
@@ -171,7 +174,6 @@ export default function PanoramicaPage() {
       ) : (
         <>
           {startStatus ? <StartChecklistSection status={startStatus} /> : null}
-          <WhatsNewSection />
           <NetWorthChartCard
             series={series}
             change={change}

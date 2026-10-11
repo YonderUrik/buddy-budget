@@ -147,7 +147,7 @@ async function main() {
       });
     };
     push(dayOfMonth(back, 27), "Stipendio", "Stipendio", "BONIFICO A VOSTRO FAVORE ACME SRL STIPENDIO", 2480);
-    if (back % 4 === 1) push(dayOfMonth(back, 14), "Freelance", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
+    if (back % 4 === 1) push(dayOfMonth(back, 14), "Altre entrate", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
     // Abbonamenti per la schermata «Abbonamenti»: un aumento di prezzo, un servizio terminato 5 mesi fa e un'assicurazione annuale.
     push(dayOfMonth(back, 6), "Abbonamenti", "Archivio cloud", "PAGAMENTO ONLINE CLOUDBOX STORAGE", -2.99);
     if (back >= 5) push(dayOfMonth(back, 12), "Abbonamenti", "Giornale online", "PAGAMENTO ONLINE IL QUOTIDIANO DIGITALE", -7.99);

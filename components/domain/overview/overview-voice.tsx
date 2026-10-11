@@ -1,5 +1,6 @@
 /** Testata della Panoramica: saluto (che entra parola per parola) e due-tre frasi che dicono com'è il mese e cosa aspetta l'utente. */
 
+import type { ReactNode } from "react";
 import { BlurText } from "@/components/motion";
 import { buildVoiceLines, greetingFor, type VoiceInput } from "@/lib/overview/voice";
 
@@ -8,9 +9,13 @@ export interface OverviewVoiceProps extends VoiceInput {
   firstName?: string;
   /** Data già formattata ("Martedì 6 ottobre 2026"). */
   dateLabel: string;
+  /** Contenuto accanto alla data (es. la novità del momento). */
+  dateAside?: ReactNode;
+  /** Frase in coda al racconto (es. la novità del momento). */
+  trailing?: ReactNode;
 }
 
-export function OverviewVoice({ firstName, dateLabel, ...input }: OverviewVoiceProps) {
+export function OverviewVoice({ firstName, dateLabel, dateAside, trailing, ...input }: OverviewVoiceProps) {
   const lines = buildVoiceLines(input);
   const greeting = greetingFor(input.today.getHours());
   return (
@@ -19,7 +24,10 @@ export function OverviewVoice({ firstName, dateLabel, ...input }: OverviewVoiceP
         <BlurText as="h1" className="font-heading text-3xl font-medium text-foreground sm:text-4xl">
           {`${greeting}${firstName ? `, ${firstName}` : ""}`}
         </BlurText>
-        <p className="text-sm text-muted-foreground">{dateLabel}</p>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <p className="text-sm text-muted-foreground">{dateLabel}</p>
+          {dateAside}
+        </div>
       </div>
       <p className="max-w-[60ch] text-lg leading-relaxed text-text-2 sm:text-xl">
         {lines.map((line) => (
@@ -35,6 +43,7 @@ export function OverviewVoice({ firstName, dateLabel, ...input }: OverviewVoiceP
             )}{" "}
           </span>
         ))}
+        {trailing}
       </p>
     </header>
   );

@@ -143,6 +143,8 @@ export interface ProductEvents {
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
   /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
   landing_link_clicked: { from: "logo" | "back_link" };
+  /** Scheda scelta in basso nel foglio delle pagine di accesso; `tab`: quale (cosa c'è dentro, novità, in arrivo). */
+  login_sheet_tab_selected: { tab: "dentro" | "novita" | "in-arrivo" };
   /** Pagina di Analitiche aperta (sostituisce le sei schede, dal 2026-10-04). */
   analytics_page_viewed: undefined;
   /** Scheda di risposta scelta (sostituisce l'indice delle domande); `view`: quale. */

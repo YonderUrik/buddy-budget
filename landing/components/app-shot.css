@@ -1,5 +1,5 @@
 /* Cornice da browser attorno a uno screenshot reale; la versione dell'immagine segue il tema della landing. */
-.shot { margin: 0; border-radius: 14px; overflow: hidden; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 50px 100px -30px var(--shadow-win), 0 20px 40px -20px var(--shadow-win2); }
+.shot { margin: 0; border-radius: var(--r-card); overflow: hidden; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 50px 100px -30px var(--shadow-win), 0 20px 40px -20px var(--shadow-win2); }
 .shot-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: var(--surface); border-bottom: 1px solid var(--line); }
 .shot-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
 .shot-bar span { margin: 0 auto; transform: translateX(-24px); font: 500 11px var(--f-b); color: var(--ink3); background: var(--bg); padding: 3px 16px; border-radius: 99px; min-width: min(240px, 50%); text-align: center; }
@@ -12,4 +12,4 @@
 }
 :root[data-theme="dark"] .shot-light { display: none; }
 :root[data-theme="dark"] .shot-dark { display: block; }
-@media (max-width: 600px) { .shot { border-radius: 10px; } .shot-bar { height: 26px; padding: 0 10px; } .shot-bar span { display: none; } }
+@media (max-width: 600px) { .shot { border-radius: var(--r); } .shot-bar { height: 26px; padding: 0 10px; } .shot-bar span { display: none; } }

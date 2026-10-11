@@ -50,7 +50,13 @@
     {
       "id": "performance",
       "theme": "light",
-      "route": "/investimenti/performance"
+      "route": "/investimenti/performance",
+      "capturedAt": "2026-10-11",
+      "viewport": {
+        "width": 1440,
+        "height": 726
+      },
+      "scale": 1
     },
     {
       "id": "diversificazione",
@@ -130,7 +136,13 @@
     {
       "id": "performance",
       "theme": "dark",
-      "route": "/investimenti/performance"
+      "route": "/investimenti/performance",
+      "capturedAt": "2026-10-11",
+      "viewport": {
+        "width": 1440,
+        "height": 726
+      },
+      "scale": 1
     },
     {
       "id": "diversificazione",

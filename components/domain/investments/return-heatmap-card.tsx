@@ -40,9 +40,10 @@ export interface ReturnHeatmapCardProps {
   daily: DailyReturn[];
   currency: string;
   today: Date;
+  periodLabel?: string;
 }
 
-export function ReturnHeatmapCard({ daily, currency, today }: ReturnHeatmapCardProps) {
+export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: ReturnHeatmapCardProps) {
   const [grouping, setGrouping] = React.useState<HeatmapGrouping>(DEFAULT_GROUPING);
   const [inspected, setInspected] = React.useState<HeatmapCell | null>(null);
   const heatmap = React.useMemo(() => heatmapFromDaily(daily, grouping, today), [daily, grouping, today]);
@@ -64,9 +65,9 @@ export function ReturnHeatmapCard({ daily, currency, today }: ReturnHeatmapCardP
   return (
     <PanelSection
       icon={CalendarRangeIcon}
-      title="Rendimento nel tempo"
+      title="Rendimento TWR nel tempo"
       color="var(--swatch-teal)"
-      description={summary}
+      description={<>{periodLabel ? `${periodLabel}. Mesi e anni ai bordi possono essere parziali. ` : ""}{summary}</>}
       action={<SegmentedControl options={GROUPING_OPTIONS} value={grouping} onChange={changeGrouping} ariaLabel="Raggruppa i rendimenti per" />}
     >
       <div className="flex flex-col gap-3">

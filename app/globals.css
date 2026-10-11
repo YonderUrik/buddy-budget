@@ -14,6 +14,7 @@
   --color-pos-soft: var(--pos-soft);
   --color-neg: var(--neg);
   --color-neg-soft: var(--neg-soft);
+  --color-highlight: var(--highlight);
   --color-risk-1: var(--risk-1);
   --color-risk-2: var(--risk-2);
   --color-risk-3: var(--risk-3);
@@ -91,6 +92,8 @@
   --pos-soft: rgba(47, 125, 87, 0.1);
   --neg: #b0473b;
   --neg-soft: rgba(176, 71, 59, 0.09);
+  /* Evidenziatore giallo del brand (cella selezionata del foglio nel login) */
+  --highlight: #fff3cf;
   --risk-1: #2f7d57;
   --risk-2: #b89a1e;
   --risk-3: #d9731a;
@@ -196,6 +199,7 @@
   --pos-soft: rgba(123, 183, 155, 0.14);
   --neg: #d2887b;
   --neg-soft: rgba(210, 136, 123, 0.14);
+  --highlight: #3a2f12;
   --risk-1: #5bb98a;
   --risk-2: #d4b43c;
   --risk-3: #ea8a3a;

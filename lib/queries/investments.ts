@@ -126,6 +126,7 @@ export function useBackfillStatusQuery(instrumentIds: string[]) {
   const ids = [...instrumentIds].sort().join(",");
   const queryClient = useQueryClient();
   const wasRunning = React.useRef(false);
+  const lastCompleted = React.useRef("");
   const query = useQuery({
     queryKey: [...INVESTMENTS_QUERY_KEY, "backfill", ids],
     enabled: ids.length > 0,
@@ -138,20 +139,29 @@ export function useBackfillStatusQuery(instrumentIds: string[]) {
       q.state.data?.some((s) => s.status === "running" && !s.interrupted) ? BACKFILL_POLL_INTERVAL_MS : false,
   });
   const running = query.data?.some((s) => s.status === "running" && !s.interrupted) ?? false;
-  // A recupero concluso i prezzi nuovi vanno riletti.
+  const completed = (query.data ?? [])
+    .filter((s) => s.status !== "running" || s.interrupted)
+    .map((s) => `${s.instrumentId}:${s.status}:${s.updatedAt}`)
+    .sort()
+    .join("|");
+  // Rileggere anche se il download finisce prima del primo polling: in quel caso
+  // il client non osserva mai "running", ma la panoramica può avere ancora prezzi vecchi.
   React.useEffect(() => {
-    if (wasRunning.current && !running) queryClient.invalidateQueries({ queryKey: [...INVESTMENTS_QUERY_KEY, "overview"] });
+    if ((wasRunning.current && !running) || (completed && completed !== lastCompleted.current)) {
+      queryClient.invalidateQueries({ queryKey: [...INVESTMENTS_QUERY_KEY, "overview"] });
+    }
     wasRunning.current = running;
-  }, [running, queryClient]);
+    lastCompleted.current = completed;
+  }, [running, completed, queryClient]);
   return query;
 }
 
-/** Crea o riusa uno strumento; restituisce lo strumento. */
-export function useCreateInstrumentMutation() {
+/** Crea o riusa uno strumento; il benchmark rimanda lo storico al salvataggio del portafoglio. */
+export function useCreateInstrumentMutation({ deferHistory = false }: { deferHistory?: boolean } = {}) {
   const invalidate = useInvalidateInvestments();
   return useMutation({
     mutationFn: async (input: CreateInstrumentInput): Promise<Instrument> => {
-      const response = await fetch("/api/instruments", {
+      const response = await fetch(deferHistory ? "/api/instruments?history=deferred" : "/api/instruments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),

@@ -11,13 +11,12 @@ export function Security({ content = SECURITY }: { content?: typeof SECURITY }) 
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security">
       <div className="wrap">
-        <span className="ref">Privacy!A1</span>
+        <span className="ref">Privacy e sicurezza</span>
         <h2 className="t">{content.title}</h2>
         <p className="lede">{content.intro}</p>
         <Reveal stagger className="sec-grid">
-          {content.points.map((point, i) => (
+          {content.points.map((point) => (
             <article key={point.title} className="sec-point cell">
-              <span className="sec-cellref" aria-hidden="true">{String.fromCharCode(65 + i)}1</span>
               <span className="sec-ic" aria-hidden="true"><HomeIcon name={point.icon} size={20} /></span>
               <h3>{point.title}</h3>
               <p>{point.text}</p>

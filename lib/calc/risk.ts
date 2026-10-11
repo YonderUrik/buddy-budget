@@ -3,11 +3,10 @@
  * con l'indice di confronto, correlazioni tra le posizioni. Tutto puro, sui rendimenti giornalieri del TWR.
  */
 
-import { parseDateOnly, startOfDay } from "./expenses";
+import { parseDateOnly } from "./expenses";
 import { convertAmount, findLastOnOrBefore, type FxTable } from "./fx";
 import {
   computeDailyPortfolioValues,
-  periodStartKey,
   priceMultiplier,
   samplePeriodSeries,
   type InstrumentInput,
@@ -15,6 +14,7 @@ import {
   type PriceIndex,
 } from "./investments";
 import { addDays, toDateKey, type NetWorthPeriod } from "./net-worth";
+import { resolvePerformanceRange, type PerformanceRange } from "./performance-range";
 import { computeDailyReturns, priceInUserCurrency, toDailyFlows, type DailyReturn } from "./returns";
 
 const DAYS_PER_YEAR = 365;
@@ -205,12 +205,12 @@ export function computePortfolioRisk(params: {
   today: Date;
   benchmark?: InstrumentInput | null;
   riskFreeRates?: RateInput[] | null;
+  range?: PerformanceRange;
 }): PortfolioRisk | null {
   const { transactions, priceIndex, fx, userCurrency, period, today, benchmark, riskFreeRates } = params;
-  const fromKey = periodStartKey(transactions, period, today);
-  if (fromKey === null) return null;
-  const baseKey = toDateKey(addDays(parseDateOnly(fromKey), -1));
-  const toKey = toDateKey(startOfDay(today));
+  const bounds = resolvePerformanceRange(transactions, period, today, params.range);
+  if (!bounds) return null;
+  const { baseKey, toKey } = bounds;
   const points = computeDailyPortfolioValues({ ...params, fromKey: baseKey, toKey });
   const daily = computeDailyReturns(points[0].value, toDailyFlows(points));
   const observations = riskObservations(daily);
@@ -222,8 +222,8 @@ export function computePortfolioRisk(params: {
   const volatility = enough && std !== null ? std * Math.sqrt(perYear) : null;
 
   const drawdown = computeDrawdown(baseKey, daily.filter((d) => d.ret !== null));
-  const shortPeriod = period === "1mese" || period === "3mesi";
-  const drawdownSeries = samplePeriodSeries(shortPeriod ? drawdown.series : monthlyMinimum(drawdown.series), period);
+  const shortPeriod = !!params.range || period === "1mese" || period === "3mesi";
+  const drawdownSeries = samplePeriodSeries(shortPeriod ? drawdown.series : monthlyMinimum(drawdown.series), params.range ? "3mesi" : period);
 
   const relations = observations.length >= MIN_RELATION_OBSERVATIONS && perYear !== null;
   const riskFreeRate = riskFreeRates ? averageRate(riskFreeRates, observations.map((o) => o.date)) : null;

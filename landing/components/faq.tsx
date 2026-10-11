@@ -10,7 +10,7 @@ export function Faq() {
       <div className="wrap">
         <div className="faq-grid">
         <div>
-          <span className="ref">Domande!A1</span>
+          <span className="ref">Domande frequenti</span>
           <h2 className="t">Domande frequenti.</h2>
         </div>
         <Reveal>

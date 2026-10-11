@@ -9,7 +9,7 @@ export function Fit({ content = FIT }: { content?: typeof FIT }) {
   return (
     <TrackedSection id="per-chi" section="perchi" className="sec fit">
       <div className="wrap">
-        <span className="ref">PerChi!A1</span>
+        <span className="ref">Per chi è</span>
         <h2 className="t">{content.title}</h2>
         <Reveal stagger className="fit-cols">
           <div className="fit-col yes">

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 
-/** Piè di pagina delle pagine secondarie: stessi rimandi del closing della home, su fondo navy. */
+/** Piè di pagina delle pagine secondarie: stessi rimandi e stesso aspetto del piè di pagina della home. */
 export function SiteFooter() {
   return (
     <footer className="sf">

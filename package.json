@@ -18,6 +18,7 @@
     "db:migrate-category-groups": "tsx --env-file=.env.local lib/db/migrate-category-groups.ts",
     "db:reset-categories": "tsx --env-file=.env.local lib/db/reset-categories.ts",
     "db:mark-baseline": "tsx --env-file-if-exists=.env.local lib/db/mark-baseline.ts",
+    "eval:categorization": "tsx --env-file-if-exists=.env.local scripts/eval-categorization.ts",
     "worker:csv": "tsx --env-file-if-exists=.env.local --conditions=react-server scripts/personal-csv-worker.ts"
   },
   "dependencies": {

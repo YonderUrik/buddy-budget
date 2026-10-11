@@ -49,6 +49,8 @@ export interface LogFields {
   action?: string;
   detected?: number;
   confirmed?: number;
+  enabled?: boolean;
+  corrected?: number;
   pending?: number;
   stopped?: number;
   /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */

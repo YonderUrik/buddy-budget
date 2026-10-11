@@ -1,22 +1,28 @@
 "use client";
 
-/** Onboarding in due passi: valuta principale (EUR preselezionato), poi le conferme legali; infine atterraggio in Panoramica. */
+/** Onboarding: valuta principale (EUR preselezionato), assistente per le categorie (se il servizio c'è, acceso di default e spiegato), conferme legali; infine atterraggio in Panoramica. */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
+import { Switch } from "@/components/ui/switch";
+import { useAiCategorizationQuery } from "@/lib/queries/notifications";
 import { DEFAULT_AFTER_LOGIN_PATH } from "@/lib/auth/constants";
 import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/currency";
 import { track } from "@/lib/analytics";
 
-const ONBOARDING_STEPS = 2;
+type OnboardingStep = "valuta" | "assistente" | "conferme";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [currency, setCurrency] = useState<SupportedCurrency>(DEFAULT_CURRENCY);
   const { consent, setConsent, complete, payload } = useLegalConsent();
-  const flow = useStepFlow(ONBOARDING_STEPS);
+  const [assistantEnabled, setAssistantEnabled] = useState(true);
+  const { data: assistant } = useAiCategorizationQuery();
+  const steps: OnboardingStep[] = assistant?.available ? ["valuta", "assistente", "conferme"] : ["valuta", "conferme"];
+  const flow = useStepFlow(steps.length);
+  const step = steps[flow.index];
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,11 +40,12 @@ export default function OnboardingPage() {
       const response = await fetch("/api/user/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currency, legal: payload }),
+        body: JSON.stringify({ currency, legal: payload, ...(assistant?.available ? { aiCategorization: assistantEnabled } : {}) }),
       });
 
       if (response.ok) {
         track("onboarding_completed", { currency });
+        if (assistant?.available) track("ai_categorization_toggled", { enabled: assistantEnabled });
         track("terms_accepted", { context: "onboarding" });
         router.replace(DEFAULT_AFTER_LOGIN_PATH);
         router.refresh();
@@ -60,10 +67,23 @@ export default function OnboardingPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-5">
-          {flow.index === 0 ? (
+          {step === "valuta" ? (
             <>
               <StepHeading title="In che valuta vuoi vedere i tuoi soldi?" description="Vale per saldi, transazioni e investimenti." />
               <CurrencyPicker value={currency} onChange={setCurrency} disabled={loading} />
+            </>
+          ) : step === "assistente" ? (
+            <>
+              <StepHeading title="Vuoi un aiuto a categorizzare?" description="Puoi cambiare idea quando vuoi in Impostazioni." />
+              <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                <p>Quando arrivano movimenti nuovi dalla banca o da un file, un assistente basato su intelligenza artificiale propone una categoria per ogni esercente.</p>
+                <p>Le proposte non si applicano mai da sole: le confermi tu, una carta alla volta. Una scelta diventa una regola solo se lo chiedi.</p>
+                <p>Per farlo inviamo a un servizio esterno solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), con richiesta di non conservare i dati.</p>
+              </div>
+              <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4 text-sm font-medium text-foreground">
+                Proponi le categorie
+                <Switch checked={assistantEnabled} onCheckedChange={setAssistantEnabled} disabled={loading} aria-label="Proponi le categorie" />
+              </label>
             </>
           ) : (
             <>

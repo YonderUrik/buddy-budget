@@ -112,6 +112,9 @@ interface MetricsState {
   supportReports: Counter<"kind" | "outcome">;
   subscriptionActions: Counter<"action">;
   subscriptionsDetect: Histogram<string>;
+  categorizationAiRequests: Counter<"outcome">;
+  categorizationAiDuration: Histogram<string>;
+  categorizationSuggestions: Counter<"event">;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
@@ -208,6 +211,25 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}subscriptions_detect_duration_seconds`,
     help: "Durata del rilevamento degli abbonamenti per richiesta (lettura delle transazioni compresa).",
     buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+
+  state.categorizationAiRequests = new Counter({
+    name: `${METRIC_PREFIX}categorization_ai_requests_total`,
+    help: "Richieste al modello per le categorie, per esito (ok, error): un lotto di esercenti è una richiesta.",
+    labelNames: ["outcome"],
+    registers: r,
+  });
+  state.categorizationAiDuration = new Histogram({
+    name: `${METRIC_PREFIX}categorization_ai_request_duration_seconds`,
+    help: "Durata di una richiesta al modello per le categorie.",
+    buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+  state.categorizationSuggestions = new Counter({
+    name: `${METRIC_PREFIX}categorization_suggestions_total`,
+    help: "Proposte di categoria per esercente: salvate, scartate dal filtro privacy, confermate o corrette dall'utente.",
+    labelNames: ["event"],
     registers: r,
   });
 
@@ -460,6 +482,21 @@ export function recordSubscriptionAction(action: SubscriptionAction): void {
 /** Registra la durata di un rilevamento degli abbonamenti. */
 export function recordSubscriptionsDetect(durationMs: number): void {
   metrics().subscriptionsDetect.observe(durationMs / 1000);
+}
+
+/** Eventi sulle proposte di categoria (enum chiuso). */
+export type CategorizationSuggestionEvent = "stored" | "blocked" | "confirmed" | "corrected";
+
+/** Registra l'esito e la durata di una richiesta al modello per le categorie. */
+export function recordCategorizationAiRequest(outcome: "ok" | "error", durationMs: number): void {
+  const m = metrics();
+  m.categorizationAiRequests.inc({ outcome });
+  m.categorizationAiDuration.observe(durationMs / 1000);
+}
+
+/** Registra `count` proposte di categoria per un evento (salvate, bloccate dal filtro, confermate, corrette). */
+export function recordCategorizationSuggestions(event: CategorizationSuggestionEvent, count: number): void {
+  if (count > 0) metrics().categorizationSuggestions.inc({ event }, count);
 }
 
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */

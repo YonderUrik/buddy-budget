@@ -6,6 +6,7 @@ import { transactions, type NewTransaction } from "@/lib/db/schema/transactions"
 import { GoCardlessError, getAccountBalances, getAccountTransactions } from "./client";
 import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limit";
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
+import { suggestCategoriesSafely } from "@/lib/categorization/ai/suggest-for-user";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 import { extractMerchantName, FALLBACK_TRANSACTION_NAME, type MerchantNameSource } from "@/lib/categorization/merchant-name";
@@ -196,6 +197,8 @@ export async function syncAccountLink(
     }
 
     await flushRuleHits(ruleResolver.appliedRuleIds());
+    // Proposte dell'assistente per gli esercenti rimasti senza categoria: mai applicate, l'utente le conferma.
+    if (uncategorizedCount > 0) await suggestCategoriesSafely(link.userId);
 
     const [currentLink] = await db
       .select({ syncTimestamps: bankAccountLinks.syncTimestamps })

@@ -17,7 +17,7 @@
  */
 
 import Image from "next/image";
-import { Menu } from "lucide-react";
+import { Menu, MessageCircleQuestion } from "lucide-react";
 import { useSidebar } from "@/components/layout/sidebar-context";
 
 // ---------------------------------------------------------------------------
@@ -29,9 +29,11 @@ interface MobileTopbarProps {
   brandName?: string;
   /** Mostra l'hamburger che apre il menu; da spegnere quando la navigazione sta nella barra in basso. Default: true. */
   showMenuButton?: boolean;
+  /** Apre il foglio «Scrivici»; senza, a destra resta uno spazio vuoto. */
+  onOpenSupport?: () => void;
 }
 
-export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true }: MobileTopbarProps) {
+export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true, onOpenSupport }: MobileTopbarProps) {
   const { openMobile } = useSidebar();
 
   return (
@@ -75,8 +77,18 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true 
         {brandName}
       </span>
 
-      {/* Riquadro vuoto: tiene il brand al centro */}
-      <span className="size-9" aria-hidden="true" />
+      {onOpenSupport ? (
+        <button
+          type="button"
+          onClick={onOpenSupport}
+          className="flex size-9 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          aria-label="Scrivici: segnala un problema, una domanda o un'idea"
+        >
+          <MessageCircleQuestion className="size-5" aria-hidden="true" />
+        </button>
+      ) : (
+        <span className="size-9" aria-hidden="true" />
+      )}
     </header>
   );
 }

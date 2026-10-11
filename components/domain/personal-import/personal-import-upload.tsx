@@ -5,6 +5,7 @@
  * Un file Excel diventa testo CSV nel browser (stesso lettore di Pensione e Investimenti); il server riceve sempre CSV.
  */
 
+import { ReportErrorLink } from "@/components/domain/support";
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileSpreadsheetIcon, UploadIcon, XIcon } from "lucide-react";
@@ -189,7 +190,12 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
               <input id={`${id}-file`} type="file" disabled={reading} accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr-only" aria-describedby={fileError ? `${id}-file-error` : undefined} onChange={(e) => { void pick(e.target.files); e.target.value = ""; }} />
             </label>
           )}
-          {fileError ? <p id={`${id}-file-error`} role="alert" className="text-sm text-destructive">{fileError}</p> : null}
+          {fileError ? (
+            <div className="flex flex-col items-start gap-0.5">
+              <p id={`${id}-file-error`} role="alert" className="text-sm text-destructive">{fileError}</p>
+              <ReportErrorLink area="Importazione movimenti: file non accettato" error={fileError} />
+            </div>
+          ) : null}
         </>
       ) : null}
 
@@ -223,7 +229,12 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
           disabled={!stepReady}
         />
         {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">Per continuare: {stepMissing.join(", ")}.</p> : null}
-        {upload.error ? <p role="alert" className="text-sm text-destructive">{upload.error.message}</p> : null}
+        {upload.error ? (
+          <div className="flex flex-col items-start gap-0.5">
+            <p role="alert" className="text-sm text-destructive">{upload.error.message}</p>
+            <ReportErrorLink area="Importazione movimenti: caricamento non riuscito" error={upload.error.message} />
+          </div>
+        ) : null}
       </div>
     </form>
   );

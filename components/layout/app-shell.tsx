@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
+import { QuickReportProvider, useQuickReport } from "@/components/domain/support";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
 import { SectionTransition } from "@/components/layout/section-transition";
@@ -62,6 +63,8 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
+  const openReport = useQuickReport();
+  const openSupport = useCallback(() => openReport(), [openReport]);
   const openMore = useCallback(() => setMoreOpen(true), []);
   const closeMore = useCallback(() => setMoreOpen(false), []);
 
@@ -97,7 +100,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={openSupport} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -109,7 +112,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={openSupport} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -215,9 +218,9 @@ interface AppShellProps {
 export function AppShell({ children, activeHref, sidebarExtra, navBadges }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges}>
+      <QuickReportProvider><InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges}>
         {children}
-      </InnerShell>
+      </InnerShell></QuickReportProvider>
     </SidebarProvider>
   );
 }

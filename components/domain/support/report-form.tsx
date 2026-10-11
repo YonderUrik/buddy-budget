@@ -30,6 +30,10 @@ export interface ReportFormProps {
   context: ReportContext;
   /** Tipo selezionato all'apertura (es. dal link «Ho un'idea»). */
   initialKind?: ReportKind;
+  /** Versione per il foglio rapido: niente etichetta, area di testo più bassa. */
+  compact?: boolean;
+  /** Nasconde la scelta del tipo (es. quando si apre da un errore: è un problema). */
+  hideKind?: boolean;
 }
 
 async function postReport(body: { kind: ReportKind; message: string; context?: ReportContext }): Promise<{ reference: string }> {
@@ -39,7 +43,7 @@ async function postReport(body: { kind: ReportKind; message: string; context?: R
   return { reference: data.reference };
 }
 
-export function ReportForm({ context, initialKind = "problema" }: ReportFormProps) {
+export function ReportForm({ context, initialKind = "problema", compact = false, hideKind = false }: ReportFormProps) {
   const [kind, setKind] = React.useState<ReportKind>(initialKind);
   const [message, setMessage] = React.useState("");
   const [withContext, setWithContext] = React.useState(true);
@@ -76,9 +80,9 @@ export function ReportForm({ context, initialKind = "problema" }: ReportFormProp
         mutation.mutate({ kind, message: message.trim(), context: withContext ? context : undefined });
       }}
     >
-      <SegmentedControl options={KIND_OPTIONS} value={kind} onChange={setKind} ariaLabel="Di cosa si tratta" stretch />
+      {hideKind ? null : <SegmentedControl options={KIND_OPTIONS} value={kind} onChange={setKind} ariaLabel="Di cosa si tratta" stretch />}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="support-message" className="text-sm font-medium text-foreground">
+        <label htmlFor="support-message" className={compact ? "sr-only" : "text-sm font-medium text-foreground"}>
           Racconta
         </label>
         <Textarea
@@ -87,7 +91,7 @@ export function ReportForm({ context, initialKind = "problema" }: ReportFormProp
           onChange={(event) => setMessage(event.target.value)}
           maxLength={REPORT_MESSAGE_MAX_LENGTH}
           placeholder={PLACEHOLDERS[kind]}
-          className="min-h-28"
+          className={compact ? "min-h-24" : "min-h-28"}
           aria-describedby="support-message-hint"
         />
         <p id="support-message-hint" className="text-xs text-muted-foreground">

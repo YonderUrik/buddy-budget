@@ -9,3 +9,5 @@ export { FAQ_ITEMS } from "./faq.data";
 export type { FaqItem } from "./faq.data";
 export { GithubLinks } from "./github-links";
 export type { GithubLinksProps } from "./github-links";
+export { QuickReportProvider, useQuickReport, ReportErrorLink } from "./quick-report";
+export type { OpenReportOptions, ReportSubject } from "./quick-report";

@@ -37,6 +37,7 @@ import {
   Settings,
   LifeBuoy,
   Eye,
+  MessageCircleQuestion,
 } from "lucide-react";
 import { LayoutGroup, motion } from "motion/react";
 
@@ -256,6 +257,8 @@ interface AppSidebarProps {
   badges?: Record<string, NavBadge>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
   extra?: React.ReactNode;
+  /** Apre il foglio «Scrivici» (segnalazione rapida); senza, il pulsante non compare. */
+  onOpenSupport?: () => void;
 }
 
 export function AppSidebar({
@@ -267,6 +270,7 @@ export function AppSidebar({
   supportHref = "/aiuto",
   badges,
   extra,
+  onOpenSupport,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
   const { hidden, toggle: toggleHidden } = usePrivacy();
@@ -380,6 +384,24 @@ export function AppSidebar({
           isCollapsed ? "px-2 py-3" : "px-4 py-3"
         )}
       >
+        {onOpenSupport ? (
+          <button
+            type="button"
+            onClick={() => {
+              onOpenSupport();
+              onClose?.();
+            }}
+            title={isCollapsed ? "Scrivici" : undefined}
+            className={cn(
+              "mb-2 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm text-sidebar-foreground/75",
+              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150",
+              isCollapsed && "justify-center"
+            )}
+          >
+            <MessageCircleQuestion className="size-4 shrink-0" aria-hidden="true" />
+            {!isCollapsed && <span className="flex-1 text-left">Scrivici</span>}
+          </button>
+        ) : null}
         {/* Card utente — apre dropdown con logout */}
         <DropdownMenu>
           <DropdownMenuTrigger

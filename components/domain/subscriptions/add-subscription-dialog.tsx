@@ -13,6 +13,7 @@ import type { Category } from "@/lib/db/schema/categories";
 import { parseAmount } from "@/lib/debts/add-form";
 import { useSaveSubscriptionMutation } from "@/lib/queries/subscriptions";
 import { CadenceSelect, Field, Input, SubscriptionCategoryField } from "./subscription-fields";
+import { ErrorWithReport } from "@/components/domain/support";
 
 export interface AddSubscriptionDialogProps {
   open: boolean;
@@ -61,7 +62,7 @@ function AddForm({ categories, today, onDone }: Omit<AddSubscriptionDialogProps,
         <Input id={`${id}-next`} type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} className="h-11 sm:h-8" />
       </Field>
       <SubscriptionCategoryField id={`${id}-category`} categories={categories} value={categoryId} onChange={setCategoryId} />
-      {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+      {error ? <ErrorWithReport area="abbonamento" error={error} /> : null}
       <DialogActions>
         <span />
         <Button type="submit" disabled={mutation.isPending} className="h-11 sm:h-8">

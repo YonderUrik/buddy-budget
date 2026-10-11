@@ -30,6 +30,10 @@ export interface LogFields {
   outcome?: string;
   /** Tipo di una segnalazione di supporto (enum chiuso `ReportKind`) e codice di riferimento `SUP-XXXXXX` (non personale). */
   reportKind?: string;
+  /** Da dove parte una segnalazione al supporto (pagina, pulsante, errore). */
+  reportSource?: string;
+  /** Operazione fallita da cui parte una segnalazione (enum `REPORT_ERROR_AREAS`). */
+  reportArea?: string;
   reference?: string;
   withContext?: boolean;
   reason?: string;

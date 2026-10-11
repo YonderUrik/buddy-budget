@@ -15,6 +15,7 @@ import { useApplyCategorizationMutation, useCategorizeSuggestionsQuery, useGener
 import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
 import { useAiCategorizationQuery, useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
+import { errorToast } from "@/lib/support/request-report";
 
 /** Ogni quanto si ricarica l'elenco mentre l'assistente lavora, e per quanti giri al massimo (~4 minuti). */
 const GENERATE_POLL_MS = 4000;
@@ -71,7 +72,7 @@ export default function CategorizzaPage() {
       try {
         await applyMutation.mutateAsync({ groups: items, onProgress: () => {} });
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Impossibile salvare le scelte");
+        errorToast(error instanceof Error ? error.message : "Impossibile salvare le scelte", "movimento");
         throw error;
       }
     },

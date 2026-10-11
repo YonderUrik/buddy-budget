@@ -41,13 +41,13 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
     <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-10 sm:p-6">
       <div>
         <h1 className="font-heading text-2xl font-medium text-foreground">Aiuto e segnalazioni</h1>
-        <p className="text-sm text-muted-foreground">Trova una risposta o scrivici: leggiamo tutto.</p>
+        <p className="text-sm text-muted-foreground">Puoi scriverci anche da qualsiasi pagina, con l&apos;icona del fumetto, e dai messaggi d&apos;errore.</p>
       </div>
+      <Section id="aiuto-scrivici" icon={MessageSquare} title="Scrivici" description="Un problema, una domanda o un'idea: ti rispondiamo via email.">
+        <ReportForm context={context} initialKind={initialKind} />
+      </Section>
       <Section id="aiuto-risposte" icon={HelpCircle} title="Risposte rapide" description="Le domande che riceviamo più spesso.">
         <FaqList />
-      </Section>
-      <Section id="aiuto-scrivici" icon={MessageSquare} title="Scrivici" description="Non hai trovato quello che cerchi? Ti rispondiamo via email.">
-        <ReportForm context={context} initialKind={initialKind} />
       </Section>
       <Section id="aiuto-github" icon={GithubIcon} title="Su GitHub" description="BuddyBudget è open source: puoi seguire e segnalare anche da lì.">
         <GithubLinks context={context} />

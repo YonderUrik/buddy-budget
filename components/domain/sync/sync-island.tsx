@@ -11,6 +11,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { AlertCircle, Check, ChevronDown, X } from "lucide-react";
 import { AnimatedList, TextMorph, TextShimmer } from "@/components/motion";
+import { ReportErrorLink } from "@/components/domain/support";
 import { SPRING_BOUNCY } from "@/lib/motion/springs";
 import { overallProgress } from "@/lib/sync-jobs/view";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
@@ -40,6 +41,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
   const uncategorized = job.accounts.reduce((sum, account) => sum + account.uncategorized, 0);
   const title = describeJobTitle(job);
   const failed = job.status === "failed" || job.interrupted;
+  const someError = failed || job.accounts.some((account) => account.phase === "error");
 
   // A job concluso l'isola si apre da sola per mostrare l'esito.
   const [wasRunning, setWasRunning] = React.useState(isRunning);
@@ -119,6 +121,13 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
                 content: <SyncAccountProgressRow account={account} interrupted={job.interrupted} />,
               }))}
             />
+            {!isRunning && someError && (
+              <ReportErrorLink
+                area="sync_banca"
+                error={title}
+                className="mt-3 mr-2 inline-flex rounded-full bg-island-foreground/10 px-3 py-1 text-sm font-medium hover:bg-island-foreground/20"
+              />
+            )}
             {!isRunning && uncategorized > 0 && (
               <Link
                 href={categorizeHref}

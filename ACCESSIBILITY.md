@@ -43,7 +43,7 @@ Se qualcosa non è utilizzabile, dillo: è un difetto da correggere, non una ric
 
 - Dall'app: pagina **Aiuto** (`/aiuto`), scegli il tipo di segnalazione.
 - Su GitHub: [apri una issue](https://github.com/YonderUrik/buddy-budget/issues/new/choose) e scrivi «accessibilità» nel titolo, con browser, dispositivo e tecnologia assistiva usata.
-- Per email: supporto@buddybudget.io.
+- Per email: support@buddybudget.io.
 
 Indica la pagina, cosa volevi fare e cosa è successo. Le segnalazioni di accessibilità hanno la stessa priorità dei bug.
 

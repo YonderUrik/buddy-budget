@@ -56,9 +56,10 @@ interface InnerShellProps {
   activeHref?: string;
   sidebarExtra?: React.ReactNode;
   navBadges?: Record<string, NavBadge>;
+  onOpenSupport?: () => void;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShellProps) {
+function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: InnerShellProps) {
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -97,7 +98,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar showMenuButton={!bottomNav} />
+      <MobileTopbar showMenuButton={!bottomNav} onOpenSupport={onOpenSupport} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -109,7 +110,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} onOpenSupport={onOpenSupport} />
         </div>
 
         {/* ── Contenuto principale ── */}
@@ -206,16 +207,18 @@ interface AppShellProps {
   sidebarExtra?: React.ReactNode;
   /** Sottovoci con contatore sotto le voci della sidebar, per `href` della voce padre. */
   navBadges?: Record<string, NavBadge>;
+  /** Apre il foglio «Scrivici»: mostra il pulsante in sidebar e nella barra in alto su telefono. */
+  onOpenSupport?: () => void;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navBadges }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges} onOpenSupport={onOpenSupport}>
         {children}
       </InnerShell>
     </SidebarProvider>

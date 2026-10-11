@@ -18,6 +18,8 @@ export interface ImportNoticeProps {
   hint?: string;
   /** Messaggio tecnico originale, per chi vuole il dettaglio (si apre su richiesta). */
   detail?: string;
+  /** Azione sotto il testo (es. il link per segnalare l'errore). */
+  action?: React.ReactNode;
   className?: string;
   ref?: React.Ref<HTMLDivElement>;
 }
@@ -28,7 +30,7 @@ const TONES: Record<ImportNoticeTone, { icon: LucideIcon; color: string }> = {
   info: { icon: InfoIcon, color: "var(--swatch-indigo)" },
 };
 
-export function ImportNotice({ tone, title, children, hint, detail, className, ref }: ImportNoticeProps) {
+export function ImportNotice({ tone, title, children, hint, detail, action, className, ref }: ImportNoticeProps) {
   const { icon: Icon, color } = TONES[tone];
   return (
     <div ref={ref} role={tone === "error" ? "alert" : "status"} className={cn("flex gap-3", className)}>
@@ -53,6 +55,7 @@ export function ImportNotice({ tone, title, children, hint, detail, className, r
             <p className="mt-1 break-words font-mono">{detail}</p>
           </details>
         ) : null}
+        {action}
       </div>
     </div>
   );

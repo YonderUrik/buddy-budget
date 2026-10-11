@@ -39,26 +39,44 @@ function isTypingTarget(target: EventTarget | null): boolean {
 /** Come esce la carta in cima: di lato nella direzione del gesto, in fondo al mazzo se saltata, o «back» quando si annulla. */
 type CardExit = "right" | "left" | "down" | "back";
 
+/** Cosa serve alle varianti: come esce la carta in cima e, dopo un annulla, da che parte era uscita quella che torna. */
+interface CardMotion {
+  exit: CardExit;
+  returnFrom?: CardExit;
+}
+
 /** Distanza (px) di cui la carta esce e durata dell'uscita: breve, perché la nuova carta sia subito pronta. */
 const EXIT_TRAVEL_PX = 420;
-const EXIT_SECONDS = 0.26;
+const EXIT_SECONDS = 0.28;
 const EXIT_TILT_DEGREES = 10;
+/** Posizione della carta successiva, in attesa sotto quella attiva: la nuova carta parte da qui, così il passaggio è continuo. */
+const WAITING_CARD = { scale: 0.95, y: 14 };
+/** Curva dell'uscita: parte con lo slancio del gesto e rallenta uscendo. */
+const EXIT_EASE = [0.25, 0.8, 0.4, 1] as const;
 
 // Chi esce di lato passa sopra la carta nuova; chi torna nel mazzo (salta, annulla) le passa sotto, così i testi non si mescolano.
 const CARD_VARIANTS = {
-  // La carta nuova sale dal mazzo (già piena, era sotto); dopo un annulla torna da davanti.
-  enter: (exit: CardExit) => (exit === "back" ? { opacity: 0, scale: 1.04 } : { opacity: 1, scale: 0.95, y: 14 }),
+  // La carta nuova sale dal posto della carta in attesa; dopo un annulla rientra dal lato da cui era uscita, già piena.
+  enter: ({ exit, returnFrom }: CardMotion) => {
+    if (exit === "back" && returnFrom === "right") return { opacity: 1, x: EXIT_TRAVEL_PX, rotate: EXIT_TILT_DEGREES };
+    if (exit === "back" && returnFrom === "left") return { opacity: 1, x: -EXIT_TRAVEL_PX, rotate: -EXIT_TILT_DEGREES };
+    return { opacity: 1, ...WAITING_CARD };
+  },
   center: { opacity: 1, scale: 1, x: 0, y: 0, rotate: 0 },
-  exit: (exit: CardExit) => {
-    const transition = { duration: EXIT_SECONDS, ease: [0.4, 0, 1, 1] as const };
+  exit: ({ exit }: CardMotion) => {
+    const transition = { duration: EXIT_SECONDS, ease: EXIT_EASE };
     if (exit === "right") return { x: EXIT_TRAVEL_PX, rotate: EXIT_TILT_DEGREES, opacity: 0, zIndex: 20, transition };
     if (exit === "left") return { x: -EXIT_TRAVEL_PX, rotate: -EXIT_TILT_DEGREES, opacity: 0, zIndex: 20, transition };
-    return { opacity: 0, scale: 0.92, y: exit === "down" ? 48 : 14, zIndex: 0, transition };
+    // Dopo un annulla la carta scende piena al posto della carta in attesa, che è lei stessa: nessuna doppia immagine.
+    if (exit === "back") return { opacity: 1, ...WAITING_CARD, zIndex: 5, transition };
+    return { opacity: 0, ...WAITING_CARD, zIndex: 5, transition };
   },
 };
 
 interface ActiveCardProps extends Omit<CategorizeSwipeDeckProps, "groups" | "onSave"> {
   group: SuggestionGroup;
+  /** La carta successiva, mostrata in attesa sotto quella attiva. */
+  nextGroup?: SuggestionGroup;
   remaining: number;
   canUndo: boolean;
   onDecide: (decision: Omit<DeckDecision, "groupKey">) => void;
@@ -67,7 +85,7 @@ interface ActiveCardProps extends Omit<CategorizeSwipeDeckProps, "groups" | "onS
 }
 
 /** La carta in cima con i suoi pulsanti e scorciatoie; `changing` e `remember` valgono per una carta sola (si azzerano al cambio di carta). */
-function ActiveCard({ group, categories, currency, categoryUsage, remaining, canUndo, onDecide, onSkip, onUndo }: ActiveCardProps) {
+function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, remaining, canUndo, onDecide, onSkip, onUndo }: ActiveCardProps) {
   // Lo stato vale per una carta sola: al cambio di carta si azzera durante il render (il componente resta montato per animare l'uscita).
   const [local, setLocal] = React.useState({ key: group.groupKey, changing: false, remember: false });
   if (local.key !== group.groupKey) setLocal({ key: group.groupKey, changing: false, remember: false });
@@ -78,6 +96,16 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
   );
   const setRemember = React.useCallback((next: boolean) => setLocal((current) => ({ ...current, remember: next })), []);
   const [exit, setExit] = React.useState<CardExit>("right");
+  // Da che parte è uscita ogni carta decisa: con «Annulla» rientra da lì.
+  const [exitByKey, setExitByKey] = React.useState<Record<string, CardExit>>({});
+  const cardMotion: CardMotion = { exit, returnFrom: exit === "back" ? exitByKey[group.groupKey] : undefined };
+  const leave = React.useCallback(
+    (direction: CardExit) => {
+      setExit(direction);
+      setExitByKey((current) => ({ ...current, [group.groupKey]: direction }));
+    },
+    [group.groupKey]
+  );
   const suggestion = group.suggestion;
   const suggested = suggestion ? categories.find((c) => c.id === suggestion.suggestedCategoryId) : undefined;
   const suggestedName = suggested?.name;
@@ -92,25 +120,25 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
 
   const confirm = React.useCallback(() => {
     if (!suggestion) return;
-    setExit("right");
+    leave("right");
     onDecide({ categoryId: suggestion.suggestedCategoryId, remember, excludedPercentage: suggestion.suggestedSplitPercentage ?? 0, action: "conferma" });
     track("categorize_card_decided", { action: "conferma", source: suggestion.source, remember });
-  }, [suggestion, onDecide, remember]);
+  }, [suggestion, onDecide, remember, leave]);
 
   const pick = React.useCallback(
     (categoryId: string) => {
-      setExit("left");
+      leave("left");
       onDecide({ categoryId, remember, excludedPercentage: 0, action: "cambia" });
       track("categorize_card_decided", { action: "cambia", source: suggestion?.source ?? "nessuna", remember });
     },
-    [suggestion, onDecide, remember]
+    [suggestion, onDecide, remember, leave]
   );
 
   const skipCard = React.useCallback(() => {
-    setExit("down");
+    leave("down");
     onSkip();
     track("categorize_card_decided", { action: "salta", source: suggestion?.source ?? "nessuna", remember: false });
-  }, [onSkip, suggestion]);
+  }, [onSkip, suggestion, leave]);
 
   const undoCard = React.useCallback(() => {
     setExit("back");
@@ -141,11 +169,16 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
         {remaining === 1 ? "Ultima carta" : `${remaining} esercenti da categorizzare`}
       </p>
       <div className="relative flex flex-col max-md:flex-1">
-        {remaining > 1 && <div className="absolute inset-x-3 -bottom-2 h-10 rounded-2xl border border-border bg-card/60" aria-hidden />}
-        <AnimatePresence mode="popLayout" custom={exit} initial={false}>
+        {remaining > 2 && <div className="absolute inset-x-5 -bottom-4 h-10 rounded-2xl border border-border bg-card/60" aria-hidden />}
+        {nextGroup && (
+          <div key={nextGroup.groupKey} inert aria-hidden className="absolute inset-0 flex flex-col overflow-hidden rounded-2xl" style={{ transform: `translateY(${WAITING_CARD.y}px) scale(${WAITING_CARD.scale})` }}>
+            <WaitingCard group={nextGroup} categories={categories} currency={currency} />
+          </div>
+        )}
+        <AnimatePresence mode="popLayout" custom={cardMotion} initial={false}>
           <motion.div
             key={group.groupKey}
-            custom={exit}
+            custom={cardMotion}
             variants={CARD_VARIANTS}
             initial="enter"
             animate="center"
@@ -200,6 +233,25 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
   );
 }
 
+/** La carta successiva com'è quando arriverà in cima, ferma e non interattiva. */
+function WaitingCard({ group, categories, currency }: { group: SuggestionGroup; categories: Category[]; currency: string }) {
+  const suggested = group.suggestion ? categories.find((c) => c.id === group.suggestion?.suggestedCategoryId) : undefined;
+  return (
+    <SwipeCard
+      group={group}
+      currency={currency}
+      suggestedName={suggested?.name}
+      suggestedAppearance={suggested ? { icon: suggested.icon as CategoryIcon, color: suggested.color as CategoryColor } : undefined}
+      changing={false}
+      remember={false}
+      onRememberChange={() => {}}
+      onConfirm={() => {}}
+      onChange={() => {}}
+      onSkip={() => {}}
+    />
+  );
+}
+
 export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsage, onSave }: CategorizeSwipeDeckProps) {
   const deck = useSwipeDeck({ groups, onSave });
   if (!deck.top) {
@@ -217,6 +269,7 @@ export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsag
   return (
     <ActiveCard
       group={deck.top}
+      nextGroup={deck.next}
       categories={categories}
       currency={currency}
       categoryUsage={categoryUsage}

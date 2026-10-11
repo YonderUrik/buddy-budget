@@ -60,3 +60,6 @@ vercelnenon.txt
 
 # snapshot di un redis-server locale avviato dalla cartella del progetto
 dump.rdb
+
+# dati locali di valutazione (movimenti veri: mai nel repo)
+/.local/

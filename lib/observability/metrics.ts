@@ -12,7 +12,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
@@ -60,6 +60,7 @@ export const CRON_NAMES: readonly CronName[] = [
   "account_deletion",
   "gocardless_maintenance",
   "notifications",
+  "inactive_accounts",
 ];
 
 /** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
@@ -74,6 +75,11 @@ export type CleanupAction =
   | "skipped_linked"
   | "capped"
   | "failed";
+/** Modalità del cron sugli account inattivi (`dry-run` conta soltanto: niente email, niente eliminazioni). */
+export type InactivityMode = "dry-run" | "execute";
+/** Cosa ha deciso/fatto il cron: `warned` = email di preavviso, `deleted` = account eliminato, `returned` = rientrato prima della scadenza, `exempt` = protetto, `capped` = rimandato dal tetto, `failed`. */
+export type InactivityAction = "warned" | "deleted" | "returned" | "exempt" | "capped" | "failed";
+
 /** Avvisi di consenso bancario (scadenza vicina o scaduto) per esito dell'invio email. */
 export type ConsentNoticeKind = "expiring" | "expired";
 export type ConsentNoticeOutcome = "sent" | "failed";
@@ -120,6 +126,7 @@ interface MetricsState {
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
+  inactiveAccounts: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
   notificationEmails: Counter<"kind" | "outcome">;
@@ -262,6 +269,12 @@ function createState(): MetricsState {
   state.gcCleanup = new Counter({
     name: `${METRIC_PREFIX}gocardless_cleanup_total`,
     help: "Requisition/agreement GoCardless trovate dalla pulizia per tipo di azione e modalità (dry-run o execute).",
+    labelNames: ["action", "mode"],
+    registers: r,
+  });
+  state.inactiveAccounts = new Counter({
+    name: `${METRIC_PREFIX}inactive_accounts_total`,
+    help: "Account inattivi per azione del cron (warned, deleted, returned, exempt, capped, failed) e modalità (dry-run o execute).",
     labelNames: ["action", "mode"],
     registers: r,
   });
@@ -531,6 +544,11 @@ export function recordPriceInstruments(outcome: PriceInstrumentOutcome, count: n
 /** Registra `count` elementi su cui la pulizia GoCardless ha deciso (dry-run) o agito (execute) per tipo di azione. */
 export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode, count = 1): void {
   if (count > 0) metrics().gcCleanup.inc({ action, mode }, count);
+}
+
+/** Registra `count` account su cui il cron degli inattivi ha deciso (dry-run) o agito (execute) per tipo di azione. */
+export function recordInactiveAccounts(action: InactivityAction, mode: InactivityMode, count = 1): void {
+  if (count > 0) metrics().inactiveAccounts.inc({ action, mode }, count);
 }
 
 /** Registra l'esito di una email di riepilogo o di avviso. */

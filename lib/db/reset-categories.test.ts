@@ -115,7 +115,7 @@ describe("planCategoryReset con i default e la mappa legacy reali", () => {
       expect.objectContaining({ id: "ristoranti", name: "Ristoranti & Bar" })
     );
     expect(plan.updates).toContainEqual(
-      expect.objectContaining({ id: "svago", name: "Svago & Hobby" })
+      expect.objectContaining({ id: "svago", name: "Svago" })
     );
 
     expect(plan.deletions).toEqual(["altro"]);

@@ -32,6 +32,7 @@ export function makeCategory(overrides: Partial<Category>): Category {
     type: "dovuta",
     color: "green",
     icon: "shopping-cart",
+    description: null,
     isFallback: false,
     createdAt: new Date(),
     ...overrides,

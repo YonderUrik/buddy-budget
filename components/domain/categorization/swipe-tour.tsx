@@ -82,7 +82,7 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
         )}
         <span className="mt-1 text-sm font-medium text-foreground">Supermercato</span>
         <span className="text-xs text-muted-foreground tabular-nums">-48,20 €</span>
-        <span className="mt-1 w-full rounded-lg bg-muted px-2 py-1.5 text-center text-xs text-foreground">Spesa alimentare</span>
+        <span className="mt-1 w-full rounded-lg bg-muted px-2 py-1.5 text-center text-xs text-foreground">Spesa</span>
         <span className="flex items-center gap-1.5 text-[0.65rem] text-muted-foreground">
           <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> Ricorda
         </span>

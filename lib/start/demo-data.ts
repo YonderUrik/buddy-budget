@@ -35,15 +35,15 @@ interface Recurring {
 
 const RECURRING: readonly Recurring[] = [
   { category: "Affitto & Mutuo", description: "Affitto", day: 5, amounts: [-720] },
-  { category: "Bollette & Utenze", description: "Luce e gas", day: 12, amounts: [-82.4, -96.1, -71.8] },
-  { category: "Internet & Telefono", description: "Fibra e mobile", day: 9, amounts: [-34.9] },
-  { category: "Spesa alimentare", description: "Supermercato", day: 3, amounts: [-54.2, -38.7, -66.9] },
-  { category: "Spesa alimentare", description: "Supermercato", day: 17, amounts: [-47.5, -72.3, -41.1] },
-  { category: "Trasporti & Carburante", description: "Carburante", day: 8, amounts: [-48, -52.6] },
+  { category: "Bollette & Telefono", description: "Luce e gas", day: 12, amounts: [-82.4, -96.1, -71.8] },
+  { category: "Bollette & Telefono", description: "Fibra e mobile", day: 9, amounts: [-34.9] },
+  { category: "Spesa", description: "Supermercato", day: 3, amounts: [-54.2, -38.7, -66.9] },
+  { category: "Spesa", description: "Supermercato", day: 17, amounts: [-47.5, -72.3, -41.1] },
+  { category: "Trasporti", description: "Carburante", day: 8, amounts: [-48, -52.6] },
   { category: "Ristoranti & Bar", description: "Cena fuori", day: 14, amounts: [-38, -52.5, -29.9] },
-  { category: "Abbonamenti & Streaming", description: "Streaming video", day: 18, amounts: [-13.99] },
+  { category: "Abbonamenti", description: "Streaming video", day: 18, amounts: [-13.99] },
   { category: "Sport & Benessere", description: "Palestra", day: 7, amounts: [-39] },
-  { category: "Shopping & Tecnologia", description: "Acquisto online", day: 22, amounts: [-64, -35.9, -112] },
+  { category: "Shopping", description: "Acquisto online", day: 22, amounts: [-64, -35.9, -112] },
 ];
 
 const SALARY = 2050;
@@ -66,7 +66,7 @@ export function buildDemoData(today: Date): DemoData {
       if (date <= todayKey) transactions.push({ category, description, amount, date });
     };
     push(27, "Stipendio", "Stipendio", SALARY);
-    push(28, "Risparmio per obiettivi", "Versamento sui risparmi", -MONTHLY_SAVING);
+    push(28, "Risparmio", "Versamento sui risparmi", -MONTHLY_SAVING);
     for (const r of RECURRING) push(r.day, r.category, r.description, r.amounts[index % r.amounts.length]);
   }
   transactions.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
@@ -80,7 +80,7 @@ export function buildDemoData(today: Date): DemoData {
   const savingsByDate = new Map<string, number>();
   for (const t of transactions) {
     byDate.set(t.date, (byDate.get(t.date) ?? 0) + t.amount);
-    if (t.category === "Risparmio per obiettivi") savingsByDate.set(t.date, (savingsByDate.get(t.date) ?? 0) + MONTHLY_SAVING);
+    if (t.category === "Risparmio") savingsByDate.set(t.date, (savingsByDate.get(t.date) ?? 0) + MONTHLY_SAVING);
   }
   const first = transactions.length ? transactions[0].date : todayKey;
   const history: { date: string; amount: number }[] = [];

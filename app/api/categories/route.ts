@@ -53,6 +53,7 @@ async function handlePost(request: NextRequest) {
       type: parsed.data.type,
       ...(parsed.data.color ? { color: parsed.data.color } : {}),
       ...(parsed.data.icon ? { icon: parsed.data.icon } : {}),
+      ...(parsed.data.description ? { description: parsed.data.description } : {}),
     })
     .returning();
 

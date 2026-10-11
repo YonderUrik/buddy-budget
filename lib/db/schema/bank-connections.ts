@@ -1,4 +1,4 @@
-import { jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 import { accounts } from "./accounts";
 
@@ -54,6 +54,24 @@ export const bankAccountLinks = pgTable("bank_account_links", {
 
 export type BankAccountLink = typeof bankAccountLinks.$inferSelect;
 export type NewBankAccountLink = typeof bankAccountLinks.$inferInsert;
+
+/**
+ * Registro delle requisition create su GoCardless (una riga per ogni consenso avviato, nuovo o rinnovo).
+ * Non si cancella quando la connessione viene eliminata: il piano gratuito conta i collegamenti del mese
+ * e non è documentato che eliminarne uno liberi il posto, quindi il tetto si calcola anche da qui.
+ * `user_id` diventa null se l'utente viene eliminato (il conteggio globale resta giusto).
+ */
+export const bankConnectionAttempts = pgTable(
+  "bank_connection_attempts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: text("user_id").references(() => authUser.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("bank_connection_attempts_created_at_idx").on(table.createdAt)]
+);
+
+export type BankConnectionAttempt = typeof bankConnectionAttempts.$inferSelect;
 
 /** Singola riga: cache dell'access token applicativo GoCardless (non è per-utente). */
 export const gocardlessToken = pgTable("gocardless_token", {

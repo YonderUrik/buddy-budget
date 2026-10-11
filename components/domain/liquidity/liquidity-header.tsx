@@ -1,9 +1,9 @@
 "use client";
 
-/** Testata di Liquidità: titolo, sottotitolo, pulsante "Aggiungi" (movimento o conto) e le schede della sezione. */
+/** Testata di Liquidità: titolo (su telefono è il selettore delle viste), sottotitolo, pulsante "Aggiungi" e le schede della sezione. */
 
 import { FileSpreadsheetIcon, LandmarkIcon, PlusIcon, ReceiptTextIcon } from "lucide-react";
-import { SectionTabs, type SectionTab } from "@/components/domain/shared";
+import { SectionHeading, SectionTabs, type SectionTab } from "@/components/domain/shared";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,10 +22,15 @@ export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="font-heading text-3xl font-medium tracking-tight text-foreground sm:text-4xl">Liquidità</h1>
-          <p className="text-text-2">{subtitle}</p>
-        </div>
+        <SectionHeading
+          title="Liquidità"
+          subtitle={subtitle}
+          tabs={tabs}
+          activeHref={activeHref}
+          analyticsKey="liquidita"
+          titleClassName="text-3xl sm:text-4xl"
+          subtitleClassName="text-text-2"
+        />
         <DropdownMenu>
           <DropdownMenuTrigger className={cn(buttonVariants(), "h-11 shrink-0 cursor-pointer gap-1.5 px-4 text-sm shadow-xs")} aria-label="Aggiungi">
             <PlusIcon className="size-4" aria-hidden="true" />

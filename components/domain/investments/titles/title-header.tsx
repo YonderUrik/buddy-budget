@@ -5,10 +5,10 @@
  * del giorno e dell'anno, e le azioni Segui / Registra.
  */
 
-import Link from "next/link";
-import { ArrowLeftIcon, EyeIcon, EyeOffIcon, PlusIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon, PlusIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BackLink } from "@/components/domain/shared";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleStats } from "@/lib/investments/title-stats";
@@ -39,9 +39,7 @@ export interface TitleHeaderProps {
 export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti", tags = [] }: TitleHeaderProps) {
   return (
     <div className="flex flex-col gap-3">
-      <Link href={backHref} className="inline-flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeftIcon size={14} aria-hidden="true" /> Portafoglio
-      </Link>
+      <BackLink href={backHref} label="Portafoglio" className="-mb-2" />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} className="mt-0.5" />

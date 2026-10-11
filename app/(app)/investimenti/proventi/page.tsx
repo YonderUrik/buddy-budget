@@ -23,6 +23,7 @@ import type { MissingIncome } from "@/lib/investments/dividends";
 import { buildIncomeView } from "@/lib/investments/income-view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useDismissDividendMutation } from "@/lib/queries/investments";
+import { errorToast } from "@/lib/support/request-report";
 
 /** Mentre gli storici dividendi si scaricano in background, la pagina si aggiorna ogni tanto (al massimo qualche volta). */
 const PENDING_REFRESH_MS = 4000;
@@ -66,7 +67,7 @@ export default function DividendiPage() {
         toast(items.length === 1 ? "Proposta ignorata" : `${items.length} proposte ignorate`, {
           action: { label: "Annulla", onClick: () => dismiss.mutate({ ...input, restore: true }) },
         }),
-      onError: (e) => toast.error(e.message),
+      onError: (e) => errorToast(e.message, "operazione"),
     });
   }
 

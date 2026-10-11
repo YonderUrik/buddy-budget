@@ -16,6 +16,7 @@ import { validateImportFiles } from "@/lib/investments/import/batch";
 import { gridToCsv } from "@/lib/investments/import/fineco";
 import { readXlsx } from "@/lib/pension/import/xlsx";
 import { ImportProviderPicker } from "./import-provider-picker";
+import { ReportErrorLink } from "@/components/domain/support";
 
 export interface ImportFileStepProps {
   provider: ImportProviderId | null;
@@ -84,7 +85,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
           onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
-      {explained ? <ImportNotice tone="error" title={explained.text} hint={explained.hint} detail={fileError ?? undefined} /> : null}
+      {explained ? <ImportNotice tone="error" title={explained.text} hint={explained.hint} detail={fileError ?? undefined} action={<ReportErrorLink area="import_investimenti" error={fileError ?? explained.text} />} /> : null}
       {onFiles ? <p className="text-center text-sm text-muted-foreground">Più rendiconti? Selezionali insieme (fino a 20): IBKR, DEGIRO e Trade Republic.</p> : null}
 
       <div className="flex flex-col gap-3 border-t pt-3">

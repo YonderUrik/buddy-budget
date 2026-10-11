@@ -23,6 +23,7 @@ import { useCreateAccountMutation } from "@/lib/queries/accounts";
 import { AccountAvatar } from "./account-avatar";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
+import { ErrorWithReport } from "@/components/domain/support";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
 
@@ -205,11 +206,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
         pending={createMutation.isPending}
       />
 
-      {errors.form && (
-        <p role="alert" className="text-sm text-destructive">
-          {errors.form}
-        </p>
-      )}
+      {errors.form && <ErrorWithReport area="conto" error={errors.form} />}
     </form>
   );
 }

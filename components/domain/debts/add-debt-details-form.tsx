@@ -23,6 +23,7 @@ import type { LoanInputKey } from "@/lib/calc/amortization";
 import { AddDebtCostsField } from "./add-debt-costs-field";
 import { DebtFormField } from "./debt-form-field";
 import { formatMonthYear } from "./debts-format";
+import { ErrorWithReport } from "@/components/domain/support";
 
 interface FieldCopy {
   principal: string;
@@ -181,7 +182,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
         </>
       ) : null}
 
-      {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+      {error ? <ErrorWithReport area="debito" error={error} /> : null}
       <StepActions backLabel="Indietro" onBack={onBack} primaryLabel={last ? (mutation.isPending ? "Salvo…" : "Aggiungi debito") : "Continua"} pending={mutation.isPending} />
     </form>
   );

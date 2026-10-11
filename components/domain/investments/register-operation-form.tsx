@@ -41,6 +41,7 @@ import {
   SPLIT_RATIO_LABEL,
   suggestsMarketPrice,
 } from "./register-operation-form.state";
+import { ErrorWithReport } from "@/components/domain/support";
 
 /** Valori iniziali (es. da un suggerimento d'acquisto o da un dividendo da registrare). */
 export interface RegisterOperationInitial {
@@ -243,7 +244,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
             </div>
           </DialogSection>
         </DialogSections>
-        {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+        {error ? <ErrorWithReport area="operazione" error={error} /> : null}
         <DialogActions>
           {controvalore}
           <Button type="submit" disabled={save.isPending || !instrument}>
@@ -281,7 +282,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
           </>
         ) : null}
       </StepStage>
-      {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+      {error ? <ErrorWithReport area="operazione" error={error} /> : null}
       <StepActions
         backLabel={flow.isFirst ? undefined : "Indietro"}
         onBack={() => {

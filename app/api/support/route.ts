@@ -33,10 +33,16 @@ async function handlePost(request: NextRequest) {
   if (!result.ok) {
     recordSupportReport(parsed.data.kind, "failed");
     log.error("support.report.failed", { reportKind: parsed.data.kind, reason: result.reason, reference });
-    return Response.json({ error: "Non siamo riusciti a inviare la segnalazione. Riprova o scrivi a supporto@buddybudget.io." }, { status: 502 });
+    return Response.json({ error: "Non siamo riusciti a inviare la segnalazione. Riprova o scrivi a support@buddybudget.io." }, { status: 502 });
   }
   recordSupportReport(parsed.data.kind, "sent");
-  log.info("support.report.sent", { reportKind: parsed.data.kind, reference, withContext: parsed.data.context !== undefined });
+  log.info("support.report.sent", {
+    reportKind: parsed.data.kind,
+    reference,
+    withContext: parsed.data.context !== undefined,
+    reportSource: parsed.data.source ?? "pagina",
+    reportArea: parsed.data.error?.area,
+  });
   return Response.json({ reference }, { status: 201 });
 }
 

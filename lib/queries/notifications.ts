@@ -56,6 +56,7 @@ const AI_CATEGORIZATION_KEY = ["ai-categorization-consent"] as const;
 export interface AiCategorizationState {
   enabled: boolean;
   available: boolean;
+  instructions: string;
 }
 
 /** Legge il consenso alle proposte dell'assistente. */
@@ -73,16 +74,19 @@ export function useAiCategorizationQuery() {
 /** Attiva o revoca il consenso alle proposte dell'assistente. */
 export function useUpdateAiCategorizationMutation() {
   const queryClient = useQueryClient();
-  return useMutation<AiCategorizationState, Error, boolean>({
+  return useMutation<AiCategorizationState, Error, boolean | { instructions: string }>({
     mutationFn: async (enabled) => {
       const response = await fetch("/api/user/ai-categorization", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled }),
+        body: JSON.stringify(typeof enabled === "boolean" ? { enabled } : enabled),
       });
       if (!response.ok) throw await failure(response, "Impossibile salvare l'impostazione");
       return (await response.json()) as AiCategorizationState;
     },
-    onSuccess: (state) => queryClient.setQueryData(AI_CATEGORIZATION_KEY, state),
+    onSuccess: (state) => {
+      queryClient.setQueryData(AI_CATEGORIZATION_KEY, state);
+      queryClient.invalidateQueries({ queryKey: ["categorize-suggestions"] });
+    },
   });
 }

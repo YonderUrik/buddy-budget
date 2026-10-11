@@ -15,6 +15,12 @@ const input: JevRequestInput = {
 };
 
 describe("buildCategorizationRequest", () => {
+  it("include le istruzioni personali senza offrire trasferimenti al modello", () => {
+    const body = buildCategorizationRequest({ ...input, instructions: "  Libri in Svago  ", categories: [...input.categories, { name: "Giroconti", type: "trasferimento" }] }) as { state: { instructions: string }; questions: Record<string, { criteria: object }> };
+    expect(body.state.instructions).toBe("Libri in Svago");
+    expect(Object.keys(body.questions.m0.criteria)).not.toContain("Giroconti");
+    expect(Object.keys(body.questions.m1.criteria)).not.toContain("Giroconti");
+  });
   it("offre solo le categorie compatibili con la direzione", () => {
     const body = buildCategorizationRequest(input) as { questions: Record<string, { criteria: object }> };
     expect(Object.keys(body.questions.m0.criteria)).toEqual(["Spesa", "Affitto"]);

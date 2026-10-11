@@ -5,6 +5,7 @@
  * esercenti a un servizio esterno per ricevere proposte di categoria. Le proposte non si applicano mai da sole.
  */
 
+import { AiCategorizationInstructions } from "./ai-categorization-instructions";
 import { Switch } from "@/components/ui/switch";
 import { track } from "@/lib/analytics";
 import { useAiCategorizationQuery, useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
@@ -35,7 +36,7 @@ export function AiCategorizationSection() {
           label="Proponi le categorie"
           hint={
             data.available
-              ? "Se attivo, il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone) viene inviato a un servizio esterno con conservazione dei dati disattivata. Puoi revocare in ogni momento."
+              ? "Se attivo, il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone) viene inviato a un servizio esterno insieme alle categorie e alle tue eventuali istruzioni, con conservazione dei dati disattivata. Puoi revocare in ogni momento."
               : "Il servizio non è configurato su questo server."
           }
           htmlFor="assistente-categorie"
@@ -51,6 +52,7 @@ export function AiCategorizationSection() {
           />
         </SettingsRow>
       )}
+      {data && <AiCategorizationInstructions saved={data.instructions ?? ""} />}
       {update.isError && (
         <p className="text-sm text-neg" role="alert">
           {update.error.message}

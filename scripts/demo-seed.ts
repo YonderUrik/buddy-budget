@@ -190,6 +190,11 @@ async function main() {
       });
     });
   }
+  for (const [accountId, amount] of [[checking.id, -250], [savings.id, 250]] as const) {
+    rows.push({ userId: DEMO_USER_ID, accountId, categoryId: cat("Trasferimenti tra i miei conti"),
+      description: "Giroconto al conto deposito", amount: amount.toFixed(2), excludedAmount: amount.toFixed(2),
+      date: iso(today), source: "auto", externalId: `demo-transfer-${accountId}` });
+  }
   for (let i = 0; i < rows.length; i += 200) await db.insert(transactions).values(rows.slice(i, i + 200));
   await db
     .update(accounts)

@@ -64,12 +64,18 @@ async function handlePatch(
     resolvedCategory = category;
   }
 
+  const [currentCategory] = await db.select().from(categories).where(
+    and(eq(categories.id, transaction.categoryId), eq(categories.userId, session.user.id))
+  );
+  const isTransfer = (resolvedCategory ?? currentCategory)?.type === "trasferimento";
+  const wasTransfer = currentCategory?.type === "trasferimento";
+
   const currentIsIncome = Number(transaction.amount) > 0;
 
   // Se si cambia categoria senza toccare l'importo, la nuova categoria deve avere una direzione
   // compatibile con il segno già salvato (a meno che sia la categoria fallback, che non ha una
   // direzione propria e può accogliere transazioni di entrambi i segni).
-  if (resolvedCategory && parsed.data.amount === undefined && !resolvedCategory.isFallback) {
+  if (resolvedCategory && parsed.data.amount === undefined && !resolvedCategory.isFallback && !isTransfer) {
     const newCategoryIsIncome = resolvedCategory.type === "entrata";
     if (newCategoryIsIncome !== currentIsIncome) {
       return Response.json(
@@ -82,7 +88,7 @@ async function handlePatch(
   // Direzione da usare per il segno del nuovo importo: quella della categoria appena assegnata
   // (se non fallback), altrimenti quella già in vigore sulla transazione.
   const signIsIncome =
-    resolvedCategory && !resolvedCategory.isFallback ? resolvedCategory.type === "entrata" : currentIsIncome;
+    resolvedCategory && !resolvedCategory.isFallback && !isTransfer ? resolvedCategory.type === "entrata" : currentIsIncome;
 
   const newAmount =
     parsed.data.amount !== undefined
@@ -95,6 +101,10 @@ async function handlePatch(
     const magnitude = Math.abs(parsed.data.excludedAmount);
     newExcludedAmount = newAmount >= 0 ? magnitude : -magnitude;
   }
+
+  // Un giroconto è sempre escluso per intero; ricategorizzandolo torna a contare normalmente.
+  if (isTransfer) newExcludedAmount = newAmount;
+  else if (wasTransfer && parsed.data.excludedAmount === undefined) newExcludedAmount = 0;
 
   // Se amount e/o excludedAmount cambiano, rivalida l'invariante |excludedAmount| ≤ |amount| contro
   // l'importo che risulterà DOPO l'update: l'excludedAmount appena inviato se presente in questa stessa

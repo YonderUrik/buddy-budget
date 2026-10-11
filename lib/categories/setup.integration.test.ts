@@ -47,7 +47,7 @@ describe("applyCategorySetup", () => {
     expect(after).toContain("Musica");
     expect(after).toContain("Da categorizzare");
     expect(after).not.toContain("Contanti");
-    expect(after).toHaveLength(25);
+    expect(after).toHaveLength(26);
     const [animali] = await db.select().from(categories).where(eq(categories.name, "Animali"));
     expect(animali.description).toMatch(/veterinario/);
   });

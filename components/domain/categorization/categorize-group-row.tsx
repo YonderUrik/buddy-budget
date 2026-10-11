@@ -62,7 +62,7 @@ export function CategorizeGroupRow({
   // "appresa" che intrappola per sempre quel merchant nel fallback (vince su ogni regola futura più
   // specifica). Sceglierla di nuovo non ha senso in una pagina che serve a uscire dal fallback.
   const selectableCategories = React.useMemo(
-    () => categories.filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata")),
+    () => categories.filter((c) => !c.isFallback && (c.type === "trasferimento" || (isIncome ? c.type === "entrata" : c.type !== "entrata"))),
     [categories, isIncome]
   );
 

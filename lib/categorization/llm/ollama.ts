@@ -16,7 +16,7 @@ const llmResponseSchema = z.array(
 /** Prompt in un solo blocco: categorie disponibili e transazioni da classificare, senza dati di conto. */
 function buildPrompt(input: SuggestInput[], categories: Category[]): string {
   const categoryList = categories
-    .filter((category) => !category.isFallback)
+    .filter((category) => !category.isFallback && category.type !== "trasferimento")
     .map((category) => `- ${category.name} (${CATEGORY_TYPE_LABELS[category.type]})`)
     .join("\n");
   const transactionList = input
@@ -73,7 +73,7 @@ export function createOllamaSuggester(baseUrl: string, model: string): CategoryS
         if (!parsed.success) return [];
 
         const validNames = new Set(
-          categories.filter((category) => !category.isFallback).map((category) => category.name)
+          categories.filter((category) => !category.isFallback && category.type !== "trasferimento").map((category) => category.name)
         );
         const validIndexes = new Set(input.map((item) => item.index));
         return parsed.data.filter(

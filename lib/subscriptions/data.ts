@@ -11,7 +11,7 @@ import type { CategoryType } from "@/lib/categories/groups";
 import { buildSubscriptionsView, type StoredSubscriptionRow, type SubscriptionsView } from "./view";
 
 /** Gruppi di categorie le cui uscite non entrano mai nel rilevamento. */
-const EXCLUDED_CATEGORY_TYPES: CategoryType[] = ["futuro", "entrata"];
+const EXCLUDED_CATEGORY_TYPES: CategoryType[] = ["futuro", "entrata", "trasferimento"];
 
 export type SubscriptionsResponse = SubscriptionsView & { currency: string; today: string };
 

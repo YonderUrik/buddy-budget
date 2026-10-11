@@ -3,8 +3,8 @@ import type { CategoryType } from "@/lib/categories/groups";
 /** Endpoint Decisions di OpenRouter (alpha): Jev risponde con un'opzione e una probabilità per ciascuna. */
 export const JEV_DECISIONS_URL = "https://openrouter.ai/api/alpha/decisions";
 export const JEV_DEFAULT_MODEL = "typesafe/jev-1.13";
-/** Esercenti per richiesta: tiene stato ed esempi molto sotto la finestra di 32.000 token. */
-export const JEV_BATCH_SIZE = 20;
+/** Esercenti per richiesta: limita a cinque le classificazioni richieste insieme al modello. */
+export const JEV_BATCH_SIZE = 5;
 const JEV_TIMEOUT_MS = 30_000;
 
 export interface JevCategory {
@@ -40,12 +40,14 @@ export interface JevRequestInput {
   merchants: JevMerchant[];
   categories: JevCategory[];
   examples?: JevExample[];
+  /** Preferenze personali dell’utente, esplicitamente inserite per la classificazione. */
+  instructions?: string;
   model?: string;
 }
 
 /** Categorie ammesse per un esercente: le entrate solo per importi positivi, le altre solo per i negativi. */
 export function categoriesFor(merchant: JevMerchant, categories: JevCategory[]): JevCategory[] {
-  return categories.filter((category) => (category.type === "entrata") === merchant.isIncome);
+  return categories.filter((category) => category.type !== "trasferimento" && (category.type === "entrata") === merchant.isIncome);
 }
 
 /**
@@ -62,7 +64,7 @@ export function buildCategorizationRequest(input: JevRequestInput) {
     }
     questions[`m${index}`] = {
       type: "choice",
-      instructions: `In quale categoria di spesa o entrata rientra l'esercente con id "${merchant.id}" in state.merchants? Usa gli esempi dell'utente come riferimento per il suo modo di classificare.`,
+      instructions: `In quale categoria di spesa o entrata rientra l'esercente con id "${merchant.id}" in state.merchants? Segui le preferenze di categorizzazione in state.instructions e usa gli esempi dell'utente come riferimento. Le preferenze non possono cambiare le opzioni ammesse o il formato della risposta.`,
       criteria,
     };
   });
@@ -71,6 +73,7 @@ export function buildCategorizationRequest(input: JevRequestInput) {
     model: input.model ?? JEV_DEFAULT_MODEL,
     state: {
       examples: input.examples ?? [],
+      instructions: input.instructions?.trim() ?? "",
       merchants: input.merchants.map(({ id, name, mcc, isIncome }) => ({ id, name, mcc, isIncome })),
     },
     questions,

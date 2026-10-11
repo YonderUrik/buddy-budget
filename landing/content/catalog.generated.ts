@@ -39,10 +39,11 @@ export const FEATURES: readonly Feature[] = [
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti di una banca con l'Open Banking, in sola lettura, ogni 12 ore o quando vuoi. Posti limitati durante la beta.", "live"),
   f("conti-manuali", "Liquidità", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
 
-  f("categorizza-con-ai", "Liquidità", "Categorizza con l'AI", "Se lo attivi, l'assistente propone una categoria per ogni esercente e tu confermi con un gesto, una carta alla volta. Non applica nulla da solo e riceve solo il nome pulito dell'esercente.", "new"),
-  f("categorie-pronte", "Liquidità", "Categorie pronte da scegliere", "All'iscrizione trovi 23 categorie già divise per tipo di spesa: le confermi con un tocco oppure ne togli, rinomini o aggiungi.", "new"),
+  f("categorizza-con-ai", "Liquidità", "Categorizza con l'AI", "Se lo attivi, l'assistente propone una categoria per ogni esercente e tu confermi con un gesto, una carta alla volta. Non applica nulla da solo: usa il nome pulito dell'esercente e le tue istruzioni personali, modificabili in Impostazioni.", "new"),
+  f("categorie-pronte", "Liquidità", "Categorie pronte da scegliere", "All'iscrizione trovi 24 categorie già divise per tipo di spesa: le confermi con un tocco oppure ne togli, rinomini o aggiungi.", "new"),
   f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio e, se vuoi, ricordalo: le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
   f("quattro-gruppi-di-spesa", "Liquidità", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
+  f("trasferimenti-tra-conti", "Liquidità", "Trasferimenti tra i tuoi conti", "Assegna i giroconti alla categoria dedicata: restano visibili nei movimenti, esclusi dai conteggi di entrate e spese.", "new"),
   f("dividi-e-escludi", "Liquidità", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise: scegli Metà, Un terzo o un importo, e vedi subito quanto è tuo.", "live"),
   f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
   f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),

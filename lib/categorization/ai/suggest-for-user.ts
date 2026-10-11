@@ -9,7 +9,7 @@ import { logger, recordCategorizationAiRequest, recordCategorizationSuggestions,
 import { groupForModel, pickExamples, type MerchantGroup } from "./groups";
 
 /** Versione del prompt e dello stato inviato: va incrementata a ogni modifica che può cambiare le risposte. */
-export const AI_PROMPT_VERSION = 1;
+export const AI_PROMPT_VERSION = 2;
 /** Tetto di esercenti nuovi per esecuzione: argine alla spesa dopo un import molto grande. */
 export const MAX_GROUPS_PER_RUN = 120;
 /** Tetto per la richiesta manuale («Categorizza con l'AI»): l'utente la chiede apposta per tutto l'arretrato. */
@@ -45,7 +45,7 @@ export async function suggestCategoriesForUser(
   const result: SuggestResult = { outcome: "nothing_to_do", stored: 0, blocked: 0 };
 
   const [user] = await db
-    .select({ consentAt: authUser.aiCategorizationConsentAt })
+    .select({ consentAt: authUser.aiCategorizationConsentAt, instructions: authUser.aiCategorizationInstructions })
     .from(authUser)
     .where(eq(authUser.id, userId));
   if (!user?.consentAt) return { ...result, outcome: "disabled" };
@@ -54,7 +54,7 @@ export async function suggestCategoriesForUser(
   const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
   const fallback = userCategories.find((category) => category.isFallback);
   if (!fallback) return result;
-  const options_ = userCategories.filter((category) => !category.isFallback);
+  const options_ = userCategories.filter((category) => !category.isFallback && category.type !== "trasferimento");
   if (options_.length === 0) return result;
 
   const pending = await db
@@ -119,7 +119,7 @@ export async function suggestCategoriesForUser(
     let decisions;
     try {
       ({ decisions } = await classifyWithJev(
-        { merchants, categories: jevCategories, examples, model },
+        { merchants, categories: jevCategories, examples, model, instructions: user.instructions },
         { apiKey, fetchImpl: options.fetchImpl }
       ));
       recordCategorizationAiRequest("ok", Date.now() - startedAt);
@@ -146,11 +146,13 @@ export async function suggestCategoriesForUser(
       ];
     });
     if (rows.length > 0) {
-      const inserted = await db
-        .insert(categorizationSuggestions)
-        .values(rows)
-        .onConflictDoNothing()
-        .returning({ id: categorizationSuggestions.id });
+      const inserted = await db.transaction(async (tx) => {
+        // Serializza con il salvataggio delle istruzioni: una risposta in volo non deve ripristinare proposte obsolete.
+        const [current] = await tx.select().from(authUser).where(eq(authUser.id, userId)).for("update");
+        if (!current?.aiCategorizationConsentAt || current.aiCategorizationInstructions !== user.instructions) return null;
+        return tx.insert(categorizationSuggestions).values(rows).onConflictDoNothing().returning({ id: categorizationSuggestions.id });
+      });
+      if (inserted === null) break;
       result.stored += inserted.length;
     }
   }

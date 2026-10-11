@@ -225,6 +225,13 @@
       "when": 1791745194156,
       "tag": "0032_limite_collegamenti_bancari",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1791748170449,
+      "tag": "0033_categorizzazione_giroconti_istruzioni",
+      "breakpoints": true
     }
   ]
 }

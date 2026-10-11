@@ -46,7 +46,7 @@ function defaultCategoryId(group: SuggestionGroup): string {
 /** Esiste almeno una categoria (non fallback) compatibile con la direzione del gruppo. */
 function hasCompatibleCategory(group: SuggestionGroup, categories: Category[]): boolean {
   const isIncome = group.totalAmount > 0;
-  return categories.some((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata"));
+  return categories.some((c) => !c.isFallback && (c.type === "trasferimento" || (isIncome ? c.type === "entrata" : c.type !== "entrata")));
 }
 
 /**

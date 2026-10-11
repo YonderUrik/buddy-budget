@@ -4,9 +4,9 @@ import { CATEGORY_TYPES, EXPENSE_GROUP_KEYS } from "@/lib/categories/groups";
 import { DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES, OPTIONAL_DEFAULT_CATEGORIES } from "./categories";
 
 describe("DEFAULT_CATEGORIES", () => {
-  it("ha 24 categorie (23 più la fallback) e 5 facoltative, con nomi e chiavi unici", () => {
+  it("ha 25 categorie (24 più la fallback) e 5 facoltative, con nomi e chiavi unici", () => {
     const all = [...DEFAULT_CATEGORIES, ...OPTIONAL_DEFAULT_CATEGORIES];
-    expect(DEFAULT_CATEGORIES).toHaveLength(24);
+    expect(DEFAULT_CATEGORIES).toHaveLength(25);
     expect(OPTIONAL_DEFAULT_CATEGORIES).toHaveLength(5);
     expect(new Set(all.map((c) => c.name)).size).toBe(all.length);
     expect(new Set(all.map((c) => c.key)).size).toBe(all.length);

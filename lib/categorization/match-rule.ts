@@ -21,7 +21,7 @@ export function isDirectionCompatible(
   isIncome: boolean,
   isFallback: boolean
 ): boolean {
-  if (isFallback) return true;
+  if (isFallback || categoryType === "trasferimento") return true;
   return (categoryType === "entrata") === isIncome;
 }
 

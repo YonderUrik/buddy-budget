@@ -57,7 +57,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
   const category = categories.find((c) => c.id === transaction.categoryId);
   const uncategorized = category?.isFallback ?? false;
   const selectable = React.useMemo(
-    () => categories.filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata")),
+    () => categories.filter((c) => c.isFallback || (c.type === "trasferimento" || (isIncome ? c.type === "entrata" : c.type !== "entrata"))),
     [categories, isIncome]
   );
   const hasRaw = transaction.rawDescription && transaction.rawDescription !== transaction.description;
@@ -124,6 +124,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         fullAmount={full}
         excluded={excluded}
         isIncome={isIncome}
+        isTransfer={category?.type === "trasferimento"}
         currency={currency}
         avatar={avatar}
         splitOpen={panel === "split"}
@@ -135,9 +136,9 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
       />
       {actionsOpen && (
         <div id={`azioni-${transaction.id}`} className="flex flex-wrap items-center gap-1 px-2 pb-2">
-          <button type="button" className={cn(actionButton, "sm:hidden")} onClick={() => setPanel("split")}>
+          {category?.type !== "trasferimento" && <button type="button" className={cn(actionButton, "sm:hidden")} onClick={() => setPanel("split")}>
             <SplitIcon className="size-4" aria-hidden="true" /> Dividi
-          </button>
+          </button>}
           <TransactionNotePopover transaction={transaction} />
           {!isAuto && (
             <>

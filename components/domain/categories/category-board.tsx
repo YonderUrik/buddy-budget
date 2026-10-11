@@ -116,6 +116,11 @@ export function CategoryBoard({ categories }: CategoryBoardProps) {
           description: INCOME_DESCRIPTION,
           items: sections.income,
         })}
+        {column("trasferimento", "trasferimento", {
+          title: "Trasferimenti tra conti",
+          description: "Spostamenti tra i tuoi conti: non contano come entrate o spese.",
+          items: sections.transfers,
+        })}
         {sections.uncategorized.length > 0 &&
           column("daCategorizzare", undefined, {
             title: GROUP_DISPLAY.daCategorizzare.label,

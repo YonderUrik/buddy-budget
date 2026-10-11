@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-10T11:20:15.203Z",
+  "capturedAt": "2026-10-11T06:29:46.419Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -26,6 +26,11 @@
       "id": "analisi",
       "theme": "light",
       "route": "/liquidita/analisi"
+    },
+    {
+      "id": "abbonamenti",
+      "theme": "light",
+      "route": "/liquidita/abbonamenti"
     },
     {
       "id": "categorie",
@@ -101,6 +106,11 @@
       "id": "analisi",
       "theme": "dark",
       "route": "/liquidita/analisi"
+    },
+    {
+      "id": "abbonamenti",
+      "theme": "dark",
+      "route": "/liquidita/abbonamenti"
     },
     {
       "id": "categorie",

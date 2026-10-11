@@ -13,8 +13,6 @@ export interface WhatsNewEntry {
   /** Dove porta il pulsante. */
   href: string;
   ctaLabel: string;
-  /** Immagine in `public/novita/` (opzionale), con testo alternativo. */
-  image?: { src: string; alt: string; width: number; height: number };
 }
 
 /** Giorni dopo i quali una novità non si mostra più, anche se non è stata chiusa. */
@@ -29,6 +27,5 @@ export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
       "Per ogni esercente l'assistente propone una categoria e tu confermi con un gesto, una carta alla volta. Si attiva in Impostazioni e non applica mai nulla da solo.",
     href: "/categorizza",
     ctaLabel: "Provala",
-    image: { src: "/novita/categorizza-ai.png", alt: "Una carta di Categorizza con la categoria proposta", width: 768, height: 620 },
   },
 ];

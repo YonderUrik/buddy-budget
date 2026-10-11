@@ -131,7 +131,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
       {toConfirm.length > 0 ? (
         <section aria-label="Da confermare">
           <SectionTitle icon={SearchCheckIcon} title="Trovati nei tuoi movimenti" color="var(--swatch-teal)" />
-          <p className="mb-3 text-sm text-text-2">Addebiti che tornano con regolarità. Conferma quelli che sono davvero abbonamenti: una spesa ricorrente non lo è per forza.</p>
+          <p className="mb-3 text-sm text-text-2">Addebiti che tornano con regolarità. Conferma solo i veri abbonamenti: non tutto ciò che ricorre lo è.</p>
           <div className="flex flex-col gap-2">
             {toConfirm.map((item) => (
               <SubscriptionRow

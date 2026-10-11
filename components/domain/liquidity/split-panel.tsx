@@ -43,7 +43,7 @@ export function SplitPanel({ title, total, excluded, currency, isIncome, saving 
     <div className="mx-1 my-2 rounded-2xl bg-foreground/[0.04] p-4 sm:p-5">
       <p className="text-sm font-semibold text-text-2">Dividi · {title}</p>
       <p className="font-heading text-3xl font-medium tabular-nums">{formatCurrency(total, currency)}</p>
-      <p className="mt-1 text-sm text-text-2">{isIncome ? "Quanto di questa entrata è davvero tuo?" : "Quanto di questa spesa è davvero tuo?"}</p>
+      <p className="mt-1 text-sm text-text-2">{isIncome ? "Quanto di questa entrata è tuo?" : "Quanto di questa spesa è tuo?"}</p>
       <div role="group" aria-label="Scorciatoie" className="mt-3 flex flex-wrap gap-2">
         {SPLIT_PRESETS.map((preset) => (
           <button

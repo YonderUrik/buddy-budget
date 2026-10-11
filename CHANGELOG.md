@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.55.0](https://github.com/YonderUrik/buddy-budget/compare/v0.54.0...v0.55.0) (2026-10-11)
+
+
+### Novità
+
+* avviso e eliminazione degli account inattivi da 90 giorni ([#304](https://github.com/YonderUrik/buddy-budget/issues/304)) ([e380a7c](https://github.com/YonderUrik/buddy-budget/commit/e380a7cc1f379fae3db4687a1b58f847eab9d0e2))
+
 ## [0.54.0](https://github.com/YonderUrik/buddy-budget/compare/v0.53.0...v0.54.0) (2026-10-11)
 
 

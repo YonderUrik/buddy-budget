@@ -3,6 +3,7 @@
 /**
  * Layout di Investimenti: titolo, bottoni Importa/Registra, schede (Portafoglio, Proventi, Tasse) e i dialog
  * condivisi. Usa la stessa query della scheda Portafoglio al periodo di default: nessuna richiesta in più.
+ * La pagina di un singolo titolo è una scheda a sé: niente intestazione né schede, solo i dialog condivisi.
  */
 
 import { FormDialogContent } from "@/components/domain/shared";
@@ -26,11 +27,12 @@ import { usedInstruments } from "@/lib/investments/view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 
-/** Le pagine dei singoli titoli vivono sotto questo indirizzo e appartengono alla scheda Portafoglio. */
+/** Le pagine dei singoli titoli vivono sotto questo indirizzo: hanno la propria testata con il ritorno indietro. */
 const TITLE_PAGES_BASE = "/investimenti/titoli/";
 
 export default function InvestimentiLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isTitlePage = pathname.startsWith(TITLE_PAGES_BASE);
   const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
   const [importOpen, setImportOpen] = React.useState(false);
@@ -47,24 +49,26 @@ export default function InvestimentiLayout({ children }: { children: React.React
   return (
     <BrokerSelectionProvider><InvestmentsActionsProvider value={actions}>
       <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="min-w-0 font-heading text-2xl font-medium text-foreground">Investimenti</h1>
-            <div className="flex shrink-0 gap-2">
-              <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
-                <DatabaseIcon size={16} aria-hidden="true" />
-              </Button>
-              {/* Su mobile solo icone: con le etichette la testata era più larga dello schermo e la pagina scorreva di lato. */}
-              <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label="Importa">
-                <Upload size={15} aria-hidden="true" /> <span className="hidden sm:inline">Importa</span>
-              </Button>
-              <Button className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label="Registra operazione">
-                <Plus size={15} aria-hidden="true" /> <span className="hidden sm:inline">Registra</span>
-              </Button>
+        {isTitlePage ? null : (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="min-w-0 font-heading text-2xl font-medium text-foreground">Investimenti</h1>
+              <div className="flex shrink-0 gap-2">
+                <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
+                  <DatabaseIcon size={16} aria-hidden="true" />
+                </Button>
+                {/* Su mobile solo icone: con le etichette la testata era più larga dello schermo e la pagina scorreva di lato. */}
+                <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label="Importa">
+                  <Upload size={15} aria-hidden="true" /> <span className="hidden sm:inline">Importa</span>
+                </Button>
+                <Button className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label="Registra operazione">
+                  <Plus size={15} aria-hidden="true" /> <span className="hidden sm:inline">Registra</span>
+                </Button>
+              </div>
             </div>
+            <InvestmentsTabs activeHref={pathname} />
           </div>
-          <InvestmentsTabs activeHref={pathname.startsWith(TITLE_PAGES_BASE) ? "/investimenti" : pathname} />
-        </div>
+        )}
         {data && !pathname.includes("/rendiconti") && !pathname.includes("/titoli") ? <BrokerSelector data={data} /> : null}
         {children}
       </div>

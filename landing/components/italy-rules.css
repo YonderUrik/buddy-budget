@@ -1,14 +1,20 @@
-.italy-grid { margin-top: 48px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-.italy-card { display: flex; flex-direction: column; gap: 10px; padding: 26px; border-radius: 24px; background: var(--surface); box-shadow: 0 0 0 1px var(--line); transition: box-shadow 0.25s, translate 0.25s var(--ease); }
-.italy-card:hover { translate: 0 -3px; box-shadow: 0 0 0 1px var(--line), 0 18px 40px -26px var(--shadow-win); }
-/* icona su fondo tinto: lo stesso schema delle sezioni aperte della Panoramica */
-.italy-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); margin-bottom: 6px; }
-.italy-card h3 { font: 600 18px / 1.3 var(--f-h); letter-spacing: -0.015em; }
-.italy-card p { color: var(--ink2); font-size: 15.5px; line-height: 1.55; }
-.italy-links { margin-top: auto; padding-top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 14.5px; }
-.italy-tool { color: var(--accent); font-weight: 600; text-decoration: none; }
-.italy-tool em { font-style: normal; display: inline-block; transition: translate 0.25s var(--ease); }
-.italy-tool:hover em { translate: 4px 0; }
-.italy-src { color: var(--ink3); text-decoration: underline; text-underline-offset: 3px; }
-@media (max-width: 1000px) { .italy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .italy-grid { grid-template-columns: 1fr; } }
+/* Regole italiane come tabella del foglio; sui telefoni ogni riga diventa una scheda. */
+.it-wrap { margin-top: 36px; }
+.it { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 15.5px; }
+.it th, .it td { border: 1px solid var(--grid); padding: 14px 16px; text-align: left; vertical-align: top; }
+.it thead th { background: var(--head); font: 500 12px var(--f-m); color: var(--ink3); text-transform: uppercase; letter-spacing: 0.05em; }
+.it tbody th { font-weight: 700; width: 36%; }
+.it td { color: var(--ink2); }
+.it-links { width: 22%; font: 500 13px var(--f-m); }
+.it-links a { display: block; color: var(--accent); text-decoration: none; }
+.it-links a + a { margin-top: 6px; color: var(--ink3); text-decoration: underline; }
+.it-links a:hover { text-decoration: underline; }
+@media (max-width: 760px) {
+  .it thead { display: none; }
+  .it, .it tbody, .it tr, .it th, .it td { display: block; width: auto; }
+  .it tr { border: 1px solid var(--grid); margin-bottom: -1px; }
+  .it th, .it td { border: 0; padding: 4px 16px; }
+  .it tbody th { padding-top: 14px; }
+  .it td.it-links { padding-bottom: 14px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .it-links a + a { margin-top: 0; }
+}

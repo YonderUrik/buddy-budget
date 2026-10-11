@@ -1,0 +1,18 @@
+/* Catalogo come tabella del foglio: filtri come celle, numeri di riga a sinistra; sotto i 700px spariscono area e numero. */
+.cs-filter { display: flex; flex-wrap: wrap; margin-top: 32px; font: 500 13.5px var(--f-m); }
+.cs-filter button { border: 1px solid var(--grid); margin: 0 -1px -1px 0; background: var(--surface); padding: 8px 14px; cursor: pointer; color: var(--ink2); font: inherit; }
+.cs-filter button[aria-pressed="true"] { background: var(--sel-soft); color: var(--ink); outline: 2px solid var(--sel); outline-offset: -2px; position: relative; }
+.cs-scroll { overflow-x: auto; margin-top: 16px; }
+.cs-table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 15px; }
+.cs-table th, .cs-table td { border: 1px solid var(--grid); padding: 10px 12px; text-align: left; vertical-align: top; }
+.cs-table thead th { background: var(--head); font: 500 12px var(--f-m); color: var(--ink3); text-transform: uppercase; letter-spacing: 0.05em; }
+.cs-table tbody th { font-weight: 700; width: 26%; }
+.cs-table td { color: var(--ink2); }
+.cs-n { width: 44px; text-align: center !important; background: var(--head); font: 500 12px var(--f-m); color: var(--ink3) !important; }
+.cs-area { width: 13%; font: 500 13px var(--f-m); color: var(--ink3) !important; }
+.cs-st { width: 84px; font: 600 12px var(--f-m); color: var(--ink3) !important; }
+.cs-st.new { color: var(--accent) !important; }
+@media (max-width: 700px) {
+  .cs-n, .cs-area, .cs-table thead th:nth-child(1), .cs-table thead th:nth-child(3) { display: none; }
+  .cs-table tbody th { width: 38%; }
+}

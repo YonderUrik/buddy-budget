@@ -1,0 +1,34 @@
+/* «Nel dettaglio»: schede a sinistra (in riga e scorrevoli sui telefoni), scheda tecnica e schermata a destra. */
+.dt { scroll-margin-top: calc(68px + 44px); }
+.dt-grid { display: grid; grid-template-columns: minmax(0, 230px) minmax(0, 1fr); gap: 28px; margin-top: 40px; align-items: start; }
+.dt-tabs { display: flex; flex-direction: column; gap: 2px; }
+.dt-tabs button { border: 0; background: none; text-align: left; cursor: pointer; padding: 11px 14px; font: 500 14px var(--f-m); color: var(--ink2); transition: color 0.2s, background 0.2s; }
+.dt-tabs button:hover { color: var(--ink); }
+.dt-tabs button[aria-selected="true"] { background: var(--sel-soft); color: var(--ink); outline: 2px solid var(--sel); outline-offset: -2px; }
+.dt-panel { min-width: 0; }
+.dt-head { padding: 26px 28px 6px; }
+.dt-head h3 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.dt-head p { margin-top: 8px; color: var(--ink2); max-width: 62ch; }
+.dt-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); }
+.dt-body.noshot { grid-template-columns: minmax(0, 1fr); }
+.dt-body dl { margin: 0; padding: 12px 28px 26px; }
+.dt-body.noshot dl { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; }
+.dt-body dl div { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 1fr); gap: 16px; padding: 12px 0; border-top: 1px solid var(--grid); }
+.dt-body dt { font: 500 13.5px var(--f-m); color: var(--ink); }
+.dt-body dd { margin: 0; color: var(--ink2); font-size: 15px; line-height: 1.5; }
+.dt-shot { border-left: 1px solid var(--grid); position: relative; min-height: 300px; }
+/* nella colonna stretta la schermata si allarga di più per restare leggibile */
+.dt-shot .shot-img { position: absolute; top: 0; left: -28.5%; width: 152%; margin: 0; }
+@media (max-width: 1000px) {
+  .dt-body { grid-template-columns: minmax(0, 1fr); }
+  .dt-shot { border-left: 0; border-top: 1px solid var(--grid); min-height: 0; }
+  .dt-shot .shot-img { position: static; width: 123%; margin-left: -23%; }
+}
+@media (max-width: 760px) {
+  .dt-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .dt-tabs { flex-direction: row; overflow-x: auto; padding: 2px; }
+  .dt-tabs button { white-space: nowrap; }
+  .dt-body dl div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .dt-body.noshot dl { grid-template-columns: minmax(0, 1fr); }
+  .dt-head, .dt-body dl { padding-inline: 18px; }
+}

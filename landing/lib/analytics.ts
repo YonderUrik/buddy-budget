@@ -1,9 +1,11 @@
 import type { FeatureArea } from "@/content/catalog.generated";
-import type { QuestionId } from "@/content/questions";
 import type { ScreenId } from "@/content/screens";
+import type { DetailId } from "@/content/sheet";
 
 /** Sezioni della pagina misurate con `section_view`. */
-export type SectionId = "hero" | "passi" | "risposte" | "italia" | "gruppi" | "schermate" | "funzioni" | "sicurezza" | "codice" | "perchi" | "confronto" | "strumenti" | "domande" | "fine";
+export type SectionId =
+  | "hero" | "fonti" | "spese" | "investimenti" | "debiti" | "pensione" | "futuro" | "dettagli"
+  | "italia" | "schermate" | "funzioni" | "sicurezza" | "codice" | "perchi" | "confronto" | "domande" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).
@@ -12,8 +14,10 @@ export type SectionId = "hero" | "passi" | "risposte" | "italia" | "gruppi" | "s
 export interface LandingEvents {
   cta_click: { location: "nav" | "hero" | "closing" | "funzioni" | "schermate" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "guida_zainetto" | "funzione_investimenti"; target: "signup" | "login" | "calculator" };
   section_view: { section: SectionId };
-  question_selected: { question: QuestionId };
-  question_tool_click: { question: QuestionId };
+  /** Apertura: il foglio d'esempio passa alla Panoramica dell'app, o torna al foglio. */
+  sheet_view_toggled: { view: "foglio" | "app" };
+  /** «Nel dettaglio»: scheda aperta (banca, categorie, broker, rischio, tasse, debiti, limiti). */
+  detail_tab_selected: { tab: DetailId };
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };

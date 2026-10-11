@@ -1,7 +1,7 @@
 /*
- * Token e base della landing. Il linguaggio è quello dell'app (token --a-* = quelli di app/globals.css, usati dalla
- * finestra del prodotto); il resto è pagina neutra (grigi caldi, niente blu) e sobria con un solo accento (azzurro brand). Il giallo compare
- * solo nel marchio e nel pulsante principale. Niente colori esadecimali nei componenti: solo token.
+ * Token e base della landing «Il foglio» (2026-10-11): carta a quadretti come un foglio di calcolo, numeri e formule in
+ * monospace, il giallo della cella selezionata come unico accento forte (pulsante principale e selezioni). I token --a-*
+ * sono quelli dell'app, usati dalla finestra del prodotto. Niente colori esadecimali nei componenti: solo token.
  */
 :root {
   --bg: #fcfcfd;
@@ -47,8 +47,17 @@
   --grad-a: #0b0b0d;
   --grad-b: #5b5b66;
 
-  --f-h: "Geist Variable", "Geist", system-ui, sans-serif;
-  --f-b: "Geist Variable", "Geist", system-ui, sans-serif;
+  /* foglio di calcolo: righe della griglia, intestazioni, cella selezionata, errori di formula, fondo dei loghi */
+  --grid: #e5e8eb;
+  --head: #f3f4f5;
+  --sel: #ffb703;
+  --sel-soft: #fff3cf;
+  --err: #b42318;
+  --logo-bg: #ffffff;
+
+  --f-h: "Schibsted Grotesk Variable", "Schibsted Grotesk", system-ui, sans-serif;
+  --f-b: "Schibsted Grotesk Variable", "Schibsted Grotesk", system-ui, sans-serif;
+  --f-m: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -82,6 +91,10 @@
     --a-vol: #facc15;
     --a-fut: #4ade80;
     --a-sal: #60a5fa;
+    --grid: #262a30;
+    --head: #1b1f24;
+    --sel-soft: #3a2f12;
+    --err: #f97066;
     color-scheme: dark;
   }
 }
@@ -115,6 +128,10 @@
   --a-vol: #facc15;
   --a-fut: #4ade80;
   --a-sal: #60a5fa;
+  --grid: #262a30;
+  --head: #1b1f24;
+  --sel-soft: #3a2f12;
+  --err: #f97066;
   color-scheme: dark;
 }
 
@@ -133,11 +150,18 @@ h1, h2, h3, h4 { font-family: var(--f-h); margin: 0; text-wrap: balance; }
 p { margin: 0; }
 a { color: inherit; }
 button { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; border-radius: 8px; }
+:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
 
 .wrap { max-width: 1200px; margin-inline: auto; padding-inline: 24px; }
 .kicker { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
-h2.t { font-size: clamp(28px, 3.6vw, 44px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; max-width: 20em; }
+/* riferimento di cella sopra i titoli delle sezioni della home («Spese!A1») */
+.ref { display: block; font: 500 13px var(--f-m); color: var(--accent); margin-bottom: 10px; }
+h2.t { font-size: clamp(30px, 4.2vw, 52px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.04; max-width: 20em; }
+.mono { font-family: var(--f-m); }
+/* carta a quadretti: righe da 32px e colonne da 120px, come le celle di un foglio */
+.paper { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 100% 32px, 120px 100%; }
+/* riquadro con il bordo di una cella */
+.cell { background: var(--surface); border: 1px solid var(--grid); }
 .lede { font-size: clamp(17px, 1.5vw, 19px); color: var(--ink2); max-width: 38em; margin-top: 16px; }
 .sec { padding-block: 104px; }
 /* fascia alternata: stacca le sezioni senza bordi né ombre */
@@ -149,15 +173,16 @@ h2.t { font-size: clamp(28px, 3.6vw, 44px); font-weight: 600; letter-spacing: -0
 
 .btn {
   white-space: nowrap; flex: none;
-  display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: 999px;
-  font: 600 16px var(--f-b); text-decoration: none; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px; border-radius: 0;
+  font: 700 16px var(--f-b); text-decoration: none; border: 1.5px solid var(--ink); cursor: pointer;
   transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease), background 0.2s;
 }
-.btn { height: 48px; font-weight: 600; }
-.btn.main { background: var(--sun); color: var(--on-sun); box-shadow: inset 0 0 0 1px var(--sun-edge), 0 6px 16px -8px color-mix(in srgb, var(--sun-edge) 80%, transparent); }
-.btn.main:hover { transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--sun-edge), 0 14px 30px -12px color-mix(in srgb, var(--sun) 70%, transparent); }
-.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
-.btn.ghost:hover { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.btn { height: 48px; }
+/* ombra piena sfalsata, come una cella sollevata: si sposta col cursore */
+.btn.main { background: var(--sel); color: var(--on-sun); box-shadow: 3px 3px 0 var(--ink); }
+.btn.ghost { background: var(--surface); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 .btn svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }
 .btn:hover svg { transform: translateX(3px); }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; }

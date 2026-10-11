@@ -1,9 +1,8 @@
 /**
- * Testi delle sezioni della home introdotte con la landing del 2026-10-09 (vedi `docs/decisioni/2026-10-09-landing-nuova-struttura.md`):
- * fatti sotto l'apertura, tre passi, regole italiane, metodo dei quattro gruppi, per chi è, confronto. Solo fatti
- * verificabili nel prodotto: niente numeri di utenti, recensioni o promesse. Le cifre di esempio sono dichiarate come tali.
+ * Testi condivisi della home (fatti sotto l'apertura, regole italiane, per chi è, confronto), nati con la landing del
+ * 2026-10-09 e ripresi da quella «Il foglio» del 2026-10-11 (il resto è in `sheet.ts`). Solo fatti verificabili nel
+ * prodotto: niente numeri di utenti, recensioni o promesse.
  */
-import type { ScreenId } from "./screens";
 import { CONTENT_PATHS, SOURCES, type Source } from "./seo-pages";
 
 /** Icone disponibili per le sezioni (stessa libreria dell'app: lucide). Il componente traduce il nome in icona. */
@@ -29,39 +28,6 @@ export const HERO_FACTS: readonly HeroFact[] = [
 
 /** Fatto aggiunto solo quando il codice è pubblico (`SOURCE_URL` valorizzato). */
 export const OPEN_SOURCE_FACT: HeroFact = { icon: "code", label: "Codice aperto" };
-
-export interface Step {
-  icon: HomeIcon;
-  title: string;
-  text: string;
-  /** Schermata vera mostrata accanto al passo (senza la barra laterale dell'app). */
-  shot: { id: ScreenId };
-}
-
-export const STEPS = {
-  title: "Come si comincia.",
-  lede: "Dal primo conto alla prima decisione, senza dover inserire tutto il primo giorno.",
-  steps: [
-    {
-      icon: "link",
-      title: "Collega la banca o importa",
-      text: "Il conto si collega in sola lettura con l'Open Banking. Le operazioni del broker arrivano dai file che già scarichi, per esempio da Interactive Brokers, DEGIRO, Trade Republic e Fineco.",
-      shot: { id: "conti" },
-    },
-    {
-      icon: "dashboard",
-      title: "Vedi il quadro intero",
-      text: "Saldi di tutti i conti, spese del mese, portafoglio, fondo pensione e debiti residui, fino al patrimonio netto.",
-      shot: { id: "movimenti" },
-    },
-    {
-      icon: "calculator",
-      title: "Decidi con le cifre",
-      text: "Quanto pagheresti vendendo oggi, quanto risparmi estinguendo una parte del mutuo, in che anno puoi smettere di lavorare.",
-      shot: { id: "tasse" },
-    },
-  ] satisfies readonly Step[],
-} as const;
 
 export interface ItalyRule {
   icon: HomeIcon;
@@ -117,33 +83,6 @@ export const ITALY = {
       source: SOURCES.guidaMutuo,
     },
   ] satisfies readonly ItalyRule[],
-} as const;
-
-export type SpendingGroupId = "dovute" | "volute" | "futuro" | "saltuarie" | "avanzo";
-
-export interface SpendingGroup {
-  id: SpendingGroupId;
-  name: string;
-  /** Importo di un mese di esempio, in euro. */
-  amount: number;
-  text: string;
-}
-
-/** Un mese di esempio diviso nei quattro gruppi di spesa dell'app, più l'avanzo (ciò che resta dopo i gruppi). */
-export const GROUPS = {
-  kicker: "Il metodo",
-  title: "Le spese in quattro gruppi.",
-  lede: "Le categorie restano, ma ognuna appartiene a uno di quattro gruppi. Basta un'occhiata per capire se il mese è andato come volevi.",
-  income: 2400,
-  incomeLabel: "Entrate del mese",
-  groups: [
-    { id: "dovute", name: "Dovute", amount: 1150, text: "Affitto o rata, bollette, spesa, trasporti: ciò che paghi comunque." },
-    { id: "volute", name: "Volute", amount: 420, text: "Ristoranti, viaggi, abbonamenti: ciò che scegli." },
-    { id: "futuro", name: "Te futuro", amount: 480, text: "Risparmio, investimenti, fondo pensione: ciò che metti da parte." },
-    { id: "saltuarie", name: "Saltuarie", amount: 150, text: "Regali, auto, spese mediche: ciò che non arriva ogni mese." },
-    { id: "avanzo", name: "Avanzo", amount: 200, text: "Ciò che resta dopo i gruppi." },
-  ] satisfies readonly SpendingGroup[],
-  note: "Cifre di un mese di esempio.",
 } as const;
 
 /** Per chi è e per chi no: due colonne oneste, per non far registrare chi non troverebbe ciò che cerca. */

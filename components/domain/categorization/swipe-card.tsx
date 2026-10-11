@@ -7,11 +7,10 @@
 
 import * as React from "react";
 import { motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
-import { CategoryAvatar, CategoryPicker } from "@/components/domain/categories";
+import { CategoryAvatar } from "@/components/domain/categories";
+import { Button } from "@/components/ui/button";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Category } from "@/lib/db/schema/categories";
-import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -40,27 +39,22 @@ function zoneFor(dx: number, dy: number, canConfirm: boolean): SwipeZone | null 
 export interface SwipeCardProps {
   group: SuggestionGroup;
   currency: string;
-  categories: Category[];
-  categoryUsage?: CategoryUsageCounts;
   /** Nome della categoria proposta (assente se la carta non ha proposte). */
   suggestedName?: string;
   /** Icona e colore della categoria proposta. */
   suggestedAppearance?: { icon: CategoryIcon; color: CategoryColor };
-  /** Mostra il selettore di un'altra categoria al posto dei pulsanti. */
+  /** Si sta scegliendo un'altra categoria (il foglio è aperto dal chiamante). */
   changing: boolean;
   remember: boolean;
   onRememberChange: (remember: boolean) => void;
   onConfirm: () => void;
   onChange: () => void;
   onSkip: () => void;
-  onPick: (categoryId: string) => void;
 }
 
 export function SwipeCard({
   group,
   currency,
-  categories,
-  categoryUsage,
   suggestedName,
   suggestedAppearance,
   changing,
@@ -69,7 +63,6 @@ export function SwipeCard({
   onConfirm,
   onChange,
   onSkip,
-  onPick,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 300], [-MAX_TILT_DEGREES, MAX_TILT_DEGREES]);
@@ -81,10 +74,6 @@ export function SwipeCard({
   const rememberId = React.useId();
   const isIncome = group.totalAmount > 0;
   const hasSuggestion = Boolean(group.suggestion);
-  const selectable = React.useMemo(
-    () => categories.filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata")),
-    [categories, isIncome]
-  );
   const updateZone = React.useCallback(() => {
     const next = zoneFor(x.get(), y.get(), hasSuggestion);
     setZone((previous) => {
@@ -147,7 +136,9 @@ export function SwipeCard({
       {changing || !hasSuggestion ? (
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">{changing ? "Scegli la categoria giusta" : "Nessuna proposta: scegli tu"}</p>
-          <CategoryPicker categories={selectable} value="" onValueChange={onPick} usage={categoryUsage} placeholder="Scegli categoria" className="w-full" />
+          <Button type="button" variant="outline" className="h-11 w-full" onClick={onChange}>
+            Scegli la categoria
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/60 p-4 text-center">

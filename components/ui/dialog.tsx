@@ -51,7 +51,8 @@ function DialogContent({
     (node: HTMLDivElement | null) => {
       if (typeof ref === "function") ref(node)
       else if (ref) ref.current = node
-      if (node) animateFromOrigin(node)
+      // `data-origin-animation="none"` per i pannelli con una propria animazione (es. i fogli dal basso).
+      if (node && node.dataset.originAnimation !== "none") animateFromOrigin(node)
     },
     [ref]
   )

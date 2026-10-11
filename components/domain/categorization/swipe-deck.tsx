@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { CheckIcon, ChevronsDownIcon, PencilIcon, Undo2Icon } from "lucide-react";
+import { CategorySheet } from "@/components/domain/categories";
 import { Button } from "@/components/ui/button";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
@@ -50,6 +51,13 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
   const suggested = suggestion ? categories.find((c) => c.id === suggestion.suggestedCategoryId) : undefined;
   const suggestedName = suggested?.name;
   const suggestedAppearance = suggested ? { icon: suggested.icon as CategoryIcon, color: suggested.color as CategoryColor } : undefined;
+
+  const isIncome = group.totalAmount > 0;
+  // Nel foglio solo le categorie della stessa direzione, senza quella già proposta (l'utente ha appena detto che non va).
+  const selectable = React.useMemo(
+    () => categories.filter((c) => !c.isFallback && c.id !== suggestion?.suggestedCategoryId && (isIncome ? c.type === "entrata" : c.type !== "entrata")),
+    [categories, isIncome, suggestion]
+  );
 
   const confirm = React.useCallback(() => {
     if (!suggestion) return;
@@ -100,8 +108,6 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
       <SwipeCard
         group={group}
         currency={currency}
-        categories={categories}
-        categoryUsage={categoryUsage}
         suggestedName={suggestedName}
         suggestedAppearance={suggestedAppearance}
         changing={changing}
@@ -110,6 +116,13 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
         onConfirm={confirm}
         onChange={() => setChanging(true)}
         onSkip={skipCard}
+      />
+      <CategorySheet
+        open={changing}
+        onOpenChange={setChanging}
+        categories={selectable}
+        usage={categoryUsage}
+        description={group.label}
         onPick={pick}
       />
       <div className="flex items-center justify-center gap-3 max-md:pb-1">

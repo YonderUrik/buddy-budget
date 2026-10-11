@@ -57,6 +57,8 @@ export interface ProductEvents {
   budget_set: undefined;
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
+  /** «Collega la tua banca» mostrato come non disponibile nel dialog «Nuovo conto» (una volta per apertura); `reason`: posti finiti o limite per persona. */
+  bank_connect_unavailable_seen: { reason: "user_limit" | "user_attempts" | "global_limit" | "provider_limit" };
   account_sync_manual: undefined;
   /** Modifica di un conto dalla finestra dei dettagli; `field`: cosa è cambiato, `kind`: conto manuale o collegato alla banca. */
   account_updated: { field: "name" | "type" | "balance" | "appearance"; kind: "manuale" | "collegato" };
@@ -150,8 +152,6 @@ export interface ProductEvents {
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
   /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
   landing_link_clicked: { from: "logo" | "back_link" };
-  /** Scheda scelta in basso nel foglio delle pagine di accesso; `tab`: quale (cosa c'è dentro, novità, in arrivo). */
-  login_sheet_tab_selected: { tab: "dentro" | "novita" | "in-arrivo" };
   /** Pagina di Analitiche aperta (sostituisce le sei schede, dal 2026-10-04). */
   analytics_page_viewed: undefined;
   /** Scheda di risposta scelta (sostituisce l'indice delle domande); `view`: quale. */
@@ -197,6 +197,7 @@ export interface ProductEvents {
   /** Riquadro «Novità» della Panoramica: clic sul pulsante o chiusura (`id` = identificativo della voce). */
   whats_new_clicked: { id: string };
   whats_new_dismissed: { id: string };
+  whats_new_opened: { id: string };
   /** Clic sull'invito «Categorizza con l'AI» che porta a Categorizza. */
   categorize_ai_link_clicked: { from: "movimenti" };
   /** Tour delle carte: passo visto, saltato o concluso. */

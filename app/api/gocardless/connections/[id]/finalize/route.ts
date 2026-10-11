@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { getRequisition } from "@/lib/gocardless/client";
+import { releaseConnectionIfUnused } from "@/lib/gocardless/release";
 import { redisRateLimitStore } from "@/lib/gocardless/redis-rate-limit-store";
 import type { SyncableLink } from "@/lib/gocardless/sync";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
@@ -99,9 +100,16 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
 
   // Seconda passata: scritture.
   const created: { link: SyncableLink; name: string }[] = [];
+  // Connessioni da cui i conti "existing" vengono spostati (rinnovo): se restano vuote si liberano subito.
+  const previousConnectionIds = new Set<string>();
   try {
     for (const selection of parsed.data.selections) {
       if (selection.mode === "existing" && selection.existingAccountId) {
+        const [previous] = await db
+          .select({ connectionId: bankAccountLinks.connectionId })
+          .from(bankAccountLinks)
+          .where(eq(bankAccountLinks.accountId, selection.existingAccountId));
+        if (previous && previous.connectionId !== connection.id) previousConnectionIds.add(previous.connectionId);
         const [updatedLink] = await db
           .update(bankAccountLinks)
           .set({ connectionId: connection.id, externalAccountId: selection.externalAccountId })
@@ -174,6 +182,11 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   after(() =>
     runSyncJob(job, linksToSync, { store, rateLimitStore: redisRateLimitStore, ops: redisOpsStore, log: jobLog })
   );
+  if (previousConnectionIds.size > 0) {
+    after(async () => {
+      for (const previousId of previousConnectionIds) await releaseConnectionIfUnused(previousId, "renewed", jobLog);
+    });
+  }
 
   return Response.json({ jobId: job.id }, { status: 201 });
 }

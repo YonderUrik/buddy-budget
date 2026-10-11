@@ -5,17 +5,15 @@
  *
  * Scena delle pagine di accesso e onboarding come un foglio di calcolo, continuando l'apertura della landing: barra
  * della formula in alto (la pagina la cambia con `useSheetFormula`), intestazioni di colonna e numeri di riga, il form
- * (`children`) nella colonna B, una tabella a destra e sopra di essa le schede che la cambiano (cosa c'è dentro, novità,
- * in arrivo). Su telefono la tabella scende sotto il form e restano tre colonne.
+ * (`children`) nella colonna B e a destra un esempio animato (il foglio dei conti che si sistema da solo). Su telefono
+ * l'esempio scende sotto il form e restano tre colonne.
  */
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import { AuthSheetExample } from "./auth-sheet-example";
 import { SheetFormulaProvider, type SheetFormula } from "./auth-sheet-formula";
-import { AuthSheetTable } from "./auth-sheet-table";
-import { buildAuthSheetTabs, type AuthSheetTab, type AuthSheetTabId } from "./auth-sheet.data";
 
 /** Cella «selezionata»: quella del campo email nel login. */
 const ACTIVE_CELL = "B6";
@@ -31,10 +29,10 @@ export interface AuthSheetProps {
   header: React.ReactNode;
   /** Riga in fondo alla pagina (es. note sulla sicurezza). */
   note?: React.ReactNode;
-  /** Schede della tabella; di default dal catalogo (`buildAuthSheetTabs`). */
-  tabs?: readonly AuthSheetTab[];
-  /** Percorsi in cui la tabella a schede non si mostra (es. l'onboarding, dove conta solo il form). */
-  tabsHiddenOn?: readonly string[];
+  /** Contenuto a destra del form; di default l'esempio animato (`AuthSheetExample`). */
+  aside?: React.ReactNode;
+  /** Percorsi in cui il contenuto a destra non si mostra (es. l'onboarding, dove conta solo il form). */
+  asideHiddenOn?: readonly string[];
   /** Il form della pagina. */
   children: React.ReactNode;
   className?: string;
@@ -49,19 +47,11 @@ function FormulaText({ formula }: { formula: SheetFormula }) {
   );
 }
 
-/** Scena a foglio di calcolo delle pagine di accesso: barra della formula, griglia, form e tabella a schede. */
-export function AuthSheet({ header, note, tabs: tabsProp, tabsHiddenOn = [], children, className }: AuthSheetProps) {
+/** Scena a foglio di calcolo delle pagine di accesso: barra della formula, griglia, form e, a destra, l'esempio animato. */
+export function AuthSheet({ header, note, aside, asideHiddenOn = [], children, className }: AuthSheetProps) {
   const pathname = usePathname();
-  const showTabs = !tabsHiddenOn.some((path) => pathname === path || pathname.startsWith(`${path}/`));
-  const tabs = React.useMemo(() => tabsProp ?? buildAuthSheetTabs(), [tabsProp]);
-  const [activeId, setActiveId] = React.useState<AuthSheetTabId>(tabs[0]?.id ?? "dentro");
+  const showAside = !asideHiddenOn.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   const [formula, setFormula] = React.useState<SheetFormula | null>(null);
-  const active = tabs.find((t) => t.id === activeId) ?? tabs[0];
-
-  const choose = (id: AuthSheetTabId) => {
-    setActiveId(id);
-    track("login_sheet_tab_selected", { tab: id });
-  };
 
   return (
     <SheetFormulaProvider value={setFormula}>
@@ -110,31 +100,9 @@ export function AuthSheet({ header, note, tabs: tabsProp, tabsHiddenOn = [], chi
                 {header}
                 {children}
               </div>
-              {showTabs && active && (
+              {showAside && (
                 <div className="flex min-w-0 flex-col lg:col-span-3 lg:col-start-6 lg:mr-6 lg:mt-[4.5rem] lg:self-start">
-                  <div role="tablist" aria-label="Fogli" className="relative z-10 -mb-px flex gap-1 overflow-x-auto">
-                    {tabs.map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        role="tab"
-                        id={`auth-sheet-tab-${t.id}`}
-                        aria-controls="auth-sheet-panel"
-                        aria-selected={t.id === active.id}
-                        onClick={() => choose(t.id)}
-                        className="whitespace-nowrap rounded-t-md border border-transparent px-3.5 py-2 text-sm font-medium text-text-2 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-selected:border-border aria-selected:border-b-card aria-selected:bg-card aria-selected:font-semibold aria-selected:text-foreground aria-selected:shadow-[inset_0_2px_0_var(--primary)]"
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                  <AuthSheetTable
-                    tab={active}
-                    id="auth-sheet-panel"
-                    role="tabpanel"
-                    aria-labelledby={`auth-sheet-tab-${active.id}`}
-                    className={cn(active.id === tabs[0]?.id && "rounded-tl-none")}
-                  />
+                  {aside ?? <AuthSheetExample />}
                 </div>
               )}
             </div>

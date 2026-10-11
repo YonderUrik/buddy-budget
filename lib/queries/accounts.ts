@@ -77,6 +77,8 @@ export function useDeleteAccountMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+      // Scollegare l'ultimo conto di una banca libera il posto: il pulsante «Collega» va ricontrollato.
+      queryClient.invalidateQueries({ queryKey: ["gocardless", "capacity"] });
     },
   });
 }

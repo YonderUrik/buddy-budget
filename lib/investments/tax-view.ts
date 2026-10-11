@@ -36,6 +36,8 @@ export interface TaxView {
   bollo: BolloYear[];
   opportunities: TaxOpportunities;
   instruments: Instrument[];
+  /** Strumenti della lista "Aliquote": posizioni aperte e titoli con un evento tassato nell'anno in corso. */
+  rateListInstruments: Instrument[];
   instrumentsById: Map<string, Instrument>;
   taxInstruments: TaxInstrument[];
   transactions: InvestmentTransactionInput[];
@@ -59,6 +61,20 @@ function sellablePositions(rows: PositionRow[], byId: Map<string, Instrument>, f
       },
     ];
   });
+}
+
+/** Tipi di operazione che generano imposta nell'anno: vendite, rimborsi e proventi. */
+const TAXED_TYPES: ReadonlySet<InvestmentTransactionInput["type"]> = new Set(["vendita", "rimborso", "dividendo", "cedola"]);
+
+/**
+ * Strumenti da mostrare nella lista delle aliquote: quelli ancora in portafoglio e quelli con un evento
+ * tassato nell'anno in corso. Esclude i titoli chiusi negli anni passati e quelli presenti solo
+ * nell'allocazione obiettivo.
+ */
+export function rateListInstruments(instruments: Instrument[], openIds: ReadonlySet<string>, transactions: InvestmentTransactionInput[], currentYear: number): Instrument[] {
+  const yearPrefix = `${currentYear}-`;
+  const taxedThisYear = new Set(transactions.filter((t) => TAXED_TYPES.has(t.type) && t.date.startsWith(yearPrefix)).map((t) => t.instrumentId));
+  return instruments.filter((i) => openIds.has(i.id) || taxedThisYear.has(i.id));
 }
 
 /** Calcola la scheda Tasse dai dati dell'overview (serve lo storico completo dei prezzi per il bollo). */
@@ -89,6 +105,7 @@ export function buildTaxView(data: InvestmentData, today: Date): TaxView {
     bollo,
     opportunities: computeTaxOpportunities(summary.rows, taxInstruments, report.losses, currentYear),
     instruments: data.instruments,
+    rateListInstruments: rateListInstruments(data.instruments, new Set(summary.rows.map((r) => r.instrument.id)), transactions, currentYear),
     instrumentsById,
     taxInstruments,
     transactions,

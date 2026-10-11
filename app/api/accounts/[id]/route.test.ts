@@ -6,12 +6,18 @@ import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
+import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
 }));
+vi.mock("@/lib/gocardless/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/gocardless/client")>();
+  return { ...actual, deleteRequisition: vi.fn() };
+});
 
 import { auth } from "@/lib/auth";
+import { deleteRequisition } from "@/lib/gocardless/client";
 import { PATCH, DELETE } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
@@ -185,5 +191,34 @@ describe("PATCH/DELETE /api/accounts/[id]", () => {
       .from(transactions)
       .where(eq(transactions.accountId, account.id));
     expect(remainingTransactions).toHaveLength(0);
+  });
+
+  it("scollegando l'ultimo conto di una banca revoca il consenso su GoCardless e libera il posto", async () => {
+    vi.mocked(deleteRequisition).mockReset();
+    const [first, second] = await db
+      .insert(accounts)
+      .values([
+        { userId, name: "Corrente", type: "checking", source: "auto" },
+        { userId, name: "Risparmio", type: "savings", source: "auto" },
+      ])
+      .returning();
+    const [connection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "INST_A", institutionName: "Banca A", requisitionId: "req-unlink", status: "linked" })
+      .returning();
+    await db.insert(bankAccountLinks).values([
+      { connectionId: connection.id, accountId: first.id, externalAccountId: "ext-1" },
+      { connectionId: connection.id, accountId: second.id, externalAccountId: "ext-2" },
+    ]);
+    const remove = (id: string) =>
+      DELETE(new NextRequest(`http://localhost/api/accounts/${id}`, { method: "DELETE" }), { params: Promise.resolve({ id }) });
+
+    expect((await remove(first.id)).status).toBe(204);
+    expect(deleteRequisition).not.toHaveBeenCalled();
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.id, connection.id))).toHaveLength(1);
+
+    expect((await remove(second.id)).status).toBe(204);
+    expect(deleteRequisition).toHaveBeenCalledWith("req-unlink");
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.id, connection.id))).toHaveLength(0);
   });
 });

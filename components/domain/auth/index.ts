@@ -6,16 +6,12 @@
 
 export { AuthSheet } from "./auth-sheet";
 export type { AuthSheetProps } from "./auth-sheet";
-export { AuthSheetTable } from "./auth-sheet-table";
-export type { AuthSheetTableProps } from "./auth-sheet-table";
-export { buildAuthSheetTabs } from "./auth-sheet.data";
-export type { AuthSheetRow, AuthSheetTab, AuthSheetTabId } from "./auth-sheet.data";
+export { AuthSheetExample } from "./auth-sheet-example";
+export type { AuthSheetExampleProps } from "./auth-sheet-example";
+export { AUTH_SHEET_EXAMPLE_ROWS } from "./auth-sheet-example.data";
+export type { AuthSheetExampleRow } from "./auth-sheet-example.data";
 export { useSheetFormula } from "./auth-sheet-formula";
 export type { SheetFormula } from "./auth-sheet-formula";
-export { LOGIN_AREAS } from "./login-areas.data";
-export type { LoginArea } from "./login-areas.data";
-export { UPCOMING_FEATURES } from "./upcoming-features.data";
-export type { UpcomingFeature } from "./upcoming-features.data";
 export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";

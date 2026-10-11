@@ -26,6 +26,6 @@ export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
     summary:
       "Per ogni esercente l'assistente propone una categoria e tu confermi con un gesto, una carta alla volta. Si attiva in Impostazioni e non applica mai nulla da solo.",
     href: "/categorizza",
-    ctaLabel: "Provala",
+    ctaLabel: "Apri Categorizza",
   },
 ];

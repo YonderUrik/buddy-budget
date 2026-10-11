@@ -5,6 +5,7 @@ import { redis } from "@/lib/redis/client";
 import type { AsyncGaugeDeps } from "./metrics";
 import { redisOpsStore } from "./redis-ops-store";
 import { readUsageSnapshot } from "./usage-stats";
+import { readCapacitySnapshot } from "@/lib/gocardless/capacity-store";
 
 /**
  * Letture reali delle gauge asincrone (Postgres, Redis, stato operativo su Redis). Separate dal registry così `metrics.ts`
@@ -24,6 +25,17 @@ export function createScrapeDeps(): AsyncGaugeDeps {
     cronLastSuccess: () => redisOpsStore.getCronSuccesses(),
     syncJobs: () => redisOpsStore.countJobs(Date.now()),
     usage: () => readUsageSnapshot(),
+    gocardlessCapacity: async () => {
+      const snapshot = await readCapacitySnapshot();
+      return {
+        live: snapshot.live,
+        recent: snapshot.recent,
+        used: Math.max(snapshot.live, snapshot.recent),
+        limit_global: snapshot.limits.global,
+        limit_provider: snapshot.limits.provider,
+        users_over_limit: snapshot.usersOverLimit,
+      };
+    },
     personalImports: async () => {
       const [row] = await client`select
         count(*) filter (where status in ('queued','processing','ready'))::int as pending,

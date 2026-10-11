@@ -4,7 +4,7 @@ import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { CLOSING } from "@/content/sheet";
 import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL } from "@/content/site";
-import { ARROW_ICON, CtaLink } from "./cta-link";
+import { CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
 import { SourceLink } from "./source-link";
 import { TrackedSection } from "./tracked-section";
@@ -21,8 +21,8 @@ export function Closing({ content = CLOSING }: { content?: typeof CLOSING }) {
             <p className="end-note">{content.note}</p>
           </div>
           <div className="cta">
-            <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup">
-              Crea un account gratis{ARROW_ICON}
+            <CtaLink className="btn main" href={APP_LINKS.signup} location="closing" target="signup" arrow>
+              Crea un account gratis
             </CtaLink>
             <CtaLink className="btn ghost" href={APP_LINKS.login} location="closing" target="login">Accedi</CtaLink>
           </div>

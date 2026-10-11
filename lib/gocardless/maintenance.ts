@@ -1,6 +1,7 @@
 import "server-only";
 import { sendConsentNotices, markExpiredConnections } from "./consent-notices";
 import { runGoCardlessCleanup, type CleanupReport } from "./cleanup";
+import { purgeOldAttempts } from "./capacity-store";
 import type { CleanupMode, Logger } from "@/lib/observability";
 
 export type MaintenanceMode = "off" | CleanupMode;
@@ -31,6 +32,7 @@ export async function runGoCardlessMaintenance(options: {
   const now = options.now ?? new Date();
   const expiredMarked = await markExpiredConnections(now);
   const notices = await sendConsentNotices(now);
+  await purgeOldAttempts(now);
   const cleanup =
     options.mode === "off"
       ? null

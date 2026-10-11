@@ -15,7 +15,7 @@
 @media (max-width: 760px) {
   .it-wrap { overflow: visible; background: none; border: 0; border-radius: 0; }
   .it thead { display: none; }
-  .it, .it tbody, .it tr, .it th, .it td { display: block; width: auto; }
+  .it, .it tbody, .it tr, .it th, .it td, .it tbody th, .it td.it-links { display: block; width: auto; }
   .it tbody { display: grid; gap: 10px; }
   .it tr { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
   .it th, .it td { border: 0; padding: 4px 16px; }

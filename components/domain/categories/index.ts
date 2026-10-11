@@ -11,3 +11,5 @@ export type { CategoryBoardProps } from "./category-board";
 export { DistributeColorsButton } from "./distribute-colors-button";
 export { CategoryPicker } from "./category-picker";
 export type { CategoryPickerProps } from "./category-picker";
+export { CategorySheet } from "./category-sheet";
+export type { CategorySheetProps } from "./category-sheet";

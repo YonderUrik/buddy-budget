@@ -181,6 +181,7 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 
 - I componenti shadcn si aggiungono con `pnpm dlx shadcn@latest add <nome>` e vivono in `components/ui/`; non modificarli a mano se non per adattarli ai token del tema.
 - **Su mobile popover, dialog e conferme sono fogli dal basso** (default di `PopoverContent`/`DialogContent`/`AlertDialogContent`, trascina giù per chiudere): non servono classi `max-sm:` nei chiamanti. Form lunghi: `FormDialogContent` (tutto schermo). Pannelli inline sotto una riga: `InlineOrSheet`, che sul telefono li apre in un foglio.
+- **Ritorno alla pagina madre**: sempre `BackLink` di `components/domain/shared` («‹ Nome della pagina madre», sopra il titolo, 44 px di tocco), mai frecce o link «Torna a…» fatti a mano.
 - I componenti compositi specifici del dominio (es. `StatCard`) vivono in `components/` e vanno costruiti componendo le primitive di `components/ui/`.
 - Tutte le stringhe visibili all'utente sono in italiano per ora (l'app è multi-lingua per design, ma l'infrastruttura di i18n non è ancora implementata — vedi "Stack" e log delle decisioni). Quando si introdurrà l'i18n, queste stringhe andranno estratte in chiavi di traduzione invece di restare hardcoded nei componenti.
 

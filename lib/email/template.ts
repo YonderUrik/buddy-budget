@@ -35,9 +35,16 @@ export interface EmailContent {
   cta?: { label: string; url: string };
   /** Righe etichetta/valore sotto la frase (es. le categorie più pesanti del riepilogo). */
   details?: { label: string; value: string }[];
+  /** Gruppi di righe con un titolo (es. «Liquidità», «Investimenti» del riepilogo), dopo `details`. */
+  sections?: EmailSection[];
   footnote?: string;
   /** Piè di pagina: di servizio (default, senza disiscrizione) oppure opzionale con link per disattivarla. */
   footer?: EmailFooter;
+}
+
+export interface EmailSection {
+  title: string;
+  rows: { label: string; value: string }[];
 }
 
 /** Le email di servizio (accesso, sicurezza, account) non si possono disattivare e lo dichiarano; le altre portano sempre il link per disiscriversi. */
@@ -76,6 +83,17 @@ function darkStyles(): string {
   return `@media (prefers-color-scheme:dark){.bg{background:${dark.page}!important}.t{color:${dark.text}!important}.t2{color:${dark.text2}!important}.t3{color:${dark.text3}!important}.ghost{border-color:${dark.border}!important}.brand{color:${dark.brand}!important}}@media (max-width:480px){.lead{font-size:21px!important}}`;
 }
 
+/** Tabella di righe etichetta/valore con un filo sopra ciascuna. */
+function detailRows(rows: { label: string; value: string }[]): string {
+  const { light } = EMAIL_COLORS;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px">${rows
+    .map(
+      (row) =>
+        `<tr><td class="t2 ghost" style="padding:9px 0;border-top:1px solid ${light.border};font-family:${SANS};font-size:15px;color:${light.text2}">${escapeHtml(row.label)}</td><td class="t ghost" align="right" style="padding:9px 0 9px 12px;border-top:1px solid ${light.border};font-family:${HEADING};font-size:15px;font-weight:700;color:${light.text};white-space:nowrap">${escapeHtml(row.value)}</td></tr>`,
+    )
+    .join("")}</table>`;
+}
+
 /** HTML + testo di un'email. `appUrl` serve per logo e font, che vivono nei file pubblici dell'app. */
 export function renderEmail(content: EmailContent, options: { appUrl: string }): RenderedEmail {
   const { light } = EMAIL_COLORS;
@@ -98,14 +116,14 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
         )
         .join("")}</table>`
     : "";
-  const details = content.details?.length
-    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px">${content.details
-        .map(
-          (row) =>
-            `<tr><td class="t2 ghost" style="padding:9px 0;border-top:1px solid ${light.border};font-family:${SANS};font-size:15px;color:${light.text2}">${escapeHtml(row.label)}</td><td class="t ghost" align="right" style="padding:9px 0;border-top:1px solid ${light.border};font-family:${HEADING};font-size:15px;font-weight:700;color:${light.text}">${escapeHtml(row.value)}</td></tr>`,
-        )
-        .join("")}</table>`
-    : "";
+  const details = content.details?.length ? detailRows(content.details) : "";
+  const sections = (content.sections ?? [])
+    .filter((section) => section.rows.length > 0)
+    .map(
+      (section) =>
+        `<div class="t" style="font-family:${HEADING};font-size:15px;font-weight:700;color:${light.text};padding:0 0 6px">${escapeHtml(section.title)}</div>${detailRows(section.rows)}`,
+    )
+    .join("");
   const footer = content.footer ?? { kind: "service" };
   const footerHtml =
     footer.kind === "optional"
@@ -120,7 +138,7 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="bg" style="background:${light.page}"><tr><td align="center" style="padding:36px 16px"><table role="presentation" width="${EMAIL_WIDTH_PX}" cellpadding="0" cellspacing="0" style="max-width:${EMAIL_WIDTH_PX}px;width:100%">
 <tr><td style="padding:0 4px 40px"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="padding-right:10px"><img src="${assetsUrl}/logo-mark.png" width="${LOGO_WIDTH_PX}" height="${LOGO_HEIGHT_PX}" alt="" style="display:block;border:0"></td><td class="brand" style="font-family:${HEADING};font-size:15px;font-weight:700;color:${light.brand}">BuddyBudget</td></tr></table></td></tr>
 <tr><td style="padding:0 4px"><div class="t3" style="font-family:${SANS};font-size:13px;color:${light.text3};padding-bottom:10px">${escapeHtml(content.title)}</div>
-<p class="t2 lead" style="margin:0 0 ${content.cta || details || content.image || steps ? 28 : 0}px;font-family:${HEADING};font-size:25px;line-height:1.5;font-weight:400;color:${light.text2}">${leadToHtml(content.lead)}</p>${image}${steps}${details}${cta}</td></tr>${footnote}
+<p class="t2 lead" style="margin:0 0 ${content.cta || details || sections || content.image || steps ? 28 : 0}px;font-family:${HEADING};font-size:25px;line-height:1.5;font-weight:400;color:${light.text2}">${leadToHtml(content.lead)}</p>${image}${steps}${details}${sections}${cta}</td></tr>${footnote}
 <tr><td class="t3" style="padding:14px 4px 0;font-family:${SANS};font-size:12px;line-height:1.6;color:${light.text3}">${footerHtml}<br>BuddyBudget</td></tr>
 </table></td></tr></table></body></html>`;
   const text = [
@@ -128,6 +146,7 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
     content.lead.replace(/\*\*/g, ""),
     content.steps?.length ? content.steps.map((step, index) => `${index + 1}. ${step}`).join("\n") : null,
     content.details?.length ? content.details.map((row) => `${row.label}: ${row.value}`).join("\n") : null,
+    ...(content.sections ?? []).filter((section) => section.rows.length > 0).map((section) => [section.title, ...section.rows.map((row) => `${row.label}: ${row.value}`)].join("\n")),
     content.cta ? `${content.cta.label}: ${content.cta.url}` : null,
     content.footnote,
     footerText,

@@ -1,8 +1,9 @@
-import { renderEmail, type EmailFooter } from "@/lib/email";
+import { renderEmail, type EmailFooter, type EmailSection } from "@/lib/email";
 import { formatLongDate } from "@/lib/format";
 import { NOTIFICATION_KIND_INFO, type NotificationKind } from "./constants";
 import type { BudgetAlert, DeadlineAlert } from "./alerts";
 import type { DigestData } from "./digest";
+import type { InvestmentDigest } from "./investments-digest";
 
 /** Formatta un importo (già nascosto, se l'utente ha scelto «nascondi importi»). */
 export type MoneyFormatter = (value: number) => string;
@@ -32,34 +33,71 @@ function percentChange(current: number, previous: number): number | null {
   return previous > 0 ? Math.round(((current - previous) / previous) * 100) : null;
 }
 
-/** Email del riepilogo periodico: solo cifre già calcolate dall'app, nessun consiglio. Pura, per poterla testare. */
-export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
-  const { period, spent, income, previousSpent, topCategories, budget } = data;
-  const opening = period.period === "mese" ? `A ${period.label.toLowerCase()}` : `Nella settimana ${period.label}`;
-  const net = income - spent;
+const PERCENT = new Intl.NumberFormat("it-IT", { style: "percent", maximumFractionDigits: 1, signDisplay: "exceptZero" });
+
+/** Importo con il segno davanti (`+120 €`); con «nascondi importi» resta la sola maschera, senza svelare il segno. */
+function signedMoney(value: number, money: MoneyFormatter): string {
+  const formatted = money(value);
+  return value > 0 && !formatted.includes("•") ? `+${formatted}` : formatted;
+}
+
+/** Righe «Liquidità» del riepilogo: entrate, uscite, quanto è rimasto, il confronto e la voce più pesante. */
+function liquidityRows(data: DigestData, money: MoneyFormatter): EmailSection["rows"] {
+  const { spent, income, previousSpent, topCategories, budget } = data;
   const change = percentChange(spent, previousSpent);
+  const top = topCategories[0];
+  return [
+    { label: "Entrate", value: money(income) },
+    { label: "Uscite", value: money(spent) },
+    { label: income - spent >= 0 ? "Messi da parte" : "Speso più delle entrate", value: money(Math.abs(income - spent)) },
+    ...(change === null ? [] : [{ label: data.period.period === "mese" ? "Uscite rispetto al mese prima" : "Uscite rispetto alla settimana prima", value: Math.abs(change) < 1 ? "in linea" : `${change > 0 ? "+" : ""}${change}%` }]),
+    ...(top ? [{ label: "Voce più pesante", value: `${top.name} · ${money(top.amount)}` }] : []),
+    ...(budget === null ? [] : [{ label: "Budget superati", value: `${budget.over} su ${budget.total}` }]),
+  ];
+}
+
+/** Righe «Investimenti» del riepilogo: valore, guadagno del periodo, proventi e versamenti (questi ultimi solo se ci sono). */
+function investmentRows(investments: InvestmentDigest, money: MoneyFormatter): EmailSection["rows"] {
+  const { endValue, gain, twr, income, netContributions } = investments;
+  return [
+    { label: "Valore a fine periodo", value: money(endValue) },
+    { label: "Guadagno del periodo", value: `${signedMoney(gain, money)}${twr === null ? "" : ` (${PERCENT.format(twr)})`}` },
+    ...(income > 0 ? [{ label: "Dividendi e cedole", value: money(income) }] : []),
+    ...(Math.abs(netContributions) >= 0.5 ? [{ label: netContributions > 0 ? "Investiti nel periodo" : "Ritirati nel periodo", value: money(Math.abs(netContributions)) }] : []),
+  ];
+}
+
+/**
+ * Email del riepilogo periodico: una frase con l'essenziale e due gruppi brevi, Liquidità e Investimenti, con le cifre
+ * che l'app già calcola. Nessun consiglio e nessun giudizio sui numeri. Pura, per poterla testare.
+ */
+export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
+  const { period, spent, income, movements, investments } = data;
+  const monthly = period.period === "mese";
+  const opening = monthly ? `A ${period.label.toLowerCase().replace(/ \d{4}$/, "")}` : `Nella settimana ${period.label}`;
   const sentences = [
-    `${opening} hai speso **${ctx.money(spent)}** e incassato **${ctx.money(income)}**.`,
-    net >= 0 ? `Ti sono rimasti **${ctx.money(net)}**.` : `Hai speso **${ctx.money(-net)}** più di quanto hai incassato.`,
-    change === null
+    movements > 0 ? `${opening} hai speso **${ctx.money(spent)}** e incassato **${ctx.money(income)}**.` : `${opening} non hai movimenti sui conti.`,
+    investments === null
       ? null
-      : Math.abs(change) < 1
-        ? "Le spese sono in linea con il periodo precedente."
-        : `Le spese sono ${Math.abs(change)}% ${change > 0 ? "più alte" : "più basse"} del periodo precedente.`,
-    budget === null ? null : budget.over === 0 ? "Sei dentro il budget in tutte le categorie." : `Hai superato il budget in **${budget.over}** ${budget.over === 1 ? "categoria" : "categorie"} su ${budget.total}.`,
+      : `I tuoi investimenti ${investments.gain >= 0 ? "hanno guadagnato" : "hanno perso"} **${ctx.money(Math.abs(investments.gain))}**${investments.income > 0 ? `, di cui **${ctx.money(investments.income)}** di dividendi e cedole` : ""}.`,
   ].filter((s): s is string => s !== null);
+  const sections: EmailSection[] = [
+    ...(movements > 0 ? [{ title: "Liquidità", rows: liquidityRows(data, ctx.money) }] : []),
+    ...(investments ? [{ title: "Investimenti", rows: investmentRows(investments, ctx.money) }] : []),
+  ];
   const rendered = renderEmail(
     {
-      title: period.period === "mese" ? "Riepilogo del mese" : "Riepilogo della settimana",
+      title: monthly ? `Riepilogo di ${period.label.toLowerCase()}` : `Riepilogo della settimana ${period.label}`,
       lead: sentences.join(" "),
-      preheader: "Le cifre del periodo appena concluso.",
-      details: topCategories.map((c) => ({ label: c.name, value: ctx.money(c.amount) })),
+      preheader: monthly ? "Il tuo mese in poche righe: conti e investimenti." : "La tua settimana in poche righe: conti e investimenti.",
+      sections,
+      footnote: investments ? "Il guadagno degli investimenti è al netto di quanto hai comprato o venduto nel periodo, con i prezzi di chiusura." : undefined,
       cta: { label: "Apri la Panoramica", url: `${ctx.appUrl}/panoramica` },
       footer: footerFor("digest", ctx),
     },
     { appUrl: ctx.appUrl },
   );
-  return { subject: period.period === "mese" ? "Il riepilogo del tuo mese" : "Il riepilogo della tua settimana", ...rendered };
+  return { subject: monthly ? "Il riepilogo del tuo mese" : "Il riepilogo della tua settimana", ...rendered };
 }
 
 /** Email degli avvisi sul budget del mese: una sola email per più categorie. Pura. */

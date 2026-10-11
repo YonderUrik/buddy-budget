@@ -7,14 +7,16 @@ import { categories, type Category } from "@/lib/db/schema/categories";
 import { notificationPreferences } from "@/lib/db/schema/notifications";
 import { transactions, type Transaction } from "@/lib/db/schema/transactions";
 import { loadUserDebts } from "@/lib/debts/data";
+import { loadInvestmentData } from "@/lib/investments/data";
 import { buildDebtsView, type DebtDueItem } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { getAppUrl } from "@/lib/env";
-import { hashUserId, logger, recordNotificationEmail, type Logger, type NotificationEmailOutcome } from "@/lib/observability";
+import { hashUserId, logger, recordNotificationDigestSection, recordNotificationEmail, type Logger, type NotificationEmailOutcome } from "@/lib/observability";
 import { findBudgetAlerts, findDeadlineAlerts } from "./alerts";
 import { RUN_TIME_BUDGET_MS, type NotificationKind, type NotificationPreferences } from "./constants";
 import { romeDate } from "./dates";
-import { buildDigest, digestPeriod, digestWindowStartIso, isDigestDay } from "./digest";
+import { buildDigest, digestPeriod, digestRange, digestWindowStartIso, isDigestDay, isDigestEmpty } from "./digest";
+import { buildInvestmentDigest, type InvestmentDigest } from "./investments-digest";
 import { budgetAlertEmail, deadlineAlertEmail, digestEmail, NOTIFICATION_SETTINGS_PATH, type BuiltEmail, type EmailContext } from "./emails";
 import { sendNotificationEmail } from "./send";
 import { claimKeys, isAlertCapped, loadSentKeys, purgeNotificationLog, releaseKeys } from "./store";
@@ -44,6 +46,8 @@ export interface NotificationDeps {
   loadCategories(userId: string): Promise<Category[]>;
   loadBudgets(userId: string): Promise<Budget[]>;
   loadDue(userId: string, now: Date): Promise<DebtDueItem[]>;
+  /** Portafoglio ritagliato sul periodo del riepilogo; null senza investimenti. */
+  loadInvestments(userId: string, range: { from: string; to: string }, now: Date): Promise<InvestmentDigest | null>;
   loadSentKeys(userId: string, kind: NotificationKind, now: Date): Promise<Set<string>>;
   isAlertCapped(userId: string, now: Date): Promise<boolean>;
   claimKeys(userId: string, kind: NotificationKind, keys: string[], sentAt: Date): Promise<string[]>;
@@ -100,6 +104,7 @@ export const databaseDeps: NotificationDeps = {
     const { debts, events } = await loadUserDebts(userId);
     return buildDebtsView(debts, events, romeDate(now).iso).overview.nextDue;
   },
+  loadInvestments: async (userId, range, now) => buildInvestmentDigest(await loadInvestmentData(userId, range.from), range, now),
   loadSentKeys,
   isAlertCapped,
   claimKeys,
@@ -181,6 +186,19 @@ export async function runNotifications(options: {
     log.info("notifications.email.sent", { user: hashUserId(user.id), kind, count: keys.length });
   }
 
+  /** Gli investimenti sono un di più: se il calcolo fallisce il riepilogo parte lo stesso, con la sola liquidità. */
+  async function loadDigestInvestments(user: NotificationUser, range: { from: string; to: string }): Promise<InvestmentDigest | null> {
+    try {
+      const investments = await deps.loadInvestments(user.id, range, now);
+      recordNotificationDigestSection("investments", investments ? "included" : "absent");
+      return investments;
+    } catch (error) {
+      recordNotificationDigestSection("investments", "failed");
+      log.warn("notifications.digest.investments_failed", { user: hashUserId(user.id), error });
+      return null;
+    }
+  }
+
   async function processUser(user: NotificationUser): Promise<void> {
     const { preferences } = user;
     if (preferences.deadlineAlertsEnabled) {
@@ -224,8 +242,9 @@ export async function runNotifications(options: {
           budgets: await deps.loadBudgets(user.id),
           frequency: preferences.digestFrequency,
           now,
+          investments: await loadDigestInvestments(user, digestRange(preferences.digestFrequency, now)),
         });
-        if (data.movements === 0) {
+        if (isDigestEmpty(data)) {
           result.empty += 1;
           outcome("digest", "empty");
         } else {

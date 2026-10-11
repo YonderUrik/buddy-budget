@@ -1,18 +1,23 @@
 "use client";
 
-/** Onboarding: valuta principale (EUR preselezionato), assistente per le categorie (se il servizio c'è, acceso di default e spiegato), conferme legali; infine atterraggio in Panoramica. */
+/**
+ * Onboarding: valuta principale (EUR preselezionato), assistente per le categorie (se il servizio c'è, acceso di default
+ * e spiegato), email facoltative (tutte spente: si accendono solo per scelta), conferme legali; infine Panoramica.
+ */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
+import { InboxPreview, NotificationChoices, ONBOARDING_NOTIFICATION_INFO } from "@/components/domain/notifications";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { Switch } from "@/components/ui/switch";
 import { useAiCategorizationQuery } from "@/lib/queries/notifications";
 import { DEFAULT_AFTER_LOGIN_PATH } from "@/lib/auth/constants";
 import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/currency";
 import { track } from "@/lib/analytics";
+import { NOTIFICATION_DEFAULTS, type NotificationPreferences } from "@/lib/notifications";
 
-type OnboardingStep = "valuta" | "assistente" | "conferme";
+type OnboardingStep = "valuta" | "assistente" | "notifiche" | "conferme";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -20,7 +25,8 @@ export default function OnboardingPage() {
   const { consent, setConsent, complete, payload } = useLegalConsent();
   const [assistantEnabled, setAssistantEnabled] = useState(true);
   const { data: assistant } = useAiCategorizationQuery();
-  const steps: OnboardingStep[] = assistant?.available ? ["valuta", "assistente", "conferme"] : ["valuta", "conferme"];
+  const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });
+  const steps: OnboardingStep[] = assistant?.available ? ["valuta", "assistente", "notifiche", "conferme"] : ["valuta", "notifiche", "conferme"];
   const flow = useStepFlow(steps.length);
   const step = steps[flow.index];
   const [loading, setLoading] = useState(false);
@@ -40,13 +46,18 @@ export default function OnboardingPage() {
       const response = await fetch("/api/user/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currency, legal: payload, ...(assistant?.available ? { aiCategorization: assistantEnabled } : {}) }),
+        body: JSON.stringify({ currency, legal: payload, notifications, ...(assistant?.available ? { aiCategorization: assistantEnabled } : {}) }),
       });
 
       if (response.ok) {
         track("onboarding_completed", { currency });
         if (assistant?.available) track("ai_categorization_toggled", { enabled: assistantEnabled });
         track("terms_accepted", { context: "onboarding" });
+        track("onboarding_notifications_chosen", {
+          digest: notifications.digestEnabled ? notifications.digestFrequency : "off",
+          budget: notifications.budgetAlertsEnabled,
+          deadlines: notifications.deadlineAlertsEnabled,
+        });
         router.replace(DEFAULT_AFTER_LOGIN_PATH);
         router.refresh();
         return;
@@ -84,6 +95,12 @@ export default function OnboardingPage() {
                 Proponi le categorie
                 <Switch checked={assistantEnabled} onCheckedChange={setAssistantEnabled} disabled={loading} aria-label="Proponi le categorie" />
               </label>
+            </>
+          ) : step === "notifiche" ? (
+            <>
+              <StepHeading title="Quali email vuoi ricevere?" description="Partono tutte spente. Ognuna ha il link per disattivarla e le ritrovi in Impostazioni." />
+              <NotificationChoices value={notifications} onChange={setNotifications} disabled={loading} info={ONBOARDING_NOTIFICATION_INFO} />
+              <InboxPreview preferences={notifications} className="px-1" />
             </>
           ) : (
             <>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { makeBudget, makeCategory, makeTransaction } from "./fixtures.test-util";
-import { buildDigest, digestPeriod, digestWindowStartIso, isDigestDay } from "./digest";
+import { buildDigest, digestPeriod, digestRange, digestWindowStartIso, isDigestDay, isDigestEmpty } from "./digest";
 
 const NOW = new Date("2026-10-02T07:00:00Z");
 const categories = [makeCategory({ id: "cat-food", name: "Spesa alimentare" }), makeCategory({ id: "cat-fun", name: "Svago", type: "voluta" })];
@@ -80,5 +80,19 @@ describe("buildDigest", () => {
 
   it("senza movimenti nel periodo non ce n'è da raccontare", () => {
     expect(buildDigest({ transactions: [], categories, budgets: [], frequency: "mensile", now: NOW }).movements).toBe(0);
+  });
+});
+
+describe("digestRange e isDigestEmpty", () => {
+  it("il periodo del portafoglio coincide con quello del riepilogo", () => {
+    expect(digestRange("mensile", NOW)).toEqual({ from: "2026-09-01", to: "2026-09-30" });
+    expect(digestRange("settimanale", new Date("2026-10-12T07:00:00Z"))).toEqual({ from: "2026-10-05", to: "2026-10-11" });
+  });
+
+  it("è vuoto solo senza movimenti e senza investimenti", () => {
+    const empty = buildDigest({ transactions: [], categories, budgets: [], frequency: "mensile", now: NOW });
+    expect(isDigestEmpty(empty)).toBe(true);
+    const withInvestments = buildDigest({ transactions: [], categories, budgets: [], frequency: "mensile", now: NOW, investments: { endValue: 10, gain: 0, twr: 0, income: 0, netContributions: 0 } });
+    expect(isDigestEmpty(withInvestments)).toBe(false);
   });
 });

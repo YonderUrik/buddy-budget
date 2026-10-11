@@ -15,9 +15,11 @@ import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
 import { useAiCategorizationQuery, useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
 
-/** Ogni quanto si ricarica l'elenco mentre l'assistente lavora, e per quanti giri al massimo (~2 minuti). */
+/** Ogni quanto si ricarica l'elenco mentre l'assistente lavora, e per quanti giri al massimo (~4 minuti). */
 const GENERATE_POLL_MS = 4000;
-const GENERATE_POLL_MAX_TICKS = 30;
+const GENERATE_POLL_MAX_TICKS = 60;
+/** Giri senza nuove proposte, dopo almeno una comparsa, oltre i quali si considera finito (restano i nomi non inviabili). */
+const GENERATE_IDLE_TICKS = 8;
 
 type View = "carte" | "elenco";
 const VIEW_OPTIONS: readonly SegmentedControlOption<View>[] = [
@@ -91,10 +93,16 @@ export default function CategorizzaPage() {
     }
     startMissingRef.current = missingRef.current;
     let ticks = 0;
+    let idle = 0;
+    let lastMissing = missingRef.current;
     const timer = setInterval(async () => {
       ticks += 1;
       await refetch();
-      if (ticks >= GENERATE_POLL_MAX_TICKS || missingRef.current === 0) {
+      const changed = missingRef.current !== lastMissing;
+      idle = changed ? 0 : idle + 1;
+      lastMissing = missingRef.current;
+      const settled = idle >= GENERATE_IDLE_TICKS && missingRef.current < startMissingRef.current;
+      if (ticks >= GENERATE_POLL_MAX_TICKS || missingRef.current === 0 || settled) {
         clearInterval(timer);
         setGenerating(false);
         setFoundCount(Math.max(0, startMissingRef.current - missingRef.current));

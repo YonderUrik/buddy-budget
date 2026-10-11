@@ -67,6 +67,7 @@ export const PRIVACY: LegalDocument = {
         "Dati finanziari che inserisci tu o che importi: conti, saldi, transazioni (con descrizione, note e controparte), categorie, budget, investimenti, debiti, fondi pensione e patrimonio netto. Le descrizioni possono contenere informazioni su abitudini, acquisti o contesti personali: non ti chiediamo mai di inserire dati sulla salute, sulle opinioni o altre categorie particolari, ma possono emergere dai testi delle transazioni.",
         "Dati bancari: se colleghi un conto con Open Banking, tramite GoCardless riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.",
         "File che carichi per l'import: estratti conto e rendiconti (per esempio CSV o file dei broker). Se scegli l'import con intelligenza artificiale, il file viene conservato cifrato solo per il tempo dell'elaborazione (vedi la sezione dedicata).",
+        "Proposte di categoria: se attivi l'assistente, per ogni esercente conserviamo il nome normalizzato, la categoria proposta e se l'hai confermata o corretta (mai importi o date), insieme alla data del tuo consenso.",
         "Messaggi al supporto: se scrivi dalla pagina Aiuto, riceviamo il testo, l'indirizzo email dell'account e, se non lo togli, un contesto tecnico (pagina, versione dell'app, dimensioni e tema dello schermo, tipo di browser).",
         `Dati tecnici di accesso: data, indirizzo IP troncato (l'ultima parte viene azzerata) e tipo di dispositivo delle sessioni, visibili in Impostazioni, per proteggere l'account.`,
         "Registro dell'accettazione: la data e la versione dei Termini e dell'informativa che hai accettato.",
@@ -83,6 +84,7 @@ export const PRIVACY: LegalDocument = {
         "Inviarti email di servizio (link di accesso, avvisi di scadenza del collegamento bancario, esito degli import, conferme di disattivazione): esecuzione del contratto, art. 6.1.b. Queste email non si possono disattivare perché servono a usare l'account.",
         "Inviarti, solo se li attivi in Impostazioni → Notifiche, il riepilogo periodico (con le cifre di entrate, spese e budget che vedi già nell'app) e gli avvisi sui budget e sulle rate in scadenza: il tuo consenso, art. 6.1.a. Sono spenti finché non li scegli, ogni email ha il link per disattivarla con un clic (senza accedere) e puoi cambiare idea quando vuoi. Non inviamo email promozionali né consigli personalizzati.",
         "Analizzare con l'intelligenza artificiale un file di import non riconosciuto: il tuo consenso esplicito, art. 6.1.a, che dai prima di caricare il file e puoi non dare usando gli altri tipi di import o l'inserimento manuale. Il consenso non è condizione per usare il resto del servizio.",
+        "Proporti una categoria per i movimenti nuovi con un servizio di intelligenza artificiale: il tuo consenso esplicito, art. 6.1.a, che dai in Impostazioni (o nell'onboarding) e puoi revocare quando vuoi. Il consenso non è condizione per usare il resto del servizio: puoi categorizzare a mano o con le regole.",
         "Rispondere ai messaggi inviati dalla pagina Aiuto: esecuzione del contratto, art. 6.1.b, per le richieste legate al tuo account; legittimo interesse, art. 6.1.f, per idee e segnalazioni generiche.",
         "Sicurezza, prevenzione degli abusi, diagnosi di errori e continuità del servizio (sessioni, log, backup): legittimo interesse, art. 6.1.f, bilanciato dal fatto che i log sono pseudonimizzati e di breve durata.",
         "Capire quali funzioni vengono usate per migliorare il prodotto, con statistiche anonime: legittimo interesse, art. 6.1.f. Puoi disattivarle in qualunque momento (vedi la pagina sui cookie).",
@@ -148,6 +150,7 @@ export const PRIVACY: LegalDocument = {
         `Copie di sicurezza (backup): i dati eliminati restano nei backup per al più ${BACKUP_DAYS} giorni, poi spariscono con la rotazione.`,
         `Sessioni: scadono dopo ${SESSION_DAYS} giorni senza utilizzo e le sessioni scadute vengono cancellate. I link di accesso valgono ${MAGIC_LINK_MINUTES} minuti.`,
         `Import con intelligenza artificiale: file cancellato al termine dell'elaborazione, anteprima al massimo ${CSV_PREVIEW_DAYS} giorni, regole di lettura fino all'eliminazione dell'account.`,
+        "Proposte di categoria: finché l'account esiste o fino al reset dei dati; revocando il consenso non partono nuove richieste.",
         `Registri tecnici (log): ${LOG_DAYS} giorni.`,
         `Messaggi al supporto: nella casella di posta del titolare, il tempo necessario a rispondere e comunque non oltre ${SUPPORT_MONTHS} mesi dalla chiusura della richiesta. Eliminando l'account non vengono cancellati in automatico: puoi chiederne la cancellazione scrivendo a ${LEGAL_OWNER.email}.`,
         `Email di riepilogo e avvisi: le preferenze finché l'account esiste; il registro degli invii (solo chiavi tecniche per non ripetere lo stesso avviso, senza importi) ${NOTIFICATION_LOG_DAYS} giorni.`,
@@ -159,7 +162,7 @@ export const PRIVACY: LegalDocument = {
       id: "diritti",
       title: "I tuoi diritti",
       paragraphs: [
-        "Hai diritto di accedere ai tuoi dati, correggerli, cancellarli, limitarne il trattamento, riceverli in formato portabile e opporti al trattamento basato sul legittimo interesse (artt. 15-22 GDPR). Dove il trattamento si basa sul consenso (l'import con intelligenza artificiale) puoi revocarlo in qualsiasi momento, senza effetto sul trattamento già avvenuto.",
+        "Hai diritto di accedere ai tuoi dati, correggerli, cancellarli, limitarne il trattamento, riceverli in formato portabile e opporti al trattamento basato sul legittimo interesse (artt. 15-22 GDPR). Dove il trattamento si basa sul consenso (l'import con intelligenza artificiale e le proposte di categoria) puoi revocarlo in qualsiasi momento, senza effetto sul trattamento già avvenuto.",
       ],
       items: [
         "Accesso e portabilità: in Impostazioni scarichi un archivio ZIP con tutti i tuoi dati in JSON e CSV.",
@@ -179,7 +182,7 @@ export const PRIVACY: LegalDocument = {
       id: "decisioni",
       title: "Decisioni automatizzate",
       paragraphs: [
-        "BuddyBudget non prende decisioni che producano effetti giuridici su di te. La categorizzazione delle transazioni usa regole che puoi vedere e modificare e propone soluzioni che confermi tu. Le stime fiscali, le proiezioni e le simulazioni sono strumenti informativi, non decisioni su di te.",
+        "BuddyBudget non prende decisioni che producano effetti giuridici su di te. La categorizzazione delle transazioni usa regole che puoi vedere e modificare e, se lo attivi, le proposte di un modello di intelligenza artificiale: sono sempre soltanto proposte, che confermi o correggi tu prima che abbiano effetto. Le stime fiscali, le proiezioni e le simulazioni sono strumenti informativi, non decisioni su di te.",
       ],
     },
     {
@@ -232,7 +235,7 @@ export const TERMINI: LegalDocument = {
       paragraphs: [
         "Calcoli, stime, simulazioni, grafici, stime fiscali, proiezioni pensionistiche e commenti sui titoli hanno solo scopo informativo e si basano sui dati che inserisci e su ipotesi semplificate. Non sono una raccomandazione di investimento né una consulenza personalizzata e BuddyBudget non è un intermediario finanziario. Le regole fiscali e previdenziali cambiano e dipendono dalla tua situazione: prima di decidere rivolgiti a un professionista abilitato.",
         "I prezzi di mercato provengono da fonti di terzi, possono essere in ritardo o errati e sono chiusure di fine giornata, non quotazioni in tempo reale. Lo stesso vale per i dati ricevuti dalle banche tramite Open Banking: dipendono dalla banca e dal fornitore del collegamento.",
-        "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti.",
+        "L'import con intelligenza artificiale produce regole di lettura generate automaticamente: controlla che i movimenti importati corrispondano ai tuoi documenti. Le proposte di categoria dell'assistente possono essere sbagliate: nulla si applica senza la tua conferma, e sei tu a verificare che le categorie scelte siano giuste.",
       ],
     },
     {

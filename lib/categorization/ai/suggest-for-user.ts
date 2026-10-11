@@ -12,6 +12,10 @@ import { groupForModel, pickExamples, type MerchantGroup } from "./groups";
 export const AI_PROMPT_VERSION = 1;
 /** Tetto di esercenti nuovi per esecuzione: argine alla spesa dopo un import molto grande. */
 export const MAX_GROUPS_PER_RUN = 120;
+/** Tetto per la richiesta manuale («Categorizza con l'AI»): l'utente la chiede apposta per tutto l'arretrato. */
+export const MAX_GROUPS_MANUAL_RUN = 600;
+/** Tempo massimo di una richiesta manuale, dentro il `maxDuration` della route (300 s). */
+export const MANUAL_RUN_BUDGET_MS = 240_000;
 
 export type SuggestOutcome = "disabled" | "no_key" | "nothing_to_do" | "done" | "failed";
 
@@ -34,7 +38,7 @@ export function categorizationModel(): string {
  */
 export async function suggestCategoriesForUser(
   userId: string,
-  options: { log?: Logger; fetchImpl?: typeof fetch } = {}
+  options: { log?: Logger; fetchImpl?: typeof fetch; maxGroups?: number; budgetMs?: number } = {}
 ): Promise<SuggestResult> {
   const log = options.log ?? logger;
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
@@ -73,7 +77,7 @@ export async function suggestCategoriesForUser(
 
   const groups = groupForModel(pending.map((row) => ({ ...row, amount: Number(row.amount) })));
   const fresh = groups.filter((group) => !knownKeys.has(`${group.merchantKey}::${group.direction}`));
-  const sendable = fresh.filter((group) => !group.blocked).slice(0, MAX_GROUPS_PER_RUN);
+  const sendable = fresh.filter((group) => !group.blocked).slice(0, options.maxGroups ?? MAX_GROUPS_PER_RUN);
   result.blocked = fresh.length - fresh.filter((group) => !group.blocked).length;
   recordCategorizationSuggestions("blocked", result.blocked);
   if (sendable.length === 0) return result;
@@ -95,8 +99,10 @@ export async function suggestCategoriesForUser(
   const jevCategories = options_.map((category) => ({ name: category.name, type: category.type }));
   const idByName = new Map(options_.map((category) => [category.name, category.id]));
   const model = categorizationModel();
+  const deadline = options.budgetMs ? Date.now() + options.budgetMs : Infinity;
 
   for (let start = 0; start < sendable.length; start += JEV_BATCH_SIZE) {
+    if (Date.now() > deadline) break;
     const batch: MerchantGroup[] = sendable.slice(start, start + JEV_BATCH_SIZE);
     const merchants: JevMerchant[] = batch.map((group, index) => ({
       id: String(index),
@@ -151,9 +157,13 @@ export async function suggestCategoriesForUser(
 }
 
 /** Come sopra, ma non lancia mai: per i punti d'ingresso (sync, import) dove un guasto non deve toccare il lavoro principale. */
-export async function suggestCategoriesSafely(userId: string, log: Logger = logger): Promise<void> {
+export async function suggestCategoriesSafely(
+  userId: string,
+  log: Logger = logger,
+  options: { maxGroups?: number; budgetMs?: number } = {}
+): Promise<void> {
   try {
-    await suggestCategoriesForUser(userId, { log });
+    await suggestCategoriesForUser(userId, { log, ...options });
   } catch (error) {
     log.error("categorization.ai.run.failed", { error });
   }

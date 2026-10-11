@@ -67,9 +67,9 @@ export const QUESTIONS: readonly Question[] = [
     id: "spese",
     question: "Dove sono finiti i soldi questo mese?",
     headline: "Ogni movimento, con la sua categoria.",
-    text: "I movimenti arrivano dalla banca. Confermi un negozio una volta e dalla volta dopo viene riconosciuto. Le spese sono divise in quattro gruppi: Dovute, Volute, Te futuro, Saltuarie.",
+    text: "I movimenti arrivano dalla banca. Se vuoi, un assistente AI propone una categoria per ogni negozio e tu confermi una carta alla volta; oppure ricordi un negozio e dalla volta dopo viene riconosciuto. Le spese sono divise in quattro gruppi: Dovute, Volute, Te futuro, Saltuarie.",
     situation: "A fine mese l'estratto conto è una lista di righe con il testo grezzo dei pagamenti, e non sai quanto è andato in cosa.",
-    note: "Le regole di categorizzazione le vedi e le puoi modificare.",
+    note: "L'assistente AI è facoltativo, propone soltanto e non vede importi né date. Le regole le vedi e le puoi modificare.",
     screen: "categorie",
   },
   {

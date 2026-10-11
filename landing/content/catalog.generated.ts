@@ -44,7 +44,8 @@ export const FEATURES: readonly Feature[] = [
   f("conti-raggruppati-per-banca", "Liquidità", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
 
 
-  f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
+  f("categorizza-con-ai", "Liquidità", "Categorizza con l'AI", "Se lo attivi, per i movimenti nuovi l'assistente propone una categoria per ogni esercente e tu confermi con un gesto, una carta alla volta (a destra conferma, a sinistra cambia, in alto salta, si può annullare). Non applica mai nulla da solo; all'assistente va solo il nome pulito dell'esercente, mai importi, date o IBAN.", "new"),
+  f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio e, se vuoi, ricordalo: le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
   f("proposte-per-somiglianza", "Liquidità", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
   f("nomi-leggibili", "Liquidità", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
   f("quattro-gruppi-di-spesa", "Liquidità", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),

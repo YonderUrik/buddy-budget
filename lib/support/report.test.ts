@@ -15,6 +15,7 @@ describe("reportInputSchema", () => {
     expect(reportInputSchema.safeParse({ kind: "problema", message: "Non vedo i movimenti di ieri", context }).success).toBe(true);
     expect(reportInputSchema.safeParse({ kind: "problema", message: "ciao" }).success).toBe(false);
     expect(reportInputSchema.safeParse({ kind: "altro", message: "Un messaggio abbastanza lungo" }).success).toBe(false);
+    expect(reportInputSchema.safeParse({ kind: "problema", message: "Un messaggio abbastanza lungo", error: { area: "boh", message: "x" } }).success).toBe(false);
   });
 });
 
@@ -33,6 +34,13 @@ describe("reportEmailContent", () => {
     expect(withCtx.text).toContain("Browser: UA/1");
     const without = reportEmailContent({ ...base, input: { kind: "idea", message: "Vorrei un export in PDF" } });
     expect(without.text).toContain("non allegato");
+  });
+
+  it("riporta l'operazione fallita e il messaggio quando la segnalazione parte da un errore", () => {
+    const base = { reference: "SUP-ABC234", userEmail: "a@b.it", userAgent: null };
+    const input = { kind: "problema" as const, message: "Il file della banca non passa", source: "errore" as const, error: { area: "import_movimenti" as const, message: "I file .xls non si leggono." } };
+    expect(reportInputSchema.safeParse(input).success).toBe(true);
+    expect(reportEmailContent({ ...base, input }).text).toContain("Errore: Importazione dei movimenti: I file .xls non si leggono.");
   });
 });
 

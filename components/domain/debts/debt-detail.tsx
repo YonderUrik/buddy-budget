@@ -32,6 +32,7 @@ import { EarlyRepaymentDialog } from "./early-repayment-dialog";
 import { PayInstallmentDialog } from "./pay-installment-dialog";
 import { START_MODE_LABELS } from "./debt-status";
 import { DEBTS_COLORS } from "./debts-theme";
+import { errorToast } from "@/lib/support/request-report";
 
 export interface DebtDetailProps {
   debt: DebtView;
@@ -83,7 +84,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
         onMarkAll={(upTo) =>
           bulk.mutate(
             { debtId: debt.id, upToInstallment: upTo },
-            { onSuccess: ({ count }) => toast.success(count === 1 ? "Una rata segnata come pagata" : `${count} rate segnate come pagate`), onError: (e) => toast.error(e.message) }
+            { onSuccess: ({ count }) => toast.success(count === 1 ? "Una rata segnata come pagata" : `${count} rate segnate come pagate`), onError: (e) => errorToast(e.message, "debito") }
           )
         }
       />
@@ -98,7 +99,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
             <DebtEventsList
               events={debt.events}
               currency={currency}
-              onDelete={(eventId) => deleteEvent.mutate({ debtId: debt.id, eventId }, { onError: (e) => toast.error(e.message) })}
+              onDelete={(eventId) => deleteEvent.mutate({ debtId: debt.id, eventId }, { onError: (e) => errorToast(e.message, "debito") })}
             />
           </PanelSection>
         </div>
@@ -119,7 +120,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           <AlertDialogFooter>
             <AlertDialogCancel>Annulla</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteDebt.mutate(debt.id, { onSuccess: onDeleted, onError: (e) => toast.error(e.message) })}
+              onClick={() => deleteDebt.mutate(debt.id, { onSuccess: onDeleted, onError: (e) => errorToast(e.message, "debito") })}
             >
               Elimina
             </AlertDialogAction>

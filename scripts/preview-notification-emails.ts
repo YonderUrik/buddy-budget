@@ -28,6 +28,7 @@ const digest: DigestData = {
   ],
   budget: { total: 5, over: 1 },
   movements: 63,
+  investments: { endValue: 48210.55, gain: 612.3, twr: 0.0128, income: 86.4, netContributions: 500 },
 };
 
 const emails = {

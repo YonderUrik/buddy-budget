@@ -6,11 +6,13 @@ import { authUser } from "@/lib/db/schema/auth";
 import { isSupportedCurrency } from "@/lib/validation/currency";
 import { isValidLegalAcceptance } from "@/lib/legal";
 import { recordLegalAcceptance } from "@/lib/legal/acceptance";
+import { saveNotificationPreferences } from "@/lib/notifications/server";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { notificationPreferencesSchema } from "@/lib/validation/notifications";
 import { applyCategorySetup } from "@/lib/categories/setup.server";
 import { categorySetupSchema } from "@/lib/validation/categories";
 
-/** Completa l'onboarding: salva la valuta principale (solo tra quelle supportate), applica le categorie scelte (se cambiate), registra l'accettazione di Termini e Privacy e marca l'utente come onboarded. */
+/** Completa l'onboarding: salva la valuta principale (solo tra quelle supportate), applica le categorie scelte (se cambiate), le email facoltative scelte, registra l'accettazione di Termini e Privacy e marca l'utente come onboarded. */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -40,11 +42,19 @@ async function handlePost(request: NextRequest) {
   const aiCategorization = (body as { aiCategorization?: unknown } | null)?.aiCategorization;
   const aiConsent = aiCategorization === true && Boolean(process.env.OPENROUTER_API_KEY?.trim());
 
+  // Email facoltative scelte nel passo «Notifiche»: le stesse preferenze di Impostazioni, salvate solo se valide.
+  const notifications = notificationPreferencesSchema.safeParse((body as { notifications?: unknown } | null)?.notifications);
+
   await db
     .update(authUser)
     .set({ currency, onboardingCompleted: true, ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
     .where(eq(authUser.id, session.user.id));
   await recordLegalAcceptance(session.user.id);
+  if (notifications.success) {
+    await saveNotificationPreferences(session.user.id, notifications.data);
+    const enabled = [notifications.data.digestEnabled, notifications.data.budgetAlertsEnabled, notifications.data.deadlineAlertsEnabled].filter(Boolean).length;
+    requestLogger().info("notifications.preferences.updated", { trigger: "onboarding", count: enabled });
+  }
   requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
   await applyOnboardingCategories((body as { categories?: unknown } | null)?.categories, session.user.id);
 

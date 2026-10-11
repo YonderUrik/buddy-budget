@@ -1,5 +1,15 @@
 import { z } from "zod";
-import { REPORT_KINDS, REPORT_MESSAGE_MAX_LENGTH, REPORT_MESSAGE_MIN_LENGTH, REPO_URL, type ReportKind } from "./constants";
+import {
+  REPORT_ERROR_AREAS,
+  REPORT_ERROR_AREA_LABELS,
+  REPORT_ERROR_MAX_LENGTH,
+  REPORT_KINDS,
+  REPORT_MESSAGE_MAX_LENGTH,
+  REPORT_MESSAGE_MIN_LENGTH,
+  REPORT_SOURCES,
+  REPO_URL,
+  type ReportKind,
+} from "./constants";
 
 const MAX_PATH_LENGTH = 120;
 const MAX_VERSION_LENGTH = 40;
@@ -14,11 +24,21 @@ export const reportContextSchema = z.object({
 });
 export type ReportContext = z.infer<typeof reportContextSchema>;
 
+/** L'errore da cui parte la segnalazione: operazione (enum) e messaggio mostrato all'utente. */
+export const reportErrorSchema = z.object({
+  area: z.enum(REPORT_ERROR_AREAS),
+  message: z.string().trim().max(REPORT_ERROR_MAX_LENGTH),
+});
+export type ReportError = z.infer<typeof reportErrorSchema>;
+
 export const reportInputSchema = z.object({
   kind: z.enum(REPORT_KINDS),
   message: z.string().trim().min(REPORT_MESSAGE_MIN_LENGTH, "Scrivi qualche parola in più.").max(REPORT_MESSAGE_MAX_LENGTH),
   /** Assente se l'utente ha tolto il contesto. */
   context: reportContextSchema.optional(),
+  source: z.enum(REPORT_SOURCES).optional(),
+  /** Presente solo se la segnalazione parte da un messaggio d'errore. */
+  error: reportErrorSchema.optional(),
 });
 export type ReportInput = z.infer<typeof reportInputSchema>;
 
@@ -59,6 +79,7 @@ export function reportEmailContent(params: {
     text: [
       `Tipo: ${input.kind}`,
       `Da: ${userEmail} (rispondi a questa email)`,
+      ...(input.error ? [`Errore: ${REPORT_ERROR_AREA_LABELS[input.error.area]}: ${input.error.message}`] : []),
       ...formatContextLines(input.context, userAgent),
       "",
       input.message,

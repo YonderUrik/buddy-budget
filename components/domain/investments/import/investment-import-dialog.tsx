@@ -29,6 +29,7 @@ import { ImportNotice } from "./import-notice";
 import { ImportStepper } from "./import-stepper";
 import { explainFileError } from "@/lib/investments/import/messages";
 import { useInvestmentImport } from "./use-investment-import";
+import { ReportErrorLink } from "@/components/domain/support";
 
 export interface InvestmentImportDialogProps {
   open: boolean;
@@ -72,7 +73,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 
       <div className="min-h-0 overflow-y-auto">
         <StepStage stepKey={s.step} direction={direction}>
-        {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={error.hint} detail={error.text === s.error ? undefined : s.error ?? undefined} className="mb-5" /> : null}
+        {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={error.hint} detail={error.text === s.error ? undefined : s.error ?? undefined} action={<ReportErrorLink area="import_investimenti" error={s.error ?? error.text} />} className="mb-5" /> : null}
         {s.step === "file" ? (
           <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} />
         ) : null}

@@ -1,12 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import type { CreateConnectionInput, FinalizeSelectionInput } from "@/lib/validation/gocardless";
 import { buildSyncErrorMessage } from "@/lib/gocardless/sync-messages";
 import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";
 import { SYNC_JOBS_QUERY_KEY } from "@/lib/queries/sync-jobs";
 import { track } from "@/lib/analytics";
+import { errorToast } from "@/lib/support/request-report";
 
 export interface Institution {
   id: string;
@@ -143,7 +143,7 @@ export function useSyncAccountMutation() {
     },
     onError: (error: unknown) => {
       const info: SyncErrorInfo = error instanceof SyncNotAvailableError ? error.info : { status: "unknown" };
-      toast.error(buildSyncErrorMessage(info));
+      errorToast(buildSyncErrorMessage(info), "sync_banca");
       // Un 409 "già in sincronizzazione" segnala un job in corso avviato altrove: aggiorna il pannello.
       queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
     },

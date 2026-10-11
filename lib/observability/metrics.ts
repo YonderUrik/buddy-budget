@@ -87,6 +87,9 @@ export type ConsentNoticeOutcome = "sent" | "failed";
 /** Email non di servizio (riepilogo, avvisi budget e scadenze) per esito: `dry_run` conta senza inviare, `capped` = rimandata dal tetto di frequenza. */
 export type NotificationEmailKind = "digest" | "budget" | "deadlines" | "test";
 export type NotificationEmailOutcome = "sent" | "failed" | "dry_run" | "capped" | "empty";
+/** Sezione facoltativa del riepilogo e come è andata: `included` = c'è, `absent` = l'utente non ne ha i dati, `failed` = calcolo fallito (il riepilogo parte senza). */
+export type NotificationDigestSection = "investments";
+export type NotificationDigestSectionOutcome = "included" | "absent" | "failed";
 /** Da dove arriva una disiscrizione: link nell'email, one-click del client di posta (RFC 8058) o preferenze in app. */
 export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 
@@ -131,6 +134,7 @@ interface MetricsState {
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
   notificationEmails: Counter<"kind" | "outcome">;
+  notificationDigestSections: Counter<"section" | "outcome">;
   notificationUnsubscribes: Counter<"kind" | "source">;
 }
 
@@ -302,6 +306,12 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}notification_emails_total`,
     help: "Email di riepilogo e avvisi (budget, scadenze) per tipo ed esito dell'invio.",
     labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+  state.notificationDigestSections = new Counter({
+    name: `${METRIC_PREFIX}notification_digest_sections_total`,
+    help: "Sezioni facoltative del riepilogo (investimenti) per esito: inclusa, assente o fallita.",
+    labelNames: ["section", "outcome"],
     registers: r,
   });
   state.notificationUnsubscribes = new Counter({
@@ -571,6 +581,11 @@ export function recordInactiveAccounts(action: InactivityAction, mode: Inactivit
 /** Registra l'esito di una email di riepilogo o di avviso. */
 export function recordNotificationEmail(kind: NotificationEmailKind, outcome: NotificationEmailOutcome): void {
   metrics().notificationEmails.inc({ kind, outcome });
+}
+
+/** Registra se una sezione facoltativa del riepilogo è entrata nell'email. */
+export function recordNotificationDigestSection(section: NotificationDigestSection, outcome: NotificationDigestSectionOutcome): void {
+  metrics().notificationDigestSections.inc({ section, outcome });
 }
 
 /** Registra una disiscrizione (`kind` = tipo di email o `all`). */

@@ -24,6 +24,7 @@ function fakeDeps(users: NotificationUser[], overrides: Partial<NotificationDeps
     loadCategories: async () => [makeCategory({})],
     loadBudgets: async () => [makeBudget({ monthlyAmount: "300" })],
     loadDue: async () => [{ debtId: "d1", name: "Mutuo", date: "2026-10-04", amount: 600, overdue: false }],
+    loadInvestments: async () => null,
     loadSentKeys: async (id, kind) => claimed.get(`${id}:${kind}`) ?? new Set(),
     isAlertCapped: async () => false,
     claimKeys: async (id, kind, keys) => {
@@ -96,6 +97,24 @@ describe("runNotifications", () => {
     const { deps: later, send: laterSend } = fakeDeps([user({ digestEnabled: true })]);
     await runNotifications({ mode: "execute", now: new Date("2026-10-15T07:00:00Z"), deps: later, log: quiet, appUrl: "https://app.test" });
     expect(laterSend).not.toHaveBeenCalled();
+  });
+
+  it("senza movimenti ma con investimenti il riepilogo parte con la sola parte Investimenti", async () => {
+    const investments = { endValue: 1000, gain: 20, twr: 0.02, income: 0, netContributions: 0 };
+    const loadInvestments = vi.fn(async () => investments);
+    const { deps, send } = fakeDeps([user({ digestEnabled: true })], { loadTransactions: async () => [], loadInvestments });
+    await run(deps);
+    expect(loadInvestments).toHaveBeenCalledWith("u1", { from: "2026-09-01", to: "2026-09-30" }, NOW);
+    expect(send).toHaveBeenCalledTimes(1);
+    const [, email] = send.mock.calls[0] as unknown as [string, { text: string }];
+    expect(email.text).toContain("Investimenti");
+  });
+
+  it("se il calcolo degli investimenti fallisce il riepilogo parte con la sola liquidità", async () => {
+    const { deps, send } = fakeDeps([user({ digestEnabled: true })], { loadInvestments: async () => { throw new Error("prezzi"); } });
+    const result = await run(deps);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(result.failed).toBe(0);
   });
 
   it("senza movimenti nel periodo il riepilogo non parte", async () => {

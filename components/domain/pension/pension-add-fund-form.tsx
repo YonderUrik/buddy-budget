@@ -6,6 +6,7 @@ import * as React from "react";
 import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
+import { ErrorWithReport } from "@/components/domain/support";
 
 export interface PensionAddFundFormProps {
   /** Data di oggi `YYYY-MM-DD`: limite massimo della data di adesione. */
@@ -56,7 +57,7 @@ export function PensionAddFundForm({ today, onSubmit, pending = false, errorMess
           </>
         )}
       </StepStage>
-      {errorMessage ? <p role="alert" className="text-sm text-neg">{errorMessage}</p> : null}
+      {errorMessage ? <ErrorWithReport area="pensione" error={errorMessage} /> : null}
       <StepActions
         backLabel={flow.isFirst ? undefined : "Indietro"}
         onBack={() => {

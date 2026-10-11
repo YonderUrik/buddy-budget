@@ -3,12 +3,12 @@
 /** Scheda Operazioni di Investimenti: tutte le operazioni per mese, con il guadagno di ciascuna, i totali, la modifica e l'eliminazione. Le importazioni fatte sono nel dialog dell'intestazione. */
 
 import * as React from "react";
-import { toast } from "sonner";
 import { EditOperationDialog, InvestmentsViewGate, InvestmentTransactionsList } from "@/components/domain/investments";
 import type { InvestmentTransaction } from "@/lib/db/schema/investments";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useDeleteInvestmentTransactionMutation } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
+import { errorToast } from "@/lib/support/request-report";
 
 export default function OperazioniPage() {
   const { overview, view } = useInvestmentsView(INVESTMENTS_DEFAULT_PERIOD);
@@ -33,7 +33,7 @@ export default function OperazioniPage() {
             onToggleShowAll={() => setShowAll((v) => !v)}
             deletingId={deleteOperation.isPending ? deleteOperation.variables : null}
             onEdit={setEditing}
-            onDelete={(t) => deleteOperation.mutate(t.id, { onError: (e) => toast.error(e.message) })}
+            onDelete={(t) => deleteOperation.mutate(t.id, { onError: (e) => errorToast(e.message, "operazione") })}
           />
         ) : null}
         <EditOperationDialog

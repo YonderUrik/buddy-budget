@@ -2,6 +2,7 @@ import type { CategoryType } from "@/lib/categories/groups";
 import type { InvestmentTransactionType } from "@/lib/db/schema/investments";
 import type { SupportedCurrency } from "@/lib/validation/currency";
 import type { SidebarModuleId } from "@/lib/sidebar/modules";
+import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import";
@@ -14,7 +15,9 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione";
  */
 export interface ProductEvents {
   /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
-  support_report_sent: { kind: "problema" | "domanda" | "idea"; withContext: boolean };
+  support_report_sent: { kind: "problema" | "domanda" | "idea"; withContext: boolean; source: ReportSource; area?: ReportErrorArea };
+  /** Apertura del foglio «Scrivici» (pulsante fisso o link sotto un errore), anche se poi non si invia. */
+  support_sheet_opened: { source: Exclude<ReportSource, "pagina">; area?: ReportErrorArea };
   /** Clic su un collegamento esterno di «Aiuto» (GitHub, novità, sicurezza). */
   support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" };
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
@@ -197,6 +200,8 @@ export interface ProductEvents {
   notifications_frequency_changed: { frequency: "settimanale" | "mensile" };
   /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
   notifications_test_sent: undefined;
+  /** Email facoltative scelte nel passo «Notifiche» dell'onboarding (anche nessuna); `digest`: frequenza o `off`. */
+  onboarding_notifications_chosen: { digest: "settimanale" | "mensile" | "off"; budget: boolean; deadlines: boolean };
   /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
   notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "all" };
   account_data_exported: undefined;

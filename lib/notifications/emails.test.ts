@@ -16,6 +16,7 @@ const data: DigestData = {
   topCategories: [{ name: "Spesa alimentare", amount: 320 }],
   budget: { total: 4, over: 1 },
   movements: 40,
+  investments: null,
 };
 
 describe("email: ogni email opzionale porta la disiscrizione", () => {
@@ -39,22 +40,51 @@ describe("email: ogni email opzionale porta la disiscrizione", () => {
 });
 
 describe("digestEmail", () => {
-  it("racconta spese, entrate, confronto e budget con le cifre dell'app", () => {
+  const investments = { endValue: 25000, gain: 312.4, twr: 0.0126, income: 48, netContributions: 500 };
+
+  it("in una frase spese ed entrate, poi la Liquidità in poche righe", () => {
     const { text } = digestEmail(data, ctx);
-    expect(text).toContain("A settembre 2026 hai speso 1234,50 € e incassato 2000,00 €.");
-    expect(text).toContain("Ti sono rimasti 765,50 €.");
-    expect(text).toContain("12% più alte");
-    expect(text).toContain("Hai superato il budget in 1 categoria su 4.");
-    expect(text).toContain("Spesa alimentare: 320,00 €");
+    expect(text).toContain("A settembre hai speso 1234,50 € e incassato 2000,00 €.");
+    expect(text).toContain("Liquidità\nEntrate: 2000,00 €\nUscite: 1234,50 €\nMessi da parte: 765,50 €");
+    expect(text).toContain("Uscite rispetto al mese prima: +12%");
+    expect(text).toContain("Voce più pesante: Spesa alimentare · 320,00 €");
+    expect(text).toContain("Budget superati: 1 su 4");
+    expect(text).not.toContain("Investimenti");
   });
 
   it("se hai speso più di quanto hai incassato lo dice senza numeri negativi", () => {
     const { text } = digestEmail({ ...data, income: 1000 }, ctx);
-    expect(text).toContain("Hai speso 234,50 € più di quanto hai incassato.");
+    expect(text).toContain("Speso più delle entrate: 234,50 €");
+  });
+
+  it("aggiunge gli investimenti: guadagno, rendimento, dividendi e versamenti", () => {
+    const { text, html } = digestEmail({ ...data, investments }, ctx);
+    expect(text).toContain("I tuoi investimenti hanno guadagnato 312,40 €, di cui 48,00 € di dividendi e cedole.");
+    expect(text).toContain("Investimenti\nValore a fine periodo: 25000,00 €\nGuadagno del periodo: +312,40 € (+1,3%)\nDividendi e cedole: 48,00 €\nInvestiti nel periodo: 500,00 €");
+    expect(html).toContain(">Investimenti</div>");
+  });
+
+  it("una perdita si dice come tale, senza dividendi né versamenti se non ci sono", () => {
+    const { text } = digestEmail({ ...data, investments: { ...investments, gain: -120, twr: -0.005, income: 0, netContributions: 0 } }, ctx);
+    expect(text).toContain("I tuoi investimenti hanno perso 120,00 €.");
+    expect(text).toContain("Guadagno del periodo: -120,00 € (-0,5%)");
+    expect(text).not.toContain("Dividendi e cedole");
+    expect(text).not.toContain("nel periodo:");
+  });
+
+  it("senza movimenti sui conti parla solo degli investimenti", () => {
+    const { text } = digestEmail({ ...data, movements: 0, investments }, ctx);
+    expect(text).toContain("A settembre non hai movimenti sui conti.");
+    expect(text).not.toContain("Liquidità");
+  });
+
+  it("con «nascondi importi» non svela il segno del guadagno", () => {
+    const { text } = digestEmail({ ...data, investments }, { ...ctx, money: () => "••••" });
+    expect(text).toContain("Guadagno del periodo: •••• (+1,3%)");
   });
 
   it("non dà consigli di investimento né raccomandazioni", () => {
-    expect(digestEmail(data, ctx).text).not.toMatch(/dovresti|ti consigliamo|investi/i);
+    expect(digestEmail({ ...data, investments }, ctx).text).not.toMatch(/dovresti|ti consigliamo|ti suggeriamo|conviene/i);
   });
 });
 

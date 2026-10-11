@@ -1,0 +1,6 @@
+# Notifiche nell'onboarding e riepilogo con gli investimenti (2026-10-11)
+
+- **Onboarding**: nuovo passo «Quali email vuoi ricevere?» prima delle conferme, con le stesse preferenze di Impostazioni → Notifiche (`notification_preferences`, nessuna migration). Tutto resta spento finché l'utente non lo accende (opt-in); la casella d'anteprima mostra le email che arriveranno. Animazioni da `motion` con le molle condivise, nessun effetto di luce, movimento ridotto rispettato.
+- **Riepilogo**: una frase con speso, entrato e guadagno degli investimenti, poi due gruppi brevi. Liquidità: entrate, uscite, messi da parte, confronto col periodo prima, voce più pesante, budget superati. Investimenti: valore a fine periodo, guadagno del periodo (TWR tra parentesi), dividendi e cedole, investiti o ritirati. Le cifre vengono da `computePeriodGain` (lo stesso motore della pagina Investimenti) ritagliato sul periodo del riepilogo. Solo dati, nessun consiglio.
+- Il riepilogo parte anche senza movimenti se ci sono investimenti; se il calcolo degli investimenti fallisce parte con la sola liquidità (log `notifications.digest.investments_failed`, metrica `buddybudget_notification_digest_sections_total`).
+- Rimandati: patrimonio netto e debiti nel riepilogo, scelta delle sezioni da parte dell'utente, prova su client email reali.

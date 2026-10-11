@@ -15,6 +15,7 @@ import { track } from "@/lib/analytics";
 import type { PersonalImportListing } from "@/lib/queries/personal-imports";
 import { cn } from "@/lib/utils";
 import { formatFileSize } from "./personal-import-upload";
+import { ReportErrorLink } from "@/components/domain/support";
 
 type Job = PersonalImportListing["jobs"][number];
 
@@ -102,6 +103,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
                 ? job?.error ?? "Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista."
                 : "L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando."}
           </p>
+          {failed ? <ReportErrorLink area="import_movimenti" error={job?.error ?? title} /> : null}
         </div>
       </div>
 

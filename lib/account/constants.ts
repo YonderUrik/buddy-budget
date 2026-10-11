@@ -20,3 +20,18 @@ export const DISPLAY_NAME_MAX_LENGTH = 80;
 
 /** Parametro di query che la pagina di login legge per dire che l'account è stato eliminato. */
 export const ACCOUNT_DELETED_QUERY = "account=eliminato";
+
+/** Giorni senza alcun accesso dopo i quali un account inattivo viene eliminato (se nel frattempo non rientra). */
+export const INACTIVITY_DELETE_AFTER_DAYS = 90;
+
+/** Giorni di preavviso: l'email «account inattivo» parte questo tempo prima dell'eliminazione. */
+export const INACTIVITY_WARNING_LEAD_DAYS = 7;
+
+/**
+ * Tetto di avvisi e di eliminazioni per ogni giro del cron: se un errore (o un'attivazione sbagliata) facesse
+ * sembrare inattivi molti utenti insieme, il danno resta limitato e il cron lo segnala come `capped`.
+ */
+export const INACTIVITY_MAX_ACTIONS_PER_RUN = 50;
+
+/** Giorni per cui i dati eliminati restano nelle copie di sicurezza (da tenere uguale al testo della Privacy). */
+export const BACKUP_RETENTION_DAYS = 14;

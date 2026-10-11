@@ -14,6 +14,7 @@ import { logMagicLink } from "./magic-link-log";
 import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
+import { touchLastActive } from "@/lib/account/last-active";
 
 /** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
 function getResend(): Resend | null {
@@ -127,8 +128,15 @@ export const auth = betterAuth({
         /** Salva l'IP troncato (minimizzazione): serve solo a riconoscere da dove arriva un accesso, non a identificare un dispositivo. */
         before: async (session) => ({ data: { ...session, ipAddress: truncateIp(session.ipAddress) } }),
         /** Ogni sessione creata è un accesso riuscito (magic link o Google): solo un contatore, nessun dato utente. */
-        after: async () => {
+        after: async (session) => {
           recordAuthEvent("sign_in");
+          await touchLastActive(session.userId);
+        },
+      },
+      update: {
+        /** Il rinnovo di una sessione (al più una volta al giorno di utilizzo) è un segno di attività: serve al cron degli account inattivi. */
+        after: async (session) => {
+          if (session?.userId) await touchLastActive(session.userId);
         },
       },
     },

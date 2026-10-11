@@ -27,6 +27,10 @@ export const authUser = pgTable("auth_user", {
   startChecklistCompletedAt: timestamp("start_checklist_completed_at", { withTimezone: true }),
   /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
   aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),
+  /** Ultimo accesso dell'utente (creazione o rinnovo di una sessione): sopravvive alla pulizia delle sessioni scadute. Base del calcolo dell'inattività. */
+  lastActiveAt: timestamp("last_active_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Quando è partito l'avviso «account inattivo»; null = nessun avviso in corso. Un nuovo accesso lo azzera (cron `inactive-accounts`). */
+  inactivityWarnedAt: timestamp("inactivity_warned_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

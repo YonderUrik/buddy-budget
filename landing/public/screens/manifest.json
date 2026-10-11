@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-10T11:20:15.203Z",
+  "capturedAt": "2026-10-11T06:29:46.419Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -28,6 +28,11 @@
       "route": "/liquidita/analisi"
     },
     {
+      "id": "abbonamenti",
+      "theme": "light",
+      "route": "/liquidita/abbonamenti"
+    },
+    {
       "id": "categorie",
       "theme": "light",
       "route": "/liquidita/categorie"
@@ -103,6 +108,11 @@
       "route": "/liquidita/analisi"
     },
     {
+      "id": "abbonamenti",
+      "theme": "dark",
+      "route": "/liquidita/abbonamenti"
+    },
+    {
       "id": "categorie",
       "theme": "dark",
       "route": "/liquidita/categorie"
@@ -156,16 +166,6 @@
       "id": "analitiche",
       "theme": "dark",
       "route": "/analitiche"
-    },
-    {
-      "id": "abbonamenti",
-      "theme": "light",
-      "route": "/liquidita/abbonamenti"
-    },
-    {
-      "id": "abbonamenti",
-      "theme": "dark",
-      "route": "/liquidita/abbonamenti"
     }
   ]
 }

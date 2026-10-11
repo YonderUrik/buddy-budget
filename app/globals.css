@@ -374,3 +374,32 @@
   --neg: var(--island-neg);
   color: var(--island-foreground);
 }
+
+/* Superficie e pulsante «AI» (Categorizza): sfumatura dai token del tema, con un riflesso lento che si ferma col movimento ridotto. */
+.ai-surface {
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--primary) 14%, transparent),
+    color-mix(in oklab, var(--pos) 10%, transparent)
+  );
+}
+.ai-button {
+  background-image: linear-gradient(110deg, var(--primary), color-mix(in oklab, var(--primary) 55%, var(--pos)), var(--primary));
+  background-size: 220% 100%;
+  color: var(--primary-foreground);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ai-button {
+    animation: ai-sheen 4s ease-in-out infinite;
+  }
+}
+@keyframes ai-sheen {
+  0%,
+  100% {
+    background-position: 0% 0;
+  }
+  50% {
+    background-position: 100% 0;
+  }
+}

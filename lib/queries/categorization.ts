@@ -218,3 +218,14 @@ export function useDeleteRuleMutation() {
     },
   });
 }
+
+/** Chiede all'assistente le proposte per i movimenti già presenti; risponde subito, le proposte arrivano ricaricando l'elenco. */
+export function useGenerateAiSuggestionsMutation() {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/transactions/categorize-suggestions/generate", { method: "POST" });
+      if (!response.ok) throw new Error("Impossibile avviare l'assistente");
+      return (await response.json()) as { status: "started" | "disabled" | "no_key" };
+    },
+  });
+}

@@ -5,14 +5,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { CategorizeListView, CategorizeSwipeDeck } from "@/components/domain/categorization";
+import { AiSuggestBanner, CategorizeListView, CategorizeSwipeDeck } from "@/components/domain/categorization";
 import { LoadError, SegmentedControl, type SegmentedControlOption } from "@/components/domain/shared";
 import { authClient } from "@/lib/auth/client";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
-import { useApplyCategorizationMutation, useCategorizeSuggestionsQuery } from "@/lib/queries/categorization";
+import { track } from "@/lib/analytics";
+import { useApplyCategorizationMutation, useCategorizeSuggestionsQuery, useGenerateAiSuggestionsMutation } from "@/lib/queries/categorization";
 import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
-import { useAiCategorizationQuery } from "@/lib/queries/notifications";
+import { useAiCategorizationQuery, useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
+
+/** Ogni quanto si ricarica l'elenco mentre l'assistente lavora, e per quanti giri al massimo (~2 minuti). */
+const GENERATE_POLL_MS = 4000;
+const GENERATE_POLL_MAX_TICKS = 30;
 
 type View = "carte" | "elenco";
 const VIEW_OPTIONS: readonly SegmentedControlOption<View>[] = [
@@ -30,6 +35,12 @@ export default function CategorizzaPage() {
   const { data: categoryUsage } = useCategoryUsageQuery();
   const { data: assistant } = useAiCategorizationQuery();
   const applyMutation = useApplyCategorizationMutation();
+  const generateMutation = useGenerateAiSuggestionsMutation();
+  const consentMutation = useUpdateAiCategorizationMutation();
+  const [generating, setGenerating] = React.useState(false);
+  const [foundCount, setFoundCount] = React.useState<number | undefined>(undefined);
+  const missingRef = React.useRef(0);
+  const startMissingRef = React.useRef(0);
 
   const groupByKey = React.useMemo(() => new Map((groups ?? []).map((group) => [group.groupKey, group])), [groups]);
 
@@ -59,6 +70,38 @@ export default function CategorizzaPage() {
     [groupByKey, applyMutation]
   );
 
+  const missingCount = groups?.filter((group) => !group.suggestion).length ?? 0;
+  React.useEffect(() => {
+    missingRef.current = missingCount;
+  });
+
+  /** Chiede le proposte (registrando prima il consenso se manca) e ricarica l'elenco finché arrivano. */
+  async function handleGenerate() {
+    track("ai_suggestions_generate_clicked", { missing: missingCount, consentGiven: Boolean(assistant?.enabled) });
+    setFoundCount(undefined);
+    setGenerating(true);
+    try {
+      if (!assistant?.enabled) await consentMutation.mutateAsync(true);
+      const { status } = await generateMutation.mutateAsync();
+      if (status !== "started") throw new Error("L'assistente non è disponibile");
+    } catch (error) {
+      setGenerating(false);
+      toast.error(error instanceof Error ? error.message : "Impossibile avviare l'assistente");
+      return;
+    }
+    startMissingRef.current = missingRef.current;
+    let ticks = 0;
+    const timer = setInterval(async () => {
+      ticks += 1;
+      await refetch();
+      if (ticks >= GENERATE_POLL_MAX_TICKS || missingRef.current === 0) {
+        clearInterval(timer);
+        setGenerating(false);
+        setFoundCount(Math.max(0, startMissingRef.current - missingRef.current));
+      }
+    }, GENERATE_POLL_MS);
+  }
+
   const total = groups?.reduce((sum, group) => sum + group.transactionIds.length, 0) ?? 0;
 
   return (
@@ -71,16 +114,11 @@ export default function CategorizzaPage() {
         <p className="text-sm text-muted-foreground">
           {isLoading ? "Caricamento in corso..." : total === 0 ? "Nessuna transazione da categorizzare" : `${total} transazioni in attesa.`}
         </p>
-        {assistant?.available && !assistant.enabled && total > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Vuoi una proposta già pronta per ogni esercente?{" "}
-            <Link href="/impostazioni#impostazioni-assistente-categorie" className="underline underline-offset-2 hover:text-foreground">
-              Attiva l&apos;assistente
-            </Link>
-            .
-          </p>
-        )}
       </div>
+
+      {assistant?.available && total > 0 && (missingCount > 0 || generating || foundCount !== undefined) && (
+        <AiSuggestBanner missingCount={missingCount} consentGiven={Boolean(assistant.enabled)} generating={generating} foundCount={foundCount} onGenerate={handleGenerate} />
+      )}
 
       <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} ariaLabel="Modo di categorizzare" stretch className="sm:max-w-xs" />
 

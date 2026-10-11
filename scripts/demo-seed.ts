@@ -68,18 +68,18 @@ interface Recurring {
 
 const EXPENSES: Recurring[] = [
   { category: "Affitto & Mutuo", description: "Rata mutuo", raw: "ADDEBITO SDD RATA MUTUO N. 4471", min: 742.18, max: 742.18, day: 5 },
-  { category: "Bollette & Utenze", description: "Luce e gas", raw: "SDD ENERGIA PIU SPA FATT 2291", min: 68, max: 135, day: 12 },
-  { category: "Internet & Telefono", description: "Fibra e mobile", raw: "ADDEBITO TELCO SRL CANONE", min: 34.9, max: 34.9, day: 9 },
-  { category: "Spesa alimentare", description: "Supermercato", raw: "PAGAMENTO POS SUPERMERCATO CENTRO 0412", min: 18, max: 96, day: 3, perMonth: 7 },
-  { category: "Trasporti & Carburante", description: "Carburante", raw: "PAGAMENTO POS STAZIONE DI SERVIZIO", min: 35, max: 62, day: 8, perMonth: 2 },
+  { category: "Bollette & Telefono", description: "Luce e gas", raw: "SDD ENERGIA PIU SPA FATT 2291", min: 68, max: 135, day: 12 },
+  { category: "Bollette & Telefono", description: "Fibra e mobile", raw: "ADDEBITO TELCO SRL CANONE", min: 34.9, max: 34.9, day: 9 },
+  { category: "Spesa", description: "Supermercato", raw: "PAGAMENTO POS SUPERMERCATO CENTRO 0412", min: 18, max: 96, day: 3, perMonth: 7 },
+  { category: "Trasporti", description: "Carburante", raw: "PAGAMENTO POS STAZIONE DI SERVIZIO", min: 35, max: 62, day: 8, perMonth: 2 },
   { category: "Ristoranti & Bar", description: "Ristorante", raw: "PAGAMENTO POS TRATTORIA DA MARIO", min: 22, max: 78, day: 15, perMonth: 4 },
-  { category: "Abbonamenti & Streaming", description: "Streaming video", raw: "PAGAMENTO ONLINE STREAMINGCO", min: 13.99, max: 13.99, day: 17 },
-  { category: "Abbonamenti & Streaming", description: "Musica", raw: "PAGAMENTO ONLINE MUSICAPP", min: 10.99, max: 10.99, day: 19 },
+  { category: "Abbonamenti", description: "Streaming video", raw: "PAGAMENTO ONLINE STREAMINGCO", min: 13.99, max: 13.99, day: 17 },
+  { category: "Abbonamenti", description: "Musica", raw: "PAGAMENTO ONLINE MUSICAPP", min: 10.99, max: 10.99, day: 19 },
   { category: "Sport & Benessere", description: "Palestra", raw: "ADDEBITO SDD FITNESS CLUB", min: 39, max: 39, day: 7 },
-  { category: "Shopping & Tecnologia", description: "Acquisto online", raw: "PAGAMENTO ONLINE MARKETPLACE", min: 24, max: 140, day: 21, perMonth: 1 },
-  { category: "Abbigliamento", description: "Negozio abbigliamento", raw: "PAGAMENTO POS MODA STORE", min: 30, max: 120, day: 23, perMonth: 1 },
-  { category: "Salute & Farmaci", description: "Farmacia", raw: "PAGAMENTO POS FARMACIA COMUNALE", min: 9, max: 38, day: 11, perMonth: 1 },
-  { category: "Viaggi & Vacanze", description: "Viaggio", raw: "PAGAMENTO ONLINE AGENZIA VIAGGI", min: 120, max: 420, day: 24, perMonth: 1 },
+  { category: "Shopping", description: "Acquisto online", raw: "PAGAMENTO ONLINE MARKETPLACE", min: 24, max: 140, day: 21, perMonth: 1 },
+  { category: "Shopping", description: "Negozio abbigliamento", raw: "PAGAMENTO POS MODA STORE", min: 30, max: 120, day: 23, perMonth: 1 },
+  { category: "Salute", description: "Farmacia", raw: "PAGAMENTO POS FARMACIA COMUNALE", min: 9, max: 38, day: 11, perMonth: 1 },
+  { category: "Viaggi", description: "Viaggio", raw: "PAGAMENTO ONLINE AGENZIA VIAGGI", min: 120, max: 420, day: 24, perMonth: 1 },
 ];
 
 async function main() {
@@ -149,8 +149,8 @@ async function main() {
     push(dayOfMonth(back, 27), "Stipendio", "Stipendio", "BONIFICO A VOSTRO FAVORE ACME SRL STIPENDIO", 2480);
     if (back % 4 === 1) push(dayOfMonth(back, 14), "Freelance", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
     // Abbonamenti per la schermata «Abbonamenti»: un aumento di prezzo, un servizio terminato 5 mesi fa e un'assicurazione annuale.
-    push(dayOfMonth(back, 6), "Abbonamenti & Streaming", "Archivio cloud", "PAGAMENTO ONLINE CLOUDBOX STORAGE", -2.99);
-    if (back >= 5) push(dayOfMonth(back, 12), "Abbonamenti & Streaming", "Giornale online", "PAGAMENTO ONLINE IL QUOTIDIANO DIGITALE", -7.99);
+    push(dayOfMonth(back, 6), "Abbonamenti", "Archivio cloud", "PAGAMENTO ONLINE CLOUDBOX STORAGE", -2.99);
+    if (back >= 5) push(dayOfMonth(back, 12), "Abbonamenti", "Giornale online", "PAGAMENTO ONLINE IL QUOTIDIANO DIGITALE", -7.99);
     if (back === 12 || back === 0) push(dayOfMonth(back, 2), "Assicurazioni", "Assicurazione auto", "ADDEBITO SDD ASSICURAZIONI SICURA RCA", back === 12 ? -412 : -428);
     for (const e of EXPENSES) {
       const times = e.perMonth ?? 1;
@@ -198,18 +198,18 @@ async function main() {
 
   await db.insert(budgets).values([
     { userId: DEMO_USER_ID, categoryId: cat("Ristoranti & Bar"), monthlyAmount: "180.00" },
-    { userId: DEMO_USER_ID, categoryId: cat("Spesa alimentare"), monthlyAmount: "420.00" },
-    { userId: DEMO_USER_ID, categoryId: cat("Shopping & Tecnologia"), monthlyAmount: "150.00" },
-    { userId: DEMO_USER_ID, categoryId: cat("Abbonamenti & Streaming"), monthlyAmount: "30.00" },
+    { userId: DEMO_USER_ID, categoryId: cat("Spesa"), monthlyAmount: "420.00" },
+    { userId: DEMO_USER_ID, categoryId: cat("Shopping"), monthlyAmount: "150.00" },
+    { userId: DEMO_USER_ID, categoryId: cat("Abbonamenti"), monthlyAmount: "30.00" },
   ]);
 
   // Abbonamenti: Giulia ha già confermato i suoi e scartato il mutuo; restano da decidere l'assicurazione e il giornale (fermo).
   await db.insert(subscriptions).values([
-    { userId: DEMO_USER_ID, key: "streaming video", status: "confermato", origin: "rilevato", name: "Streaming video", amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti & Streaming") },
-    { userId: DEMO_USER_ID, key: "musica", status: "confermato", origin: "rilevato", name: "Musica", amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti & Streaming") },
-    { userId: DEMO_USER_ID, key: "archivio cloud", status: "confermato", origin: "rilevato", name: "Archivio cloud", amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti & Streaming") },
+    { userId: DEMO_USER_ID, key: "streaming video", status: "confermato", origin: "rilevato", name: "Streaming video", amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: DEMO_USER_ID, key: "musica", status: "confermato", origin: "rilevato", name: "Musica", amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
+    { userId: DEMO_USER_ID, key: "archivio cloud", status: "confermato", origin: "rilevato", name: "Archivio cloud", amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti") },
     { userId: DEMO_USER_ID, key: "palestra", status: "confermato", origin: "rilevato", name: "Palestra", amount: "39.00", cadence: "mensile", categoryId: cat("Sport & Benessere") },
-    { userId: DEMO_USER_ID, key: "fibra e mobile", status: "confermato", origin: "rilevato", name: "Fibra e mobile", amount: "34.90", cadence: "mensile", categoryId: cat("Internet & Telefono") },
+    { userId: DEMO_USER_ID, key: "fibra e mobile", status: "confermato", origin: "rilevato", name: "Fibra e mobile", amount: "34.90", cadence: "mensile", categoryId: cat("Bollette & Telefono") },
     { userId: DEMO_USER_ID, key: "rata mutuo", status: "escluso", origin: "rilevato", name: "Rata mutuo", amount: "742.18", cadence: "mensile", categoryId: cat("Affitto & Mutuo") },
   ]);
 

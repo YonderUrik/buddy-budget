@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Pannello di dettaglio di una categoria: nome, gruppo, colore e icona (salvataggio immediato/on-blur)
+ * Pannello di dettaglio di una categoria: nome, descrizione, gruppo, colore e icona (salvataggio immediato/on-blur)
  * ed eliminazione con conferma. La fallback "Da categorizzare" non si rinomina, non cambia gruppo e non si elimina.
  */
 
@@ -14,10 +14,11 @@ import { SegmentedControl, FormDialogContent } from "@/components/domain/shared"
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "@/lib/queries/categories";
 import { CATEGORY_TYPES, CATEGORY_TYPE_LABELS, type CategoryType } from "@/lib/categories/groups";
 import type { Category } from "@/lib/db/schema/categories";
-import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { CATEGORY_DESCRIPTION_MAX_LENGTH, type CategoryColor, type CategoryIcon } from "@/lib/validation/categories";
 import { CategoryAppearanceFields } from "./category-appearance-fields";
 import { CategoryAvatar } from "./category-avatar";
 
+const DESCRIPTION_PLACEHOLDER = "Es. supermercato, alimentari";
 const TYPE_OPTIONS = CATEGORY_TYPES.map((type) => ({ value: type, label: CATEGORY_TYPE_LABELS[type] }));
 
 export interface CategoryDetailDialogProps {
@@ -42,6 +43,7 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
   const updateMutation = useUpdateCategoryMutation();
   const deleteMutation = useDeleteCategoryMutation();
   const [name, setName] = React.useState(category.name);
+  const [description, setDescription] = React.useState(category.description ?? "");
   const [error, setError] = React.useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
 
@@ -56,6 +58,12 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
       { id: category.id, input: { name: trimmed } },
       { onError: (mutationError) => { setError(mutationError.message); setName(category.name); } }
     );
+  }
+
+  function commitDescription() {
+    const trimmed = description.trim();
+    if (trimmed === (category.description ?? "")) return setDescription(trimmed);
+    updateMutation.mutate({ id: category.id, input: { description: trimmed } });
   }
 
   function commitAppearance(next: { color: CategoryColor; icon: CategoryIcon }) {
@@ -90,6 +98,22 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
           />
           {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
+
+        {!category.isFallback && (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="category-description" className="text-xs font-medium text-muted-foreground">Cosa ci va (facoltativo)</label>
+            <Input
+              id="category-description"
+              value={description}
+              maxLength={CATEGORY_DESCRIPTION_MAX_LENGTH}
+              placeholder={DESCRIPTION_PLACEHOLDER}
+              onChange={(event) => setDescription(event.target.value)}
+              onBlur={commitDescription}
+              onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}
+            />
+            <p className="text-xs text-text-3">Aiuta l&apos;assistente a proporre questa categoria agli esercenti giusti.</p>
+          </div>
+        )}
 
         {!category.isFallback && (
           <div className="flex flex-col gap-1.5">

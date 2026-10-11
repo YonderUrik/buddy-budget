@@ -10,8 +10,8 @@ import { TrackedSection } from "./tracked-section";
 const BAR_VISIBLE_RATIO = 0.6;
 
 /**
- * "Quattro gruppi": un mese di esempio come barra unica (entrate = 100%) divisa in Dovute, Volute, Te futuro,
- * Saltuarie e Avanzo, con i colori dei gruppi dell'app. I segmenti si riempiono uno dopo l'altro quando la barra entra in vista.
+ * "Quattro gruppi": un mese di esempio come registro, una riga per gruppo (Dovute, Volute, Te futuro, Saltuarie, Avanzo) con la
+ * sua barra in proporzione alle entrate. Le barre si riempiono una dopo l'altra quando il registro entra in vista.
  */
 export function Groups({ content = GROUPS }: { content?: typeof GROUPS }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -44,18 +44,16 @@ export function Groups({ content = GROUPS }: { content?: typeof GROUPS }) {
             <span>{content.incomeLabel}</span>
             <b>{groupThousands(content.income)} €</b>
           </div>
-          <div className="grp-bar" role="img" aria-label={`${content.incomeLabel} ${groupThousands(content.income)} €: ${label}`}>
-            {content.groups.map((g, i) => (
-              <span key={g.id} className={`grp-seg g-${g.id}`} style={{ "--w": `${(g.amount / content.income) * 100}%`, "--i": i } as CSSProperties} />
-            ))}
-          </div>
-          <ul className="grp-legend">
+          <ul className="grp-rows" aria-label={label}>
             {content.groups.map((g, i) => (
               <li key={g.id} style={{ "--i": i } as CSSProperties}>
                 <span className="grp-name"><i className={`g-${g.id}`} />{g.name}</span>
+                <p>{g.text}</p>
+                <span className="grp-track" aria-hidden="true">
+                  <span className={`grp-seg g-${g.id}`} style={{ "--w": `${(g.amount / content.income) * 100}%` } as CSSProperties} />
+                </span>
                 <b>{groupThousands(g.amount)} €</b>
                 <span className="grp-pct">{Math.round((g.amount / content.income) * 100)}%</span>
-                <p>{g.text}</p>
               </li>
             ))}
           </ul>

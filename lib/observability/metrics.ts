@@ -12,12 +12,14 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance";
+export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
 export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
+/** Scelte dell'utente sugli abbonamenti (enum chiuso, mai il nome dell'abbonamento). */
+export type SubscriptionAction = "confirmed" | "excluded" | "ended" | "restored" | "added" | "updated" | "removed";
 
 /** Numeri aggregati di utilizzo (nessun dato personale: solo conteggi), letti dal DB allo scrape. */
 export interface UsageSnapshot {
@@ -28,8 +30,12 @@ export interface UsageSnapshot {
   usersWithFeature: Record<UsageFeature, number>;
   /** Righe totali per tipo di dato. */
   records: Record<UsageRecordKind, number>;
+  /** Utenti per passo dei primi passi (dati veri, esclusi quelli d'esempio) e per stato della checklist. */
+  activation: Record<ActivationStep, number>;
 }
-export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension";
+export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" | "completa" | "chiusa" | "demo_attiva";
+export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed";
+export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
@@ -53,6 +59,7 @@ export const CRON_NAMES: readonly CronName[] = [
   "market_prices",
   "account_deletion",
   "gocardless_maintenance",
+  "notifications",
 ];
 
 /** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
@@ -70,6 +77,12 @@ export type CleanupAction =
 /** Avvisi di consenso bancario (scadenza vicina o scaduto) per esito dell'invio email. */
 export type ConsentNoticeKind = "expiring" | "expired";
 export type ConsentNoticeOutcome = "sent" | "failed";
+
+/** Email non di servizio (riepilogo, avvisi budget e scadenze) per esito: `dry_run` conta senza inviare, `capped` = rimandata dal tetto di frequenza. */
+export type NotificationEmailKind = "digest" | "budget" | "deadlines" | "test";
+export type NotificationEmailOutcome = "sent" | "failed" | "dry_run" | "capped" | "empty";
+/** Da dove arriva una disiscrizione: link nell'email, one-click del client di posta (RFC 8058) o preferenze in app. */
+export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
 
 /**
  * Letture fatte al momento dello scrape (gauge "asincrone"). Se una lettura lancia, la gauge
@@ -97,12 +110,17 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   supportReports: Counter<"kind" | "outcome">;
+  subscriptionActions: Counter<"action">;
+  subscriptionsDetect: Histogram<string>;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
   gcCleanup: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
+  startEvents: Counter<"event">;
+  notificationEmails: Counter<"kind" | "outcome">;
+  notificationUnsubscribes: Counter<"kind" | "source">;
 }
 
 function createState(): MetricsState {
@@ -180,6 +198,19 @@ function createState(): MetricsState {
     registers: r,
   });
 
+  state.subscriptionActions = new Counter({
+    name: `${METRIC_PREFIX}subscription_actions_total`,
+    help: "Scelte degli utenti sugli abbonamenti (confermato, escluso, terminato, ripristinato, aggiunto, modificato, rimosso).",
+    labelNames: ["action"],
+    registers: r,
+  });
+  state.subscriptionsDetect = new Histogram({
+    name: `${METRIC_PREFIX}subscriptions_detect_duration_seconds`,
+    help: "Durata del rilevamento degli abbonamenti per richiesta (lettura delle transazioni compresa).",
+    buckets: DURATION_BUCKETS_SECONDS,
+    registers: r,
+  });
+
   state.priceProvider = new Counter({
     name: `${METRIC_PREFIX}price_provider_requests_total`,
     help: "Tentativi sulle fonti di prezzi di mercato per fonte ed esito (success, empty, error, skipped...).",
@@ -212,10 +243,28 @@ function createState(): MetricsState {
     labelNames: ["action", "mode"],
     registers: r,
   });
+  state.startEvents = new Counter({
+    name: `${METRIC_PREFIX}start_events_total`,
+    help: "Eventi dei primi passi: dati d'esempio avviati o azzerati, checklist chiusa, riaperta o completata.",
+    labelNames: ["event"],
+    registers: r,
+  });
   state.consentNotices = new Counter({
     name: `${METRIC_PREFIX}gocardless_consent_notices_total`,
     help: "Email di avviso sul consenso bancario (in scadenza o scaduto) per esito dell'invio.",
     labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+  state.notificationEmails = new Counter({
+    name: `${METRIC_PREFIX}notification_emails_total`,
+    help: "Email di riepilogo e avvisi (budget, scadenze) per tipo ed esito dell'invio.",
+    labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+  state.notificationUnsubscribes = new Counter({
+    name: `${METRIC_PREFIX}notification_unsubscribes_total`,
+    help: "Disiscrizioni dalle email di riepilogo e avvisi, per tipo (o all) e provenienza.",
+    labelNames: ["kind", "source"],
     registers: r,
   });
 
@@ -308,7 +357,8 @@ function createState(): MetricsState {
   usageGauge("users", "Utenti per stato: registered (tutti), onboarded (onboarding finito), deactivated (in attesa di eliminazione).", "state", (u) => u.users);
   usageGauge("users_new", "Utenti registrati nella finestra indicata (7d, 30d).", "window", (u) => u.newUsers);
   usageGauge("users_active", "Utenti con una sessione attiva nella finestra indicata (24h, 7d, 30d).", "window", (u) => u.activeUsers);
-  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza).", "feature", (u) => u.usersWithFeature);
+  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza, abbonamenti confermati).", "feature", (u) => u.usersWithFeature);
+  usageGauge("users_activation", "Utenti per passo dei primi passi fatto (conto, import, investimento, obiettivo), checklist completa o chiusa, e con dati d'esempio attivi.", "step", (u) => u.activation);
   usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti, fotografie della previdenza).", "kind", (u) => u.records);
 
   return state;
@@ -402,6 +452,16 @@ export function recordSupportReport(kind: SupportReportKind, outcome: SupportRep
   metrics().supportReports.inc({ kind, outcome });
 }
 
+/** Registra una scelta dell'utente sugli abbonamenti. */
+export function recordSubscriptionAction(action: SubscriptionAction): void {
+  metrics().subscriptionActions.inc({ action });
+}
+
+/** Registra la durata di un rilevamento degli abbonamenti. */
+export function recordSubscriptionsDetect(durationMs: number): void {
+  metrics().subscriptionsDetect.observe(durationMs / 1000);
+}
+
 /** Registra un tentativo su una fonte di prezzi (anche le fonti saltate, per vedere quanto si usano le riserve). */
 export function recordPriceProviderRequest(provider: ProviderId, outcome: ProviderOutcome): void {
   metrics().priceProvider.inc({ provider, outcome });
@@ -436,7 +496,22 @@ export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode
   if (count > 0) metrics().gcCleanup.inc({ action, mode }, count);
 }
 
+/** Registra l'esito di una email di riepilogo o di avviso. */
+export function recordNotificationEmail(kind: NotificationEmailKind, outcome: NotificationEmailOutcome): void {
+  metrics().notificationEmails.inc({ kind, outcome });
+}
+
+/** Registra una disiscrizione (`kind` = tipo di email o `all`). */
+export function recordNotificationUnsubscribe(kind: NotificationEmailKind | "all", source: NotificationUnsubscribeSource): void {
+  metrics().notificationUnsubscribes.inc({ kind, source });
+}
+
 /** Registra l'invio di un avviso email sul consenso bancario. */
 export function recordConsentNotice(kind: ConsentNoticeKind, outcome: ConsentNoticeOutcome): void {
   metrics().consentNotices.inc({ kind, outcome });
+}
+
+/** Registra un evento dei primi passi (demo avviata/azzerata, checklist chiusa/riaperta/completata). */
+export function recordStartEvent(event: StartEvent): void {
+  metrics().startEvents.inc({ event });
 }

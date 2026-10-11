@@ -13,6 +13,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { authSession, authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
+import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { categories } from "@/lib/db/schema/categories";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
@@ -147,11 +148,17 @@ async function main() {
     };
     push(dayOfMonth(back, 27), "Stipendio", "Stipendio", "BONIFICO A VOSTRO FAVORE ACME SRL STIPENDIO", 2480);
     if (back % 4 === 1) push(dayOfMonth(back, 14), "Freelance", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
+    // Abbonamenti per la schermata «Abbonamenti»: un aumento di prezzo, un servizio terminato 5 mesi fa e un'assicurazione annuale.
+    push(dayOfMonth(back, 6), "Abbonamenti & Streaming", "Archivio cloud", "PAGAMENTO ONLINE CLOUDBOX STORAGE", -2.99);
+    if (back >= 5) push(dayOfMonth(back, 12), "Abbonamenti & Streaming", "Giornale online", "PAGAMENTO ONLINE IL QUOTIDIANO DIGITALE", -7.99);
+    if (back === 12 || back === 0) push(dayOfMonth(back, 2), "Assicurazioni", "Assicurazione auto", "ADDEBITO SDD ASSICURAZIONI SICURA RCA", back === 12 ? -412 : -428);
     for (const e of EXPENSES) {
       const times = e.perMonth ?? 1;
       for (let i = 0; i < times; i++) {
         const day = Math.min(28, e.day + i * 4 + Math.floor(between(0, 3)));
-        push(dayOfMonth(back, day), e.category, e.description, e.raw, -round2(between(e.min, e.max)));
+        // La musica costava 9,99 € fino a 4 mesi fa: l'aumento si vede in «Abbonamenti».
+        const amount = e.description === "Musica" && back >= 4 ? 9.99 : round2(between(e.min, e.max));
+        push(dayOfMonth(back, day), e.category, e.description, e.raw, -amount);
       }
     }
     if (back % 3 === 0) push(dayOfMonth(back, 20), "Investimenti", "Versamento PAC", "BONIFICO PAC ETF AZIONARIO", -300);
@@ -194,6 +201,16 @@ async function main() {
     { userId: DEMO_USER_ID, categoryId: cat("Spesa alimentare"), monthlyAmount: "420.00" },
     { userId: DEMO_USER_ID, categoryId: cat("Shopping & Tecnologia"), monthlyAmount: "150.00" },
     { userId: DEMO_USER_ID, categoryId: cat("Abbonamenti & Streaming"), monthlyAmount: "30.00" },
+  ]);
+
+  // Abbonamenti: Giulia ha già confermato i suoi e scartato il mutuo; restano da decidere l'assicurazione e il giornale (fermo).
+  await db.insert(subscriptions).values([
+    { userId: DEMO_USER_ID, key: "streaming video", status: "confermato", origin: "rilevato", name: "Streaming video", amount: "13.99", cadence: "mensile", categoryId: cat("Abbonamenti & Streaming") },
+    { userId: DEMO_USER_ID, key: "musica", status: "confermato", origin: "rilevato", name: "Musica", amount: "10.99", cadence: "mensile", categoryId: cat("Abbonamenti & Streaming") },
+    { userId: DEMO_USER_ID, key: "archivio cloud", status: "confermato", origin: "rilevato", name: "Archivio cloud", amount: "2.99", cadence: "mensile", categoryId: cat("Abbonamenti & Streaming") },
+    { userId: DEMO_USER_ID, key: "palestra", status: "confermato", origin: "rilevato", name: "Palestra", amount: "39.00", cadence: "mensile", categoryId: cat("Sport & Benessere") },
+    { userId: DEMO_USER_ID, key: "fibra e mobile", status: "confermato", origin: "rilevato", name: "Fibra e mobile", amount: "34.90", cadence: "mensile", categoryId: cat("Internet & Telefono") },
+    { userId: DEMO_USER_ID, key: "rata mutuo", status: "escluso", origin: "rilevato", name: "Rata mutuo", amount: "742.18", cadence: "mensile", categoryId: cat("Affitto & Mutuo") },
   ]);
 
   // Investimenti: un ETF globale, un'azione e un BTP, con prezzi giornalieri finti (passeggiata aleatoria).

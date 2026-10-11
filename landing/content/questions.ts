@@ -49,8 +49,7 @@ export const QUESTIONS: readonly Question[] = [
     headline: "Il patrimonio netto, con i debiti già tolti.",
     text: "Liquidità, investimenti e fondo pensione sommati in un numero solo, con l'andamento negli ultimi mesi. Il debito residuo è sottratto.",
     situation: "Hai un conto corrente, un deposito, qualche ETF, un fondo pensione e un mutuo. Ognuno ha la sua app o il suo estratto.",
-    figure: { value: 37944, unit: "eur", note: "il patrimonio netto dell'account demo, aggiornato con i movimenti della banca ogni 12 ore." },
-    note: "I dati mostrati sono di esempio.",
+    note: "Account demo con dati di esempio, aggiornato con i movimenti della banca ogni 12 ore.",
     screen: "panoramica",
   },
   {

@@ -10,6 +10,7 @@ export type { ProfileSectionProps } from "./profile-section";
 export { PreferencesSection } from "./preferences-section";
 export type { PreferencesSectionProps } from "./preferences-section";
 export { SidebarSection } from "./sidebar-section";
+export { NotificationsSection } from "./notifications-section";
 export { SessionsSection } from "./sessions-section";
 export { DataSection } from "./data-section";
 export type { DataSectionProps } from "./data-section";

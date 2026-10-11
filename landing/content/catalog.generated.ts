@@ -34,6 +34,7 @@ const f = (
 
 export const FEATURES: readonly Feature[] = [
   f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background, ricordiamo il formato per le volte dopo e ti avvisiamo per email a import finito.", "new"),
+  f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può guardare l'app con dati d'esempio, segnati come demo e azzerabili con un tocco.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live"),
   f("avviso-rinnovo-banca", "Liquidità", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
   f("liquidita-unica", "Liquidità", "Conti e movimenti in un posto solo", "Saldo totale, andamento e movimenti di tutti i conti in un'unica schermata, filtrabile per conto con un tocco.", "new"),
@@ -51,6 +52,7 @@ export const FEATURES: readonly Feature[] = [
   f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
   f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),
   f("ricerca-filtri-e-note", "Liquidità", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
+  f("abbonamenti", "Liquidità", "Abbonamenti", "Trova da solo gli addebiti che tornano (streaming, palestra, assicurazione annuale) e li confermi con un tocco. Vedi quanto pesano al mese e all'anno, il prossimo addebito, gli aumenti di prezzo e quelli che non vengono più addebitati. Il riconoscimento è un calcolo sui tuoi movimenti, senza AI, e le tue scelte restano memorizzate.", "new"),
   f("da-sistemare", "Liquidità", "Da sistemare", "Un avviso in Panoramica e un contatore su Liquidità nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
@@ -79,6 +81,7 @@ export const FEATURES: readonly Feature[] = [
 
   f("accesso-semplice", "Account", "Accesso semplice", "Link via email o Google, senza password da ricordare.", "live"),
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),
+  f("email-riepilogo-e-avvisi", "Account", "Email di riepilogo e avvisi", "Se vuoi, ricevi il riepilogo del mese o della settimana e un avviso quando un budget è quasi finito o una rata sta per scadere. Partono spente, le scegli tu, e ogni email ha il link per disattivarla con un clic.", "new"),
   f("aiuto-e-segnalazioni", "Account", "Aiuto e segnalazioni", "Dal menu dell'avatar trovi le risposte rapide e ci scrivi per un problema, una domanda o un'idea: la pagina e la versione dell'app arrivano con la segnalazione, i tuoi dati finanziari mai. Puoi seguire e segnalare anche su GitHub.", "new"),
   f("installabile-e-a-tema", "Account", "Installabile e a tema", "Si installa come app dal telefono e ha tema chiaro e scuro.", "live"),
   f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Oggi italiano ed EUR, altre in arrivo.", "soon"),

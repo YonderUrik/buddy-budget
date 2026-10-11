@@ -24,6 +24,17 @@ export interface ProductEvents {
   /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
   investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
   investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
+  /** Clic sull'azione di un passo della checklist «Primi passi» della Panoramica. */
+  start_step_clicked: { step: "conto" | "import" | "investimento" | "obiettivo" };
+  /** Checklist chiusa; `done`: quanti passi su quattro erano già fatti. */
+  start_checklist_dismissed: { done: number };
+  start_checklist_reopened: undefined;
+  /** Tutti i passi fatti, registrato una sola volta per utente. */
+  start_checklist_completed: undefined;
+  /** «Esplora con dati d'esempio» avviato. */
+  demo_started: undefined;
+  /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
+  demo_cleared: { from: "banner" | "panoramica" };
   onboarding_completed: { currency: SupportedCurrency };
   account_created: undefined;
   budget_set: undefined;
@@ -46,11 +57,18 @@ export interface ProductEvents {
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
-  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "categorie" | "regole" };
+  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "abbonamenti" | "categorie" | "regole" };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
   liquidity_account_filtered: { scope: "conto" | "tutti" };
   /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */
   liquidity_category_remembered: { remembered: boolean };
+  /** Scelta su un abbonamento: confermato, escluso («non è un abbonamento»), terminato o rimesso tra i rilevati; `origin`: rilevato o aggiunto a mano. */
+  subscription_decided: { decision: "confermato" | "escluso" | "terminato" | "ripristinato"; origin: "rilevato" | "manuale" };
+  subscription_added: { cadence: "settimanale" | "mensile" | "trimestrale" | "semestrale" | "annuale" };
+  subscription_updated: undefined;
+  subscription_removed: undefined;
+  /** Dettaglio di un abbonamento aperto dalla lista; `decision`: lo stato in cui era. */
+  subscription_details_opened: { decision: "da-confermare" | "confermato" | "escluso" | "terminato" };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
@@ -136,7 +154,16 @@ export interface ProductEvents {
   /** Tocco su una scheda della barra in basso su mobile. */
   bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
+  amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
+  theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "tema" | "importi" | "esci" | "informativa" | "quadro" };
+  /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
+  notifications_toggled: { kind: "digest" | "budget" | "deadlines"; enabled: boolean };
+  notifications_frequency_changed: { frequency: "settimanale" | "mensile" };
+  /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
+  notifications_test_sent: undefined;
+  /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
+  notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "all" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

@@ -1,9 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeftIcon, FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet } from "lucide-react";
+import { BackLink } from "@/components/domain/shared";
 import {
   PersonalImportList,
   PersonalImportPreview,
@@ -33,9 +33,7 @@ function PersonalImports() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 sm:p-6">
       <header className="flex flex-col gap-2">
-        <Link href="/liquidita" className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeftIcon className="size-4" aria-hidden="true" /> Liquidità
-        </Link>
+        <BackLink href="/liquidita" label="Liquidità" />
         <h1 className="flex items-center gap-2 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
           <FileSpreadsheet className="size-7 text-muted-foreground" aria-hidden="true" />
           {PAGE_TITLE}

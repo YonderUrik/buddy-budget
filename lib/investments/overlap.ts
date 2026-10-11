@@ -134,3 +134,45 @@ export function computeStocksInsideFunds(inputs: OverlapInput[]): StockInsideFun
   }
   return found.sort((a, b) => b.totalValue - a.totalValue);
 }
+
+/** Strumento posseduto, con i dati del profilo che servono a riconoscere i titoli in comune. */
+export interface HeldInstrumentRef {
+  id: string;
+  name: string;
+  type: string;
+  symbol: string | null;
+  holdings: ProfileHolding[] | null;
+}
+
+/** Dove compare un titolo tra gli altri strumenti posseduti: dentro un fondo (con il peso) o direttamente (peso null). */
+export interface HoldingElsewhere {
+  id: string;
+  name: string;
+  weight: number | null;
+}
+
+function sameCompany(a: Pick<ProfileHolding, "symbol" | "name">, b: Pick<ProfileHolding, "symbol" | "name">): boolean {
+  const keys = holdingKeys(a);
+  return holdingKeys(b).some((k) => keys.includes(k));
+}
+
+/** Dove compare `company` tra gli strumenti posseduti: fondi che la contengono tra i primi titoli e l'azione stessa. */
+export function findCompanyElsewhere(company: Pick<ProfileHolding, "symbol" | "name">, others: HeldInstrumentRef[]): HoldingElsewhere[] {
+  const found: HoldingElsewhere[] = [];
+  for (const other of others) {
+    if (FUND_TYPES.has(other.type)) {
+      const holding = other.holdings?.find((h) => sameCompany(h, company));
+      if (holding) found.push({ id: other.id, name: other.name, weight: holding.weight });
+    } else if (other.type === "azione" && sameCompany({ symbol: other.symbol, name: other.name }, company)) {
+      found.push({ id: other.id, name: other.name, weight: null });
+    }
+  }
+  return found;
+}
+
+/** Primi titoli di un fondo che possiedi anche altrove (in altri fondi o direttamente), nell'ordine del fondo. */
+export function sharedFundHoldings(holdings: ProfileHolding[], others: HeldInstrumentRef[]): { holding: ProfileHolding; elsewhere: HoldingElsewhere[] }[] {
+  return holdings
+    .map((holding) => ({ holding, elsewhere: findCompanyElsewhere(holding, others) }))
+    .filter((entry) => entry.elsewhere.length > 0);
+}

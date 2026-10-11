@@ -23,6 +23,7 @@ export {
   recordPriceProviderRequest,
   recordFxProviderRequest,
   recordLogoRequest,
+  recordFundamentalsRequest,
   recordPriceInstruments,
   recordGoCardlessCleanup,
   recordInactiveAccounts,

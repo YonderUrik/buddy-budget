@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.56.0](https://github.com/YonderUrik/buddy-budget/compare/v0.55.0...v0.56.0) (2026-10-11)
+
+
+### Novità
+
+* dettaglio dell'analisi a schede, lista importazioni chiara e importazioni degli investimenti in un dialog ([#305](https://github.com/YonderUrik/buddy-budget/issues/305)) ([d3a25e3](https://github.com/YonderUrik/buddy-budget/commit/d3a25e39f2f0fb50424a4623c458bcadbcbe1bc8))
+
 ## [0.55.0](https://github.com/YonderUrik/buddy-budget/compare/v0.54.0...v0.55.0) (2026-10-11)
 
 

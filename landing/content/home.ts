@@ -11,7 +11,7 @@ export type HomeIcon =
   | "link" | "dashboard" | "calculator"
   | "backpack" | "scale" | "stamp" | "landmark-gov" | "umbrella" | "house"
   | "wallet" | "trending" | "card" | "user" | "shield" | "pie"
-  | "key" | "eye" | "ban" | "sliders" | "file-text" | "database";
+  | "key" | "eye" | "ban" | "sliders" | "file-text" | "database" | "pencil" | "chart";
 
 export interface HeroFact {
   icon: HomeIcon;

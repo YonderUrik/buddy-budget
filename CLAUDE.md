@@ -188,12 +188,12 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 
 ### Schermate "in arrivo" e catalogo funzionalità: punti da aggiornare quando se ne implementa una
 
-Elenco, area, descrizioni e stato (`live` / `new` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, che aggiunge solo l'icona) e la landing, che ne tiene una copia generata (`landing/content/catalog.generated.ts`, aggiornata con `pnpm sync:features` in `landing/`; la CI controlla l'allineamento). Il pannello del login mostra le funzionalità `soon` che hanno `appPath` (le schermate). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
+Elenco, area, descrizioni e stato (`live` / `new` / `soon`) di tutte le funzionalità stanno in **un solo posto**: `lib/features/catalog.ts`. Lo leggono il pannello "In arrivo" del login (`components/domain/auth/upcoming-features.data.ts`, scheda «In arrivo» del foglio di accesso) e la landing, che ne tiene una copia generata (`landing/content/catalog.generated.ts`, aggiornata con `pnpm sync:features` in `landing/`; la CI controlla l'allineamento). Il pannello del login mostra le funzionalità `soon` che hanno `appPath` (le schermate). Il test `lib/features/catalog.test.ts` fallisce se la sidebar e il catalogo divergono.
 
 Quando si implementa una schermata pianificata (oggi: Pianifica, Analitiche):
 
 1. `components/layout/sidebar.tsx` → `NAV_ITEMS`: **togliere `comingSoon: true`** e verificare che `href` corrisponda alla route reale.
-2. `lib/features/catalog.ts`: passare la voce da `soon` a `new` o `live` (e aggiornare la descrizione se serve); togliere l'icona da `UPCOMING_ICONS` nel file dati del login; poi `pnpm sync:features` in `landing/`.
+2. `lib/features/catalog.ts`: passare la voce da `soon` a `new` o `live` (e aggiornare la descrizione se serve); poi `pnpm sync:features` in `landing/`.
 3. Una **feature nuova** (non pianificata) si aggiunge al catalogo come `new` (poi `live`) e si lancia il sync: la landing la mostra da sola, ma va controllato che il testo regga nella pagina.
 
 Una schermata o feature nuova non è "completata" finché il catalogo non è aggiornato, insieme a "Stato del progetto" qui sotto.
@@ -213,7 +213,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 **Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.
 
-**Landing «Il foglio» (2026-10-11)**: home riprogettata come foglio di calcolo che diventa l'app (direzione C scelta da Daniele), loghi dei broker supportati, scheda tecnica a schede e catalogo in tabella; stile allineato all'app (stessi font, raggi e pulsanti); voce in `docs/decisioni/2026-10-11-landing-il-foglio.md`. PR in bozza sul branch `claude/project-thread-1pbv5w`. Rimandati: pagine interne nello stesso stile, immagine Open Graph.
+**Landing «Il foglio» (2026-10-11)**: home come foglio di calcolo che diventa l'app (direzione C scelta da Daniele), loghi dei broker, stile allineato all'app (PR #311, unita). Seconda passata: un solo «giro dell'app» a schede con schermate intere (mai ritagliate), bandiere dei paesi delle banche e icone, catalogo sfoltito a 34 voci e tolto dalla home (resta `/funzioni`), indice delle sezioni tolto, card «E tutti gli altri» tra i broker, pagine interne nello stesso stile; voce in `docs/decisioni/2026-10-11-landing-giro-dell-app.md`. PR in bozza sul branch `claude/project-thread-1pbv5w`. Rimandati: rifare gli screenshot con inquadrature pensate per la landing, immagine Open Graph.
+**Login «Il foglio» (2026-10-11)**: le pagine di accesso sono un foglio di calcolo (barra della formula, email come cella B6, tabella a schede con aree, novità e arrivi dal catalogo) al posto del patrimonio d'esempio; voce in `docs/decisioni/2026-10-11-login-il-foglio.md`. PR #322, unita. Rimandati: formula propria per onboarding e Termini, prova su Safari/iPhone.
 
 **Landing nuova (2026-10-09)**: home ristrutturata dopo l'analisi dei competitor (fatti in apertura, tre passi, regole italiane con fonti, quattro gruppi, per chi è, confronto) e `/llms.txt` + crawler AI ammessi; voce in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. PR in bozza sul branch `claude/project-thread-kflwwq`. Rimandati: pagine per domanda, `/sicurezza`, confronti, glossario, Lighthouse.
 
@@ -239,7 +240,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### Fatto (tutto su `main`, in produzione su k3s)
 
-- **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login con pannello "mosaico", brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
+- **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login a foglio di calcolo, brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
 - **Movimenti** (`/liquidita`: Movimenti · Analisi · Conti · Categorie e regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
 - **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
 - **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
@@ -280,7 +281,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - **Investimenti**: probe delle fonti (`pnpm tsx scripts/probe-price-sources.ts` da locale e VPS), Yahoo vero (ricerca, numeri chiave, storico dividendi, settori ETF), Eurostat (`inflation_index`), BCE €STR (`interest_rates`), `COINGECKO_API_KEY` da aggiungere come secret SOPS nel repo infra, un avviso di prezzo reale (email Resend), stime fiscali contro il rendiconto Fineco, tasso e scadenza dei BTP, un benchmark vero (es. VWCE).
 - **Debiti**: tasso e TAEG calcolati contro un contratto vero, pregresso dall'origine contro fotografia, penali e rate di un'estinzione reale, transazioni collegate dal picker con dati GoCardless veri.
 - **Impostazioni**: email di disattivazione/eliminazione e revoca GoCardless in produzione, "Collega Google". Il CronJob `account-deletion` del repo infra va mergiato solo con l'immagine che contiene la route in produzione (verificare se già fatto).
-- **Login mosaico**: Safari e Firefox (il morph dei path), altezza a 1366×768.
+- **Login «Il foglio»**: Safari/iPhone (schede in basso fisse, tastiera aperta sul campo email) e Firefox.
 - **Prezzi**: nei log (`market.prices.updated`) devono girare i 3 giri al giorno senza 429 nuovi; backup CNPG non più orario (`kubectl get backups -n data`) e spazio R2 in calo.
 - **Redirect** dai vecchi indirizzi (`/spese`, `/transazioni`, `/cash-flow`, `/categorie`) e dialog "Aggiungi" in Movimenti.
 

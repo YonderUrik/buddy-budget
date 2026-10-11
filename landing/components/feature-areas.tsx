@@ -5,7 +5,7 @@ import { AREA_META } from "@/content/feature-areas";
 import { AreaJump } from "./area-jump";
 import { HomeIcon } from "./home-icon";
 import { Reveal } from "./reveal";
-import { ToolShot } from "./tool-shot";
+import { AppShot } from "./app-shot";
 
 /** Etichetta solo per ciò che non è ancora «normale»: una funzione disponibile da tempo non ha bisogno di bollino. */
 const STATUS_LABEL: Partial<Record<FeatureStatus, string>> = { new: "Nuovo", soon: "In arrivo" };
@@ -34,7 +34,7 @@ export function FeatureAreas() {
                   </Link>
                 ) : null}
               </div>
-              {meta.shot ? <ToolShot id={meta.shot.id} /> : null}
+              {meta.shot ? <AppShot id={meta.shot.id} className="fa-shot" /> : null}
             </div>
             <Reveal stagger className="fa-grid">
               {features.map((f) => (

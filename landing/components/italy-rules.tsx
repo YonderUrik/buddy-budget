@@ -1,6 +1,7 @@
 import "./italy-rules.css";
 import Link from "next/link";
 import { ITALY } from "@/content/home";
+import { HomeIcon } from "./home-icon";
 import { Reveal } from "./reveal";
 import { TrackedSection } from "./tracked-section";
 
@@ -12,7 +13,7 @@ export function ItalyRules({ content = ITALY }: { content?: typeof ITALY }) {
   return (
     <TrackedSection id="italia" section="italia" className="sec italy">
       <div className="wrap">
-        <span className="ref">Regole!A1</span>
+        <span className="ref">{content.kicker}</span>
         <h2 className="t">{content.title}</h2>
         <p className="lede">{content.lede}</p>
         <Reveal className="it-wrap cell">
@@ -27,7 +28,12 @@ export function ItalyRules({ content = ITALY }: { content?: typeof ITALY }) {
             <tbody>
               {content.rules.map((r) => (
                 <tr key={r.rule}>
-                  <th scope="row">{r.rule}</th>
+                  <th scope="row">
+                    <span className="it-rule">
+                      <span className="it-ic" aria-hidden="true"><HomeIcon name={r.icon} size={18} /></span>
+                      {r.rule}
+                    </span>
+                  </th>
                   <td>{r.app}</td>
                   <td className="it-links">
                     {r.link ? <Link href={r.link.href}>{r.link.label} →</Link> : null}

@@ -7,7 +7,7 @@ import { FEATURE_AREAS, featuresByArea } from "./catalog.generated";
 import { ITALY } from "./home";
 import { LEGAL_PATHS } from "./legal";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "./seo-pages";
-import { DETAILS, SUPPORTED } from "./sheet";
+import { SUPPORTED, TOUR } from "./sheet";
 import { APP_URL, FAQ, SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOURCE_LICENSE, SOURCE_URL } from "./site";
 
 /** Pagine pubbliche descritte nel file, con la riga che dice a cosa servono. */
@@ -39,9 +39,11 @@ export function buildLlmsTxt(): string {
   for (const r of ITALY.rules) lines.push(`- ${r.rule} ${r.app}${r.source ? ` Fonte: ${r.source.href}` : ""}`);
   lines.push("", "## Fonti supportate", "");
   for (const b of SUPPORTED.brokers) lines.push(`- **${b.name}**: ${b.detail}`);
-  lines.push(`- **Banche (Open Banking, sola lettura)**: ${SUPPORTED.countries.join(", ")}`);
-  for (const d of DETAILS.tabs) {
-    lines.push("", `## ${d.title}`, "", d.lede, "");
+  lines.push(`- **Banche (Open Banking, sola lettura)**: ${SUPPORTED.countries.map((c) => c.name).join(", ")}`);
+  for (const o of SUPPORTED.other) lines.push(`- ${o.label}`);
+  for (const d of TOUR.tabs) {
+    const after = [d.after.lead, "strong" in d.after ? d.after.strong : "", "tail" in d.after ? d.after.tail : ""].filter(Boolean).join(" ");
+    lines.push("", `## ${d.title}`, "", after, "");
     for (const [label, text] of d.specs) lines.push(`- **${label}**: ${text}`);
   }
   lines.push("", "## Funzioni", "");

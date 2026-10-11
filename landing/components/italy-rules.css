@@ -6,6 +6,8 @@
 .it thead th { background: var(--head); font: 500 12px var(--f-b); color: var(--ink3); text-transform: uppercase; letter-spacing: 0.06em; }
 .it tbody th { font-weight: 600; width: 36%; }
 .it td { color: var(--ink2); }
+.it-rule { display: flex; gap: 12px; align-items: flex-start; }
+.it-ic { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-sm); background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); margin-top: -4px; }
 .it-links { width: 22%; font-size: 14.5px; }
 .it-links a { display: block; color: var(--accent); font-weight: 600; text-decoration: none; }
 .it-links a + a { margin-top: 6px; color: var(--ink3); font-weight: 400; text-decoration: underline; }

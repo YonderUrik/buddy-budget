@@ -1,11 +1,11 @@
 import type { FeatureArea } from "@/content/catalog.generated";
 import type { ScreenId } from "@/content/screens";
-import type { DetailId } from "@/content/sheet";
+import type { TourId } from "@/content/sheet";
 
 /** Sezioni della pagina misurate con `section_view`. */
 export type SectionId =
-  | "hero" | "fonti" | "spese" | "investimenti" | "debiti" | "pensione" | "futuro" | "dettagli"
-  | "italia" | "schermate" | "funzioni" | "sicurezza" | "codice" | "perchi" | "confronto" | "domande" | "fine";
+  | "hero" | "fonti" | "app" | "italia" | "schermate" | "funzioni" | "sicurezza" | "codice" | "perchi" | "confronto"
+  | "domande" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).
@@ -16,8 +16,8 @@ export interface LandingEvents {
   section_view: { section: SectionId };
   /** Apertura: il foglio d'esempio passa alla Panoramica dell'app, o torna al foglio. */
   sheet_view_toggled: { view: "foglio" | "app" };
-  /** «Nel dettaglio»: scheda aperta (banca, categorie, broker, rischio, tasse, debiti, limiti). */
-  detail_tab_selected: { tab: DetailId };
+  /** «L'app, area per area»: scheda aperta (conti, investimenti, tasse, debiti, pensione, futuro, limiti). */
+  tour_tab_selected: { tab: TourId };
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };

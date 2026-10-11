@@ -30,8 +30,8 @@ export function ScreenGallery() {
       }
       const mm = gsap.matchMedia();
       mm.add(MOTION_OK, () => {
-        gsap.fromTo(".shot", { clipPath: "inset(0 0 100% 0 round 14px)", scale: 1.03 }, { clipPath: "inset(0 0 0% 0 round 14px)", scale: 1, duration: 0.9, ease: EASE_OUT, clearProps: "clipPath,scale" });
-        gsap.fromTo(".gal-cap", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.7, ease: EASE_OUT, delay: 0.15 });
+        gsap.fromTo(".shot", { clipPath: "inset(0 0 100% 0 round 16px)", scale: 1.02 }, { clipPath: "inset(0 0 0% 0 round 16px)", scale: 1, duration: 0.35, ease: EASE_OUT, clearProps: "clipPath,scale" });
+        gsap.fromTo(".gal-cap", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: EASE_OUT, delay: 0.05 });
       });
     },
     { scope: view, dependencies: [selected] },

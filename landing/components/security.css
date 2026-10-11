@@ -1,7 +1,6 @@
 /* Sicurezza: quattro celle affiancate, ognuna col suo riferimento (A1…D1); due per riga sotto i 1000px, una sotto i 560px. */
 .sec-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 36px; }
 .sec-point { padding: 22px; }
-.sec-cellref { display: none; }
 .sec-ic { display: grid; place-items: center; width: 40px; height: 40px; color: var(--accent); border-radius: var(--r); background: color-mix(in srgb, var(--primary) 12%, transparent); }
 .sec-point h3 { margin: 16px 0 8px; font: 600 19px / 1.2 var(--f-h); letter-spacing: -0.02em; }
 .sec-point p { color: var(--ink2); font-size: 15.5px; }

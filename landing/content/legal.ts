@@ -109,6 +109,14 @@ export const PRIVACY: LegalDocument = {
       ],
     },
     {
+      id: "proposte-categorie",
+      title: "Proposte di categoria con intelligenza artificiale",
+      paragraphs: [
+        "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
+        "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone soltanto: nessun movimento viene categorizzato senza la tua conferma, e una scelta diventa una regola solo se lo chiedi tu. Puoi revocare il consenso in ogni momento: da quel momento non partono nuove richieste.",
+      ],
+    },
+    {
       id: "destinatari",
       title: "Con chi condividiamo i dati",
       paragraphs: [
@@ -119,7 +127,7 @@ export const PRIVACY: LegalDocument = {
         "Cloudflare: instradamento del traffico, DNS e archiviazione (R2) delle copie di sicurezza del database.",
         "GoCardless: lettura dei conti bancari che colleghi, ai sensi di PSD2.",
         "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
-        "OpenRouter e il fornitore del modello che questo seleziona: solo se usi l'import con intelligenza artificiale, con il tuo consenso (vedi la sezione dedicata).",
+        "OpenRouter e il fornitore del modello che questo seleziona: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",
         "Strumenti di monitoraggio, avvisi tecnici e statistiche anonime (Umami), che gestiamo sui nostri server e che non ricevono dati finanziari né contenuti tuoi.",
       ],

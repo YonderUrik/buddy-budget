@@ -5,6 +5,7 @@
 import {
   DangerZoneSection,
   DataSection,
+  AiCategorizationSection,
   NotificationsSection,
   PreferencesSection,
   PrivacySection,
@@ -39,6 +40,7 @@ export default function ImpostazioniPage() {
           <ProfileSection settings={settings} />
           <PreferencesSection settings={settings} />
           <NotificationsSection email={settings.email} />
+          <AiCategorizationSection />
           <SidebarSection />
           <SessionsSection />
           <DataSection settings={settings} recentLogin={recentLogin} />

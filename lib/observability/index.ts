@@ -17,6 +17,8 @@ export {
   recordAuthEvent,
   recordSubscriptionAction,
   recordSubscriptionsDetect,
+  recordCategorizationAiRequest,
+  recordCategorizationSuggestions,
   recordSupportReport,
   recordPriceProviderRequest,
   recordFxProviderRequest,

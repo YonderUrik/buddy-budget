@@ -1,0 +1,7 @@
+# Categorizzazione con LLM, Fase 1: proposte e carte
+
+- **Decisione (2026-10-11)**: dopo ogni sync GoCardless e ogni import, se l'utente ha acconsentito (Impostazioni → Assistente per le categorie, spento di default), Jev propone una categoria per ogni esercente ancora da categorizzare. Le proposte stanno in `categorization_suggestions` (migration 0028): non sono regole e non categorizzano mai da sole; servono a non richiamare il modello per lo stesso esercente.
+- **Privacy**: parte solo il nome pulito dell'esercente (filtro `prepareMerchantForModel`: niente bonifici, persone, importi, date), con ZDR. Testo legale aggiunto in `landing/content/legal.ts` **senza** alzare `LEGAL_VERSION`: da far rivedere e poi decidere se chiedere una nuova accettazione.
+- **Interfaccia**: `/categorizza` ha la vista «Una alla volta» (carte: conferma, cambia, salta, annulla; gesto, pulsanti, frecce e Z) e la vista «Elenco». Le scelte si salvano in blocco dopo 5 secondi di pausa o uscendo, quindi sono annullabili fino ad allora. Nessuna regola nasce se non si spunta «Ricorda per questo esercente»; anche l'elenco non crea più regole da solo.
+- **Rimandato**: ricerca web, eliminazione delle regole passate (Fase 6), pulizia di Jaccard/Ollama, descrizioni delle categorie per Jev.
+- **Landing**: nessun impatto (funzione dietro consenso, catalogo da aggiornare quando sarà attiva per tutti).

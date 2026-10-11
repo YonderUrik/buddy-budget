@@ -1,6 +1,6 @@
 import { after, NextRequest } from "next/server";
 import { sessionOrUnauthorized } from "@/lib/account/route-session";
-import { suggestCategoriesSafely } from "@/lib/categorization/ai/suggest-for-user";
+import { MANUAL_RUN_BUDGET_MS, MAX_GROUPS_MANUAL_RUN, suggestCategoriesSafely } from "@/lib/categorization/ai/suggest-for-user";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { eq } from "drizzle-orm";
@@ -22,7 +22,7 @@ async function handlePost(request: NextRequest) {
   const [user] = await db.select({ consentAt: authUser.aiCategorizationConsentAt }).from(authUser).where(eq(authUser.id, userId));
   if (!user?.consentAt) return Response.json({ status: "disabled" });
 
-  after(() => suggestCategoriesSafely(userId));
+  after(() => suggestCategoriesSafely(userId, undefined, { maxGroups: MAX_GROUPS_MANUAL_RUN, budgetMs: MANUAL_RUN_BUDGET_MS }));
   requestLogger().info("categorization.ai.generate.requested");
   return Response.json({ status: "started" });
 }

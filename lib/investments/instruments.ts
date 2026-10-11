@@ -98,9 +98,38 @@ export interface CreateInstrumentDeps {
 /**
  * Crea uno strumento o riusa quello esistente (stesso ISIN o stesso simbolo sulla fonte). Gli strumenti da Yahoo,
  * CoinGecko e ISIN sono comuni a tutti; quelli manuali sono visibili solo a chi li crea. La valuta di uno strumento
- * Yahoo la legge il server, non la dichiara il client: la tabella è condivisa.
+ * Yahoo la legge il server, non la dichiara il client: la tabella è condivisa. Aliquota e armonizzazione scelte
+ * per uno strumento comune vanno tra le impostazioni dell'utente.
  */
 export async function createOrReuseInstrument(
+  userId: string,
+  input: CreateInstrumentInput,
+  deps: CreateInstrumentDeps
+): Promise<CreateInstrumentOutcome> {
+  const outcome = await findOrCreateInstrument(userId, input, deps);
+  if (outcome.ok && outcome.instrument.createdByUserId === null) await savePersonalTaxChoice(userId, outcome.instrument.id, input);
+  return outcome;
+}
+
+/**
+ * Aliquota e armonizzazione scelte alla creazione di uno strumento comune: si salvano tra le impostazioni
+ * dell'utente, mai sulla riga condivisa (varrebbero per tutti). Si scrivono solo i campi indicati.
+ */
+async function savePersonalTaxChoice(userId: string, instrumentId: string, input: CreateInstrumentInput): Promise<void> {
+  const choice: { taxRate?: string; taxHarmonized?: boolean } = {};
+  if ("taxRate" in input && input.taxRate) choice.taxRate = input.taxRate;
+  if ("taxHarmonized" in input && input.taxHarmonized != null) choice.taxHarmonized = input.taxHarmonized;
+  if (Object.keys(choice).length === 0) return;
+  await db
+    .insert(userInstrumentSettings)
+    .values({ userId, instrumentId, ...choice })
+    .onConflictDoUpdate({
+      target: [userInstrumentSettings.userId, userInstrumentSettings.instrumentId],
+      set: { ...choice, updatedAt: new Date() },
+    });
+}
+
+async function findOrCreateInstrument(
   userId: string,
   input: CreateInstrumentInput,
   deps: CreateInstrumentDeps
@@ -130,8 +159,6 @@ export async function createOrReuseInstrument(
         currency: meta.currency,
         exchange: meta.exchange,
         priceUnit: input.type === "obbligazione" ? "percentuale_nominale" : "unita",
-        ...(taxRate ? { taxRate } : {}),
-        taxHarmonized: taxHarmonized ?? null,
       };
       const symbols = deriveSymbols({ isin: values.isin ?? null, type: input.type, currency: meta.currency, yahooSymbol: input.yahooSymbol });
       return { ok: true, instrument: await insertInstrument(values, symbols), created: true };
@@ -158,8 +185,6 @@ export async function createOrReuseInstrument(
           type: input.type,
           currency: input.currency,
           priceUnit: input.type === "obbligazione" ? "percentuale_nominale" : "unita",
-          ...(taxRate ? { taxRate } : {}),
-          taxHarmonized: taxHarmonized ?? null,
         },
         symbols
       );

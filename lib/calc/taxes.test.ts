@@ -323,7 +323,7 @@ describe("computeBollo", () => {
 });
 
 describe("impostazioni fiscali", () => {
-  const base = { taxRate: "0.2600", taxHarmonized: null };
+  const base = { taxRate: "0.2600", taxHarmonized: null, createdByUserId: null };
   it("riconosce i titoli di Stato dal nome", () => {
     expect(looksLikeGovernmentBond({ type: "obbligazione", name: "BTP 1 MZ 2035 3,85%" })).toBe(true);
     expect(looksLikeGovernmentBond({ type: "obbligazione", name: "Enel 2030 4%" })).toBe(false);
@@ -339,5 +339,11 @@ describe("impostazioni fiscali", () => {
     const etf = { ...base, type: "etf" as const, name: "VWCE" };
     expect(resolveTaxSettings(etf, undefined)).toMatchObject({ harmonized: true, harmonizedSource: "presunto" });
     expect(resolveTaxSettings(etf, { taxRate: null, taxHarmonized: false }).harmonized).toBe(false);
+  });
+  it("su uno strumento comune ignora aliquota e armonizzazione salvate sulla riga condivisa", () => {
+    const shared = { type: "etf" as const, name: "ETF", taxRate: "0.1250", taxHarmonized: false, createdByUserId: null };
+    expect(resolveTaxSettings(shared, undefined)).toMatchObject({ taxRate: 0.26, harmonized: true, harmonizedSource: "presunto" });
+    const own = { ...shared, createdByUserId: "utente" };
+    expect(resolveTaxSettings(own, undefined)).toMatchObject({ taxRate: 0.125, harmonized: false, harmonizedSource: "strumento" });
   });
 });

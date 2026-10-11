@@ -277,7 +277,8 @@ export function AppSidebar({
 
   async function handleSignOut() {
     await authClient.signOut();
-    router.push("/login");
+    // Ricarica completa: svuota la cache in memoria, così il prossimo utente della scheda non vede dati altrui.
+    window.location.assign("/login");
   }
 
   // In modalità forceExpanded (drawer mobile) la sidebar è sempre espansa.

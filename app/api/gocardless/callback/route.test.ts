@@ -5,11 +5,13 @@ import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 
+vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/gocardless/client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/gocardless/client")>();
   return { ...actual, getRequisition: vi.fn() };
 });
 
+import { auth } from "@/lib/auth";
 import { getRequisition } from "@/lib/gocardless/client";
 import { GET } from "./route";
 
@@ -30,6 +32,7 @@ describe("GET /api/gocardless/callback", () => {
       .returning();
     userId = user.id;
     vi.mocked(getRequisition).mockReset();
+    vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: userId } } as never);
   });
 
   afterEach(async () => {
@@ -77,5 +80,19 @@ describe("GET /api/gocardless/callback", () => {
 
     const [updated] = await db.select().from(bankConnections).where(eq(bankConnections.id, connection.id));
     expect(updated.status).toBe("error");
+  });
+
+  it("non tocca la connessione di un altro utente", async () => {
+    const [connection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "INST_1", institutionName: "Banca Test", requisitionId: "req-3", status: "pending" })
+      .returning();
+    vi.mocked(auth.api.getSession).mockResolvedValue({ user: { id: "altro-utente" } } as never);
+
+    const response = await GET(new NextRequest(`http://localhost/api/gocardless/callback?ref=${connection.id}`));
+    expect(response.headers.get("location")).toContain("bankError=not_found");
+    expect(getRequisition).not.toHaveBeenCalled();
+    const [unchanged] = await db.select().from(bankConnections).where(eq(bankConnections.id, connection.id));
+    expect(unchanged.status).toBe("pending");
   });
 });

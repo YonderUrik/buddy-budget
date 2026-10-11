@@ -1,7 +1,7 @@
 import { NextRequest, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { createOrReuseInstrument } from "@/lib/investments/instruments";
-import { ensureHistory, INITIAL_HISTORY_DAYS, quoteMetaOnProviders } from "@/lib/market-data/runtime";
+import { ensureHistory, INITIAL_HISTORY_DAYS, listingsOnOpenFigi, quoteMetaOnProviders } from "@/lib/market-data/runtime";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { createInstrumentSchema } from "@/lib/validation/investments";
 
@@ -17,7 +17,7 @@ async function handlePost(request: NextRequest) {
   const parsed = createInstrumentSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
 
-  const outcome = await createOrReuseInstrument(session.user.id, parsed.data, { quoteMeta: quoteMetaOnProviders });
+  const outcome = await createOrReuseInstrument(session.user.id, parsed.data, { quoteMeta: quoteMetaOnProviders, listings: listingsOnOpenFigi });
   if (!outcome.ok) return Response.json({ error: outcome.error }, { status: outcome.status });
 
   // Il benchmark avvia lo storico completo nel PATCH del portafoglio: evitare un download

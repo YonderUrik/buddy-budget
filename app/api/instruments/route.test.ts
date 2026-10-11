@@ -147,15 +147,15 @@ describe("API strumenti", () => {
     expect([status.status, status.saved]).toEqual(["done", prices.length]);
   });
 
-  it("riusa lo strumento esistente con lo stesso ISIN o lo stesso simbolo", async () => {
+  it("riusa lo strumento con lo stesso simbolo e non lega un ISIN che la fonte non conferma", async () => {
     const ticker = uniqueTicker();
     const isin = uniqueIsin("IE");
     const first = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.DE`, name: ticker, type: "etf", isin });
-    const sameIsin = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.MI`, name: "Altro nome", type: "etf", isin });
     const sameSymbol = await createAndTrack({ source: "yahoo", yahooSymbol: `${ticker}.DE`, name: "Altro", type: "etf" });
-    expect(sameIsin.response.status).toBe(200);
-    expect(sameIsin.json.id).toBe(first.json.id);
+    expect(sameSymbol.response.status).toBe(200);
     expect(sameSymbol.json.id).toBe(first.json.id);
+    // Le quotazioni finte di OpenFIGI non contengono questo simbolo: l'ISIN non si lega allo strumento comune.
+    expect(first.json.isin).toBeNull();
   });
 
   it("gli strumenti manuali sono visibili solo a chi li crea", async () => {

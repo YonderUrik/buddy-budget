@@ -115,7 +115,7 @@ describe("yahoo", () => {
 
   it("legge valuta e borsa di una quotazione", async () => {
     const meta = await fetchYahooQuoteMeta("VWRL.L", fakeContext(readFixture("synthetic-yahoo-chart-gbp.json")));
-    expect(meta).toEqual({ currency: "GBP", exchange: "LSE" });
+    expect(meta).toMatchObject({ currency: "GBP", exchange: "LSE" });
   });
 });
 

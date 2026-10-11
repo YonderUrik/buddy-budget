@@ -5,7 +5,7 @@ import { instrumentSymbols, instruments, type Instrument } from "@/lib/db/schema
 import type { YahooSearchHit } from "@/lib/market-data/providers/yahoo";
 import { splitYahooSymbol } from "@/lib/market-data/symbols";
 import type { ResolveImportInput } from "@/lib/validation/investments-import";
-import { visibleTo } from "../instruments";
+import { linkedToUser, visibleTo } from "../instruments";
 import type { ImportMatch } from "./types";
 
 type Identity = ResolveImportInput["identities"][number];
@@ -34,7 +34,9 @@ async function knownBySymbol(userId: string, provider: "yahoo" | "coingecko", sy
 
 async function knownBy(userId: string, field: "isin" | "name", value: string, currency?: string | null): Promise<Instrument | null> {
   const condition = field === "isin" ? eq(instruments.isin, value) : sql`lower(${instruments.name}) = ${value.toLowerCase()}`;
-  const [row] = await db.select().from(instruments).where(and(condition, visibleTo(userId), currency ? eq(instruments.currency, currency) : undefined)).limit(1);
+  // Per nome solo tra gli strumenti dell'utente: il nome di uno strumento comune può averlo scelto un altro utente.
+  const scope = field === "name" ? and(visibleTo(userId), linkedToUser(userId)) : visibleTo(userId);
+  const [row] = await db.select().from(instruments).where(and(condition, scope, currency ? eq(instruments.currency, currency) : undefined)).limit(1);
   return row ?? null;
 }
 

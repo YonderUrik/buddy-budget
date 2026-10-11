@@ -278,6 +278,15 @@
   html {
     @apply font-sans;
   }
+  /*
+   * Nell'app scorre solo <main>: la pagina intera no. Senza questo, se il documento supera di poco la finestra
+   * (zoom del browser, arrotondamenti di dvh in Safari) compare una seconda barra accanto a quella di <main>.
+   * Vale solo dove c'è la shell dell'app: login, landing e pagine pubbliche scorrono normalmente.
+   */
+  html:has(#main-content),
+  body:has(#main-content) {
+    overflow: hidden;
+  }
 }
 
 /* ── Sidebar nav: scorre senza barra visibile ── */

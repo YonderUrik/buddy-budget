@@ -62,6 +62,8 @@ for (const theme of SCREEN_THEMES) {
     await page.waitForTimeout(SETTLE_MS / 3);
     const file = join(root, "public", "screens", theme, `${screen.id}.jpg`);
     await page.screenshot({ path: file, type: "jpeg", quality: JPEG_QUALITY });
+    // Versione leggera a 1x (1280 px di larghezza) per i telefoni: un terzo dei pixel da decodificare.
+    await page.screenshot({ path: join(root, "public", "screens", theme, `${screen.id}-sm.jpg`), type: "jpeg", quality: JPEG_QUALITY, scale: "css" });
     // Versione con solo la parte alta, per i riquadri a proporzione fissa (l'apertura della home).
     if (screen.topCrop) {
       const top = join(root, "public", "screens", theme, `${screen.id}-top.jpg`);

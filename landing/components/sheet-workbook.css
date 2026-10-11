@@ -6,7 +6,7 @@
 .wb-fx span { padding: 8px 12px; border-right: 1px solid var(--grid); color: var(--ink3); flex: none; }
 .wb-fx code { padding: 8px 12px; font: inherit; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .wb-body { position: relative; overflow: hidden; }
-.wb-sheet { width: 100%; border-collapse: collapse; table-layout: fixed; font: 400 13.5px var(--f-m); font-variant-numeric: tabular-nums; transition: opacity 0.6s var(--ease), filter 0.6s var(--ease); }
+.wb-sheet { width: 100%; border-collapse: collapse; table-layout: fixed; font: 400 13.5px var(--f-m); font-variant-numeric: tabular-nums; }
 .wb-sheet th, .wb-sheet td { border: 1px solid var(--grid); padding: 0 9px; height: 31px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
 .wb-sheet th { background: var(--head); color: var(--ink3); font-weight: 500; font-size: 12px; text-align: center; }
 .wb-sheet th:first-child, .wb-sheet td:first-child { width: 38px; background: var(--head); color: var(--ink3); text-align: center; font-size: 12px; }
@@ -15,16 +15,23 @@
 .wb-head td { font-weight: 600; }
 .wb-total td:nth-child(2) { font-weight: 600; }
 .wb-sheet .wb-sel { background: var(--sel-soft); outline: 2px solid var(--sel); outline-offset: -2px; }
-.wb-app { position: absolute; inset: 0; opacity: 0; transform: scale(1.04); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); pointer-events: none; background: var(--a-bg); }
+/* Il passaggio all'app: la schermata parte ritagliata sulla cella B12 (variabili misurate in sheet-workbook.tsx) e si
+   allarga fino a coprire il foglio, mentre le righe si spengono una dopo l'altra. Solo clip-path e opacità: niente
+   sfocature o ingrandimenti su livelli grandi, pesanti per la memoria dei telefoni. */
+.wb-app { position: absolute; inset: 0; opacity: 0; clip-path: inset(var(--ct, 45%) var(--cr, 40%) var(--cb, 0) var(--cl, 30%) round 4px); transition: clip-path 0.55s var(--ease), opacity 0.2s linear 0.35s; pointer-events: none; background: var(--a-bg); }
 .wb-app img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
-.wb.is-app .wb-app { opacity: 1; transform: none; }
-.wb.is-app .wb-sheet { opacity: 0.25; filter: blur(2px); }
-.wb-tabs { display: flex; gap: 2px; padding: 4px; border-top: 1px solid var(--line); background: var(--head); font: 500 13px var(--f-b); }
-.wb-tabs button { position: relative; overflow: hidden; flex: 1; border: 0; border-radius: var(--r-sm); background: none; padding: 7px; cursor: pointer; color: var(--ink3); font: inherit; }
+.wb.is-app .wb-app { opacity: 1; clip-path: inset(0 round 0); transition: clip-path 0.6s var(--ease) 0.15s, opacity 0.15s linear; }
+.wb-sheet tbody tr { transition: opacity 0.3s var(--ease) calc(var(--i, 0) * 30ms); }
+.wb.is-app .wb-sheet tbody tr:not(.wb-total) { opacity: 0.2; }
+.wb-tabs { position: relative; z-index: 2; display: flex; gap: 2px; padding: 4px; border-top: 1px solid var(--line); background: var(--head); font: 500 13px var(--f-b); }
+.wb-tabs button { position: relative; overflow: hidden; flex: 1; border: 0; border-radius: var(--r-sm); background: none; min-height: 40px; padding: 8px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; color: var(--ink3); font: inherit; }
 .wb-tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px var(--shadow-win2); }
 .wb-tabs button:hover { color: var(--ink); }
+/* La scheda non attiva si legge come un pulsante: «BuddyBudget» col colore del marchio. */
+.wb-tabs button[aria-pressed="false"]:last-child { color: var(--primary); }
 @media (max-width: 900px) { .wb-age, .wb-d { display: none; } }
 @media (max-width: 480px) { .wb-sheet { font-size: 12px; } .wb-sheet th, .wb-sheet td { padding: 0 6px; height: 28px; } }
 .wb-progress { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--primary); transform-origin: left; transform: scaleX(0); animation-name: wb-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
 @keyframes wb-fill { to { transform: scaleX(1); } }
 .wb-fx code.wb-fx-ok { color: var(--a-pos); }
+@media (prefers-reduced-motion: reduce) { .wb-app, .wb.is-app .wb-app, .wb-sheet tbody tr { transition: opacity 0.15s linear !important; } .wb-app { clip-path: none; } }

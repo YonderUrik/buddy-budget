@@ -24,9 +24,10 @@ export async function enqueue(userId: string, input: { csv: string; name: string
 export async function listImports(userId: string) {
   const [sources, requests] = await Promise.all([
     db.select({ id: formats.id, name: formats.name }).from(formats).where(eq(formats.userId, userId)).orderBy(desc(formats.createdAt)),
-    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
+    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
-  return { formats: sources, jobs: requests };
+  // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
+  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length } : null })) };
 }
 export async function getPreview(userId: string, id: string) {
   const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));

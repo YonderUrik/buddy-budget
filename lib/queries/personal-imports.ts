@@ -1,10 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { hasRunningImport } from "@/lib/personal-import/island";
 
 export type PersonalImportListing = {
   formats: { id: string; name: string }[];
-  jobs: { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null }[];
+  jobs: { id: string; formatId: string; status: string; estimatedAt: string; expiresAt: string; createdAt: string; error: string | null; notifiedAt: string | null; results: { cash: number; investments: number } | null }[];
 };
 
 export const personalImportLabels: Record<string, string> = {
@@ -12,6 +13,8 @@ export const personalImportLabels: Record<string, string> = {
   ready: "Salvataggio in corso", review_failed: "Importazione non riuscita",
   failed: "Analisi non riuscita", imported: "Importato", expired: "File scaduto",
 };
+
+export const PERSONAL_IMPORT_POLL_INTERVAL_MS = 3000;
 
 export function usePersonalImportsQuery() {
   return useQuery({
@@ -21,6 +24,7 @@ export function usePersonalImportsQuery() {
       if (!response.ok) throw new Error("Impossibile caricare i CSV personali. Riprova.");
       return response.json();
     },
-    refetchInterval: 10000,
+    // Interroga il server solo mentre c'è un'importazione in corso.
+    refetchInterval: (query) => (hasRunningImport(query.state.data?.jobs) ? PERSONAL_IMPORT_POLL_INTERVAL_MS : false),
   });
 }

@@ -16,6 +16,7 @@ import { gridToCsv } from "@/lib/investments/import/fineco";
 import { readXlsx, XLSX_MAX_FILE_BYTES } from "@/lib/pension/import/xlsx";
 import { cn } from "@/lib/utils";
 import { personalImportApi } from "./personal-import-api";
+import type { PersonalImportReceiptFile } from "./personal-import-receipt";
 
 export const PERSONAL_IMPORT_MAX_BYTES = 25 * 1024 * 1024;
 export const PERSONAL_IMPORT_MAX_ROWS = 50_000;
@@ -47,11 +48,16 @@ export async function readPersonalImportFile(file: File): Promise<LoadedFile> {
   return { name: file.name, size: file.size, csv: await file.text() };
 }
 
+/** Righe di dati di un testo CSV (intestazione e righe vuote escluse). */
+export function countCsvRows(csv: string): number {
+  return Math.max(0, csv.split(/\r?\n/).filter((line) => line.trim() !== "").length - 1);
+}
+
 export interface PersonalImportUploadProps {
   /** Formati già creati dall'utente, riusabili senza altra analisi. */
   formats: { id: string; name: string }[];
-  /** Chiamato con l'id del lavoro creato. */
-  onQueued: (jobId: string) => void;
+  /** Chiamato con l'id del lavoro creato e i dati del file inviato. */
+  onQueued: (jobId: string, file: PersonalImportReceiptFile) => void;
 }
 
 export function PersonalImportUpload({ formats, onQueued }: PersonalImportUploadProps) {
@@ -76,11 +82,12 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
     },
     onSuccess: (result) => {
       track("personal_csv_requested", { reuse: !isNew });
+      const sent = file && { name: file.name, size: file.size, rows: countCsvRows(file.csv), source: formats.find((f) => f.id === formatId)?.name ?? name.trim() };
       setFile(null);
       setConsent(false);
       setRegenerate(false);
       void client.invalidateQueries({ queryKey: ["personal-imports"] });
-      onQueued(result.id);
+      if (sent) onQueued(result.id, sent);
     },
   });
 

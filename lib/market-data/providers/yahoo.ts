@@ -173,7 +173,15 @@ interface YahooChartResponse {
   chart: {
     result:
       | {
-          meta: { currency?: string | null; gmtoffset?: number; exchangeName?: string; symbol?: string };
+          meta: {
+            currency?: string | null;
+            gmtoffset?: number;
+            exchangeName?: string;
+            symbol?: string;
+            longName?: string;
+            shortName?: string;
+            instrumentType?: string;
+          };
           timestamp?: number[];
           indicators: { quote: { close?: (number | null)[] }[] };
         }[]
@@ -229,17 +237,30 @@ export const yahooProvider: PriceProvider = {
   },
 };
 
-/** Dati essenziali di una quotazione: valuta e borsa, dall'ultima settimana di `chart`. */
+/** Dati essenziali di una quotazione letti dalla fonte (mai dal client): valuta, borsa, nome e tipo. */
+export interface YahooQuoteMeta {
+  currency: string | null;
+  exchange: string | null;
+  name?: string | null;
+  type?: InstrumentType | null;
+}
+
+/** Dati essenziali di una quotazione: valuta, borsa, nome e tipo, dall'ultima settimana di `chart`. */
 export async function fetchYahooQuoteMeta(
   symbol: string,
   ctx: ProviderContext,
   nowMs: number = Date.now()
-): Promise<{ currency: string | null; exchange: string | null } | null> {
+): Promise<YahooQuoteMeta | null> {
   const to = Math.floor(nowMs / 1000);
   const body = await fetchChart(symbol, to - 10 * 86_400, to, ctx);
   const meta = body?.chart.result?.[0]?.meta;
   if (!meta) return null;
-  return { currency: normalizeYahooCurrency(meta.currency).currency, exchange: meta.exchangeName ?? null };
+  return {
+    currency: normalizeYahooCurrency(meta.currency).currency,
+    exchange: meta.exchangeName ?? null,
+    name: meta.longName?.trim() || meta.shortName?.trim() || null,
+    type: meta.instrumentType ? (QUOTE_TYPES[meta.instrumentType] ?? null) : null,
+  };
 }
 
 /** Risultato della ricerca Yahoo, già tradotto nei tipi dell'app. */

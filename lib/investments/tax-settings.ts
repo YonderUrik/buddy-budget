@@ -33,11 +33,14 @@ export interface ResolvedTaxSettings {
 /**
  * Aliquota: la correzione dell'utente, altrimenti 12,5% per un titolo di Stato riconosciuto dal nome, altrimenti
  * quella dello strumento (26% di default). Armonizzato: correzione, poi strumento, altrimenti sì (UCITS europeo).
+ * Aliquota e armonizzazione salvate sulla riga dello strumento contano solo per i manuali (privati): su uno strumento
+ * comune le aveva scelte chi l'ha creato per primo e varrebbero per tutti, quindi si ignorano.
  */
 export function resolveTaxSettings(
-  instrument: Pick<Instrument, "type" | "name" | "taxRate" | "taxHarmonized">,
+  instrument: Pick<Instrument, "type" | "name" | "taxRate" | "taxHarmonized" | "createdByUserId">,
   setting: Pick<InstrumentSettingInput, "taxRate" | "taxHarmonized"> | undefined
 ): ResolvedTaxSettings {
+  const isPrivate = instrument.createdByUserId != null;
   let taxRate: number;
   let taxRateSource: TaxRateSource;
   if (setting?.taxRate != null) {
@@ -47,7 +50,7 @@ export function resolveTaxSettings(
     taxRate = GOVERNMENT_BOND_TAX_RATE;
     taxRateSource = "titolo_di_stato";
   } else {
-    taxRate = Number(instrument.taxRate) || BASE_TAX_RATE;
+    taxRate = (isPrivate ? Number(instrument.taxRate) : 0) || BASE_TAX_RATE;
     taxRateSource = "strumento";
   }
   let harmonized = true;
@@ -55,7 +58,7 @@ export function resolveTaxSettings(
   if (setting?.taxHarmonized != null) {
     harmonized = setting.taxHarmonized;
     harmonizedSource = "manuale";
-  } else if (instrument.taxHarmonized != null) {
+  } else if (isPrivate && instrument.taxHarmonized != null) {
     harmonized = instrument.taxHarmonized;
     harmonizedSource = "strumento";
   }

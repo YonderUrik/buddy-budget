@@ -8,6 +8,7 @@ export function defaultCategoryRows(userId: string): NewCategory[] {
     type: category.type,
     color: category.color,
     icon: category.icon,
+    description: category.description ?? null,
     isFallback: category.isFallback ?? false,
   }));
 }

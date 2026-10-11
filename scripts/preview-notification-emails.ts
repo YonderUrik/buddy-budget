@@ -23,7 +23,7 @@ const digest: DigestData = {
   previousSpent: 1620.8,
   topCategories: [
     { name: "Affitto & Mutuo", amount: 720 },
-    { name: "Spesa alimentare", amount: 318.4 },
+    { name: "Spesa", amount: 318.4 },
     { name: "Ristoranti & Bar", amount: 164.9 },
   ],
   budget: { total: 5, over: 1 },
@@ -36,7 +36,7 @@ const emails = {
   "avviso-budget": budgetAlertEmail(
     [
       { categoryId: "a", name: "Ristoranti & Bar", threshold: 100, spent: 164.9, budget: 150, itemKey: "a", itemKeys: ["a"] },
-      { categoryId: "b", name: "Spesa alimentare", threshold: 80, spent: 318.4, budget: 380, itemKey: "b", itemKeys: ["b"] },
+      { categoryId: "b", name: "Spesa", threshold: 80, spent: 318.4, budget: 380, itemKey: "b", itemKeys: ["b"] },
     ],
     ctx,
   ),

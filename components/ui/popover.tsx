@@ -6,7 +6,7 @@ import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 import { cn } from "@/lib/utils"
 import { useMediaQuery } from "@/lib/hooks/use-media-query"
 import { attachSheetSwipe, clickSheetClose, SHEET_QUERY } from "@/lib/motion/sheet"
-import { SHEET_CLASS, SheetHandle } from "@/components/ui/sheet-handle"
+import { SHEET_BACKDROP_CLASS, SHEET_CLASS, SheetHandle } from "@/components/ui/sheet-handle"
 
 /** Sul telefono il popover è un foglio dal basso: diventa modale (pagina bloccata sotto) salvo `modal` esplicito. */
 function Popover({ modal, ...props }: PopoverPrimitive.Root.Props) {
@@ -47,7 +47,7 @@ function PopoverContent({
   )
   return (
     <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/40 duration-200 supports-backdrop-filter:backdrop-blur-xs sm:hidden data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+      <PopoverPrimitive.Backdrop className={cn("fixed inset-0 isolate z-50 bg-black/40 sm:hidden", SHEET_BACKDROP_CLASS)} />
       <PopoverPrimitive.Positioner
         align={align}
         alignOffset={alignOffset}

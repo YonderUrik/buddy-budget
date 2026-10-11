@@ -1,6 +1,6 @@
 {
-  "id": "74064845-0e30-4f48-ab88-a8d855f91bdf",
-  "prevId": "ac72ecf1-c2d1-4d22-a884-ebf5f5f800ad",
+  "id": "e99adcad-97fd-4de8-a265-87f949fca705",
+  "prevId": "1e366292-3724-415d-8e1f-8327e45fc563",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -446,6 +446,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'package'"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "is_fallback": {
           "name": "is_fallback",

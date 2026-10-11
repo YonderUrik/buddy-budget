@@ -31,7 +31,11 @@ describe("schermate della landing", () => {
   it("ha uno screenshot per ogni schermata e tema", () => {
     for (const screen of SCREENS)
       for (const theme of SCREEN_THEMES)
+      {
         expect(existsSync(join(LANDING_ROOT, "public", screenSrc(screen.id, theme))), `${theme}/${screen.id}`).toBe(true);
+        if ("topCrop" in screen && screen.topCrop)
+          expect(existsSync(join(LANDING_ROOT, "public", screenSrc(screen.id, theme, true))), `${theme}/${screen.id}-top`).toBe(true);
+      }
   });
 
   it("gli id sono unici", () => {

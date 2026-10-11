@@ -16,6 +16,8 @@ const VIEWPORT = { width: 1280, height: 800 };
 const SCALE = 1.5;
 const JPEG_QUALITY = 80;
 const SETTLE_MS = 1500;
+/** Altezza massima (px CSS) di uno screenshot: la pagina si cattura intera fin qui, così non si vede solo la parte alta. */
+const MAX_HEIGHT = 1500;
 
 if (!SECRET) throw new Error("Serve BETTER_AUTH_SECRET (lo stesso dell'app demo) per firmare il cookie di sessione.");
 
@@ -51,11 +53,22 @@ for (const theme of SCREEN_THEMES) {
     // l'indicatore di sviluppo di Next non deve finire nelle immagini se l'app gira con `next dev`
     await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root]{display:none!important}" });
     for (const [label, value] of screen.fill ?? []) await page.getByLabel(label, { exact: true }).first().fill(value);
-    if (screen.scrollToText) await page.getByText(screen.scrollToText).first().scrollIntoViewIfNeeded();
     await page.waitForTimeout(SETTLE_MS);
+    // L'app scorre dentro <main>: si allunga la finestra fino all'altezza del contenuto (con un tetto), poi si scatta.
+    const contentHeight = await page.evaluate(() => document.querySelector("main")?.scrollHeight ?? 0);
+    const height = Math.min(screen.maxHeight ?? MAX_HEIGHT, Math.max(VIEWPORT.height, contentHeight));
+    await page.setViewportSize({ width: VIEWPORT.width, height });
+    if (screen.scrollToText) await page.getByText(screen.scrollToText).first().scrollIntoViewIfNeeded();
+    await page.waitForTimeout(SETTLE_MS / 3);
     const file = join(root, "public", "screens", theme, `${screen.id}.jpg`);
     await page.screenshot({ path: file, type: "jpeg", quality: JPEG_QUALITY });
-    manifest.screens.push({ id: screen.id, theme, route: screen.route });
+    // Versione con solo la parte alta, per i riquadri a proporzione fissa (l'apertura della home).
+    if (screen.topCrop) {
+      const top = join(root, "public", "screens", theme, `${screen.id}-top.jpg`);
+      await page.screenshot({ path: top, type: "jpeg", quality: JPEG_QUALITY, clip: { x: 0, y: 0, ...VIEWPORT } });
+    }
+    await page.setViewportSize(VIEWPORT);
+    manifest.screens.push({ id: screen.id, theme, route: screen.route, width: Math.round(VIEWPORT.width * SCALE), height: Math.round(height * SCALE) });
     console.log(`${theme}/${screen.id}`);
   }
   await context.close();

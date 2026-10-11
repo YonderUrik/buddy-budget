@@ -13,16 +13,18 @@ export interface InvestmentsTab {
   label: string;
   /** Icona decorativa prima dell'etichetta (facoltativa). */
   icon?: LucideIcon;
+  /** Riga di spiegazione nel menu su mobile (facoltativa). */
+  description?: string;
 }
 
 /** Schede di default: una per tema, la prima con solo l'essenziale. */
 export const INVESTMENTS_TABS: readonly InvestmentsTab[] = [
-  { href: "/investimenti", label: "Portafoglio", icon: Wallet },
-  { href: "/investimenti/performance", label: "Performance", icon: TrendingUp },
-  { href: "/investimenti/diversificazione", label: "Diversificazione", icon: ChartPie },
-  { href: "/investimenti/proventi", label: "Dividendi", icon: HandCoins },
-  { href: "/investimenti/tasse", label: "Tasse", icon: Landmark },
-  { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight },
+  { href: "/investimenti", label: "Portafoglio", icon: Wallet, description: "Valore, andamento e posizioni" },
+  { href: "/investimenti/performance", label: "Performance", icon: TrendingUp, description: "Rendimento, rischio e confronto" },
+  { href: "/investimenti/diversificazione", label: "Diversificazione", icon: ChartPie, description: "Come è distribuito il portafoglio" },
+  { href: "/investimenti/proventi", label: "Dividendi", icon: HandCoins, description: "Cedole e proventi incassati" },
+  { href: "/investimenti/tasse", label: "Tasse", icon: Landmark, description: "Stime fiscali e minusvalenze" },
+  { href: "/investimenti/operazioni", label: "Operazioni", icon: ArrowLeftRight, description: "Acquisti, vendite e importazioni" },
 ];
 
 /** Dimensione delle icone delle schede, in pixel: piccole, per non competere con il testo. */

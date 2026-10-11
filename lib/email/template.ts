@@ -29,8 +29,19 @@ export interface EmailContent {
   /** Anteprima mostrata dai client accanto all'oggetto; se manca si usa la frase. */
   preheader?: string;
   cta?: { label: string; url: string };
+  /** Righe etichetta/valore sotto la frase (es. le categorie più pesanti del riepilogo). */
+  details?: { label: string; value: string }[];
   footnote?: string;
+  /** Piè di pagina: di servizio (default, senza disiscrizione) oppure opzionale con link per disattivarla. */
+  footer?: EmailFooter;
 }
+
+/** Le email di servizio (accesso, sicurezza, account) non si possono disattivare e lo dichiarano; le altre portano sempre il link per disiscriversi. */
+export type EmailFooter =
+  | { kind: "service" }
+  | { kind: "optional"; reason: string; unsubscribeUrl: string; preferencesUrl: string };
+
+export const SERVICE_FOOTER_TEXT = "Email di servizio, legata al tuo account o a una funzione che hai attivato: non si può disattivare.";
 
 export interface RenderedEmail {
   html: string;
@@ -72,15 +83,39 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
   const footnote = content.footnote
     ? `<tr><td class="t3" style="padding:20px 4px 0;font-family:${SANS};font-size:12px;line-height:1.6;color:${light.text3}">${escapeHtml(content.footnote)}</td></tr>`
     : "";
+  const details = content.details?.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px">${content.details
+        .map(
+          (row) =>
+            `<tr><td class="t2 ghost" style="padding:9px 0;border-top:1px solid ${light.border};font-family:${SANS};font-size:15px;color:${light.text2}">${escapeHtml(row.label)}</td><td class="t ghost" align="right" style="padding:9px 0;border-top:1px solid ${light.border};font-family:${HEADING};font-size:15px;font-weight:700;color:${light.text}">${escapeHtml(row.value)}</td></tr>`,
+        )
+        .join("")}</table>`
+    : "";
+  const footer = content.footer ?? { kind: "service" };
+  const footerHtml =
+    footer.kind === "optional"
+      ? `Ricevi questa email perché hai attivato ${escapeHtml(footer.reason)}. <a href="${escapeHtml(footer.unsubscribeUrl)}" class="t3" style="color:${light.text3};text-decoration:underline">Disattiva queste email</a> · <a href="${escapeHtml(footer.preferencesUrl)}" class="t3" style="color:${light.text3};text-decoration:underline">Gestisci le preferenze</a>`
+      : escapeHtml(SERVICE_FOOTER_TEXT);
+  const footerText =
+    footer.kind === "optional"
+      ? `Ricevi questa email perché hai attivato ${footer.reason}.\nDisattiva queste email: ${footer.unsubscribeUrl}\nGestisci le preferenze: ${footer.preferencesUrl}`
+      : SERVICE_FOOTER_TEXT;
   const html = `<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="supported-color-schemes" content="light dark"><title>${escapeHtml(content.title)}</title><style>${fontFaces(assetsUrl)}${darkStyles()}</style></head>
 <body class="bg" style="margin:0;background:${light.page};font-family:${SANS}"><div style="display:none;max-height:0;overflow:hidden;opacity:0">${preheader}</div>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="bg" style="background:${light.page}"><tr><td align="center" style="padding:36px 16px"><table role="presentation" width="${EMAIL_WIDTH_PX}" cellpadding="0" cellspacing="0" style="max-width:${EMAIL_WIDTH_PX}px;width:100%">
 <tr><td style="padding:0 4px 40px"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="padding-right:10px"><img src="${assetsUrl}/logo-mark.png" width="${LOGO_WIDTH_PX}" height="${LOGO_HEIGHT_PX}" alt="" style="display:block;border:0"></td><td class="brand" style="font-family:${HEADING};font-size:15px;font-weight:700;color:${light.brand}">BuddyBudget</td></tr></table></td></tr>
 <tr><td style="padding:0 4px"><div class="t3" style="font-family:${SANS};font-size:13px;color:${light.text3};padding-bottom:10px">${escapeHtml(content.title)}</div>
-<p class="t2 lead" style="margin:0 0 ${content.cta ? 28 : 0}px;font-family:${HEADING};font-size:25px;line-height:1.5;font-weight:400;color:${light.text2}">${leadToHtml(content.lead)}</p>${cta}</td></tr>${footnote}
-<tr><td class="t3" style="padding:14px 4px 0;font-family:${SANS};font-size:12px;color:${light.text3}">BuddyBudget</td></tr>
+<p class="t2 lead" style="margin:0 0 ${content.cta || details ? 28 : 0}px;font-family:${HEADING};font-size:25px;line-height:1.5;font-weight:400;color:${light.text2}">${leadToHtml(content.lead)}</p>${details}${cta}</td></tr>${footnote}
+<tr><td class="t3" style="padding:14px 4px 0;font-family:${SANS};font-size:12px;line-height:1.6;color:${light.text3}">${footerHtml}<br>BuddyBudget</td></tr>
 </table></td></tr></table></body></html>`;
-  const text = [content.title, content.lead.replace(/\*\*/g, ""), content.cta ? `${content.cta.label}: ${content.cta.url}` : null, content.footnote]
+  const text = [
+    content.title,
+    content.lead.replace(/\*\*/g, ""),
+    content.details?.length ? content.details.map((row) => `${row.label}: ${row.value}`).join("\n") : null,
+    content.cta ? `${content.cta.label}: ${content.cta.url}` : null,
+    content.footnote,
+    footerText,
+  ]
     .filter(Boolean)
     .join("\n\n");
   return { html, text };

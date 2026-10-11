@@ -6,7 +6,7 @@
  * Su mobile il grafico segue subito il valore; lettura in parole, barra e simulazione dei costi vanno sotto il grafico.
  */
 
-import { ReinvestmentPanel } from "./reinvestment-panel";
+import { ReinvestmentControl } from "./reinvestment-panel";
 import { PeriodGainSummary } from "./period-gain-summary";
 import type { PeriodGain } from "@/lib/investments/period-gain";
 import { simulateCostExclusions } from "@/lib/investments/cost-impact";
@@ -134,11 +134,6 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
           {showPeriodGain ? null : <ValueBreakdownBar breakdown={breakdown} currency={currency} />}
         </div>
       ) : null}
-      {costImpact ? (
-        <div className="max-sm:order-5">
-          <ReinvestmentPanel impact={costImpact} currency={currency} includeFees={includeFees} includeTaxes={includeTaxes} onIncludeFeesChange={onIncludeFeesChange} onIncludeTaxesChange={onIncludeTaxesChange} />
-        </div>
-      ) : null}
       {hasHistory ? (
         <div className="flex flex-col gap-3 max-sm:order-2">
           <div className="-mx-4 sm:-mx-6">
@@ -176,8 +171,11 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
       ) : (
         <p className="text-sm text-muted-foreground max-sm:order-2">Nessun dato disponibile nel periodo selezionato.</p>
       )}
-      <div className="flex justify-center max-sm:order-3">
+      <div className="flex flex-wrap items-start justify-center gap-x-3 gap-y-2 max-sm:order-3">
         <PortfolioPeriodSelector value={period} onChange={onPeriodChange} range={range} today={today} onRangeChange={onRangeChange} />
+        {costImpact ? (
+          <ReinvestmentControl impact={costImpact} currency={currency} includeFees={includeFees} includeTaxes={includeTaxes} onIncludeFeesChange={onIncludeFeesChange} onIncludeTaxesChange={onIncludeTaxesChange} />
+        ) : null}
       </div>
     </section>
   );

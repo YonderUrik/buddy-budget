@@ -2,6 +2,41 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.49.0](https://github.com/YonderUrik/buddy-budget/compare/v0.48.0...v0.49.0) (2026-10-10)
+
+
+### Novità
+
+* email di riepilogo e avvisi con disiscrizione a un clic ([#273](https://github.com/YonderUrik/buddy-budget/issues/273)) ([5967767](https://github.com/YonderUrik/buddy-budget/commit/5967767795b39a74492cc583fc0af144d592dde4))
+
+## [0.48.0](https://github.com/YonderUrik/buddy-budget/compare/v0.47.0...v0.48.0) (2026-10-10)
+
+
+### Novità
+
+* tema e «Nascondi importi» passano nel menu utente ([#269](https://github.com/YonderUrik/buddy-budget/issues/269)) ([3c5ab01](https://github.com/YonderUrik/buddy-budget/commit/3c5ab0154c4628380181c7b9720f8ba0116961fe))
+
+## [0.47.0](https://github.com/YonderUrik/buddy-budget/compare/v0.46.0...v0.47.0) (2026-10-10)
+
+
+### Novità
+
+* viste delle sezioni come controllo segmentato su desktop e menu su mobile ([#271](https://github.com/YonderUrik/buddy-budget/issues/271)) ([78fd96d](https://github.com/YonderUrik/buddy-budget/commit/78fd96dc443ec2107192dabf3937a60c02f12d29))
+
+## [0.46.0](https://github.com/YonderUrik/buddy-budget/compare/v0.45.0...v0.46.0) (2026-10-10)
+
+
+### Novità
+
+* costi e imposte del Portafoglio in un pulsante con popover, schede senza barra orizzontale ([#267](https://github.com/YonderUrik/buddy-budget/issues/267)) ([3add343](https://github.com/YonderUrik/buddy-budget/commit/3add3435c85e1c1571ee21932afefabb7ecc7898))
+
+## [0.45.0](https://github.com/YonderUrik/buddy-budget/compare/v0.44.2...v0.45.0) (2026-10-10)
+
+
+### Novità
+
+* **landing:** Markdown per gli agenti (Accept: text/markdown) e Content-Signal in robots.txt ([#268](https://github.com/YonderUrik/buddy-budget/issues/268)) ([d0b92e1](https://github.com/YonderUrik/buddy-budget/commit/d0b92e13dd7bb1e5ee63f175d58f1ff6062fa490))
+
 ## [0.44.2](https://github.com/YonderUrik/buddy-budget/compare/v0.44.1...v0.44.2) (2026-10-10)
 
 

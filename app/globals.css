@@ -281,6 +281,21 @@
   display: none;
 }
 
+/* ── Scorrimento orizzontale senza barra (schede, chip) ── */
+/*
+ * Schede e chip che scorrono di lato (mobile, finestre strette) non disegnano la barra: accanto a quella verticale della
+ * pagina darebbe l'impressione di una doppia scrollbar. Restano scorrevoli con tocco, trackpad e tastiera (la scheda
+ * attiva viene portata in vista). `overflow-y: hidden` evita anche la barra verticale da 1px che `overflow-x: auto` può
+ * aprire quando un figlio sborda di poco.
+ */
+.scrollbar-hidden {
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Scrollbar custom generica (sottile ed elegante) ── */
 .custom-scrollbar {
   scrollbar-width: thin;

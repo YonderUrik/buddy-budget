@@ -80,6 +80,7 @@ export const FEATURES: readonly Feature[] = [
 
   f("accesso-semplice", "Account", "Accesso semplice", "Link via email o Google, senza password da ricordare.", "live"),
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),
+  f("email-riepilogo-e-avvisi", "Account", "Email di riepilogo e avvisi", "Se vuoi, ricevi il riepilogo del mese o della settimana e un avviso quando un budget è quasi finito o una rata sta per scadere. Partono spente, le scegli tu, e ogni email ha il link per disattivarla con un clic.", "new"),
   f("aiuto-e-segnalazioni", "Account", "Aiuto e segnalazioni", "Dal menu dell'avatar trovi le risposte rapide e ci scrivi per un problema, una domanda o un'idea: la pagina e la versione dell'app arrivano con la segnalazione, i tuoi dati finanziari mai. Puoi seguire e segnalare anche su GitHub.", "new"),
   f("installabile-e-a-tema", "Account", "Installabile e a tema", "Si installa come app dal telefono e ha tema chiaro e scuro.", "live"),
   f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Oggi italiano ed EUR, altre in arrivo.", "soon"),

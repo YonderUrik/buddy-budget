@@ -129,7 +129,8 @@ export function MobileMoreMenu({
     onAction?.("esci");
     onClose();
     await authClient.signOut();
-    router.replace("/login");
+    // Ricarica completa: svuota la cache in memoria, così il prossimo utente della scheda non vede dati altrui.
+    window.location.replace("/login");
   }
 
   /** Azione che porta altrove: la destinazione prende il posto della voce di cronologia del menu. */

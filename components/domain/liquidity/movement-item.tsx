@@ -7,6 +7,7 @@ import { PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryAvatar } from "@/components/domain/categories";
 import { TransactionEditPanel, TransactionNotePopover } from "@/components/domain/expenses";
+import { InlineOrSheet } from "@/components/domain/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -164,19 +165,31 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
           )}
         </div>
       )}
-      {panel === "split" && (
-        <SplitPanel
-          title={transaction.description}
-          total={full}
-          excluded={excluded}
-          currency={currency}
-          isIncome={isIncome}
-          saving={update.isPending}
-          onSave={saveSplit}
-          onCancel={() => setPanel("none")}
-        />
-      )}
-      {panel === "edit" && <TransactionEditPanel transaction={transaction} currency={currency} onClose={() => setPanel("none")} />}
+      <InlineOrSheet open={panel === "split"} onOpenChange={(open) => !open && setPanel("none")} title={`Dividi ${transaction.description}`}>
+        {(layout) => (
+          <SplitPanel
+            title={transaction.description}
+            total={full}
+            excluded={excluded}
+            currency={currency}
+            isIncome={isIncome}
+            saving={update.isPending}
+            onSave={saveSplit}
+            onCancel={() => setPanel("none")}
+            className={layout === "sheet" ? "m-0 bg-transparent p-0" : undefined}
+          />
+        )}
+      </InlineOrSheet>
+      <InlineOrSheet open={panel === "edit"} onOpenChange={(open) => !open && setPanel("none")} title="Modifica movimento" showTitle>
+        {(layout) => (
+          <TransactionEditPanel
+            transaction={transaction}
+            currency={currency}
+            onClose={() => setPanel("none")}
+            className={layout === "sheet" ? "border-0 bg-transparent p-0" : undefined}
+          />
+        )}
+      </InlineOrSheet>
     </li>
   );
 }

@@ -5,6 +5,8 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 
 import { cn } from "@/lib/utils"
 import { animateFromOrigin, trackDialogOrigins } from "@/lib/motion/dialog-origin"
+import { attachSheetSwipe, clickSheetClose, isSheetViewport } from "@/lib/motion/sheet"
+import { SHEET_CLASS, SheetHandle } from "@/components/ui/sheet-handle"
 
 trackDialogOrigins()
 
@@ -40,21 +42,38 @@ function DialogOverlay({
   )
 }
 
-/** Pannello del dialog: si apre crescendo dall'elemento che l'ha aperto (vedi `animateFromOrigin`). */
+/** Come si presenta il dialog sul telefono: foglio dal basso (default) o a tutto schermo (form lunghi, vedi `FormDialogContent`). */
+type DialogMobileLayout = "sheet" | "fullscreen"
+
+const MOBILE_CLASS: Record<DialogMobileLayout, string> = {
+  sheet: `max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:max-h-[92dvh] max-sm:overflow-y-auto max-sm:px-4 max-sm:pb-[max(1.25rem,env(safe-area-inset-bottom))] ${SHEET_CLASS}`,
+  fullscreen:
+    "max-sm:inset-0 max-sm:h-dvh max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:duration-200 max-sm:data-open:slide-in-from-bottom-6! max-sm:data-open:zoom-in-100! max-sm:data-closed:slide-out-to-bottom-6! max-sm:data-closed:zoom-out-100!",
+}
+
+/**
+ * Pannello del dialog. Da `sm` in su è una finestra centrata che cresce dall'elemento che l'ha aperta (vedi
+ * `animateFromOrigin`); sul telefono è un foglio dal basso che si chiude anche trascinandolo giù, oppure a tutto schermo
+ * con `mobileLayout="fullscreen"`.
+ */
 function DialogContent({
   className,
   ref,
+  mobileLayout = "sheet",
+  children,
   ...props
-}: DialogPrimitive.Popup.Props) {
+}: DialogPrimitive.Popup.Props & { mobileLayout?: DialogMobileLayout }) {
   // Ref a callback: scatta quando il pannello entra nel DOM, cioè all'apertura (il componente esiste anche da chiuso).
   const popupRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       if (typeof ref === "function") ref(node)
       else if (ref) ref.current = node
-      // `data-origin-animation="none"` per i pannelli con una propria animazione (es. i fogli dal basso).
-      if (node && node.dataset.originAnimation !== "none") animateFromOrigin(node)
+      if (!node) return
+      if (mobileLayout === "sheet") attachSheetSwipe(node, () => clickSheetClose(node))
+      // `data-origin-animation="none"` per i pannelli con una propria animazione; sul telefono entrano dal basso.
+      if (node.dataset.originAnimation !== "none" && !isSheetViewport()) animateFromOrigin(node)
     },
-    [ref]
+    [ref, mobileLayout]
   )
   return (
     <DialogPortal>
@@ -64,10 +83,19 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-6 text-popover-foreground shadow-lg ring-1 ring-foreground/10 duration-100 outline-none max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          MOBILE_CLASS[mobileLayout],
           className
         )}
         {...props}
-      />
+      >
+        {mobileLayout === "sheet" && (
+          <>
+            <SheetHandle />
+            <DialogPrimitive.Close data-sheet-close="" hidden tabIndex={-1} aria-hidden="true" />
+          </>
+        )}
+        {children}
+      </DialogPrimitive.Popup>
     </DialogPortal>
   )
 }
@@ -145,6 +173,7 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
   )
 }
 
+export type { DialogMobileLayout }
 export {
   Dialog,
   DialogTrigger,

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "@fontsource-variable/geist";
+import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/hanken-grotesk";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import { BrandSprite } from "@/components/brand";
 import { APP_URL, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";

@@ -28,6 +28,10 @@ export interface EmailContent {
   lead: string;
   /** Anteprima mostrata dai client accanto all'oggetto; se manca si usa la frase. */
   preheader?: string;
+  /** Immagine sotto la frase (es. uno screenshot della novità); larghezza piena, con testo alternativo. */
+  image?: { src: string; alt: string };
+  /** Passi numerati («come si usa»), allineati a sinistra sotto l'immagine. */
+  steps?: string[];
   cta?: { label: string; url: string };
   /** Righe etichetta/valore sotto la frase (es. le categorie più pesanti del riepilogo). */
   details?: { label: string; value: string }[];
@@ -83,6 +87,17 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
   const footnote = content.footnote
     ? `<tr><td class="t3" style="padding:20px 4px 0;font-family:${SANS};font-size:12px;line-height:1.6;color:${light.text3}">${escapeHtml(content.footnote)}</td></tr>`
     : "";
+  const image = content.image
+    ? `<img src="${escapeHtml(content.image.src)}" width="${EMAIL_WIDTH_PX - 8}" alt="${escapeHtml(content.image.alt)}" style="display:block;width:100%;max-width:${EMAIL_WIDTH_PX - 8}px;height:auto;margin:0 0 28px;border:1px solid ${light.border};border-radius:12px">`
+    : "";
+  const steps = content.steps?.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px">${content.steps
+        .map(
+          (step, index) =>
+            `<tr><td valign="top" width="28" class="t3" style="padding:7px 0;font-family:${HEADING};font-size:15px;font-weight:700;color:${light.primary}">${index + 1}</td><td class="t" style="padding:7px 0;font-family:${SANS};font-size:15px;line-height:1.5;color:${light.text}">${escapeHtml(step)}</td></tr>`,
+        )
+        .join("")}</table>`
+    : "";
   const details = content.details?.length
     ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px">${content.details
         .map(
@@ -105,12 +120,13 @@ export function renderEmail(content: EmailContent, options: { appUrl: string }):
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="bg" style="background:${light.page}"><tr><td align="center" style="padding:36px 16px"><table role="presentation" width="${EMAIL_WIDTH_PX}" cellpadding="0" cellspacing="0" style="max-width:${EMAIL_WIDTH_PX}px;width:100%">
 <tr><td style="padding:0 4px 40px"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="padding-right:10px"><img src="${assetsUrl}/logo-mark.png" width="${LOGO_WIDTH_PX}" height="${LOGO_HEIGHT_PX}" alt="" style="display:block;border:0"></td><td class="brand" style="font-family:${HEADING};font-size:15px;font-weight:700;color:${light.brand}">BuddyBudget</td></tr></table></td></tr>
 <tr><td style="padding:0 4px"><div class="t3" style="font-family:${SANS};font-size:13px;color:${light.text3};padding-bottom:10px">${escapeHtml(content.title)}</div>
-<p class="t2 lead" style="margin:0 0 ${content.cta || details ? 28 : 0}px;font-family:${HEADING};font-size:25px;line-height:1.5;font-weight:400;color:${light.text2}">${leadToHtml(content.lead)}</p>${details}${cta}</td></tr>${footnote}
+<p class="t2 lead" style="margin:0 0 ${content.cta || details || content.image || steps ? 28 : 0}px;font-family:${HEADING};font-size:25px;line-height:1.5;font-weight:400;color:${light.text2}">${leadToHtml(content.lead)}</p>${image}${steps}${details}${cta}</td></tr>${footnote}
 <tr><td class="t3" style="padding:14px 4px 0;font-family:${SANS};font-size:12px;line-height:1.6;color:${light.text3}">${footerHtml}<br>BuddyBudget</td></tr>
 </table></td></tr></table></body></html>`;
   const text = [
     content.title,
     content.lead.replace(/\*\*/g, ""),
+    content.steps?.length ? content.steps.map((step, index) => `${index + 1}. ${step}`).join("\n") : null,
     content.details?.length ? content.details.map((row) => `${row.label}: ${row.value}`).join("\n") : null,
     content.cta ? `${content.cta.label}: ${content.cta.url}` : null,
     content.footnote,

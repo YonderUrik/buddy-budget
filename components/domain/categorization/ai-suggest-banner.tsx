@@ -33,29 +33,26 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
     else setConfirming(true);
   }
 
+  const status = generating
+    ? null
+    : foundCount !== undefined
+      ? `${foundCount} proposte pronte nelle carte`
+      : `${missingCount} ${missingCount === 1 ? "esercente senza" : "esercenti senza"} proposta`;
+
   return (
-    <div className="ai-surface flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-          <SparklesIcon className="size-5" aria-hidden />
-        </span>
-        <div className="flex flex-col gap-0.5">
-          <p className="flex flex-wrap items-center gap-2 font-heading text-base font-medium text-foreground">
-            Categorizza con l&apos;AI <Badge>Novità</Badge>
-          </p>
-          {generating ? (
-            <TextShimmer className="text-sm">L&apos;AI sta leggendo i tuoi esercenti…</TextShimmer>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {foundCount !== undefined
-                ? `Pronte ${foundCount} proposte: le trovi nelle carte. Decidi tu cosa applicare.`
-                : `${missingCount} ${missingCount === 1 ? "esercente non ha" : "esercenti non hanno"} ancora una proposta. L'AI può suggerire una categoria per ognuno: le confermi tu.`}
-            </p>
-          )}
-        </div>
-      </div>
-      <Button type="button" className="ai-button h-10 shrink-0 border-0" onClick={handleClick} disabled={generating}>
-        <SparklesIcon /> {generating ? "Sto lavorando…" : "Categorizza con l'AI"}
+    <div className="ai-surface flex items-center gap-3 rounded-xl px-3 py-2">
+      <SparklesIcon className="size-4 shrink-0 text-primary" aria-hidden />
+      <p className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 text-sm">
+        <span className="font-medium text-foreground">AI</span>
+        <Badge className="h-4 px-1.5 text-[0.65rem]">Novità</Badge>
+        {generating ? (
+          <TextShimmer className="text-xs">Sto leggendo i tuoi esercenti…</TextShimmer>
+        ) : (
+          <span className="truncate text-xs text-muted-foreground">{status}</span>
+        )}
+      </p>
+      <Button type="button" size="sm" className="ai-button h-8 shrink-0 border-0" onClick={handleClick} disabled={generating}>
+        <SparklesIcon /> {generating ? "In corso…" : "Categorizza con l'AI"}
       </Button>
 
       <Dialog open={confirming} onOpenChange={setConfirming}>

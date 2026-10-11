@@ -105,3 +105,25 @@ export function deadlineAlertEmail(alerts: DeadlineAlert[], ctx: EmailContext): 
   );
   return { subject: overdue ? "Hai una rata scaduta" : "Una rata sta per scadere", ...rendered };
 }
+
+/**
+ * Email di annuncio di una novità, da mandare una volta a tutti gli utenti solo dopo l'approvazione del titolare.
+ * Pura: lo screenshot e i passi arrivano dal chiamante. Il piè di pagina porta sempre il link per non ricevere altre novità.
+ */
+export function featureAnnouncementEmail(
+  input: { title: string; lead: string; steps: string[]; imageUrl: string; imageAlt: string; ctaLabel: string; ctaPath: string; subject: string },
+  ctx: EmailContext,
+): BuiltEmail {
+  const rendered = renderEmail(
+    {
+      title: input.title,
+      lead: input.lead,
+      image: { src: input.imageUrl, alt: input.imageAlt },
+      steps: input.steps,
+      cta: { label: input.ctaLabel, url: `${ctx.appUrl}${input.ctaPath}` },
+      footer: { kind: "optional", reason: "l'account BuddyBudget", unsubscribeUrl: ctx.unsubscribeUrl, preferencesUrl: ctx.preferencesUrl },
+    },
+    { appUrl: ctx.appUrl },
+  );
+  return { subject: input.subject, ...rendered };
+}

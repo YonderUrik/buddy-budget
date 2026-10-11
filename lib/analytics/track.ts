@@ -170,6 +170,10 @@ export interface ProductEvents {
   ai_categorization_toggled: { enabled: boolean };
   /** Pulsante «Categorizza con l'AI» in Categorizza; `missing` = esercenti senza proposta in quel momento. */
   ai_suggestions_generate_clicked: { missing: number; consentGiven: boolean };
+  /** Clic sull'invito «Categorizza con l'AI» che porta a Categorizza. */
+  categorize_ai_link_clicked: { from: "movimenti" };
+  /** Tour delle carte: passo visto, saltato o concluso. */
+  categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
   /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
   categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
   notifications_frequency_changed: { frequency: "settimanale" | "mensile" };

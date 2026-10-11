@@ -2,6 +2,25 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.60.0](https://github.com/YonderUrik/buddy-budget/compare/v0.59.0...v0.60.0) (2026-10-11)
+
+
+### Novità
+
+* categorie di default più semplici e passo «Categorie» nell'onboarding ([#328](https://github.com/YonderUrik/buddy-budget/issues/328)) ([0e291e8](https://github.com/YonderUrik/buddy-budget/commit/0e291e84af275ba8c24cb837220e448da45a51bc))
+* landing con schermate intere, bandiere e pagine interne nello stile nuovo ([#321](https://github.com/YonderUrik/buddy-budget/issues/321)) ([1bf38c0](https://github.com/YonderUrik/buddy-budget/commit/1bf38c0eb2808e56d416889c1c228dd7fedd5c75))
+* limite ai collegamenti bancari GoCardless e rilascio immediato allo scollegamento ([#326](https://github.com/YonderUrik/buddy-budget/issues/326)) ([73d6dc3](https://github.com/YonderUrik/buddy-budget/commit/73d6dc3659236d0e853691b5ea704815e8e01987))
+* pagina di accesso come foglio di calcolo ([#322](https://github.com/YonderUrik/buddy-budget/issues/322)) ([a78d1f3](https://github.com/YonderUrik/buddy-budget/commit/a78d1f3a63c89decd88c411fbf69dfa23522784f))
+* passo Notifiche nell'onboarding e riepilogo email con liquidità e investimenti ([#325](https://github.com/YonderUrik/buddy-budget/issues/325)) ([77fd835](https://github.com/YonderUrik/buddy-budget/commit/77fd835b560995591955ee29961bea8187fb7808))
+* regime fiscale come riga compatta in fondo alla scheda Tasse ([#329](https://github.com/YonderUrik/buddy-budget/issues/329)) ([b9bc66f](https://github.com/YonderUrik/buddy-budget/commit/b9bc66f70760c8a3fd0de27f948586b8bcb0f881))
+* segnalazione rapida da ogni pagina e dagli errori, email support@ ([#323](https://github.com/YonderUrik/buddy-budget/issues/323)) ([704baa8](https://github.com/YonderUrik/buddy-budget/commit/704baa84dac39594286aa6cce7ff7b79e0e2406b))
+
+
+### Correzioni
+
+* fogli dal basso senza flash alla chiusura e con un'animazione più fluida ([#330](https://github.com/YonderUrik/buddy-budget/issues/330)) ([b369d3a](https://github.com/YonderUrik/buddy-budget/commit/b369d3a5cb960d6bd5e22757078e9a0dea472033))
+* nessuna scelta di un utente vale per gli altri sugli strumenti comuni ([#327](https://github.com/YonderUrik/buddy-budget/issues/327)) ([f1d3735](https://github.com/YonderUrik/buddy-budget/commit/f1d3735109e69eb8dd138149e13501371dbcdca4))
+
 ## [0.59.0](https://github.com/YonderUrik/buddy-budget/compare/v0.58.0...v0.59.0) (2026-10-11)
 
 

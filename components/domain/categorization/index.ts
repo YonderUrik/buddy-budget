@@ -18,5 +18,5 @@ export type { AddRuleFormProps } from "./add-rule-form";
 export { CategorizeSwipeDeck } from "./swipe-deck";
 export type { CategorizeSwipeDeckProps } from "./swipe-deck";
 export { CategorizeListView } from "./categorize-list-view";
-export { AiSuggestBanner } from "./ai-suggest-banner";
-export type { AiSuggestBannerProps } from "./ai-suggest-banner";
+export { AiProgressStrip, AiSuggestBanner } from "./ai-suggest-banner";
+export type { AiProgressStripProps, AiSuggestBannerProps } from "./ai-suggest-banner";

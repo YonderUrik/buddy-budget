@@ -6,7 +6,7 @@
  */
 
 import * as React from "react";
-import { motion, useMotionValue, useTransform } from "motion/react";
+import { motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
 import { CategoryPicker } from "@/components/domain/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category } from "@/lib/db/schema/categories";
@@ -24,6 +24,17 @@ const DESCRIPTION_PREVIEW_LIMIT = 3;
 const MAX_TILT_DEGREES = 8;
 /** Durata della vibrazione leggera quando un gesto va a segno (dove il telefono la supporta). */
 const HAPTIC_TICK_MS = 12;
+
+type SwipeZone = "conferma" | "cambia" | "salta";
+
+/** Zona in cui l'azione scatterebbe se si lasciasse la carta adesso (assente se non si è oltre la soglia). */
+function zoneFor(dx: number, dy: number, canConfirm: boolean): SwipeZone | null {
+  const horizontal = Math.abs(dx) >= Math.abs(dy);
+  if (horizontal && dx > SWIPE_COMMIT_DISTANCE && canConfirm) return "conferma";
+  if (horizontal && dx < -SWIPE_COMMIT_DISTANCE) return "cambia";
+  if (!horizontal && dy < -SWIPE_COMMIT_DISTANCE) return "salta";
+  return null;
+}
 
 export interface SwipeCardProps {
   group: SuggestionGroup;
@@ -62,6 +73,7 @@ export function SwipeCard({
   const skipOpacity = useTransform(y, [-SWIPE_COMMIT_DISTANCE, -20], [1, 0]);
   const confirmOpacity = useTransform(x, [20, SWIPE_COMMIT_DISTANCE], [0, 1]);
   const changeOpacity = useTransform(x, [-SWIPE_COMMIT_DISTANCE, -20], [1, 0]);
+  const [zone, setZone] = React.useState<SwipeZone | null>(null);
   const rememberId = React.useId();
   const isIncome = group.totalAmount > 0;
   const hasSuggestion = Boolean(group.suggestion);
@@ -69,15 +81,26 @@ export function SwipeCard({
     () => categories.filter((c) => !c.isFallback && (isIncome ? c.type === "entrata" : c.type !== "entrata")),
     [categories, isIncome]
   );
+  const updateZone = React.useCallback(() => {
+    const next = zoneFor(x.get(), y.get(), hasSuggestion);
+    setZone((previous) => {
+      if (next && next !== previous) navigator.vibrate?.(HAPTIC_TICK_MS);
+      return next;
+    });
+  }, [x, y, hasSuggestion]);
+  useMotionValueEvent(x, "change", updateZone);
+  useMotionValueEvent(y, "change", updateZone);
   const descriptions = [...new Set(group.transactionDescriptions)].slice(0, DESCRIPTION_PREVIEW_LIMIT);
 
   return (
+    <div className="relative flex flex-col max-md:flex-1">
     <motion.div
       style={{ x, y, rotate }}
       drag={changing ? false : true}
       dragSnapToOrigin
       dragElastic={0.6}
       onDragEnd={(_, info) => {
+        setZone(null);
         const { x: dx, y: dy } = info.offset;
         const horizontal = Math.abs(dx) >= Math.abs(dy);
         let committed = true;
@@ -87,16 +110,16 @@ export function SwipeCard({
         else committed = false;
         if (committed) navigator.vibrate?.(HAPTIC_TICK_MS);
       }}
-      className="relative flex touch-none flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-lg select-none"
+      className={cn("relative flex touch-none flex-col gap-4 rounded-2xl border-2 bg-card transition-colors p-5 shadow-lg select-none max-md:flex-1 max-md:justify-between", zone === "conferma" ? "border-pos" : zone === "cambia" ? "border-neg" : zone === "salta" ? "border-muted-foreground" : "border-border")}
     >
-      <motion.span style={{ opacity: confirmOpacity }} className="pointer-events-none absolute top-4 left-4 rounded-md border-2 border-pos px-2 py-0.5 text-sm font-semibold text-pos">
-        È questa
+      <motion.span style={{ opacity: confirmOpacity }} className={cn("pointer-events-none absolute top-4 left-4 rounded-md border-2 border-pos px-2 py-0.5 text-sm font-semibold text-pos", zone === "conferma" && "bg-pos text-background")}>
+        {zone === "conferma" ? "Lascia: è questa" : "È questa"}
       </motion.span>
-      <motion.span style={{ opacity: skipOpacity }} className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-md border-2 border-muted-foreground px-2 py-0.5 text-sm font-semibold text-muted-foreground">
-        Salta
+      <motion.span style={{ opacity: skipOpacity }} className={cn("pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-md border-2 border-muted-foreground px-2 py-0.5 text-sm font-semibold text-muted-foreground", zone === "salta" && "bg-muted-foreground text-background")}>
+        {zone === "salta" ? "Lascia: salta" : "Salta"}
       </motion.span>
-      <motion.span style={{ opacity: changeOpacity }} className="pointer-events-none absolute top-4 right-4 rounded-md border-2 border-neg px-2 py-0.5 text-sm font-semibold text-neg">
-        Un&apos;altra
+      <motion.span style={{ opacity: changeOpacity }} className={cn("pointer-events-none absolute top-4 right-4 rounded-md border-2 border-neg px-2 py-0.5 text-sm font-semibold text-neg", zone === "cambia" && "bg-neg text-background")}>
+        {zone === "cambia" ? "Lascia: un'altra" : "Un'altra"}
       </motion.span>
 
       <div className="flex flex-col gap-1 pt-6 text-center">
@@ -135,5 +158,6 @@ export function SwipeCard({
         Ricorda per questo esercente
       </label>
     </motion.div>
+    </div>
   );
 }

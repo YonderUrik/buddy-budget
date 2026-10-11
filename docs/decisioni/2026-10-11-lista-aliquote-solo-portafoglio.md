@@ -1,0 +1,3 @@
+# 2026-10-11 — Lista «Aliquote degli strumenti» solo con i titoli in portafoglio
+
+La lista nella scheda Tasse mostrava tutti gli strumenti caricati per l'utente: anche i titoli venduti negli anni passati e quelli presenti solo nell'allocazione obiettivo. Erano dati dell'utente stesso (le query sono già filtrate per utente), ma sembravano titoli estranei. Ora la lista mostra solo le posizioni aperte e i titoli con una vendita, un rimborso o un provento nell'anno in corso (`rateListInstruments` in `lib/investments/tax-view.ts`). Il calcolo delle imposte e il resto della scheda non cambiano. Test con due utenti in `lib/investments/tax-list-isolation.integration.test.ts`.

@@ -146,3 +146,20 @@ it("limits chart dates inclusively while preserving earlier positions and curren
   expect(view.analysis.risk!.returns.every((value) => value === 0)).toBe(true);
   expect(view.returns!.series.at(-1)!.portfolio).toBe(view.returns!.twr);
 });
+
+it("lista delle aliquote: posizioni aperte e titoli tassati nell'anno, non quelli chiusi prima o solo obiettivo", async () => {
+  const { buildTaxView } = await import("./tax-view");
+  const input = data();
+  const base = input.instruments[0];
+  const buy = input.transactions[0];
+  input.instruments = [base, { ...base, id: "chiuso" }, { ...base, id: "venduto" }, { ...base, id: "obiettivo" }];
+  input.transactions = [
+    buy,
+    { ...buy, id: "c1", instrumentId: "chiuso", date: "2025-01-10" },
+    { ...buy, id: "c2", instrumentId: "chiuso", type: "vendita", date: "2025-06-10" },
+    { ...buy, id: "v1", instrumentId: "venduto", date: "2025-01-10" },
+    { ...buy, id: "v2", instrumentId: "venduto", type: "vendita", date: "2026-03-10" },
+  ];
+  input.targets = [{ instrumentId: "obiettivo", weight: "1" }];
+  expect(buildTaxView(input, NOW).rateListInstruments.map((i) => i.id)).toEqual(["etf", "venduto"]);
+});

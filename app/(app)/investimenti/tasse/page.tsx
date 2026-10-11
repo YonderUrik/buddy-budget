@@ -61,7 +61,7 @@ export default function TassePage() {
               currency={currency}
             />
           ) : null}
-          <InstrumentTaxListCard instruments={view.instruments} resolved={view.resolved} onEdit={setEditing} />
+          <InstrumentTaxListCard instruments={view.rateListInstruments} resolved={view.resolved} onEdit={setEditing} />
         </div>
         <div className="flex flex-col gap-10 lg:col-span-2">
           <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />

@@ -39,7 +39,7 @@ export function TaxRegimeCard({ regime, onChange, saving }: TaxRegimeCardProps) 
       <div className="flex flex-col gap-2 text-sm">
         <p className="max-w-prose text-foreground">{EXPLANATIONS[regime]}</p>
         <p className="max-w-prose text-muted-foreground">
-          Le crypto seguono sempre le regole della dichiarazione. Sono stime per capire i numeri secondo le regole italiane, non un
+          Le crypto seguono sempre le regole della dichiarazione. Sono stime secondo le regole italiane, non un
           calcolo fiscale: per la dichiarazione fai riferimento al broker o a un commercialista.
         </p>
       </div>

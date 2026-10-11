@@ -46,7 +46,7 @@ export function SidebarSection() {
       ))}
       <SettingsRow
         label="Barra in basso su mobile"
-        hint="Le sezioni principali a portata di pollice, con «Altro» per il resto. Spenta, torna il menu a scomparsa."
+        hint="Le sezioni principali in basso, con «Altro» per il resto. Spenta, torna il menu a scomparsa."
         htmlFor="sidebar-bottom-nav"
       >
         <Switch

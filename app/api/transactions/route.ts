@@ -80,7 +80,7 @@ async function handlePost(request: NextRequest) {
   }
   if (account.source === "auto") {
     return Response.json(
-      { error: "Non è possibile aggiungere una spesa manuale a un conto collegato automaticamente" },
+      { error: "Non si può aggiungere una spesa manuale a un conto collegato" },
       { status: 400 }
     );
   }

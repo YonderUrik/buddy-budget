@@ -2,6 +2,14 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.54.0](https://github.com/YonderUrik/buddy-budget/compare/v0.53.0...v0.54.0) (2026-10-11)
+
+
+### Novità
+
+* foglio con ricerca e griglia di icone per scegliere un'altra categoria in Categorizza ([#303](https://github.com/YonderUrik/buddy-budget/issues/303)) ([440259b](https://github.com/YonderUrik/buddy-budget/commit/440259bd07ae1cec8379a62a64d988241800b2c9))
+* importazioni personali con «File ricevuto», isola globale e rapporto per file ([#301](https://github.com/YonderUrik/buddy-budget/issues/301)) ([8d6ffde](https://github.com/YonderUrik/buddy-budget/commit/8d6ffded3149ca4c24cfe48d84202d3aadbeb8ce))
+
 ## [0.53.0](https://github.com/YonderUrik/buddy-budget/compare/v0.52.0...v0.53.0) (2026-10-11)
 
 

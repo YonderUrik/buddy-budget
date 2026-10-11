@@ -1,5 +1,5 @@
 import "./app-shot.css";
-import { SCREENS, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
+import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
 import manifest from "@/public/screens/manifest.json";
 
 /** Dimensioni di ripiego, quelle della finestra di cattura (1280×800 a 1,5x). */
@@ -16,6 +16,8 @@ export interface AppShotProps {
   id: ScreenId;
   /** Indirizzo mostrato nella barra del finto browser (default: dominio dell'app + route reale). */
   url?: string;
+  /** Larghezza a cui viene mostrata (attributo `sizes`): aiuta il browser a scegliere la versione leggera. */
+  sizes?: string;
   /** Immagine sopra la piega: caricata subito invece che in lazy. */
   priority?: boolean;
   className?: string;
@@ -25,7 +27,7 @@ export interface AppShotProps {
  * Screenshot vero dell'app in una cornice da browser. Rende entrambe le versioni (chiara e scura) e il CSS mostra
  * quella che corrisponde al tema della landing, così il cambio tema non ricarica nulla.
  */
-export function AppShot({ id, url, priority = false, className }: AppShotProps) {
+export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", priority = false, className }: AppShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen) throw new Error(`Schermata sconosciuta: ${id}`);
   const size = screenSize(screen.id);
@@ -43,7 +45,10 @@ export function AppShot({ id, url, priority = false, className }: AppShotProps) 
           <img
             key={theme}
             className={`shot-img shot-${theme}`}
-            src={screenSrc(screen.id, theme)}
+            src={screenSmallSrc(screen.id, theme)}
+            // I telefoni scaricano e decodificano la versione a 1x; la 1,5x solo dove serve (schermi larghi e densi).
+            srcSet={`${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${size.width}w`}
+            sizes={sizes}
             alt={screen.alt}
             width={size.width}
             height={size.height}

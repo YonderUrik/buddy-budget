@@ -2,7 +2,7 @@
 
 import "./app-shot.css";
 import "./sheet-workbook.css";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type CSSProperties, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SCREEN_THEMES, screenSrc } from "@/content/screens";
 import type { SHEET_HERO } from "@/content/sheet";
 import { track } from "@/lib/analytics";
@@ -28,7 +28,7 @@ const AUTO_MS: Record<View, number> = { foglio: 3800, app: 5200 };
  * Il foglio di calcolo d'esempio (errori di formula, date vecchie, note a margine) con due schede in basso: «Foglio1»
  * e «BuddyBudget». Le due viste si alternano da sole (la barra che si riempie sotto la scheda attiva dice quando cambia),
  * si fermano al passaggio del mouse o fuori schermo e smettono del tutto al primo clic; con «riduci movimento» non
- * partono. Invia `sheet_view_toggled` solo per i cambi scelti dall'utente.
+ * partono. Il passaggio all'app parte dalla cella del totale, che si allarga nella Panoramica. Invia `sheet_view_toggled` solo per i cambi scelti dall'utente.
  */
 export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
   const [view, setView] = useState<View>("foglio");
@@ -36,6 +36,8 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const cellRef = useRef<HTMLTableCellElement>(null);
   // Il giro automatico parte solo se l'utente non ha chiesto meno movimento (sul server: fermo).
   const reduced = useSyncExternalStore(subscribeReduced, () => window.matchMedia(REDUCED_QUERY).matches, () => true);
   const auto = !reduced && !stopped;
@@ -46,6 +48,26 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
     const io = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0.4 });
     io.observe(el);
     return () => io.disconnect();
+  }, []);
+
+  // La schermata parte ritagliata sulla cella del totale (B12) e si allarga fino a riempire il foglio: qui si misura
+  // dove sta la cella, in variabili CSS sul contenitore (niente stato React, cambia solo al ridimensionamento).
+  useEffect(() => {
+    const body = bodyRef.current;
+    const cell = cellRef.current;
+    if (!body || !cell) return;
+    const measure = () => {
+      const b = body.getBoundingClientRect();
+      const c = cell.getBoundingClientRect();
+      body.style.setProperty("--ct", `${c.top - b.top}px`);
+      body.style.setProperty("--cl", `${c.left - b.left}px`);
+      body.style.setProperty("--cr", `${b.right - c.right}px`);
+      body.style.setProperty("--cb", `${b.bottom - c.bottom}px`);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(body);
+    return () => ro.disconnect();
   }, []);
 
   const choose = (next: View) => {
@@ -60,8 +82,9 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
     <div
       ref={ref}
       className={`wb cell${view === "app" ? " is-app" : ""}`}
-      onPointerEnter={() => setPaused(true)}
-      onPointerLeave={() => setPaused(false)}
+      // Pausa solo col mouse: su un telefono il tocco non ha un «uscire» e il giro resterebbe fermo.
+      onPointerEnter={(e) => e.pointerType === "mouse" && setPaused(true)}
+      onPointerLeave={(e) => e.pointerType === "mouse" && setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
@@ -73,7 +96,7 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
         <span>{content.formulaCell}</span>
         <code className={view === "app" ? "wb-fx-ok" : undefined}>{view === "app" ? content.appFormula : content.formula}</code>
       </div>
-      <div className="wb-body">
+      <div className="wb-body" ref={bodyRef}>
         <table className="wb-sheet" aria-label="Foglio di calcolo d'esempio, con i conti tenuti a mano">
           <thead>
             <tr>
@@ -84,14 +107,14 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
             </tr>
           </thead>
           <tbody>
-            <tr className="wb-head">
+            <tr className="wb-head" style={{ "--i": 0 } as CSSProperties}>
               <td>1</td>
               {content.columns.map((c, i) => (
                 <td key={c} className={`${i > 0 && i < 3 ? "n" : ""}${i === 3 ? " wb-d" : ""}`}>{c}</td>
               ))}
             </tr>
             {content.rows.map((r, i) => (
-              <tr key={i}>
+              <tr key={i} style={{ "--i": i + 1 } as CSSProperties}>
                 <td>{i + 2}</td>
                 <td>{r.label}</td>
                 <td className={r.error ? "n err" : "n"}>{r.value}</td>
@@ -102,7 +125,7 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
             <tr className="wb-total">
               <td>{content.rows.length + 2}</td>
               <td>{content.totalLabel}</td>
-              <td className="n err wb-sel">{content.totalValue}</td>
+              <td ref={cellRef} className="n err wb-sel">{content.totalValue}</td>
               <td />
               <td className="wb-d" />
             </tr>

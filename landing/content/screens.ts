@@ -58,3 +58,11 @@ export type ScreenId = (typeof SCREENS)[number]["id"];
 export function screenSrc(id: ScreenId, theme: ScreenTheme, top = false): string {
   return `/screens/${theme}/${id}${top ? "-top" : ""}.jpg`;
 }
+
+/** Larghezza della versione leggera (`-sm`), catturata a 1x per i telefoni. */
+export const SCREEN_SMALL_WIDTH = 1280;
+
+/** Percorso della versione leggera a 1x di una schermata intera. */
+export function screenSmallSrc(id: ScreenId, theme: ScreenTheme): string {
+  return `/screens/${theme}/${id}-sm.jpg`;
+}

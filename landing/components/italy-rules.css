@@ -1,18 +1,21 @@
-/* Regole italiane come tabella del foglio; sui telefoni ogni riga diventa una scheda. */
-.it-wrap { margin-top: 36px; }
-.it { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 15.5px; }
-.it th, .it td { border: 1px solid var(--grid); padding: 14px 16px; text-align: left; vertical-align: top; }
-.it thead th { background: var(--head); font: 500 12px var(--f-m); color: var(--ink3); text-transform: uppercase; letter-spacing: 0.05em; }
-.it tbody th { font-weight: 700; width: 36%; }
+/* Regole italiane in una tabella dentro una card, come le tabelle dell'app; sui telefoni ogni riga diventa una scheda. */
+.it-wrap { margin-top: 36px; overflow: hidden; }
+.it { width: 100%; border-collapse: collapse; font-size: 15.5px; }
+.it th, .it td { border-bottom: 1px solid var(--line); padding: 16px 18px; text-align: left; vertical-align: top; }
+.it tbody tr:last-child > * { border-bottom: 0; }
+.it thead th { background: var(--head); font: 500 12px var(--f-b); color: var(--ink3); text-transform: uppercase; letter-spacing: 0.06em; }
+.it tbody th { font-weight: 600; width: 36%; }
 .it td { color: var(--ink2); }
-.it-links { width: 22%; font: 500 13px var(--f-m); }
-.it-links a { display: block; color: var(--accent); text-decoration: none; }
-.it-links a + a { margin-top: 6px; color: var(--ink3); text-decoration: underline; }
+.it-links { width: 22%; font-size: 14.5px; }
+.it-links a { display: block; color: var(--accent); font-weight: 600; text-decoration: none; }
+.it-links a + a { margin-top: 6px; color: var(--ink3); font-weight: 400; text-decoration: underline; }
 .it-links a:hover { text-decoration: underline; }
 @media (max-width: 760px) {
+  .it-wrap { overflow: visible; background: none; border: 0; border-radius: 0; }
   .it thead { display: none; }
   .it, .it tbody, .it tr, .it th, .it td { display: block; width: auto; }
-  .it tr { border: 1px solid var(--grid); margin-bottom: -1px; }
+  .it tbody { display: grid; gap: 10px; }
+  .it tr { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
   .it th, .it td { border: 0; padding: 4px 16px; }
   .it tbody th { padding-top: 14px; }
   .it td.it-links { padding-bottom: 14px; display: flex; gap: 16px; flex-wrap: wrap; }

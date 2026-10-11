@@ -1,2 +1,2 @@
-.tg { width: 38px; height: 38px; border: 1px solid var(--grid); background: var(--surface); color: inherit; cursor: pointer; display: grid; place-items: center; }
+.tg { width: 38px; height: 38px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: inherit; cursor: pointer; display: grid; place-items: center; }
 .tg svg { width: 18px; height: 18px; }

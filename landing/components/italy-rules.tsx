@@ -15,7 +15,7 @@ export function ItalyRules({ content = ITALY }: { content?: typeof ITALY }) {
         <span className="ref">Regole!A1</span>
         <h2 className="t">{content.title}</h2>
         <p className="lede">{content.lede}</p>
-        <Reveal className="it-wrap">
+        <Reveal className="it-wrap cell">
           <table className="it">
             <thead>
               <tr>

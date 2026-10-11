@@ -1,12 +1,12 @@
 /* Apertura «Il foglio»: testo a sinistra, foglio d'esempio a destra; sotto i 900px il foglio va sotto il testo. */
 .sh { padding-block: calc(68px + 64px + env(safe-area-inset-top, 0px)) 72px; }
 .sh-grid { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 13fr); gap: 40px; align-items: center; }
-.sh h1 { font-size: clamp(40px, 5.6vw, 72px); line-height: 1; font-weight: 800; letter-spacing: -0.035em; }
-.sh h1 mark { background: var(--sel-soft); color: inherit; box-shadow: inset 0 -0.12em 0 var(--sel); padding: 0 0.06em; }
+.sh h1 { font-size: clamp(40px, 5.6vw, 72px); line-height: 1; font-weight: 700; letter-spacing: -0.04em; }
+.sh h1 mark { background: linear-gradient(transparent 22%, var(--sel-soft) 22%); color: inherit; box-shadow: inset 0 -0.12em 0 var(--sel); padding: 0 0.08em; border-radius: var(--r-sm); }
 .sh-lede { color: var(--ink2); font-size: clamp(18px, 2vw, 20px); margin: 22px 0 28px; max-width: 46ch; }
 .sh .cta { gap: 14px; }
 .sh-facts { list-style: none; margin: 26px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font: 500 13px var(--f-m); color: var(--ink3); }
-.sh-facts li::before { content: "✓ "; color: var(--accent); }
+.sh-facts li::before { content: "✓ "; color: var(--a-pos); }
 @media (max-width: 900px) {
   .sh { padding-block: calc(68px + 40px + env(safe-area-inset-top, 0px)) 56px; }
   .sh-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }

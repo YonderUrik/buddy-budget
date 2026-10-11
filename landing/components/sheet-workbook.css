@@ -1,6 +1,6 @@
 /* Il foglio d'esempio dell'apertura e la sua trasformazione nella Panoramica (classe .is-app). */
-.wb { box-shadow: 0 24px 60px -20px var(--shadow-win2); min-width: 0; }
-.wb-file { display: flex; justify-content: space-between; gap: 12px; padding: 7px 12px; border-bottom: 1px solid var(--grid); font: 500 12px var(--f-m); color: var(--ink3); }
+.wb { box-shadow: 0 24px 60px -24px var(--shadow-win2); min-width: 0; overflow: hidden; }
+.wb-file { display: flex; justify-content: space-between; gap: 12px; padding: 7px 12px; border-bottom: 1px solid var(--line); font: 500 12px var(--f-m); color: var(--ink3); }
 .wb-file span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wb-fx { display: flex; border-bottom: 1px solid var(--grid); background: var(--head); font: 500 13px var(--f-m); min-width: 0; }
 .wb-fx span { padding: 8px 12px; border-right: 1px solid var(--grid); color: var(--ink3); flex: none; }
@@ -19,9 +19,9 @@
 .wb-app img { width: 100%; height: 100%; object-fit: cover; object-position: left top; }
 .wb.is-app .wb-app { opacity: 1; transform: none; }
 .wb.is-app .wb-sheet { opacity: 0.25; filter: blur(2px); }
-.wb-tabs { display: flex; border-top: 1px solid var(--grid); background: var(--head); font: 500 13px var(--f-m); }
-.wb-tabs button { flex: 1; border: 0; border-right: 1px solid var(--grid); background: none; padding: 10px; cursor: pointer; color: var(--ink3); font: inherit; }
-.wb-tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: inset 0 2px 0 var(--sel); }
+.wb-tabs { display: flex; gap: 2px; padding: 4px; border-top: 1px solid var(--line); background: var(--head); font: 500 13px var(--f-b); }
+.wb-tabs button { flex: 1; border: 0; border-radius: var(--r-sm); background: none; padding: 7px; cursor: pointer; color: var(--ink3); font: inherit; }
+.wb-tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px var(--shadow-win2); }
 .wb-tabs button:hover { color: var(--ink); }
 @media (max-width: 900px) { .wb-age, .wb-d { display: none; } }
 @media (max-width: 480px) { .wb-sheet { font-size: 12px; } .wb-sheet th, .wb-sheet td { padding: 0 6px; height: 28px; } }

@@ -10,7 +10,7 @@ import { ARROW_ICON } from "./cta-link";
 import { TrackedSection } from "./tracked-section";
 
 /** Stato della funzione nella colonna «Stato», come un valore di cella. */
-const STATUS_LABEL: Record<FeatureStatus, string> = { live: "ATTIVA", new: "NUOVA", soon: "PRESTO" };
+const STATUS_LABEL: Record<FeatureStatus, string> = { live: "Attiva", new: "Nuova", soon: "In arrivo" };
 /** Area mostrata all'apertura: la più usata. */
 const DEFAULT_AREA: FeatureArea = "Liquidità";
 
@@ -36,7 +36,7 @@ export function CatalogSheet() {
             <button key={a} type="button" aria-pressed={area === a} onClick={() => choose(a)}>{a}</button>
           ))}
         </div>
-        <div className="cs-scroll">
+        <div className="cs-scroll cell">
           <table className="cs-table">
             <thead>
               <tr>
@@ -56,7 +56,7 @@ export function CatalogSheet() {
                     <th scope="row">{f.name}</th>
                     <td className="cs-area">{f.area}</td>
                     <td>{f.description}</td>
-                    <td className={`cs-st ${f.status}`}>{STATUS_LABEL[f.status]}</td>
+                    <td className="cs-st"><span className={`cs-badge ${f.status}`}>{STATUS_LABEL[f.status]}</span></td>
                   </tr>
                 );
               })}

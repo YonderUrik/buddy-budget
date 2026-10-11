@@ -1,11 +1,12 @@
-/* Domande frequenti come righe di un foglio: titolo fermo a sinistra, risposte che si aprono a destra. */
+/* Domande frequenti in una card a righe, come le liste dell'app: titolo fermo a sinistra, risposte che si aprono a destra. */
 .faq-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 24px 64px; align-items: start; }
 .faq-grid > div:first-child { position: sticky; top: calc(68px + 64px); }
-.faq-item { border: 1px solid var(--grid); margin-bottom: -1px; background: var(--surface); }
-.faq-item summary { cursor: pointer; list-style: none; padding: 18px 20px 18px 46px; font: 700 clamp(17px, 1.8vw, 19px) / 1.35 var(--f-h); position: relative; }
+.faq-list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
+.faq-item + .faq-item { border-top: 1px solid var(--line); }
+.faq-item summary { cursor: pointer; list-style: none; padding: 18px 20px 18px 46px; font: 600 clamp(17px, 1.8vw, 18px) / 1.35 var(--f-h); position: relative; }
 .faq-item summary::-webkit-details-marker { display: none; }
-.faq-item summary::before { content: "▸"; position: absolute; left: 20px; top: 18px; font-family: var(--f-m); color: var(--accent); transition: transform 0.2s; }
+.faq-item summary::before { content: "›"; position: absolute; left: 22px; top: 16px; font: 600 20px / 1 var(--f-b); color: var(--accent); transition: transform 0.2s; }
 .faq-item[open] summary::before { transform: rotate(90deg); }
-.faq-item summary:focus-visible { outline: 2px solid var(--sel); outline-offset: -2px; }
+.faq-item summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .faq-item p { margin: 0 20px 20px 46px; color: var(--ink2); line-height: 1.6; max-width: 70ch; }
 @media (max-width: 1000px) { .faq-grid { grid-template-columns: minmax(0, 1fr); } .faq-grid > div:first-child { position: static; } }

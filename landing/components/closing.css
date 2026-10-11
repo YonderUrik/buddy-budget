@@ -1,10 +1,10 @@
-/* Chiusura: un riquadro con il bordo spesso e l'ombra piena come i pulsanti, poi il piè di pagina in monospace. */
+/* Chiusura: una card grande con la formula di chiusura e i pulsanti, poi il piè di pagina. */
 .end { padding-block: 104px 0; }
-.end-panel { padding: 48px; display: flex; gap: 28px; align-items: center; justify-content: space-between; flex-wrap: wrap; border: 1.5px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
+.end-panel { padding: 48px; display: flex; gap: 28px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-radius: var(--r-lg); box-shadow: 0 24px 60px -32px var(--shadow-win2); }
 .end-fx { display: block; font: 500 14px var(--f-m); color: var(--ink3); margin-bottom: 12px; overflow-wrap: anywhere; }
-.end h2 { font-size: clamp(32px, 4.4vw, 54px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; max-width: 17ch; }
+.end h2 { font-size: clamp(32px, 4.4vw, 52px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.02; max-width: 17ch; }
 .end-note { margin-top: 14px; color: var(--ink2); font-size: 15px; }
-.end-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; margin-top: 72px; padding-block: 24px 40px; border-top: 1px solid var(--grid); font: 500 13px var(--f-m); color: var(--ink3); }
+.end-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; margin-top: 72px; padding-block: 24px 40px; border-top: 1px solid var(--line); font: 500 14px var(--f-b); color: var(--ink3); }
 .end-foot nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .end-foot a { color: var(--ink3); text-decoration: none; }
 .end-foot a:hover { color: var(--ink); text-decoration: underline; }

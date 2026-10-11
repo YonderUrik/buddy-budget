@@ -44,7 +44,7 @@ export default function HomePage() {
     <>
       <JsonLd data={FAQ_JSON_LD} />
       <SiteNav />
-      <main className="paper">
+      <main>
         <SheetHero />
         <SheetTabs tabs={PAGE_TABS} />
         <SupportedSources />

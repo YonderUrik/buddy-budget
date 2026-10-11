@@ -14,7 +14,7 @@ import { TrackedSection } from "./tracked-section";
 export function SheetHero({ content = SHEET_HERO }: { content?: typeof SHEET_HERO }) {
   const facts = SOURCE_URL ? [...HERO_FACTS, OPEN_SOURCE_FACT] : HERO_FACTS;
   return (
-    <TrackedSection id="top" section="hero" className="sh">
+    <TrackedSection id="top" section="hero" className="sh paper">
       <div className="wrap sh-grid">
         <div className="sh-copy">
           <h1>

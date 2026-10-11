@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "@fontsource-variable/schibsted-grotesk";
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/500.css";
-import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/hanken-grotesk";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import { BrandSprite } from "@/components/brand";
 import { APP_URL, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";

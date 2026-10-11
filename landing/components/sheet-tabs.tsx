@@ -13,7 +13,7 @@ export interface SheetTab {
 }
 
 /**
- * Le sezioni della home come schede in fondo a un foglio di calcolo, ferme sotto la barra in alto. La scheda della
+ * Le sezioni della home come le schede dell'app, ferme sotto la barra in alto. La scheda della
  * sezione che si sta leggendo resta evidenziata.
  */
 export function SheetTabs({ tabs }: { tabs: readonly SheetTab[] }) {
@@ -34,9 +34,11 @@ export function SheetTabs({ tabs }: { tabs: readonly SheetTab[] }) {
   return (
     <nav className="stabs" aria-label="Sezioni della pagina">
       <div className="wrap">
-        {tabs.map((t) => (
-          <a key={t.id} href={`#${t.id}`} aria-current={active === t.id ? "true" : undefined}>{t.label}</a>
-        ))}
+        <div className="stabs-list">
+          {tabs.map((t) => (
+            <a key={t.id} href={`#${t.id}`} aria-current={active === t.id ? "true" : undefined}>{t.label}</a>
+          ))}
+        </div>
       </div>
     </nav>
   );

@@ -2,11 +2,18 @@
 
 /** Sezione "Privacy": documenti legali, quando li hai accettati e come esercitare i diritti che non hanno un pulsante in app. */
 
+import * as React from "react";
+import { Switch } from "@/components/ui/switch";
+import { useAnalyticsOptOut } from "@/lib/hooks/use-analytics-opt-out";
 import { track } from "@/lib/analytics";
 import { formatLongDate } from "@/lib/format";
 import { LEGAL_LINKS, PRIVACY_EMAIL, PRIVACY_REQUEST_OPTIONS, buildPrivacyRequestHref } from "@/lib/legal";
 import type { UserSettings } from "@/lib/queries/user-settings";
+import { ShieldCheck } from "lucide-react";
 import { SettingsRow, SettingsSection } from "./settings-section";
+
+/** Store vuoto: la scelta sulle statistiche si conosce solo sul client. */
+const subscribeNoop = () => () => {};
 
 const LINK_CLASS = "underline underline-offset-2 hover:text-foreground";
 
@@ -16,13 +23,30 @@ export interface PrivacySectionProps {
 
 export function PrivacySection({ settings }: PrivacySectionProps) {
   const { legalAcceptedAt, legalAcceptedVersion, email } = settings;
+  const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
+  const [optedOut, setOptedOut] = useAnalyticsOptOut();
 
   return (
     <SettingsSection
       id="impostazioni-privacy"
       title="Privacy"
+      icon={ShieldCheck}
       description="Come trattiamo i tuoi dati e come esercitare i tuoi diritti. Scarica e cancella i dati dalle sezioni qui sotto."
     >
+      <SettingsRow
+        label="Statistiche d'uso anonime"
+        hint="Contano le pagine viste e le azioni (mai importi o testi tuoi), senza cookie. Spegnile e non ti misuriamo più su questo dispositivo."
+      >
+        {mounted ? (
+          <Switch
+            checked={!optedOut}
+            onCheckedChange={(checked) => setOptedOut(!checked)}
+            aria-label="Statistiche d'uso anonime"
+          />
+        ) : (
+          <div className="h-[18.4px] w-[32px]" />
+        )}
+      </SettingsRow>
       <SettingsRow
         label="Documenti"
         hint={

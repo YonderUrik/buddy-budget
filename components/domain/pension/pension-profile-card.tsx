@@ -4,8 +4,9 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { LandmarkIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { PensionSection } from "./pension-section";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,17 +50,17 @@ export function PensionProfileCard({ name, adhesionDate, today, onSave, onDelete
   }
 
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-4">
+    <PensionSection icon={LandmarkIcon} title="Dati del fondo" color="var(--swatch-slate)" description="Nome e data di prima adesione: quest'ultima decide l'aliquota in uscita.">
+      <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
             Nome del fondo
             <Input value={draftName} maxLength={80} onChange={(e) => setDraftName(e.target.value)} />
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
             Prima adesione a una forma pensionistica
             <Input type="date" value={draftDate} max={today} onChange={(e) => setDraftDate(e.target.value)} />
-            <span>Conta la prima in assoluto, anche in un&apos;altra azienda: decide l&apos;aliquota in uscita.</span>
+            <span className="text-xs">Conta la prima in assoluto, anche in un&apos;altra azienda: decide l&apos;aliquota in uscita.</span>
           </label>
         </div>
         {error ? <p role="alert" className="text-sm text-neg">{error}</p> : null}
@@ -68,7 +69,7 @@ export function PensionProfileCard({ name, adhesionDate, today, onSave, onDelete
             Salva le modifiche
           </Button>
           <AlertDialog>
-            <AlertDialogTrigger className="text-sm text-muted-foreground underline-offset-2 hover:text-destructive hover:underline">Elimina questo fondo</AlertDialogTrigger>
+            <AlertDialogTrigger className="min-h-8 text-sm text-text-2 underline-offset-2 hover:text-destructive hover:underline">Elimina questo fondo</AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Eliminare questo fondo?</AlertDialogTitle>
@@ -81,7 +82,7 @@ export function PensionProfileCard({ name, adhesionDate, today, onSave, onDelete
             </AlertDialogContent>
           </AlertDialog>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </PensionSection>
   );
 }

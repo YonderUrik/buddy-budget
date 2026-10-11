@@ -1,0 +1,3 @@
+# Import: anche gli strumenti manuali già presenti si collegano alla quotazione (2026-10-08)
+
+Dopo un import riuscito (CSV e rendiconto), ogni strumento manuale con ISIN dell'utente coinvolto viene collegato alla prima quotazione verificata (OpenFIGI + Yahoo, nella valuta dello strumento), come da «Cerca la quotazione»; lo storico dei prezzi riparte dalla sua prima operazione. Prima i titoli riconosciuti come «già tra i tuoi strumenti» restavano manuali. Se non c'è quotazione o le fonti non rispondono non cambia nulla e l'import non fallisce. La riga nel passo «Strumenti» lo dice. Impatto landing: nessuno. Log: `instrument.quotation.linked` anche dall'import.

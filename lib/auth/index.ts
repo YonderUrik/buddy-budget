@@ -9,11 +9,23 @@ import { authUser, authSession, authAccount, authVerification } from "@/lib/db/s
 import { categories } from "@/lib/db/schema/categories";
 import { defaultCategoryRows } from "@/lib/categories/seed";
 import { recordAuthEvent, requestLogger } from "@/lib/observability";
+import { magicLinkEmailContent } from "./emails";
+import { logMagicLink } from "./magic-link-log";
 import { MAGIC_LINK_EXPIRES_MINUTES, SESSION_EXPIRES_IN_DAYS, SESSION_UPDATE_AGE_DAYS } from "./constants";
 import { DEFAULT_HOME_PAGE } from "@/lib/account/home-pages";
 import { truncateIp } from "@/lib/account/ip-mask";
+import { touchLastActive } from "@/lib/account/last-active";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/** Client Resend creato al primo uso: senza RESEND_API_KEY (self-hosting) il costruttore lancerebbe già all'import. */
+function getResend(): Resend | null {
+  return process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+}
+
+/** Google è attivo solo con entrambe le credenziali; altrimenti resta solo il magic link. */
+const googleProvider =
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ? { google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET } }
+    : {};
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -29,13 +41,19 @@ export const auth = betterAuth({
     magicLink({
       expiresIn: MAGIC_LINK_EXPIRES_MINUTES * 60,
       sendMagicLink: async ({ email, url }) => {
+        const resend = getResend();
+        if (!resend) {
+          // Self-hosting senza email: il link compare nei log del container (`docker compose logs app`).
+          logMagicLink(url);
+          recordAuthEvent("magic_link_sent");
+          return;
+        }
         // Resend non lancia in caso di errore: restituisce `{ error }`. Lo trasformiamo in eccezione
         // così better-auth risponde con errore e la UI non mostra "controlla la tua email" a vuoto.
         const { error } = await resend.emails.send({
           from: process.env.RESEND_FROM!,
           to: email,
-          subject: "Il tuo link di accesso a BuddyBudget",
-          text: `Clicca qui per accedere: ${url}\n\nIl link scade tra ${MAGIC_LINK_EXPIRES_MINUTES} minuti.`,
+          ...magicLinkEmailContent({ url, expiresInMinutes: MAGIC_LINK_EXPIRES_MINUTES, appUrl: new URL(url).origin }),
         });
         if (error) {
           recordAuthEvent("magic_link_failed");
@@ -47,12 +65,7 @@ export const auth = betterAuth({
       },
     }),
   ],
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    },
-  },
+  socialProviders: googleProvider,
   // Espliciti (sono anche i default di better-auth) perché la pagina Impostazioni li mostra all'utente.
   session: {
     expiresIn: SESSION_EXPIRES_IN_DAYS * 24 * 60 * 60,
@@ -115,8 +128,15 @@ export const auth = betterAuth({
         /** Salva l'IP troncato (minimizzazione): serve solo a riconoscere da dove arriva un accesso, non a identificare un dispositivo. */
         before: async (session) => ({ data: { ...session, ipAddress: truncateIp(session.ipAddress) } }),
         /** Ogni sessione creata è un accesso riuscito (magic link o Google): solo un contatore, nessun dato utente. */
-        after: async () => {
+        after: async (session) => {
           recordAuthEvent("sign_in");
+          await touchLastActive(session.userId);
+        },
+      },
+      update: {
+        /** Il rinnovo di una sessione (al più una volta al giorno di utilizzo) è un segno di attività: serve al cron degli account inattivi. */
+        after: async (session) => {
+          if (session?.userId) await touchLastActive(session.userId);
         },
       },
     },

@@ -6,9 +6,13 @@ import { TrackedSection } from "./tracked-section";
 /** Domande frequenti: `<details>` nativi (funzionano senza JS e il testo sta nell'HTML, indicizzabile). Lo stesso `FAQ` alimenta il JSON-LD. */
 export function Faq() {
   return (
-    <TrackedSection id="domande" section="domande" className="sec faq band">
+    <TrackedSection id="domande" section="domande" className="sec faq">
       <div className="wrap">
-        <h2 className="t">Domande frequenti.</h2>
+        <div className="faq-grid">
+        <div>
+          <span className="ref">Domande!A1</span>
+          <h2 className="t">Domande frequenti.</h2>
+        </div>
         <Reveal>
           <div className="faq-list">
             {FAQ.map((item) => (
@@ -19,6 +23,7 @@ export function Faq() {
             ))}
           </div>
         </Reveal>
+        </div>
       </div>
     </TrackedSection>
   );

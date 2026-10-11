@@ -3,6 +3,7 @@ import { Hanken_Grotesk, Space_Grotesk, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { MotionProvider } from "@/components/motion";
 import Script from "next/script";
 import "./globals.css";
 import { PwaInstallTracker } from "@/components/analytics";
@@ -70,8 +71,10 @@ export default function RootLayout({
         <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />
         <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
-            <Toaster />
+            <MotionProvider>
+              {children}
+              <Toaster />
+            </MotionProvider>
           </ThemeProvider>
         </QueryProvider>
         <PwaInstallTracker />

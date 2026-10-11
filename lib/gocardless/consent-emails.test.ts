@@ -10,7 +10,7 @@ describe("consentEmailContent", () => {
     });
     expect(subject).toContain("Banca Uno");
     expect(text).toContain("8 ottobre 2026");
-    expect(text).toContain("https://app.example.test/conti?rinnova=1");
+    expect(text).toContain("https://app.example.test/liquidita/conti?rinnova=1");
   });
 
   it("avviso di scadenza senza data usa una formula generica", () => {
@@ -21,6 +21,6 @@ describe("consentEmailContent", () => {
     const { subject, text } = consentEmailContent("expired", { institutionName: "Banca Uno", appUrl: "https://a.test" });
     expect(subject).toContain("scaduto");
     expect(text).toContain("non vanno persi");
-    expect(text).toContain("https://a.test/conti?rinnova=1");
+    expect(text).toContain("https://a.test/liquidita/conti?rinnova=1");
   });
 });

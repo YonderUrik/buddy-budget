@@ -127,7 +127,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
   return (
     <div className="flex flex-col gap-8">
       {notice && (
-        <p className="rounded-lg bg-muted p-3 text-sm text-foreground" role="status">
+        <p className="border-l-2 border-primary pl-3 text-sm text-text-2" role="status">
           {notice}
         </p>
       )}

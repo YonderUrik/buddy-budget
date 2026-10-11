@@ -2,7 +2,7 @@
 // Prerequisiti (vedi docs/landing-screens.md): app in esecuzione su DEMO_APP_URL con il database popolato da
 // `pnpm demo:seed`, e BETTER_AUTH_SECRET uguale a quello dell'app (serve a firmare il cookie di sessione demo).
 import { createHmac } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -31,6 +31,8 @@ const browser = await chromium.launch({
   args: ["--no-sandbox"],
 });
 const host = new URL(APP).hostname;
+// ONLY=id1,id2 rigenera solo quelle schermate (utile quando se ne aggiunge una) e conserva il resto del manifest.
+const ONLY = process.env.ONLY?.split(",").map((id) => id.trim()).filter(Boolean);
 const manifest = { capturedAt: new Date().toISOString(), app: APP, viewport: VIEWPORT, scale: SCALE, screens: [] };
 
 for (const theme of SCREEN_THEMES) {
@@ -39,7 +41,7 @@ for (const theme of SCREEN_THEMES) {
   await context.addInitScript((t) => localStorage.setItem("theme", t), theme);
   const page = await context.newPage();
   mkdirSync(join(root, "public", "screens", theme), { recursive: true });
-  for (const screen of SCREENS) {
+  for (const screen of SCREENS.filter((candidate) => !ONLY || ONLY.includes(candidate.id))) {
     const response = await page.goto(APP + screen.route, { waitUntil: "networkidle", timeout: 90_000 });
     if (!response || !response.ok()) throw new Error(`${screen.route}: risposta ${response?.status() ?? "assente"}, l'app non sta servendo la pagina`);
     if (new URL(page.url()).pathname !== screen.route) {
@@ -59,4 +61,11 @@ for (const theme of SCREEN_THEMES) {
   await context.close();
 }
 await browser.close();
-writeFileSync(join(root, "public", "screens", "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+const manifestPath = join(root, "public", "screens", "manifest.json");
+if (ONLY) {
+  const previous = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const kept = previous.screens.filter((entry) => !ONLY.includes(entry.id));
+  manifest.screens = [...kept, ...manifest.screens];
+  manifest.capturedAt = previous.capturedAt;
+}
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\n");

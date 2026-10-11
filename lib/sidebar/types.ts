@@ -52,3 +52,35 @@ export interface SidebarSummary {
   /** Avvisi di prezzo scattati su tutti i titoli. */
   triggeredAlerts: number;
 }
+
+/** Una scadenza vicina mostrata nella sidebar: una rata di un finanziamento o il rinnovo del collegamento a una banca. */
+export interface SidebarDeadline {
+  /** Chiave stabile per React (id del debito o della connessione). */
+  id: string;
+  kind: "rata" | "rinnovo";
+  label: string;
+  /** Data `YYYY-MM-DD`: per i rinnovi la scadenza del consenso (oggi se è già scaduto o in errore). */
+  date: string;
+  /** Importo della rata, null per i rinnovi. */
+  amount: number | null;
+  overdue: boolean;
+  href: string;
+}
+
+export interface SidebarDeadlines {
+  currency: string;
+  items: SidebarDeadline[];
+}
+
+/** Avanzamento verso il numero FIRE, calcolato con le stesse ipotesi di Analitiche. */
+export interface SidebarFire {
+  currency: string;
+  /** Patrimonio considerato, come in Analitiche (liquidità + investimenti, previdenza se scelta nelle ipotesi). */
+  wealth: number;
+  /** Numero FIRE, null se mancano i dati per stimarlo (spesa annua sconosciuta). */
+  target: number | null;
+  /** Patrimonio / numero FIRE, può superare 1. */
+  progress: number | null;
+  /** Anni stimati al numero FIRE; null se non raggiungibile o non calcolabile. */
+  yearsToFire: number | null;
+}

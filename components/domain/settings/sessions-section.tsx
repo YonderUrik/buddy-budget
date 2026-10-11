@@ -11,6 +11,7 @@ import { LoadError } from "@/components/domain/shared";
 import { SESSION_EXPIRES_IN_DAYS } from "@/lib/auth/constants";
 import { formatLongDate, formatRelativeTime } from "@/lib/format";
 import { useRevokeSessionMutation, useUserSessionsQuery, type UserSessionView } from "@/lib/queries/user-settings";
+import { MonitorSmartphone } from "lucide-react";
 import { SettingsSection } from "./settings-section";
 
 function SessionRow({ session, onRevoke, revoking }: { session: UserSessionView; onRevoke: () => void; revoking: boolean }) {
@@ -46,6 +47,7 @@ export function SessionsSection() {
     <SettingsSection
       id="impostazioni-sessioni"
       title="Sessioni attive"
+      icon={MonitorSmartphone}
       description={`I dispositivi da cui hai fatto l'accesso. Una sessione scade dopo ${SESSION_EXPIRES_IN_DAYS} giorni senza utilizzo.`}
     >
       {isLoading ? (

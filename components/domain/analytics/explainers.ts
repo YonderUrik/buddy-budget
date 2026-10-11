@@ -22,7 +22,7 @@ export const EXPLAINERS = {
   "fire-number": {
     title: "Numero FIRE",
     what: "È il capitale che ti servirebbe per vivere con il solo rendimento del tuo patrimonio, senza più lavorare per reddito. Dipende da quanto spendi e da quanta parte del capitale accetti di prelevare ogni anno.",
-    read: "Se il tuo patrimonio è sopra il numero, secondo queste ipotesi sei già indipendente; se è sotto, la barra mostra quanta strada manca. Cambia le ipotesi in alto per vedere quanto il numero è sensibile: pochi decimi di tasso di prelievo spostano il traguardo di decine di migliaia di euro.",
+    read: "Sopra il numero, con queste ipotesi sei già indipendente; sotto, la barra mostra quanto manca. Pochi decimi di tasso di prelievo spostano il traguardo di decine di migliaia di euro.",
     how: "Numero FIRE = spesa annua ÷ tasso di prelievo. Con il 3,5% e 30.000 € di spesa: 30.000 ÷ 0,035 ≈ 857.000 €. Se attivi le imposte latenti, il numero è diviso per (1 − quota di patrimonio che se ne andrebbe in imposte vendendo tutto), perché prelevando realizzi plusvalenze tassate. Gli anni mancanti si ricavano dalla crescita del patrimonio con il tuo risparmio annuo e il rendimento reale ipotizzato (tutto in euro di oggi, quindi già al netto dell'inflazione).",
     limits: "La spesa di oggi non è per forza quella futura (figli, casa, salute). Il tasso di prelievo non è una garanzia: descrive cosa sarebbe successo nel passato. Il rendimento futuro è incerto: per questo esiste la scheda Simulazione. Il patrimonio non sottrae i debiti: se hai un mutuo, le sue rate sono già dentro la spesa.",
     sources: [
@@ -33,7 +33,7 @@ export const EXPLAINERS = {
   },
   sensitivity: {
     title: "Sensibilità alle ipotesi",
-    what: "Mostra quanti anni mancano al numero FIRE cambiando due ipotesi alla volta. Serve a capire quali ipotesi contano davvero e quali no.",
+    what: "Mostra quanti anni mancano al numero FIRE cambiando due ipotesi alla volta. Mostra quali ipotesi spostano di più il traguardo.",
     read: "Ogni cella è una combinazione. Guarda quanto cambiano gli anni spostandoti di una riga o di una colonna: se cambiano poco, quell'ipotesi pesa poco. Di solito spesa e risparmio pesano molto più del rendimento.",
     how: "Ogni cella ricalcola gli anni al traguardo con la stessa formula del numero FIRE. Nella tabella spesa/risparmio, spendere meno abbassa il traguardo e libera anche risparmio.",
     limits: "Cambiare una sola ipotesi per volta isola l'effetto, ma nella realtà rendimento e inflazione si muovono insieme.",

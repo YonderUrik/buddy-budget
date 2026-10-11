@@ -20,7 +20,7 @@ export interface DebtRefinanceSimProps {
 
 function Side({ title, rows }: { title: string; rows: { label: string; value: string }[] }) {
   return (
-    <div className="rounded-lg border p-3">
+    <div className="border-t pt-3">
       <p className="mb-2 text-sm font-medium text-foreground">{title}</p>
       <dl className="flex flex-col gap-1">
         {rows.map((row) => (
@@ -52,7 +52,7 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
   const saving = result?.netSaving ?? 0;
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-foreground">Un&apos;altra banca ti offre un tasso migliore? Inserisci l&apos;offerta: sul residuo di oggi vedi se, tolte le spese, conviene davvero.</p>
+      <p className="text-sm text-foreground">Un&apos;altra banca offre un tasso migliore? Inserisci l&apos;offerta e vedi se, spese incluse, conviene.</p>
       <div className="grid grid-cols-2 gap-3">
         <DebtFormField label="Nuovo TAN (%)" htmlFor={`${base}-rate`}>
           <Input id={`${base}-rate`} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="es. 3,5" />

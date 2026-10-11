@@ -31,7 +31,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   const stats = computeTitleStats(await loadTitleCloses(session.user.id, instrument), new Date().toISOString().slice(0, 10));
   if (!stats) return Response.json({ error: "Non ci sono ancora prezzi per questo titolo" }, { status: 400 });
 
-  const cacheKey = `market:commentary:${id}:${stats.lastDate}`;
+  const cacheKey = `market:commentary:${session.user.id}:${id}:${stats.lastDate}`;
   try {
     const cached = await redis.get(cacheKey);
     if (cached) return Response.json({ available: true, text: cached, cached: true });

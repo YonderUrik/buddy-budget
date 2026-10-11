@@ -36,3 +36,5 @@ export { UncategorizedCallout } from "./uncategorized-callout";
 export type { UncategorizedCalloutProps } from "./uncategorized-callout";
 export { TransactionEditPanel } from "./transaction-edit-panel";
 export type { TransactionEditPanelProps } from "./transaction-edit-panel";
+export { TransactionNotePopover } from "./transaction-note-popover";
+export type { TransactionNotePopoverProps } from "./transaction-note-popover";

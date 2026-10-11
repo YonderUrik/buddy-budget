@@ -1,16 +1,45 @@
 import type { CategoryType } from "@/lib/categories/groups";
 import type { InvestmentTransactionType } from "@/lib/db/schema/investments";
 import type { SupportedCurrency } from "@/lib/validation/currency";
+import type { SidebarModuleId } from "@/lib/sidebar/modules";
+
+/** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
+export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import";
 
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface ProductEvents {
+  /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
+  support_report_sent: { kind: "problema" | "domanda" | "idea"; withContext: boolean };
+  /** Clic su un collegamento esterno di «Aiuto» (GitHub, novità, sicurezza). */
+  support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" };
+  /** Domanda aperta tra le risposte rapide di «Aiuto». */
+  support_faq_opened: { id: string };
+  personal_csv_requested: { reuse: boolean };
+  personal_csv_deleted: { cash: number; investments: number };
+  personal_csv_imported: { rows: number };
+  /** Azione scelta nella schermata «File ricevuto» dell'import personale. */
+  personal_csv_receipt_action: { action: "lista" | "altro_file" | "vai_ai_dati" };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };
   /** Fetta della torta "Dove sta il patrimonio" bloccata con un clic (solo la classe di asset). */
   overview_composition_slice_selected: { assetClass: "liquidita" | "investimenti" | "previdenza" };
   investment_chart_period_changed: { period: "1mese" | "3mesi" | "1anno" | "max" | "ytd" | "custom" };
+  /** Interruttore «Rimetti costi/imposte nel portafoglio» in Investimenti; `reinvested`: acceso o spento. */
+  investment_reinvest_toggled: { kind: "costi" | "imposte"; reinvested: boolean };
+  investment_title_searched: { type: "etf" | "azione" | "obbligazione" | "fondo" | "crypto" | "etc" };
+  /** Clic sull'azione di un passo della checklist «Primi passi» della Panoramica. */
+  start_step_clicked: { step: "conto" | "import" | "investimento" | "obiettivo" };
+  /** Checklist chiusa; `done`: quanti passi su quattro erano già fatti. */
+  start_checklist_dismissed: { done: number };
+  start_checklist_reopened: undefined;
+  /** Tutti i passi fatti, registrato una sola volta per utente. */
+  start_checklist_completed: undefined;
+  /** «Esplora con dati d'esempio» avviato. */
+  demo_started: undefined;
+  /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
+  demo_cleared: { from: "banner" | "panoramica" };
   onboarding_completed: { currency: SupportedCurrency };
   account_created: undefined;
   budget_set: undefined;
@@ -23,13 +52,32 @@ export interface ProductEvents {
   account_removed: { kind: "manuale" | "collegato" };
   /** Apertura dei dettagli di un conto dalla lista (serve a capire se la riga cliccabile viene usata). */
   account_details_opened: { kind: "manuale" | "collegato" };
+  /** Scelta nel dialog «Nuovo conto»: quale strada prende l'utente. */
+  account_add_path_chosen: { path: "banca" | "manuale" | "importa" };
+  /** Un passo di un form a passi è stato completato (`step` parte da 1): serve a vedere dove ci si ferma. */
+  form_step_completed: { flow: FormFlow; step: number };
+  /** «Indietro» in un form a passi, dal passo `step` (parte da 1). */
+  form_step_back: { flow: FormFlow; step: number };
   /** Clic su "Rinnova"/"Riconnetti" per un collegamento bancario; `source`: dove (banner in Conti, riga del conto, link dell'email, banner in Panoramica). */
-  bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" };
+  bank_renew_started: { source: "banner" | "row" | "email" | "panoramica" | "sidebar" };
   transaction_added: { direction: "entrata" | "uscita" };
   transaction_category_changed: { source: "row" | "categorizza" };
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
+  /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
+  liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "abbonamenti" | "categorie" | "regole" };
+  /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
+  liquidity_account_filtered: { scope: "conto" | "tutti" };
+  /** Categoria cambiata dall'icona del movimento; `remembered`: l'utente ha chiesto di ricordarla con una regola. */
+  liquidity_category_remembered: { remembered: boolean };
+  /** Scelta su un abbonamento: confermato, escluso («non è un abbonamento»), terminato o rimesso tra i rilevati; `origin`: rilevato o aggiunto a mano. */
+  subscription_decided: { decision: "confermato" | "escluso" | "terminato" | "ripristinato"; origin: "rilevato" | "manuale" };
+  subscription_added: { cadence: "settimanale" | "mensile" | "trimestrale" | "semestrale" | "annuale" };
+  subscription_updated: undefined;
+  subscription_removed: undefined;
+  /** Dettaglio di un abbonamento aperto dalla lista; `decision`: lo stato in cui era. */
+  subscription_details_opened: { decision: "da-confermare" | "confermato" | "escluso" | "terminato" };
   category_created: { group: CategoryType };
   pwa_installed: undefined;
   instrument_added: { source: "yahoo" | "coingecko" | "isin" | "manuale" };
@@ -54,25 +102,28 @@ export interface ProductEvents {
   /** Simulazione locale dell'aliquota in uscita (chip trascinato o mosso da tastiera); `years`: anni di partecipazione simulati. */
   pension_rate_simulated: { years: number };
   investment_broker_filter_changed: { action: "toggle" | "all"; selected?: number };
-  investment_broker_overlay_changed: { enabled: boolean };
   investment_benchmark_set: undefined;
   investment_targets_set: { instruments: number };
   instrument_breakdown_saved: undefined;
   investment_tax_regime_set: { regime: "amministrato" | "dichiarativo" };
   instrument_settings_saved: undefined;
+  /** Strumento importato (solo ISIN, prezzi manuali) collegato a una quotazione con prezzi automatici. */
+  instrument_quotation_linked: undefined;
   tax_carryforward_added: undefined;
   investment_dividend_dismissed: undefined;
   title_watched: undefined;
   price_alert_created: { direction: "sopra" | "sotto" };
   title_commentary_requested: undefined;
+  /** Popover «come si calcola» di un indicatore nella pagina titolo; `indicator`: chiave statica (pe, roe, ter...). */
+  title_indicator_opened: { indicator: string };
   /** `format`: id del formato riconosciuto (`IMPORT_PRESETS`) o `personalizzato`. */
   investments_import_reset: { operations: number; statements: number };
   investments_import_deleted: { statements: number; operations: number };
   investments_imported: { operations: number; format: string };
   /** File letto nel primo passo dell'import. `provider`: formato (`interactive-brokers`, `yahoo-portfolio`, `generic`); `chosen`: scelto a mano o riconosciuto dal file. */
   investments_import_file_read: { provider: string; chosen: boolean };
-  /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso "Da sistemare". */
-  attention_link_clicked: { from: "home" | "sidebar" };
+  /** `from`: dove si è cliccato per aprire la categorizzazione dall'avviso in Panoramica. */
+  attention_link_clicked: { from: "home" };
   /** Clic su una voce della legenda del patrimonio netto per mostrarla o nasconderla; `visible`: lo stato dopo il clic. */
   net_worth_class_toggled: { assetClass: "liquidita" | "investimenti" | "previdenza" | "altro"; visible: boolean };
   /** Clic su una tessera della Panoramica; `tile`: quale (mese, scadenze, investimenti). */
@@ -85,8 +136,14 @@ export interface ProductEvents {
   landing_link_clicked: { from: "logo" | "back_link" };
   /** Pagina di Analitiche aperta (sostituisce le sei schede, dal 2026-10-04). */
   analytics_page_viewed: undefined;
-  /** Voce dell'indice delle domande cliccata; `question`: quale. */
-  analytics_question_nav: { question: "dove-sono" | "quando" | "reggera" | "costi" };
+  /** Scheda di risposta scelta (sostituisce l'indice delle domande); `view`: quale. */
+  analytics_view_selected: { view: "dove-sono" | "quando" | "reggera" | "costi" };
+  /** Un cursore «e se…» lasciato; `field`: quale ipotesi. */
+  analytics_scenario_changed: { field: "annualSavings" | "annualSpending" | "expectedReturn" | "withdrawalRate" };
+  /** Cursori riportati alle ipotesi salvate. */
+  analytics_scenario_reset: undefined;
+  /** Valori dei cursori salvati come ipotesi; `fields`: quanti. */
+  analytics_scenario_saved: { fields: number };
   /** Apertura/chiusura di «Per esperti» di una domanda. */
   analytics_expert_toggled: { question: "dove-sono" | "quando" | "reggera" | "costi"; state: "aperta" | "chiusa" };
   /** Ipotesi salvate; `fields`: quanti campi sono cambiati. */
@@ -101,6 +158,37 @@ export interface ProductEvents {
   analytics_reading_toggled: { tab: string; state: "aperta" | "chiusa" };
   /** Popup di una parola o cifra sottolineata aperto; `term`: quale voce del glossario. */
   analytics_term_opened: { term: string };
+  /** Modulo della barra laterale acceso o spento dalle Impostazioni (`barra_in_basso`: la navigazione mobile). */
+  sidebar_module_toggled: { module: SidebarModuleId | "barra_in_basso"; enabled: boolean };
+  /** Clic su un elemento dei moduli della barra laterale (scadenza o obiettivo FIRE). */
+  sidebar_module_clicked: { module: "scadenze" | "fire" };
+  /** Tocco su una scheda della barra in basso su mobile. */
+  bottom_nav_clicked: { tab: "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro" };
+  /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
+  amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
+  theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
+  settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
+  more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
+  /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
+  notifications_toggled: { kind: "digest" | "budget" | "deadlines"; enabled: boolean };
+  /** Consenso alle proposte dell'assistente in Impostazioni. */
+  ai_categorization_toggled: { enabled: boolean };
+  /** Pulsante «Categorizza con l'AI» in Categorizza; `missing` = esercenti senza proposta in quel momento. */
+  ai_suggestions_generate_clicked: { missing: number; consentGiven: boolean };
+  /** Riquadro «Novità» della Panoramica: clic sul pulsante o chiusura (`id` = identificativo della voce). */
+  whats_new_clicked: { id: string };
+  whats_new_dismissed: { id: string };
+  /** Clic sull'invito «Categorizza con l'AI» che porta a Categorizza. */
+  categorize_ai_link_clicked: { from: "movimenti" };
+  /** Tour delle carte: passo visto, saltato o concluso. */
+  categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
+  /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
+  categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
+  notifications_frequency_changed: { frequency: "settimanale" | "mensile" };
+  /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
+  notifications_test_sent: undefined;
+  /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
+  notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "all" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

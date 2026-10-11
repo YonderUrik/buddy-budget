@@ -15,3 +15,7 @@ export * from "./analytics";
 export * from "./broker-statements";
 
 export * from "./broker-import-accounts";
+export * from "./personal-imports";
+export * from "./notifications";
+export * from "./subscriptions";
+export * from "./categorization-suggestions";

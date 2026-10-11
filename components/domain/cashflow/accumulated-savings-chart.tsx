@@ -55,7 +55,7 @@ export function AccumulatedSavingsChart({ entries, currency }: AccumulatedSaving
                 />
               }
             />
-            <Line type="monotone" dataKey="cumulative" stroke="var(--color-cumulative)" strokeWidth={2} dot={false} />
+            <Line isAnimationActive={false} type="monotone" dataKey="cumulative" stroke="var(--color-cumulative)" strokeWidth={2} dot={false} />
           </LineChart>
         </ChartContainer>
       </CardContent>

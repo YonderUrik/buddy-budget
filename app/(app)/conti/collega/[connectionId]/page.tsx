@@ -60,7 +60,7 @@ export default function CollegaBancaPage() {
     finalize.mutate(
       { selections },
       {
-        onSuccess: () => router.push("/conti"),
+        onSuccess: () => router.push("/liquidita/conti"),
         onError: (mutationError) => setError(mutationError.message),
       }
     );

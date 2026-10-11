@@ -29,6 +29,6 @@ describe("alertEmailContent", () => {
     expect(subject).toContain("Vanguard FTSE All-World scende sotto");
     expect(text).toContain("2026-09-30");
     expect(text).toContain("https://app.example/investimenti/titoli/abc");
-    expect(text).toContain("non è una raccomandazione");
+    expect(text).toContain("Questa non è una raccomandazione");
   });
 });

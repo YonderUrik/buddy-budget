@@ -50,8 +50,8 @@ export function CashflowTrendChart({ monthlySeries, currency }: CashflowTrendCha
                 />
               }
             />
-            <Bar dataKey="entrate" fill="var(--color-entrate)" radius={4} />
-            <Bar dataKey="uscite" fill="var(--color-uscite)" radius={4} />
+            <Bar isAnimationActive={false} dataKey="entrate" fill="var(--color-entrate)" radius={4} />
+            <Bar isAnimationActive={false} dataKey="uscite" fill="var(--color-uscite)" radius={4} />
           </BarChart>
         </ChartContainer>
       </CardContent>

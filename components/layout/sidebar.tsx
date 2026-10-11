@@ -26,27 +26,32 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  Landmark,
-  ArrowLeftRight,
+  Wallet,
   TrendingUp,
   Umbrella,
   CreditCard,
-  Target,
   BarChart3,
   ChevronLeft,
   ChevronRight,
   LogOut,
   Settings,
+  LifeBuoy,
+  Eye,
 } from "lucide-react";
+import { LayoutGroup, motion } from "motion/react";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-import { PrivacyToggle } from "@/components/privacy-toggle";
+import { ThemeSubmenu, type ThemeChoice } from "@/components/theme-submenu";
+import { track } from "@/lib/analytics";
+import { usePrivacy } from "@/components/privacy-provider";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
+import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { authClient } from "@/lib/auth/client";
+import { SPRING_SNAPPY } from "@/lib/motion/springs";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -66,20 +71,20 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-/** Sottovoce sotto una voce di navigazione, mostrata solo quando `count > 0` (es. "Da sistemare" sotto Movimenti). */
-export interface NavSubItem {
-  label: string;
-  href: string;
-  /** Contatore mostrato nel badge; con 0 la sottovoce non compare. */
+/** Badge con contatore accanto a una voce di navigazione (es. i movimenti da sistemare su Liquidità), mostrato solo con `count > 0`. */
+export interface NavBadge {
   count: number;
   /** Testo del badge (es. "99+"); default: `count`. */
   countLabel?: string;
-  /** Chiamata al clic sulla sottovoce (es. per tracciare l'uso). */
-  onClick?: () => void;
+  /** Descrizione per gli screen reader (es. "3 movimenti da sistemare"). */
+  ariaLabel?: string;
 }
 
 /** Etichetta del badge per le voci non ancora disponibili. */
 const COMING_SOON_LABEL = "Presto";
+
+/** Nome categorico della scelta di tema per l'evento di prodotto. */
+const THEME_EVENT_CHOICE = { light: "chiaro", dark: "scuro", system: "sistema" } as const satisfies Record<ThemeChoice, string>;
 
 /**
  * Le voci di navigazione dell'applicazione.
@@ -87,12 +92,10 @@ const COMING_SOON_LABEL = "Presto";
  */
 export const NAV_ITEMS: NavItem[] = [
   { label: "Panoramica", href: "/panoramica", icon: LayoutDashboard },
-  { label: "Conti", href: "/conti", icon: Landmark },
-  { label: "Movimenti", href: "/movimenti", icon: ArrowLeftRight },
+  { label: "Liquidità", href: "/liquidita", icon: Wallet },
   { label: "Investimenti", href: "/investimenti", icon: TrendingUp },
   { label: "Pensione", href: "/pensione", icon: Umbrella },
   { label: "Debiti", href: "/debiti", icon: CreditCard },
-  { label: "Pianifica", href: "/pianifica", icon: Target, comingSoon: true },
   { label: "Analitiche", href: "/analitiche", icon: BarChart3 },
 ];
 
@@ -110,17 +113,18 @@ function NavLink({
   item,
   collapsed,
   active = false,
-  indicator = false,
+  badge,
   onNavigate,
 }: {
   item: NavItem;
   collapsed: boolean;
   active?: boolean;
-  /** Pallino di avviso sull'icona (usato dalla sidebar compatta, dove la sottovoce non si vede). */
-  indicator?: boolean;
+  /** Badge con contatore: pallino sull'icona nella sidebar compatta, numero a destra in quella espansa. */
+  badge?: NavBadge;
   onNavigate?: () => void;
 }) {
   const Icon = item.icon;
+  const showBadge = badge !== undefined && badge.count > 0;
 
   if (item.comingSoon) {
     return (
@@ -153,14 +157,23 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cn(
-        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+        "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
         "transition-colors duration-150",
-        "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        active && "bg-sidebar-accent text-sidebar-accent-foreground",
+        "text-sidebar-foreground/70 hover:text-sidebar-accent-foreground",
+        active ? "text-sidebar-accent-foreground" : "hover:bg-sidebar-accent",
         collapsed && "justify-center px-2"
       )}
     >
-      <span className="relative flex shrink-0">
+      {/* Sfondo della voce attiva: uno solo per lista, scivola da una voce all'altra (`layoutId`). */}
+      {active ? (
+        <motion.span
+          layoutId="sidebar-active-pill"
+          transition={SPRING_SNAPPY}
+          className="absolute inset-0 rounded-lg bg-sidebar-accent"
+          aria-hidden="true"
+        />
+      ) : null}
+      <span className="relative z-10 flex shrink-0">
         <Icon
           className={cn(
             "shrink-0 transition-transform duration-150",
@@ -169,7 +182,7 @@ function NavLink({
           )}
           aria-hidden="true"
         />
-        {indicator && collapsed && (
+        {showBadge && collapsed && (
           <span
             className="absolute -right-1 -top-1 size-2 rounded-full bg-sidebar-primary ring-2 ring-sidebar"
             aria-hidden="true"
@@ -177,31 +190,16 @@ function NavLink({
         )}
       </span>
       {!collapsed && (
-        <span className="truncate leading-none">{item.label}</span>
+        <span className="relative z-10 truncate leading-none">{item.label}</span>
       )}
-    </Link>
-  );
-}
-
-/** Sottovoce con contatore sotto una voce di navigazione. */
-function NavSubLink({ subItem, onNavigate }: { subItem: NavSubItem; onNavigate?: () => void }) {
-  return (
-    <Link
-      href={subItem.href}
-      onClick={() => {
-        subItem.onClick?.();
-        onNavigate?.();
-      }}
-      className={cn(
-        "flex items-center gap-2 rounded-lg py-1.5 pl-9 pr-3 text-[13px] font-semibold",
-        "text-sidebar-primary transition-colors duration-150 hover:bg-sidebar-accent"
+      {showBadge && !collapsed && (
+        <span
+          aria-label={badge.ariaLabel}
+          className="relative z-10 ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-xs font-bold leading-none text-sidebar-primary-foreground tabular-nums"
+        >
+          {badge.countLabel ?? badge.count}
+        </span>
       )}
-    >
-      <span className="size-1.5 shrink-0 rounded-full bg-sidebar-primary" aria-hidden="true" />
-      <span className="truncate">{subItem.label}</span>
-      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-xs font-bold leading-none text-sidebar-primary-foreground tabular-nums">
-        {subItem.countLabel ?? subItem.count}
-      </span>
     </Link>
   );
 }
@@ -252,8 +250,10 @@ interface AppSidebarProps {
   onClose?: () => void;
   /** Pagina delle impostazioni utente, raggiungibile dal menu dell'avatar. */
   settingsHref?: string;
-  /** Sottovoci con contatore, per `href` della voce padre (es. `{ "/movimenti": { label: "Da sistemare", href: "/categorizza", count: 9 } }`). */
-  subItems?: Record<string, NavSubItem>;
+  /** Pagina «Aiuto e segnalazioni», raggiungibile dal menu dell'avatar; porta con sé la pagina corrente come contesto. */
+  supportHref?: string;
+  /** Badge con contatore, per `href` della voce (es. `{ "/liquidita": { count: 9 } }`). */
+  badges?: Record<string, NavBadge>;
   /** Contenuto extra sotto le voci di navigazione (es. riepilogo del portafoglio). Legge lo stato con `useSidebarSlot`. */
   extra?: React.ReactNode;
 }
@@ -264,12 +264,17 @@ export function AppSidebar({
   activeHref,
   onClose,
   settingsHref = "/impostazioni",
-  subItems,
+  supportHref = "/aiuto",
+  badges,
   extra,
 }: AppSidebarProps) {
   const { collapsed, toggleCollapsed } = useSidebar();
+  const { hidden, toggle: toggleHidden } = usePrivacy();
   const router = useRouter();
   const pathname = usePathname();
+  const [pendingHref, startNav] = usePendingNavHref();
+  /** Una sidebar desktop e una nel menu mobile possono convivere: ognuna ha la sua pillola. */
+  const navGroupId = React.useId();
   const { data: sessionData } = authClient.useSession();
   // La sessione si legge solo sul client: finché non siamo idratati si usa il placeholder, come sul server,
   // altrimenti nome e iniziali renderizzati dal server ("Utente", "U") non combaciano con quelli del client.
@@ -287,7 +292,8 @@ export function AppSidebar({
 
   async function handleSignOut() {
     await authClient.signOut();
-    router.push("/login");
+    // Ricarica completa: svuota la cache in memoria, così il prossimo utente della scheda non vede dati altrui.
+    window.location.assign("/login");
   }
 
   // In modalità forceExpanded (drawer mobile) la sidebar è sempre espansa.
@@ -336,28 +342,32 @@ export function AppSidebar({
 
       {/* ── Navigazione ── */}
       <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
-        <ul className="flex flex-col gap-0.5" role="list">
-          {items.map((item) => {
-            const subItem = subItems?.[item.href];
-            const showSubItem = subItem !== undefined && subItem.count > 0;
-            return (
-              <li key={item.href}>
-                <NavLink
-                  item={item}
-                  collapsed={isCollapsed}
-                  active={activeHref ? activeHref === item.href : isActivePath(pathname, item.href)}
-                  indicator={showSubItem}
-                  onNavigate={onClose}
-                />
-                {showSubItem && !isCollapsed && (
-                  <div className="mt-0.5">
-                    <NavSubLink subItem={subItem} onNavigate={onClose} />
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <LayoutGroup id={navGroupId}>
+          <ul className="flex flex-col gap-0.5" role="list">
+            {items.map((item) => {
+              return (
+                <li key={item.href}>
+                  <NavLink
+                    item={item}
+                    collapsed={isCollapsed}
+                    active={
+                      pendingHref
+                        ? pendingHref === item.href
+                        : activeHref
+                          ? activeHref === item.href
+                          : isActivePath(pathname, item.href)
+                    }
+                    badge={badges?.[item.href]}
+                    onNavigate={() => {
+                      startNav(item.href);
+                      onClose?.();
+                    }}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </LayoutGroup>
         {extra ? (
           <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
         ) : null}
@@ -409,23 +419,38 @@ export function AppSidebar({
               <Settings className="mr-2 size-4" aria-hidden="true" />
               Impostazioni
             </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
+                onClose?.();
+              }}
+              className="cursor-pointer"
+            >
+              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />
+              Aiuto e segnalazioni
+            </DropdownMenuItem>
+            <DropdownMenuCheckboxItem
+              checked={hidden}
+              onCheckedChange={(checked) => {
+                toggleHidden();
+                track("amounts_hidden_toggled", { enabled: checked, source: "menu_utente" });
+              }}
+              className="cursor-pointer"
+            >
+              <Eye className="mr-2 size-4" aria-hidden="true" />
+              Nascondi gli importi
+            </DropdownMenuCheckboxItem>
+            <ThemeSubmenu
+              onChange={(choice) =>
+                track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
+              }
+            />
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
               <LogOut className="mr-2 size-4" aria-hidden="true" />
               Esci
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* Toggle tema */}
-        <div
-          className={cn(
-            "flex mb-2",
-            isCollapsed ? "flex-col items-center gap-1" : "items-center justify-between px-1"
-          )}
-        >
-          <ThemeToggle compact={isCollapsed} surface="sidebar" />
-          <PrivacyToggle />
-        </div>
 
         {/* Bottone collapse (solo desktop, non nel drawer mobile) */}
         {!forceExpanded && (

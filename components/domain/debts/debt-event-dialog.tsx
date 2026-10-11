@@ -4,9 +4,12 @@
  * Dialog per registrare un evento semplice (data + un valore): il cambio di tasso o la correzione del residuo.
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PercentIcon, SlidersHorizontalIcon } from "lucide-react";
+import { DialogActions, PanelDialogHeader } from "@/components/domain/investments/light";
+import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { parseAmount } from "@/lib/debts/add-form";
 import { todayIso } from "@/lib/debts/dates";
@@ -68,7 +71,7 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3">
+    <form onSubmit={submit} className="flex flex-col gap-5">
       <div className="grid grid-cols-2 gap-3">
         <DebtFormField label={copy.dateLabel} htmlFor={`${id}-date`}>
           <Input id={`${id}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
@@ -78,9 +81,12 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
         </DebtFormField>
       </div>
       {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
-      <Button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? "Salvo…" : copy.submit}
-      </Button>
+      <DialogActions>
+        <span />
+        <Button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? "Salvo…" : copy.submit}
+        </Button>
+      </DialogActions>
     </form>
   );
 }
@@ -89,13 +95,10 @@ export function DebtEventDialog({ debtId, kind, onOpenChange }: DebtEventDialogP
   const copy = kind ? COPY[kind] : null;
   return (
     <Dialog open={kind !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{copy?.title ?? ""}</DialogTitle>
-          {copy ? <DialogDescription>{copy.description}</DialogDescription> : null}
-        </DialogHeader>
+      <FormDialogContent>
+        <PanelDialogHeader icon={kind === "balance_correction" ? SlidersHorizontalIcon : PercentIcon} title={copy?.title ?? ""} description={copy?.description} />
         {kind ? <EventForm key={kind} debtId={debtId} kind={kind} onDone={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

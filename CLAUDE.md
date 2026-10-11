@@ -94,6 +94,17 @@ Regola decisa il 2026-10-01: una feature non è "completata" finché in produzio
 
 Un cambiamento puramente grafico o di calcolo senza nuovi esiti osservabili può dichiarare "nessun nuovo segnale" nella PR, ma va dichiarato, non omesso.
 
+### Prestazioni e animazioni (standard)
+
+Standard deciso il 2026-10-11 dopo la review delle prestazioni (`docs/decisioni/2026-10-11-prestazioni-caricamento.md`). Ogni modifica all'interfaccia tiene d'occhio peso, caricamento e movimento; la PR dichiara in una riga cosa è cambiato, oppure «nessun impatto sulle prestazioni».
+
+1. **Peso del JS**: i barrel `index.ts` che esportano grafici (Recharts) o altro codice pesante non si importano da sidebar, layout o da altre aree per usare un piccolo helper: si usa un barrel leggero (esempio: `components/domain/investments/light.ts`) o si sposta l'helper in un file a sé. Un componente pesante o poco visto (dialog, tab secondaria) si carica con `next/dynamic`.
+2. **Caricamento senza salti**: ogni schermata ha uno stato di caricamento (`loading.tsx` o segnaposto) con l'altezza vicina a quella del contenuto, e i blocchi che compaiono dopo i dati riservano lo spazio: l'obiettivo è CLS sotto 0,1. Nessun blocco che appare di colpo spostando il resto.
+3. **Dati**: si chiede solo ciò che serve (finestre di date e `compact` come per lo storico del patrimonio), la stessa informazione non si richiede due volte con intervalli diversi, e le query di dati che cambiano di rado hanno uno `staleTime`. Prima di aggiungerne uno a una query, controllare che le mutazioni la invalidino.
+4. **Rendering**: nessun calcolo pesante nel render (`useMemo`, `useDeferredValue` per i cursori, un Worker se serve); i grafici non hanno animazione d'ingresso (`isAnimationActive={false}`), si anima solo ciò che comunica un cambiamento.
+5. **Animazioni**: durata breve (sotto 300 ms per le transizioni, sotto 600 ms per i numeri), mai alla prima comparsa dei dati o su liste lunghe; si usano `components/motion/` e `lib/motion/springs`, si rispetta `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`), nessun effetto di luce. Numeri animati solo per le cifre-chiave che cambiano per una scelta dell'utente o per un dato nuovo.
+6. **Come si verifica**: build di produzione con i dati demo (`pnpm demo:seed`), Chromium con rete lenta e CPU rallentata; si guardano JS caricato, tempo alla prima chiamata dati e CLS prima e dopo, e i numeri vanno nella PR.
+
 ## Stack
 
 - Next.js (App Router) + TypeScript
@@ -131,7 +142,7 @@ docker build -t buddy-budget:local .   # immagine dell'app (target migrator: --t
 ```
 app/                         route App Router
   (auth)/                    login, onboarding (senza AppShell)
-  (app)/                     schermate con AppShell: panoramica, conti, movimenti (elenco/analisi/categorie/regole),
+  (app)/                     schermate con AppShell: panoramica, liquidita (movimenti/analisi/conti/categorie/regole),
                              categorizza, investimenti (6 schede + titoli), debiti, impostazioni, style-guide
   api/                       route handler (tutti con withRoute), cron in api/cron/*
   globals.css                design token (CSS variables) e theme Tailwind
@@ -169,6 +180,7 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 ## Convenzioni componenti
 
 - I componenti shadcn si aggiungono con `pnpm dlx shadcn@latest add <nome>` e vivono in `components/ui/`; non modificarli a mano se non per adattarli ai token del tema.
+- **Su mobile popover, dialog e conferme sono fogli dal basso** (default di `PopoverContent`/`DialogContent`/`AlertDialogContent`, trascina giù per chiudere): non servono classi `max-sm:` nei chiamanti. Form lunghi: `FormDialogContent` (tutto schermo). Pannelli inline sotto una riga: `InlineOrSheet`, che sul telefono li apre in un foglio.
 - I componenti compositi specifici del dominio (es. `StatCard`) vivono in `components/` e vanno costruiti componendo le primitive di `components/ui/`.
 - Tutte le stringhe visibili all'utente sono in italiano per ora (l'app è multi-lingua per design, ma l'infrastruttura di i18n non è ancora implementata — vedi "Stack" e log delle decisioni). Quando si introdurrà l'i18n, queste stringhe andranno estratte in chiavi di traduzione invece di restare hardcoded nei componenti.
 
@@ -185,6 +197,28 @@ Quando si implementa una schermata pianificata (oggi: Pianifica, Analitiche):
 Una schermata o feature nuova non è "completata" finché il catalogo non è aggiornato, insieme a "Stato del progetto" qui sotto.
 
 ## Stato del progetto
+
+**Scheda titolo e indicatori fondamentali (2026-10-11)**: pagina del titolo ripensata (pagina unica): numeri in breve, grafico con i tuoi acquisti, rischio, e per le azioni multipli, valori per azione, conti, margini, ROE e debiti calcolati dai bilanci Yahoo con la forbice storica e il calcolo sotto ogni numero; per gli ETF composizione, settori, paniere e costo del TER. Voce in `docs/decisioni/2026-10-11-scheda-titolo-e-indicatori.md`. PR in bozza sul branch `claude/project-thread-rcuszy` (e nel repo infra per il pannello). Rimandati: SEC per le USA, fonti a pagamento, trimestrali, aree degli ETF.
+**Fogli dal basso su mobile (2026-10-11)**: sul telefono popover, dialog e conferme si aprono come foglio dal basso (trascina giù per chiudere), Dividi e Modifica dei movimenti compresi; desktop invariato, form lunghi a tutto schermo; voce in `docs/decisioni/2026-10-11-fogli-dal-basso-su-mobile.md`. PR sul branch `claude/project-thread-m82qpp`. Rimandati: menu a tendina e select.
+**Account inattivi (2026-10-11)**: cron giornaliero `inactive-accounts` che avvisa via email a 83 giorni senza accessi ed elimina a 90 chi non è rientrato; parte in dry-run (`INACTIVITY_CLEANUP_MODE=execute` a mano dopo il dry-run), migration 0029, Privacy/Termini aggiornati con `LEGAL_VERSION` 2026-10-12 (nuova accettazione e revisione di un professionista da fare); voce in `docs/decisioni/2026-10-11-account-inattivi.md`. PR in bozza sul branch `claude/project-thread-ek292d` (e nel repo infra). Rimandati: cron nel compose, email non verificate vecchie, dati orfani, eccezione per gli abbonamenti.
+**Self-hosting (2026-10-10)**: `docker-compose.yml` (app, Postgres, Redis, migrate, cron) e guida `docs/self-hosting.md`; Google, Resend e GoCardless ora facoltativi; immagini multi-arch su ghcr.io dietro la variabile di repo `SELFHOST_IMAGES`; voce in `docs/decisioni/2026-10-10-self-hosting-docker.md`. PR sul branch `claude/project-thread-a8nxln`. Rimandati: firma cosign, mirror Docker Hub, worker CSV AI nel compose.
+**Primi passi (2026-10-10)**: checklist «Primi passi» in Panoramica che si compila dai dati veri, «Esplora con dati d'esempio» azzerabile (conti `is_demo`, mai mischiati: i dati veri sono bloccati finché la demo è attiva) e stati vuoti con azione in Movimenti, Conti, Investimenti e Debiti; voce in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0026. PR in bozza sul branch `claude/project-thread-ec9i5w`. Rimandati: riaprire la checklist dalla UI, demo con investimenti, guardia su import personalizzati.
+
+**Email di riepilogo e avvisi (2026-10-10)**: riepilogo periodico (mensile di default o settimanale), avvisi sul budget (80% e 100%) e sulle rate in scadenza, tutti opt-in da Impostazioni → Notifiche, con disiscrizione a un clic (token firmato, `List-Unsubscribe` one-click) in ogni email non di servizio; cron `/api/cron/notifications` in dry-run finché non si imposta `NOTIFICATIONS_MODE=execute`; voce in `docs/decisioni/2026-10-10-email-riepilogo-e-avvisi.md`. PR in bozza sul branch `claude/project-thread-eto0ft` (migration 0025, da ricontrollare al merge). Rimandati: avvisi su investimenti e patrimonio, orario a scelta, prova su client reali.
+
+**Abbonamenti (2026-10-10)**: scheda «Abbonamenti» in Liquidità (`/liquidita/abbonamenti`): addebiti ricorrenti rilevati dai movimenti (cadenza, importo, giorno), da confermare o scartare, con totale al mese e all'anno, prossimo addebito, aumenti di prezzo e abbonamenti non più addebitati; aggiunta manuale; scelte salvate (migration 0027). Voce in `docs/decisioni/2026-10-10-abbonamenti.md`. PR in bozza sul branch `claude/project-thread-5fqfo3`. Rimandati: legame con le rate dei Debiti, scadenze in sidebar, avvisi email/push, pannello Grafana.
+
+**Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.
+
+**Landing «Il foglio» (2026-10-11)**: home riprogettata come foglio di calcolo che diventa l'app (direzione C scelta da Daniele), loghi dei broker supportati, scheda tecnica a schede e catalogo in tabella; stile allineato all'app (stessi font, raggi e pulsanti); voce in `docs/decisioni/2026-10-11-landing-il-foglio.md`. PR in bozza sul branch `claude/project-thread-1pbv5w`. Rimandati: pagine interne nello stesso stile, immagine Open Graph.
+
+**Landing nuova (2026-10-09)**: home ristrutturata dopo l'analisi dei competitor (fatti in apertura, tre passi, regole italiane con fonti, quattro gruppi, per chi è, confronto) e `/llms.txt` + crawler AI ammessi; voce in `docs/decisioni/2026-10-09-landing-nuova-struttura.md`. PR in bozza sul branch `claude/project-thread-kflwwq`. Rimandati: pagine per domanda, `/sicurezza`, confronti, glossario, Lighthouse.
+
+**Sidebar (2026-10-09)**: moduli «Prossime scadenze» e «Obiettivo FIRE» accanto al riepilogo, barra in basso su mobile e sezione Impostazioni → «Barra laterale» per accendere/spegnere tutto (per dispositivo, localStorage); voce in `docs/decisioni/2026-10-09-sidebar-moduli-e-barra-mobile.md`. PR in bozza sul branch `claude/project-thread-mwh38f`. Rimandati: moduli riordinabili, preferenze sull'account.
+
+**Analitiche (2026-10-09)**: dalla proposta C scelta da Daniele, cursori «e se…» (risparmio, spesa, rendimento, prelievo) con anno del traguardo e quattro schede-risposta nello stile della Panoramica; voce in `docs/decisioni/2026-10-09-analitiche-cursori.md`. PR in bozza sul branch `claude/project-thread-qx2vob`. Rimandati: restyling dei dettagli «Per esperti», Rischio come risposta propria.
+
+**Liquidità (2026-10-08)**: Conti e Movimenti unificati in `/liquidita` (Movimenti · Analisi · Conti · Categorie e regole) con lo stile della Panoramica come standard, Dividi con scorciatoie e categoria cambiabile dall'icona; voce in `docs/decisioni/2026-10-08-liquidita.md`. PR in bozza sul branch `claude/project-thread-6pd4uu`. Rimandati: redesign di Categorie e Regole (oggi riusano board e gestore esistenti) e dei moduli di modifica.
 
 **Impatto costi e imposte (2026-10-06)**: due interruttori indipendenti accanto al grafico e card di dettaglio nel Portafoglio; imposte dal medesimo calcolo della scheda Tasse, con regime, aliquote e compensazioni; i toggle «Reinvesti costi» e «Reinvesti imposte», inizialmente spenti, aggiungono al valore reale i risparmi reinvestiti dal giorno di addebito al rendimento giornaliero osservato, aggiornando totale e grafico. Perimetro: oneri registrati sulle operazioni e imposte sulle vendite stimate dalla scheda Tasse; oneri autonomi del conto, TER e bollo esclusi. PR #169; branch `codex/portfolio-cost-impact`.
 
@@ -203,7 +237,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 ### Fatto (tutto su `main`, in produzione su k3s)
 
 - **Base**: autenticazione (better-auth, magic link + Google), onboarding, Conti (manuali + Open Banking GoCardless con sync manuale e cron), Panoramica con patrimonio netto per classe di asset, login con pannello "mosaico", brand identity e PWA installabile, pulsante "nascondi importi", pagina Impostazioni (profilo, sessioni, export ZIP, reset, disattivazione con 30 giorni, eliminazione), etichetta versione in sidebar, sidebar con riepilogo finanziario.
-- **Movimenti** (`/movimenti`: Elenco · Analisi · Categorie · Regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
+- **Movimenti** (`/liquidita`: Movimenti · Analisi · Conti · Categorie e regole): transazioni, entrate/uscite, "Dividi", note, budget per categoria, gruppi di spesa (Dovute/Volute/Te futuro/Saltuarie), categorizzazione automatica a regole e pagina `/categorizza`, import e sync come job in background con avanzamento.
 - **Investimenti** (Fasi 1-4 e 6 + import CSV): fonti di prezzo gratuite con riserva automatica, operazioni, rendimenti e benchmark, rischio e diversificazione, fiscalità italiana, Proventi, Titoli con watchlist e avvisi di prezzo. Cron `market-prices` 3 volte al giorno.
 - **Debiti**: Fase 1 (motore e finanziamenti, PR #36), Fase 2 (estinzioni anticipate, PR #38). Fasi 3 e 4 implementate nella PR #43 (vedi "In corso").
 - **Infrastruttura**: migrazione Vercel+Neon → VPS k3s completata (Fasi 0-7, cutover il 2026-09-27). Osservabilità Fasi A e B completate (log JSON, metriche, 4 dashboard, 12 alert con runbook, Slack `#bb-allarmi`/`#bb-avvisi`/`#bb-deploy`).
@@ -230,7 +264,7 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 
 ### Rimandato consapevolmente
 
-- **Investimenti**: OpenFIGI per ISIN→ticker, più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
+- **Investimenti**: più portafogli per utente, ritenute estere e quadri della dichiarazione, notifica push PWA per gli avvisi, preset di import per un broker italiano (serve un export d'esempio), undo dell'import, screener (escluso), correzione dello storico attorno a uno split, aree degli ETF dai file degli emittenti, ribilanciamento con vendite, Sortino/VaR.
 - **Debiti**: aggiornamento automatico Euribor, valute estere, tasso misto/cap, debiti informali, push sulle scadenze, quota capitale/interessi nel Cash flow, modifica dei dati di un debito dalla UI, ordinamento dei debiti.
 - **Impostazioni**: cambio email, scollegare Google, notifiche email, import dell'export.
 - **Sidebar**: popover al passaggio del mouse sul chip compresso, sezione "Prossimi eventi", sezioni riordinabili, eventuale sidebar a gruppi (alternativa B).
@@ -253,7 +287,6 @@ Aggiornato al 2026-10-01. Il dettaglio storico di ogni lavoro è in [`docs/decis
 - Il matching per similarità nel wizard "Categorizza automaticamente" non scarta le parole generiche (es. "pagamento pos"); ogni suggerimento resta comunque confermato a mano.
 - Nel PATCH di una transazione che cambia direzione via `categoryId` senza inviare `excludedAmount`, il valore salvato per la vecchia direzione può far rifiutare l'aggiornamento (fail-safe, nessuna corruzione).
 - `resolveDbSsl` può lanciare su URL Postgres multi-host; lo stage `migrator` del Dockerfile non forza TLS; il cron GoCardless non ha un budget di tempo dentro `maxDuration`.
-- `InvestmentsTabs` ha ancora una copia propria del componente schede (`SectionTabs` è quello condiviso): da unificare.
 - La maschera di "nascondi importi" copre solo ciò che passa da `formatCurrency` (restano in chiaro quantità, percentuali e alcuni formatter locali).
 - better-auth scrive i propri errori interni su console, fuori dal nostro `logger`: da rivalutare guardando i log in Loki.
 
@@ -427,3 +460,13 @@ rtk init --global       # Add RTK to ~/.claude/CLAUDE.md
 
 Overall average: **60-90% token reduction** on common development operations.
 <!-- /rtk-instructions -->
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

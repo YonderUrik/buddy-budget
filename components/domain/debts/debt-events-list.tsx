@@ -28,9 +28,9 @@ export function DebtEventsList({ events, currency, onDelete }: DebtEventsListPro
   if (events.length === 0) return <p className="text-sm text-muted-foreground">Ancora nessun evento: segna una rata pagata o registra un cambio.</p>;
   const ordered = [...events].sort((a, b) => b.date.localeCompare(a.date));
   return (
-    <ul className="divide-y">
+    <ul>
       {ordered.map((event) => (
-        <li key={event.id} className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0">
+        <li key={event.id} className="flex items-center justify-between gap-3 border-b py-2.5 last:border-b-0">
           <div className="min-w-0">
             <p className="truncate text-sm text-foreground">{describeEvent(event, currency)}</p>
             <p className="text-xs text-muted-foreground">{formatDateWithYear(event.date)}</p>

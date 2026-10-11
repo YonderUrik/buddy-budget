@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
+import { categorizationSuggestions } from "@/lib/db/schema/categorization-suggestions";
 import { transactions } from "@/lib/db/schema/transactions";
 import { computeSuggestions, groupByMerchant, type SuggestTransaction } from "@/lib/categorization/suggest";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -70,7 +71,30 @@ async function handleGet(request: NextRequest) {
     })),
   });
 
-  return Response.json({ groups: groupByMerchant(uncategorized, suggestions) });
+  const groups = groupByMerchant(uncategorized, suggestions);
+
+  // Proposte dell'assistente già calcolate: riempiono solo i gruppi che regole e storico non coprono.
+  const stored = await db
+    .select()
+    .from(categorizationSuggestions)
+    .where(and(eq(categorizationSuggestions.userId, userId), eq(categorizationSuggestions.status, "in_attesa")));
+  const storedByKey = new Map(stored.map((row) => [`${row.merchantKey}::${row.direction}`, row]));
+  for (const group of groups) {
+    if (group.suggestion) continue;
+    const row = storedByKey.get(group.groupKey);
+    if (!row) continue;
+    group.suggestion = {
+      transactionId: group.transactionIds[0],
+      merchantKey: group.merchantKey,
+      suggestedCategoryId: row.categoryId,
+      source: "assistente",
+      confidence: Number(row.confidence),
+      reason: "Proposta dall'assistente",
+      suggestedSplitPercentage: null,
+    };
+  }
+
+  return Response.json({ groups });
 }
 
 export const GET = withRoute("transactions.categorize_suggestions", handleGet);

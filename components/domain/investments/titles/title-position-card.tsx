@@ -1,9 +1,14 @@
-/** Card "La tua posizione" sul titolo: quote, prezzo medio, valore e variazione dell'ultima chiusura rispetto al prezzo medio. */
+/**
+ * Sezione "La tua posizione" sul titolo: valore e guadagno sul prezzo medio, proventi incassati, quote e prezzo medio,
+ * tutto nella valuta del titolo (senza cambi, commissioni né tasse).
+ */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BriefcaseIcon } from "lucide-react";
 import type { TitlePosition } from "@/lib/investments/title-view";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
+import { PanelSection } from "../panel-section";
 import { formatPrice } from "./title-format";
 
 const QUANTITY_FORMAT = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 6 });
@@ -15,45 +20,39 @@ export interface TitlePositionCardProps {
   action?: React.ReactNode;
 }
 
+function signClass(value: number | null): string {
+  return value === null ? "text-foreground" : value < 0 ? "text-neg" : "text-pos";
+}
+
 export function TitlePositionCard({ position, currency, action }: TitlePositionCardProps) {
+  const gain = position.gain;
+  const items: { label: string; value: React.ReactNode; className?: string }[] = [
+    { label: "Valore", value: formatCurrency(position.value, currency) },
+    {
+      label: "Guadagno sul prezzo medio",
+      value:
+        gain !== null
+          ? `${gain < 0 ? "−" : "+"}${formatCurrency(Math.abs(gain), currency)}${position.changeVsAverage !== null ? ` · ${formatSignedPct(position.changeVsAverage)}` : ""}`
+          : "—",
+      className: signClass(gain),
+    },
+    { label: "Quote", value: QUANTITY_FORMAT.format(position.quantity) },
+    { label: "Prezzo medio", value: position.averagePrice !== null ? formatPrice(position.averagePrice, currency) : "—" },
+  ];
+  if (position.incomeReceived > 0) items.splice(2, 0, { label: "Proventi incassati (lordi)", value: formatCurrency(position.incomeReceived, currency) });
   return (
-    <Card>
-      <CardHeader className="flex-row items-center justify-between gap-3">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">La tua posizione</CardTitle>
-        {action}
-      </CardHeader>
-      <CardContent>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
-          <div>
-            <dt className="text-xs text-muted-foreground">Quote</dt>
-            <dd className="text-base font-medium tabular-nums text-foreground">{QUANTITY_FORMAT.format(position.quantity)}</dd>
+    <PanelSection icon={BriefcaseIcon} title="La tua posizione" color="var(--primary)" action={action}>
+      <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
+        {items.map((item) => (
+          <div key={item.label} className="min-w-0">
+            <dt className="text-xs text-muted-foreground">{item.label}</dt>
+            <dd className={cn("font-heading text-lg font-medium tabular-nums", item.className ?? "text-foreground")}>{item.value}</dd>
           </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Prezzo medio</dt>
-            <dd className="text-base font-medium tabular-nums text-foreground">
-              {position.averagePrice !== null ? formatPrice(position.averagePrice, currency) : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Valore</dt>
-            <dd className="text-base font-medium tabular-nums text-foreground">{formatPrice(position.value, currency)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Rispetto al prezzo medio</dt>
-            <dd
-              className={cn(
-                "text-base font-medium tabular-nums",
-                position.changeVsAverage === null ? "text-foreground" : position.changeVsAverage < 0 ? "text-neg" : "text-pos"
-              )}
-            >
-              {position.changeVsAverage !== null ? formatSignedPct(position.changeVsAverage) : "—"}
-            </dd>
-          </div>
-        </dl>
-        <p className="mt-3 text-xs text-muted-foreground">
-          Valori nella valuta del titolo ({currency}), senza cambio né tasse. Il guadagno completo è nelle schede Portafoglio e Tasse.
-        </p>
-      </CardContent>
-    </Card>
+        ))}
+      </dl>
+      <p className="text-xs text-muted-foreground">
+        Valori nella valuta del titolo ({currency}), senza cambio né tasse. Il guadagno completo è nelle schede Portafoglio e Tasse.
+      </p>
+    </PanelSection>
   );
 }

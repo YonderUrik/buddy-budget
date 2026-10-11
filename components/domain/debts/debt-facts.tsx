@@ -1,5 +1,6 @@
 /** Le cifre di un finanziamento: anello di avanzamento col residuo, poi rata, tasso e TAEG, rate rimaste, fine e interessi che restano. */
 
+import { MoneyHero } from "@/components/domain/net-worth";
 import type { DebtView } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { DebtRing } from "./debt-ring";
@@ -34,11 +35,11 @@ export function DebtFacts({ debt, currency }: DebtFactsProps) {
       <div className="flex items-center gap-4">
         <DebtRing fraction={share} label={`${Math.round(share * 100)}%`} caption="restituito" />
         <div className="min-w-0">
-          <p className="font-heading text-3xl font-medium tabular-nums text-foreground">{formatCurrency(t.residual, currency, { maximumFractionDigits: 0 })}</p>
+          <MoneyHero value={t.residual} currency={currency} className="text-4xl sm:text-5xl" />
           <p className="text-sm text-muted-foreground">{t.finished ? "Estinto" : `ancora da restituire · finisce a ${formatMonthYear(t.endDate)}`}</p>
         </div>
       </div>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-4 border-t pt-4 sm:grid-cols-4">
         {facts.map((fact) => (
           <div key={fact.label}>
             <dt className="text-xs text-muted-foreground">{fact.label}</dt>

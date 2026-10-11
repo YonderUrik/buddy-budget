@@ -6,7 +6,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { cn } from "@/lib/utils"
 import { animateFromOrigin, trackDialogOrigins } from "@/lib/motion/dialog-origin"
 import { attachSheetSwipe, clickSheetClose, isSheetViewport } from "@/lib/motion/sheet"
-import { SHEET_CLASS, SheetHandle } from "@/components/ui/sheet-handle"
+import { SHEET_BACKDROP_CLASS, SHEET_CLASS, SheetHandle } from "@/components/ui/sheet-handle"
 
 trackDialogOrigins()
 
@@ -34,7 +34,8 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 isolate z-50 bg-black/40 duration-100 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
+        "fixed inset-0 isolate z-50 bg-black/40",
+        SHEET_BACKDROP_CLASS,
         className
       )}
       {...props}
@@ -48,7 +49,7 @@ type DialogMobileLayout = "sheet" | "fullscreen"
 const MOBILE_CLASS: Record<DialogMobileLayout, string> = {
   sheet: `max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:max-h-[92dvh] max-sm:overflow-y-auto max-sm:px-4 max-sm:pb-[max(1.25rem,env(safe-area-inset-bottom))] ${SHEET_CLASS}`,
   fullscreen:
-    "max-sm:inset-0 max-sm:h-dvh max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:duration-200 max-sm:data-open:slide-in-from-bottom-6! max-sm:data-open:zoom-in-100! max-sm:data-closed:slide-out-to-bottom-6! max-sm:data-closed:zoom-out-100!",
+    "max-sm:inset-0 max-sm:h-dvh max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none max-sm:duration-200 max-sm:data-open:slide-in-from-bottom-6! max-sm:data-open:zoom-in-100! max-sm:data-closed:slide-out-to-bottom-6! max-sm:data-closed:zoom-out-100! data-closed:fill-mode-forwards",
 }
 
 /**

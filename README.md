@@ -1,115 +1,159 @@
-# BuddyBudget
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/brand/logo-full-white.svg">
+  <img src="public/brand/logo-full-navy.svg" alt="BuddyBudget" width="320">
+</picture>
+
+<p>Finanza personale in un posto solo: conti e movimenti, investimenti con la fiscalità italiana, debiti, pensione e patrimonio netto nel tempo.</p>
 
 [![CI](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/YonderUrik/buddy-budget/actions/workflows/ci.yml)
 [![Ultima release](https://img.shields.io/github/v/release/YonderUrik/buddy-budget?label=release)](https://github.com/YonderUrik/buddy-budget/releases/latest)
 [![Licenza: AGPL-3.0](https://img.shields.io/badge/licenza-AGPL--3.0-blue)](LICENSE)
 [![Node.js 24](https://img.shields.io/badge/node-24-339933?logo=nodedotjs&logoColor=white)](.github/workflows/ci.yml)
 
-App di finanza personale: conti, movimenti e budget, investimenti con fiscalità italiana, debiti e pensione, in un'unica vista sul patrimonio netto. Lingua e valuta si scelgono in onboarding (oggi l'interfaccia è solo in italiano, vedi [Stato](#stato-del-progetto)).
+[Sito](https://buddybudget.io) · [Self-hosting](docs/self-hosting.md) · [Sviluppo in locale](#sviluppo-in-locale) · [Contribuire](CONTRIBUTING.md) · [English](#english)
 
-> **English:** BuddyBudget is a personal finance web app (accounts, transactions and budgets, investments with Italian tax rules, debts, pension, net worth over time). The UI and most of the documentation are in Italian. A short English summary is at the [bottom](#english-summary).
+</div>
 
-| Panoramica | Movimenti |
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="landing/public/screens/dark/panoramica-top.jpg">
+  <img src="landing/public/screens/light/panoramica-top.jpg" alt="Panoramica: patrimonio netto nel tempo, ripartito per liquidità, investimenti, previdenza e debiti">
+</picture>
+
+## Perché esiste
+
+Chi tiene i conti di solito usa tre strumenti: un'app per le spese, un foglio per gli investimenti, un altro per il mutuo. BuddyBudget li mette insieme e li collega al patrimonio netto, con le regole italiane dove contano: plus e minusvalenze, zainetto fiscale, aliquota agevolata sui titoli di Stato, bollo, tassazione del fondo pensione.
+
+- **Un solo quadro.** Liquidità, investimenti, previdenza e debiti finiscono nello stesso patrimonio netto, giorno per giorno.
+- **Calcoli che si possono controllare.** Rendimenti, imposte e piani di ammortamento vengono da funzioni pure e testate in [`lib/calc/`](lib/calc/); le stime mostrano da cosa partono.
+- **Nessuna scelta presa al posto tuo.** Una categoria si applica da sola solo se c'è una regola che hai creato o confermato; le proposte, anche quelle dell'AI, si confermano a mano.
+- **I dati restano tuoi.** Esportazione completa in ZIP, eliminazione dell'account, codice aperto e un `docker compose` per ospitarlo da te.
+
+## Funzioni
+
+| Area | Cosa trovi |
 | --- | --- |
-| ![Panoramica](landing/public/screens/light/panoramica.jpg) | ![Movimenti](landing/public/screens/light/movimenti.jpg) |
-| **Investimenti** | **Debiti** |
-| ![Investimenti](landing/public/screens/light/investimenti.jpg) | ![Debiti](landing/public/screens/light/debiti.jpg) |
+| **Panoramica** | Patrimonio netto nel tempo per classe di asset, storico ricostruito, primi passi guidati e dati d'esempio azzerabili. |
+| **Liquidità** | Conti manuali e collegati alla banca via Open Banking ([GoCardless](https://gocardless.com/bank-account-data/), sola lettura); movimenti con ricerca, filtri, «Dividi» ed esclusioni; categorie in quattro gruppi di spesa (Dovute, Volute, Te futuro, Saltuarie) con budget; categorizzazione a regole; analisi mese per mese; abbonamenti rilevati dai movimenti, con aumenti di prezzo. |
+| **Investimenti** | ETF, azioni, BTP, fondi e crypto con prezzi di fine giornata da fonti gratuite; import da Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance o CSV generico; rendimento (TWR e XIRR) contro un indice e al netto dell'inflazione; rischio e diversificazione dentro gli ETF; dividendi; stima delle imposte italiane; scheda titolo con indicatori fondamentali, watchlist e avvisi di prezzo. |
+| **Debiti** | Finanziamenti dall'origine o dalla situazione di oggi, piano di ammortamento, TAEG, estinzioni anticipate e simulazioni (rata più alta, surroga, valanga e palla di neve). |
+| **Pensione** | Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse, confronto con il TFR in azienda, proiezione. |
+| **Analitiche** | L'anno in cui potresti smettere di lavorare, con cursori «e se…» su risparmio, spesa, rendimento e prelievo; per chi vuole di più, numero FIRE al netto delle tasse, Monte Carlo e regole di prelievo. |
+| **Account** | Accesso con link via email o Google, email di riepilogo e avvisi (tutte facoltative), PWA installabile, tema chiaro e scuro, esportazione ed eliminazione dei dati. |
 
-Gli screenshot sono dell'app vera con dati di esempio (utente fittizio), nel tema chiaro; esiste anche il tema scuro (`landing/public/screens/dark/`). L'elenco completo delle schermate è in [`landing/content/screens.ts`](landing/content/screens.ts) e il modo in cui vengono generate in [`docs/landing-screens.md`](docs/landing-screens.md).
+L'elenco completo, con ciò che è in arrivo, è in [`lib/features/catalog.ts`](lib/features/catalog.ts): è la stessa fonte da cui si genera la pagina [Funzioni](https://buddybudget.io/funzioni) del sito.
 
-## Cosa fa
+> [!NOTE]
+> Stime fiscali, proiezioni e simulazioni sono a scopo informativo e non sono consulenza finanziaria o fiscale. Le regole sulla pensione sono ipotesi non ancora validate da un professionista.
 
-- **Panoramica**: patrimonio netto nel tempo, ripartito tra liquidità, investimenti, previdenza e debiti.
-- **Conti**: conti manuali e collegamento alla banca via Open Banking ([GoCardless Bank Account Data](https://bankaccountdata.gocardless.com)), con sincronizzazione periodica e manuale.
-- **Movimenti**: elenco con ricerca e filtri, categorie in quattro gruppi di spesa (Dovute, Volute, Te futuro, Saltuarie), budget per categoria, analisi e cash flow, categorizzazione a regole visibili (nessuna categoria viene applicata senza una regola esplicita).
-- **Investimenti**: ETF, azioni, BTP, fondi e crypto con prezzi di fine giornata da fonti gratuite; operazioni, import CSV; rendimento reale e confronto con un indice, rischio e diversificazione, proventi, **fiscalità italiana** (plus/minus, zainetto fiscale, titoli di Stato, bollo), titoli con watchlist e avvisi di prezzo.
-- **Debiti**: finanziamenti con piano di ammortamento, TAEG, estinzioni anticipate, simulatore (surroga, valanga, palla di neve).
-- **Pensione**: fondo pensione e TFR, rendimento reale, stima del prelievo oggi al netto delle tasse e proiezione. Le regole fiscali sono ipotesi non ancora validate da un professionista.
-- **Account**: accesso con link via email o Google, esportazione dei dati in ZIP, azzeramento ed eliminazione con 30 giorni di ripensamento, PWA installabile, tema chiaro e scuro.
+<details>
+<summary><strong>Altre schermate</strong></summary>
+<br>
 
-Le stime fiscali e finanziarie sono a scopo informativo e non costituiscono consulenza. L'elenco aggiornato (con ciò che è in arrivo) è in [`lib/features/catalog.ts`](lib/features/catalog.ts).
+| Movimenti | Investimenti |
+| --- | --- |
+| ![Movimenti: elenco delle transazioni con categorie e importi](landing/public/screens/light/movimenti.jpg) | ![Investimenti: valore del portafoglio, versato contro mercato e posizioni](landing/public/screens/light/investimenti.jpg) |
+| **Tasse** | **Debiti** |
+| ![Tasse: stima della fiscalità italiana sul portafoglio](landing/public/screens/light/tasse.jpg) | ![Debiti: prossime rate, interessi per debito e percorso per estinguerli prima](landing/public/screens/light/debiti.jpg) |
+| **Analitiche** | **Abbonamenti** |
+| ![Analitiche: l'anno del traguardo e i cursori per provare le ipotesi](landing/public/screens/light/analitiche.jpg) | ![Abbonamenti: costo mensile e annuale e prossimo addebito](landing/public/screens/light/abbonamenti.jpg) |
 
-## Stack
+Sono screenshot dell'app vera con dati d'esempio di un utente fittizio, rigenerati da uno script ([`docs/landing-screens.md`](docs/landing-screens.md)). Tutte le schermate, anche in tema scuro, sono in [`landing/public/screens/`](landing/public/screens/).
 
-- Next.js (App Router) e TypeScript, React 19
-- Tailwind CSS v4 e shadcn/ui (su `@base-ui/react`), grafici con Recharts
-- Postgres con Drizzle ORM, migration versionate in `lib/db/migrations/`
-- better-auth (magic link e Google OAuth), email transazionali con Resend
-- TanStack Query lato client; Route Handlers come API (niente Server Actions)
-- Redis per rate limiting, stato dei job in background e cache
-- Osservabilità: log JSON, metriche Prometheus (`/api/metrics`), eventi di prodotto con Umami
-- Test con Vitest; CI su GitHub Actions
+</details>
 
-## Struttura del repository
+## Provarlo
 
+### Con Docker
+
+App, Postgres, Redis e i lavori periodici partono con un solo comando:
+
+```bash
+git clone https://github.com/YonderUrik/buddy-budget.git
+cd buddy-budget
+./scripts/selfhost-init.sh   # crea .env con segreti casuali
+docker compose up -d         # poi apri http://localhost:3000
 ```
-app/            route Next.js: (auth), (app) con le schermate, api/ (route handler e cron)
-components/     ui/ (primitive), layout/ (struttura pagina), domain/ (componenti per feature)
-lib/            logica di dominio per area; calc/ contiene i motori di calcolo puri e testati
-lib/db/         schema Drizzle e migration
-landing/        sito vetrina statico (progetto Next.js separato, con propri package.json e CI)
-scripts/        seed dei dati demo e sonde
-docs/           visione, specifiche, decision log, spec e piani di ogni feature
-```
 
-I componenti sono su tre layer con dipendenze solo verso il basso (`ui` ← `layout`/`domain` ← `app`). Le regole di architettura, osservabilità e design token sono in [`CLAUDE.md`](CLAUDE.md), che è anche la guida per l'assistente di sviluppo usato nel progetto.
+Finché le immagini non sono pubblicate su ghcr.io, costruiscile dal sorgente: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
-## Avvio in locale
+Email (Resend), accesso con Google e collegamento alla banca (GoCardless) sono facoltativi: senza Resend il link di accesso compare nei log. La guida [`docs/self-hosting.md`](docs/self-hosting.md) spiega cosa funziona senza servizi esterni, come mettere l'app dietro HTTPS, come aggiornarla e come fare i backup.
+
+### Sviluppo in locale
 
 Servono Node 24, [pnpm](https://pnpm.io), Postgres e Redis.
 
 ```bash
 pnpm install
-cp .env.local.example .env.local   # poi compila i valori
+cp .env.local.example .env.local   # database, Redis, segreti di accesso e cron
 pnpm db:migrate                    # applica le migration
+pnpm demo:seed                     # facoltativo: utente fittizio con dati d'esempio
 pnpm dev                           # http://localhost:3000
 ```
 
-In `.env.local` sono obbligatorie (lo schema in [`lib/env.ts`](lib/env.ts) le valida all'avvio) le variabili di database, Redis, better-auth, Google OAuth, Resend, GoCardless e `CRON_SECRET`; per lo sviluppo bastano credenziali di sandbox o valori segnaposto se non usi quella funzione. Sono opzionali Ollama (categorizzazione assistita), le chiavi delle fonti di prezzo e le variabili di osservabilità. Ogni variabile è commentata in [`.env.local.example`](.env.local.example).
+Le variabili sono validate all'avvio da [`lib/env.ts`](lib/env.ts) e commentate una per una in [`.env.local.example`](.env.local.example). Google, Resend, GoCardless, le chiavi delle fonti di prezzo e l'osservabilità sono facoltativi.
 
-Per provare l'app con dati di esempio: `pnpm demo:seed` crea in un database vuoto un utente fittizio con conti, movimenti, investimenti e debiti.
+| Comando | Cosa fa |
+| --- | --- |
+| `pnpm lint` | ESLint |
+| `pnpm exec tsc --noEmit` | controllo dei tipi |
+| `pnpm test` | Vitest, su un database vuoto e migrato (`DATABASE_URL`) |
+| `pnpm build` | build di produzione |
+| `pnpm db:generate` | nuova migration dopo una modifica a `lib/db/schema/` |
 
-### Comandi
+Lo schema del database cambia solo con migration versionate e committate, mai a mano.
 
-```bash
-pnpm lint         # ESLint
-pnpm test         # Vitest (usa DATABASE_URL: un database vuoto e migrato)
-pnpm build        # build di produzione
-pnpm db:generate  # nuova migration dopo una modifica a lib/db/schema
+## Come è fatto
+
+| Livello | Tecnologie |
+| --- | --- |
+| **Frontend** | Next.js (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui su `@base-ui/react`, Recharts |
+| **Dati** | Postgres con Drizzle ORM; Route Handlers come API, consumate con TanStack Query |
+| **Accesso** | better-auth (magic link e Google OAuth), email con Resend |
+| **Lavori lunghi** | job in background con avanzamento su Redis; cron come endpoint `/api/cron/*` protetti da `CRON_SECRET` |
+| **Osservabilità** | log JSON senza dati personali, metriche Prometheus su `/api/metrics`, eventi di prodotto con Umami |
+| **Qualità** | Vitest, ESLint, GitHub Actions; versioni e CHANGELOG con release-please dai titoli delle PR |
+
+```
+app/          (auth) accesso e onboarding · (app) schermate · api/ route e cron
+components/   ui/ primitive · layout/ struttura · domain/ componenti per area
+lib/          dominio per area · calc/ calcoli puri e testati · db/ schema e migration
+landing/      sito vetrina statico, progetto Next.js a sé
+scripts/      dati d'esempio, screenshot, avvio del self-hosting
+docs/         decisioni, spec e piani di ogni funzione, guide
 ```
 
-Lo schema del database cambia solo tramite migration versionate (`pnpm db:generate`, poi `pnpm db:migrate`).
-
-## Self-hosting
-
-App, Postgres e Redis partono con un solo `docker compose up -d`: guida in [`docs/self-hosting.md`](docs/self-hosting.md) (avvio in 5 minuti, aggiornamento, backup, HTTPS). Email, Google e banche sono facoltativi.
-
-## Deploy
-
-L'immagine Docker si costruisce con `docker build -t buddy-budget:local .` (target `migrator` per le migration). In produzione l'app gira su un cluster k3s con GitOps (ArgoCD), gestito nel repository di infrastruttura separato `buddy-budget-infra`. Il codice non dipende da quell'infrastruttura: i cron sono endpoint `/api/cron/*` chiamati con `CRON_SECRET`.
+I componenti stanno su tre livelli con dipendenze solo verso il basso (`ui` ← `layout`/`domain` ← `app`). Regole di architettura, osservabilità e design token sono in [`CLAUDE.md`](CLAUDE.md): è anche la guida dell'assistente AI usato nello sviluppo, ma vale per chiunque contribuisca.
 
 ## Documentazione
 
-- [`docs/decisioni/`](docs/decisioni/) e [`docs/decision-log.md`](docs/decision-log.md) (archivio): perché sono state prese le decisioni, in ordine di data
-- [`docs/product-vision.md`](docs/product-vision.md) e [`docs/functional-spec.md`](docs/functional-spec.md): visione e specifica per schermata
-- [`docs/superpowers/specs/`](docs/superpowers/specs) e [`plans/`](docs/superpowers/plans): spec e piani di ogni feature
-- [`docs/landing-screens.md`](docs/landing-screens.md): come si generano gli screenshot
-- [`landing/README.md`](landing/README.md): il sito vetrina
+| Documento | Contenuto |
+| --- | --- |
+| [`docs/self-hosting.md`](docs/self-hosting.md) | installazione con Docker, HTTPS, aggiornamenti, backup |
+| [`docs/product-vision.md`](docs/product-vision.md), [`docs/functional-spec.md`](docs/functional-spec.md) | visione di prodotto e specifica per schermata |
+| [`docs/decisioni/`](docs/decisioni/) | perché si è scelto cosa, una decisione per file ([archivio precedente](docs/decision-log.md)) |
+| [`docs/superpowers/`](docs/superpowers/) | spec e piano di ogni funzione |
+| [`docs/ibkr-import.md`](docs/ibkr-import.md), [`docs/degiro-import.md`](docs/degiro-import.md), [`docs/trade-republic-import.md`](docs/trade-republic-import.md) | import dai broker |
+| [`docs/rilasci.md`](docs/rilasci.md) | versioni e rilasci |
+| [`CHANGELOG.md`](CHANGELOG.md) | cosa è cambiato in ogni versione |
 
 ## Stato del progetto
 
-Il progetto è in sviluppo attivo da una persona sola, con l'aiuto di un assistente AI per il codice. Non c'è ancora un sistema di traduzione: l'italiano è la lingua dell'interfaccia e della documentazione. Non sono implementate le schermate Pianifica e Analitiche. Lo stato aggiornato è in [`CLAUDE.md`](CLAUDE.md), sezione "Stato del progetto".
+BuddyBudget è in beta e lo sviluppa una persona sola, con l'aiuto di un assistente AI per il codice. L'interfaccia e la documentazione sono in italiano: lingua e valuta si scelgono già in onboarding, ma la traduzione non è ancora implementata. In arrivo: altre lingue e valute, notifiche push, la schermata Pianifica. Il collegamento alla banca ha posti limitati durante la beta.
 
-## Contribuire e sicurezza
+## Contribuire, sicurezza e contatti
 
-Vedi [`CONTRIBUTING.md`](CONTRIBUTING.md) e il [Codice di condotta](CODE_OF_CONDUCT.md). Stato e limiti dell'accessibilità: [`ACCESSIBILITY.md`](ACCESSIBILITY.md). Per segnalare una vulnerabilità, non aprire una issue pubblica: leggi [`SECURITY.md`](SECURITY.md).
+- **Contribuire**: leggi [`CONTRIBUTING.md`](CONTRIBUTING.md) e il [Codice di condotta](CODE_OF_CONDUCT.md); per una modifica grande apri prima una issue. Lo stato dell'accessibilità è in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
+- **Vulnerabilità**: non aprire una issue pubblica, segui [`SECURITY.md`](SECURITY.md).
+- **Aiuto e segnalazioni** sul servizio ospitato: support@buddybudget.io. **Privacy**: privacy@buddybudget.io.
 
-## English summary
+## English
 
-BuddyBudget is a personal finance app built with Next.js, Postgres (Drizzle) and Redis. It covers manual and Open Banking accounts, categorised transactions with budgets, investment tracking (returns, risk, diversification, Italian capital-gains tax estimates), debts with amortisation and simulators, pension funds, and net worth over time. The interface and most docs are currently in Italian; language and currency are chosen at onboarding but only Italian/EUR is implemented.
+BuddyBudget is a personal finance web app: manual and Open Banking accounts, categorised transactions with budgets and recurring-payment detection, investment tracking (TWR/XIRR returns, benchmarks, risk, look-through diversification, Italian capital-gains tax estimates, broker imports), debts with amortisation and payoff simulations, pension funds, FIRE projections and net worth over time. The interface and docs are in Italian for now; multi-language support is planned.
 
-To run it locally you need Node 24, pnpm, Postgres and Redis: `pnpm install`, copy `.env.local.example` to `.env.local` and fill it in (Google, Resend and GoCardless values are validated at startup), `pnpm db:migrate`, `pnpm dev`. Tax and financial figures are informational estimates, not advice.
+Self-host it with `./scripts/selfhost-init.sh && docker compose up -d` (see [`docs/self-hosting.md`](docs/self-hosting.md)), or run it for development with Node 24, pnpm, Postgres and Redis: `pnpm install`, copy `.env.local.example` to `.env.local`, `pnpm db:migrate`, `pnpm dev`. Email, Google sign-in and bank connections are optional. Tax and financial figures are informational estimates, not advice.
 
 ## Licenza
 
-[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only). In sintesi: puoi usare, studiare, modificare e ridistribuire il codice, ma se offri una versione modificata come servizio in rete devi rendere disponibile il codice sorgente agli utenti, con la stessa licenza. Resta l'obbligo di conservare le note di copyright e l'attribuzione all'autore originale indicate in [`NOTICE`](NOTICE).
+[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only). Puoi usare, studiare, modificare e ridistribuire il codice; se offri una versione modificata come servizio in rete, devi rendere disponibile il sorgente ai suoi utenti con la stessa licenza. Vanno conservate le note di copyright e l'attribuzione indicate in [`NOTICE`](NOTICE).

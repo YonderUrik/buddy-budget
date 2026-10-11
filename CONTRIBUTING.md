@@ -11,7 +11,7 @@ Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di s
 ## Flusso
 
 1. Forka il repository e crea un branch dedicato.
-2. Avvia l'ambiente seguendo il [README](README.md#avvio-in-locale).
+2. Avvia l'ambiente seguendo il [README](README.md#sviluppo-in-locale).
 3. Prima di aprire la PR: `pnpm lint`, `pnpm test`, `pnpm exec tsc --noEmit`.
 4. Una modifica allo schema richiede `pnpm db:generate` e la migration committata. Non si modifica il database a mano.
 5. Compila il modello della PR: dì cosa cambia per chi usa l'app e come l'hai verificato.

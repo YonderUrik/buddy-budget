@@ -21,6 +21,8 @@ import {
   useSendNotificationExampleMutation,
   useUpdateNotificationPreferencesMutation,
 } from "@/lib/queries/notifications";
+import { Mail } from "lucide-react";
+import { EmailPreview } from "./settings-preview";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 const FREQUENCY_LABEL: Record<DigestFrequency, string> = { settimanale: "Ogni settimana (lunedì)", mensile: "Ogni mese (primi giorni)" };
@@ -39,6 +41,8 @@ export function NotificationsSection({ email }: { email: string }) {
     <SettingsSection
       id="impostazioni-notifiche"
       title="Notifiche"
+      icon={Mail}
+      preview={<EmailPreview />}
       description={`Email di riepilogo e di avviso a ${email}. Sono facoltative e partono spente; ognuna ha il link per disattivarla. Le email di servizio (link di accesso, sicurezza, account) non si possono disattivare.`}
     >
       {isLoading ? (

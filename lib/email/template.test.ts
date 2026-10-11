@@ -43,7 +43,7 @@ describe("renderEmail: piè di pagina", () => {
     kind: "optional" as const,
     reason: "il riepilogo periodico",
     unsubscribeUrl: "https://app.example.test/disiscrizione?t=abc",
-    preferencesUrl: "https://app.example.test/impostazioni#impostazioni-notifiche",
+    preferencesUrl: "https://app.example.test/impostazioni?sezione=notifiche#impostazioni-notifiche",
   };
 
   it("di default dichiara che è un'email di servizio, senza link per disiscriversi", () => {
@@ -59,7 +59,7 @@ describe("renderEmail: piè di pagina", () => {
     expect(html).toContain("Gestisci le preferenze");
     expect(html).not.toContain(SERVICE_FOOTER_TEXT);
     expect(text).toContain("Disattiva queste email: https://app.example.test/disiscrizione?t=abc");
-    expect(text).toContain("Gestisci le preferenze: https://app.example.test/impostazioni#impostazioni-notifiche");
+    expect(text).toContain("Gestisci le preferenze: https://app.example.test/impostazioni?sezione=notifiche#impostazioni-notifiche");
   });
 
   it("mostra le righe di dettaglio in HTML e in testo, con l'HTML neutralizzato", () => {

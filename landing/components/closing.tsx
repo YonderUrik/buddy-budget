@@ -28,7 +28,7 @@ export function Closing({ content = CLOSING }: { content?: typeof CLOSING }) {
           </div>
         </Reveal>
         <footer className="end-foot">
-          <span>© BuddyBudget · creato da Daniele</span>
+          <span>© BuddyBudget</span>
           <span>Le schermate del sito usano dati di esempio inventati</span>
           {SOURCE_URL && (
             <span>

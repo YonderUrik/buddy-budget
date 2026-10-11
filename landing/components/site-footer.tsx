@@ -8,7 +8,7 @@ export function SiteFooter() {
   return (
     <footer className="sf">
       <div className="wrap">
-        <span>© BuddyBudget · creato da Daniele</span>
+        <span>© BuddyBudget</span>
         <nav aria-label="Strumenti e guide">
           <Link href={CONTENT_PATHS.funzioni}>Funzioni</Link>
           <Link href={CONTENT_PATHS.schermate}>Schermate</Link>

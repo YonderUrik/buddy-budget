@@ -65,7 +65,8 @@ export const FEATURES: readonly Feature[] = [
   f("proventi", "Investimenti", "Dividendi", "Proventi incassati e previsti nei prossimi 12 mesi, mese per mese e per strumento, con lordo, ritenute e netto.", "live"),
   f("tasse-italiane", "Investimenti", "Tasse italiane", "Plus e minus, zaino a 4 anni, titoli di Stato, crypto e bollo.", "live"),
   f("simulatore-prima-di-vendere", "Investimenti", "Simulatore «Prima di vendere»", "Ricalcola le tasse con la vendita in più, prima di farla.", "live"),
-  f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo, che si apre dalle posizioni o con la ricerca, con grafico, watchlist e avvisi di prezzo via email.", "live"),
+  f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo, che si apre dalle posizioni o con la ricerca, con grafico dei tuoi acquisti, rischio, watchlist e avvisi di prezzo via email.", "live"),
+  f("indicatori-fondamentali", "Investimenti", "Indicatori fondamentali", "Per ogni azione P/E, P/S, P/B, ricavi e utili per azione, margini, ROE e debiti calcolati dai bilanci, con la forbice degli ultimi anni e il calcolo sotto ogni numero. Per gli ETF composizione, settori, costo del TER e titoli che hai già altrove.", "new"),
 
   f("finanziamenti-nuovi-o-in-corso", "Debiti", "Finanziamenti nuovi o in corso", "Dall'origine o con la fotografia di oggi, con piano di ammortamento.", "live", "/debiti"),
   f("calcolatore-della-variabile-mancante", "Debiti", "Calcolatore della variabile mancante", "Dai capitale, rata, numero di rate o tasso ricava quello che manca, con il TAEG.", "live"),

@@ -10,6 +10,7 @@ import {
   toUnixSeconds,
   utcDateKey,
 } from "../http";
+import { STATEMENT_YEARS, parseYahooStatements, statementTypes, type CompanyStatements, type YahooTimeseriesResponse } from "../statements";
 import type { DailyClose, PriceProvider, ProviderContext } from "../types";
 
 const CHART_URL = "https://query2.finance.yahoo.com/v8/finance/chart/";
@@ -441,20 +442,41 @@ interface YahooFundamentalsResponse {
             dividendYield?: YahooRawNumber;
             beta?: YahooRawNumber;
             totalAssets?: YahooRawNumber;
+            payoutRatio?: YahooRawNumber;
+            exDividendDate?: YahooRawNumber;
+            yield?: YahooRawNumber;
           };
           defaultKeyStatistics?: {
             priceToBook?: YahooRawNumber;
             trailingEps?: YahooRawNumber;
             beta?: YahooRawNumber;
             annualReportExpenseRatio?: YahooRawNumber;
+            enterpriseValue?: YahooRawNumber;
+            enterpriseToEbitda?: YahooRawNumber;
+            sharesOutstanding?: YahooRawNumber;
+            bookValue?: YahooRawNumber;
+            pegRatio?: YahooRawNumber;
           };
           financialData?: {
             profitMargins?: YahooRawNumber;
             returnOnEquity?: YahooRawNumber;
             revenueGrowth?: YahooRawNumber;
             debtToEquity?: YahooRawNumber;
+            revenuePerShare?: YahooRawNumber;
+            grossMargins?: YahooRawNumber;
+            operatingMargins?: YahooRawNumber;
+            returnOnAssets?: YahooRawNumber;
+            freeCashflow?: YahooRawNumber;
+            totalCash?: YahooRawNumber;
+            totalDebt?: YahooRawNumber;
+            currentRatio?: YahooRawNumber;
+            ebitda?: YahooRawNumber;
+            financialCurrency?: string;
           };
-          fundProfile?: { feesExpensesInvestment?: { annualReportExpenseRatio?: YahooRawNumber } };
+          fundProfile?: { categoryName?: string; feesExpensesInvestment?: { annualReportExpenseRatio?: YahooRawNumber } };
+          topHoldings?: {
+            equityHoldings?: { priceToEarnings?: YahooRawNumber; priceToBook?: YahooRawNumber; priceToSales?: YahooRawNumber };
+          };
         }[]
       | null;
   };
@@ -479,6 +501,48 @@ export interface YahooFundamentals {
   expenseRatio: number | null;
   /** Patrimonio gestito di un ETF o fondo. */
   totalAssets: number | null;
+  /** Ricavi per azione degli ultimi 12 mesi (valuta di bilancio). */
+  revenuePerShare: number | null;
+  grossMargin: number | null;
+  operatingMargin: number | null;
+  returnOnAssets: number | null;
+  freeCashFlow: number | null;
+  totalCash: number | null;
+  totalDebt: number | null;
+  currentRatio: number | null;
+  ebitda: number | null;
+  enterpriseValue: number | null;
+  enterpriseToEbitda: number | null;
+  sharesOutstanding: number | null;
+  /** Patrimonio netto per azione (valuta di bilancio). */
+  bookValue: number | null;
+  /** P/E diviso la crescita attesa degli utili (stime degli analisti). */
+  pegRatio: number | null;
+  /** Parte dell'utile distribuita, frazione. */
+  payoutRatio: number | null;
+  /** Prossima (o ultima) data di stacco dichiarata da Yahoo, YYYY-MM-DD. */
+  exDividendDate: string | null;
+  /** Valuta dei bilanci, se diversa da quella di quotazione. */
+  financialCurrency: string | null;
+  /** Categoria del fondo secondo Yahoo (es. "Global Large-Cap Blend Equity"). */
+  fundCategory: string | null;
+  /** Rendimento da dividendo di un fondo (cedole e dividendi distribuiti), frazione. */
+  fundYield: number | null;
+  /** Multipli medi dei titoli contenuti in un fondo. */
+  holdingsPE: number | null;
+  holdingsPB: number | null;
+  holdingsPS: number | null;
+}
+
+/**
+ * Multipli medi dei titoli di un fondo: Yahoo a volte li dà invertiti (utili/prezzo invece di prezzo/utili, es. 0,05
+ * invece di 20). Un P/E medio sotto 1 non è plausibile per un paniere di azioni, quindi in quel caso si invertono tutti.
+ */
+export function normalizeHoldingsMultiples(pe: number | null, pb: number | null, ps: number | null): { pe: number | null; pb: number | null; ps: number | null } {
+  const invert = (v: number | null) => (v !== null && v > 0 ? 1 / v : null);
+  const positive = (v: number | null) => (v !== null && v > 0 ? v : null);
+  if (pe !== null && pe > 0 && pe < 1) return { pe: invert(pe), pb: invert(pb), ps: invert(ps) };
+  return { pe: positive(pe), pb: positive(pb), ps: positive(ps) };
 }
 
 /** Converte la risposta `quoteSummary` dei moduli dei fondamentali. Null se non c'è nessun numero. */
@@ -488,6 +552,9 @@ export function parseYahooFundamentals(body: YahooFundamentalsResponse): YahooFu
   const detail = result.summaryDetail;
   const stats = result.defaultKeyStatistics;
   const financial = result.financialData;
+  const exDate = rawNumber(detail?.exDividendDate);
+  const equity = result.topHoldings?.equityHoldings;
+  const multiples = normalizeHoldingsMultiples(rawNumber(equity?.priceToEarnings), rawNumber(equity?.priceToBook), rawNumber(equity?.priceToSales));
   const values: YahooFundamentals = {
     marketCap: rawNumber(detail?.marketCap),
     trailingPE: rawNumber(detail?.trailingPE),
@@ -503,14 +570,50 @@ export function parseYahooFundamentals(body: YahooFundamentalsResponse): YahooFu
     expenseRatio:
       rawNumber(result.fundProfile?.feesExpensesInvestment?.annualReportExpenseRatio) ?? rawNumber(stats?.annualReportExpenseRatio),
     totalAssets: rawNumber(detail?.totalAssets),
+    revenuePerShare: rawNumber(financial?.revenuePerShare),
+    grossMargin: rawNumber(financial?.grossMargins),
+    operatingMargin: rawNumber(financial?.operatingMargins),
+    returnOnAssets: rawNumber(financial?.returnOnAssets),
+    freeCashFlow: rawNumber(financial?.freeCashflow),
+    totalCash: rawNumber(financial?.totalCash),
+    totalDebt: rawNumber(financial?.totalDebt),
+    currentRatio: rawNumber(financial?.currentRatio),
+    ebitda: rawNumber(financial?.ebitda),
+    enterpriseValue: rawNumber(stats?.enterpriseValue),
+    enterpriseToEbitda: rawNumber(stats?.enterpriseToEbitda),
+    sharesOutstanding: rawNumber(stats?.sharesOutstanding),
+    bookValue: rawNumber(stats?.bookValue),
+    pegRatio: rawNumber(stats?.pegRatio),
+    payoutRatio: rawNumber(detail?.payoutRatio),
+    exDividendDate: exDate !== null ? utcDateKey(exDate * 1000) : null,
+    financialCurrency: financial?.financialCurrency ?? null,
+    fundCategory: result.fundProfile?.categoryName?.trim() || null,
+    fundYield: rawNumber(detail?.yield),
+    holdingsPE: multiples.pe,
+    holdingsPB: multiples.pb,
+    holdingsPS: multiples.ps,
   };
-  return Object.values(values).some((v) => v !== null) ? values : null;
+  return Object.entries(values).some(([key, v]) => v !== null && key !== "financialCurrency") ? values : null;
 }
 
 /** Fondamentali di un simbolo Yahoo, o null se Yahoo non ne ha per quello strumento. */
 export async function fetchYahooFundamentals(symbol: string, kind: YahooProfileKind, ctx: ProviderContext): Promise<YahooFundamentals | null> {
-  const modules = kind === "company" ? "summaryDetail,defaultKeyStatistics,financialData" : "summaryDetail,defaultKeyStatistics,fundProfile";
+  const modules = kind === "company" ? "summaryDetail,defaultKeyStatistics,financialData" : "summaryDetail,defaultKeyStatistics,fundProfile,topHoldings";
   const response = await yahooGet(`${QUOTE_SUMMARY_URL}${encodeURIComponent(symbol)}?modules=${modules}`, ctx);
   if (!response) return null;
   return parseYahooFundamentals(await readJson<YahooFundamentalsResponse>("yahoo", response));
+}
+
+const TIMESERIES_URL = "https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/";
+
+/** Bilanci annuali e degli ultimi 12 mesi di un'azienda, o null se Yahoo non ne ha. */
+export async function fetchYahooStatements(symbol: string, ctx: ProviderContext, nowMs: number = Date.now()): Promise<CompanyStatements | null> {
+  const period1 = Math.floor(nowMs / 1000) - (STATEMENT_YEARS + 1) * 366 * 24 * 60 * 60;
+  const period2 = Math.floor(nowMs / 1000);
+  const url =
+    `${TIMESERIES_URL}${encodeURIComponent(symbol)}?symbol=${encodeURIComponent(symbol)}` +
+    `&type=${statementTypes().join(",")}&period1=${period1}&period2=${period2}&merge=false&padTimeSeries=false`;
+  const response = await yahooGet(url, ctx);
+  if (!response) return null;
+  return parseYahooStatements(await readJson<YahooTimeseriesResponse>("yahoo", response));
 }

@@ -1,9 +1,9 @@
 import { splitYahooSymbol } from "./symbols";
 import type { DailyClose, FxProvider, PriceProvider, ProviderId } from "./types";
-import type { YahooSearchHit } from "./providers/yahoo";
 import type { InflationProvider } from "./providers/eurostat";
 import type { RateProvider } from "./providers/estr";
-import type { FundamentalsProvider } from "./fundamentals";
+import type { CompanyStatements, FundamentalsProvider } from "./fundamentals";
+import type { YahooFundamentals, YahooSearchHit } from "./providers/yahoo";
 import type { ProfileProvider } from "./profiles";
 import type { DividendProvider } from "./dividends";
 
@@ -180,7 +180,7 @@ export const FAKE_PROFILE_PROVIDER: ProfileProvider = {
 
 /** Dividendi finti: mesi di stacco e importo per quota per simbolo base; gli altri non pagano. */
 const FAKE_DIVIDENDS: Record<string, { months: number[]; day: number; amount: number }> = {
-  ENEL: { months: [1, 7], day: 20, amount: 0.22 },
+  ENEL: { months: [1, 7], day: 20, amount: 0.75 },
   AAPL: { months: [2, 5, 8, 11], day: 10, amount: 0.25 },
   VHYL: { months: [3, 6, 9, 12], day: 18, amount: 0.45 },
 };
@@ -204,22 +204,73 @@ export const FAKE_DIVIDEND_PROVIDER: DividendProvider = {
   },
 };
 
-/** Numeri chiave finti: costi e patrimonio per gli ETF del catalogo, multipli e margini per le azioni. */
+/** Numeri chiave tutti vuoti: base dei finti, che riempiono solo ciò che serve. */
+export const EMPTY_FUNDAMENTALS: YahooFundamentals = {
+  marketCap: null, trailingPE: null, forwardPE: null, priceToBook: null, dividendYield: null, eps: null, beta: null,
+  profitMargin: null, returnOnEquity: null, revenueGrowth: null, debtToEquity: null, expenseRatio: null, totalAssets: null,
+  revenuePerShare: null, grossMargin: null, operatingMargin: null, returnOnAssets: null, freeCashFlow: null, totalCash: null,
+  totalDebt: null, currentRatio: null, ebitda: null, enterpriseValue: null, enterpriseToEbitda: null, sharesOutstanding: null,
+  bookValue: null, pegRatio: null, payoutRatio: null, exDividendDate: null, financialCurrency: null, fundCategory: null,
+  fundYield: null, holdingsPE: null, holdingsPB: null, holdingsPS: null,
+};
+
+/** Bilanci finti di un'utility italiana (in miliardi di euro, 2,9 miliardi di azioni), per ENEL. */
+function fakeUtilityStatements(): CompanyStatements {
+  const thisYear = new Date().getUTCFullYear();
+  const shares = 2.9e9;
+  const years: [number, number, number, number, number, number][] = [
+    // ricavi, utile netto, cassa operativa, investimenti, patrimonio, debiti
+    [70.4e9, 3.2e9, 10.1e9, -7.8e9, 33.1e9, 60.2e9],
+    [142.0e9, 1.7e9, 5.6e9, -7.4e9, 31.3e9, 69.8e9],
+    [95.6e9, 3.4e9, 13.0e9, -8.5e9, 30.7e9, 64.0e9],
+    [79.4e9, 7.0e9, 15.4e9, -8.2e9, 31.9e9, 61.5e9],
+  ];
+  const annual = years.map(([revenue, netIncome, ocf, capex, equity, totalDebt], i) => ({
+    end: `${thisYear - 5 + i}-12-31`,
+    values: {
+      revenue, grossProfit: revenue * 0.38, operatingIncome: revenue * 0.14, ebitda: revenue * 0.26, netIncome,
+      dilutedEps: netIncome / shares, dilutedShares: shares, interestExpense: -2.9e9, operatingCashFlow: ocf, capex,
+      freeCashFlow: ocf + capex, dividendsPaid: -4.3e9 - i * 0.2e9, equity, totalDebt, cash: 8.5e9, totalAssets: 190e9,
+      currentAssets: 48e9, currentLiabilities: 51e9, sharesOutstanding: shares,
+    },
+  }));
+  const trailing = {
+    end: `${thisYear}-06-30`,
+    values: {
+      revenue: 77.1e9, grossProfit: 29.6e9, operatingIncome: 11.5e9, ebitda: 22.4e9, netIncome: 5.1e9, dilutedEps: 5.1e9 / shares,
+      dilutedShares: shares, interestExpense: -2.8e9, operatingCashFlow: 14.4e9, capex: -8.2e9, freeCashFlow: 6.2e9,
+      dividendsPaid: -4.5e9, equity: 31.2e9, totalDebt: 60.9e9, cash: 8.9e9, totalAssets: 192e9, currentAssets: 47e9,
+      currentLiabilities: 50e9, sharesOutstanding: shares,
+    },
+  };
+  return { currency: "EUR", annual, trailing };
+}
+
+/** Numeri chiave finti: costi, patrimonio e multipli del paniere per gli ETF del catalogo, multipli e margini per le azioni. */
 export const FAKE_FUNDAMENTALS_PROVIDER: FundamentalsProvider = {
   async fetchFundamentals(symbol, kind) {
     const { base } = splitYahooSymbol(symbol);
-    const empty = {
-      marketCap: null, trailingPE: null, forwardPE: null, priceToBook: null, dividendYield: null, eps: null, beta: null,
-      profitMargin: null, returnOnEquity: null, revenueGrowth: null, debtToEquity: null, expenseRatio: null, totalAssets: null,
-    };
+    const empty = EMPTY_FUNDAMENTALS;
     if (kind === "fund") {
-      if (base === "VWCE" || base === "SWDA") return { ...empty, expenseRatio: 0.0022, totalAssets: 8.5e9, beta: 1 };
+      if (base === "VWCE" || base === "SWDA") {
+        return { ...empty, expenseRatio: 0.0022, totalAssets: 8.5e9, beta: 1, fundCategory: "Global Large-Cap Blend Equity",
+          holdingsPE: 1 / 0.0505, holdingsPB: 1 / 0.345, holdingsPS: 1 / 0.455, fundYield: 0.017 };
+      }
       return null;
     }
     if (base === "AAPL") {
       return { ...empty, marketCap: 3.1e12, trailingPE: 31.2, forwardPE: 27.5, priceToBook: 46, dividendYield: 0.0045, eps: 6.4, beta: 1.2,
         profitMargin: 0.25, returnOnEquity: 1.5, revenueGrowth: 0.06, debtToEquity: 150 };
     }
+    if (base === "ENEL") {
+      const exYear = new Date().getUTCFullYear() + 1;
+      return { ...empty, marketCap: 72.2e9, trailingPE: 14.2, forwardPE: 11.9, priceToBook: 2.3, dividendYield: 0.062, eps: 1.76, beta: 0.85,
+        profitMargin: 0.066, returnOnEquity: 0.162, revenueGrowth: -0.029, debtToEquity: 195, pegRatio: 1.8, payoutRatio: 0.88,
+        exDividendDate: `${exYear}-01-20` };
+    }
     return null;
+  },
+  async fetchStatements(symbol) {
+    return splitYahooSymbol(symbol).base === "ENEL" ? fakeUtilityStatements() : null;
   },
 };

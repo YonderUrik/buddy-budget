@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-11T11:33:50.970Z",
+  "capturedAt": "2026-10-11T19:33:38.092Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -10,174 +10,226 @@
     {
       "id": "panoramica",
       "theme": "light",
-      "route": "/panoramica"
+      "route": "/panoramica",
+      "width": 1920,
+      "height": 2250
     },
     {
       "id": "conti",
       "theme": "light",
-      "route": "/liquidita/conti"
-    },
-    {
-      "id": "movimenti",
-      "theme": "light",
-      "route": "/liquidita"
+      "route": "/liquidita/conti",
+      "width": 1920,
+      "height": 1200
     },
     {
       "id": "analisi",
       "theme": "light",
-      "route": "/liquidita/analisi"
+      "route": "/liquidita/analisi",
+      "width": 1920,
+      "height": 1769
     },
     {
       "id": "abbonamenti",
       "theme": "light",
-      "route": "/liquidita/abbonamenti"
+      "route": "/liquidita/abbonamenti",
+      "width": 1920,
+      "height": 2250
     },
     {
       "id": "categorie",
       "theme": "light",
-      "route": "/liquidita/categorie"
+      "route": "/liquidita/categorie",
+      "width": 1920,
+      "height": 1476
     },
     {
       "id": "categorizza",
       "theme": "light",
-      "route": "/categorizza"
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1200
     },
     {
       "id": "investimenti",
       "theme": "light",
-      "route": "/investimenti"
+      "route": "/investimenti",
+      "width": 1920,
+      "height": 1949
     },
     {
       "id": "performance",
       "theme": "light",
       "route": "/investimenti/performance",
-      "capturedAt": "2026-10-11",
-      "viewport": {
-        "width": 1440,
-        "height": 726
-      },
-      "scale": 1
+      "width": 1920,
+      "height": 1838
     },
     {
       "id": "diversificazione",
       "theme": "light",
-      "route": "/investimenti/diversificazione"
+      "route": "/investimenti/diversificazione",
+      "width": 1920,
+      "height": 1313
     },
     {
       "id": "tasse",
       "theme": "light",
-      "route": "/investimenti/tasse"
+      "route": "/investimenti/tasse",
+      "width": 1920,
+      "height": 1992
     },
     {
       "id": "pensione",
       "theme": "light",
-      "route": "/pensione"
+      "route": "/pensione",
+      "width": 1920,
+      "height": 1475
     },
     {
       "id": "pensione-scenari",
       "theme": "light",
-      "route": "/pensione/scenari"
-    },
-    {
-      "id": "debiti",
-      "theme": "light",
-      "route": "/debiti"
-    },
-    {
-      "id": "simulatore",
-      "theme": "light",
-      "route": "/debiti/finanziamenti"
+      "route": "/pensione/scenari",
+      "width": 1920,
+      "height": 1875
     },
     {
       "id": "analitiche",
       "theme": "light",
-      "route": "/analitiche"
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1412
     },
     {
       "id": "panoramica",
       "theme": "dark",
-      "route": "/panoramica"
+      "route": "/panoramica",
+      "width": 1920,
+      "height": 2250
     },
     {
       "id": "conti",
       "theme": "dark",
-      "route": "/liquidita/conti"
-    },
-    {
-      "id": "movimenti",
-      "theme": "dark",
-      "route": "/liquidita"
+      "route": "/liquidita/conti",
+      "width": 1920,
+      "height": 1200
     },
     {
       "id": "analisi",
       "theme": "dark",
-      "route": "/liquidita/analisi"
+      "route": "/liquidita/analisi",
+      "width": 1920,
+      "height": 1769
     },
     {
       "id": "abbonamenti",
       "theme": "dark",
-      "route": "/liquidita/abbonamenti"
+      "route": "/liquidita/abbonamenti",
+      "width": 1920,
+      "height": 2250
     },
     {
       "id": "categorie",
       "theme": "dark",
-      "route": "/liquidita/categorie"
+      "route": "/liquidita/categorie",
+      "width": 1920,
+      "height": 1476
     },
     {
       "id": "categorizza",
       "theme": "dark",
-      "route": "/categorizza"
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1200
     },
     {
       "id": "investimenti",
       "theme": "dark",
-      "route": "/investimenti"
+      "route": "/investimenti",
+      "width": 1920,
+      "height": 1949
     },
     {
       "id": "performance",
       "theme": "dark",
       "route": "/investimenti/performance",
-      "capturedAt": "2026-10-11",
-      "viewport": {
-        "width": 1440,
-        "height": 726
-      },
-      "scale": 1
+      "width": 1920,
+      "height": 1838
     },
     {
       "id": "diversificazione",
       "theme": "dark",
-      "route": "/investimenti/diversificazione"
+      "route": "/investimenti/diversificazione",
+      "width": 1920,
+      "height": 1313
     },
     {
       "id": "tasse",
       "theme": "dark",
-      "route": "/investimenti/tasse"
+      "route": "/investimenti/tasse",
+      "width": 1920,
+      "height": 1992
     },
     {
       "id": "pensione",
       "theme": "dark",
-      "route": "/pensione"
+      "route": "/pensione",
+      "width": 1920,
+      "height": 1475
     },
     {
       "id": "pensione-scenari",
       "theme": "dark",
-      "route": "/pensione/scenari"
-    },
-    {
-      "id": "debiti",
-      "theme": "dark",
-      "route": "/debiti"
-    },
-    {
-      "id": "simulatore",
-      "theme": "dark",
-      "route": "/debiti/finanziamenti"
+      "route": "/pensione/scenari",
+      "width": 1920,
+      "height": 1875
     },
     {
       "id": "analitiche",
       "theme": "dark",
-      "route": "/analitiche"
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1412
+    },
+    {
+      "id": "movimenti",
+      "theme": "light",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "debiti",
+      "theme": "light",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1647
+    },
+    {
+      "id": "simulatore",
+      "theme": "light",
+      "route": "/debiti/finanziamenti",
+      "width": 1920,
+      "height": 1500
+    },
+    {
+      "id": "movimenti",
+      "theme": "dark",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "debiti",
+      "theme": "dark",
+      "route": "/debiti",
+      "width": 1920,
+      "height": 1647
+    },
+    {
+      "id": "simulatore",
+      "theme": "dark",
+      "route": "/debiti/finanziamenti",
+      "width": 1920,
+      "height": 1500
     }
   ]
 }

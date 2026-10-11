@@ -9,7 +9,12 @@
 .gal-view { margin-top: 32px; }
 .cp .gal-cap { margin: 0 0 20px; font-size: 17px; color: var(--ink2); max-width: 60em; }
 .gal-cap b { color: var(--ink); font-family: var(--f-h); margin-right: 10px; }
+/* Sul telefono ogni area è una riga (nome a sinistra, schermate a capo a destra): tutto visibile, niente scorrimento laterale. */
 @media (max-width: 760px) {
-  .gal-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -20px; padding: 14px 20px; border-radius: 0; gap: 20px; }
-  .gal-area-b { flex-wrap: nowrap; }
+  .gal-nav { display: grid; gap: 10px; padding: 14px 16px; margin-top: 28px; }
+  .gal-area { grid-template-columns: 92px minmax(0, 1fr); align-items: baseline; gap: 8px; }
+  .gal-area + .gal-area { border-top: 1px solid var(--line); padding-top: 10px; }
+  .gal-area-t { font-size: 10.5px; letter-spacing: 0.1em; }
+  .gal-area-b { gap: 2px 4px; }
+  .gal-tab { padding: 6px 10px; font-size: 14.5px; }
 }

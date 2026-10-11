@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { APP_LINKS } from "@/content/site";
 import { SiteNav } from "./site-nav";
 import { SiteFooter } from "./site-footer";
-import { ARROW_ICON, CtaLink } from "./cta-link";
+import { CtaLink } from "./cta-link";
 import type { LandingEvents } from "@/lib/analytics";
 
 type CtaLocation = LandingEvents["cta_click"]["location"];
@@ -42,8 +42,8 @@ export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, 
                 <h2>{ctaTitle}</h2>
                 <p>{ctaText}</p>
               </div>
-              <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup">
-                Crea un account{ARROW_ICON}
+              <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup" arrow>
+                Crea un account
               </CtaLink>
             </div>
           </div>

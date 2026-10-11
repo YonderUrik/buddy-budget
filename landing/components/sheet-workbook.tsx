@@ -2,39 +2,76 @@
 
 import "./app-shot.css";
 import "./sheet-workbook.css";
-import { useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { SCREEN_THEMES, screenSrc } from "@/content/screens";
 import type { SHEET_HERO } from "@/content/sheet";
 import { track } from "@/lib/analytics";
 
 /** Lettere delle colonne del foglio, nell'ordine di `content.columns`. */
 const COLUMN_LETTERS = ["A", "B", "C", "D"] as const;
-/** Dimensioni intrinseche degli screenshot (vedi `scripts/capture-screens.mjs`). */
+/** Dimensioni intrinseche della parte alta della Panoramica (vedi `scripts/capture-screens.mjs`). */
 const SHOT_SIZE = { width: 1920, height: 1200 } as const;
 
 type View = "foglio" | "app";
 
+const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
+const subscribeReduced = (cb: () => void) => {
+  const mq = window.matchMedia(REDUCED_QUERY);
+  mq.addEventListener("change", cb);
+  return () => mq.removeEventListener("change", cb);
+};
+
+/** Quanto resta ogni vista prima del cambio automatico (ms): il foglio meno, l'app un po' di più per leggerla. */
+const AUTO_MS: Record<View, number> = { foglio: 3800, app: 5200 };
+
 /**
  * Il foglio di calcolo d'esempio (errori di formula, date vecchie, note a margine) con due schede in basso: «Foglio1»
- * e «BuddyBudget». La seconda dissolve il foglio nella Panoramica vera, con gli stessi conti. Invia `sheet_view_toggled`.
+ * e «BuddyBudget». Le due viste si alternano da sole (la barra che si riempie sotto la scheda attiva dice quando cambia),
+ * si fermano al passaggio del mouse o fuori schermo e smettono del tutto al primo clic; con «riduci movimento» non
+ * partono. Invia `sheet_view_toggled` solo per i cambi scelti dall'utente.
  */
 export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
   const [view, setView] = useState<View>("foglio");
+  const [stopped, setStopped] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  // Il giro automatico parte solo se l'utente non ha chiesto meno movimento (sul server: fermo).
+  const reduced = useSyncExternalStore(subscribeReduced, () => window.matchMedia(REDUCED_QUERY).matches, () => true);
+  const auto = !reduced && !stopped;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   const choose = (next: View) => {
+    setStopped(true);
     if (next === view) return;
     setView(next);
     track("sheet_view_toggled", { view: next });
   };
+  const running = auto && visible && !paused;
 
   return (
-    <div className={`wb cell${view === "app" ? " is-app" : ""}`}>
+    <div
+      ref={ref}
+      className={`wb cell${view === "app" ? " is-app" : ""}`}
+      onPointerEnter={() => setPaused(true)}
+      onPointerLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={() => setPaused(false)}
+    >
       <div className="wb-file">
-        <span>{content.fileName}</span>
-        <span className="wb-age">{content.fileAge}</span>
+        <span>{view === "app" ? content.appFile : content.fileName}</span>
+        <span className="wb-age">{view === "app" ? content.appAge : content.fileAge}</span>
       </div>
       <div className="wb-fx" aria-hidden="true">
         <span>{content.formulaCell}</span>
-        <code>{content.formula}</code>
+        <code className={view === "app" ? "wb-fx-ok" : undefined}>{view === "app" ? content.appFormula : content.formula}</code>
       </div>
       <div className="wb-body">
         <table className="wb-sheet" aria-label="Foglio di calcolo d'esempio, con i conti tenuti a mano">
@@ -74,13 +111,25 @@ export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
         <div className="wb-app" aria-hidden={view !== "app"}>
           {SCREEN_THEMES.map((theme) => (
             // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
-            <img key={theme} className={`shot-img shot-${theme}`} src={screenSrc("panoramica", theme)} alt={content.appAlt} width={SHOT_SIZE.width} height={SHOT_SIZE.height} loading="eager" decoding="async" />
+            <img key={theme} className={`shot-img shot-${theme}`} src={screenSrc("panoramica", theme, true)} alt={content.appAlt} width={SHOT_SIZE.width} height={SHOT_SIZE.height} loading="eager" decoding="async" />
           ))}
         </div>
       </div>
       <div className="wb-tabs" role="group" aria-label="Vista">
-        <button type="button" aria-pressed={view === "foglio"} onClick={() => choose("foglio")}>{content.sheetTab}</button>
-        <button type="button" aria-pressed={view === "app"} onClick={() => choose("app")}>{content.appTab}</button>
+        {(["foglio", "app"] as const).map((v) => (
+          <button key={v} type="button" aria-pressed={view === v} onClick={() => choose(v)}>
+            {v === "foglio" ? content.sheetTab : content.appTab}
+            {auto && view === v && (
+              // La barra si riempie nel tempo della vista; alla fine dell'animazione si passa all'altra.
+              <span
+                className="wb-progress"
+                aria-hidden="true"
+                style={{ animationDuration: `${AUTO_MS[v]}ms`, animationPlayState: running ? "running" : "paused" }}
+                onAnimationEnd={() => setView(v === "foglio" ? "app" : "foglio")}
+              />
+            )}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -138,7 +138,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
       )}
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-medium tracking-tight text-balance">
-          Accedi al tuo <mark className="rounded-sm bg-highlight px-1 text-foreground">foglio</mark>.
+          Entra in <mark className="rounded-sm bg-highlight px-1 text-foreground">BuddyBudget</mark>
         </h1>
         <p className="text-text-2">
           Nessuna password: scrivi l&apos;email e premi Invio, ti mandiamo un link. Se è la prima volta, l&apos;account

@@ -50,9 +50,9 @@ export function ReturnsChart({ series, benchmarkName }: ReturnsChartProps) {
           <YAxis tickLine={false} axisLine={false} width={44} tickFormatter={axisPct} />
           <ReferenceLine y={0} stroke="var(--border)" />
           <ChartTooltip cursor={false} content={<Tooltip benchmarkName={benchmarkName} />} />
-          <Line type="monotone" dataKey="portfolio" stroke="var(--color-portfolio)" strokeWidth={2} dot={false} />
+          <Line isAnimationActive={false} type="monotone" dataKey="portfolio" stroke="var(--color-portfolio)" strokeWidth={2} dot={false} />
           {benchmarkName ? (
-            <Line type="monotone" dataKey="benchmark" stroke="var(--color-benchmark)" strokeWidth={1.5} dot={false} connectNulls />
+            <Line isAnimationActive={false} type="monotone" dataKey="benchmark" stroke="var(--color-benchmark)" strokeWidth={1.5} dot={false} connectNulls />
           ) : null}
         </LineChart>
       </ChartContainer>

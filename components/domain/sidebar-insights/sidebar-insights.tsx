@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { formatSignedPct } from "@/components/domain/investments";
+import { formatSignedPct } from "@/components/domain/investments/light";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarSummary } from "@/lib/sidebar/types";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";

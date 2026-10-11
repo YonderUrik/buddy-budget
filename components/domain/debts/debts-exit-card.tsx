@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import { RouteIcon } from "lucide-react";
-import { PanelSection } from "@/components/domain/investments";
+import { PanelSection } from "@/components/domain/investments/light";
 import { Slider } from "@/components/ui/slider";
 import { track } from "@/lib/analytics";
 import { todayIso } from "@/lib/debts/dates";

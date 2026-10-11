@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronRightIcon, LandmarkIcon } from "lucide-react";
-import { PanelSection } from "@/components/domain/investments";
+import { PanelSection } from "@/components/domain/investments/light";
 import type { DebtView } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { formatMonthYear } from "./debts-format";

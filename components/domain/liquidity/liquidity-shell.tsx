@@ -10,7 +10,7 @@ import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReceiptTextIcon } from "lucide-react";
 import { AddTransactionForm } from "@/components/domain/expenses";
-import { PanelDialogHeader } from "@/components/domain/investments";
+import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";

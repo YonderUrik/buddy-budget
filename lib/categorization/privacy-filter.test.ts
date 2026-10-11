@@ -17,7 +17,11 @@ describe("prepareMerchantForModel", () => {
 
   it("blocca un nome di persona", () => {
     expect(prepareMerchantForModel("Mario Rossi").blocked).toBe("persona");
-    expect(prepareMerchantForModel("ROSSI MARIO TORINO IT Carta N. ***** 249 Data operazione 01/02/25").blocked).toBe("persona");
+    expect(prepareMerchantForModel("Rossi Mario Torino").blocked).toBe("persona");
+  });
+
+  it("non blocca i pagamenti con carta, anche con un nome da ditta individuale", () => {
+    expect(prepareMerchantForModel("ROSSI MARIO TORINO IT Carta N. ***** 249 Data operazione 01/02/25").blocked).toBeNull();
   });
 
   it("non blocca un'attività con segni di attività", () => {

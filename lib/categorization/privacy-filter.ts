@@ -33,14 +33,17 @@ function cutBankBoilerplate(raw: string): string {
  * Prepara un movimento per un servizio esterno: toglie il testo di contorno della banca e blocca ciò che non
  * è un esercente riconoscibile. Il filtro è volutamente prudente: due-quattro parole fatte solo di lettere e
  * senza alcun segno di attività sono trattate come una persona (o una ditta individuale) e restano da
- * categorizzare a mano; meglio qualche esercente in più a mano che un nome di privato verso terzi.
+ * categorizzare a mano; meglio qualche esercente in più a mano che un nome di privato verso terzi. I pagamenti
+ * con carta (testo «Carta N.») sono sempre commerciali: il nome, anche se di una ditta individuale, è quello
+ * pubblico dell'attività, e il controllo sulle persone vale solo per il resto (bonifici, giri, accrediti).
  */
 export function prepareMerchantForModel(rawDescription: string): PreparedMerchant {
   const text = cutBankBoilerplate(rawDescription);
+  const isCardPayment = /\bCarta\s+N\b/i.test(rawDescription);
   const { name, source } = extractMerchantName({ rawText: text });
 
   if (NON_MERCHANT.test(text)) return { name, blocked: "operazione" };
-  if (source === "alias") return { name, blocked: null };
+  if (source === "alias" || isCardPayment) return { name, blocked: null };
 
   const words = name.split(/\s+/).filter((word) => word.length > 0);
   const onlyLetters = words.every((word) => /^[A-Za-zÀ-ÿ'.]+$/.test(word));

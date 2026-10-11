@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.57.0](https://github.com/YonderUrik/buddy-budget/compare/v0.56.0...v0.57.0) (2026-10-11)
+
+
+### Novità
+
+* scala a fasce colorate nella scheda «Quanto rischia» ([#308](https://github.com/YonderUrik/buddy-budget/issues/308)) ([e036718](https://github.com/YonderUrik/buddy-budget/commit/e036718dffc437c872cd64d9390e368c499d2dbc))
+
+
+### Refactoring
+
+* testi dell'app più brevi e meno artificiosi ([#309](https://github.com/YonderUrik/buddy-budget/issues/309)) ([7d2204c](https://github.com/YonderUrik/buddy-budget/commit/7d2204c9abef78f47c166fc24c1faa77f7b8af61))
+
 ## [0.56.0](https://github.com/YonderUrik/buddy-budget/compare/v0.55.0...v0.56.0) (2026-10-11)
 
 

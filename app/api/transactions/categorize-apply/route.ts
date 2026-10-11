@@ -6,8 +6,9 @@ import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
 import { isDirectionCompatible } from "@/lib/categorization/match-rule";
+import { recordSuggestionDecisions } from "@/lib/categorization/ai/suggest-for-user";
 import { applyCategorizationSchema } from "@/lib/validation/categorization-rules";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /**
  * POST /api/transactions/categorize-apply — applica in blocco le scelte fatte nella pagina di
@@ -114,6 +115,17 @@ async function handlePost(request: NextRequest) {
       if (rule && rule.createdAt.getTime() === rule.updatedAt.getTime()) rulesCreated += 1;
     }
   });
+
+  const decisions = parsed.data.groups.map((group) => {
+    const firstTransaction = transactionById.get(group.transactionIds[0])!;
+    return {
+      merchantKey: group.merchantKey,
+      direction: (Number(firstTransaction.amount) > 0 ? "entrata" : "uscita") as "entrata" | "uscita",
+      categoryId: group.categoryId,
+    };
+  });
+  const { confirmed, corrected } = await recordSuggestionDecisions(userId, decisions);
+  if (confirmed + corrected > 0) requestLogger().info("categorization.ai.decided", { confirmed, corrected });
 
   return Response.json({ applied, rulesCreated });
 }

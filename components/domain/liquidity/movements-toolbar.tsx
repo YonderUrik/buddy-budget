@@ -2,7 +2,9 @@
 
 /** Strumenti sopra l'elenco: ricerca, tipo (tutti/uscite/entrate), "Da sistemare" e il filtro di categoria attivo. */
 
-import { SearchIcon, XIcon } from "lucide-react";
+import Link from "next/link";
+import { SearchIcon, SparklesIcon, XIcon } from "lucide-react";
+import { track } from "@/lib/analytics";
 import { SegmentedControl } from "@/components/domain/shared";
 import type { TransactionDirection } from "@/lib/calc/expenses";
 import { cn } from "@/lib/utils";
@@ -50,6 +52,16 @@ export function MovementsToolbar(props: MovementsToolbarProps) {
         >
           Da sistemare · {props.toFix}
         </button>
+      )}
+      {props.toFix > 0 && (
+        <Link
+          href="/categorizza"
+          onClick={() => track("categorize_ai_link_clicked", { from: "movimenti" })}
+          className="flex min-h-11 items-center gap-1.5 rounded-xl border-[1.5px] border-primary/30 bg-primary/10 px-3.5 text-sm font-semibold text-primary hover:bg-primary/15"
+        >
+          <SparklesIcon className="size-4" aria-hidden="true" />
+          Categorizza con l&apos;AI
+        </Link>
       )}
       {props.categoryName && (
         <button type="button" onClick={props.onClearCategory} className="flex min-h-11 items-center gap-1.5 rounded-xl bg-primary/10 px-3.5 text-sm font-semibold text-primary">

@@ -25,6 +25,8 @@ export const authUser = pgTable("auth_user", {
   startChecklistDismissedAt: timestamp("start_checklist_dismissed_at", { withTimezone: true }),
   /** Quando la checklist «Primi passi» è risultata completa per la prima volta (serve a registrarlo una sola volta). */
   startChecklistCompletedAt: timestamp("start_checklist_completed_at", { withTimezone: true }),
+  /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
+  aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -49,3 +49,40 @@ export function useSendNotificationExampleMutation() {
     },
   });
 }
+
+const AI_CATEGORIZATION_KEY = ["ai-categorization-consent"] as const;
+
+/** Stato del consenso alle proposte automatiche di categoria. */
+export interface AiCategorizationState {
+  enabled: boolean;
+  available: boolean;
+}
+
+/** Legge il consenso alle proposte dell'assistente. */
+export function useAiCategorizationQuery() {
+  return useQuery({
+    queryKey: AI_CATEGORIZATION_KEY,
+    queryFn: async () => {
+      const response = await fetch("/api/user/ai-categorization");
+      if (!response.ok) throw await failure(response, "Impossibile caricare l'impostazione");
+      return (await response.json()) as AiCategorizationState;
+    },
+  });
+}
+
+/** Attiva o revoca il consenso alle proposte dell'assistente. */
+export function useUpdateAiCategorizationMutation() {
+  const queryClient = useQueryClient();
+  return useMutation<AiCategorizationState, Error, boolean>({
+    mutationFn: async (enabled) => {
+      const response = await fetch("/api/user/ai-categorization", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!response.ok) throw await failure(response, "Impossibile salvare l'impostazione");
+      return (await response.json()) as AiCategorizationState;
+    },
+    onSuccess: (state) => queryClient.setQueryData(AI_CATEGORIZATION_KEY, state),
+  });
+}

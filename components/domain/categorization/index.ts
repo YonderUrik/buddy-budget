@@ -15,3 +15,8 @@ export { RuleRow } from "./rule-row";
 export type { RuleRowProps } from "./rule-row";
 export { AddRuleForm } from "./add-rule-form";
 export type { AddRuleFormProps } from "./add-rule-form";
+export { CategorizeSwipeDeck } from "./swipe-deck";
+export type { CategorizeSwipeDeckProps } from "./swipe-deck";
+export { CategorizeListView } from "./categorize-list-view";
+export { AiSuggestBanner } from "./ai-suggest-banner";
+export type { AiSuggestBannerProps } from "./ai-suggest-banner";

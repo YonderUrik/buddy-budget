@@ -10,6 +10,8 @@ const JEV_TIMEOUT_MS = 30_000;
 export interface JevCategory {
   name: string;
   type: CategoryType;
+  /** Cosa rientra nella categoria, in poche parole: passata a Jev come guida dell'opzione. */
+  description?: string;
 }
 
 export interface JevMerchant {
@@ -54,8 +56,10 @@ export function categoriesFor(merchant: JevMerchant, categories: JevCategory[]):
 export function buildCategorizationRequest(input: JevRequestInput) {
   const questions: Record<string, unknown> = {};
   input.merchants.forEach((merchant, index) => {
-    const criteria: Record<string, null> = {};
-    for (const category of categoriesFor(merchant, input.categories)) criteria[category.name] = null;
+    const criteria: Record<string, string | null> = {};
+    for (const category of categoriesFor(merchant, input.categories)) {
+      criteria[category.name] = category.description?.trim() || null;
+    }
     questions[`m${index}`] = {
       type: "choice",
       instructions: `In quale categoria di spesa o entrata rientra l'esercente con id "${merchant.id}" in state.merchants? Usa gli esempi dell'utente come riferimento per il suo modo di classificare.`,

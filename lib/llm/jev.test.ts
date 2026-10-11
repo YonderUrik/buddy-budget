@@ -21,6 +21,15 @@ describe("buildCategorizationRequest", () => {
     expect(Object.keys(body.questions.m1.criteria)).toEqual(["Stipendio"]);
   });
 
+  it("passa la descrizione della categoria come guida dell'opzione", () => {
+    const body = buildCategorizationRequest({
+      ...input,
+      categories: [{ name: "Spesa", type: "voluta", description: "Supermercati e alimentari" }, ...input.categories.slice(1)],
+    }) as { questions: Record<string, { criteria: Record<string, string | null> }> };
+    expect(body.questions.m0.criteria.Spesa).toBe("Supermercati e alimentari");
+    expect(body.questions.m0.criteria.Affitto).toBeNull();
+  });
+
   it("non manda importi né identificativi e pretende ZDR", () => {
     const body = buildCategorizationRequest(input);
     expect(body.provider).toEqual({ zdr: true, data_collection: "deny" });

@@ -14,6 +14,7 @@ import {
 } from "@/lib/calc/expenses";
 import { DIGEST_MONTHLY_MAX_DAY, DIGEST_WEEKLY_WEEKDAYS, type DigestFrequency } from "./constants";
 import { romeDate, romeReferenceDate } from "./dates";
+import type { InvestmentDigest } from "./investments-digest";
 
 const TOP_CATEGORIES = 3;
 const PERIOD_BY_FREQUENCY: Record<DigestFrequency, ExpensePeriod> = { settimanale: "settimana", mensile: "mese" };
@@ -51,12 +52,21 @@ export function digestWindowStartIso(frequency: DigestFrequency, now: Date): str
   return toIso(getPreviousPeriodRange(period.period, period.referenceDate).from);
 }
 
+/** Primo e ultimo giorno (ISO) del periodo del riepilogo: servono per ritagliare il portafoglio sullo stesso periodo. */
+export function digestRange(frequency: DigestFrequency, now: Date): { from: string; to: string } {
+  const period = digestPeriod(frequency, now);
+  const range = getPeriodRange(period.period, period.referenceDate);
+  return { from: toIso(range.from), to: toIso(range.to) };
+}
+
 export interface DigestInput {
   transactions: Transaction[];
   categories: Category[];
   budgets: Budget[];
   frequency: DigestFrequency;
   now: Date;
+  /** Portafoglio nel periodo, già calcolato (`buildInvestmentDigest`); null se non ci sono investimenti. */
+  investments?: InvestmentDigest | null;
 }
 
 export interface DigestData {
@@ -67,12 +77,18 @@ export interface DigestData {
   topCategories: { name: string; amount: number }[];
   /** null se l'utente non ha budget; `over` = categorie con budget che hanno superato il limite nel periodo. */
   budget: { total: number; over: number } | null;
-  /** Numero di movimenti nel periodo: con zero l'email non parte. */
+  /** Numero di movimenti nel periodo. */
   movements: number;
+  investments: InvestmentDigest | null;
+}
+
+/** True se il riepilogo non avrebbe niente da dire (nessun movimento e nessun investimento): in quel caso non parte. */
+export function isDigestEmpty(data: DigestData): boolean {
+  return data.movements === 0 && data.investments === null;
 }
 
 /** Cifre del riepilogo, calcolate con gli stessi motori delle schermate (`lib/calc/expenses`): nessun numero nuovo. */
-export function buildDigest({ transactions, categories, budgets, frequency, now }: DigestInput): DigestData {
+export function buildDigest({ transactions, categories, budgets, frequency, now, investments = null }: DigestInput): DigestData {
   const period = digestPeriod(frequency, now);
   const range = getPeriodRange(period.period, period.referenceDate);
   const previousRange = getPreviousPeriodRange(period.period, period.referenceDate);
@@ -99,6 +115,7 @@ export function buildDigest({ transactions, categories, budgets, frequency, now 
     topCategories,
     budget: budgets.length === 0 ? null : { total: budgets.length, over },
     movements,
+    investments,
   };
 }
 

@@ -13,5 +13,7 @@ export { runNotifications, parseNotificationsMode, databaseDeps } from "./run";
 export type { NotificationsMode, NotificationsResult, NotificationDeps, NotificationUser } from "./run";
 export { digestEmail, budgetAlertEmail, deadlineAlertEmail, NOTIFICATION_SETTINGS_PATH } from "./emails";
 export type { BuiltEmail, EmailContext } from "./emails";
-export { buildDigest, digestPeriod, digestWindowStartIso } from "./digest";
+export { buildDigest, digestPeriod, digestRange, digestWindowStartIso, isDigestEmpty } from "./digest";
+export { buildInvestmentDigest } from "./investments-digest";
+export type { InvestmentDigest } from "./investments-digest";
 export { sendNotificationEmail } from "./send";

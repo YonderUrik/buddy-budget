@@ -14,3 +14,13 @@ export const updateNotificationPreferencesSchema = z
   .refine((value) => Object.keys(value).length > 0, { message: "Nessuna preferenza da aggiornare" });
 
 export type UpdateNotificationPreferencesInput = z.infer<typeof updateNotificationPreferencesSchema>;
+
+/** Preferenze complete, come le sceglie l'onboarding (tutti i campi, nessun default implicito). */
+export const notificationPreferencesSchema = z
+  .object({
+    digestEnabled: z.boolean(),
+    digestFrequency: z.enum(DIGEST_FREQUENCIES),
+    budgetAlertsEnabled: z.boolean(),
+    deadlineAlertsEnabled: z.boolean(),
+  })
+  .strict();

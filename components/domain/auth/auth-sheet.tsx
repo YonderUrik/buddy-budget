@@ -10,6 +10,7 @@
  */
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { SheetFormulaProvider, type SheetFormula } from "./auth-sheet-formula";
@@ -32,6 +33,8 @@ export interface AuthSheetProps {
   note?: React.ReactNode;
   /** Schede della tabella; di default dal catalogo (`buildAuthSheetTabs`). */
   tabs?: readonly AuthSheetTab[];
+  /** Percorsi in cui la tabella a schede non si mostra (es. l'onboarding, dove conta solo il form). */
+  tabsHiddenOn?: readonly string[];
   /** Il form della pagina. */
   children: React.ReactNode;
   className?: string;
@@ -47,7 +50,9 @@ function FormulaText({ formula }: { formula: SheetFormula }) {
 }
 
 /** Scena a foglio di calcolo delle pagine di accesso: barra della formula, griglia, form e tabella a schede. */
-export function AuthSheet({ header, note, tabs: tabsProp, children, className }: AuthSheetProps) {
+export function AuthSheet({ header, note, tabs: tabsProp, tabsHiddenOn = [], children, className }: AuthSheetProps) {
+  const pathname = usePathname();
+  const showTabs = !tabsHiddenOn.some((path) => pathname === path || pathname.startsWith(`${path}/`));
   const tabs = React.useMemo(() => tabsProp ?? buildAuthSheetTabs(), [tabsProp]);
   const [activeId, setActiveId] = React.useState<AuthSheetTabId>(tabs[0]?.id ?? "dentro");
   const [formula, setFormula] = React.useState<SheetFormula | null>(null);
@@ -105,7 +110,7 @@ export function AuthSheet({ header, note, tabs: tabsProp, children, className }:
                 {header}
                 {children}
               </div>
-              {active && (
+              {showTabs && active && (
                 <div className="flex min-w-0 flex-col lg:col-span-3 lg:col-start-6 lg:mr-6 lg:mt-[4.5rem] lg:self-start">
                   <div role="tablist" aria-label="Fogli" className="relative z-10 -mb-px flex gap-1 overflow-x-auto">
                     {tabs.map((t) => (

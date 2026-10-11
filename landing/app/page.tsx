@@ -7,7 +7,6 @@ import { JsonLd } from "@/components/json-ld";
 import { OpenSource } from "@/components/open-source";
 import { Security } from "@/components/security";
 import { SheetHero } from "@/components/sheet-hero";
-import { SheetTabs, type SheetTab } from "@/components/sheet-tabs";
 import { SiteNav } from "@/components/site-nav";
 import { SupportedSources } from "@/components/supported-sources";
 import { Tour } from "@/components/tour";
@@ -22,15 +21,6 @@ const FAQ_JSON_LD = {
 };
 
 /** Schede del foglio sotto l'apertura: una per sezione, nell'ordine della pagina. */
-const PAGE_TABS: readonly SheetTab[] = [
-  { id: "fonti", label: "Fonti" },
-  { id: "app", label: "L'app" },
-  { id: "italia", label: "Regole" },
-  { id: "confronto", label: "Confronto" },
-  { id: "sicurezza", label: "Sicurezza" },
-  { id: "domande", label: "Domande" },
-];
-
 /**
  * Home «Il foglio»: si parte dal foglio dei conti tenuto a mano, poi le fonti supportate e il giro dell'app area per
  * area (schermate intere e scheda tecnica), le regole italiane, il confronto, la fiducia e le domande frequenti.
@@ -42,7 +32,6 @@ export default function HomePage() {
       <SiteNav />
       <main>
         <SheetHero />
-        <SheetTabs tabs={PAGE_TABS} />
         <SupportedSources />
         <Tour />
         <ItalyRules />

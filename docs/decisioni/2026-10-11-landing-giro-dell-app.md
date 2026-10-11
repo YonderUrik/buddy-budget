@@ -10,3 +10,5 @@ Dopo la PR #311 Daniele ha trovato gli screenshot illeggibili (si vedeva solo un
 - Evento Umami `tour_tab_selected` al posto di `detail_tab_selected`. Tolti gli screenshot del credito Lombard (funzione rimossa).
 
 Catalogo sfoltito da 49 a 34 voci (richiesta di Daniele): tolte le voci che erano dettagli d'interfaccia (nomi leggibili, ricerca e note, proposte per somiglianza, conti per banca, aggiornamento, avviso di rinnovo, categoria con un tocco, da sistemare, liquidità unica, rate e correzioni, riepilogo in barra, nascondi importi, accesso, aiuto, installabile). Le funzioni restano nell'app; il catalogo elenca solo quelle che contano da sole.
+
+Indice delle sezioni sotto l'apertura tolto (Daniele: «non allineato, non c'entra»): la barra in alto ha già i collegamenti e il giro dell'app ha le sue schede. Tra i broker la card «E tutti gli altri» dice che qualsiasi CSV si importa, perché i soli loghi facevano pensare a un elenco chiuso.

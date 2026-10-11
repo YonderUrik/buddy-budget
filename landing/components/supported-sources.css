@@ -10,6 +10,8 @@
 .ss-logo img { max-height: 26px; max-width: 100%; width: auto; height: auto; }
 .ss-name { font-weight: 600; }
 .ss-detail { font: 500 12.5px var(--f-m); color: var(--ink3); }
+.ss-more { border-style: dashed; }
+.ss-more-detail { font-size: 13.5px; line-height: 1.45; color: var(--ink2); }
 .ss-tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .ss-tags li { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 15px; }
 .ss-flag { width: 20px; height: 15px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px var(--line); }

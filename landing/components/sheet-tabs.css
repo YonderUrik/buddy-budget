@@ -1,8 +1,0 @@
-/* Indice delle sezioni della home come le schede dell'app (gruppo a pillola), sotto l'apertura e non fisso: scorre con la pagina; in orizzontale sui telefoni. */
-.stabs { border-bottom: 1px solid var(--line); padding-block: 8px; }
-.stabs .wrap { display: flex; }
-.stabs-list { display: flex; gap: 2px; padding: 3px; border-radius: var(--r); background: var(--head); overflow-x: auto; scrollbar-width: none; max-width: 100%; font: 500 14px var(--f-b); }
-.stabs-list::-webkit-scrollbar { display: none; }
-.stabs a { padding: 6px 12px; border-radius: var(--r-sm); text-decoration: none; color: var(--ink2); white-space: nowrap; transition: color 0.2s, background 0.2s, box-shadow 0.2s; }
-.stabs a:hover { color: var(--ink); }
-@media (max-width: 600px) { .stabs a { padding: 6px 10px; font-size: 13px; } }

@@ -5,7 +5,7 @@ import { TrackedSection } from "./tracked-section";
 
 /**
  * «Funziona con»: i broker di cui si importano i file (con logo, su fondo sempre bianco perché alcuni marchi sono scuri),
- * i paesi delle banche collegabili (con bandiera) e le alternative per tutto il resto. Elenco verificato in `lib/investments/import/providers.ts`.
+ * i paesi delle banche collegabili (con bandiera) le alternative per tutto il resto e, in fondo ai broker, una card che ricorda che qualsiasi CSV si importa. Elenco verificato in `lib/investments/import/providers.ts`.
  */
 export function SupportedSources({ content = SUPPORTED }: { content?: typeof SUPPORTED }) {
   return (
@@ -27,6 +27,13 @@ export function SupportedSources({ content = SUPPORTED }: { content?: typeof SUP
                   <span className="ss-detail">{b.detail}</span>
                 </li>
               ))}
+              <li className="cell ss-more">
+                <span className="ss-logo" aria-hidden="true">
+                  <HomeIcon name="file-text" size={22} className="ss-icon" />
+                </span>
+                <span className="ss-name">{content.moreBrokers.name}</span>
+                <span className="ss-more-detail">{content.moreBrokers.detail}</span>
+              </li>
             </ul>
           </div>
           <div className="ss-block">

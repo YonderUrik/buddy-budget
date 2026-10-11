@@ -63,7 +63,7 @@ export interface BankCountry {
 export const SUPPORTED = {
   kicker: "Fonti supportate",
   title: "Funziona con quello che usi già.",
-  brokersLabel: "Broker, dai file che scarichi",
+  brokersLabel: "Broker con l'import già pronto",
   brokers: [
     { name: "Interactive Brokers", detail: "Activity Statement CSV", logo: { src: "/logos/interactive-brokers.svg", width: 271, height: 527 } },
     { name: "DEGIRO", detail: "Account.csv", logo: { src: "/logos/degiro.svg", width: 722, height: 102 } },
@@ -71,7 +71,9 @@ export const SUPPORTED = {
     { name: "Fineco", detail: "Excel delle operazioni", logo: { src: "/logos/fineco.png", width: 640, height: 261 } },
     { name: "Yahoo Finance", detail: "Portafoglio esportato", logo: { src: "/logos/yahoo.svg", width: 512, height: 143 } },
   ] satisfies readonly SupportedSource[],
-  banksLabel: "Banche, con l'Open Banking in sola lettura",
+  /** Ultima card dei broker: chiarisce che l'elenco sopra non è l'unico modo di importare. */
+  moreBrokers: { name: "E tutti gli altri", detail: "Carichi il CSV del tuo broker o della tua banca: lo leggiamo e ricordiamo il formato per le volte dopo." },
+  banksLabel: "Le banche di questi paesi, con l'Open Banking in sola lettura",
   countries: [
     { code: "it", name: "Italia" },
     { code: "de", name: "Germania" },
@@ -81,8 +83,7 @@ export const SUPPORTED = {
   ] satisfies readonly BankCountry[],
   otherLabel: "E per il resto",
   other: [
-    { icon: "file-text", label: "CSV di qualsiasi banca o broker" },
-    { icon: "wallet", label: "Conti manuali e contanti" },
+        { icon: "wallet", label: "Conti manuali e contanti" },
     { icon: "pencil", label: "Operazioni inserite a mano" },
   ] satisfies readonly { icon: HomeIcon; label: string }[],
 } as const;

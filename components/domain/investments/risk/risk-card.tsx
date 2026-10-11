@@ -68,19 +68,18 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
   }
 
   const bench = risk.benchmark;
-    return (
+  return (
     <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
       <div className="flex flex-col gap-5">
-        <RiskLevelMeter level={riskLevel(risk.volatility)} />
+        <RiskLevelMeter
+          level={riskLevel(risk.volatility)}
+          volatility={risk.volatility}
+          volatilityText={`±${pct(risk.volatility)}`}
+          volatilityNote={volatilityInsight(risk.volatility, bench?.volatility ?? null, benchmarkName)}
+          volatilityHint="Nome tecnico: volatilità. Di quanto si muove di solito il valore in un anno, in più o in meno. Più è alta, più il percorso è accidentato."
+        />
 
         <div className={`grid grid-cols-1 gap-5 border-t pt-5 [&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:pt-5 `}>
-          <RiskMetric
-            label="Quanto oscilla"
-            value={`±${pct(risk.volatility)}`}
-            note="in un anno"
-            description={volatilityInsight(risk.volatility, bench?.volatility ?? null, benchmarkName)}
-            hint="Nome tecnico: volatilità. Di quanto si muove di solito il valore in un anno, in più o in meno. Più è alta, più il percorso è accidentato."
-          />
           <RiskMetric
             label="Perdita peggiore"
             value={risk.drawdown && risk.drawdown.depth < 0 ? formatSignedPct(risk.drawdown.depth) : "0%"}

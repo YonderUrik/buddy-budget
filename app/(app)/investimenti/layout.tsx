@@ -3,6 +3,7 @@
 /**
  * Layout di Investimenti: titolo, bottoni Importa/Registra, schede (Portafoglio, Proventi, Tasse) e i dialog
  * condivisi. Usa la stessa query della scheda Portafoglio al periodo di default: nessuna richiesta in più.
+ * La pagina di un singolo titolo è una scheda a sé: niente intestazione né schede, solo i dialog condivisi.
  */
 
 import { FormDialogContent } from "@/components/domain/shared";
@@ -26,11 +27,12 @@ import { usedInstruments } from "@/lib/investments/view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 
-/** Le pagine dei singoli titoli vivono sotto questo indirizzo e appartengono alla scheda Portafoglio. */
+/** Le pagine dei singoli titoli vivono sotto questo indirizzo: hanno la propria testata con il ritorno indietro. */
 const TITLE_PAGES_BASE = "/investimenti/titoli/";
 
 export default function InvestimentiLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isTitlePage = pathname.startsWith(TITLE_PAGES_BASE);
   const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [registerInitial, setRegisterInitial] = React.useState<RegisterOperationInitial | null>(null);
   const [importOpen, setImportOpen] = React.useState(false);
@@ -47,26 +49,28 @@ export default function InvestimentiLayout({ children }: { children: React.React
   return (
     <BrokerSelectionProvider><InvestmentsActionsProvider value={actions}>
       <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h1 className="font-heading text-2xl font-medium text-foreground">Investimenti</h1>
-              <p className="text-sm text-muted-foreground">Prezzi di chiusura aggiornati ogni sera</p>
+        {isTitlePage ? null : (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h1 className="font-heading text-2xl font-medium text-foreground">Investimenti</h1>
+                <p className="text-sm text-muted-foreground">Prezzi di chiusura aggiornati ogni sera</p>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
+                  <DatabaseIcon size={16} aria-hidden="true" />
+                </Button>
+                <Button variant="outline" className="gap-1.5" onClick={() => setImportOpen(true)}>
+                  <Upload size={15} aria-hidden="true" /> Importa
+                </Button>
+                <Button className="gap-1.5 shadow-xs" onClick={() => setRegisterInitial({ instrument: null })}>
+                  <Plus size={15} aria-hidden="true" /> Registra
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
-                <DatabaseIcon size={16} aria-hidden="true" />
-              </Button>
-              <Button variant="outline" className="gap-1.5" onClick={() => setImportOpen(true)}>
-                <Upload size={15} aria-hidden="true" /> Importa
-              </Button>
-              <Button className="gap-1.5 shadow-xs" onClick={() => setRegisterInitial({ instrument: null })}>
-                <Plus size={15} aria-hidden="true" /> Registra
-              </Button>
-            </div>
+            <InvestmentsTabs activeHref={pathname} />
           </div>
-          <InvestmentsTabs activeHref={pathname.startsWith(TITLE_PAGES_BASE) ? "/investimenti" : pathname} />
-        </div>
+        )}
         {data && !pathname.includes("/rendiconti") && !pathname.includes("/titoli") ? <BrokerSelector data={data} /> : null}
         {children}
       </div>

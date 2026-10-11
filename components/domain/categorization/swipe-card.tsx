@@ -6,7 +6,7 @@
  */
 
 import * as React from "react";
-import { motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
+import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
 import { CategoryAvatar } from "@/components/domain/categories";
 import { Button } from "@/components/ui/button";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
@@ -22,6 +22,8 @@ export const SWIPE_COMMIT_DISTANCE = 110;
 const DESCRIPTION_PREVIEW_LIMIT = 3;
 /** Inclinazione massima della carta in gradi. */
 const MAX_TILT_DEGREES = 8;
+/** Ritorno al centro quando il gesto non va a segno. */
+const SNAP_BACK_SPRING = { type: "spring", stiffness: 500, damping: 34 } as const;
 /** Durata della vibrazione leggera quando un gesto va a segno (dove il telefono la supporta). */
 const HAPTIC_TICK_MS = 12;
 
@@ -90,18 +92,18 @@ export function SwipeCard({
     <motion.div
       style={{ x, y, rotate }}
       drag={changing ? false : true}
-      dragSnapToOrigin
       dragElastic={0.6}
       onDragEnd={(_, info) => {
         setZone(null);
         const { x: dx, y: dy } = info.offset;
         const horizontal = Math.abs(dx) >= Math.abs(dy);
-        let committed = true;
-        if (horizontal && dx > SWIPE_COMMIT_DISTANCE && hasSuggestion) onConfirm();
-        else if (horizontal && dx < -SWIPE_COMMIT_DISTANCE) onChange();
-        else if (!horizontal && dy < -SWIPE_COMMIT_DISTANCE) onSkip();
-        else committed = false;
-        if (committed) navigator.vibrate?.(HAPTIC_TICK_MS);
+        // Confermata o saltata la carta resta dove la si è lasciata e da lì esce (la anima il mazzo); altrimenti torna al centro.
+        let leaves = false;
+        if (horizontal && dx > SWIPE_COMMIT_DISTANCE && hasSuggestion) { onConfirm(); leaves = true; }
+        else if (horizontal && dx < -SWIPE_COMMIT_DISTANCE) { onChange(); navigator.vibrate?.(HAPTIC_TICK_MS); }
+        else if (!horizontal && dy < -SWIPE_COMMIT_DISTANCE) { onSkip(); leaves = true; }
+        if (leaves) navigator.vibrate?.(HAPTIC_TICK_MS);
+        else { animate(x, 0, SNAP_BACK_SPRING); animate(y, 0, SNAP_BACK_SPRING); }
       }}
       className={cn("relative flex touch-none flex-col gap-4 rounded-2xl border-2 bg-card transition-colors p-5 shadow-lg select-none max-md:flex-1 max-md:justify-between", zone === "conferma" ? "border-pos" : zone === "cambia" ? "border-neg" : zone === "salta" ? "border-muted-foreground" : "border-border")}
     >

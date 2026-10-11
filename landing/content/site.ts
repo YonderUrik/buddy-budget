@@ -54,7 +54,7 @@ export interface SecurityPoint {
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
   title: "Cosa vede BuddyBudget dei tuoi dati, e cosa no.",
-  intro: "I server sono in Germania e le connessioni sono cifrate. Questi sono gli impegni, uno per uno.",
+  intro: "I server sono in Germania e le connessioni sono cifrate.",
   points: [
     { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
     { icon: "eye", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },

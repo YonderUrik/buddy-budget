@@ -1,9 +1,9 @@
 /**
  * components/domain/whats-new — barrel file
  *
- * Riquadro «Novità» della Panoramica.
+ * Etichetta «Novità» della Panoramica, accanto alla data.
  */
 
-export { WhatsNewCard } from "./whats-new-card";
-export type { WhatsNewCardProps } from "./whats-new-card";
+export { WhatsNewChip } from "./whats-new-chip";
+export type { WhatsNewChipProps } from "./whats-new-chip";
 export { WhatsNewSection } from "./whats-new-section";

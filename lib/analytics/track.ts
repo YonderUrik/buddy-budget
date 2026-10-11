@@ -198,6 +198,7 @@ export interface ProductEvents {
   /** Riquadro «Novità» della Panoramica: clic sul pulsante o chiusura (`id` = identificativo della voce). */
   whats_new_clicked: { id: string };
   whats_new_dismissed: { id: string };
+  whats_new_opened: { id: string };
   /** Clic sull'invito «Categorizza con l'AI» che porta a Categorizza. */
   categorize_ai_link_clicked: { from: "movimenti" };
   /** Tour delle carte: passo visto, saltato o concluso. */

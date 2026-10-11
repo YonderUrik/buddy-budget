@@ -102,11 +102,11 @@ export function buildCategoryPickerSections<T extends PickerCategory>(
   }
 
   const alphabetical = [...regular].sort((a, b) => a.name.localeCompare(b.name));
-  const groupTypes: string[] = [...EXPENSE_GROUP_KEYS, "entrata"];
+  const groupTypes: string[] = [...EXPENSE_GROUP_KEYS, "entrata", "trasferimento"];
   for (const type of groupTypes) {
     const inGroup = alphabetical.filter((c) => c.type === type);
     if (inGroup.length === 0) continue;
-    const label = type === "entrata" ? "Entrate" : EXPENSE_GROUPS[type as keyof typeof EXPENSE_GROUPS].label;
+    const label = type === "entrata" ? "Entrate" : type === "trasferimento" ? "Esclusi da entrate e spese" : EXPENSE_GROUPS[type as keyof typeof EXPENSE_GROUPS].label;
     sections.push({ key: `type-${type}`, label, categories: inGroup });
   }
 

@@ -65,7 +65,9 @@ export async function buildRuleResolver(userId: string): Promise<RuleResolver> {
       if (!rule) return null;
 
       const magnitude =
-        rule.splitPercentage === null
+        rule.categoryType === "trasferimento"
+          ? Math.abs(input.amount)
+          : rule.splitPercentage === null
           ? 0
           : Math.round(Math.abs(input.amount) * rule.splitPercentage * 100) / 100;
 

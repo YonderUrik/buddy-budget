@@ -117,7 +117,7 @@ export const PRIVACY: LegalDocument = {
       id: "proposte-categorie",
       title: "Proposte di categoria con intelligenza artificiale",
       paragraphs: [
-        "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
+        "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate e le istruzioni personali che scegli di inserire nelle Impostazioni. Evita di inserire dati personali o bancari nelle istruzioni. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
         "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone soltanto: nessun movimento viene categorizzato senza la tua conferma, e una scelta diventa una regola solo se lo chiedi tu. Puoi revocare il consenso in ogni momento: da quel momento non partono nuove richieste.",
       ],
     },

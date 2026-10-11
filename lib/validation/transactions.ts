@@ -7,6 +7,7 @@ export const createTransactionSchema = z.object({
   description: z.string().trim().min(1),
   categoryId: z.string().uuid(),
   amount: z.number().positive(),
+  direction: z.enum(["entrata", "uscita"]).optional(),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida"),
 });
 

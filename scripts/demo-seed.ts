@@ -147,7 +147,7 @@ async function main() {
       });
     };
     push(dayOfMonth(back, 27), "Stipendio", "Stipendio", "BONIFICO A VOSTRO FAVORE ACME SRL STIPENDIO", 2480);
-    if (back % 4 === 1) push(dayOfMonth(back, 14), "Freelance", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
+    if (back % 4 === 1) push(dayOfMonth(back, 14), "Altre entrate", "Consulenza", "BONIFICO FATT 12/26", round2(between(380, 720)));
     // Abbonamenti per la schermata «Abbonamenti»: un aumento di prezzo, un servizio terminato 5 mesi fa e un'assicurazione annuale.
     push(dayOfMonth(back, 6), "Abbonamenti", "Archivio cloud", "PAGAMENTO ONLINE CLOUDBOX STORAGE", -2.99);
     if (back >= 5) push(dayOfMonth(back, 12), "Abbonamenti", "Giornale online", "PAGAMENTO ONLINE IL QUOTIDIANO DIGITALE", -7.99);
@@ -189,6 +189,11 @@ async function main() {
         externalId: `demo-pending-${i}`,
       });
     });
+  }
+  for (const [accountId, amount] of [[checking.id, -250], [savings.id, 250]] as const) {
+    rows.push({ userId: DEMO_USER_ID, accountId, categoryId: cat("Trasferimenti tra i miei conti"),
+      description: "Giroconto al conto deposito", amount: amount.toFixed(2), excludedAmount: amount.toFixed(2),
+      date: iso(today), source: "auto", externalId: `demo-transfer-${accountId}` });
   }
   for (let i = 0; i < rows.length; i += 200) await db.insert(transactions).values(rows.slice(i, i + 200));
   await db

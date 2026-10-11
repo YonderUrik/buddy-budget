@@ -20,6 +20,27 @@ describe("prepareMerchantForModel", () => {
     expect(prepareMerchantForModel("Rossi Mario Torino").blocked).toBe("persona");
   });
 
+  it.each(["DB Vertrieb GmbH", "DB Vertrieb GmbH DE", "Mario Rossi S.r.l.", "Mario Rossi Ltd", "Mario Rossi Inc"])(
+    "riconosce la forma societaria prima di ripulire %s",
+    (description) => {
+      const prepared = prepareMerchantForModel(description);
+      expect(prepared.blocked).toBeNull();
+      expect(prepared.name).not.toMatch(/gmbh|s\.r\.l|ltd|inc/i);
+    }
+  );
+
+  it("ripulisce DB Vertrieb senza scambiarlo per una persona", () => {
+    expect(prepareMerchantForModel("DB Vertrieb GmbH")).toEqual({ name: "Db Vertrieb", blocked: null });
+  });
+
+  it("non interpreta una parte del nome come forma societaria", () => {
+    expect(prepareMerchantForModel("Mario Jacob").blocked).toBe("persona");
+  });
+
+  it("continua a bloccare i bonifici anche verso una società", () => {
+    expect(prepareMerchantForModel("Bonifico a favore di DB Vertrieb GmbH").blocked).toBe("operazione");
+  });
+
   it("non blocca i pagamenti con carta, anche con un nome da ditta individuale", () => {
     expect(prepareMerchantForModel("ROSSI MARIO TORINO IT Carta N. ***** 249 Data operazione 01/02/25").blocked).toBeNull();
   });

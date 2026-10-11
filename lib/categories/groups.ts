@@ -3,7 +3,7 @@
  * di verità per valori, ordine, etichette e token colore. Modulo puro, senza dipendenze da React o DB.
  */
 
-export const CATEGORY_TYPES = ["dovuta", "voluta", "futuro", "saltuaria", "entrata"] as const;
+export const CATEGORY_TYPES = ["dovuta", "voluta", "futuro", "saltuaria", "entrata", "trasferimento"] as const;
 export type CategoryType = (typeof CATEGORY_TYPES)[number];
 
 export const EXPENSE_GROUP_KEYS = ["dovuta", "voluta", "futuro", "saltuaria"] as const;
@@ -67,6 +67,7 @@ export const CATEGORY_TYPE_LABELS: Record<CategoryType, string> = {
   futuro: EXPENSE_GROUPS.futuro.label,
   saltuaria: EXPENSE_GROUPS.saltuaria.label,
   entrata: "Entrata",
+  trasferimento: "Trasferimenti tra conti",
 };
 
 /** Tipo proposto di default quando l'utente crea una nuova categoria. */
@@ -83,7 +84,7 @@ export function isExpenseGroup(type: string): type is ExpenseGroup {
  */
 export function categoryGroupKey(category: { type: string; isFallback: boolean }): CategoryGroupKey | null {
   if (category.isFallback) return UNCATEGORIZED_GROUP_KEY;
-  if (category.type === "entrata") return null;
+  if (category.type === "entrata" || category.type === "trasferimento") return null;
   return isExpenseGroup(category.type) ? category.type : UNCATEGORIZED_GROUP_KEY;
 }
 
@@ -92,6 +93,7 @@ export interface CategorySections<T> {
   groups: { key: ExpenseGroup; categories: T[] }[];
   uncategorized: T[];
   income: T[];
+  transfers: T[];
 }
 
 /** Divide le categorie in sezioni per la pagina Categorie, preservando l'ordine di input dentro ogni sezione. */
@@ -102,10 +104,12 @@ export function groupCategoriesByType<T extends { type: string; isFallback: bool
     groups: EXPENSE_GROUP_KEYS.map((key) => ({ key, categories: [] as T[] })),
     uncategorized: [],
     income: [],
+    transfers: [],
   };
   for (const category of categories) {
     const key = categoryGroupKey(category);
-    if (key === null) sections.income.push(category);
+    if (!category.isFallback && category.type === "trasferimento") sections.transfers.push(category);
+    else if (key === null) sections.income.push(category);
     else if (key === UNCATEGORIZED_GROUP_KEY) sections.uncategorized.push(category);
     else sections.groups.find((group) => group.key === key)!.categories.push(category);
   }

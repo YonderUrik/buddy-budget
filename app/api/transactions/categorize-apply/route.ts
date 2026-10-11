@@ -72,10 +72,11 @@ async function handlePost(request: NextRequest) {
 
   await db.transaction(async (tx) => {
     for (const group of parsed.data.groups) {
+      const excludedPercentage = categoryById.get(group.categoryId)!.type === "trasferimento" ? 1 : group.excludedPercentage;
       for (const transactionId of group.transactionIds) {
         const transaction = transactionById.get(transactionId)!;
         const amount = Number(transaction.amount);
-        const magnitude = Math.round(Math.abs(amount) * group.excludedPercentage * 100) / 100;
+        const magnitude = Math.round(Math.abs(amount) * excludedPercentage * 100) / 100;
         const excludedAmount = amount >= 0 ? magnitude : -magnitude;
 
         await tx
@@ -91,7 +92,7 @@ async function handlePost(request: NextRequest) {
 
       if (!group.createRule) continue;
 
-      const splitPercentage = group.excludedPercentage > 0 ? group.excludedPercentage.toFixed(4) : null;
+      const splitPercentage = excludedPercentage > 0 ? excludedPercentage.toFixed(4) : null;
       const [rule] = await tx
         .insert(categorizationRules)
         .values({

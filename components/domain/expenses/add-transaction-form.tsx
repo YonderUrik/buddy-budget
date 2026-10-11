@@ -76,7 +76,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
   const [added, setAdded] = React.useState(0);
   const amountRef = React.useRef<HTMLDivElement>(null);
 
-  const availableCategories = categories.filter((c) => (direction === "entrata" ? c.type === "entrata" : c.type !== "entrata"));
+  const availableCategories = categories.filter((c) => (c.type === "trasferimento" || (direction === "entrata" ? c.type === "entrata" : c.type !== "entrata")));
 
   function handleDirectionChange(next: Direction) {
     setDirection(next);
@@ -107,7 +107,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
   function submit(keepOpen: boolean) {
     if (!validate(1) || amountValue === null) return;
     createMutation.mutate(
-      { accountId, description: description.trim(), categoryId, amount: amountValue, date },
+      { accountId, description: description.trim(), categoryId, amount: amountValue, date, direction: direction === "entrata" ? "entrata" : "uscita" },
       {
         onSuccess: () => {
           setDescription("");

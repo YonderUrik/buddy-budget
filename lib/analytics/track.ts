@@ -190,6 +190,7 @@ export interface ProductEvents {
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
   notifications_toggled: { kind: "digest" | "budget" | "deadlines"; enabled: boolean };
   /** Consenso alle proposte dell'assistente in Impostazioni. */
+  ai_categorization_instructions_saved: undefined;
   ai_categorization_toggled: { enabled: boolean };
   /** Pulsante «Categorizza con l'AI» in Categorizza; `missing` = esercenti senza proposta in quel momento. */
   ai_suggestions_generate_clicked: { missing: number; consentGiven: boolean };

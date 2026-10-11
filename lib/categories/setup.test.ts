@@ -18,7 +18,7 @@ const withItem = (items: CategorySetupItem[], key: string, patch: Partial<Catego
 describe("buildCategoryProposal", () => {
   it("propone le default accese senza la fallback e le facoltative spente", () => {
     const items = buildCategoryProposal();
-    expect(items.filter((item) => item.enabled)).toHaveLength(23);
+    expect(items.filter((item) => item.enabled)).toHaveLength(24);
     expect(items.filter((item) => item.optional).every((item) => !item.enabled)).toBe(true);
     expect(items.some((item) => item.name === "Da categorizzare")).toBe(false);
   });
@@ -71,6 +71,6 @@ describe("summarizeCategorySetup", () => {
     items = withItem(items, "spesa", { name: "Supermercato" });
     items = withItem(items, "figli", { enabled: true });
     items.push({ key: null, name: "Musica", type: "voluta", enabled: true });
-    expect(summarizeCategorySetup(items)).toEqual({ active: 24, removed: 1, renamed: 1, optionalAdded: 1, custom: 1 });
+    expect(summarizeCategorySetup(items)).toEqual({ active: 25, removed: 1, renamed: 1, optionalAdded: 1, custom: 1 });
   });
 });

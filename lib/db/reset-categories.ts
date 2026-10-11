@@ -5,7 +5,7 @@
  * sulla fallback e budget/regole rimossi. Idempotente. Richiede l'enum già migrato
  * (`pnpm db:migrate-category-groups`). Esecuzione: `pnpm db:reset-categories [--dry-run]`.
  */
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "./client";
 import { categories, DEFAULT_CATEGORIES, LEGACY_CATEGORY_NAMES } from "./schema/categories";
 import { transactions } from "./schema/transactions";
@@ -166,6 +166,12 @@ export async function resetUserCategories(userId: string, { dryRun }: { dryRun: 
         .set({ isFallback: true, color: "red", icon: "help-circle", type: "voluta" })
         .where(eq(categories.id, fallbackCandidate.id));
     }
+    const transferIds = existing.filter((c) => c.type === "trasferimento").map((c) => c.id);
+    if (plan.deletions.length > 0 && transferIds.length > 0) {
+      await tx.update(transactions).set({ excludedAmount: "0" }).where(and(
+        eq(transactions.userId, userId), inArray(transactions.categoryId, transferIds), inArray(transactions.categoryId, plan.deletions)
+      ));
+    }
     if (plan.deletions.length > 0) {
       await tx
         .update(transactions)
@@ -178,6 +184,11 @@ export async function resetUserCategories(userId: string, { dryRun }: { dryRun: 
     for (const update of plan.updates) {
       const { id, ...fields } = update;
       await tx.update(categories).set(fields).where(eq(categories.id, id));
+      const previous = existing.find((c) => c.id === id);
+      if (previous && previous.type !== fields.type && (previous.type === "trasferimento" || fields.type === "trasferimento")) {
+        await tx.update(transactions).set({ excludedAmount: fields.type === "trasferimento" ? sql`${transactions.amount}` : "0" })
+          .where(and(eq(transactions.userId, userId), eq(transactions.categoryId, id)));
+      }
     }
     if (plan.creates.length > 0) {
       await tx.insert(categories).values(

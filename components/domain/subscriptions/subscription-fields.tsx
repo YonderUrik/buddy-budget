@@ -46,7 +46,7 @@ export interface SubscriptionCategoryFieldProps {
 
 /** Categoria di spesa dell'abbonamento (le entrate non c'entrano). */
 export function SubscriptionCategoryField({ id, categories, value, onChange }: SubscriptionCategoryFieldProps) {
-  const expense = React.useMemo(() => categories.filter((c) => c.type !== "entrata"), [categories]);
+  const expense = React.useMemo(() => categories.filter((c) => c.type !== "entrata" && c.type !== "trasferimento"), [categories]);
   return (
     <Field label="Categoria" htmlFor={id}>
       <CategoryPicker categories={expense} value={value} onValueChange={onChange} placeholder="Nessuna categoria" aria-label="Categoria" />

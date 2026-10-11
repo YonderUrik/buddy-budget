@@ -17,6 +17,7 @@ export interface MovementRowProps {
   amount: number;
   fullAmount: number;
   isIncome: boolean;
+  isTransfer?: boolean;
   currency: string;
   /** Icona-categoria; è il bottone che apre la scelta (passato già avvolto nel suo pannello). */
   avatar: React.ReactNode;
@@ -32,7 +33,7 @@ export interface MovementRowProps {
 
 export function MovementRow(props: MovementRowProps) {
   const { description, rawDescription, categoryName, uncategorized, accountName, amount, fullAmount, isIncome, currency, avatar, excluded } = props;
-  const isSplit = excluded > 0;
+  const isSplit = excluded > 0 && !props.isTransfer;
   return (
     <div className="flex min-h-[3.75rem] items-center gap-3.5 px-1.5 py-2.5">
       {avatar}
@@ -47,7 +48,7 @@ export function MovementRow(props: MovementRowProps) {
         </p>
         {props.statusMessage && <p className="text-sm text-text-2">{props.statusMessage}</p>}
       </div>
-      <button
+      {!props.isTransfer && <button
         type="button"
         onClick={props.onSplit}
         aria-pressed={props.splitOpen}
@@ -59,12 +60,13 @@ export function MovementRow(props: MovementRowProps) {
       >
         <SplitIcon className="size-4" aria-hidden="true" />
         Dividi
-      </button>
+      </button>}
       <div className="min-w-[5.5rem] shrink-0 text-right">
-        <p className={cn("font-heading font-semibold tabular-nums", isIncome ? "text-pos" : "text-neg")}>
+        <p className={cn("font-heading font-semibold tabular-nums", props.isTransfer ? "text-text-2" : isIncome ? "text-pos" : "text-neg")}>
           {isIncome ? "+" : "−"}
-          {formatCurrency(amount, currency)}
+          {formatCurrency(props.isTransfer ? fullAmount : amount, currency)}
         </p>
+        {props.isTransfer && <p className="text-xs text-text-2">Escluso dai conteggi</p>}
         {isSplit && (
           <p className="text-sm text-text-2">
             <span className="sr-only">Importo pieno </span>

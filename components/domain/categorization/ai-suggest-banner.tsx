@@ -96,7 +96,7 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
           <DialogHeader>
             <DialogTitle>Attivare l&apos;assistente per le categorie?</DialogTitle>
             <DialogDescription>
-              Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), con richiesta di non conservare i dati. Le proposte non si applicano da sole. Puoi disattivarlo quando vuoi in Impostazioni.
+              Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati. Le proposte non si applicano da sole. Puoi disattivarlo quando vuoi in Impostazioni.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

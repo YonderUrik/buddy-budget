@@ -16,7 +16,7 @@
 .wb-total td:nth-child(2) { font-weight: 600; }
 .wb-sheet .wb-sel { background: var(--sel-soft); outline: 2px solid var(--sel); outline-offset: -2px; }
 .wb-app { position: absolute; inset: 0; opacity: 0; transform: scale(1.04); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); pointer-events: none; background: var(--a-bg); }
-.wb-app img { width: 100%; height: 100%; object-fit: cover; object-position: left top; }
+.wb-app img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
 .wb.is-app .wb-app { opacity: 1; transform: none; }
 .wb.is-app .wb-sheet { opacity: 0.25; filter: blur(2px); }
 .wb-tabs { display: flex; gap: 2px; padding: 4px; border-top: 1px solid var(--line); background: var(--head); font: 500 13px var(--f-b); }

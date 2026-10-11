@@ -3,7 +3,7 @@ import { HERO_FACTS, OPEN_SOURCE_FACT } from "@/content/home";
 import { SHEET_HERO } from "@/content/sheet";
 import { APP_LINKS, SOURCE_URL } from "@/content/site";
 import { CONTENT_PATHS } from "@/content/seo-pages";
-import { ARROW_ICON, CtaLink } from "./cta-link";
+import { CtaLink } from "./cta-link";
 import { SheetWorkbook } from "./sheet-workbook";
 import { TrackedSection } from "./tracked-section";
 
@@ -22,8 +22,8 @@ export function SheetHero({ content = SHEET_HERO }: { content?: typeof SHEET_HER
           </h1>
           <p className="sh-lede">{content.lede}</p>
           <div className="cta">
-            <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup">
-              Crea un account gratis{ARROW_ICON}
+            <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup" arrow>
+              Crea un account gratis
             </CtaLink>
             <CtaLink className="btn ghost" href={CONTENT_PATHS.zainetto} location="hero" target="calculator">
               Prova un calcolatore

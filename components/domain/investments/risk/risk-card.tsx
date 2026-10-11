@@ -40,7 +40,7 @@ function drawdownText(drawdown: MaxDrawdown): string {
   if (drawdown.depth === 0) return "Nel periodo non è mai sceso sotto il massimo precedente.";
   const span = `Dal ${formatDateWithYear(drawdown.peakDate)} al ${formatDateWithYear(drawdown.troughDate)}`;
   if (drawdown.recoveryDate) return `${span}; tornato al massimo in ${daysBetween(drawdown.troughDate, drawdown.recoveryDate)} giorni.`;
-  return `${span}; non è ancora tornato al massimo (oggi ${formatSignedPct(drawdown.current)}).`;
+  return `${span}; non è ancora tornato al massimo (a fine periodo ${formatSignedPct(drawdown.current)}).`;
 }
 
 function riskFreeNote(risk: PortfolioRisk, currency: string): string {
@@ -52,15 +52,16 @@ function riskFreeNote(risk: PortfolioRisk, currency: string): string {
 export interface RiskCardProps {
   risk: PortfolioRisk;
   period: NetWorthPeriod;
+  periodLabel?: string;
   /** Nome dell'indice di confronto scelto nella card dei rendimenti, o null. */
   benchmarkName: string | null;
   currency: string;
 }
 
-export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProps) {
+export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }: RiskCardProps) {
   if (risk.volatility === null) {
     return (
-      <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
+      <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={periodLabel ?? PERIOD_LABELS[period]}>
         <p className="text-sm text-muted-foreground">
           Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.
         </p>
@@ -71,12 +72,12 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
   const bench = risk.benchmark;
   const footnote = [
     risk.fewData ? "Meno di un anno di dati: numeri indicativi." : null,
-    benchmarkName ? null : "Scegli un indice in «Quanto sta rendendo» per vedere quanto lo segui.",
+    benchmarkName ? null : "Scegli un indice in «Rendimenti del periodo» per vedere quanto lo segui.",
   ]
     .filter(Boolean)
     .join(" ");
     return (
-    <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
+    <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={periodLabel ?? PERIOD_LABELS[period]}>
       <div className="flex flex-col gap-5">
         <RiskLevelMeter
           level={riskLevel(risk.volatility)}

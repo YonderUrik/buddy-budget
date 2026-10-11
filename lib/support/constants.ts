@@ -16,7 +16,7 @@ export const REPORT_RATE_LIMIT = 5;
 export const REPORT_RATE_WINDOW_SECONDS = 60 * 60;
 
 /** Casella che riceve le segnalazioni; sovrascrivibile lato server con `SUPPORT_EMAIL_TO`. */
-export const SUPPORT_EMAIL = "supporto@buddybudget.io";
+export const SUPPORT_EMAIL = "support@buddybudget.io";
 
 /** Repository open source dell'app: issue, release e policy di sicurezza. */
 export const REPO_URL = "https://github.com/YonderUrik/buddy-budget";

@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { getRequisition } from "@/lib/gocardless/client";
 import { redisRateLimitStore } from "@/lib/gocardless/redis-rate-limit-store";
 import type { SyncableLink } from "@/lib/gocardless/sync";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
@@ -41,6 +42,20 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   const parsed = finalizeSelectionSchema.safeParse(body);
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  // I conti scelti devono appartenere alla requisition di questa connessione: l'id arriva dal client e il sync
+  // usa le credenziali dell'applicazione, quindi senza questo controllo si potrebbe collegare un conto altrui.
+  let requisitionAccounts: string[];
+  try {
+    if (!connection.requisitionId) return Response.json({ error: "Connessione non completata" }, { status: 400 });
+    requisitionAccounts = (await getRequisition(connection.requisitionId)).accounts;
+  } catch (error) {
+    requestLogger().warn("gocardless.finalize.requisition_failed", { error });
+    return Response.json({ error: "Banca non raggiungibile, riprova tra poco" }, { status: 502 });
+  }
+  if (parsed.data.selections.some((selection) => !requisitionAccounts.includes(selection.externalAccountId))) {
+    return Response.json({ error: "Conto non appartenente a questa connessione" }, { status: 400 });
   }
 
   // Prima passata: solo verifiche, nessuna scrittura.

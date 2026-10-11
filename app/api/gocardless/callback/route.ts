@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { getAppUrl } from "@/lib/env";
@@ -14,8 +15,15 @@ async function handleGet(request: NextRequest) {
     return Response.redirect(`${appUrl}/liquidita/conti?bankError=missing_ref`, 302);
   }
 
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) return Response.redirect(`${appUrl}/login`, 302);
+
   try {
-    const [connection] = await db.select().from(bankConnections).where(eq(bankConnections.id, ref));
+    // Solo le connessioni dell'utente che torna dalla banca: un ref altrui non deve poterne cambiare lo stato.
+    const [connection] = await db
+      .select()
+      .from(bankConnections)
+      .where(and(eq(bankConnections.id, ref), eq(bankConnections.userId, session.user.id)));
     if (!connection || !connection.requisitionId) {
       return Response.redirect(`${appUrl}/liquidita/conti?bankError=not_found`, 302);
     }

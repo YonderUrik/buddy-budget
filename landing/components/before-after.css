@@ -1,0 +1,19 @@
+/* «Prima / ora»: colonna stretta con la formula, colonna larga con la schermata; una sopra l'altra sotto gli 860px. */
+.ba { padding-block: 80px; scroll-margin-top: calc(68px + 64px); }
+.ba-panel { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); margin-top: 36px; overflow: hidden; box-shadow: 0 18px 50px -30px var(--shadow-win2); }
+.ba-before { padding: 24px; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+.ba-lab { font: 600 12px var(--f-b); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); }
+.ba-before code { display: block; font: 500 13.5px/1.55 var(--f-m); background: var(--head); border-radius: var(--r); padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink2); }
+.ba-before p { font-size: 15.5px; color: var(--ink2); }
+.ba-cost { font: 600 14px var(--f-m); color: var(--err); }
+.ba-after { min-width: 0; display: flex; flex-direction: column; }
+.ba-now { align-self: flex-start; margin: 22px 24px 14px; background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--accent); padding: 3px 10px; border-radius: 999px; }
+.ba-shot { max-height: 440px; flex: 1; }
+.ba-get { padding: 16px 20px; border-top: 1px solid var(--line); font-size: 15.5px; color: var(--ink2); }
+.ba-get strong { color: var(--ink); }
+@media (max-width: 860px) {
+  .ba { padding-block: 56px; }
+  .ba-panel { grid-template-columns: minmax(0, 1fr); }
+  .ba-before { border-right: 0; border-bottom: 1px solid var(--line); }
+  .ba-shot { max-height: 260px; }
+}

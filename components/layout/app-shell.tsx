@@ -32,6 +32,7 @@ import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sideba
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
 import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
 import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
+import { SectionTransition } from "@/components/layout/section-transition";
 import { track } from "@/lib/analytics";
 import { useBottomNav } from "@/lib/hooks/use-sidebar-preferences";
 import { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
@@ -122,7 +123,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShel
           // Accessibilità: link "skip to content" può puntare qui.
           tabIndex={-1}
         >
-          {children}
+          <SectionTransition>{children}</SectionTransition>
           {/* Spazio sotto il contenuto per la barra in basso (solo mobile). */}
           {bottomNav ? <div className="md:hidden" style={{ height: `calc(${BOTTOM_NAV_HEIGHT_REM}rem + env(safe-area-inset-bottom))` }} aria-hidden="true" /> : null}
         </main>

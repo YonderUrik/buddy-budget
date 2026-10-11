@@ -9,7 +9,10 @@ export function Faq() {
     <TrackedSection id="domande" section="domande" className="sec faq">
       <div className="wrap">
         <div className="faq-grid">
-        <h2 className="t">Domande frequenti.</h2>
+        <div>
+          <span className="ref">Domande!A1</span>
+          <h2 className="t">Domande frequenti.</h2>
+        </div>
         <Reveal>
           <div className="faq-list">
             {FAQ.map((item) => (

@@ -14,7 +14,9 @@ export interface DebtEventsListProps {
 }
 
 export function describeEvent(event: DebtEventView, currency: string): string {
-  if (event.type === "payment") return `Rata ${event.installmentNumber} pagata · ${formatCurrency(event.amount ?? 0, currency)}`;
+  // Una rata segnata senza importo è quella del piano: niente «0,00 €».
+  if (event.type === "payment")
+    return `Rata ${event.installmentNumber} pagata${event.amount ? ` · ${formatCurrency(event.amount, currency)}` : ""}`;
   if (event.type === "rate_change") return `Tasso portato al ${String(event.rate).replace(".", ",")}%`;
   if (event.type === "early_repayment") {
     const how = event.effect === "reduce_installment" ? "rata ridotta" : "durata ridotta";

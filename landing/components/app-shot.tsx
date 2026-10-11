@@ -1,9 +1,15 @@
 import "./app-shot.css";
 import { SCREENS, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
+import manifest from "@/public/screens/manifest.json";
 
-/** Dimensioni intrinseche degli screenshot (vedi `scripts/capture-screens.mjs`): servono a riservare lo spazio. */
-const SHOT_WIDTH = 1920;
-const SHOT_HEIGHT = 1200;
+/** Dimensioni di ripiego, quelle della finestra di cattura (1280×800 a 1,5x). */
+const DEFAULT_SIZE = { width: 1920, height: 1200 } as const;
+
+/** Dimensioni in pixel dell'immagine intera, lette dal manifest della cattura: servono a riservare lo spazio. */
+function screenSize(id: ScreenId): { width: number; height: number } {
+  const entry = (manifest.screens as { id: string; width?: number; height?: number }[]).find((s) => s.id === id);
+  return entry?.width && entry.height ? { width: entry.width, height: entry.height } : DEFAULT_SIZE;
+}
 
 export interface AppShotProps {
   /** Id di una schermata di `content/screens.ts`. */
@@ -22,6 +28,7 @@ export interface AppShotProps {
 export function AppShot({ id, url, priority = false, className }: AppShotProps) {
   const screen = SCREENS.find((s) => s.id === id);
   if (!screen) throw new Error(`Schermata sconosciuta: ${id}`);
+  const size = screenSize(screen.id);
   return (
     <figure className={`shot${className ? ` ${className}` : ""}`}>
       <div className="shot-bar" aria-hidden="true">
@@ -30,7 +37,7 @@ export function AppShot({ id, url, priority = false, className }: AppShotProps) 
         <i />
         <span>{url ?? `app.buddybudget.io${screen.route}`}</span>
       </div>
-      <div className="shot-imgs">
+      <div className="shot-imgs" style={{ aspectRatio: `${size.width} / ${size.height}` }}>
         {SCREEN_THEMES.map((theme) => (
           // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
           <img
@@ -38,8 +45,8 @@ export function AppShot({ id, url, priority = false, className }: AppShotProps) 
             className={`shot-img shot-${theme}`}
             src={screenSrc(screen.id, theme)}
             alt={screen.alt}
-            width={SHOT_WIDTH}
-            height={SHOT_HEIGHT}
+            width={size.width}
+            height={size.height}
             loading={priority ? "eager" : "lazy"}
             decoding="async"
           />

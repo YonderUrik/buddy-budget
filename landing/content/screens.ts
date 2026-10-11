@@ -26,12 +26,16 @@ export interface AppScreen {
   fill?: readonly (readonly [label: string, value: string])[];
   /** Testo di un elemento da portare in vista prima dello scatto. */
   scrollToText?: string;
+  /** Altezza massima (px CSS) di questa schermata, se la pagina intera è troppo lunga per la landing. */
+  maxHeight?: number;
+  /** Salva anche `<id>-top.jpg`, solo la parte alta a 1280×800, per i riquadri a proporzione fissa. */
+  topCrop?: boolean;
 }
 
 export const SCREENS = [
-  { id: "panoramica", area: "Panoramica", label: "Panoramica", route: "/panoramica", caption: "Patrimonio netto nel tempo, per liquidità, investimenti, previdenza e debiti.", alt: "Panoramica: patrimonio netto, grafico nel tempo e ripartizione per classe di asset" },
+  { id: "panoramica", area: "Panoramica", label: "Panoramica", route: "/panoramica", topCrop: true, caption: "Patrimonio netto nel tempo, per liquidità, investimenti, previdenza e debiti.", alt: "Panoramica: patrimonio netto, grafico nel tempo e ripartizione per classe di asset" },
   { id: "conti", area: "Liquidità", label: "Conti", route: "/liquidita/conti", caption: "Banca collegata e conti manuali, con la liquidità dell'ultimo mese.", alt: "Conti: conto collegato alla banca e conti manuali con saldi" },
-  { id: "movimenti", area: "Liquidità", label: "Movimenti", route: "/liquidita", caption: "Saldo, andamento e movimenti di tutti i conti; la categoria si cambia con un tocco.", alt: "Movimenti: elenco delle transazioni con categorie e importi" },
+  { id: "movimenti", area: "Liquidità", label: "Movimenti", route: "/liquidita", maxHeight: 1200, caption: "Saldo, andamento e movimenti di tutti i conti; la categoria si cambia con un tocco.", alt: "Movimenti: elenco delle transazioni con categorie e importi" },
   { id: "analisi", area: "Liquidità", label: "Analisi", route: "/liquidita/analisi", caption: "Entrate, uscite, netto e risparmio, mese per mese.", alt: "Analisi: entrate contro uscite per mese e indicatori di risparmio", clickFirst: "Anno" },
   { id: "abbonamenti", area: "Liquidità", label: "Abbonamenti", route: "/liquidita/abbonamenti", caption: "Gli addebiti che tornano, trovati nei movimenti: quanto pesano al mese, il prossimo addebito e gli aumenti di prezzo.", alt: "Abbonamenti: costo mensile e annuale, abbonamenti da confermare e prossimo addebito" },
   { id: "categorie", area: "Liquidità", label: "Categorie", route: "/liquidita/categorie", caption: "Quattro gruppi di spesa: Dovute, Volute, Te futuro, Saltuarie.", alt: "Categorie divise nei quattro gruppi di spesa" },
@@ -43,14 +47,14 @@ export const SCREENS = [
   { id: "pensione", area: "Pensione", label: "Pensione", route: "/pensione", caption: "Contributi, valore e rendimento reale del fondo, da due numeri per fotografia.", alt: "Pensione: valore del fondo, contributi versati e rendimento reale" },
   { id: "pensione-scenari", area: "Pensione", label: "Se ritiri oggi", route: "/pensione/scenari", caption: "Quanto ti resterebbe oggi al netto delle tasse e il confronto con il TFR in azienda.", alt: "Pensione: stima netta di un prelievo oggi e confronto con il TFR lasciato in azienda" },
   { id: "debiti", area: "Debiti", label: "Debiti", route: "/debiti", caption: "Le prossime rate, dove paghi più interessi e come uscirne prima.", alt: "Debiti: prossime rate, interessi in un anno per debito e percorso per estinguerli prima" },
-  { id: "simulatore", area: "Debiti", label: "Simulazione", route: "/debiti/finanziamenti", caption: "Finanziamento con le ipotesi «E se…»: versare di più, estinguere, cambiare banca.", alt: "Dettaglio di un finanziamento con residuo, anello di avanzamento e simulazione", scrollToText: "E se…" },
+  { id: "simulatore", area: "Debiti", label: "Simulazione", route: "/debiti/finanziamenti", caption: "Finanziamento con le ipotesi «E se…»: versare di più, estinguere, cambiare banca.", alt: "Dettaglio di un finanziamento con residuo, anello di avanzamento e simulazione", scrollToText: "E se…", maxHeight: 1000 },
   { id: "analitiche", area: "Analitiche", label: "E se…", route: "/analitiche", caption: "L'anno in cui puoi smettere di lavorare, che si sposta mentre muovi risparmio, spesa, rendimento e prelievo.", alt: "Analitiche: l'anno del traguardo, quattro cursori per provare le ipotesi e il grafico del patrimonio verso il numero FIRE" },
 ] as const satisfies readonly AppScreen[];
 
 /** Id di una schermata (tipo chiuso: finisce negli eventi Umami). */
 export type ScreenId = (typeof SCREENS)[number]["id"];
 
-/** Percorso pubblico dell'immagine di una schermata nel tema dato. */
-export function screenSrc(id: ScreenId, theme: ScreenTheme): string {
-  return `/screens/${theme}/${id}.jpg`;
+/** Percorso pubblico dell'immagine di una schermata nel tema dato (`top`: solo la parte alta, se catturata). */
+export function screenSrc(id: ScreenId, theme: ScreenTheme, top = false): string {
+  return `/screens/${theme}/${id}${top ? "-top" : ""}.jpg`;
 }

@@ -1,12 +1,24 @@
 /* «L'app, area per area»: schede a pillola come nell'app, poi prima/ora, schermata intera a tutta larghezza e scheda tecnica. */
-.tour-tabs { display: flex; gap: 2px; margin-top: 36px; padding: 3px; background: var(--head); border-radius: var(--r); width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.tour-tabs::-webkit-scrollbar { display: none; }
-.tour-tabs button { display: inline-flex; align-items: center; gap: 7px; border: 0; background: none; cursor: pointer; padding: 7px 14px; border-radius: var(--r-sm); font: 500 14.5px var(--f-b); color: var(--ink2); white-space: nowrap; transition: color 0.2s, background 0.2s; }
-.tour-tabs button:hover { color: var(--ink); }
-.tour-tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px var(--shadow-win2); }
-.tour-tabs button[aria-selected="true"] svg { color: var(--accent); }
-.tour-panel { margin-top: 32px; }
-.tour-panel h3 { font-size: clamp(22px, 2.6vw, 30px); font-weight: 600; letter-spacing: -0.02em; }
+.tour-layout { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 40px; margin-top: 40px; align-items: start; }
+.tour-index { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.tour-index button { display: flex; align-items: center; gap: 12px; padding: 13px 12px; border: 0; border-bottom: 1px solid var(--line); background: none; cursor: pointer; text-align: left; font: 500 15.5px var(--f-b); color: var(--ink2); box-shadow: inset 2px 0 0 transparent; transition: color 0.2s, background 0.2s, box-shadow 0.2s; }
+.tour-index button:hover { color: var(--ink); background: var(--head); }
+.tour-index button svg { color: var(--ink3); flex: none; }
+.tour-num { font: 500 12px var(--f-m); color: var(--ink3); width: 18px; }
+.tour-index button[aria-selected="true"] { color: var(--ink); font-weight: 600; background: var(--surface); box-shadow: inset 2px 0 0 var(--primary); }
+.tour-index button[aria-selected="true"] svg, .tour-index button[aria-selected="true"] .tour-num { color: var(--accent); }
+.tour-index button:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.tour-panels { min-width: 0; }
+@media (max-width: 1023px) {
+  .tour-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .tour-index { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; border: 0; }
+  .tour-index button { border: 1px solid var(--line); border-radius: var(--r); padding: 11px 12px; font-size: 14.5px; background: var(--surface); }
+  .tour-index button:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .tour-index button[aria-selected="true"] { box-shadow: inset 0 0 0 1px var(--primary); border-color: var(--primary); }
+  .tour-num { display: none; }
+}
+.tour-panel { margin-top: 0; }
+.tour-panel h3 { margin-top: 6px; font-size: clamp(22px, 2.6vw, 30px); font-weight: 600; letter-spacing: -0.02em; }
 .tour-story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 20px; }
 .tour-story.solo { grid-template-columns: minmax(0, 1fr); }
 .tour-before, .tour-after { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }

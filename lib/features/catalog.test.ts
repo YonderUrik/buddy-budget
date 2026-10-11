@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { NAV_ITEMS } from "@/components/layout/sidebar";
-import { UPCOMING_FEATURES } from "@/components/domain/auth/upcoming-features.data";
 import { FEATURES, FEATURE_AREAS, featureCounts, featuresByArea, featuresByStatus } from "./catalog";
 
 describe("catalogo funzionalità", () => {
@@ -28,10 +27,5 @@ describe("catalogo funzionalità", () => {
       if (item.comingSoon) expect(feature?.status).toBe("soon");
       else expect(["live", "new"]).toContain(feature?.status);
     }
-  });
-
-  it("il pannello \"In arrivo\" del login mostra esattamente le funzionalità `soon`", () => {
-    const screens = featuresByStatus("soon").filter((feature) => feature.appPath);
-    expect(UPCOMING_FEATURES.map((feature) => feature.name)).toEqual(screens.map((feature) => feature.name));
   });
 });

@@ -20,8 +20,11 @@
 .wb.is-app .wb-app { opacity: 1; transform: none; }
 .wb.is-app .wb-sheet { opacity: 0.25; filter: blur(2px); }
 .wb-tabs { display: flex; gap: 2px; padding: 4px; border-top: 1px solid var(--line); background: var(--head); font: 500 13px var(--f-b); }
-.wb-tabs button { flex: 1; border: 0; border-radius: var(--r-sm); background: none; padding: 7px; cursor: pointer; color: var(--ink3); font: inherit; }
+.wb-tabs button { position: relative; overflow: hidden; flex: 1; border: 0; border-radius: var(--r-sm); background: none; padding: 7px; cursor: pointer; color: var(--ink3); font: inherit; }
 .wb-tabs button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px var(--shadow-win2); }
 .wb-tabs button:hover { color: var(--ink); }
 @media (max-width: 900px) { .wb-age, .wb-d { display: none; } }
 @media (max-width: 480px) { .wb-sheet { font-size: 12px; } .wb-sheet th, .wb-sheet td { padding: 0 6px; height: 28px; } }
+.wb-progress { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--primary); transform-origin: left; transform: scaleX(0); animation-name: wb-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
+@keyframes wb-fill { to { transform: scaleX(1); } }
+.wb-fx code.wb-fx-ok { color: var(--a-pos); }

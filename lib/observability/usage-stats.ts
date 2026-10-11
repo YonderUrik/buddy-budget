@@ -22,6 +22,7 @@ interface UsageRow {
   f_investments: number;
   f_debts: number;
   f_pension: number;
+  f_subscriptions: number;
   r_accounts: number;
   r_transactions: number;
   r_investment_operations: number;
@@ -63,6 +64,7 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       (select count(distinct user_id)::int from investment_transactions) as f_investments,
       (select count(distinct user_id)::int from debts) as f_debts,
       (select count(distinct user_id)::int from pension_funds) as f_pension,
+      (select count(distinct user_id)::int from subscriptions where status = 'confermato') as f_subscriptions,
       (select count(*)::int from accounts where not is_demo) as r_accounts,
       (select count(*)::int from transactions t join accounts a on a.id = t.account_id where not a.is_demo) as r_transactions,
       (select count(*)::int from investment_transactions) as r_investment_operations,
@@ -92,6 +94,7 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       investments: row.f_investments,
       debts: row.f_debts,
       pension: row.f_pension,
+      subscriptions: row.f_subscriptions,
     },
     records: {
       accounts: row.r_accounts,

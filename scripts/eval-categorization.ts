@@ -26,6 +26,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { merchantKey } from "@/lib/categorization/merchant-key";
+import { prepareMerchantForModel, type BlockReason } from "@/lib/categorization/privacy-filter";
 import { summarizeByThreshold, topConfusions, type EvalPrediction } from "@/lib/categorization/eval-metrics";
 import {
   JEV_BATCH_SIZE,
@@ -50,6 +51,9 @@ interface GoldenRow {
   skipped: boolean;
   /** Ancora «Da categorizzare»: non ha una verità di riferimento, entra solo nel report. */
   uncategorized?: boolean;
+  /** Calcolati al caricamento: nome pulito da inviare e motivo per cui non parte. */
+  sendName?: string;
+  blockReason?: BlockReason | null;
 }
 
 interface CategoryDescription {
@@ -194,6 +198,12 @@ function loadGolden(dir: string): { golden: GoldenRow[]; categoryOptions: JevCat
     .split("\n")
     .filter(Boolean)
     .map((line) => JSON.parse(line) as GoldenRow);
+  for (const row of golden) {
+    const prepared = prepareMerchantForModel(row.name);
+    row.sendName = prepared.name;
+    row.blockReason = prepared.blocked;
+    row.skipped = row.skipped || prepared.blocked !== null;
+  }
   const path = join(dir, "categories.json");
   const described: CategoryDescription[] = existsSync(path) ? (JSON.parse(readFileSync(path, "utf8")) as CategoryDescription[]) : [];
   const categoryOptions = new Map<string, JevCategory>(described.map((c) => [c.name, { name: c.name, type: c.type, description: c.description }]));
@@ -210,7 +220,7 @@ function pickExamples(pool: GoldenRow[]): (JevExample & { key: string })[] {
     const used = perCategory.get(row.category) ?? 0;
     if (used >= EXAMPLES_PER_CATEGORY || examples.length >= MAX_EXAMPLES) continue;
     perCategory.set(row.category, used + 1);
-    examples.push({ key: row.key, name: row.name, category: row.category });
+    examples.push({ key: row.key, name: row.sendName ?? row.name, category: row.category });
   }
   return examples;
 }
@@ -243,7 +253,7 @@ async function run() {
     const batch = test.slice(i, i + JEV_BATCH_SIZE);
     const merchants: JevMerchant[] = batch.map((row, index) => ({
       id: String(i + index),
-      name: row.name,
+      name: row.sendName ?? row.name,
       mcc: row.mcc,
       isIncome: row.isIncome,
     }));
@@ -300,6 +310,8 @@ async function report() {
   const examplePicks = pickExamples(sendable.filter((row) => !row.uncategorized && !isTestRow(row.key)));
   const exampleKeys = new Set(examplePicks.map((e) => e.key));
   const examples = examplePicks.map(({ name, category }) => ({ name, category }));
+  const blocked = golden.filter((row) => row.blockReason);
+  console.log(`Non inviati: ${blocked.filter((r) => r.blockReason === "persona").length} come persone, ${blocked.filter((r) => r.blockReason === "operazione").length} come operazioni.`);
   console.log(`Report: ${sendable.length} esercenti da classificare (${golden.length - sendable.length} esclusi), esempi: ${examples.length}, modello: ${model}`);
 
   const decisions = new Map<string, { category: string; confidence: number; second: string; secondConfidence: number }>();
@@ -307,7 +319,7 @@ async function report() {
   let costKnown = true;
   for (let i = 0; i < sendable.length; i += JEV_BATCH_SIZE) {
     const batch = sendable.slice(i, i + JEV_BATCH_SIZE);
-    const merchants: JevMerchant[] = batch.map((row, index) => ({ id: String(i + index), name: row.name, mcc: row.mcc, isIncome: row.isIncome }));
+    const merchants: JevMerchant[] = batch.map((row, index) => ({ id: String(i + index), name: row.sendName ?? row.name, mcc: row.mcc, isIncome: row.isIncome }));
     const result = await classifyWithJev({ merchants, categories: categoryOptions, examples, model }, { apiKey });
     if (result.costUsd === null) costKnown = false;
     else costUsd += result.costUsd;
@@ -346,7 +358,7 @@ async function report() {
         d ? d.confidence.toFixed(2) : "",
         d?.second ?? "",
         d ? d.secondConfidence.toFixed(2) : "",
-        result,
+        result === "non inviato" ? `non inviato (${row.blockReason ?? "operazione"})` : result,
         "",
       ]
         .map(csvField)

@@ -57,6 +57,8 @@ export interface ProductEvents {
   budget_set: undefined;
   bank_connect_started: undefined;
   bank_connect_completed: { accounts: number };
+  /** «Collega la tua banca» mostrato come non disponibile nel dialog «Nuovo conto» (una volta per apertura); `reason`: posti finiti o limite per persona. */
+  bank_connect_unavailable_seen: { reason: "user_limit" | "user_attempts" | "global_limit" | "provider_limit" };
   account_sync_manual: undefined;
   /** Modifica di un conto dalla finestra dei dettagli; `field`: cosa è cambiato, `kind`: conto manuale o collegato alla banca. */
   account_updated: { field: "name" | "type" | "balance" | "appearance"; kind: "manuale" | "collegato" };

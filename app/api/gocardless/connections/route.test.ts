@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { accounts } from "@/lib/db/schema/accounts";
-import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
+import { bankAccountLinks, bankConnectionAttempts, bankConnections } from "@/lib/db/schema/bank-connections";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/gocardless/client", async (importOriginal) => {
@@ -13,7 +13,7 @@ vi.mock("@/lib/gocardless/client", async (importOriginal) => {
 });
 
 import { auth } from "@/lib/auth";
-import { createRequisition } from "@/lib/gocardless/client";
+import { GoCardlessError, createRequisition } from "@/lib/gocardless/client";
 import { GET, POST } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
@@ -39,6 +39,7 @@ describe("GET/POST /api/gocardless/connections", () => {
   });
 
   afterEach(async () => {
+    await db.delete(bankConnectionAttempts).where(eq(bankConnectionAttempts.userId, userId));
     await db.delete(authUser).where(eq(authUser.id, userId));
   });
 
@@ -117,5 +118,37 @@ describe("GET/POST /api/gocardless/connections", () => {
         syncsRemainingToday: 4,
       },
     ]);
+  });
+
+  it("risponde 409 con il motivo quando l'utente ha già una banca collegata", async () => {
+    const [account] = await db.insert(accounts).values({ userId, name: "Conto", type: "checking", source: "auto" }).returning();
+    const [connection] = await db
+      .insert(bankConnections)
+      .values({ userId, institutionId: "INST_A", institutionName: "Banca A", requisitionId: "req-a", status: "linked" })
+      .returning();
+    await db.insert(bankAccountLinks).values({ connectionId: connection.id, accountId: account.id, externalAccountId: "ext-a" });
+
+    const response = await POST(
+      new NextRequest("http://localhost/api/gocardless/connections", {
+        method: "POST",
+        body: JSON.stringify({ institutionId: "INST_B", institutionName: "Banca B", transactionTotalDays: 90 }),
+      })
+    );
+    expect(response.status).toBe(409);
+    expect((await response.json()).reason).toBe("user_limit");
+    expect(createRequisition).not.toHaveBeenCalled();
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.userId, userId))).toHaveLength(1);
+  });
+
+  it("traduce il 402 di GoCardless (posti del piano finiti) in posti esauriti", async () => {
+    vi.mocked(createRequisition).mockRejectedValue(new GoCardlessError("CompanyRequisitionLimitReached", 402));
+    const response = await POST(
+      new NextRequest("http://localhost/api/gocardless/connections", {
+        method: "POST",
+        body: JSON.stringify({ institutionId: "INST_1", institutionName: "Banca Test", transactionTotalDays: 90 }),
+      })
+    );
+    expect(response.status).toBe(409);
+    expect((await response.json()).reason).toBe("provider_limit");
   });
 });

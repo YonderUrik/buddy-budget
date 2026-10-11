@@ -164,6 +164,11 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
     const [link] = await db.select().from(bankAccountLinks).where(eq(bankAccountLinks.accountId, existingAccount.id));
     expect(link.externalAccountId).toBe("ext-new");
     expect(link.connectionId).toBe(connectionId);
+
+    // Il rinnovo libera subito la vecchia connessione rimasta senza conti.
+    await Promise.all(afterTasks);
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.id, oldConnection.id))).toHaveLength(0);
+    expect(await db.select().from(bankConnections).where(eq(bankConnections.id, connectionId))).toHaveLength(1);
   });
 
   it("segnala 'already-running' e non tocca il lock se il conto 'existing' è già in sincronizzazione altrove", async () => {

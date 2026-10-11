@@ -4,8 +4,10 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { transactions } from "@/lib/db/schema/transactions";
+import { bankAccountLinks } from "@/lib/db/schema/bank-connections";
+import { releaseConnectionIfUnused } from "@/lib/gocardless/release";
 import { updateAccountSchema } from "@/lib/validation/accounts";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Recupera un conto solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedAccount(userId: string, accountId: string) {
@@ -64,7 +66,10 @@ async function handlePatch(
   return Response.json(updated);
 }
 
-/** Elimina o scollega un conto del proprio utente, manuale o auto; 404 se non proprio. */
+/**
+ * Elimina o scollega un conto del proprio utente, manuale o auto; 404 se non proprio. Se era l'ultimo conto
+ * di un collegamento bancario, il consenso viene revocato subito su GoCardless e il posto si libera.
+ */
 async function handleDelete(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -83,10 +88,18 @@ async function handleDelete(
 
   // transactions.account_id non ha ON DELETE cascade (a differenza di bank_account_links):
   // un conto "auto" con transazioni sincronizzate violerebbe altrimenti il vincolo FK.
+  const links = await db
+    .select({ connectionId: bankAccountLinks.connectionId })
+    .from(bankAccountLinks)
+    .where(eq(bankAccountLinks.accountId, id));
+
   await db.transaction(async (tx) => {
     await tx.delete(transactions).where(eq(transactions.accountId, id));
     await tx.delete(accounts).where(eq(accounts.id, id));
   });
+
+  // Dopo la transazione: il link è sparito con il conto (cascade). Non lancia mai, al peggio resta alla pulizia giornaliera.
+  for (const { connectionId } of links) await releaseConnectionIfUnused(connectionId, "account_removed", requestLogger());
 
   return new Response(null, { status: 204 });
 }

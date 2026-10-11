@@ -6,7 +6,7 @@
  * La pagina di un singolo titolo è una scheda a sé: niente intestazione né schede, solo i dialog condivisi.
  */
 
-import { FormDialogContent } from "@/components/domain/shared";
+import { FormDialogContent, SectionHeading } from "@/components/domain/shared";
 import * as React from "react";
 import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
 import { usePathname } from "next/navigation";
@@ -17,6 +17,7 @@ import {
   BrokerSelector,
   InvestmentsActionsProvider,
   InvestmentsTabs,
+  INVESTMENTS_TABS,
   PanelDialogHeader,
   RegisterOperationForm,
   type RegisterOperationInitial,
@@ -52,7 +53,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
         {isTitlePage ? null : (
           <div className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
-              <h1 className="min-w-0 font-heading text-2xl font-medium text-foreground">Investimenti</h1>
+              <SectionHeading title="Investimenti" tabs={INVESTMENTS_TABS} activeHref={pathname} analyticsKey="investimenti" />
               <div className="flex shrink-0 gap-2">
                 <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
                   <DatabaseIcon size={16} aria-hidden="true" />

@@ -27,3 +27,7 @@ export { InlineOrSheet } from "./inline-or-sheet";
 export type { InlineOrSheetLayout, InlineOrSheetProps } from "./inline-or-sheet";
 export { BackLink } from "./back-link";
 export type { BackLinkProps } from "./back-link";
+export { SectionHeading } from "./section-heading";
+export type { SectionHeadingProps } from "./section-heading";
+export { SectionViewsSheet } from "./section-views-sheet";
+export type { SectionViewsSheetProps } from "./section-views-sheet";

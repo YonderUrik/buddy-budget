@@ -5,6 +5,8 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import";
+/** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
+export type SectionViewsKey = "liquidita" | "investimenti" | "pensione";
 
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
@@ -65,6 +67,10 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
+  /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
+  section_views_opened: { section: SectionViewsKey };
+  /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */
+  section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
   liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "abbonamenti" | "categorie" | "regole" };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */

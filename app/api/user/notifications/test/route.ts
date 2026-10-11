@@ -6,6 +6,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { getAppUrl } from "@/lib/env";
+import { loadInvestmentData } from "@/lib/investments/data";
 import { formatCurrency } from "@/lib/format";
 import { TEST_EMAIL_MAX_PER_HOUR } from "@/lib/notifications";
 import {
@@ -15,14 +16,17 @@ import {
   countRecentTests,
   createUnsubscribeToken,
   digestEmail,
+  buildInvestmentDigest,
+  digestRange,
   digestWindowStartIso,
+  isDigestEmpty,
   sendNotificationEmail,
   unsubscribePageUrl,
 } from "@/lib/notifications/server";
 import { recordNotificationEmail, requestLogger, withRoute } from "@/lib/observability";
 
 /**
- * Manda a chi lo chiede un esempio del riepilogo con i suoi dati (ultimo mese concluso), così vede che cosa riceverà.
+ * Manda a chi lo chiede un esempio del riepilogo con i suoi dati (ultimo mese concluso, conti e investimenti), così vede che cosa riceverà.
  * Va solo all'indirizzo dell'account, al massimo `TEST_EMAIL_MAX_PER_HOUR` volte all'ora, e porta il link di disiscrizione come le altre.
  */
 async function handlePost(request: NextRequest) {
@@ -42,9 +46,16 @@ async function handlePost(request: NextRequest) {
     db.select().from(categories).where(eq(categories.userId, user.id)),
     db.select().from(budgets).where(eq(budgets.userId, user.id)),
   ]);
-  const data = buildDigest({ transactions: transactionRows, categories: categoryRows, budgets: budgetRows, frequency: "mensile", now });
-  if (data.movements === 0) {
-    return Response.json({ error: "Nel mese scorso non hai movimenti: l'esempio sarebbe vuoto." }, { status: 409 });
+  const range = digestRange("mensile", now);
+  const investments = await loadInvestmentData(user.id, range.from)
+    .then((investmentData) => buildInvestmentDigest(investmentData, range, now))
+    .catch((error: unknown) => {
+      log.warn("notifications.digest.investments_failed", { kind: "test", error });
+      return null;
+    });
+  const data = buildDigest({ transactions: transactionRows, categories: categoryRows, budgets: budgetRows, frequency: "mensile", now, investments });
+  if (isDigestEmpty(data)) {
+    return Response.json({ error: "Nel mese scorso non hai movimenti né investimenti: l'esempio sarebbe vuoto." }, { status: 409 });
   }
   const appUrl = getAppUrl();
   const token = createUnsubscribeToken({ userId: user.id, scope: "digest" });

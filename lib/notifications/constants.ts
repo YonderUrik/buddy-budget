@@ -20,7 +20,7 @@ export const NOTIFICATION_KIND_INFO: Record<NotificationKind, NotificationKindIn
   digest: {
     label: "Riepilogo periodico",
     reason: "il riepilogo periodico",
-    hint: "Entrate, spese e budget del periodo appena concluso, con le cifre che vedi già nell'app.",
+    hint: "Entrate, uscite e investimenti del periodo appena concluso, in poche righe.",
   },
   budget: {
     label: "Avvisi sul budget",

@@ -8,10 +8,9 @@ import {
   PersonalImportList,
   PersonalImportPreview,
   PersonalImportReceipt,
-  PersonalImportProgress,
+  isActiveJob,
   type PersonalImportReceiptFile,
   PersonalImportUpload,
-  isActiveJob,
 } from "@/components/domain/personal-import";
 import { usePersonalImportsQuery } from "@/lib/queries/personal-imports";
 
@@ -28,6 +27,9 @@ function PersonalImports() {
   const jobs = listing.data?.jobs;
   const selectedJob = jobs?.find((j) => j.id === selected) ?? (selected ? undefined : jobs?.find(isActiveJob));
 
+  // Rapporto del file: quello appena inviato, oppure quello scelto dall'isola o dalla lista.
+  const reportJob = receipt ? jobs?.find((j) => j.id === receipt.jobId) ?? ({ id: receipt.jobId } as NonNullable<typeof jobs>[number]) : selectedJob;
+  const reportFile: PersonalImportReceiptFile = receipt?.file ?? { name: `Importazione del ${reportJob?.createdAt ? new Date(reportJob.createdAt).toLocaleDateString("it-IT", { day: "numeric", month: "long" }) : ""}`.trim(), source: listing.data?.formats.find((f) => f.id === reportJob?.formatId)?.name ?? "File" };
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 sm:p-6">
       <header className="flex flex-col gap-2">
@@ -41,14 +43,7 @@ function PersonalImports() {
         <p className="text-text-2">Per le banche e i broker che BuddyBudget non supporta ancora. L&apos;AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.</p>
       </header>
 
-      {receipt ? (
-        <PersonalImportReceipt file={receipt.file} job={jobs?.find((j) => j.id === receipt.jobId)} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} />
-      ) : (
-        <>
-          {selectedJob && isActiveJob(selectedJob) ? <PersonalImportProgress job={selectedJob} /> : null}
-          {selectedJob?.status === "imported" ? <PersonalImportProgress job={selectedJob} /> : null}
-        </>
-      )}
+      {reportJob ? <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} /> : null}
       {selectedJob?.status === "review_failed" ? <PersonalImportPreview key={selectedJob.id} id={selectedJob.id} /> : null}
 
       {receipt ? null : <PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} />}

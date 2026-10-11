@@ -19,9 +19,9 @@ type Job = PersonalImportListing["jobs"][number];
 /** Cosa si sa del file appena inviato (letto nel browser prima dell'invio). */
 export interface PersonalImportReceiptFile {
   name: string;
-  size: number;
-  /** Righe di dati del file, intestazione esclusa. */
-  rows: number;
+  /** Peso e righe, noti solo subito dopo l'invio (non si conservano sul server). */
+  size?: number;
+  rows?: number;
   /** Nome della banca o del broker scelto. */
   source: string;
 }
@@ -107,7 +107,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium text-foreground">{file.name}</span>
-          <span className="text-xs text-muted-foreground">{file.source} · {formatFileSize(file.size)} · {plural(file.rows, "riga", "righe")}</span>
+          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size) : null, file.rows !== undefined ? plural(file.rows, "riga", "righe") : null].filter(Boolean).join(" · ")}</span>
         </span>
       </div>
 

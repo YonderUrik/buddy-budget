@@ -145,6 +145,7 @@ export default function PanoramicaPage() {
         currency={currency}
         nextDue={dues[0] ? { name: dues[0].name, date: dues[0].date, amount: dues[0].amount } : null}
         today={today}
+        dateAside={<WhatsNewSection />}
       />
 
       <RenewalBanner alerts={renewalAlerts} renewHref={`${RENEW_PATH}panoramica`} />
@@ -171,7 +172,6 @@ export default function PanoramicaPage() {
       ) : (
         <>
           {startStatus ? <StartChecklistSection status={startStatus} /> : null}
-          <WhatsNewSection />
           <NetWorthChartCard
             series={series}
             change={change}

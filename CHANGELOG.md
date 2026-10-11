@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.53.0](https://github.com/YonderUrik/buddy-budget/compare/v0.52.0...v0.53.0) (2026-10-11)
+
+
+### Novità
+
+* Altro più corto e Impostazioni a gruppi con anteprime ([#298](https://github.com/YonderUrik/buddy-budget/issues/298)) ([cfa83e7](https://github.com/YonderUrik/buddy-budget/commit/cfa83e7c0fb4093594af2e65d634517f9c9ae6be))
+* Categorizza su mobile con la carta a tutto schermo e soglia visibile ([#296](https://github.com/YonderUrik/buddy-budget/issues/296)) ([b470694](https://github.com/YonderUrik/buddy-budget/commit/b470694e20225b7201cbf23e13424e15de395d81))
+
+
+### Correzioni
+
+* isolamento tra utenti (ricerca strumenti, GoCardless, commento AI, logout) ([#297](https://github.com/YonderUrik/buddy-budget/issues/297)) ([f830c5e](https://github.com/YonderUrik/buddy-budget/commit/f830c5e51b759889bc2159c992493439cf15ce94))
+
 ## [0.52.0](https://github.com/YonderUrik/buddy-budget/compare/v0.51.0...v0.52.0) (2026-10-11)
 
 

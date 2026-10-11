@@ -5,8 +5,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeftIcon } from "lucide-react";
 import { DebtDetail, DebtsViewGate } from "@/components/domain/debts";
+import { BackLink } from "@/components/domain/shared";
 import { authClient } from "@/lib/auth/client";
 import { useDebtsQuery } from "@/lib/queries/debts";
 import { cn } from "@/lib/utils";
@@ -24,10 +24,8 @@ function FinanziamentiContent() {
     <DebtsViewGate loading={query.isLoading} error={query.isError} empty={data?.debts.length === 0} onRetry={() => query.refetch()}>
       {data && selected ? (
         <>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href="/debiti" className="mr-2 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground">
-              <ChevronLeftIcon size={16} aria-hidden="true" /> Debiti
-            </Link>
+          <BackLink href="/debiti" label="Debiti" className="-mb-2" />
+          <div className="flex flex-wrap items-center gap-2 empty:hidden">
             {data.debts.length > 1
               ? data.debts.map((d) => (
                   <Link

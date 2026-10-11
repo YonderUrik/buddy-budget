@@ -2,23 +2,29 @@
 
 /**
  * Layout di Debiti: titolo e "Aggiungi debito". Il dialog di aggiunta vive qui, così ogni scheda può aprirlo.
+ * Il dettaglio di un finanziamento ha la sua testata con «‹ Debiti»: lì il titolo della sezione non si ripete.
  */
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
 import { AddDebtDialog, DebtsActionsProvider } from "@/components/domain/debts";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 
+/** Pagine di dettaglio dei singoli finanziamenti. */
+const DETAIL_PAGES_BASE = "/debiti/finanziamenti";
+
 export default function DebitiLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = authClient.useSession();
+  const isDetail = usePathname().startsWith(DETAIL_PAGES_BASE);
   const [addOpen, setAddOpen] = React.useState(false);
   const actions = React.useMemo(() => ({ openAdd: () => setAddOpen(true) }), []);
 
   return (
     <DebtsActionsProvider value={actions}>
       <div className="mx-auto flex max-w-6xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-        <div className="flex flex-col gap-3">
+        <div className={isDetail ? "hidden" : "flex flex-col gap-3"}>
           <div className="flex items-start justify-between gap-3">
             <div>
               <h1 className="font-heading text-2xl font-medium text-foreground">Debiti</h1>

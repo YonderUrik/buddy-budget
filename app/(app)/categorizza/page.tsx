@@ -3,11 +3,9 @@
 /** Pagina "Categorizza": conferma rapida «a carte» delle proposte, o vista a elenco per lavorare in blocco. */
 
 import * as React from "react";
-import Link from "next/link";
-import { ArrowLeftIcon } from "lucide-react";
 import { toast } from "sonner";
 import { AiProgressStrip, AiSuggestBanner, CategorizeListView, CategorizeSwipeDeck } from "@/components/domain/categorization";
-import { LoadError, SegmentedControl, type SegmentedControlOption } from "@/components/domain/shared";
+import { BackLink, LoadError, SegmentedControl, type SegmentedControlOption } from "@/components/domain/shared";
 import { authClient } from "@/lib/auth/client";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { track } from "@/lib/analytics";
@@ -140,15 +138,8 @@ export default function CategorizzaPage() {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4 max-md:min-h-[calc(100dvh-3.5rem-var(--bottom-nav-offset,0px)-env(safe-area-inset-bottom))] sm:gap-6 sm:p-6 md:gap-5">
       <div className="flex items-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <Link href="/liquidita" className="-my-1 hidden w-fit py-1 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground md:block">
-            ← Torna a Movimenti
-          </Link>
-          <div className="flex items-center gap-2">
-            <Link href="/liquidita" aria-label="Torna a Movimenti" className="-ml-1 flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground md:hidden">
-              <ArrowLeftIcon className="size-5" />
-            </Link>
-            <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">Categorizza</h1>
-          </div>
+          <BackLink href="/liquidita" label="Movimenti" className="-my-1.5" />
+          <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">Categorizza</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
             {isLoading ? "Caricamento in corso..." : total === 0 ? "Nessuna transazione da categorizzare" : `${total} transazioni in attesa.`}
           </p>

@@ -50,14 +50,26 @@ function ImpostazioniContent() {
     if (group && !selected) router.replace(`${pathname}?sezione=${group}${window.location.hash}`);
   }, [selected, pathname, router]);
 
+  // Gruppo aperto dall'elenco in questa visita: «‹ Impostazioni» torna indietro nella cronologia invece di aggiungere
+  // un'altra voce, così il tasto indietro del telefono non riapre il gruppo appena chiuso.
+  const openedFromList = React.useRef(false);
+
   function select(id: SettingsGroupId | null) {
-    router.push(id ? `${pathname}?sezione=${id}` : pathname, { scroll: true });
+    if (id === null && openedFromList.current) {
+      openedFromList.current = false;
+      router.back();
+      return;
+    }
+    openedFromList.current = id !== null && !selected;
+    if (id) router.push(`${pathname}?sezione=${id}`, { scroll: true });
+    else router.replace(pathname, { scroll: true });
     if (id) track("settings_group_opened", { group: id });
   }
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <div>
+      {/* Su telefono, dentro un gruppo, in cima c'è «‹ Impostazioni»: il titolo della pagina lo ripeterebbe. */}
+      <div className={selected ? "max-md:hidden" : undefined}>
         <h1 className="font-heading text-2xl font-medium text-foreground">Impostazioni</h1>
         <p className="text-sm text-muted-foreground">Il tuo profilo, le preferenze e il controllo sui tuoi dati.</p>
       </div>

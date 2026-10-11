@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.50.1](https://github.com/YonderUrik/buddy-budget/compare/v0.50.0...v0.50.1) (2026-10-11)
+
+
+### Prestazioni
+
+* scheletro di caricamento, niente salti in Liquidità e cache dello storico patrimonio ([#288](https://github.com/YonderUrik/buddy-budget/issues/288)) ([15387ed](https://github.com/YonderUrik/buddy-budget/commit/15387edd1318f27370d4c7ce7fae98d7efc407b8))
+
 ## [0.50.0](https://github.com/YonderUrik/buddy-budget/compare/v0.49.1...v0.50.0) (2026-10-11)
 
 

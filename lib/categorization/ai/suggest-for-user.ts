@@ -96,7 +96,11 @@ export async function suggestCategoriesForUser(
     .limit(400);
   const nameById = new Map(options_.map((category) => [category.id, category.name]));
   const examples = pickExamples(exampleRows, nameById);
-  const jevCategories = options_.map((category) => ({ name: category.name, type: category.type }));
+  const jevCategories = options_.map((category) => ({
+    name: category.name,
+    type: category.type,
+    ...(category.description ? { description: category.description } : {}),
+  }));
   const idByName = new Map(options_.map((category) => [category.name, category.id]));
   const model = categorizationModel();
   const deadline = options.budgetMs ? Date.now() + options.budgetMs : Infinity;

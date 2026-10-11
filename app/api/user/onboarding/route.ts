@@ -9,8 +9,10 @@ import { recordLegalAcceptance } from "@/lib/legal/acceptance";
 import { saveNotificationPreferences } from "@/lib/notifications/server";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { notificationPreferencesSchema } from "@/lib/validation/notifications";
+import { applyCategorySetup } from "@/lib/categories/setup.server";
+import { categorySetupSchema } from "@/lib/validation/categories";
 
-/** Completa l'onboarding: salva la valuta principale (solo tra quelle supportate), le email facoltative scelte, registra l'accettazione di Termini e Privacy e marca l'utente come onboarded. */
+/** Completa l'onboarding: salva la valuta principale (solo tra quelle supportate), applica le categorie scelte (se cambiate), le email facoltative scelte, registra l'accettazione di Termini e Privacy e marca l'utente come onboarded. */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -54,8 +56,34 @@ async function handlePost(request: NextRequest) {
     requestLogger().info("notifications.preferences.updated", { trigger: "onboarding", count: enabled });
   }
   requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
+  await applyOnboardingCategories((body as { categories?: unknown } | null)?.categories, session.user.id);
 
   return new Response(null, { status: 200 });
+}
+
+/**
+ * Categorie scelte nel passo «Categorie»: assenti se l'utente non ha cambiato la proposta. Un errore qui non blocca
+ * l'onboarding (restano le categorie di default, modificabili in Categorie): si registra e si prosegue.
+ */
+async function applyOnboardingCategories(raw: unknown, userId: string) {
+  if (raw === undefined) return;
+  const parsed = categorySetupSchema.safeParse(raw);
+  if (!parsed.success) {
+    requestLogger().warn("onboarding.categories.skipped", { reason: "invalid" });
+    return;
+  }
+  try {
+    const result = await applyCategorySetup(userId, parsed.data);
+    if (result.outcome === "applied") {
+      requestLogger().info("onboarding.categories.applied", { deleted: result.deleted, updated: result.updated, created: result.created });
+    } else if (result.reason === "unchanged") {
+      requestLogger().info("onboarding.categories.skipped", { reason: result.reason });
+    } else {
+      requestLogger().warn("onboarding.categories.skipped", { reason: result.reason });
+    }
+  } catch (error) {
+    requestLogger().error("onboarding.categories.failed", { error });
+  }
 }
 
 export const POST = withRoute("user.onboarding", handlePost);

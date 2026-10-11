@@ -42,6 +42,7 @@ function makeCategory(overrides: Partial<Category>): Category {
     type: "voluta",
     color: "slate",
     icon: "package",
+    description: null,
     isFallback: false,
     createdAt: new Date(),
     ...overrides,

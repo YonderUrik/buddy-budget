@@ -46,6 +46,13 @@ export interface ProductEvents {
   /** Dati d'esempio azzerati; `from`: banner sempre visibile o Panoramica. */
   demo_cleared: { from: "banner" | "panoramica" };
   onboarding_completed: { currency: SupportedCurrency };
+  /** Foglio «Personalizza» aperto nel passo «Categorie» dell'onboarding. */
+  onboarding_categories_opened: undefined;
+  /**
+   * Categorie scelte nell'onboarding (alla fine dell'onboarding): `customized` false = confermata la proposta;
+   * conteggi di categorie attive, tolte, rinominate, facoltative accese e aggiunte a mano.
+   */
+  onboarding_categories_chosen: { customized: boolean; active: number; removed: number; renamed: number; optionalAdded: number; custom: number };
   account_created: undefined;
   budget_set: undefined;
   bank_connect_started: undefined;

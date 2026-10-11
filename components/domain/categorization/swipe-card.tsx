@@ -22,6 +22,8 @@ export const SWIPE_COMMIT_DISTANCE = 110;
 const DESCRIPTION_PREVIEW_LIMIT = 3;
 /** Inclinazione massima della carta in gradi. */
 const MAX_TILT_DEGREES = 8;
+/** Durata della vibrazione leggera quando un gesto va a segno (dove il telefono la supporta). */
+const HAPTIC_TICK_MS = 12;
 
 export interface SwipeCardProps {
   group: SuggestionGroup;
@@ -36,6 +38,7 @@ export interface SwipeCardProps {
   onRememberChange: (remember: boolean) => void;
   onConfirm: () => void;
   onChange: () => void;
+  onSkip: () => void;
   onPick: (categoryId: string) => void;
 }
 
@@ -50,10 +53,13 @@ export function SwipeCard({
   onRememberChange,
   onConfirm,
   onChange,
+  onSkip,
   onPick,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 300], [-MAX_TILT_DEGREES, MAX_TILT_DEGREES]);
+  const y = useMotionValue(0);
+  const skipOpacity = useTransform(y, [-SWIPE_COMMIT_DISTANCE, -20], [1, 0]);
   const confirmOpacity = useTransform(x, [20, SWIPE_COMMIT_DISTANCE], [0, 1]);
   const changeOpacity = useTransform(x, [-SWIPE_COMMIT_DISTANCE, -20], [1, 0]);
   const rememberId = React.useId();
@@ -67,18 +73,27 @@ export function SwipeCard({
 
   return (
     <motion.div
-      style={{ x, rotate }}
-      drag={changing ? false : "x"}
+      style={{ x, y, rotate }}
+      drag={changing ? false : true}
       dragSnapToOrigin
       dragElastic={0.6}
       onDragEnd={(_, info) => {
-        if (info.offset.x > SWIPE_COMMIT_DISTANCE && hasSuggestion) onConfirm();
-        else if (info.offset.x < -SWIPE_COMMIT_DISTANCE) onChange();
+        const { x: dx, y: dy } = info.offset;
+        const horizontal = Math.abs(dx) >= Math.abs(dy);
+        let committed = true;
+        if (horizontal && dx > SWIPE_COMMIT_DISTANCE && hasSuggestion) onConfirm();
+        else if (horizontal && dx < -SWIPE_COMMIT_DISTANCE) onChange();
+        else if (!horizontal && dy < -SWIPE_COMMIT_DISTANCE) onSkip();
+        else committed = false;
+        if (committed) navigator.vibrate?.(HAPTIC_TICK_MS);
       }}
-      className="relative flex touch-pan-y flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-lg select-none"
+      className="relative flex touch-none flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-lg select-none"
     >
       <motion.span style={{ opacity: confirmOpacity }} className="pointer-events-none absolute top-4 left-4 rounded-md border-2 border-pos px-2 py-0.5 text-sm font-semibold text-pos">
         È questa
+      </motion.span>
+      <motion.span style={{ opacity: skipOpacity }} className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-md border-2 border-muted-foreground px-2 py-0.5 text-sm font-semibold text-muted-foreground">
+        Salta
       </motion.span>
       <motion.span style={{ opacity: changeOpacity }} className="pointer-events-none absolute top-4 right-4 rounded-md border-2 border-neg px-2 py-0.5 text-sm font-semibold text-neg">
         Un&apos;altra

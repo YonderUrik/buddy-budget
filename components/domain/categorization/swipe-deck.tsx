@@ -15,6 +15,7 @@ import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { track } from "@/lib/analytics";
 import { SwipeCard } from "./swipe-card";
+import { SwipeTutorial } from "./swipe-tutorial";
 import { useSwipeDeck } from "./use-swipe-deck";
 
 export interface CategorizeSwipeDeckProps {
@@ -104,6 +105,7 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
         onRememberChange={setRemember}
         onConfirm={confirm}
         onChange={() => setChanging(true)}
+        onSkip={skipCard}
         onPick={pick}
       />
       <div className="flex items-center justify-center gap-3">
@@ -125,6 +127,7 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
       <p className="hidden text-center text-xs text-muted-foreground sm:block">
         Frecce: → conferma, ← cambia, ↓ salta, Z annulla. Le scelte si salvano da sole dopo qualche secondo.
       </p>
+      <SwipeTutorial />
     </div>
   );
 }

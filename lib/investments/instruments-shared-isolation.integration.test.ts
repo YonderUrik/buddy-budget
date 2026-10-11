@@ -8,7 +8,7 @@ import { resolveTaxSettings } from "./tax-settings";
 
 const deps: CreateInstrumentDeps = { quoteMeta: async () => ({ currency: "EUR", exchange: "Milan" }) };
 
-describe("aliquote degli strumenti comuni: isolamento tra utenti", () => {
+describe("strumenti comuni: nessuna scelta di un utente vale per gli altri", () => {
   const userIds: string[] = [];
   const instrumentIds: string[] = [];
   let alice: string;
@@ -79,5 +79,47 @@ describe("aliquote degli strumenti comuni: isolamento tra utenti", () => {
     await createOrReuseInstrument(bob, { source: "yahoo", yahooSymbol: symbol, name: "ETF", type: "etf", taxRate: "0.26" }, deps);
     expect((await settingOf(alice, created.instrument.id))?.taxRate).toBe("0.1250");
     expect((await settingOf(bob, created.instrument.id))?.taxRate).toBe("0.2600");
+  });
+
+  it("nome e tipo di uno strumento comune vengono dalla fonte, non dal client", async () => {
+    const fromSource: CreateInstrumentDeps = { quoteMeta: async () => ({ currency: "EUR", exchange: "Milan", name: "Nome dalla fonte", type: "etf" }) };
+    const created = await createOrReuseInstrument(alice, { source: "yahoo", yahooSymbol: symbol, name: "Nome scelto da Alice", type: "obbligazione" }, fromSource);
+    if (!created.ok) throw new Error("creazione fallita");
+    instrumentIds.push(created.instrument.id);
+    expect(created.instrument).toMatchObject({ name: "Nome dalla fonte", type: "etf", priceUnit: "unita" });
+  });
+
+  it("lega l'ISIN indicato dal client solo se la fonte lo conferma per quel simbolo", async () => {
+    const isin = `IE00${crypto.randomUUID().replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+    const unconfirmed = await createOrReuseInstrument(
+      alice,
+      { source: "yahoo", yahooSymbol: symbol, name: "ETF", type: "etf", isin },
+      { ...deps, listings: async () => [{ yahooSymbol: "ALTRO.MI" }] }
+    );
+    if (!unconfirmed.ok) throw new Error("creazione fallita");
+    instrumentIds.push(unconfirmed.instrument.id);
+    expect(unconfirmed.instrument.isin).toBeNull();
+
+    const other = `${symbol.slice(0, -3)}X.MI`;
+    const confirmed = await createOrReuseInstrument(
+      alice,
+      { source: "yahoo", yahooSymbol: other, name: "ETF", type: "etf", isin },
+      { ...deps, listings: async () => [{ yahooSymbol: other }] }
+    );
+    if (!confirmed.ok) throw new Error("creazione fallita");
+    instrumentIds.push(confirmed.instrument.id);
+    expect(confirmed.instrument.isin).toBe(isin);
+  });
+
+  it("uno strumento creato solo da ISIN resta privato di chi lo crea", async () => {
+    const isin = `IT000${crypto.randomUUID().replace(/-/g, "").slice(0, 7).toUpperCase()}`;
+    const input = { source: "isin" as const, isin, name: "BTP di prova", type: "obbligazione" as const, currency: "EUR" };
+    const byAlice = await createOrReuseInstrument(alice, input, deps);
+    const byBob = await createOrReuseInstrument(bob, { ...input, name: "Altro nome" }, deps);
+    if (!byAlice.ok || !byBob.ok) throw new Error("creazione fallita");
+    instrumentIds.push(byAlice.instrument.id, byBob.instrument.id);
+    expect(byAlice.instrument.createdByUserId).toBe(alice);
+    expect(byBob.instrument.id).not.toBe(byAlice.instrument.id);
+    expect(byBob.instrument.name).toBe("Altro nome");
   });
 });

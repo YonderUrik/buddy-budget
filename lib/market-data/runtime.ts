@@ -17,7 +17,7 @@ import {
   isFakeMarketData,
 } from "./fake";
 import { refreshCryptoCatalog, searchCryptoCached } from "./crypto-catalog";
-import { fetchOpenFigiListings, fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
+import { fetchOpenFigiListings, fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooQuoteMeta, type YahooSearchHit } from "./providers";
 import {
   getCachedYahooSearch,
   redisBackfillStore,
@@ -82,7 +82,7 @@ export async function refreshCryptoCatalogOnProviders(): Promise<number> {
 }
 
 /** Valuta e borsa di un simbolo Yahoo, o null se Yahoo non lo conosce. */
-export async function quoteMetaOnProviders(symbol: string): Promise<{ currency: string | null; exchange: string | null } | null> {
+export async function quoteMetaOnProviders(symbol: string): Promise<YahooQuoteMeta | null> {
   return isFakeMarketData() ? fakeQuoteMeta(symbol) : fetchYahooQuoteMeta(symbol, realContext());
 }
 

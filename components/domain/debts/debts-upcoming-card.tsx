@@ -4,7 +4,7 @@
 
 import * as React from "react";
 import { CalendarClockIcon, CheckIcon } from "lucide-react";
-import { PanelSection } from "@/components/domain/investments";
+import { PanelSection } from "@/components/domain/investments/light";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { todayIso } from "@/lib/debts/dates";
 import { findDueRow } from "@/lib/debts/overview-insights";

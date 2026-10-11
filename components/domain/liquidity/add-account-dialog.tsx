@@ -10,7 +10,7 @@ import Link from "next/link";
 import * as React from "react";
 import { ArrowLeftIcon, ChevronRightIcon, FileSpreadsheetIcon, LandmarkIcon, PencilLineIcon, ZapIcon } from "lucide-react";
 import { AddAccountForm, ConnectBankFlow } from "@/components/domain/accounts";
-import { PanelDialogHeader } from "@/components/domain/investments";
+import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
 

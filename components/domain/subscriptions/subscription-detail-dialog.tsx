@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { CheckIcon, HistoryIcon, InfoIcon, RepeatIcon, Trash2Icon, UndoIcon, XIcon } from "lucide-react";
-import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
+import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments/light";
 import { FormDialogContent } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";

@@ -7,7 +7,7 @@
 
 import * as React from "react";
 import { LightbulbIcon, PiggyBankIcon } from "lucide-react";
-import { PanelSection } from "@/components/domain/investments";
+import { PanelSection } from "@/components/domain/investments/light";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";

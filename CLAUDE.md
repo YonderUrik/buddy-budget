@@ -94,6 +94,17 @@ Regola decisa il 2026-10-01: una feature non è "completata" finché in produzio
 
 Un cambiamento puramente grafico o di calcolo senza nuovi esiti osservabili può dichiarare "nessun nuovo segnale" nella PR, ma va dichiarato, non omesso.
 
+### Prestazioni e animazioni (standard)
+
+Standard deciso il 2026-10-11 dopo la review delle prestazioni (`docs/decisioni/2026-10-11-prestazioni-caricamento.md`). Ogni modifica all'interfaccia tiene d'occhio peso, caricamento e movimento; la PR dichiara in una riga cosa è cambiato, oppure «nessun impatto sulle prestazioni».
+
+1. **Peso del JS**: i barrel `index.ts` che esportano grafici (Recharts) o altro codice pesante non si importano da sidebar, layout o da altre aree per usare un piccolo helper: si usa un barrel leggero (esempio: `components/domain/investments/light.ts`) o si sposta l'helper in un file a sé. Un componente pesante o poco visto (dialog, tab secondaria) si carica con `next/dynamic`.
+2. **Caricamento senza salti**: ogni schermata ha uno stato di caricamento (`loading.tsx` o segnaposto) con l'altezza vicina a quella del contenuto, e i blocchi che compaiono dopo i dati riservano lo spazio: l'obiettivo è CLS sotto 0,1. Nessun blocco che appare di colpo spostando il resto.
+3. **Dati**: si chiede solo ciò che serve (finestre di date e `compact` come per lo storico del patrimonio), la stessa informazione non si richiede due volte con intervalli diversi, e le query di dati che cambiano di rado hanno uno `staleTime`. Prima di aggiungerne uno a una query, controllare che le mutazioni la invalidino.
+4. **Rendering**: nessun calcolo pesante nel render (`useMemo`, `useDeferredValue` per i cursori, un Worker se serve); i grafici non hanno animazione d'ingresso (`isAnimationActive={false}`), si anima solo ciò che comunica un cambiamento.
+5. **Animazioni**: durata breve (sotto 300 ms per le transizioni, sotto 600 ms per i numeri), mai alla prima comparsa dei dati o su liste lunghe; si usano `components/motion/` e `lib/motion/springs`, si rispetta `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`), nessun effetto di luce. Numeri animati solo per le cifre-chiave che cambiano per una scelta dell'utente o per un dato nuovo.
+6. **Come si verifica**: build di produzione con i dati demo (`pnpm demo:seed`), Chromium con rete lenta e CPU rallentata; si guardano JS caricato, tempo alla prima chiamata dati e CLS prima e dopo, e i numeri vanno nella PR.
+
 ## Stack
 
 - Next.js (App Router) + TypeScript

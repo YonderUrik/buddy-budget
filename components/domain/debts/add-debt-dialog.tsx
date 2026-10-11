@@ -5,7 +5,7 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { LandmarkIcon } from "lucide-react";
-import { PanelDialogHeader } from "@/components/domain/investments";
+import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { StepProgress, StepStage, useStepFlow, FormDialogContent } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
 import { Dialog } from "@/components/ui/dialog";

@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SearchCheckIcon } from "lucide-react";
-import { PanelSection } from "@/components/domain/investments";
+import { PanelSection } from "@/components/domain/investments/light";
 import { Button } from "@/components/ui/button";
 import { usePrivacy } from "@/components/privacy-provider";
 import { personalImportApi } from "./personal-import-api";

@@ -6,6 +6,7 @@ import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { loadUserDebts } from "@/lib/debts/data";
 import { todayIso } from "@/lib/debts/dates";
 import { buildDebtsView } from "@/lib/debts/view";
+import { compactSnapshotRows } from "@/lib/net-worth/compact";
 import { buildDebtHistoryRows } from "@/lib/net-worth/debt-history";
 import { buildPensionHistoryRows } from "@/lib/net-worth/pension-history";
 import { loadUserPension } from "@/lib/pension/data";
@@ -15,7 +16,7 @@ import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 
-/** GET /api/net-worth/snapshots?from&to — righe snapshot dell'utente nel periodo; prima ricostruisce lo storico che manca o non è più aggiornato. */
+/** GET /api/net-worth/snapshots?from&to[&compact=1] — righe snapshot dell'utente nel periodo (con `compact=1` le righe oltre l'ultimo anno si riducono all'ultima di ogni mese); prima ricostruisce lo storico che manca o non è più aggiornato. */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -49,7 +50,8 @@ async function handleGet(request: NextRequest) {
   // Anche la previdenza si ricalcola dalle fotografie dei fondi, senza salvare nulla.
   const pensionHistory = buildPensionHistoryRows((await loadUserPension(session.user.id)).funds, today, from).filter((r) => r.date <= to);
 
-  return Response.json([...rows, ...debtHistory, ...pensionHistory]);
+  const all = [...rows, ...debtHistory, ...pensionHistory];
+  return Response.json(url.searchParams.get("compact") === "1" ? compactSnapshotRows(all, today) : all);
 }
 
 export const GET = withRoute("net_worth.snapshots", handleGet);

@@ -79,10 +79,10 @@ export function PensionProjectionCard({ startValue, defaultQuarterlyContribution
               <XAxis dataKey="year" tickLine={false} axisLine={false} tickFormatter={(y) => `${y}a`} minTickGap={24} padding={{ left: 16, right: 16 }} />
               <YAxis hide domain={[0, "auto"]} />
               <ChartTooltip cursor={false} content={<PensionChartTooltip config={CHART_CONFIG} currency={currency} title={(point) => `Tra ${Number(point.year ?? 0)} anni`} />} />
-              <Area type="monotone" dataKey="optimistic" stroke="none" tooltipType="none" fill="url(#pension-band-fill)" />
-              <Line type="monotone" dataKey="optimistic" stroke="var(--color-optimistic)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
-              <Line type="monotone" dataKey="base" stroke="var(--color-base)" strokeWidth={2.6} dot={false} />
-              <Line type="monotone" dataKey="prudent" stroke="var(--color-prudent)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
+              <Area isAnimationActive={false} type="monotone" dataKey="optimistic" stroke="none" tooltipType="none" fill="url(#pension-band-fill)" />
+              <Line isAnimationActive={false} type="monotone" dataKey="optimistic" stroke="var(--color-optimistic)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
+              <Line isAnimationActive={false} type="monotone" dataKey="base" stroke="var(--color-base)" strokeWidth={2.6} dot={false} />
+              <Line isAnimationActive={false} type="monotone" dataKey="prudent" stroke="var(--color-prudent)" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
             </ComposedChart>
           </ChartContainer>
         </div>

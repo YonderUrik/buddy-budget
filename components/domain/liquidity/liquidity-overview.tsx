@@ -6,8 +6,8 @@ import * as React from "react";
 import { computeAccountsKpi } from "@/components/domain/accounts";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
-import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
-import { computeMonthPace, MONTH_PACE_LOOKBACK } from "@/lib/calc/month-pace";
+import { startOfDay } from "@/lib/calc/expenses";
+import { computeMonthPace } from "@/lib/calc/month-pace";
 import {
   buildNetWorthSeries,
   computeNetWorthChange,
@@ -23,15 +23,19 @@ import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
+import { cn } from "@/lib/utils";
 import { useAttentionQuery } from "@/lib/queries/attention";
 import { AccountChips } from "./account-chips";
 import { useLiquidityActions } from "./liquidity-actions";
-import { useLiquidity } from "./liquidity-context";
+import { liquidityFetchWindow, useLiquidity } from "./liquidity-context";
 import { LiquidityHero } from "./liquidity-hero";
 import type { TrendPoint } from "./trend-chart";
 
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
 const MONTH_NAME = new Intl.DateTimeFormat("it-IT", { month: "long" });
+/** Altezza riservata, finché i dati non ci sono, alla frase del mese (tre righe) e alla riga dei chip: evita che la pagina salti quando arrivano i dati. */
+const VOICE_MIN_HEIGHT_CLASS = "min-h-28 sm:min-h-[6.25rem]";
+const CHIPS_PLACEHOLDER_CLASS = "h-[3.75rem] animate-pulse rounded-2xl bg-muted";
 
 export function LiquidityOverview() {
   const { data: session } = authClient.useSession();
@@ -42,14 +46,15 @@ export function LiquidityOverview() {
   const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
 
   const accountsQuery = useAccountsQuery();
-  const snapshotsQuery = useNetWorthSnapshotsQuery("2000-01-01", toDateKey(today));
+  const snapshotsQuery = useNetWorthSnapshotsQuery("2000-01-01", toDateKey(today), { compact: true });
   const connectionsQuery = useBankConnectionsStatusQuery();
   const connections = React.useMemo(() => connectionsQuery.data ?? [], [connectionsQuery.data]);
   const budgetsQuery = useBudgetsQuery();
   const budgets = React.useMemo(() => budgetsQuery.data ?? [], [budgetsQuery.data]);
   const attention = useAttentionQuery().data;
-  const monthRange = React.useMemo(() => ({ from: addMonths(startOfMonth(today), -MONTH_PACE_LOOKBACK), to: endOfMonth(today) }), [today]);
-  const transactionsQuery = useTransactionsQuery(toDateKey(monthRange.from), toDateKey(monthRange.to), "tutte");
+  // Stessa finestra dell'elenco movimenti: una sola richiesta condivisa dalla cache invece di due con intervalli diversi.
+  const { from: fetchFrom, to: fetchTo } = liquidityFetchWindow(today);
+  const transactionsQuery = useTransactionsQuery(fetchFrom, fetchTo, "tutte");
   const transactions = React.useMemo(() => transactionsQuery.data ?? [], [transactionsQuery.data]);
 
   const accounts = React.useMemo(() => accountsQuery.data ?? [], [accountsQuery.data]);
@@ -73,10 +78,11 @@ export function LiquidityOverview() {
   const pace = React.useMemo(() => computeMonthPace(transactions, budgets, today), [transactions, budgets, today]);
   const lines = buildVoiceLines({ pace, monthLabel: MONTH_NAME.format(today), currency, nextDue: null, today });
   const toFix = attention?.uncategorizedCount ?? 0;
+  const voiceLoading = accountsQuery.isPending || transactionsQuery.isPending || budgetsQuery.isPending;
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl">
+      <p className={cn("max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl", voiceLoading && VOICE_MIN_HEIGHT_CLASS)}>
         {accounts.length > 0 && (
           <>
             Hai <strong className="font-heading font-medium text-foreground">{new Intl.NumberFormat("it-IT", { style: "currency", currency, maximumFractionDigits: 0 }).format(total)}</strong> su {accounts.length} {accounts.length === 1 ? "conto" : "conti"}.{" "}
@@ -102,17 +108,21 @@ export function LiquidityOverview() {
         onPeriodChange={setPeriod}
         points={points}
       />
-      <AccountChips
-        accounts={accounts.map((a) => ({ id: a.id, name: a.name, balance: Number(a.balance), needsAttention: needsAttention.has(a.id) }))}
-        total={total}
-        currency={currency}
-        selectedId={accountId}
-        onSelect={(id) => {
-          setAccountId(id);
-          track("liquidity_account_filtered", { scope: id ? "conto" : "tutti" });
-        }}
-        onAdd={addAccount}
-      />
+      {accountsQuery.isPending ? (
+        <div className={CHIPS_PLACEHOLDER_CLASS} aria-hidden="true" />
+      ) : (
+        <AccountChips
+          accounts={accounts.map((a) => ({ id: a.id, name: a.name, balance: Number(a.balance), needsAttention: needsAttention.has(a.id) }))}
+          total={total}
+          currency={currency}
+          selectedId={accountId}
+          onSelect={(id) => {
+            setAccountId(id);
+            track("liquidity_account_filtered", { scope: id ? "conto" : "tutti" });
+          }}
+          onAdd={addAccount}
+        />
+      )}
     </div>
   );
 }

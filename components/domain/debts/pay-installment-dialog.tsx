@@ -6,7 +6,7 @@ import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { CircleCheckIcon, LinkIcon, WalletIcon } from "lucide-react";
-import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
+import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";

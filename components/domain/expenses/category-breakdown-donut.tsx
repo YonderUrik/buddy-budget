@@ -233,12 +233,12 @@ export function CategoryBreakdownDonut({
         <ChartContainer config={GROUP_CHART_CONFIG} className="mx-auto aspect-square max-h-56 sm:mx-0">
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent formatter={formatTooltipValue} />} />
-            <Pie data={innerData} dataKey="value" nameKey="label" innerRadius={35} outerRadius={55}>
+            <Pie isAnimationActive={false} data={innerData} dataKey="value" nameKey="label" innerRadius={35} outerRadius={55}>
               {innerData.map((entry) => (
                 <Cell key={entry.key} fill={entry.fill} />
               ))}
             </Pie>
-            <Pie
+            <Pie isAnimationActive={false}
               data={outerData}
               dataKey="value"
               nameKey="label"

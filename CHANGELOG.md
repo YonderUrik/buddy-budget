@@ -2,6 +2,397 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.58.0](https://github.com/YonderUrik/buddy-budget/compare/v0.57.0...v0.58.0) (2026-10-11)
+
+
+### Novità
+
+* animazione di entrata e uscita delle carte in Categorizza ([#312](https://github.com/YonderUrik/buddy-budget/issues/312)) ([bf30b02](https://github.com/YonderUrik/buddy-budget/commit/bf30b0231704530995601bafbc7dd13462661520))
+* fogli dal basso su mobile per popover, dialog e conferme ([#315](https://github.com/YonderUrik/buddy-budget/issues/315)) ([a300112](https://github.com/YonderUrik/buddy-budget/commit/a3001126e6b267bc0eeffec992c51c720bc1fcf6))
+* nuova landing «Il foglio» con fonti supportate e scheda tecnica ([#311](https://github.com/YonderUrik/buddy-budget/issues/311)) ([d4a2f08](https://github.com/YonderUrik/buddy-budget/commit/d4a2f0836ea4c0d187af8fdb0bb8ca499c1c358a))
+* scheda titolo ripensata e indicatori fondamentali ([#316](https://github.com/YonderUrik/buddy-budget/issues/316)) ([16e9405](https://github.com/YonderUrik/buddy-budget/commit/16e9405c9e3977873b6eeaf5887b1082f01bf469))
+* transizioni fluide tra le sezioni nella sidebar e nella barra mobile ([#313](https://github.com/YonderUrik/buddy-budget/issues/313)) ([e0a4e35](https://github.com/YonderUrik/buddy-budget/commit/e0a4e350ec1d4bd0603f4c464430970f0fc2309a))
+
+## [0.57.0](https://github.com/YonderUrik/buddy-budget/compare/v0.56.0...v0.57.0) (2026-10-11)
+
+
+### Novità
+
+* scala a fasce colorate nella scheda «Quanto rischia» ([#308](https://github.com/YonderUrik/buddy-budget/issues/308)) ([e036718](https://github.com/YonderUrik/buddy-budget/commit/e036718dffc437c872cd64d9390e368c499d2dbc))
+
+
+### Refactoring
+
+* testi dell'app più brevi e meno artificiosi ([#309](https://github.com/YonderUrik/buddy-budget/issues/309)) ([7d2204c](https://github.com/YonderUrik/buddy-budget/commit/7d2204c9abef78f47c166fc24c1faa77f7b8af61))
+
+## [0.56.0](https://github.com/YonderUrik/buddy-budget/compare/v0.55.0...v0.56.0) (2026-10-11)
+
+
+### Novità
+
+* dettaglio dell'analisi a schede, lista importazioni chiara e importazioni degli investimenti in un dialog ([#305](https://github.com/YonderUrik/buddy-budget/issues/305)) ([d3a25e3](https://github.com/YonderUrik/buddy-budget/commit/d3a25e39f2f0fb50424a4623c458bcadbcbe1bc8))
+
+## [0.55.0](https://github.com/YonderUrik/buddy-budget/compare/v0.54.0...v0.55.0) (2026-10-11)
+
+
+### Novità
+
+* avviso e eliminazione degli account inattivi da 90 giorni ([#304](https://github.com/YonderUrik/buddy-budget/issues/304)) ([e380a7c](https://github.com/YonderUrik/buddy-budget/commit/e380a7cc1f379fae3db4687a1b58f847eab9d0e2))
+
+## [0.54.0](https://github.com/YonderUrik/buddy-budget/compare/v0.53.0...v0.54.0) (2026-10-11)
+
+
+### Novità
+
+* foglio con ricerca e griglia di icone per scegliere un'altra categoria in Categorizza ([#303](https://github.com/YonderUrik/buddy-budget/issues/303)) ([440259b](https://github.com/YonderUrik/buddy-budget/commit/440259bd07ae1cec8379a62a64d988241800b2c9))
+* importazioni personali con «File ricevuto», isola globale e rapporto per file ([#301](https://github.com/YonderUrik/buddy-budget/issues/301)) ([8d6ffde](https://github.com/YonderUrik/buddy-budget/commit/8d6ffded3149ca4c24cfe48d84202d3aadbeb8ce))
+
+## [0.53.0](https://github.com/YonderUrik/buddy-budget/compare/v0.52.0...v0.53.0) (2026-10-11)
+
+
+### Novità
+
+* Altro più corto e Impostazioni a gruppi con anteprime ([#298](https://github.com/YonderUrik/buddy-budget/issues/298)) ([cfa83e7](https://github.com/YonderUrik/buddy-budget/commit/cfa83e7c0fb4093594af2e65d634517f9c9ae6be))
+* Categorizza su mobile con la carta a tutto schermo e soglia visibile ([#296](https://github.com/YonderUrik/buddy-budget/issues/296)) ([b470694](https://github.com/YonderUrik/buddy-budget/commit/b470694e20225b7201cbf23e13424e15de395d81))
+
+
+### Correzioni
+
+* isolamento tra utenti (ricerca strumenti, GoCardless, commento AI, logout) ([#297](https://github.com/YonderUrik/buddy-budget/issues/297)) ([f830c5e](https://github.com/YonderUrik/buddy-budget/commit/f830c5e51b759889bc2159c992493439cf15ce94))
+
+## [0.52.0](https://github.com/YonderUrik/buddy-budget/compare/v0.51.0...v0.52.0) (2026-10-11)
+
+
+### Novità
+
+* striscia Novità in Panoramica, catalogo e landing per Categorizza con l'AI ([#294](https://github.com/YonderUrik/buddy-budget/issues/294)) ([008ab6a](https://github.com/YonderUrik/buddy-budget/commit/008ab6a59958ec2b5e8a0d9f1c026611864cca16))
+
+## [0.51.0](https://github.com/YonderUrik/buddy-budget/compare/v0.50.2...v0.51.0) (2026-10-11)
+
+
+### Novità
+
+* categorizzazione con Jev, proposte dopo sync/import e carte «Tinder» ([#289](https://github.com/YonderUrik/buddy-budget/issues/289)) ([28a5e8f](https://github.com/YonderUrik/buddy-budget/commit/28a5e8f58bc6ebb4fbefdd221bc63aba52a623ee))
+
+## [0.50.2](https://github.com/YonderUrik/buddy-budget/compare/v0.50.1...v0.50.2) (2026-10-11)
+
+
+### Correzioni
+
+* **landing:** redirect nginx senza porta interna e senza slash finale ([#291](https://github.com/YonderUrik/buddy-budget/issues/291)) ([fb4b18e](https://github.com/YonderUrik/buddy-budget/commit/fb4b18e8df79925653f1702cd099d9fd57724ec6))
+
+## [0.50.1](https://github.com/YonderUrik/buddy-budget/compare/v0.50.0...v0.50.1) (2026-10-11)
+
+
+### Prestazioni
+
+* scheletro di caricamento, niente salti in Liquidità e cache dello storico patrimonio ([#288](https://github.com/YonderUrik/buddy-budget/issues/288)) ([15387ed](https://github.com/YonderUrik/buddy-budget/commit/15387edd1318f27370d4c7ce7fae98d7efc407b8))
+
+## [0.50.0](https://github.com/YonderUrik/buddy-budget/compare/v0.49.1...v0.50.0) (2026-10-11)
+
+
+### Novità
+
+* form a passi (onboarding, conto, movimento, operazione, import, debito, pensione) ([#283](https://github.com/YonderUrik/buddy-budget/issues/283)) ([4cca4c5](https://github.com/YonderUrik/buddy-budget/commit/4cca4c50c561ac71d59a31588d6630dd42b66a93))
+* primi passi in Panoramica e dati d'esempio azzerabili ([#275](https://github.com/YonderUrik/buddy-budget/issues/275)) ([872f4bc](https://github.com/YonderUrik/buddy-budget/commit/872f4bc9102a27834f45077fd87520f353c44469))
+* scheda Abbonamenti in Liquidità, rilevati dai movimenti ([#277](https://github.com/YonderUrik/buddy-budget/issues/277)) ([23fe20d](https://github.com/YonderUrik/buddy-budget/commit/23fe20d1572f82d70f89838910220b1837ad6714))
+* self-hosting con Docker Compose e immagini multi-arch su ghcr.io ([#274](https://github.com/YonderUrik/buddy-budget/issues/274)) ([df96a1d](https://github.com/YonderUrik/buddy-budget/commit/df96a1d664dd2a90dd9a71ed4e5a57bdd8e3159e))
+
+
+### Correzioni
+
+* **landing:** correzioni tecniche dall'audit SEO (email, dati strutturati, HSTS, title) ([#281](https://github.com/YonderUrik/buddy-budget/issues/281)) ([1d3a841](https://github.com/YonderUrik/buddy-budget/commit/1d3a84115141de88668ed1c6c848fbe685dc0140))
+
+## [0.49.1](https://github.com/YonderUrik/buddy-budget/compare/v0.49.0...v0.49.1) (2026-10-11)
+
+
+### Correzioni
+
+* landing, tolta la cifra demo incoerente e sistemato il piè di pagina su telefono ([#282](https://github.com/YonderUrik/buddy-budget/issues/282)) ([814243f](https://github.com/YonderUrik/buddy-budget/commit/814243f2d302b0953b4b102ced2b7bee0134c934))
+
+## [0.49.0](https://github.com/YonderUrik/buddy-budget/compare/v0.48.0...v0.49.0) (2026-10-10)
+
+
+### Novità
+
+* email di riepilogo e avvisi con disiscrizione a un clic ([#273](https://github.com/YonderUrik/buddy-budget/issues/273)) ([5967767](https://github.com/YonderUrik/buddy-budget/commit/5967767795b39a74492cc583fc0af144d592dde4))
+
+## [0.48.0](https://github.com/YonderUrik/buddy-budget/compare/v0.47.0...v0.48.0) (2026-10-10)
+
+
+### Novità
+
+* tema e «Nascondi importi» passano nel menu utente ([#269](https://github.com/YonderUrik/buddy-budget/issues/269)) ([3c5ab01](https://github.com/YonderUrik/buddy-budget/commit/3c5ab0154c4628380181c7b9720f8ba0116961fe))
+
+## [0.47.0](https://github.com/YonderUrik/buddy-budget/compare/v0.46.0...v0.47.0) (2026-10-10)
+
+
+### Novità
+
+* viste delle sezioni come controllo segmentato su desktop e menu su mobile ([#271](https://github.com/YonderUrik/buddy-budget/issues/271)) ([78fd96d](https://github.com/YonderUrik/buddy-budget/commit/78fd96dc443ec2107192dabf3937a60c02f12d29))
+
+## [0.46.0](https://github.com/YonderUrik/buddy-budget/compare/v0.45.0...v0.46.0) (2026-10-10)
+
+
+### Novità
+
+* costi e imposte del Portafoglio in un pulsante con popover, schede senza barra orizzontale ([#267](https://github.com/YonderUrik/buddy-budget/issues/267)) ([3add343](https://github.com/YonderUrik/buddy-budget/commit/3add3435c85e1c1571ee21932afefabb7ecc7898))
+
+## [0.45.0](https://github.com/YonderUrik/buddy-budget/compare/v0.44.2...v0.45.0) (2026-10-10)
+
+
+### Novità
+
+* **landing:** Markdown per gli agenti (Accept: text/markdown) e Content-Signal in robots.txt ([#268](https://github.com/YonderUrik/buddy-budget/issues/268)) ([d0b92e1](https://github.com/YonderUrik/buddy-budget/commit/d0b92e13dd7bb1e5ee63f175d58f1ff6062fa490))
+
+## [0.44.2](https://github.com/YonderUrik/buddy-budget/compare/v0.44.1...v0.44.2) (2026-10-10)
+
+
+### Correzioni
+
+* **landing:** favicon quadrata e favicon.ico per Google ([#262](https://github.com/YonderUrik/buddy-budget/issues/262)) ([c37b8bf](https://github.com/YonderUrik/buddy-budget/commit/c37b8bff5abe1d2e5ed72e3219635ff4fb308c77))
+
+## [0.44.1](https://github.com/YonderUrik/buddy-budget/compare/v0.44.0...v0.44.1) (2026-10-10)
+
+
+### Correzioni
+
+* **deps:** proxy-addr 2.0.8 (alert Dependabot 127) ([#263](https://github.com/YonderUrik/buddy-budget/issues/263)) ([22e0691](https://github.com/YonderUrik/buddy-budget/commit/22e0691fdc4c964ebfdcf221c49b56a820e560da))
+
+## [0.44.0](https://github.com/YonderUrik/buddy-budget/compare/v0.43.1...v0.44.0) (2026-10-10)
+
+
+### Novità
+
+* **landing:** aree dell'app, punti di sicurezza senza illustrazioni e blocco Codice aperto ([#259](https://github.com/YonderUrik/buddy-budget/issues/259)) ([bbce329](https://github.com/YonderUrik/buddy-budget/commit/bbce329a2dba7772d53cdd94c839845a941113ed))
+
+## [0.43.1](https://github.com/YonderUrik/buddy-budget/compare/v0.43.0...v0.43.1) (2026-10-10)
+
+
+### Correzioni
+
+* **deps:** bump @number-flow/react ([#257](https://github.com/YonderUrik/buddy-budget/issues/257)) ([3c91793](https://github.com/YonderUrik/buddy-budget/commit/3c91793612700a588fbbbe2fe9a86a9817089f82))
+
+## [0.43.0](https://github.com/YonderUrik/buddy-budget/compare/v0.42.0...v0.43.0) (2026-10-10)
+
+
+### Novità
+
+* testi animati, numeri che scorrono e transizioni elastiche ([#254](https://github.com/YonderUrik/buddy-budget/issues/254)) ([fe04b38](https://github.com/YonderUrik/buddy-budget/commit/fe04b38266320b4cf5510c44b6dbd3ccb122e9c7))
+
+## [0.42.0](https://github.com/YonderUrik/buddy-budget/compare/v0.41.0...v0.42.0) (2026-10-10)
+
+
+### Novità
+
+* pagina Aiuto e segnalazioni ([#245](https://github.com/YonderUrik/buddy-budget/issues/245)) ([61c1189](https://github.com/YonderUrik/buddy-budget/commit/61c1189984cd828a331f9f71ecaa24b81d8c27c3))
+
+## [0.41.0](https://github.com/YonderUrik/buddy-budget/compare/v0.40.0...v0.41.0) (2026-10-10)
+
+
+### Novità
+
+* Investimenti più pulito su mobile e rimozione del confronto tra broker ([#247](https://github.com/YonderUrik/buddy-budget/issues/247)) ([d330969](https://github.com/YonderUrik/buddy-budget/commit/d330969610222e3214a28646b8252c589f5b2eb7))
+
+## [0.40.0](https://github.com/YonderUrik/buddy-budget/compare/v0.39.0...v0.40.0) (2026-10-10)
+
+
+### Novità
+
+* menu «Altro» a tutto schermo su mobile ([#249](https://github.com/YonderUrik/buddy-budget/issues/249)) ([27a55cc](https://github.com/YonderUrik/buddy-budget/commit/27a55cc22f5f32916258a0120413cd3aaeb44bc3))
+
+## [0.39.0](https://github.com/YonderUrik/buddy-budget/compare/v0.38.1...v0.39.0) (2026-10-10)
+
+
+### Novità
+
+* template grafico per le email transazionali ([#246](https://github.com/YonderUrik/buddy-budget/issues/246)) ([56aef9a](https://github.com/YonderUrik/buddy-budget/commit/56aef9a68592dbab6870c5289254d2699e7a3999))
+
+## [0.38.1](https://github.com/YonderUrik/buddy-budget/compare/v0.38.0...v0.38.1) (2026-10-09)
+
+
+### Correzioni
+
+* schermate intere nei passi e in Tutte le funzioni ([#243](https://github.com/YonderUrik/buddy-budget/issues/243)) ([94b24c3](https://github.com/YonderUrik/buddy-budget/commit/94b24c3f2cd1b51e157aa5f3748c328eac9a6614))
+
+## [0.38.0](https://github.com/YonderUrik/buddy-budget/compare/v0.37.0...v0.38.0) (2026-10-09)
+
+
+### Novità
+
+* nuova landing con regole italiane, metodo, confronto, pagine interne allineate e llms.txt ([#240](https://github.com/YonderUrik/buddy-budget/issues/240)) ([b50803d](https://github.com/YonderUrik/buddy-budget/commit/b50803d6c8a124919de1cb2a9083693a21fc1372))
+
+## [0.37.0](https://github.com/YonderUrik/buddy-budget/compare/v0.36.0...v0.37.0) (2026-10-09)
+
+
+### Novità
+
+* flussi di aggiunta di Liquidità più chiari e accessibili (conto, banca, movimento, import CSV/Excel) ([#238](https://github.com/YonderUrik/buddy-budget/issues/238)) ([91edced](https://github.com/YonderUrik/buddy-budget/commit/91edced70eee716180d96eb1b05eec0277b4899e))
+
+## [0.36.0](https://github.com/YonderUrik/buddy-budget/compare/v0.35.0...v0.36.0) (2026-10-09)
+
+
+### Novità
+
+* il grafico del login scorre come un nastro ([#236](https://github.com/YonderUrik/buddy-budget/issues/236)) ([147b2b3](https://github.com/YonderUrik/buddy-budget/commit/147b2b37e99dc555a4daf8920f762bc4e52fda12))
+
+## [0.35.0](https://github.com/YonderUrik/buddy-budget/compare/v0.34.1...v0.35.0) (2026-10-09)
+
+
+### Novità
+
+* login «Orizzonte» nello stile della Panoramica ([#232](https://github.com/YonderUrik/buddy-budget/issues/232)) ([82482da](https://github.com/YonderUrik/buddy-budget/commit/82482da7e7aa5d55595500e7d1e302e497bbe875))
+
+## [0.34.1](https://github.com/YonderUrik/buddy-budget/compare/v0.34.0...v0.34.1) (2026-10-09)
+
+
+### Refactoring
+
+* importazioni compatte e pagina I tuoi CSV nello stile della Panoramica ([#230](https://github.com/YonderUrik/buddy-budget/issues/230)) ([c1994c1](https://github.com/YonderUrik/buddy-budget/commit/c1994c159d00e12dad6e818f1a97ad20f3753641))
+
+## [0.34.0](https://github.com/YonderUrik/buddy-budget/compare/v0.33.1...v0.34.0) (2026-10-09)
+
+
+### Novità
+
+* sidebar con scadenze e obiettivo FIRE, barra in basso su mobile e moduli configurabili ([#231](https://github.com/YonderUrik/buddy-budget/issues/231)) ([fe3fbaa](https://github.com/YonderUrik/buddy-budget/commit/fe3fbaa4e1fe9ce364e871d2b7948b006e61ee9b))
+
+## [0.33.1](https://github.com/YonderUrik/buddy-budget/compare/v0.33.0...v0.33.1) (2026-10-09)
+
+
+### Correzioni
+
+* la sidebar non mostra più una seconda barra di scroll accanto a quella della pagina ([#228](https://github.com/YonderUrik/buddy-budget/issues/228)) ([3de61b8](https://github.com/YonderUrik/buddy-budget/commit/3de61b8f393aee33a8206bdf5706c68d4b9f2239))
+
+## [0.33.0](https://github.com/YonderUrik/buddy-budget/compare/v0.32.0...v0.33.0) (2026-10-09)
+
+
+### Novità
+
+* Analitiche con cursori «e se…» nello stile della Panoramica ([#225](https://github.com/YonderUrik/buddy-budget/issues/225)) ([bb327f9](https://github.com/YonderUrik/buddy-budget/commit/bb327f9c026bac2f41535f693ee6a4176d98125f))
+
+## [0.32.0](https://github.com/YonderUrik/buddy-budget/compare/v0.31.0...v0.32.0) (2026-10-09)
+
+
+### Novità
+
+* nuovo flusso e testi del dialog Importa operazioni ([#223](https://github.com/YonderUrik/buddy-budget/issues/223)) ([da46687](https://github.com/YonderUrik/buddy-budget/commit/da466871fd27d5abadcc2a7153339d7be4fb1570))
+
+
+### Correzioni
+
+* il guadagno degli Investimenti segue il periodo scelto e gli switch di reinvestimento spiegano l'effetto ([#221](https://github.com/YonderUrik/buddy-budget/issues/221)) ([3e8b761](https://github.com/YonderUrik/buddy-budget/commit/3e8b7615ead91973b0aa459e83d30efc790f7ff9))
+
+## [0.31.0](https://github.com/YonderUrik/buddy-budget/compare/v0.30.1...v0.31.0) (2026-10-09)
+
+
+### Novità
+
+* Investimenti, il titolo si apre dalle Posizioni o con la ricerca; via la scheda Titoli ([#222](https://github.com/YonderUrik/buddy-budget/issues/222)) ([a59b50d](https://github.com/YonderUrik/buddy-budget/commit/a59b50dff81dd3617d9f93919e811a28b2e4ca8d))
+
+
+### Refactoring
+
+* Pensione nello stile della Panoramica ([#218](https://github.com/YonderUrik/buddy-budget/issues/218)) ([5d5d532](https://github.com/YonderUrik/buddy-budget/commit/5d5d5326bb219a50ed3411b5b2c113e6b1f16877))
+
+## [0.30.1](https://github.com/YonderUrik/buddy-budget/compare/v0.30.0...v0.30.1) (2026-10-08)
+
+
+### Correzioni
+
+* l'import non collega la quotazione se l'ISIN esiste in un'altra valuta ([#217](https://github.com/YonderUrik/buddy-budget/issues/217)) ([09bd483](https://github.com/YonderUrik/buddy-budget/commit/09bd4837e3b315dad709c7a4ca96f237d157613e))
+
+## [0.30.0](https://github.com/YonderUrik/buddy-budget/compare/v0.29.0...v0.30.0) (2026-10-08)
+
+
+### Novità
+
+* Investimenti, tutte le schede, nello stile della Panoramica ([#184](https://github.com/YonderUrik/buddy-budget/issues/184)) ([410104e](https://github.com/YonderUrik/buddy-budget/commit/410104e3e4f316241d7f3db560087eb130f7a42f))
+
+## [0.29.0](https://github.com/YonderUrik/buddy-budget/compare/v0.28.0...v0.29.0) (2026-10-08)
+
+
+### Novità
+
+* l'import collega anche gli strumenti manuali già presenti alla quotazione ([#214](https://github.com/YonderUrik/buddy-budget/issues/214)) ([1393937](https://github.com/YonderUrik/buddy-budget/commit/1393937c06970aeb0946b28f6d5f14863bb37c00))
+
+## [0.28.0](https://github.com/YonderUrik/buddy-budget/compare/v0.27.0...v0.28.0) (2026-10-08)
+
+
+### Novità
+
+* l'import da rendiconto collega in automatico la quotazione trovata ([#211](https://github.com/YonderUrik/buddy-budget/issues/211)) ([007cc14](https://github.com/YonderUrik/buddy-budget/commit/007cc14c55f9a5b7c004e065056a47aa85fef107))
+
+## [0.27.0](https://github.com/YonderUrik/buddy-budget/compare/v0.26.0...v0.27.0) (2026-10-08)
+
+
+### Novità
+
+* l'import da rendiconto dice se esiste una quotazione da collegare ([#209](https://github.com/YonderUrik/buddy-budget/issues/209)) ([2b124fa](https://github.com/YonderUrik/buddy-budget/commit/2b124fa7e7238403107393198db0f027f8e8416d))
+
+## [0.26.0](https://github.com/YonderUrik/buddy-budget/compare/v0.25.0...v0.26.0) (2026-10-08)
+
+
+### Novità
+
+* collega gli strumenti importati a una quotazione con OpenFIGI ([#207](https://github.com/YonderUrik/buddy-budget/issues/207)) ([242ca1f](https://github.com/YonderUrik/buddy-budget/commit/242ca1fac8bebca7288ddd7e469bf247c4d1692c))
+
+## [0.25.0](https://github.com/YonderUrik/buddy-budget/compare/v0.24.0...v0.25.0) (2026-10-08)
+
+
+### Novità
+
+* logo Fineco nella scelta del provider di import ([#205](https://github.com/YonderUrik/buddy-budget/issues/205)) ([f5618a8](https://github.com/YonderUrik/buddy-budget/commit/f5618a8e23dde5a5c50df91974acad2be21a5fff))
+
+## [0.24.0](https://github.com/YonderUrik/buddy-budget/compare/v0.23.2...v0.24.0) (2026-10-08)
+
+
+### Novità
+
+* import Fineco (Movimenti Dossier Titoli) negli Investimenti ([#203](https://github.com/YonderUrik/buddy-budget/issues/203)) ([4049090](https://github.com/YonderUrik/buddy-budget/commit/40490908d448be8f6206440527634e391f1bb404))
+
+## [0.23.2](https://github.com/YonderUrik/buddy-budget/compare/v0.23.1...v0.23.2) (2026-10-08)
+
+
+### Correzioni
+
+* import Trade Republic con ricezioni gratuite di crypto e imposte in ritardo ([#201](https://github.com/YonderUrik/buddy-budget/issues/201)) ([d6fde91](https://github.com/YonderUrik/buddy-budget/commit/d6fde91a359ac74b03e8c85d415346ee88998d24))
+
+## [0.23.1](https://github.com/YonderUrik/buddy-budget/compare/v0.23.0...v0.23.1) (2026-10-08)
+
+
+### Correzioni
+
+* torta interattiva e tooltip nei grafici di Liquidità ([#198](https://github.com/YonderUrik/buddy-budget/issues/198)) ([d2421a5](https://github.com/YonderUrik/buddy-budget/commit/d2421a5fde169f19455c78910ae602d0d52e9821))
+
+## [0.23.0](https://github.com/YonderUrik/buddy-budget/compare/v0.22.0...v0.23.0) (2026-10-08)
+
+
+### Novità
+
+* rimuove Pianifica e trasforma Da sistemare in un badge su Movimenti ([#183](https://github.com/YonderUrik/buddy-budget/issues/183)) ([4300840](https://github.com/YonderUrik/buddy-budget/commit/4300840358343cb9f5ef81f74ab198008013ebf8))
+
+## [0.22.0](https://github.com/YonderUrik/buddy-budget/compare/v0.21.0...v0.22.0) (2026-10-08)
+
+
+### Novità
+
+* **import:** add private AI-generated CSV parsers ([#181](https://github.com/YonderUrik/buddy-budget/issues/181)) ([895c51a](https://github.com/YonderUrik/buddy-budget/commit/895c51ac117760ff550e180c8fe3d57491875c03))
+
+## [0.21.0](https://github.com/YonderUrik/buddy-budget/compare/v0.20.0...v0.21.0) (2026-10-08)
+
+
+### Novità
+
+* unisce Conti e Movimenti nella sezione Liquidità ([#186](https://github.com/YonderUrik/buddy-budget/issues/186)) ([dd81dca](https://github.com/YonderUrik/buddy-budget/commit/dd81dcaf6f199e0db0c2f9b5d5b63f46635b03ff))
+
+
+### Correzioni
+
+* **deps:** bump next from 16.3.7 to 16.3.8 ([#188](https://github.com/YonderUrik/buddy-budget/issues/188)) ([d00191a](https://github.com/YonderUrik/buddy-budget/commit/d00191a3b1804e1de37a5d3ad25cc97883e2f527))
+* **deps:** bump next from 16.3.7 to 16.3.8 in /landing ([#189](https://github.com/YonderUrik/buddy-budget/issues/189)) ([d60f318](https://github.com/YonderUrik/buddy-budget/commit/d60f318a1b65af103a2ae2ad095f0542f0999837))
+* rimuovi la sezione Pianifica ([#193](https://github.com/YonderUrik/buddy-budget/issues/193)) ([ba6c6f8](https://github.com/YonderUrik/buddy-budget/commit/ba6c6f881cf8caf8f7c64a080bab9a3a16892d43))
+
 ## [0.20.0](https://github.com/YonderUrik/buddy-budget/compare/v0.19.0...v0.20.0) (2026-10-08)
 
 

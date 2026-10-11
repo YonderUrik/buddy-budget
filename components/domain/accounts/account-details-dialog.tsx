@@ -8,13 +8,14 @@
  * scollegamento. Le azioni distruttive chiedono sempre conferma.
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import Link from "next/link";
 import { Link2Off, ListOrdered, RefreshCw, Trash2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -281,9 +282,9 @@ function AccountDetailsBody({
 export function AccountDetailsDialog({ account, onClose, ...rest }: AccountDetailsDialogProps) {
   return (
     <Dialog open={account !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[92dvh] max-w-md overflow-y-auto">
+      <FormDialogContent>
         {account && <AccountDetailsBody key={account.id} account={account} onClose={onClose} {...rest} />}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

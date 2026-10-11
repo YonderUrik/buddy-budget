@@ -5,7 +5,7 @@
  * Quando una funzione viene rilasciata, cambia stato o nasce, si aggiorna QUI e si lancia il sync.
  */
 
-export const FEATURE_AREAS = ["Conti", "Movimenti", "Investimenti", "Debiti", "Patrimonio", "Account"] as const;
+export const FEATURE_AREAS = ["Liquidità", "Investimenti", "Debiti", "Patrimonio", "Account"] as const;
 export type FeatureArea = (typeof FEATURE_AREAS)[number];
 
 /** `live` disponibile, `new` rilasciata da poco (badge "Nuovo"), `soon` pianificata (badge "Presto"). */
@@ -32,33 +32,41 @@ const f = (
 ): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
 
 export const FEATURES: readonly Feature[] = [
-  f("collegamento-alla-banca", "Conti", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live", "/conti"),
-  f("avviso-rinnovo-banca", "Conti", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
-  f("conti-manuali", "Conti", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
-  f("aggiornamento-automatico-e-manuale", "Conti", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
-  f("conti-raggruppati-per-banca", "Conti", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
+  f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background, ricordiamo il formato e ti avvisiamo per email a import finito.", "new"),
+  f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può provare l'app con dati d'esempio, azzerabili con un tocco.", "new"),
+  f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live"),
+  f("avviso-rinnovo-banca", "Liquidità", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
+  f("liquidita-unica", "Liquidità", "Conti e movimenti in un posto solo", "Saldo totale, andamento e movimenti di tutti i conti in un'unica schermata, filtrabile per conto con un tocco.", "new"),
+  f("categoria-con-un-tocco", "Liquidità", "Categoria con un tocco", "Tocchi l'icona di un movimento, scegli la categoria e, se vuoi, ricordala per i prossimi: si annulla con un tocco.", "new"),
+  f("conti-manuali", "Liquidità", "Conti manuali", "Per il contante o le banche che non si collegano. Tocchi il conto e cambi saldo, nome e icona.", "live"),
+  f("aggiornamento-automatico-e-manuale", "Liquidità", "Aggiornamento automatico e manuale", "Ogni 12 ore, più un pulsante per aggiornare subito.", "live"),
+  f("conti-raggruppati-per-banca", "Liquidità", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
 
-  f("categorizzazione-automatica", "Movimenti", "Categorizzazione automatica", "Conferma un negozio una volta e le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
-  f("proposte-per-somiglianza", "Movimenti", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
-  f("nomi-leggibili", "Movimenti", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
-  f("quattro-gruppi-di-spesa", "Movimenti", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
-  f("dividi-e-escludi", "Movimenti", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise.", "live"),
-  f("budget-per-categoria", "Movimenti", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
-  f("analisi-e-cash-flow", "Movimenti", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/movimenti"),
-  f("ricerca-filtri-e-note", "Movimenti", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
-  f("da-sistemare", "Movimenti", "Da sistemare", "Un avviso in Panoramica e nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
+
+  f("categorizza-con-ai", "Liquidità", "Categorizza con l'AI", "Se lo attivi, l'assistente propone una categoria per ogni esercente e tu confermi con un gesto, una carta alla volta. Non applica nulla da solo e riceve solo il nome pulito dell'esercente.", "new"),
+  f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio e, se vuoi, ricordalo: le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
+  f("proposte-per-somiglianza", "Liquidità", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
+  f("nomi-leggibili", "Liquidità", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, chi ti ha pagato) e, quando la banca lo indica, il tipo di esercente.", "new"),
+  f("quattro-gruppi-di-spesa", "Liquidità", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
+  f("dividi-e-escludi", "Liquidità", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise: scegli Metà, Un terzo o un importo, e vedi subito quanto è tuo.", "live"),
+  f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
+  f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),
+  f("ricerca-filtri-e-note", "Liquidità", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
+  f("abbonamenti", "Liquidità", "Abbonamenti", "Trova gli addebiti ricorrenti (streaming, palestra, assicurazioni) e li confermi con un tocco. Vedi il costo al mese e all'anno, il prossimo addebito e gli aumenti di prezzo. Il calcolo parte dai tuoi movimenti, senza AI.", "new"),
+  f("da-sistemare", "Liquidità", "Da sistemare", "Un avviso in Panoramica e un contatore su Liquidità nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),
-  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite, importa da un file: Interactive Brokers e DEGIRO nello stesso portafoglio (selezione multipla dei rendiconti, cassa riconciliata includibile nel totale con un interruttore, aggiornamento dei periodi sovrapposti e gestione degli import per broker in un menu espandibile nella scheda Operazioni e ripristino completo dello storico), Trade Republic (investimenti, pagamenti con carta e movimenti del conto), Yahoo Finance o un altro CSV.", "live"),
-  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Grafico del portafoglio con periodo YTD e intervallo personalizzato. Rendimenti del portafoglio e dei tuoi soldi, al netto dell'inflazione. Includi o escludi i broker dalla vista combinata e sovrapponi i loro rendimenti per confrontarli. Attiva «Reinvesti costi» e «Reinvesti imposte» nel grafico per aggiungere al valore reale il risparmio rivalutato al rendimento del portafoglio; card di dettaglio con le stesse stime della scheda Tasse, incluse le compensazioni delle minusvalenze.", "live"),
+  f("operazioni-e-import-csv", "Investimenti", "Operazioni e import CSV", "Registra acquisti e vendite o importa i file del tuo broker: Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance o un altro CSV. Più broker convivono nello stesso portafoglio e gli import si gestiscono uno per uno.", "live"),
+  f("rendimenti-veri", "Investimenti", "Rendimenti veri", "Il rendimento del portafoglio e dei tuoi soldi, anche al netto dell'inflazione, per qualsiasi periodo e per broker. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.", "live"),
   f("confronto-con-un-indice", "Investimenti", "Confronto con un indice", "«Con gli stessi versamenti oggi avresti X invece di Y». Scelte rapide per S&P 500, MSCI World, FTSE All-World e Nasdaq-100 tramite ETF ad accumulazione, oppure cerca un altro strumento.", "live"),
   f("rischio", "Investimenti", "Rischio", "Un livello di rischio chiaro (da basso a molto alto), poi quanto oscilla, la perdita peggiore, se il rischio è stato ripagato e quanto segue l'indice.", "live"),
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),
   f("allocazione-obiettivo", "Investimenti", "Allocazione obiettivo", "Con il suggerimento di dove mettere il prossimo versamento.", "live"),
-  f("proventi", "Investimenti", "Dividendi", "Riepilogo nel portafoglio, previsione a 12 mesi e incassi mese per mese. Pagamenti con date e dettaglio per strumento, anni espandibili e grafici con informazioni su lordo, ritenute e netto.", "live"),
+  f("proventi", "Investimenti", "Dividendi", "Proventi incassati e previsti nei prossimi 12 mesi, mese per mese e per strumento, con lordo, ritenute e netto.", "live"),
   f("tasse-italiane", "Investimenti", "Tasse italiane", "Plus e minus, zaino a 4 anni, titoli di Stato, crypto e bollo.", "live"),
   f("simulatore-prima-di-vendere", "Investimenti", "Simulatore «Prima di vendere»", "Ricalcola le tasse con la vendita in più, prima di farla.", "live"),
-  f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo con grafico e avvisi di prezzo via email.", "live"),
+  f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo, che si apre dalle posizioni o con la ricerca, con grafico dei tuoi acquisti, rischio, watchlist e avvisi di prezzo via email.", "live"),
+  f("indicatori-fondamentali", "Investimenti", "Indicatori fondamentali", "Per ogni azione P/E, P/S, P/B, ricavi e utili per azione, margini, ROE e debiti calcolati dai bilanci, con la forbice degli ultimi anni e il calcolo sotto ogni numero. Per gli ETF composizione, settori, costo del TER e titoli che hai già altrove.", "new"),
 
   f("finanziamenti-nuovi-o-in-corso", "Debiti", "Finanziamenti nuovi o in corso", "Dall'origine o con la fotografia di oggi, con piano di ammortamento.", "live", "/debiti"),
   f("calcolatore-della-variabile-mancante", "Debiti", "Calcolatore della variabile mancante", "Dai capitale, rata, numero di rate o tasso ricava quello che manca, con il TAEG.", "live"),
@@ -70,11 +78,12 @@ export const FEATURES: readonly Feature[] = [
   f("riepilogo-sempre-in-vista", "Patrimonio", "Riepilogo sempre in vista", "Nella barra laterale: patrimonio, portafoglio, watchlist e avvisi.", "live"),
   f("nascondi-importi", "Patrimonio", "Nascondi importi", "Oscura cifre e grafici quando qualcuno guarda lo schermo.", "live"),
   f("pensione", "Patrimonio", "Pensione", "Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse e una stima di quanto varrà. Lo storico lo inserisci a mano o lo importi da CSV o Excel.", "new", "/pensione"),
-  f("pianifica", "Patrimonio", "Pianifica", "Simula un cambio di lavoro, una casa o un figlio e vedi l'effetto sul patrimonio.", "soon", "/pianifica"),
-  f("analitiche", "Patrimonio", "Analitiche", "Quattro domande, una risposta ciascuna: quanta strada hai fatto, quando puoi smettere di lavorare, se il patrimonio reggerà, quanto ti costa. In «Per esperti» il numero FIRE al netto delle tasse, simulazioni Monte Carlo, regole di prelievo, rischio e imposte latenti, da ipotesi che decidi tu.", "new", "/analitiche"),
+  f("analitiche", "Patrimonio", "Analitiche", "L'anno in cui puoi smettere di lavorare, con quattro cursori «e se…» su risparmio, spesa, rendimento e prelievo. Per chi vuole di più: numero FIRE al netto delle tasse, simulazioni Monte Carlo e regole di prelievo.", "new", "/analitiche"),
 
   f("accesso-semplice", "Account", "Accesso semplice", "Link via email o Google, senza password da ricordare.", "live"),
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),
+  f("email-riepilogo-e-avvisi", "Account", "Email di riepilogo e avvisi", "Se vuoi, ricevi il riepilogo del mese o della settimana e un avviso quando un budget è quasi finito o una rata sta per scadere. Partono spente, le scegli tu, e ogni email ha il link per disattivarla con un clic.", "new"),
+  f("aiuto-e-segnalazioni", "Account", "Aiuto e segnalazioni", "Dal menu dell'avatar trovi le risposte rapide e ci scrivi per un problema, una domanda o un'idea: la pagina e la versione dell'app arrivano con la segnalazione, i tuoi dati finanziari mai. Puoi seguire e segnalare anche su GitHub.", "new"),
   f("installabile-e-a-tema", "Account", "Installabile e a tema", "Si installa come app dal telefono e ha tema chiaro e scuro.", "live"),
   f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Oggi italiano ed EUR, altre in arrivo.", "soon"),
   f("notifiche-push", "Account", "Notifiche push", "Avvisi sul telefono, per esempio per i prezzi.", "soon"),

@@ -11,12 +11,13 @@ import {
   FAKE_PROFILE_PROVIDER,
   FAKE_RATE_PROVIDER,
   fakeCryptoSearch,
+  fakeListings,
   fakeQuoteMeta,
   fakeSearch,
   isFakeMarketData,
 } from "./fake";
 import { refreshCryptoCatalog, searchCryptoCached } from "./crypto-catalog";
-import { fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
+import { fetchOpenFigiListings, fetchYahooQuoteMeta, searchYahoo, setYahooSessionStore, type YahooSearchHit } from "./providers";
 import {
   getCachedYahooSearch,
   redisBackfillStore,
@@ -27,8 +28,9 @@ import {
 } from "./redis-stores";
 import { findInstrumentsWithoutProfile, PROFILE_ON_DEMAND_LIMIT, refreshInstrumentProfile } from "./profiles";
 import { redis } from "@/lib/redis/client";
+import { searchByIsinOnOpenFigi } from "@/lib/investments/isin-listings";
 import { DIVIDENDS_ON_DEMAND_LIMIT, findInstrumentsWithoutDividends, refreshInstrumentDividends } from "./dividends";
-import { loadFundamentals } from "./fundamentals";
+import { loadFundamentals, loadStatements } from "./fundamentals";
 import { findFirstPriceDate, loadSymbols } from "./store";
 import type { ProviderContext } from "./types";
 import { backfillInstrument, type MarketDataDeps } from "./update";
@@ -176,4 +178,21 @@ export async function ensureDividendsSafely(instruments: Instrument[], schedule:
 export function fundamentalsOnProviders(instrument: Pick<Instrument, "id" | "type" | "priceMode">) {
   const deps = marketDataDeps();
   return loadFundamentals(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
+}
+
+/** Bilanci di un'azione (Yahoo, o finti con `MARKET_DATA_FAKE=1`), con cache giornaliera su Redis. */
+export function statementsOnProviders(instrument: Pick<Instrument, "id" | "type" | "priceMode">) {
+  const deps = marketDataDeps();
+  return loadStatements(instrument, deps.ctx, { provider: deps.fundamentalsProvider });
+}
+
+/** Quotazioni di un ISIN su OpenFIGI (finte con `MARKET_DATA_FAKE=1`). Usa il `fetch` normale: non serve il TLS da browser. */
+export async function listingsOnOpenFigi(isin: string) {
+  if (isFakeMarketData()) return fakeListings();
+  return fetchOpenFigiListings(isin, { fetch: globalThis.fetch, env: process.env });
+}
+
+/** Cerca per ISIN su OpenFIGI e conferma su Yahoo: ripiego quando la ricerca Yahoo non trova l'ISIN. */
+export async function searchByIsinOnProviders(isin: string, currency: string | null) {
+  return searchByIsinOnOpenFigi(isin, currency, { listings: listingsOnOpenFigi, quoteMeta: quoteMetaOnProviders });
 }

@@ -1,0 +1,7 @@
+# 2026-10-08 — Liquidità: Conti e Movimenti in un'unica sezione
+
+- **Decisione**: Conti e Movimenti diventano **Liquidità** (`/liquidita`, schede Movimenti · Analisi · Conti · Categorie e regole). Direzione scelta tra tre mockup: «Un flusso unico» (saldo e grafico in alto, chip dei conti per filtrare, feed dei movimenti per giorno con il mese a lato).
+- **Stile**: quello della Panoramica (frase calcolata, cifra con decimali attenuati, grafico a tutta larghezza senza card, righe morbide, sezioni con icona tinta) diventa lo standard dell'app per le schermate nuove o riviste.
+- **Dividi** resta sul modello esistente (`excludedAmount`, nessuna migration): ora ha scorciatoie Tutta/Metà/Un terzo/Un quarto, importo e cursore, con il risultato in chiaro. **Categoria**: si cambia toccando l'icona del movimento, con «Ricordala» (crea la regola) e annulla.
+- **Rimandato**: Categorie e Regole riusano la board e il gestore esistenti dentro il nuovo involucro (redesign dedicato da fare); i moduli di modifica movimento/nota e le finestre di nuovo conto e dettaglio conto sono quelli di prima; «Dividi» su più categorie e i motivi della divisione richiederebbero una modifica al modello.
+- **Compatibilità**: redirect permanenti da `/movimenti*`, `/conti` e dalle vecchie route; la pagina iniziale salvata (`/conti`, `/movimenti`) viene mappata sulla nuova; link di rinnovo nelle email e callback GoCardless puntano a `/liquidita/conti`.

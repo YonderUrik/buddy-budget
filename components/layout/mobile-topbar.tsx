@@ -10,7 +10,7 @@
  * Contiene:
  * - Brand/logo testuale
  * - Hamburger button (apre il drawer via SidebarContext)
- * - ThemeToggle
+ * Tema e «Nascondi importi» stanno nel menu utente del drawer o in «Altro».
  *
  * Riusabilità: accetta `brandName` e `brandHref` come prop per essere
  * adattata ad altre app senza modifiche al componente.
@@ -18,8 +18,6 @@
 
 import Image from "next/image";
 import { Menu } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { PrivacyToggle } from "@/components/privacy-toggle";
 import { useSidebar } from "@/components/layout/sidebar-context";
 
 // ---------------------------------------------------------------------------
@@ -29,9 +27,11 @@ import { useSidebar } from "@/components/layout/sidebar-context";
 interface MobileTopbarProps {
   /** Nome del brand mostrato nella topbar. Default: "BuddyBudget". */
   brandName?: string;
+  /** Mostra l'hamburger che apre il menu; da spegnere quando la navigazione sta nella barra in basso. Default: true. */
+  showMenuButton?: boolean;
 }
 
-export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
+export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true }: MobileTopbarProps) {
   const { openMobile } = useSidebar();
 
   return (
@@ -44,7 +44,8 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       ].join(" ")}
       aria-label="Barra di navigazione"
     >
-      {/* Hamburger */}
+      {/* Hamburger (senza, un riquadro vuoto mantiene il brand al centro) */}
+      {showMenuButton ? (
       <button
         onClick={openMobile}
         className={[
@@ -57,6 +58,9 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
       >
         <Menu className="size-5" aria-hidden="true" />
       </button>
+      ) : (
+        <span className="size-9" aria-hidden="true" />
+      )}
 
       {/* Brand */}
       <span className="flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground">
@@ -71,11 +75,8 @@ export function MobileTopbar({ brandName = "BuddyBudget" }: MobileTopbarProps) {
         {brandName}
       </span>
 
-      {/* Theme toggle */}
-      <div className="flex items-center gap-1">
-        <PrivacyToggle />
-        <ThemeToggle surface="sidebar" />
-      </div>
+      {/* Riquadro vuoto: tiene il brand al centro */}
+      <span className="size-9" aria-hidden="true" />
     </header>
   );
 }

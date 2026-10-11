@@ -1,0 +1,38 @@
+# Esempio da integrare nel repository infra. Non applicare senza configurare immagine e secret.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buddy-budget-csv-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: buddy-budget-csv-worker }
+  template:
+    metadata:
+      labels: { app: buddy-budget-csv-worker }
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 180
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: worker
+          image: REPLACE_WITH_CSV_WORKER_IMAGE
+          command: ["node", "--conditions=react-server", "--import", "tsx", "scripts/personal-csv-worker.ts"]
+          envFrom:
+            - secretRef: { name: buddy-budget-csv-worker }
+          resources:
+            requests: { cpu: 100m, memory: 512Mi }
+            limits: { cpu: "1", memory: 1536Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 32Mi }

@@ -32,6 +32,17 @@ export function riskLevel(volatility: number): RiskLevel {
   return 4;
 }
 
+/** Oscillazione a cui finisce la scala del livello di rischio (oltre, il segnaposto resta a fondo scala). */
+export const RISK_SCALE_MAX = 0.35;
+
+/** Posizione da 0 a 1 sulla scala a 4 fasce uguali: dentro la fascia del livello, in proporzione all'oscillazione. */
+export function riskScalePosition(volatility: number): number {
+  const bounds = [0, RISK_LEVEL_LOW, RISK_LEVEL_MEDIUM, RISK_LEVEL_HIGH, RISK_SCALE_MAX];
+  const index = riskLevel(volatility) - 1;
+  const fraction = (volatility - bounds[index]) / (bounds[index + 1] - bounds[index]);
+  return (index + Math.min(Math.max(fraction, 0), 1)) / 4;
+}
+
 const RISK_LEVEL_TEXT: Record<RiskLevel, string> = {
   1: "Il valore si muove poco: di solito sale e scende di pochi punti.",
   2: "Il valore si muove in modo moderato, come ci si aspetta da un mix di azioni e obbligazioni.",

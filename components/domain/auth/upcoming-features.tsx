@@ -23,7 +23,7 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
   const [index, setIndex] = React.useState(0);
 
   React.useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion || UPCOMING_FEATURES.length < 2) return;
     const id = window.setInterval(
       () => setIndex((i) => (i + 1) % UPCOMING_FEATURES.length),
       UPCOMING_FEATURE_INTERVAL_MS
@@ -32,11 +32,12 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
   }, [reduceMotion]);
 
   const current = UPCOMING_FEATURES[index];
+  if (!current) return null;
 
   return (
-    <section className={cn("flex flex-col gap-3 border-t border-sidebar-foreground/15 pt-5", className)}>
+    <section className={cn("flex flex-col gap-3 border-t border-border pt-5", className)}>
       <div className="flex items-center justify-between gap-3">
-        <h3 className="text-xs font-medium text-sidebar-foreground/60">In arrivo</h3>
+        <h3 className="text-xs font-medium text-text-3">In arrivo</h3>
         <ul className="flex items-center gap-1" aria-hidden="true">
           {UPCOMING_FEATURES.map((feature, i) => {
             const Icon = feature.icon;
@@ -44,8 +45,8 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
               <li
                 key={feature.name}
                 className={cn(
-                  "flex size-6 items-center justify-center rounded-md transition-colors duration-500",
-                  i === index ? "bg-sidebar-foreground/15 text-sidebar-foreground" : "text-sidebar-foreground/40"
+                  "flex size-6 items-center justify-center rounded-full transition-colors duration-500",
+                  i === index ? "bg-primary/15 text-primary" : "text-text-3"
                 )}
               >
                 <Icon className="size-3.5" />
@@ -64,7 +65,7 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
       </ul>
 
       {reduceMotion ? (
-        <p className="text-sm text-sidebar-foreground/75" aria-hidden="true">
+        <p className="text-sm text-text-2" aria-hidden="true">
           {UPCOMING_FEATURES.map((f) => f.name).join(" · ")}
         </p>
       ) : (
@@ -77,9 +78,9 @@ export function UpcomingFeatures({ className }: UpcomingFeaturesProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.5, ease: STORY_EASE }}
-              className="absolute inset-0 text-sm leading-snug text-sidebar-foreground/75"
+              className="absolute inset-0 text-sm leading-snug text-text-2"
             >
-              <span className="font-medium text-sidebar-foreground">{current.name}.</span> {current.description}
+              <span className="font-medium text-foreground">{current.name}.</span> {current.description}
             </motion.p>
           </AnimatePresence>
         </div>

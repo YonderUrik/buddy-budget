@@ -2,6 +2,7 @@
 
 /** Primo passo di "Aggiungi debito": nuovo o già in corso, con la spiegazione di ciascuna strada. */
 
+import { CameraIcon, ChevronRightIcon, FileTextIcon, PlayIcon, type LucideIcon } from "lucide-react";
 import type { DebtStartMode } from "@/lib/db/schema/debts";
 
 export interface StartOption {
@@ -31,25 +32,36 @@ export const START_OPTIONS: readonly StartOption[] = [
   },
 ];
 
+const MODE_ICONS: Record<DebtStartMode, LucideIcon> = { nuovo: PlayIcon, origine: FileTextIcon, fotografia: CameraIcon };
+
 export interface AddDebtStartStepProps {
   onChoose: (mode: DebtStartMode) => void;
 }
 
 export function AddDebtStartStep({ onChoose }: AddDebtStartStepProps) {
   return (
-    <ul className="flex flex-col gap-2">
-      {START_OPTIONS.map((option) => (
-        <li key={option.mode}>
-          <button
-            type="button"
-            onClick={() => onChoose(option.mode)}
-            className="flex w-full flex-col gap-1 rounded-xl border bg-card p-4 text-left transition-colors hover:border-primary focus-visible:border-primary focus-visible:outline-none"
-          >
-            <span className="font-medium text-foreground">{option.title}</span>
-            <span className="text-sm text-muted-foreground">{option.description}</span>
-          </button>
-        </li>
-      ))}
+    <ul>
+      {START_OPTIONS.map((option) => {
+        const Icon = MODE_ICONS[option.mode];
+        return (
+          <li key={option.mode} className="border-b last:border-b-0">
+            <button
+              type="button"
+              onClick={() => onChoose(option.mode)}
+              className="flex w-full items-start gap-3 rounded-lg py-4 text-left transition-colors hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary" aria-hidden="true">
+                <Icon className="size-[18px]" />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="font-medium text-foreground">{option.title}</span>
+                <span className="text-sm text-muted-foreground">{option.description}</span>
+              </span>
+              <ChevronRightIcon size={16} className="mt-2.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+            </button>
+          </li>
+        );
+      })}
     </ul>
   );
 }

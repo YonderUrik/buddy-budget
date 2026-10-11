@@ -6,6 +6,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
+import { rejectIfDemoActive } from "@/lib/start/demo";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
@@ -61,6 +62,8 @@ async function handlePost(request: NextRequest) {
     return new Response(null, { status: 401 });
   }
   bindRequestUser(session.user.id);
+  const demoBlock = await rejectIfDemoActive(session.user.id);
+  if (demoBlock) return demoBlock;
 
   const body = await request.json();
   const parsed = createTransactionSchema.safeParse(body);
@@ -77,7 +80,7 @@ async function handlePost(request: NextRequest) {
   }
   if (account.source === "auto") {
     return Response.json(
-      { error: "Non è possibile aggiungere una spesa manuale a un conto collegato automaticamente" },
+      { error: "Non si può aggiungere una spesa manuale a un conto collegato" },
       { status: 400 }
     );
   }

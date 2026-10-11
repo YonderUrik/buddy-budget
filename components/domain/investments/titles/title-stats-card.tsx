@@ -1,14 +1,15 @@
 /**
  * Card "In numeri": variazione su 1 mese / 3 mesi / 6 mesi / 1 anno / da inizio anno, posizione dell'ultima chiusura
- * nella forbice a 52 settimane, volatilità e caduta massima dell'ultimo anno, ognuna con una frase che la spiega.
+ * nella forbice a 52 settimane. Volatilità e caduta massima stanno in «Quanto rischia».
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TITLE_RETURN_PERIODS, type TitleReturnPeriod, type TitleStats } from "@/lib/investments/title-stats";
 import { cn } from "@/lib/utils";
 import { formatSignedPct } from "../gain-text";
 import { formatPct } from "../percent";
 import { formatPrice } from "./title-format";
+import { ChartNoAxesColumnIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 
 const RETURN_LABELS: Record<TitleReturnPeriod, string> = { "1M": "1 mese", "3M": "3 mesi", "6M": "6 mesi", "1A": "1 anno", YTD: "Da inizio anno" };
 
@@ -35,11 +36,8 @@ function RangeBar({ low, high, last, currency }: { low: number; high: number; la
 export function TitleStatsCard({ stats, currency }: TitleStatsCardProps) {
   const returns = TITLE_RETURN_PERIODS.filter((p) => stats.returns[p] !== undefined);
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">In numeri</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-5">
+    <PanelSection icon={ChartNoAxesColumnIcon} title="In numeri" color="var(--primary)">
+      <div className="flex flex-col gap-5">
         {returns.length > 0 ? (
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-5">
             {returns.map((period) => {
@@ -70,29 +68,7 @@ export function TitleStatsCard({ stats, currency }: TitleStatsCardProps) {
           </div>
         ) : null}
 
-        {stats.volatility !== null || stats.maxDrawdown !== null ? (
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {stats.volatility !== null ? (
-              <div>
-                <dt className="text-xs text-muted-foreground">Volatilità annua</dt>
-                <dd className="text-base font-medium tabular-nums text-foreground">{formatPct(stats.volatility)}</dd>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  Di norma il prezzo si muove di circa {formatPct(stats.volatility, 0)} in un anno, in su o in giù.
-                </p>
-              </div>
-            ) : null}
-            {stats.maxDrawdown !== null ? (
-              <div>
-                <dt className="text-xs text-muted-foreground">Caduta massima (1 anno)</dt>
-                <dd className={cn("text-base font-medium tabular-nums", stats.maxDrawdown < -0.005 ? "text-neg" : "text-foreground")}>
-                  {stats.maxDrawdown < -0.005 ? formatSignedPct(stats.maxDrawdown) : "Nessuna"}
-                </dd>
-                <p className="mt-0.5 text-xs text-muted-foreground">Il peggior calo dal massimo precedente nell&apos;ultimo anno.</p>
-              </div>
-            ) : null}
-          </dl>
-        ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

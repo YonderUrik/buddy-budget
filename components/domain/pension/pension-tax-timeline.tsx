@@ -78,7 +78,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
   return (
     <div className="flex flex-col gap-3">
       <div ref={trackRef} className="relative pt-6">
-        <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
+        <div className="flex h-3 w-full overflow-hidden rounded-full bg-foreground/10">
           <span className="h-full bg-neg/70" style={{ width: `${flatShare}%` }} />
           <span className="h-full bg-gradient-to-r from-neg/70 to-pos" style={{ width: `${100 - flatShare}%` }} />
         </div>
@@ -120,7 +120,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
           </div>
         </div>
       </div>
-      <ul className="relative h-9 text-xs text-muted-foreground">
+      <ul className="relative h-9 text-xs text-text-2">
         {marks.map((mark) => (
           <li key={mark.title} className="absolute flex -translate-x-1/2 flex-col items-center whitespace-nowrap first:translate-x-0 first:items-start last:-translate-x-full last:items-end" style={{ left: `${mark.left}%` }}>
             <span className="font-medium tabular-nums text-foreground">{mark.title}</span>

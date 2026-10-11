@@ -14,6 +14,10 @@
   --color-pos-soft: var(--pos-soft);
   --color-neg: var(--neg);
   --color-neg-soft: var(--neg-soft);
+  --color-risk-1: var(--risk-1);
+  --color-risk-2: var(--risk-2);
+  --color-risk-3: var(--risk-3);
+  --color-risk-4: var(--risk-4);
   --color-text-2: var(--text-2);
   --color-text-3: var(--text-3);
   --color-group-dovuta: var(--group-dovuta);
@@ -29,6 +33,8 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-island: var(--island);
+  --color-island-foreground: var(--island-foreground);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -85,6 +91,10 @@
   --pos-soft: rgba(47, 125, 87, 0.1);
   --neg: #b0473b;
   --neg-soft: rgba(176, 71, 59, 0.09);
+  --risk-1: #2f7d57;
+  --risk-2: #b89a1e;
+  --risk-3: #d9731a;
+  --risk-4: #b0473b;
   --chart-1: #1f5141;
   --chart-2: #2f7d57;
   --chart-3: #41705f;
@@ -152,6 +162,12 @@
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e4e4e7;
   --sidebar-ring: #15738b;
+  /* Isola dei lavori in corso: sempre scura, in entrambi i temi (come l'isola dei telefoni). */
+  --island: #0f0f12;
+  --island-foreground: #f4f4f5;
+  --island-muted: #a1a1aa;
+  --island-pos: #7bb79b;
+  --island-neg: #e3a194;
 }
 
 .dark {
@@ -180,6 +196,10 @@
   --pos-soft: rgba(123, 183, 155, 0.14);
   --neg: #d2887b;
   --neg-soft: rgba(210, 136, 123, 0.14);
+  --risk-1: #5bb98a;
+  --risk-2: #d4b43c;
+  --risk-3: #ea8a3a;
+  --risk-4: #d8695c;
   --chart-1: #7bb79b;
   --chart-2: #5fb98a;
   --chart-3: #5b9280;
@@ -258,41 +278,43 @@
   html {
     @apply font-sans;
   }
+  /*
+   * Nell'app scorre solo <main>: la pagina intera no. Senza questo, se il documento supera di poco la finestra
+   * (zoom del browser, arrotondamenti di dvh in Safari) compare una seconda barra accanto a quella di <main>.
+   * Vale solo dove c'è la shell dell'app: login, landing e pagine pubbliche scorrono normalmente.
+   */
+  html:has(#main-content),
+  body:has(#main-content) {
+    overflow: hidden;
+  }
 }
 
-/* ── Scrollbar custom per la sidebar nav ── */
+/* ── Sidebar nav: scorre senza barra visibile ── */
 /*
- * Obiettivo: scrollbar sottile (4px), tono sul colore del bordo sidebar,
- * visibile solo quando la nav ha contenuto che supera l'altezza.
- * Usa la scrollbar-width API CSS moderna + il fallback webkit per Chrome/Edge/Safari.
+ * Con finestre basse il riepilogo sotto le voci supera l'altezza e la nav scorre da sola. Una seconda barra
+ * accanto a quella della pagina (doppio scroll) è rumore: la nav resta scorrevole con rotella e tocco,
+ * ma non disegna la barra.
  */
 .sidebar-nav {
-  /* Firefox: scrollbar sottile, thumb colorato con il token border */
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.2s ease;
+  scrollbar-width: none;
 }
-.sidebar-nav:hover {
-  scrollbar-color: var(--sidebar-border) transparent;
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
 }
 
-/* Chrome / Edge / Safari */
-.sidebar-nav::-webkit-scrollbar {
-  width: 4px;
+/* ── Scorrimento orizzontale senza barra (schede, chip) ── */
+/*
+ * Schede e chip che scorrono di lato (mobile, finestre strette) non disegnano la barra: accanto a quella verticale della
+ * pagina darebbe l'impressione di una doppia scrollbar. Restano scorrevoli con tocco, trackpad e tastiera (la scheda
+ * attiva viene portata in vista). `overflow-y: hidden` evita anche la barra verticale da 1px che `overflow-x: auto` può
+ * aprire quando un figlio sborda di poco.
+ */
+.scrollbar-hidden {
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
-.sidebar-nav::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sidebar-nav::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 9999px;
-  transition: background 0.2s ease;
-}
-.sidebar-nav:hover::-webkit-scrollbar-thumb {
-  background: var(--sidebar-border);
-}
-.sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
 }
 
 /* ── Scrollbar custom generica (sottile ed elegante) ── */
@@ -332,5 +354,73 @@
 @keyframes month-pace-draw {
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+/* Testo che luccica mentre un'operazione è in corso (componente TextShimmer). Senza movimento resta testo secondario. */
+.text-shimmer {
+  color: var(--muted-foreground);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .text-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      var(--muted-foreground) 0%,
+      var(--muted-foreground) 40%,
+      var(--foreground) 50%,
+      var(--muted-foreground) 60%,
+      var(--muted-foreground) 100%
+    );
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: text-shimmer 1.8s linear infinite;
+  }
+}
+@keyframes text-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* Dentro l'isola dei lavori in corso i colori di testo diventano quelli chiari dell'isola (anche per TextShimmer). */
+.island-ink {
+  --foreground: var(--island-foreground);
+  --muted-foreground: var(--island-muted);
+  --pos: var(--island-pos);
+  --neg: var(--island-neg);
+  color: var(--island-foreground);
+}
+
+/* Superficie e pulsante «AI» (Categorizza): sfumatura dai token del tema, con un riflesso lento che si ferma col movimento ridotto. */
+.ai-surface {
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--primary) 14%, transparent),
+    color-mix(in oklab, var(--pos) 10%, transparent)
+  );
+}
+.ai-button {
+  background-image: linear-gradient(110deg, var(--primary), color-mix(in oklab, var(--primary) 55%, var(--pos)), var(--primary));
+  background-size: 220% 100%;
+  color: var(--primary-foreground);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ai-button {
+    animation: ai-sheen 4s ease-in-out infinite;
+  }
+}
+@keyframes ai-sheen {
+  0%,
+  100% {
+    background-position: 0% 0;
+  }
+  50% {
+    background-position: 100% 0;
   }
 }

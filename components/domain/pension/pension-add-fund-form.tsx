@@ -1,9 +1,10 @@
 "use client";
 
-/** Form per aggiungere un fondo di previdenza: nome e data di prima adesione a una forma pensionistica. */
+/** Form per aggiungere un fondo di previdenza in due passi: il nome, poi la data di prima adesione a una forma pensionistica. */
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
+import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
+import { track } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 
 export interface PensionAddFundFormProps {
@@ -19,30 +20,53 @@ export interface PensionAddFundFormProps {
 export function PensionAddFundForm({ today, onSubmit, pending = false, errorMessage = null, defaultName = "" }: PensionAddFundFormProps) {
   const [name, setName] = React.useState(defaultName);
   const [adhesionDate, setAdhesionDate] = React.useState("");
-  const canSubmit = name.trim() !== "" && adhesionDate !== "" && !pending;
+  const flow = useStepFlow(2);
+  const canContinue = flow.isLast ? name.trim() !== "" && adhesionDate !== "" && !pending : name.trim() !== "";
   return (
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        if (canSubmit) onSubmit({ name: name.trim(), adhesionDate });
+        if (!canContinue) return;
+        if (!flow.isLast) {
+          track("form_step_completed", { flow: "pension_fund", step: flow.index + 1 });
+          flow.next();
+          return;
+        }
+        onSubmit({ name: name.trim(), adhesionDate });
       }}
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-4"
     >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
-          Nome del fondo
-          <Input value={name} placeholder="es. Piano pensione Moneyfarm" maxLength={80} onChange={(e) => setName(e.target.value)} />
-        </label>
-        <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
-          Prima adesione a una forma pensionistica
-          <Input type="date" value={adhesionDate} max={today} onChange={(e) => setAdhesionDate(e.target.value)} />
-          <span>Conta la prima in assoluto, anche in un&apos;altra azienda: decide l&apos;aliquota in uscita.</span>
-        </label>
-      </div>
+      <StepProgress index={flow.index} count={flow.count} label="Passi del nuovo fondo" />
+      <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-3">
+        {flow.index === 0 ? (
+          <>
+            <StepHeading title="Come si chiama il fondo?" />
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
+              Nome del fondo
+              <Input data-autofocus value={name} placeholder="es. Piano pensione Moneyfarm" maxLength={80} onChange={(e) => setName(e.target.value)} />
+            </label>
+          </>
+        ) : (
+          <>
+            <StepHeading title="Quando hai aderito?" description="Conta la prima adesione in assoluto a una forma pensionistica, anche in un'altra azienda: decide l'aliquota in uscita." />
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
+              Data di prima adesione
+              <Input data-autofocus type="date" value={adhesionDate} max={today} onChange={(e) => setAdhesionDate(e.target.value)} />
+            </label>
+          </>
+        )}
+      </StepStage>
       {errorMessage ? <p role="alert" className="text-sm text-neg">{errorMessage}</p> : null}
-      <div>
-        <Button type="submit" disabled={!canSubmit}>{pending ? "Salvataggio…" : "Aggiungi il fondo"}</Button>
-      </div>
+      <StepActions
+        backLabel={flow.isFirst ? undefined : "Indietro"}
+        onBack={() => {
+          track("form_step_back", { flow: "pension_fund", step: flow.index + 1 });
+          flow.back();
+        }}
+        primaryLabel={flow.isLast ? (pending ? "Salvataggio…" : "Aggiungi il fondo") : "Continua"}
+        disabled={!canContinue}
+        pending={pending}
+      />
     </form>
   );
 }

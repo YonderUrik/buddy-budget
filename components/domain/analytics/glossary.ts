@@ -85,11 +85,11 @@ export const GLOSSARY = {
   volatilita: { title: "Volatilità", text: "Quanto il valore oscilla in un anno. Il 12% significa che di solito il portafoglio sale o scende fino a 12 punti rispetto alla media; più è alta, più il percorso è ballerino." },
   "peggior-calo": { title: "Peggior calo (drawdown)", text: "La perdita più grande dal punto più alto al punto più basso successivo. Dice quanto male è andata nel peggior momento." },
   sharpe: { title: "Indice di Sharpe", text: "Il rendimento ottenuto per ogni unità di rischio corso. Sopra 1 è buono, sotto 0,5 il rischio è poco ripagato." },
-  sortino: { title: "Indice di Sortino", text: "Come Sharpe, ma conta solo le oscillazioni al ribasso, che sono quelle che fanno davvero male." },
+  sortino: { title: "Indice di Sortino", text: "Come Sharpe, ma conta solo le oscillazioni al ribasso, che sono quelle che fanno male." },
   calmar: { title: "Indice di Calmar", text: "Rendimento annuo diviso per il peggior calo. Dice quanto rendimento ottieni per ogni punto di perdita massima sopportata." },
   var: { title: "VaR 95%", text: "Valore a rischio: nel 5% dei giorni peggiori si perde almeno questa percentuale in un giorno. Nel restante 95% la perdita è minore." },
-  cvar: { title: "CVaR 95%", text: "La perdita media nei giorni peggiori (quel 5%). È più severa del VaR perché guarda come vanno davvero i casi brutti." },
-  "posizioni-effettive": { title: "Posizioni effettive", text: "Quanti titoli equivalenti hai davvero, tenendo conto dei pesi. 1 significa tutto su un titolo, più è alto più sei diversificato." },
+  cvar: { title: "CVaR 95%", text: "La perdita media nei giorni peggiori (quel 5%). È più severa del VaR perché guarda come vanno i casi brutti." },
+  "posizioni-effettive": { title: "Posizioni effettive", text: "Quanti titoli equivalenti hai, tenendo conto dei pesi. 1 significa tutto su un titolo, più è alto più sei diversificato." },
 } as const satisfies Record<string, GlossaryEntry>;
 
 export type GlossaryId = keyof typeof GLOSSARY;

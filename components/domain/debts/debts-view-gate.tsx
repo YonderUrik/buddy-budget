@@ -3,9 +3,10 @@
 /** Stati comuni delle schede di Debiti: caricamento, errore e nessun debito (con invito ad aggiungerne uno). */
 
 import type { ReactNode } from "react";
-import { LoadError } from "@/components/domain/shared";
-import { Button } from "@/components/ui/button";
+import { LandmarkIcon } from "lucide-react";
+import { EmptyState, LoadError } from "@/components/domain/shared";
 import { useDebtsActions } from "./debts-actions";
+import { DEBTS_COLORS } from "./debts-theme";
 
 export interface DebtsViewGateProps {
   loading: boolean;
@@ -24,7 +25,7 @@ export function DebtsViewGate({ loading, error, empty, onRetry, children }: Debt
   const { openAdd } = useDebtsActions();
   if (loading) {
     return (
-      <div className="flex flex-col gap-6" aria-busy="true">
+      <div className="flex flex-col gap-8" aria-busy="true">
         <div className="h-44 animate-pulse rounded-xl bg-muted" />
         <div className="h-64 animate-pulse rounded-xl bg-muted" />
       </div>
@@ -33,13 +34,13 @@ export function DebtsViewGate({ loading, error, empty, onRetry, children }: Debt
   if (error) return <LoadError message="Impossibile caricare i debiti." onRetry={onRetry} />;
   if (empty) {
     return (
-      <div className="rounded-xl border border-dashed p-8 text-center">
-        <p className="font-heading text-lg font-medium text-foreground">{EMPTY_TITLE}</p>
-        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{EMPTY_TEXT}</p>
-        <Button className="mt-4" onClick={openAdd}>
-          Aggiungi un finanziamento
-        </Button>
-      </div>
+      <EmptyState
+        icon={LandmarkIcon}
+        title={EMPTY_TITLE}
+        description={EMPTY_TEXT}
+        color={DEBTS_COLORS.list}
+        primary={{ label: "Aggiungi un finanziamento", onClick: openAdd }}
+      />
     );
   }
   return <>{children}</>;

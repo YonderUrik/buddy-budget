@@ -8,7 +8,6 @@
 import Link from "next/link";
 import { BellIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleListItem } from "@/lib/investments/titles-list";
 import { cn } from "@/lib/utils";
@@ -30,16 +29,14 @@ function ChangeText({ value }: { value: number | null }) {
 
 export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: TitleListCardProps) {
   return (
-    <Card>
-      <CardContent className="p-0">
-        <ul className="divide-y">
+    <ul className="-mx-4 divide-y sm:-mx-6">
           {items.map((item) => {
             const { instrument } = item;
             return (
               <li key={instrument.id}>
                 <Link
                   href={`${hrefBase}/${instrument.id}`}
-                  className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
+                  className="flex items-center gap-3 px-4 py-3 sm:px-6 transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none"
                 >
                   <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} />
                   <div className="min-w-0 flex-1">
@@ -75,8 +72,6 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
               </li>
             );
           })}
-        </ul>
-      </CardContent>
-    </Card>
+    </ul>
   );
 }

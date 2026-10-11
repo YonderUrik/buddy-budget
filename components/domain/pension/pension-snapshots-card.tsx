@@ -6,12 +6,12 @@
  */
 
 import * as React from "react";
-import { Trash2, Upload } from "lucide-react";
+import { DatabaseIcon, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { sortSnapshots, type PensionSnapshot } from "@/lib/calc/pension";
 import { formatLongDateKey, formatShortDateKey, money } from "./pension-format";
+import { PensionSection } from "./pension-section";
 
 export interface PensionSnapshotsCardProps {
   snapshots: PensionSnapshot[];
@@ -63,22 +63,23 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Aggiorna i valori del fondo</CardTitle>
-        <p className="text-sm text-muted-foreground">Riporta i due numeri che vedi nell&apos;area clienti, ogni volta che vuoi (di solito dopo ogni versamento del TFR). Il versamento lo ricaviamo noi dalla differenza. Se esiste già una fotografia con la stessa data, viene sostituita.</p>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <PensionSection
+      icon={DatabaseIcon}
+      title="Aggiorna i valori del fondo"
+      color="var(--primary)"
+      description="Riporta i due numeri che vedi nell'area clienti, ogni volta che vuoi (di solito dopo ogni versamento del TFR). Il versamento lo ricaviamo noi dalla differenza. Se esiste già una fotografia con la stessa data, viene sostituita."
+    >
+      <div className="flex flex-col gap-5">
         <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
             Data
             <Input type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
             Contributi netti
             <Input inputMode="decimal" placeholder="es. 10.880" value={contributions} onChange={(e) => setContributions(e.target.value)} />
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-muted-foreground">
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
             Controvalore
             <Input inputMode="decimal" placeholder="es. 11.420" value={value} onChange={(e) => setValue(e.target.value)} />
           </label>
@@ -86,9 +87,9 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
         </form>
         {error ? <p role="alert" className="text-sm text-neg">{error}</p> : null}
         {onImport ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-text-2">
             Hai già uno storico?{" "}
-            <button type="button" onClick={onImport} className="inline-flex items-center gap-1 font-medium text-primary underline-offset-2 hover:underline">
+            <button type="button" onClick={onImport} className="inline-flex min-h-8 items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline">
               <Upload size={14} aria-hidden="true" /> Importa da file CSV o Excel
             </button>
           </p>
@@ -96,17 +97,17 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
 
         {rows.length > 0 ? (
           <div className="flex flex-col">
-            <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr_auto] gap-2 border-b border-border pb-1.5 text-xs text-muted-foreground">
-              <span>Data</span><span className="text-right">Versamento</span><span className="text-right">Contributi netti</span><span className="text-right">Controvalore</span><span className="w-7" />
+            <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr_auto] gap-2 border-b border-border pb-2 text-sm text-text-2">
+              <span>Data</span><span className="text-right">Versamento</span><span className="text-right">Contributi netti</span><span className="text-right">Controvalore</span><span className="w-8" />
             </div>
             {visible.map((snapshot) => {
               const previous = sorted[sorted.findIndex((s) => s.id === snapshot.id) - 1];
               const delta = previous ? snapshot.netContributions - previous.netContributions : null;
               return (
-                <div key={snapshot.id} className="grid grid-cols-[1.2fr_1fr_1fr_1fr_auto] items-center gap-2 border-b border-border/60 py-1.5 text-sm tabular-nums last:border-b-0">
-                  <span className="truncate text-foreground">{formatShortDateKey(snapshot.date)}</span>
+                <div key={snapshot.id} className="grid grid-cols-[1.2fr_1fr_1fr_1fr_auto] items-center gap-2 border-b border-border/60 py-2 text-sm tabular-nums last:border-b-0">
+                  <span className="truncate font-semibold text-foreground">{formatShortDateKey(snapshot.date)}</span>
                   <span className="text-right text-pos">{delta !== null && delta > 0 ? `+${money(delta, currency)}` : "—"}</span>
-                  <span className="text-right text-muted-foreground">{money(snapshot.netContributions, currency)}</span>
+                  <span className="text-right text-text-2">{money(snapshot.netContributions, currency)}</span>
                   <span className="text-right text-foreground">{money(snapshot.value, currency)}</span>
                   <Button variant="ghost" size="icon-sm" aria-label={`Elimina la fotografia del ${formatLongDateKey(snapshot.date)}`} onClick={() => onRemove(snapshot.id)}>
                     <Trash2 size={14} aria-hidden="true" />
@@ -121,7 +122,7 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
             ) : null}
           </div>
         ) : null}
-      </CardContent>
-    </Card>
+      </div>
+    </PensionSection>
   );
 }

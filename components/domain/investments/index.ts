@@ -4,6 +4,10 @@
  * Componenti della schermata Investimenti.
  */
 
+export { DialogActions, DialogSection, DialogSections, DialogSteps, PanelDialogHeader } from "./dialog-parts";
+export type { DialogActionsProps, DialogSectionProps, DialogSectionsProps, DialogStepsProps, PanelDialogHeaderProps } from "./dialog-parts";
+export { PanelSection, PANEL_DEFAULT_COLOR } from "./panel-section";
+export type { PanelSectionProps } from "./panel-section";
 export { PortfolioHeroCard } from "./portfolio-hero-card";
 export type { PortfolioHeroCardProps } from "./portfolio-hero-card";
 export { ValueBreakdownBar } from "./value-breakdown-bar";
@@ -116,10 +120,11 @@ export * from "./titles";
 
 
 export { ImportManagement } from "./import-management";
+export { ImportManagementDialog } from "./import-management-dialog";
+export type { ImportManagementDialogProps } from "./import-management-dialog";
 export { CostDetailsCard } from "./cost-details-card";
 
 export { BrokerSelector } from "./broker-selector";
-export { BrokerComparisonCard } from "./broker-comparison-card";
 
 export { DividendsSummaryCard } from "./dividends-summary-card";
 export type { DividendsSummaryCardProps } from "./dividends-summary-card";

@@ -2,13 +2,16 @@
 
 /** Dialog per scegliere (o togliere) lo strumento con cui confrontare il rendimento del portafoglio. */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { BENCHMARK_SUGGESTIONS } from "@/lib/investments/benchmark-suggestions";
 import { useCreateInstrumentMutation, useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { InstrumentPicker } from "./instrument-picker";
+import { GitCompareArrowsIcon } from "lucide-react";
+import { PanelDialogHeader } from "./dialog-parts";
 
 export interface BenchmarkDialogProps {
   open: boolean;
@@ -38,14 +41,8 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
         onOpenChange(next);
       }}
     >
-      <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Confronta con un indice</DialogTitle>
-          <DialogDescription>
-            Mettiamo gli stessi soldi, negli stessi giorni, in un altro strumento e vediamo quanto avresti oggi. Di solito si
-            sceglie un ETF ad accumulazione (i dividendi sono già nel prezzo).
-          </DialogDescription>
-        </DialogHeader>
+      <FormDialogContent>
+        <PanelDialogHeader icon={GitCompareArrowsIcon} title="Confronta con un indice" description="Confrontiamo gli stessi versamenti, negli stessi giorni, con un ETF ad accumulazione." color="var(--swatch-indigo)" />
         <section aria-label="Benchmark comuni" className="space-y-2">
           <p className="text-sm font-medium">Benchmark comuni</p>
           <p className="text-xs text-muted-foreground">Scegli un indice: il confronto usa l’ETF ad accumulazione indicato.</p>
@@ -90,7 +87,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
             Togli il confronto
           </Button>
         ) : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

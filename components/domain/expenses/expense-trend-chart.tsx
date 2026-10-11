@@ -98,7 +98,7 @@ export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChart
             />
             <ChartTooltip content={<MonthlyStackTooltip currency={currency} />} />
             {slots.map((slotIndex) => (
-              <Bar key={slotIndex} dataKey={`pos${slotIndex}Amount`} stackId="trend">
+              <Bar isAnimationActive={false} key={slotIndex} dataKey={`pos${slotIndex}Amount`} stackId="trend">
                 {rows.map((row, rowIndex) => {
                   const segment = row.segments[slotIndex];
                   return <Cell key={rowIndex} fill={segment ? segmentColor(segment) : "transparent"} />;

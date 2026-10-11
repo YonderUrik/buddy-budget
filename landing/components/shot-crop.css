@@ -1,0 +1,3 @@
+/* Ritaglio senza barra laterale: la barra occupa il 18,75% della larghezza dello screenshot, quindi l'immagine si allarga del 23% e si sposta a sinistra. */
+.crop { overflow: hidden; background: var(--a-bg); }
+.crop .shot-img { width: 123%; max-width: none; margin-left: -23%; }

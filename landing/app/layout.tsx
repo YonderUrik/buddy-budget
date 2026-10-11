@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "@fontsource-variable/geist";
+import "@fontsource-variable/space-grotesk";
+import "@fontsource-variable/hanken-grotesk";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import { BrandSprite } from "@/components/brand";
-import { APP_URL, FAQ, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";
+import { APP_URL, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/content/site";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 
 const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
@@ -18,7 +20,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: { title: SITE_TITLE, description: SITE_DESCRIPTION, url: SITE_URL, siteName: SITE_NAME, locale: "it_IT", type: "website", images: [OG_IMAGE] },
   twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [OG_IMAGE.url] },
-  icons: { icon: "/icon.svg", apple: "/icons/apple-touch-icon.png" },
+  // Google chiede un'icona quadrata con lato multiplo di 48 px (ico/png/svg) e rilegge la favicon solo dopo una nuova scansione.
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "48x48" },
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/icons/icon-96.png", type: "image/png", sizes: "96x96" },
+      { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -28,29 +39,16 @@ export const viewport: Viewport = {
   ],
 };
 
-/** Dati strutturati della home: organizzazione, sito, applicazione web e FAQ (le stesse domande della sezione visibile). */
+/**
+ * Dati strutturati di ogni pagina: organizzazione e sito. `SoftwareApplication`/`WebApplication` non ci sono di proposito:
+ * Google li accetta solo con `aggregateRating` o `review` reali, che non abbiamo (l'audit SEO li segnalava come errore su ogni pagina).
+ * La FAQ sta solo nella home, dove le domande sono visibili (`app/page.tsx`).
+ */
 const JSON_LD = {
   "@context": "https://schema.org",
   "@graph": [
     { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icons/icon-512.png` },
     { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, inLanguage: "it-IT", publisher: { "@id": `${SITE_URL}/#organization` } },
-    {
-      "@type": "SoftwareApplication",
-      "@id": `${SITE_URL}/#app`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      applicationCategory: "FinanceApplication",
-      operatingSystem: "Web, iOS, Android (PWA)",
-      inLanguage: "it-IT",
-      description: SITE_DESCRIPTION,
-      image: `${SITE_URL}${OG_IMAGE.url}`,
-      offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
-    },
-    {
-      "@type": "FAQPage",
-      "@id": `${SITE_URL}/#faq`,
-      mainEntity: FAQ.map((q) => ({ "@type": "Question", name: q.question, acceptedAnswer: { "@type": "Answer", text: q.answer } })),
-    },
   ],
 };
 

@@ -4,17 +4,29 @@ import * as React from "react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { cn } from "@/lib/utils"
+import { useMediaQuery } from "@/lib/hooks/use-media-query"
+import { attachSheetSwipe, clickSheetClose, SHEET_QUERY } from "@/lib/motion/sheet"
+import { SHEET_CLASS, SheetHandle } from "@/components/ui/sheet-handle"
 
-function Popover({ ...props }: PopoverPrimitive.Root.Props) {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />
+/** Sul telefono il popover è un foglio dal basso: diventa modale (pagina bloccata sotto) salvo `modal` esplicito. */
+function Popover({ modal, ...props }: PopoverPrimitive.Root.Props) {
+  const sheet = useMediaQuery(SHEET_QUERY)
+  return <PopoverPrimitive.Root data-slot="popover" modal={modal ?? sheet} {...props} />
 }
 
 function PopoverTrigger({ ...props }: PopoverPrimitive.Trigger.Props) {
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
+/**
+ * Contenuto del popover: da `sm` in su resta ancorato al pulsante; sul telefono si apre come foglio dal basso a tutta
+ * larghezza, sopra uno sfondo scuro, e si chiude toccando fuori o trascinandolo giù. Le larghezze passate dal chiamante
+ * valgono solo da `sm` in su.
+ */
 function PopoverContent({
   className,
+  ref,
+  children,
   align = "center",
   alignOffset = 0,
   side = "bottom",
@@ -25,23 +37,40 @@ function PopoverContent({
     PopoverPrimitive.Positioner.Props,
     "align" | "alignOffset" | "side" | "sideOffset"
   >) {
+  const popupRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+      if (node) attachSheetSwipe(node, () => clickSheetClose(node))
+    },
+    [ref]
+  )
   return (
     <PopoverPrimitive.Portal>
+      <PopoverPrimitive.Backdrop className="fixed inset-0 isolate z-50 bg-black/40 duration-200 supports-backdrop-filter:backdrop-blur-xs sm:hidden data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
       <PopoverPrimitive.Positioner
         align={align}
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        className="isolate z-50"
+        // Sul telefono la posizione calcolata accanto al pulsante viene ignorata: il foglio sta sul fondo.
+        className="isolate z-50 max-sm:fixed! max-sm:inset-x-0! max-sm:top-auto! max-sm:bottom-0! max-sm:transform-none! max-sm:translate-none!"
       >
         <PopoverPrimitive.Popup
+          ref={popupRef}
           data-slot="popover-content"
           className={cn(
-            "z-50 flex w-72 origin-(--transform-origin) flex-col gap-2.5 rounded-lg bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "z-50 flex w-72 origin-(--transform-origin) flex-col gap-2.5 rounded-lg bg-popover p-2.5 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-left-2 data-[side=inline-start]:slide-in-from-right-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative",
+            "max-sm:w-full! max-sm:max-w-none! max-sm:max-h-[85dvh] max-sm:overflow-y-auto max-sm:px-4 max-sm:pb-[max(1rem,env(safe-area-inset-bottom))] max-sm:shadow-lg",
+            SHEET_CLASS,
             className
           )}
           {...props}
-        />
+        >
+          <SheetHandle />
+          <PopoverPrimitive.Close data-sheet-close="" hidden tabIndex={-1} aria-hidden="true" />
+          {children}
+        </PopoverPrimitive.Popup>
       </PopoverPrimitive.Positioner>
     </PopoverPrimitive.Portal>
   )

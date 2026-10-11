@@ -37,9 +37,9 @@ function decimal(value: number): string {
 
 function drawdownText(drawdown: MaxDrawdown): string {
   if (drawdown.depth === 0) return "Nel periodo non è mai sceso sotto il massimo precedente.";
-  const fall = `Tra il ${formatDateWithYear(drawdown.peakDate)} e il ${formatDateWithYear(drawdown.troughDate)} è sceso del ${pct(-drawdown.depth)} dal massimo`;
-  if (drawdown.recoveryDate) return `${fall}; ci ha messo ${daysBetween(drawdown.troughDate, drawdown.recoveryDate)} giorni a tornarci.`;
-  return `${fall} e non ci è ancora tornato: oggi è a ${formatSignedPct(drawdown.current)}.`;
+  const span = `Dal ${formatDateWithYear(drawdown.peakDate)} al ${formatDateWithYear(drawdown.troughDate)}`;
+  if (drawdown.recoveryDate) return `${span}; tornato al massimo in ${daysBetween(drawdown.troughDate, drawdown.recoveryDate)} giorni.`;
+  return `${span}; non è ancora tornato al massimo (oggi ${formatSignedPct(drawdown.current)}).`;
 }
 
 function riskFreeNote(risk: PortfolioRisk, currency: string): string {
@@ -68,6 +68,13 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
   }
 
   const bench = risk.benchmark;
+  const footnote = [
+    risk.fewData ? "Meno di un anno di dati: numeri indicativi." : null,
+    benchmarkName ? null : "Scegli un indice in «Quanto sta rendendo» per vedere quanto lo segui.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const hasDetails = risk.drawdownSeries.length >= 2 || risk.sharpe !== null;
   return (
     <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
       <div className="flex flex-col gap-5">
@@ -79,7 +86,7 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
           volatilityHint="Nome tecnico: volatilità. Di quanto si muove di solito il valore in un anno, in più o in meno. Più è alta, più il percorso è accidentato."
         />
 
-        <div className={`grid grid-cols-1 gap-5 border-t pt-5 [&>*:not(:first-child)]:border-t [&>*:not(:first-child)]:pt-5 `}>
+        <div className="grid grid-cols-1 gap-x-8 gap-y-5 border-t pt-5 sm:grid-cols-2">
           <RiskMetric
             label="Perdita peggiore"
             value={risk.drawdown && risk.drawdown.depth < 0 ? formatSignedPct(risk.drawdown.depth) : "0%"}
@@ -88,7 +95,7 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
             hint="Nome tecnico: massima perdita dal picco (drawdown). Quanto hai visto scendere il portafoglio, al massimo, rispetto al suo valore più alto. Non conta i versamenti."
           />
           <RiskMetric
-            label="Il rischio è stato ripagato?"
+            label="Rischio ripagato?"
             value={risk.sharpe === null ? null : SHARPE_WORDS[sharpeLevel(risk.sharpe)]}
             note={risk.sharpe === null ? "servono 3 mesi di dati" : `Sharpe ${decimal(risk.sharpe)}`}
             description={risk.sharpe === null ? null : sharpeInsight(risk.sharpe)}
@@ -105,30 +112,21 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
           ) : null}
         </div>
 
-        {!benchmarkName ? (
-          <p className="text-sm text-muted-foreground">Scegli un indice di confronto in &ldquo;Quanto sta rendendo&rdquo; per vedere quanto lo segui.</p>
-        ) : null}
-        {risk.fewData ? (
-          <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
-            Meno di un anno di dati: prendi questi numeri come indicativi.
-          </p>
-        ) : null}
+        {footnote ? <p className="text-xs text-muted-foreground">{footnote}</p> : null}
 
-        <div className="flex flex-col">
-          {risk.drawdownSeries.length >= 2 ? (
-            <RiskDetails title="Guarda le cadute nel tempo">
-              <div className="flex flex-col gap-1">
-                <p className="text-sm text-muted-foreground">Quanto il portafoglio era sotto il suo massimo, giorno per giorno. Più il grafico scende, più era in perdita.</p>
-                <DrawdownChart series={risk.drawdownSeries} />
-              </div>
-            </RiskDetails>
-          ) : null}
-          {risk.sharpe !== null ? (
-            <RiskDetails title="Come sono calcolati">
-              <p className="text-sm text-muted-foreground">{riskFreeNote(risk, currency)}</p>
-            </RiskDetails>
-          ) : null}
-        </div>
+        {hasDetails ? (
+          <RiskDetails title="Dettagli">
+            <div className="flex flex-col gap-3">
+              {risk.drawdownSeries.length >= 2 ? (
+                <div className="flex flex-col gap-1">
+                  <p className="text-sm text-muted-foreground">Quanto il portafoglio era sotto il suo massimo, giorno per giorno.</p>
+                  <DrawdownChart series={risk.drawdownSeries} />
+                </div>
+              ) : null}
+              {risk.sharpe !== null ? <p className="text-sm text-muted-foreground">{riskFreeNote(risk, currency)}</p> : null}
+            </div>
+          </RiskDetails>
+        ) : null}
       </div>
     </PanelSection>
   );

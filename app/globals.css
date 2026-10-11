@@ -14,6 +14,10 @@
   --color-pos-soft: var(--pos-soft);
   --color-neg: var(--neg);
   --color-neg-soft: var(--neg-soft);
+  --color-risk-1: var(--risk-1);
+  --color-risk-2: var(--risk-2);
+  --color-risk-3: var(--risk-3);
+  --color-risk-4: var(--risk-4);
   --color-text-2: var(--text-2);
   --color-text-3: var(--text-3);
   --color-group-dovuta: var(--group-dovuta);
@@ -87,6 +91,10 @@
   --pos-soft: rgba(47, 125, 87, 0.1);
   --neg: #b0473b;
   --neg-soft: rgba(176, 71, 59, 0.09);
+  --risk-1: #2f7d57;
+  --risk-2: #b89a1e;
+  --risk-3: #d9731a;
+  --risk-4: #b0473b;
   --chart-1: #1f5141;
   --chart-2: #2f7d57;
   --chart-3: #41705f;
@@ -188,6 +196,10 @@
   --pos-soft: rgba(123, 183, 155, 0.14);
   --neg: #d2887b;
   --neg-soft: rgba(210, 136, 123, 0.14);
+  --risk-1: #5bb98a;
+  --risk-2: #d4b43c;
+  --risk-3: #ea8a3a;
+  --risk-4: #d8695c;
   --chart-1: #7bb79b;
   --chart-2: #5fb98a;
   --chart-3: #5b9280;

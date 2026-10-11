@@ -24,9 +24,11 @@ export interface SplitPanelProps {
   /** Salva la nuova parte esclusa (positiva, 0 = nessuna divisione). */
   onSave: (excluded: number) => void;
   onCancel: () => void;
+  /** Classi del contenitore (es. senza riquadro dentro un foglio). */
+  className?: string;
 }
 
-export function SplitPanel({ title, total, excluded, currency, isIncome, saving = false, onSave, onCancel }: SplitPanelProps) {
+export function SplitPanel({ title, total, excluded, currency, isIncome, saving = false, onSave, onCancel, className }: SplitPanelProps) {
   const [own, setOwn] = React.useState(() => clampOwnShare(total - excluded, total));
   const [typed, setTyped] = React.useState(() => own.toFixed(2));
   const activePreset = matchPreset(total, own);
@@ -40,7 +42,7 @@ export function SplitPanel({ title, total, excluded, currency, isIncome, saving 
   }
 
   return (
-    <div className="mx-1 my-2 rounded-2xl bg-foreground/[0.04] p-4 sm:p-5">
+    <div className={cn("mx-1 my-2 rounded-2xl bg-foreground/[0.04] p-4 sm:p-5", className)}>
       <p className="text-sm font-semibold text-text-2">Dividi · {title}</p>
       <p className="font-heading text-3xl font-medium tabular-nums">{formatCurrency(total, currency)}</p>
       <p className="mt-1 text-sm text-text-2">{isIncome ? "Quanto di questa entrata è tuo?" : "Quanto di questa spesa è tuo?"}</p>

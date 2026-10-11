@@ -180,6 +180,7 @@ Font: `font-heading` (Space Grotesk) per titoli e cifre in evidenza, `font-sans`
 ## Convenzioni componenti
 
 - I componenti shadcn si aggiungono con `pnpm dlx shadcn@latest add <nome>` e vivono in `components/ui/`; non modificarli a mano se non per adattarli ai token del tema.
+- **Su mobile popover, dialog e conferme sono fogli dal basso** (default di `PopoverContent`/`DialogContent`/`AlertDialogContent`, trascina giù per chiudere): non servono classi `max-sm:` nei chiamanti. Form lunghi: `FormDialogContent` (tutto schermo). Pannelli inline sotto una riga: `InlineOrSheet`, che sul telefono li apre in un foglio.
 - I componenti compositi specifici del dominio (es. `StatCard`) vivono in `components/` e vanno costruiti componendo le primitive di `components/ui/`.
 - Tutte le stringhe visibili all'utente sono in italiano per ora (l'app è multi-lingua per design, ma l'infrastruttura di i18n non è ancora implementata — vedi "Stack" e log delle decisioni). Quando si introdurrà l'i18n, queste stringhe andranno estratte in chiavi di traduzione invece di restare hardcoded nei componenti.
 
@@ -197,6 +198,7 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Fogli dal basso su mobile (2026-10-11)**: sul telefono popover, dialog e conferme si aprono come foglio dal basso (trascina giù per chiudere), Dividi e Modifica dei movimenti compresi; desktop invariato, form lunghi a tutto schermo; voce in `docs/decisioni/2026-10-11-fogli-dal-basso-su-mobile.md`. PR sul branch `claude/project-thread-m82qpp`. Rimandati: menu a tendina e select.
 **Account inattivi (2026-10-11)**: cron giornaliero `inactive-accounts` che avvisa via email a 83 giorni senza accessi ed elimina a 90 chi non è rientrato; parte in dry-run (`INACTIVITY_CLEANUP_MODE=execute` a mano dopo il dry-run), migration 0029, Privacy/Termini aggiornati con `LEGAL_VERSION` 2026-10-12 (nuova accettazione e revisione di un professionista da fare); voce in `docs/decisioni/2026-10-11-account-inattivi.md`. PR in bozza sul branch `claude/project-thread-ek292d` (e nel repo infra). Rimandati: cron nel compose, email non verificate vecchie, dati orfani, eccezione per gli abbonamenti.
 **Self-hosting (2026-10-10)**: `docker-compose.yml` (app, Postgres, Redis, migrate, cron) e guida `docs/self-hosting.md`; Google, Resend e GoCardless ora facoltativi; immagini multi-arch su ghcr.io dietro la variabile di repo `SELFHOST_IMAGES`; voce in `docs/decisioni/2026-10-10-self-hosting-docker.md`. PR sul branch `claude/project-thread-a8nxln`. Rimandati: firma cosign, mirror Docker Hub, worker CSV AI nel compose.
 **Primi passi (2026-10-10)**: checklist «Primi passi» in Panoramica che si compila dai dati veri, «Esplora con dati d'esempio» azzerabile (conti `is_demo`, mai mischiati: i dati veri sono bloccati finché la demo è attiva) e stati vuoti con azione in Movimenti, Conti, Investimenti e Debiti; voce in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0026. PR in bozza sul branch `claude/project-thread-ec9i5w`. Rimandati: riaprire la checklist dalla UI, demo con investimenti, guardia su import personalizzati.

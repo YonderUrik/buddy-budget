@@ -4,7 +4,8 @@
 
 import * as React from "react";
 import { NotebookPen } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useUpdateTransactionMutation } from "@/lib/queries/transactions";
@@ -69,6 +70,8 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
         <span className="sm:sr-only">Nota</span>
       </PopoverTrigger>
       <PopoverContent align="end">
+        {/* Sul telefono il popover è un foglio dal basso: titolo e «Fatto» danno contesto e un modo chiaro per chiudere. */}
+        <PopoverTitle className="font-heading text-base font-semibold sm:sr-only">Nota</PopoverTitle>
         <Textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
@@ -80,6 +83,9 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
         {updateMutation.isError && (
           <p className="mt-1 text-xs text-destructive">Salvataggio non riuscito, riprova.</p>
         )}
+        <Button type="button" className="h-11 sm:hidden" onClick={() => handleOpenChange(false)}>
+          Fatto
+        </Button>
       </PopoverContent>
     </Popover>
   );

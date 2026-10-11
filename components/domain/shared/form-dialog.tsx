@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 export type FormDialogSize = "default" | "wide";
 
 const BASE_CLASS =
-  "flex max-h-dvh flex-col gap-5 overflow-y-auto max-sm:inset-0 max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-w-none max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-none sm:max-h-[90dvh] [&_[data-slot=dialog-header]]:pr-10";
+  "flex max-h-dvh flex-col gap-5 overflow-y-auto sm:max-h-[90dvh] [&_[data-slot=dialog-header]]:pr-10";
 
 const SIZE_CLASS: Record<FormDialogSize, string> = {
   default: "sm:max-w-lg",
@@ -30,7 +30,7 @@ export interface FormDialogContentProps extends React.ComponentProps<typeof Dial
 /** `DialogContent` con il formato comune dei form (vedi sopra). Va dentro un `Dialog`, al posto di `DialogContent`. */
 export function FormDialogContent({ size = "default", closeLabel = "Chiudi", className, children, ...props }: FormDialogContentProps) {
   return (
-    <DialogContent className={cn(BASE_CLASS, SIZE_CLASS[size], className)} {...props}>
+    <DialogContent mobileLayout="fullscreen" className={cn(BASE_CLASS, SIZE_CLASS[size], className)} {...props}>
       <DialogClose
         aria-label={closeLabel}
         className="absolute top-3 right-3 z-10 grid size-11 cursor-pointer place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none sm:top-4 sm:right-4 sm:size-9"

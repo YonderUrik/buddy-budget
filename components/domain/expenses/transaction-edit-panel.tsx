@@ -17,9 +17,11 @@ export interface TransactionEditPanelProps {
   transaction: Transaction;
   currency: string;
   onClose: () => void;
+  /** Classi del contenitore (es. senza bordo e sfondo dentro un foglio). */
+  className?: string;
 }
 
-export function TransactionEditPanel({ transaction, currency, onClose }: TransactionEditPanelProps) {
+export function TransactionEditPanel({ transaction, currency, onClose, className }: TransactionEditPanelProps) {
   const updateMutation = useUpdateTransactionMutation();
   const isIncome = Number(transaction.amount) > 0;
   const [description, setDescription] = React.useState(transaction.description);
@@ -43,7 +45,7 @@ export function TransactionEditPanel({ transaction, currency, onClose }: Transac
   }
 
   return (
-    <div className="flex flex-col gap-3 border-t border-border bg-muted/50 px-4 py-3">
+    <div className={cn("flex flex-col gap-3 border-t border-border bg-muted/50 px-4 py-3", className)}>
       <div className="flex flex-col gap-1">
         <label htmlFor={`${idPrefix}-description`} className="text-xs text-muted-foreground">
           Descrizione

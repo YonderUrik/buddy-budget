@@ -14,6 +14,7 @@ import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { track } from "@/lib/analytics";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { SwipeCard } from "./swipe-card";
 import { SwipeTour } from "./swipe-tour";
 import { useSwipeDeck } from "./use-swipe-deck";
@@ -46,7 +47,9 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
   const [changing, setChanging] = React.useState(false);
   const [remember, setRemember] = React.useState(false);
   const suggestion = group.suggestion;
-  const suggestedName = suggestion ? categories.find((c) => c.id === suggestion.suggestedCategoryId)?.name : undefined;
+  const suggested = suggestion ? categories.find((c) => c.id === suggestion.suggestedCategoryId) : undefined;
+  const suggestedName = suggested?.name;
+  const suggestedAppearance = suggested ? { icon: suggested.icon as CategoryIcon, color: suggested.color as CategoryColor } : undefined;
 
   const confirm = React.useCallback(() => {
     if (!suggestion) return;
@@ -100,6 +103,7 @@ function ActiveCard({ group, categories, currency, categoryUsage, remaining, can
         categories={categories}
         categoryUsage={categoryUsage}
         suggestedName={suggestedName}
+        suggestedAppearance={suggestedAppearance}
         changing={changing}
         remember={remember}
         onRememberChange={setRemember}

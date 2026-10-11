@@ -7,7 +7,8 @@
 
 import * as React from "react";
 import { motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react";
-import { CategoryPicker } from "@/components/domain/categories";
+import { CategoryAvatar, CategoryPicker } from "@/components/domain/categories";
+import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
@@ -43,6 +44,8 @@ export interface SwipeCardProps {
   categoryUsage?: CategoryUsageCounts;
   /** Nome della categoria proposta (assente se la carta non ha proposte). */
   suggestedName?: string;
+  /** Icona e colore della categoria proposta. */
+  suggestedAppearance?: { icon: CategoryIcon; color: CategoryColor };
   /** Mostra il selettore di un'altra categoria al posto dei pulsanti. */
   changing: boolean;
   remember: boolean;
@@ -59,6 +62,7 @@ export function SwipeCard({
   categories,
   categoryUsage,
   suggestedName,
+  suggestedAppearance,
   changing,
   remember,
   onRememberChange,
@@ -148,6 +152,7 @@ export function SwipeCard({
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/60 p-4 text-center">
           <p className="text-xs text-muted-foreground">Categoria proposta</p>
+          {suggestedAppearance && <CategoryAvatar icon={suggestedAppearance.icon} color={suggestedAppearance.color} size={24} className="size-12" />}
           <p className="font-heading text-lg font-medium text-foreground">{suggestedName}</p>
           {group.suggestion && <SuggestionSourceBadge suggestion={group.suggestion} />}
         </div>

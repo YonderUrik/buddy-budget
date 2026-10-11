@@ -8,3 +8,5 @@ Dopo la PR #311 Daniele ha trovato gli screenshot illeggibili (si vedeva solo un
 - Le etichette tipo «Spese!A1» diventano titoletti normali: sembravano codice.
 - Pagine interne: intestazione sulla griglia del foglio, invito finale in card chiara e piè di pagina chiaro al posto della fascia navy, selettori a pillola come nell'app, raggi dai token.
 - Evento Umami `tour_tab_selected` al posto di `detail_tab_selected`. Tolti gli screenshot del credito Lombard (funzione rimossa).
+
+Catalogo sfoltito da 49 a 34 voci (richiesta di Daniele): tolte le voci che erano dettagli d'interfaccia (nomi leggibili, ricerca e note, proposte per somiglianza, conti per banca, aggiornamento, avviso di rinnovo, categoria con un tocco, da sistemare, liquidità unica, rate e correzioni, riepilogo in barra, nascondi importi, accesso, aiuto, installabile). Le funzioni restano nell'app; il catalogo elenca solo quelle che contano da sole.

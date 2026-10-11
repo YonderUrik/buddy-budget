@@ -17,6 +17,7 @@ import { DrawdownChart } from "./drawdown-chart";
 import { RiskDetails } from "./risk-details";
 import { RiskLevelMeter } from "./risk-level-meter";
 import { RiskMetric } from "./risk-metric";
+import { RiskMethod } from "./risk-method";
 
 const PERIOD_LABELS: Record<NetWorthPeriod, string> = {
   "1mese": "Nell'ultimo mese",
@@ -74,8 +75,7 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
   ]
     .filter(Boolean)
     .join(" ");
-  const hasDetails = risk.drawdownSeries.length >= 2 || risk.sharpe !== null;
-  return (
+    return (
     <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={PERIOD_LABELS[period]}>
       <div className="flex flex-col gap-5">
         <RiskLevelMeter
@@ -114,19 +114,22 @@ export function RiskCard({ risk, period, benchmarkName, currency }: RiskCardProp
 
         {footnote ? <p className="text-xs text-muted-foreground">{footnote}</p> : null}
 
-        {hasDetails ? (
-          <RiskDetails title="Dettagli">
+        <div className="flex flex-col">
+          {risk.drawdownSeries.length >= 2 ? (
+            <RiskDetails title="Guarda le cadute nel tempo">
+              <div className="flex flex-col gap-1">
+                <p className="text-sm text-muted-foreground">Quanto il portafoglio era sotto il suo massimo, giorno per giorno.</p>
+                <DrawdownChart series={risk.drawdownSeries} />
+              </div>
+            </RiskDetails>
+          ) : null}
+          <RiskDetails title="Come è calcolato">
             <div className="flex flex-col gap-3">
-              {risk.drawdownSeries.length >= 2 ? (
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm text-muted-foreground">Quanto il portafoglio era sotto il suo massimo, giorno per giorno.</p>
-                  <DrawdownChart series={risk.drawdownSeries} />
-                </div>
-              ) : null}
+              <RiskMethod />
               {risk.sharpe !== null ? <p className="text-sm text-muted-foreground">{riskFreeNote(risk, currency)}</p> : null}
             </div>
           </RiskDetails>
-        ) : null}
+        </div>
       </div>
     </PanelSection>
   );

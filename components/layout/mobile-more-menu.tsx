@@ -4,8 +4,9 @@
  * MobileMoreMenu
  *
  * Menu «Altro» della barra in basso su mobile: una vista a tutto schermo (non il pannello laterale della sidebar)
- * pensata per il pollice. Dall'alto: l'account, le sezioni che non stanno nella barra con una riga di spiegazione, il
- * riepilogo finanziario (lo slot `extra` della sidebar), le preferenze veloci (tema, nascondi importi) e uscita.
+ * pensata per il pollice e volutamente corta. Dall'alto: l'account, le sezioni che non stanno nella barra con una riga di
+ * spiegazione, l'assistenza (aiuto, impostazioni), l'unico interruttore veloce (nascondi importi), il riepilogo
+ * finanziario (lo slot `extra` della sidebar) chiuso finché non lo si apre, e l'uscita. Il tema sta in Impostazioni.
  * Si chiude con il pulsante ×, con Esc o con il tasto indietro del telefono (la voce di cronologia aggiunta
  * all'apertura viene consumata, così «indietro» non esce dall'app).
  *
@@ -17,8 +18,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { useTheme } from "next-themes";
-import { ChevronRight, EyeOff, LogOut, Monitor, Moon, Settings, Sun, X } from "lucide-react";
+import { ChevronDown, ChevronRight, EyeOff, LifeBuoy, LogOut, Settings, SlidersHorizontal, X } from "lucide-react";
 
 import { usePrivacy } from "@/components/privacy-provider";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
@@ -30,19 +30,13 @@ import { LEGAL_LINKS } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 /** Cosa ha toccato l'utente nel menu (tipo chiuso, per le statistiche d'uso). */
-export type MoreMenuAction = "sezione" | "impostazioni" | "tema" | "importi" | "esci" | "informativa" | "quadro";
+export type MoreMenuAction = "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro";
 
 /** Spiegazione di una riga per `href`, in italiano semplice: cosa si trova dentro la sezione. */
 export const MORE_MENU_HINTS: Record<string, string> = {
   "/pensione": "Fondi, rendimento e a quanto arriverai",
   "/analitiche": "Quando arrivi al traguardo e cosa cambia con le tue ipotesi",
 };
-
-const THEME_OPTIONS = [
-  { value: "light", label: "Chiaro", icon: Sun },
-  { value: "dark", label: "Scuro", icon: Moon },
-  { value: "system", label: "Sistema", icon: Monitor },
-] as const;
 
 export interface MobileMoreMenuProps {
   open: boolean;
@@ -56,6 +50,8 @@ export interface MobileMoreMenuProps {
   /** Riepilogo finanziario sotto le sezioni (lo stesso slot della sidebar). */
   extra?: React.ReactNode;
   settingsHref?: string;
+  /** Pagina di aiuto e segnalazioni. */
+  supportHref?: string;
   onAction?: (action: MoreMenuAction) => void;
 }
 
@@ -113,11 +109,12 @@ export function MobileMoreMenu({
   activeHref,
   extra,
   settingsHref = "/impostazioni",
+  supportHref = "/aiuto",
   onAction,
 }: MobileMoreMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
+  const [quadroOpen, setQuadroOpen] = React.useState(false);
   const { hidden, toggle } = usePrivacy();
   const { data: sessionData } = authClient.useSession();
   const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
@@ -192,7 +189,7 @@ export function MobileMoreMenu({
             {/* Sezioni */}
             {sections.length > 0 ? (
               <>
-                <h2 className={SECTION_TITLE_CLASS}>Sezioni</h2>
+                <h2 className={SECTION_TITLE_CLASS}>Altre sezioni</h2>
                 <ul className="flex flex-col">
                   {sections.map((item) => {
                     const Icon = item.icon;
@@ -231,52 +228,43 @@ export function MobileMoreMenu({
               </>
             ) : null}
 
-            {/* Riepilogo: i moduli della sidebar */}
-            {extra ? (
-              <>
-                <h2 className={SECTION_TITLE_CLASS}>Il tuo quadro</h2>
-                <div className="px-1 text-sidebar-foreground [&_button]:min-h-11 [&_button[aria-pressed]]:min-w-11" onClickCapture={replaceInternalLink}>
-                  <SidebarSlotProvider value={{ collapsed: false }}>{extra}</SidebarSlotProvider>
-                </div>
-              </>
-            ) : null}
+            {/* Assistenza */}
+            <h2 className={SECTION_TITLE_CLASS}>Assistenza</h2>
+            <ul className="flex flex-col">
+              <li>
+                <Link href={settingsHref} replace onClick={() => go("impostazioni")} className={ROW_CLASS}>
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <SlidersHorizontal className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold leading-tight">Impostazioni</span>
+                    <span className="block text-xs leading-snug text-text-2">Aspetto, notifiche, privacy e dati</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
+                </Link>
+              </li>
+              <li>
+                <Link href={supportHref} replace onClick={() => go("aiuto")} className={ROW_CLASS}>
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <LifeBuoy className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold leading-tight">Aiuto e segnalazioni</span>
+                    <span className="block text-xs leading-snug text-text-2">Domande, problemi e idee</span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
+                </Link>
+              </li>
+            </ul>
 
-            {/* Preferenze veloci */}
-            <h2 className={SECTION_TITLE_CLASS}>Preferenze</h2>
-            <div className="px-3 pb-2">
-              <p id="more-menu-theme" className="mb-2 text-sm font-medium">
-                Tema
-              </p>
-              <div role="radiogroup" aria-labelledby="more-menu-theme" className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1">
-                {THEME_OPTIONS.map(({ value, label, icon: Icon }) => {
-                  const selected = (theme ?? "system") === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      onClick={() => {
-                        setTheme(value);
-                        onAction?.("tema");
-                      }}
-                      className={cn(
-                        "flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        selected ? "bg-card text-foreground shadow-sm" : "text-text-2"
-                      )}
-                    >
-                      <Icon className="size-4" aria-hidden="true" />
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <label className={cn(ROW_CLASS, "cursor-pointer")}>
-              <EyeOff className="size-5 shrink-0 text-text-2" aria-hidden="true" />
+            {/* Nascondi importi: l'unico interruttore veloce */}
+            <label className={cn(ROW_CLASS, "mt-2 cursor-pointer")}>
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-text-2">
+                <EyeOff className="size-5" aria-hidden="true" />
+              </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-medium leading-tight">Nascondi gli importi</span>
-                <span className="block text-xs text-text-2">Utile quando qualcuno guarda lo schermo</span>
+                <span className="block text-[15px] font-semibold leading-tight">Nascondi gli importi</span>
+                <span className="block text-xs leading-snug text-text-2">Utile quando qualcuno guarda lo schermo</span>
               </span>
               <Switch
                 checked={hidden}
@@ -287,6 +275,35 @@ export function MobileMoreMenu({
                 aria-label="Nascondi gli importi"
               />
             </label>
+
+            {/* Riepilogo: i moduli della sidebar, chiusi finché non si aprono (non caricano dati prima) */}
+            {extra ? (
+              <>
+                <h2 className={SECTION_TITLE_CLASS}>Il tuo quadro</h2>
+                <button
+                  type="button"
+                  aria-expanded={quadroOpen}
+                  aria-controls="more-menu-quadro"
+                  onClick={() => setQuadroOpen((v) => !v)}
+                  className={ROW_CLASS}
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[15px] font-semibold leading-tight">Patrimonio, scadenze e obiettivo</span>
+                    <span className="block text-xs leading-snug text-text-2">{quadroOpen ? "Tocca per chiudere" : "Tocca per aprire il riepilogo"}</span>
+                  </span>
+                  <ChevronDown className={cn("size-4 shrink-0 text-text-3 transition-transform", quadroOpen && "rotate-180")} aria-hidden="true" />
+                </button>
+                {quadroOpen ? (
+                  <div
+                    id="more-menu-quadro"
+                    className="px-1 pt-2 text-sidebar-foreground [&_button]:min-h-11 [&_button[aria-pressed]]:min-w-11"
+                    onClickCapture={replaceInternalLink}
+                  >
+                    <SidebarSlotProvider value={{ collapsed: false }}>{extra}</SidebarSlotProvider>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
 
             {/* Esci e note */}
             <div className="mt-4 border-t border-border pt-3">

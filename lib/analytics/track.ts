@@ -163,7 +163,8 @@ export interface ProductEvents {
   /** Menu «Altro» a tutto schermo (mobile): cosa è stato toccato. */
   amounts_hidden_toggled: { enabled: boolean; source: "menu_utente" };
   theme_changed: { choice: "chiaro" | "scuro" | "sistema"; source: "menu_utente" };
-  more_menu_clicked: { target: "sezione" | "impostazioni" | "tema" | "importi" | "esci" | "informativa" | "quadro" };
+  settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
+  more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
   notifications_toggled: { kind: "digest" | "budget" | "deadlines"; enabled: boolean };
   /** Consenso alle proposte dell'assistente in Impostazioni. */

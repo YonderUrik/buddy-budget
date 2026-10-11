@@ -2,7 +2,7 @@
 
 /** Sezione "I tuoi dati": riepilogo di cosa c'è e download di tutto in uno ZIP (JSON completo + CSV per Excel). */
 
-import { Download, Loader2 } from "lucide-react";
+import { Download, Database, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadError } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
@@ -25,6 +25,7 @@ export function DataSection({ settings, recentLogin }: DataSectionProps) {
     <SettingsSection
       id="impostazioni-dati"
       title="I tuoi dati"
+      icon={Database}
       description="Puoi scaricare in qualsiasi momento tutto quello che hai inserito o importato."
     >
       {isLoading ? (

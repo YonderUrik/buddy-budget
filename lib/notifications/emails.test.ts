@@ -6,7 +6,7 @@ const ctx: EmailContext = {
   appUrl: "https://app.test",
   money: (v) => `${v.toFixed(2).replace(".", ",")} €`,
   unsubscribeUrl: "https://app.test/disiscrizione?t=TOKEN",
-  preferencesUrl: "https://app.test/impostazioni#impostazioni-notifiche",
+  preferencesUrl: "https://app.test/impostazioni?sezione=notifiche#impostazioni-notifiche",
 };
 const data: DigestData = {
   period: digestPeriod("mensile", new Date("2026-10-02T07:00:00Z")),

@@ -11,6 +11,7 @@ import { authClient } from "@/lib/auth/client";
 import { DISPLAY_NAME_MAX_LENGTH } from "@/lib/account/constants";
 import { formatLongDate } from "@/lib/format";
 import { useUpdateUserSettingsMutation, type UserSettings } from "@/lib/queries/user-settings";
+import { UserRound } from "lucide-react";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 export interface ProfileSectionProps {
@@ -46,7 +47,7 @@ export function ProfileSection({ settings, returnTo = "/impostazioni" }: Profile
   }
 
   return (
-    <SettingsSection id="impostazioni-profilo" title="Profilo">
+    <SettingsSection id="impostazioni-profilo" title="Profilo" icon={UserRound}>
       <SettingsRow label="Nome" hint="Come ti chiamiamo nell'app." htmlFor="settings-name">
         <form onSubmit={saveName} className="flex w-full gap-2 sm:w-72">
           <Input

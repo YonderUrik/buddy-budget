@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { track } from "@/lib/analytics";
 import { useBottomNav, useSidebarModule } from "@/lib/hooks/use-sidebar-preferences";
 import { SIDEBAR_MODULES, type SidebarModuleId } from "@/lib/sidebar/modules";
+import { PanelLeft } from "lucide-react";
+import { SidebarPreview } from "./settings-preview";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 function ModuleRow({ id, label, hint }: { id: SidebarModuleId; label: string; hint: string }) {
@@ -35,6 +37,8 @@ export function SidebarSection() {
     <SettingsSection
       id="impostazioni-barra-laterale"
       title="Barra laterale"
+      icon={PanelLeft}
+      preview={<SidebarPreview />}
       description="Scegli cosa vedere sotto il menu. Vale per questo dispositivo."
     >
       {SIDEBAR_MODULES.map((module) => (

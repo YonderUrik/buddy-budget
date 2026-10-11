@@ -8,6 +8,8 @@
 import { Switch } from "@/components/ui/switch";
 import { track } from "@/lib/analytics";
 import { useAiCategorizationQuery, useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
+import { Sparkles } from "lucide-react";
+import { CategoryProposalPreview } from "./settings-preview";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 export function AiCategorizationSection() {
@@ -18,6 +20,8 @@ export function AiCategorizationSection() {
     <SettingsSection
       id="impostazioni-assistente-categorie"
       title="Assistente per le categorie"
+      icon={Sparkles}
+      preview={<CategoryProposalPreview />}
       description="Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Sei sempre tu a confermare: nulla viene categorizzato da solo."
     >
       {isLoading ? (

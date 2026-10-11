@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { SCREENS, SCREEN_THEMES, screenSrc } from "./screens";
+import { SCREENS, SCREEN_THEMES, screenSmallSrc, screenSrc } from "./screens";
 
 const LANDING_ROOT = join(__dirname, "..");
 const APP_PAGES = join(LANDING_ROOT, "..", "app", "(app)");
@@ -33,6 +33,7 @@ describe("schermate della landing", () => {
       for (const theme of SCREEN_THEMES)
       {
         expect(existsSync(join(LANDING_ROOT, "public", screenSrc(screen.id, theme))), `${theme}/${screen.id}`).toBe(true);
+        expect(existsSync(join(LANDING_ROOT, "public", screenSmallSrc(screen.id, theme))), `${theme}/${screen.id}-sm`).toBe(true);
         if ("topCrop" in screen && screen.topCrop)
           expect(existsSync(join(LANDING_ROOT, "public", screenSrc(screen.id, theme, true))), `${theme}/${screen.id}-top`).toBe(true);
       }

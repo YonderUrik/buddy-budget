@@ -2,6 +2,17 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.58.0](https://github.com/YonderUrik/buddy-budget/compare/v0.57.0...v0.58.0) (2026-10-11)
+
+
+### Novità
+
+* animazione di entrata e uscita delle carte in Categorizza ([#312](https://github.com/YonderUrik/buddy-budget/issues/312)) ([bf30b02](https://github.com/YonderUrik/buddy-budget/commit/bf30b0231704530995601bafbc7dd13462661520))
+* fogli dal basso su mobile per popover, dialog e conferme ([#315](https://github.com/YonderUrik/buddy-budget/issues/315)) ([a300112](https://github.com/YonderUrik/buddy-budget/commit/a3001126e6b267bc0eeffec992c51c720bc1fcf6))
+* nuova landing «Il foglio» con fonti supportate e scheda tecnica ([#311](https://github.com/YonderUrik/buddy-budget/issues/311)) ([d4a2f08](https://github.com/YonderUrik/buddy-budget/commit/d4a2f0836ea4c0d187af8fdb0bb8ca499c1c358a))
+* scheda titolo ripensata e indicatori fondamentali ([#316](https://github.com/YonderUrik/buddy-budget/issues/316)) ([16e9405](https://github.com/YonderUrik/buddy-budget/commit/16e9405c9e3977873b6eeaf5887b1082f01bf469))
+* transizioni fluide tra le sezioni nella sidebar e nella barra mobile ([#313](https://github.com/YonderUrik/buddy-budget/issues/313)) ([e0a4e35](https://github.com/YonderUrik/buddy-budget/commit/e0a4e350ec1d4bd0603f4c464430970f0fc2309a))
+
 ## [0.57.0](https://github.com/YonderUrik/buddy-budget/compare/v0.56.0...v0.57.0) (2026-10-11)
 
 

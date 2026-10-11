@@ -24,8 +24,9 @@ export async function sendSupportReport(params: {
   userAgent: string | null;
 }): Promise<{ ok: true } | { ok: false; reason: string }> {
   const { subject, text } = reportEmailContent(params);
+  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM) return { ok: false, reason: "email_not_configured" };
   const { error } = await new Resend(process.env.RESEND_API_KEY).emails.send({
-    from: process.env.RESEND_FROM!,
+    from: process.env.RESEND_FROM,
     to: process.env.SUPPORT_EMAIL_TO ?? SUPPORT_EMAIL,
     replyTo: params.userEmail,
     subject,

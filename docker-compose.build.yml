@@ -1,0 +1,9 @@
+# Sovrascrive le immagini con una build locale dal sorgente (più lenta, utile per provare modifiche):
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+services:
+  migrate:
+    build: { context: ., target: migrator }
+    image: buddy-budget-migrate:local
+  app:
+    build: { context: ., target: runner }
+    image: buddy-budget:local

@@ -16,6 +16,8 @@ const VERDICT_TEXT = {
 
 export interface BenchmarkSummaryProps {
   status: BenchmarkStatus;
+  /** Data finale del confronto, anche storica durante l’ispezione del grafico. */
+  asOf?: string;
   comparison: BenchmarkComparison | null;
   /** Nome del benchmark scelto (anche mentre i prezzi si scaricano). */
   benchmarkName: string | null;
@@ -52,7 +54,7 @@ function waitProgress(wait: BenchmarkWait): ProgressBarState {
   return wait.total ? { kind: "determinate", value: wait.saved, max: wait.total } : { kind: "indeterminate" };
 }
 
-export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying }: BenchmarkSummaryProps) {
+export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying, asOf }: BenchmarkSummaryProps) {
   if (status === "none") {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed p-3">
@@ -105,10 +107,10 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
         </Button>
       </div>
       <p className="text-sm text-muted-foreground">
-        Con gli stessi versamenti in <span className="text-foreground">{comparison.instrument.name}</span> oggi avresti{" "}
+        Con gli stessi versamenti in <span className="text-foreground">{comparison.instrument.name}</span> {asOf ? `al ${formatDateWithYear(asOf)}` : "oggi"} avresti{" "}
         <span className="font-medium tabular-nums text-foreground">{format(comparison.simulatedValue)}</span> invece di{" "}
-        <span className="font-medium tabular-nums text-foreground">{format(comparison.portfolioValue)}</span>. Nel periodo l&apos;indice ha
-        fatto <span className="tabular-nums">{formatSignedPct(comparison.twr)}</span>
+        <span className="font-medium tabular-nums text-foreground">{format(comparison.portfolioValue)}</span>. Nel periodo l&apos;ETF di confronto ha
+        reso <span className="tabular-nums">{formatSignedPct(comparison.twr)}</span>
         {comparison.twrAnnual !== null ? <span className="tabular-nums"> ({formatSignedPct(comparison.twrAnnual)} l&apos;anno)</span> : null}.
       </p>
       {comparison.depleted ? (

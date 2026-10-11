@@ -72,6 +72,7 @@ export interface AnalysisInputs {
   riskFreeRates: RateInput[] | null;
   period: NetWorthPeriod;
   today: Date;
+  range?: { from: string; to: string };
 }
 
 /** Calcola rischio, esposizione, sovrapposizioni, correlazioni e confronto con l'obiettivo. */

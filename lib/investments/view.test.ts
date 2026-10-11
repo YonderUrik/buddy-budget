@@ -132,3 +132,17 @@ it("limits chart dates inclusively while preserving earlier positions and curren
   expect(range.summary.totalValue).toBe(full.summary.totalValue);
   expect(range.costImpact).toEqual(full.costImpact);
 });
+
+ it("allinea grafico, rendimenti, rischio e giorni della heatmap all’intervallo storico", () => {
+  const input = data();
+  const view = buildInvestmentsView(input, "max", NOW, { from: "2026-09-05", to: "2026-09-10" });
+  expect(view.series[0].date).toBe("2026-09-05");
+  expect(view.series.at(-1)!.date).toBe("2026-09-10");
+  expect(view.returns!.fromKey).toBe("2026-09-05");
+  expect(view.returns!.toKey).toBe("2026-09-10");
+  expect(view.returns!.twr).toBe(0);
+  expect(view.returns!.moneyWeighted).toBeCloseTo(0);
+  expect(view.returns!.daily).toHaveLength(6);
+  expect(view.analysis.risk!.returns.every((value) => value === 0)).toBe(true);
+  expect(view.returns!.series.at(-1)!.portfolio).toBe(view.returns!.twr);
+});

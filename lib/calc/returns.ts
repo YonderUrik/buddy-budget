@@ -19,6 +19,8 @@ import {
 } from "./investments";
 import { addDays, toDateKey, type NetWorthPeriod } from "./net-worth";
 
+import { resolvePerformanceRange, type PerformanceRange } from "./performance-range";
+
 const DAYS_PER_YEAR = 365;
 const MS_PER_DAY = 86_400_000;
 /** Sotto questa soglia un importo è considerato zero (evita divisioni su resti di arrotondamento). */
@@ -273,6 +275,9 @@ export type BenchmarkStatus = "none" | "missing_prices" | "ok";
 
 /** Rendimenti del portafoglio sul periodo. Le percentuali sono quote (0,08 = +8%). */
 export interface PortfolioReturns {
+  /** Primo giorno incluso e rendimenti giornalieri nello stesso intervallo. */
+  fromKey: string;
+  daily: DailyReturn[];
   /** Giorno di base (il giorno prima del periodo) e ultimo giorno. */
   baseKey: string;
   toKey: string;
@@ -304,7 +309,7 @@ export function priceInUserCurrency(
 
 /**
  * Rendimenti sul periodo scelto (lo stesso del grafico). `benchmark` va passato con i suoi prezzi già dentro
- * `priceIndex`; `inflation` solo quando ha senso mostrarlo (valuta EUR, periodo di almeno un anno).
+ * `priceIndex`; `inflation` solo quando ha senso mostrarlo (indice pertinente alla valuta e dati disponibili).
  */
 export function computePortfolioReturns(params: {
   transactions: InvestmentTransactionInput[];
@@ -316,23 +321,27 @@ export function computePortfolioReturns(params: {
   today: Date;
   benchmark?: InstrumentInput | null;
   inflation?: InflationPoint[] | null;
+  range?: PerformanceRange;
+  /** Anteprima fino a una data del grafico, inclusa la base a rendimento zero. */
+  asOf?: string;
+  dailySeries?: boolean;
 }): PortfolioReturns | null {
   const { transactions, priceIndex, fx, userCurrency, period, today, benchmark, inflation } = params;
-  const fromKey = periodStartKey(transactions, period, today);
-  if (fromKey === null) return null;
-  const baseKey = toDateKey(addDays(parseDateOnly(fromKey), -1));
-  const toKey = toDateKey(startOfDay(today));
+  const bounds = resolvePerformanceRange(transactions, period, today, params.range);
+  if (!bounds) return null;
+  const { fromKey, baseKey } = bounds;
+  const toKey = params.asOf ? [baseKey, params.asOf, bounds.toKey].sort()[1] : bounds.toKey;
   const points = computeDailyPortfolioValues({ ...params, fromKey: baseKey, toKey });
   const base = points[0];
   const flows = toDailyFlows(points);
   // Se all'inizio non c'era niente investito il periodo parte dal primo acquisto, non dal giorno prima: altrimenti
   // rendimento dei tuoi soldi e valori annui conterebbero un giorno in cui non c'era niente da far rendere.
-  const days = Math.max(1, daysBetween(base.value > AMOUNT_EPSILON ? baseKey : fromKey, toKey));
+  const days = toKey === baseKey ? 0 : Math.max(1, daysBetween(base.value > AMOUNT_EPSILON ? baseKey : fromKey, toKey));
   const showAnnual = days >= DAYS_PER_YEAR;
   const endValue = points.at(-1)?.value ?? 0;
 
   const twrSeries = computeTwrSeries(base.value, flows);
-  const twr = twrSeries.at(-1)?.cumulative ?? null;
+  const twr = twrSeries.at(-1)?.cumulative ?? (toKey === baseKey ? 0 : null);
   const mwr = moneyWeightedReturn(investorCashFlows(baseKey, base.value, flows, endValue), days);
 
   let benchmarkStatus: BenchmarkStatus = "none";
@@ -366,10 +375,12 @@ export function computePortfolioReturns(params: {
       portfolio: p.cumulative,
       benchmark: p.date === baseKey ? (comparison ? 0 : null) : (benchmarkByDate.get(p.date) ?? null),
     })),
-    period
+    params.dailySeries || params.range ? "3mesi" : period
   );
 
   return {
+    fromKey,
+    daily: computeDailyReturns(base.value, flows),
     baseKey,
     toKey,
     days,

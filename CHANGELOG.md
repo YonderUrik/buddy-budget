@@ -2,6 +2,21 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.59.0](https://github.com/YonderUrik/buddy-budget/compare/v0.58.0...v0.59.0) (2026-10-11)
+
+
+### Novità
+
+* add common performance benchmark suggestions ([#192](https://github.com/YonderUrik/buddy-budget/issues/192)) ([29c6d78](https://github.com/YonderUrik/buddy-budget/commit/29c6d78fa19457e89994d831d96cc2e7e44d1a77))
+* navigazione su telefono, viste dal titolo e un solo pulsante indietro ([#320](https://github.com/YonderUrik/buddy-budget/issues/320)) ([f229026](https://github.com/YonderUrik/buddy-budget/commit/f229026951ff9d24b8c138cf7e6414f7db1e5302))
+* rendimenti spiegati e intervalli interattivi nella nuova Performance ([#199](https://github.com/YonderUrik/buddy-budget/issues/199)) ([94f8e7b](https://github.com/YonderUrik/buddy-budget/commit/94f8e7b7bc5703a039f6c61a3a902e007e87ca08))
+
+
+### Correzioni
+
+* scheda titolo senza intestazione di Investimenti e barre in scala ([#317](https://github.com/YonderUrik/buddy-budget/issues/317)) ([4dacc8c](https://github.com/YonderUrik/buddy-budget/commit/4dacc8c4f2c954295ed09dfd189ede2242e4fe62))
+* una sola barra di scorrimento nell'app e niente scroll orizzontale in Investimenti su mobile ([#319](https://github.com/YonderUrik/buddy-budget/issues/319)) ([8150dfb](https://github.com/YonderUrik/buddy-budget/commit/8150dfbf44f1fae284aaf7ffe45f66ff9be72952))
+
 ## [0.58.0](https://github.com/YonderUrik/buddy-budget/compare/v0.57.0...v0.58.0) (2026-10-11)
 
 

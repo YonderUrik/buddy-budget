@@ -80,6 +80,19 @@ describe("API strumenti", () => {
     return { response, json };
   }
 
+  it("deferisce lo storico per lasciare al benchmark il recupero completo", async () => {
+    const response = await createInstrument(new NextRequest("http://localhost/api/instruments?history=deferred", {
+      method: "POST",
+      body: JSON.stringify({ source: "yahoo", yahooSymbol: uniqueTicker(), name: "Benchmark test", type: "etf" }),
+    }));
+    const instrument = await response.json();
+    if (response.status === 201) createdInstrumentIds.push(instrument.id);
+    expect(response.status).toBe(201);
+    expect(afterTasks).toHaveLength(0);
+    const prices = await db.select().from(instrumentPrices).where(eq(instrumentPrices.instrumentId, instrument.id));
+    expect(prices).toHaveLength(0);
+  });
+
   beforeAll(() => {
     process.env.MARKET_DATA_FAKE = "1";
   });

@@ -1,14 +1,12 @@
 "use client";
 
 /**
- * Viste di una sezione come link veri (ogni vista ha il suo URL). Da `lg` in su è un controllo segmentato con il fondo
- * della vista attiva che scivola; sotto `lg` è un menu a tendina («Portafoglio · 1 di 6») con una riga di descrizione
- * per voce, così nessuna vista resta nascosta su telefono. La prima voce è la radice: le altre restano attive anche
- * sulle loro sotto-pagine.
+ * Viste di una sezione come link veri (ogni vista ha il suo URL), da `lg` in su: un controllo segmentato con il fondo
+ * della vista attiva che scivola. Sotto `lg` non mostra nulla: le viste si scelgono dal titolo (`SectionHeading`), che
+ * apre un foglio dal basso. La prima voce è la radice: le altre restano attive anche sulle loro sotto-pagine.
  */
 
 import type { LucideIcon } from "lucide-react";
-import { SectionTabsMenu } from "./section-tabs-menu";
 import { SectionTabsSegmented } from "./section-tabs-segmented";
 
 export interface SectionTab {
@@ -16,7 +14,7 @@ export interface SectionTab {
   label: string;
   /** Icona decorativa prima dell'etichetta (facoltativa). */
   icon?: LucideIcon;
-  /** Riga di spiegazione mostrata nel menu su mobile (facoltativa). */
+  /** Riga di spiegazione mostrata nel foglio delle viste su telefono (facoltativa). */
   description?: string;
 }
 
@@ -43,13 +41,8 @@ export function activeSectionTabIndex(tabs: readonly SectionTab[], pathname: str
 export function SectionTabs({ tabs, activeHref, ariaLabel }: SectionTabsProps) {
   const activeIndex = activeSectionTabIndex(tabs, activeHref);
   return (
-    <>
-      <div className="hidden lg:block">
-        <SectionTabsSegmented tabs={tabs} activeIndex={activeIndex} ariaLabel={ariaLabel} />
-      </div>
-      <div className="lg:hidden">
-        <SectionTabsMenu tabs={tabs} activeIndex={activeIndex} ariaLabel={ariaLabel} />
-      </div>
-    </>
+    <div className="hidden lg:block">
+      <SectionTabsSegmented tabs={tabs} activeIndex={activeIndex} ariaLabel={ariaLabel} />
+    </div>
   );
 }

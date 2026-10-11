@@ -5,6 +5,8 @@ import type { SidebarModuleId } from "@/lib/sidebar/modules";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
 export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import";
+/** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
+export type SectionViewsKey = "liquidita" | "investimenti" | "pensione";
 
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
@@ -65,6 +67,10 @@ export interface ProductEvents {
   categorization_applied: { groups: number };
   categorization_rule_saved: { matchType: "merchant" | "contains" };
   transaction_split: undefined;
+  /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
+  section_views_opened: { section: SectionViewsKey };
+  /** Su telefono: vista scelta dal foglio aperto dal titolo (diversa da quella corrente). */
+  section_view_chosen: { section: SectionViewsKey };
   /** Scheda di Liquidità aperta (sostituisce Conti e Movimenti dal 2026-10-08); `tab`: quale. */
   liquidity_tab_viewed: { tab: "movimenti" | "analisi" | "conti" | "abbonamenti" | "categorie" | "regole" };
   /** Conto scelto come filtro dai chip di Liquidità; `scope`: un conto o tutti. */
@@ -134,6 +140,8 @@ export interface ProductEvents {
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
   /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
   landing_link_clicked: { from: "logo" | "back_link" };
+  /** Scheda scelta in basso nel foglio delle pagine di accesso; `tab`: quale (cosa c'è dentro, novità, in arrivo). */
+  login_sheet_tab_selected: { tab: "dentro" | "novita" | "in-arrivo" };
   /** Pagina di Analitiche aperta (sostituisce le sei schede, dal 2026-10-04). */
   analytics_page_viewed: undefined;
   /** Scheda di risposta scelta (sostituisce l'indice delle domande); `view`: quale. */

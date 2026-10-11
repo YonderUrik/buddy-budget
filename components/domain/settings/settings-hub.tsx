@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BackLink } from "@/components/domain/shared";
+import { ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { SETTINGS_GROUPS, type SettingsGroupId, type SettingsGroupInfo } from "./settings-groups";
@@ -88,14 +89,7 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
 
       {/* Contenuto del gruppo */}
       <div className={cn("min-w-0 flex-1", selected === null && "max-md:hidden")}>
-        <button
-          type="button"
-          onClick={() => onSelect(null)}
-          className="-ml-2 mb-3 flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-medium text-text-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
-        >
-          <ChevronLeft className="size-4" aria-hidden="true" />
-          Impostazioni
-        </button>
+        <BackLink onClick={() => onSelect(null)} label="Impostazioni" className="mb-3 md:hidden" />
         <h2 className={cn("mb-1 font-heading text-xl font-medium", currentGroup.danger ? "text-neg" : "text-foreground")}>{currentGroup.label}</h2>
         <p className="mb-5 text-sm text-muted-foreground">{currentGroup.summary}</p>
         <div className="flex flex-col gap-8">{content[current]}</div>

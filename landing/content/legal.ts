@@ -5,7 +5,7 @@
  */
 
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
-export const LEGAL_VERSION = "2026-10-11";
+export const LEGAL_VERSION = "2026-10-12";
 
 export const LEGAL_OWNER = {
   name: "Daniele Roccaforte",
@@ -17,6 +17,9 @@ export const LEGAL_OWNER = {
 const SESSION_DAYS = 7;
 const MAGIC_LINK_MINUTES = 10;
 const DEACTIVATION_DAYS = 30;
+/** Account senza accessi eliminato dopo questi giorni, con avviso via email `INACTIVITY_NOTICE_DAYS` giorni prima (`lib/account/constants.ts`). */
+const INACTIVITY_DAYS = 90;
+const INACTIVITY_NOTICE_DAYS = 7;
 const BACKUP_DAYS = 14;
 const BANK_CONSENT_DAYS = 90;
 /** Retention di Loki nel repo infra (`limits_config.retention_period`). */
@@ -147,6 +150,7 @@ export const PRIVACY: LegalDocument = {
       items: [
         "Dati dell'account e dati finanziari: finché l'account esiste.",
         `Disattivazione: se disattivi l'account hai ${DEACTIVATION_DAYS} giorni per ripensarci, poi i dati vengono eliminati definitivamente. Puoi anche eliminare subito tutto da Impostazioni.`,
+        `Inattività: se non accedi da ${INACTIVITY_DAYS} giorni l'account viene eliminato con tutti i suoi dati. Ti scriviamo all'indirizzo dell'account ${INACTIVITY_NOTICE_DAYS} giorni prima: un accesso, anche solo uno, annulla l'eliminazione.`,
         `Copie di sicurezza (backup): i dati eliminati restano nei backup per al più ${BACKUP_DAYS} giorni, poi spariscono con la rotazione.`,
         `Sessioni: scadono dopo ${SESSION_DAYS} giorni senza utilizzo e le sessioni scadute vengono cancellate. I link di accesso valgono ${MAGIC_LINK_MINUTES} minuti.`,
         `Import con intelligenza artificiale: file cancellato al termine dell'elaborazione, anteprima al massimo ${CSV_PREVIEW_DAYS} giorni, regole di lettura fino all'eliminazione dell'account.`,
@@ -273,7 +277,7 @@ export const TERMINI: LegalDocument = {
       id: "sospensione",
       title: "Sospensione e chiusura",
       paragraphs: [
-        "Puoi chiudere l'account quando vuoi, da Impostazioni. Possiamo sospendere o chiudere un account che violi questi termini o metta a rischio il servizio, dandoti notizia quando possibile. Possiamo anche interrompere il servizio, avvisandoti con un preavviso ragionevole e lasciandoti il tempo di esportare i dati.",
+        `Puoi chiudere l'account quando vuoi, da Impostazioni. Se non accedi per ${INACTIVITY_DAYS} giorni chiudiamo noi l'account ed eliminiamo i dati: ti avvisiamo via email ${INACTIVITY_NOTICE_DAYS} giorni prima e un accesso entro quella data annulla l'eliminazione. Possiamo sospendere o chiudere un account che violi questi termini o metta a rischio il servizio, dandoti notizia quando possibile. Possiamo anche interrompere il servizio, avvisandoti con un preavviso ragionevole e lasciandoti il tempo di esportare i dati.`,
       ],
     },
     {

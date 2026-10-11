@@ -66,6 +66,8 @@ export interface LogFields {
   verificationsPurged?: number;
   /** Tipo di email di riepilogo/avviso (`digest`, `budget`, `deadlines`, `test`) o ambito di una disiscrizione. */
   kind?: string;
+  /** Giorni senza accessi di un account inattivo (conteggio, non dato personale). */
+  inactiveDays?: number;
   error?: unknown;
 }
 

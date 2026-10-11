@@ -9,7 +9,7 @@ describe("OpsStore", () => {
     const store = createOpsStore(createMemoryOpsKv());
     await store.setCronSuccess("gocardless_sync", 1_790_000_000);
     expect(await store.getCronSuccesses()).toEqual({ gocardless_sync: 1_790_000_000, net_worth_snapshot: null,
-      notifications: null, market_prices: null, account_deletion: null, gocardless_maintenance: null });
+      notifications: null, market_prices: null, account_deletion: null, gocardless_maintenance: null, inactive_accounts: null });
   });
 
   it("separa job attivi e bloccati e pulisce le voci più vecchie del TTL", async () => {

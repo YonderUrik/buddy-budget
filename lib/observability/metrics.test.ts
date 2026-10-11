@@ -101,6 +101,7 @@ describe("metriche applicative", () => {
         activeUsers: { "24h": 2, "7d": 6, "30d": 8 },
         usersWithFeature: { accounts: 9, bank_connection: 4, transactions: 8, budgets: 3, rules: 2, investments: 5, debts: 1, pension: 2 },
         records: { accounts: 20, transactions: 4000, investment_operations: 150, debts: 2, pension_snapshots: 12 },
+        activation: { conto: 8, import: 5, investimento: 3, obiettivo: 4, completa: 1, chiusa: 2, demo_attiva: 1 },
       }),
     });
     const t = await text();

@@ -40,7 +40,7 @@ async function handlePost(request: NextRequest) {
   const result = await execute(userId, parsed.data, {
     userCurrency: await getUserCurrency(userId),
     todayKey: todayKey(),
-    createInstrument: (input) => createOrReuseInstrument(userId, input, { quoteMeta: quoteMetaOnProviders }),
+    createInstrument: (input) => createOrReuseInstrument(userId, input, { quoteMeta: quoteMetaOnProviders, listings: listingsOnOpenFigi }),
     fetchFx: async (currencies, from, to) => {
       try {
         await updateFxRates(currencies.filter((c) => c !== "EUR"), from, to, marketDataDeps());

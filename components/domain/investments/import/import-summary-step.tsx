@@ -13,6 +13,7 @@ import type { ImportResult } from "@/lib/investments/import/types";
 import { DialogSection, DialogSections } from "../dialog-parts";
 import { ImportNotice } from "./import-notice";
 import { PreviewNumbers } from "./import-preview-parts";
+import { useInvestmentsActions } from "../investments-actions";
 
 export interface ImportSummaryStepProps {
   result: ImportResult;
@@ -47,6 +48,7 @@ function Fact({ children }: { children: React.ReactNode }) {
 }
 
 export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashMovements = false, keepsOriginal = false, onNavigate }: ImportSummaryStepProps) {
+  const { openImportManagement } = useInvestmentsActions();
   if (done) {
     return (
       <DialogSections>
@@ -78,7 +80,7 @@ export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashM
             {keepsOriginal ? (
               <li>
                 Il file è nella lista delle importazioni: da{" "}
-                <Link href="/investimenti/operazioni" onClick={onNavigate} className="font-medium text-primary hover:underline">Gestisci importazioni</Link>{" "}
+                <button type="button" onClick={() => { onNavigate?.(); openImportManagement(); }} className="font-medium text-primary hover:underline">Gestisci importazioni</button>{" "}
                 puoi vederlo, sostituirlo o cancellarlo.
               </li>
             ) : null}

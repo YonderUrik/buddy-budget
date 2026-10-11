@@ -76,10 +76,6 @@ export function InvestmentTransactionsList({
       {months.length > 0 ? (
         <>
           <OperationsTotals totals={totals} currency={currency} />
-          <p className="text-sm text-muted-foreground">
-            Per un acquisto il guadagno è quanto valgono oggi le quote ancora possedute rispetto a quanto le hai pagate;
-            per una vendita è il guadagno realizzato.
-          </p>
         </>
       ) : null}
       {months.length === 0 ? (

@@ -13,7 +13,8 @@ import { useParseStatementMutation } from "@/lib/queries/investments";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { StepStage, type StepDirection, FormDialogContent } from "@/components/domain/shared";
+import { StepStage, type StepDirection, FormDialogContent, ProgressBar } from "@/components/domain/shared";
+import { TextShimmer } from "@/components/motion";
 import { getImportProvider } from "@/lib/investments/import/providers";
 import { UploadIcon } from "lucide-react";
 import { DialogActions, PanelDialogHeader } from "../dialog-parts";
@@ -113,6 +114,13 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
         ) : null}
         </StepStage>
       </div>
+
+      {s.reading || s.resolving || s.running ? (
+        <div role="status" className="flex flex-col gap-2">
+          <ProgressBar state={{ kind: "indeterminate" }} label="Elaborazione in corso" />
+          <TextShimmer className="text-sm">{s.reading ? "Leggo il file…" : s.resolving ? "Cerco gli strumenti…" : s.step === "summary" ? "Importo le operazioni…" : "Controllo le operazioni…"}</TextShimmer>
+        </div>
+      ) : null}
 
       <DialogActions>
         {s.done ? (

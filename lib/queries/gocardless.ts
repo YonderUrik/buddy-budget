@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import type { CreateConnectionInput, FinalizeSelectionInput } from "@/lib/validation/gocardless";
 import { buildSyncErrorMessage } from "@/lib/gocardless/sync-messages";
 import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";

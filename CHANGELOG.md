@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.49.1](https://github.com/YonderUrik/buddy-budget/compare/v0.49.0...v0.49.1) (2026-10-11)
+
+
+### Correzioni
+
+* landing, tolta la cifra demo incoerente e sistemato il piè di pagina su telefono ([#282](https://github.com/YonderUrik/buddy-budget/issues/282)) ([814243f](https://github.com/YonderUrik/buddy-budget/commit/814243f2d302b0953b4b102ced2b7bee0134c934))
+
 ## [0.49.0](https://github.com/YonderUrik/buddy-budget/compare/v0.48.0...v0.49.0) (2026-10-10)
 
 

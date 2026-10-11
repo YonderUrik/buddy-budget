@@ -13,7 +13,7 @@ import {
   groupAccounts,
   sumBalances,
 } from "@/components/domain/accounts";
-import { LoadError } from "@/components/domain/shared";
+import { EmptyState, LoadError } from "@/components/domain/shared";
 import { AccountLine, LIQUIDITY_ACCOUNT_PARAM, LIQUIDITY_HREF, SectionTitle, useLiquidity, useLiquidityActions } from "@/components/domain/liquidity";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
@@ -44,6 +44,20 @@ export default function LiquiditaContiPage() {
 
   React.useEffect(() => track("liquidity_tab_viewed", { tab: "conti" }), []);
 
+  // Il link dei primi passi (?nuovo=1) apre subito «Nuovo conto», una volta sola.
+  React.useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has("nuovo")) return;
+    // Il parametro si toglie solo allo scoccare del timer: in Strict Mode il primo effetto viene annullato e il secondo deve ritrovarlo.
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      params.delete("nuovo");
+      const query = params.toString();
+      window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+      addAccount();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [addAccount]);
+
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const connections = useBankConnectionsStatusQuery().data ?? [];
   const syncJobs = useSyncJobsQuery().data ?? [];
@@ -68,13 +82,13 @@ export default function LiquiditaContiPage() {
     <div className="flex flex-col gap-8" aria-busy={isLoading}>
       <RenewalBanner alerts={alerts} onRenew={() => renew("banner")} />
       {!isLoading && list.length === 0 ? (
-        <section className="flex flex-col items-start gap-3 rounded-2xl bg-foreground/[0.04] p-6">
-          <p className="font-heading text-xl font-medium">Nessun conto ancora</p>
-          <p className="max-w-md text-text-2">Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo.</p>
-          <Button className="h-11 gap-1.5" onClick={addAccount}>
-            <PlusIcon className="size-4" aria-hidden="true" /> Aggiungi il primo conto
-          </Button>
-        </section>
+        <EmptyState
+          icon={LandmarkIcon}
+          title="Nessun conto ancora"
+          description="Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo."
+          primary={{ label: "Aggiungi il primo conto", onClick: addAccount }}
+          secondary={{ label: "Importa un file", href: "/importazioni" }}
+        />
       ) : (
         groups.map((group) => (
           <section key={group.key} aria-label={group.label}>

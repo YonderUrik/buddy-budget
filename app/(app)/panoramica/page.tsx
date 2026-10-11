@@ -3,7 +3,7 @@
 /** Pagina Panoramica: patrimonio netto nel tempo, composizione per classe di asset e riepilogo del mese corrente. */
 
 import * as React from "react";
-import Link from "next/link";
+import { WalletIcon } from "lucide-react";
 import { RenewalBanner, buildRenewalAlerts, computeAccountsKpi } from "@/components/domain/accounts";
 import {
   buildCompositionItems,
@@ -11,8 +11,8 @@ import {
   NetWorthCompositionRow,
 } from "@/components/domain/net-worth";
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
-import { LoadError } from "@/components/domain/shared";
-import { buttonVariants } from "@/components/ui/button";
+import { EmptyState, LoadError } from "@/components/domain/shared";
+import { DemoOfferSection, StartChecklistSection } from "@/components/domain/start";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
@@ -37,6 +37,8 @@ import { usePensionQuery } from "@/lib/queries/pension";
 import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
+import { NEW_ACCOUNT_HREF } from "@/lib/start";
+import { useStartQuery } from "@/lib/queries/start";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { useHydrated } from "@/lib/hooks/use-hydrated";
 
@@ -81,6 +83,8 @@ export default function PanoramicaPage() {
   const pensionQuery = usePensionQuery();
   // Anche questo è opzionale: se lo stato delle connessioni non carica, semplicemente non c'è il banner.
   const connectionsQuery = useBankConnectionsStatusQuery();
+  // I primi passi sono un di più: se non caricano, la Panoramica funziona lo stesso.
+  const startStatus = useStartQuery().data;
   const renewalAlerts = buildRenewalAlerts(connectionsQuery.data ?? [], today);
 
   const isLoading =
@@ -153,17 +157,19 @@ export default function PanoramicaPage() {
       ) : isError ? (
         <LoadError message="Impossibile caricare i dati della panoramica." onRetry={retry} />
       ) : accounts.length === 0 && !investments && !pension ? (
-        <div className="rounded-xl border border-dashed p-8 text-center">
-          <p className="font-heading text-lg font-medium text-foreground">Nessun conto ancora</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Aggiungi o collega un conto per vedere il tuo patrimonio netto.
-          </p>
-          <Link href="/liquidita/conti" className={buttonVariants({ className: "mt-4" })}>
-            Aggiungi un conto
-          </Link>
+        <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            {startStatus ? (
+              <StartChecklistSection status={startStatus} forceVisible />
+            ) : (
+              <EmptyState icon={WalletIcon} title="Nessun conto ancora" description="Aggiungi un conto per vedere il tuo patrimonio netto." primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
+            )}
+          </div>
+          <DemoOfferSection className="lg:col-span-2" />
         </div>
       ) : (
         <>
+          {startStatus ? <StartChecklistSection status={startStatus} /> : null}
           <NetWorthChartCard
             series={series}
             change={change}

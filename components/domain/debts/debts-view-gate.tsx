@@ -4,8 +4,7 @@
 
 import type { ReactNode } from "react";
 import { LandmarkIcon } from "lucide-react";
-import { LoadError } from "@/components/domain/shared";
-import { Button } from "@/components/ui/button";
+import { EmptyState, LoadError } from "@/components/domain/shared";
 import { useDebtsActions } from "./debts-actions";
 import { DEBTS_COLORS } from "./debts-theme";
 
@@ -35,16 +34,13 @@ export function DebtsViewGate({ loading, error, empty, onRetry, children }: Debt
   if (error) return <LoadError message="Impossibile caricare i debiti." onRetry={onRetry} />;
   if (empty) {
     return (
-      <div className="flex flex-col items-center py-10 text-center">
-        <span className="mb-3 grid size-12 place-items-center rounded-full" style={{ color: DEBTS_COLORS.list, backgroundColor: `color-mix(in oklab, ${DEBTS_COLORS.list} 16%, transparent)` }} aria-hidden="true">
-          <LandmarkIcon className="size-6" />
-        </span>
-        <p className="font-heading text-lg font-medium text-foreground">{EMPTY_TITLE}</p>
-        <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{EMPTY_TEXT}</p>
-        <Button className="mt-4" onClick={openAdd}>
-          Aggiungi un finanziamento
-        </Button>
-      </div>
+      <EmptyState
+        icon={LandmarkIcon}
+        title={EMPTY_TITLE}
+        description={EMPTY_TEXT}
+        color={DEBTS_COLORS.list}
+        primary={{ label: "Aggiungi un finanziamento", onClick: openAdd }}
+      />
     );
   }
   return <>{children}</>;

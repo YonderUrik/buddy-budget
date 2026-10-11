@@ -4,7 +4,8 @@
 
 import Link from "next/link";
 import * as React from "react";
-import { LoadError } from "@/components/domain/shared";
+import { ArrowLeftRightIcon } from "lucide-react";
+import { EmptyState, LoadError } from "@/components/domain/shared";
 import {
   LIQUIDITY_HREF,
   LiquidityOverview,
@@ -13,6 +14,7 @@ import {
   MovementsToolbar,
   liquidityFetchWindow,
   useLiquidity,
+  useLiquidityActions,
 } from "@/components/domain/liquidity";
 import { authClient } from "@/lib/auth/client";
 import { computeMonthPace } from "@/lib/calc/month-pace";
@@ -36,6 +38,7 @@ import { useTransactionsQuery } from "@/lib/queries/transactions";
 
 export default function LiquiditaPage() {
   const { data: session } = authClient.useSession();
+  const { addAccount, addTransaction } = useLiquidityActions();
   const currency = session?.user.currency ?? "EUR";
   const { today: now, accountId, categoryId, setCategoryId, searchText, setSearchText } = useLiquidity();
   const today = React.useMemo(() => startOfDay(now), [now]);
@@ -96,6 +99,15 @@ export default function LiquiditaPage() {
             </div>
           ) : isError ? (
             <LoadError message="Impossibile caricare i movimenti." onRetry={() => refetch()} />
+          ) : all.length === 0 && !searchText && !categoryId && !toFixOnly && !accountId ? (
+            <EmptyState
+              icon={ArrowLeftRightIcon}
+              title={accounts.length === 0 ? "Prima serve un conto" : "Nessun movimento ancora"}
+              description={accounts.length === 0 ? "I movimenti vivono dentro un conto: crealo, poi aggiungi i movimenti a mano o importali da un file." : "Importa il CSV o l'estratto conto della banca, oppure registra un movimento a mano: le categorie e il mese si riempiono da soli."}
+              primary={accounts.length === 0 ? { label: "Crea un conto", onClick: addAccount } : { label: "Importa un file", href: "/importazioni" }}
+              secondary={accounts.length === 0 ? undefined : { label: "Aggiungi un movimento", onClick: addTransaction }}
+              className="pt-6"
+            />
           ) : (
             <MovementFeed
               transactions={visible}

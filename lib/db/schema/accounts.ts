@@ -1,4 +1,4 @@
-import { numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { dataSourceEnum } from "./shared";
 import { authUser } from "./auth";
 
@@ -13,6 +13,8 @@ export const accounts = pgTable("accounts", {
   color: text("color").notNull().default("slate"),
   icon: text("icon").notNull().default("wallet"),
   source: dataSourceEnum("source").notNull().default("manuale"),
+  /** Conto di esempio creato da «Esplora con dati d'esempio»: non è un dato reale e si azzera in un tocco insieme ai suoi movimenti. */
+  isDemo: boolean("is_demo").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

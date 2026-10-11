@@ -186,6 +186,8 @@ Una schermata o feature nuova non è "completata" finché il catalogo non è agg
 
 ## Stato del progetto
 
+**Primi passi (2026-10-10)**: checklist «Primi passi» in Panoramica che si compila dai dati veri, «Esplora con dati d'esempio» azzerabile (conti `is_demo`, mai mischiati: i dati veri sono bloccati finché la demo è attiva) e stati vuoti con azione in Movimenti, Conti, Investimenti e Debiti; voce in `docs/decisioni/2026-10-10-primi-passi-e-dati-d-esempio.md`, migration 0026. PR in bozza sul branch `claude/project-thread-ec9i5w`. Rimandati: riaprire la checklist dalla UI, demo con investimenti, guardia su import personalizzati.
+
 **Email di riepilogo e avvisi (2026-10-10)**: riepilogo periodico (mensile di default o settimanale), avvisi sul budget (80% e 100%) e sulle rate in scadenza, tutti opt-in da Impostazioni → Notifiche, con disiscrizione a un clic (token firmato, `List-Unsubscribe` one-click) in ogni email non di servizio; cron `/api/cron/notifications` in dry-run finché non si imposta `NOTIFICATIONS_MODE=execute`; voce in `docs/decisioni/2026-10-10-email-riepilogo-e-avvisi.md`. PR in bozza sul branch `claude/project-thread-eto0ft` (migration 0025, da ricontrollare al merge). Rimandati: avvisi su investimenti e patrimonio, orario a scelta, prova su client reali.
 
 **Effetti animati (2026-10-10)**: numeri che scorrono, testi che cambiano lettera per lettera (anche nei pulsanti), saluto che emerge, schede con indicatore che scivola, dialog che cresce dal pulsante, isola scura dei sync; nessun effetto di luce. Componenti in `components/motion/`; voce in `docs/decisioni/2026-10-10-effetti-animati.md`. PR in bozza sul branch `claude/project-thread-0syccd`. Rimandati: animazioni sulle card/grafici e sui toast.

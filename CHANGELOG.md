@@ -2,6 +2,21 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.50.0](https://github.com/YonderUrik/buddy-budget/compare/v0.49.1...v0.50.0) (2026-10-11)
+
+
+### Novità
+
+* form a passi (onboarding, conto, movimento, operazione, import, debito, pensione) ([#283](https://github.com/YonderUrik/buddy-budget/issues/283)) ([4cca4c5](https://github.com/YonderUrik/buddy-budget/commit/4cca4c50c561ac71d59a31588d6630dd42b66a93))
+* primi passi in Panoramica e dati d'esempio azzerabili ([#275](https://github.com/YonderUrik/buddy-budget/issues/275)) ([872f4bc](https://github.com/YonderUrik/buddy-budget/commit/872f4bc9102a27834f45077fd87520f353c44469))
+* scheda Abbonamenti in Liquidità, rilevati dai movimenti ([#277](https://github.com/YonderUrik/buddy-budget/issues/277)) ([23fe20d](https://github.com/YonderUrik/buddy-budget/commit/23fe20d1572f82d70f89838910220b1837ad6714))
+* self-hosting con Docker Compose e immagini multi-arch su ghcr.io ([#274](https://github.com/YonderUrik/buddy-budget/issues/274)) ([df96a1d](https://github.com/YonderUrik/buddy-budget/commit/df96a1d664dd2a90dd9a71ed4e5a57bdd8e3159e))
+
+
+### Correzioni
+
+* **landing:** correzioni tecniche dall'audit SEO (email, dati strutturati, HSTS, title) ([#281](https://github.com/YonderUrik/buddy-budget/issues/281)) ([1d3a841](https://github.com/YonderUrik/buddy-budget/commit/1d3a84115141de88668ed1c6c848fbe685dc0140))
+
 ## [0.49.1](https://github.com/YonderUrik/buddy-budget/compare/v0.49.0...v0.49.1) (2026-10-11)
 
 

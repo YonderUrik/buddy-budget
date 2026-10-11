@@ -37,13 +37,17 @@ export function NotificationChoices({ value, onChange, onToggle, disabled = fals
         const field = PREFERENCE_FIELD_BY_KIND[kind];
         const checked = value[field];
         const Icon = ICON_BY_KIND[kind];
+        // Sfondo pieno: le righe stanno sopra la griglia del foglio delle pagine di accesso e non devono lasciarla trasparire.
         return (
           <motion.div
             key={kind}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...SPRING_SOFT, delay: index * ROW_STAGGER_S }}
-            className={cn("rounded-xl border transition-colors", checked ? "border-primary/40 bg-primary/5" : "border-border")}
+            className={cn(
+              "rounded-xl border transition-colors",
+              checked ? "border-primary/40 bg-[color-mix(in_oklab,var(--primary)_6%,var(--card))]" : "border-border bg-card"
+            )}
           >
             <label htmlFor={`onboarding-notifiche-${kind}`} className="flex cursor-pointer items-center gap-3 p-3.5">
               <motion.span

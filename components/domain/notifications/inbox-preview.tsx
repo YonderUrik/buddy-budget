@@ -28,7 +28,7 @@ export function InboxPreview({
 }: InboxPreviewProps) {
   const items = inboxPreview(preferences);
   return (
-    <div className={cn("flex flex-col gap-2", className)} aria-live="polite">
+    <div className={cn("flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5", className)} aria-live="polite">
       <span className="flex items-center gap-1.5 text-xs font-medium text-text-3">
         <Inbox className="size-3.5" aria-hidden="true" />
         {title}

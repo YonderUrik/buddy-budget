@@ -100,7 +100,7 @@ export default function OnboardingPage() {
             <>
               <StepHeading title="Quali email vuoi ricevere?" description="Partono tutte spente. Ognuna ha il link per disattivarla e le ritrovi in Impostazioni." />
               <NotificationChoices value={notifications} onChange={setNotifications} disabled={loading} info={ONBOARDING_NOTIFICATION_INFO} />
-              <InboxPreview preferences={notifications} className="px-1" />
+              <InboxPreview preferences={notifications} />
             </>
           ) : (
             <>

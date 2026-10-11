@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.51.0](https://github.com/YonderUrik/buddy-budget/compare/v0.50.2...v0.51.0) (2026-10-11)
+
+
+### Novità
+
+* categorizzazione con Jev, proposte dopo sync/import e carte «Tinder» ([#289](https://github.com/YonderUrik/buddy-budget/issues/289)) ([28a5e8f](https://github.com/YonderUrik/buddy-budget/commit/28a5e8f58bc6ebb4fbefdd221bc63aba52a623ee))
+
 ## [0.50.2](https://github.com/YonderUrik/buddy-budget/compare/v0.50.1...v0.50.2) (2026-10-11)
 
 

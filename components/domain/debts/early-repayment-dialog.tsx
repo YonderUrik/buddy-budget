@@ -9,10 +9,10 @@ import * as React from "react";
 import { BanknoteIcon, CheckIcon, GitCompareArrowsIcon, PiggyBankIcon } from "lucide-react";
 import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SegmentedControl } from "@/components/domain/shared";
+import { SegmentedControl, FormDialogContent } from "@/components/domain/shared";
 import { todayIso } from "@/lib/debts/dates";
 import { previewEarlyRepayment, type EarlyRepaymentMode, type PenaltyUnit } from "@/lib/debts/early-repayment-form";
 import type { DebtView } from "@/lib/debts/view";
@@ -131,10 +131,10 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
 export function EarlyRepaymentDialog({ debt, currency, open, onOpenChange }: EarlyRepaymentDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <FormDialogContent>
         <PanelDialogHeader icon={PiggyBankIcon} title="Estinzione anticipata" description={DESCRIPTION} />
         {open ? <EarlyRepaymentForm debt={debt} currency={currency} onDone={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

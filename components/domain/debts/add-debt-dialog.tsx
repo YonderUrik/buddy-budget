@@ -6,9 +6,9 @@ import * as React from "react";
 import { toast } from "sonner";
 import { LandmarkIcon } from "lucide-react";
 import { PanelDialogHeader } from "@/components/domain/investments";
-import { StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
+import { StepProgress, StepStage, useStepFlow, FormDialogContent } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { emptyAddDebtForm, type AddDebtFormState } from "@/lib/debts/add-form";
 import { AddDebtDetailsForm } from "./add-debt-details-form";
 import { AddDebtStartStep } from "./add-debt-start-step";
@@ -75,10 +75,10 @@ function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => v
 export function AddDebtDialog({ open, onOpenChange, currency }: AddDebtDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg gap-5 overflow-y-auto">
+      <FormDialogContent>
         {/* Il flusso si rimonta a ogni apertura: niente dati rimasti dall'ultima volta. */}
         {open ? <AddDebtFlow currency={currency} onClose={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

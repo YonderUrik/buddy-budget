@@ -5,9 +5,10 @@
  * Non scrive nulla finché non si conferma al riepilogo; chiudere il dialog azzera il wizard (il contenuto si smonta).
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import { FileUpIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { ExistingSnapshot } from "@/lib/pension/import/plan";
 import { cn } from "@/lib/utils";
 import { PensionImportFileStep } from "./pension-import-file-step";
@@ -90,7 +91,7 @@ function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImpo
 export function PensionImportDialog({ open, onOpenChange, fundName, ...wizard }: PensionImportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
+      <FormDialogContent size="wide">
         <DialogHeader className="flex-row items-center gap-3">
           <span
             className="grid size-10 shrink-0 place-items-center rounded-full"
@@ -105,7 +106,7 @@ export function PensionImportDialog({ open, onOpenChange, fundName, ...wizard }:
           </div>
         </DialogHeader>
         {open ? <Wizard {...wizard} onClose={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

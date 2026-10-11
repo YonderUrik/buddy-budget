@@ -5,16 +5,14 @@
  * con «Indietro» sempre disponibile. A tutto schermo sul telefono. `renew` apre direttamente il collegamento della banca.
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import Link from "next/link";
 import * as React from "react";
 import { ArrowLeftIcon, ChevronRightIcon, FileSpreadsheetIcon, LandmarkIcon, PencilLineIcon, ZapIcon } from "lucide-react";
 import { AddAccountForm, ConnectBankFlow } from "@/components/domain/accounts";
 import { PanelDialogHeader } from "@/components/domain/investments";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
-import { cn } from "@/lib/utils";
-import { DialogCloseButton } from "./dialog-close-button";
-import { LIQUIDITY_DIALOG_CLASS } from "./dialog-layout";
 
 export type AddAccountView = "scelta" | "banca" | "manuale";
 
@@ -63,9 +61,9 @@ export interface AddAccountDialogProps {
 export function AddAccountDialog({ open, onOpenChange, currency, renew = false }: AddAccountDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(LIQUIDITY_DIALOG_CLASS)}>
+      <FormDialogContent>
         {open ? <AddAccountSession key={renew ? "rinnovo" : "nuovo"} currency={currency} renew={renew} onClose={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }
@@ -79,8 +77,7 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
   };
   return (
     <>
-      <DialogCloseButton />
-      <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? "Rinnova il collegamento" : copy.title} description={renew && view === "banca" ? "Scegli di nuovo la tua banca per rinnovare il consenso." : copy.description} />
+            <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? "Rinnova il collegamento" : copy.title} description={renew && view === "banca" ? "Scegli di nuovo la tua banca per rinnovare il consenso." : copy.description} />
       {view === "scelta" ? (
         <div className="flex flex-col gap-3">
           <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")}>

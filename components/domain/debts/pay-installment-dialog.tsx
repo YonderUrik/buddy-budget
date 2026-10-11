@@ -2,11 +2,12 @@
 
 /** Dialog "Segna pagata": data e importo reali (precompilati dal piano) e, se vuoi, la transazione collegata. */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { CircleCheckIcon, LinkIcon, WalletIcon } from "lucide-react";
 import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { parseAmount } from "@/lib/debts/add-form";
@@ -80,10 +81,10 @@ function PayForm({ debtId, row, currency, onDone }: { debtId: string; row: LoanP
 export function PayInstallmentDialog({ debtId, row, currency, onOpenChange }: PayInstallmentDialogProps) {
   return (
     <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <FormDialogContent>
         <PanelDialogHeader icon={CircleCheckIcon} title={<>Rata {row?.number} pagata</>} description="Data e importo reali, precompilati dal piano." />
         {row ? <PayForm key={row.number} debtId={debtId} row={row} currency={currency} onDone={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

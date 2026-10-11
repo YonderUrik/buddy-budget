@@ -2,9 +2,10 @@
 
 /** Dialog per inserire a mano il prezzo di uno strumento in una data: vale solo per il tuo portafoglio. */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useSaveManualPriceMutation } from "@/lib/queries/investments";
@@ -41,7 +42,7 @@ export function ManualPriceDialog({ instrument, onClose }: ManualPriceDialogProp
 
   return (
     <Dialog open={instrument !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-sm">
+      <FormDialogContent>
         <PanelDialogHeader icon={PencilLineIcon} title={<>Prezzo di {instrument?.name}</>} color="var(--swatch-amber)" />
         <form onSubmit={submit} className="flex flex-col gap-5">
           <p className="text-sm text-muted-foreground">
@@ -63,7 +64,7 @@ export function ManualPriceDialog({ instrument, onClose }: ManualPriceDialogProp
             </Button>
           </DialogActions>
         </form>
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

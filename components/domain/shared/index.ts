@@ -21,3 +21,5 @@ export type { UseStepFlowResult, StepProgressProps, StepStageProps, StepHeadingP
 export type { StepDirection } from "./step-flow.state";
 export { EmptyState } from "./empty-state";
 export type { EmptyStateAction, EmptyStateProps } from "./empty-state";
+export { FormDialogContent } from "./form-dialog";
+export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";

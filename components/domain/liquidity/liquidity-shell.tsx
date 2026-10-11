@@ -5,20 +5,18 @@
  * del collegamento). Le schede sono pagine vere dentro `children`; nei link del banner e dell'email `?rinnova=` apre il rinnovo.
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ReceiptTextIcon } from "lucide-react";
 import { AddTransactionForm } from "@/components/domain/expenses";
 import { PanelDialogHeader } from "@/components/domain/investments";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { useMarkMovementsSeen } from "@/lib/queries/attention";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { AddAccountDialog } from "./add-account-dialog";
-import { DialogCloseButton } from "./dialog-close-button";
-import { LIQUIDITY_DIALOG_CLASS } from "./dialog-layout";
 import { LiquidityActionsProvider } from "./liquidity-actions";
 import { LiquidityProvider } from "./liquidity-context";
 import { LiquidityHeader } from "./liquidity-header";
@@ -66,16 +64,15 @@ function Frame({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       <Dialog open={addTransactionOpen} onOpenChange={setAddTransactionOpen}>
-        <DialogContent className={cn(LIQUIDITY_DIALOG_CLASS)}>
-          <DialogCloseButton />
-          <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title="Nuovo movimento" description="Una spesa o un'entrata su un conto manuale." />
+        <FormDialogContent>
+                    <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title="Nuovo movimento" description="Una spesa o un'entrata su un conto manuale." />
           <AddTransactionForm
             categories={categories ?? []}
             currency={currency}
             onSuccess={() => setAddTransactionOpen(false)}
             onAddAccount={() => { setAddTransactionOpen(false); addAccount(); }}
           />
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
       <AddAccountDialog
         open={accountDialog.open}

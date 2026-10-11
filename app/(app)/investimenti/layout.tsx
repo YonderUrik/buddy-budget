@@ -5,6 +5,7 @@
  * condivisi. Usa la stessa query della scheda Portafoglio al periodo di default: nessuna richiesta in più.
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { BrokerSelectionProvider } from "@/lib/investments/broker-selection";
 import { usePathname } from "next/navigation";
@@ -19,7 +20,7 @@ import {
   type RegisterOperationInitial,
 } from "@/components/domain/investments";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { usedInstruments } from "@/lib/investments/view";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
@@ -66,7 +67,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
       </div>
 
       <Dialog open={registerInitial !== null} onOpenChange={(open) => !open && setRegisterInitial(null)}>
-        <DialogContent className="max-w-lg">
+        <FormDialogContent>
           <PanelDialogHeader icon={Plus} title="Registra operazione" description="Un acquisto, una vendita, un dividendo o un altro movimento del portafoglio." color="var(--swatch-indigo)" />
           {registerInitial ? (
             <RegisterOperationForm
@@ -76,7 +77,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
               onSuccess={() => setRegisterInitial(null)}
             />
           ) : null}
-        </DialogContent>
+        </FormDialogContent>
       </Dialog>
       <InvestmentImportDialog open={importOpen} onOpenChange={setImportOpen} currency={currency} />
     </InvestmentsActionsProvider></BrokerSelectionProvider>

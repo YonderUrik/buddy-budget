@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Form per registrare una spesa o un'entrata su un conto manuale, in tre passi: importo e tipo, descrizione e
- * categoria, conto e data (già precompilati). Errori accanto al campo, «Aggiungi e inserisci un altro» per più
+ * Form per registrare una spesa o un'entrata su un conto manuale, in due passi: importo e tipo, poi descrizione e
+ * categoria; conto e data sono già precompilati (oggi, primo conto) e si cambiano da «Cambia». Errori accanto al campo, «Aggiungi e inserisci un altro» per più
  * movimenti di fila.
  */
 
@@ -55,7 +55,7 @@ function yesterdayDateString(): string {
   return dateString(new Date(Date.now() - MS_PER_DAY));
 }
 
-const TRANSACTION_STEPS = 3;
+const TRANSACTION_STEPS = 2;
 
 export function AddTransactionForm({ categories, currency, onSuccess, onAddAccount }: AddTransactionFormProps) {
   const idBase = React.useId();
@@ -93,8 +93,6 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
     if (step === 1) {
       if (description.trim() === "") next.description = "Scrivi una breve descrizione, per ritrovarlo nell'elenco.";
       if (!categoryId) next.category = "Scegli una categoria.";
-    }
-    if (step === 2) {
       if (!accountId) next.account = "Serve un conto manuale su cui registrare il movimento.";
       if (date === "") next.date = "Scegli la data del movimento.";
     }
@@ -106,7 +104,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
   }
 
   function submit(keepOpen: boolean) {
-    if (!validate(2) || amountValue === null) return;
+    if (!validate(1) || amountValue === null) return;
     createMutation.mutate(
       { accountId, description: description.trim(), categoryId, amount: amountValue, date },
       {
@@ -217,18 +215,20 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
                 </p>
               ) : null}
             </div>
-          </>
-        ) : null}
-
-        {flow.index === 2 ? (
-          <>
-            <StepHeading title="Quando e su quale conto?" description="Di solito va bene così: oggi, sul primo conto." />
+            <details className="rounded-xl border p-3" open={Boolean(errors.account || errors.date) || noAccount}>
+              <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 text-sm">
+                <span className="text-muted-foreground">
+                  {date === todayDateString() ? "Oggi" : date === yesterdayDateString() ? "Ieri" : date} · {manualAccounts.find((a) => a.id === accountId)?.name ?? "nessun conto"}
+                </span>
+                <span className="font-medium text-primary">Cambia</span>
+              </summary>
+              <div className="mt-3 flex flex-col gap-4">
             <div className={fieldClass}>
               <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-date`}>Data</label>
               <div className="flex items-center gap-2">
                 <Input
                   id={`${idBase}-date`}
-                  data-autofocus
+                 
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
@@ -271,8 +271,11 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
                 {onAddAccount ? <button type="button" onClick={onAddAccount} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">Aggiungi un conto</button> : null}
               </p>
             ) : null}
+                        </div>
+            </details>
           </>
         ) : null}
+
       </StepStage>
 
       {flow.isLast ? (

@@ -12,8 +12,8 @@ import { detectImportProvider } from "@/lib/investments/import/providers";
 import { useParseStatementMutation } from "@/lib/queries/investments";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { StepStage, type StepDirection } from "@/components/domain/shared";
+import { Dialog } from "@/components/ui/dialog";
+import { StepStage, type StepDirection, FormDialogContent } from "@/components/domain/shared";
 import { getImportProvider } from "@/lib/investments/import/providers";
 import { UploadIcon } from "lucide-react";
 import { DialogActions, PanelDialogHeader } from "../dialog-parts";
@@ -180,10 +180,10 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
 export function InvestmentImportDialog({ open, onOpenChange, currency }: InvestmentImportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
+      <FormDialogContent size="wide">
         <PanelDialogHeader icon={UploadIcon} title="Importa operazioni" description="Carica il file del tuo broker: lo leggo, ti mostro cosa importerei e importo solo quando confermi." color="var(--primary)" />
         {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

@@ -4,25 +4,25 @@
  * Componenti delle pagine di autenticazione e onboarding.
  */
 
-export { LoginHorizon } from "./login-horizon";
-export type { LoginHorizonProps } from "./login-horizon";
-export { LoginAreas } from "./login-areas";
-export type { LoginAreasProps } from "./login-areas";
+export { AuthSheet } from "./auth-sheet";
+export type { AuthSheetProps } from "./auth-sheet";
+export { AuthSheetTable } from "./auth-sheet-table";
+export type { AuthSheetTableProps } from "./auth-sheet-table";
+export { buildAuthSheetTabs } from "./auth-sheet.data";
+export type { AuthSheetRow, AuthSheetTab, AuthSheetTabId } from "./auth-sheet.data";
+export { useSheetFormula } from "./auth-sheet-formula";
+export type { SheetFormula } from "./auth-sheet-formula";
 export { LOGIN_AREAS } from "./login-areas.data";
 export type { LoginArea } from "./login-areas.data";
+export { UPCOMING_FEATURES } from "./upcoming-features.data";
+export type { UpcomingFeature } from "./upcoming-features.data";
 export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";
 export type { LoginPanelProps } from "./login-panel";
 export { CurrencyPicker } from "./currency-picker";
 export type { CurrencyPickerProps } from "./currency-picker";
-export { UpcomingFeatures } from "./upcoming-features";
-export { NewFeatureNote } from "./new-feature-note";
 export { GoogleIcon } from "./google-icon";
-export type { NewFeatureNoteProps } from "./new-feature-note";
-export { LATEST_FEATURE } from "./new-feature.data";
-export type { NewFeature } from "./new-feature.data";
-export type { UpcomingFeaturesProps } from "./upcoming-features";
 export { LegalLinksNote } from "./legal-links-note";
 export type { LegalLinksNoteProps } from "./legal-links-note";
 export { LegalConsentFields } from "./legal-consent-fields";

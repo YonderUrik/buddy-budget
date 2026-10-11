@@ -1,8 +1,5 @@
-import { BeforeAfterSections } from "@/components/before-after";
-import { CatalogSheet } from "@/components/catalog-sheet";
 import { Closing } from "@/components/closing";
 import { Compare } from "@/components/compare";
-import { Details } from "@/components/details";
 import { Faq } from "@/components/faq";
 import { Fit } from "@/components/fit";
 import { ItalyRules } from "@/components/italy-rules";
@@ -13,7 +10,7 @@ import { SheetHero } from "@/components/sheet-hero";
 import { SheetTabs, type SheetTab } from "@/components/sheet-tabs";
 import { SiteNav } from "@/components/site-nav";
 import { SupportedSources } from "@/components/supported-sources";
-import { BEFORE_AFTER } from "@/content/sheet";
+import { Tour } from "@/components/tour";
 import { FAQ, SITE_URL } from "@/content/site";
 
 /** Dati strutturati FAQ: le stesse domande della sezione visibile, solo in questa pagina. */
@@ -26,18 +23,17 @@ const FAQ_JSON_LD = {
 
 /** Schede del foglio sotto l'apertura: una per sezione, nell'ordine della pagina. */
 const PAGE_TABS: readonly SheetTab[] = [
-  ...BEFORE_AFTER.map((b) => ({ id: b.id, label: b.tab })),
-  { id: "dettagli", label: "Dettagli" },
+  { id: "fonti", label: "Fonti" },
+  { id: "app", label: "L'app" },
   { id: "italia", label: "Regole" },
-  { id: "funzioni", label: "Funzioni" },
   { id: "confronto", label: "Confronto" },
   { id: "sicurezza", label: "Sicurezza" },
   { id: "domande", label: "Domande" },
 ];
 
 /**
- * Home «Il foglio»: si parte dal foglio dei conti tenuto a mano e si mostra, area per area, cosa fa l'app al suo posto;
- * poi i dettagli tecnici, le regole italiane, il catalogo, il confronto, la fiducia e le domande frequenti.
+ * Home «Il foglio»: si parte dal foglio dei conti tenuto a mano, poi le fonti supportate e il giro dell'app area per
+ * area (schermate intere e scheda tecnica), le regole italiane, il confronto, la fiducia e le domande frequenti.
  */
 export default function HomePage() {
   return (
@@ -48,10 +44,8 @@ export default function HomePage() {
         <SheetHero />
         <SheetTabs tabs={PAGE_TABS} />
         <SupportedSources />
-        <BeforeAfterSections />
-        <Details />
+        <Tour />
         <ItalyRules />
-        <CatalogSheet />
         <Compare />
         <Security />
         <OpenSource />

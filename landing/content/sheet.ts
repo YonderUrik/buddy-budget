@@ -4,6 +4,7 @@
  * (paesi della banca in `connect-bank-flow.tsx`, file dei broker in `lib/investments/import/providers.ts`, soglie del
  * rischio in `lib/investments/risk-insights.ts`). Le cifre sono quelle dei dati d'esempio degli screenshot.
  */
+import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";
 
 /** Riga del foglio d'esempio in apertura: voce, saldo (o errore), ultimo aggiornamento, nota a margine. */
@@ -53,8 +54,14 @@ export interface SupportedSource {
   logo?: { src: string; width: number; height: number };
 }
 
+/** Paese delle banche collegabili, con la bandiera di `public/flags/` (codice ISO 3166-1 alfa-2 in minuscolo). */
+export interface BankCountry {
+  code: "it" | "de" | "fr" | "es" | "gb";
+  name: string;
+}
+
 export const SUPPORTED = {
-  ref: "Fonti!A1",
+  kicker: "Fonti supportate",
   title: "Funziona con quello che usi già.",
   brokersLabel: "Broker, dai file che scarichi",
   brokers: [
@@ -65,166 +72,129 @@ export const SUPPORTED = {
     { name: "Yahoo Finance", detail: "Portafoglio esportato", logo: { src: "/logos/yahoo.svg", width: 512, height: 143 } },
   ] satisfies readonly SupportedSource[],
   banksLabel: "Banche, con l'Open Banking in sola lettura",
-  countries: ["Italia", "Germania", "Francia", "Spagna", "Regno Unito"],
+  countries: [
+    { code: "it", name: "Italia" },
+    { code: "de", name: "Germania" },
+    { code: "fr", name: "Francia" },
+    { code: "es", name: "Spagna" },
+    { code: "gb", name: "Regno Unito" },
+  ] satisfies readonly BankCountry[],
   otherLabel: "E per il resto",
-  other: ["CSV di qualsiasi banca o broker", "Conti manuali", "Operazioni a mano"],
+  other: [
+    { icon: "file-text", label: "CSV di qualsiasi banca o broker" },
+    { icon: "wallet", label: "Conti manuali e contanti" },
+    { icon: "pencil", label: "Operazioni inserite a mano" },
+  ] satisfies readonly { icon: HomeIcon; label: string }[],
 } as const;
 
-export type SheetSectionId = "spese" | "investimenti" | "debiti" | "pensione" | "futuro";
+export type TourId = "conti" | "investimenti" | "tasse" | "debiti" | "pensione" | "futuro" | "limiti";
 
-/** Sezione «prima / ora»: la formula che si scriveva nel foglio accanto alla schermata dell'app. */
-export interface BeforeAfter {
-  id: SheetSectionId;
-  /** Riferimento di cella mostrato sopra il titolo, come il nome di un foglio. */
-  ref: string;
+/**
+ * Una scheda del giro dell'app: la formula che si scriveva nel foglio, cosa fa l'app al suo posto (con la cifra
+ * d'esempio della schermata), la schermata intera e la scheda tecnica con i fatti da controllare prima di iscriversi.
+ */
+export interface TourTab {
+  id: TourId;
   tab: string;
+  icon: HomeIcon;
   title: string;
-  formula: string;
-  before: string;
-  /** Il costo di farlo a mano, in breve. */
-  cost: string;
-  shot: ScreenId;
-  /** Testo sotto la schermata; `strong` è la frase in evidenza con la cifra d'esempio. */
-  after: { lead: string; strong: string; tail: string };
-}
-
-export const BEFORE_AFTER: readonly BeforeAfter[] = [
-  {
-    id: "spese", ref: "Spese!A1", tab: "Spese", title: "Le spese del mese, senza copiare l'estratto conto.",
-    formula: '=SOMMA.SE(Movimenti!C:C;"Spesa";Movimenti!D:D)',
-    before: "Scarichi il CSV, incolli, sistemi le colonne, scrivi la categoria riga per riga.", cost: "circa un'ora al mese",
-    shot: "analisi",
-    after: { lead: "I movimenti arrivano dalla banca in sola lettura.", strong: "Le regole che confermi riconoscono i negozi le volte dopo,", tail: "e le spese si dividono in quattro gruppi: Dovute, Volute, Te futuro, Saltuarie." },
-  },
-  {
-    id: "investimenti", ref: "Investimenti!A1", tab: "Investimenti", title: "Le tasse di una vendita, prima di vendere.",
-    formula: "=SE(ANNO(OGGI())-ANNO(E2)>4;0;MIN(F2;G2))*0,26",
-    before: "Una formula per lo zainetto, un'altra per i BTP al 12,5%, una per il bollo. E il dubbio di aver sbagliato.", cost: "#RIF! al primo cambio",
-    shot: "tasse",
-    after: { lead: "Importi i file del tuo broker.", strong: "Vendendo l'ETF oggi pagheresti 145,93 €", tail: "su 561,28 € di guadagno, con zainetto e aliquota già considerati." },
-  },
-  {
-    id: "debiti", ref: "Mutuo!A1", tab: "Debiti", title: "Il piano del mutuo, con l'estinzione già calcolata.",
-    formula: "=RATA(2,9%/12;120;-35000)",
-    before: "Il piano sta in un PDF della banca. Per sapere cosa cambia versando di più, va rifatto da capo.", cost: "un pomeriggio",
-    shot: "simulatore",
-    after: { lead: "Con 200 € in più al mese", strong: "finisci 2 anni e 7 mesi prima e risparmi 1094 €", tail: "di interessi. TAEG, penali e surroga compresi." },
-  },
-  {
-    id: "pensione", ref: "Pensione!A1", tab: "Pensione", title: "Il fondo pensione, confrontato con il TFR.",
-    formula: "=TIR.X(B2:B40;A2:A40)",
-    before: "Il fondo ti dà contributi e controvalore. Il rendimento e il confronto con il TFR li ricostruisci tu.", cost: "di solito non si fa",
-    shot: "pensione",
-    after: { lead: "Inserisci due numeri ogni tanto o importi lo storico.", strong: "+11,7% sui contributi versati,", tail: "e quanto ti resterebbe prelevando oggi al netto delle tasse." },
-  },
-  {
-    id: "futuro", ref: "FIRE!A1", tab: "Futuro", title: "L'anno in cui puoi smettere di lavorare.",
-    formula: "=NPER(4%;-5122;-29343;756614)",
-    before: "Una cella con un'ipotesi fissa, che nessuno riapre.", cost: "una stima mai aggiornata",
-    shot: "analitiche",
-    after: { lead: "Quattro cursori su risparmio, spesa, rendimento e prelievo.", strong: "Ai ritmi di oggi: 2066.", tail: "Sposta un cursore e l'anno si sposta con lui." },
-  },
-];
-
-export type DetailId = "banca" | "categorie" | "broker" | "rischio" | "tasse" | "debiti" | "limiti";
-
-/** Scheda della sezione «Nel dettaglio»: le risposte che si cercano prima di iscriversi, compreso ciò che l'app non fa. */
-export interface DetailTab {
-  id: DetailId;
-  tab: string;
-  title: string;
-  lede: string;
-  specs: readonly (readonly [label: string, text: string])[];
+  /** Il foglio di prima: formula, fatica e quanto costava. Assente nella scheda «Cosa non fa». */
+  before?: { formula: string; text: string; cost: string };
+  /** Cosa fa l'app; `strong` è la frase con la cifra d'esempio che si vede nella schermata. */
+  after: { lead: string; strong?: string; tail?: string };
   shot?: ScreenId;
+  specs: readonly (readonly [label: string, text: string])[];
 }
 
-export const DETAILS = {
-  ref: "Dettagli!A1",
-  title: "Banche, broker, rischio: la scheda tecnica.",
-  lede: "Quello che controlleresti prima di iscriverti, compreso quello che l'app non fa.",
+export const TOUR = {
+  kicker: "L'app, area per area",
+  title: "Le formule che scrivevi, già fatte.",
+  lede: "Per ogni area: com'era nel foglio, cosa fa BuddyBudget e i dettagli da controllare prima di iscriversi.",
   tabs: [
     {
-      id: "banca", tab: "Banche e conti", shot: "conti",
-      title: "Collegare la banca",
-      lede: "Il conto si collega con l'Open Banking, lo stesso sistema regolato dalla PSD2 che usano le app delle banche.",
+      id: "conti", tab: "Conti e spese", icon: "wallet", shot: "analisi",
+      title: "Le spese del mese, senza copiare l'estratto conto.",
+      before: { formula: '=SOMMA.SE(Movimenti!C:C;"Spesa";Movimenti!D:D)', text: "Scarichi il CSV, incolli, sistemi le colonne e scrivi la categoria riga per riga.", cost: "circa un'ora al mese" },
+      after: { lead: "I movimenti arrivano dalla banca in sola lettura.", strong: "Hai speso 21.088 € quest'anno,", tail: "e vedi subito la voce che pesa di più." },
       specs: [
-        ["Paesi", "Italia, Germania, Francia, Spagna, Regno Unito. Cerchi la tua banca per nome quando colleghi il conto."],
-        ["Accesso", "Solo lettura di saldi e movimenti, tramite un fornitore autorizzato. Le credenziali le inserisci sul sito della banca, mai da noi."],
+        ["Banche", "Italia, Germania, Francia, Spagna e Regno Unito, con l'Open Banking (PSD2) in sola lettura. Le credenziali le inserisci sul sito della banca, mai da noi."],
         ["Consenso", "Dura 90 giorni. Sette giorni prima ti avvisiamo per email e in app, e rinnovi con un clic."],
         ["Aggiornamento", "Ogni 12 ore, più un pulsante per aggiornare subito."],
-        ["Storico", "Tutti i movimenti che la banca mette a disposizione al primo collegamento."],
-        ["Se la banca non c'è", "Conto manuale, oppure carichi il CSV della banca: lo leggiamo anche se il formato è nuovo e lo ricordiamo per le volte dopo."],
+        ["Se la banca non c'è", "Conto manuale, oppure carichi il CSV della banca: lo leggiamo anche se il formato è nuovo."],
+        ["Categorie", "Confermi un negozio e scegli se ricordarlo. Le regole si leggono, si modificano e si cancellano."],
+        ["Nomi leggibili", "Da «POS 1234 ESSELUNGA SPA MI» ricava «Esselunga», anche con codici o filiali diversi."],
+        ["Assistente AI", "Spento finché non lo attivi. Propone una categoria per i negozi nuovi e riceve solo il nome pulito del negozio."],
+        ["Gruppi e budget", "Dovute, Volute, Te futuro, Saltuarie; un tetto per categoria, con un'email all'80% e al 100% se la vuoi."],
       ],
     },
     {
-      id: "categorie", tab: "Categorie", shot: "categorie",
-      title: "Mettere i movimenti in categoria",
-      lede: "Le categorie le confermi tu. L'app impara dalle tue scelte e non cambia nulla da sola.",
+      id: "investimenti", tab: "Investimenti", icon: "trending", shot: "investimenti",
+      title: "Il portafoglio di tutti i broker, con il guadagno vero.",
+      before: { formula: '=GOOGLEFINANCE("VWCE";"price")*B4', text: "Copi i prezzi, aggiorni le quote a ogni acquisto e confondi quello che hai versato con quello che hai guadagnato.", cost: "a ogni acquisto" },
+      after: { lead: "Importi i file del broker e i prezzi si aggiornano da soli.", strong: "Il periodo ha reso +582 €,", tail: "separati dagli 876 € che hai versato tu." },
       specs: [
-        ["Regole", "Confermi un negozio e scegli se ricordarlo. Le regole sono in una lista che puoi leggere, modificare e cancellare."],
-        ["Nomi leggibili", "Da «POS 1234 ESSELUNGA SPA MI» ricava «Esselunga», e riconosce lo stesso negozio anche con codici o filiali diversi."],
-        ["Assistente AI", "Spento finché non lo attivi. Propone una categoria per i negozi nuovi, una carta alla volta. Riceve solo il nome pulito del negozio: niente importi, date o IBAN."],
-        ["Gruppi di spesa", "Ogni categoria sta in uno di quattro gruppi: Dovute, Volute, Te futuro, Saltuarie. Ciò che resta è l'avanzo."],
-        ["Spese condivise", "Dividi un movimento a metà, a un terzo o di un importo, o escludi rimborsi e giroconti dai conti del mese."],
-        ["Budget", "Un tetto per categoria, con quanto ne hai usato e, se lo vuoi, un'email all'80% e al 100%."],
-      ],
-    },
-    {
-      id: "broker", tab: "Broker e strumenti", shot: "investimenti",
-      title: "Portare dentro gli investimenti",
-      lede: "Le operazioni arrivano dai file che il broker ti fa già scaricare. Nessun accesso al tuo conto titoli.",
-      specs: [
-        ["Interactive Brokers", "Activity Statement in CSV, con liquidità e cambi."],
-        ["DEGIRO", "Il file Account.csv, con commissioni e cambi."],
-        ["Trade Republic", "Il file Transaction export.csv, anche carta, bonifici e interessi."],
-        ["Fineco", "Il file Excel delle operazioni, con dividendi e cedole."],
-        ["Altri", "Un portafoglio esportato da Yahoo Finance, un CSV qualsiasi con le colonne indicate da te, o le operazioni inserite a mano."],
-        ["Strumenti", "ETF, azioni, BTP e altri titoli di Stato, fondi e crypto. Più broker nello stesso portafoglio, e ogni import si cancella da solo."],
-        ["Prezzi", "Chiusure di fine giornata, aggiornate tre volte al giorno da più fonti gratuite che si sostituiscono a vicenda. Cambi dalla BCE."],
-      ],
-    },
-    {
-      id: "rischio", tab: "Rendimento e rischio", shot: "performance",
-      title: "Capire come sta andando",
-      lede: "Numeri da gestore di fondi, ognuno spiegato con una frase in italiano normale.",
-      specs: [
-        ["Rendimento", "Quello del portafoglio e quello dei tuoi soldi, che tiene conto di quando hai versato. Per qualsiasi periodo e per broker, anche al netto dell'inflazione."],
+        ["Broker", "Interactive Brokers, DEGIRO, Trade Republic, Fineco, un portafoglio di Yahoo Finance o un CSV con le colonne indicate da te. Nessun accesso al conto titoli."],
+        ["Strumenti", "ETF, azioni, BTP e altri titoli di Stato, fondi e crypto, da più broker nello stesso portafoglio."],
+        ["Prezzi", "Chiusure di fine giornata, tre volte al giorno, da più fonti gratuite che si sostituiscono a vicenda. Cambi dalla BCE."],
+        ["Rendimento", "Quello del portafoglio e quello dei tuoi soldi, per qualsiasi periodo e per broker, anche al netto dell'inflazione."],
         ["Confronto", "Con un indice a scelta a parità di versamenti: «oggi avresti X invece di Y»."],
-        ["Livello di rischio", "Basso, medio, alto o molto alto, da quanto oscilla il portafoglio in un anno: sotto l'8%, fino al 15%, fino al 25%, oltre."],
-        ["Dettagli", "La perdita peggiore dal massimo, se il rischio preso è stato ripagato e quanto il portafoglio segue l'indice."],
+        ["Rischio", "Basso, medio, alto o molto alto, da quanto oscilla il portafoglio in un anno: sotto l'8%, fino al 15%, fino al 25%, oltre."],
         ["Diversificazione", "Per area geografica e settore, guardando dentro gli ETF, con i titoli che si sovrappongono."],
-        ["Costi", "Commissioni e imposte pagate, e quanto varresti se fossero rimaste investite."],
       ],
     },
     {
-      id: "tasse", tab: "Tasse", shot: "tasse",
-      title: "Le tasse italiane sugli investimenti",
-      lede: "Stime pensate per decidere. Il conteggio definitivo resta all'intermediario o a un professionista.",
+      id: "tasse", tab: "Tasse", icon: "backpack", shot: "tasse",
+      title: "Le tasse di una vendita, prima di vendere.",
+      before: { formula: "=SE(ANNO(OGGI())-ANNO(E2)>4;0;MIN(F2;G2))*0,26", text: "Una formula per lo zainetto, un'altra per i BTP al 12,5%, una per il bollo. E il dubbio di aver sbagliato.", cost: "#RIF! al primo cambio" },
+      after: { lead: "Scegli il titolo e le quote.", strong: "Vendendo l'ETF oggi pagheresti 145,93 €", tail: "su 561,28 € di guadagno, con zainetto e aliquota già considerati." },
       specs: [
-        ["Aliquote", "26% in generale, 12,5% sui titoli di Stato, applicata operazione per operazione."],
+        ["Aliquote", "26% in generale, 12,5% sui titoli di Stato, operazione per operazione."],
         ["Zainetto fiscale", "Le minusvalenze anno per anno, con quanto scade e quando (quattro anni dopo)."],
         ["ETF e fondi", "I guadagni sono redditi di capitale e non si compensano con le perdite: l'app li tiene separati."],
         ["Bollo", "Stimato sul valore del deposito titoli."],
         ["Regime", "Amministrato, se il broker fa da sostituto d'imposta, o dichiarativo."],
-        ["Prima di vendere", "Scegli un titolo e le quote: vedi incasso, plusvalenza e imposta prima di dare l'ordine."],
+        ["Sono stime", "Pensate per decidere. Il conteggio definitivo resta all'intermediario o a un professionista."],
       ],
     },
     {
-      id: "debiti", tab: "Debiti e pensione", shot: "debiti",
-      title: "Mutuo, prestiti e fondo pensione",
-      lede: "Le due voci che pesano di più sul patrimonio e che le app di spese di solito lasciano fuori.",
+      id: "debiti", tab: "Mutuo e prestiti", icon: "card", shot: "simulatore",
+      title: "Il piano del mutuo, con l'estinzione già calcolata.",
+      before: { formula: "=RATA(2,9%/12;120;-35000)", text: "Il piano sta in un PDF della banca. Per sapere cosa cambia versando di più, va rifatto da capo.", cost: "un pomeriggio" },
+      after: { lead: "Con 200 € in più al mese", strong: "finisci 2 anni e 7 mesi prima e risparmi 1094 €", tail: "di interessi." },
       specs: [
         ["Finanziamenti", "Mutui e prestiti, inseriti dall'inizio o dalla situazione di oggi, con il piano rata per rata."],
         ["Dati mancanti", "Da tre fra capitale, rata, numero di rate e tasso ricava il quarto, con il TAEG."],
         ["Simulazioni", "Extra ogni mese, estinzione parziale con penale, surroga: quanto risparmi e quando finisci."],
-        ["Fondo pensione", "Contributi e controvalore ogni tanto, a mano o da CSV ed Excel. Rendimento e guadagno sui versamenti."],
-        ["TFR", "Gli stessi versamenti nel fondo o in azienda, e quanto ti resterebbe prelevando oggi al netto delle tasse."],
+        ["Priorità", "Le prossime rate e quale debito costa di più in interessi, per sapere dove mettere un extra."],
       ],
     },
     {
-      id: "limiti", tab: "Cosa non fa",
-      title: "Cosa BuddyBudget non fa",
-      lede: "Meglio saperlo prima di iscriversi.",
+      id: "pensione", tab: "Pensione", icon: "umbrella", shot: "pensione",
+      title: "Il fondo pensione, confrontato con il TFR.",
+      before: { formula: "=TIR.X(B2:B40;A2:A40)", text: "Il fondo ti dà contributi e controvalore. Il rendimento e il confronto con il TFR li ricostruisci tu.", cost: "di solito non si fa" },
+      after: { lead: "Inserisci due numeri ogni tanto o importi lo storico.", strong: "+11,7% sui contributi versati,", tail: "e quanto ti resterebbe prelevando oggi al netto delle tasse." },
+      specs: [
+        ["Fotografie", "Contributi versati e controvalore quando vuoi, a mano o da CSV ed Excel."],
+        ["Rendimento", "Annuo e sui contributi, separato dai versamenti."],
+        ["Se ritiri oggi", "Quanto ti resterebbe al netto delle tasse, per prelievo totale o parziale."],
+        ["TFR", "Gli stessi versamenti nel fondo o lasciati in azienda, rivalutati."],
+      ],
+    },
+    {
+      id: "futuro", tab: "Futuro", icon: "chart", shot: "analitiche",
+      title: "L'anno in cui puoi smettere di lavorare.",
+      before: { formula: "=NPER(4%;-5122;-29343;756614)", text: "Una cella con un'ipotesi fissa, che nessuno riapre.", cost: "una stima mai aggiornata" },
+      after: { lead: "Quattro cursori su risparmio, spesa, rendimento e prelievo.", strong: "Ai ritmi di oggi: 2066.", tail: "Sposta un cursore e l'anno si sposta con lui." },
+      specs: [
+        ["Dai tuoi dati", "Risparmio e spesa partono da quelli dei tuoi conti, il patrimonio da quello della Panoramica."],
+        ["Quattro risposte", "Quanta strada hai fatto, l'anno di arrivo, se il piano regge per 40 anni e quanto pesano i costi."],
+        ["Ipotesi", "Volatilità, inflazione e imposte sono scritte sotto i cursori, così sai su cosa poggia la stima."],
+      ],
+    },
+    {
+      id: "limiti", tab: "Cosa non fa", icon: "ban",
+      title: "Cosa BuddyBudget non fa.",
+      after: { lead: "Meglio saperlo prima di iscriversi." },
       specs: [
         ["Consigli", "Non dice cosa comprare o vendere. Non è consulenza finanziaria."],
         ["Pagamenti", "Non sposta denaro e non fa ordini al broker: legge e calcola."],
@@ -234,7 +204,7 @@ export const DETAILS = {
         ["App store", "Si usa dal browser e si installa sulla schermata Home, senza passare dagli store."],
       ],
     },
-  ] satisfies readonly DetailTab[],
+  ] satisfies readonly TourTab[],
 } as const;
 
 export const CLOSING = {

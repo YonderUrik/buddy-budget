@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.52.0](https://github.com/YonderUrik/buddy-budget/compare/v0.51.0...v0.52.0) (2026-10-11)
+
+
+### Novità
+
+* striscia Novità in Panoramica, catalogo e landing per Categorizza con l'AI ([#294](https://github.com/YonderUrik/buddy-budget/issues/294)) ([008ab6a](https://github.com/YonderUrik/buddy-budget/commit/008ab6a59958ec2b5e8a0d9f1c026611864cca16))
+
 ## [0.51.0](https://github.com/YonderUrik/buddy-budget/compare/v0.50.2...v0.51.0) (2026-10-11)
 
 

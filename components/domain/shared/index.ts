@@ -19,3 +19,5 @@ export type { SectionTab, SectionTabsProps } from "./section-tabs";
 export { useStepFlow, StepProgress, StepStage, StepHeading, StepActions } from "./step-flow";
 export type { UseStepFlowResult, StepProgressProps, StepStageProps, StepHeadingProps, StepActionsProps } from "./step-flow";
 export type { StepDirection } from "./step-flow.state";
+export { EmptyState } from "./empty-state";
+export type { EmptyStateAction, EmptyStateProps } from "./empty-state";

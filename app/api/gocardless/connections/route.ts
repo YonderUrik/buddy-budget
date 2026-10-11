@@ -8,6 +8,7 @@ import { createRequisition } from "@/lib/gocardless/client";
 import { consentExpiryFrom } from "@/lib/gocardless/connection-health";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
+import { rejectIfDemoActive } from "@/lib/start/demo";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 async function handleGet(request: NextRequest) {
@@ -55,6 +56,8 @@ async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
+  const demoBlock = await rejectIfDemoActive(session.user.id);
+  if (demoBlock) return demoBlock;
 
   const body = await request.json();
   const parsed = createConnectionSchema.safeParse(body);

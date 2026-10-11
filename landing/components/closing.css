@@ -7,7 +7,7 @@
 .end footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; margin-top: 96px; padding-top: 28px; border-top: 1px solid color-mix(in srgb, var(--on-navy) 12%, transparent); color: var(--on-navy2); font-size: 14px; text-align: left; }
 @media (max-width: 600px) { .end { padding-block: 96px 40px; } }
 .end .wrap { position: relative; }
-.end .legal-links { display: flex; gap: 18px; }
+.end .legal-links { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .end .legal-links a { color: var(--on-navy2); text-decoration: none; }
 .end .legal-links a:hover { color: var(--on-navy); text-decoration: underline; }
 .end h2 em { font-style: normal; color: var(--sky); }

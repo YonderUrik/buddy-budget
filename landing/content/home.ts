@@ -179,12 +179,12 @@ export const COMPARE = {
   lede: "Le due alternative più comuni vanno bene entrambe. La differenza sta in quanto vuoi tenere insieme.",
   columns: ["Foglio di calcolo", "App di sole spese", "BuddyBudget"] as const,
   rows: [
-    { label: "Movimenti dalla banca", cells: [["no", "copiati a mano"], ["parziale", "dipende dall'app"], ["si", "Open Banking, in sola lettura"]] },
-    { label: "Categorie che si ricordano i negozi", cells: [["no", "a mano"], ["si", "di solito"], ["si", "regole che vedi e modifichi"]] },
-    { label: "Investimenti con le tasse italiane", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "zainetto, bollo, aliquote"]] },
-    { label: "Fondo pensione e TFR", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "rendimento e confronto"]] },
-    { label: "Mutui e finanziamenti", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "piano, TAEG, estinzione"]] },
+    { label: "Movimenti dalla banca", cells: [["no", "copiati a mano"], ["parziale", "dipende dall'app"], ["si", "con Open Banking in sola lettura"]] },
+    { label: "Categorie che ricordano i negozi", cells: [["no", "a mano"], ["si", "di solito"], ["si", "con regole che vedi e modifichi"]] },
+    { label: "Investimenti con le tasse italiane", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "con zainetto, bollo e aliquote"]] },
+    { label: "Fondo pensione e TFR", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "con rendimento e confronto"]] },
+    { label: "Mutui e finanziamenti", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "con piano, TAEG ed estinzione"]] },
     { label: "Patrimonio netto nel tempo", cells: [["parziale", "aggiornato a mano"], ["no", ""], ["si", "ogni giorno"]] },
-    { label: "Dati tuoi, esportabili", cells: [["si", "il file è tuo"], ["parziale", "dipende dall'app"], ["si", "ZIP completo, quando vuoi"]] },
+    { label: "Dati tuoi, esportabili", cells: [["si", "il file è tuo"], ["parziale", "dipende dall'app"], ["si", "con ZIP completo quando vuoi"]] },
   ] satisfies readonly CompareRow[],
 } as const;

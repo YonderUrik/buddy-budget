@@ -1,26 +1,36 @@
 import "./legal-page.css";
-import { LEGAL_DRAFT, LEGAL_PATHS, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
-import { PageBar } from "./page-bar";
+import { LEGAL_OWNER, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
+import { SiteNav } from "./site-nav";
 import { SiteFooter } from "./site-footer";
 
-const LEGAL_NAV = [
-  { href: LEGAL_PATHS.privacy, label: "Privacy" },
-  { href: LEGAL_PATHS.termini, label: "Termini" },
-  { href: LEGAL_PATHS.cookie, label: "Cookie" },
-] as const;
+/**
+ * Testo con l'indirizzo del titolare reso come link `mailto:`. Il marcatore `email_off` impedisce a Cloudflare di sostituirlo con
+ * `/cdn-cgi/l/email-protection`, un link che i crawler (e l'audit SEO) vedono rotto (404) perché risolto solo da uno script.
+ */
+function RichText({ text }: { text: string }) {
+  const [before, ...rest] = text.split(LEGAL_OWNER.email);
+  if (rest.length === 0) return <>{text}</>;
+  const link = `<!--email_off--><a href="mailto:${LEGAL_OWNER.email}">${LEGAL_OWNER.email}</a><!--/email_off-->`;
+  return (
+    <>
+      {before}
+      {rest.map((part, i) => (
+        <span key={i}>
+          <span style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: link }} />
+          {part}
+        </span>
+      ))}
+    </>
+  );
+}
 
-/** Pagina di un documento legale: intestazione con marchio, avviso di bozza, indice e sezioni numerate. */
+/** Pagina di un documento legale: intestazione con marchio, indice e sezioni numerate. */
 export function LegalPage({ doc }: { doc: LegalDocument }) {
   return (
     <>
-      <PageBar label="Documenti legali" links={LEGAL_NAV} current={`/${doc.slug}`} />
+      <SiteNav />
       <main className="legal">
         <div className="wrap legal-wrap">
-          {LEGAL_DRAFT ? (
-            <p className="legal-draft" role="note">
-              Bozza in revisione: questo testo non è ancora definitivo e alcuni dati sono segnaposto.
-            </p>
-          ) : null}
           <h1>{doc.title}</h1>
           <p className="legal-meta">Versione del {LEGAL_VERSION}</p>
           <p className="legal-intro">{doc.intro}</p>
@@ -38,11 +48,11 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
               <h2>
                 {index + 1}. {section.title}
               </h2>
-              {section.paragraphs?.map((text) => <p key={text}>{text}</p>)}
+              {section.paragraphs?.map((text) => <p key={text}><RichText text={text} /></p>)}
               {section.items ? (
                 <ul>
                   {section.items.map((text) => (
-                    <li key={text}>{text}</li>
+                    <li key={text}><RichText text={text} /></li>
                   ))}
                 </ul>
               ) : null}

@@ -1,0 +1,9 @@
+.fit-cols { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.fit-col { padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
+.fit-col h3 { font: 600 22px / 1.2 var(--f-h); letter-spacing: -0.02em; margin-bottom: 18px; }
+.fit-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.fit-col li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; color: var(--ink2); font-size: 16px; line-height: 1.5; }
+.fit-col svg { margin-top: 3px; }
+.fit-col.yes svg { color: var(--a-pos); }
+.fit-col.no svg { color: var(--ink3); }
+@media (max-width: 800px) { .fit-cols { grid-template-columns: 1fr; } }

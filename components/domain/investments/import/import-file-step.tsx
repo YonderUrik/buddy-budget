@@ -1,14 +1,20 @@
 "use client";
 
-/** Primo passo dell'import: carica un file CSV o incollane il contenuto; offre il modello da compilare. */
+/**
+ * Primo passo dell'import: carica il file (il formato lo riconosce da solo). Chi non sa come esportarlo apre «Come lo
+ * ottengo?» e sceglie il broker per leggere i passi; chi non trova il suo broker può creare un formato personale.
+ */
 
+import Link from "next/link";
 import * as React from "react";
-import { DownloadIcon, UploadIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { ChevronDownIcon, UploadIcon } from "lucide-react";
+import { ImportExportGuide } from "./import-export-guide";
+import { ImportNotice } from "./import-notice";
+import { explainFileError } from "@/lib/investments/import/messages";
 import { getImportProvider, type ImportProviderId } from "@/lib/investments/import/providers";
 import { validateImportFiles } from "@/lib/investments/import/batch";
-import { templateCsv } from "@/lib/investments/import/presets";
+import { gridToCsv } from "@/lib/investments/import/fineco";
+import { readXlsx } from "@/lib/pension/import/xlsx";
 import { ImportProviderPicker } from "./import-provider-picker";
 
 export interface ImportFileStepProps {
@@ -20,26 +26,10 @@ export interface ImportFileStepProps {
   reading?: boolean;
 }
 
-/** Nome del modello scaricato. */
-const TEMPLATE_FILE_NAME = "buddybudget-modello-investimenti.csv";
-
-function downloadTemplate() {
-  // BOM: Excel apre il file in UTF-8 e mostra bene gli accenti delle intestazioni.
-  const blob = new Blob(["﻿", templateCsv()], {
-    type: "text/csv;charset=utf-8",
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = TEMPLATE_FILE_NAME;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
 export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false }: ImportFileStepProps) {
   const id = React.useId();
-  const [pasted, setPasted] = React.useState("");
   const [dragging, setDragging] = React.useState(false);
+  const [showGuide, setShowGuide] = React.useState(provider !== null);
 
   const [fileError, setFileError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -50,22 +40,20 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
       const files = Array.from(list);
       validateImportFiles(files);
       if (files.length > 1 && onFiles) await onFiles(files);
-      else onLoad(await files[0].text(), files[0].name);
+      else if (/\.xlsx$/i.test(files[0].name)) {
+        // Fineco esporta in Excel: il foglio diventa testo e passa dallo stesso percorso dei CSV.
+        const sheet = readXlsx(new Uint8Array(await files[0].arrayBuffer()));
+        onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
+      } else onLoad(await files[0].text(), files[0].name);
     } catch (e) { setFileError(e instanceof Error ? e.message : "Impossibile leggere i file"); }
     finally { setLoading(false); }
   }
+  const busy = reading || loading;
+  const explained = fileError ? explainFileError(fileError) : null;
+  const chosen = provider ? getImportProvider(provider) : null;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium text-foreground">Da dove arriva il file?</p>
-        <ImportProviderPicker value={provider} onChange={onProviderChange} />
-        <p className="text-xs text-muted-foreground" aria-live="polite">
-          {provider
-            ? getImportProvider(provider).howTo
-            : "Non sai quale scegliere? Carica il file: se è di un provider conosciuto lo riconosco da solo."}
-        </p>
-      </div>
       <label
         htmlFor={`${id}-file`}
         onDragOver={(e) => {
@@ -78,55 +66,48 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
           setDragging(false);
           void readFiles(e.dataTransfer.files);
         }}
-        className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 ${dragging ? "border-primary bg-primary/5" : ""}`}
+        className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-8 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 ${dragging ? "border-primary bg-primary/5" : ""}`}
       >
-        <UploadIcon className="size-5 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-foreground">{reading || loading ? "Leggo i file…" : "Scegli uno o più file CSV"}</span>
-        <span className="text-xs text-muted-foreground">{reading || loading ? "Un attimo" : "oppure trascinali qui · massimo 20 file"}</span>
+        <UploadIcon className="size-6 text-muted-foreground" aria-hidden="true" />
+        <span className="text-sm font-medium text-foreground">{busy ? "Leggo il file…" : "Scegli il file del tuo broker"}</span>
+        <span className="text-xs text-muted-foreground">
+          {busy ? "Un attimo" : chosen?.fileLabel ? `Ti serve: ${chosen.fileLabel}. Oppure trascinalo qui.` : "CSV o Excel, oppure trascinalo qui."}
+        </span>
         <input
           id={`${id}-file`}
           type="file"
+          data-autofocus
           multiple={!!onFiles}
-          disabled={reading || loading}
-          accept=".csv,.txt,text/csv"
+          disabled={busy}
+          accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           className="sr-only"
           onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
+      {explained ? <ImportNotice tone="error" title={explained.text} hint={explained.hint} detail={fileError ?? undefined} /> : null}
+      {onFiles ? <p className="text-center text-sm text-muted-foreground">Più rendiconti? Selezionali insieme (fino a 20): IBKR, DEGIRO e Trade Republic.</p> : null}
 
-      {fileError ? <p role="alert" className="text-sm text-destructive">{fileError}</p> : null}
-      <p className="text-xs text-muted-foreground">Più file insieme: rendiconti IBKR, DEGIRO e Trade Republic, ordinati per conto e periodo. Gli altri CSV si importano uno alla volta.</p>
-      <details className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-        <summary className="cursor-pointer">Oppure incolla il contenuto</summary>
-        <label htmlFor={`${id}-paste`} className="sr-only">
-          Contenuto del file
-        </label>
-        <Textarea
-          id={`${id}-paste`}
-          rows={4}
-          value={pasted}
-          onChange={(e) => setPasted(e.target.value)}
-          placeholder="Data;Tipo;ISIN;Quantità;Prezzo…"
-          className="font-mono text-xs"
-        />
-        <Button variant="outline" size="sm" className="self-end" disabled={!pasted.trim() || reading} onClick={() => onLoad(pasted, null)}>
-          Leggi
-        </Button>
-      </details>
-
-      {provider === "generic" || provider === null ? (
-        <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-          Il tuo broker non esporta un CSV leggibile?{" "}
-          <button
-            type="button"
-            onClick={downloadTemplate}
-            className="inline-flex items-center gap-1 font-medium text-primary underline-offset-2 hover:underline"
-          >
-            <DownloadIcon className="size-3.5" aria-hidden="true" /> Scarica il modello
-          </button>{" "}
-          e compilalo con le tue operazioni.
-        </div>
-      ) : null}
+      <div className="flex flex-col gap-3 border-t pt-3">
+        <button
+          type="button"
+          aria-expanded={showGuide}
+          onClick={() => setShowGuide((open) => !open)}
+          className="flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-primary hover:underline sm:min-h-9"
+        >
+          Come ottengo il file?
+          <ChevronDownIcon className={`size-4 transition-transform ${showGuide ? "rotate-180" : ""}`} aria-hidden="true" />
+        </button>
+        {showGuide ? (
+          <ImportProviderPicker value={provider} onChange={onProviderChange} renderSelected={(info) => <ImportExportGuide provider={info} />} />
+        ) : null}
+        <p className="text-sm text-muted-foreground">
+          Il tuo broker non c&apos;è?{" "}
+          <Link href="/importazioni" className="font-medium text-primary hover:underline">
+            Crea il tuo formato
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }

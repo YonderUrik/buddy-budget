@@ -1,6 +1,15 @@
-import { and, eq, ilike, isNull, or, type SQL } from "drizzle-orm";
+import { and, eq, exists, ilike, isNull, or, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { instrumentSymbols, instruments, type Instrument, type NewInstrument } from "@/lib/db/schema/investments";
+import {
+  instrumentSymbols,
+  instruments,
+  investmentTransactions,
+  userInstrumentSettings,
+  userPriceAlerts,
+  userWatchlistItems,
+  type Instrument,
+  type NewInstrument,
+} from "@/lib/db/schema/investments";
 import { saveSymbols } from "@/lib/market-data/store";
 import { deriveSymbols } from "@/lib/market-data/symbols";
 import type { ProviderId } from "@/lib/market-data/types";
@@ -17,7 +26,22 @@ export async function findVisibleInstrument(userId: string, instrumentId: string
   return row ?? null;
 }
 
-/** Ricerca tra gli strumenti già noti per ISIN o nome. */
+/**
+ * Strumenti legati all'utente: creati da lui (manuali), con sue operazioni, in watchlist, con un suo avviso o sue
+ * impostazioni. Il catalogo comune è condiviso per i prezzi, ma non si elenca: altrimenti ognuno vedrebbe i titoli
+ * che hanno aggiunto gli altri.
+ */
+function linkedToUser(userId: string): SQL {
+  return or(
+    eq(instruments.createdByUserId, userId),
+    exists(db.select({ one: investmentTransactions.id }).from(investmentTransactions).where(and(eq(investmentTransactions.instrumentId, instruments.id), eq(investmentTransactions.userId, userId)))),
+    exists(db.select({ one: userWatchlistItems.id }).from(userWatchlistItems).where(and(eq(userWatchlistItems.instrumentId, instruments.id), eq(userWatchlistItems.userId, userId)))),
+    exists(db.select({ one: userPriceAlerts.id }).from(userPriceAlerts).where(and(eq(userPriceAlerts.instrumentId, instruments.id), eq(userPriceAlerts.userId, userId)))),
+    exists(db.select({ one: userInstrumentSettings.id }).from(userInstrumentSettings).where(and(eq(userInstrumentSettings.instrumentId, instruments.id), eq(userInstrumentSettings.userId, userId))))
+  )!;
+}
+
+/** Ricerca per ISIN o nome tra gli strumenti dell'utente (non l'intero catalogo comune). */
 export async function searchKnownInstruments(userId: string, query: string, limit = 8): Promise<Instrument[]> {
   const q = query.trim();
   if (!q) return [];
@@ -25,16 +49,17 @@ export async function searchKnownInstruments(userId: string, query: string, limi
   return db
     .select()
     .from(instruments)
-    .where(and(visibleTo(userId), or(eq(instruments.isin, q.toUpperCase()), ilike(instruments.name, `%${escaped}%`))))
+    .where(and(visibleTo(userId), linkedToUser(userId), or(eq(instruments.isin, q.toUpperCase()), ilike(instruments.name, `%${escaped}%`))))
     .limit(limit);
 }
 
+/** Strumento comune (non manuale) con quel simbolo: i manuali collegati a una quotazione restano privati. */
 async function findBySymbol(provider: ProviderId, symbol: string): Promise<Instrument | null> {
   const [row] = await db
     .select({ instrument: instruments })
     .from(instrumentSymbols)
     .innerJoin(instruments, eq(instrumentSymbols.instrumentId, instruments.id))
-    .where(and(eq(instrumentSymbols.provider, provider), eq(instrumentSymbols.symbol, symbol)));
+    .where(and(eq(instrumentSymbols.provider, provider), eq(instrumentSymbols.symbol, symbol), isNull(instruments.createdByUserId)));
   return row?.instrument ?? null;
 }
 

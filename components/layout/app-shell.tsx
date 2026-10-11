@@ -7,7 +7,8 @@
  * - `SidebarProvider` — fornisce lo stato collapsed/mobile al sottoalbero
  * - `MobileTopbar` — visibile solo su mobile (< 768px)
  * - `AppSidebar` — sidebar desktop (nascosta su mobile, icon-only su tablet)
- * - Drawer mobile — `AppSidebar` con `forceExpanded`, overlay e animazione
+ * - Drawer mobile — `AppSidebar` con `forceExpanded`, overlay e animazione (solo senza barra in basso)
+ * - Menu «Altro» — vista a tutto schermo aperta dalla barra in basso
  * - `<main>` — contenuto della pagina, che si adatta alla larghezza sidebar
  *
  * Uso:
@@ -26,11 +27,25 @@
  * - Desktop ≥ 1024px → sidebar espansa (collassabile manualmente)
  */
 
-import { useEffect } from "react";
-import { AppSidebar, type NavSubItem } from "@/components/layout/sidebar";
+import { useCallback, useEffect, useState } from "react";
+import { AppSidebar, NAV_ITEMS, type NavBadge } from "@/components/layout/sidebar";
 import { MobileTopbar } from "@/components/layout/mobile-topbar";
+import { BOTTOM_NAV_HEIGHT_REM, BOTTOM_NAV_HREFS, BottomNav } from "@/components/layout/bottom-nav";
+import { MobileMoreMenu } from "@/components/layout/mobile-more-menu";
+import { SectionTransition } from "@/components/layout/section-transition";
+import { track } from "@/lib/analytics";
+import { useBottomNav } from "@/lib/hooks/use-sidebar-preferences";
 import { SidebarProvider, useSidebar } from "@/components/layout/sidebar-context";
 import { cn } from "@/lib/utils";
+
+/** Nome della scheda per le statistiche d'uso, dall'href della voce (tipo chiuso: mai percorsi o id). */
+const BOTTOM_NAV_TABS: Record<string, "panoramica" | "liquidita" | "investimenti" | "debiti" | "altro"> = {
+  "/panoramica": "panoramica",
+  "/liquidita": "liquidita",
+  "/investimenti": "investimenti",
+  "/debiti": "debiti",
+  altro: "altro",
+};
 
 // ---------------------------------------------------------------------------
 // Inner shell (accede al context, deve stare dentro SidebarProvider)
@@ -40,34 +55,49 @@ interface InnerShellProps {
   children: React.ReactNode;
   activeHref?: string;
   sidebarExtra?: React.ReactNode;
-  navSubItems?: Record<string, NavSubItem>;
+  navBadges?: Record<string, NavBadge>;
 }
 
-function InnerShell({ children, activeHref, sidebarExtra, navSubItems }: InnerShellProps) {
-  const { collapsed, mobileOpen, closeMobile } = useSidebar();
+function InnerShell({ children, activeHref, sidebarExtra, navBadges }: InnerShellProps) {
+  const { mobileOpen, closeMobile } = useSidebar();
+  const [bottomNav] = useBottomNav();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const openMore = useCallback(() => setMoreOpen(true), []);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
+
+  // Chi sta in basso sulla pagina (pannello dei sync) sa di quanto alzarsi grazie a questa variabile.
+  useEffect(() => {
+    document.documentElement.style.setProperty("--bottom-nav-offset", bottomNav ? `${BOTTOM_NAV_HEIGHT_REM}rem` : "0px");
+    return () => {
+      document.documentElement.style.removeProperty("--bottom-nav-offset");
+    };
+  }, [bottomNav]);
 
   // Chiude il drawer mobile se la finestra viene allargata oltre il breakpoint.
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
     const handler = (e: MediaQueryListEvent) => {
-      if (e.matches) closeMobile();
+      if (e.matches) {
+        closeMobile();
+        closeMore();
+      }
     };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, [closeMobile]);
+  }, [closeMobile, closeMore]);
 
   // Blocca lo scroll del body quando il drawer mobile è aperto.
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    document.body.style.overflow = mobileOpen || moreOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileOpen]);
+  }, [mobileOpen, moreOpen]);
 
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* ── Topbar mobile ── */}
-      <MobileTopbar />
+      <MobileTopbar showMenuButton={!bottomNav} />
 
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar desktop/tablet: nascosta su mobile ── */}
@@ -79,57 +109,87 @@ function InnerShell({ children, activeHref, sidebarExtra, navSubItems }: InnerSh
             // via il token `collapsed` del context.
           )}
         >
-          <AppSidebar activeHref={activeHref} subItems={navSubItems} extra={sidebarExtra} />
+          <AppSidebar activeHref={activeHref} badges={navBadges} extra={sidebarExtra} />
         </div>
 
         {/* ── Contenuto principale ── */}
         <main
           id="main-content"
           className={cn(
-            "flex-1 overflow-y-auto",
+            // Unico contenitore che scorre: mai di lato (un elemento che sborda non deve aprire una seconda barra).
+            "flex-1 overflow-x-hidden overflow-y-auto",
             // Transizione coordinata con la sidebar per un resize fluido.
             "transition-[margin] duration-300 ease-in-out"
           )}
           // Accessibilità: link "skip to content" può puntare qui.
           tabIndex={-1}
         >
-          {children}
+          <SectionTransition>{children}</SectionTransition>
+          {/* Spazio sotto il contenuto per la barra in basso (solo mobile). */}
+          {bottomNav ? <div className="md:hidden" style={{ height: `calc(${BOTTOM_NAV_HEIGHT_REM}rem + env(safe-area-inset-bottom))` }} aria-hidden="true" /> : null}
         </main>
       </div>
 
-      {/* ── Drawer mobile ── */}
-      {/* Overlay */}
-      <div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/50 md:hidden",
-          "transition-opacity duration-300",
-          mobileOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        )}
-        onClick={closeMobile}
-        aria-hidden="true"
-      />
-
-      {/* Pannello drawer */}
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-50 md:hidden",
-          "transition-transform duration-300 ease-in-out",
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu di navigazione"
-      >
-        <AppSidebar
-          forceExpanded
+      {bottomNav ? (
+        <BottomNav
+          items={NAV_ITEMS}
           activeHref={activeHref}
-          onClose={closeMobile}
-          subItems={navSubItems}
-          extra={sidebarExtra}
+          badges={navBadges}
+          onOpenMore={openMore}
+          onTabClick={(key) => track("bottom_nav_clicked", { tab: BOTTOM_NAV_TABS[key] ?? "altro" })}
         />
-      </div>
+      ) : null}
+
+      {/* ── Menu «Altro» a tutto schermo (barra in basso) ── */}
+      {bottomNav ? (
+        <MobileMoreMenu
+          open={moreOpen}
+          onClose={closeMore}
+          items={NAV_ITEMS.filter((i) => !(BOTTOM_NAV_HREFS as readonly string[]).includes(i.href))}
+          activeHref={activeHref}
+          badges={navBadges}
+          extra={sidebarExtra}
+          onAction={(target) => track("more_menu_clicked", { target })}
+        />
+      ) : null}
+
+      {!bottomNav ? (
+        <>
+        {/* ── Drawer mobile (con l'hamburger, se la barra in basso è spenta) ── */}
+        {/* Overlay */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/50 md:hidden",
+            "transition-opacity duration-300",
+            mobileOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          )}
+          onClick={closeMobile}
+          aria-hidden="true"
+        />
+
+        {/* Pannello drawer */}
+        <div
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 md:hidden",
+            "transition-transform duration-300 ease-in-out",
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu di navigazione"
+        >
+          <AppSidebar
+            forceExpanded
+            activeHref={activeHref}
+            onClose={closeMobile}
+            badges={navBadges}
+            extra={sidebarExtra}
+          />
+        </div>
+        </>
+      ) : null}
     </div>
   );
 }
@@ -145,17 +205,17 @@ interface AppShellProps {
   /** Contenuto extra sotto le voci della sidebar (desktop e drawer mobile). */
   sidebarExtra?: React.ReactNode;
   /** Sottovoci con contatore sotto le voci della sidebar, per `href` della voce padre. */
-  navSubItems?: Record<string, NavSubItem>;
+  navBadges?: Record<string, NavBadge>;
 }
 
 /**
  * Shell applicazione. Wrappa il `SidebarProvider` e compone tutti i layer
  * di navigazione. Va usato come wrapper in `app/layout.tsx`.
  */
-export function AppShell({ children, activeHref, sidebarExtra, navSubItems }: AppShellProps) {
+export function AppShell({ children, activeHref, sidebarExtra, navBadges }: AppShellProps) {
   return (
     <SidebarProvider>
-      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navSubItems={navSubItems}>
+      <InnerShell activeHref={activeHref} sidebarExtra={sidebarExtra} navBadges={navBadges}>
         {children}
       </InnerShell>
     </SidebarProvider>

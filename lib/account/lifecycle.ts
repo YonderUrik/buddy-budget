@@ -1,3 +1,4 @@
+import { personalFormats } from "@/lib/db/schema/personal-imports";
 import "server-only";
 import { and, count, countDistinct, eq, isNotNull, lte, ne, notExists } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -5,6 +6,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { authSession, authUser } from "@/lib/db/schema/auth";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { budgets } from "@/lib/db/schema/budgets";
+import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debts } from "@/lib/db/schema/debts";
@@ -130,6 +132,7 @@ export async function clearUserRedisState(userId: string): Promise<void> {
 
 /** Cancella tutti i dati finanziari dell'utente, nell'ordine imposto dalle chiavi esterne. */
 async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
+  await tx.delete(personalFormats).where(eq(personalFormats.userId, userId));
   // I debiti portano con sé i loro eventi (cascata); le transazioni collegate restano e si cancellano più sotto.
   await tx.delete(debts).where(eq(debts.userId, userId));
   // I fondi di previdenza portano con sé le loro fotografie (cascata).
@@ -160,6 +163,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(netWorthSnapshots).where(eq(netWorthSnapshots.userId, userId));
   await tx.delete(transactions).where(eq(transactions.userId, userId));
   await tx.delete(budgets).where(eq(budgets.userId, userId));
+  await tx.delete(subscriptions).where(eq(subscriptions.userId, userId));
   await tx.delete(categorizationRules).where(eq(categorizationRules.userId, userId));
   // I link conto↔banca spariscono in cascata con la connessione e con il conto.
   await tx.delete(bankConnections).where(eq(bankConnections.userId, userId));

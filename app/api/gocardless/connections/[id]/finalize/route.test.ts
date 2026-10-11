@@ -15,6 +15,10 @@ vi.mock("@/lib/sync-jobs/redis-store", async () => {
   return { redisSyncJobStore: createSyncJobStore(createMemorySyncJobKv()) };
 });
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
+vi.mock("@/lib/gocardless/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/gocardless/client")>();
+  return { ...actual, getRequisition: vi.fn() };
+});
 vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/gocardless/sync")>();
   return {
@@ -30,6 +34,7 @@ vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
 });
 
 import { auth } from "@/lib/auth";
+import { getRequisition } from "@/lib/gocardless/client";
 import { syncAccountLink } from "@/lib/gocardless/sync";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { POST } from "./route";
@@ -62,6 +67,12 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
       .values({ userId, institutionId: "INST_1", institutionName: "Banca Test", requisitionId: "req-1", status: "linked" })
       .returning();
     connectionId = connection.id;
+    vi.mocked(getRequisition).mockResolvedValue({
+      id: "req-1",
+      status: "LN",
+      link: "",
+      accounts: ["ext-1", "ext-2", "ext-new", "ext-hijack", "ext-fail", "ext-orphan"],
+    });
     vi.mocked(syncAccountLink).mockClear();
     afterTasks.length = 0;
     vi.mocked(after).mockClear();
@@ -76,6 +87,20 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
 
   afterAll(async () => {
     await client.end();
+  });
+
+  it("rifiuta un conto che non appartiene alla requisition della connessione", async () => {
+    const response = await POST(
+      new NextRequest(`http://localhost/api/gocardless/connections/${connectionId}/finalize`, {
+        method: "POST",
+        body: JSON.stringify({
+          selections: [{ externalAccountId: "ext-di-un-altro", name: "Conto", type: "Conto corrente", mode: "new" }],
+        }),
+      }),
+      { params: Promise.resolve({ id: connectionId }) }
+    );
+    expect(response.status).toBe(400);
+    expect(await db.select().from(accounts).where(eq(accounts.userId, userId))).toHaveLength(0);
   });
 
   it("crea un nuovo conto per una selezione 'new' e lancia il sync", async () => {

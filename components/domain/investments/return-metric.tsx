@@ -25,7 +25,7 @@ export function ReturnMetric({ label, hint, value, annual = null, note = null, d
       delay={200}
       closeDelay={100}
       aria-label={`${label}: ${formatted}. Mostra la spiegazione`}
-      className="flex min-h-40 min-w-0 flex-col items-start gap-1 rounded-lg border bg-muted/20 p-3 text-left transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
+      className="flex min-w-0 flex-col items-start gap-1 rounded-sm text-left transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
     >
       <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">{label}<InfoIcon className="size-3.5 shrink-0" aria-hidden="true" /></span>
       <span className={cn("font-heading text-2xl font-medium tabular-nums", value === null ? "text-muted-foreground" : value < 0 ? "text-neg" : "text-pos")}>{value === null ? "—" : formatted}</span>

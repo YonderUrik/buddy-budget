@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { createAccountSchema } from "@/lib/validation/accounts";
+import { rejectIfDemoActive } from "@/lib/start/demo";
 import { bindRequestUser, withRoute } from "@/lib/observability";
 
 async function handleGet(request: NextRequest) {
@@ -28,6 +29,8 @@ async function handlePost(request: NextRequest) {
     return new Response(null, { status: 401 });
   }
   bindRequestUser(session.user.id);
+  const demoBlock = await rejectIfDemoActive(session.user.id);
+  if (demoBlock) return demoBlock;
 
   const body = await request.json();
   const parsed = createAccountSchema.safeParse(body);

@@ -28,6 +28,10 @@ export interface LogFields {
   /** Tipo di un'operazione di investimento (enum chiuso: acquisto, vendita...). */
   operationType?: string;
   outcome?: string;
+  /** Tipo di una segnalazione di supporto (enum chiuso `ReportKind`) e codice di riferimento `SUP-XXXXXX` (non personale). */
+  reportKind?: string;
+  reference?: string;
+  withContext?: boolean;
   reason?: string;
   inserted?: number;
   deleted?: number;
@@ -41,6 +45,14 @@ export interface LogFields {
   processed?: number;
   total?: number;
   count?: number;
+  /** Abbonamenti: scelta dell'utente (enum chiuso `SubscriptionAction`) e conteggi per stato nel rilevamento. */
+  action?: string;
+  detected?: number;
+  confirmed?: number;
+  enabled?: boolean;
+  corrected?: number;
+  pending?: number;
+  stopped?: number;
   /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */
   nameSource?: string;
   /** Fonte di prezzi di mercato (id statico). */
@@ -52,6 +64,10 @@ export interface LogFields {
   /** Sessioni e token di verifica scaduti eliminati dal cron di conservazione (conteggi). */
   sessionsPurged?: number;
   verificationsPurged?: number;
+  /** Tipo di email di riepilogo/avviso (`digest`, `budget`, `deadlines`, `test`) o ambito di una disiscrizione. */
+  kind?: string;
+  /** Giorni senza accessi di un account inattivo (conteggio, non dato personale). */
+  inactiveDays?: number;
   error?: unknown;
 }
 

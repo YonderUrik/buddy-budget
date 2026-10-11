@@ -16,6 +16,9 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/market-data/runtime", () => ({
   ensureHistory: vi.fn().mockResolvedValue(false),
   fundamentalsOnProviders: vi.fn().mockResolvedValue({ status: "unavailable" }),
+  statementsOnProviders: vi.fn().mockResolvedValue(null),
+  ensureProfilesSafely: vi.fn().mockResolvedValue(undefined),
+  ensureDividendsSafely: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { auth } from "@/lib/auth";

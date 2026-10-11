@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-08T12:12:31.125Z",
+  "capturedAt": "2026-10-11T11:33:50.970Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -15,22 +15,27 @@
     {
       "id": "conti",
       "theme": "light",
-      "route": "/conti"
+      "route": "/liquidita/conti"
     },
     {
       "id": "movimenti",
       "theme": "light",
-      "route": "/movimenti"
+      "route": "/liquidita"
     },
     {
       "id": "analisi",
       "theme": "light",
-      "route": "/movimenti/analisi"
+      "route": "/liquidita/analisi"
+    },
+    {
+      "id": "abbonamenti",
+      "theme": "light",
+      "route": "/liquidita/abbonamenti"
     },
     {
       "id": "categorie",
       "theme": "light",
-      "route": "/movimenti/categorie"
+      "route": "/liquidita/categorie"
     },
     {
       "id": "categorizza",
@@ -46,10 +51,10 @@
       "id": "performance",
       "theme": "light",
       "route": "/investimenti/performance",
-      "capturedAt": "2026-10-08T17:23:35.802845+00:00",
+      "capturedAt": "2026-10-11",
       "viewport": {
         "width": 1440,
-        "height": 782
+        "height": 726
       },
       "scale": 1
     },
@@ -96,22 +101,27 @@
     {
       "id": "conti",
       "theme": "dark",
-      "route": "/conti"
+      "route": "/liquidita/conti"
     },
     {
       "id": "movimenti",
       "theme": "dark",
-      "route": "/movimenti"
+      "route": "/liquidita"
     },
     {
       "id": "analisi",
       "theme": "dark",
-      "route": "/movimenti/analisi"
+      "route": "/liquidita/analisi"
+    },
+    {
+      "id": "abbonamenti",
+      "theme": "dark",
+      "route": "/liquidita/abbonamenti"
     },
     {
       "id": "categorie",
       "theme": "dark",
-      "route": "/movimenti/categorie"
+      "route": "/liquidita/categorie"
     },
     {
       "id": "categorizza",
@@ -127,10 +137,10 @@
       "id": "performance",
       "theme": "dark",
       "route": "/investimenti/performance",
-      "capturedAt": "2026-10-08T17:23:35.802943+00:00",
+      "capturedAt": "2026-10-11",
       "viewport": {
         "width": 1440,
-        "height": 782
+        "height": 726
       },
       "scale": 1
     },

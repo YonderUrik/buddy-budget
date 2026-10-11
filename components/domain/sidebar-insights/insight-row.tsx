@@ -3,7 +3,7 @@
 /** Riga compatta di un titolo nella sidebar: sigla, nome, mini linea, valore e variazione. Porta alla pagina del titolo. */
 
 import Link from "next/link";
-import { formatSignedPct, TitleSparkline } from "@/components/domain/investments";
+import { formatSignedPct, TitleSparkline } from "@/components/domain/investments/light";
 import { cn } from "@/lib/utils";
 import { changeToneClass } from "./sidebar-insights.utils";
 

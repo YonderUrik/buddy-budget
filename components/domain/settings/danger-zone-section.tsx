@@ -18,6 +18,7 @@ import {
   type UserSettings,
 } from "@/lib/queries/user-settings";
 import { DangerActionDialog } from "./danger-action-dialog";
+import { TriangleAlert } from "lucide-react";
 import { SettingsSection } from "./settings-section";
 
 export interface DangerZoneSectionProps {
@@ -44,6 +45,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
       id="impostazioni-zona-pericolosa"
       title="Zona pericolosa"
       tone="danger"
+      icon={TriangleAlert}
       description="Azioni che cancellano i tuoi dati. Per sicurezza ti chiediamo di confermare la tua identità."
     >
       <DangerActionDialog

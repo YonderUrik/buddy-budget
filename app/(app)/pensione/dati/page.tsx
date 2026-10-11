@@ -3,8 +3,8 @@
 /** I tuoi dati: inserimento delle fotografie (contributi netti e controvalore), profilo del fondo e altri fondi. */
 
 import * as React from "react";
-import { PensionAddFundForm, PensionImportDialog, PensionProfileCard, PensionSnapshotsCard } from "@/components/domain/pension";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircleIcon } from "lucide-react";
+import { PensionAddFundForm, PensionImportDialog, PensionProfileCard, PensionSection, PensionSnapshotsCard } from "@/components/domain/pension";
 import { usePensionView } from "@/lib/pension/pension-context";
 import { PENSION_MAX_FUNDS } from "@/lib/pension/limits";
 import {
@@ -26,7 +26,7 @@ export default function PensioneDatiPage() {
   if (!fund) return null;
 
   return (
-    <>
+    <div className="flex flex-col gap-10">
       <PensionSnapshotsCard
         snapshots={snapshots}
         currency={currency}
@@ -60,22 +60,16 @@ export default function PensioneDatiPage() {
         }}
       />
       {funds.length < PENSION_MAX_FUNDS ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Hai un altro fondo?</CardTitle>
-            <p className="text-sm text-muted-foreground">Puoi tracciarne più di uno (per esempio un fondo negoziale e un PIP): il patrimonio netto li somma.</p>
-          </CardHeader>
-          <CardContent>
-            <PensionAddFundForm
-              key={funds.length}
-              today={today}
-              pending={createFund.isPending}
-              errorMessage={createFund.isError ? createFund.error.message : null}
-              onSubmit={(input) => createFund.mutate(input, { onSuccess: (created) => selectFund(created.id) })}
-            />
-          </CardContent>
-        </Card>
+        <PensionSection icon={PlusCircleIcon} title="Hai un altro fondo?" color="var(--swatch-indigo)" description="Puoi tracciarne più di uno (per esempio un fondo negoziale e un PIP): il patrimonio netto li somma.">
+          <PensionAddFundForm
+            key={funds.length}
+            today={today}
+            pending={createFund.isPending}
+            errorMessage={createFund.isError ? createFund.error.message : null}
+            onSubmit={(input) => createFund.mutate(input, { onSuccess: (created) => selectFund(created.id) })}
+          />
+        </PensionSection>
       ) : null}
-    </>
+    </div>
   );
 }

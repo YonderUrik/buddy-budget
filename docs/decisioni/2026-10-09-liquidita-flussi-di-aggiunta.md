@@ -1,0 +1,9 @@
+# 2026-10-09 — Liquidità: flussi di aggiunta (conto, banca, movimento, file)
+
+- **Nuovo conto** è un dialog a due livelli: prima la scelta (Collega la tua banca · Conto manuale · Importa un file CSV o Excel), poi il passo scelto, con «Cambia modo» sempre disponibile. Sostituisce le due schede «Manuale / Collega banca». Il rinnovo di un consenso scaduto apre direttamente il passo banca.
+- **Collega banca**: etichette vere sui campi, banche con lo storico che offrono, scheletro in caricamento, errore con «Riprova», «nessun risultato» con la via d'uscita verso il conto manuale, stato «Ti porto sul sito di …» durante il redirect. Frase sulla sola lettura del collegamento.
+- **Nuovo movimento**: tipo e importo in cima, errori accanto al campo (e focus sul primo errore), «Oggi/Ieri», «Aggiungi e inserisci un altro», e senza conti manuali l'invito a crearne uno.
+- **Importa da CSV o Excel** (`/importazioni`): voce nel menu «Aggiungi» e nella scelta del nuovo conto; pagina in tre passi (da dove arriva, il file, il consenso). Ora accetta anche `.xlsx` (convertito in CSV nel browser con lo stesso lettore di Pensione e Investimenti: il server riceve sempre CSV, nessuna modifica all'API). Il testo del consenso è lo stesso, solo ripartito (frase breve + «Cosa succede ai tuoi dati»).
+- **Accessibilità e mobile**: dialog a tutto schermo sotto `sm` con pulsante «Chiudi», campi alti 44px sul telefono, `label` collegate (`htmlFor`), errori `role="alert"`, `aria-invalid`/`aria-describedby`, stati `role="status"`.
+- Evento Umami nuovo: `account_add_path_chosen` (`banca` | `manuale` | `importa`). Nessun impatto sulla landing (nessuna funzione nuova).
+- Rimandati: import diretto di un estratto conto su un conto manuale esistente (oggi l'import crea il proprio conto), anteprima del file prima dell'invio, redesign di Categorie/Regole.

@@ -181,7 +181,7 @@ export function NetWorthChartCard({
                   <XAxis dataKey="label" hide />
                   <YAxis hide domain={[(min: number) => min * TOTAL_DOMAIN_LOW, (max: number) => max * TOTAL_DOMAIN_HIGH]} />
                   <ChartTooltip cursor={{ stroke: "var(--border)" }} content={<NetWorthChartTooltip currency={currency} classes={totalTooltipClasses} totalLabel={pensionExcluded ? PENSION_EXCLUDED_TOTAL_LABEL : undefined} />} />
-                  <Area type="monotone" dataKey="value" name="netto" stroke="var(--primary)" strokeWidth={2} fill="url(#net-worth-total-fill)" activeDot={{ r: 4 }} />
+                  <Area isAnimationActive={false} type="monotone" dataKey="value" name="netto" stroke="var(--primary)" strokeWidth={2} fill="url(#net-worth-total-fill)" activeDot={{ r: 4 }} />
                 </ComposedChart>
               ) : (
                 <ComposedChart data={shownSeries} accessibilityLayer>
@@ -198,7 +198,7 @@ export function NetWorthChartCard({
                   <YAxis hide />
                   <ChartTooltip cursor={false} content={<NetWorthChartTooltip currency={currency} classes={tooltipClasses} totalLabel={totalLabel} />} />
                   {classes.map((key) => (
-                    <Area
+                    <Area isAnimationActive={false}
                       key={key}
                       type="monotone"
                       dataKey={(point: NetWorthSeriesPoint) => point.byClass[key] ?? 0}
@@ -210,7 +210,7 @@ export function NetWorthChartCard({
                       fill={`url(#${AREA_FILL_ID_PREFIX}${key})`}
                     />
                   ))}
-                  {showNetLine ? <Line type="monotone" dataKey="value" name="netto" stroke="var(--foreground)" strokeWidth={2.5} dot={false} /> : null}
+                  {showNetLine ? <Line isAnimationActive={false} type="monotone" dataKey="value" name="netto" stroke="var(--foreground)" strokeWidth={2.5} dot={false} /> : null}
                 </ComposedChart>
               )}
             </ChartContainer>

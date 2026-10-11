@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Explainer } from "./explainer";
 import type { GlossaryId } from "./glossary";
 import { Term } from "./term";
@@ -11,18 +10,14 @@ export interface AnalyticsCardProps {
   children: ReactNode;
 }
 
-/** Card standard di Analitiche: titolo, contenuto e (se c'è) il riquadro che spiega l'analitica. */
+/** Blocco standard di Analitiche, senza riquadro: filetto, titolo, contenuto e (se c'è) il riquadro che spiega l'analitica. */
 export function AnalyticsCard({ title, explainer, children }: AnalyticsCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        {children}
-        {explainer ? <Explainer id={explainer} /> : null}
-      </CardContent>
-    </Card>
+    <section className="flex flex-col gap-4 border-t pt-4">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
+      {children}
+      {explainer ? <Explainer id={explainer} /> : null}
+    </section>
   );
 }
 
@@ -39,9 +34,9 @@ export interface MetricProps {
 export function Metric({ label, value, sub, tone = "default", term }: MetricProps) {
   const color = tone === "pos" ? "text-pos" : tone === "neg" ? "text-neg" : "text-foreground";
   return (
-    <div className="rounded-lg bg-muted/50 px-3 py-2.5">
-      <p className="text-xs text-muted-foreground">{term ? <Term id={term}>{label}</Term> : label}</p>
-      <p className={`font-heading text-xl font-medium tabular-nums ${color}`}>{value}</p>
+    <div className="border-t pt-3">
+      <p className="text-sm text-muted-foreground">{term ? <Term id={term}>{label}</Term> : label}</p>
+      <p className={`font-heading text-2xl font-medium tabular-nums ${color}`}>{value}</p>
       {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
     </div>
   );

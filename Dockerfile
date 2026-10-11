@@ -38,6 +38,15 @@ COPY scripts ./scripts
 USER node
 CMD ["pnpm", "db:migrate"]
 
+# ---- csv-worker: processo separato per analisi AI e sandbox ----
+FROM deps AS csv-worker
+COPY tsconfig.json ./
+COPY lib ./lib
+COPY scripts ./scripts
+ENV NODE_ENV=production
+USER node
+CMD ["pnpm", "worker:csv"]
+
 # ---- runner: immagine dell'app ----
 FROM node:24-alpine AS runner
 WORKDIR /app

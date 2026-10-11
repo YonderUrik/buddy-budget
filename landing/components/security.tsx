@@ -1,35 +1,31 @@
 import "./security.css";
-import "./security-art.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
-import { SECURITY, SOURCE_URL } from "@/content/site";
+import { SECURITY } from "@/content/site";
+import { HomeIcon } from "./home-icon";
 import { Reveal } from "./reveal";
-import { SecurityCard } from "./security-card";
-import { ServerMap } from "./server-map";
 import { TrackedSection } from "./tracked-section";
 
-/** Sezione "Sicurezza e privacy": quattro impegni concreti sui dati, con rimando all'informativa. */
-export function Security() {
+/** Sezione "Sicurezza e privacy": quattro impegni concreti sui dati in quattro celle affiancate, con rimando all'informativa. */
+export function Security({ content = SECURITY }: { content?: typeof SECURITY }) {
   return (
-    <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security band">
-      <div className="wrap" style={{ paddingTop: 0 }}>
-        <h2 className="t">{SECURITY.title}</h2>
-        <p className="sec-intro">{SECURITY.intro}</p>
-        <div className="sec-layout">
-        <ServerMap />
+    <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security">
+      <div className="wrap">
+        <span className="ref">Privacy!A1</span>
+        <h2 className="t">{content.title}</h2>
+        <p className="lede">{content.intro}</p>
         <Reveal stagger className="sec-grid">
-          {SECURITY.points.map((point) => (
-            <SecurityCard key={point.title} point={point} />
+          {content.points.map((point, i) => (
+            <article key={point.title} className="sec-point cell">
+              <span className="sec-cellref" aria-hidden="true">{String.fromCharCode(65 + i)}1</span>
+              <span className="sec-ic" aria-hidden="true"><HomeIcon name={point.icon} size={20} /></span>
+              <h3>{point.title}</h3>
+              <p>{point.text}</p>
+            </article>
           ))}
         </Reveal>
-        </div>
-        <p className="fine">
-          {SOURCE_URL ? (
-            <>
-              {SECURITY.sourceNote} <a href={SOURCE_URL} rel="noopener">leggilo su GitHub</a>.{" "}
-            </>
-          ) : null}
-          {SECURITY.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
+        <p className="sec-legal">
+          {content.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
         </p>
       </div>
     </TrackedSection>

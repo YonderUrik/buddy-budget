@@ -1,4 +1,5 @@
 import { investmentTaxReport } from "./tax-report";
+import { computePeriodGain, type PeriodGain } from "./period-gain";
 import { computeCostImpact, type CostImpact } from "./cost-impact";
 import { buildFxTable } from "@/lib/calc/fx";
 import {
@@ -22,11 +23,11 @@ import type { InvestmentData } from "./data";
 import { computeIncomeHistory, type IncomeHistory } from "./income";
 import { computeOperationInsights, groupOperationsByMonth, type OperationMonthGroup } from "./operations-history";
 
-/** Il rendimento reale si mostra solo su periodi lunghi: Eurostat pubblica con circa un mese di ritardo. */
-
 /** Dati della pagina Investimenti già calcolati: la UI li riceve pronti. */
 export interface InvestmentsView {
   costImpact: CostImpact;
+  /** Guadagno nel periodo scelto (non dall'inizio), null senza operazioni. */
+  periodGain: PeriodGain | null;
   currency: string;
   summary: PortfolioSummary;
   series: PortfolioSeriesPoint[];
@@ -128,6 +129,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     operationMonths,
     usedInstruments: usedInstruments(data.transactions, instrumentsById),
     returns,
+    periodGain: computePeriodGain({ ...common, period, today, range: chartRange }),
     costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0, investmentTaxReport(data, transactions, todayKey)),
     benchmark: data.benchmark,
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,

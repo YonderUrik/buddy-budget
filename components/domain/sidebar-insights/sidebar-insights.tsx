@@ -8,7 +8,7 @@
 
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-import { formatSignedPct } from "@/components/domain/investments";
+import { formatSignedPct } from "@/components/domain/investments/light";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarSummary } from "@/lib/sidebar/types";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
@@ -34,8 +34,14 @@ export interface SidebarInsightsProps {
   collapsed: boolean;
   /** Chiamata quando si segue un link (chiude il drawer mobile). */
   onNavigate?: () => void;
-  /** Base degli indirizzi dei titoli e pagina Investimenti. */
+  /** Base degli indirizzi dei titoli. */
   titlesHref?: string;
+  /** Pagina che elenca tutti i titoli (posizioni e seguiti): il Portafoglio di Investimenti. */
+  titlesListHref?: string;
+  /** Sezioni da mostrare (preferenza dell'utente); quelle non indicate sono visibili. */
+  show?: Partial<Record<"oggi" | "portafoglio" | "watchlist", boolean>>;
+  /** Mostra l'occhio «nascondi importi» nella prima sezione visibile; da spegnere se un'altra istanza sopra lo mostra già. */
+  privacyToggle?: boolean;
 }
 
 const SECTION_LINK_CLASS = "block rounded-md px-1.5 py-1 text-xs font-semibold text-primary hover:underline";
@@ -79,6 +85,9 @@ export function SidebarInsights({
   collapsed,
   onNavigate,
   titlesHref = "/investimenti/titoli",
+  titlesListHref = "/investimenti",
+  show,
+  privacyToggle = true,
 }: SidebarInsightsProps) {
   const [pensionIncluded] = usePensionInNetWorth();
   if (loading) {
@@ -90,7 +99,10 @@ export function SidebarInsights({
     );
   }
   if (!summary) return null;
-  const { currency, netWorth, portfolio, watchlist } = summary;
+  const { currency } = summary;
+  const netWorth = show?.oggi === false ? null : summary.netWorth;
+  const portfolio = show?.portafoglio === false ? null : summary.portfolio;
+  const watchlist = show?.watchlist === false ? [] : summary.watchlist;
   if (!netWorth && !portfolio && watchlist.length === 0) return null;
 
   if (collapsed) {
@@ -120,7 +132,7 @@ export function SidebarInsights({
       : null;
   const eyeInFirstSection = netWorth ? "oggi" : portfolio ? "portafoglio" : "watchlist";
   const eye = (owner: string) =>
-    owner === eyeInFirstSection ? <PrivacyToggle hidden={hidden} onToggle={onToggleHidden} /> : undefined;
+    privacyToggle && owner === eyeInFirstSection ? <PrivacyToggle hidden={hidden} onToggle={onToggleHidden} /> : undefined;
   const watchAlerts = watchlist.reduce((sum, w) => sum + w.triggeredAlerts, 0);
 
   return (
@@ -187,7 +199,7 @@ export function SidebarInsights({
             ))}
           </div>
           {portfolio.holdings.length > MAX_HOLDINGS_SHOWN ? (
-            <Link href={titlesHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
               Mostra tutti ({portfolio.holdings.length}) →
             </Link>
           ) : null}
@@ -225,7 +237,7 @@ export function SidebarInsights({
             ))}
           </div>
           {watchlist.length > MAX_WATCHLIST_SHOWN ? (
-            <Link href={titlesHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
               Mostra tutti ({watchlist.length}) →
             </Link>
           ) : null}

@@ -11,13 +11,13 @@ import { journeySentences } from "./plain-answers";
 import { QuestionSection } from "./question-section";
 import type { QuestionSectionData } from "./section-props";
 
-export function JourneySection({ question, index, base, assumptions, plan }: QuestionSectionData) {
+export function JourneySection({ question, base, assumptions, plan }: QuestionSectionData) {
   const { currency } = base;
   const split = splitGrowth(base.growthPoints);
   const sentences = journeySentences(plan, split.rows.length >= 2 ? split : null, currency, assumptions.withdrawalRate);
   const progress = Math.min(plan.progress ?? 0, 1);
   return (
-    <QuestionSection question={question} index={index} expertHint="da dove arriva la crescita, mese per mese" renderExpert={() => <GrowthTab base={base} />}>
+    <QuestionSection question={question} expertHint="da dove arriva la crescita, mese per mese" renderExpert={() => <GrowthTab base={base} />}>
       <div className="flex flex-col gap-1 text-base leading-relaxed text-muted-foreground">
         {sentences.map((s) => (
           <p key={s}>

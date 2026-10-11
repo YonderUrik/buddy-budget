@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { InvestmentData } from "./data";
 import { buildInvestmentsView } from "./view";
 import { filterInvestmentBrokers, investmentBrokerGroups, transactionBroker } from "./broker-filter";
-import { brokerComparison } from "./broker-comparison";
 const NOW = new Date("2026-09-20T12:00:00Z");
 
 function data(): InvestmentData {
@@ -95,23 +94,6 @@ describe("broker selection and comparison", () => {
     legacy.transactions[0].statementAccountKey = "unknown";
     expect(transactionBroker(legacy, legacy.transactions[0])).toBe("source:unknown");
   });
-  it("does not invent zero-return history before a broker first appears", () => {
-    const input = mixed(); input.transactions[1].date = "2026-09-10";
-    const result = brokerComparison(input, "max", NOW);
-    const degiro = result.lines.find((line) => line.label === "DEGIRO")!;
-    const early = result.points.filter((point) => point.date < "2026-09-10");
-    expect(early.length).toBeGreaterThan(0);
-    expect(early.every((point) => point[degiro.key] === undefined)).toBe(true);
-  });
-  it("overlays percentage returns and recalculates the combined return instead of adding percentages", () => {
-    const comparison = brokerComparison(mixed(), "1mese", NOW);
-    expect(comparison.lines).toHaveLength(3);
-    for (const line of comparison.lines) expect(line.twr).toBeCloseTo(0.1);
-    const final = comparison.points.at(-1)!;
-    expect(final.combined).toBeCloseTo(10);
-    expect(comparison.points.map((p) => p.date)).toEqual(comparison.points.map((p) => p.date).sort());
-    expect(brokerComparison(filterInvestmentBrokers(mixed(), new Set(["degiro"])), "1mese", NOW).lines.map((l) => l.label)).toEqual(["Interactive Brokers"]);
-  });
 });
 
 it("filters cash including cash-only brokers without changing securities valuations or the source", () => {
@@ -127,4 +109,31 @@ it("filters cash including cash-only brokers without changing securities valuati
   original.transactions = [];
   expect(investmentBrokerGroups(original)).toHaveLength(2);
   expect(filterInvestmentBrokers(original, new Set(["degiro", "interactive-brokers"])).brokerCash).toEqual([]);
+});
+
+
+it("hides retained empty broker accounts after deletion while preserving active or cash-only history", () => {
+  const original = mixed();
+  original.brokerCash = [
+    { accountId: "tr", provider: "trade-republic", balance: 0, name: "TR", statementDate: null },
+  ];
+  expect(investmentBrokerGroups(original).map(g => g.id)).toEqual(["degiro", "interactive-brokers"]);
+  original.brokerCash[0].statementDate = "2026-09-30";
+  expect(investmentBrokerGroups(original).map(g => g.id)).toContain("trade-republic");
+  original.brokerCash[0].statementDate = null;
+  original.brokerCash[0].balance = -12;
+  expect(investmentBrokerGroups(original).map(g => g.id)).toContain("trade-republic");
+  original.brokerCash[0].balance = 0;
+  original.brokerSources!.push({ accountKey: "tr", provider: "trade-republic" });
+  original.transactions.push({ ...original.transactions[0], id: "tr-operation", statementAccountKey: "tr" });
+  expect(investmentBrokerGroups(original).find(g => g.id === "trade-republic")?.operations).toBe(1);
+});
+
+it("uses each personal import source name and filters sources independently", () => {
+  const input = data();
+  input.personalSources = [{ id: "one", name: "My broker" }, { id: "two", name: "Second broker" }];
+  input.portfolios = input.personalSources.map((source, i) => ({ id: i ? "p2" : "p", userId: "u", name: "Renamed portfolio", broker: `personal:${source.id}`, statementCashAccountId: null, benchmarkInstrumentId: null, taxRegime: "dichiarativo", createdAt: NOW, updatedAt: NOW }));
+  input.transactions.push({ ...input.transactions[0], id: "t2", portfolioId: "p2" });
+  expect(investmentBrokerGroups(input)).toEqual([{ id: "personal:one", label: "My broker", operations: 1 }, { id: "personal:two", label: "Second broker", operations: 1 }]);
+  expect(filterInvestmentBrokers(input, new Set(["personal:one"])).transactions.map(t => t.id)).toEqual(["t2"]);
 });

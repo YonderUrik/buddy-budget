@@ -34,9 +34,13 @@ async function handlePost(request: NextRequest) {
     return Response.json({ error: "Per continuare accetta Termini e Privacy", code: "legal_acceptance_required" }, { status: 400 });
   }
 
+  // Scelta dell'assistente per le categorie: presente solo se il servizio è configurato; il consenso è quello dato in questo passo.
+  const aiCategorization = (body as { aiCategorization?: unknown } | null)?.aiCategorization;
+  const aiConsent = aiCategorization === true && Boolean(process.env.OPENROUTER_API_KEY?.trim());
+
   await db
     .update(authUser)
-    .set({ currency, onboardingCompleted: true })
+    .set({ currency, onboardingCompleted: true, ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
     .where(eq(authUser.id, session.user.id));
   await recordLegalAcceptance(session.user.id);
   requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });

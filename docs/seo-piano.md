@@ -21,7 +21,7 @@ Resta da fare (non in questa PR):
 - **Una sola pagina indicizzabile**: è il limite principale. Una landing singola compete solo sulla parola chiave di marca e su poche generiche. Servono pagine dedicate (sezione 3).
 - **H1**: è un claim di marca. Si può tenere, ma ogni pagina nuova deve avere H1 con la parola chiave.
 - **Core Web Vitals**: non misurabili da qui (il sandbox non raggiunge il sito). Da controllare con PageSpeed Insights / Search Console; sospetti: GSAP + Lenis (JS iniziale), 2 font variabili, hero con screenshot JPEG da 1920×1200 (valutare `srcset`/dimensioni minori, `fetchpriority=high` solo sul primo).
-- **Pagine legali**: restano `noindex` finché non confermate (`LEGAL_DRAFT`).
+- **Pagine legali**: dal 2026-10-10 definitive, indicizzabili e nella sitemap (restano da far rivedere a un professionista).
 
 ## 2. Parole chiave per intento
 
@@ -62,6 +62,14 @@ Regole: ogni pagina con title/description propri, canonical, JSON-LD adatto (`Ar
    - Contatta le testate con elenchi "migliori app di finanza personale" (money.it, investireoggi...) con una mail breve e una demo: vuoi essere nell'elenco quando aggiornano.
    - Directory di software (AlternativeTo, Capterra/G2 solo quando c'è una base utenti).
 6. **Misurazione**: Umami sulla landing già traccia le visite; aggiungi in Search Console l'utente di servizio solo se vorrai automatizzare report (opzionale).
+
+## 4-bis. Assistenti AI (ChatGPT, Claude, Perplexity, Gemini) — 2026-10-09
+
+- `/llms.txt` (formato llmstxt.org) generato a ogni build da FAQ, regole italiane, metodo dei gruppi e catalogo funzioni (`landing/content/llms.ts`): non può divergere dal sito.
+- `robots.txt` ammette per nome i crawler AI (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended…).
+- Contenuti citabili: frasi brevi con il fatto e la fonte ufficiale (sezione «Le regole italiane»), tabella HTML vera per il confronto, FAQ in testo semplice.
+- Da fare: verificare ogni mese le citazioni (chiedere agli assistenti «app per tenere conti e tasse sugli ETF in Italia»), Bing Webmaster Tools (lo usano diversi assistenti), una pagina per domanda.
+- Nota: secondo fonti di settore i rich result FAQ di Google non compaiono più da maggio 2026; il markup FAQPage resta, innocuo.
 
 ## 5. Cosa NON fare
 - Niente testo generato in massa o pagine duplicate per città/parola chiave: Google penalizza i contenuti sottili.

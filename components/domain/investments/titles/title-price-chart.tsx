@@ -1,10 +1,14 @@
 "use client";
 
-/** Grafico delle chiusure di un titolo con selettore del periodo. Colore verde o rosso secondo l'andamento del periodo. */
+/**
+ * Grafico delle chiusure di un titolo con selettore del periodo. Colore verde o rosso secondo l'andamento del periodo;
+ * se possiedi il titolo segna i tuoi acquisti e una linea tratteggiata sul prezzo medio.
+ */
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ReferenceDot, ReferenceLine, XAxis, YAxis } from "recharts";
 import { SegmentedControl } from "@/components/domain/shared";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartSplineIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { parseDateOnly } from "@/lib/calc/expenses";
 import { TITLE_CHART_PERIODS, type CloseInput, type TitleChartPeriod } from "@/lib/investments/title-stats";
@@ -32,28 +36,42 @@ export interface TitlePriceChartProps {
   onPeriodChange: (period: TitleChartPeriod) => void;
   /** Mentre lo storico si scarica il grafico può essere incompleto. */
   backfilling: boolean;
+  /** Acquisti dell'utente da segnare sul grafico (data e prezzo). */
+  purchases?: { date: string; price: number }[];
+  /** Prezzo medio dell'utente, come linea tratteggiata. */
+  averagePrice?: number | null;
 }
 
-export function TitlePriceChart({ series, currency, period, onPeriodChange, backfilling }: TitlePriceChartProps) {
+/** Ogni acquisto sul primo punto del grafico alla sua data o dopo (la serie è diradata); fuori periodo si salta. */
+export function purchaseMarkers(series: CloseInput[], purchases: { date: string; price: number }[]): { date: string; price: number }[] {
+  if (series.length === 0) return [];
+  const first = series[0].date;
+  const last = series[series.length - 1].date;
+  return purchases
+    .filter((p) => p.date >= first && p.date <= last)
+    .map((p) => ({ date: series.find((point) => point.date >= p.date)!.date, price: p.price }));
+}
+
+export function TitlePriceChart({ series, currency, period, onPeriodChange, backfilling, purchases = [], averagePrice = null }: TitlePriceChartProps) {
+  const markers = purchaseMarkers(series, purchases);
   const up = series.length < 2 || series[series.length - 1].close >= series[0].close;
   const color = up ? "var(--pos)" : "var(--neg)";
   const config = { close: { label: "Chiusura", color } } satisfies ChartConfig;
   return (
-    <Card>
-      <CardHeader className="gap-3">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Andamento</CardTitle>
-          <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" stretch className="sm:w-auto" />
-        </div>
-      </CardHeader>
-      <CardContent>
+    <PanelSection
+      icon={ChartSplineIcon}
+      title="Andamento"
+      color={color}
+      action={<SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" stretch className="sm:w-auto" />}
+    >
+      <div>
         {series.length < 2 ? (
           <p className="py-10 text-center text-sm text-muted-foreground" role="status">
             {backfilling ? "Sto scaricando lo storico dei prezzi…" : "Non ci sono ancora abbastanza prezzi per il grafico."}
           </p>
         ) : (
           <>
-            <ChartContainer config={config} className="h-56 w-full">
+            <ChartContainer config={config} className="-mx-4 h-56 w-[calc(100%+2rem)] sm:-mx-6 sm:h-72 sm:w-[calc(100%+3rem)] lg:mx-0 lg:w-full">
               <AreaChart data={series} margin={{ left: 4, right: 8 }}>
                 <defs>
                   <linearGradient id="title-fill" x1="0" y1="0" x2="0" y2="1">
@@ -72,12 +90,32 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
                 <YAxis tickLine={false} axisLine={false} width={48} domain={["auto", "auto"]} tickFormatter={(v: number) => String(Math.round(v * 100) / 100)} />
                 <ChartTooltip cursor={false} content={<Tooltip currency={currency} />} />
                 <Area type="monotone" dataKey="close" stroke={color} strokeWidth={2} fill="url(#title-fill)" dot={false} isAnimationActive={false} />
+                {averagePrice !== null ? (
+                  <ReferenceLine y={averagePrice} stroke="var(--primary)" strokeDasharray="5 4" ifOverflow="extendDomain" />
+                ) : null}
+                {markers.map((m, i) => (
+                  <ReferenceDot key={`${m.date}-${i}`} x={m.date} y={m.price} r={4.5} fill="var(--primary)" stroke="var(--background)" strokeWidth={2} ifOverflow="extendDomain" />
+                ))}
               </AreaChart>
             </ChartContainer>
+            {markers.length > 0 || averagePrice !== null ? (
+              <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                {markers.length > 0 ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="size-2.5 rounded-full bg-primary" aria-hidden="true" /> I tuoi acquisti
+                  </span>
+                ) : null}
+                {averagePrice !== null ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-4 border-t-2 border-dashed border-primary" aria-hidden="true" /> Il tuo prezzo medio ({formatPrice(averagePrice, currency)})
+                  </span>
+                ) : null}
+              </p>
+            ) : null}
             {backfilling ? <p className="mt-2 text-xs text-muted-foreground">Sto ancora scaricando lo storico: il grafico si completa da solo.</p> : null}
           </>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </PanelSection>
   );
 }

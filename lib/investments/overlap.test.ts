@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveInstrumentExposure, type ExposureInstrument, type ExposureProfile } from "./exposure";
-import { baseTicker, computeFundOverlaps, computeStocksInsideFunds, holdingsOverlap, normalizeCompanyName, type OverlapInput } from "./overlap";
+import { baseTicker, computeFundOverlaps, computeStocksInsideFunds, findCompanyElsewhere, holdingsOverlap, sharedFundHoldings, normalizeCompanyName, type OverlapInput } from "./overlap";
 
 function input(id: string, type: ExposureInstrument["type"], name: string, value: number, profile: Partial<ExposureProfile> | null = null): OverlapInput {
   const instrument: ExposureInstrument = { id, type, name, isin: null };
@@ -74,5 +74,29 @@ describe("computeStocksInsideFunds", () => {
         totalValue: 950,
       },
     ]);
+  });
+});
+
+describe("findCompanyElsewhere / sharedFundHoldings", () => {
+  const others = [
+    { id: "f2", name: "ETF USA", type: "etf", symbol: "SXR8.DE", holdings: [{ symbol: "AAPL", name: "Apple Inc", weight: 0.07 }] },
+    { id: "s1", name: "Apple Inc.", type: "azione", symbol: "AAPL", holdings: null },
+    { id: "b1", name: "BTP", type: "obbligazione", symbol: null, holdings: null },
+  ];
+
+  it("trova un'azione nei fondi posseduti e tra le azioni possedute", () => {
+    expect(findCompanyElsewhere({ symbol: "AAPL", name: "Apple" }, others)).toEqual([
+      { id: "f2", name: "ETF USA", weight: 0.07 },
+      { id: "s1", name: "Apple Inc.", weight: null },
+    ]);
+    expect(findCompanyElsewhere({ symbol: "MSFT", name: "Microsoft Corp" }, others)).toEqual([]);
+  });
+
+  it("elenca solo i titoli del fondo che compaiono altrove", () => {
+    const holdings = [
+      { symbol: "AAPL", name: "Apple Inc", weight: 0.046 },
+      { symbol: "MSFT", name: "Microsoft Corp", weight: 0.043 },
+    ];
+    expect(sharedFundHoldings(holdings, others).map((s) => s.holding.symbol)).toEqual(["AAPL"]);
   });
 });

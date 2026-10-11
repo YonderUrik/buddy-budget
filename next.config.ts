@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
   // Build autosufficiente in .next/standalone (server.js + sole dipendenze usate): base dell'immagine Docker.
   // Vercel la ignora, quindi il deploy attuale non cambia.
   output: "standalone",
+  // Personal CSV: 25 MiB plus JSON escaping; the route enforces the actual CSV size.
+  experimental: { proxyClientMaxBodySize: "51mb" },
   env: {
     NEXT_PUBLIC_APP_VERSION: buildInfo.version,
     NEXT_PUBLIC_APP_COMMIT: buildInfo.commit,
@@ -40,10 +42,13 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: "/spese", destination: "/movimenti", permanent: true },
-      { source: "/transazioni", destination: "/movimenti", permanent: true },
-      { source: "/cash-flow", destination: "/movimenti/analisi", permanent: true },
-      { source: "/categorie", destination: "/movimenti/categorie", permanent: true },
+      { source: "/spese", destination: "/liquidita", permanent: true },
+      { source: "/transazioni", destination: "/liquidita", permanent: true },
+      { source: "/cash-flow", destination: "/liquidita/analisi", permanent: true },
+      { source: "/categorie", destination: "/liquidita/categorie", permanent: true },
+      { source: "/movimenti", destination: "/liquidita", permanent: true },
+      { source: "/movimenti/:tab(analisi|categorie|regole)", destination: "/liquidita/:tab", permanent: true },
+      { source: "/conti", destination: "/liquidita/conti", permanent: true },
     ];
   },
 };

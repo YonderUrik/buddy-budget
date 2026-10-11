@@ -8,9 +8,9 @@
 import * as React from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { SegmentedControl } from "@/components/domain/shared";
+import { SegmentedControl, FormDialogContent } from "@/components/domain/shared";
 import { useDeleteCategoryMutation, useUpdateCategoryMutation } from "@/lib/queries/categories";
 import { CATEGORY_TYPES, CATEGORY_TYPE_LABELS, type CategoryType } from "@/lib/categories/groups";
 import type { Category } from "@/lib/db/schema/categories";
@@ -31,9 +31,9 @@ export interface CategoryDetailDialogProps {
 export function CategoryDetailDialog({ category, usageCount, onClose }: CategoryDetailDialogProps) {
   return (
     <Dialog open={category !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
+      <FormDialogContent>
         {category && <DetailBody key={category.id} category={category} usageCount={usageCount} onClose={onClose} />}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

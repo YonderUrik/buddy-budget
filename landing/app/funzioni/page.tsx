@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { ContentPage } from "@/components/content-page";
-import { FeatureCatalog } from "@/components/feature-catalog";
+import { FeatureAreas } from "@/components/feature-areas";
 import { JsonLd } from "@/components/json-ld";
-import { featureCounts } from "@/content/catalog.generated";
+import { FEATURE_AREAS, featureCounts } from "@/content/catalog.generated";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
 import { SITE_URL } from "@/content/site";
 
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default function Page() {
   const { total } = featureCounts();
   return (
-    <ContentPage
+    <ContentPage current={CONTENT_PATHS.funzioni}
       wide
       disclaimer={false}
       crumbs={[{ href: "/", label: "BuddyBudget" }, { label: "Funzioni" }]}
@@ -29,8 +29,8 @@ export default function Page() {
     >
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: TITLE, description: DESCRIPTION, url: `${SITE_URL}${CONTENT_PATHS.funzioni}`, inLanguage: "it-IT" }} />
       <h1>Tutte le funzioni</h1>
-      <p className="lead">{total} funzioni, divise per area. L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare qui.</p>
-      <FeatureCatalog />
+      <p className="lead">{total} funzioni in {FEATURE_AREAS.length} aree. L&apos;elenco è lo stesso che usa l&apos;app: quando ne aggiungiamo una, compare anche qui.</p>
+      <FeatureAreas />
     </ContentPage>
   );
 }

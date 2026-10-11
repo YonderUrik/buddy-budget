@@ -8,7 +8,8 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TargetIcon } from "lucide-react";
+import { PanelSection } from "../panel-section";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { ALLOCATION_TOLERANCE, roundedCurrentWeights, type AllocationAnalysis, type AllocationRow, type TargetInput } from "@/lib/investments/allocation";
 import { cn } from "@/lib/utils";
@@ -65,33 +66,33 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
   const outOfLine = allocation?.rows.filter((r) => r.status !== "in_linea") ?? [];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Allocazione obiettivo</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {allocation
+    <>
+    <PanelSection
+      icon={TargetIcon}
+      title="Allocazione obiettivo"
+      color="var(--swatch-emerald)"
+      description={
+        allocation
                 ? outOfLine.length === 0
                   ? `Tutto entro ±${Math.round(ALLOCATION_TOLERANCE * 100)} punti dall'obiettivo.`
                   : `${outOfLine.length === 1 ? "Uno strumento è" : `${outOfLine.length} strumenti sono`} fuori di più di ${Math.round(ALLOCATION_TOLERANCE * 100)} punti.`
-                : "Decidi quanto deve pesare ogni strumento: ti diciamo dove mettere il prossimo versamento."}
-            </p>
+                : "Decidi quanto deve pesare ogni strumento: ti diciamo dove mettere il prossimo versamento."
+      }
+      action={
+        allocation ? (
+          <div className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
+              Modifica
+            </Button>
+            <Button variant="outline" size="sm" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((v) => !v)}>
+              {open ? "Chiudi" : "Dettaglio"}
+              <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
+            </Button>
           </div>
-          {allocation ? (
-            <div className="flex shrink-0 items-center gap-1">
-              <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-                Modifica
-              </Button>
-              <Button variant="outline" size="sm" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((v) => !v)}>
-                {open ? "Chiudi" : "Dettaglio"}
-                <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
-              </Button>
-            </div>
-          ) : null}
-        </div>
-      </CardHeader>
-      <CardContent id={panelId} className={cn("flex flex-col gap-5", allocation && !open && "hidden")}>
+        ) : null
+      }
+    >
+      <div id={panelId} className={cn("flex flex-col gap-5", allocation && !open && "hidden")}>
         {allocation ? (
           <>
             <ul className="flex flex-col gap-3">
@@ -127,7 +128,8 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
             Imposta un obiettivo
           </Button>
         )}
-      </CardContent>
+      </div>
+    </PanelSection>
       <TargetsDialog
         open={editing}
         onOpenChange={setEditing}
@@ -137,6 +139,6 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
         suggestions={suggestions}
         currency={currency}
       />
-    </Card>
+    </>
   );
 }

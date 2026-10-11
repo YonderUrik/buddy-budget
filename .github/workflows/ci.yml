@@ -162,7 +162,8 @@ jobs:
 
   image:
     name: Immagine ${{ matrix.image }}
-    timeout-minutes: 30
+    # Con SELFHOST_IMAGES=true (variabile del repo, vedi docs/self-hosting.md) l'immagine è multi-architettura e più lenta da costruire.
+    timeout-minutes: 60
     needs: [release]
     # Le immagini servono solo al deploy, che usa il tag di versione: si costruiscono nel run del rilascio, non a ogni push.
     # Partono in parallelo ai test; il deploy (sotto) aspetta che le check siano passate.
@@ -178,8 +179,12 @@ jobs:
             target: runner
           - image: buddy-budget-migrate
             target: migrator
+          - image: buddy-budget-csv-worker
+            target: csv-worker
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        if: vars.SELFHOST_IMAGES == 'true'
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -194,10 +199,13 @@ jobs:
             type=sha,prefix=sha-
             type=raw,value=main
             type=raw,value=${{ needs.release.outputs.version }},enable=${{ needs.release.outputs.is_release == 'true' }}
+            type=raw,value=latest,enable=${{ vars.SELFHOST_IMAGES == 'true' && needs.release.outputs.is_release == 'true' }}
       - uses: docker/build-push-action@v6
         with:
           context: .
           target: ${{ matrix.target }}
+          platforms: ${{ vars.SELFHOST_IMAGES == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          sbom: ${{ vars.SELFHOST_IMAGES == 'true' }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -241,7 +249,12 @@ jobs:
           fi
           kustomize edit set image \
             ghcr.io/yonderurik/buddy-budget=ghcr.io/yonderurik/buddy-budget:${VERSION} \
-            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:${VERSION}
+            ghcr.io/yonderurik/buddy-budget-migrate=ghcr.io/yonderurik/buddy-budget-migrate:${VERSION} \
+            ghcr.io/yonderurik/buddy-budget-csv-worker=ghcr.io/yonderurik/buddy-budget-csv-worker:${VERSION}
+          # The infra PR stages this Deployment at zero until its first image is published.
+          if [ -f csv-worker.yaml ]; then
+            kustomize edit set replicas buddy-budget-csv-worker=1
+          fi
       - name: Commit e push
         run: |
           git config user.name "github-actions[bot]"

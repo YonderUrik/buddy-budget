@@ -45,28 +45,34 @@ export default function TassePage() {
   const manualLosses = view.carryforwards.map((c) => ({ year: c.year, amount: Number(c.amount) }));
   return (
     <>
-      <TaxRegimeCard
-        regime={view.regime}
-        saving={updatePortfolio.isPending}
-        onChange={(taxRegime) => updatePortfolio.mutate({ taxRegime }, { onError: (e) => toast.error(e.message) })}
-      />
-      {view.report.years.length > 0 ? (
-        <TaxYearCard years={view.report.years} regime={view.regime} currency={currency} currentYear={view.currentYear} />
-      ) : null}
-      <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
-      {view.sellable.length > 0 ? (
-        <SaleSimulatorCard
-          positions={view.sellable}
-          transactions={view.transactions}
-          instruments={view.taxInstruments}
-          regime={view.regime}
-          manualLosses={manualLosses}
-          todayKey={view.todayKey}
-          currency={currency}
-        />
-      ) : null}
-      <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />
-      <InstrumentTaxListCard instruments={view.instruments} resolved={view.resolved} onEdit={setEditing} />
+      <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
+        <div className="flex flex-col gap-10 lg:col-span-3">
+          {view.report.years.length > 0 ? (
+            <TaxYearCard years={view.report.years} regime={view.regime} currency={currency} currentYear={view.currentYear} />
+          ) : null}
+          {view.sellable.length > 0 ? (
+            <SaleSimulatorCard
+              positions={view.sellable}
+              transactions={view.transactions}
+              instruments={view.taxInstruments}
+              regime={view.regime}
+              manualLosses={manualLosses}
+              todayKey={view.todayKey}
+              currency={currency}
+            />
+          ) : null}
+          <InstrumentTaxListCard instruments={view.instruments} resolved={view.resolved} onEdit={setEditing} />
+        </div>
+        <div className="flex flex-col gap-10 lg:col-span-2">
+          <TaxRegimeCard
+            regime={view.regime}
+            saving={updatePortfolio.isPending}
+            onChange={(taxRegime) => updatePortfolio.mutate({ taxRegime }, { onError: (e) => toast.error(e.message) })}
+          />
+          <LossCarryforwardCard losses={view.report.losses} carryforwards={view.carryforwards} currency={currency} currentYear={view.currentYear} />
+          <TaxOpportunitiesCard opportunities={view.opportunities} instrumentsById={view.instrumentsById} currency={currency} currentYear={view.currentYear} />
+        </div>
+      </div>
       <InstrumentSettingsDialog instrument={editing} setting={editing ? view.settingsById.get(editing.id) : undefined} onClose={() => setEditing(null)} />
     </>
   );

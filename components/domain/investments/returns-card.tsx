@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUpIcon } from "lucide-react";
+import { PanelSection } from "./panel-section";
 import type { PortfolioReturns } from "@/lib/calc/returns";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { formatDateWithYear } from "@/lib/format";
@@ -37,16 +38,14 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
   const dates = values.days === 0 ? `Valore iniziale al ${formatDateWithYear(values.baseKey)}`
     : `${formatDateWithYear(values.fromKey)} – ${formatDateWithYear(values.toKey)}`;
   const { real } = values;
-  return <Card>
-    <CardHeader>
-      <CardTitle className="text-base font-semibold">Rendimenti del periodo</CardTitle>
+  return <>
+    <PanelSection icon={TrendingUpIcon} title="Rendimenti del periodo">
       <p className="text-sm text-muted-foreground" data-testid="performance-summary-period">
         {inspected ? "Anteprima dal grafico" : "Periodo del grafico"} · {dates}
       </p>
       <p className="text-xs text-muted-foreground">Importi e rendimenti in {currency}. Passa su un numero per capire cosa misura.</p>
-    </CardHeader>
-    <CardContent className="flex flex-col gap-5">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
         <ReturnMetric
           label="Portafoglio · TWR"
           value={values.twr}
@@ -77,7 +76,8 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
         benchmarkName={benchmark?.name ?? null} currency={currency} wait={wait}
         onChoose={() => setChoosing(true)} onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })} retrying={retry.isPending} />
       {returns.series.length >= 2 ? <ReturnsChart series={returns.series} benchmarkName={returns.benchmark ? benchmark?.name ?? null : null} onInspect={onInspect} onSelectRange={onSelectRange} /> : null}
-    </CardContent>
+    </div>
+    </PanelSection>
     <BenchmarkDialog open={choosing} onOpenChange={setChoosing} current={benchmark} currency={currency} />
-  </Card>;
+  </>;
 }

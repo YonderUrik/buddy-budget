@@ -12,7 +12,8 @@ import { detectImportProvider } from "@/lib/investments/import/providers";
 import { useParseStatementMutation } from "@/lib/queries/investments";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
+import { StepStage, type StepDirection, FormDialogContent } from "@/components/domain/shared";
 import { getImportProvider } from "@/lib/investments/import/providers";
 import { UploadIcon } from "lucide-react";
 import { DialogActions, PanelDialogHeader } from "../dialog-parts";
@@ -37,6 +38,15 @@ export interface InvestmentImportDialogProps {
 
 function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi" }: { currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
   const s = useInvestmentImport(initialFile);
+  const [direction, setDirection] = React.useState<StepDirection>(1);
+  const forward = (action: () => void) => () => {
+    setDirection(1);
+    action();
+  };
+  const backward = () => {
+    setDirection(-1);
+    s.back();
+  };
   const cashCount = s.statement?.cashMovements?.length ?? 0;
   const validRows = s.rows.filter((r) => r.status === "ok").length + cashCount;
   const included = s.identities.filter((i) => {
@@ -60,6 +70,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
       {!s.done ? <ImportStepper current={s.step} /> : null}
 
       <div className="min-h-0 overflow-y-auto">
+        <StepStage stepKey={s.step} direction={direction}>
         {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={error.hint} detail={error.text === s.error ? undefined : s.error ?? undefined} className="mb-5" /> : null}
         {s.step === "file" ? (
           <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} />
@@ -100,6 +111,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
         {s.step === "summary" && s.result ? (
           <ImportSummaryStep result={s.result} rows={s.rows} newInstruments={newInstruments} done={s.done} hasCashMovements={cashCount > 0} keepsOriginal={s.statement !== null} onNavigate={onClose} />
         ) : null}
+        </StepStage>
       </div>
 
       <DialogActions>
@@ -109,16 +121,16 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
           </Button>
         ) : (
           <>
-            <Button variant="ghost" onClick={s.step === "file" ? onClose : s.back} disabled={s.running || (!!initialFile && s.step === "mapping")}>
+            <Button variant="ghost" onClick={s.step === "file" ? onClose : backward} disabled={s.running || (!!initialFile && s.step === "mapping")}>
               {s.step === "file" ? "Annulla" : "Indietro"}
             </Button>
             {s.step === "mapping" ? (
-              <Button onClick={s.goToInstruments} disabled={s.missing.length > 0 || validRows === 0 || s.resolving}>
+              <Button onClick={forward(s.goToInstruments)} disabled={s.missing.length > 0 || validRows === 0 || s.resolving}>
                 {s.resolving ? "Cerco gli strumenti…" : "Avanti"}
               </Button>
             ) : null}
             {s.step === "instruments" ? (
-              <Button onClick={s.preview} disabled={(included.length === 0 && cashCount === 0) || s.running}>
+              <Button onClick={forward(s.preview)} disabled={(included.length === 0 && cashCount === 0) || s.running}>
                 {s.running ? "Controllo…" : "Avanti"}
               </Button>
             ) : null}
@@ -168,10 +180,10 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
 export function InvestmentImportDialog({ open, onOpenChange, currency }: InvestmentImportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
+      <FormDialogContent size="wide">
         <PanelDialogHeader icon={UploadIcon} title="Importa operazioni" description="Carica il file del tuo broker: lo leggo, ti mostro cosa importerei e importo solo quando confermi." color="var(--primary)" />
         {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

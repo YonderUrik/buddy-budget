@@ -4,11 +4,12 @@
  * Dialog per registrare un evento semplice (data + un valore): il cambio di tasso o la correzione del residuo.
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { PercentIcon, SlidersHorizontalIcon } from "lucide-react";
 import { DialogActions, PanelDialogHeader } from "@/components/domain/investments";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { parseAmount } from "@/lib/debts/add-form";
 import { todayIso } from "@/lib/debts/dates";
@@ -94,10 +95,10 @@ export function DebtEventDialog({ debtId, kind, onOpenChange }: DebtEventDialogP
   const copy = kind ? COPY[kind] : null;
   return (
     <Dialog open={kind !== null} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <FormDialogContent>
         <PanelDialogHeader icon={kind === "balance_correction" ? SlidersHorizontalIcon : PercentIcon} title={copy?.title ?? ""} description={copy?.description} />
         {kind ? <EventForm key={kind} debtId={debtId} kind={kind} onDone={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

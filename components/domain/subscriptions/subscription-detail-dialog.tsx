@@ -9,9 +9,9 @@
 import * as React from "react";
 import { CheckIcon, HistoryIcon, InfoIcon, RepeatIcon, Trash2Icon, UndoIcon, XIcon } from "lucide-react";
 import { DialogActions, DialogSection, DialogSections, PanelDialogHeader } from "@/components/domain/investments";
-import { DialogCloseButton, LIQUIDITY_DIALOG_CLASS } from "@/components/domain/liquidity";
+import { FormDialogContent } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import type { SubscriptionCadence } from "@/lib/calc/subscriptions";
 import type { Category } from "@/lib/db/schema/categories";
 import { parseAmount } from "@/lib/debts/add-form";
@@ -165,11 +165,10 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
 export function SubscriptionDetailDialog({ item, currency, today, categories, onOpenChange }: SubscriptionDetailDialogProps) {
   return (
     <Dialog open={item !== null} onOpenChange={onOpenChange}>
-      <DialogContent className={LIQUIDITY_DIALOG_CLASS}>
-        <DialogCloseButton />
+      <FormDialogContent>
         <PanelDialogHeader className="pr-10" icon={RepeatIcon} title={item?.name ?? "Abbonamento"} description={item?.origin === "manuale" ? "Aggiunto da te" : "Trovato nei tuoi movimenti"} />
         {item ? <Details key={item.key} item={item} currency={currency} today={today} categories={categories} onDone={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

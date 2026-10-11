@@ -5,9 +5,9 @@
 import * as React from "react";
 import { RepeatIcon } from "lucide-react";
 import { DialogActions, PanelDialogHeader } from "@/components/domain/investments";
-import { DialogCloseButton, LIQUIDITY_DIALOG_CLASS } from "@/components/domain/liquidity";
+import { FormDialogContent } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import type { SubscriptionCadence } from "@/lib/calc/subscriptions";
 import type { Category } from "@/lib/db/schema/categories";
 import { parseAmount } from "@/lib/debts/add-form";
@@ -75,11 +75,10 @@ function AddForm({ categories, today, onDone }: Omit<AddSubscriptionDialogProps,
 export function AddSubscriptionDialog({ open, onOpenChange, categories, today }: AddSubscriptionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={LIQUIDITY_DIALOG_CLASS}>
-        <DialogCloseButton />
+      <FormDialogContent>
         <PanelDialogHeader className="pr-10" icon={RepeatIcon} title="Aggiungi un abbonamento" description="Se compare tra i movimenti lo collegheremo da soli e ne seguiremo gli addebiti." />
         {open ? <AddForm key={String(open)} categories={categories} today={today} onDone={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

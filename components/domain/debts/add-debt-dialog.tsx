@@ -5,8 +5,10 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { LandmarkIcon } from "lucide-react";
-import { DialogSteps, PanelDialogHeader } from "@/components/domain/investments";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PanelDialogHeader } from "@/components/domain/investments";
+import { StepProgress, StepStage, useStepFlow, FormDialogContent } from "@/components/domain/shared";
+import { track } from "@/lib/analytics";
+import { Dialog } from "@/components/ui/dialog";
 import { emptyAddDebtForm, type AddDebtFormState } from "@/lib/debts/add-form";
 import { AddDebtDetailsForm } from "./add-debt-details-form";
 import { AddDebtStartStep } from "./add-debt-start-step";
@@ -17,15 +19,17 @@ export interface AddDebtDialogProps {
   currency: string;
 }
 
-const STEPS = ["Come parte", "I dati"] as const;
+/** Come parte, nome e data, dati del finanziamento, spese e conferma. */
+const ADD_DEBT_STEPS = 4;
 
 const STEP_COPY = {
   start: { title: "Aggiungi un debito", description: "Il finanziamento parte adesso o è già in corso?" },
-  details: { title: "I dati del finanziamento", description: "Bastano tre dati su quattro: il quarto lo calcoliamo noi." },
+  details: { title: "Aggiungi un debito", description: "Un passo alla volta: bastano tre dati su quattro, il quarto lo calcoliamo noi." },
 } as const;
 
 function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => void }) {
   const [state, setState] = React.useState<AddDebtFormState | null>(null);
+  const flow = useStepFlow(ADD_DEBT_STEPS);
   const step = state ? "details" : "start";
   const done = () => {
     toast.success("Debito aggiunto");
@@ -34,11 +38,36 @@ function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => v
   return (
     <>
       <PanelDialogHeader icon={LandmarkIcon} title={STEP_COPY[step].title} description={STEP_COPY[step].description} />
-      <DialogSteps steps={STEPS} current={state ? 1 : 0} ariaLabel="Passi per aggiungere un debito" />
-      {step === "start" ? <AddDebtStartStep onChoose={(mode) => setState(emptyAddDebtForm(mode))} /> : null}
-      {step === "details" && state ? (
-        <AddDebtDetailsForm state={state} onChange={setState} currency={currency} onBack={() => setState(null)} onCreated={done} />
-      ) : null}
+      <StepProgress index={flow.index} count={flow.count} label="Passi per aggiungere un debito" />
+      <StepStage stepKey={step === "start" ? "start" : `details-${flow.index}`} direction={flow.direction} className="flex flex-col gap-5">
+        {step === "start" ? (
+          <AddDebtStartStep
+            onChoose={(mode) => {
+              track("form_step_completed", { flow: "debt_add", step: 1 });
+              setState(emptyAddDebtForm(mode));
+              flow.next();
+            }}
+          />
+        ) : null}
+        {step === "details" && state ? (
+          <AddDebtDetailsForm
+            state={state}
+            onChange={setState}
+            currency={currency}
+            part={flow.index - 1}
+            onNext={() => {
+              track("form_step_completed", { flow: "debt_add", step: flow.index + 1 });
+              flow.next();
+            }}
+            onBack={() => {
+              track("form_step_back", { flow: "debt_add", step: flow.index + 1 });
+              if (flow.index === 1) setState(null);
+              flow.back();
+            }}
+            onCreated={done}
+          />
+        ) : null}
+      </StepStage>
     </>
   );
 }
@@ -46,10 +75,10 @@ function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => v
 export function AddDebtDialog({ open, onOpenChange, currency }: AddDebtDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-lg gap-5 overflow-y-auto">
+      <FormDialogContent>
         {/* Il flusso si rimonta a ogni apertura: niente dati rimasti dall'ultima volta. */}
         {open ? <AddDebtFlow currency={currency} onClose={() => onOpenChange(false)} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

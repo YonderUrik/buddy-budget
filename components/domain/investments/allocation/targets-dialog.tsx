@@ -5,10 +5,11 @@
  * si possono aggiungere strumenti non ancora posseduti (es. un ETF che vuoi iniziare a comprare).
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { TargetInput } from "@/lib/investments/allocation";
@@ -57,7 +58,7 @@ export interface TargetsDialogProps {
 export function TargetsDialog(props: TargetsDialogProps) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="max-w-lg">{props.open ? <TargetsForm {...props} /> : null}</DialogContent>
+      <FormDialogContent>{props.open ? <TargetsForm {...props} /> : null}</FormDialogContent>
     </Dialog>
   );
 }

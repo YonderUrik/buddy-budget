@@ -1,9 +1,13 @@
 "use client";
 
-/** Form per un nuovo conto manuale: nome, tipo, saldo di oggi, colore e icona. Errori per campo, annunciati agli screen reader. */
+/**
+ * Form per un nuovo conto manuale in due passi: prima nome e tipo, poi il saldo di oggi (con icona e colore, già
+ * scelti di default). Errori per campo, annunciati agli screen reader; «Indietro» al primo passo esce dal form.
+ */
 
 import * as React from "react";
-import { Button } from "@/components/ui/button";
+import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
+import { track } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,9 +36,14 @@ export interface AddAccountFormProps {
   currency: string;
   /** Callback richiamata alla creazione con successo del conto. */
   onSuccess?: () => void;
+  /** «Indietro» dal primo passo (es. tornare alla scelta del dialog). Senza, al primo passo non c'è «Indietro». */
+  onExit?: () => void;
 }
 
-export function AddAccountForm({ currency, onSuccess }: AddAccountFormProps) {
+const ACCOUNT_FORM_STEPS = 2;
+
+export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormProps) {
+  const flow = useStepFlow(ACCOUNT_FORM_STEPS);
   const idBase = React.useId();
   const createMutation = useCreateAccountMutation();
 
@@ -49,12 +58,22 @@ export function AddAccountForm({ currency, onSuccess }: AddAccountFormProps) {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const next: typeof errors = {};
-    if (name.trim() === "") next.name = "Dai un nome al conto, per riconoscerlo nell'elenco.";
-    if (type.trim() === "") next.type = "Scrivi di che tipo di conto si tratta.";
+    if (!flow.isLast) {
+      if (name.trim() === "") next.name = "Dai un nome al conto, per riconoscerlo nell'elenco.";
+      if (type.trim() === "") next.type = "Scrivi di che tipo di conto si tratta.";
+      setErrors(next);
+      if (next.name || next.type) {
+        document.getElementById(`${idBase}-${next.name ? "name" : "type-custom"}`)?.focus();
+        return;
+      }
+      track("form_step_completed", { flow: "account_manual", step: flow.index + 1 });
+      flow.next();
+      return;
+    }
     if (balanceValue === null) next.balance = "Inserisci il saldo di oggi (anche 0).";
     setErrors(next);
-    if (next.name || next.type || next.balance || balanceValue === null) {
-      document.getElementById(`${idBase}-${next.name ? "name" : next.type ? "type-custom" : "balance"}`)?.focus();
+    if (next.balance || balanceValue === null) {
+      document.getElementById(`${idBase}-balance`)?.focus();
       return;
     }
 
@@ -75,93 +94,116 @@ export function AddAccountForm({ currency, onSuccess }: AddAccountFormProps) {
     );
   }
 
+  function handleBack() {
+    track("form_step_back", { flow: "account_manual", step: flow.index + 1 });
+    setErrors({});
+    if (flow.isFirst) onExit?.();
+    else flow.back();
+  }
+
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-      <div className="flex items-center gap-3">
-        <AccountIconColorPicker
-          value={{ color, icon }}
-          onChange={({ color: c, icon: i }) => {
-            setColor(c);
-            setIcon(i);
-          }}
-        >
-          <div className="transition-transform hover:scale-105">
-            <AccountAvatar color={color} icon={icon} size={22} className="size-12 shadow-sm" />
-          </div>
-        </AccountIconColorPicker>
-        <div className="space-y-0.5">
-          <p className="text-sm font-medium text-foreground">Icona e colore</p>
-          <p className="text-sm text-muted-foreground">Tocca l&apos;icona per cambiarle.</p>
-        </div>
-      </div>
+      <StepProgress index={flow.index} count={flow.count} label="Passi del nuovo conto" />
 
-      <Field id={`${idBase}-name`} label="Nome del conto" error={errors.name}>
-        <Input
-          id={`${idBase}-name`}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Es. Conto Intesa"
-          autoComplete="off"
-          maxLength={80}
-          aria-invalid={errors.name ? true : undefined}
-          aria-describedby={errors.name ? `${idBase}-name-error` : undefined}
-          className={FIELD_CLASS}
-        />
-      </Field>
+      <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-5">
+        {flow.index === 0 ? (
+          <>
+            <StepHeading title="Come si chiama il conto?" />
+            <Field id={`${idBase}-name`} label="Nome del conto" error={errors.name}>
+              <Input
+                id={`${idBase}-name`}
+                data-autofocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Es. Conto Intesa"
+                autoComplete="off"
+                maxLength={80}
+                aria-invalid={errors.name ? true : undefined}
+                aria-describedby={errors.name ? `${idBase}-name-error` : undefined}
+                className={FIELD_CLASS}
+              />
+            </Field>
 
-      <Field id={`${idBase}-type`} label="Tipo" error={errors.type}>
-        <Select
-          value={isCustomType ? CUSTOM_TYPE_VALUE : type}
-          onValueChange={(value) => {
-            if (value === CUSTOM_TYPE_VALUE) {
-              setIsCustomType(true);
-              setType("");
-              return;
-            }
-            setIsCustomType(false);
-            setType(value as string);
-          }}
-        >
-          <SelectTrigger id={`${idBase}-type`} className={cn("w-full", FIELD_CLASS)}>
-            <SelectValue placeholder="Seleziona il tipo di conto" />
-          </SelectTrigger>
-          <SelectContent>
-            {ACCOUNT_TYPE_OPTIONS.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-            <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
-          </SelectContent>
-        </Select>
-        {isCustomType && (
-          <Input
-            id={`${idBase}-type-custom`}
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            placeholder="Es. Cassa contanti, Wallet crypto"
-            aria-label="Tipo di conto personalizzato"
-            aria-invalid={errors.type ? true : undefined}
-            aria-describedby={errors.type ? `${idBase}-type-error` : undefined}
-            className={cn("mt-1.5", FIELD_CLASS)}
-          />
+            <Field id={`${idBase}-type`} label="Tipo" error={errors.type}>
+              <Select
+                value={isCustomType ? CUSTOM_TYPE_VALUE : type}
+                onValueChange={(value) => {
+                  if (value === CUSTOM_TYPE_VALUE) {
+                    setIsCustomType(true);
+                    setType("");
+                    return;
+                  }
+                  setIsCustomType(false);
+                  setType(value as string);
+                }}
+              >
+                <SelectTrigger id={`${idBase}-type`} className={cn("w-full", FIELD_CLASS)}>
+                  <SelectValue placeholder="Seleziona il tipo di conto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
+                </SelectContent>
+              </Select>
+              {isCustomType && (
+                <Input
+                  id={`${idBase}-type-custom`}
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  placeholder="Es. Cassa contanti, Wallet crypto"
+                  aria-label="Tipo di conto personalizzato"
+                  aria-invalid={errors.type ? true : undefined}
+                  aria-describedby={errors.type ? `${idBase}-type-error` : undefined}
+                  className={cn("mt-1.5", FIELD_CLASS)}
+                />
+              )}
+            </Field>
+          </>
+        ) : (
+          <>
+            <StepHeading title="Quanto c'è sul conto oggi?" description="Da qui in poi lo aggiornano i movimenti che registri." />
+            <Field id={`${idBase}-balance`} label="Saldo di oggi" error={errors.balance}>
+              <CurrencyInput
+                id={`${idBase}-balance`}
+                data-autofocus
+                value={balanceValue}
+                onChange={setBalanceValue}
+                currency={currency}
+                className={cn("w-full text-lg font-medium", FIELD_CLASS)}
+                aria-label="Saldo di oggi"
+              />
+            </Field>
+            <div className="flex items-center gap-3 rounded-xl border p-3">
+              <AccountIconColorPicker
+                value={{ color, icon }}
+                onChange={({ color: c, icon: i }) => {
+                  setColor(c);
+                  setIcon(i);
+                }}
+              >
+                <div className="transition-transform hover:scale-105">
+                  <AccountAvatar color={color} icon={icon} size={20} className="size-10 shadow-sm" />
+                </div>
+              </AccountIconColorPicker>
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium text-foreground">{name.trim() || "Il tuo conto"}</p>
+                <p className="text-xs text-muted-foreground">Tocca l&apos;icona per cambiare icona e colore (facoltativo).</p>
+              </div>
+            </div>
+          </>
         )}
-      </Field>
+      </StepStage>
 
-      <Field id={`${idBase}-balance`} label="Saldo di oggi" hint="Quanto c'è adesso sul conto. Da qui in poi lo aggiornano i movimenti che registri." error={errors.balance}>
-        <CurrencyInput
-          id={`${idBase}-balance`}
-          value={balanceValue}
-          onChange={setBalanceValue}
-          currency={currency}
-          className={cn("w-full", FIELD_CLASS)}
-          aria-label="Saldo di oggi"
-        />
-      </Field>
-
-      <Button type="submit" disabled={createMutation.isPending} className="h-11 w-full cursor-pointer sm:h-9">
-        {createMutation.isPending ? "Aggiungo il conto…" : "Aggiungi il conto"}
-      </Button>
+      <StepActions
+        backLabel={flow.isFirst && !onExit ? undefined : "Indietro"}
+        onBack={handleBack}
+        primaryLabel={flow.isLast ? (createMutation.isPending ? "Aggiungo il conto…" : "Aggiungi il conto") : "Continua"}
+        pending={createMutation.isPending}
+      />
 
       {errors.form && (
         <p role="alert" className="text-sm text-destructive">

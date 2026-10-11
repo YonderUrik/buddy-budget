@@ -1,25 +1,32 @@
 "use client";
 
-/** Onboarding: scelta della valuta principale (EUR preselezionato), poi atterraggio in Panoramica. */
+/** Onboarding in due passi: valuta principale (EUR preselezionato), poi le conferme legali; infine atterraggio in Panoramica. */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
 import { CurrencyPicker, LegalConsentFields, useLegalConsent } from "@/components/domain/auth";
-import { Button } from "@/components/ui/button";
+import { StepActions, StepHeading, StepProgress, StepStage, useStepFlow } from "@/components/domain/shared";
 import { DEFAULT_AFTER_LOGIN_PATH } from "@/lib/auth/constants";
 import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/currency";
 import { track } from "@/lib/analytics";
+
+const ONBOARDING_STEPS = 2;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [currency, setCurrency] = useState<SupportedCurrency>(DEFAULT_CURRENCY);
   const { consent, setConsent, complete, payload } = useLegalConsent();
+  const flow = useStepFlow(ONBOARDING_STEPS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!flow.isLast) {
+      track("form_step_completed", { flow: "onboarding", step: flow.index + 1 });
+      flow.next();
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -48,15 +55,23 @@ export default function OnboardingPage() {
     <div className="flex flex-col gap-8 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
       <div className="flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-medium tracking-tight">Ti diamo il benvenuto</h1>
-        <p className="text-text-2">
-          Un&apos;ultima cosa: in che valuta vuoi vedere saldi, transazioni e investimenti?
-        </p>
+        <StepProgress index={flow.index} count={flow.count} label="Passi dell'onboarding" className="mt-3" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <CurrencyPicker value={currency} onChange={setCurrency} disabled={loading} />
-
-        <LegalConsentFields value={consent} onChange={setConsent} disabled={loading} />
+        <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-5">
+          {flow.index === 0 ? (
+            <>
+              <StepHeading title="In che valuta vuoi vedere i tuoi soldi?" description="Vale per saldi, transazioni e investimenti." />
+              <CurrencyPicker value={currency} onChange={setCurrency} disabled={loading} />
+            </>
+          ) : (
+            <>
+              <StepHeading title="Ultima cosa: le conferme" description="Servono per usare l'app. Le trovi sempre in Impostazioni." />
+              <LegalConsentFields value={consent} onChange={setConsent} disabled={loading} />
+            </>
+          )}
+        </StepStage>
 
         {error && (
           <p className="rounded-lg bg-neg-soft p-3 text-sm text-neg" role="alert">
@@ -64,10 +79,18 @@ export default function OnboardingPage() {
           </p>
         )}
 
-        <Button type="submit" className="h-11 w-full text-base" disabled={loading || !complete}>
-          {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
-          {loading ? "Salvataggio in corso…" : "Inizia"}
-        </Button>
+        <StepActions
+          backLabel={flow.isFirst ? undefined : "Indietro"}
+          onBack={() => {
+            track("form_step_back", { flow: "onboarding", step: flow.index + 1 });
+            setError(null);
+            flow.back();
+          }}
+          primaryLabel={flow.isLast ? (loading ? "Salvataggio in corso…" : "Inizia") : "Continua"}
+          pending={loading}
+          disabled={flow.isLast && !complete}
+          className="[&_button]:w-full sm:[&_button]:w-auto"
+        />
       </form>
     </div>
   );

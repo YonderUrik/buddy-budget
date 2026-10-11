@@ -5,9 +5,10 @@
  * e, per le obbligazioni, tasso, frequenza e scadenza delle cedole (servono a prevederle e a proporle da registrare).
  */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isFund } from "@/lib/calc/taxes";
@@ -37,9 +38,9 @@ export interface InstrumentSettingsDialogProps {
 export function InstrumentSettingsDialog({ instrument, setting, onClose }: InstrumentSettingsDialogProps) {
   return (
     <Dialog open={instrument !== null} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
+      <FormDialogContent>
         {instrument ? <SettingsForm key={instrument.id} instrument={instrument} setting={setting} onClose={onClose} /> : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

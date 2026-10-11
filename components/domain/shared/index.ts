@@ -16,5 +16,10 @@ export { CollapsibleSection, COLLAPSIBLE_STORAGE_PREFIX } from "./collapsible-se
 export type { CollapsibleSectionProps } from "./collapsible-section";
 export { SectionTabs, isSectionTabActive, activeSectionTabIndex } from "./section-tabs";
 export type { SectionTab, SectionTabsProps } from "./section-tabs";
+export { useStepFlow, StepProgress, StepStage, StepHeading, StepActions } from "./step-flow";
+export type { UseStepFlowResult, StepProgressProps, StepStageProps, StepHeadingProps, StepActionsProps } from "./step-flow";
+export type { StepDirection } from "./step-flow.state";
 export { EmptyState } from "./empty-state";
 export type { EmptyStateAction, EmptyStateProps } from "./empty-state";
+export { FormDialogContent } from "./form-dialog";
+export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";

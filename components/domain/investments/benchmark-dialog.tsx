@@ -2,9 +2,10 @@
 
 /** Dialog per scegliere (o togliere) lo strumento con cui confrontare il rendimento del portafoglio. */
 
+import { FormDialogContent } from "@/components/domain/shared";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import {Dialog, DialogContent} from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { InstrumentPicker } from "./instrument-picker";
@@ -33,7 +34,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
         onOpenChange(next);
       }}
     >
-      <DialogContent className="max-w-lg">
+      <FormDialogContent>
         <PanelDialogHeader icon={GitCompareArrowsIcon} title="Confronta con un indice" description="Mettiamo gli stessi soldi, negli stessi giorni, in un altro strumento e vediamo quanto avresti oggi. Di solito si sceglie un ETF azionario globale ad accumulazione (i dividendi sono già nel prezzo)." color="var(--swatch-indigo)" />
         <InstrumentPicker value={current} onChange={(instrument) => save(instrument.id)} defaultCurrency={currency} />
         {update.isPending ? <p className="text-sm text-muted-foreground">Salvo e scarico i prezzi…</p> : null}
@@ -43,7 +44,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
             Togli il confronto
           </Button>
         ) : null}
-      </DialogContent>
+      </FormDialogContent>
     </Dialog>
   );
 }

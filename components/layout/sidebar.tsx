@@ -38,6 +38,7 @@ import {
   LifeBuoy,
   Eye,
 } from "lucide-react";
+import { LayoutGroup, motion } from "motion/react";
 
 import { ThemeSubmenu, type ThemeChoice } from "@/components/theme-submenu";
 import { track } from "@/lib/analytics";
@@ -45,7 +46,9 @@ import { usePrivacy } from "@/components/privacy-provider";
 import { useSidebar } from "@/components/layout/sidebar-context";
 import { AppVersionLabel } from "@/components/layout/app-version-label";
 import { SidebarSlotProvider } from "@/components/layout/sidebar-slot";
+import { usePendingNavHref } from "@/components/layout/use-pending-nav";
 import { authClient } from "@/lib/auth/client";
+import { SPRING_SNAPPY } from "@/lib/motion/springs";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -154,14 +157,23 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cn(
-        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+        "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
         "transition-colors duration-150",
-        "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        active && "bg-sidebar-accent text-sidebar-accent-foreground",
+        "text-sidebar-foreground/70 hover:text-sidebar-accent-foreground",
+        active ? "text-sidebar-accent-foreground" : "hover:bg-sidebar-accent",
         collapsed && "justify-center px-2"
       )}
     >
-      <span className="relative flex shrink-0">
+      {/* Sfondo della voce attiva: uno solo per lista, scivola da una voce all'altra (`layoutId`). */}
+      {active ? (
+        <motion.span
+          layoutId="sidebar-active-pill"
+          transition={SPRING_SNAPPY}
+          className="absolute inset-0 rounded-lg bg-sidebar-accent"
+          aria-hidden="true"
+        />
+      ) : null}
+      <span className="relative z-10 flex shrink-0">
         <Icon
           className={cn(
             "shrink-0 transition-transform duration-150",
@@ -178,12 +190,12 @@ function NavLink({
         )}
       </span>
       {!collapsed && (
-        <span className="truncate leading-none">{item.label}</span>
+        <span className="relative z-10 truncate leading-none">{item.label}</span>
       )}
       {showBadge && !collapsed && (
         <span
           aria-label={badge.ariaLabel}
-          className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-xs font-bold leading-none text-sidebar-primary-foreground tabular-nums"
+          className="relative z-10 ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-xs font-bold leading-none text-sidebar-primary-foreground tabular-nums"
         >
           {badge.countLabel ?? badge.count}
         </span>
@@ -260,6 +272,9 @@ export function AppSidebar({
   const { hidden, toggle: toggleHidden } = usePrivacy();
   const router = useRouter();
   const pathname = usePathname();
+  const [pendingHref, startNav] = usePendingNavHref();
+  /** Una sidebar desktop e una nel menu mobile possono convivere: ognuna ha la sua pillola. */
+  const navGroupId = React.useId();
   const { data: sessionData } = authClient.useSession();
   // La sessione si legge solo sul client: finché non siamo idratati si usa il placeholder, come sul server,
   // altrimenti nome e iniziali renderizzati dal server ("Utente", "U") non combaciano con quelli del client.
@@ -327,21 +342,32 @@ export function AppSidebar({
 
       {/* ── Navigazione ── */}
       <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
-        <ul className="flex flex-col gap-0.5" role="list">
-          {items.map((item) => {
-            return (
-              <li key={item.href}>
-                <NavLink
-                  item={item}
-                  collapsed={isCollapsed}
-                  active={activeHref ? activeHref === item.href : isActivePath(pathname, item.href)}
-                  badge={badges?.[item.href]}
-                  onNavigate={onClose}
-                />
-              </li>
-            );
-          })}
-        </ul>
+        <LayoutGroup id={navGroupId}>
+          <ul className="flex flex-col gap-0.5" role="list">
+            {items.map((item) => {
+              return (
+                <li key={item.href}>
+                  <NavLink
+                    item={item}
+                    collapsed={isCollapsed}
+                    active={
+                      pendingHref
+                        ? pendingHref === item.href
+                        : activeHref
+                          ? activeHref === item.href
+                          : isActivePath(pathname, item.href)
+                    }
+                    badge={badges?.[item.href]}
+                    onNavigate={() => {
+                      startNav(item.href);
+                      onClose?.();
+                    }}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </LayoutGroup>
         {extra ? (
           <SidebarSlotProvider value={{ collapsed: isCollapsed, onNavigate: onClose }}>{extra}</SidebarSlotProvider>
         ) : null}

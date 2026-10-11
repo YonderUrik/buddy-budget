@@ -96,7 +96,7 @@ export function EarlyRepaymentMonthly({ preview, currency }: EarlyRepaymentMonth
         <Row label="Interessi risparmiati" value={formatCurrency(result.interestSaved, currency)} strong positive />
         <Row label="Versato in extra in totale" value={formatCurrency(result.extraPaid, currency)} />
       </dl>
-      <p className="mt-2 text-xs text-muted-foreground">È solo una simulazione: non si registra. Se vuoi farlo davvero, registra le singole estinzioni quando le fai.</p>
+      <p className="mt-2 text-xs text-muted-foreground">È solo una simulazione: non si registra. Per registrarle, inserisci le singole estinzioni quando le fai.</p>
     </div>
   );
 }

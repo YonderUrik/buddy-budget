@@ -97,7 +97,7 @@ export function NotificationsSection({ email }: { email: string }) {
               </Select>
             </SettingsRow>
           )}
-          <SettingsRow label="Vedi un esempio" hint="Ti mandiamo il riepilogo dell'ultimo mese con i tuoi dati, per capire che cosa riceverai. Non attiva nulla.">
+          <SettingsRow label="Vedi un esempio" hint="Ti mandiamo il riepilogo dell'ultimo mese con i tuoi dati. Non attiva nulla.">
             <Button
               variant="outline"
               disabled={example.isPending}

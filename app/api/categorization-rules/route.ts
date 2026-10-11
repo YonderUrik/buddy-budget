@@ -92,7 +92,7 @@ async function handlePost(request: NextRequest) {
   }
   if (category.isFallback) {
     return Response.json(
-      { error: "Non è possibile creare una regola sulla categoria di fallback" },
+      { error: "Non si può creare una regola sulla categoria di fallback" },
       { status: 400 }
     );
   }

@@ -67,7 +67,7 @@ export function ReturnsCard({ returns, period, benchmark, benchmarkFirstPriceDat
             label="I tuoi soldi"
             value={returns.moneyWeighted}
             annual={returns.moneyWeightedAnnual}
-            hint="Il rendimento che hai ottenuto davvero: tiene conto di quando hai messo i soldi. Se hai versato molto poco prima di un calo è più basso di quello del portafoglio."
+            hint="Il rendimento che hai ottenuto: tiene conto di quando hai messo i soldi. Se hai versato molto poco prima di un calo, è più basso di quello del portafoglio."
           />
           {real ? (
             <ReturnMetric

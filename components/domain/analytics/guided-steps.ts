@@ -60,7 +60,7 @@ export function fireSteps(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency
       title: "A che punto sei",
       text: [
         `Il tuo patrimonio è ${money(plan.wealth, currency)}: il ${pct(plan.progress ?? 0, 0)} del traguardo. La barra sotto i tre numeri mostra lo stesso dato.`,
-        reached ? "Hai già raggiunto il numero: secondo queste ipotesi potresti vivere del patrimonio. Controlla la scheda Simulazione per vedere quanto reggerebbe." : `Mancano ${money(plan.target - plan.wealth, currency)}.`,
+        reached ? "Hai già raggiunto il numero: con queste ipotesi potresti vivere del patrimonio. La scheda Simulazione mostra quanto reggerebbe." : `Mancano ${money(plan.target - plan.wealth, currency)}.`,
       ],
     },
     {
@@ -175,7 +175,7 @@ export function withdrawalSteps(results: MonteCarloResult[], a: AnalyticsAssumpt
       text: [
         `La regola con più successo è «${RULE_NAMES[best.rule]}» (${pct(best.successRate, 0)}).${fissa ? ` La fissa arriva a ${pct(fissa.successRate, 0)}.` : ""}`,
         flexible.length > 0 ? `Il prezzo delle regole flessibili è nel taglio: nel 10% dei casi peggiori la spesa può scendere del ${pct(Math.max(...flexible.map((r) => r.maxCut.p90)), 0)} o più rispetto al primo anno.` : "",
-        "Chiediti se sapresti davvero ridurre le spese di quella misura: se no, la regola migliore sulla carta non è la tua.",
+        "Chiediti se sapresti ridurre le spese di quella misura: se no, la regola migliore sulla carta non è la tua.",
       ].filter(Boolean),
     },
     {

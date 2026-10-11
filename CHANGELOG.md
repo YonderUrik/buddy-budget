@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.61.0](https://github.com/YonderUrik/buddy-budget/compare/v0.60.0...v0.61.0) (2026-10-11)
+
+
+### Novità
+
+* apertura che si anima, schermate intere, giro dell'app a indice e accesso con esempio animato ([#331](https://github.com/YonderUrik/buddy-budget/issues/331)) ([9a79147](https://github.com/YonderUrik/buddy-budget/commit/9a791472d3e26f7331680a7f9aad086f03002123))
+* novità della Panoramica come etichetta accanto alla data ([#334](https://github.com/YonderUrik/buddy-budget/issues/334)) ([9e0c1e9](https://github.com/YonderUrik/buddy-budget/commit/9e0c1e95ac3a9cae7cc9c28e2627eb18514f2ad2))
+
+
+### Correzioni
+
+* le aliquote mostrano solo i titoli in portafoglio ([#332](https://github.com/YonderUrik/buddy-budget/issues/332)) ([b2109cf](https://github.com/YonderUrik/buddy-budget/commit/b2109cfef283e21feab988bccf8449175154719d))
+
 ## [0.60.0](https://github.com/YonderUrik/buddy-budget/compare/v0.59.0...v0.60.0) (2026-10-11)
 
 

@@ -49,16 +49,18 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
     <section aria-label={label} className={className}>
       <p className="text-base text-text-2">{label}</p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
-      {delta !== null && (
-        <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm">
-          <span className={cn("inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums", up ? "text-pos" : "text-neg")}>
-            <Icon className="size-4" aria-hidden="true" />
-            {up ? "+" : "−"}
-            {formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })}
-          </span>
-          <span className="text-text-2">{PERIOD_PHRASES[period]}</span>
-        </p>
-      )}
+      <div className="mt-3 min-h-5">
+        {delta !== null && (
+          <p className="flex flex-wrap items-center gap-x-2 text-sm">
+            <span className={cn("inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums", up ? "text-pos" : "text-neg")}>
+              <Icon className="size-4" aria-hidden="true" />
+              {up ? "+" : "−"}
+              {formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })}
+            </span>
+            <span className="text-text-2">{PERIOD_PHRASES[period]}</span>
+          </p>
+        )}
+      </div>
       <div className="-mx-4 mt-2 sm:-mx-6">
         <TrendChart points={points} description={description} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>

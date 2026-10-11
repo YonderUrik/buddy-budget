@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Novità come etichetta accanto alla data della Panoramica: una parola in colore primario con una scintilla che gira
+ * Novità come etichetta accanto alla data della Panoramica: un testo in colore primario con una scintilla che gira
  * una volta e un riflesso che attraversa il testo un paio di volte, poi resta ferma. Toccandola si apre un popover
  * (foglio dal basso sul telefono) con la spiegazione, il pulsante per provarla e «Non mostrare più».
  */

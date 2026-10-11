@@ -11,11 +11,9 @@ export interface OverviewVoiceProps extends VoiceInput {
   dateLabel: string;
   /** Contenuto accanto alla data (es. la novità del momento). */
   dateAside?: ReactNode;
-  /** Frase in coda al racconto (es. la novità del momento). */
-  trailing?: ReactNode;
 }
 
-export function OverviewVoice({ firstName, dateLabel, dateAside, trailing, ...input }: OverviewVoiceProps) {
+export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: OverviewVoiceProps) {
   const lines = buildVoiceLines(input);
   const greeting = greetingFor(input.today.getHours());
   return (
@@ -43,7 +41,6 @@ export function OverviewVoice({ firstName, dateLabel, dateAside, trailing, ...in
             )}{" "}
           </span>
         ))}
-        {trailing}
       </p>
     </header>
   );

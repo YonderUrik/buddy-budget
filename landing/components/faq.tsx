@@ -8,6 +8,7 @@ export function Faq() {
   return (
     <TrackedSection id="domande" section="domande" className="sec faq">
       <div className="wrap">
+        <div className="faq-grid">
         <h2 className="t">Domande frequenti.</h2>
         <Reveal>
           <div className="faq-list">
@@ -19,6 +20,7 @@ export function Faq() {
             ))}
           </div>
         </Reveal>
+        </div>
       </div>
     </TrackedSection>
   );

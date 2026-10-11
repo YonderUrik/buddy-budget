@@ -6,6 +6,7 @@ function makeAccount(balance: string): Account {
   return {
     id: crypto.randomUUID(),
     userId: "user-1",
+    isDemo: false,
     name: "Conto",
     type: "Conto corrente",
     balance,

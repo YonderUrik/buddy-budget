@@ -36,7 +36,7 @@ export function DiversificationCard({ analysis, currency }: DiversificationCardP
   return (
     <>
       <PanelSection icon={GlobeIcon} title="Diversificazione" color="var(--swatch-blue)">
-        <p className="text-sm text-muted-foreground">Dove investi davvero, guardando dentro ETF e fondi</p>
+        <p className="text-sm text-muted-foreground">Dove investi, guardando dentro ETF e fondi</p>
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <AreaSection slices={analysis.areas.slices} currency={currency} insight={areaInsight(analysis.areas)} />

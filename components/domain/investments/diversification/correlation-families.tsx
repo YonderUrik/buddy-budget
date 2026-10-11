@@ -44,7 +44,7 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
       {independent.length > 0 ? (
         <div className="flex flex-col gap-2 rounded-xl border p-3">
           <p className="text-sm font-medium text-foreground">
-            {families.length > 0 ? "Vanno per conto loro" : "Nessuna coppia si muove davvero insieme"}
+            {families.length > 0 ? "Vanno per conto loro" : "Nessuna coppia si muove insieme"}
             <span className="font-normal text-muted-foreground"> · diversificano il resto</span>
           </p>
           <ul className="flex flex-wrap gap-2">

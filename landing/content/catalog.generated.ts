@@ -33,8 +33,8 @@ const f = (
 ): Feature => ({ id, area, name, description, status, ...(appPath ? { appPath } : {}) });
 
 export const FEATURES: readonly Feature[] = [
-  f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background, ricordiamo il formato per le volte dopo e ti avvisiamo per email a import finito.", "new"),
-  f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può guardare l'app con dati d'esempio, segnati come demo e azzerabili con un tocco.", "new"),
+  f("csv-personali-ai", "Liquidità", "CSV personali con AI", "Carica il CSV di una banca o di un broker che non conosciamo: lo leggiamo in background, ricordiamo il formato e ti avvisiamo per email a import finito.", "new"),
+  f("primi-passi-e-dati-d-esempio", "Account", "Primi passi e dati d'esempio", "Chi parte senza banca trova in Panoramica quattro passi che si spuntano da soli (conto, movimenti, investimento, obiettivo) e può provare l'app con dati d'esempio, azzerabili con un tocco.", "new"),
   f("collegamento-alla-banca", "Liquidità", "Collegamento alla banca", "Importa saldi e movimenti con l'Open Banking, in sola lettura.", "live"),
   f("avviso-rinnovo-banca", "Liquidità", "Avviso di rinnovo del collegamento", "Ti avvisiamo per email e in app prima che il consenso con la banca scada, con un clic per rinnovarlo.", "new"),
   f("liquidita-unica", "Liquidità", "Conti e movimenti in un posto solo", "Saldo totale, andamento e movimenti di tutti i conti in un'unica schermata, filtrabile per conto con un tocco.", "new"),
@@ -44,16 +44,16 @@ export const FEATURES: readonly Feature[] = [
   f("conti-raggruppati-per-banca", "Liquidità", "Conti raggruppati per banca", "Il totale per banca e l'andamento della liquidità degli ultimi 30 giorni, leggibili anche dal telefono.", "live"),
 
 
-  f("categorizza-con-ai", "Liquidità", "Categorizza con l'AI", "Se lo attivi, per i movimenti nuovi l'assistente propone una categoria per ogni esercente e tu confermi con un gesto, una carta alla volta (a destra conferma, a sinistra cambia, in alto salta, si può annullare). Non applica mai nulla da solo; all'assistente va solo il nome pulito dell'esercente, mai importi, date o IBAN.", "new"),
+  f("categorizza-con-ai", "Liquidità", "Categorizza con l'AI", "Se lo attivi, l'assistente propone una categoria per ogni esercente e tu confermi con un gesto, una carta alla volta. Non applica nulla da solo e riceve solo il nome pulito dell'esercente.", "new"),
   f("categorizzazione-automatica", "Liquidità", "Categorizzazione automatica", "Conferma un negozio e, se vuoi, ricordalo: le volte dopo viene riconosciuto. Le regole sono visibili e modificabili.", "live"),
   f("proposte-per-somiglianza", "Liquidità", "Proposte per somiglianza", "Riconosce lo stesso negozio anche con codici o filiali diverse.", "live"),
-  f("nomi-leggibili", "Liquidità", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, il nome di chi ti ha pagato) e mostra il tipo di esercente quando la banca lo indica.", "new"),
+  f("nomi-leggibili", "Liquidità", "Nomi leggibili", "Dalle descrizioni criptiche della banca ricava il negozio (Amazon, Esselunga, chi ti ha pagato) e, quando la banca lo indica, il tipo di esercente.", "new"),
   f("quattro-gruppi-di-spesa", "Liquidità", "Quattro gruppi di spesa", "Dovute, Volute, Te futuro e Saltuarie, con colori e icone scelti da te.", "live"),
   f("dividi-e-escludi", "Liquidità", "Dividi e escludi", "Escludi in tutto o in parte rimborsi, giroconti e spese condivise: scegli Metà, Un terzo o un importo, e vedi subito quanto è tuo.", "live"),
   f("budget-per-categoria", "Liquidità", "Budget per categoria", "Imposta un budget e guarda quanto ne hai usato.", "live"),
   f("analisi-e-cash-flow", "Liquidità", "Analisi e cash flow", "Entrate, uscite, netto e risparmio, mese per mese e per categoria.", "live", "/liquidita"),
   f("ricerca-filtri-e-note", "Liquidità", "Ricerca, filtri e note", "Cerca per testo o categoria e aggiungi una nota a ogni movimento.", "live"),
-  f("abbonamenti", "Liquidità", "Abbonamenti", "Trova da solo gli addebiti che tornano (streaming, palestra, assicurazione annuale) e li confermi con un tocco. Vedi quanto pesano al mese e all'anno, il prossimo addebito, gli aumenti di prezzo e quelli che non vengono più addebitati. Il riconoscimento è un calcolo sui tuoi movimenti, senza AI, e le tue scelte restano memorizzate.", "new"),
+  f("abbonamenti", "Liquidità", "Abbonamenti", "Trova gli addebiti ricorrenti (streaming, palestra, assicurazioni) e li confermi con un tocco. Vedi il costo al mese e all'anno, il prossimo addebito e gli aumenti di prezzo. Il calcolo parte dai tuoi movimenti, senza AI.", "new"),
   f("da-sistemare", "Liquidità", "Da sistemare", "Un avviso in Panoramica e un contatore su Liquidità nella barra laterale quando ci sono movimenti nuovi o da categorizzare, con la categoria proposta da confermare in un tocco.", "new"),
 
   f("etf-azioni-btp-fondi-e-crypto", "Investimenti", "ETF, azioni, BTP, fondi e crypto", "Prezzi di fine giornata da fonti gratuite con riserva automatica, cambi della BCE.", "live", "/investimenti"),

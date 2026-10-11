@@ -10,7 +10,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
     title: "Quattro domande, una risposta ciascuna",
     body: [
       "Analitiche è la parte di Buddy Budget per chi vuole ragionare sui numeri. In alto vedi l'anno in cui puoi smettere di lavorare e quattro cursori per provare «e se…»; sotto, quattro schede rispondono ciascuna a una domanda con una frase e un grafico.",
-      "Ogni risultato è una stima basata su ipotesi che decidi tu. Non è una previsione e non è una consulenza: serve a capire quali scelte contano di più.",
+      "Ogni risultato è una stima basata su ipotesi che decidi tu. Non è una previsione e non è una consulenza: mostra quali scelte contano di più.",
     ],
   },
   {

@@ -23,3 +23,5 @@ export { EmptyState } from "./empty-state";
 export type { EmptyStateAction, EmptyStateProps } from "./empty-state";
 export { FormDialogContent } from "./form-dialog";
 export type { FormDialogContentProps, FormDialogSize } from "./form-dialog";
+export { InlineOrSheet } from "./inline-or-sheet";
+export type { InlineOrSheetLayout, InlineOrSheetProps } from "./inline-or-sheet";

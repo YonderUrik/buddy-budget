@@ -74,9 +74,8 @@ export function CategorySheet({
       <DialogContent
         data-origin-animation="none"
         initialFocus={wide}
-        className="top-auto bottom-0 left-0 flex h-[80dvh] max-w-none translate-x-0 translate-y-0 flex-col gap-3 rounded-b-none rounded-t-2xl p-4 max-sm:data-open:slide-in-from-bottom-full max-sm:data-open:zoom-in-100 max-sm:data-closed:slide-out-to-bottom-full max-sm:data-closed:zoom-out-100 sm:top-1/2 sm:bottom-auto sm:left-1/2 sm:h-[70vh] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl"
+        className="flex h-[80dvh] flex-col gap-3 p-4 sm:h-[70vh] sm:max-w-lg"
       >
-        <div className="mx-auto h-1 w-9 shrink-0 rounded-full bg-border sm:hidden" aria-hidden />
         <DialogHeader className="gap-0.5">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className={description ? "truncate text-sm" : "sr-only"}>{description ?? "Cerca o scegli una categoria"}</DialogDescription>

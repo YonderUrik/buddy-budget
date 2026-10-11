@@ -12,6 +12,9 @@ export interface PreparedMerchant {
 /** Operazioni che non descrivono un esercente: trasferimenti, prelievi, imposte, stipendi. */
 const NON_MERCHANT = /\b(bonifico|giroconto|giro conto|trasferimento|ricarica|prelievo|prelevamento|bollo|f24|stipendio|versamento)\b/i;
 
+/** Forme societarie finali che l'estrazione del nome può rimuovere, anche prima del paese. */
+const COMPANY_ENDING = /\b(?:s\.?p\.?a|s\.?r\.?l\.?s?|s\.?a\.?s|s\.?n\.?c|s\.?a\.?r\.?l|ltd|gmbh|inc|llc|bv|ab)\.?(?:\s+(?:IT|LU|IE|DE|FR|ES|NL|GB|UK|US|CH|AT|BE|PT|SE|SI|SM))*[\s.,:;/-]*$/i;
+
 /** Parole tipiche di un'attività: un nome che le contiene non è trattato come persona. */
 const BUSINESS_WORDS = new Set([
   "srl", "srls", "snc", "sas", "spa", "sa", "ltd", "inc", "gmbh", "llc", "bv", "ab", "coop", "soc", "societa",
@@ -40,10 +43,11 @@ function cutBankBoilerplate(raw: string): string {
 export function prepareMerchantForModel(rawDescription: string): PreparedMerchant {
   const text = cutBankBoilerplate(rawDescription);
   const isCardPayment = /\bCarta\s+N\b/i.test(rawDescription);
+  const hasCompanyEnding = COMPANY_ENDING.test(text);
   const { name, source } = extractMerchantName({ rawText: text });
 
   if (NON_MERCHANT.test(text)) return { name, blocked: "operazione" };
-  if (source === "alias" || isCardPayment) return { name, blocked: null };
+  if (source === "alias" || isCardPayment || hasCompanyEnding) return { name, blocked: null };
 
   const words = name.split(/\s+/).filter((word) => word.length > 0);
   const onlyLetters = words.every((word) => /^[A-Za-zÀ-ÿ'.]+$/.test(word));

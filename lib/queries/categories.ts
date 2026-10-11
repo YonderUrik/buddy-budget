@@ -85,6 +85,9 @@ export function useUpdateCategoryMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["categorize-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
     },
   });
 }
@@ -102,6 +105,9 @@ export function useDeleteCategoryMutation() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["categorize-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["budgets"] });
     },
   });
 }

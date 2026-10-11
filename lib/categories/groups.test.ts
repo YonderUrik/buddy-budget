@@ -15,9 +15,9 @@ function cat(id: string, type: string, isFallback = false) {
 }
 
 describe("costanti gruppi", () => {
-  it("i gruppi di spesa sono i tipi categoria meno 'entrata', nello stesso ordine", () => {
+  it("i gruppi di spesa sono i tipi categoria meno entrate e trasferimenti, nello stesso ordine", () => {
     expect(EXPENSE_GROUP_KEYS).toEqual(["dovuta", "voluta", "futuro", "saltuaria"]);
-    expect(CATEGORY_TYPES).toEqual(["dovuta", "voluta", "futuro", "saltuaria", "entrata"]);
+    expect(CATEGORY_TYPES).toEqual(["dovuta", "voluta", "futuro", "saltuaria", "entrata", "trasferimento"]);
   });
 
   it("ha un'etichetta per ogni tipo categoria", () => {
@@ -27,6 +27,7 @@ describe("costanti gruppi", () => {
       futuro: "Te futuro",
       saltuaria: "Saltuarie",
       entrata: "Entrata",
+      trasferimento: "Trasferimenti tra conti",
     });
   });
 
@@ -56,6 +57,7 @@ describe("isExpenseGroup / categoryGroupKey", () => {
 
   it("entrata → null, gruppo → se stesso, tipo sconosciuto → daCategorizzare", () => {
     expect(categoryGroupKey(cat("e", "entrata"))).toBeNull();
+    expect(categoryGroupKey(cat("t", "trasferimento"))).toBeNull();
     expect(categoryGroupKey(cat("s", "saltuaria"))).toBe("saltuaria");
     expect(categoryGroupKey(cat("x", "boh"))).toBe("daCategorizzare");
   });
@@ -65,6 +67,7 @@ describe("groupCategoriesByType", () => {
   it("divide in quattro gruppi ordinati, fallback a parte, entrate in fondo, preservando l'ordine di input", () => {
     const sections = groupCategoriesByType([
       cat("stipendio", "entrata"),
+      cat("giroconto", "trasferimento"),
       cat("netflix", "voluta"),
       cat("fallback", "voluta", true),
       cat("affitto", "dovuta"),
@@ -76,6 +79,7 @@ describe("groupCategoriesByType", () => {
     expect(sections.groups[2].categories).toEqual([]);
     expect(sections.uncategorized.map((c) => c.id)).toEqual(["fallback"]);
     expect(sections.income.map((c) => c.id)).toEqual(["stipendio"]);
+    expect(sections.transfers.map((c) => c.id)).toEqual(["giroconto"]);
   });
 
   it("con lista vuota restituisce comunque i quattro gruppi vuoti", () => {

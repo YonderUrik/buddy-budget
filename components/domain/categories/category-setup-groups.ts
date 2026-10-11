@@ -11,5 +11,6 @@ export interface SetupGroup {
 
 export const SETUP_GROUPS: SetupGroup[] = [
   ...EXPENSE_GROUP_KEYS.map((type) => ({ type, label: EXPENSE_GROUPS[type].label, dotClassName: EXPENSE_GROUPS[type].dotClassName })),
+  { type: "trasferimento", label: "Trasferimenti tra conti", dotClassName: "bg-muted-foreground" },
   { type: "entrata", label: "Entrate", dotClassName: "bg-pos" },
 ];

@@ -58,12 +58,13 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
   const excludedAmount = Math.abs(Number(transaction.excludedAmount));
   const fullAmount = Math.abs(Number(transaction.amount));
   const netAmount = fullAmount - excludedAmount;
-  const isSplit = excludedAmount > 0;
-  const isIncome = Number(transaction.amount) > 0;
   const currentCategory = categories.find((c) => c.id === transaction.categoryId);
+  const isTransfer = currentCategory?.type === "trasferimento";
+  const isSplit = excludedAmount > 0 && !isTransfer;
+  const isIncome = Number(transaction.amount) > 0;
   const isUncategorized = currentCategory?.isFallback ?? false;
   const selectableCategories = React.useMemo(
-    () => categories.filter((c) => c.isFallback || (isIncome ? c.type === "entrata" : c.type !== "entrata")),
+    () => categories.filter((c) => c.isFallback || (c.type === "trasferimento" || (isIncome ? c.type === "entrata" : c.type !== "entrata"))),
     [categories, isIncome]
   );
   const descriptionTitle =
@@ -146,10 +147,11 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
         </div>
 
         <div className="shrink-0 text-right">
-          <p className={cn("text-sm font-medium tabular-nums", isIncome && "text-pos")}>
+          <p className={cn("text-sm font-medium tabular-nums", isIncome && !isTransfer && "text-pos")}>
             {isIncome && "+"}
             {formatCurrency(isSplit ? netAmount : fullAmount, currency)}
           </p>
+          {isTransfer && <p className="text-xs text-muted-foreground">Escluso dai conteggi</p>}
           {isSplit && (
             <p className="text-xs text-muted-foreground">
               <span className="sr-only">Diviso, importo pieno </span>
@@ -178,7 +180,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
         >
           <TransactionNotePopover transaction={transaction} />
 
-          <button
+          {!isTransfer && <button
             type="button"
             onClick={() => togglePanel("split")}
             className={cn(ACTION_BUTTON_CLASS, openPanel === "split" && "bg-muted text-foreground")}
@@ -187,7 +189,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           >
             <SplitIcon className="size-4 sm:hidden" aria-hidden="true" />
             Dividi
-          </button>
+          </button>}
 
           {!isAuto && (
             <>

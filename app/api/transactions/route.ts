@@ -93,7 +93,7 @@ async function handlePost(request: NextRequest) {
     return Response.json({ error: "Categoria non valida" }, { status: 400 });
   }
 
-  const signedAmount = category.type === "entrata" ? parsed.data.amount : -parsed.data.amount;
+  const signedAmount = (category.type === "entrata" || (category.type === "trasferimento" && parsed.data.direction === "entrata")) ? parsed.data.amount : -parsed.data.amount;
 
   const [transaction] = await db
     .insert(transactions)
@@ -103,6 +103,7 @@ async function handlePost(request: NextRequest) {
       categoryId: parsed.data.categoryId,
       description: parsed.data.description,
       amount: signedAmount.toFixed(2),
+      excludedAmount: category.type === "trasferimento" ? signedAmount.toFixed(2) : "0",
       date: parsed.data.date,
       source: "manuale",
     })

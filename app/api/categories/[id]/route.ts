@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
@@ -70,11 +70,21 @@ async function handlePatch(
     }
   }
 
-  const [updated] = await db
-    .update(categories)
-    .set(parsed.data)
-    .where(eq(categories.id, id))
-    .returning();
+  if (category.isFallback && parsed.data.type === "trasferimento") {
+    return Response.json({ error: "La categoria da categorizzare non può diventare un trasferimento" }, { status: 400 });
+  }
+  const updated = await db.transaction(async (tx) => {
+    const [row] = await tx.update(categories).set(parsed.data).where(eq(categories.id, id)).returning();
+    if (parsed.data.type && parsed.data.type !== category.type &&
+        (parsed.data.type === "trasferimento" || category.type === "trasferimento")) {
+      await tx.update(transactions).set({
+        excludedAmount: parsed.data.type === "trasferimento" ? sql`${transactions.amount}` : "0",
+        updatedAt: new Date(),
+      }).where(and(eq(transactions.categoryId, id), eq(transactions.userId, session.user.id)));
+      if (parsed.data.type === "trasferimento") await tx.delete(budgets).where(eq(budgets.categoryId, id));
+    }
+    return row;
+  });
 
   return Response.json(updated);
 }
@@ -116,7 +126,7 @@ async function handleDelete(
   await db.transaction(async (tx) => {
     await tx
       .update(transactions)
-      .set({ categoryId: fallback.id })
+      .set({ categoryId: fallback.id, ...(category.type === "trasferimento" ? { excludedAmount: "0" } : {}) })
       .where(eq(transactions.categoryId, id));
     await tx.delete(budgets).where(eq(budgets.categoryId, id));
     await tx.delete(categories).where(eq(categories.id, id));

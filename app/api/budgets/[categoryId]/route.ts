@@ -32,6 +32,8 @@ async function handlePut(
     return new Response(null, { status: 404 });
   }
 
+  if (category.type === "trasferimento") return Response.json({ error: "I trasferimenti sono esclusi dal budget" }, { status: 400 });
+
   const body = await request.json();
   const parsed = upsertBudgetSchema.safeParse(body);
   if (!parsed.success) {

@@ -25,8 +25,9 @@
       "id": "movimenti",
       "theme": "light",
       "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
+      "width": 1280,
+      "height": 1200,
+      "capturedAt": "2026-10-11T19:55:08.084573+00:00"
     },
     {
       "id": "analisi",
@@ -46,8 +47,9 @@
       "id": "categorie",
       "theme": "light",
       "route": "/liquidita/categorie",
-      "width": 1920,
-      "height": 1476
+      "width": 1280,
+      "height": 1200,
+      "capturedAt": "2026-10-11T19:55:08.084483+00:00"
     },
     {
       "id": "categorizza",
@@ -137,8 +139,9 @@
       "id": "movimenti",
       "theme": "dark",
       "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
+      "width": 1280,
+      "height": 1200,
+      "capturedAt": "2026-10-11T19:55:08.084574+00:00"
     },
     {
       "id": "analisi",
@@ -158,8 +161,9 @@
       "id": "categorie",
       "theme": "dark",
       "route": "/liquidita/categorie",
-      "width": 1920,
-      "height": 1476
+      "width": 1280,
+      "height": 1200,
+      "capturedAt": "2026-10-11T19:55:08.084569+00:00"
     },
     {
       "id": "categorizza",

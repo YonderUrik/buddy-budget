@@ -47,7 +47,7 @@ export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", pr
             className={`shot-img shot-${theme}`}
             src={screenSmallSrc(screen.id, theme)}
             // I telefoni scaricano e decodificano la versione a 1x; la 1,5x solo dove serve (schermi larghi e densi).
-            srcSet={`${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${size.width}w`}
+            srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${size.width}w` : undefined}
             sizes={sizes}
             alt={screen.alt}
             width={size.width}

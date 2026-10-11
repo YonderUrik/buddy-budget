@@ -114,7 +114,7 @@ function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, rem
   const isIncome = group.totalAmount > 0;
   // Nel foglio solo le categorie della stessa direzione, senza quella già proposta (l'utente ha appena detto che non va).
   const selectable = React.useMemo(
-    () => categories.filter((c) => !c.isFallback && c.id !== suggestion?.suggestedCategoryId && (isIncome ? c.type === "entrata" : c.type !== "entrata")),
+    () => categories.filter((c) => !c.isFallback && c.id !== suggestion?.suggestedCategoryId && (c.type === "trasferimento" || (isIncome ? c.type === "entrata" : c.type !== "entrata"))),
     [categories, isIncome, suggestion]
   );
 

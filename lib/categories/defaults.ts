@@ -17,7 +17,7 @@ export interface DefaultCategory {
   isFallback?: boolean;
 }
 
-/** Categorie create per ogni nuovo utente (lista rivista il 2026-10-11: 23 più la fallback). */
+/** Categorie create per ogni nuovo utente (lista rivista il 2026-10-11: 24 più la fallback). */
 export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   // --- DOVUTE ---
   { key: "affitto", name: "Affitto & Mutuo", type: "dovuta", icon: "home", color: "slate", description: "Affitto, rata del mutuo, condominio" },
@@ -45,6 +45,8 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   { key: "tasse", name: "Tasse & Bolli", type: "saltuaria", icon: "receipt", color: "slate", description: "F24, IMU, TARI, bollo auto, canone" },
   { key: "casa", name: "Casa & Arredamento", type: "saltuaria", icon: "sofa", color: "amber", description: "Mobili, elettrodomestici, lavori in casa" },
   { key: "regali", name: "Regali & Donazioni", type: "saltuaria", icon: "gift", color: "pink", description: "Regali, ricorrenze, beneficenza" },
+
+  { key: "trasferimenti", name: "Trasferimenti tra i miei conti", type: "trasferimento", icon: "landmark", color: "slate", description: "Giroconti fra conti di tua proprietà: esclusi da entrate e spese" },
 
   // --- FALLBACK (nessun gruppo reale: il type è solo un valore non-null) ---
   { key: "da-categorizzare", name: "Da categorizzare", type: "voluta", icon: "help-circle", color: "red", isFallback: true },

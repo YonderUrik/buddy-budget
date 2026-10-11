@@ -1,18 +1,18 @@
 /** Tabella della scheda aperta nel foglio delle pagine di accesso: voce e descrizione, con bollino per novità e arrivi. */
 
+import type * as React from "react";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AuthSheetTab } from "./auth-sheet.data";
 
-export interface AuthSheetTableProps {
+export interface AuthSheetTableProps extends Omit<React.ComponentProps<"div">, "children"> {
   tab: AuthSheetTab;
-  className?: string;
 }
 
 /** Tabella a due colonne della scheda aperta, con didascalia e link facoltativi in fondo. */
-export function AuthSheetTable({ tab, className }: AuthSheetTableProps) {
+export function AuthSheetTable({ tab, className, ...props }: AuthSheetTableProps) {
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-border bg-card shadow-sm", className)}>
+    <div {...props} className={cn("overflow-hidden rounded-xl border border-border bg-card shadow-sm", className)}>
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-muted text-left text-[11px] font-medium uppercase tracking-wider text-text-3">

@@ -5,7 +5,7 @@
  *
  * Scena delle pagine di accesso e onboarding come un foglio di calcolo, continuando l'apertura della landing: barra
  * della formula in alto (la pagina la cambia con `useSheetFormula`), intestazioni di colonna e numeri di riga, il form
- * (`children`) nella colonna B, una tabella a destra e le schede in basso che la cambiano (cosa c'è dentro, novità,
+ * (`children`) nella colonna B, una tabella a destra e sopra di essa le schede che la cambiano (cosa c'è dentro, novità,
  * in arrivo). Su telefono la tabella scende sotto il form e restano tre colonne.
  */
 
@@ -28,7 +28,7 @@ const DEFAULT_FORMULA: SheetFormula = { fn: "BENVENUTO" };
 export interface AuthSheetProps {
   /** Riga sopra il form (logo e link al sito). */
   header: React.ReactNode;
-  /** Testo a destra della fila di schede (es. note sulla sicurezza). */
+  /** Riga in fondo alla pagina (es. note sulla sicurezza). */
   note?: React.ReactNode;
   /** Schede della tabella; di default dal catalogo (`buildAuthSheetTabs`). */
   tabs?: readonly AuthSheetTab[];
@@ -46,7 +46,7 @@ function FormulaText({ formula }: { formula: SheetFormula }) {
   );
 }
 
-/** Scena a foglio di calcolo delle pagine di accesso: barra della formula, griglia, form e schede in basso. */
+/** Scena a foglio di calcolo delle pagine di accesso: barra della formula, griglia, form e tabella a schede. */
 export function AuthSheet({ header, note, tabs: tabsProp, children, className }: AuthSheetProps) {
   const tabs = React.useMemo(() => tabsProp ?? buildAuthSheetTabs(), [tabsProp]);
   const [activeId, setActiveId] = React.useState<AuthSheetTabId>(tabs[0]?.id ?? "dentro");
@@ -106,32 +106,41 @@ export function AuthSheet({ header, note, tabs: tabsProp, children, className }:
                 {children}
               </div>
               {active && (
-                <AuthSheetTable
-                  tab={active}
-                  className="lg:col-span-3 lg:col-start-6 lg:mr-6 lg:mt-[4.5rem] lg:self-start"
-                />
+                <div className="flex min-w-0 flex-col lg:col-span-3 lg:col-start-6 lg:mr-6 lg:mt-[4.5rem] lg:self-start">
+                  <div role="tablist" aria-label="Fogli" className="relative z-10 -mb-px flex gap-1 overflow-x-auto">
+                    {tabs.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        role="tab"
+                        id={`auth-sheet-tab-${t.id}`}
+                        aria-controls="auth-sheet-panel"
+                        aria-selected={t.id === active.id}
+                        onClick={() => choose(t.id)}
+                        className="whitespace-nowrap rounded-t-md border border-transparent px-3.5 py-2 text-sm font-medium text-text-2 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-selected:border-border aria-selected:border-b-card aria-selected:bg-card aria-selected:font-semibold aria-selected:text-foreground aria-selected:shadow-[inset_0_2px_0_var(--primary)]"
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                  <AuthSheetTable
+                    tab={active}
+                    id="auth-sheet-panel"
+                    role="tabpanel"
+                    aria-labelledby={`auth-sheet-tab-${active.id}`}
+                    className={cn(active.id === tabs[0]?.id && "rounded-tl-none")}
+                  />
+                </div>
               )}
             </div>
           </main>
         </div>
 
-        <div className="sticky bottom-0 flex h-10 shrink-0 items-stretch gap-0.5 overflow-x-auto border-t border-border bg-muted pl-2 pr-3 text-sm lg:pl-11">
-          <div role="tablist" aria-label="Fogli" className="flex items-stretch gap-0.5">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                role="tab"
-                aria-selected={t.id === active?.id}
-                onClick={() => choose(t.id)}
-                className="whitespace-nowrap rounded-b-md px-4 font-medium text-text-2 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring aria-selected:bg-card aria-selected:font-semibold aria-selected:text-foreground aria-selected:shadow-[inset_0_2px_0_var(--primary)]"
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-          {note && <span className="ml-auto hidden self-center whitespace-nowrap pl-4 font-mono text-xs text-text-3 md:block">{note}</span>}
-        </div>
+        {note && (
+          <footer className="flex min-h-9 shrink-0 items-center border-t border-border bg-muted px-4 py-2 font-mono text-xs text-text-3 lg:pl-11">
+            {note}
+          </footer>
+        )}
       </div>
     </SheetFormulaProvider>
   );

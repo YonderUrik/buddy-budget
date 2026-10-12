@@ -197,6 +197,18 @@ describe("GET/POST /api/transactions", () => {
     expect(list).toHaveLength(2);
   });
 
+  it("GET aggiunge il logo dell'esercente quando il server lo trova, null per i bonifici", async () => {
+    await db.insert(transactions).values([
+      { userId, accountId: manualAccountId, categoryId, description: "Netflix", amount: "-12.99", date: "2026-03-05", source: "manuale" },
+      { userId, accountId: manualAccountId, categoryId, description: "Bonifico a Mario", amount: "-50.00", date: "2026-03-06", source: "manuale" },
+    ]);
+
+    const response = await GET(new NextRequest("http://localhost/api/transactions?from=2026-03-01&to=2026-03-31&type=uscita"));
+    const list: { description: string; logoPath: string | null }[] = await response.json();
+    expect(list.find((t) => t.description === "Netflix")?.logoPath).toBe("/api/merchant-logos/netflix.com");
+    expect(list.find((t) => t.description === "Bonifico a Mario")?.logoPath).toBeNull();
+  });
+
   it("risponde 400 se type non è uno dei valori validi", async () => {
     const response = await GET(
       new NextRequest("http://localhost/api/transactions?from=2026-01-01&to=2026-12-31&type=boh")

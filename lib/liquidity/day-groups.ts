@@ -4,14 +4,14 @@ import { addDays, toDateKey } from "@/lib/calc/net-worth";
 import { effectiveAmount, parseDateOnly, startOfDay } from "@/lib/calc/expenses";
 import type { Transaction } from "@/lib/db/schema/transactions";
 
-export interface DayGroup {
+export interface DayGroup<T extends Transaction = Transaction> {
   /** Data del giorno (YYYY-MM-DD). */
   date: string;
   /** "Oggi", "Ieri" oppure "lunedì 5 ottobre" (con l'anno se non è quello corrente). */
   label: string;
   /** Somma degli importi effettivi del giorno (entrate positive, uscite negative). */
   total: number;
-  items: Transaction[];
+  items: T[];
 }
 
 const DAY_FORMAT = new Intl.DateTimeFormat("it-IT", { weekday: "long", day: "numeric", month: "long" });
@@ -27,8 +27,8 @@ export function dayLabel(date: string, today: Date): string {
 }
 
 /** Raggruppa per data, giorni dal più recente; dentro il giorno l'ordine ricevuto è mantenuto. */
-export function groupByDay(transactions: Transaction[], today: Date): DayGroup[] {
-  const byDate = new Map<string, Transaction[]>();
+export function groupByDay<T extends Transaction>(transactions: T[], today: Date): DayGroup<T>[] {
+  const byDate = new Map<string, T[]>();
   for (const transaction of transactions) {
     byDate.set(transaction.date, [...(byDate.get(transaction.date) ?? []), transaction]);
   }

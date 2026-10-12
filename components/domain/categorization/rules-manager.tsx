@@ -6,10 +6,12 @@
  * e permette di aggiungerne una manualmente.
  */
 
+import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCategorizationRulesQuery } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
 import { AddRuleForm } from "./add-rule-form";
+import { LogoCredit } from "./logo-credit";
 import { RuleRow } from "./rule-row";
 
 export interface RulesManagerProps {
@@ -19,6 +21,8 @@ export interface RulesManagerProps {
 export function RulesManager({ categories }: RulesManagerProps) {
   const { data: rules, isLoading, isError, refetch } = useCategorizationRulesQuery();
   const safeRules = rules ?? [];
+  const [logosShown, setLogosShown] = React.useState(false);
+  const onRemoteLogo = React.useCallback(() => setLogosShown(true), []);
 
   return (
     <Card className="p-0">
@@ -46,9 +50,10 @@ export function RulesManager({ categories }: RulesManagerProps) {
             Categorizza.
           </p>
         ) : (
-          safeRules.map((rule) => <RuleRow key={rule.id} rule={rule} categories={categories} />)
+          safeRules.map((rule) => <RuleRow key={rule.id} rule={rule} categories={categories} onRemoteLogo={onRemoteLogo} />)
         )}
         {categories.length > 0 && <AddRuleForm categories={categories} />}
+        <LogoCredit visible={logosShown} className="px-4 pb-3" />
       </CardContent>
     </Card>
   );

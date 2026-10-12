@@ -17,6 +17,7 @@ import type { SubscriptionsResponse } from "@/lib/subscriptions/data";
 import { recentPriceRises, upcomingCharges, type SubscriptionItem } from "@/lib/subscriptions/view";
 import { AddSubscriptionDialog } from "./add-subscription-dialog";
 import { SubscriptionDetailDialog } from "./subscription-detail-dialog";
+import { LogoCredit } from "@/components/domain/categorization";
 import { SubscriptionRow } from "./subscription-row";
 import { fromDate, whenPhrase } from "./subscriptions-format";
 
@@ -71,7 +72,7 @@ function Hero({ data }: { data: SubscriptionsResponse }) {
   );
 }
 
-function ArchiveList({ title, items, ...rowProps }: { title: string; items: SubscriptionItem[]; currency: string; today: string; onOpen: (item: SubscriptionItem) => void }) {
+function ArchiveList({ title, items, ...rowProps }: { title: string; items: SubscriptionItem[]; currency: string; today: string; onOpen: (item: SubscriptionItem) => void; onRemoteLogo: () => void }) {
   if (items.length === 0) return null;
   return (
     <details className="group rounded-2xl">
@@ -94,6 +95,8 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
   const save = useSaveSubscriptionMutation();
   const [opened, setOpened] = React.useState<string | null>(null);
   const [adding, setAdding] = React.useState(false);
+  const [logosShown, setLogosShown] = React.useState(false);
+  const onRemoteLogo = React.useCallback(() => setLogosShown(true), []);
   const open = (item: SubscriptionItem) => {
     setOpened(item.key);
     onItemOpened?.(item);
@@ -106,7 +109,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
   const rises = recentPriceRises(items, today);
   const ended = items.filter((i) => i.decision === "terminato");
   const excluded = items.filter((i) => i.decision === "escluso");
-  const rowProps = { currency, today, onOpen: open };
+  const rowProps = { currency, today, onOpen: open, onRemoteLogo };
 
   function quick(item: SubscriptionItem, status: "confermato" | "escluso" | "terminato") {
     if (item.amount === null || item.cadence === null) return open(item);
@@ -211,6 +214,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
         <ArchiveList title="Terminati" items={ended} {...rowProps} />
         <ArchiveList title="Non sono abbonamenti" items={excluded} {...rowProps} />
       </div>
+      <LogoCredit visible={logosShown} className="-mt-6" />
 
       <SubscriptionDetailDialog item={current} currency={currency} today={today} categories={categories ?? []} onOpenChange={(next) => !next && setOpened(null)} />
       <AddSubscriptionDialog open={adding} onOpenChange={setAdding} categories={categories ?? []} today={today} />

@@ -16,6 +16,16 @@ const FRESH_LOGIN_MINUTES = 10;
 
 export const SECURITY_SOURCES_CHECKED = "12 ottobre 2026";
 
+/**
+ * Vero solo quando in produzione `DATA_ENCRYPTION_KEY` è attiva E il job `encrypt-fields` ha cifrato i dati vecchi
+ * (runbook `cifratura-dati.md` nel repo infra: la prova deve dire «0 in chiaro» su tutte le colonne). Finché è false la
+ * landing non parla di cifratura nel database, perché non sarebbe ancora vero.
+ */
+export const FIELD_ENCRYPTION_LIVE = false;
+
+/** Cosa cifra l'app nel database (colonne `encryptedText` nel repo dell'app). */
+const ENCRYPTED_FIELDS_TEXT = "descrizioni e note dei movimenti, note di debiti e investimenti";
+
 /** Fonti ufficiali citate nella pagina. */
 export const SECURITY_SOURCES = {
   psd2: { label: "Direttiva (UE) 2015/2366 (PSD2), art. 67: il servizio di informazione sui conti accede solo con il consenso esplicito e solo ai dati dei conti indicati", href: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
@@ -82,7 +92,9 @@ export const FLOW = {
       seesTitle: "Cosa riceve BuddyBudget",
       label: "BuddyBudget",
       role: "Server in Germania",
-      sees: ["Chiede soltanto saldi, dati del conto e movimenti: nel codice non esiste nessuna funzione di pagamento.", "Salva saldi e movimenti (data, importo, descrizione) per mostrarteli e calcolare budget e patrimonio.", "L'IBAN serve solo a farti scegliere il conto e non viene salvato."],
+      sees: ["Chiede soltanto saldi, dati del conto e movimenti: nel codice non esiste nessuna funzione di pagamento.", FIELD_ENCRYPTION_LIVE
+          ? "Salva saldi e movimenti per mostrarteli e calcolare budget e patrimonio; descrizioni e note le cifra prima di salvarle."
+          : "Salva saldi e movimenti (data, importo, descrizione) per mostrarteli e calcolare budget e patrimonio.", "L'IBAN serve solo a farti scegliere il conto e non viene salvato."],
       never: ["Non vende i dati, non fa pubblicità e non li usa per profilarti."],
     },
   ] satisfies readonly FlowNode[],
@@ -104,9 +116,18 @@ export const STORED = {
     { what: "Credenziali della banca", kept: "no", keptLabel: "Mai", detail: "Restano alla banca: le inserisci solo nelle sue pagine." },
     { what: "Password", kept: "no", keptLabel: "Mai", detail: "Non esistono: entri con un link via email, valido pochi minuti, o con Google." },
     { what: "IBAN", kept: "no", keptLabel: "No", detail: "Usato solo mentre scegli quale conto collegare." },
-    { what: "Saldi e movimenti", kept: "si", keptLabel: "Sì", detail: "Su un server in Germania, finché tieni il conto. Scollegando la banca si cancellano i movimenti di quel conto." },
+    {
+      what: "Saldi e movimenti",
+      kept: "si",
+      keptLabel: "Sì",
+      detail: FIELD_ENCRYPTION_LIVE
+        ? "Su un server in Germania, finché tieni il conto. Descrizioni e note sono cifrate (AES-256) prima di finire nel database; importi e date no, servono ai calcoli. Scollegando la banca si cancellano i movimenti di quel conto."
+        : "Su un server in Germania, finché tieni il conto. Scollegando la banca si cancellano i movimenti di quel conto.",
+    },
     { what: "Log tecnici", kept: "parziale", keptLabel: `${LOG_DAYS} giorni`, detail: "Senza email, nomi, importi né descrizioni: l'utente compare solo come un codice non reversibile." },
-    { what: "Copie di sicurezza", kept: "parziale", keptLabel: `${BACKUP_DAYS} giorni`, detail: "Su Cloudflare R2 nell'Unione europea, cifrate a riposo dal servizio. Dopo 14 giorni i dati eliminati spariscono anche da lì." },
+    { what: "Copie di sicurezza", kept: "parziale", keptLabel: `${BACKUP_DAYS} giorni`, detail: FIELD_ENCRYPTION_LIVE
+      ? "Su Cloudflare R2 nell'Unione europea, cifrate a riposo dal servizio. Descrizioni e note restano cifrate anche lì, e la chiave non sta nei backup. Dopo 14 giorni i dati eliminati spariscono anche da lì."
+      : "Su Cloudflare R2 nell'Unione europea, cifrate a riposo dal servizio. Dopo 14 giorni i dati eliminati spariscono anche da lì." },
     { what: "Statistiche d'uso", kept: "parziale", keptLabel: "Anonime", detail: "Umami sui nostri server, senza cookie e senza sapere chi sei. Le spegni da Impostazioni, su ogni dispositivo." },
   ] satisfies readonly StoredRow[],
 } as const;
@@ -133,7 +154,12 @@ export const LIMITS = {
   kicker: "Cosa non promettiamo",
   title: "I limiti, detti chiaramente.",
   items: [
-    { title: "Non è cifrato end-to-end", text: "Per calcolare saldi, budget e tasse il server deve leggere i movimenti. Sono protetti dalle connessioni cifrate e dall'accesso limitato al server, ma chi gestisce il servizio potrebbe tecnicamente leggerli." },
+    {
+      title: "Non è cifrato end-to-end",
+      text: FIELD_ENCRYPTION_LIVE
+        ? `Cifriamo nel database ${ENCRYPTED_FIELDS_TEXT}, così una copia del database o un backup non li mostra. Il server però ha la chiave, perché deve leggerli per calcolare saldi, budget e tasse: chi gestisce il servizio potrebbe tecnicamente leggerli.`
+        : "Per calcolare saldi, budget e tasse il server deve leggere i movimenti. Sono protetti dalle connessioni cifrate e dall'accesso limitato al server, ma chi gestisce il servizio potrebbe tecnicamente leggerli.",
+    },
     { title: "Nessuna certificazione", text: "BuddyBudget è un progetto piccolo: non ha certificazioni come ISO 27001 né audit esterni. Preferiamo dirlo che lasciarlo intendere." },
     { title: "Il codice si può controllare", text: "Il codice è pubblico con licenza AGPL-3.0: chi vuole verificare cosa viene salvato e inviato può leggerlo, senza fidarsi della nostra parola." },
   ] satisfies readonly Pillar[],

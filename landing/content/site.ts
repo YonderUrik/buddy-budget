@@ -1,5 +1,6 @@
 /** Indirizzi e testi della landing. Gli URL arrivano dall'env, con default di produzione. */
 import type { HomeIcon } from "./home";
+import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudget.io";
@@ -33,7 +34,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto. Oppure importa lo storico da un file CSV o Excel. BuddyBudget calcola versamenti e rendimento. Stima quanto ti resterebbe se prelevi oggi, al netto delle tasse. Inoltre confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
   { question: "Posso simulare l'estinzione anticipata di un finanziamento o di un mutuo?", answer: "Sì. Inserisci i dettagli del debito e guarda il piano di ammortamento. Vedi anche il TAEG e gli interessi risparmiati. Puoi vedere la penale se riduci la rata o la durata, oppure se fai la surroga." },
   { question: "Cos'è la sezione Analitiche?", answer: "Una sezione per chi ama i numeri, aperta a chiunque voglia entrarci. Mostra l'anno in cui puoi smettere di lavorare e ti lascia provare «e se…» con quattro cursori (risparmio, spesa, rendimento, prelievo) senza salvare nulla. Sotto, quattro risposte in parole semplici: quanta strada hai fatto, quando puoi smettere di lavorare, se il patrimonio reggerà e quanto ti costa il portafoglio. Sotto ogni risposta, nella sezione «Per esperti», trovi il numero FIRE dopo le imposte. Trovi anche migliaia di scenari di mercato. Inoltre, vedi un confronto tra regole di prelievo, rischio e costi. Ogni risultato parte da ipotesi che scegli tu, con una guida alla prima visita. Sono stime, non previsioni né consulenza." },
-  { question: "Dove sono i miei dati e posso portarli via?", answer: "App e database girano su un server in Germania e le connessioni sono cifrate. Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
+  { question: "Dove sono i miei dati e posso portarli via?", answer: (FIELD_ENCRYPTION_LIVE ? "App e database girano su un server in Germania, le connessioni sono cifrate e descrizioni e note dei movimenti sono cifrate anche nel database." : "App e database girano su un server in Germania e le connessioni sono cifrate.") + " Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
   { question: "In che lingua e in che valuta funziona?", answer: "Per ora in italiano e in euro. L'app è pensata per più lingue e valute, che arriveranno più avanti." },
   { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
 ];
@@ -62,10 +63,12 @@ export const SECURITY = {
     { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
   ],
   /** Il limite principale, detto nella home e spiegato nella pagina. */
-  limit: "Un limite da sapere: i dati non sono cifrati end-to-end, perché il server deve leggerli per calcolare saldi, budget e tasse.",
+  limit: FIELD_ENCRYPTION_LIVE
+    ? "Descrizioni e note dei movimenti sono cifrate nel database e nei backup. Un limite da sapere: non è cifratura end-to-end, perché il server deve leggerle per calcolare saldi, budget e tasse."
+    : "Un limite da sapere: i dati non sono cifrati end-to-end, perché il server deve leggerli per calcolare saldi, budget e tasse.",
   points: [
     { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
-    { icon: "database", title: "Cosa conserviamo", text: "Saldi e movimenti, per mostrarteli. Le credenziali della banca e l'IBAN non li salviamo mai." },
+    { icon: "database", title: "Cosa conserviamo", text: FIELD_ENCRYPTION_LIVE ? "Saldi e movimenti, per mostrarteli, con descrizioni e note cifrate nel database. Le credenziali della banca e l'IBAN non li salviamo mai." : "Saldi e movimenti, per mostrarteli. Le credenziali della banca e l'IBAN non li salviamo mai." },
     { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime, senza cookie, e le spegni dalle impostazioni su ogni dispositivo." },
     { icon: "sliders", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
   ] satisfies readonly SecurityPoint[],

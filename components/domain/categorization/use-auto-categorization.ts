@@ -2,7 +2,7 @@
 
 /**
  * Stato e azioni delle categorie applicate da sole in Categorizza: applica subito le proposte sicure che la pagina trova
- * pronte (e lo dice con un toast), corregge un gruppo di «Fatte da sole», segna tutto come visto, accende l'opzione.
+ * pronte (e lo dice con un toast), corregge un gruppo di «Messe dall'app», segna tutto come visto, accende l'opzione.
  */
 
 import * as React from "react";
@@ -28,7 +28,7 @@ export interface UseAutoCategorizationOptions {
   suggestions?: CategorizeSuggestionsResponse;
   /** Quando sono arrivate le proposte: si prova ad applicare una volta per ogni caricamento. */
   dataUpdatedAt: number;
-  /** Porta l'utente a «Fatte da sole» (azione del toast). */
+  /** Porta l'utente a «Messe dall'app» (azione del toast). */
   onShowApplied: () => void;
 }
 
@@ -59,7 +59,7 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
       onSuccess: (result) => {
         if (result.applied === 0) return;
         toast.success(appliedToastText(result.applied), {
-          description: "Le trovi in «Fatte da sole».",
+          description: "Le trovi in «Messe dall'app».",
           action: { label: "Guarda", onClick: () => onShowRef.current() },
         });
       },

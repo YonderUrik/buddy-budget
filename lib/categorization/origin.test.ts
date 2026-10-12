@@ -52,9 +52,9 @@ describe("suggestionOriginText", () => {
 });
 
 describe("autoOriginLabel", () => {
-  it("le regole senza percentuale, le proposte con la sicurezza", () => {
-    expect(autoOriginLabel("regola", null)).toBe("Regola");
-    expect(autoOriginLabel("assistente", 0.964)).toBe("AI · 96%");
-    expect(autoOriginLabel("storico", 1)).toBe("Le tue scelte · 100%");
+  it("solo il nome dell'origine, senza percentuale", () => {
+    expect(autoOriginLabel("regola")).toBe("Regola");
+    expect(autoOriginLabel("assistente")).toBe("AI");
+    expect(autoOriginLabel("storico")).toBe("Le tue scelte");
   });
 });

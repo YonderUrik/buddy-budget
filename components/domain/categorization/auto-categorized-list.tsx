@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * «Fatte da sole»: le categorie applicate senza chiedere (regole e proposte sicure) che l'utente non ha ancora visto,
+ * «Messe dall'app»: le categorie applicate senza chiedere (regole e proposte sicure) che l'utente non ha ancora visto,
  * una riga per esercente. Si cambia una categoria toccandola; «Va tutto bene» toglie dalla lista quelle viste.
  */
 
@@ -10,8 +10,6 @@ import { CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { AutoCategorizedGroup } from "@/lib/categorization/auto-review";
-import { AUTO_APPLY_THRESHOLD } from "@/lib/categorization/suggest";
-import { confidencePercent } from "@/lib/categorization/origin";
 import type { Category } from "@/lib/db/schema/categories";
 import { AutoCategorizedRow } from "./auto-categorized-row";
 import { LogoCredit } from "./logo-credit";
@@ -47,7 +45,6 @@ export function AutoCategorizedList({
 }: AutoCategorizedListProps) {
   const [logosShown, setLogosShown] = React.useState(false);
   const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
-  const threshold = confidencePercent(AUTO_APPLY_THRESHOLD);
 
   if (groups.length === 0) {
     return (
@@ -55,8 +52,8 @@ export function AutoCategorizedList({
         <p className="font-heading text-lg font-medium text-foreground">Niente da controllare</p>
         <p className="max-w-sm text-sm text-muted-foreground">
           {autoApplyEnabled
-            ? `Qui compaiono i movimenti categorizzati da soli: dalle tue regole e dalle proposte sicure almeno al ${threshold}%.`
-            : "Qui compaiono i movimenti categorizzati dalle tue regole. Attiva «Applica da sole le categorie sicure» per lasciare fare anche le proposte più sicure."}
+            ? "Qui compaiono i movimenti a cui l'app ha messo la categoria da sola: con le tue regole o perché era quasi certa."
+            : "Qui compaiono i movimenti a cui l'app ha messo la categoria con le tue regole. In Impostazioni puoi lasciarla scegliere anche quando è quasi certa."}
         </p>
       </div>
     );
@@ -65,9 +62,8 @@ export function AutoCategorizedList({
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted-foreground">
-        {total === 1 ? "1 movimento categorizzato" : `${total} movimenti categorizzati`} senza chiederti nulla, dalle tue regole
-        {autoApplyEnabled ? ` e dalle proposte sicure almeno al ${threshold}%` : ""}. Se una categoria non va, toccala e
-        cambiala.
+        {total === 1 ? "1 movimento ha" : `${total} movimenti hanno`} la categoria messa dall&apos;app
+        {autoApplyEnabled ? ", con le tue regole o perché era quasi certa" : ", con le tue regole"}. Se una non va, toccala e cambiala.
       </p>
       <ul className="flex flex-col divide-y divide-border">
         {groups.map((group) => (

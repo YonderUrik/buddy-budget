@@ -37,6 +37,12 @@ function CategoryChip({ category, muted = false }: { category: Category | undefi
   );
 }
 
+/** I movimenti categorizzati prima che l'app ne segnasse l'origine: potrebbero essere scelte dell'utente. */
+function maybeMineText(legacyCount: number, count: number): string {
+  if (legacyCount === count) return count === 1 ? "forse scelto da te" : "forse scelti da te";
+  return `${legacyCount} forse scelti da te`;
+}
+
 export function RecategorizeRow({ group, categoryById, currency, checked, onCheckedChange, onRemoteLogo }: RecategorizeRowProps) {
   const checkboxId = React.useId();
   const isIncome = group.totalAmount > 0;
@@ -50,7 +56,7 @@ export function RecategorizeRow({ group, categoryById, currency, checked, onChec
             <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{group.label}</span>
             <span className="text-xs text-muted-foreground tabular-nums">
               {group.count === 1 ? "1 movimento" : `${group.count} movimenti`} · {dateRangeLabel([group.firstDate, group.lastDate])}
-              {group.legacyCount > 0 ? ` · ${group.legacyCount === group.count ? "tutti" : group.legacyCount} più vecchi` : ""}
+              {group.legacyCount > 0 ? ` · ${maybeMineText(group.legacyCount, group.count)}` : ""}
             </span>
           </span>
           <span className={cn("shrink-0 text-sm font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>

@@ -120,7 +120,7 @@ async function handlePatch(
     }
   }
 
-  // Cambiare categoria a mano la rende una scelta dell'utente (esce da «Fatte da sole»); tornare a «Da categorizzare» la azzera.
+  // Cambiare categoria a mano la rende una scelta dell'utente (esce da «Messe dall'app»); tornare a «Da categorizzare» la azzera.
   const now = new Date();
   const categoryChanged = resolvedCategory !== null && resolvedCategory.id !== transaction.categoryId;
   // Anche cambiare a mano la quota esclusa («Dividi») di una categoria messa da sola la rende una scelta dell'utente:

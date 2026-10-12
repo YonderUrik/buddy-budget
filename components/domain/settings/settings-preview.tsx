@@ -116,7 +116,7 @@ export function EmailPreview() {
 /** Mini proposta dell'assistente: un movimento, la categoria suggerita e i pulsanti per confermarla o rifiutarla. */
 export function CategoryProposalPreview() {
   return (
-    <SettingsPreview caption="L'assistente propone: le proposte incerte le confermi tu, quelle sicure possono applicarsi da sole e restano da controllare.">
+    <SettingsPreview caption="L'assistente propone: quelle in dubbio le scegli tu, quelle quasi certe può metterle l'app da sola, e restano da controllare.">
       <div className="mx-auto flex max-w-sm flex-col gap-2 rounded-lg bg-card p-3 shadow-sm">
         <div className="flex items-center justify-between gap-2">
           <p className="text-xs font-semibold text-foreground">Esercente</p>

@@ -208,11 +208,11 @@ export interface ProductEvents {
   categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
   /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
   categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
-  /** Interruttore «Applica da sole le categorie sicure»; `from` = dove l'utente l'ha cambiato. */
+  /** Interruttore «Lascia che l'app scelga quando è quasi certa»; `from` = dove l'utente l'ha cambiato. */
   categorization_auto_apply_toggled: { enabled: boolean; from: "categorizza" | "impostazioni" };
   /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
   categorization_auto_applied: { count: number; groups: number };
-  /** «Va tutto bene» in «Fatte da sole»: movimenti controllati in un colpo. */
+  /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
   categorization_auto_reviewed: { count: number };
   /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
   categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" };

@@ -223,7 +223,7 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
 
     const [reassigned] = await db.select().from(transactions).where(eq(transactions.id, transaction.id));
     expect(reassigned.categoryId).toBe(fallbackCategoryId);
-    // Senza origine: non deve restare tra le «Fatte da sole».
+    // Senza origine: non deve restare tra le «Messe dall'app».
     expect(reassigned.categorySource).toBeNull();
     expect(reassigned.categorizedAt).toBeNull();
   });

@@ -1,7 +1,7 @@
 import type { AutomaticCategorySource } from "./category-source";
 import { merchantKey } from "./merchant-key";
 
-/** Movimento categorizzato da solo, nella forma che serve a «Fatte da sole». */
+/** Movimento categorizzato da solo, nella forma che serve a «Messe dall'app». */
 export interface AutoCategorizedTransaction {
   id: string;
   description: string;

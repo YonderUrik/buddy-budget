@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Riga di «Fatte da sole»: un esercente con i movimenti categorizzati da soli, la categoria applicata (toccandola si
+ * Riga di «Messe dall'app»: un esercente con i movimenti categorizzati da soli, la categoria applicata (toccandola si
  * cambia) e da dove viene. I movimenti si aprono a richiesta. Non scrive nulla: passa la scelta a `onCorrect`.
  */
 

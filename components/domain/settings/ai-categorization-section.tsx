@@ -3,7 +3,7 @@
 /**
  * Sezione «Assistente per le categorie»: consenso esplicito (spento di default) a inviare il nome pulito degli
  * esercenti a un servizio esterno per ricevere proposte di categoria, e la scelta di far applicare da sole le proposte
- * sicure (dal 90%, dalle scelte passate o dall'AI), che si ritrovano in Categorizza → «Fatte da sole».
+ * sicure (dal 90%, dalle scelte passate o dall'AI), che si ritrovano in Categorizza → «Messe dall'app».
  */
 
 import { AiCategorizationInstructions } from "./ai-categorization-instructions";
@@ -26,7 +26,7 @@ export function AiCategorizationSection() {
       title="Assistente per le categorie"
       icon={Sparkles}
       preview={<CategoryProposalPreview />}
-      description="Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Le proposte incerte le confermi tu; quelle sicure, se vuoi, si applicano da sole e le ritrovi in Categorizza."
+      description="Propone una categoria per i movimenti nuovi di sincronizzazioni e importazioni. Quelle in dubbio le scegli tu; se vuoi, quando è quasi certa l'app la mette da sola e la ritrovi in Categorizza."
     >
       {isLoading ? (
         <div className="h-16 animate-pulse rounded-lg bg-muted" aria-busy="true" />
@@ -57,8 +57,8 @@ export function AiCategorizationSection() {
       )}
       {data && (
         <SettingsRow
-          label="Applica da sole le categorie sicure"
-          hint={`Le tue regole si applicano sempre. Se attivo, anche le proposte sicure almeno al ${confidencePercent(AUTO_APPLY_THRESHOLD)}% (dalle tue scelte passate o, se lo hai attivato, dall'assistente) si applicano senza chiederti nulla. Le ritrovi in Categorizza → «Fatte da sole», dove puoi cambiarle.`}
+          label="Lascia che l'app scelga quando è quasi certa"
+          hint={`Le tue regole valgono sempre. Se attivo, l'app mette da sola anche le categorie di cui è quasi certa (almeno al ${confidencePercent(AUTO_APPLY_THRESHOLD)}%, dalle tue scelte passate o, se lo hai attivato, dall'assistente). Le ritrovi in Categorizza → «Messe dall'app», dove puoi cambiarle.`}
           htmlFor="categorie-sicure-da-sole"
         >
           <Switch
@@ -71,7 +71,7 @@ export function AiCategorizationSection() {
                 { onSuccess: () => track("categorization_auto_apply_toggled", { enabled: checked, from: "impostazioni" }) }
               )
             }
-            aria-label="Applica da sole le categorie sicure"
+            aria-label="Lascia che l'app scelga quando è quasi certa"
           />
         </SettingsRow>
       )}

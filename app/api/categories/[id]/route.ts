@@ -126,7 +126,7 @@ async function handleDelete(
   await db.transaction(async (tx) => {
     await tx
       .update(transactions)
-      // Tornano «Da categorizzare»: senza origine, altrimenti resterebbero tra le «Fatte da sole» con una categoria che non c'è più.
+      // Tornano «Da categorizzare»: senza origine, altrimenti resterebbero tra le «Messe dall'app» con una categoria che non c'è più.
       .set({
         categoryId: fallback.id,
         categorySource: null,

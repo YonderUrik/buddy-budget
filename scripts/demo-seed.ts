@@ -104,7 +104,7 @@ async function main() {
     // Termini già accettati, sempre nella versione in vigore al momento del seed: così il gate di proxy.ts non rimanda a /accetta-termini.
     legalAcceptedAt: new Date(),
     legalAcceptedVersion: LEGAL_VERSION,
-    // Categorizza: assistente attivo, categorie sicure applicate da sole e «Fatte da sole» degli ultimi giorni da controllare.
+    // Categorizza: assistente attivo, categorie sicure applicate da sole e «Messe dall'app» degli ultimi giorni da controllare.
     aiCategorizationConsentAt: new Date(),
     categorizationAutoApply: true,
     autoCategorizedSeenAt: new Date(Date.now() - 14 * 86400000),
@@ -170,7 +170,7 @@ async function main() {
     }
     if (back % 3 === 0) push(dayOfMonth(back, 20), "Investimenti", "Versamento PAC", "BONIFICO PAC ETF AZIONARIO", -300);
   }
-  // Categorizza: la rata del mese messa da una regola, alcuni movimenti già categorizzati da soli («Fatte da sole») e
+  // Categorizza: la rata del mese messa da una regola, alcuni movimenti già categorizzati da soli («Messe dall'app») e
   // alcuni incerti o senza proposta («Da decidere»).
   const recentCutoff = iso(daysAgo(14));
   rows.forEach((row, index) => {
@@ -195,7 +195,7 @@ async function main() {
   }
   const fallback = cats.find((c) => c.isFallback);
   if (fallback) {
-    // Fatte da sole: uguali a movimenti già categorizzati (le tue scelte, al 100%) e una proposta sicura dell'AI.
+    // Messe dall'app: uguali a movimenti già categorizzati (le tue scelte, al 100%) e una proposta sicura dell'AI.
     const applied = [
       ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -23.4, "Spesa", "storico", 1],
       ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -41.7, "Spesa", "storico", 1],

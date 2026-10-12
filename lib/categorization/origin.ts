@@ -1,6 +1,6 @@
 /**
  * Testi che spiegano da dove viene una categoria (proposta o applicata da sola) e quando sono i movimenti: un solo
- * vocabolario per carte, elenco, «Fatte da sole» e Movimenti.
+ * vocabolario per carte, elenco, «Messe dall'app» e Movimenti.
  */
 
 import { formatDateWithYear, formatShortDate } from "@/lib/format";
@@ -33,19 +33,21 @@ export function suggestionOriginText(suggestion: CategorizeSuggestion): string {
   return `Come ${history.agreeing} dei tuoi ${history.total} movimenti simili`;
 }
 
-/** Etichetta breve di una categoria applicata da sola: «Regola», «AI · 96%», «Le tue scelte · 100%». */
-export function autoOriginLabel(source: CategoryOrigin, confidence: number | null): string {
-  if (source === "regola" || confidence === null) return ORIGIN_NAMES[source];
-  return `${ORIGIN_NAMES[source]} · ${confidencePercent(confidence)}%`;
+/**
+ * Etichetta breve di una categoria messa dall'app: «Regola», «Le tue scelte», «AI». Senza percentuale: a chi non è
+ * esperto non dice nulla, e quella esatta resta nel tooltip (`autoOriginDescription`).
+ */
+export function autoOriginLabel(source: CategoryOrigin): string {
+  return ORIGIN_NAMES[source];
 }
 
-/** Spiegazione estesa dell'origine di una categoria applicata da sola (per tooltip e lettori di schermo). */
+/** Spiegazione estesa dell'origine di una categoria messa dall'app, con la sicurezza (per tooltip e lettori di schermo). */
 export function autoOriginDescription(source: CategoryOrigin, confidence: number | null): string {
-  if (source === "regola") return "Applicata da sola da una tua regola";
+  if (source === "regola") return "Messa dall'app con una tua regola";
   const percent = confidence === null ? "" : ` (sicura al ${confidencePercent(confidence)}%)`;
   return source === "assistente"
-    ? `Applicata da sola: proposta sicura dell'AI${percent}`
-    : `Applicata da sola: la scegli sempre per questo esercente${percent}`;
+    ? `Messa dall'app: proposta dell'AI${percent}`
+    : `Messa dall'app: la scegli sempre per questo esercente${percent}`;
 }
 
 function yearOf(isoDate: string): number {

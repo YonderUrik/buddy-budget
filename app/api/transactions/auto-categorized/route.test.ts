@@ -17,7 +17,7 @@ import { POST as markSeen } from "./seen/route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);
 
-describe("«Fatte da sole»: GET /api/transactions/auto-categorized e POST …/seen", () => {
+describe("«Messe dall'app»: GET /api/transactions/auto-categorized e POST …/seen", () => {
   let userId: string;
   let accountId: string;
   let svagoId: string;

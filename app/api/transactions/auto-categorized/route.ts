@@ -13,7 +13,7 @@ export const AUTO_CATEGORIZED_LIMIT = 1000;
 
 /**
  * GET /api/transactions/auto-categorized — movimenti categorizzati da soli (regole e proposte sicure) che l'utente non ha
- * ancora controllato, raggruppati per esercente e categoria: la sezione «Fatte da sole» di Categorizza.
+ * ancora controllato, raggruppati per esercente e categoria: la sezione «Messe dall'app» di Categorizza.
  */
 async function handleGet(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);

@@ -13,7 +13,7 @@ import { bindRequestUser, recordCategorizationAutoCorrected, requestLogger, with
 
 /**
  * POST /api/transactions/categorize-apply — applica in blocco le scelte fatte in Categorizza (carte, elenco
- * o «Fatte da sole»): aggiorna categoria e quota esclusa di ogni transazione dei gruppi ricevuti, segna la
+ * o «Messe dall'app»): aggiorna categoria e quota esclusa di ogni transazione dei gruppi ricevuti, segna la
  * categoria come scelta dall'utente e, dove richiesto, crea o aggiorna la regola `appresa` corrispondente.
  * Tutto in un'unica transazione DB: o passa l'intero batch, o non passa nulla. Se l'utente sposta movimenti
  * che erano stati categorizzati da soli, lo conta (metrica e log): è la misura degli errori della soglia.

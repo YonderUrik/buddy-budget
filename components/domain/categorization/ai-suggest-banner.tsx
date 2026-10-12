@@ -11,8 +11,6 @@ import { TextShimmer } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { confidencePercent } from "@/lib/categorization/origin";
-import { AUTO_APPLY_THRESHOLD } from "@/lib/categorization/suggest";
 
 export interface AiSuggestBannerProps {
   /** Esercenti senza proposta in questo momento. */
@@ -102,7 +100,7 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
             <DialogDescription>
               Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.{" "}
               {autoApplyEnabled
-                ? `Le proposte sicure almeno al ${confidencePercent(AUTO_APPLY_THRESHOLD)}% si applicano da sole e le ritrovi in «Fatte da sole», dove puoi cambiarle; le altre restano da confermare.`
+                ? "Quando è quasi certa l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu."
                 : "Le proposte restano da confermare."}{" "}
               Puoi disattivarlo quando vuoi in Impostazioni.
             </DialogDescription>

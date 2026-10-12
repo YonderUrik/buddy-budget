@@ -78,7 +78,7 @@ export function useAutoApplyMutation() {
   });
 }
 
-/** Categorie applicate da sole e non ancora controllate («Fatte da sole»). */
+/** Categorie applicate da sole e non ancora controllate («Messe dall'app»). */
 export interface AutoCategorizedResponse {
   groups: AutoCategorizedGroup[];
   total: number;

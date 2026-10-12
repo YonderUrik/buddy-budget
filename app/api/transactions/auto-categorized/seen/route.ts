@@ -15,7 +15,7 @@ const bodySchema = z.object({
 
 /**
  * POST /api/transactions/auto-categorized/seen — «Va tutto bene»: le categorie applicate da sole fino a `until` escono
- * da «Fatte da sole». Restano com'erano su ogni movimento (e in Movimenti si vede ancora da dove vengono).
+ * da «Messe dall'app». Restano com'erano su ogni movimento (e in Movimenti si vede ancora da dove vengono).
  */
 async function handlePost(request: NextRequest) {
   const session = await sessionOrUnauthorized(request);

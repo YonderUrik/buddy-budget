@@ -49,7 +49,7 @@ export function useRecategorizeActions() {
           }
           const runId = result.runId;
           toast.success(movedText(result.changed), {
-            description: "Li trovi in «Fatte da sole».",
+            description: "Li trovi in «Messe dall'app».",
             action: { label: "Annulla", onClick: () => undoRun(runId) },
             duration: UNDO_TOAST_DURATION_MS,
           });

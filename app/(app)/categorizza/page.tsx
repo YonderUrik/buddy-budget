@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * Pagina "Categorizza": «Da decidere» (carte o elenco per le proposte incerte e i movimenti senza proposta) e «Fatte da
- * sole» (le categorie applicate senza chiedere, da controllare e correggere). Le proposte sicure non passano dalle carte:
+ * Pagina "Categorizza": «Da decidere» (carte o elenco per le proposte incerte e i movimenti senza proposta) e «Messe
+ * dall'app» (le categorie applicate senza chiedere, da controllare e correggere). Le proposte sicure non passano dalle carte:
  * appena la pagina le trova le applica e lo dice. «Ricategorizza» rifà le categorie messe da sole con le regole di oggi.
  */
 
 import * as React from "react";
-import { RefreshCwIcon } from "lucide-react";
+import { EllipsisIcon, RefreshCwIcon } from "lucide-react";
 import {
   AiProgressStrip,
   AiSuggestBanner,
@@ -20,7 +20,8 @@ import {
   useAutoCategorization,
 } from "@/components/domain/categorization";
 import { BackLink, LoadError, SegmentedControl, type SegmentedControlOption } from "@/components/domain/shared";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth/client";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
@@ -60,7 +61,7 @@ export default function CategorizzaPage() {
   const toDecideTotal = toDecide.reduce((sum, group) => sum + group.transactionIds.length, 0);
   const autoGroups = auto.autoData?.groups ?? [];
   const autoApplyEnabled = suggestions?.autoApply.enabled ?? true;
-  // Senza una scelta dell'utente si apre la scheda con qualcosa dentro: «Da decidere» se c'è, altrimenti «Fatte da sole».
+  // Senza una scelta dell'utente si apre la scheda con qualcosa dentro: «Da decidere» se c'è, altrimenti «Messe dall'app».
   const tab: Tab = chosenTab ?? (!isLoading && toDecide.length === 0 && autoGroups.length > 0 ? "fatte" : "da-decidere");
   const generation = useAiGeneration({ groups: toDecide, refetch });
   const { saveChoices } = auto;
@@ -106,31 +107,40 @@ export default function CategorizzaPage() {
     ) : null;
   const tabOptions: readonly SegmentedControlOption<Tab>[] = [
     { value: "da-decidere", label: isLoading ? "Da decidere" : `Da decidere · ${toDecideTotal}` },
-    { value: "fatte", label: auto.autoData ? `Fatte da sole · ${auto.autoData.total}` : "Fatte da sole" },
+    { value: "fatte", label: auto.autoData ? `Messe dall'app · ${auto.autoData.total}` : "Messe dall'app" },
   ];
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4 max-md:min-h-[calc(100dvh-3.5rem-var(--bottom-nav-offset,0px)-env(safe-area-inset-bottom))] sm:gap-6 sm:p-6 md:gap-5">
-      <div className="flex items-center gap-3">
+      {/* In basso: il menu «⋯» sta all'altezza del titolo, non del link in alto. */}
+      <div className="flex items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <BackLink href="/liquidita" label="Movimenti" className="-my-1.5" />
           <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">Categorizza</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
-            Le categorie sicure si mettono da sole: qui decidi quelle incerte e controlli quelle già messe.
+            Quando è quasi certa l&apos;app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.
           </p>
         </div>
         {!isDesktop ? banner : null}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setRecategorizing(true)}
-          disabled={!categories}
-          title="Rifà le categorie messe da sole con le regole di oggi"
-          className="shrink-0 max-md:size-11 max-md:px-0 md:h-9 md:px-3"
-        >
-          <RefreshCwIcon />
-          <span className="max-md:sr-only">Ricategorizza</span>
-        </Button>
+        {/* Strumento per chi cambia le regole: in un menu, così la pagina mostra solo le due schede. */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-11 shrink-0 cursor-pointer md:size-9")}
+            aria-label="Altre azioni"
+            disabled={!categories}
+          >
+            <EllipsisIcon className="size-5" aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-64">
+            <DropdownMenuItem className="min-h-11 items-start gap-2 py-2" onClick={() => setRecategorizing(true)}>
+              <RefreshCwIcon className="mt-0.5 size-4" aria-hidden="true" />
+              <span className="flex flex-col gap-0.5">
+                <span>Ricategorizza</span>
+                <span className="text-xs text-muted-foreground">Rifà le categorie messe dall&apos;app con le regole di oggi</span>
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       {categories ? <RecategorizeDialog open={recategorizing} onOpenChange={setRecategorizing} categories={categories} currency={currency} /> : null}
 

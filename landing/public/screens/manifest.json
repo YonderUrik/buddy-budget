@@ -211,13 +211,6 @@
       "height": 1800
     },
     {
-      "id": "categorizza",
-      "theme": "light",
-      "route": "/categorizza",
-      "width": 1920,
-      "height": 1506
-    },
-    {
       "id": "movimenti",
       "theme": "dark",
       "route": "/liquidita",
@@ -226,10 +219,17 @@
     },
     {
       "id": "categorizza",
+      "theme": "light",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1473
+    },
+    {
+      "id": "categorizza",
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1506
+      "height": 1473
     }
   ]
 }

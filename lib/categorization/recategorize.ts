@@ -123,7 +123,7 @@ export interface RecategorizeApplyResult {
 /**
  * Ricategorizza i gruppi scelti (`groupKeys`, o tutti se null) ricalcolando il piano sui dati di adesso: un gruppo che
  * nel frattempo è cambiato viene saltato. In una sola transazione scrive le categorie nuove (con origine, sicurezza e
- * momento, così compaiono in «Fatte da sole») e com'erano prima, per l'annulla. Tocca solo movimenti ancora nella
+ * momento, così compaiono in «Messe dall'app») e com'erano prima, per l'annulla. Tocca solo movimenti ancora nella
  * categoria di partenza e mai le scelte dell'utente.
  */
 export async function applyRecategorize(

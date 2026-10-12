@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.65.0](https://github.com/YonderUrik/buddy-budget/compare/v0.64.0...v0.65.0) (2026-10-12)
+
+
+### Novità
+
+* loghi degli esercenti in Movimenti, Abbonamenti e Regole ([#355](https://github.com/YonderUrik/buddy-budget/issues/355)) ([42d2d37](https://github.com/YonderUrik/buddy-budget/commit/42d2d3786671410ff3a2d6e78f35b7d6ecb0de1f))
+
 ## [0.64.0](https://github.com/YonderUrik/buddy-budget/compare/v0.63.0...v0.64.0) (2026-10-12)
 
 

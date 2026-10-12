@@ -113,13 +113,6 @@
       "height": 1500
     },
     {
-      "id": "analitiche",
-      "theme": "light",
-      "route": "/analitiche",
-      "width": 1920,
-      "height": 1412
-    },
-    {
       "id": "panoramica",
       "theme": "dark",
       "route": "/panoramica",
@@ -226,10 +219,17 @@
     },
     {
       "id": "analitiche",
+      "theme": "light",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1608
+    },
+    {
+      "id": "analitiche",
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1412
+      "height": 1608
     }
   ]
 }

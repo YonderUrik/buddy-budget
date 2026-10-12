@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { loadAssumptions, saveAssumptions } from "@/lib/analitiche/data";
-import { countChangedFields, resolveAssumptions, updateAssumptionsSchema } from "@/lib/analitiche/assumptions";
+import { countChangedFields, mergeAssumptions, updateAssumptionsSchema } from "@/lib/analitiche/assumptions";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Ipotesi di Analitiche dell'utente (con i default) e stato della guida iniziale. */
@@ -22,9 +22,13 @@ async function handlePut(request: NextRequest) {
     return Response.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
   }
   const current = await loadAssumptions(session.user.id);
-  const next = resolveAssumptions({ ...current.assumptions, ...parsed.data });
+  const next = mergeAssumptions(current.assumptions, parsed.data as Partial<typeof current.assumptions>);
   await saveAssumptions(session.user.id, next);
-  requestLogger().info("analytics.assumptions.saved", { count: countChangedFields(current.assumptions, next) });
+  const log = requestLogger();
+  log.info("analytics.assumptions.saved", { count: countChangedFields(current.assumptions, next) });
+  if (next.expectedReturnAuto !== current.assumptions.expectedReturnAuto) {
+    log.info("analytics.return_source.changed", { kind: next.expectedReturnAuto ? "storico" : "manuale" });
+  }
   return Response.json({ assumptions: next, walkthroughSeen: current.walkthroughSeen });
 }
 

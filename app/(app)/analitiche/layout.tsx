@@ -50,6 +50,16 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
     }
   }, [ready, ctx.walkthroughSeen]);
 
+  // Da dove viene il rendimento mostrato: dice quanti utenti hanno abbastanza storico per il valore automatico.
+  const returnShown = React.useRef(false);
+  const returnInfo = ready ? ctx.returnInfo : null;
+  React.useEffect(() => {
+    if (!returnInfo || returnShown.current) return;
+    returnShown.current = true;
+    const { source, history } = returnInfo;
+    track("analytics_return_source_shown", { source: source === "storico" && history.status === "ok" ? (history.months === 24 ? "storico-24" : "storico-12") : source === "storico" ? "prudente" : source });
+  }, [returnInfo]);
+
   const closeGuide = (step: number, outcome: "completata" | "chiusa") => {
     setGuideOpen(false);
     track("analytics_guide_closed", { step, outcome });

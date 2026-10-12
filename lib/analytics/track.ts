@@ -164,6 +164,10 @@ export interface ProductEvents {
   analytics_scenario_saved: { fields: number };
   /** Apertura/chiusura di «Per esperti» di una domanda. */
   analytics_expert_toggled: { question: "dove-sono" | "quando" | "reggera" | "costi"; state: "aperta" | "chiusa" };
+  /** «Il tuo traguardo» aperto; `from`: da dove (oggi solo dai Primi passi della Panoramica). */
+  analytics_goal_opened: { from: "primi-passi" };
+  /** Traguardo salvato; `source`: spesa lasciata ai movimenti o scritta dall'utente. */
+  analytics_goal_saved: { source: "dati" | "scritta" };
   /** Ipotesi salvate; `fields`: quanti campi sono cambiati. */
   analytics_assumptions_saved: { fields: number };
   /** Guida iniziale: `step` è l'ultimo passo visto (1-based), `outcome` come è finita. */

@@ -1,9 +1,15 @@
-import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { date, index, numeric, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { encryptedText } from "./encrypted-text";
 import { accounts } from "./accounts";
 import { categories } from "./categories";
 import { dataSourceEnum } from "./shared";
 import { authUser } from "./auth";
+import { CATEGORY_SOURCES } from "../../categorization/category-source";
+
+export { AUTOMATIC_CATEGORY_SOURCES, CATEGORY_SOURCES } from "../../categorization/category-source";
+export type { AutomaticCategorySource, CategorySource } from "../../categorization/category-source";
+/** Da dove viene la categoria di un movimento (vedi `lib/categorization/category-source`). */
+export const categorySourceEnum = pgEnum("category_source", CATEGORY_SOURCES);
 
 export const transactions = pgTable(
   "transactions",
@@ -30,6 +36,11 @@ export const transactions = pgTable(
     note: encryptedText("note"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
     excludedAmount: numeric("excluded_amount", { precision: 12, scale: 2 }).notNull().default("0"),
+    // Origine della categoria attuale (null = movimenti precedenti al tracciamento o categoria di ripiego),
+    // sicurezza della proposta applicata da sola (0-1, null per regole e scelte dell'utente) e quando è stata messa.
+    categorySource: categorySourceEnum("category_source"),
+    categoryConfidence: numeric("category_confidence", { precision: 5, scale: 4 }),
+    categorizedAt: timestamp("categorized_at", { withTimezone: true }),
     date: date("date").notNull(),
     source: dataSourceEnum("source").notNull().default("manuale"),
     // Id della transazione lato GoCardless — nullable (le transazioni manuali non ce l'hanno),

@@ -30,6 +30,8 @@ export interface CategorySheetProps {
   description?: string;
   searchPlaceholder?: string;
   onPick: (categoryId: string) => void;
+  /** Contenuto fisso sotto la griglia (es. l'opzione «Usa sempre questa categoria»). */
+  footer?: React.ReactNode;
 }
 
 /** Da questa larghezza (breakpoint `sm`) il foglio è una finestra e la ricerca prende subito il focus; sotto, la tastiera coprirebbe la griglia. */
@@ -58,19 +60,22 @@ export function CategorySheet({
   description,
   searchPlaceholder = "Cerca categoria…",
   onPick,
+  footer,
 }: CategorySheetProps) {
   const [query, setQuery] = React.useState("");
+  // Ogni apertura riparte con la ricerca vuota, anche quando il chiamante chiude il foglio cambiando `open` da sé
+  // (es. la carta successiva nel mazzo di Categorizza) invece di passare da `onOpenChange`.
+  const [wasOpen, setWasOpen] = React.useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setQuery("");
+  }
   const wide = useMediaQuery(WIDE_QUERY);
   const sections = React.useMemo(() => buildCategoryPickerSections(categories, usage, query), [categories, usage, query]);
   const firstResult = query.trim() !== "" ? sections[0]?.categories[0] : undefined;
 
-  function handleOpenChange(next: boolean) {
-    if (!next) setQuery("");
-    onOpenChange(next);
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-origin-animation="none"
         initialFocus={wide}
@@ -128,6 +133,7 @@ export function CategorySheet({
             ))
           )}
         </div>
+        {footer ? <div className="shrink-0">{footer}</div> : null}
       </DialogContent>
     </Dialog>
   );

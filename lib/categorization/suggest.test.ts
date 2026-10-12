@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { computeSuggestions, groupByMerchant, type SuggestTransaction } from "./suggest";
+import {
+  AUTO_APPLY_THRESHOLD,
+  computeSuggestions,
+  groupByMerchant,
+  isAutoApplicable,
+  isConfidentSuggestion,
+  withAssistantSuggestions,
+  type CategorizeSuggestion,
+  type SuggestTransaction,
+} from "./suggest";
 
 function makeTx(overrides: Partial<SuggestTransaction> = {}): SuggestTransaction {
   return {
@@ -158,5 +167,109 @@ describe("groupByMerchant", () => {
       []
     );
     expect(groups[0].merchantKey).toBe("esselunga via roma");
+  });
+});
+
+function makeSuggestion(overrides: Partial<CategorizeSuggestion> = {}): CategorizeSuggestion {
+  return {
+    transactionId: "tx-1",
+    merchantKey: "esselunga via roma",
+    suggestedCategoryId: "cat-spesa",
+    source: "storico",
+    confidence: 1,
+    reason: "",
+    suggestedSplitPercentage: null,
+    history: { agreeing: 3, total: 3 },
+    ...overrides,
+  };
+}
+
+describe("sicurezza delle proposte dallo storico", () => {
+  it("vale quota d'accordo × somiglianza e riporta i movimenti d'accordo sul totale", () => {
+    const [result] = computeSuggestions({
+      uncategorized: [makeTx()],
+      rules: [],
+      history: [
+        makeTx({ id: "h1", categoryId: "cat-spesa" }),
+        makeTx({ id: "h2", categoryId: "cat-spesa" }),
+        makeTx({ id: "h3", categoryId: "cat-spesa" }),
+        makeTx({ id: "h4", categoryId: "cat-altro" }),
+      ],
+      categories: [spesa, fallback, { id: "cat-altro", type: "voluta", isFallback: false }],
+    });
+    expect(result.history).toEqual({ agreeing: 3, total: 4 });
+    expect(result.confidence).toBeCloseTo(0.75);
+  });
+
+  it("con meno di 3 movimenti d'accordo la sicurezza scende in proporzione", () => {
+    const [result] = computeSuggestions({
+      uncategorized: [makeTx()],
+      rules: [],
+      history: [makeTx({ id: "h1", categoryId: "cat-spesa" }), makeTx({ id: "h2", categoryId: "cat-spesa" })],
+      categories: [spesa, fallback],
+    });
+    expect(result.confidence).toBeCloseTo(0.67);
+    expect(isConfidentSuggestion(result)).toBe(false);
+  });
+
+  it("preferisce uno storico sicuro a una regola solo vagamente simile", () => {
+    const history = [1, 2, 3].map((n) => makeTx({ id: `h${n}`, categoryId: "cat-altro" }));
+    const [result] = computeSuggestions({
+      uncategorized: [makeTx()],
+      rules: [{ id: "r1", pattern: "esselunga via milano", categoryId: "cat-spesa", splitPercentage: null }],
+      history,
+      categories: [spesa, fallback, { id: "cat-altro", type: "voluta", isFallback: false }],
+    });
+    expect(result.source).toBe("storico");
+    expect(result.suggestedCategoryId).toBe("cat-altro");
+  });
+});
+
+describe("isConfidentSuggestion", () => {
+  it("sotto la soglia non è mai sicura", () => {
+    expect(isConfidentSuggestion(makeSuggestion({ source: "assistente", confidence: AUTO_APPLY_THRESHOLD - 0.01 }))).toBe(false);
+    expect(isConfidentSuggestion(makeSuggestion({ source: "assistente", confidence: AUTO_APPLY_THRESHOLD }))).toBe(true);
+  });
+
+  it("dallo storico servono almeno 3 movimenti d'accordo, anche al 100%", () => {
+    expect(isConfidentSuggestion(makeSuggestion({ history: { agreeing: 2, total: 2 } }))).toBe(false);
+    expect(isConfidentSuggestion(makeSuggestion({ history: { agreeing: 3, total: 3 } }))).toBe(true);
+  });
+});
+
+describe("withAssistantSuggestions", () => {
+  const group = groupByMerchant([makeTx()], [])[0];
+  const groupKey = group.groupKey;
+
+  it("riempie un gruppo senza proposta", () => {
+    const [result] = withAssistantSuggestions([group], new Map([[groupKey, { categoryId: "cat-spesa", confidence: 0.6 }]]));
+    expect(result.suggestion?.source).toBe("assistente");
+    expect(result.suggestion?.confidence).toBe(0.6);
+  });
+
+  it("sostituisce una proposta incerta solo se quella dell'assistente è sicura", () => {
+    const uncertain = { ...group, suggestion: makeSuggestion({ confidence: 0.5 }) };
+    const [kept] = withAssistantSuggestions([uncertain], new Map([[groupKey, { categoryId: "cat-altro", confidence: 0.8 }]]));
+    expect(kept.suggestion?.source).toBe("storico");
+    const [replaced] = withAssistantSuggestions([uncertain], new Map([[groupKey, { categoryId: "cat-altro", confidence: 0.95 }]]));
+    expect(replaced.suggestion?.source).toBe("assistente");
+    expect(replaced.suggestion?.suggestedCategoryId).toBe("cat-altro");
+  });
+
+  it("non tocca una proposta già sicura", () => {
+    const confident = { ...group, suggestion: makeSuggestion() };
+    const [result] = withAssistantSuggestions([confident], new Map([[groupKey, { categoryId: "cat-altro", confidence: 0.99 }]]));
+    expect(result.suggestion?.source).toBe("storico");
+  });
+});
+
+describe("isAutoApplicable", () => {
+  const group = groupByMerchant([makeTx()], [])[0];
+
+  it("vuole una proposta sicura e coerente in tutto il gruppo", () => {
+    expect(isAutoApplicable({ ...group, suggestion: null })).toBe(false);
+    expect(isAutoApplicable({ ...group, suggestion: makeSuggestion({ confidence: 0.8 }) })).toBe(false);
+    expect(isAutoApplicable({ ...group, suggestion: makeSuggestion(), hasDivergentSuggestions: true })).toBe(false);
+    expect(isAutoApplicable({ ...group, suggestion: makeSuggestion() })).toBe(true);
   });
 });

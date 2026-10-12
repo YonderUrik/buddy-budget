@@ -1,6 +1,6 @@
 import { ImportError } from "@/lib/personal-import/contract";
 import { after, NextRequest } from "next/server";
-import { suggestCategoriesSafely } from "@/lib/categorization/ai/suggest-for-user";
+import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
@@ -27,7 +27,7 @@ export const POST = withRoute("personal_import.confirm", async (request: NextReq
   bindRequestUser(session.user.id);
   if (request.headers.get("origin") !== new URL(process.env.APP_URL ?? request.url).origin) return new Response(null, { status: 403 });
   const id = idOf(request); if (!id.success) return new Response(null, { status: 404 });
-  try { const result = await confirmImport(session.user.id, id.data); const userId = session.user.id; after(() => suggestCategoriesSafely(userId)); requestLogger().info("personal_import.confirmed", { inserted: result.inserted }); return Response.json(result); }
+  try { const result = await confirmImport(session.user.id, id.data); const userId = session.user.id; after(() => categorizeNewMovementsSafely(userId)); requestLogger().info("personal_import.confirmed", { inserted: result.inserted }); return Response.json(result); }
   catch (error) { return Response.json({ error: error instanceof ImportError ? error.message : "Importazione non riuscita: nessuna modifica salvata" }, { status: 422 }); }
 });
 

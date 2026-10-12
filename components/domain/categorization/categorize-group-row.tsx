@@ -2,8 +2,8 @@
 
 /**
  * Riga di un gruppo di transazioni (stesso merchant) nella pagina di revisione categorizzazione.
- * Layout a colonna unica dopo la checkbox, così resta leggibile anche su mobile: nome e totale,
- * poi categoria + "Dividi", poi il perché della proposta e il dettaglio delle transazioni a richiesta.
+ * Layout a colonna unica dopo la checkbox, così resta leggibile anche su mobile: logo, nome, quando e totale,
+ * poi categoria + "Dividi", poi il perché della proposta e il dettaglio dei movimenti a richiesta.
  */
 
 import * as React from "react";
@@ -15,9 +15,12 @@ import { CategoryPicker } from "@/components/domain/categories";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
+import { dateRangeLabel } from "@/lib/categorization/origin";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { SuggestionSourceBadge } from "./suggestion-source-badge";
+import { MerchantLogo } from "./merchant-logo";
+import { MovementsPreview } from "./movements-preview";
+import { SuggestionOrigin } from "./suggestion-origin";
 
 export interface CategorizeGroupRowProps {
   group: SuggestionGroup;
@@ -33,11 +36,13 @@ export interface CategorizeGroupRowProps {
   onToggleSelected: (selected: boolean) => void;
   onCategoryChange: (categoryId: string) => void;
   onExcludedPercentageChange: (value: number) => void;
+  /** Chiamata quando la riga mostra un logo remoto (per citare la fonte dei loghi). */
+  onRemoteLogo?: () => void;
 }
 
-/** Numero di transazioni del gruppo con singolare/plurale corretto. */
-function transactionCountLabel(count: number): string {
-  return count === 1 ? "1 transazione" : `${count} transazioni`;
+/** Numero di movimenti del gruppo con singolare/plurale corretto. */
+function movementCountLabel(count: number): string {
+  return count === 1 ? "1 movimento" : `${count} movimenti`;
 }
 
 export function CategorizeGroupRow({
@@ -52,6 +57,7 @@ export function CategorizeGroupRow({
   onToggleSelected,
   onCategoryChange,
   onExcludedPercentageChange,
+  onRemoteLogo,
 }: CategorizeGroupRowProps) {
   const [expanded, setExpanded] = React.useState(false);
   const [splitOpen, setSplitOpen] = React.useState(false);
@@ -82,9 +88,16 @@ export function CategorizeGroupRow({
         className="mt-0.5"
       />
 
+      <MerchantLogo name={group.label} size="sm" onRemoteLogo={onRemoteLogo} className="-mt-0.5" />
+
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
-          <p className="line-clamp-2 min-w-0 text-sm font-medium break-words text-foreground">{group.label}</p>
+          <div className="flex min-w-0 flex-col">
+            <p className="line-clamp-2 min-w-0 text-sm font-medium break-words text-foreground">{group.label}</p>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {movementCountLabel(group.transactionIds.length)} · {dateRangeLabel(group.transactionDates)}
+            </p>
+          </div>
           <span className={cn("shrink-0 text-sm font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>
             {formatCurrency(group.totalAmount, currency)}
           </span>
@@ -116,7 +129,7 @@ export function CategorizeGroupRow({
         {disabledReason ? (
           <p className="text-xs text-muted-foreground">{disabledReason}</p>
         ) : (
-          group.suggestion && <SuggestionSourceBadge suggestion={group.suggestion} />
+          group.suggestion && <SuggestionOrigin suggestion={group.suggestion} />
         )}
 
         {group.hasDivergentSuggestions && (
@@ -155,18 +168,21 @@ export function CategorizeGroupRow({
           aria-controls={detailsId}
           className="-my-1 flex w-fit items-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          {expanded ? "Nascondi" : "Mostra"} {transactionCountLabel(group.transactionIds.length)}
+          {expanded ? "Nascondi" : "Mostra"} {group.transactionIds.length === 1 ? "il movimento" : `i ${group.transactionIds.length} movimenti`}
           <ChevronDownIcon className={cn("size-3.5 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
         </button>
 
         {expanded && (
-          <ul id={detailsId} className="flex flex-col gap-1 border-l border-border pl-3 text-xs text-muted-foreground">
-            {group.transactionDescriptions.map((description, index) => (
-              <li key={group.transactionIds[index]} className="break-words">
-                {description}
-              </li>
-            ))}
-          </ul>
+          <div id={detailsId} className="border-l border-border pl-3">
+            <MovementsPreview
+              label={group.label}
+              dates={group.transactionDates}
+              amounts={group.transactionAmounts}
+              descriptions={group.transactionDescriptions}
+              currency={currency}
+              limit={group.transactionIds.length}
+            />
+          </div>
         )}
       </div>
     </div>

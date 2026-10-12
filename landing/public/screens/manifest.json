@@ -22,13 +22,6 @@
       "height": 1200
     },
     {
-      "id": "movimenti",
-      "theme": "light",
-      "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
-    },
-    {
       "id": "analisi",
       "theme": "light",
       "route": "/liquidita/analisi",
@@ -48,13 +41,6 @@
       "route": "/liquidita/categorie",
       "width": 1920,
       "height": 1716
-    },
-    {
-      "id": "categorizza",
-      "theme": "light",
-      "route": "/categorizza",
-      "width": 1920,
-      "height": 1200
     },
     {
       "id": "investimenti",
@@ -134,13 +120,6 @@
       "height": 1200
     },
     {
-      "id": "movimenti",
-      "theme": "dark",
-      "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
-    },
-    {
       "id": "analisi",
       "theme": "dark",
       "route": "/liquidita/analisi",
@@ -160,13 +139,6 @@
       "route": "/liquidita/categorie",
       "width": 1920,
       "height": 1716
-    },
-    {
-      "id": "categorizza",
-      "theme": "dark",
-      "route": "/categorizza",
-      "width": 1920,
-      "height": 1200
     },
     {
       "id": "investimenti",
@@ -230,6 +202,34 @@
       "route": "/analitiche",
       "width": 1920,
       "height": 1412
+    },
+    {
+      "id": "movimenti",
+      "theme": "light",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "categorizza",
+      "theme": "light",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1506
+    },
+    {
+      "id": "movimenti",
+      "theme": "dark",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "categorizza",
+      "theme": "dark",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1506
     }
   ]
 }

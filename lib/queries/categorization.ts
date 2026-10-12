@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
+import type { AutoCategorizedGroup } from "@/lib/categorization/auto-review";
 import { chunkGroups } from "@/lib/categorization/batch-apply";
 import type {
   ApplyCategorizationInput,
@@ -12,22 +13,98 @@ import type { CategorizationRule } from "@/lib/db/schema/categorization-rules";
 import { track } from "@/lib/analytics";
 
 const SUGGESTIONS_QUERY_KEY = ["categorize-suggestions"] as const;
+const AUTO_CATEGORIZED_QUERY_KEY = ["auto-categorized"] as const;
 const CATEGORIZATION_RULES_QUERY_KEY = ["categorization-rules"] as const;
 
 export type CategorizationRuleWithCategoryName = CategorizationRule & { categoryName: string };
 
-async function fetchSuggestions(): Promise<SuggestionGroup[]> {
+/** Movimenti da categorizzare per esercente e quanti gruppi si applicherebbero da soli adesso. */
+export interface CategorizeSuggestionsResponse {
+  groups: SuggestionGroup[];
+  /** `readyKeys`: gruppi con una proposta sicura che si applicherebbero da soli adesso. */
+  autoApply: { enabled: boolean; ready: number; readyKeys: string[] };
+}
+
+async function fetchSuggestions(): Promise<CategorizeSuggestionsResponse> {
   const response = await fetch("/api/transactions/categorize-suggestions");
   if (!response.ok) {
     throw new Error("Impossibile caricare le proposte di categorizzazione");
   }
-  const body = (await response.json()) as { groups: SuggestionGroup[] };
-  return body.groups;
+  return (await response.json()) as CategorizeSuggestionsResponse;
 }
 
-/** Gruppi di transazioni da categorizzare con le relative proposte da regole e storico. */
+/** Gruppi di transazioni da categorizzare con le relative proposte (regole simili, scelte passate, assistente). */
 export function useCategorizeSuggestionsQuery({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({ queryKey: SUGGESTIONS_QUERY_KEY, queryFn: fetchSuggestions, enabled });
+}
+
+/** Invalida tutto ciò che cambia quando le categorie dei movimenti cambiano. */
+function invalidateCategorized(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY });
+  queryClient.invalidateQueries({ queryKey: AUTO_CATEGORIZED_QUERY_KEY });
+  queryClient.invalidateQueries({ queryKey: ["transactions"] });
+  queryClient.invalidateQueries({ queryKey: ["attention"] });
+}
+
+/** Esito di un'applicazione automatica: movimenti categorizzati da soli in tutto e per origine. */
+export interface AutoApplyResponse {
+  applied: number;
+  groups: number;
+  bySource: { regola: number; storico: number; assistente: number };
+}
+
+/** Applica subito regole e proposte sicure ai movimenti in attesa (la pagina lo chiede quando ne trova di pronte). */
+export function useAutoApplyMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/transactions/categorize-auto", { method: "POST" });
+      if (!response.ok) throw new Error("Impossibile applicare le categorie sicure");
+      return (await response.json()) as AutoApplyResponse;
+    },
+    onSuccess: (result) => {
+      if (result.applied > 0) track("categorization_auto_applied", { count: result.applied, groups: result.groups });
+      invalidateCategorized(queryClient);
+    },
+  });
+}
+
+/** Categorie applicate da sole e non ancora controllate («Fatte da sole»). */
+export interface AutoCategorizedResponse {
+  groups: AutoCategorizedGroup[];
+  total: number;
+  seenAt: string;
+}
+
+/** Gruppi di movimenti categorizzati da soli dall'ultimo controllo dell'utente. */
+export function useAutoCategorizedQuery() {
+  return useQuery({
+    queryKey: AUTO_CATEGORIZED_QUERY_KEY,
+    queryFn: async () => {
+      const response = await fetch("/api/transactions/auto-categorized");
+      if (!response.ok) throw new Error("Impossibile caricare le categorie applicate da sole");
+      return (await response.json()) as AutoCategorizedResponse;
+    },
+  });
+}
+
+/** «Va tutto bene»: le categorie applicate da sole fino a `until` escono dalla lista da controllare. */
+export function useMarkAutoCategorizedSeenMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ until, count }: { until: string; count: number }) => {
+      const response = await fetch("/api/transactions/auto-categorized/seen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ until, count }),
+      });
+      if (!response.ok) throw new Error("Impossibile salvare il controllo");
+    },
+    onSuccess: (_result, { count }) => {
+      track("categorization_auto_reviewed", { count });
+      queryClient.invalidateQueries({ queryKey: AUTO_CATEGORIZED_QUERY_KEY });
+    },
+  });
 }
 
 async function postApplyCategorization(
@@ -120,11 +197,7 @@ export function useApplyCategorizationMutation() {
     onSuccess: (_result, { groups }) => track("categorization_applied", { groups: groups.length }),
     // Anche su fallimento parziale i gruppi già applicati hanno scritto dati reali: invalida sempre,
     // non solo al successo pieno.
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      queryClient.invalidateQueries({ queryKey: ["attention"] });
-    },
+    onSettled: () => invalidateCategorized(queryClient),
   });
 }
 

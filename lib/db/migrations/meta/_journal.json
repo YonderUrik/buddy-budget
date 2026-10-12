@@ -232,6 +232,13 @@
       "when": 1791748170449,
       "tag": "0033_categorizzazione_giroconti_istruzioni",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1791825795140,
+      "tag": "0034_categorie_applicate_da_sole",
+      "breakpoints": true
     }
   ]
 }

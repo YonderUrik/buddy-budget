@@ -6,8 +6,8 @@ import { transactions, type NewTransaction } from "@/lib/db/schema/transactions"
 import { GoCardlessError, getAccountBalances, getAccountTransactions } from "./client";
 import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limit";
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
-import { suggestCategoriesSafely } from "@/lib/categorization/ai/suggest-for-user";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
+import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 import { extractMerchantName, FALLBACK_TRANSACTION_NAME, type MerchantNameSource } from "@/lib/categorization/merchant-name";
 import { logger, recordMerchantNames } from "@/lib/observability";
@@ -109,6 +109,7 @@ export async function syncAccountLink(
     const ruleResolver = await buildRuleResolver(link.userId);
 
     const rows: NewTransaction[] = [];
+    const categorizedAt = new Date();
     const nameSourceCounts = new Map<MerchantNameSource, number>();
     const ruleIdByExternalId = new Map<string, string>();
     for (const bankTransaction of bankTransactions) {
@@ -141,6 +142,7 @@ export async function syncAccountLink(
         merchantCategoryCode: bankTransaction.merchantCategoryCode?.trim() || null,
         amount: bankTransaction.transactionAmount.amount,
         excludedAmount: (resolved?.excludedAmount ?? 0).toFixed(2),
+        ...(resolved ? { categorySource: "regola" as const, categorizedAt } : {}),
         date: bankTransaction.bookingDate,
         source: "auto",
         externalId,
@@ -197,8 +199,9 @@ export async function syncAccountLink(
     }
 
     await flushRuleHits(ruleResolver.appliedRuleIds());
-    // Proposte dell'assistente per gli esercenti rimasti senza categoria: mai applicate, l'utente le conferma.
-    if (uncategorizedCount > 0) await suggestCategoriesSafely(link.userId);
+    // Proposte dell'assistente per gli esercenti rimasti senza categoria, poi le sicure (dal 90%) si applicano da sole
+    // se l'utente lo ha scelto; le altre restano da confermare in Categorizza.
+    if (uncategorizedCount > 0) await categorizeNewMovementsSafely(link.userId);
 
     const [currentLink] = await db
       .select({ syncTimestamps: bankAccountLinks.syncTimestamps })

@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Carta di un esercente nella categorizzazione rapida: nome, importo, categoria proposta e, con la carta in cima,
- * trascinamento a destra per confermare o a sinistra per cambiare. Non decide nulla da sola: chiama le callback.
+ * Carta di un esercente nella categorizzazione rapida: logo, nome, importo, quando (date e primi movimenti), categoria
+ * proposta con la sua origine e, con la carta in cima, trascinamento a destra per confermare o a sinistra per cambiare.
+ * Non decide nulla da sola: chiama le callback.
  */
 
 import * as React from "react";
@@ -12,20 +13,23 @@ import { Button } from "@/components/ui/button";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
+import { dateRangeLabel } from "@/lib/categorization/origin";
 import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { SuggestionSourceBadge } from "./suggestion-source-badge";
+import { MerchantLogo } from "./merchant-logo";
+import { MovementsPreview } from "./movements-preview";
+import { SuggestionOrigin } from "./suggestion-origin";
 
 /** Distanza di trascinamento oltre la quale il gesto vale come scelta. */
 export const SWIPE_COMMIT_DISTANCE = 110;
-/** Quante descrizioni grezze mostrare sotto il nome. */
-const DESCRIPTION_PREVIEW_LIMIT = 3;
 /** Inclinazione massima della carta in gradi. */
 const MAX_TILT_DEGREES = 8;
 /** Ritorno al centro quando il gesto non va a segno. */
 const SNAP_BACK_SPRING = { type: "spring", stiffness: 500, damping: 34 } as const;
 /** Durata della vibrazione leggera quando un gesto va a segno (dove il telefono la supporta). */
 const HAPTIC_TICK_MS = 12;
+/** Movimenti mostrati sulla carta su telefono (su schermi larghi `MOVEMENTS_PREVIEW_LIMIT`). */
+const MOBILE_PREVIEW_LIMIT = 2;
 
 type SwipeZone = "conferma" | "cambia" | "salta";
 
@@ -52,6 +56,8 @@ export interface SwipeCardProps {
   onConfirm: () => void;
   onChange: () => void;
   onSkip: () => void;
+  /** Chiamata quando la carta mostra un logo remoto (per citare la fonte dei loghi). */
+  onRemoteLogo?: () => void;
 }
 
 export function SwipeCard({
@@ -65,6 +71,7 @@ export function SwipeCard({
   onConfirm,
   onChange,
   onSkip,
+  onRemoteLogo,
 }: SwipeCardProps) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 300], [-MAX_TILT_DEGREES, MAX_TILT_DEGREES]);
@@ -85,7 +92,7 @@ export function SwipeCard({
   }, [x, y, hasSuggestion]);
   useMotionValueEvent(x, "change", updateZone);
   useMotionValueEvent(y, "change", updateZone);
-  const descriptions = [...new Set(group.transactionDescriptions)].slice(0, DESCRIPTION_PREVIEW_LIMIT);
+  const count = group.transactionIds.length;
 
   return (
     <div className="relative flex flex-col max-md:flex-1">
@@ -117,43 +124,61 @@ export function SwipeCard({
         {zone === "cambia" ? "Lascia: un'altra" : "Un'altra"}
       </motion.span>
 
-      <div className="flex flex-col gap-1 pt-6 text-center">
+      <div className="flex flex-col items-center gap-1 pt-6 text-center">
+        <MerchantLogo name={group.label} size="md" onRemoteLogo={onRemoteLogo} className="mb-1 md:size-14 md:text-xl" />
         <p className="font-heading text-xl font-medium break-words text-foreground">{group.label}</p>
         <p className={cn("text-lg font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>
           {formatCurrency(group.totalAmount, currency)}
         </p>
         <p className="text-xs text-muted-foreground">
-          {group.transactionIds.length === 1 ? "1 movimento" : `${group.transactionIds.length} movimenti`}
+          {count === 1 ? "1 movimento" : `${count} movimenti`} · {dateRangeLabel(group.transactionDates)}
         </p>
       </div>
 
-      {descriptions.length > 1 || (descriptions[0] && descriptions[0] !== group.label) ? (
-        <ul className="flex flex-col gap-0.5 text-xs text-muted-foreground">
-          {descriptions.map((description) => (
-            <li key={description} className="truncate">{description}</li>
-          ))}
-        </ul>
+      {/* Con un movimento solo data e importo sono già sopra; sul telefono bastano i due più recenti. */}
+      {count > 1 ? (
+        <>
+          <MovementsPreview
+            label={group.label}
+            dates={group.transactionDates}
+            amounts={group.transactionAmounts}
+            descriptions={group.transactionDescriptions}
+            currency={currency}
+            className="rounded-xl border border-border px-3 py-2 max-md:hidden"
+          />
+          <MovementsPreview
+            label={group.label}
+            dates={group.transactionDates}
+            amounts={group.transactionAmounts}
+            descriptions={group.transactionDescriptions}
+            currency={currency}
+            limit={MOBILE_PREVIEW_LIMIT}
+            className="rounded-xl border border-border px-3 py-2 md:hidden"
+          />
+        </>
       ) : null}
 
       {changing || !hasSuggestion ? (
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">{changing ? "Scegli la categoria giusta" : "Nessuna proposta: scegli tu"}</p>
+          <p className="text-sm text-muted-foreground">{changing ? "Scegli la categoria giusta" : "Nessuna proposta: scegli tu la categoria"}</p>
           <Button type="button" variant="outline" className="h-11 w-full" onClick={onChange}>
             Scegli la categoria
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/60 p-4 text-center">
+        <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/60 p-3 text-center md:p-4">
           <p className="text-xs text-muted-foreground">Categoria proposta</p>
-          {suggestedAppearance && <CategoryAvatar icon={suggestedAppearance.icon} color={suggestedAppearance.color} size={24} className="size-12" />}
+          {suggestedAppearance && <CategoryAvatar icon={suggestedAppearance.icon} color={suggestedAppearance.color} size={22} className="size-10 md:size-12" />}
           <p className="font-heading text-lg font-medium text-foreground">{suggestedName}</p>
-          {group.suggestion && <SuggestionSourceBadge suggestion={group.suggestion} />}
+          {group.suggestion && <SuggestionOrigin suggestion={group.suggestion} align="center" />}
         </div>
       )}
 
       <label htmlFor={rememberId} className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
         <Checkbox id={rememberId} checked={remember} onCheckedChange={(checked) => onRememberChange(checked === true)} />
-        Ricorda per questo esercente
+        <span className="min-w-0">
+          Usa sempre questa categoria<span className="max-sm:sr-only"> per «{group.label}»</span>
+        </span>
       </label>
     </motion.div>
     </div>

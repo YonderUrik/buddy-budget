@@ -57,6 +57,8 @@ export interface LogFields {
   corrected?: number;
   pending?: number;
   stopped?: number;
+  /** Origine di una categoria applicata da sola (enum chiuso `AUTOMATIC_CATEGORY_SOURCES`: regola, storico, assistente). */
+  categorySource?: string;
   /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */
   nameSource?: string;
   /** Fonte di prezzi di mercato (id statico). */

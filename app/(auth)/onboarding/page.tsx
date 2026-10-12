@@ -19,6 +19,11 @@ import { DEFAULT_CURRENCY, type SupportedCurrency } from "@/lib/validation/curre
 import { track } from "@/lib/analytics";
 import { summarizeCategorySetup } from "@/lib/categories/setup";
 import { NOTIFICATION_DEFAULTS, type NotificationPreferences } from "@/lib/notifications";
+import { confidencePercent } from "@/lib/categorization/origin";
+import { AUTO_APPLY_THRESHOLD } from "@/lib/categorization/suggest";
+
+/** Soglia oltre la quale una proposta si applica da sola, in percentuale (per il testo del passo «Assistente»). */
+const AUTO_APPLY_PERCENT = confidencePercent(AUTO_APPLY_THRESHOLD);
 
 type OnboardingStep = "valuta" | "categorie" | "assistente" | "notifiche" | "conferme";
 
@@ -107,7 +112,7 @@ export default function OnboardingPage() {
               <StepHeading title="Vuoi un aiuto a categorizzare?" description="Puoi cambiare idea quando vuoi in Impostazioni." />
               <div className="flex flex-col gap-3 text-sm text-muted-foreground">
                 <p>Quando arrivano movimenti nuovi dalla banca o da un file, un assistente basato su intelligenza artificiale propone una categoria per ogni esercente.</p>
-                <p>Le proposte non si applicano mai da sole: le confermi tu, una carta alla volta. Una scelta diventa una regola solo se lo chiedi.</p>
+                <p>Le proposte sicure almeno al {AUTO_APPLY_PERCENT}% si applicano da sole e le ritrovi in Categorizza, sotto «Fatte da sole», dove puoi cambiarle. Le altre le confermi tu, una carta alla volta. Se preferisci confermare tutto, lo spegni in Impostazioni.</p>
                 <p>Per farlo inviamo a un servizio esterno solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), con richiesta di non conservare i dati.</p>
               </div>
               <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4 text-sm font-medium text-foreground">

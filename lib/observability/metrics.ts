@@ -146,6 +146,7 @@ interface MetricsState {
   categorizationAiRequests: Counter<"outcome">;
   categorizationAiDuration: Histogram<string>;
   categorizationSuggestions: Counter<"event">;
+  categorizationAuto: Counter<"source" | "event">;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
   fundamentalsRequests: Counter<"kind" | "outcome">;
@@ -268,6 +269,12 @@ function createState(): MetricsState {
     labelNames: ["event"],
     registers: r,
   });
+  state.categorizationAuto = new Counter({
+    name: `${METRIC_PREFIX}categorization_auto_total`,
+    help: "Movimenti categorizzati da soli (regole e proposte sicure dal 90%) e poi corretti dall'utente, per origine.",
+    labelNames: ["source", "event"],
+    registers: r,
+  });
 
   state.priceProvider = new Counter({
     name: `${METRIC_PREFIX}price_provider_requests_total`,
@@ -278,7 +285,7 @@ function createState(): MetricsState {
 
   state.logoRequests = new Counter({
     name: `${METRIC_PREFIX}logo_requests_total`,
-    help: "Richieste al servizio di loghi degli strumenti non servite dalla cache, per origine (issuer, isin) ed esito (hit, miss, error).",
+    help: "Richieste al servizio di loghi (strumenti ed esercenti) non servite dalla cache, per origine (issuer, isin, merchant) ed esito (hit, miss, error).",
     labelNames: ["source", "outcome"],
     registers: r,
   });
@@ -578,6 +585,19 @@ export function recordCategorizationAiRequest(outcome: "ok" | "error", durationM
   m.categorizationAiDuration.observe(durationMs / 1000);
 }
 
+/** Origine di una categoria applicata da sola (enum chiuso, come `AUTOMATIC_CATEGORY_SOURCES`). */
+export type AutoCategorySource = "regola" | "storico" | "assistente";
+
+/** Registra `count` movimenti categorizzati da soli per origine. */
+export function recordCategorizationAutoApplied(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "applied" }, count);
+}
+
+/** Registra `count` movimenti categorizzati da soli che l'utente ha poi spostato in un'altra categoria. */
+export function recordCategorizationAutoCorrected(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "corrected" }, count);
+}
+
 /** Registra `count` proposte di categoria per un evento (salvate, bloccate dal filtro, confermate, corrette). */
 export function recordCategorizationSuggestions(event: CategorizationSuggestionEvent, count: number): void {
   if (count > 0) metrics().categorizationSuggestions.inc({ event }, count);
@@ -589,7 +609,7 @@ export function recordPriceProviderRequest(provider: ProviderId, outcome: Provid
 }
 
 /** Origine ed esito di una richiesta al servizio di loghi. */
-export type LogoSourceKind = "issuer" | "isin";
+export type LogoSourceKind = "issuer" | "isin" | "merchant";
 export type LogoRequestOutcome = "hit" | "miss" | "error";
 
 /** Registra una richiesta al servizio di loghi che non è stata servita dalla cache. */

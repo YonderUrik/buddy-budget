@@ -1,0 +1,11 @@
+# Categorizzazione: le categorie sicure si mettono da sole (2026-10-12)
+
+Data: 2026-10-12
+
+Prima ogni proposta passava dalle carte, anche quelle ovvie, e non era chiaro se una categoria venisse da una regola, dalle scelte passate o dall'AI. Decisione (richiesta di Daniele): l'utente decide solo ciò che è incerto e vede sempre cosa è stato messo da solo.
+- **Cosa si applica da solo**: le regole sempre (anche negli import CSV, che prima non le usavano); con l'opzione «Applica da sole le categorie sicure» (Impostazioni → Assistente per le categorie, accesa di default) anche le proposte sicure almeno al 90% (`AUTO_APPLY_THRESHOLD`). Le scelte passate contano solo con almeno 3 movimenti d'accordo, con sicurezza = quota d'accordo × somiglianza; l'AI solo con il consenso attivo. Chi aveva acconsentito all'AI prima di questa regola parte con l'opzione spenta (migration 0034) e trova in Categorizza un invito ad accenderla.
+- **Traccia**: ogni movimento ha `category_source` (regola, storico, assistente, utente), `category_confidence` e `categorized_at`. Categorizza ha due schede: «Da decidere» (carte o elenco) e «Fatte da sole» (correzione con un tocco, «Va tutto bene» segna come viste fino all'ultima mostrata, `auth_user.auto_categorized_seen_at`). In Movimenti la riga dice «Regola», «Le tue scelte · 100%» o «AI · 96%».
+- **Loghi**: solo per i marchi del dizionario alias (`MERCHANT_LOGO_DOMAINS`), chiesti a Logo.dev per dominio dal nostro server (`/api/merchant-logos/[dominio]`, cache Redis come per gli strumenti). Mai per nome libero (loghi sbagliati) e a Logo.dev non arriva nulla dell'utente; fallback all'iniziale.
+- **Testi legali**: Privacy aggiornata (proposte sicure applicate da sole, sempre indicate e correggibili) senza cambiare `LEGAL_VERSION`: l'applicazione automatica dell'AI resta legata al consenso e all'opzione, entrambi revocabili.
+- **Osservabilità**: `buddybudget_categorization_auto_total{source,event=applied|corrected}` (la quota di corretti è la misura degli errori della soglia), log `categorization.auto.applied|corrected|reviewed|setting.updated`, eventi Umami `categorization_auto_*`.
+Rimandati: soglia regolabile dall'utente, loghi per esercenti fuori dal dizionario, legame con le proposte «confermate» dell'AI (oggi una conferma conta come scelta passata).

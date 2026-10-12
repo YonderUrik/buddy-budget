@@ -30,7 +30,9 @@ const ENCRYPTED_FIELDS_TEXT = "descrizioni e note dei movimenti, note di debiti 
 export const SECURITY_SOURCES = {
   psd2: { label: "Direttiva (UE) 2015/2366 (PSD2), art. 67: il servizio di informazione sui conti accede solo con il consenso esplicito e solo ai dati dei conti indicati", href: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
   rts: { label: "Regolamento delegato (UE) 2018/389: autenticazione forte del cliente e comunicazione sicura con la banca", href: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32018R0389" },
-  gocardlessTerms: { label: "GoCardless, condizioni del servizio Bank Account Data (UE): GoCardless SAS, autorizzata dall'ACPR, n. 17118; non vede né conserva le tue credenziali", href: "https://gocardless.com/legal/bank-account-data/" },
+  gocardlessTerms: { label: "GoCardless, condizioni del servizio Bank Account Data (UE): GoCardless SAS, autorizzata dall'ACPR, n. 17118; cosa conserva e per cosa lo usa (art. 4.1), nessun altro terzo e credenziali mai viste (art. 4.3)", href: "https://gocardless.com/legal/bank-account-data/" },
+  gocardlessPrivacy: { label: "GoCardless, informativa privacy per chi condivide i dati del proprio conto: dati raccolti e contatti del responsabile della protezione dei dati", href: "https://gocardless.com/privacy/account-holders/" },
+  gocardlessPrivacyDetails: { label: "GoCardless, dettagli dell'informativa privacy: per quanto tempo conserva i dati, condivisione con le autorità e trasferimenti fuori dall'UE", href: "https://gocardless.com/privacy/details/" },
   regafi: { label: "REGAFI, registro degli intermediari autorizzati in Francia (ACPR): cerca GoCardless SAS", href: "https://www.regafi.fr/" },
   ebaRegister: { label: "EBA, registro europeo degli istituti di pagamento", href: "https://www.eba.europa.eu/risk-and-data-analysis/data/registers/payment-institutions-register" },
   gdpr: { label: "Regolamento (UE) 2016/679 (GDPR): diritti di accesso, portabilità e cancellazione (artt. 15-20)", href: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32016R0679" },
@@ -84,7 +86,7 @@ export const FLOW = {
       seesTitle: "Cosa riceve GoCardless",
       label: "GoCardless",
       role: "Fornitore autorizzato (PSD2)",
-      sees: ["GoCardless SAS è autorizzata dall'autorità francese di vigilanza (ACPR, n. 17118) a fornire servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti, e li passa solo a BuddyBudget, perché l'hai chiesto tu."],
+      sees: ["GoCardless SAS è autorizzata dall'autorità francese di vigilanza (ACPR, n. 17118) a fornire servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti e li passa a BuddyBudget, perché l'hai chiesto tu. Ne conserva una copia secondo le sue condizioni e gli obblighi di legge."],
       never: ["Non vede le tue credenziali e non può muovere denaro: il servizio è solo di lettura."],
     },
     {
@@ -128,8 +130,41 @@ export const STORED = {
     { what: "Copie di sicurezza", kept: "parziale", keptLabel: `${BACKUP_DAYS} giorni`, detail: FIELD_ENCRYPTION_LIVE
       ? "Su Cloudflare R2 nell'Unione europea, cifrate a riposo dal servizio. Descrizioni e note restano cifrate anche lì, e la chiave non sta nei backup. Dopo 14 giorni i dati eliminati spariscono anche da lì."
       : "Su Cloudflare R2 nell'Unione europea, cifrate a riposo dal servizio. Dopo 14 giorni i dati eliminati spariscono anche da lì." },
-    { what: "Statistiche d'uso", kept: "parziale", keptLabel: "Anonime", detail: "Umami sui nostri server, senza cookie e senza sapere chi sei. Le spegni da Impostazioni, su ogni dispositivo." },
+    { what: "Statistiche d'uso", kept: "parziale", keptLabel: "Anonime", detail: "Pagine viste e azioni, senza importi né testi tuoi. Umami sui nostri server, senza cookie: dettagli più sotto." },
   ] satisfies readonly StoredRow[],
+} as const;
+
+export interface FactRow {
+  label: string;
+  text: string;
+}
+
+/** Cosa conserva GoCardless: dalle sue condizioni UE (art. 4) e dalla sua informativa privacy, non da ipotesi nostre. */
+export const GOCARDLESS_DATA = {
+  kicker: "Cosa tiene GoCardless",
+  title: "Anche GoCardless conserva i dati, con regole sue.",
+  lede: "GoCardless non è un semplice tramite: è un istituto autorizzato con obblighi propri e una sua informativa privacy. Ecco cosa dicono le sue condizioni.",
+  rows: [
+    { label: "Cosa conserva", text: "Nome dell'intestatario, dati e numero del conto, saldo e movimenti del periodo che autorizzi (condizioni UE, art. 4.1). Le credenziali della banca no: non le vede mai (art. 4.3)." },
+    { label: "Per cosa li usa", text: "Solo per fornire il servizio. Le condizioni citano anche la prevenzione delle frodi sui tuoi conti e analisi interne per migliorare il servizio (art. 4.1)." },
+    { label: "Con chi li condivide", text: "Con BuddyBudget, perché l'hai chiesto tu, e con nessun altro terzo (art. 4.3). Come ogni istituto regolato, deve consegnarli alle autorità quando la legge lo impone." },
+    { label: "Per quanto tempo", text: "Finché servono al servizio, e più a lungo quando lo richiedono un obbligo di legge, una contestazione o la prevenzione delle frodi. I tempi variano per tipo di dato e GoCardless non pubblica un numero di anni." },
+    { label: "Dove", text: "GoCardless SAS ha sede a Parigi. Alcuni suoi fornitori sono fuori dall'UE, anche negli Stati Uniti, con contratti che li obbligano a trattare i dati come richiede la legge europea." },
+    { label: "Se scolleghi la banca", text: "Revochiamo il consenso e GoCardless smette di leggere i tuoi conti. Quello che ha già ricevuto segue i suoi tempi: per vederlo o chiederne la cancellazione puoi scrivere a GoCardless (GDPR, artt. 15-17)." },
+  ] satisfies readonly FactRow[],
+} as const;
+
+/** Statistiche d'uso (Umami): cosa contiamo e cosa no. Vedi `lib/analytics/track.ts` (tipo chiuso `ProductEvents`) e la pagina cookie. */
+export const ANALYTICS_DATA = {
+  kicker: "Statistiche d'uso",
+  title: "Cosa contiamo per capire se l'app funziona.",
+  lede: "Usiamo le statistiche per sapere quali funzioni vengono usate e dove le persone si fermano. Non servono a conoscerti.",
+  rows: [
+    { label: "Cosa contiamo", text: "Pagine viste e azioni come «conto creato» o «file importato», con dettagli solo a categorie o conteggi (per esempio quanti conti hai collegato)." },
+    { label: "Cosa non riceve mai", text: "Importi, descrizioni dei movimenti, nomi di esercenti, email, nomi o codici dei tuoi conti. L'elenco degli eventi è chiuso nel codice: un evento nuovo va aggiunto lì apposta." },
+    { label: "Dove", text: "Umami, installato sui nostri server. Non usa cookie, non ti segue su altri siti e non passa i dati a terzi." },
+    { label: "Come spegnerle", text: "Nell'app, da Impostazioni → Privacy, su ogni dispositivo. Sul sito trovi come fare nella pagina sui cookie." },
+  ] satisfies readonly FactRow[],
 } as const;
 
 export interface Pillar {

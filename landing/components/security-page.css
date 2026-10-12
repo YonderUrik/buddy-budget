@@ -31,3 +31,11 @@
   .sp-table th, .sp-table td { padding: 0; border: 0; }
   .sp-table td { margin-top: 6px; }
 }
+.sp-facts tbody th { width: 28%; white-space: normal; }
+@media (max-width: 640px) {
+  .sp-facts tbody tr { display: block; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .sp-facts tbody tr:last-child { border-bottom: 0; }
+  .sp-facts tbody th, .sp-facts tbody td { display: block; width: auto; padding: 0; border: 0; }
+  .sp-facts tbody th { margin-bottom: 4px; }
+}
+.sp-facts + .sp-note { margin-top: 14px; }

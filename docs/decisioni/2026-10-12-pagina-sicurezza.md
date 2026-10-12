@@ -6,3 +6,5 @@
 - **Consenso AI nell'onboarding**: ora spento di default (prima acceso), perché un consenso non può essere pre-selezionato (art. 7 GDPR) e l'informativa dice già «spento finché non lo scegli».
 - **Evento Umami**: `security_node_selected` (landing), `cta_click` con `location: "sicurezza"`.
 - **Rimandati**: SSH solo con chiave, ruolo DB di sviluppo con accesso ai dati di produzione, `security.txt`, eliminazione per inattività in `execute`.
+
+Aggiunta dello stesso giorno: due sezioni in `/sicurezza`, «Cosa tiene GoCardless» (cosa conserva, per cosa lo usa, con chi lo condivide, tempi, dove, cosa succede se scolleghi), riassunta dalle condizioni UE (art. 4) e dall'informativa privacy di GoCardless, e «Statistiche d'uso» (cosa conta Umami e cosa non riceve mai). GoCardless non pubblica un numero di anni di conservazione: la pagina lo dice invece di inventarlo.

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { CONTROLS, FIELD_ENCRYPTION_LIVE, FLOW, LIMITS, STORED } from "./security";
+import { ANALYTICS_DATA, CONTROLS, FIELD_ENCRYPTION_LIVE, FLOW, GOCARDLESS_DATA, LIMITS, STORED } from "./security";
 import { FAQ, SECURITY } from "./site";
 
 /** Tutti i testi pubblici sulla sicurezza, home e pagina /sicurezza. */
-const allText = () => JSON.stringify([FLOW, STORED, CONTROLS, LIMITS, SECURITY, FAQ]);
+const allText = () => JSON.stringify([FLOW, STORED, GOCARDLESS_DATA, ANALYTICS_DATA, CONTROLS, LIMITS, SECURITY, FAQ]);
 
 describe("testi sulla sicurezza", () => {
   it("parlano di cifratura nel database solo quando è attiva in produzione", () => {

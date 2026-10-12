@@ -3,11 +3,12 @@ import Link from "next/link";
 import "@/components/security-page.css";
 import { ContentPage } from "@/components/content-page";
 import { DataFlow } from "@/components/data-flow";
+import { FactTable } from "@/components/fact-table";
 import { JsonLd } from "@/components/json-ld";
 import { Sources } from "@/components/sources";
 import { LEGAL_OWNER, LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
-import { CONTROLS, FLOW, LIMITS, SECURITY_PAGE, SECURITY_SOURCES, SECURITY_SOURCES_CHECKED, STORED } from "@/content/security";
+import { ANALYTICS_DATA, CONTROLS, FLOW, GOCARDLESS_DATA, LIMITS, SECURITY_PAGE, SECURITY_SOURCES, SECURITY_SOURCES_CHECKED, STORED } from "@/content/security";
 import { SITE_URL, SOURCE_URL } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -61,6 +62,22 @@ export default function Page() {
             </tbody>
           </table>
         </div>
+      </section>
+
+      <section className="sp-sec" aria-labelledby="sp-gocardless">
+        <span className="ref">{GOCARDLESS_DATA.kicker}</span>
+        <h2 id="sp-gocardless">{GOCARDLESS_DATA.title}</h2>
+        <p>{GOCARDLESS_DATA.lede}</p>
+        <FactTable rows={GOCARDLESS_DATA.rows} caption={GOCARDLESS_DATA.title} />
+        <p className="sp-note">Le frasi riassumono le <a href={SECURITY_SOURCES.gocardlessTerms.href} rel="noopener" target="_blank">condizioni UE di GoCardless</a> e la sua <a href={SECURITY_SOURCES.gocardlessPrivacy.href} rel="noopener" target="_blank">informativa privacy</a>, dove trovi anche i contatti per esercitare i tuoi diritti.</p>
+      </section>
+
+      <section className="sp-sec" aria-labelledby="sp-analytics">
+        <span className="ref">{ANALYTICS_DATA.kicker}</span>
+        <h2 id="sp-analytics">{ANALYTICS_DATA.title}</h2>
+        <p>{ANALYTICS_DATA.lede}</p>
+        <FactTable rows={ANALYTICS_DATA.rows} caption={ANALYTICS_DATA.title} />
+        <p className="sp-note">Tutti i dettagli, compreso come spegnerle sul sito, nella <Link href={LEGAL_PATHS.cookie}>pagina sui cookie</Link>.</p>
       </section>
 
       <section className="sp-sec" aria-labelledby="sp-controls">

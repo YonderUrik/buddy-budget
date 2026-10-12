@@ -6,7 +6,7 @@ import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { personalImportJobs as jobs, personalParsers as parsers, personalFormats as formats } from "@/lib/db/schema/personal-imports";
 import { logger } from "@/lib/observability";
-import { suggestCategoriesSafely } from "@/lib/categorization/ai/suggest-for-user";
+import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { confirmImport } from "./confirm";
 import { ImportError, readRawFile, parserSchema } from "./contract";
 import { seal, unseal, digest } from "./crypto";
@@ -79,7 +79,7 @@ export async function maintainJobs() {
     try {
       const result = await confirmImport(ready.userId, ready.id);
       logger.info("personal_import.saved", { jobId: ready.id, count: result.inserted });
-      await suggestCategoriesSafely(ready.userId);
+      await categorizeNewMovementsSafely(ready.userId);
     } catch (error) {
       await db.update(jobs).set(error instanceof ImportError
         ? { status: "review_failed", error: error.message, notifiedAt: null }

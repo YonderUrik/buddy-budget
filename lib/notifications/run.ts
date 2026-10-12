@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, eq, gte, isNull, or } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { budgets, type Budget } from "@/lib/db/schema/budgets";
@@ -48,6 +48,8 @@ export interface NotificationDeps {
   loadDue(userId: string, now: Date): Promise<DebtDueItem[]>;
   /** Portafoglio ritagliato sul periodo del riepilogo; null senza investimenti. */
   loadInvestments(userId: string, range: { from: string; to: string }, now: Date): Promise<InvestmentDigest | null>;
+  /** Movimenti ancora «Da categorizzare»; assente = non se ne parla nel riepilogo. */
+  countToDecide?(userId: string): Promise<number>;
   loadSentKeys(userId: string, kind: NotificationKind, now: Date): Promise<Set<string>>;
   isAlertCapped(userId: string, now: Date): Promise<boolean>;
   claimKeys(userId: string, kind: NotificationKind, keys: string[], sentAt: Date): Promise<string[]>;
@@ -105,6 +107,14 @@ export const databaseDeps: NotificationDeps = {
     return buildDebtsView(debts, events, romeDate(now).iso).overview.nextDue;
   },
   loadInvestments: async (userId, range, now) => buildInvestmentDigest(await loadInvestmentData(userId, range.from), range, now),
+  async countToDecide(userId) {
+    const fallbackIds = db.select({ id: categories.id }).from(categories).where(and(eq(categories.userId, userId), eq(categories.isFallback, true)));
+    const [row] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(transactions)
+      .where(and(eq(transactions.userId, userId), inArray(transactions.categoryId, fallbackIds)));
+    return row?.count ?? 0;
+  },
   loadSentKeys,
   isAlertCapped,
   claimKeys,
@@ -243,6 +253,7 @@ export async function runNotifications(options: {
           frequency: preferences.digestFrequency,
           now,
           investments: await loadDigestInvestments(user, digestRange(preferences.digestFrequency, now)),
+          toDecide: (await deps.countToDecide?.(user.id)) ?? 0,
         });
         if (isDigestEmpty(data)) {
           result.empty += 1;

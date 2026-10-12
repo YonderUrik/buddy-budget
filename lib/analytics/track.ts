@@ -77,7 +77,7 @@ export interface ProductEvents {
   transaction_added: { direction: "entrata" | "uscita" };
   transaction_category_changed: { source: "row" | "categorizza" };
   categorization_applied: { groups: number };
-  categorization_rule_saved: { matchType: "merchant" | "contains" };
+  categorization_rule_saved: { matchType: "merchant" | "contains"; applied: number };
   transaction_split: undefined;
   /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
   section_views_opened: { section: SectionViewsKey };
@@ -212,6 +212,20 @@ export interface ProductEvents {
   categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
   /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
   categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
+  /** Interruttore «Lascia che l'app scelga quando è quasi certa»; `from` = dove l'utente l'ha cambiato. */
+  categorization_auto_apply_toggled: { enabled: boolean; from: "categorizza" | "impostazioni" };
+  /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
+  categorization_auto_applied: { count: number; groups: number };
+  /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
+  categorization_auto_reviewed: { count: number };
+  /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
+  categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
+  /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */
+  recategorize_previewed: { scope: "tutto" | "regola"; changes: number };
+  /** «Ricategorizza» applicata: movimenti spostati e gruppi scelti; `legacy` = inclusi i movimenti categorizzati prima che se ne segnasse l'origine. */
+  recategorize_applied: { scope: "tutto" | "regola"; count: number; groups: number; legacy: boolean };
+  /** Annulla dell'ultima «Ricategorizza»: movimenti riportati com'erano. */
+  recategorize_undone: { count: number };
   notifications_frequency_changed: { frequency: "settimanale" | "mensile" };
   /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
   notifications_test_sent: undefined;

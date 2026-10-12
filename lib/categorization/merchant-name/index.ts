@@ -3,3 +3,4 @@ export type { MerchantNameInput, MerchantNameResult, MerchantNameSource } from "
 export { mccLabel } from "./mcc";
 export { MERCHANT_ALIASES } from "./aliases";
 export type { MerchantAlias } from "./aliases";
+export { MERCHANT_LOGO_DOMAINS, isKnownMerchantLogoDomain, merchantLogoDomain } from "./logos";

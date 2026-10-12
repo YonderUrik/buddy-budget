@@ -25,6 +25,8 @@ export interface AiSuggestBannerProps {
   onGenerate: () => void;
   /** Solo il pulsante, senza riquadro: per le intestazioni strette (mobile). */
   compact?: boolean;
+  /** Le proposte sicure si applicano da sole: lo dice la conferma del consenso. */
+  autoApplyEnabled?: boolean;
 }
 
 export interface AiProgressStripProps {
@@ -49,7 +51,7 @@ export function AiProgressStrip({ done, total }: AiProgressStripProps) {
   );
 }
 
-export function AiSuggestBanner({ missingCount, consentGiven, generating, foundCount, onGenerate, compact = false }: AiSuggestBannerProps) {
+export function AiSuggestBanner({ missingCount, consentGiven, generating, foundCount, onGenerate, compact = false, autoApplyEnabled = false }: AiSuggestBannerProps) {
   const [confirming, setConfirming] = React.useState(false);
 
   function handleClick() {
@@ -96,7 +98,11 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
           <DialogHeader>
             <DialogTitle>Attivare l&apos;assistente per le categorie?</DialogTitle>
             <DialogDescription>
-              Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati. Le proposte non si applicano da sole. Puoi disattivarlo quando vuoi in Impostazioni.
+              Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.{" "}
+              {autoApplyEnabled
+                ? "Quando è quasi certa l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu."
+                : "Le proposte restano da confermare."}{" "}
+              Puoi disattivarlo quando vuoi in Impostazioni.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

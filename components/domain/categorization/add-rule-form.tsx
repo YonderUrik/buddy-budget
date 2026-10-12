@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateRuleMutation } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
+import { useRuleSavedFeedback } from "./rule-feedback";
 import { RULE_MATCH_TYPE_LABELS } from "./rule-labels";
 
 export interface AddRuleFormProps {
@@ -16,6 +17,7 @@ export interface AddRuleFormProps {
 
 export function AddRuleForm({ categories }: AddRuleFormProps) {
   const createMutation = useCreateRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
   // La fallback ("Da categorizzare") non è mai una categoria valida per una regola creata qui — vedi
   // lo stesso ragionamento in RuleRow: una regola sulla fallback resta sempre inutilizzata a runtime.
   const assignableCategories = React.useMemo(() => categories.filter((c) => !c.isFallback), [categories]);
@@ -40,9 +42,10 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
     createMutation.mutate(
       { pattern: pattern.trim(), categoryId, matchType },
       {
-        onSuccess: () => {
+        onSuccess: (rule) => {
           setPattern("");
           setMatchType("contains");
+          notifyRuleSaved(rule);
         },
         onError: (mutationError) => setError(mutationError.message),
       }

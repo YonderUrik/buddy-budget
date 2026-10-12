@@ -158,6 +158,24 @@ describe("GET /api/transactions/categorize-suggestions", () => {
     expect(groups[0].suggestion.suggestedCategoryId).toBe(foodCategoryId);
   });
 
+  it("indica i gruppi con una proposta sicura che si applicherebbero da soli", async () => {
+    for (const date of ["2026-01-01", "2026-01-08", "2026-01-15"]) {
+      await db.insert(transactions).values({ userId, accountId, categoryId: foodCategoryId, description: "ESSELUNGA VIA ROMA", amount: "-20.00", date, source: "manuale" });
+    }
+    await db.insert(transactions).values([
+      { userId, accountId, categoryId: fallbackCategoryId, description: "ESSELUNGA VIA ROMA", amount: "-30.00", date: "2026-02-01", source: "manuale" },
+      { userId, accountId, categoryId: fallbackCategoryId, description: "Bar Centrale", amount: "-5.00", date: "2026-02-01", source: "manuale" },
+    ]);
+
+    const body = await (await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"))).json();
+    const esselunga = body.groups.find((group: { label: string }) => group.label === "ESSELUNGA VIA ROMA");
+    expect(body.autoApply).toEqual({ enabled: true, ready: 1, readyKeys: [esselunga.groupKey] });
+
+    await db.update(authUser).set({ categorizationAutoApply: false }).where(eq(authUser.id, userId));
+    const off = await (await GET(new NextRequest("http://localhost/api/transactions/categorize-suggestions"))).json();
+    expect(off.autoApply).toEqual({ enabled: false, ready: 0, readyKeys: [] });
+  });
+
   it("non include le transazioni di altri utenti", async () => {
     await db.insert(transactions).values({
       userId: otherUserId,

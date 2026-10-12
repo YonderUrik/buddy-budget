@@ -3,7 +3,7 @@
 /**
  * Categorizzazione rapida «a carte»: una carta per esercente, si conferma la proposta o si sceglie un'altra
  * categoria (gesto, pulsanti o tastiera: → conferma, ← cambia, ↓ salta, Z annulla). Non crea mai regole da sola:
- * solo se l'utente spunta «Ricorda per questo esercente» sulla carta.
+ * solo se l'utente spunta «Usa sempre questa categoria» sulla carta.
  */
 
 import * as React from "react";
@@ -18,6 +18,7 @@ import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { track } from "@/lib/analytics";
 import { SPRING_SOFT } from "@/lib/motion/springs";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { LogoCredit } from "./logo-credit";
 import { SwipeCard } from "./swipe-card";
 import { SwipeTour } from "./swipe-tour";
 import { useSwipeDeck } from "./use-swipe-deck";
@@ -82,10 +83,11 @@ interface ActiveCardProps extends Omit<CategorizeSwipeDeckProps, "groups" | "onS
   onDecide: (decision: Omit<DeckDecision, "groupKey">) => void;
   onSkip: () => void;
   onUndo: () => void;
+  onRemoteLogo: () => void;
 }
 
 /** La carta in cima con i suoi pulsanti e scorciatoie; `changing` e `remember` valgono per una carta sola (si azzerano al cambio di carta). */
-function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, remaining, canUndo, onDecide, onSkip, onUndo }: ActiveCardProps) {
+function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, remaining, canUndo, onDecide, onSkip, onUndo, onRemoteLogo }: ActiveCardProps) {
   // Lo stato vale per una carta sola: al cambio di carta si azzera durante il render (il componente resta montato per animare l'uscita).
   const [local, setLocal] = React.useState({ key: group.groupKey, changing: false, remember: false });
   if (local.key !== group.groupKey) setLocal({ key: group.groupKey, changing: false, remember: false });
@@ -197,6 +199,7 @@ function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, rem
               onConfirm={confirm}
               onChange={() => setChanging(true)}
               onSkip={skipCard}
+              onRemoteLogo={onRemoteLogo}
             />
           </motion.div>
         </AnimatePresence>
@@ -254,6 +257,8 @@ function WaitingCard({ group, categories, currency }: { group: SuggestionGroup; 
 
 export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsage, onSave }: CategorizeSwipeDeckProps) {
   const deck = useSwipeDeck({ groups, onSave });
+  const [logosShown, setLogosShown] = React.useState(false);
+  const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   if (!deck.top) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-border p-8 text-center">
@@ -267,6 +272,7 @@ export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsag
     );
   }
   return (
+    <>
     <ActiveCard
       group={deck.top}
       nextGroup={deck.next}
@@ -278,6 +284,9 @@ export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsag
       onDecide={deck.decide}
       onSkip={deck.skip}
       onUndo={deck.undo}
+      onRemoteLogo={showLogoCredit}
     />
+    <LogoCredit visible={logosShown} className="mt-3 text-center" />
+    </>
   );
 }

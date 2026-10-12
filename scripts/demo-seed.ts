@@ -15,6 +15,9 @@ import { authSession, authUser } from "@/lib/db/schema/auth";
 import { budgets } from "@/lib/db/schema/budgets";
 import { subscriptions } from "@/lib/db/schema/subscriptions";
 import { categories } from "@/lib/db/schema/categories";
+import { categorizationRules } from "@/lib/db/schema/categorization-rules";
+import { categorizationSuggestions } from "@/lib/db/schema/categorization-suggestions";
+import { merchantKey } from "@/lib/categorization/merchant-key";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
@@ -101,6 +104,10 @@ async function main() {
     // Termini già accettati, sempre nella versione in vigore al momento del seed: così il gate di proxy.ts non rimanda a /accetta-termini.
     legalAcceptedAt: new Date(),
     legalAcceptedVersion: LEGAL_VERSION,
+    // Categorizza: assistente attivo, categorie sicure applicate da sole e «Messe dall'app» degli ultimi giorni da controllare.
+    aiCategorizationConsentAt: new Date(),
+    categorizationAutoApply: true,
+    autoCategorizedSeenAt: new Date(Date.now() - 14 * 86400000),
   });
   // Guida di Analitiche già vista: la schermata si cattura senza il dialogo di benvenuto.
   await db.insert(analyticsAssumptions).values({ userId: DEMO_USER_ID, walkthroughSeenAt: new Date() });
@@ -163,16 +170,62 @@ async function main() {
     }
     if (back % 3 === 0) push(dayOfMonth(back, 20), "Investimenti", "Versamento PAC", "BONIFICO PAC ETF AZIONARIO", -300);
   }
-  // Movimenti ancora da categorizzare, per la schermata "Categorizza".
+  // Categorizza: la rata del mese messa da una regola, alcuni movimenti già categorizzati da soli («Messe dall'app») e
+  // alcuni incerti o senza proposta («Da decidere»).
+  const recentCutoff = iso(daysAgo(14));
+  rows.forEach((row, index) => {
+    if (row.description === "Rata mutuo" && row.date >= recentCutoff) {
+      Object.assign(row, { categorySource: "regola", categorizedAt: new Date(Date.now() - (index % 5) * 3600000) });
+    }
+  });
+  // Due caffè al Bar Centrale già categorizzati: il terzo arriva con una proposta «Come i tuoi 2 movimenti simili», incerta.
+  for (const back of [2, 1]) {
+    net -= 3.8;
+    rows.push({
+      userId: DEMO_USER_ID,
+      accountId: checking.id,
+      categoryId: cat("Ristoranti & Bar"),
+      description: "Bar Centrale",
+      rawDescription: "PAGAMENTO POS BAR CENTRALE",
+      amount: "-3.80",
+      date: iso(dayOfMonth(back, 10)),
+      source: "auto",
+      externalId: `demo-${rows.length}`,
+    });
+  }
   const fallback = cats.find((c) => c.isFallback);
   if (fallback) {
-    // Descrizioni uguali a quelle già categorizzate: la pagina le propone dallo storico.
+    // Messe dall'app: uguali a movimenti già categorizzati (le tue scelte, al 100%) e una proposta sicura dell'AI.
+    const applied = [
+      ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -23.4, "Spesa", "storico", 1],
+      ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -41.7, "Spesa", "storico", 1],
+      ["Ristorante", "PAGAMENTO POS TRATTORIA DA MARIO", -34, "Ristoranti & Bar", "storico", 1],
+      ["Carburante", "PAGAMENTO POS STAZIONE DI SERVIZIO", -48.2, "Trasporti", "storico", 1],
+      ["Libreria del Corso", "PAGAMENTO POS LIBRERIA DEL CORSO", -18.9, "Svago", "assistente", 0.94],
+    ] as const;
+    applied.forEach(([description, raw, amount, categoryName, origin, confidence], i) => {
+      net += amount;
+      rows.push({
+        userId: DEMO_USER_ID,
+        accountId: checking.id,
+        categoryId: cat(categoryName),
+        description,
+        rawDescription: raw,
+        amount: amount.toFixed(2),
+        date: iso(daysAgo(i + 1)),
+        source: "auto",
+        externalId: `demo-applied-${i}`,
+        categorySource: origin,
+        categoryConfidence: confidence.toFixed(4),
+        categorizedAt: new Date(Date.now() - (i + 1) * 3600000),
+      });
+    });
+    // Da decidere: una proposta incerta dalle tue scelte, due dell'AI sotto il 90% e un bonifico senza proposta.
     const pending = [
-      ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -23.4],
-      ["Supermercato", "PAGAMENTO POS SUPERMERCATO CENTRO 0412", -41.7],
-      ["Ristorante", "PAGAMENTO POS TRATTORIA DA MARIO", -34],
-      ["Carburante", "PAGAMENTO POS STAZIONE DI SERVIZIO", -48.2],
-      ["Farmacia", "PAGAMENTO POS FARMACIA COMUNALE", -12.5],
+      ["Bar Centrale", "PAGAMENTO POS BAR CENTRALE", -4.6],
+      ["Ferramenta Rossi", "PAGAMENTO POS FERRAMENTA ROSSI", -27.5],
+      ["Ferramenta Rossi", "PAGAMENTO POS FERRAMENTA ROSSI", -12.9],
+      ["Ottica Vista", "PAGAMENTO POS OTTICA VISTA", -89],
       ["Bonifico a favore di Luca", "BONIFICO A FAVORE DI LUCA R", -50],
     ] as const;
     pending.forEach(([description, raw, amount], i) => {
@@ -184,11 +237,16 @@ async function main() {
         description,
         rawDescription: raw,
         amount: amount.toFixed(2),
-        date: iso(daysAgo(i + 1)),
+        date: iso(daysAgo(i + 2)),
         source: "auto",
         externalId: `demo-pending-${i}`,
       });
     });
+    await db.insert(categorizationSuggestions).values([
+      { userId: DEMO_USER_ID, merchantKey: merchantKey("Ferramenta Rossi"), direction: "uscita", categoryId: cat("Casa & Arredamento"), confidence: "0.7800", model: "demo", promptVersion: 1 },
+      { userId: DEMO_USER_ID, merchantKey: merchantKey("Ottica Vista"), direction: "uscita", categoryId: cat("Salute"), confidence: "0.7100", model: "demo", promptVersion: 1 },
+    ]);
+    await db.insert(categorizationRules).values({ userId: DEMO_USER_ID, matchType: "merchant", pattern: merchantKey("Rata mutuo"), categoryId: cat("Affitto & Mutuo"), source: "appresa" });
   }
   for (const [accountId, amount] of [[checking.id, -250], [savings.id, 250]] as const) {
     rows.push({ userId: DEMO_USER_ID, accountId, categoryId: cat("Trasferimenti tra i miei conti"),

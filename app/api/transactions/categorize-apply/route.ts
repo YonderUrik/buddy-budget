@@ -5,16 +5,18 @@ import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { transactions } from "@/lib/db/schema/transactions";
+import { countAutoCorrections } from "@/lib/categorization/auto-corrections";
 import { isDirectionCompatible } from "@/lib/categorization/match-rule";
 import { recordSuggestionDecisions } from "@/lib/categorization/ai/suggest-for-user";
 import { applyCategorizationSchema } from "@/lib/validation/categorization-rules";
-import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
+import { bindRequestUser, recordCategorizationAutoCorrected, requestLogger, withRoute } from "@/lib/observability";
 
 /**
- * POST /api/transactions/categorize-apply — applica in blocco le scelte fatte nella pagina di
- * revisione: aggiorna categoria e quota esclusa di ogni transazione dei gruppi ricevuti e, dove
- * richiesto, crea o aggiorna la regola `appresa` corrispondente. Tutto in un'unica transazione DB:
- * o passa l'intero batch, o non passa nulla.
+ * POST /api/transactions/categorize-apply — applica in blocco le scelte fatte in Categorizza (carte, elenco
+ * o «Messe dall'app»): aggiorna categoria e quota esclusa di ogni transazione dei gruppi ricevuti, segna la
+ * categoria come scelta dall'utente e, dove richiesto, crea o aggiorna la regola `appresa` corrispondente.
+ * Tutto in un'unica transazione DB: o passa l'intero batch, o non passa nulla. Se l'utente sposta movimenti
+ * che erano stati categorizzati da soli, lo conta (metrica e log): è la misura degli errori della soglia.
  */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -69,6 +71,12 @@ async function handlePost(request: NextRequest) {
 
   let applied = 0;
   let rulesCreated = 0;
+  const now = new Date();
+  const corrections = countAutoCorrections(
+    parsed.data.groups.flatMap((group) =>
+      group.transactionIds.map((transactionId) => ({ before: transactionById.get(transactionId)!, categoryId: group.categoryId }))
+    )
+  );
 
   await db.transaction(async (tx) => {
     for (const group of parsed.data.groups) {
@@ -84,7 +92,10 @@ async function handlePost(request: NextRequest) {
           .set({
             categoryId: group.categoryId,
             excludedAmount: excludedAmount.toFixed(2),
-            updatedAt: new Date(),
+            categorySource: "utente",
+            categoryConfidence: null,
+            categorizedAt: now,
+            updatedAt: now,
           })
           .where(eq(transactions.id, transactionId));
         applied += 1;
@@ -127,6 +138,10 @@ async function handlePost(request: NextRequest) {
   });
   const { confirmed, corrected } = await recordSuggestionDecisions(userId, decisions);
   if (confirmed + corrected > 0) requestLogger().info("categorization.ai.decided", { confirmed, corrected });
+  for (const [source, count] of corrections) {
+    recordCategorizationAutoCorrected(source, count);
+    requestLogger().info("categorization.auto.corrected", { categorySource: source, count });
+  }
 
   return Response.json({ applied, rulesCreated });
 }

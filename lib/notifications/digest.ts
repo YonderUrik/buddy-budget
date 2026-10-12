@@ -67,6 +67,8 @@ export interface DigestInput {
   now: Date;
   /** Portafoglio nel periodo, già calcolato (`buildInvestmentDigest`); null se non ci sono investimenti. */
   investments?: InvestmentDigest | null;
+  /** Movimenti ancora «Da categorizzare» oggi (di qualunque data): l'email lo ricorda con un link a Categorizza. */
+  toDecide?: number;
 }
 
 export interface DigestData {
@@ -80,6 +82,8 @@ export interface DigestData {
   /** Numero di movimenti nel periodo. */
   movements: number;
   investments: InvestmentDigest | null;
+  /** Movimenti da decidere in Categorizza (0 o assente = niente da dire). */
+  toDecide?: number;
 }
 
 /** True se il riepilogo non avrebbe niente da dire (nessun movimento e nessun investimento): in quel caso non parte. */
@@ -88,7 +92,7 @@ export function isDigestEmpty(data: DigestData): boolean {
 }
 
 /** Cifre del riepilogo, calcolate con gli stessi motori delle schermate (`lib/calc/expenses`): nessun numero nuovo. */
-export function buildDigest({ transactions, categories, budgets, frequency, now, investments = null }: DigestInput): DigestData {
+export function buildDigest({ transactions, categories, budgets, frequency, now, investments = null, toDecide = 0 }: DigestInput): DigestData {
   const period = digestPeriod(frequency, now);
   const range = getPeriodRange(period.period, period.referenceDate);
   const previousRange = getPreviousPeriodRange(period.period, period.referenceDate);
@@ -116,6 +120,7 @@ export function buildDigest({ transactions, categories, budgets, frequency, now,
     budget: budgets.length === 0 ? null : { total: budgets.length, over },
     movements,
     investments,
+    toDecide,
   };
 }
 

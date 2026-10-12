@@ -54,7 +54,7 @@
       "theme": "light",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1200
+      "height": 1473
     },
     {
       "id": "investimenti",
@@ -159,7 +159,7 @@
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1200
+      "height": 1473
     },
     {
       "id": "investimenti",

@@ -43,10 +43,10 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
       </section>
       {toFix > 0 && (
         <section>
-          <SectionTitle icon={AlertTriangleIcon} title="Da sistemare" color="var(--neg)" />
+          <SectionTitle icon={AlertTriangleIcon} title="Da decidere" color="var(--neg)" />
           <SoftRow
             title={`${toFix} ${toFix === 1 ? "movimento" : "movimenti"}`}
-            hint="Senza categoria: sistemali a gruppi, con le proposte"
+            hint="Senza categoria: decidili a gruppi, con le proposte"
             end={<Link href={fixHref} className={cn(buttonVariants(), "h-11 shrink-0")}>Categorizza</Link>}
           />
         </section>

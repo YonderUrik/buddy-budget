@@ -206,6 +206,8 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
         description: "Cinema",
         amount: "-15.00",
         date: "2026-07-01",
+        categorySource: "regola",
+        categorizedAt: new Date(),
       })
       .returning();
 
@@ -221,6 +223,9 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
 
     const [reassigned] = await db.select().from(transactions).where(eq(transactions.id, transaction.id));
     expect(reassigned.categoryId).toBe(fallbackCategoryId);
+    // Senza origine: non deve restare tra le «Messe dall'app».
+    expect(reassigned.categorySource).toBeNull();
+    expect(reassigned.categorizedAt).toBeNull();
   });
 
   it("risponde 409 eliminando la categoria fallback", async () => {

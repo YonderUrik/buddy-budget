@@ -1,8 +1,7 @@
-/* Pagina /sicurezza: sezioni con riferimento, tabella del foglio «cosa salviamo», schede dei controlli e dei limiti. */
+/* Pagina /sicurezza: sezioni con riferimento, tabella del foglio «cosa salviamo», domande a tendina per il resto. */
 .sp-sec { margin-top: 56px; }
 .sp-sec > .ref { margin-bottom: 8px; }
 .cp .sp-sec > h2 { margin-top: 0; }
-@media (min-width: 861px) { .sp-grid-3:has(> :nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .sp-table { margin-top: 24px; overflow-x: auto; }
 .sp-table table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
 .sp-table th, .sp-table td { padding: 14px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
@@ -14,16 +13,9 @@
 .sp-kept-no { color: var(--a-pos); background: var(--a-pos-soft); }
 .sp-kept-si { color: var(--accent); background: color-mix(in srgb, var(--primary) 12%, transparent); }
 .sp-kept-parziale { color: var(--ink2); background: var(--bg-alt); }
-.sp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 24px; }
-.sp-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.sp-card { padding: 20px 22px; }
-.sp-card h3 { margin: 0 0 8px; font: 600 18px / 1.25 var(--f-h); letter-spacing: -0.01em; }
-.sp-card p { margin: 0; color: var(--ink2); font-size: 15.5px; }
-.sp-card a, .sp-note a { color: var(--accent); }
+.sp-note a { color: var(--accent); }
 .sp-note { margin-top: 20px; font-size: 15px; color: var(--ink3); }
-@media (max-width: 860px) { .sp-grid-3 { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 640px) {
-  .sp-grid { grid-template-columns: minmax(0, 1fr); }
   .sp-table table, .sp-table tbody, .sp-table tr, .sp-table th, .sp-table td { display: block; }
   .sp-table thead { display: none; }
   .sp-table tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
@@ -31,11 +23,11 @@
   .sp-table th, .sp-table td { padding: 0; border: 0; }
   .sp-table td { margin-top: 6px; }
 }
-.sp-facts tbody th { width: 28%; white-space: normal; }
-@media (max-width: 640px) {
-  .sp-facts tbody tr { display: block; padding: 14px 16px; border-bottom: 1px solid var(--line); }
-  .sp-facts tbody tr:last-child { border-bottom: 0; }
-  .sp-facts tbody th, .sp-facts tbody td { display: block; width: auto; padding: 0; border: 0; }
-  .sp-facts tbody th { margin-bottom: 4px; }
-}
-.sp-facts + .sp-note { margin-top: 14px; }
+.sp-questions { margin-top: 24px; }
+.sp-answer { margin: 0 20px 22px 46px; color: var(--ink2); max-width: 70ch; }
+.sp-answer > p { margin: 0 0 12px; line-height: 1.6; }
+.sp-answer .sp-note { margin: 12px 0 0; }
+.sp-dl { margin: 0; display: grid; gap: 12px; }
+.sp-dl dt { font-weight: 600; color: var(--ink); }
+.sp-dl dd { margin: 2px 0 0; line-height: 1.55; }
+@media (max-width: 560px) { .sp-answer { margin-left: 20px; } }

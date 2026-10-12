@@ -44,13 +44,6 @@ export const FAQ: readonly FaqItem[] = [
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
 export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 
-export interface SecurityPoint {
-  /** Icona del punto (vedi `HomeIcon`). */
-  icon: HomeIcon;
-  title: string;
-  text: string;
-}
-
 /** Cosa fa BuddyBudget per i dati: solo fatti verificabili nel codice o nell'infrastruttura, niente promesse generiche. */
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
@@ -62,18 +55,7 @@ export const SECURITY = {
     { text: "Sola lettura con consenso esplicito (PSD2, art. 67)", source: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
     { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
   ],
-  /** Il limite principale, detto nella home e spiegato nella pagina. */
-  limit: FIELD_ENCRYPTION_LIVE
-    ? "Descrizioni e note dei movimenti sono cifrate nel database e nei backup. Un limite da sapere: non è cifratura end-to-end, perché il server deve leggerle per calcolare saldi, budget e tasse."
-    : "Un limite da sapere: i dati non sono cifrati end-to-end, perché il server deve leggerli per calcolare saldi, budget e tasse.",
-  points: [
-    { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
-    { icon: "database", title: "Cosa conserviamo", text: FIELD_ENCRYPTION_LIVE ? "Saldi e movimenti, per mostrarteli, con descrizioni e note cifrate nel database. Le credenziali della banca e l'IBAN non li salviamo mai." : "Saldi e movimenti, per mostrarteli. Le credenziali della banca e l'IBAN non li salviamo mai." },
-    { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime, senza cookie, e le spegni dalle impostazioni su ogni dispositivo." },
-    { icon: "sliders", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
-  ] satisfies readonly SecurityPoint[],
-  legalNote: "Maggiori dettagli nella",
-  more: "Cosa salviamo, come cancelli tutto e le fonti",
+  more: "Tutti i dettagli: cosa salviamo, cosa tiene GoCardless, come cancelli tutto",
 } as const;
 
 /** Blocco «Codice aperto» (dopo la sicurezza): mostrato solo con `SOURCE_URL`. Ogni punto è verificabile leggendo il repository. */

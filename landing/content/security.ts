@@ -141,8 +141,7 @@ export interface FactRow {
 
 /** Cosa conserva GoCardless: dalle sue condizioni UE (art. 4) e dalla sua informativa privacy, non da ipotesi nostre. */
 export const GOCARDLESS_DATA = {
-  kicker: "Cosa tiene GoCardless",
-  title: "Anche GoCardless conserva i dati, con regole sue.",
+  question: "Cosa conserva GoCardless, e per quanto?",
   lede: "GoCardless non è un semplice tramite: è un istituto autorizzato con obblighi propri e una sua informativa privacy. Ecco cosa dicono le sue condizioni.",
   rows: [
     { label: "Cosa conserva", text: "Nome dell'intestatario, dati e numero del conto, saldo e movimenti del periodo che autorizzi (condizioni UE, art. 4.1). Le credenziali della banca no: non le vede mai (art. 4.3)." },
@@ -156,14 +155,13 @@ export const GOCARDLESS_DATA = {
 
 /** Statistiche d'uso (Umami): cosa contiamo e cosa no. Vedi `lib/analytics/track.ts` (tipo chiuso `ProductEvents`) e la pagina cookie. */
 export const ANALYTICS_DATA = {
-  kicker: "Statistiche d'uso",
-  title: "Cosa contiamo per capire se l'app funziona.",
+  question: "Cosa contano le statistiche d'uso?",
   lede: "Usiamo le statistiche per sapere quali funzioni vengono usate e dove le persone si fermano. Non servono a conoscerti.",
   rows: [
     { label: "Cosa contiamo", text: "Pagine viste e azioni come «conto creato» o «file importato», con dettagli solo a categorie o conteggi (per esempio quanti conti hai collegato)." },
     { label: "Cosa non riceve mai", text: "Importi, descrizioni dei movimenti, nomi di esercenti, email, nomi o codici dei tuoi conti. L'elenco degli eventi è chiuso nel codice: un evento nuovo va aggiunto lì apposta." },
     { label: "Dove", text: "Umami, installato sui nostri server. Non usa cookie, non ti segue su altri siti e non passa i dati a terzi." },
-    { label: "Come spegnerle", text: "Nell'app, da Impostazioni → Privacy, su ogni dispositivo. Sul sito trovi come fare nella pagina sui cookie." },
+    { label: "Come spegnerle", text: "Nell'app, da Impostazioni → Privacy, su ogni dispositivo." },
   ] satisfies readonly FactRow[],
 } as const;
 
@@ -174,8 +172,7 @@ export interface Pillar {
 
 /** Come si protegge l'accesso e come si tolgono i dati. */
 export const CONTROLS = {
-  kicker: "Sei tu a decidere",
-  title: "Puoi portare via tutto, o cancellarlo, quando vuoi.",
+  question: "Come porto via o cancello i miei dati?",
   items: [
     { title: "Scollega la banca", text: "Togliendo l'ultimo conto di una banca revochiamo subito il consenso su GoCardless. Il consenso scade comunque dopo 90 giorni e lo rinnovi solo se vuoi." },
     { title: "Scarica i tuoi dati", text: "Da Impostazioni scarichi un file ZIP con tutto, in JSON e CSV." },
@@ -186,8 +183,7 @@ export const CONTROLS = {
 
 /** Cosa non promettiamo: limiti detti apertamente, perché la fiducia si regge anche su quello che non si dice. */
 export const LIMITS = {
-  kicker: "Cosa non promettiamo",
-  title: "I limiti, detti chiaramente.",
+  question: "Cosa non promettete?",
   items: [
     {
       title: "Non è cifrato end-to-end",
@@ -196,7 +192,6 @@ export const LIMITS = {
         : "Per calcolare saldi, budget e tasse il server deve leggere i movimenti. Sono protetti dalle connessioni cifrate e dall'accesso limitato al server, ma chi gestisce il servizio potrebbe tecnicamente leggerli.",
     },
     { title: "Nessuna certificazione", text: "BuddyBudget è un progetto piccolo: non ha certificazioni come ISO 27001 né audit esterni. Preferiamo dirlo che lasciarlo intendere." },
-    { title: "Il codice si può controllare", text: "Il codice è pubblico con licenza AGPL-3.0: chi vuole verificare cosa viene salvato e inviato può leggerlo, senza fidarsi della nostra parola." },
   ] satisfies readonly Pillar[],
 } as const;
 

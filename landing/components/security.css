@@ -1,20 +1,7 @@
-/* Sicurezza: quattro celle affiancate, ognuna col suo riferimento (A1…D1); due per riga sotto i 1000px, una sotto i 560px. */
-.sec-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 36px; }
-.sec-point { padding: 22px; }
-.sec-ic { display: grid; place-items: center; width: 40px; height: 40px; color: var(--accent); border-radius: var(--r); background: color-mix(in srgb, var(--primary) 12%, transparent); }
-.sec-point h3 { margin: 16px 0 8px; font: 600 19px / 1.2 var(--f-h); letter-spacing: -0.02em; }
-.sec-point p { color: var(--ink2); font-size: 15.5px; }
-.sec-legal { margin-top: 20px; font-size: 15px; color: var(--ink3); }
-.sec-legal a { color: var(--accent); }
-@media (max-width: 1000px) { .sec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .sec-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Sicurezza in home: diagramma, fatti con fonte (pillole) e link alla pagina /sicurezza. */
 .sec-more { margin-top: 24px; font: 600 16px var(--f-b); }
 .sec-more a { color: var(--accent); }
-.sec-more + .sec-legal { margin-top: 8px; }
 .sec-facts { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .sec-facts a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink2); font-size: 13.5px; text-decoration: none; }
 .sec-facts a::after { content: "↗"; color: var(--accent); }
 .sec-facts a:hover { border-color: var(--accent); color: var(--ink); }
-.sec-limit { margin-top: 20px; font-size: 15.5px; color: var(--ink2); max-width: 48em; }
-.sec-limit + .sec-more { margin-top: 10px; }
-.sec-facts + .sec-grid { margin-top: 28px; }

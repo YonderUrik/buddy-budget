@@ -8,3 +8,5 @@
 - **Rimandati**: SSH solo con chiave, ruolo DB di sviluppo con accesso ai dati di produzione, `security.txt`, eliminazione per inattività in `execute`.
 
 Aggiunta dello stesso giorno: due sezioni in `/sicurezza`, «Cosa tiene GoCardless» (cosa conserva, per cosa lo usa, con chi lo condivide, tempi, dove, cosa succede se scolleghi), riassunta dalle condizioni UE (art. 4) e dall'informativa privacy di GoCardless, e «Statistiche d'uso» (cosa conta Umami e cosa non riceve mai). GoCardless non pubblica un numero di anni di conservazione: la pagina lo dice invece di inventarlo.
+
+Semplificazione (stesso giorno, feedback dei tester: «troppe informazioni»): in home restano solo diagramma, tre fatti con fonte e il link; in `/sicurezza` restano in vista diagramma e tabella, il resto (GoCardless, statistiche, cancellazione, limiti) sta in quattro domande a tendina. Il codice aperto non è più presentato come argomento di sicurezza.

@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.63.0](https://github.com/YonderUrik/buddy-budget/compare/v0.62.0...v0.63.0) (2026-10-12)
+
+
+### Novità
+
+* pagina Sicurezza e cifratura dei dati delicati nel database ([#345](https://github.com/YonderUrik/buddy-budget/issues/345)) ([8e48509](https://github.com/YonderUrik/buddy-budget/commit/8e48509bd6461212370a71555a93bb7b9e383fd6))
+
 ## [0.62.0](https://github.com/YonderUrik/buddy-budget/compare/v0.61.1...v0.62.0) (2026-10-11)
 
 

@@ -1,5 +1,4 @@
 /** Indirizzi e testi della landing. Gli URL arrivano dall'env, con default di produzione. */
-import type { HomeIcon } from "./home";
 import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
@@ -58,16 +57,3 @@ export const SECURITY = {
   more: "Tutti i dettagli: cosa salviamo, cosa tiene GoCardless, come cancelli tutto",
 } as const;
 
-/** Blocco «Codice aperto» (dopo la sicurezza): mostrato solo con `SOURCE_URL`. Ogni punto è verificabile leggendo il repository. */
-export const OPEN_SOURCE = {
-  kicker: "Codice aperto",
-  title: "Il codice dell'app è pubblico e lo puoi leggere.",
-  intro: "BuddyBudget è open source con licenza AGPL-3.0. Chi vuole controllare come funziona può leggere il codice, senza fidarsi della nostra parola.",
-  cta: "Apri il codice su GitHub",
-  repoName: "YonderUrik/buddy-budget",
-  points: [
-    { icon: "calculator", title: "Come sono fatti i calcoli", text: "Rendimenti, tasse, piani di ammortamento: le formule sono nel codice, con i test." },
-    { icon: "database", title: "Cosa viene salvato", text: "Lo schema del database elenca ogni dato conservato, campo per campo." },
-    { icon: "scale", title: "Le regole italiane", text: "Aliquote, zainetto fiscale e bollo si leggono per quello che sono, non come scatola chiusa." },
-  ] satisfies readonly { icon: HomeIcon; title: string; text: string }[],
-} as const;

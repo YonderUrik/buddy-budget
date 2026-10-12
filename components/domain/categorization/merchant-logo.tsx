@@ -1,13 +1,12 @@
 "use client";
 
 /**
- * Logo di un esercente: l'iniziale su un fondo tenue e, se la descrizione corrisponde a un marchio noto (Amazon, Apple,
- * Esselunga...), il logo servito dal nostro server (`/api/merchant-logos/[dominio]`, che lo chiede a Logo.dev). Finché
- * il logo non arriva, o se non c'è, resta l'iniziale. Decorativo: il nome è sempre scritto accanto.
+ * Logo di un esercente: l'iniziale su un fondo tenue e, se il server ha trovato un logo per il gruppo (`logoPath`: marchio
+ * del dizionario, sito scritto nel movimento o nome cercato su Logo.dev), l'immagine servita dal nostro server. Finché il
+ * logo non arriva, o se non c'è, resta l'iniziale. Decorativo: il nome è sempre scritto accanto.
  */
 
 import * as React from "react";
-import { merchantLogoDomain } from "@/lib/categorization/merchant-name";
 import { cn } from "@/lib/utils";
 
 export type MerchantLogoSize = "sm" | "md" | "lg";
@@ -19,8 +18,10 @@ const SIZE_CLASSES: Record<MerchantLogoSize, { tile: string; text: string; pad: 
 };
 
 export interface MerchantLogoProps {
-  /** Descrizione o nome dell'esercente. */
+  /** Nome dell'esercente (per l'iniziale). */
   name: string;
+  /** Indirizzo del logo sul nostro server, dal gruppo (`logoPath`); null o assente = solo l'iniziale. */
+  logoPath?: string | null;
   /** `sm` 36 px, `md` 44 px (default), `lg` 56 px. */
   size?: MerchantLogoSize;
   /** Chiamata quando è stato mostrato un logo remoto (serve a chi deve citare la fonte dei loghi). */
@@ -34,12 +35,11 @@ function initialOf(name: string): string {
   return match ? match[0].toUpperCase() : "·";
 }
 
-export function MerchantLogo({ name, size = "md", onRemoteLogo, className }: MerchantLogoProps) {
-  const domain = React.useMemo(() => merchantLogoDomain(name), [name]);
-  const [state, setState] = React.useState<{ domain: string | null; status: "pending" | "loaded" | "failed" }>({ domain, status: "pending" });
+export function MerchantLogo({ name, logoPath = null, size = "md", onRemoteLogo, className }: MerchantLogoProps) {
+  const [state, setState] = React.useState<{ src: string | null; status: "pending" | "loaded" | "failed" }>({ src: logoPath, status: "pending" });
   // Un altro esercente nello stesso posto (carte del mazzo): si ricomincia dall'iniziale.
-  if (state.domain !== domain) setState({ domain, status: "pending" });
-  const loaded = domain !== null && state.status === "loaded";
+  if (state.src !== logoPath) setState({ src: logoPath, status: "pending" });
+  const loaded = logoPath !== null && state.status === "loaded";
   const { tile, text, pad } = SIZE_CLASSES[size];
 
   return (
@@ -55,18 +55,18 @@ export function MerchantLogo({ name, size = "md", onRemoteLogo, className }: Mer
       )}
     >
       {loaded ? null : initialOf(name)}
-      {domain !== null && state.status !== "failed" ? (
+      {logoPath !== null && state.status !== "failed" ? (
         // eslint-disable-next-line @next/next/no-img-element -- immagine dal nostro server, già ridimensionata
         <img
-          key={domain}
-          src={`/api/merchant-logos/${encodeURIComponent(domain)}`}
+          key={logoPath}
+          src={logoPath}
           alt=""
           loading="lazy"
           onLoad={() => {
-            setState({ domain, status: "loaded" });
+            setState({ src: logoPath, status: "loaded" });
             onRemoteLogo?.();
           }}
-          onError={() => setState({ domain, status: "failed" })}
+          onError={() => setState({ src: logoPath, status: "failed" })}
           className={cn("absolute inset-0 size-full bg-white object-contain", pad, !loaded && "opacity-0")}
         />
       ) : null}

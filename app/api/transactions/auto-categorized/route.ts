@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { and, desc, eq, gt, inArray } from "drizzle-orm";
 import { sessionOrUnauthorized } from "@/lib/account/route-session";
 import { groupAutoCategorized } from "@/lib/categorization/auto-review";
+import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { AUTOMATIC_CATEGORY_SOURCES, transactions, type AutomaticCategorySource } from "@/lib/db/schema/transactions";
@@ -26,6 +27,7 @@ async function handleGet(request: NextRequest) {
     .select({
       id: transactions.id,
       description: transactions.description,
+      rawDescription: transactions.rawDescription,
       amount: transactions.amount,
       date: transactions.date,
       categoryId: transactions.categoryId,
@@ -44,7 +46,8 @@ async function handleGet(request: NextRequest) {
     .orderBy(desc(transactions.categorizedAt))
     .limit(AUTO_CATEGORIZED_LIMIT);
 
-  const groups = groupAutoCategorized(
+  const rawById = new Map(rows.map((row) => [row.id, row.rawDescription]));
+  const grouped = groupAutoCategorized(
     rows.map((row) => ({
       id: row.id,
       description: row.description,
@@ -55,6 +58,15 @@ async function handleGet(request: NextRequest) {
       confidence: row.confidence === null ? null : Number(row.confidence),
       categorizedAt: (row.categorizedAt ?? user.seenAt).toISOString(),
     }))
+  );
+  const groups = await withMerchantLogos(
+    grouped,
+    (group) => ({
+      label: group.label,
+      texts: [...group.transactionDescriptions, ...group.transactionIds.map((id) => rawById.get(id))],
+      isExpense: group.totalAmount < 0,
+    }),
+    userId
   );
   return Response.json({ groups, total: rows.length, seenAt: user.seenAt.toISOString() });
 }

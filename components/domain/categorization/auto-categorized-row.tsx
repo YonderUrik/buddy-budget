@@ -52,7 +52,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
 
   return (
     <li className="flex gap-3 py-3">
-      <MerchantLogo name={group.label} size="md" onRemoteLogo={onRemoteLogo} />
+      <MerchantLogo name={group.label} logoPath={group.logoPath} size="md" onRemoteLogo={onRemoteLogo} />
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-start justify-between gap-3">
           <button

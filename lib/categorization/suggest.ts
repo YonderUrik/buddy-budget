@@ -73,6 +73,8 @@ export interface SuggestionGroup {
   totalAmount: number;
   suggestion: CategorizeSuggestion | null;
   hasDivergentSuggestions: boolean;
+  /** Indirizzo del logo dell'esercente sul nostro server, aggiunto dalla rotta (null = iniziale). */
+  logoPath?: string | null;
 }
 
 /** Quota esclusa come frazione dell'importo, arrotondata per confronti fra importi diversi. */

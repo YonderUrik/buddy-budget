@@ -31,6 +31,8 @@ export interface AutoCategorizedGroup {
   totalAmount: number;
   /** Quando è stato categorizzato l'ultimo movimento del gruppo (ISO). */
   lastCategorizedAt: string;
+  /** Indirizzo del logo dell'esercente sul nostro server, aggiunto dalla rotta (null = iniziale). */
+  logoPath?: string | null;
 }
 
 /**

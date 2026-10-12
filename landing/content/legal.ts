@@ -125,7 +125,7 @@ export const PRIVACY: LegalDocument = {
       id: "destinatari",
       title: "Con chi condividiamo i dati",
       paragraphs: [
-        "Non vendiamo i tuoi dati e non li usiamo per pubblicità. Li comunichiamo solo ai fornitori che servono a far funzionare il servizio, nominati responsabili del trattamento o, dove agiscono come titolari autonomi, indicati come tali. I servizi di prezzi, cambi e loghi degli strumenti sono interrogati dai nostri server con soli simboli, codici ISIN o nomi di titoli, mai con dati che ti identificano. Possiamo comunicare dati alle autorità quando la legge lo impone. I fornitori sono:",
+        "Non vendiamo i tuoi dati e non li usiamo per pubblicità. Li comunichiamo solo ai fornitori che servono a far funzionare il servizio, nominati responsabili del trattamento o, dove agiscono come titolari autonomi, indicati come tali. I servizi di prezzi, cambi e loghi degli strumenti sono interrogati dai nostri server con soli simboli, codici ISIN o nomi di titoli, mai con dati che ti identificano. Per i loghi degli esercenti il servizio di loghi (Logo.dev) riceve dai nostri server solo il sito di un marchio (scritto nei movimenti o noto a noi) o, per i nomi presenti nei movimenti di più utenti, il nome dell'esercente: mai bonifici, importi o chi ha fatto il movimento. Possiamo comunicare dati alle autorità quando la legge lo impone. I fornitori sono:",
       ],
       items: [
         "Hostinger: server (VPS) in Germania, dove girano app e database.",

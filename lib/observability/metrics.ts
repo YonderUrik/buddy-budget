@@ -285,7 +285,7 @@ function createState(): MetricsState {
 
   state.logoRequests = new Counter({
     name: `${METRIC_PREFIX}logo_requests_total`,
-    help: "Richieste al servizio di loghi (strumenti ed esercenti) non servite dalla cache, per origine (issuer, isin, merchant) ed esito (hit, miss, error).",
+    help: "Richieste al servizio di loghi (strumenti ed esercenti) non servite dalla cache, per origine (issuer, isin, merchant, merchant_search = ricerca per nome) ed esito (hit, miss, error, skipped).",
     labelNames: ["source", "outcome"],
     registers: r,
   });
@@ -609,8 +609,9 @@ export function recordPriceProviderRequest(provider: ProviderId, outcome: Provid
 }
 
 /** Origine ed esito di una richiesta al servizio di loghi. */
-export type LogoSourceKind = "issuer" | "isin" | "merchant";
-export type LogoRequestOutcome = "hit" | "miss" | "error";
+export type LogoSourceKind = "issuer" | "isin" | "merchant" | "merchant_search";
+/** `skipped`: ricerca per nome non fatta perché il budget del giorno è finito. */
+export type LogoRequestOutcome = "hit" | "miss" | "error" | "skipped";
 
 /** Registra una richiesta al servizio di loghi che non è stata servita dalla cache. */
 export function recordLogoRequest(source: LogoSourceKind, outcome: LogoRequestOutcome): void {

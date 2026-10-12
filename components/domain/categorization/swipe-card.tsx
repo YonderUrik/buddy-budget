@@ -125,7 +125,7 @@ export function SwipeCard({
       </motion.span>
 
       <div className="flex flex-col items-center gap-1 pt-6 text-center">
-        <MerchantLogo name={group.label} size="md" onRemoteLogo={onRemoteLogo} className="mb-1 md:size-14 md:text-xl" />
+        <MerchantLogo name={group.label} logoPath={group.logoPath} size="md" onRemoteLogo={onRemoteLogo} className="mb-1 md:size-14 md:text-xl" />
         <p className="font-heading text-xl font-medium break-words text-foreground">{group.label}</p>
         <p className={cn("text-lg font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>
           {formatCurrency(group.totalAmount, currency)}

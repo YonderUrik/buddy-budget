@@ -5,3 +5,5 @@ Fino a oggi l'app non aveva `error.tsx` né `global-error.tsx`: una pagina che s
 Scelte: niente Sentry o GlitchTip per ora. Sentry cloud manderebbe fuori gli errori di un'app finanziaria, Sentry self-host chiede 16 GB e GlitchTip circa 0,5 GB sulla VPS. Si manda solo l'area (primo segmento del percorso, enum chiuso), mai il percorso intero, e il messaggio passa dalla redazione del logger. Niente stack trace, perché senza source map è illeggibile. Limite di 20 errori ogni 10 minuti per utente. La route richiede la sessione, quindi gli errori della pagina di login non arrivano.
 
 Rimandati: GlitchTip, se gli errori diventano tanti da dover essere raggruppati; source map. Analisi completa: https://claude.ai/code/artifact/85881df9-9aa1-43b9-88f4-6b75499ab133
+
+Nella stessa PR: link «Stato del servizio» alla pagina gratuita di UptimeRobot (`https://stats.uptimerobot.com/BCuTWm0Ukg`, `STATUS_URL`) nel piè di pagina della landing e in cima alla pagina Aiuto (evento `support_link_opened` con `link: "stato"`). Il piano gratuito non permette un dominio nostro; niente pagina di status self-hosted per ora.

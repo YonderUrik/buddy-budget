@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { CLOSING } from "@/content/sheet";
-import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL } from "@/content/site";
+import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL, STATUS_URL } from "@/content/site";
 import { CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
 import { SourceLink } from "./source-link";
@@ -46,6 +46,7 @@ export function Closing({ content = CLOSING }: { content?: typeof CLOSING }) {
             <Link href={LEGAL_PATHS.privacy}>Privacy</Link>
             <Link href={LEGAL_PATHS.termini}>Termini</Link>
             <Link href={LEGAL_PATHS.cookie}>Cookie</Link>
+            <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">Stato del servizio</a>
           </nav>
         </footer>
       </div>

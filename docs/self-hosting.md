@@ -72,7 +72,7 @@ docker compose exec -T postgres pg_dump -U buddybudget -Fc buddybudget > buddybu
 docker compose exec -T postgres pg_restore -U buddybudget -d buddybudget --clean --if-exists < buddybudget-2026-10-10.dump
 ```
 
-Pianifica il backup con `cron` del sistema e copia i file fuori dalla macchina. Conserva anche `.env`: perdere `BETTER_AUTH_SECRET` disconnette tutti, non perde dati. Dall'app, Impostazioni → Esporta i dati scarica uno ZIP leggibile con i tuoi dati.
+Pianifica il backup con `cron` del sistema e copia i file fuori dalla macchina. Conserva anche `.env`: perdere `BETTER_AUTH_SECRET` disconnette tutti, non perde dati. Se hai impostato `DATA_ENCRYPTION_KEY` (descrizioni e note cifrate nel database, facoltativa), conservala a parte: senza quella chiave un backup non si rilegge. I dati salvati prima di impostarla si cifrano con `docker compose run --rm migrate pnpm db:encrypt-fields --execute`. Dall'app, Impostazioni → Esporta i dati scarica uno ZIP leggibile con i tuoi dati.
 
 ## Postgres esterno
 

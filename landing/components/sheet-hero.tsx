@@ -1,7 +1,7 @@
 import "./sheet-hero.css";
-import { HERO_FACTS, OPEN_SOURCE_FACT } from "@/content/home";
+import { HERO_FACTS } from "@/content/home";
 import { SHEET_HERO } from "@/content/sheet";
-import { APP_LINKS, SOURCE_URL } from "@/content/site";
+import { APP_LINKS } from "@/content/site";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { CtaLink } from "./cta-link";
 import { SheetWorkbook } from "./sheet-workbook";
@@ -12,7 +12,6 @@ import { TrackedSection } from "./tracked-section";
  * (account o calcolatore senza account), i fatti verificabili e il foglio d'esempio che si trasforma nella Panoramica.
  */
 export function SheetHero({ content = SHEET_HERO }: { content?: typeof SHEET_HERO }) {
-  const facts = SOURCE_URL ? [...HERO_FACTS, OPEN_SOURCE_FACT] : HERO_FACTS;
   return (
     <TrackedSection id="top" section="hero" className="sh paper">
       <div className="wrap sh-grid">
@@ -30,7 +29,7 @@ export function SheetHero({ content = SHEET_HERO }: { content?: typeof SHEET_HER
             </CtaLink>
           </div>
           <ul className="sh-facts">
-            {facts.map((f) => (
+            {HERO_FACTS.map((f) => (
               <li key={f.label}>{f.label}</li>
             ))}
           </ul>

@@ -2,7 +2,7 @@
 
 /**
  * Onboarding: valuta principale (EUR preselezionato), categorie proposte (confermabili con un tocco o da personalizzare),
- * assistente per le categorie (se il servizio c'è, acceso di default e spiegato), email facoltative (tutte spente: si
+ * assistente per le categorie (se il servizio c'è, spento di default e spiegato), email facoltative (tutte spente: si
  * accendono solo per scelta), conferme legali; infine Panoramica.
  */
 
@@ -26,7 +26,8 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currency, setCurrency] = useState<SupportedCurrency>(DEFAULT_CURRENCY);
   const { consent, setConsent, complete, payload } = useLegalConsent();
-  const [assistantEnabled, setAssistantEnabled] = useState(true);
+  // Consenso al trattamento con AI: spento finché l'utente non lo accende (art. 7 GDPR, nessuna casella pre-selezionata).
+  const [assistantEnabled, setAssistantEnabled] = useState(false);
   const { data: assistant } = useAiCategorizationQuery();
   const categorySetup = useCategorySetup();
   const [notifications, setNotifications] = useState<NotificationPreferences>({ ...NOTIFICATION_DEFAULTS });

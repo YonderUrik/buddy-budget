@@ -26,9 +26,6 @@ export const HERO_FACTS: readonly HeroFact[] = [
   { icon: "download", label: "Esporti tutto in ZIP" },
 ];
 
-/** Fatto aggiunto solo quando il codice è pubblico (`SOURCE_URL` valorizzato). */
-export const OPEN_SOURCE_FACT: HeroFact = { icon: "code", label: "Codice aperto" };
-
 export interface ItalyRule {
   icon: HomeIcon;
   /** La regola, come la trovi scritta nelle guide. */

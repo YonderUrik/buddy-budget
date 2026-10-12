@@ -4,7 +4,6 @@ import { Faq } from "@/components/faq";
 import { Fit } from "@/components/fit";
 import { ItalyRules } from "@/components/italy-rules";
 import { JsonLd } from "@/components/json-ld";
-import { OpenSource } from "@/components/open-source";
 import { Security } from "@/components/security";
 import { SheetHero } from "@/components/sheet-hero";
 import { SiteNav } from "@/components/site-nav";
@@ -37,7 +36,6 @@ export default function HomePage() {
         <ItalyRules />
         <Compare />
         <Security />
-        <OpenSource />
         <Fit />
         <Faq />
         <Closing />

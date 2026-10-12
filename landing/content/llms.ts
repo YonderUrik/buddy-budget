@@ -17,6 +17,7 @@ const PAGES: readonly { path: string; title: string; text: string }[] = [
   { path: CONTENT_PATHS.guidaZainetto, title: "Guida allo zainetto fiscale", text: "Come funzionano le minusvalenze a quattro anni, con esempi e fonti ufficiali." },
   { path: CONTENT_PATHS.funzioneInvestimenti, title: "Investimenti con le tasse italiane", text: "Rendimento vero, rischio, zainetto e bollo calcolati dalle operazioni." },
   { path: CONTENT_PATHS.funzioni, title: "Tutte le funzioni", text: "Elenco completo per area, con lo stato di ognuna." },
+  { path: CONTENT_PATHS.sicurezza, title: "Sicurezza e privacy", text: "Collegamento alla banca in sola lettura (PSD2) tramite GoCardless, cosa viene salvato e cosa no, server in Germania, export e cancellazione, limiti dichiarati." },
   { path: CONTENT_PATHS.schermate, title: "Schermate", text: "Screenshot dell'app vera con dati di esempio." },
 ];
 

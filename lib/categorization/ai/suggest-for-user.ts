@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { categories } from "@/lib/db/schema/categories";
@@ -6,12 +6,14 @@ import { categorizationSuggestions } from "@/lib/db/schema/categorization-sugges
 import { transactions } from "@/lib/db/schema/transactions";
 import { JEV_BATCH_SIZE, JEV_DEFAULT_MODEL, classifyWithJev, type JevMerchant } from "@/lib/llm/jev";
 import { logger, recordCategorizationAiRequest, recordCategorizationSuggestions, type Logger } from "@/lib/observability";
-import { groupForModel, pickExamples, type MerchantGroup } from "./groups";
+import { countExampleRows, groupForModel, pickExamples, type MerchantGroup } from "./groups";
 
 /** Versione del prompt e dello stato inviato: va incrementata a ogni modifica che può cambiare le risposte. */
 export const AI_PROMPT_VERSION = 2;
 /** Tetto di esercenti nuovi per esecuzione: argine alla spesa dopo un import molto grande. */
 export const MAX_GROUPS_PER_RUN = 120;
+/** Movimenti categorizzati più recenti da cui si scelgono gli esempi per il modello. */
+const MAX_EXAMPLE_SOURCE_ROWS = 5000;
 /** Tetto per la richiesta manuale («Categorizza con l'AI»): l'utente la chiede apposta per tutto l'arretrato. */
 export const MAX_GROUPS_MANUAL_RUN = 600;
 /** Tempo massimo di una richiesta manuale, dentro il `maxDuration` della route (300 s). */
@@ -82,18 +84,18 @@ export async function suggestCategoriesForUser(
   recordCategorizationSuggestions("blocked", result.blocked);
   if (sendable.length === 0) return result;
 
-  const exampleRows = await db
+  // Raggruppati in memoria: le descrizioni possono essere cifrate nel database e un GROUP BY non le unirebbe.
+  const categorizedRows = await db
     .select({
       description: transactions.description,
       rawDescription: transactions.rawDescription,
       categoryId: transactions.categoryId,
-      count: count(),
     })
     .from(transactions)
     .where(and(eq(transactions.userId, userId), ne(transactions.categoryId, fallback.id)))
-    .groupBy(transactions.description, transactions.rawDescription, transactions.categoryId)
-    .orderBy(sql`count(*) desc`)
-    .limit(400);
+    .orderBy(desc(transactions.date))
+    .limit(MAX_EXAMPLE_SOURCE_ROWS);
+  const exampleRows = countExampleRows(categorizedRows);
   const nameById = new Map(options_.map((category) => [category.id, category.name]));
   const examples = pickExamples(exampleRows, nameById);
   const jevCategories = options_.map((category) => ({

@@ -26,7 +26,7 @@ export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
   { href: "/#italia", label: "Tasse italiane" },
   { href: CONTENT_PATHS.zainetto, label: "Calcolatori" },
   { href: CONTENT_PATHS.schermate, label: "Schermate" },
-  { href: "/#sicurezza", label: "Sicurezza" },
+  { href: CONTENT_PATHS.sicurezza, label: "Sicurezza" },
 ];
 
 /** Barra fissa in alto, la stessa in ogni pagina. Passa allo stile scuro quando sta sopra una sezione `data-nav-dark`; `current` evidenzia la voce della pagina aperta. */

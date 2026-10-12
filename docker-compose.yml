@@ -24,6 +24,8 @@ x-app-env: &app-env
   GOCARDLESS_SECRET_ID: ${GOCARDLESS_SECRET_ID:-}
   GOCARDLESS_SECRET_KEY: ${GOCARDLESS_SECRET_KEY:-}
   LOG_LEVEL: ${LOG_LEVEL:-info}
+  # Facoltativa: cifra descrizioni e note nel database (vedi docs/self-hosting.md, «Backup e ripristino»).
+  DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
 
 services:
   postgres:
@@ -58,6 +60,8 @@ services:
     restart: "no"
     environment:
       DATABASE_URL: postgresql://buddybudget:${POSTGRES_PASSWORD:?Manca POSTGRES_PASSWORD}@postgres:5432/buddybudget?sslmode=disable
+      # Serve solo a `pnpm db:encrypt-fields` (cifratura dei dati già salvati); le migration non la usano.
+      DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

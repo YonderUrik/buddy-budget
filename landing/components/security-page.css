@@ -1,0 +1,33 @@
+/* Pagina /sicurezza: sezioni con riferimento, tabella del foglio «cosa salviamo», domande a tendina per il resto. */
+.sp-sec { margin-top: 56px; }
+.sp-sec > .ref { margin-bottom: 8px; }
+.cp .sp-sec > h2 { margin-top: 0; }
+.sp-table { margin-top: 24px; overflow-x: auto; }
+.sp-table table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
+.sp-table th, .sp-table td { padding: 14px 16px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.sp-table tbody tr:last-child th, .sp-table tbody tr:last-child td { border-bottom: 0; }
+.sp-table thead th { font: 600 12px var(--f-b); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink3); background: var(--head); }
+.sp-table tbody th { font-weight: 600; color: var(--ink); white-space: nowrap; }
+.sp-table td { color: var(--ink2); }
+.sp-kept { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.sp-kept-no { color: var(--a-pos); background: var(--a-pos-soft); }
+.sp-kept-si { color: var(--accent); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.sp-kept-parziale { color: var(--ink2); background: var(--bg-alt); }
+.sp-note a { color: var(--accent); }
+.sp-note { margin-top: 20px; font-size: 15px; color: var(--ink3); }
+@media (max-width: 640px) {
+  .sp-table table, .sp-table tbody, .sp-table tr, .sp-table th, .sp-table td { display: block; }
+  .sp-table thead { display: none; }
+  .sp-table tr { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .sp-table tbody tr:last-child { border-bottom: 0; }
+  .sp-table th, .sp-table td { padding: 0; border: 0; }
+  .sp-table td { margin-top: 6px; }
+}
+.sp-questions { margin-top: 24px; }
+.sp-answer { margin: 0 20px 22px 46px; color: var(--ink2); max-width: 70ch; }
+.sp-answer > p { margin: 0 0 12px; line-height: 1.6; }
+.sp-answer .sp-note { margin: 12px 0 0; }
+.sp-dl { margin: 0; display: grid; gap: 12px; }
+.sp-dl dt { font-weight: 600; color: var(--ink); }
+.sp-dl dd { margin: 2px 0 0; line-height: 1.55; }
+@media (max-width: 560px) { .sp-answer { margin-left: 20px; } }

@@ -58,10 +58,11 @@ export const SECURITY = {
   points: [
     { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
     { icon: "eye", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
-    { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
+    { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime, senza cookie, e le spegni dalle impostazioni su ogni dispositivo." },
     { icon: "sliders", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
   ] satisfies readonly SecurityPoint[],
   legalNote: "Maggiori dettagli nella",
+  more: "Il percorso dei tuoi dati, passo per passo, con le fonti",
 } as const;
 
 /** Blocco «Codice aperto» (dopo la sicurezza): mostrato solo con `SOURCE_URL`. Ogni punto è verificabile leggendo il repository. */

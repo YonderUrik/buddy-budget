@@ -1,6 +1,7 @@
 import "./security.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
+import { CONTENT_PATHS } from "@/content/seo-pages";
 import { SECURITY } from "@/content/site";
 import { HomeIcon } from "./home-icon";
 import { Reveal } from "./reveal";
@@ -23,6 +24,7 @@ export function Security({ content = SECURITY }: { content?: typeof SECURITY }) 
             </article>
           ))}
         </Reveal>
+        <p className="sec-more"><Link href={CONTENT_PATHS.sicurezza}>{content.more} →</Link></p>
         <p className="sec-legal">
           {content.legalNote} <Link href={LEGAL_PATHS.privacy}>informativa privacy</Link>.
         </p>

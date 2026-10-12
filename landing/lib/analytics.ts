@@ -12,7 +12,7 @@ export type SectionId =
  * Props solo categoriche: mai dati personali. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface LandingEvents {
-  cta_click: { location: "nav" | "hero" | "closing" | "funzioni" | "schermate" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "guida_zainetto" | "funzione_investimenti"; target: "signup" | "login" | "calculator" };
+  cta_click: { location: "nav" | "hero" | "closing" | "funzioni" | "schermate" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "guida_zainetto" | "funzione_investimenti" | "sicurezza"; target: "signup" | "login" | "calculator" };
   section_view: { section: SectionId };
   /** Apertura: il foglio d'esempio passa alla Panoramica dell'app, o torna al foglio. */
   sheet_view_toggled: { view: "foglio" | "app" };
@@ -23,6 +23,8 @@ export interface LandingEvents {
   simulator_used: { instrument: "azioni_etf" | "titoli_stato" };
   hide_amounts_toggled: { hidden: boolean };
   theme_toggled: { theme: "light" | "dark" };
+  /** Pagina /sicurezza: passaggio aperto nel diagramma del percorso dei dati. */
+  security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
 }
 

@@ -9,6 +9,7 @@ import { LoadError } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { track } from "@/lib/analytics";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
+import { GOAL_PARAM } from "@/lib/start";
 
 const DISCLAIMER =
   "Stime a scopo informativo basate su ipotesi tue, non previsioni né consulenza finanziaria o fiscale. Le regole fiscali sono semplificate: verificale prima di decisioni importanti.";
@@ -34,6 +35,8 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
   const ctx = useAnalytics();
   const [guideOpen, setGuideOpen] = React.useState(false);
   const autoOpened = React.useRef(false);
+  // Chi arriva dai Primi passi trova «Il tuo traguardo»: la guida non gli si apre sopra (resta da vedere dal pulsante).
+  const fromGoalLink = React.useRef(typeof window !== "undefined" && new URLSearchParams(window.location.search).has(GOAL_PARAM));
 
   React.useEffect(() => {
     track("analytics_page_viewed");
@@ -41,7 +44,7 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
 
   const ready = !ctx.isLoading && !ctx.isError && ctx.base && ctx.assumptions && ctx.plan;
   React.useEffect(() => {
-    if (ready && !ctx.walkthroughSeen && !autoOpened.current) {
+    if (ready && !ctx.walkthroughSeen && !autoOpened.current && !fromGoalLink.current) {
       autoOpened.current = true;
       setGuideOpen(true);
     }

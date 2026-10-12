@@ -19,7 +19,7 @@ export interface ProductEvents {
   /** Apertura del foglio «Scrivici» (pulsante fisso o link sotto un errore), anche se poi non si invia. */
   support_sheet_opened: { source: Exclude<ReportSource, "pagina">; area?: ReportErrorArea };
   /** Clic su un collegamento esterno di «Aiuto» (GitHub, novità, sicurezza). */
-  support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" };
+  support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" | "stato" };
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };

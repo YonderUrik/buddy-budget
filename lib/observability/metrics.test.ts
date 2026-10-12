@@ -4,6 +4,7 @@ import {
   configureAsyncGauges,
   getMetricsRegistry,
   recordAuthEvent,
+  recordClientError,
   recordCronRunMetric,
   recordGoCardlessApiRequest,
   recordGoCardlessSync,
@@ -59,6 +60,14 @@ describe("metriche applicative", () => {
     expect(t).toContain('buddybudget_transactions_imported_total{categorized="false"} 2');
     expect(t).toContain('buddybudget_cron_runs_total{cron="gocardless_sync",outcome="success"} 1');
     expect(t).toContain('buddybudget_auth_events_total{event="magic_link_failed"} 1');
+  });
+
+  it("registra gli errori del browser per tipo, area ed esito", async () => {
+    recordClientError("sezione", "investimenti", "reported");
+    recordClientError("globale", "altro", "rate_limited");
+    const t = await text();
+    expect(t).toContain('buddybudget_client_errors_total{kind="sezione",area="investimenti",outcome="reported"} 1');
+    expect(t).toContain('buddybudget_client_errors_total{kind="globale",area="altro",outcome="rate_limited"} 1');
   });
 
   it("espone build_info e metriche di processo", async () => {

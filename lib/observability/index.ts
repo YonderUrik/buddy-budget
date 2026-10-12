@@ -24,6 +24,7 @@ export {
   recordCategorizationRecategorized,
   recordCategorizationRecategorizeUndone,
   recordSupportReport,
+  recordClientError,
   recordPriceProviderRequest,
   recordFxProviderRequest,
   recordLogoRequest,

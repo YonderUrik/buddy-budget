@@ -59,3 +59,6 @@ export const SUPPORT_EMAIL = "support@buddybudget.io";
 
 /** Repository open source dell'app: issue, release e policy di sicurezza. */
 export const REPO_URL = "https://github.com/YonderUrik/buddy-budget";
+
+/** Pagina pubblica con lo stato del servizio (UptimeRobot): da linkare dove l'utente cerca aiuto se l'app non risponde. */
+export const STATUS_URL = "https://stats.uptimerobot.com/BCuTWm0Ukg";

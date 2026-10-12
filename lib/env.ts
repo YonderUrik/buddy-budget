@@ -41,6 +41,9 @@ export const serverEnvSchema = z.object({
   /** Chiave pubblica (`pk_…`) di Logo.dev per i loghi degli strumenti; assente = solo icone locali. */
   LOGODEV_PUBLISHABLE_KEY: z.string().optional(),
   OPENFIGI_API_KEY: z.string().optional(),
+  // Chiave dei campi cifrati nel database (32 byte in base64, vedi lib/crypto/field-encryption.ts). Facoltativa: senza,
+  // i campi si scrivono in chiaro come prima. Una volta usata non va più tolta né cambiata, o i dati cifrati non si rileggono.
+  DATA_ENCRYPTION_KEY: optionalSecret.refine((value) => value === undefined || Buffer.from(value, "base64").length === 32, "32 byte in base64"),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

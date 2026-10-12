@@ -72,6 +72,8 @@ export const auth = betterAuth({
     updateAge: SESSION_UPDATE_AGE_DAYS * 24 * 60 * 60,
   },
   account: {
+    // Token di Google cifrati con BETTER_AUTH_SECRET; quelli già salvati in chiaro restano leggibili (better-auth li riconosce).
+    encryptOAuthTokens: true,
     accountLinking: {
       enabled: true,
       updateUserInfoOnLink: true,

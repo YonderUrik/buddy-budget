@@ -91,3 +91,21 @@ export function pickExamples(
   }
   return examples;
 }
+
+/** Massimo di gruppi esempio passati a `pickExamples` (prima era il `limit` della query raggruppata). */
+export const MAX_EXAMPLE_GROUPS = 400;
+
+/**
+ * Raggruppa in memoria i movimenti già categorizzati per (descrizione, testo grezzo, categoria) e li ordina per frequenza.
+ * Si fa qui e non con un GROUP BY perché descrizioni e testo grezzo possono essere cifrati nel database (IV casuale).
+ */
+export function countExampleRows(rows: readonly Omit<CategorizedExampleRow, "count">[], limit = MAX_EXAMPLE_GROUPS): CategorizedExampleRow[] {
+  const groups = new Map<string, CategorizedExampleRow>();
+  for (const row of rows) {
+    const key = JSON.stringify([row.description, row.rawDescription ?? null, row.categoryId]);
+    const group = groups.get(key);
+    if (group) group.count += 1;
+    else groups.set(key, { ...row, count: 1 });
+  }
+  return [...groups.values()].sort((a, b) => b.count - a.count).slice(0, limit);
+}

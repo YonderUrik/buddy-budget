@@ -71,7 +71,8 @@ export async function getAccessToken(): Promise<string> {
     return memoryToken.accessToken;
   }
 
-  const [cached] = await db.select().from(gocardlessToken).where(eq(gocardlessToken.id, TOKEN_ROW_ID));
+  // Se la cache non si decifra (chiave cambiata) si chiede un token nuovo: è solo una cache.
+  const [cached] = await db.select().from(gocardlessToken).where(eq(gocardlessToken.id, TOKEN_ROW_ID)).catch(() => []);
   if (cached && cached.expiresAt.getTime() > Date.now() + TOKEN_EXPIRY_MARGIN_MS) {
     memoryToken = { accessToken: cached.accessToken, expiresAt: cached.expiresAt.getTime() };
     return cached.accessToken;

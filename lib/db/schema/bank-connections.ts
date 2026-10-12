@@ -1,4 +1,5 @@
 import { index, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { encryptedText } from "./encrypted-text";
 import { authUser } from "./auth";
 import { accounts } from "./accounts";
 
@@ -76,7 +77,7 @@ export type BankConnectionAttempt = typeof bankConnectionAttempts.$inferSelect;
 /** Singola riga: cache dell'access token applicativo GoCardless (non è per-utente). */
 export const gocardlessToken = pgTable("gocardless_token", {
   id: text("id").primaryKey(),
-  accessToken: text("access_token").notNull(),
+  accessToken: encryptedText("access_token").notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
 });
 

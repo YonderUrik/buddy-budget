@@ -17,6 +17,7 @@ export function SiteFooter() {
           <Link href={CONTENT_PATHS.guidaZainetto}>Guida</Link>
         </nav>
         <nav aria-label="Documenti legali">
+          <Link href={CONTENT_PATHS.sicurezza}>Sicurezza</Link>
           <Link href={LEGAL_PATHS.privacy}>Privacy</Link>
           <Link href={LEGAL_PATHS.termini}>Termini</Link>
           <Link href={LEGAL_PATHS.cookie}>Cookie</Link>

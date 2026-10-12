@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { encryptedText } from "./encrypted-text";
 import { boolean, date, index, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 import { transactions } from "./transactions";
@@ -108,7 +109,7 @@ export const debtEvents = pgTable(
     effect: text("effect").$type<DebtEarlyEffect>(),
     // Transazione collegata a mano dall'utente (facoltativa): nessun automatismo.
     transactionId: uuid("transaction_id").references(() => transactions.id, { onDelete: "set null" }),
-    note: text("note"),
+    note: encryptedText("note"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

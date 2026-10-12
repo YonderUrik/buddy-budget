@@ -1,4 +1,5 @@
 import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { encryptedText } from "./encrypted-text";
 import { accounts } from "./accounts";
 import { categories } from "./categories";
 import { dataSourceEnum } from "./shared";
@@ -17,16 +18,16 @@ export const transactions = pgTable(
     categoryId: uuid("category_id")
       .notNull()
       .references(() => categories.id),
-    description: text("description").notNull(),
+    description: encryptedText("description").notNull(),
     // Testo grezzo remittanceInformationUnstructured originale (solo transazioni auto, quando
     // GoCardless lo fornisce): usato per il tooltip quando `description` è stata sostituita dal
     // nome pulito creditorName/debtorName, mai per il matching di categorizzazione.
-    rawDescription: text("raw_description"),
+    rawDescription: encryptedText("raw_description"),
     // Codice di categoria dell'esercente (MCC, 4 cifre) fornito dalla banca: solo un'etichetta
     // informativa, non entra nel matching delle regole.
     merchantCategoryCode: text("merchant_category_code"),
     // Nota libera dell'utente, editabile su transazioni auto e manuali.
-    note: text("note"),
+    note: encryptedText("note"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
     excludedAmount: numeric("excluded_amount", { precision: 12, scale: 2 }).notNull().default("0"),
     date: date("date").notNull(),

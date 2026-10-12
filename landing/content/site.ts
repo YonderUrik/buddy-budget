@@ -1,5 +1,5 @@
 /** Indirizzi e testi della landing. Gli URL arrivano dall'env, con default di produzione. */
-import type { HomeIcon } from "./home";
+import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudget.io";
@@ -33,7 +33,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto. Oppure importa lo storico da un file CSV o Excel. BuddyBudget calcola versamenti e rendimento. Stima quanto ti resterebbe se prelevi oggi, al netto delle tasse. Inoltre confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
   { question: "Posso simulare l'estinzione anticipata di un finanziamento o di un mutuo?", answer: "Sì. Inserisci i dettagli del debito e guarda il piano di ammortamento. Vedi anche il TAEG e gli interessi risparmiati. Puoi vedere la penale se riduci la rata o la durata, oppure se fai la surroga." },
   { question: "Cos'è la sezione Analitiche?", answer: "Una sezione per chi ama i numeri, aperta a chiunque voglia entrarci. Mostra l'anno in cui puoi smettere di lavorare e ti lascia provare «e se…» con quattro cursori (risparmio, spesa, rendimento, prelievo) senza salvare nulla. Sotto, quattro risposte in parole semplici: quanta strada hai fatto, quando puoi smettere di lavorare, se il patrimonio reggerà e quanto ti costa il portafoglio. Sotto ogni risposta, nella sezione «Per esperti», trovi il numero FIRE dopo le imposte. Trovi anche migliaia di scenari di mercato. Inoltre, vedi un confronto tra regole di prelievo, rischio e costi. Ogni risultato parte da ipotesi che scegli tu, con una guida alla prima visita. Sono stime, non previsioni né consulenza." },
-  { question: "Dove sono i miei dati e posso portarli via?", answer: "App e database girano su un server in Germania e le connessioni sono cifrate. Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
+  { question: "Dove sono i miei dati e posso portarli via?", answer: (FIELD_ENCRYPTION_LIVE ? "App e database girano su un server in Germania, le connessioni sono cifrate e descrizioni e note dei movimenti sono cifrate anche nel database." : "App e database girano su un server in Germania e le connessioni sono cifrate.") + " Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
   { question: "In che lingua e in che valuta funziona?", answer: "Per ora in italiano e in euro. L'app è pensata per più lingue e valute, che arriveranno più avanti." },
   { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
 ];
@@ -43,37 +43,17 @@ export const FAQ: readonly FaqItem[] = [
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
 export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 
-export interface SecurityPoint {
-  /** Icona del punto (vedi `HomeIcon`). */
-  icon: HomeIcon;
-  title: string;
-  text: string;
-}
-
 /** Cosa fa BuddyBudget per i dati: solo fatti verificabili nel codice o nell'infrastruttura, niente promesse generiche. */
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
   title: "Cosa vede BuddyBudget dei tuoi dati, e cosa no.",
-  intro: "I server sono in Germania e le connessioni sono cifrate.",
-  points: [
-    { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
-    { icon: "eye", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
-    { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime e le spegni dalle impostazioni." },
-    { icon: "sliders", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
-  ] satisfies readonly SecurityPoint[],
-  legalNote: "Maggiori dettagli nella",
+  intro: "Le credenziali della banca restano alla banca: verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
+  /** Fatti con la loro fonte ufficiale, sotto il diagramma. */
+  facts: [
+    { text: "GoCardless SAS è autorizzata dall'ACPR, n. 17118", source: "https://gocardless.com/legal/bank-account-data/" },
+    { text: "Sola lettura con consenso esplicito (PSD2, art. 67)", source: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
+    { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
+  ],
+  more: "Tutti i dettagli: cosa salviamo, cosa tiene GoCardless, come cancelli tutto",
 } as const;
 
-/** Blocco «Codice aperto» (dopo la sicurezza): mostrato solo con `SOURCE_URL`. Ogni punto è verificabile leggendo il repository. */
-export const OPEN_SOURCE = {
-  kicker: "Codice aperto",
-  title: "Il codice dell'app è pubblico e lo puoi leggere.",
-  intro: "BuddyBudget è open source con licenza AGPL-3.0. Chi vuole controllare come funziona può leggere il codice, senza fidarsi della nostra parola.",
-  cta: "Apri il codice su GitHub",
-  repoName: "YonderUrik/buddy-budget",
-  points: [
-    { icon: "calculator", title: "Come sono fatti i calcoli", text: "Rendimenti, tasse, piani di ammortamento: le formule sono nel codice, con i test." },
-    { icon: "database", title: "Cosa viene salvato", text: "Lo schema del database elenca ogni dato conservato, campo per campo." },
-    { icon: "scale", title: "Le regole italiane", text: "Aliquote, zainetto fiscale e bollo si leggono per quello che sono, non come scatola chiusa." },
-  ] satisfies readonly { icon: HomeIcon; title: string; text: string }[],
-} as const;

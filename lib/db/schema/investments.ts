@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { encryptedText } from "./encrypted-text";
 import {
   boolean,
   date,
@@ -207,7 +208,7 @@ export const investmentTransactions = pgTable(
     taxes: numeric("taxes", { precision: 14, scale: 2 }).notNull().default("0"),
     /** Importo lordo di dividendi e cedole, nella valuta dello strumento. */
     grossAmount: numeric("gross_amount", { precision: 14, scale: 2 }),
-    note: text("note"),
+    note: encryptedText("note"),
     ...timestamps,
   },
   (table) => [
@@ -385,7 +386,7 @@ export const investmentTaxCarryforwards = pgTable(
     /** Anno in cui la minusvalenza è nata: si usa fino al 31/12 di anno + 4. */
     year: integer("year").notNull(),
     amount: numeric("amount", { precision: 14, scale: 2 }).notNull(),
-    note: text("note"),
+    note: encryptedText("note"),
     ...timestamps,
   },
   (table) => [index("investment_tax_carryforwards_user_idx").on(table.userId)]

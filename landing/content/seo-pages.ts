@@ -12,6 +12,7 @@ export const CONTENT_PATHS = {
   funzioneInvestimenti: "/funzioni/investimenti",
   funzioni: "/funzioni",
   schermate: "/schermate",
+  sicurezza: "/sicurezza",
 } as const;
 
 export interface Source {

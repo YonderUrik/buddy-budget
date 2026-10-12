@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries/gocardless";
 import type { Institution } from "@/lib/queries/gocardless";
 import { ErrorWithReport, ReportErrorLink } from "@/components/domain/support";
+import { LANDING_URL } from "@/lib/legal";
 
 export const BANK_COUNTRY_OPTIONS = [
   { code: "IT", label: "Italia" },
@@ -23,6 +24,8 @@ export const BANK_COUNTRY_OPTIONS = [
 ] as const;
 
 const FIELD_CLASS = "h-11 sm:h-9";
+/** Pagina pubblica che spiega il percorso dei dati quando si collega la banca. */
+const SECURITY_PAGE_URL = `${LANDING_URL}/sicurezza`;
 const SKELETON_ROWS = [0, 1, 2, 3, 4];
 
 /** Converte un codice paese ISO 3166-1 alpha-2 nella bandiera emoji corrispondente. */
@@ -97,7 +100,10 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
     <div className="flex flex-col gap-4">
       <p className="flex items-start gap-2.5 rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">
         <LockKeyholeIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        <span>Ti porto sul sito della tua banca per dare il consenso. Il collegamento è in sola lettura: BuddyBudget non vede le tue credenziali e non può muovere denaro.</span>
+        <span>
+          Ti porto sul sito della tua banca per dare il consenso. Il collegamento è in sola lettura: BuddyBudget non vede le tue credenziali e non può muovere denaro.{" "}
+          <a href={SECURITY_PAGE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Come funziona</a>
+        </span>
       </p>
 
       <div className="grid gap-3 sm:grid-cols-[11rem_1fr]">

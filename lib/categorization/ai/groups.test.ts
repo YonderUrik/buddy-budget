@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { directionOf, groupForModel, pickExamples } from "./groups";
+import { countExampleRows, directionOf, groupForModel, pickExamples } from "./groups";
 
 const row = (id: string, description: string, amount: number, rawDescription: string | null = null) => ({
   id,
@@ -56,5 +56,26 @@ describe("pickExamples", () => {
     );
     expect(examples.map((e) => e.category)).toEqual(["Spesa", "Spesa", "Casa"]);
     expect(examples.map((e) => e.name)).toEqual(["Coop", "Conad", "IKEA"]);
+  });
+});
+
+describe("countExampleRows", () => {
+  it("conta le righe uguali e ordina per frequenza", () => {
+    const rows = [
+      { description: "Esselunga", rawDescription: null, categoryId: "spesa" },
+      { description: "Netflix", rawDescription: null, categoryId: "svago" },
+      { description: "Esselunga", rawDescription: null, categoryId: "spesa" },
+      { description: "Esselunga", rawDescription: "POS ESSELUNGA", categoryId: "spesa" },
+    ];
+    expect(countExampleRows(rows)).toEqual([
+      { description: "Esselunga", rawDescription: null, categoryId: "spesa", count: 2 },
+      { description: "Netflix", rawDescription: null, categoryId: "svago", count: 1 },
+      { description: "Esselunga", rawDescription: "POS ESSELUNGA", categoryId: "spesa", count: 1 },
+    ]);
+  });
+
+  it("rispetta il limite", () => {
+    const rows = Array.from({ length: 10 }, (_, i) => ({ description: `m${i}`, rawDescription: null, categoryId: "c" }));
+    expect(countExampleRows(rows, 3)).toHaveLength(3);
   });
 });

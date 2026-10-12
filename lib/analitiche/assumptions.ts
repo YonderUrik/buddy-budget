@@ -4,7 +4,7 @@ import { WITHDRAWAL_RULES } from "@/lib/calc/monte-carlo";
 /** Limiti delle ipotesi: servono a impedire valori privi di senso (rendimento del 90%, 400 anni di pensione). */
 export const ASSUMPTION_LIMITS = {
   withdrawalRate: { min: 0.01, max: 0.1 },
-  expectedReturn: { min: -0.02, max: 0.12 },
+  expectedReturn: { min: -0.02, max: 0.5 },
   volatility: { min: 0, max: 0.6 },
   inflation: { min: -0.02, max: 0.15 },
   retirementYears: { min: 5, max: 70 },
@@ -26,6 +26,8 @@ export const assumptionsSchema = z.object({
   annualSavings: money.nullable(),
   /** Rendimento reale annuo atteso del portafoglio, al netto dell'inflazione. */
   expectedReturn: ratio(L.expectedReturn),
+  /** Vero = il rendimento si ricava dallo storico degli investimenti (ultimi 24 o 12 mesi); `expectedReturn` resta come riserva. */
+  expectedReturnAuto: z.boolean(),
   /** Volatilità annua attesa del portafoglio. */
   volatility: ratio(L.volatility),
   inflation: ratio(L.inflation),
@@ -50,6 +52,7 @@ export const DEFAULT_ASSUMPTIONS: AnalyticsAssumptions = {
   annualSpending: null,
   annualSavings: null,
   expectedReturn: 0.04,
+  expectedReturnAuto: true,
   volatility: 0.12,
   inflation: 0.02,
   retirementYears: 40,
@@ -75,7 +78,15 @@ export function resolveAssumptions(stored: unknown): AnalyticsAssumptions {
     const parsed = schema.safeParse(raw[key]);
     if (parsed.success) result[key] = parsed.data;
   }
+  // Ipotesi salvate prima del rendimento automatico: chi aveva scritto un rendimento diverso dal default lo tiene.
+  if (!("expectedReturnAuto" in raw)) result.expectedReturnAuto = result.expectedReturn === DEFAULT_ASSUMPTIONS.expectedReturn;
   return result as AnalyticsAssumptions;
+}
+
+/** Applica un aggiornamento: scrivere un rendimento senza dire altro vuol dire sceglierlo a mano (niente più automatico). */
+export function mergeAssumptions(current: AnalyticsAssumptions, update: Partial<AnalyticsAssumptions>): AnalyticsAssumptions {
+  const manualReturn = update.expectedReturn !== undefined && update.expectedReturnAuto === undefined ? { expectedReturnAuto: false } : {};
+  return resolveAssumptions({ ...current, ...update, ...manualReturn });
 }
 
 /** Quanti campi sono diversi tra due set di ipotesi (per l'evento di prodotto). */

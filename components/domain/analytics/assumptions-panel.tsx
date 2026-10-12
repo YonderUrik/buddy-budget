@@ -12,9 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { DEFAULT_ASSUMPTIONS, ASSUMPTION_LIMITS, type AnalyticsAssumptions, type UpdateAssumptionsInput } from "@/lib/analitiche/assumptions";
+import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { WITHDRAWAL_RULES, type WithdrawalRule } from "@/lib/calc/monte-carlo";
 import { money, pct } from "./analytics-format";
+import { historyOffer, returnSourceText } from "./return-source";
 import { limitsOf, parseNumber, PERCENT_FIELDS, toFieldText, toPercentDraft, type PercentDraft, type PercentField } from "./assumptions-fields";
 
 export const RULE_LABELS: Record<WithdrawalRule, string> = {
@@ -27,6 +29,8 @@ export const RULE_LABELS: Record<WithdrawalRule, string> = {
 export interface AssumptionsPanelProps {
   assumptions: AnalyticsAssumptions;
   plan: AnalyticsPlan;
+  /** Origine del rendimento in uso: se il campo non viene toccato resta com'è (anche in automatico). */
+  returnInfo: ExpectedReturnInfo;
   currency: string;
   pensionValue: number;
   saving: boolean;
@@ -44,8 +48,12 @@ function Field({ label, hint, children, id }: { label: string; hint: string; chi
   );
 }
 
-export function AssumptionsPanel({ assumptions, plan, currency, pensionValue, saving, error, onSave }: AssumptionsPanelProps) {
-  const [percents, setPercents] = React.useState<PercentDraft>(() => toPercentDraft(assumptions));
+export function AssumptionsPanel({ assumptions, plan, returnInfo, currency, pensionValue, saving, error, onSave }: AssumptionsPanelProps) {
+  const initialPercents = React.useMemo(() => toPercentDraft(assumptions), [assumptions]);
+  const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
+  /** Vero = al salvataggio il rendimento torna a calcolarsi dallo storico. */
+  const [returnAuto, setReturnAuto] = React.useState(false);
+  const offer = historyOffer(returnInfo);
   const [years, setYears] = React.useState(String(assumptions.retirementYears));
   const [spending, setSpending] = React.useState(toFieldText(assumptions.annualSpending, false));
   const [savings, setSavings] = React.useState(toFieldText(assumptions.annualSavings, false));
@@ -57,7 +65,9 @@ export function AssumptionsPanel({ assumptions, plan, currency, pensionValue, sa
   const [localError, setLocalError] = React.useState<string | null>(null);
 
   const reset = (next: AnalyticsAssumptions) => {
-    setPercents(toPercentDraft(next));
+    const manual = returnInfo.source === "manuale";
+    setPercents({ ...toPercentDraft(next), expectedReturn: manual ? toFieldText(offer ?? next.expectedReturn, true) : initialPercents.expectedReturn });
+    setReturnAuto(manual);
     setYears(String(next.retirementYears));
     setSpending(toFieldText(next.annualSpending, false));
     setSavings(toFieldText(next.annualSavings, false));
@@ -80,6 +90,13 @@ export function AssumptionsPanel({ assumptions, plan, currency, pensionValue, sa
         return;
       }
       input[field.key] = value / 100;
+    }
+    // Il rendimento non toccato resta com'è: chi è in automatico continua a seguire lo storico.
+    if (returnAuto) {
+      delete input.expectedReturn;
+      input.expectedReturnAuto = true;
+    } else if (percents.expectedReturn === initialPercents.expectedReturn) {
+      delete input.expectedReturn;
     }
     const yearsValue = parseNumber(years);
     if (yearsValue === null || !Number.isInteger(yearsValue) || yearsValue < ASSUMPTION_LIMITS.retirementYears.min || yearsValue > ASSUMPTION_LIMITS.retirementYears.max) {
@@ -107,13 +124,35 @@ export function AssumptionsPanel({ assumptions, plan, currency, pensionValue, sa
       </p>
       <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {PERCENT_FIELDS.map((field: PercentField) => (
-          <Field key={field.key} id={`ass-${field.key}`} label={`${field.label} (%)`} hint={field.hint}>
+          <Field
+            key={field.key}
+            id={`ass-${field.key}`}
+            label={`${field.label} (%)`}
+            hint={field.key === "expectedReturn" ? `${returnAuto ? "Torna a seguire il tuo storico al salvataggio." : returnSourceText(returnInfo, currency)} ${field.hint}` : field.hint}
+          >
             <Input
               id={`ass-${field.key}`}
               inputMode="decimal"
               value={percents[field.key]}
-              onChange={(e) => setPercents({ ...percents, [field.key]: e.target.value })}
+              onChange={(e) => {
+                setPercents({ ...percents, [field.key]: e.target.value });
+                if (field.key === "expectedReturn") setReturnAuto(false);
+              }}
             />
+            {field.key === "expectedReturn" && offer !== null && !returnAuto ? (
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                className="h-auto self-start px-0"
+                onClick={() => {
+                  setPercents({ ...percents, expectedReturn: toFieldText(offer, true) });
+                  setReturnAuto(true);
+                }}
+              >
+                Usa il tuo rendimento ({pct(offer)})
+              </Button>
+            ) : null}
           </Field>
         ))}
         <Field id="ass-years" label="Anni di pensione da coprire" hint="Quanto deve durare il patrimonio. Per smettere a 45 anni e arrivare a 90, circa 45; più è lungo, più il tasso di prelievo sicuro scende.">

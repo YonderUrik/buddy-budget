@@ -74,13 +74,20 @@ describe("runGoCardlessCleanup", () => {
     expect(await exists(abandoned.id)).toBe(false);
   });
 
-  it("non elimina un tentativo che GoCardless dice già collegato (callback persa)", async () => {
+  it("un tentativo che GoCardless dice già collegato (callback persa) aspetta la grazia delle orfane, poi si elimina", async () => {
     vi.mocked(getRequisition).mockResolvedValue({ id: "x", status: "LN", link: "", accounts: [] });
     const row = await connection({ status: "pending", requisitionId: "req-linked", createdAt: daysAgo(5) });
     const report = await runGoCardlessCleanup({ mode: "execute", now: NOW });
     expect(report.counts.skipped_linked).toBe(1);
     expect(deleteRequisition).not.toHaveBeenCalled();
-    expect(await exists(row.id)).toBe(true);
+    const [marked] = await db.select().from(bankConnections).where(eq(bankConnections.id, row.id));
+    expect(marked.orphanedAt).not.toBeNull();
+
+    await db.update(bankConnections).set({ orphanedAt: daysAgo(8) }).where(eq(bankConnections.id, row.id));
+    const second = await runGoCardlessCleanup({ mode: "execute", now: NOW });
+    expect(second.counts.orphan_connection).toBeGreaterThanOrEqual(1);
+    expect(deleteRequisition).toHaveBeenCalledWith("req-linked");
+    expect(await exists(row.id)).toBe(false);
   });
 
   it("una connessione senza conti viene prima segnata, poi eliminata dopo la grazia; con conti non si tocca", async () => {
@@ -165,6 +172,53 @@ describe("runGoCardlessCleanup", () => {
       await runGoCardlessCleanup({ mode: "dry-run", deleteUnknown: true, now: NOW });
       expect(deleteRequisition).not.toHaveBeenCalled();
       expect(deleteAgreement).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("requisition nostre rimaste senza riga", () => {
+    const OWN = "https://app.example.com/api/gocardless/callback";
+    const previousAppUrl = process.env.APP_URL;
+
+    beforeEach(async () => {
+      process.env.APP_URL = "https://app.example.com";
+      await connection({ requisitionId: "req-known" }, true);
+      vi.mocked(listRequisitions).mockResolvedValue([
+        { id: "req-known", created: daysAgo(10).toISOString(), status: "LN", redirect: OWN },
+        { id: "req-own-cr", created: daysAgo(5).toISOString(), status: "CR", redirect: OWN },
+        { id: "req-own-ln", created: daysAgo(20).toISOString(), status: "LN", reference: crypto.randomUUID(), redirect: OWN },
+        { id: "req-dev-cr", created: daysAgo(5).toISOString(), status: "CR", redirect: "http://localhost:3000/api/gocardless/callback" },
+      ]);
+    });
+
+    afterEach(() => {
+      process.env.APP_URL = previousAppUrl;
+    });
+
+    it("elimina le nostre mai collegate senza bisogno del flag; le LN e quelle di altri ambienti restano", async () => {
+      const report = await runGoCardlessCleanup({ mode: "execute", now: NOW });
+      expect(report.counts.stale_requisition).toBe(1);
+      expect(deleteRequisition).toHaveBeenCalledWith("req-own-cr");
+      expect(deleteRequisition).not.toHaveBeenCalledWith("req-own-ln");
+      expect(deleteRequisition).not.toHaveBeenCalledWith("req-dev-cr");
+      expect(deleteRequisition).not.toHaveBeenCalledWith("req-known");
+      expect(report.counts.skipped_linked).toBe(1);
+    });
+
+    it("in dry-run le conta soltanto", async () => {
+      const report = await runGoCardlessCleanup({ mode: "dry-run", now: NOW });
+      expect(report.counts.stale_requisition).toBe(1);
+      expect(deleteRequisition).not.toHaveBeenCalled();
+    });
+
+    it("elimina una LN sconosciuta solo se approvata per id, mai una nota anche se in elenco", async () => {
+      const report = await runGoCardlessCleanup({
+        mode: "execute",
+        approvedRequisitionIds: new Set(["req-own-ln", "req-known"]),
+        now: NOW,
+      });
+      expect(report.counts.approved_requisition).toBe(1);
+      expect(deleteRequisition).toHaveBeenCalledWith("req-own-ln");
+      expect(deleteRequisition).not.toHaveBeenCalledWith("req-known");
     });
   });
 

@@ -29,8 +29,8 @@ describe("planConnectionCleanup", () => {
     const noRequisition = connection({ id: "none", status: "error", requisitionId: null, linkCount: 0, createdAt: daysAgo(10) });
     const { actions } = planConnectionCleanup([recent, old, noRequisition], NOW);
     expect(actions).toEqual([
-      { connectionId: "old", kind: "abandoned_attempt", requisitionId: "req-1", deleteRow: true },
-      { connectionId: "none", kind: "abandoned_attempt", requisitionId: null, deleteRow: true },
+      { connectionId: "old", kind: "abandoned_attempt", requisitionId: "req-1", deleteRow: true, orphanedAt: null },
+      { connectionId: "none", kind: "abandoned_attempt", requisitionId: null, deleteRow: true, orphanedAt: null },
     ]);
   });
 
@@ -82,12 +82,13 @@ describe("planConnectionCleanup", () => {
 
 describe("planRemoteSweep", () => {
   const known = new Set(["req-1"]);
+  const OWN = "https://app.example.com/api/gocardless/callback";
   const base = {
     requisitions: [
       { id: "req-1", created: daysAgo(100).toISOString(), status: "EX", agreement: "ag-1" },
       { id: "req-old-cr", created: daysAgo(45).toISOString(), status: "CR", agreement: "ag-2" },
       { id: "req-new-cr", created: daysAgo(5).toISOString(), status: "CR", agreement: "ag-3" },
-      { id: "req-old-ln", created: daysAgo(45).toISOString(), status: "LN", agreement: "ag-4" },
+      { id: "req-old-ln", created: daysAgo(45).toISOString(), status: "LN", agreement: "ag-4", redirect: "http://localhost:3000/api/gocardless/callback" },
     ],
     agreements: [
       { id: "ag-1", created: daysAgo(100).toISOString() },
@@ -98,10 +99,51 @@ describe("planRemoteSweep", () => {
     knownRequisitionIds: known,
   };
 
-  it("propone solo requisition sconosciute, vecchie e non collegate; segnala quelle LN senza eliminarle", () => {
+  it("propone solo requisition altrui, vecchie e non collegate; elenca quelle LN senza eliminarle", () => {
     const sweep = planRemoteSweep(base, NOW);
     expect(sweep.requisitionIds).toEqual(["req-old-cr"]);
-    expect(sweep.linkedUnknown).toBe(1);
+    expect(sweep.staleRequisitionIds).toEqual([]);
+    expect(sweep.linkedUnknown).toEqual([{ id: "req-old-ln", origin: "foreign", ageDays: 45, redirectHost: "localhost" }]);
+  });
+
+  it("le nostre mai collegate (URL di ritorno o reference) sono tentativi abbandonati: grazia di 3 giorni, senza flag", () => {
+    const sweep = planRemoteSweep(
+      {
+        ...base,
+        requisitions: [
+          { id: "own-gc", created: daysAgo(4).toISOString(), status: "GC", redirect: OWN },
+          { id: "own-new", created: daysAgo(1).toISOString(), status: "CR", redirect: OWN },
+          { id: "superseded", created: daysAgo(4).toISOString(), status: "CR", reference: "conn-1", redirect: "https://old.example.com/cb" },
+          { id: "foreign-young", created: daysAgo(10).toISOString(), status: "CR", redirect: "http://localhost:3000/api/gocardless/callback" },
+        ],
+        knownConnectionIds: new Set(["conn-1"]),
+        ownRedirect: OWN,
+      },
+      NOW
+    );
+    expect(sweep.staleRequisitionIds).toEqual(["own-gc", "superseded"]);
+    expect(sweep.requisitionIds).toEqual([]);
+  });
+
+  it("classifica le LN sconosciute per origine", () => {
+    const sweep = planRemoteSweep(
+      {
+        ...base,
+        requisitions: [
+          { id: "ln-gone", created: daysAgo(20).toISOString(), status: "LN", reference: "conn-x", redirect: OWN },
+          { id: "ln-superseded", created: daysAgo(20).toISOString(), status: "LN", reference: "conn-1", redirect: OWN },
+          { id: "ln-young", created: daysAgo(1).toISOString(), status: "LN", redirect: OWN },
+        ],
+        knownConnectionIds: new Set(["conn-1"]),
+        ownRedirect: OWN,
+      },
+      NOW
+    );
+    expect(sweep.linkedUnknown.map(({ id, origin }) => [id, origin])).toEqual([
+      ["ln-gone", "own_row_gone"],
+      ["ln-superseded", "own_superseded"],
+    ]);
+    expect(sweep.staleRequisitionIds).toEqual([]);
   });
 
   it("propone solo agreement non citati da nessuna requisition e vecchi", () => {
@@ -109,6 +151,11 @@ describe("planRemoteSweep", () => {
   });
 
   it("non propone nulla se l'app non conosce alcuna requisition (DB vuoto o ambiente condiviso)", () => {
-    expect(planRemoteSweep({ ...base, knownRequisitionIds: new Set() }, NOW)).toEqual({ requisitionIds: [], agreementIds: [], linkedUnknown: 0 });
+    expect(planRemoteSweep({ ...base, knownRequisitionIds: new Set(), ownRedirect: OWN }, NOW)).toEqual({
+      staleRequisitionIds: [],
+      requisitionIds: [],
+      agreementIds: [],
+      linkedUnknown: [],
+    });
   });
 });

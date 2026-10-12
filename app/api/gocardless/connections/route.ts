@@ -3,11 +3,11 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
-import { getAppUrl } from "@/lib/env";
 import { GoCardlessError, createRequisition } from "@/lib/gocardless/client";
 import { CAPACITY_BLOCK_MESSAGES } from "@/lib/gocardless/capacity";
 import { reserveConnectionSlot } from "@/lib/gocardless/capacity-store";
 import { consentExpiryFrom } from "@/lib/gocardless/connection-health";
+import { gocardlessRedirectUrl } from "@/lib/gocardless/redirect";
 import { createConnectionSchema } from "@/lib/validation/gocardless";
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 import { rejectIfDemoActive } from "@/lib/start/demo";
@@ -81,7 +81,7 @@ async function handlePost(request: NextRequest) {
   }
   const { connection } = reservation;
 
-  const redirectUrl = `${getAppUrl()}/api/gocardless/callback`;
+  const redirectUrl = gocardlessRedirectUrl();
   try {
     const requisition = await createRequisition({
       institutionId: parsed.data.institutionId,

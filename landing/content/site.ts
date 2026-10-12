@@ -54,15 +54,23 @@ export interface SecurityPoint {
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
   title: "Cosa vede BuddyBudget dei tuoi dati, e cosa no.",
-  intro: "I server sono in Germania e le connessioni sono cifrate.",
+  intro: "Le credenziali della banca restano alla banca: verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
+  /** Fatti con la loro fonte ufficiale, sotto il diagramma. */
+  facts: [
+    { text: "GoCardless SAS è autorizzata dall'ACPR, n. 17118", source: "https://gocardless.com/legal/bank-account-data/" },
+    { text: "Sola lettura con consenso esplicito (PSD2, art. 67)", source: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
+    { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
+  ],
+  /** Il limite principale, detto nella home e spiegato nella pagina. */
+  limit: "Un limite da sapere: i dati non sono cifrati end-to-end, perché il server deve leggerli per calcolare saldi, budget e tasse.",
   points: [
     { icon: "key", title: "Nessuna password da rubare", text: "Si entra con un link via email o con Google. Non conserviamo password." },
-    { icon: "eye", title: "Banca in sola lettura", text: "Il collegamento ai conti passa da un fornitore regolato (PSD2) e permette solo di leggere saldi e movimenti, mai di muovere denaro. Il consenso scade e lo rinnovi tu." },
+    { icon: "database", title: "Cosa conserviamo", text: "Saldi e movimenti, per mostrarteli. Le credenziali della banca e l'IBAN non li salviamo mai." },
     { icon: "ban", title: "Non vendiamo i tuoi dati", text: "Niente pubblicità, niente cookie di profilazione, niente rivendita. Le statistiche d'uso sono anonime, senza cookie, e le spegni dalle impostazioni su ogni dispositivo." },
     { icon: "sliders", title: "Sei tu a decidere", text: "Scarichi tutto in un file, azzeri i dati o elimini l'account quando vuoi, e puoi nascondere gli importi a schermo." },
   ] satisfies readonly SecurityPoint[],
   legalNote: "Maggiori dettagli nella",
-  more: "Il percorso dei tuoi dati, passo per passo, con le fonti",
+  more: "Cosa salviamo, come cancelli tutto e le fonti",
 } as const;
 
 /** Blocco «Codice aperto» (dopo la sicurezza): mostrato solo con `SOURCE_URL`. Ogni punto è verificabile leggendo il repository. */

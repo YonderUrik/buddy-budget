@@ -27,15 +27,18 @@ import { useDeleteRuleMutation, useUpdateRuleMutation } from "@/lib/queries/cate
 import type { CategorizationRuleWithCategoryName } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { MerchantLogo } from "./merchant-logo";
 import { useRuleSavedFeedback } from "./rule-feedback";
 import { RULE_MATCH_TYPE_LABELS, RULE_SOURCE_LABELS } from "./rule-labels";
 
 export interface RuleRowProps {
   rule: CategorizationRuleWithCategoryName;
   categories: Category[];
+  /** Chiamata quando la riga mostra il logo dell'esercente (per citare la fonte dei loghi). */
+  onRemoteLogo?: () => void;
 }
 
-export function RuleRow({ rule, categories }: RuleRowProps) {
+export function RuleRow({ rule, categories, onRemoteLogo }: RuleRowProps) {
   const updateMutation = useUpdateRuleMutation();
   const deleteMutation = useDeleteRuleMutation();
   const notifyRuleSaved = useRuleSavedFeedback();
@@ -82,11 +85,13 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {category && (
-          <CategoryAvatar
-            color={category.color as CategoryColor}
-            icon={category.icon as CategoryIcon}
-            size={14}
+          <MerchantLogo
+            name={rule.pattern}
+            logoPath={rule.logoPath ?? null}
+            size="sm"
+            onRemoteLogo={onRemoteLogo}
             className="size-7"
+            fallback={<CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={14} className="size-7" />}
           />
         )}
         <div className="min-w-0 flex-1 space-y-1">

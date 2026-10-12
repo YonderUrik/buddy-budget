@@ -3,7 +3,7 @@
 /**
  * Logo di un esercente: l'iniziale su un fondo tenue e, se il server ha trovato un logo per il gruppo (`logoPath`: marchio
  * del dizionario, sito scritto nel movimento o nome cercato su Logo.dev), l'immagine servita dal nostro server. Finché il
- * logo non arriva, o se non c'è, resta l'iniziale. Decorativo: il nome è sempre scritto accanto.
+ * logo non arriva, o se non c'è, resta l'iniziale (o il `fallback` passato). Decorativo: il nome è sempre scritto accanto.
  */
 
 import * as React from "react";
@@ -26,6 +26,8 @@ export interface MerchantLogoProps {
   size?: MerchantLogoSize;
   /** Chiamata quando è stato mostrato un logo remoto (serve a chi deve citare la fonte dei loghi). */
   onRemoteLogo?: () => void;
+  /** Cosa mostrare finché il logo non c'è, al posto dell'iniziale (es. l'icona della categoria in Movimenti). */
+  fallback?: React.ReactNode;
   className?: string;
 }
 
@@ -35,7 +37,7 @@ function initialOf(name: string): string {
   return match ? match[0].toUpperCase() : "·";
 }
 
-export function MerchantLogo({ name, logoPath = null, size = "md", onRemoteLogo, className }: MerchantLogoProps) {
+export function MerchantLogo({ name, logoPath = null, size = "md", onRemoteLogo, fallback, className }: MerchantLogoProps) {
   const [state, setState] = React.useState<{ src: string | null; status: "pending" | "loaded" | "failed" }>({ src: logoPath, status: "pending" });
   // Un altro esercente nello stesso posto (carte del mazzo): si ricomincia dall'iniziale.
   if (state.src !== logoPath) setState({ src: logoPath, status: "pending" });
@@ -50,11 +52,11 @@ export function MerchantLogo({ name, logoPath = null, size = "md", onRemoteLogo,
         tile,
         text,
         // I marchi sono pensati per fondi chiari: il riquadro resta bianco anche nel tema scuro.
-        loaded ? "bg-white ring-1 ring-border" : "bg-foreground/[0.06] text-text-2",
+        loaded ? "bg-white ring-1 ring-border" : fallback === undefined && "bg-foreground/[0.06] text-text-2",
         className
       )}
     >
-      {loaded ? null : initialOf(name)}
+      {loaded ? null : (fallback ?? initialOf(name))}
       {logoPath !== null && state.status !== "failed" ? (
         // eslint-disable-next-line @next/next/no-img-element -- immagine dal nostro server, già ridimensionata
         <img

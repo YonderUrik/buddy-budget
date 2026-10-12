@@ -1,12 +1,15 @@
 "use client";
 
-/** Un movimento con i suoi comportamenti: cambio categoria dall'icona, Dividi, nota e (per i manuali) modifica ed elimina. */
+/**
+ * Un movimento con i suoi comportamenti: cambio categoria dall'icona, Dividi, nota e (per i manuali) modifica ed elimina.
+ * Se c'è il logo dell'esercente prende il posto dell'icona, che resta piccola nell'angolo (si tocca sempre lì per cambiarla).
+ */
 
 import * as React from "react";
 import { PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryAvatar } from "@/components/domain/categories";
-import { AutoOriginBadge, useRuleSavedFeedback } from "@/components/domain/categorization";
+import { AutoOriginBadge, MerchantLogo, useRuleSavedFeedback } from "@/components/domain/categorization";
 import { TransactionEditPanel, TransactionNotePopover } from "@/components/domain/expenses";
 import { InlineOrSheet } from "@/components/domain/shared";
 import {
@@ -24,10 +27,9 @@ import { track } from "@/lib/analytics";
 import { merchantKey } from "@/lib/categorization/merchant-key";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { Category } from "@/lib/db/schema/categories";
-import type { Transaction } from "@/lib/db/schema/transactions";
 import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
 import { useCreateRuleMutation } from "@/lib/queries/categorization";
-import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/lib/queries/transactions";
+import { useDeleteTransactionMutation, useUpdateTransactionMutation, type ListedTransaction } from "@/lib/queries/transactions";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
 import { CategorySheet } from "./category-sheet";
@@ -35,11 +37,14 @@ import { MovementRow } from "./movement-row";
 import { SplitPanel } from "./split-panel";
 
 export interface MovementItemProps {
-  transaction: Transaction;
+  /** Il movimento, con `logoPath` se il server ha trovato il logo dell'esercente. */
+  transaction: ListedTransaction;
   categories: readonly Category[];
   usage?: CategoryUsageCounts;
   accountName?: string;
   currency: string;
+  /** Chiamata quando la riga mostra il logo dell'esercente (per citare la fonte dei loghi sotto l'elenco). */
+  onRemoteLogo?: () => void;
 }
 
 type Panel = "none" | "split" | "edit";
@@ -49,7 +54,12 @@ function rememberedMessage(applied: number, categoryName: string): string {
   return applied === 1 ? `Messo in ${categoryName} anche un altro movimento` : `Messi in ${categoryName} anche altri ${applied} movimenti`;
 }
 
-export function MovementItem({ transaction, categories, usage, accountName, currency }: MovementItemProps) {
+/** Icona della categoria alla misura richiesta. */
+function categoryAvatar(category: Category, className: string, iconSize: number) {
+  return <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={iconSize} className={className} />;
+}
+
+export function MovementItem({ transaction, categories, usage, accountName, currency, onRemoteLogo }: MovementItemProps) {
   const update = useUpdateTransactionMutation();
   const remove = useDeleteTransactionMutation();
   const createRule = useCreateRuleMutation();
@@ -57,6 +67,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
   const [panel, setPanel] = React.useState<Panel>("none");
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [logoShown, setLogoShown] = React.useState(false);
 
   const full = Math.abs(Number(transaction.amount));
   const excluded = Math.abs(Number(transaction.excludedAmount));
@@ -119,9 +130,24 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         <button
           type="button"
           aria-label={`Categoria: ${category.name}. Tocca per cambiarla`}
-          className="size-11 shrink-0 rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="relative size-11 shrink-0 rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={19} className="size-11" />
+          {transaction.logoPath ? (
+            <MerchantLogo
+              name={transaction.description}
+              logoPath={transaction.logoPath}
+              fallback={categoryAvatar(category, "size-11", 19)}
+              onRemoteLogo={() => {
+                setLogoShown(true);
+                onRemoteLogo?.();
+              }}
+            />
+          ) : (
+            categoryAvatar(category, "size-11", 19)
+          )}
+          {logoShown && transaction.logoPath ? (
+            <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-px">{categoryAvatar(category, "size-5", 11)}</span>
+          ) : null}
         </button>
       }
     />

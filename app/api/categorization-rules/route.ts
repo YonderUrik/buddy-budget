@@ -8,6 +8,7 @@ import { createRuleSchema } from "@/lib/validation/categorization-rules";
 import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
 import { countPastMatchesSafely } from "@/lib/categorization/recategorize";
 import { merchantKey } from "@/lib/categorization/merchant-key";
+import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Recupera una categoria solo se appartiene all'utente indicato, altrimenti null. */
@@ -59,13 +60,21 @@ async function handleGet(request: NextRequest) {
       createdAt: categorizationRules.createdAt,
       updatedAt: categorizationRules.updatedAt,
       categoryName: categories.name,
+      categoryType: categories.type,
     })
     .from(categorizationRules)
     .innerJoin(categories, eq(categorizationRules.categoryId, categories.id))
     .where(eq(categorizationRules.userId, session.user.id))
     .orderBy(desc(categorizationRules.hitCount));
 
-  return Response.json(rows);
+  // Logo dell'esercente della regola, come in Categorizza; il tipo di categoria serve solo a dire se è una spesa.
+  const expenseIds = new Set<string>();
+  const rules = rows.map(({ categoryType, ...rule }) => {
+    if (categoryType !== "entrata" && categoryType !== "trasferimento") expenseIds.add(rule.id);
+    return rule;
+  });
+  const withLogos = await withMerchantLogos(rules, (rule) => ({ label: rule.pattern, texts: [], isExpense: expenseIds.has(rule.id) }), session.user.id);
+  return Response.json(withLogos);
 }
 
 /**

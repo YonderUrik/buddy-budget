@@ -7,11 +7,14 @@ import { track } from "@/lib/analytics";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
+/** Movimento come arriva dall'elenco: con l'indirizzo del logo dell'esercente, se il server ne ha trovato uno. */
+export type ListedTransaction = Transaction & { logoPath?: string | null };
+
 function transactionsQueryKey(from: string, to: string, type: TransactionDirectionParam) {
   return ["transactions", from, to, type] as const;
 }
 
-async function fetchTransactions(from: string, to: string, type: TransactionDirectionParam): Promise<Transaction[]> {
+async function fetchTransactions(from: string, to: string, type: TransactionDirectionParam): Promise<ListedTransaction[]> {
   const response = await fetch(`/api/transactions?from=${from}&to=${to}&type=${type}`);
   if (!response.ok) {
     throw new Error("Impossibile caricare le transazioni");

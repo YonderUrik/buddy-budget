@@ -4,8 +4,9 @@
 
 import * as React from "react";
 import type { Category } from "@/lib/db/schema/categories";
-import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
+import { LogoCredit } from "@/components/domain/categorization";
+import type { ListedTransaction } from "@/lib/queries/transactions";
 import { formatCurrency } from "@/lib/format";
 import { groupByDay } from "@/lib/liquidity/day-groups";
 import { MovementItem } from "./movement-item";
@@ -14,7 +15,7 @@ import { MovementItem } from "./movement-item";
 const DAYS_PER_PAGE = 10;
 
 export interface MovementFeedProps {
-  transactions: readonly Transaction[];
+  transactions: readonly ListedTransaction[];
   categories: readonly Category[];
   usage?: CategoryUsageCounts;
   /** Nome del conto per id; con un solo conto filtrato si può omettere per non ripeterlo su ogni riga. */
@@ -26,6 +27,8 @@ export interface MovementFeedProps {
 
 export function MovementFeed({ transactions, categories, usage, accountNames, currency, today, emptyMessage }: MovementFeedProps) {
   const [days, setDays] = React.useState(DAYS_PER_PAGE);
+  const [logosShown, setLogosShown] = React.useState(false);
+  const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   const groups = React.useMemo(() => groupByDay([...transactions], today), [transactions, today]);
   if (groups.length === 0) return <p className="py-10 text-center text-text-2">{emptyMessage}</p>;
   return (
@@ -48,6 +51,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
                 usage={usage}
                 accountName={accountNames?.get(transaction.accountId)}
                 currency={currency}
+                onRemoteLogo={showLogoCredit}
               />
             ))}
           </ul>
@@ -60,6 +64,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
           </button>
         </div>
       )}
+      <LogoCredit visible={logosShown} className="pt-4" />
     </div>
   );
 }

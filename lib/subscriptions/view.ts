@@ -52,6 +52,8 @@ export interface SubscriptionItem {
   reasons: SubscriptionReason[];
   confidence: number | null;
   categoryId: string | null;
+  /** Logo dell'esercente sul nostro server (lo aggiunge `loadSubscriptions`); null o assente = l'iniziale. */
+  logoPath?: string | null;
 }
 
 export interface SubscriptionTotals {

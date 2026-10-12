@@ -19,7 +19,8 @@ const AUTO_CATEGORIZED_QUERY_KEY = ["auto-categorized"] as const;
 const CATEGORIZATION_RULES_QUERY_KEY = ["categorization-rules"] as const;
 const RECATEGORIZE_PREVIEW_QUERY_KEY = ["recategorize-preview"] as const;
 
-export type CategorizationRuleWithCategoryName = CategorizationRule & { categoryName: string };
+/** Regola con il nome della categoria e, se il server l'ha trovato, il logo dell'esercente. */
+export type CategorizationRuleWithCategoryName = CategorizationRule & { categoryName: string; logoPath?: string | null };
 
 /** Movimenti da categorizzare per esercente e quanti gruppi si applicherebbero da soli adesso. */
 export interface CategorizeSuggestionsResponse {

@@ -21,7 +21,7 @@ export const SECURITY_SOURCES_CHECKED = "12 ottobre 2026";
  * (runbook `cifratura-dati.md` nel repo infra: la prova deve dire «0 in chiaro» su tutte le colonne). Finché è false la
  * landing non parla di cifratura nel database, perché non sarebbe ancora vero.
  */
-export const FIELD_ENCRYPTION_LIVE = false;
+export const FIELD_ENCRYPTION_LIVE = true;
 
 /** Cosa cifra l'app nel database (colonne `encryptedText` nel repo dell'app). */
 const ENCRYPTED_FIELDS_TEXT = "descrizioni e note dei movimenti, note di debiti e investimenti";

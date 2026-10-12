@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.66.0](https://github.com/YonderUrik/buddy-budget/compare/v0.65.0...v0.66.0) (2026-10-12)
+
+
+### Novità
+
+* pagina d'errore per le schermate e errori del browser nei log ([#357](https://github.com/YonderUrik/buddy-budget/issues/357)) ([fd62455](https://github.com/YonderUrik/buddy-budget/commit/fd62455ce685e1695685c04ff31a2215fe5e5ff4))
+
 ## [0.65.0](https://github.com/YonderUrik/buddy-budget/compare/v0.64.0...v0.65.0) (2026-10-12)
 
 

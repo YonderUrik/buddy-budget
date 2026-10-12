@@ -7,7 +7,7 @@ import { GoCardlessError, getAccountBalances, getAccountTransactions } from "./c
 import { isRateLimited, recordRateLimit, type RateLimitStore } from "./rate-limit";
 import { getFallbackCategoryId } from "@/lib/categorization/fallback";
 import { buildRuleResolver, flushRuleHits } from "@/lib/categorization/resolve";
-import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
+import { categorizeNewMovementsSafely, countStillUncategorized } from "@/lib/categorization/auto-apply";
 import { MIN_SYNC_GAP_MS } from "./sync-eligibility";
 import { extractMerchantName, FALLBACK_TRANSACTION_NAME, type MerchantNameSource } from "@/lib/categorization/merchant-name";
 import { logger, recordMerchantNames } from "@/lib/observability";
@@ -152,6 +152,8 @@ export async function syncAccountLink(
     let newTransactionsCount = 0;
     let categorizedCount = 0;
     let uncategorizedCount = 0;
+    // Movimenti nuovi rimasti senza categoria dopo le regole: si ricontano dopo il giro automatico.
+    const pendingIds: string[] = [];
     for (const [source, count] of nameSourceCounts) {
       recordMerchantNames(source, count);
       logger.info("gocardless.sync.names_resolved", { nameSource: source, count });
@@ -172,7 +174,7 @@ export async function syncAccountLink(
         .insert(transactions)
         .values(chunk)
         .onConflictDoNothing({ target: [transactions.accountId, transactions.externalId] })
-        .returning({ externalId: transactions.externalId, categoryId: transactions.categoryId });
+        .returning({ id: transactions.id, externalId: transactions.externalId, categoryId: transactions.categoryId });
 
       for (const inserted of insertedRows) {
         newTransactionsCount += 1;
@@ -183,6 +185,7 @@ export async function syncAccountLink(
         if (ruleId) ruleResolver.recordHit(ruleId);
         if (inserted.categoryId === fallbackCategoryId) {
           uncategorizedCount += 1;
+          pendingIds.push(inserted.id);
         } else {
           categorizedCount += 1;
         }
@@ -201,7 +204,13 @@ export async function syncAccountLink(
     await flushRuleHits(ruleResolver.appliedRuleIds());
     // Proposte dell'assistente per gli esercenti rimasti senza categoria, poi le sicure (dal 90%) si applicano da sole
     // se l'utente lo ha scelto; le altre restano da confermare in Categorizza.
-    if (uncategorizedCount > 0) await categorizeNewMovementsSafely(link.userId);
+    // I conteggi del risultato sono quelli dopo il giro: «categorizzati» comprende quelli messi da soli adesso.
+    if (uncategorizedCount > 0) {
+      await categorizeNewMovementsSafely(link.userId);
+      const still = await countStillUncategorized(link.userId, pendingIds);
+      categorizedCount += uncategorizedCount - still;
+      uncategorizedCount = still;
+    }
 
     const [currentLink] = await db
       .select({ syncTimestamps: bankAccountLinks.syncTimestamps })

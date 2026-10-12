@@ -3,10 +3,11 @@
 /**
  * Pagina "Categorizza": «Da decidere» (carte o elenco per le proposte incerte e i movimenti senza proposta) e «Fatte da
  * sole» (le categorie applicate senza chiedere, da controllare e correggere). Le proposte sicure non passano dalle carte:
- * appena la pagina le trova le applica e lo dice.
+ * appena la pagina le trova le applica e lo dice. «Ricategorizza» rifà le categorie messe da sole con le regole di oggi.
  */
 
 import * as React from "react";
+import { RefreshCwIcon } from "lucide-react";
 import {
   AiProgressStrip,
   AiSuggestBanner,
@@ -14,10 +15,12 @@ import {
   AutoCategorizedList,
   CategorizeListView,
   CategorizeSwipeDeck,
+  RecategorizeDialog,
   useAiGeneration,
   useAutoCategorization,
 } from "@/components/domain/categorization";
 import { BackLink, LoadError, SegmentedControl, type SegmentedControlOption } from "@/components/domain/shared";
+import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth/client";
 import type { DeckDecision } from "@/lib/categorization/swipe-deck";
 import { useMediaQuery } from "@/lib/hooks/use-media-query";
@@ -43,6 +46,7 @@ export default function CategorizzaPage() {
   const currency = session?.user.currency ?? "EUR";
   const [chosenTab, setChosenTab] = React.useState<Tab | null>(null);
   const [view, setView] = React.useState<View>("carte");
+  const [recategorizing, setRecategorizing] = React.useState(false);
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const activeView: View = isDesktop ? view : "carte";
   const { data: suggestions, dataUpdatedAt, isLoading, isError, refetch } = useCategorizeSuggestionsQuery();
@@ -116,7 +120,19 @@ export default function CategorizzaPage() {
           </p>
         </div>
         {!isDesktop ? banner : null}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setRecategorizing(true)}
+          disabled={!categories}
+          title="Rifà le categorie messe da sole con le regole di oggi"
+          className="shrink-0 max-md:size-11 max-md:px-0 md:h-9 md:px-3"
+        >
+          <RefreshCwIcon />
+          <span className="max-md:sr-only">Ricategorizza</span>
+        </Button>
       </div>
+      {categories ? <RecategorizeDialog open={recategorizing} onOpenChange={setRecategorizing} categories={categories} currency={currency} /> : null}
 
       <SegmentedControl options={tabOptions} value={tab} onChange={setChosenTab} ariaLabel="Movimenti da decidere o già categorizzati" stretch className="sm:max-w-sm" />
       {suggestions && !autoApplyEnabled ? <AutoApplyPrompt onEnable={auto.enableAutoApply} pending={auto.enabling} /> : null}

@@ -14,17 +14,20 @@ function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural;
 }
 
-/** Messaggio di successo mostrato nel toast dopo un sync manuale riuscito. */
+/**
+ * Messaggio di successo dopo un sync riuscito, con i conteggi presi dopo il giro automatico: quante si sono messe da
+ * sole (regole e proposte sicure) e quante restano da decidere in Categorizza.
+ */
 export function buildSyncSummaryMessage(result: SyncSuccessResult): string {
   if (result.newTransactionsCount === 0) {
     return "Nessuna nuova transazione trovata. Saldo aggiornato.";
   }
   const parts: string[] = [];
   if (result.categorizedCount > 0) {
-    parts.push(`${result.categorizedCount} ${pluralize(result.categorizedCount, "categorizzata", "categorizzate")}`);
+    parts.push(`${result.categorizedCount} ${pluralize(result.categorizedCount, "categorizzata da sola", "categorizzate da sole")}`);
   }
   if (result.uncategorizedCount > 0) {
-    parts.push(`${result.uncategorizedCount} da categorizzare`);
+    parts.push(`${result.uncategorizedCount} da decidere`);
   }
   const detail = parts.length > 0 ? ` (${parts.join(", ")})` : "";
   const label = pluralize(result.newTransactionsCount, "nuova transazione", "nuove transazioni");

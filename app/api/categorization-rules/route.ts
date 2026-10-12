@@ -5,8 +5,10 @@ import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { createRuleSchema } from "@/lib/validation/categorization-rules";
+import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
+import { countPastMatchesSafely } from "@/lib/categorization/recategorize";
 import { merchantKey } from "@/lib/categorization/merchant-key";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Recupera una categoria solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedCategory(userId: string, categoryId: string) {
@@ -71,7 +73,10 @@ async function handleGet(request: NextRequest) {
  * categoria non è propria, 400 se è la categoria di fallback (una regola su di essa resterebbe sempre
  * inutilizzata a runtime, vedi `selectMatchingRule`), 409 se esiste già una regola con lo stesso tipo
  * di match e pattern (il pattern viene normalizzato con `merchantKey` prima di ogni confronto/scrittura,
- * dato che la risoluzione confronta sempre chiavi normalizzate, mai testo grezzo).
+ * dato che la risoluzione confronta sempre chiavi normalizzate, mai testo grezzo). Con `replaceExisting`
+ * (es. «Ricordala» in Movimenti) la regola che c'è già prende la categoria nuova invece del 409.
+ * La regola vale subito: si applica ai movimenti ancora «Da categorizzare» e la risposta dice quanti (`applied`), più
+ * quanti movimenti già categorizzati da soli prenderebbe (`pastMatches`, per «Applica anche ai passati»).
  */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -99,30 +104,41 @@ async function handlePost(request: NextRequest) {
 
   const normalizedPattern = merchantKey(parsed.data.pattern);
 
+  const splitPercentage =
+    parsed.data.splitPercentage === undefined || parsed.data.splitPercentage === null
+      ? null
+      : parsed.data.splitPercentage.toFixed(4);
   const duplicate = await findDuplicateRule(session.user.id, parsed.data.matchType, normalizedPattern);
-  if (duplicate) {
+  if (duplicate && !parsed.data.replaceExisting) {
     return Response.json(
       { error: "Esiste già una regola con questo pattern" },
       { status: 409 }
     );
   }
 
-  const [rule] = await db
-    .insert(categorizationRules)
-    .values({
-      userId: session.user.id,
-      matchType: parsed.data.matchType,
-      pattern: normalizedPattern,
-      categoryId: parsed.data.categoryId,
-      splitPercentage:
-        parsed.data.splitPercentage === undefined || parsed.data.splitPercentage === null
-          ? null
-          : parsed.data.splitPercentage.toFixed(4),
-      source: "manuale",
-    })
-    .returning();
+  const [rule] = duplicate
+    ? await db
+        .update(categorizationRules)
+        .set({ categoryId: parsed.data.categoryId, splitPercentage, updatedAt: new Date() })
+        .where(eq(categorizationRules.id, duplicate.id))
+        .returning()
+    : await db
+        .insert(categorizationRules)
+        .values({
+          userId: session.user.id,
+          matchType: parsed.data.matchType,
+          pattern: normalizedPattern,
+          categoryId: parsed.data.categoryId,
+          splitPercentage,
+          source: "manuale",
+        })
+        .returning();
 
-  return Response.json(rule, { status: 201 });
+  const log = requestLogger();
+  log.info(duplicate ? "categorization.rule.replaced" : "categorization.rule.created", { kind: rule.matchType });
+  const applied = await applyRulesToUncategorized(session.user.id, { log });
+  const pastMatches = await countPastMatchesSafely(session.user.id, rule.id, log);
+  return Response.json({ ...rule, applied, pastMatches }, { status: duplicate ? 200 : 201 });
 }
 
 export const GET = withRoute("categorization_rules.list", handleGet);

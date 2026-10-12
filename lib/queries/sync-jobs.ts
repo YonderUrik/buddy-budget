@@ -4,16 +4,17 @@ import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
 import { hasFinishedSince, hasNewlyFinishedJob, runningJobIds } from "@/lib/sync-jobs/view";
+import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "./categorization";
 
 export const SYNC_JOBS_QUERY_KEY = ["sync-jobs"] as const;
 export const SYNC_JOBS_POLL_INTERVAL_MS = 1000;
 
-/** Query invalidate a fine job: i dati che un sync può aver cambiato. */
+/** Query invalidate a fine job: i dati che un sync può aver cambiato, compresi avvisi e Categorizza (giro automatico). */
 const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["accounts"],
-  ["transactions"],
   ["gocardless", "connections", "status"],
   ["net-worth-snapshots"],
+  ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION,
 ] as const;
 
 /** Job di sync dell'utente; interroga il server ogni secondo solo mentre almeno un job è in corso. */

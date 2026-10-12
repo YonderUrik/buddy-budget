@@ -76,6 +76,25 @@ async function applyRules(userId: string, fallbackIds: string[], now: Date): Pro
   return applied;
 }
 
+async function fallbackCategoryIds(userId: string): Promise<string[]> {
+  const rows = await db.select({ id: categories.id }).from(categories).where(and(eq(categories.userId, userId), eq(categories.isFallback, true)));
+  return rows.map((row) => row.id);
+}
+
+/**
+ * Solo le regole, sui movimenti ancora «Da categorizzare»: da chiamare appena l'utente crea o cambia una regola, così
+ * vale subito e non al prossimo import. Ritorna quanti movimenti ha categorizzato.
+ */
+export async function applyRulesToUncategorized(userId: string, options: { log?: Logger; now?: Date } = {}): Promise<number> {
+  const fallbackIds = await fallbackCategoryIds(userId);
+  const applied = await applyRules(userId, fallbackIds, options.now ?? new Date());
+  if (applied > 0) {
+    recordCategorizationAutoApplied("regola", applied);
+    (options.log ?? logger).info("categorization.auto.applied", { categorySource: "regola", count: applied });
+  }
+  return applied;
+}
+
 /**
  * Categorizza da sola ciò che non ha bisogno di controllo: prima le regole dell'utente, poi (se l'utente lo ha scelto)
  * le proposte sicure dal 90% in su, da regole simili, scelte passate e, solo con il consenso attivo, assistente. Tocca
@@ -87,9 +106,7 @@ export async function autoApplyCategories(userId: string, options: { log?: Logge
   const now = options.now ?? new Date();
   const result = emptyResult();
 
-  const fallbackIds = (
-    await db.select({ id: categories.id }).from(categories).where(and(eq(categories.userId, userId), eq(categories.isFallback, true)))
-  ).map((row) => row.id);
+  const fallbackIds = await fallbackCategoryIds(userId);
   if (fallbackIds.length === 0) return result;
 
   result.applied.regola = await applyRules(userId, fallbackIds, now);
@@ -132,6 +149,36 @@ export async function autoApplyCategories(userId: string, options: { log?: Logge
     log.info("categorization.auto.applied", { categorySource: source, count });
   }
   return result;
+}
+
+/** Movimenti per query nel conteggio dopo il giro: tiene corta la lista di parametri anche al primo import. */
+const RECOUNT_CHUNK_SIZE = 1000;
+
+/**
+ * Quanti dei movimenti indicati sono ancora «Da categorizzare»: dopo il giro automatico, per dire all'utente quanti si
+ * sono messi da soli e quanti restano da decidere. In caso di errore ritorna `ids.length` (nessuno sistemato): il
+ * riepilogo resta prudente e la sync non si ferma.
+ */
+export async function countStillUncategorized(userId: string, ids: string[], log: Logger = logger): Promise<number> {
+  if (ids.length === 0) return 0;
+  try {
+    const fallbackIds = await fallbackCategoryIds(userId);
+    if (fallbackIds.length === 0) return 0;
+    let still = 0;
+    for (let start = 0; start < ids.length; start += RECOUNT_CHUNK_SIZE) {
+      const [row] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(transactions)
+        .where(
+          and(eq(transactions.userId, userId), inArray(transactions.id, ids.slice(start, start + RECOUNT_CHUNK_SIZE)), inArray(transactions.categoryId, fallbackIds))
+        );
+      still += row?.count ?? 0;
+    }
+    return still;
+  } catch (error) {
+    log.warn("categorization.auto.recount_failed", { error });
+    return ids.length;
+  }
 }
 
 /** Come sopra ma non lancia mai: per sync, import e richieste dove un guasto non deve toccare il lavoro principale. */

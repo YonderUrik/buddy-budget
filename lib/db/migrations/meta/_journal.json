@@ -239,6 +239,13 @@
       "when": 1791825795140,
       "tag": "0034_categorie_applicate_da_sole",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1791830449741,
+      "tag": "0035_ricategorizza",
+      "breakpoints": true
     }
   ]
 }

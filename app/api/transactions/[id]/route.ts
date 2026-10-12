@@ -6,6 +6,7 @@ import { categories } from "@/lib/db/schema/categories";
 import { isValidExcludedAmount, transactions } from "@/lib/db/schema/transactions";
 import { updateTransactionSchema } from "@/lib/validation/transactions";
 import { countAutoCorrections } from "@/lib/categorization/auto-corrections";
+import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
 import { bindRequestUser, recordCategorizationAutoCorrected, requestLogger, withRoute } from "@/lib/observability";
 
 /** Recupera una transazione solo se appartiene all'utente indicato, altrimenti null. */
@@ -122,11 +123,20 @@ async function handlePatch(
   // Cambiare categoria a mano la rende una scelta dell'utente (esce da «Fatte da sole»); tornare a «Da categorizzare» la azzera.
   const now = new Date();
   const categoryChanged = resolvedCategory !== null && resolvedCategory.id !== transaction.categoryId;
-  const origin = !categoryChanged
-    ? {}
-    : resolvedCategory!.isFallback
+  // Anche cambiare a mano la quota esclusa («Dividi») di una categoria messa da sola la rende una scelta dell'utente:
+  // «Ricategorizza» non deve rifarla.
+  const splitByHand =
+    !categoryChanged &&
+    parsed.data.excludedAmount !== undefined &&
+    newExcludedAmount !== Number(transaction.excludedAmount) &&
+    isAutomaticCategorySource(transaction.categorySource);
+  const origin = categoryChanged
+    ? resolvedCategory!.isFallback
       ? { categorySource: null, categoryConfidence: null, categorizedAt: null }
-      : { categorySource: "utente" as const, categoryConfidence: null, categorizedAt: now };
+      : { categorySource: "utente" as const, categoryConfidence: null, categorizedAt: now }
+    : splitByHand
+      ? { categorySource: "utente" as const, categoryConfidence: null, categorizedAt: now }
+      : {};
 
   const { amount, excludedAmount, ...rest } = parsed.data;
   const [updated] = await db

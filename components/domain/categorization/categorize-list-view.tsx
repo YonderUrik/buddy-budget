@@ -11,12 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authClient } from "@/lib/auth/client";
-import type { CategorizeSuggestion, SuggestionGroup } from "@/lib/categorization/suggest";
+import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import type { Category } from "@/lib/db/schema/categories";
 import {
   ApplyCategorizationPartialError,
   type ApplyCategorizationProgress,
-  useAiSuggestionsMutation,
   useApplyCategorizationMutation,
 } from "@/lib/queries/categorization";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
@@ -73,47 +72,10 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
   const { data: categories } = useCategoriesQuery();
   const { data: categoryUsage } = useCategoryUsageQuery();
   const applyMutation = useApplyCategorizationMutation();
-  const aiSuggestionsMutation = useAiSuggestionsMutation();
   const [overrides, setOverrides] = React.useState<Map<string, GroupOverride>>(new Map());
-  const [aiSuggestionsByMerchant, setAiSuggestionsByMerchant] = React.useState<Map<string, CategorizeSuggestion>>(
-    new Map()
-  );
   const [rememberMerchants, setRememberMerchants] = React.useState(false);
   const [applyProgress, setApplyProgress] = React.useState<ApplyCategorizationProgress | null>(null);
   const [logosShown, setLogosShown] = React.useState(false);
-  const aiRequestedRef = React.useRef(false);
-
-  // Richiama l'assistente una sola volta per i gruppi rimasti senza proposta, appena i dati sono
-  // arrivati. Un fallimento non produce mai un errore visibile: la mutation stessa risolve sempre
-  // con { groups: [] } in quel caso, quindi qui c'è solo il caso "nessuna proposta aggiuntiva".
-  React.useEffect(() => {
-    if (isLoading || aiRequestedRef.current) return;
-    aiRequestedRef.current = true;
-
-    const unsuggestedIds = groups.filter((group) => !group.suggestion).flatMap((group) => group.transactionIds);
-    if (unsuggestedIds.length === 0) return;
-
-    aiSuggestionsMutation.mutate(unsuggestedIds, {
-      onSuccess: (result) => {
-        setAiSuggestionsByMerchant((prev) => {
-          const next = new Map(prev);
-          for (const group of result.groups) {
-            if (group.suggestion) next.set(group.groupKey, group.suggestion);
-          }
-          return next;
-        });
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, groups]);
-
-  const safeGroups = React.useMemo(() => {
-    return groups.map((group) => {
-      if (group.suggestion) return group;
-      const aiSuggestion = aiSuggestionsByMerchant.get(group.groupKey);
-      return aiSuggestion ? { ...group, suggestion: aiSuggestion } : group;
-    });
-  }, [groups, aiSuggestionsByMerchant]);
   const safeCategories = categories ?? [];
 
   function getOverride(group: SuggestionGroup): GroupOverride {
@@ -137,7 +99,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
   function handleSelectAll(selectAll: boolean) {
     setOverrides((prev) => {
       const next = new Map(prev);
-      for (const group of safeGroups) {
+      for (const group of groups) {
         const override = getOverride(group);
         // Un gruppo senza categoria compatibile, o senza ancora una categoria scelta, non può mai
         // essere selezionato da "Seleziona tutto" — solo una scelta esplicita dal dropdown lo sblocca.
@@ -148,12 +110,12 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
     });
   }
 
-  const selectedGroups = safeGroups.filter(
+  const selectedGroups = groups.filter(
     (group) => getOverride(group).selected && !disabledReason(group, safeCategories, getOverride(group).categoryId)
   );
-  const totalTransactionCount = safeGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
+  const totalTransactionCount = groups.reduce((sum, group) => sum + group.transactionIds.length, 0);
   const selectedTransactionCount = selectedGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
-  const selectableGroupCount = safeGroups.filter(
+  const selectableGroupCount = groups.filter(
     (group) => !disabledReason(group, safeCategories, getOverride(group).categoryId)
   ).length;
   const allSelected = selectableGroupCount > 0 && selectedGroups.length === selectableGroupCount;
@@ -224,9 +186,6 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
             si categorizzano da soli.
           </p>
         )}
-        {aiSuggestionsMutation.isPending && (
-          <p className="text-xs text-muted-foreground">Ricerca di altre proposte in corso…</p>
-        )}
       </div>
 
       {isLoading ? (
@@ -235,7 +194,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
             <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : safeGroups.length === 0 ? (
+      ) : groups.length === 0 ? (
         <Card className="p-6 text-center text-sm text-muted-foreground">Niente da decidere</Card>
       ) : (
         <>
@@ -253,7 +212,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
                 </span>
               </span>
             </label>
-            {safeGroups.map((group) => {
+            {groups.map((group) => {
               const override = getOverride(group);
               return (
                 <CategorizeGroupRow

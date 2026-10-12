@@ -27,6 +27,7 @@ import { useDeleteRuleMutation, useUpdateRuleMutation } from "@/lib/queries/cate
 import type { CategorizationRuleWithCategoryName } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { useRuleSavedFeedback } from "./rule-feedback";
 import { RULE_MATCH_TYPE_LABELS, RULE_SOURCE_LABELS } from "./rule-labels";
 
 export interface RuleRowProps {
@@ -37,6 +38,7 @@ export interface RuleRowProps {
 export function RuleRow({ rule, categories }: RuleRowProps) {
   const updateMutation = useUpdateRuleMutation();
   const deleteMutation = useDeleteRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
 
   const [pattern, setPattern] = React.useState(rule.pattern);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -55,18 +57,21 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
     }
     updateMutation.mutate(
       { id: rule.id, input: { pattern: trimmed } },
-      { onError: () => setPattern(rule.pattern) }
+      { onSuccess: (saved) => notifyRuleSaved(saved), onError: () => setPattern(rule.pattern) }
     );
   }
 
   function commitCategory(categoryId: string | null) {
     if (categoryId === null || categoryId === rule.categoryId) return;
-    updateMutation.mutate({ id: rule.id, input: { categoryId } });
+    updateMutation.mutate({ id: rule.id, input: { categoryId } }, { onSuccess: (saved) => notifyRuleSaved(saved) });
   }
 
   function commitMatchType(matchType: string | null) {
     if (matchType === null || matchType === rule.matchType) return;
-    updateMutation.mutate({ id: rule.id, input: { matchType: matchType as "merchant" | "contains" } });
+    updateMutation.mutate(
+      { id: rule.id, input: { matchType: matchType as "merchant" | "contains" } },
+      { onSuccess: (saved) => notifyRuleSaved(saved) }
+    );
   }
 
   function handleDeleteConfirm() {

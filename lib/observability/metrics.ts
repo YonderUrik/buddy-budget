@@ -271,7 +271,7 @@ function createState(): MetricsState {
   });
   state.categorizationAuto = new Counter({
     name: `${METRIC_PREFIX}categorization_auto_total`,
-    help: "Movimenti categorizzati da soli (regole e proposte sicure dal 90%) e poi corretti dall'utente, per origine.",
+    help: "Movimenti categorizzati da soli (regole e proposte sicure dal 90%), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
     labelNames: ["source", "event"],
     registers: r,
   });
@@ -596,6 +596,16 @@ export function recordCategorizationAutoApplied(source: AutoCategorySource, coun
 /** Registra `count` movimenti categorizzati da soli che l'utente ha poi spostato in un'altra categoria. */
 export function recordCategorizationAutoCorrected(source: AutoCategorySource, count: number): void {
   if (count > 0) metrics().categorizationAuto.inc({ source, event: "corrected" }, count);
+}
+
+/** Registra `count` movimenti già categorizzati spostati da «Ricategorizza», per origine della nuova categoria. */
+export function recordCategorizationRecategorized(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "recategorized" }, count);
+}
+
+/** Registra `count` movimenti riportati com'erano dall'annulla di «Ricategorizza», per origine che avevano ricevuto. */
+export function recordCategorizationRecategorizeUndone(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "recategorize_undone" }, count);
 }
 
 /** Registra `count` proposte di categoria per un evento (salvate, bloccate dal filtro, confermate, corrette). */

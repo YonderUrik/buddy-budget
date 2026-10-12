@@ -72,7 +72,7 @@ function investmentRows(investments: InvestmentDigest, money: MoneyFormatter): E
  * che l'app già calcola. Nessun consiglio e nessun giudizio sui numeri. Pura, per poterla testare.
  */
 export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
-  const { period, spent, income, movements, investments } = data;
+  const { period, spent, income, movements, investments, toDecide = 0 } = data;
   const monthly = period.period === "mese";
   const opening = monthly ? `A ${period.label.toLowerCase().replace(/ \d{4}$/, "")}` : `Nella settimana ${period.label}`;
   const sentences = [
@@ -80,6 +80,7 @@ export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
     investments === null
       ? null
       : `I tuoi investimenti ${investments.gain >= 0 ? "hanno guadagnato" : "hanno perso"} **${ctx.money(Math.abs(investments.gain))}**${investments.income > 0 ? `, di cui **${ctx.money(investments.income)}** di dividendi e cedole` : ""}.`,
+    toDecide > 0 ? `${toDecide === 1 ? "**Un movimento** aspetta" : `**${toDecide} movimenti** aspettano`} una categoria in Categorizza.` : null,
   ].filter((s): s is string => s !== null);
   const sections: EmailSection[] = [
     ...(movements > 0 ? [{ title: "Liquidità", rows: liquidityRows(data, ctx.money) }] : []),

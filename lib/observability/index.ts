@@ -21,6 +21,8 @@ export {
   recordCategorizationSuggestions,
   recordCategorizationAutoApplied,
   recordCategorizationAutoCorrected,
+  recordCategorizationRecategorized,
+  recordCategorizationRecategorizeUndone,
   recordSupportReport,
   recordPriceProviderRequest,
   recordFxProviderRequest,

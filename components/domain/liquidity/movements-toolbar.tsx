@@ -1,6 +1,6 @@
 "use client";
 
-/** Strumenti sopra l'elenco: ricerca, tipo (tutti/uscite/entrate), "Da sistemare" e il filtro di categoria attivo. */
+/** Strumenti sopra l'elenco: ricerca, tipo (tutti/uscite/entrate), "Da decidere" e il filtro di categoria attivo. */
 
 import Link from "next/link";
 import { SearchIcon, SparklesIcon, XIcon } from "lucide-react";
@@ -50,7 +50,7 @@ export function MovementsToolbar(props: MovementsToolbarProps) {
           onClick={() => props.onToFixOnlyChange(!props.toFixOnly)}
           className={cn("min-h-11 rounded-xl border-[1.5px] px-3.5 text-sm font-semibold", props.toFixOnly ? "border-neg bg-neg-soft text-neg" : "border-border bg-card hover:bg-muted")}
         >
-          Da sistemare · {props.toFix}
+          Da decidere · {props.toFix}
         </button>
       )}
       {props.toFix > 0 && (

@@ -6,7 +6,7 @@ import * as React from "react";
 import { PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryAvatar } from "@/components/domain/categories";
-import { AutoOriginBadge } from "@/components/domain/categorization";
+import { AutoOriginBadge, useRuleSavedFeedback } from "@/components/domain/categorization";
 import { TransactionEditPanel, TransactionNotePopover } from "@/components/domain/expenses";
 import { InlineOrSheet } from "@/components/domain/shared";
 import {
@@ -44,10 +44,16 @@ export interface MovementItemProps {
 
 type Panel = "none" | "split" | "edit";
 
+/** Messaggio dopo «Ricordala» quando la regola ha già sistemato altri movimenti da categorizzare. */
+function rememberedMessage(applied: number, categoryName: string): string {
+  return applied === 1 ? `Messo in ${categoryName} anche un altro movimento` : `Messi in ${categoryName} anche altri ${applied} movimenti`;
+}
+
 export function MovementItem({ transaction, categories, usage, accountName, currency }: MovementItemProps) {
   const update = useUpdateTransactionMutation();
   const remove = useDeleteTransactionMutation();
   const createRule = useCreateRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
   const [panel, setPanel] = React.useState<Panel>("none");
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -76,7 +82,13 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         onSuccess: () => {
           track("liquidity_category_remembered", { remembered: remember });
           if (autoSource) track("categorization_auto_corrected", { source: autoSource, count: 1, remember, from: "movimenti" });
-          if (remember) createRule.mutate({ matchType: "merchant", pattern: merchantKey(transaction.description), categoryId });
+          // Se c'è già una regola per questo esercente, prende la categoria nuova: altrimenti i prossimi tornerebbero nella vecchia.
+          if (remember) {
+            createRule.mutate(
+              { matchType: "merchant", pattern: merchantKey(transaction.description), categoryId, replaceExisting: true },
+              { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name) : undefined) }
+            );
+          }
           toast.success(`Spostata in ${name}`, {
             action: { label: "Annulla", onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
           });

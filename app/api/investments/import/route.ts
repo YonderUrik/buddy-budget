@@ -1,6 +1,7 @@
 import { NextRequest, after } from "next/server";
 import { and, eq, min } from "drizzle-orm";
 import { auth } from "@/lib/auth";
+import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { db } from "@/lib/db/client";
 import { investmentTransactions } from "@/lib/db/schema/investments";
 import { ensureHistorySafely } from "@/lib/investments/history";
@@ -66,6 +67,8 @@ async function handlePost(request: NextRequest) {
   if (!parsed.data.dryRun && result.counts.error > 0) return Response.json(result, { status: 400 });
   if (!parsed.data.dryRun) {
     requestLogger().info("investments.import.completed", { inserted: result.inserted });
+    // I movimenti di cassa del rendiconto (es. carta Trade Republic) passano dallo stesso giro della banca.
+    if (parsed.data.statementCsv && result.inserted > 0) after(() => categorizeNewMovementsSafely(userId));
   }
   return Response.json(result, { status: parsed.data.dryRun ? 200 : 201 });
 }

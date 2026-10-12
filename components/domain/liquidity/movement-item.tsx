@@ -6,6 +6,7 @@ import * as React from "react";
 import { PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryAvatar } from "@/components/domain/categories";
+import { AutoOriginBadge, useRuleSavedFeedback } from "@/components/domain/categorization";
 import { TransactionEditPanel, TransactionNotePopover } from "@/components/domain/expenses";
 import { InlineOrSheet } from "@/components/domain/shared";
 import {
@@ -24,6 +25,7 @@ import { merchantKey } from "@/lib/categorization/merchant-key";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { Category } from "@/lib/db/schema/categories";
 import type { Transaction } from "@/lib/db/schema/transactions";
+import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
 import { useCreateRuleMutation } from "@/lib/queries/categorization";
 import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/lib/queries/transactions";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
@@ -42,10 +44,16 @@ export interface MovementItemProps {
 
 type Panel = "none" | "split" | "edit";
 
+/** Messaggio dopo «Ricordala» quando la regola ha già sistemato altri movimenti da categorizzare. */
+function rememberedMessage(applied: number, categoryName: string): string {
+  return applied === 1 ? `Messo in ${categoryName} anche un altro movimento` : `Messi in ${categoryName} anche altri ${applied} movimenti`;
+}
+
 export function MovementItem({ transaction, categories, usage, accountName, currency }: MovementItemProps) {
   const update = useUpdateTransactionMutation();
   const remove = useDeleteTransactionMutation();
   const createRule = useCreateRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
   const [panel, setPanel] = React.useState<Panel>("none");
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -61,6 +69,9 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
     [categories, isIncome]
   );
   const hasRaw = transaction.rawDescription && transaction.rawDescription !== transaction.description;
+  // Categoria messa da sola (regola, scelte passate, AI): lo si dice accanto al nome, così si sa cosa controllare.
+  const autoSource = isAutomaticCategorySource(transaction.categorySource) ? transaction.categorySource : undefined;
+  const autoConfidence = transaction.categoryConfidence === null ? null : Number(transaction.categoryConfidence);
 
   function chooseCategory(categoryId: string, remember: boolean) {
     const previous = transaction.categoryId;
@@ -70,7 +81,14 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
       {
         onSuccess: () => {
           track("liquidity_category_remembered", { remembered: remember });
-          if (remember) createRule.mutate({ matchType: "merchant", pattern: merchantKey(transaction.description), categoryId });
+          if (autoSource) track("categorization_auto_corrected", { source: autoSource, count: 1, remember, from: "movimenti" });
+          // Se c'è già una regola per questo esercente, prende la categoria nuova: altrimenti i prossimi tornerebbero nella vecchia.
+          if (remember) {
+            createRule.mutate(
+              { matchType: "merchant", pattern: merchantKey(transaction.description), categoryId, replaceExisting: true },
+              { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name) : undefined) }
+            );
+          }
           toast.success(`Spostata in ${name}`, {
             action: { label: "Annulla", onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
           });
@@ -118,6 +136,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         description={transaction.description}
         rawDescription={hasRaw ? (transaction.rawDescription ?? undefined) : undefined}
         categoryName={category?.name ?? "Senza categoria"}
+        categoryOrigin={autoSource && !uncategorized ? <AutoOriginBadge source={autoSource} confidence={autoConfidence} compact className="align-[-0.15em]" /> : undefined}
         uncategorized={uncategorized}
         accountName={accountName}
         amount={full - excluded}

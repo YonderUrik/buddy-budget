@@ -40,7 +40,11 @@ const manifest = { capturedAt: new Date().toISOString(), app: APP, viewport: VIE
 for (const theme of SCREEN_THEMES) {
   const context = await browser.newContext({ viewport: VIEWPORT, deviceScaleFactor: SCALE, colorScheme: theme, locale: "it-IT" });
   await context.addCookies([{ name: "better-auth.session_token", value: cookieValue, domain: host, path: "/" }]);
-  await context.addInitScript((t) => localStorage.setItem("theme", t), theme);
+  // Tema scelto e tour di Categorizza già visto: si cattura la schermata, non la guida sopra.
+  await context.addInitScript((t) => {
+    localStorage.setItem("theme", t);
+    localStorage.setItem("bb:categorize-tour-seen", "1");
+  }, theme);
   const page = await context.newPage();
   mkdirSync(join(root, "public", "screens", theme), { recursive: true });
   for (const screen of SCREENS.filter((candidate) => !ONLY || ONLY.includes(candidate.id))) {

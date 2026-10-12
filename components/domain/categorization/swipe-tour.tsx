@@ -32,11 +32,11 @@ interface TourStep {
 }
 
 const STEPS: readonly TourStep[] = [
-  { gesture: "carta", title: "Una carta per esercente", text: "In alto c'è l'esercente con il totale, sotto la categoria che l'assistente propone. Nulla si applica da solo." },
+  { gesture: "carta", title: "Una carta per esercente", text: "In alto l'esercente con il totale e le date, sotto la categoria proposta e perché. Qui arrivano solo i dubbi: quando è quasi certa l'app mette la categoria da sola, e la trovi in «Messe dall'app»." },
   { gesture: "destra", title: "A destra: è questa", text: "Trascina la carta a destra per confermare la categoria proposta.", keys: "→ o Invio" },
   { gesture: "sinistra", title: "A sinistra: un'altra", text: "Trascinala a sinistra per scegliere tu la categoria giusta.", keys: "←" },
   { gesture: "alto", title: "In alto: salta", text: "Non sei sicuro? Trascinala in alto: torna in fondo al mazzo.", keys: "↓" },
-  { gesture: "annulla", title: "Annulla e ricorda", text: "Hai sbagliato? Annulla finché la scelta non è salvata (qualche secondo). Spunta «Ricorda» solo se vuoi una regola per quell'esercente.", keys: "Z" },
+  { gesture: "annulla", title: "Annulla e ricorda", text: "Hai sbagliato? Annulla finché la scelta non è salvata (qualche secondo). Spunta «Usa sempre questa categoria» se vuoi che quell'esercente si categorizzi da solo.", keys: "Z" },
 ];
 
 function readSeen(): boolean {
@@ -84,7 +84,7 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
         <span className="text-xs text-muted-foreground tabular-nums">-48,20 €</span>
         <span className="mt-1 w-full rounded-lg bg-muted px-2 py-1.5 text-center text-xs text-foreground">Spesa</span>
         <span className="flex items-center gap-1.5 text-[0.65rem] text-muted-foreground">
-          <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> Ricorda
+          <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> Usa sempre
         </span>
       </motion.div>
       <span className="absolute bottom-3 text-muted-foreground">

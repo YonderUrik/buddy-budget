@@ -126,7 +126,14 @@ async function handleDelete(
   await db.transaction(async (tx) => {
     await tx
       .update(transactions)
-      .set({ categoryId: fallback.id, ...(category.type === "trasferimento" ? { excludedAmount: "0" } : {}) })
+      // Tornano «Da categorizzare»: senza origine, altrimenti resterebbero tra le «Messe dall'app» con una categoria che non c'è più.
+      .set({
+        categoryId: fallback.id,
+        categorySource: null,
+        categoryConfidence: null,
+        categorizedAt: null,
+        ...(category.type === "trasferimento" ? { excludedAmount: "0" } : {}),
+      })
       .where(eq(transactions.categoryId, id));
     await tx.delete(budgets).where(eq(budgets.categoryId, id));
     await tx.delete(categories).where(eq(categories.id, id));

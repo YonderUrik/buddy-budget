@@ -19,6 +19,10 @@ export {
   recordSubscriptionsDetect,
   recordCategorizationAiRequest,
   recordCategorizationSuggestions,
+  recordCategorizationAutoApplied,
+  recordCategorizationAutoCorrected,
+  recordCategorizationRecategorized,
+  recordCategorizationRecategorizeUndone,
   recordSupportReport,
   recordPriceProviderRequest,
   recordFxProviderRequest,
@@ -39,6 +43,7 @@ export {
   DURATION_BUCKETS_SECONDS,
 } from "./metrics";
 export type {
+  AutoCategorySource,
   FxOutcome,
   PriceInstrumentOutcome,
   AsyncGaugeDeps,

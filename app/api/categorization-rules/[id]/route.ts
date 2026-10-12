@@ -5,8 +5,10 @@ import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { updateRuleSchema } from "@/lib/validation/categorization-rules";
+import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
+import { countPastMatchesSafely } from "@/lib/categorization/recategorize";
 import { merchantKey } from "@/lib/categorization/merchant-key";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Recupera una regola solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedRule(userId: string, ruleId: string) {
@@ -52,6 +54,8 @@ async function findDuplicateRule(
  * propria o se la nuova categoria non è propria, 400 se la nuova categoria è la fallback (stesso
  * guard di POST), 409 se la combinazione tipo/pattern risultante coincide con un'altra regola già
  * esistente. Il pattern viene rinormalizzato con `merchantKey` prima di salvare, come in creazione.
+ * Come in creazione, la regola cambiata vale subito sui movimenti ancora «Da categorizzare» (`applied`) e dice quanti
+ * già categorizzati da soli prenderebbe (`pastMatches`).
  */
 async function handlePatch(
   request: NextRequest,
@@ -117,7 +121,11 @@ async function handlePatch(
     .where(eq(categorizationRules.id, id))
     .returning();
 
-  return Response.json(updated);
+  const log = requestLogger();
+  log.info("categorization.rule.updated", { kind: updated.matchType });
+  const applied = await applyRulesToUncategorized(session.user.id, { log });
+  const pastMatches = await countPastMatchesSafely(session.user.id, updated.id, log);
+  return Response.json({ ...updated, applied, pastMatches });
 }
 
 /** DELETE /api/categorization-rules/[id] — elimina una regola del proprio utente; 404 se non propria. */

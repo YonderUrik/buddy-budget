@@ -107,7 +107,7 @@ export default function OnboardingPage() {
               <StepHeading title="Vuoi un aiuto a categorizzare?" description="Puoi cambiare idea quando vuoi in Impostazioni." />
               <div className="flex flex-col gap-3 text-sm text-muted-foreground">
                 <p>Quando arrivano movimenti nuovi dalla banca o da un file, un assistente basato su intelligenza artificiale propone una categoria per ogni esercente.</p>
-                <p>Le proposte non si applicano mai da sole: le confermi tu, una carta alla volta. Una scelta diventa una regola solo se lo chiedi.</p>
+                <p>Quando l&apos;app è quasi certa mette la categoria da sola, e la ritrovi in Categorizza, sotto «Messe dall&apos;app», dove puoi cambiarla. Le altre le scegli tu, una carta alla volta. Se preferisci scegliere sempre tu, lo spegni in Impostazioni.</p>
                 <p>Per farlo inviamo a un servizio esterno solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), con richiesta di non conservare i dati.</p>
               </div>
               <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4 text-sm font-medium text-foreground">

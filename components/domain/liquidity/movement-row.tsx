@@ -10,6 +10,8 @@ export interface MovementRowProps {
   /** Tooltip con il testo grezzo della banca, se diverso. */
   rawDescription?: string;
   categoryName: string;
+  /** Da dove viene la categoria quando si è messa da sola (es. «AI · 96%»), accanto al nome. */
+  categoryOrigin?: React.ReactNode;
   /** La categoria è quella di ripiego ("Da categorizzare"). */
   uncategorized: boolean;
   accountName?: string;
@@ -43,6 +45,7 @@ export function MovementRow(props: MovementRowProps) {
         </p>
         <p className={cn("truncate text-sm", uncategorized ? "font-medium text-neg" : "text-text-2")}>
           {categoryName}
+          {props.categoryOrigin ? <> · {props.categoryOrigin}</> : null}
           {accountName ? ` · ${accountName}` : ""}
           {isSplit && <span className="text-text-2"> · diviso</span>}
         </p>

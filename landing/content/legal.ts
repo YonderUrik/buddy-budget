@@ -87,7 +87,7 @@ export const PRIVACY: LegalDocument = {
         "Inviarti email di servizio (link di accesso, avvisi di scadenza del collegamento bancario, esito degli import, conferme di disattivazione): esecuzione del contratto, art. 6.1.b. Queste email non si possono disattivare perché servono a usare l'account.",
         "Inviarti, solo se li attivi in Impostazioni → Notifiche, il riepilogo periodico (con le cifre di entrate, spese e budget che vedi già nell'app) e gli avvisi sui budget e sulle rate in scadenza: il tuo consenso, art. 6.1.a. Sono spenti finché non li scegli, ogni email ha il link per disattivarla con un clic (senza accedere) e puoi cambiare idea quando vuoi. Non inviamo email promozionali né consigli personalizzati.",
         "Analizzare con l'intelligenza artificiale un file di import non riconosciuto: il tuo consenso esplicito, art. 6.1.a, che dai prima di caricare il file e puoi non dare usando gli altri tipi di import o l'inserimento manuale. Il consenso non è condizione per usare il resto del servizio.",
-        "Proporti una categoria per i movimenti nuovi con un servizio di intelligenza artificiale: il tuo consenso esplicito, art. 6.1.a, che dai in Impostazioni (o nell'onboarding) e puoi revocare quando vuoi. Il consenso non è condizione per usare il resto del servizio: puoi categorizzare a mano o con le regole.",
+        "Proporti una categoria per i movimenti nuovi con un servizio di intelligenza artificiale (e, se lo scegli, applicare da sole le proposte più sicure): il tuo consenso esplicito, art. 6.1.a, che dai in Impostazioni (o nell'onboarding) e puoi revocare quando vuoi. Il consenso non è condizione per usare il resto del servizio: puoi categorizzare a mano o con le regole.",
         "Rispondere ai messaggi inviati dalla pagina Aiuto: esecuzione del contratto, art. 6.1.b, per le richieste legate al tuo account; legittimo interesse, art. 6.1.f, per idee e segnalazioni generiche.",
         "Sicurezza, prevenzione degli abusi, diagnosi di errori e continuità del servizio (sessioni, log, backup): legittimo interesse, art. 6.1.f, bilanciato dal fatto che i log sono pseudonimizzati e di breve durata.",
         "Capire quali funzioni vengono usate per migliorare il prodotto, con statistiche anonime: legittimo interesse, art. 6.1.f. Puoi disattivarle in qualunque momento (vedi la pagina sui cookie).",
@@ -118,14 +118,14 @@ export const PRIVACY: LegalDocument = {
       title: "Proposte di categoria con intelligenza artificiale",
       paragraphs: [
         "Se lo attivi in Impostazioni → Assistente per le categorie (è spento finché non lo scegli), per i movimenti nuovi di sincronizzazioni e importazioni inviamo a un modello di intelligenza artificiale il nome pulito dell'esercente, la direzione (entrata o uscita) e l'elenco delle tue categorie, con qualche esempio di tue scelte passate e le istruzioni personali che scegli di inserire nelle Impostazioni. Evita di inserire dati personali o bancari nelle istruzioni. Non inviamo importi, date, IBAN, note, descrizioni complete dei movimenti, bonifici né nomi che sembrano di persona.",
-        "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone soltanto: nessun movimento viene categorizzato senza la tua conferma, e una scelta diventa una regola solo se lo chiedi tu. Puoi revocare il consenso in ogni momento: da quel momento non partono nuove richieste.",
+        "Il servizio è OpenRouter, con richiesta di non conservazione dei dati e di non uso per l'addestramento. Il modello propone una categoria con un grado di sicurezza. Se in Impostazioni lasci attiva l'opzione «Lascia che l'app scelga quando è quasi certa», le proposte sicure almeno al 90% si applicano senza chiederti conferma: le ritrovi in Categorizza → «Messe dall'app», con l'indicazione che vengono dall'intelligenza artificiale, e puoi cambiarle in ogni momento. Le altre proposte restano da confermare, e una scelta diventa una regola solo se lo chiedi tu. Puoi spegnere l'applicazione automatica o revocare il consenso in ogni momento: da quel momento non partono nuove richieste e le proposte già ricevute non si applicano più da sole.",
       ],
     },
     {
       id: "destinatari",
       title: "Con chi condividiamo i dati",
       paragraphs: [
-        "Non vendiamo i tuoi dati e non li usiamo per pubblicità. Li comunichiamo solo ai fornitori che servono a far funzionare il servizio, nominati responsabili del trattamento o, dove agiscono come titolari autonomi, indicati come tali. I servizi di prezzi, cambi e loghi degli strumenti sono interrogati dai nostri server con soli simboli, codici ISIN o nomi di titoli, mai con dati che ti identificano. Possiamo comunicare dati alle autorità quando la legge lo impone. I fornitori sono:",
+        "Non vendiamo i tuoi dati e non li usiamo per pubblicità. Li comunichiamo solo ai fornitori che servono a far funzionare il servizio, nominati responsabili del trattamento o, dove agiscono come titolari autonomi, indicati come tali. I servizi di prezzi, cambi e loghi degli strumenti sono interrogati dai nostri server con soli simboli, codici ISIN o nomi di titoli, mai con dati che ti identificano. Per i loghi degli esercenti il servizio di loghi (Logo.dev) riceve dai nostri server solo il sito di un marchio (scritto nei movimenti o noto a noi) o, per i nomi presenti nei movimenti di più utenti, il nome dell'esercente: mai bonifici, importi o chi ha fatto il movimento. Possiamo comunicare dati alle autorità quando la legge lo impone. I fornitori sono:",
       ],
       items: [
         "Hostinger: server (VPS) in Germania, dove girano app e database.",
@@ -186,7 +186,7 @@ export const PRIVACY: LegalDocument = {
       id: "decisioni",
       title: "Decisioni automatizzate",
       paragraphs: [
-        "BuddyBudget non prende decisioni che producano effetti giuridici su di te. La categorizzazione delle transazioni usa regole che puoi vedere e modificare e, se lo attivi, le proposte di un modello di intelligenza artificiale: sono sempre soltanto proposte, che confermi o correggi tu prima che abbiano effetto. Le stime fiscali, le proiezioni e le simulazioni sono strumenti informativi, non decisioni su di te.",
+        "BuddyBudget non prende decisioni che producano effetti giuridici su di te. La categorizzazione delle transazioni usa regole che puoi vedere e modificare, le tue scelte passate e, se lo attivi, le proposte di un modello di intelligenza artificiale. Se lo scegli, le proposte più sicure si applicano da sole: riguardano solo l'etichetta dei tuoi movimenti, sono sempre indicate come applicate automaticamente e puoi correggerle in ogni momento. Le stime fiscali, le proiezioni e le simulazioni sono strumenti informativi, non decisioni su di te.",
       ],
     },
     {

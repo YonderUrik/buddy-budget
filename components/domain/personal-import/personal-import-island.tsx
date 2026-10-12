@@ -16,12 +16,13 @@ import { SyncProgressRing } from "@/components/domain/sync/sync-progress-ring";
 import { SPRING_BOUNCY } from "@/lib/motion/springs";
 import { ISLAND_DISMISSED_STORAGE_KEY, islandJobs, islandState, runningImportIds } from "@/lib/personal-import/island";
 import { usePersonalImportsQuery, type PersonalImportListing } from "@/lib/queries/personal-imports";
+import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "@/lib/queries/categorization";
 import { cn } from "@/lib/utils";
 
 type Job = PersonalImportListing["jobs"][number];
 
 /** Dati che un import concluso può aver cambiato: da ricaricare quando l'isola vede la fine del lavoro. */
-const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["transactions"], ["investments"], ["net-worth-snapshots"]] as const;
+const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["investments"], ["net-worth-snapshots"], ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION] as const;
 const DISMISS_LABEL = "Chiudi riepilogo importazione";
 const MAX_DISMISSED_IDS = 50;
 

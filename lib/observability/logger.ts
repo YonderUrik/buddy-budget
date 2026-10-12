@@ -35,6 +35,12 @@ export interface LogFields {
   /** Operazione fallita da cui parte una segnalazione (enum `REPORT_ERROR_AREAS`). */
   reportArea?: string;
   reference?: string;
+  /** Id di una requisition GoCardless (non personale, serve solo con le nostre chiavi): per decidere a mano cosa eliminare. */
+  requisitionId?: string;
+  /** Età in giorni di un elemento (es. una requisition sconosciuta). */
+  ageDays?: number;
+  /** Host di un URL di ritorno (es. `localhost`), mai l'URL completo. */
+  host?: string;
   withContext?: boolean;
   reason?: string;
   inserted?: number;

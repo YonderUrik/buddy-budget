@@ -72,6 +72,8 @@ export type CleanupAction =
   | "expired_connection"
   | "unknown_requisition"
   | "unknown_agreement"
+  | "stale_requisition"
+  | "approved_requisition"
   | "skipped_linked"
   | "capped"
   | "failed";

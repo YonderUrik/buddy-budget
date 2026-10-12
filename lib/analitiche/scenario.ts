@@ -1,5 +1,5 @@
 import { fireNumber, fireNumberAfterTax, yearsToTarget } from "@/lib/calc/fire";
-import type { AnalyticsAssumptions } from "./assumptions";
+import { ASSUMPTION_LIMITS, type AnalyticsAssumptions } from "./assumptions";
 import type { AnalyticsPlan } from "./plan";
 
 /** Le quattro ipotesi che si muovono con i cursori della pagina Analitiche. */
@@ -21,7 +21,8 @@ export interface SliderSpec {
 const MONEY_STEP = 100;
 const MONEY_MIN_CEILING = 12_000;
 const PERCENT_STEP = 0.001;
-const RETURN_RANGE = { min: 0, max: 0.08 };
+/** Il rendimento va dal minimo delle ipotesi al 50%: chi ha avuto anni molto buoni può provarli, con un avviso sopra l'8%. */
+const RETURN_RANGE = ASSUMPTION_LIMITS.expectedReturn;
 const WITHDRAWAL_RANGE = { min: 0.02, max: 0.06 };
 
 const roundUp = (v: number, to: number) => Math.ceil(v / to) * to;

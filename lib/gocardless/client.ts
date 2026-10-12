@@ -211,13 +211,15 @@ export async function deleteRequisition(requisitionId: string): Promise<void> {
   }
 }
 
-/** Requisition come elencata dall'API: `created` (ISO), `agreement` e `reference` (id della nostra connessione). */
+/** Requisition come elencata dall'API: `created` (ISO), `agreement`, `reference` (id della nostra connessione) e `redirect`. */
 export interface RemoteRequisition {
   id: string;
   created: string;
   status: string;
   reference?: string;
   agreement?: string;
+  /** URL di ritorno passato alla creazione: dice da quale ambiente è partita. */
+  redirect?: string;
 }
 
 export interface RemoteAgreement {

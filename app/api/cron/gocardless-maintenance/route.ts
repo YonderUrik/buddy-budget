@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
-import { parseMaintenanceMode, runGoCardlessMaintenance, type MaintenanceResult } from "@/lib/gocardless/maintenance";
+import { parseApprovedRequisitions, parseMaintenanceMode, runGoCardlessMaintenance, type MaintenanceResult } from "@/lib/gocardless/maintenance";
 import { recordCronRun, requestLogger, withRoute } from "@/lib/observability";
 import { redisOpsStore } from "@/lib/observability/redis-ops-store";
 
@@ -10,7 +10,8 @@ export const maxDuration = 300;
 /**
  * Cron giornaliero: segna le connessioni bancarie scadute, avvisa via email chi deve rinnovare e ripulisce la
  * lista GoCardless. `GOCARDLESS_CLEANUP_MODE` = `off` | `dry-run` (default) | `execute`;
- * `GOCARDLESS_CLEANUP_DELETE_UNKNOWN=true` abilita anche l'eliminazione di ciò che a DB non risulta.
+ * `GOCARDLESS_CLEANUP_DELETE_UNKNOWN=true` abilita anche l'eliminazione di ciò che altri ambienti hanno lasciato;
+ * `GOCARDLESS_CLEANUP_APPROVED_REQUISITIONS` elenca le requisition collegate (LN) sconosciute approvate a mano.
  */
 async function handleGet(request: NextRequest) {
   if (!isAuthorizedCronRequest(request.headers.get("authorization"), process.env.CRON_SECRET)) {
@@ -23,6 +24,7 @@ async function handleGet(request: NextRequest) {
     result = await runGoCardlessMaintenance({
       mode: parseMaintenanceMode(process.env.GOCARDLESS_CLEANUP_MODE),
       deleteUnknown: process.env.GOCARDLESS_CLEANUP_DELETE_UNKNOWN === "true",
+      approvedRequisitionIds: parseApprovedRequisitions(process.env.GOCARDLESS_CLEANUP_APPROVED_REQUISITIONS),
       log,
     });
   } catch (error) {

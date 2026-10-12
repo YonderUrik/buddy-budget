@@ -22,6 +22,13 @@
       "height": 1200
     },
     {
+      "id": "movimenti",
+      "theme": "light",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
       "id": "analisi",
       "theme": "light",
       "route": "/liquidita/analisi",
@@ -41,6 +48,13 @@
       "route": "/liquidita/categorie",
       "width": 1920,
       "height": 1716
+    },
+    {
+      "id": "categorizza",
+      "theme": "light",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1473
     },
     {
       "id": "investimenti",
@@ -97,13 +111,6 @@
       "route": "/debiti/finanziamenti",
       "width": 1920,
       "height": 1500
-    },
-    {
-      "id": "analitiche",
-      "theme": "light",
-      "route": "/analitiche",
-      "width": 1920,
-      "height": 1412
     },
     {
       "id": "panoramica",
@@ -120,6 +127,13 @@
       "height": 1200
     },
     {
+      "id": "movimenti",
+      "theme": "dark",
+      "route": "/liquidita",
+      "width": 1920,
+      "height": 1800
+    },
+    {
       "id": "analisi",
       "theme": "dark",
       "route": "/liquidita/analisi",
@@ -139,6 +153,13 @@
       "route": "/liquidita/categorie",
       "width": 1920,
       "height": 1716
+    },
+    {
+      "id": "categorizza",
+      "theme": "dark",
+      "route": "/categorizza",
+      "width": 1920,
+      "height": 1473
     },
     {
       "id": "investimenti",
@@ -198,38 +219,17 @@
     },
     {
       "id": "analitiche",
+      "theme": "light",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1608
+    },
+    {
+      "id": "analitiche",
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1412
-    },
-    {
-      "id": "movimenti",
-      "theme": "light",
-      "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
-    },
-    {
-      "id": "movimenti",
-      "theme": "dark",
-      "route": "/liquidita",
-      "width": 1920,
-      "height": 1800
-    },
-    {
-      "id": "categorizza",
-      "theme": "light",
-      "route": "/categorizza",
-      "width": 1920,
-      "height": 1473
-    },
-    {
-      "id": "categorizza",
-      "theme": "dark",
-      "route": "/categorizza",
-      "width": 1920,
-      "height": 1473
+      "height": 1608
     }
   ]
 }

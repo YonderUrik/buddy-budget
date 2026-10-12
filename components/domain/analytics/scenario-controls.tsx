@@ -9,9 +9,11 @@ import { RotateCcw, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type { AnalyticsAssumptions } from "@/lib/analitiche/assumptions";
+import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { hasScenario, scenarioSlider, yearsToFireWith, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
 import { formatYears, money, pct } from "./analytics-format";
+import { ReturnSourceNote } from "./return-source-note";
 import type { GlossaryId } from "./glossary";
 import { Term } from "./term";
 
@@ -19,6 +21,8 @@ export interface ScenarioControlsProps {
   /** Ipotesi e piano salvati: da qui parte ogni cursore. */
   assumptions: AnalyticsAssumptions;
   plan: AnalyticsPlan;
+  /** Origine del rendimento in uso, spiegata sotto il suo cursore. */
+  returnInfo: ExpectedReturnInfo;
   currency: string;
   overrides: ScenarioOverrides;
   onChange: (field: ScenarioField, value: number | undefined) => void;
@@ -27,6 +31,8 @@ export interface ScenarioControlsProps {
   onReset: () => void;
   onSave: () => void;
   onOpenAllAssumptions: () => void;
+  /** Torna al rendimento calcolato dallo storico. */
+  onUseHistoryReturn: () => void;
   saving: boolean;
 }
 
@@ -48,7 +54,7 @@ function deltaText(base: number | null, next: number | null): string | null {
   return `${formatYears(Math.abs(diff))} ${diff > 0 ? "prima" : "dopo"}`;
 }
 
-export function ScenarioControls({ assumptions, plan, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, saving }: ScenarioControlsProps) {
+export function ScenarioControls({ assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving }: ScenarioControlsProps) {
   const rows: Row[] = [
     { field: "annualSavings", label: "Risparmio annuo", baseline: plan.savings, format: (v) => money(v, currency), missingHint: "servono 3 mesi di movimenti" },
     { field: "annualSpending", label: "Spesa annua", baseline: plan.spending, format: (v) => money(v, currency), missingHint: "servono 3 mesi di movimenti" },
@@ -91,6 +97,9 @@ export function ScenarioControls({ assumptions, plan, currency, overrides, onCha
               <p className={`min-h-4 text-xs ${delta ? "font-semibold text-pos" : "text-muted-foreground"}`}>
                 {delta ?? (overrides[row.field] !== undefined ? "stesso traguardo" : value !== null && spec ? "ipotesi di partenza" : "")}
               </p>
+              {row.field === "expectedReturn" && value !== null ? (
+                <ReturnSourceNote info={returnInfo} value={value} currency={currency} saving={saving} onUseHistory={onUseHistoryReturn} />
+              ) : null}
             </div>
           );
         })}

@@ -8,13 +8,17 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
 import { rejectIfDemoActive } from "@/lib/start/demo";
 import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
+import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 const VALID_TYPES = ["uscita", "entrata", "tutte"] as const;
 type TypeParam = (typeof VALID_TYPES)[number];
 
-/** GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per direzione (default "uscita", retrocompatibile). */
+/**
+ * GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per
+ * direzione (default "uscita", retrocompatibile). Ogni riga ha `logoPath`: il logo dell'esercente come in Categorizza, o null.
+ */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -53,7 +57,12 @@ async function handleGet(request: NextRequest) {
     )
     .orderBy(desc(transactions.date));
 
-  return Response.json(rows);
+  const withLogos = await withMerchantLogos(
+    rows,
+    (row) => ({ label: row.description, texts: [row.rawDescription], isExpense: Number(row.amount) < 0 }),
+    session.user.id
+  );
+  return Response.json(withLogos);
 }
 
 /**

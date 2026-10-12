@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { track } from "@/lib/analytics";
 import type { AnalyticsAssumptions, UpdateAssumptionsInput } from "@/lib/analitiche/assumptions";
 import type { AnalyticsBase } from "@/lib/analitiche/base";
+import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
 import { resolvePlan, type AnalyticsPlan } from "@/lib/analitiche/plan";
 import { applyScenario, hasScenario, SCENARIO_FIELDS, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
 import { buildSimulationInput } from "@/lib/analitiche/simulation";
@@ -33,6 +34,8 @@ export interface ScenarioViewProps {
   /** Ipotesi e piano salvati. */
   assumptions: AnalyticsAssumptions;
   plan: AnalyticsPlan;
+  /** Da dove viene il rendimento in uso (storico, prudente o scelto). */
+  returnInfo: ExpectedReturnInfo;
   saving: boolean;
   saveError: string | null;
   today: Date;
@@ -44,7 +47,7 @@ const PANEL_ID = "analytics-view-panel";
 const VIEW_ICONS = { "dove-sono": TrendingUp, quando: CalendarClock, reggera: ShieldCheck, costi: Percent } as const;
 const VIEW_LABELS = { "dove-sono": "Strada fatta", quando: "Arrivo", reggera: "Regge", costi: "Costi" } as const;
 
-export function ScenarioView({ base, assumptions, plan, saving, saveError, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
+export function ScenarioView({ base, assumptions, plan, returnInfo, saving, saveError, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -93,6 +96,7 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
       <ScenarioControls
         assumptions={assumptions}
         plan={plan}
+        returnInfo={returnInfo}
         currency={currency}
         overrides={overrides}
         onChange={changeField}
@@ -103,11 +107,20 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
         }}
         onSave={() => {
           const fields = SCENARIO_FIELDS.filter((f) => overrides[f] !== undefined).length;
+          const toManual = overrides.expectedReturn !== undefined && returnInfo.source !== "manuale";
           onSaveAssumptions(overrides as UpdateAssumptionsInput)
-            .then(() => track("analytics_scenario_saved", { fields }))
+            .then(() => {
+              track("analytics_scenario_saved", { fields });
+              if (toManual) track("analytics_return_source_changed", { source: "manuale" });
+            })
             .catch(() => undefined);
         }}
         onOpenAllAssumptions={() => setDialogOpen(true)}
+        onUseHistoryReturn={() => {
+          onSaveAssumptions({ expectedReturnAuto: true })
+            .then(() => track("analytics_return_source_changed", { source: "storico" }))
+            .catch(() => undefined);
+        }}
         saving={saving}
       />
       {saveError && !dialogOpen ? (
@@ -141,6 +154,7 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
           <AssumptionsPanel
             assumptions={assumptions}
             plan={plan}
+            returnInfo={returnInfo}
             currency={currency}
             pensionValue={base.wealth.pension}
             saving={saving}
@@ -148,6 +162,10 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
             onSave={async (input) => {
               await onSaveAssumptions(input);
               setDialogOpen(false);
+              const nextAuto = input.expectedReturnAuto ?? (input.expectedReturn !== undefined ? false : undefined);
+              if (nextAuto !== undefined && nextAuto !== (returnInfo.source !== "manuale")) {
+                track("analytics_return_source_changed", { source: nextAuto ? "storico" : "manuale" });
+              }
             }}
           />
         </DialogContent>

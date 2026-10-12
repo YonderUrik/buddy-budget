@@ -27,6 +27,7 @@ import type { InvestmentData } from "@/lib/investments/data";
 import { buildInvestmentsView, toTransactionInputs } from "@/lib/investments/view";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import type { PensionFundData } from "@/lib/pension/types";
+import { historicalReturn, type HistoricalReturnResult } from "./historical-return";
 
 /** Mesi di transazioni letti: 12 per la spesa annua più uno per il mese in corso (parziale). */
 export const ANALYTICS_HISTORY_MONTHS = 13;
@@ -84,6 +85,8 @@ export interface AnalyticsBase {
   riskContribution: RiskContribution[] | null;
   /** Nomi per id, per etichettare i contributi al rischio. */
   names: Record<string, string>;
+  /** Rendimento degli ultimi 24 (o 12) mesi, da cui parte il rendimento atteso se l'utente non ne sceglie uno. */
+  historicalReturn: HistoricalReturnResult;
 }
 
 function fullMonthsRange(today: Date): { from: Date; to: Date } {
@@ -135,6 +138,7 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
   let risk: AnalyticsRisk | null = null;
   const names: Record<string, string> = {};
   let investmentsValue = 0;
+  let history: HistoricalReturnResult = { status: "manca", reason: "nessun-investimento" };
   if (investments && investments.transactions.length > 0) {
     const view = buildInvestmentsView(investments, "max", today);
     investmentsValue = view.summary.totalValue;
@@ -174,11 +178,23 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
       };
     }
 
+    const transactionInputs = toTransactionInputs(investments);
+    history = historicalReturn({
+      transactions: transactionInputs,
+      instruments: investments.instruments,
+      priceIndex: view.priceIndex,
+      fx: buildFxTable(investments.fxRates),
+      userCurrency: investments.currency,
+      inflation: investments.inflation,
+      today,
+      currentValue: investmentsValue,
+      unpricedCount: view.summary.unpricedCount,
+    });
+
     const top = [...positions].sort((a, b) => b.value - a.value).slice(0, MAX_RISK_POSITIONS);
     if (top.length >= 2) {
-      const transactions = toTransactionInputs(investments);
-      const first = transactions.map((t) => t.date).sort()[0];
-      const priceIndex = buildPriceIndex(investments.prices, investments.manualPrices, transactions);
+      const first = transactionInputs.map((t) => t.date).sort()[0];
+      const priceIndex = buildPriceIndex(investments.prices, investments.manualPrices, transactionInputs);
       const fx = buildFxTable(investments.fxRates);
       const series = top.map((p) => {
         const instrument = view.instruments.find((i) => i.id === p.id);
@@ -229,5 +245,6 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
     risk,
     riskContribution,
     names,
+    historicalReturn: history,
   };
 }

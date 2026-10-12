@@ -7,7 +7,7 @@ import { useAnalytics } from "@/lib/analitiche/analytics-context";
 import { GOAL_PARAM } from "@/lib/start";
 
 export default function AnalitichePage() {
-  const { base, assumptions, plan, saving, saveError, saveAssumptions, today } = useAnalytics();
+  const { base, assumptions, returnInfo, plan, saving, saveError, saveAssumptions, today } = useAnalytics();
   const [goalOpen, setGoalOpen] = React.useState(false);
 
   // Il link dei primi passi (?traguardo=1) apre subito «Il tuo traguardo», una volta sola.
@@ -25,7 +25,7 @@ export default function AnalitichePage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  if (!base || !assumptions || !plan) return null;
+  if (!base || !assumptions || !plan || !returnInfo) return null;
   // Si rimonta quando cambiano le ipotesi salvate (non il TER, che si salva dal pannello costi), per non tenere cursori su valori vecchi.
   const key = JSON.stringify({ ...assumptions, terByInstrument: undefined });
   return (
@@ -35,6 +35,7 @@ export default function AnalitichePage() {
         base={base}
         assumptions={assumptions}
         plan={plan}
+        returnInfo={returnInfo}
         saving={saving}
         saveError={saveError}
         today={today}

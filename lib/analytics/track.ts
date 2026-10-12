@@ -158,6 +158,10 @@ export interface ProductEvents {
   analytics_view_selected: { view: "dove-sono" | "quando" | "reggera" | "costi" };
   /** Un cursore «e se…» lasciato; `field`: quale ipotesi. */
   analytics_scenario_changed: { field: "annualSavings" | "annualSpending" | "expectedReturn" | "withdrawalRate" };
+  /** Rendimento atteso passato dallo storico a un valore scelto a mano o viceversa; `source`: quello nuovo. */
+  analytics_return_source_changed: { source: "storico" | "manuale" };
+  /** Origine del rendimento atteso mostrato all'apertura di Analitiche (una volta per visita): storico a 24 o 12 mesi, valore prudente o scelto a mano. */
+  analytics_return_source_shown: { source: "storico-24" | "storico-12" | "prudente" | "manuale" };
   /** Cursori riportati alle ipotesi salvate. */
   analytics_scenario_reset: undefined;
   /** Valori dei cursori salvati come ipotesi; `fields`: quanti. */

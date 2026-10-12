@@ -15,6 +15,7 @@ import { usePensionQuery } from "@/lib/queries/pension";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import type { AnalyticsAssumptions, UpdateAssumptionsInput } from "./assumptions";
 import { ANALYTICS_HISTORY_MONTHS, buildAnalyticsBase, type AnalyticsBase } from "./base";
+import { resolveExpectedReturn, withExpectedReturn, type ExpectedReturnInfo } from "./historical-return";
 import { resolvePlan, type AnalyticsPlan } from "./plan";
 
 /** Valore condiviso dalle schede di Analitiche: dati di partenza, ipotesi e cifre risultanti. */
@@ -23,7 +24,10 @@ export interface AnalyticsContextValue {
   isError: boolean;
   refetch: () => void;
   base: AnalyticsBase | null;
+  /** Ipotesi in uso: quelle salvate, con il rendimento dallo storico se è in automatico. */
   assumptions: AnalyticsAssumptions | null;
+  /** Da dove viene il rendimento in uso (storico, valore prudente o scelto dall'utente). */
+  returnInfo: ExpectedReturnInfo | null;
   plan: AnalyticsPlan | null;
   walkthroughSeen: boolean;
   saveAssumptions: (input: UpdateAssumptionsInput) => Promise<void>;
@@ -70,7 +74,9 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     });
   }, [accounts.data, transactions.data, categories.data, snapshots.data, investments.data, pension.data, debts.data, session?.user.currency, today]);
 
-  const assumptions = assumptionsQuery.data?.assumptions ?? null;
+  const stored = assumptionsQuery.data?.assumptions ?? null;
+  const returnInfo = React.useMemo(() => (base && stored ? resolveExpectedReturn(stored, base.historicalReturn) : null), [base, stored]);
+  const assumptions = React.useMemo(() => (stored && returnInfo ? withExpectedReturn(stored, returnInfo) : stored), [stored, returnInfo]);
   const plan = React.useMemo(() => (base && assumptions ? resolvePlan(base, assumptions) : null), [base, assumptions]);
 
   const value: AnalyticsContextValue = {
@@ -81,6 +87,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     },
     base,
     assumptions,
+    returnInfo,
     plan,
     walkthroughSeen: assumptionsQuery.data?.walkthroughSeen ?? true,
     saveAssumptions: async (input) => {

@@ -34,6 +34,9 @@ export interface LogFields {
   reportSource?: string;
   /** Operazione fallita da cui parte una segnalazione (enum `REPORT_ERROR_AREAS`). */
   reportArea?: string;
+  /** Errori del browser: area dell'app (enum chiuso `CLIENT_ERROR_AREAS`) e digest di Next che lega l'errore ai log del server. */
+  clientArea?: string;
+  errorDigest?: string;
   reference?: string;
   /** Id di una requisition GoCardless (non personale, serve solo con le nostre chiavi): per decidere a mano cosa eliminare. */
   requisitionId?: string;

@@ -8,6 +8,8 @@ export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.buddybudg
  * (così non ne pubblica uno rotto). Si attiva impostando `NEXT_PUBLIC_SOURCE_URL` (vedi `Dockerfile`).
  */
 export const SOURCE_URL = process.env.NEXT_PUBLIC_SOURCE_URL ?? "";
+/** Pagina pubblica con lo stato del servizio (UptimeRobot, piano gratuito: niente dominio nostro). */
+export const STATUS_URL = process.env.NEXT_PUBLIC_STATUS_URL ?? "https://stats.uptimerobot.com/BCuTWm0Ukg";
 /** Licenza del codice, mostrata accanto al link. */
 export const SOURCE_LICENSE = "AGPL-3.0";
 

@@ -3,6 +3,7 @@ import { APP_BUILD_INFO } from "@/lib/app-version";
 import type { ProviderId } from "@/lib/db/schema/investments";
 import type { FxProviderId, ProviderOutcome } from "@/lib/market-data/types";
 import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
+import type { ClientErrorArea, ClientErrorKind } from "@/lib/client-errors";
 
 /** Prefisso comune di tutte le metriche applicative. */
 export const METRIC_PREFIX = "buddybudget_";
@@ -17,6 +18,8 @@ export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
 export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
+/** Esito della ricezione di un errore del browser: registrato o scartato per il limite per utente. */
+export type ClientErrorOutcome = "reported" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
 /** Scelte dell'utente sugli abbonamenti (enum chiuso, mai il nome dell'abbonamento). */
 export type SubscriptionAction = "confirmed" | "excluded" | "ended" | "restored" | "added" | "updated" | "removed";
@@ -143,6 +146,7 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   supportReports: Counter<"kind" | "outcome">;
+  clientErrors: Counter<"kind" | "area" | "outcome">;
   subscriptionActions: Counter<"action">;
   subscriptionsDetect: Histogram<string>;
   categorizationAiRequests: Counter<"outcome">;
@@ -237,6 +241,13 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}support_reports_total`,
     help: "Segnalazioni di supporto inviate dagli utenti per tipo ed esito (sent, failed, rate_limited).",
     labelNames: ["kind", "outcome"],
+    registers: r,
+  });
+
+  state.clientErrors = new Counter({
+    name: `${METRIC_PREFIX}client_errors_total`,
+    help: "Errori del browser (pagine che si rompono) per tipo (sezione, globale), area dell'app ed esito (reported, rate_limited).",
+    labelNames: ["kind", "area", "outcome"],
     registers: r,
   });
 
@@ -565,6 +576,11 @@ export function recordAuthEvent(event: AuthEvent): void {
 /** Registra l'esito di una segnalazione di supporto. */
 export function recordSupportReport(kind: SupportReportKind, outcome: SupportReportOutcome): void {
   metrics().supportReports.inc({ kind, outcome });
+}
+
+/** Registra un errore del browser ricevuto da `POST /api/client-errors`. */
+export function recordClientError(kind: ClientErrorKind, area: ClientErrorArea, outcome: ClientErrorOutcome): void {
+  metrics().clientErrors.inc({ kind, area, outcome });
 }
 
 /** Registra una scelta dell'utente sugli abbonamenti. */

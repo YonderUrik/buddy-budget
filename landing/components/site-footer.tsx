@@ -2,6 +2,7 @@ import "./site-footer.css";
 import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
+import { STATUS_URL } from "@/content/site";
 
 /** Piè di pagina delle pagine secondarie: stessi rimandi e stesso aspetto del piè di pagina della home. */
 export function SiteFooter() {
@@ -21,6 +22,7 @@ export function SiteFooter() {
           <Link href={LEGAL_PATHS.privacy}>Privacy</Link>
           <Link href={LEGAL_PATHS.termini}>Termini</Link>
           <Link href={LEGAL_PATHS.cookie}>Cookie</Link>
+            <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">Stato del servizio</a>
         </nav>
       </div>
     </footer>

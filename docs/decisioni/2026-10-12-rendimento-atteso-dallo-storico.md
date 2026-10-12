@@ -7,4 +7,4 @@ Data: 2026-10-12
 - Nuovo campo `expectedReturnAuto` nelle ipotesi (JSON, nessuna migration): vero di default; chi aveva salvato un rendimento diverso dal 4% resta sul suo. Salvare un rendimento lo rende manuale; «Usa il tuo rendimento» torna all'automatico.
 - Cursore e limiti da −2% a 50%; sopra l'8% reale compare un avviso (le borse mondiali hanno reso in media intorno al 5% reale nel lungo periodo), senza bloccare.
 - Osservabilità: log `analytics.return_source.changed`, eventi Umami `analytics_return_source_shown` e `analytics_return_source_changed`.
-- Rimandato: scegliere a mano la finestra (12/24/36 mesi), usare il money-weighted al posto del time-weighted.
+- Rimandato: usare il money-weighted al posto del time-weighted. La finestra si sceglie dal 2026-10-12 (`2026-10-12-analitiche-periodo-dei-dati.md`).

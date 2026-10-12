@@ -190,7 +190,7 @@ export const TOUR = {
       before: { formula: "=NPER(4%;-5122;-29343;756614)", text: "Una cella con un'ipotesi fissa, che nessuno riapre.", cost: "una stima mai aggiornata" },
       after: { lead: "Quattro cursori su risparmio, spesa, rendimento e prelievo.", strong: "Ai ritmi di oggi: 2066.", tail: "Sposta un cursore e l'anno si sposta con lui." },
       specs: [
-        ["Dai tuoi dati", "Risparmio e spesa partono da quelli dei tuoi conti, il patrimonio da quello della Panoramica."],
+        ["Dai tuoi dati", "Risparmio, spesa e rendimento partono dai tuoi conti e investimenti degli ultimi 12 o 24 mesi, o dei mesi che scegli; il patrimonio da quello della Panoramica."],
         ["Quattro risposte", "Quanta strada hai fatto, l'anno di arrivo, se il piano regge per 40 anni e quanto pesano i costi."],
         ["Ipotesi", "Volatilità, inflazione e imposte sono scritte sotto i cursori, così sai su cosa poggia la stima."],
       ],

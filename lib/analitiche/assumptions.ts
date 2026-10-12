@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { WITHDRAWAL_RULES } from "@/lib/calc/monte-carlo";
+import { DEFAULT_DATA_PERIOD, dataPeriodSchema } from "./period";
 
 /** Limiti delle ipotesi: servono a impedire valori privi di senso (rendimento del 90%, 400 anni di pensione). */
 export const ASSUMPTION_LIMITS = {
@@ -20,13 +21,15 @@ const money = z.number().finite().min(L.amount.min).max(L.amount.max);
 export const assumptionsSchema = z.object({
   /** Tasso di prelievo sicuro con cui si calcola il numero FIRE. */
   withdrawalRate: ratio(L.withdrawalRate),
-  /** Spesa annua in pensione; null = ultimi 12 mesi di uscite. */
+  /** Periodo dei dati da cui si ricavano spesa, risparmio e rendimento quando non li scrive l'utente. */
+  dataPeriod: dataPeriodSchema,
+  /** Spesa annua in pensione; null = uscite del periodo dei dati, riportate a un anno. */
   annualSpending: money.nullable(),
-  /** Risparmio annuo; null = media degli ultimi 12 mesi. */
+  /** Risparmio annuo; null = entrate meno uscite del periodo dei dati, riportate a un anno. */
   annualSavings: money.nullable(),
   /** Rendimento reale annuo atteso del portafoglio, al netto dell'inflazione. */
   expectedReturn: ratio(L.expectedReturn),
-  /** Vero = il rendimento si ricava dallo storico degli investimenti (ultimi 24 o 12 mesi); `expectedReturn` resta come riserva. */
+  /** Vero = il rendimento si ricava dallo storico degli investimenti nel periodo dei dati; `expectedReturn` resta come riserva. */
   expectedReturnAuto: z.boolean(),
   /** Volatilità annua attesa del portafoglio. */
   volatility: ratio(L.volatility),
@@ -49,6 +52,7 @@ export type AnalyticsAssumptions = Omit<z.infer<typeof assumptionsSchema>, "rule
 /** Valori di partenza prudenti, spiegati nella schermata: la sezione funziona anche se l'utente non tocca nulla. */
 export const DEFAULT_ASSUMPTIONS: AnalyticsAssumptions = {
   withdrawalRate: 0.035,
+  dataPeriod: DEFAULT_DATA_PERIOD,
   annualSpending: null,
   annualSavings: null,
   expectedReturn: 0.04,

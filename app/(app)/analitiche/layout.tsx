@@ -50,15 +50,19 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
     }
   }, [ready, ctx.walkthroughSeen]);
 
-  // Da dove viene il rendimento mostrato: dice quanti utenti hanno abbastanza storico per il valore automatico.
-  const returnShown = React.useRef(false);
+  // Da dove vengono rendimento, spesa e risparmio mostrati: dice quanti utenti hanno abbastanza dati per i valori automatici.
+  const sourceShown = React.useRef(false);
   const returnInfo = ready ? ctx.returnInfo : null;
+  const plan = ready ? ctx.plan : null;
+  const period = ready ? ctx.assumptions?.dataPeriod : undefined;
   React.useEffect(() => {
-    if (!returnInfo || returnShown.current) return;
-    returnShown.current = true;
+    if (!returnInfo || !plan || !period || sourceShown.current) return;
+    sourceShown.current = true;
     const { source, history } = returnInfo;
-    track("analytics_return_source_shown", { source: source === "storico" && history.status === "ok" ? (history.months === 24 ? "storico-24" : "storico-12") : source === "storico" ? "prudente" : source });
-  }, [returnInfo]);
+    const historySource = period.kind === "personalizzato" ? "storico-personalizzato" : period.months === 24 ? "storico-24" : "storico-12";
+    track("analytics_return_source_shown", { source: source === "storico" && history.status === "ok" ? historySource : source === "storico" ? "prudente" : source });
+    track("analytics_cashflow_source_shown", { spending: plan.spendingSource, savings: plan.savingsSource });
+  }, [returnInfo, plan, period]);
 
   const closeGuide = (step: number, outcome: "completata" | "chiusa") => {
     setGuideOpen(false);

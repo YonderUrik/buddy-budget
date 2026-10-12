@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type { AnalyticsAssumptions } from "@/lib/analitiche/assumptions";
 import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
+import type { DataPeriod } from "@/lib/analitiche/period";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { hasScenario, scenarioSlider, yearsToFireWith, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
 import { formatYears, money, pct } from "./analytics-format";
+import { CashflowSourceNote } from "./cashflow-source-note";
 import { ReturnSourceNote } from "./return-source-note";
 import type { GlossaryId } from "./glossary";
 import { Term } from "./term";
@@ -33,6 +35,15 @@ export interface ScenarioControlsProps {
   onOpenAllAssumptions: () => void;
   /** Torna al rendimento calcolato dallo storico. */
   onUseHistoryReturn: () => void;
+  /** Periodo dei dati e come si legge («negli ultimi 12 mesi»). */
+  period: DataPeriod;
+  periodPhrase: string;
+  /** Spesa e risparmio ricavati dai movimenti (anche se l'utente ne ha scritti altri), mesi della media e del periodo. */
+  dataFigures: { spending: number | null; savings: number | null };
+  coveredMonths: number;
+  periodMonths: number;
+  /** Torna alla cifra dei movimenti per spesa o risparmio. */
+  onUseData: (field: "annualSavings" | "annualSpending") => void;
   saving: boolean;
 }
 
@@ -54,10 +65,11 @@ function deltaText(base: number | null, next: number | null): string | null {
   return `${formatYears(Math.abs(diff))} ${diff > 0 ? "prima" : "dopo"}`;
 }
 
-export function ScenarioControls({ assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving }: ScenarioControlsProps) {
+export function ScenarioControls(props: ScenarioControlsProps) {
+  const { assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving } = props;
   const rows: Row[] = [
-    { field: "annualSavings", label: "Risparmio annuo", baseline: plan.savings, format: (v) => money(v, currency), missingHint: "servono 3 mesi di movimenti" },
-    { field: "annualSpending", label: "Spesa annua", baseline: plan.spending, format: (v) => money(v, currency), missingHint: "servono 3 mesi di movimenti" },
+    { field: "annualSavings", label: "Risparmio annuo", baseline: plan.savings, format: (v) => money(v, currency), missingHint: "servono almeno 3 mesi di movimenti nel periodo" },
+    { field: "annualSpending", label: "Spesa annua", baseline: plan.spending, format: (v) => money(v, currency), missingHint: "servono almeno 3 mesi di movimenti nel periodo" },
     { field: "expectedReturn", label: "Rendimento reale", term: "rendimento-reale", baseline: assumptions.expectedReturn, format: (v) => pct(v), missingHint: "" },
     { field: "withdrawalRate", label: "Tasso di prelievo", term: "tasso-prelievo", baseline: assumptions.withdrawalRate, format: (v) => pct(v), missingHint: "" },
   ];
@@ -98,7 +110,19 @@ export function ScenarioControls({ assumptions, plan, returnInfo, currency, over
                 {delta ?? (overrides[row.field] !== undefined ? "stesso traguardo" : value !== null && spec ? "ipotesi di partenza" : "")}
               </p>
               {row.field === "expectedReturn" && value !== null ? (
-                <ReturnSourceNote info={returnInfo} value={value} currency={currency} saving={saving} onUseHistory={onUseHistoryReturn} />
+                <ReturnSourceNote info={returnInfo} value={value} currency={currency} period={props.period} saving={saving} onUseHistory={onUseHistoryReturn} />
+              ) : null}
+              {row.field === "annualSavings" || row.field === "annualSpending" ? (
+                <CashflowSourceNote
+                  source={row.field === "annualSavings" ? plan.savingsSource : plan.spendingSource}
+                  dataValue={row.field === "annualSavings" ? props.dataFigures.savings : props.dataFigures.spending}
+                  periodPhrase={props.periodPhrase}
+                  coveredMonths={props.coveredMonths}
+                  periodMonths={props.periodMonths}
+                  currency={currency}
+                  saving={saving}
+                  onUseData={() => props.onUseData(row.field as "annualSavings" | "annualSpending")}
+                />
               ) : null}
             </div>
           );

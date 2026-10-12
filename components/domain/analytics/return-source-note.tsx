@@ -4,6 +4,7 @@
 
 import { TriangleAlert } from "lucide-react";
 import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
+import type { DataPeriod } from "@/lib/analitiche/period";
 import { pct } from "./analytics-format";
 import { HIGH_RETURN_TEXT, HIGH_RETURN_WARNING, historyOffer, returnSourceText } from "./return-source";
 
@@ -12,16 +13,18 @@ export interface ReturnSourceNoteProps {
   /** Valore mostrato dal cursore (anche se non ancora salvato), per l'avviso. */
   value: number;
   currency: string;
+  /** Periodo dei dati, per dire su quali mesi è calcolato il rendimento. */
+  period: DataPeriod;
   saving: boolean;
   onUseHistory: () => void;
 }
 
-export function ReturnSourceNote({ info, value, currency, saving, onUseHistory }: ReturnSourceNoteProps) {
+export function ReturnSourceNote({ info, value, currency, period, saving, onUseHistory }: ReturnSourceNoteProps) {
   const offer = historyOffer(info);
   return (
     <div className="flex flex-col gap-1.5 text-xs leading-relaxed text-muted-foreground">
       <p>
-        {returnSourceText(info, currency)}
+        {returnSourceText(info, currency, period)}
         {offer !== null ? (
           <>
             {" "}

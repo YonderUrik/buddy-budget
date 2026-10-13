@@ -57,6 +57,7 @@ export function Tour({ content = TOUR }: { content?: typeof TOUR }) {
                       {"strong" in t.after && t.after.strong ? <> <strong>{t.after.strong}</strong></> : null}
                       {"tail" in t.after && t.after.tail ? ` ${t.after.tail}` : null}
                     </p>
+                    {"link" in t && t.link ? <Link className="tour-try" href={t.link.href}>{t.link.label} →</Link> : null}
                   </div>
                 </div>
                 {"shot" in t && t.shot ? <AppShot id={t.shot} className="tour-shot" /> : null}

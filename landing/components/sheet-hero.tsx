@@ -24,7 +24,7 @@ export function SheetHero({ content = SHEET_HERO }: { content?: typeof SHEET_HER
             <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup" arrow>
               Crea un account gratis
             </CtaLink>
-            <CtaLink className="btn ghost" href={CONTENT_PATHS.zainetto} location="hero" target="calculator">
+            <CtaLink className="btn ghost" href={CONTENT_PATHS.strumenti} location="hero" target="calculator">
               Prova un calcolatore
             </CtaLink>
           </div>

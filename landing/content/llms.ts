@@ -13,6 +13,7 @@ import { APP_URL, FAQ, SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOURCE_LICENSE, SO
 /** Pagine pubbliche descritte nel file, con la riga che dice a cosa servono. */
 const PAGES: readonly { path: string; title: string; text: string }[] = [
   { path: CONTENT_PATHS.zainetto, title: "Calcolatore dello zainetto fiscale", text: "Quanta imposta si evita compensando plusvalenze con minusvalenze (regole italiane, 26% e 12,5%)." },
+  { path: CONTENT_PATHS.risparmio, title: "Calcolatore dell'obiettivo di risparmio", text: "In quanto tempo si mette da parte una cifra e quanto prima ci si arriva risparmiando di più." },
   { path: CONTENT_PATHS.ammortamento, title: "Calcolatore del piano di ammortamento", text: "Rata, interessi ed estinzione anticipata di mutui e prestiti." },
   { path: CONTENT_PATHS.guidaZainetto, title: "Guida allo zainetto fiscale", text: "Come funzionano le minusvalenze a quattro anni, con esempi e fonti ufficiali." },
   { path: CONTENT_PATHS.funzioneInvestimenti, title: "Investimenti con le tasse italiane", text: "Rendimento vero, rischio, zainetto e bollo calcolati dalle operazioni." },

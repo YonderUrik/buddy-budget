@@ -29,7 +29,7 @@ export interface FaqItem {
 /** Domande frequenti: stesso testo nella sezione visibile e nei dati strutturati FAQPage (Google vuole che coincidano). */
 export const FAQ: readonly FaqItem[] = [
   { question: "BuddyBudget è gratuito?", answer: "Sì, al momento l'uso è gratuito. Se in futuro cambierà, lo comunicheremo in anticipo e potrai esportare tutti i tuoi dati in ZIP." },
-  { question: "Come si collega la banca?", answer: "Con l'Open Banking (PSD2), tramite un fornitore regolato. Autorizzi l'accesso presso la tua banca in sola lettura: BuddyBudget vede saldi e movimenti, non può muovere denaro e non conosce le tue credenziali. Il consenso dura al massimo 90 giorni e ti avvisiamo prima che scada." },
+  { question: "Come si collega la banca?", answer: "In tre passi. Nell'app scegli la tua banca; si apre il sito della tua banca, dove entri come fai sempre e confermi che BuddyBudget può leggere saldi e movimenti; da lì i movimenti arrivano da soli. La password la scrivi solo sul sito della banca, noi non la vediamo, e nessuno può spostare soldi dal tuo conto. Il collegamento passa da GoCardless, una società autorizzata dall'autorità di vigilanza bancaria francese a fare proprio questo, come prevede la legge europea sull'Open Banking (PSD2). Il permesso dura 90 giorni, ti avvisiamo prima che scada e puoi toglierlo quando vuoi." },
   { question: "Calcola le tasse italiane sugli investimenti?", answer: "Sì. Dalle tue operazioni ricava plusvalenze, zaino fiscale a quattro anni, imposta di bollo e l'imposta che pagheresti vendendo oggi. Sono stime pensate per decidere, non sostituiscono il rendiconto del tuo intermediario né un consulente." },
   { question: "Quali investimenti posso tracciare?", answer: "ETF, azioni, BTP e titoli di Stato, fondi e crypto. Vedi il rendimento vero, il confronto con un indice a parità di versamenti, rischio e diversificazione, più i proventi (dividendi e cedole)." },
   { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto. Oppure importa lo storico da un file CSV o Excel. BuddyBudget calcola versamenti e rendimento. Stima quanto ti resterebbe se prelevi oggi, al netto delle tasse. Inoltre confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
@@ -57,5 +57,12 @@ export const SECURITY = {
     { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
   ],
   more: "Tutti i dettagli: cosa salviamo, cosa tiene GoCardless, come cancelli tutto",
+  /** Il collegamento in parole semplici, prima del diagramma: chi ha provato la landing non conosceva «PSD2». */
+  stepsTitle: "Come si collega la banca, in tre passi",
+  steps: [
+    { title: "Scegli la tua banca", text: "Nell'app, dall'elenco delle banche del tuo paese." },
+    { title: "Confermi sul sito della banca", text: "Entri come fai sempre e dai il permesso di leggere saldi e movimenti. La password la scrivi solo lì." },
+    { title: "I movimenti arrivano da soli", text: "Ogni 12 ore. Il permesso dura 90 giorni e si rinnova con un clic; nessuno può spostare soldi e lo togli quando vuoi." },
+  ],
 } as const;
 

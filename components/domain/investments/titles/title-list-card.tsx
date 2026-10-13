@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Elenco dei titoli dell'utente (posseduti e seguiti): nome, tipo, ultima chiusura con variazione, piccola linea
@@ -11,9 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleListItem } from "@/lib/investments/titles-list";
 import { cn } from "@/lib/utils";
-import { formatSignedPct } from "../gain-text";
+
 import { InstrumentIcon } from "../instrument-icon";
-import { formatPrice } from "./title-format";
+
 import { TitleSparkline } from "./title-sparkline";
 
 export interface TitleListCardProps {
@@ -23,11 +26,18 @@ export interface TitleListCardProps {
 }
 
 function ChangeText({ value }: { value: number | null }) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedPct } = localizedFormats(formattingLocale);
+
   if (value === null) return <span className="text-muted-foreground">—</span>;
   return <span className={cn("tabular-nums", value < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(value)}</span>;
 }
 
 export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: TitleListCardProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPrice } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   return (
     <ul className="-mx-4 divide-y sm:-mx-6">
           {items.map((item) => {
@@ -43,16 +53,16 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
                     <p className="truncate text-sm font-medium text-foreground">{instrument.name}</p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                       <span>{INSTRUMENT_TYPE_SINGULAR[instrument.type]}</span>
-                      {item.held ? <Badge variant="secondary">Posseduto</Badge> : null}
-                      {item.watching && !item.held ? <Badge variant="outline">Seguito</Badge> : null}
+                      {item.held ? <Badge variant="secondary">{tr("Posseduto")}</Badge> : null}
+                      {item.watching && !item.held ? <Badge variant="outline">{tr("Seguito")}</Badge> : null}
                       {item.activeAlerts > 0 ? (
                         <span className="inline-flex items-center gap-1">
                           <BellIcon size={12} aria-hidden="true" />
-                          {item.activeAlerts} {item.activeAlerts === 1 ? "avviso" : "avvisi"}
+                          {item.activeAlerts}{" "}{item.activeAlerts === 1 ? tr("avviso") : tr("avvisi")}
                         </span>
                       ) : null}
                       {item.triggeredAlerts > 0 ? (
-                        <Badge variant="destructive">{item.triggeredAlerts === 1 ? "Avviso scattato" : `${item.triggeredAlerts} avvisi scattati`}</Badge>
+                        <Badge variant="destructive">{item.triggeredAlerts === 1 ? tr("Avviso scattato") : tr("{0} avvisi scattati", {0: item.triggeredAlerts})}</Badge>
                       ) : null}
                     </p>
                   </div>
@@ -61,11 +71,11 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
                     {item.lastClose !== null ? (
                       <p className="text-sm font-medium tabular-nums text-foreground">{formatPrice(item.lastClose, instrument.currency)}</p>
                     ) : (
-                      <p className="text-xs text-muted-foreground">Nessun prezzo</p>
+                      <p className="text-xs text-muted-foreground">{tr("Nessun prezzo")}</p>
                     )}
                     <p className="text-xs">
                       <ChangeText value={item.dayChange} />
-                      <span className="sr-only"> nell&apos;ultimo giorno</span>
+                      <span className="sr-only">{" "}{tr("nell'ultimo giorno")}</span>
                     </p>
                   </div>
                 </Link>

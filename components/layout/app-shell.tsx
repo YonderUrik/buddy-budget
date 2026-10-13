@@ -1,4 +1,6 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
  * AppShell
@@ -60,6 +62,9 @@ interface InnerShellProps {
 }
 
 function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSupport }: InnerShellProps) {
+  const { t: tr } = useLocalization();
+  const { productCountry } = useLocalization();
+  const navigation = NAV_ITEMS.filter(item => isCountryPathAvailable(productCountry, item.href));
   const { mobileOpen, closeMobile } = useSidebar();
   const [bottomNav] = useBottomNav();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -133,7 +138,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
 
       {bottomNav ? (
         <BottomNav
-          items={NAV_ITEMS}
+          items={navigation}
           activeHref={activeHref}
           badges={navBadges}
           onOpenMore={openMore}
@@ -146,7 +151,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
         <MobileMoreMenu
           open={moreOpen}
           onClose={closeMore}
-          items={NAV_ITEMS.filter((i) => !(BOTTOM_NAV_HREFS as readonly string[]).includes(i.href))}
+          items={navigation.filter((i) => !(BOTTOM_NAV_HREFS as readonly string[]).includes(i.href))}
           activeHref={activeHref}
           badges={navBadges}
           extra={sidebarExtra}
@@ -179,7 +184,7 @@ function InnerShell({ children, activeHref, sidebarExtra, navBadges, onOpenSuppo
           )}
           role="dialog"
           aria-modal="true"
-          aria-label="Menu di navigazione"
+          aria-label={tr("Menu di navigazione")}
         >
           <AppSidebar
             forceExpanded

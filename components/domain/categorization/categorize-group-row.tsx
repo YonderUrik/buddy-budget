@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga di un gruppo di transazioni (stesso merchant) nella pagina di revisione categorizzazione.
@@ -16,7 +19,7 @@ import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import { dateRangeLabel } from "@/lib/categorization/origin";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
 import { MovementsPreview } from "./movements-preview";
@@ -59,6 +62,10 @@ export function CategorizeGroupRow({
   onExcludedPercentageChange,
   onRemoteLogo,
 }: CategorizeGroupRowProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [expanded, setExpanded] = React.useState(false);
   const [splitOpen, setSplitOpen] = React.useState(false);
   const detailsId = React.useId();
@@ -83,7 +90,7 @@ export function CategorizeGroupRow({
         checked={selected}
         disabled={Boolean(disabledReason)}
         title={disabledReason}
-        aria-label={`Seleziona ${group.label}`}
+        aria-label={tr("Seleziona {0}", {0: group.label})}
         onCheckedChange={(checked) => onToggleSelected(checked === true)}
         className="mt-0.5"
       />
@@ -109,7 +116,7 @@ export function CategorizeGroupRow({
             value={categoryId}
             onValueChange={onCategoryChange}
             usage={categoryUsage}
-            placeholder="Scegli categoria"
+            placeholder={tr("Scegli categoria")}
             className="min-w-0 flex-1 data-[size=default]:h-9 sm:w-60 sm:flex-none sm:data-[size=default]:h-8"
           />
           <Button
@@ -119,10 +126,8 @@ export function CategorizeGroupRow({
             onClick={() => setSplitOpen((v) => !v)}
             aria-pressed={splitOpen}
             className="h-9 shrink-0 sm:h-8"
-            title="Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)"
-          >
-            Dividi
-            {excludedPercentage > 0 && ` · ${Math.round(excludedPercentage * 100)}%`}
+            title={tr("Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)")}
+          >{tr("Dividi")}{excludedPercentage > 0 && ` · ${Math.round(excludedPercentage * 100)}%`}
           </Button>
         </div>
 
@@ -133,9 +138,7 @@ export function CategorizeGroupRow({
         )}
 
         {group.hasDivergentSuggestions && (
-          <p className="text-xs text-neg">
-            Le transazioni di questo gruppo avevano proposte diverse — controlla prima di applicare.
-          </p>
+          <p className="text-xs text-neg">{tr("Le transazioni di questo gruppo avevano proposte diverse — controlla prima di applicare.")}</p>
         )}
 
         {splitOpen && (
@@ -145,16 +148,16 @@ export function CategorizeGroupRow({
               min={0}
               max={100}
               step={1}
-              aria-label="Quota esclusa dal conteggio"
+              aria-label={tr("Quota esclusa dal conteggio")}
               onValueChange={(value) => {
                 const next = Array.isArray(value) ? value[0] : value;
                 onExcludedPercentageChange(next / 100);
               }}
             />
             <div className="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
-              <span>Esclusa dal conteggio: {Math.round(excludedPercentage * 100)}%</span>
+              <span>{tr("Esclusa dal conteggio:")}{" "}{Math.round(excludedPercentage * 100)}%</span>
               <span>
-                {isIncome ? "Entrata effettiva" : "Spesa effettiva"}:{" "}
+                {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}:{" "}
                 {formatCurrency(group.totalAmount * (1 - excludedPercentage), currency)}
               </span>
             </div>
@@ -168,7 +171,7 @@ export function CategorizeGroupRow({
           aria-controls={detailsId}
           className="-my-1 flex w-fit items-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          {expanded ? "Nascondi" : "Mostra"} {group.transactionIds.length === 1 ? "il movimento" : `i ${group.transactionIds.length} movimenti`}
+          {expanded ? "Nascondi" : "Mostra"}{" "}{group.transactionIds.length === 1 ? "il movimento" : `i ${group.transactionIds.length} movimenti`}
           <ChevronDownIcon className={cn("size-3.5 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
         </button>
 

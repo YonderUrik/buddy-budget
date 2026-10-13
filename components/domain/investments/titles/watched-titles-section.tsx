@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Titoli che si seguono senza possederli (watchlist), con ultima chiusura, variazione e avvisi. Non mostra nulla se
@@ -16,11 +17,12 @@ export interface WatchedTitlesSectionProps {
 }
 
 export function WatchedTitlesSection({ hrefBase }: WatchedTitlesSectionProps) {
+  const { t: tr } = useLocalization();
   const list = useTitleListQuery();
   const items = (list.data?.items ?? []).filter((item) => item.watching && !item.held);
   if (items.length === 0) return null;
   return (
-    <PanelSection icon={EyeIcon} title="Seguiti" description="Titoli che osservi senza possederli. Aprine uno per il grafico e gli avvisi di prezzo.">
+    <PanelSection icon={EyeIcon} title={tr("Seguiti")} description={tr("Titoli che osservi senza possederli. Aprine uno per il grafico e gli avvisi di prezzo.")}>
       <TitleListCard items={items} hrefBase={hrefBase} />
     </PanelSection>
   );

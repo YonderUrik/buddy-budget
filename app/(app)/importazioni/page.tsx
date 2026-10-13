@@ -1,5 +1,8 @@
 "use client";
 
+
+import { useLocalization } from "@/lib/localization/provider";
+
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
@@ -19,6 +22,9 @@ const PAGE_TITLE = "Importa da CSV o Excel";
 
 /** Import di un estratto conto o di un rendiconto non ancora supportato: l'AI ricava il formato, che resta dell'utente. */
 function PersonalImports() {
+  const { locale: formattingLocale } = useLocalization();
+
+  const { t: tr } = useLocalization();
   const params = useSearchParams();
   const [selected, setSelected] = useState<string | null>(params.get("job"));
   const listing = usePersonalImportsQuery();
@@ -29,16 +35,16 @@ function PersonalImports() {
 
   // Rapporto del file: quello appena inviato, oppure quello scelto dall'isola o dalla lista.
   const reportJob = receipt ? jobs?.find((j) => j.id === receipt.jobId) ?? ({ id: receipt.jobId } as NonNullable<typeof jobs>[number]) : selectedJob;
-  const reportFile: PersonalImportReceiptFile = receipt?.file ?? { name: `Importazione del ${reportJob?.createdAt ? new Date(reportJob.createdAt).toLocaleDateString("it-IT", { day: "numeric", month: "long" }) : ""}`.trim(), source: listing.data?.formats.find((f) => f.id === reportJob?.formatId)?.name ?? "File" };
+  const reportFile: PersonalImportReceiptFile = receipt?.file ?? { name: `Importazione del ${reportJob?.createdAt ? new Date(reportJob.createdAt).toLocaleDateString(formattingLocale, { day: "numeric", month: "long" }) : ""}`.trim(), source: listing.data?.formats.find((f) => f.id === reportJob?.formatId)?.name ?? "File" };
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 sm:p-6">
       <header className="flex flex-col gap-2">
-        <BackLink href="/liquidita" label="Liquidità" />
+        <BackLink href="/liquidita" label={tr("Liquidità")} />
         <h1 className="flex items-center gap-2 font-heading text-3xl font-medium tracking-tight sm:text-4xl">
           <FileSpreadsheet className="size-7 text-muted-foreground" aria-hidden="true" />
           {PAGE_TITLE}
         </h1>
-        <p className="text-text-2">Per le banche e i broker che BuddyBudget non supporta ancora. L&apos;AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.</p>
+        <p className="text-text-2">{tr("Per le banche e i broker che BuddyBudget non supporta ancora. L'AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.")}</p>
       </header>
 
       {reportJob ? <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} /> : null}
@@ -51,8 +57,9 @@ function PersonalImports() {
 }
 
 export default function Page() {
+  const { t: tr } = useLocalization();
   return (
-    <Suspense fallback={<p role="status" className="p-6">Caricamento…</p>}>
+    <Suspense fallback={<p role="status" className="p-6">{tr("Caricamento…")}</p>}>
       <PersonalImports />
     </Suspense>
   );

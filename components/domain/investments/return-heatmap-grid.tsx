@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Griglia della heatmap dei rendimenti: caselle verdi (guadagno) e rosse (perdita), più intense quanto più il
@@ -9,7 +12,7 @@
 import type { CSSProperties } from "react";
 import { HEATMAP_LEVELS, type HeatmapCell, type ReturnHeatmap } from "@/lib/calc/return-heatmap";
 import { cn } from "@/lib/utils";
-import { formatSignedPct } from "./gain-text";
+
 
 /** Quota di verde o rosso mescolata al neutro per ogni livello (0 = neutro). */
 const LEVEL_MIX = [0, 30, 50, 72, 100];
@@ -28,6 +31,9 @@ export interface ReturnHeatmapGridProps {
 }
 
 function Cell({ cell, showValue, selected, onInspect }: { cell: HeatmapCell | null; showValue: boolean; selected: boolean; onInspect: (c: HeatmapCell | null) => void }) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedPct } = localizedFormats(formattingLocale);
+
   if (!cell) return <span aria-hidden="true" />;
   const strong = cell.level >= 3;
   return (
@@ -49,6 +55,7 @@ function Cell({ cell, showValue, selected, onInspect }: { cell: HeatmapCell | nu
 }
 
 export function ReturnHeatmapGrid({ heatmap, onInspect, selectedKey }: ReturnHeatmapGridProps) {
+  const { t: tr } = useLocalization();
   const showValue = heatmap.grouping === "mese" || heatmap.grouping === "anno";
   const hasTotal = heatmap.rows.some((r) => r.total !== undefined);
   const hasRowLabels = heatmap.rows.some((r) => r.label !== "");
@@ -65,14 +72,14 @@ export function ReturnHeatmapGrid({ heatmap, onInspect, selectedKey }: ReturnHea
         {hasRowLabels ? <span className="sticky left-0 z-10 bg-card" /> : null}
         {heatmap.columns.map((label, i) => (
           <span key={i} className="whitespace-nowrap text-left leading-4">
-            {label}
+            {tr(label)}
           </span>
         ))}
-        {hasTotal ? <span className="text-center font-medium leading-4">Anno</span> : null}
+        {hasTotal ? <span className="text-center font-medium leading-4">{tr("Anno")}</span> : null}
         {heatmap.rows.map((row) => (
           <div key={row.label || "row"} className="contents">
             {hasRowLabels ? (
-              <span className="sticky left-0 z-10 flex items-center bg-card leading-none tabular-nums">{row.label}</span>
+              <span className="sticky left-0 z-10 flex items-center bg-card leading-none tabular-nums">{tr(row.label)}</span>
             ) : null}
             {row.cells.map((cell, i) => (
               <Cell key={cell?.key ?? `empty-${i}`} cell={cell} showValue={showValue} selected={cell?.key === selectedKey} onInspect={onInspect} />

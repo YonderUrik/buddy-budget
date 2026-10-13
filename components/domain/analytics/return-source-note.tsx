@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Riga breve sotto il cursore del rendimento: da dove viene (dettagli nel tasto info), ritorno allo storico e avviso se è alto. */
 
@@ -21,6 +22,7 @@ export interface ReturnSourceNoteProps {
 }
 
 export function ReturnSourceNote({ info, value, currency, period, saving, onUseHistory }: ReturnSourceNoteProps) {
+  const { t: tr } = useLocalization();
   const offer = historyOffer(info);
   const detail = info.source === "manuale" ? null : returnSourceText(info, currency, period);
   return (
@@ -28,19 +30,16 @@ export function ReturnSourceNote({ info, value, currency, period, saving, onUseH
       <p className="flex flex-wrap items-center gap-x-1.5">
         <span className="flex items-center gap-0.5">
           {returnSourceLabel(info)}
-          {detail ? <InfoHint label="Da dove viene il rendimento">{detail}</InfoHint> : null}
+          {detail ? <InfoHint label={tr("Da dove viene il rendimento")}>{detail}</InfoHint> : null}
         </span>
         {offer !== null ? (
-          <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseHistory} disabled={saving}>
-            Usa il tuo ({pct(offer)})
+          <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseHistory} disabled={saving}>{tr("Usa il tuo (")}{pct(offer)})
           </button>
         ) : null}
       </p>
       {value > HIGH_RETURN_WARNING ? (
         <p className="flex items-center gap-1 text-risk-3" role="note">
-          <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />
-          Stima ottimistica
-          <InfoHint label="Perché è ottimistica">{HIGH_RETURN_TEXT}</InfoHint>
+          <TriangleAlert className="size-3.5 shrink-0" aria-hidden="true" />{tr("Stima ottimistica")}<InfoHint label={tr("Perché è ottimistica")}>{HIGH_RETURN_TEXT}</InfoHint>
         </p>
       ) : null}
     </div>

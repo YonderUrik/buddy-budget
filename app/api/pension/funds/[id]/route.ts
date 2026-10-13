@@ -1,3 +1,4 @@
+import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -50,5 +51,5 @@ async function handleDelete(request: NextRequest, { params }: Params) {
   return new Response(null, { status: 204 });
 }
 
-export const PATCH = withRoute("pension.funds.update", handlePatch);
-export const DELETE = withRoute("pension.funds.delete", handleDelete);
+export const PATCH = withRoute("pension.funds.update", withCountryGuard(handlePatch));
+export const DELETE = withRoute("pension.funds.delete", withCountryGuard(handleDelete));

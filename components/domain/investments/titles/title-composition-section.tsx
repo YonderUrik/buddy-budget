@@ -1,3 +1,7 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * Sezioni «Cosa c'è dentro» e «Settori» di un ETF o fondo: primi titoli con il peso, con l'avviso dei titoli che
  * possiedi anche altrove (in altri fondi o direttamente), e pesi per settore della parte azionaria.
@@ -8,15 +12,19 @@ import type { ProfileHolding } from "@/lib/db/schema/investments";
 import { SECTOR_LABELS, type SectorKey } from "@/lib/investments/exposure-keys";
 import type { HoldingElsewhere } from "@/lib/investments/overlap";
 import { PanelSection } from "../panel-section";
-import { formatPct } from "../percent";
+
 
 function WeightRows({ rows, colorClass }: { rows: { key: string; label: string; weight: number }[]; colorClass: string }) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPct } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const max = Math.max(...rows.map((r) => r.weight), 0.0001);
   return (
     <ul className="flex flex-col gap-2">
       {rows.map((row) => (
         <li key={row.key} className="grid grid-cols-[minmax(0,9rem)_1fr_3rem] items-center gap-3 text-sm">
-          <span className="truncate text-foreground">{row.label}</span>
+          <span className="truncate text-foreground">{tr(row.label)}</span>
           <span className="h-2 overflow-hidden rounded-full bg-muted">
             <span className={`block h-full rounded-full ${colorClass}`} style={{ width: `${(row.weight / max) * 100}%` }} />
           </span>
@@ -42,24 +50,28 @@ export interface TitleCompositionSectionProps {
 }
 
 export function TitleCompositionSection({ holdings, sectors, shared }: TitleCompositionSectionProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPct } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const top = holdings.slice(0, 10);
   const topShare = top.reduce((s, h) => s + h.weight, 0);
   const sectorRows = Object.entries(sectors ?? {})
     .filter(([, w]) => w > 0)
     .sort(([, a], [, b]) => b - a)
-    .map(([key, weight]) => ({ key, label: SECTOR_LABELS[key as SectorKey] ?? key, weight }));
+    .map(([key, weight]) => ({ key, label: tr(SECTOR_LABELS[key as SectorKey]) ?? key, weight }));
   return (
     <div className="grid gap-10 lg:grid-cols-2">
       {top.length > 0 ? (
-        <PanelSection icon={LayersIcon} title="Cosa c'è dentro" color="var(--swatch-emerald)" description={`Primi ${top.length} titoli: ${formatPct(topShare)} del fondo.`}>
+        <PanelSection icon={LayersIcon} title={tr("Cosa c'è dentro")} color="var(--swatch-emerald)" description={tr("Primi {0} titoli: {1} del fondo.", {0: top.length, 1: formatPct(topShare)})}>
           <WeightRows rows={top.map((h, i) => ({ key: `${h.symbol ?? h.name}-${i}`, label: h.name, weight: h.weight }))} colorClass="bg-[var(--swatch-emerald)]" />
           {shared.length > 0 ? <p className="text-sm text-muted-foreground">{sharedText(shared)}</p> : null}
         </PanelSection>
       ) : null}
       {sectorRows.length > 0 ? (
-        <PanelSection icon={PieChartIcon} title="Settori" color="var(--swatch-blue)" description="Parte azionaria del fondo.">
+        <PanelSection icon={PieChartIcon} title={tr("Settori")} color="var(--swatch-blue)" description={tr("Parte azionaria del fondo.")}>
           <WeightRows rows={sectorRows} colorClass="bg-[var(--swatch-blue)]" />
-          <p className="text-xs text-muted-foreground">Fonte: Yahoo Finance. Le aree geografiche arriveranno con i file degli emittenti.</p>
+          <p className="text-xs text-muted-foreground">{tr("Fonte: Yahoo Finance. Le aree geografiche arriveranno con i file degli emittenti.")}</p>
         </PanelSection>
       ) : null}
     </div>

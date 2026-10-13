@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * I quattro cursori «e se…» di Analitiche: provano risparmio, spesa, rendimento e tasso di prelievo senza salvare nulla.
@@ -68,6 +69,7 @@ function deltaText(base: number | null, next: number | null): string | null {
 }
 
 export function ScenarioControls(props: ScenarioControlsProps) {
+  const { t: tr } = useLocalization();
   const { assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving } = props;
   const rows: Row[] = [
     { field: "annualSavings", label: "Risparmio annuo", baseline: plan.savings, format: (v) => money(v, currency), missingHint: "servono almeno 3 mesi di movimenti nel periodo scelto" },
@@ -88,7 +90,7 @@ export function ScenarioControls(props: ScenarioControlsProps) {
             <div key={row.field} className="flex min-w-0 flex-col gap-2">
               <div className="flex items-baseline justify-between gap-2">
                 <span id={labelId} className="text-sm text-muted-foreground">
-                  {row.term ? <Term id={row.term}>{row.label}</Term> : row.label}
+                  {row.term ? <Term id={row.term}>{tr(row.label)}</Term> : row.label}
                 </span>
                 <span className="font-heading text-base font-medium tabular-nums text-foreground">{value !== null ? row.format(value) : "—"}</span>
               </div>
@@ -137,21 +139,16 @@ export function ScenarioControls(props: ScenarioControlsProps) {
         })}
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-        <span>
-          Altre ipotesi: volatilità {pct(assumptions.volatility, 0)}, inflazione {pct(assumptions.inflation, 0)}, imposte {assumptions.includeLatentTax ? "contate" : "non contate"}
+        <span>{tr("Altre ipotesi: volatilità")}{" "}{pct(assumptions.volatility, 0)}{tr(", inflazione")}{" "}{pct(assumptions.inflation, 0)}{tr(", imposte")}{" "}{assumptions.includeLatentTax ? tr("contate") : tr("non contate")}
         </span>
         <Button type="button" variant="ghost" size="sm" onClick={onOpenAllAssumptions}>
-          <SlidersHorizontal className="size-4" aria-hidden="true" />
-          Tutte le ipotesi
-        </Button>
+          <SlidersHorizontal className="size-4" aria-hidden="true" />{tr("Tutte le ipotesi")}</Button>
         {active ? (
           <span className="ml-auto flex items-center gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onReset}>
-              <RotateCcw className="size-4" aria-hidden="true" />
-              Ripristina
-            </Button>
+              <RotateCcw className="size-4" aria-hidden="true" />{tr("Ripristina")}</Button>
             <Button type="button" size="sm" onClick={onSave} disabled={saving}>
-              {saving ? "Salvo…" : "Salva queste ipotesi"}
+              {saving ? tr("Salvo…") : tr("Salva queste ipotesi")}
             </Button>
           </span>
         ) : null}

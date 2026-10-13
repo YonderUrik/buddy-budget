@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Board delle categorie: colonne con chip per gruppo, "Da categorizzare" ed Entrate. Le tessere si trascinano
@@ -30,6 +31,7 @@ const INCOME_DESCRIPTION = "Stipendio, rimborsi e tutto ciò che entra.";
 const UNCATEGORIZED_DESCRIPTION =
   "Movimenti non ancora assegnati: si sistemano da Transazioni.";
 export function CategoryBoard({ categories }: CategoryBoardProps) {
+  const { t: tr } = useLocalization();
   const { data: usage } = useCategoryUsageQuery();
   const updateMutation = useUpdateCategoryMutation();
   const sections = groupCategoriesByType(categories);
@@ -83,8 +85,8 @@ export function CategoryBoard({ categories }: CategoryBoardProps) {
     return (
       <CategoryGroupColumn
         key={key}
-        title={props.title}
-        description={props.description}
+        title={tr(props.title)}
+        description={tr(props.description)}
         dotClassName={props.dotClassName}
         categories={props.items}
         usage={usage}
@@ -112,13 +114,13 @@ export function CategoryBoard({ categories }: CategoryBoardProps) {
           }),
         )}
         {column("entrata", "entrata", {
-          title: "Entrate",
+          title: tr("Entrate"),
           description: INCOME_DESCRIPTION,
           items: sections.income,
         })}
         {column("trasferimento", "trasferimento", {
-          title: "Trasferimenti tra conti",
-          description: "Spostamenti tra i tuoi conti: non contano come entrate o spese.",
+          title: tr("Trasferimenti tra conti"),
+          description: tr("Spostamenti tra i tuoi conti: non contano come entrate o spese."),
           items: sections.transfers,
         })}
         {sections.uncategorized.length > 0 &&

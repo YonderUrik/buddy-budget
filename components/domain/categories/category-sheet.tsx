@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Foglio per scegliere una categoria: dal basso su mobile, finestra centrata su schermi larghi. In cima la ricerca e le
@@ -62,6 +63,7 @@ export function CategorySheet({
   onPick,
   footer,
 }: CategorySheetProps) {
+  const { t: tr } = useLocalization();
   const [query, setQuery] = React.useState("");
   // Ogni apertura riparte con la ricerca vuota, anche quando il chiamante chiude il foglio cambiando `open` da sé
   // (es. la carta successiva nel mazzo di Categorizza) invece di passare da `onOpenChange`.
@@ -82,7 +84,7 @@ export function CategorySheet({
         className="flex h-[80dvh] flex-col gap-3 p-4 sm:h-[70vh] sm:max-w-lg"
       >
         <DialogHeader className="gap-0.5">
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{tr(title)}</DialogTitle>
           <DialogDescription className={description ? "truncate text-sm" : "sr-only"}>{description ?? "Cerca o scegli una categoria"}</DialogDescription>
         </DialogHeader>
         <div className="relative shrink-0">
@@ -97,17 +99,17 @@ export function CategorySheet({
               }
             }}
             placeholder={searchPlaceholder}
-            aria-label="Cerca categoria"
+            aria-label={tr("Cerca categoria")}
             className="pl-9"
           />
         </div>
         <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-2">
           {sections.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Nessuna categoria trovata</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">{tr("Nessuna categoria trovata")}</p>
           ) : (
             sections.map((section) => (
               <section key={section.key} className="flex flex-col gap-1.5">
-                {section.label && <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{section.key === MOST_USED_KEY ? "Per te" : section.label}</h3>}
+                {section.label && <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{section.key === MOST_USED_KEY ? tr("Per te") : section.label}</h3>}
                 {section.key === MOST_USED_KEY ? (
                   <div className="flex flex-wrap gap-2">
                     {section.categories.map((category) => (

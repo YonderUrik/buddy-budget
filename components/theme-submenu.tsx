@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useTheme } from "next-themes";
@@ -35,6 +36,7 @@ export interface ThemeSubmenuProps {
  * «Sistema» segue l'impostazione del dispositivo; la persistenza è di `next-themes`.
  */
 export function ThemeSubmenu({ onChange }: ThemeSubmenuProps) {
+  const { t: tr } = useLocalization();
   const { theme, setTheme } = useTheme();
   const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
   const current: ThemeChoice = mounted ? ((theme as ThemeChoice | undefined) ?? "system") : "system";
@@ -44,7 +46,7 @@ export function ThemeSubmenu({ onChange }: ThemeSubmenuProps) {
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="cursor-pointer">
         <Palette className="mr-2 size-4" aria-hidden="true" />
-        <span>Tema</span>
+        <span>{tr("Tema")}</span>
         {mounted ? <span className="ml-auto pr-1 text-xs text-muted-foreground">{currentLabel}</span> : null}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="min-w-36">
@@ -59,7 +61,7 @@ export function ThemeSubmenu({ onChange }: ThemeSubmenuProps) {
           {THEME_CHOICES.map(({ value, label, icon: Icon }) => (
             <DropdownMenuRadioItem key={value} value={value} className="cursor-pointer">
               <Icon className="mr-2 size-4" aria-hidden="true" />
-              {label}
+              {tr(label)}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

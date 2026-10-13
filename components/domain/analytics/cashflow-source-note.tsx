@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Riga breve sotto i cursori di risparmio e spesa: «Dai tuoi dati» o «A mano», con i dettagli nel tasto info. */
 
@@ -21,22 +22,18 @@ export interface CashflowSourceNoteProps {
 }
 
 export function CashflowSourceNote({ source, dataValue, periodPhrase, coveredMonths, periodMonths, currency, saving, onUseData }: CashflowSourceNoteProps) {
+  const { t: tr } = useLocalization();
   if (source === "manca") return null;
   if (source === "dati") {
     const average = coveredMonths < periodMonths ? `dei ${coveredMonths} mesi da quando registri i movimenti` : `dei movimenti ${periodPhrase}`;
     return (
-      <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
-        Dai tuoi dati
-        <InfoHint label="Da dove viene questa cifra">Media mensile {average}, moltiplicata per 12. I giroconti tra i tuoi conti non contano.</InfoHint>
+      <p className="flex items-center gap-0.5 text-xs text-muted-foreground">{tr("Dai tuoi dati")}<InfoHint label={tr("Da dove viene questa cifra")}>{tr("Media mensile")}{" "}{average}{tr(", moltiplicata per 12. I giroconti tra i tuoi conti non contano.")}</InfoHint>
       </p>
     );
   }
   return (
-    <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
-      Scritta a mano
-      {dataValue !== null ? (
-        <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseData} disabled={saving}>
-          Usa i tuoi dati ({money(dataValue, currency)})
+    <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">{tr("Scritta a mano")}{dataValue !== null ? (
+        <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseData} disabled={saving}>{tr("Usa i tuoi dati (")}{money(dataValue, currency)})
         </button>
       ) : null}
     </p>

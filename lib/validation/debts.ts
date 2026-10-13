@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DEBT_EARLY_EFFECTS, DEBT_START_MODES } from "@/lib/db/schema/debts";
+import { DEBT_EARLY_EFFECTS, DEBT_START_MODES } from "@/lib/debts/constants";
 
 /** Lunghezza massima del nome di un debito e delle etichette delle spese. */
 export const DEBT_NAME_MAX_LENGTH = 80;

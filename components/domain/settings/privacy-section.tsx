@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Sezione "Privacy": documenti legali, quando li hai accettati e come esercitare i diritti che non hanno un pulsante in app. */
 
@@ -6,7 +9,7 @@ import * as React from "react";
 import { Switch } from "@/components/ui/switch";
 import { useAnalyticsOptOut } from "@/lib/hooks/use-analytics-opt-out";
 import { track } from "@/lib/analytics";
-import { formatLongDate } from "@/lib/format";
+
 import { LEGAL_LINKS, PRIVACY_EMAIL, PRIVACY_REQUEST_OPTIONS, buildPrivacyRequestHref } from "@/lib/legal";
 import type { UserSettings } from "@/lib/queries/user-settings";
 import { ShieldCheck } from "lucide-react";
@@ -22,6 +25,10 @@ export interface PrivacySectionProps {
 }
 
 export function PrivacySection({ settings }: PrivacySectionProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatLongDate } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const { legalAcceptedAt, legalAcceptedVersion, email } = settings;
   const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
   const [optedOut, setOptedOut] = useAnalyticsOptOut();
@@ -29,37 +36,37 @@ export function PrivacySection({ settings }: PrivacySectionProps) {
   return (
     <SettingsSection
       id="impostazioni-privacy"
-      title="Privacy"
+      title={tr("Privacy")}
       icon={ShieldCheck}
-      description="Come trattiamo i tuoi dati e come esercitare i tuoi diritti. Scarica e cancella i dati dalle sezioni qui sotto."
+      description={tr("Come trattiamo i tuoi dati e come esercitare i tuoi diritti. Scarica e cancella i dati dalle sezioni qui sotto.")}
     >
       <SettingsRow
-        label="Statistiche d'uso anonime"
-        hint="Contano le pagine viste e le azioni (mai importi o testi tuoi), senza cookie. Spegnile e non ti misuriamo più su questo dispositivo."
+        label={tr("Statistiche d'uso anonime")}
+        hint={tr("Contano le pagine viste e le azioni (mai importi o testi tuoi), senza cookie. Spegnile e non ti misuriamo più su questo dispositivo.")}
       >
         {mounted ? (
           <Switch
             checked={!optedOut}
             onCheckedChange={(checked) => setOptedOut(!checked)}
-            aria-label="Statistiche d'uso anonime"
+            aria-label={tr("Statistiche d'uso anonime")}
           />
         ) : (
           <div className="h-[18.4px] w-[32px]" />
         )}
       </SettingsRow>
       <SettingsRow
-        label="Documenti"
+        label={tr("Documenti")}
         hint={
           legalAcceptedAt
-            ? `Hai accettato la versione del ${legalAcceptedVersion} il ${formatLongDate(new Date(legalAcceptedAt))}.`
-            : "Non risulta un'accettazione registrata."
+            ? tr("Hai accettato la versione del {0} il {1}.", {0: legalAcceptedVersion, 1: formatLongDate(new Date(legalAcceptedAt))})
+            : tr("Non risulta un'accettazione registrata.")
         }
       >
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {LEGAL_LINKS.map((link) => (
             <li key={link.id}>
               <a href={link.href} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-                {link.label}
+                {tr(link.label)}
               </a>
             </li>
           ))}
@@ -67,13 +74,10 @@ export function PrivacySection({ settings }: PrivacySectionProps) {
       </SettingsRow>
 
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted-foreground">
-          Per le altre richieste scrivi a{" "}
+        <p className="text-sm text-muted-foreground">{tr("Per le altre richieste scrivi a")}{" "}
           <a href={`mailto:${PRIVACY_EMAIL}`} className={LINK_CLASS}>
             {PRIVACY_EMAIL}
-          </a>
-          : rispondiamo entro un mese. Questi link aprono una email già compilata.
-        </p>
+          </a>{tr(": rispondiamo entro un mese. Questi link aprono una email già compilata.")}</p>
         <ul className="grid gap-2 sm:grid-cols-2">
           {PRIVACY_REQUEST_OPTIONS.map((option) => (
             <li key={option.type}>
@@ -82,8 +86,8 @@ export function PrivacySection({ settings }: PrivacySectionProps) {
                 onClick={() => track("privacy_request_started", { type: option.type })}
                 className="flex h-full flex-col gap-0.5 rounded-lg border p-3 text-sm transition-colors hover:bg-muted"
               >
-                <span className="font-medium text-foreground">{option.label}</span>
-                <span className="text-muted-foreground">{option.description}</span>
+                <span className="font-medium text-foreground">{tr(option.label)}</span>
+                <span className="text-muted-foreground">{tr(option.description)}</span>
               </a>
             </li>
           ))}

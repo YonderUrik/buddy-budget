@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Badge di un provider di import: il logo se ne abbiamo uno con licenza (`logoSrc`), altrimenti una sigla neutra. */
 
 import { FileSpreadsheetIcon } from "lucide-react";
@@ -10,6 +12,7 @@ export interface ProviderBadgeProps {
 }
 
 export function ProviderBadge({ provider, className }: ProviderBadgeProps) {
+  const { t: tr } = useLocalization();
   return (
     <span
       aria-hidden="true"
@@ -24,7 +27,7 @@ export function ProviderBadge({ provider, className }: ProviderBadgeProps) {
     >
       {provider.logoSrc ? (
         // eslint-disable-next-line @next/next/no-img-element -- logo statico piccolo, nessun bisogno dell'ottimizzatore
-        <img src={provider.logoSrc} alt="" className="size-full object-contain p-1.5" />
+        <img src={provider.logoSrc} alt={tr("")} className="size-full object-contain p-1.5" />
       ) : provider.id === "generic" ? (
         <FileSpreadsheetIcon className="size-5 text-muted-foreground" />
       ) : (

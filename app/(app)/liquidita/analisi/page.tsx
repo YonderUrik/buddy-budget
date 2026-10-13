@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Liquidità · Analisi: com'è andato il periodo (cifra, curva contro il solito), dove vanno i soldi, da dove arrivano, risparmio accumulato. */
 
@@ -34,12 +37,16 @@ import {
 import { computeMonthPace } from "@/lib/calc/month-pace";
 import { getTrendRange } from "@/lib/calc/movements";
 import { buildCumulativeSpend } from "@/lib/liquidity/spend-curve";
-import { formatCurrency } from "@/lib/format";
+
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
 export default function LiquiditaAnalisiPage() {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -101,33 +108,33 @@ export default function LiquiditaAnalisiPage() {
   return (
     <div className="flex flex-col gap-8" aria-busy={isLoading}>
       <PeriodStepper period={period} onPeriodChange={setPeriod} referenceDate={referenceDate} onReferenceDateChange={setReferenceDate} latest={today} />
-      <section aria-label="Spese del periodo">
+      <section aria-label={tr("Spese del periodo")}>
         <p className="max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl">{sentence}</p>
-        <p className="mt-6 text-base text-text-2">Spese del periodo</p>
+        <p className="mt-6 text-base text-text-2">{tr("Spese del periodo")}</p>
         <MoneyHero value={spent} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
         {spentBefore > 0 && (
           <p className="mt-3 font-mono text-sm font-semibold tabular-nums" style={{ color: delta > 0 ? "var(--neg)" : "var(--pos)" }}>
             {delta > 0 ? "▲ +" : "▼ −"}
-            {money(Math.abs(delta))} <span className="font-sans font-normal text-text-2">rispetto al periodo prima</span>
+            {money(Math.abs(delta))}{" "}<span className="font-sans font-normal text-text-2">{tr("rispetto al periodo prima")}</span>
           </p>
         )}
         <div className="-mx-4 mt-2 sm:-mx-6">
           <TrendChart
             points={curve.map((p) => ({ label: p.date, value: p.value }))}
             reference={typical ?? undefined}
-            description={`Spese cumulate: ${money(spent)}${typical ? `, contro ${money(typical[Math.max(curve.length - 1, 0)] ?? 0)} di solito a questo punto` : ""}.`}
+            description={tr("Spese cumulate: {0}{1}.", {0: money(spent), 1: typical ? `, contro ${money(typical[Math.max(curve.length - 1, 0)] ?? 0)} di solito a questo punto` : ""})}
             height={200}
             formatValue={money}
             referenceLabel="Di solito"
           />
         </div>
-        {typical && <p className="mt-2 text-sm text-text-2">La linea tratteggiata è la tua spesa media nello stesso tratto di mese.</p>}
+        {typical && <p className="mt-2 text-sm text-text-2">{tr("La linea tratteggiata è la tua spesa media nello stesso tratto di mese.")}</p>}
       </section>
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <section aria-label="Dove vanno i soldi">
-          <SectionTitle icon={PieChartIcon} title="Dove vanno i soldi" color="var(--swatch-teal)" />
+        <section aria-label={tr("Dove vanno i soldi")}>
+          <SectionTitle icon={PieChartIcon} title={tr("Dove vanno i soldi")} color="var(--swatch-teal)" />
           {groups.length === 0 ? (
-            <p className="text-text-2">Nessuna spesa da mostrare in questo periodo.</p>
+            <p className="text-text-2">{tr("Nessuna spesa da mostrare in questo periodo.")}</p>
           ) : (
             <SpendByGroup
               groups={groups}
@@ -140,28 +147,28 @@ export default function LiquiditaAnalisiPage() {
           )}
         </section>
         <div className="flex flex-col gap-8">
-          <section aria-label="Da dove arrivano">
-            <SectionTitle icon={ArrowDownToLineIcon} title="Da dove arrivano" color="var(--pos)" />
+          <section aria-label={tr("Da dove arrivano")}>
+            <SectionTitle icon={ArrowDownToLineIcon} title={tr("Da dove arrivano")} color="var(--pos)" />
             {sources.length === 0 ? (
-              <p className="text-text-2">Nessuna entrata in questo periodo.</p>
+              <p className="text-text-2">{tr("Nessuna entrata in questo periodo.")}</p>
             ) : (
               <div className="flex flex-col gap-1.5">
                 {sources.map((s) => (
                   <SoftRow
                     key={s.categoryId}
                     title={s.name}
-                    hint={s.quotaPct !== null ? `${Math.round(s.quotaPct)}% delle entrate` : undefined}
+                    hint={s.quotaPct !== null ? tr("{0}% delle entrate", {0: Math.round(s.quotaPct)}) : undefined}
                     end={<span className="font-heading font-semibold tabular-nums text-pos">+{money(s.amount)}</span>}
                   />
                 ))}
               </div>
             )}
           </section>
-          <section aria-label="Risparmio accumulato">
-            <SectionTitle icon={PiggyBankIcon} title="Risparmio accumulato" color="var(--swatch-blue)" />
+          <section aria-label={tr("Risparmio accumulato")}>
+            <SectionTitle icon={PiggyBankIcon} title={tr("Risparmio accumulato")} color="var(--swatch-blue)" />
             <SoftRow
-              title={saved >= 0 ? "Messo da parte" : "In meno"}
-              hint="Entrate meno spese, mese per mese, nei mesi guardati"
+              title={saved >= 0 ? tr("Messo da parte") : tr("In meno")}
+              hint={tr("Entrate meno spese, mese per mese, nei mesi guardati")}
               end={<span className="font-heading font-semibold tabular-nums" style={{ color: saved >= 0 ? "var(--pos)" : "var(--neg)" }}>{saved >= 0 ? "+" : "−"}{money(Math.abs(saved))}</span>}
             />
           </section>

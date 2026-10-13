@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pannello di modifica di una transazione manuale (descrizione, data, importo), aperto sotto la riga.
@@ -22,6 +23,7 @@ export interface TransactionEditPanelProps {
 }
 
 export function TransactionEditPanel({ transaction, currency, onClose, className }: TransactionEditPanelProps) {
+  const { t: tr } = useLocalization();
   const updateMutation = useUpdateTransactionMutation();
   const isIncome = Number(transaction.amount) > 0;
   const [description, setDescription] = React.useState(transaction.description);
@@ -47,9 +49,7 @@ export function TransactionEditPanel({ transaction, currency, onClose, className
   return (
     <div className={cn("flex flex-col gap-3 border-t border-border bg-muted/50 px-4 py-3", className)}>
       <div className="flex flex-col gap-1">
-        <label htmlFor={`${idPrefix}-description`} className="text-xs text-muted-foreground">
-          Descrizione
-        </label>
+        <label htmlFor={`${idPrefix}-description`} className="text-xs text-muted-foreground">{tr("Descrizione")}</label>
         <Input
           id={`${idPrefix}-description`}
           value={description}
@@ -60,9 +60,7 @@ export function TransactionEditPanel({ transaction, currency, onClose, className
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex min-w-0 flex-col gap-1">
-          <label htmlFor={`${idPrefix}-date`} className="text-xs text-muted-foreground">
-            Data
-          </label>
+          <label htmlFor={`${idPrefix}-date`} className="text-xs text-muted-foreground">{tr("Data")}</label>
           <Input
             id={`${idPrefix}-date`}
             type="date"
@@ -74,7 +72,7 @@ export function TransactionEditPanel({ transaction, currency, onClose, className
         </div>
         <div className="flex min-w-0 flex-col gap-1">
           <label htmlFor={`${idPrefix}-amount`} className="text-xs text-muted-foreground">
-            {isIncome ? "Importo entrata" : "Importo uscita"}
+            {isIncome ? tr("Importo entrata") : tr("Importo uscita")}
           </label>
           <CurrencyInput
             id={`${idPrefix}-amount`}
@@ -89,14 +87,12 @@ export function TransactionEditPanel({ transaction, currency, onClose, className
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {updateMutation.isPending
-            ? "Salvataggio in corso..."
+            ? tr("Salvataggio in corso...")
             : updateMutation.isError
-              ? "Salvataggio non riuscito, riprova."
-              : "Le modifiche si salvano da sole."}
+              ? tr("Salvataggio non riuscito, riprova.")
+              : tr("Le modifiche si salvano da sole.")}
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={onClose}>
-          Fatto
-        </Button>
+        <Button type="button" variant="outline" size="sm" onClick={onClose}>{tr("Fatto")}</Button>
       </div>
     </div>
   );

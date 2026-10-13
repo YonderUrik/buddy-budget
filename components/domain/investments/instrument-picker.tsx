@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Selettore strumento con ricerca per nome, ticker o ISIN: prima gli strumenti già noti, poi i risultati di mercato
@@ -54,6 +55,7 @@ export function InstrumentPicker({
   deferHistory = false,
   className,
 }: InstrumentPickerProps) {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const search = useInstrumentSearchQuery(query);
@@ -94,8 +96,8 @@ export function InstrumentPicker({
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="VWCE, Apple, IE00BK5BQT80…"
-            aria-label="Cerca strumento"
+            placeholder={tr("VWCE, Apple, IE00BK5BQT80…")}
+            aria-label={tr("Cerca strumento")}
             className="h-9 w-full bg-transparent text-sm outline-none"
           />
         </div>
@@ -112,10 +114,10 @@ export function InstrumentPicker({
           ) : null}
           {!searching ? (
             <p className="px-2 py-3 text-sm text-muted-foreground">
-              {suggestions.length ? "Oppure cercane un altro: scrivi almeno 2 caratteri." : "Scrivi almeno 2 caratteri."}
+              {suggestions.length ? tr("Oppure cercane un altro: scrivi almeno 2 caratteri.") : tr("Scrivi almeno 2 caratteri.")}
             </p>
           ) : null}
-          {searching && search.isFetching && !search.data ? <p className="px-2 py-3 text-sm text-muted-foreground">Ricerca…</p> : null}
+          {searching && search.isFetching && !search.data ? <p className="px-2 py-3 text-sm text-muted-foreground">{tr("Ricerca…")}</p> : null}
           {search.data ? (
             <InstrumentSearchResults
               known={known}
@@ -127,23 +129,20 @@ export function InstrumentPicker({
             />
           ) : null}
           {searching && search.data?.marketUnavailable ? (
-            <p className="px-2 py-2 text-sm text-muted-foreground">
-              La fonte di ETF, azioni e fondi non risponde in questo momento: riprova tra qualche minuto, oppure
-              aggiungilo qui sotto.
-            </p>
+            <p className="px-2 py-2 text-sm text-muted-foreground">{tr("La fonte di ETF, azioni e fondi non risponde in questo momento: riprova tra qualche minuto, oppure aggiungilo qui sotto.")}</p>
           ) : null}
           {searching && search.data && !search.data.marketUnavailable && !known.length && !groups.length ? (
-            <p className="px-2 py-2 text-sm text-muted-foreground">Nessun risultato dalle fonti di mercato.</p>
+            <p className="px-2 py-2 text-sm text-muted-foreground">{tr("Nessun risultato dalle fonti di mercato.")}</p>
           ) : null}
           {searching ? (
             <div className="flex flex-col gap-0.5">
-              <SectionTitle>Non lo trovi?</SectionTitle>
+              <SectionTitle>{tr("Non lo trovi?")}</SectionTitle>
               <div className="px-2 pb-1">
                 <InstrumentManualForm isin={search.data?.isin ?? null} defaultCurrency={defaultCurrency} pending={create.isPending} onCreate={add} />
               </div>
             </div>
           ) : null}
-          {create.isError ? <p className="px-2 py-2 text-sm text-destructive">{create.error.message}</p> : null}
+          {create.isError ? <p className="px-2 py-2 text-sm text-destructive">{tr(create.error.message)}</p> : null}
         </div>
       </PopoverContent>
     </Popover>

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Pagina Impostazioni: cinque gruppi (account, aspetto e uso, notifiche e assistente, privacy e dati, zona pericolosa). */
 
@@ -38,6 +39,7 @@ const LEGACY_HASH_GROUPS: Record<string, SettingsGroupId> = {
 };
 
 function ImpostazioniContent() {
+  const { t: tr } = useLocalization();
   const { data: settings, isLoading, isError, refetch } = useUserSettingsQuery();
   const recentLogin = useRecentLogin(settings?.recentLoginUntil);
   const router = useRouter();
@@ -70,8 +72,8 @@ function ImpostazioniContent() {
     <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       {/* Su telefono, dentro un gruppo, in cima c'è «‹ Impostazioni»: il titolo della pagina lo ripeterebbe. */}
       <div className={selected ? "max-md:hidden" : undefined}>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Impostazioni</h1>
-        <p className="text-sm text-muted-foreground">Il tuo profilo, le preferenze e il controllo sui tuoi dati.</p>
+        <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Impostazioni")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Il tuo profilo, le preferenze e il controllo sui tuoi dati.")}</p>
       </div>
 
       {isLoading ? (

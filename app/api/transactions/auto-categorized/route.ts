@@ -9,7 +9,7 @@ import { AUTOMATIC_CATEGORY_SOURCES, transactions, type AutomaticCategorySource 
 import { withRoute } from "@/lib/observability";
 
 /** Tetto ai movimenti restituiti: dopo un primo import molto grande la lista resta leggibile e la risposta leggera. */
-export const AUTO_CATEGORIZED_LIMIT = 1000;
+const AUTO_CATEGORIZED_LIMIT = 1000;
 
 /**
  * GET /api/transactions/auto-categorized — movimenti categorizzati da soli (regole e proposte sicure) che l'utente non ha

@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Liquidità · Conti: avviso di rinnovo, conti per banca con stato e saldo, collegamento di una banca o di un conto a mano. */
 
@@ -22,7 +25,7 @@ import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
 import { buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
-import { formatCurrency } from "@/lib/format";
+
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
@@ -34,6 +37,10 @@ import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 const TREND_DAYS = 30;
 
 export default function LiquiditaContiPage() {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -84,19 +91,19 @@ export default function LiquiditaContiPage() {
       {!isLoading && list.length === 0 ? (
         <EmptyState
           icon={LandmarkIcon}
-          title="Nessun conto ancora"
-          description="Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo."
+          title={tr("Nessun conto ancora")}
+          description={tr("Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo.")}
           primary={{ label: "Aggiungi il primo conto", onClick: addAccount }}
           secondary={{ label: "Importa un file", href: "/importazioni" }}
         />
       ) : (
         groups.map((group) => (
-          <section key={group.key} aria-label={group.label}>
+          <section key={group.key} aria-label={tr(group.label)}>
             <div className="flex items-baseline justify-between gap-3">
-              <SectionTitle icon={group.key === "manuali" ? BanknoteIcon : LandmarkIcon} title={group.label} color="var(--swatch-teal)" />
+              <SectionTitle icon={group.key === "manuali" ? BanknoteIcon : LandmarkIcon} title={tr(group.label)} color="var(--swatch-teal)" />
               <span className="font-heading font-semibold tabular-nums">{formatCurrency(sumBalances(group.accounts), currency)}</span>
             </div>
-            <p className="-mt-1 mb-3 text-sm text-text-2">{group.hint}</p>
+            <p className="-mt-1 mb-3 text-sm text-text-2">{tr(group.hint)}</p>
             <ul className="flex flex-col gap-2">
               {group.accounts.map((account) => {
                 const status = buildAccountStatus({
@@ -132,8 +139,7 @@ export default function LiquiditaContiPage() {
       {list.length > 0 && (
         <div className="flex flex-wrap gap-2.5">
           <Button className="h-11 gap-1.5" onClick={addAccount}>
-            <PlusIcon className="size-4" aria-hidden="true" /> Aggiungi un conto
-          </Button>
+            <PlusIcon className="size-4" aria-hidden="true" />{" "}{tr("Aggiungi un conto")}</Button>
         </div>
       )}
       <AccountDetailsDialog

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Liquidità · Categorie: board per gruppo (crea, sposta, modifica, elimina; colori automatici). */
 
@@ -17,6 +18,7 @@ const OPTIONS = [
 ] as const;
 
 export default function LiquiditaCategoriePage() {
+  const { t: tr } = useLocalization();
   const pathname = usePathname();
   const { data: categories, isLoading, isError, refetch } = useCategoriesQuery();
 
@@ -26,9 +28,9 @@ export default function LiquiditaCategoriePage() {
     <div className="flex flex-col gap-6">
       <ManagementSwitch options={OPTIONS} activeHref={pathname} />
       <section>
-        <SectionTitle icon={TagsIcon} title="Le tue categorie" color="var(--swatch-teal)" />
+        <SectionTitle icon={TagsIcon} title={tr("Le tue categorie")} color="var(--swatch-teal)" />
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-text-2">Trascina una categoria in un altro gruppo, oppure toccala per modificarla.</p>
+          <p className="text-sm text-text-2">{tr("Trascina una categoria in un altro gruppo, oppure toccala per modificarla.")}</p>
           <DistributeColorsButton />
         </div>
         {isLoading ? (

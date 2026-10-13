@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Scelta rapida della categoria di un movimento: si apre toccando l'icona. In cima la ricerca, poi le categorie più usate
@@ -47,6 +48,7 @@ function CategoryTile({ category, selected, onPick }: { category: Category; sele
 }
 
 export function CategorySheet({ categories, value, usage = {}, trigger, onSelect, rememberLabel }: CategorySheetProps) {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [remember, setRemember] = React.useState(Boolean(rememberLabel));
@@ -72,16 +74,16 @@ export function CategorySheet({ categories, value, usage = {}, trigger, onSelect
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cerca una categoria"
-            aria-label="Cerca una categoria"
+            placeholder={tr("Cerca una categoria")}
+            aria-label={tr("Cerca una categoria")}
             className="h-11 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </label>
         <div className="max-h-80 space-y-3 overflow-y-auto">
-          {sections.length === 0 && <p className="py-6 text-center text-sm text-text-2">Nessuna categoria trovata</p>}
+          {sections.length === 0 && <p className="py-6 text-center text-sm text-text-2">{tr("Nessuna categoria trovata")}</p>}
           {sections.map((section) => (
             <div key={section.key} role="group" aria-label={section.label ?? "Categorie"}>
-              {section.label && <p className="mb-1.5 text-sm font-semibold text-text-2">{section.label}</p>}
+              {section.label && <p className="mb-1.5 text-sm font-semibold text-text-2">{tr(section.label)}</p>}
               <div className="grid grid-cols-2 gap-1.5">
                 {section.categories.map((category) => (
                   <CategoryTile key={`${section.key}-${category.id}`} category={category} selected={category.id === value} onPick={() => pick(category.id)} />
@@ -92,7 +94,7 @@ export function CategorySheet({ categories, value, usage = {}, trigger, onSelect
         </div>
         {rememberLabel && (
           <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-foreground/[0.04] px-3 text-sm">
-            <span>Ricordala per i prossimi «{rememberLabel}»</span>
+            <span>{tr("Ricordala per i prossimi «")}{rememberLabel}»</span>
             <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="size-5 accent-[var(--primary)]" />
           </label>
         )}

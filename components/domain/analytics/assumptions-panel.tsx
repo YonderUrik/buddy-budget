@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pannello delle ipotesi: ogni campo dice che cosa significa e da dove partire. Le cifre che l'app può ricavare dai
@@ -41,16 +42,18 @@ export interface AssumptionsPanelProps {
 }
 
 function Field({ label, hint, children, id }: { label: string; hint: string; children: React.ReactNode; id: string }) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>{tr(label)}</Label>
       {children}
-      <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{tr(hint)}</p>
     </div>
   );
 }
 
 export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, currency, pensionValue, saving, error, onSave }: AssumptionsPanelProps) {
+  const { t: tr } = useLocalization();
   const initialPercents = React.useMemo(() => toPercentDraft(assumptions), [assumptions]);
   const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
   /** Vero = al salvataggio il rendimento torna a calcolarsi dallo storico. */
@@ -121,9 +124,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
-      <p className="text-sm text-muted-foreground">
-        Tutti i calcoli partono da queste ipotesi: sono tue assunzioni, non previsioni. Cambiale e guarda come si muovono i risultati.
-      </p>
+      <p className="text-sm text-muted-foreground">{tr("Tutti i calcoli partono da queste ipotesi: sono tue assunzioni, non previsioni. Cambiale e guarda come si muovono i risultati.")}</p>
       <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {PERCENT_FIELDS.map((field: PercentField) => (
           <Field
@@ -157,72 +158,69 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
             ) : null}
           </Field>
         ))}
-        <Field id="ass-years" label="Anni di pensione da coprire" hint="Quanto deve durare il patrimonio. Per smettere a 45 anni e arrivare a 90, circa 45; più è lungo, più il tasso di prelievo sicuro scende.">
+        <Field id="ass-years" label={tr("Anni di pensione da coprire")} hint={tr("Quanto deve durare il patrimonio. Per smettere a 45 anni e arrivare a 90, circa 45; più è lungo, più il tasso di prelievo sicuro scende.")}>
           <Input id="ass-years" inputMode="numeric" value={years} onChange={(e) => setYears(e.target.value)} />
         </Field>
         <Field
           id="ass-spending"
-          label={`Spesa annua in pensione (${currency})`}
+          label={tr("Spesa annua in pensione ({0})", {0: currency})}
           hint={
             plan.spendingSource === "dati" && plan.spending !== null
               ? `Vuoto = uso le tue uscite ${periodPhrase}, riportate a un anno: ${money(plan.spending, currency)}. Scrivi una cifra se in pensione spenderai diversamente.`
               : `Vuoto = uso le tue uscite ${periodPhrase}, riportate a un anno (servono almeno 3 mesi di movimenti).`
           }
         >
-          <Input id="ass-spending" inputMode="numeric" value={spending} placeholder="Dai tuoi dati" onChange={(e) => setSpending(e.target.value)} />
+          <Input id="ass-spending" inputMode="numeric" value={spending} placeholder={tr("Dai tuoi dati")} onChange={(e) => setSpending(e.target.value)} />
         </Field>
         <Field
           id="ass-savings"
-          label={`Risparmio annuo (${currency})`}
+          label={tr("Risparmio annuo ({0})", {0: currency})}
           hint={
             plan.savingsSource === "dati" && plan.savings !== null
               ? `Vuoto = uso quanto hai messo da parte ${periodPhrase}, riportato a un anno: ${money(plan.savings, currency)}.`
               : `Vuoto = uso entrate meno uscite ${periodPhrase}, riportate a un anno. Scrivi 0 se non versi più nulla.`
           }
         >
-          <Input id="ass-savings" inputMode="numeric" value={savings} placeholder="Dai tuoi dati" onChange={(e) => setSavings(e.target.value)} />
+          <Input id="ass-savings" inputMode="numeric" value={savings} placeholder={tr("Dai tuoi dati")} onChange={(e) => setSavings(e.target.value)} />
         </Field>
-        <Field id="ass-rule" label="Regola di prelievo" hint="Come decidi quanto prelevare ogni anno in pensione. La scheda Prelievi le confronta.">
+        <Field id="ass-rule" label={tr("Regola di prelievo")} hint={tr("Come decidi quanto prelevare ogni anno in pensione. La scheda Prelievi le confronta.")}>
           <Select value={rule} onValueChange={(v) => v && setRule(v as WithdrawalRule)}>
-            <SelectTrigger id="ass-rule" className="w-full" aria-label="Regola di prelievo">
-              <SelectValue>{(v: string | null) => (v ? RULE_LABELS[v as WithdrawalRule] : "")}</SelectValue>
+            <SelectTrigger id="ass-rule" className="w-full" aria-label={tr("Regola di prelievo")}>
+              <SelectValue>{(v: string | null) => (v ? tr(RULE_LABELS[v as WithdrawalRule]) : "")}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {WITHDRAWAL_RULES.map((r) => (
                 <SelectItem key={r} value={r}>
-                  {RULE_LABELS[r]}
+                  {tr(RULE_LABELS[r])}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </Field>
         <div className="flex flex-col gap-1.5 sm:col-span-2">
-          <Label>Pensione pubblica attesa (facoltativa)</Label>
+          <Label>{tr("Pensione pubblica attesa (facoltativa)")}</Label>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <Input aria-label="Importo annuo della pensione pubblica" inputMode="numeric" value={pensionAnnual} placeholder={`Importo annuo (${currency})`} onChange={(e) => setPensionAnnual(e.target.value)} />
-            <Input aria-label="Anni dall'inizio della pensione FIRE" inputMode="numeric" value={pensionAfter} placeholder="Dopo quanti anni di pensione FIRE" onChange={(e) => setPensionAfter(e.target.value)} />
+            <Input aria-label={tr("Importo annuo della pensione pubblica")} inputMode="numeric" value={pensionAnnual} placeholder={tr("Importo annuo ({0})", {0: currency})} onChange={(e) => setPensionAnnual(e.target.value)} />
+            <Input aria-label={tr("Anni dall'inizio della pensione FIRE")} inputMode="numeric" value={pensionAfter} placeholder={tr("Dopo quanti anni di pensione FIRE")} onChange={(e) => setPensionAfter(e.target.value)} />
           </div>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Se andrai in pensione presto, la pensione pubblica arriverà più tardi e ridurrà quanto devi prelevare da allora. Scrivi l&apos;importo in euro di oggi e fra quanti anni dall&apos;inizio la riceverai; lascia vuoto per ignorarla (scelta prudente).
-          </p>
+          <p className="text-xs leading-relaxed text-muted-foreground">{tr("Se andrai in pensione presto, la pensione pubblica arriverà più tardi e ridurrà quanto devi prelevare da allora. Scrivi l'importo in euro di oggi e fra quanti anni dall'inizio la riceverai; lascia vuoto per ignorarla (scelta prudente).")}</p>
         </div>
       </div>
       <div className="flex flex-col gap-3">
         <label className="flex items-start justify-between gap-4 text-sm">
           <span>
-            <span className="font-medium">Conta le imposte sulle plusvalenze</span>
-            <span className="block text-xs text-muted-foreground">Il patrimonio che spendi è quello dopo le tasse: il numero FIRE sale di conseguenza. Stimate: {money(plan.liquidation.latentTax, currency)} se vendessi tutto oggi.</span>
+            <span className="font-medium">{tr("Conta le imposte sulle plusvalenze")}</span>
+            <span className="block text-xs text-muted-foreground">{tr("Il patrimonio che spendi è quello dopo le tasse: il numero FIRE sale di conseguenza. Stimate:")}{" "}{money(plan.liquidation.latentTax, currency)}{" "}{tr("se vendessi tutto oggi.")}</span>
           </span>
-          <Switch checked={includeTax} onCheckedChange={setIncludeTax} aria-label="Conta le imposte sulle plusvalenze" />
+          <Switch checked={includeTax} onCheckedChange={setIncludeTax} aria-label={tr("Conta le imposte sulle plusvalenze")} />
         </label>
         <label className="flex items-start justify-between gap-4 text-sm">
           <span>
-            <span className="font-medium">Includi la previdenza complementare</span>
+            <span className="font-medium">{tr("Includi la previdenza complementare")}</span>
             <span className="block text-xs text-muted-foreground">
-              {pensionValue > 0 ? `Valore attuale ${money(pensionValue, currency)}. ` : ""}Di solito non è prelevabile prima dell&apos;età pensionabile, quindi è escluso di default.
-            </span>
+              {pensionValue > 0 ? tr("Valore attuale {0}. ", {0: money(pensionValue, currency)}) : ""}{tr("Di solito non è prelevabile prima dell'età pensionabile, quindi è escluso di default.")}</span>
           </span>
-          <Switch checked={includePension} onCheckedChange={setIncludePension} aria-label="Includi la previdenza complementare" />
+          <Switch checked={includePension} onCheckedChange={setIncludePension} aria-label={tr("Includi la previdenza complementare")} />
         </label>
       </div>
       {localError || error ? (
@@ -232,11 +230,9 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
       ) : null}
       <div className="flex flex-wrap gap-2">
         <Button type="submit" disabled={saving}>
-          {saving ? "Salvo…" : "Salva ipotesi"}
+          {saving ? tr("Salvo…") : tr("Salva ipotesi")}
         </Button>
-        <Button type="button" variant="outline" disabled={saving} onClick={() => reset({ ...DEFAULT_ASSUMPTIONS, terByInstrument: assumptions.terByInstrument })}>
-          Ripristina i valori consigliati
-        </Button>
+        <Button type="button" variant="outline" disabled={saving} onClick={() => reset({ ...DEFAULT_ASSUMPTIONS, terByInstrument: assumptions.terByInstrument })}>{tr("Ripristina i valori consigliati")}</Button>
       </div>
     </form>
   );

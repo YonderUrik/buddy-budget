@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 
 export type ProgressBarState =
@@ -14,13 +16,14 @@ export interface ProgressBarProps {
 
 /** Barra di avanzamento sottile: determinata (con aria-valuenow) o indeterminata (pulsante, solo se il movimento è consentito). */
 export function ProgressBar({ state, label, className }: ProgressBarProps) {
+  const { t: tr } = useLocalization();
   if (state.kind === "none") return null;
 
   if (state.kind === "indeterminate") {
     return (
       <div
         role="progressbar"
-        aria-label={label}
+        aria-label={tr(label)}
         aria-busy="true"
         className={cn("h-1.5 w-full overflow-hidden rounded-full bg-muted", className)}
       >
@@ -33,7 +36,7 @@ export function ProgressBar({ state, label, className }: ProgressBarProps) {
   return (
     <div
       role="progressbar"
-      aria-label={label}
+      aria-label={tr(label)}
       aria-valuemin={0}
       aria-valuemax={state.max}
       aria-valuenow={state.value}

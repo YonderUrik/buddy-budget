@@ -2,9 +2,10 @@
 
 /** Stato del passo «Categorie» dell'onboarding: la proposta e le modifiche dell'utente (spegni, rinomina, aggiungi). */
 
+import { useLocalization } from "@/lib/localization/provider";
+import { localizedCategoryProposal } from "@/lib/localization/categories";
 import * as React from "react";
 import {
-  buildCategoryProposal,
   CUSTOM_CATEGORY_ICON,
   FALLBACK_SETUP_NAME,
   isCustomized,
@@ -32,7 +33,12 @@ export interface UseCategorySetupResult {
 
 /** Tiene la proposta di categorie e le modifiche fatte nel foglio «Personalizza». */
 export function useCategorySetup(): UseCategorySetupResult {
-  const [items, setItems] = React.useState<CategoryProposalItem[]>(buildCategoryProposal);
+  const { productCountry, language } = useLocalization();
+  const profileKey = `${productCountry}:${language}`;
+  const initial = React.useMemo(() => localizedCategoryProposal({ productCountry, language }), [productCountry, language]);
+  const [draft, setDraft] = React.useState<{ profileKey: string; items: CategoryProposalItem[] } | null>(null);
+  const items = draft?.profileKey === profileKey ? draft.items : initial;
+  const setItems = (next: React.SetStateAction<CategoryProposalItem[]>) => setDraft({ profileKey, items: typeof next === "function" ? next(items) : next });
 
   const setup = React.useMemo(() => items.map(({ key, name, type, enabled }) => ({ key, name, type, enabled })), [items]);
   const customized = React.useMemo(() => isCustomized(setup), [setup]);
@@ -63,7 +69,7 @@ export function useCategorySetup(): UseCategorySetupResult {
       if (!reason) setItems(next);
       return reason;
     },
-    reset: () => setItems(buildCategoryProposal()),
+    reset: () => setItems(initial),
     payload: customized && !problem ? setup : undefined,
   };
 }

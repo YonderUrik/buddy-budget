@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Selettore categoria con ricerca: in cima le più usate, poi le categorie divise per gruppo di spesa;
@@ -62,6 +63,7 @@ export function CategoryPicker({
   "aria-label": ariaLabel = "Categoria",
   className,
 }: CategoryPickerProps) {
+  const { t: tr } = useLocalization();
   const listboxId = React.useId();
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -158,11 +160,11 @@ export function CategoryPicker({
             className="h-10 w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
-        <div id={listboxId} role="listbox" aria-label={ariaLabel} className="max-h-72 overflow-y-auto p-1">
-          {options.length === 0 && <p className="px-2 py-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>}
+        <div id={listboxId} role="listbox" aria-label={tr(ariaLabel)} className="max-h-72 overflow-y-auto p-1">
+          {options.length === 0 && <p className="px-2 py-6 text-center text-sm text-muted-foreground">{tr(emptyMessage)}</p>}
           {sections.map((section, sectionIndex) => (
             <div key={section.key} role="group" aria-label={section.label ?? undefined} className="py-0.5">
-              {section.label && <p className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground">{section.label}</p>}
+              {section.label && <p className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground">{tr(section.label)}</p>}
               {section.categories.map((category, categoryIndex) => {
                 const index = sectionOffsets[sectionIndex] + categoryIndex;
                 const isActive = index === activeIndex;

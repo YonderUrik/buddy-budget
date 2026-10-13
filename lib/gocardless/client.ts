@@ -165,6 +165,7 @@ export async function createRequisition(params: {
   maxHistoricalDays: number;
   redirectUrl: string;
   reference: string;
+  language?: "IT" | "EN" | "DE";
 }): Promise<Requisition> {
   const { data: agreement } = await request<{ id: string }>("agreements.create", "/agreements/enduser/", {
     method: "POST",
@@ -183,7 +184,7 @@ export async function createRequisition(params: {
       institution_id: params.institutionId,
       reference: params.reference,
       agreement: agreement.id,
-      user_language: "IT",
+      user_language: params.language ?? "IT",
     }),
   });
 

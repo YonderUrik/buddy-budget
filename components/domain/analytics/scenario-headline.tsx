@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Titolo di Analitiche: l'anno in cui puoi smettere di lavorare con le ipotesi in uso, e di quanto cambia rispetto a quelle salvate. */
 
 import { AnimatedNumber, TextMorph } from "@/components/motion";
@@ -22,12 +24,13 @@ function comparison(plan: AnalyticsPlan, baseline: AnalyticsPlan): { text: strin
 }
 
 export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProps) {
+  const { t: tr } = useLocalization();
   if (plan.target === null) {
     return (
       <div className="flex flex-col gap-1">
-        <p className="text-muted-foreground">Quando puoi smettere di lavorare</p>
-        <p className="font-heading text-2xl font-medium text-foreground">Mi serve la tua spesa annua</p>
-        <p className="text-sm text-muted-foreground">Registra almeno 3 mesi di movimenti oppure scrivila in «Tutte le ipotesi».</p>
+        <p className="text-muted-foreground">{tr("Quando puoi smettere di lavorare")}</p>
+        <p className="font-heading text-2xl font-medium text-foreground">{tr("Mi serve la tua spesa annua")}</p>
+        <p className="text-sm text-muted-foreground">{tr("Registra almeno 3 mesi di movimenti oppure scrivila in «Tutte le ipotesi».")}</p>
       </div>
     );
   }
@@ -38,10 +41,10 @@ export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProp
     years === null ? "Oltre 80 anni" : year === null ? "Già oggi" : <AnimatedNumber value={year} format={{ useGrouping: false }} />;
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-muted-foreground">{years === 0 ? "Hai già raggiunto il numero FIRE" : "Puoi smettere di lavorare intorno al"}</p>
+      <p className="text-muted-foreground">{years === 0 ? tr("Hai già raggiunto il numero FIRE") : tr("Puoi smettere di lavorare intorno al")}</p>
       <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <span className="font-heading text-5xl leading-none font-medium tracking-tight text-foreground tabular-nums sm:text-7xl">{big}</span>
-        {years !== null && years > 0 ? <TextMorph className="text-lg text-muted-foreground">{`tra ${formatYears(years)}`}</TextMorph> : null}
+        {years !== null && years > 0 ? <TextMorph className="text-lg text-muted-foreground">{tr("tra {0}", {0: formatYears(years)})}</TextMorph> : null}
         {cmp ? <TextMorph className={cn("text-lg font-semibold", cmp.positive ? "text-pos" : "text-neg")}>{cmp.text}</TextMorph> : null}
       </p>
     </div>

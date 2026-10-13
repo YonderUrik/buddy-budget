@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Ritorno alla pagina madre, uguale in tutta l'app: freccia «‹» e nome della pagina a cui si torna, sopra il titolo,
@@ -20,10 +21,11 @@ export type BackLinkProps = {
 } & ({ href: string; onClick?: never } | { onClick: () => void; href?: never });
 
 export function BackLink({ label, href, onClick, className }: BackLinkProps) {
+  const { t: tr } = useLocalization();
   const content = (
     <>
       <ChevronLeftIcon className="size-4 shrink-0" aria-hidden="true" />
-      {label}
+      {tr(label)}
     </>
   );
   if (href !== undefined) {

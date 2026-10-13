@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Anello di avanzamento dell'isola dei sync: si riempie con una molla se il totale è noto, altrimenti gira. */
 
@@ -18,6 +19,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const INDETERMINATE_ARC = 0.28;
 
 export function SyncProgressRing({ progress, label }: SyncProgressRingProps) {
+  const { t: tr } = useLocalization();
   const determinate = progress.kind === "determinate";
   const fraction = determinate ? progress.processed / Math.max(progress.total, 1) : INDETERMINATE_ARC;
   return (
@@ -25,7 +27,7 @@ export function SyncProgressRing({ progress, label }: SyncProgressRingProps) {
       viewBox="0 0 24 24"
       className={determinate ? "size-5 -rotate-90" : "size-5 -rotate-90 motion-safe:animate-spin"}
       role="progressbar"
-      aria-label={label}
+      aria-label={tr(label)}
       aria-valuemin={determinate ? 0 : undefined}
       aria-valuemax={determinate ? progress.total : undefined}
       aria-valuenow={determinate ? progress.processed : undefined}

@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * "Dividi" di un movimento: quanta parte è davvero tua. Scorciatoie grandi (tutta, metà, un terzo, un quarto), un importo
@@ -8,7 +11,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { formatCurrency } from "@/lib/format";
+
 import { clampOwnShare, excludedFromOwnShare, matchPreset, ownShareForPreset, SPLIT_PRESETS } from "@/lib/liquidity/split";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +32,10 @@ export interface SplitPanelProps {
 }
 
 export function SplitPanel({ title, total, excluded, currency, isIncome, saving = false, onSave, onCancel, className }: SplitPanelProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [own, setOwn] = React.useState(() => clampOwnShare(total - excluded, total));
   const [typed, setTyped] = React.useState(() => own.toFixed(2));
   const activePreset = matchPreset(total, own);
@@ -43,10 +50,10 @@ export function SplitPanel({ title, total, excluded, currency, isIncome, saving 
 
   return (
     <div className={cn("mx-1 my-2 rounded-2xl bg-foreground/[0.04] p-4 sm:p-5", className)}>
-      <p className="text-sm font-semibold text-text-2">Dividi · {title}</p>
+      <p className="text-sm font-semibold text-text-2">{tr("Dividi ·")}{" "}{tr(title)}</p>
       <p className="font-heading text-3xl font-medium tabular-nums">{formatCurrency(total, currency)}</p>
-      <p className="mt-1 text-sm text-text-2">{isIncome ? "Quanto di questa entrata è tuo?" : "Quanto di questa spesa è tuo?"}</p>
-      <div role="group" aria-label="Scorciatoie" className="mt-3 flex flex-wrap gap-2">
+      <p className="mt-1 text-sm text-text-2">{isIncome ? tr("Quanto di questa entrata è tuo?") : tr("Quanto di questa spesa è tuo?")}</p>
+      <div role="group" aria-label={tr("Scorciatoie")} className="mt-3 flex flex-wrap gap-2">
         {SPLIT_PRESETS.map((preset) => (
           <button
             key={preset.key}
@@ -58,12 +65,10 @@ export function SplitPanel({ title, total, excluded, currency, isIncome, saving 
               activePreset?.key === preset.key ? "border-primary bg-primary/10 text-primary" : "border-border bg-card hover:bg-muted"
             )}
           >
-            {preset.label}
+            {tr(preset.label)}
           </button>
         ))}
-        <label className="flex min-h-11 items-center gap-2 rounded-xl border-[1.5px] border-border bg-card px-3 text-sm font-semibold">
-          Importo
-          <input
+        <label className="flex min-h-11 items-center gap-2 rounded-xl border-[1.5px] border-border bg-card px-3 text-sm font-semibold">{tr("Importo")}<input
             type="number"
             inputMode="decimal"
             min={0}
@@ -99,11 +104,9 @@ export function SplitPanel({ title, total, excluded, currency, isIncome, saving 
       </div>
       <div className="mt-4 flex gap-2">
         <Button className="h-11 flex-1" disabled={saving} onClick={() => onSave(excludedFromOwnShare(total, own))}>
-          {saving ? "Salvataggio…" : "Salva"}
+          {saving ? tr("Salvataggio…") : tr("Salva")}
         </Button>
-        <Button variant="outline" className="h-11" onClick={onCancel}>
-          Annulla
-        </Button>
+        <Button variant="outline" className="h-11" onClick={onCancel}>{tr("Annulla")}</Button>
       </div>
     </div>
   );

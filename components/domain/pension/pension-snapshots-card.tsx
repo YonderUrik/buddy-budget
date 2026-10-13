@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Inserimento delle fotografie del fondo: l'utente riporta ogni tanto i due valori che vede nell'area clienti
@@ -33,6 +34,7 @@ const parseAmount = (raw: string): number | null => {
 };
 
 export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemove, onImport }: PensionSnapshotsCardProps) {
+  const { t: tr } = useLocalization();
   const [date, setDate] = React.useState(today);
   const [contributions, setContributions] = React.useState("");
   const [value, setValue] = React.useState("");
@@ -65,40 +67,32 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
   return (
     <PensionSection
       icon={DatabaseIcon}
-      title="Aggiorna i valori del fondo"
+      title={tr("Aggiorna i valori del fondo")}
       color="var(--primary)"
-      description="Riporta i due numeri che vedi nell'area clienti, ogni volta che vuoi (di solito dopo ogni versamento del TFR). Il versamento lo ricaviamo noi dalla differenza. Se esiste già una fotografia con la stessa data, viene sostituita."
+      description={tr("Riporta i due numeri che vedi nell'area clienti, ogni volta che vuoi (di solito dopo ogni versamento del TFR). Il versamento lo ricaviamo noi dalla differenza. Se esiste già una fotografia con la stessa data, viene sostituita.")}
     >
       <div className="flex flex-col gap-5">
         <form onSubmit={submit} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
-            Data
-            <Input type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">{tr("Data")}<Input type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />
           </label>
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
-            Contributi netti
-            <Input inputMode="decimal" placeholder="es. 10.880" value={contributions} onChange={(e) => setContributions(e.target.value)} />
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">{tr("Contributi netti")}<Input inputMode="decimal" placeholder={tr("es. 10.880")} value={contributions} onChange={(e) => setContributions(e.target.value)} />
           </label>
-          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
-            Controvalore
-            <Input inputMode="decimal" placeholder="es. 11.420" value={value} onChange={(e) => setValue(e.target.value)} />
+          <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">{tr("Controvalore")}<Input inputMode="decimal" placeholder={tr("es. 11.420")} value={value} onChange={(e) => setValue(e.target.value)} />
           </label>
-          <Button type="submit" disabled={!canSave || saving}>{saving ? "Salvo…" : "Aggiungi"}</Button>
+          <Button type="submit" disabled={!canSave || saving}>{saving ? tr("Salvo…") : tr("Aggiungi")}</Button>
         </form>
-        {error ? <p role="alert" className="text-sm text-neg">{error}</p> : null}
+        {error ? <p role="alert" className="text-sm text-neg">{tr(error)}</p> : null}
         {onImport ? (
-          <p className="text-sm text-text-2">
-            Hai già uno storico?{" "}
+          <p className="text-sm text-text-2">{tr("Hai già uno storico?")}{" "}
             <button type="button" onClick={onImport} className="inline-flex min-h-8 items-center gap-1 font-semibold text-primary underline-offset-2 hover:underline">
-              <Upload size={14} aria-hidden="true" /> Importa da file CSV o Excel
-            </button>
+              <Upload size={14} aria-hidden="true" />{" "}{tr("Importa da file CSV o Excel")}</button>
           </p>
         ) : null}
 
         {rows.length > 0 ? (
           <div className="flex flex-col">
             <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr_auto] gap-2 border-b border-border pb-2 text-sm text-text-2">
-              <span>Data</span><span className="text-right">Versamento</span><span className="text-right">Contributi netti</span><span className="text-right">Controvalore</span><span className="w-8" />
+              <span>{tr("Data")}</span><span className="text-right">{tr("Versamento")}</span><span className="text-right">{tr("Contributi netti")}</span><span className="text-right">{tr("Controvalore")}</span><span className="w-8" />
             </div>
             {visible.map((snapshot) => {
               const previous = sorted[sorted.findIndex((s) => s.id === snapshot.id) - 1];
@@ -109,7 +103,7 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
                   <span className="text-right text-pos">{delta !== null && delta > 0 ? `+${money(delta, currency)}` : "—"}</span>
                   <span className="text-right text-text-2">{money(snapshot.netContributions, currency)}</span>
                   <span className="text-right text-foreground">{money(snapshot.value, currency)}</span>
-                  <Button variant="ghost" size="icon-sm" aria-label={`Elimina la fotografia del ${formatLongDateKey(snapshot.date)}`} onClick={() => onRemove(snapshot.id)}>
+                  <Button variant="ghost" size="icon-sm" aria-label={tr("Elimina la fotografia del {0}", {0: formatLongDateKey(snapshot.date)})} onClick={() => onRemove(snapshot.id)}>
                     <Trash2 size={14} aria-hidden="true" />
                   </Button>
                 </div>
@@ -117,7 +111,7 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
             })}
             {rows.length > LIST_VISIBLE_ROWS ? (
               <Button variant="ghost" size="sm" className="mt-1 self-start" onClick={() => setShowAll((v) => !v)}>
-                {showAll ? "Mostra meno" : `Mostra tutte (${rows.length})`}
+                {showAll ? tr("Mostra meno") : tr("Mostra tutte ({0})", {0: rows.length})}
               </Button>
             ) : null}
           </div>

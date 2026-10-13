@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * Percorso numerato dell'import: su schermi larghi i passi con etichetta e filo, su telefono «Passo 2 di 4» con una
  * barra a segmenti (le etichette non ci stanno). Sotto, una frase che dice cosa si fa nel passo corrente.
@@ -13,14 +15,14 @@ export interface ImportStepperProps {
 }
 
 export function ImportStepper({ current, className }: ImportStepperProps) {
+  const { t: tr } = useLocalization();
   const index = IMPORT_STEPS.indexOf(current);
-  const labels = IMPORT_STEPS.map((step) => IMPORT_STEP_LABELS[step]);
+  const labels = IMPORT_STEPS.map((step) => tr(IMPORT_STEP_LABELS[step]));
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <DialogSteps steps={labels} current={index} ariaLabel="Passi dell'import" className="hidden sm:flex" />
-      <div className="flex flex-col gap-2 sm:hidden" role="group" aria-label="Passi dell'import">
-        <p className="text-sm font-medium text-foreground" aria-current="step">
-          Passo {index + 1} di {IMPORT_STEPS.length} · {labels[index]}
+      <DialogSteps steps={labels} current={index} ariaLabel={tr("Passi dell'import")} className="hidden sm:flex" />
+      <div className="flex flex-col gap-2 sm:hidden" role="group" aria-label={tr("Passi dell'import")}>
+        <p className="text-sm font-medium text-foreground" aria-current="step">{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{IMPORT_STEPS.length} · {labels[index]}
         </p>
         <div className="flex gap-1.5" aria-hidden="true">
           {IMPORT_STEPS.map((step, i) => (

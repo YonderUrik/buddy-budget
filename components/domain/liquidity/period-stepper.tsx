@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Scelta del periodo da analizzare: frecce per il periodo prima/dopo, etichetta e selettore Mese · 3 mesi · Anno. */
 
@@ -22,23 +23,24 @@ export interface PeriodStepperProps {
 }
 
 export function PeriodStepper({ period, onPeriodChange, referenceDate, onReferenceDateChange, latest }: PeriodStepperProps) {
+  const { t: tr } = useLocalization();
   const label = formatPeriodLabel(period, getPeriodRange(period, referenceDate));
   const atLatest = getPeriodRange(period, referenceDate).to.getTime() >= latest.getTime();
   const arrow = "flex size-11 items-center justify-center rounded-xl text-text-2 hover:bg-muted disabled:opacity-35 disabled:hover:bg-transparent";
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-1">
-        <button type="button" className={arrow} aria-label="Periodo precedente" onClick={() => onReferenceDateChange(shiftReferenceDate(period, referenceDate, -1))}>
+        <button type="button" className={arrow} aria-label={tr("Periodo precedente")} onClick={() => onReferenceDateChange(shiftReferenceDate(period, referenceDate, -1))}>
           <ChevronLeftIcon className="size-5" aria-hidden="true" />
         </button>
         <span className="min-w-36 text-center font-heading text-lg font-medium" aria-live="polite">
-          {label}
+          {tr(label)}
         </span>
-        <button type="button" className={arrow} aria-label="Periodo successivo" disabled={atLatest} onClick={() => onReferenceDateChange(shiftReferenceDate(period, referenceDate, 1))}>
+        <button type="button" className={arrow} aria-label={tr("Periodo successivo")} disabled={atLatest} onClick={() => onReferenceDateChange(shiftReferenceDate(period, referenceDate, 1))}>
           <ChevronRightIcon className="size-5" aria-hidden="true" />
         </button>
       </div>
-      <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Ampiezza del periodo" />
+      <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Ampiezza del periodo")} />
     </div>
   );
 }

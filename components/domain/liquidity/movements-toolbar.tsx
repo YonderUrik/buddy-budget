@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Strumenti sopra l'elenco: ricerca, tipo (tutti/uscite/entrate), "Da decidere" e il filtro di categoria attivo. */
 
@@ -30,6 +31,7 @@ export interface MovementsToolbarProps {
 }
 
 export function MovementsToolbar(props: MovementsToolbarProps) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-wrap items-center gap-2.5">
       <label className="flex min-h-11 min-w-0 flex-1 basis-56 items-center gap-2 rounded-xl border border-input bg-card px-3">
@@ -37,12 +39,12 @@ export function MovementsToolbar(props: MovementsToolbarProps) {
         <input
           value={props.searchText}
           onChange={(event) => props.onSearchTextChange(event.target.value)}
-          placeholder="Cerca nei movimenti"
-          aria-label="Cerca nei movimenti"
+          placeholder={tr("Cerca nei movimenti")}
+          aria-label={tr("Cerca nei movimenti")}
           className="h-11 w-full min-w-0 bg-transparent outline-none placeholder:text-muted-foreground"
         />
       </label>
-      <SegmentedControl options={TYPE_OPTIONS} value={props.direction} onChange={props.onDirectionChange} ariaLabel="Tipo di movimento" />
+      <SegmentedControl options={TYPE_OPTIONS} value={props.direction} onChange={props.onDirectionChange} ariaLabel={tr("Tipo di movimento")} />
       {props.toFix > 0 && (
         <button
           type="button"
@@ -59,15 +61,13 @@ export function MovementsToolbar(props: MovementsToolbarProps) {
           onClick={() => track("categorize_ai_link_clicked", { from: "movimenti" })}
           className="flex min-h-11 items-center gap-1.5 rounded-xl border-[1.5px] border-primary/30 bg-primary/10 px-3.5 text-sm font-semibold text-primary hover:bg-primary/15"
         >
-          <SparklesIcon className="size-4" aria-hidden="true" />
-          Categorizza con l&apos;AI
-        </Link>
+          <SparklesIcon className="size-4" aria-hidden="true" />{tr("Categorizza con l'AI")}</Link>
       )}
       {props.categoryName && (
         <button type="button" onClick={props.onClearCategory} className="flex min-h-11 items-center gap-1.5 rounded-xl bg-primary/10 px-3.5 text-sm font-semibold text-primary">
           {props.categoryName}
           <XIcon className="size-4" aria-hidden="true" />
-          <span className="sr-only">Togli il filtro</span>
+          <span className="sr-only">{tr("Togli il filtro")}</span>
         </button>
       )}
     </div>

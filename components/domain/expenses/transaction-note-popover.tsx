@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Icona + popover per leggere/editare la nota libera di una transazione (auto o manuale). */
 
@@ -18,6 +19,7 @@ export interface TransactionNotePopoverProps {
 }
 
 export function TransactionNotePopover({ transaction }: TransactionNotePopoverProps) {
+  const { t: tr } = useLocalization();
   const updateMutation = useUpdateTransactionMutation();
   const [note, setNote] = React.useState(transaction.note ?? "");
   const [open, setOpen] = React.useState(false);
@@ -53,39 +55,37 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
         )}
         aria-label={
           hasSaveError
-            ? "Salvataggio della nota non riuscito, riprova"
+            ? tr("Salvataggio della nota non riuscito, riprova")
             : hasNote
-              ? "Modifica nota"
-              : "Aggiungi nota"
+              ? tr("Modifica nota")
+              : tr("Aggiungi nota")
         }
         title={
           hasSaveError
-            ? "Salvataggio della nota non riuscito, riprova"
+            ? tr("Salvataggio della nota non riuscito, riprova")
             : hasNote
               ? (transaction.note ?? undefined)
-              : "Aggiungi nota"
+              : tr("Aggiungi nota")
         }
       >
         <NotebookPen className="size-4" aria-hidden="true" />
-        <span className="sm:sr-only">Nota</span>
+        <span className="sm:sr-only">{tr("Nota")}</span>
       </PopoverTrigger>
       <PopoverContent align="end">
         {/* Sul telefono il popover è un foglio dal basso: titolo e «Fatto» danno contesto e un modo chiaro per chiudere. */}
-        <PopoverTitle className="font-heading text-base font-semibold sm:sr-only">Nota</PopoverTitle>
+        <PopoverTitle className="font-heading text-base font-semibold sm:sr-only">{tr("Nota")}</PopoverTitle>
         <Textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           maxLength={NOTE_MAX_LENGTH}
-          placeholder="Aggiungi una nota (es. a cosa si riferisce questa spesa)"
+          placeholder={tr("Aggiungi una nota (es. a cosa si riferisce questa spesa)")}
           className="min-h-20 text-sm"
-          aria-label="Nota transazione"
+          aria-label={tr("Nota transazione")}
         />
         {updateMutation.isError && (
-          <p className="mt-1 text-xs text-destructive">Salvataggio non riuscito, riprova.</p>
+          <p className="mt-1 text-xs text-destructive">{tr("Salvataggio non riuscito, riprova.")}</p>
         )}
-        <Button type="button" className="h-11 sm:hidden" onClick={() => handleOpenChange(false)}>
-          Fatto
-        </Button>
+        <Button type="button" className="h-11 sm:hidden" onClick={() => handleOpenChange(false)}>{tr("Fatto")}</Button>
       </PopoverContent>
     </Popover>
   );

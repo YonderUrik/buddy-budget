@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Prossime rate dei finanziamenti con il pulsante per segnarle pagate senza entrare nel debito; una rata scaduta è evidenziata. */
 
@@ -9,7 +12,7 @@ import type { LoanPlanRow } from "@/lib/calc/debt-plan";
 import { todayIso } from "@/lib/debts/dates";
 import { findDueRow } from "@/lib/debts/overview-insights";
 import type { DebtDueItem, DebtView } from "@/lib/debts/view";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 import { PayInstallmentDialog } from "./pay-installment-dialog";
 import { DEBTS_COLORS } from "./debts-theme";
@@ -37,11 +40,15 @@ export function dueText(days: number): string {
 }
 
 export function DebtsUpcomingCard({ items, debts, currency }: DebtsUpcomingCardProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [pay, setPay] = React.useState<{ debtId: string; row: LoanPlanRow } | null>(null);
   if (items.length === 0) return null;
   const today = todayIso();
   return (
-    <PanelSection icon={CalendarClockIcon} title="Prossime rate" color={DEBTS_COLORS.dues}>
+    <PanelSection icon={CalendarClockIcon} title={tr("Prossime rate")} color={DEBTS_COLORS.dues}>
       <ul>
           {items.map((item, index) => {
             const [, month, day] = item.date.split("-").map(Number);
@@ -63,7 +70,7 @@ export function DebtsUpcomingCard({ items, debts, currency }: DebtsUpcomingCardP
                   type="button"
                   disabled={!row}
                   onClick={() => row && setPay({ debtId: item.debtId, row })}
-                  aria-label={`Segna pagata la rata di ${item.name}`}
+                  aria-label={tr("Segna pagata la rata di {0}", {0: item.name})}
                   className="flex size-9 shrink-0 items-center justify-center rounded-full border-2 border-border text-transparent transition-colors hover:border-primary hover:text-primary focus-visible:border-primary focus-visible:text-primary disabled:opacity-40"
                 >
                   <CheckIcon size={16} aria-hidden="true" />

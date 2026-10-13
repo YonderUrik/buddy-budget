@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Domanda 3, «Il patrimonio reggerà?»: probabilità di durare smettendo oggi, confronto tra regole e rischio. */
 
@@ -26,6 +27,7 @@ export interface LastingSectionProps extends QuestionSectionData {
 }
 
 export function LastingSection({ question, base, assumptions, plan, results }: LastingSectionProps) {
+  const { t: tr } = useLocalization();
   const { currency } = base;
   const answer = results ? lastingAnswer(results, assumptions.rule, assumptions.retirementYears) : null;
   const expert = () => (
@@ -38,7 +40,7 @@ export function LastingSection({ question, base, assumptions, plan, results }: L
   return (
     <QuestionSection question={question} expertHint="probabilità di successo, regole di prelievo, rischio del portafoglio" renderExpert={expert}>
       {!answer ? (
-        <MissingData>Per simulare serve la tua spesa annua. Scrivila nelle ipotesi, oppure registra almeno 3 mesi di movimenti.</MissingData>
+        <MissingData>{tr("Per simulare serve la tua spesa annua. Scrivila nelle ipotesi, oppure registra almeno 3 mesi di movimenti.")}</MissingData>
       ) : (
         <>
           <div className="flex flex-col gap-2 text-base leading-relaxed text-muted-foreground">
@@ -47,15 +49,13 @@ export function LastingSection({ question, base, assumptions, plan, results }: L
             </p>
             <p>{answer.verdict.text}.</p>
             {answer.better ? (
-              <p>
-                Cambiando il modo di prelevare la situazione cambia: con la regola «{answer.better.label}» il patrimonio regge nel {pct(answer.better.success, 0)} dei casi.
-              </p>
+              <p>{tr("Cambiando il modo di prelevare la situazione cambia: con la regola «")}{tr(answer.better.label)}{tr("» il patrimonio regge nel")}{" "}{pct(answer.better.success, 0)}{" "}{tr("dei casi.")}</p>
             ) : null}
           </div>
-          <ul className="flex flex-wrap gap-2" aria-label="Probabilità di successo per regola di prelievo">
+          <ul className="flex flex-wrap gap-2" aria-label={tr("Probabilità di successo per regola di prelievo")}>
             {answer.rules.map((r) => (
               <li key={r.rule} className={cn("rounded-full px-3 py-1 text-xs font-semibold", r.success >= 0.9 ? TONE_CLASS.pos : r.success >= 0.75 ? TONE_CLASS.default : TONE_CLASS.neg)}>
-                <Term id={RULE_TERMS[r.rule]}>{r.label}</Term> · {pct(r.success, 0)}
+                <Term id={RULE_TERMS[r.rule]}>{tr(r.label)}</Term> · {pct(r.success, 0)}
               </li>
             ))}
           </ul>

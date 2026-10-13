@@ -1,4 +1,6 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+
 
 /**
  * Scheda Portafoglio di Investimenti, la più essenziale: quanto vale e quanto ha guadagnato, e le posizioni (con la ricerca di un titolo e quelli seguiti).
@@ -27,6 +29,7 @@ import { useBackfillStatusQuery } from "@/lib/queries/investments";
 import { useInvestmentsView } from "@/lib/queries/investments-view";
 
 export default function InvestimentiPage() {
+
   const [includeFees, setIncludeFees] = React.useState(true);
   const [includeTaxes, setIncludeTaxes] = React.useState(true);
   const [period, setPeriod] = React.useState<PortfolioChartPeriod>(INVESTMENTS_DEFAULT_PERIOD);

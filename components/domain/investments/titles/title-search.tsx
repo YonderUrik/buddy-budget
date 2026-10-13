@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Ricerca di un titolo per nome, ticker o ISIN: trova quelli già noti (anche venduti, se hanno operazioni) e quelli di
@@ -19,13 +20,14 @@ export interface TitleSearchProps {
 }
 
 export function TitleSearch({ currency, suggestions, hrefBase = "/investimenti/titoli", onSelect }: TitleSearchProps) {
+  const { t: tr } = useLocalization();
   const router = useRouter();
   return (
     <InstrumentPicker
       value={null}
       defaultCurrency={currency}
       suggestions={suggestions}
-      placeholder="Cerca un titolo"
+      placeholder={tr("Cerca un titolo")}
       className="w-full sm:w-64"
       onChange={(instrument) => {
         onSelect?.(instrument);

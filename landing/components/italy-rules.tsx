@@ -9,12 +9,12 @@ import { TrackedSection } from "./tracked-section";
  * "Le regole italiane, già nei conti" come tabella: la regola, cosa ne fa l'app, il calcolatore gratuito collegato (se
  * esiste) e la fonte ufficiale. È il vantaggio che le app straniere non hanno, e la parte più citabile della pagina.
  */
-export function ItalyRules({ content = ITALY }: { content?: typeof ITALY }) {
+export function ItalyRules({ content = ITALY, titleAs: Title = "h2" }: { content?: typeof ITALY; titleAs?: "h1" | "h2" }) {
   return (
     <TrackedSection id="italia" section="italia" className="sec italy">
       <div className="wrap">
         <span className="ref">{content.kicker}</span>
-        <h2 className="t">{content.title}</h2>
+        <Title className="t">{content.title}</Title>
         <p className="lede">{content.lede}</p>
         <Reveal className="it-wrap cell">
           <table className="it">

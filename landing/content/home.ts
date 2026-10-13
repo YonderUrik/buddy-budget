@@ -125,3 +125,22 @@ export const COMPARE = {
     { label: "Dati tuoi, esportabili", cells: [["si", "il file è tuo"], ["parziale", "dipende dall'app"], ["si", "con ZIP completo quando vuoi"]] },
   ] satisfies readonly CompareRow[],
 } as const;
+
+export interface DeepLink {
+  href: string;
+  icon: HomeIcon;
+  title: string;
+  text: string;
+}
+
+/** «Per approfondire»: in home restano le risposte brevi, i dettagli stanno in queste pagine. */
+export const DEEP_LINKS = {
+  kicker: "Per approfondire",
+  title: "I dettagli, quando ti servono.",
+  links: [
+    { href: CONTENT_PATHS.funzioni, icon: "dashboard", title: "Tutte le funzioni", text: "Cosa fa l'app, area per area." },
+    { href: CONTENT_PATHS.strumenti, icon: "calculator", title: "Calcolatori gratuiti", text: "Obiettivo di risparmio, mutuo e tasse, senza account." },
+    { href: CONTENT_PATHS.tasse, icon: "landmark-gov", title: "Tasse italiane", text: "Le regole che l'app applica, con le fonti, e il confronto con un foglio Excel." },
+    { href: CONTENT_PATHS.sicurezza, icon: "shield", title: "Sicurezza e privacy", text: "Cosa salviamo, cosa no e come cancelli tutto." },
+  ] satisfies readonly DeepLink[],
+} as const;

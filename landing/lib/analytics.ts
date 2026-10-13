@@ -5,7 +5,7 @@ import type { TourId } from "@/content/sheet";
 /** Sezioni della pagina misurate con `section_view`. */
 export type SectionId =
   | "hero" | "fonti" | "app" | "italia" | "schermate" | "funzioni" | "sicurezza" | "codice" | "perchi" | "confronto"
-  | "domande" | "fine";
+  | "domande" | "approfondisci" | "fine";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).

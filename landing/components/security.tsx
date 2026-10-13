@@ -4,10 +4,9 @@ import { CONTENT_PATHS } from "@/content/seo-pages";
 import { SECURITY, SOURCE_URL, SUPPORT_EMAIL } from "@/content/site";
 import { MailLink } from "./mail-link";
 import { SourceLink } from "./source-link";
-import { DataFlow } from "./data-flow";
 import { TrackedSection } from "./tracked-section";
 
-/** Sezione "Sicurezza e privacy" della home, volutamente breve: percorso dei dati (diagramma), tre fatti con fonte, chi c'è dietro con un contatto e il rimando alla pagina /sicurezza, dove sta tutto il resto. */
+/** Sezione "Sicurezza e privacy" della home, volutamente breve: collegamento in tre passi, tre fatti con fonte, chi c'è dietro con un contatto e il rimando alla pagina /sicurezza, dove sta tutto il resto. */
 export function Security({ content = SECURITY }: { content?: typeof SECURITY }) {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security">
@@ -25,7 +24,6 @@ export function Security({ content = SECURITY }: { content?: typeof SECURITY }) 
             </li>
           ))}
         </ol>
-        <DataFlow />
         <ul className="sec-facts">
           {content.facts.map((fact) => (
             <li key={fact.text}>

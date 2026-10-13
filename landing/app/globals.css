@@ -170,7 +170,7 @@ button { font: inherit; color: inherit; }
 .kicker { font: 600 12px var(--f-b); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
 /* riferimento di cella sopra i titoli delle sezioni della home («Spese!A1») */
 .ref { display: block; font: 600 12px var(--f-b); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
-h2.t { font-size: clamp(30px, 4.2vw, 50px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.04; max-width: 20em; }
+h1.t, h2.t { font-size: clamp(30px, 4.2vw, 50px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.04; max-width: 20em; }
 .mono { font-family: var(--f-m); }
 /* carta a quadretti: righe da 32px e colonne da 120px, come le celle di un foglio */
 .paper { background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 100% 32px, 120px 100%; }

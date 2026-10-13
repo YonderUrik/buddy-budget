@@ -23,7 +23,7 @@ export interface NavLink {
 /** Un solo menu per tutto il sito: indirizzi assoluti, così funziona uguale dalla home e dalle pagine interne. */
 export const DEFAULT_NAV_LINKS: readonly NavLink[] = [
   { href: CONTENT_PATHS.funzioni, label: "Funzioni" },
-  { href: "/#italia", label: "Tasse italiane" },
+  { href: CONTENT_PATHS.tasse, label: "Tasse italiane" },
   { href: CONTENT_PATHS.strumenti, label: "Calcolatori" },
   { href: CONTENT_PATHS.schermate, label: "Schermate" },
   { href: CONTENT_PATHS.sicurezza, label: "Sicurezza" },

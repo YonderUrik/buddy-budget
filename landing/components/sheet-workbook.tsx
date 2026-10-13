@@ -31,7 +31,7 @@ const AUTO_MS: Record<View, number> = { foglio: 3800, app: 5200 };
  * partono. Il passaggio all'app parte dalla cella del totale, che si allarga nella Panoramica. Invia `sheet_view_toggled` solo per i cambi scelti dall'utente.
  */
 export function SheetWorkbook({ content }: { content: typeof SHEET_HERO }) {
-  const [view, setView] = useState<View>("foglio");
+  const [view, setView] = useState<View>("app");
   const [stopped, setStopped] = useState(false);
   const [paused, setPaused] = useState(false);
   const [visible, setVisible] = useState(false);

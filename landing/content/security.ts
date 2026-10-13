@@ -85,7 +85,7 @@ export const FLOW = {
       id: "gocardless",
       seesTitle: "Cosa riceve GoCardless",
       label: "GoCardless",
-      role: "Fornitore autorizzato (PSD2)",
+      role: "Società autorizzata a collegare le banche",
       sees: ["GoCardless SAS è autorizzata dall'autorità francese di vigilanza (ACPR, n. 17118) a fornire servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti e li passa a BuddyBudget, perché l'hai chiesto tu. Ne conserva una copia secondo le sue condizioni e gli obblighi di legge."],
       never: ["Non vede le tue credenziali e non può muovere denaro: il servizio è solo di lettura."],
     },

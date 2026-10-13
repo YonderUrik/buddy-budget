@@ -19,10 +19,10 @@ export interface SheetRow {
 }
 
 export const SHEET_HERO = {
-  title: "Il foglio dei conti, senza aggiornarlo",
+  title: "Tutti i tuoi soldi in un posto, senza aggiornarli",
   /** Parole evidenziate come una cella selezionata, in coda al titolo. */
   titleMark: "a mano",
-  lede: "Vedi dove vanno i soldi ogni mese, senza copiare l'estratto conto. E se hai investimenti, un mutuo o un fondo pensione, li trovi nello stesso posto, con le tasse italiane già calcolate.",
+  lede: "I movimenti arrivano dalla banca già divisi per categoria: vedi quanto spendi, quanto metti da parte e quando arrivi a un obiettivo. Investimenti, mutuo e fondo pensione stanno nello stesso posto, con le tasse italiane già calcolate.",
   fileName: "Conti_2026_DEFINITIVO_v3.xlsx",
   fileAge: "ultima modifica: 3 mesi fa",
   formulaCell: "B12",

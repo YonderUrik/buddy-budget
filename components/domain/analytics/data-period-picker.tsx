@@ -6,7 +6,7 @@
  */
 
 import * as React from "react";
-import { SegmentedControl } from "@/components/domain/shared";
+import { InfoHint, SegmentedControl } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CUSTOM_PERIOD_LIMITS, dataPeriodSchema, monthSpan, toMonthKey, type DataPeriod } from "@/lib/analitiche/period";
@@ -85,9 +85,9 @@ export function DataPeriodPicker({ period, fromKey, toKey, today, updating, savi
   const span = monthSpan(from, to);
   const error =
     to > toMonthKey(lastFull)
-      ? "Il mese in corso non è ancora finito: fermati al mese scorso."
+      ? "Il mese in corso non è finito: fermati al mese scorso."
       : span < CUSTOM_PERIOD_LIMITS.minMonths
-        ? `Scegli almeno ${CUSTOM_PERIOD_LIMITS.minMonths} mesi, con il primo prima dell'ultimo.`
+        ? `Scegli almeno ${CUSTOM_PERIOD_LIMITS.minMonths} mesi.`
         : !dataPeriodSchema.safeParse(custom).success
           ? "Scegli al massimo 10 anni."
           : null;
@@ -103,8 +103,9 @@ export function DataPeriodPicker({ period, fromKey, toKey, today, updating, savi
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className="text-sm text-muted-foreground">I tuoi dati di</span>
         <SegmentedControl options={CHOICES} value={choice} onChange={select} ariaLabel="Periodo dei tuoi dati" />
-        <span className="text-xs text-muted-foreground" aria-live="polite">
-          {updating ? "Aggiorno le cifre…" : `${rangeText(fromKey, toKey)}: da qui vengono spesa, risparmio e rendimento.`}
+        <span className="flex items-center gap-0.5 text-xs text-muted-foreground" aria-live="polite">
+          {updating ? "Aggiorno le cifre…" : rangeText(fromKey, toKey)}
+          <InfoHint label="Cosa cambia il periodo">Risparmio, spesa e rendimento vengono dai tuoi movimenti e investimenti di questi mesi. Il mese in corso non conta perché non è finito. Una cifra scritta a mano resta la tua.</InfoHint>
         </span>
       </div>
       {choice === "personalizzato" ? (

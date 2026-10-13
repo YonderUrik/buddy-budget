@@ -1,6 +1,6 @@
 /** Testi che spiegano da dove viene il rendimento usato in Analitiche (storico, valore prudente o scelto a mano). */
 
-import { ASSUMPTION_LIMITS } from "@/lib/analitiche/assumptions";
+import { ASSUMPTION_LIMITS, DEFAULT_ASSUMPTIONS } from "@/lib/analitiche/assumptions";
 import { HIGH_RETURN_WARNING, MIN_INVESTED_FOR_ESTIMATE, type ExpectedReturnInfo, type MissingReason } from "@/lib/analitiche/historical-return";
 import type { DataPeriod } from "@/lib/analitiche/period";
 import { money, pct } from "./analytics-format";
@@ -20,7 +20,7 @@ export function returnSourceText(info: ExpectedReturnInfo, currency: string, per
   if (info.source === "manuale") return "Inserito a mano.";
   if (info.source === "prudente") {
     const reason = history.status === "manca" ? MISSING_TEXT[history.reason](currency) : "";
-    return `Valore prudente di partenza: ${reason}.`;
+    return `Uso un ${pct(DEFAULT_ASSUMPTIONS.expectedReturn, 0)} prudente: ${reason}.`;
   }
   if (history.status !== "ok" || info.historyReal === null) return "";
   const clamped = info.clamped ? ` Uso ${pct(info.value)}, il limite del cursore.` : "";
@@ -29,7 +29,12 @@ export function returnSourceText(info: ExpectedReturnInfo, currency: string, per
     : period.kind === "ultimi"
       ? `negli ultimi ${period.months} mesi`
       : `da ${monthText(history.fromKey)} a ${monthText(history.toKey)}`;
-  return `Dai tuoi dati: il portafoglio ${when} ha reso ${pct(history.nominal)} l'anno, ${pct(info.historyReal)} tolta l'inflazione.${clamped}`;
+  return `Il tuo portafoglio ${when} ha reso ${pct(history.nominal)} l'anno, ${pct(info.historyReal)} tolta l'inflazione.${clamped}`;
+}
+
+/** Etichetta breve dell'origine del rendimento, per la riga sotto il cursore. */
+export function returnSourceLabel(info: ExpectedReturnInfo): string {
+  return info.source === "manuale" ? "Scritto a mano" : info.source === "prudente" ? "Valore prudente" : "Dai tuoi dati";
 }
 
 /** Rendimento dello storico da proporre a chi ne ha scelto uno a mano, o null se non c'è. */

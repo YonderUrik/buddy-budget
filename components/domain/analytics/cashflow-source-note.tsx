@@ -1,7 +1,8 @@
 "use client";
 
-/** Riga sotto i cursori di risparmio e spesa: se la cifra viene dai movimenti o è scritta a mano, con il ritorno ai dati. */
+/** Riga breve sotto i cursori di risparmio e spesa: «Dai tuoi dati» o «A mano», con i dettagli nel tasto info. */
 
+import { InfoHint } from "@/components/domain/shared";
 import type { FigureSource } from "@/lib/analitiche/plan";
 import { money } from "./analytics-format";
 
@@ -22,23 +23,21 @@ export interface CashflowSourceNoteProps {
 export function CashflowSourceNote({ source, dataValue, periodPhrase, coveredMonths, periodMonths, currency, saving, onUseData }: CashflowSourceNoteProps) {
   if (source === "manca") return null;
   if (source === "dati") {
-    const average = coveredMonths < periodMonths ? `media dei ${coveredMonths} mesi da quando registri i movimenti` : `media dei movimenti ${periodPhrase}`;
+    const average = coveredMonths < periodMonths ? `dei ${coveredMonths} mesi da quando registri i movimenti` : `dei movimenti ${periodPhrase}`;
     return (
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        <span className="font-medium text-foreground">Dai tuoi dati:</span> {average}, su base annua.
+      <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
+        Dai tuoi dati
+        <InfoHint label="Da dove viene questa cifra">Media mensile {average}, moltiplicata per 12. I giroconti tra i tuoi conti non contano.</InfoHint>
       </p>
     );
   }
   return (
-    <p className="text-xs leading-relaxed text-muted-foreground">
-      <span className="font-medium text-foreground">Inserito a mano.</span>
+    <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
+      Scritta a mano
       {dataValue !== null ? (
-        <>
-          {" "}
-          <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseData} disabled={saving}>
-            Usa i tuoi dati ({money(dataValue, currency)})
-          </button>
-        </>
+        <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseData} disabled={saving}>
+          Usa i tuoi dati ({money(dataValue, currency)})
+        </button>
       ) : null}
     </p>
   );

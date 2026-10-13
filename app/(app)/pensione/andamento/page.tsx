@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Andamento del fondo: grafico di contributi e controvalore, poi la ripartizione anno per anno. */
 
@@ -9,11 +10,12 @@ import { yearlyBreakdown } from "@/lib/calc/pension";
 import { usePensionView } from "@/lib/pension/pension-context";
 
 export default function PensioneAndamentoPage() {
+  const { t: tr } = useLocalization();
   const { snapshots, currency } = usePensionView();
   if (snapshots.length === 0) return <PensionNoSnapshots />;
   return (
     <div className="flex flex-col gap-10">
-      <PensionSection icon={ChartLineIcon} title="Andamento del fondo" color="var(--primary)" description="I contributi versati e il controvalore del fondo, fotografia dopo fotografia.">
+      <PensionSection icon={ChartLineIcon} title={tr("Andamento del fondo")} color="var(--primary)" description={tr("I contributi versati e il controvalore del fondo, fotografia dopo fotografia.")}>
         <div className="-mx-4 sm:-mx-6">
           <PensionTrendChart snapshots={snapshots} currency={currency} />
         </div>

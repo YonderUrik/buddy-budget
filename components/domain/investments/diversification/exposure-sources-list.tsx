@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Elenco delle posizioni con la fonte di settore e area di ciascuna, e il bottone per correggerle a mano. */
 
@@ -21,34 +22,31 @@ function sharePct(share: number): string {
 }
 
 export function ExposureSourcesList({ rows, onEdit }: ExposureSourcesListProps) {
+  const { t: tr } = useLocalization();
   const [showAll, setShowAll] = React.useState(false);
   const visible = showAll ? rows : rows.slice(0, EXPOSURE_ROWS_LIMIT);
   return (
     <div className="flex flex-col gap-2">
-      <ul className="flex flex-col divide-y rounded-lg border" aria-label="Fonte dei dati di ogni posizione">
+      <ul className="flex flex-col divide-y rounded-lg border" aria-label={tr("Fonte dei dati di ogni posizione")}>
         {visible.map((row) => (
           <li key={row.instrument.id} className="flex items-center gap-3 px-3 py-2">
             <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm text-foreground">
-                {row.instrument.name} <span className="tabular-nums text-muted-foreground">· {sharePct(row.share)}</span>
+                {row.instrument.name}{" "}<span className="tabular-nums text-muted-foreground">· {sharePct(row.share)}</span>
               </p>
-              <p className="text-xs text-muted-foreground">
-                Area: {EXPOSURE_SOURCE_LABELS[row.exposure.areaSource]}
+              <p className="text-xs text-muted-foreground">{tr("Area:")}{" "}{tr(EXPOSURE_SOURCE_LABELS[row.exposure.areaSource])}
                 <br className="sm:hidden" />
-                <span className="hidden sm:inline"> · </span>
-                Settore: {EXPOSURE_SOURCE_LABELS[row.exposure.sectorSource]}
+                <span className="hidden sm:inline"> · </span>{tr("Settore:")}{" "}{tr(EXPOSURE_SOURCE_LABELS[row.exposure.sectorSource])}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => onEdit(row)}>
-              Correggi
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onEdit(row)}>{tr("Correggi")}</Button>
           </li>
         ))}
       </ul>
       {rows.length > EXPOSURE_ROWS_LIMIT ? (
         <Button variant="ghost" size="sm" className="self-start text-muted-foreground" onClick={() => setShowAll((v) => !v)}>
-          {showAll ? "Mostra meno" : `Mostra tutte (${rows.length})`}
+          {showAll ? tr("Mostra meno") : tr("Mostra tutte ({0})", {0: rows.length})}
         </Button>
       ) : null}
     </div>

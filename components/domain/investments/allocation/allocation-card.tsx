@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card "Allocazione obiettivo": quanto ogni strumento si scosta dal peso voluto e dove mettere il prossimo
@@ -59,6 +60,7 @@ export interface AllocationCardProps {
 }
 
 export function AllocationCard({ allocation, targets, positions, instrumentsById, suggestions, currency, onRegister }: AllocationCardProps) {
+  const { t: tr } = useLocalization();
   const [editing, setEditing] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const panelId = React.useId();
@@ -69,23 +71,21 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
     <>
     <PanelSection
       icon={TargetIcon}
-      title="Allocazione obiettivo"
+      title={tr("Allocazione obiettivo")}
       color="var(--swatch-emerald)"
       description={
         allocation
                 ? outOfLine.length === 0
-                  ? `Tutto entro ±${Math.round(ALLOCATION_TOLERANCE * 100)} punti dall'obiettivo.`
-                  : `${outOfLine.length === 1 ? "Uno strumento è" : `${outOfLine.length} strumenti sono`} fuori di più di ${Math.round(ALLOCATION_TOLERANCE * 100)} punti.`
-                : "Decidi quanto deve pesare ogni strumento: ti diciamo dove mettere il prossimo versamento."
+                  ? tr("Tutto entro ±{0} punti dall'obiettivo.", {0: Math.round(ALLOCATION_TOLERANCE * 100)})
+                  : tr("{0} fuori di più di {1} punti.", {0: outOfLine.length === 1 ? "Uno strumento è" : `${outOfLine.length} strumenti sono`, 1: Math.round(ALLOCATION_TOLERANCE * 100)})
+                : tr("Decidi quanto deve pesare ogni strumento: ti diciamo dove mettere il prossimo versamento.")
       }
       action={
         allocation ? (
           <div className="flex shrink-0 items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-              Modifica
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>{tr("Modifica")}</Button>
             <Button variant="outline" size="sm" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((v) => !v)}>
-              {open ? "Chiudi" : "Dettaglio"}
+              {open ? tr("Chiudi") : tr("Dettaglio")}
               <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
             </Button>
           </div>
@@ -102,7 +102,7 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
                     <span className="min-w-0 truncate text-foreground">{instrumentsById.get(row.instrumentId)?.name ?? "—"}</span>
                     <span className="shrink-0 text-xs tabular-nums text-muted-foreground sm:text-sm">
                       {pct(row.currentWeight)}
-                      {row.inTarget ? ` su ${pct(row.targetWeight)}` : ""} ·{" "}
+                      {row.inTarget ? tr(" su {0}", {0: pct(row.targetWeight)}) : ""} ·{" "}
                       <span className={cn(row.status === "in_linea" ? "text-muted-foreground" : "font-medium text-foreground")}>{driftText(row)}</span>
                     </span>
                   </div>
@@ -111,8 +111,7 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
               ))}
             </ul>
             {allocation.unpricedIds.length > 0 ? (
-              <p className="text-xs text-muted-foreground">
-                Esclusi perché senza prezzo: {allocation.unpricedIds.map((id) => instrumentsById.get(id)?.name ?? "—").join(", ")}.
+              <p className="text-xs text-muted-foreground">{tr("Esclusi perché senza prezzo:")}{" "}{allocation.unpricedIds.map((id) => instrumentsById.get(id)?.name ?? "—").join(", ")}.
               </p>
             ) : null}
             <ContributionSuggestions
@@ -124,9 +123,7 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
             />
           </>
         ) : (
-          <Button variant="outline" className="self-start" onClick={() => setEditing(true)}>
-            Imposta un obiettivo
-          </Button>
+          <Button variant="outline" className="self-start" onClick={() => setEditing(true)}>{tr("Imposta un obiettivo")}</Button>
         )}
       </div>
     </PanelSection>

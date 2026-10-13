@@ -7,6 +7,7 @@
  * slot lo stato della sidebar (compressa, drawer mobile).
  */
 
+import { useLocalization } from "@/lib/localization/provider";
 import { SidebarDeadlinesModule, SidebarFireModule, SidebarInsights } from "@/components/domain/sidebar-insights";
 import { useSidebarSlot } from "@/components/layout";
 import { usePrivacy } from "@/components/privacy-provider";
@@ -15,6 +16,7 @@ import { useSidebarModule } from "@/lib/hooks/use-sidebar-preferences";
 import { useSidebarDeadlinesQuery, useSidebarFireQuery, useSidebarSummaryQuery } from "@/lib/queries/sidebar";
 
 export function SidebarInsightsSlot() {
+  const { features } = useLocalization();
   const { collapsed, onNavigate } = useSidebarSlot();
   const { hidden, toggle } = usePrivacy();
   const [showToday] = useSidebarModule("oggi");
@@ -25,7 +27,7 @@ export function SidebarInsightsSlot() {
   const summaryNeeded = showToday || showPortfolio || showWatchlist;
   const summary = useSidebarSummaryQuery(summaryNeeded);
   const deadlines = useSidebarDeadlinesQuery(showDeadlines);
-  const fire = useSidebarFireQuery(showFire);
+  const fire = useSidebarFireQuery(showFire && features.retirement);
   const common = { summary: summary.data, loading: summary.isLoading, hidden, onToggleHidden: toggle, collapsed, onNavigate };
   return (
     <>
@@ -42,7 +44,7 @@ export function SidebarInsightsSlot() {
           onItemClick={() => track("sidebar_module_clicked", { module: "scadenze" })}
         />
       ) : null}
-      {showFire ? (
+      {showFire && features.retirement ? (
         <SidebarFireModule
           data={fire.data}
           loading={fire.isLoading}

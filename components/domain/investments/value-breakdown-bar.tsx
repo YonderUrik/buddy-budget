@@ -1,10 +1,14 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * Barra che scompone il valore del portafoglio: quanto hai pagato per ciò che possiedi e quanto ha aggiunto il
  * mercato (in verde). In perdita la barra è lunga quanto il pagato, e la parte persa è in rosso.
  */
 
 import type { ValueBreakdown } from "@/lib/investments/insights";
-import { formatCurrency } from "@/lib/format";
+
 
 export interface ValueBreakdownBarProps {
   breakdown: ValueBreakdown;
@@ -16,6 +20,10 @@ function pct(part: number, whole: number): string {
 }
 
 export function ValueBreakdownBar({ breakdown, currency }: ValueBreakdownBarProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const { paid, market, value } = breakdown;
   const gaining = market >= 0;
   // In guadagno il totale è il valore; in perdita è il pagato (la parte rossa è ciò che manca per tornarci).
@@ -27,7 +35,7 @@ export function ValueBreakdownBar({ breakdown, currency }: ValueBreakdownBarProp
       <div
         className="flex h-3 w-full overflow-hidden rounded-full bg-muted"
         role="img"
-        aria-label={`Hai pagato ${format(paid)}, il mercato ha ${gaining ? "aggiunto" : "tolto"} ${format(Math.abs(market))}`}
+        aria-label={tr("Hai pagato {0}, il mercato ha {1} {2}", {0: format(paid), 1: gaining ? "aggiunto" : "tolto", 2: format(Math.abs(market))})}
       >
         <div className="h-full bg-primary" style={{ width: pct(gaining ? paid : value, whole) }} />
         <div className={gaining ? "h-full bg-pos" : "h-full bg-neg/70"} style={{ width: pct(Math.abs(market), whole) }} />
@@ -35,12 +43,12 @@ export function ValueBreakdownBar({ breakdown, currency }: ValueBreakdownBarProp
       <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs">
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
-          {gaining ? "Pagato" : "Vale oggi"}{" "}
+          {gaining ? tr("Pagato") : tr("Vale oggi")}{" "}
           <span className="font-medium tabular-nums text-foreground">{format(gaining ? paid : value)}</span>
         </span>
         <span className="flex items-center gap-1.5 text-muted-foreground">
           <span className={gaining ? "size-2 rounded-full bg-pos" : "size-2 rounded-full bg-neg/70"} aria-hidden="true" />
-          {gaining ? "Dal mercato" : "Perso"}{" "}
+          {gaining ? tr("Dal mercato") : tr("Perso")}{" "}
           <span className={gaining ? "font-medium tabular-nums text-pos" : "font-medium tabular-nums text-neg"}>
             {gaining ? "+" : "−"}
             {format(Math.abs(market))}

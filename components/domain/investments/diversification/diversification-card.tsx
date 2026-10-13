@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card "Diversificazione": ripartizione per area (mappa) e per settore (icone) guardando dentro ETF e fondi, quanta
@@ -31,23 +32,22 @@ function coverageText(areas: number, sectors: number): string | null {
 }
 
 export function DiversificationCard({ analysis, currency }: DiversificationCardProps) {
+  const { t: tr } = useLocalization();
   const [editing, setEditing] = React.useState<ExposureRow | null>(null);
   const coverage = coverageText(analysis.areas.classifiedShare, analysis.sectors.classifiedShare);
   return (
     <>
-      <PanelSection icon={GlobeIcon} title="Diversificazione" color="var(--swatch-blue)">
-        <p className="text-sm text-muted-foreground">Dove investi, guardando dentro ETF e fondi</p>
+      <PanelSection icon={GlobeIcon} title={tr("Diversificazione")} color="var(--swatch-blue)">
+        <p className="text-sm text-muted-foreground">{tr("Dove investi, guardando dentro ETF e fondi")}</p>
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <AreaSection slices={analysis.areas.slices} currency={currency} insight={areaInsight(analysis.areas)} />
             <SectorSection slices={analysis.sectors.slices} currency={currency} insight={sectorInsight(analysis.sectors)} />
           </div>
           {coverage ? <p className="text-sm text-muted-foreground">{coverage}</p> : null}
-          <Disclosure title="Da dove vengono i dati" summary="Fonte di area e settore di ogni posizione, con la possibilità di correggerla">
+          <Disclosure title={tr("Da dove vengono i dati")} summary="Fonte di area e settore di ogni posizione, con la possibilità di correggerla">
             <ExposureSourcesList rows={analysis.exposureRows} onEdit={setEditing} />
-            <p className="text-xs text-muted-foreground">
-              Per gli ETF Yahoo dà solo i settori: le aree degli indici più diffusi sono una stima indicativa, le altre puoi inserirle tu.
-            </p>
+            <p className="text-xs text-muted-foreground">{tr("Per gli ETF Yahoo dà solo i settori: le aree degli indici più diffusi sono una stima indicativa, le altre puoi inserirle tu.")}</p>
           </Disclosure>
         </div>
       </PanelSection>

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Guida iniziale di Analitiche: si apre da sola alla prima visita, si riapre dal pulsante «Guida». */
 
@@ -14,6 +15,7 @@ export interface WalkthroughDialogProps {
 }
 
 export function WalkthroughDialog({ open, onClose }: WalkthroughDialogProps) {
+  const { t: tr } = useLocalization();
   const [index, setIndex] = React.useState(0);
   const step = WALKTHROUGH_STEPS[index];
   const last = index === WALKTHROUGH_STEPS.length - 1;
@@ -25,10 +27,9 @@ export function WalkthroughDialog({ open, onClose }: WalkthroughDialogProps) {
     <Dialog open={open} onOpenChange={(next) => !next && close("chiusa")}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogDescription>
-            Passo {index + 1} di {WALKTHROUGH_STEPS.length}
+          <DialogDescription>{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{WALKTHROUGH_STEPS.length}
           </DialogDescription>
-          <DialogTitle>{step.title}</DialogTitle>
+          <DialogTitle>{tr(step.title)}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-3 text-sm leading-relaxed text-muted-foreground">
           {step.body.map((paragraph) => (
@@ -43,15 +44,11 @@ export function WalkthroughDialog({ open, onClose }: WalkthroughDialogProps) {
           </div>
           <div className="flex gap-2">
             {index > 0 ? (
-              <Button variant="outline" onClick={() => setIndex(index - 1)}>
-                Indietro
-              </Button>
+              <Button variant="outline" onClick={() => setIndex(index - 1)}>{tr("Indietro")}</Button>
             ) : (
-              <Button variant="ghost" onClick={() => close("chiusa")}>
-                Salta
-              </Button>
+              <Button variant="ghost" onClick={() => close("chiusa")}>{tr("Salta")}</Button>
             )}
-            {last ? <Button onClick={() => close("completata")}>Inizia</Button> : <Button onClick={() => setIndex(index + 1)}>Avanti</Button>}
+            {last ? <Button onClick={() => close("completata")}>{tr("Inizia")}</Button> : <Button onClick={() => setIndex(index + 1)}>{tr("Avanti")}</Button>}
           </div>
         </DialogFooter>
       </DialogContent>

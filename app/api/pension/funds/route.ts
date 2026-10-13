@@ -1,3 +1,4 @@
+import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { eq, count } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -28,4 +29,4 @@ async function handlePost(request: NextRequest) {
   return Response.json(created, { status: 201 });
 }
 
-export const POST = withRoute("pension.funds.create", handlePost);
+export const POST = withRoute("pension.funds.create", withCountryGuard(handlePost));

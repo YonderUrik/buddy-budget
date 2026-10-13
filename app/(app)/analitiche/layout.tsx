@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Layout di Analitiche: intestazione, guida iniziale e caricamento dei dati; il corpo (cursori e risposte) è la pagina. */
 
@@ -15,17 +16,16 @@ const DISCLAIMER =
   "Stime a scopo informativo basate su ipotesi tue, non previsioni né consulenza finanziaria o fiscale. Le regole fiscali sono semplificate: verificale prima di decisioni importanti.";
 
 function Header({ onGuide }: { onGuide?: () => void }) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Analitiche</h1>
-        <p className="text-sm text-muted-foreground">Muovi le ipotesi e guarda cosa cambia. I numeri tecnici sono in «Per esperti».</p>
+        <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Analitiche")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Muovi le ipotesi e guarda cosa cambia. I numeri tecnici sono in «Per esperti».")}</p>
       </div>
       {onGuide ? (
         <Button variant="outline" size="sm" onClick={onGuide}>
-          <HelpCircle className="size-4" aria-hidden="true" />
-          Guida
-        </Button>
+          <HelpCircle className="size-4" aria-hidden="true" />{tr("Guida")}</Button>
       ) : null}
     </div>
   );

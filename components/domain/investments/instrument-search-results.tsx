@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Risultati della ricerca strumenti divisi per tipo (ETF, azioni, fondi, obbligazioni, ETC, crypto), ognuno col
@@ -51,6 +52,7 @@ function ResultButton(props: {
   onClick: () => void;
   disabled?: boolean;
 }) {
+  const { t: tr } = useLocalization();
   return (
     <button
       type="button"
@@ -60,7 +62,7 @@ function ResultButton(props: {
     >
       <InstrumentIcon type={props.type} name={props.title} instrumentId={props.instrumentId} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm text-foreground">{props.title}</span>
+        <span className="truncate text-sm text-foreground">{tr(props.title)}</span>
         <span className="truncate text-xs text-muted-foreground">{props.detail}</span>
       </span>
       {props.tag}
@@ -69,11 +71,12 @@ function ResultButton(props: {
 }
 
 function GroupHeader({ type, count }: { type: InstrumentType; count: number }) {
+  const { t: tr } = useLocalization();
   return (
     <p className="flex items-center gap-2 px-2 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-foreground">
       <TypeDot type={type} />
       <span>
-        {INSTRUMENT_TYPE_LABELS[type]} <span className="font-normal text-muted-foreground">({count})</span>
+        {tr(INSTRUMENT_TYPE_LABELS[type])}{" "}<span className="font-normal text-muted-foreground">({count})</span>
       </span>
     </p>
   );
@@ -96,6 +99,7 @@ export function InstrumentSearchResults({
   onChoose,
   onAdd,
 }: InstrumentSearchResultsProps) {
+  const { t: tr } = useLocalization();
   const [filter, setFilter] = React.useState<InstrumentType | null>(null);
   const types = groups.map((g) => g.type);
   // Un filtro su un tipo che non c'è più (ricerca cambiata) vale come "Tutti".
@@ -121,7 +125,7 @@ export function InstrumentSearchResults({
         </div>
       ) : null}
       {groups.length > 1 ? (
-        <div role="group" aria-label="Filtra per tipo" className="flex flex-wrap gap-1 px-2 pt-3">
+        <div role="group" aria-label={tr("Filtra per tipo")} className="flex flex-wrap gap-1 px-2 pt-3">
           {[null, ...types].map((type) => (
             <button
               key={type ?? "tutti"}
@@ -134,7 +138,7 @@ export function InstrumentSearchResults({
               )}
             >
               {type ? <TypeDot type={type} /> : null}
-              {type ? INSTRUMENT_TYPE_LABELS[type] : "Tutti"}
+              {type ? tr(INSTRUMENT_TYPE_LABELS[type]) : tr("Tutti")}
             </button>
           ))}
         </div>
@@ -146,7 +150,7 @@ export function InstrumentSearchResults({
           <div className="ml-2 flex flex-col gap-0.5 border-l-2 pl-1" style={{ borderLeftColor: INSTRUMENT_TYPE_COLOR[group.type] }}>
             {group.items.map((item) => {
               const view = itemView(item, cryptoCurrency);
-              return <ResultButton key={view.key} title={view.title} detail={view.detail} type={group.type} disabled={disabled} onClick={() => onAdd(item)} />;
+              return <ResultButton key={view.key} title={tr(view.title)} detail={view.detail} type={group.type} disabled={disabled} onClick={() => onAdd(item)} />;
             })}
           </div>
         </div>

@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 import { TextShimmer } from "@/components/motion";
 import { cn } from "@/lib/utils";
 import type { SyncJobAccount } from "@/lib/sync-jobs/types";
@@ -16,6 +18,7 @@ const WORKING_PHASES = new Set<SyncJobAccount["phase"]>(["balance", "fetching", 
  * Pensata per lo sfondo scuro dell'isola: usa i colori invertiti del tema.
  */
 export function SyncAccountProgressRow({ account, interrupted }: SyncAccountProgressRowProps) {
+  const { t: tr } = useLocalization();
   const description = describeAccountProgress(account, interrupted);
   const working = WORKING_PHASES.has(account.phase) && !interrupted;
   const bar = description.bar;
@@ -40,7 +43,7 @@ export function SyncAccountProgressRow({ account, interrupted }: SyncAccountProg
       {bar.kind === "none" ? null : (
         <div
           role="progressbar"
-          aria-label={`Avanzamento ${account.name}`}
+          aria-label={tr("Avanzamento {0}", {0: account.name})}
           aria-valuemin={bar.kind === "determinate" ? 0 : undefined}
           aria-valuemax={bar.kind === "determinate" ? bar.max : undefined}
           aria-valuenow={bar.kind === "determinate" ? bar.value : undefined}

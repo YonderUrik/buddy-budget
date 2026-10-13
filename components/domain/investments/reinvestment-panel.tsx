@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Controllo compatto «Costi e imposte»: un pulsante accanto al selettore del periodo che apre un popover con i due
@@ -11,7 +14,7 @@ import { SlidersHorizontalIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { formatCurrency } from "@/lib/format";
+
 import { reinvestmentEffects, type CostImpact } from "@/lib/investments/cost-impact";
 import { cn } from "@/lib/utils";
 
@@ -36,15 +39,19 @@ interface RowProps {
 }
 
 function Row({ label, paidText, effect, active, disabled, currency, onChange }: RowProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const money = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   return (
     <label className={cn("flex items-start gap-3", disabled ? "opacity-60" : "cursor-pointer")}>
       <Switch size="sm" className="mt-0.5" checked={active} onCheckedChange={(checked) => onChange?.(checked)} disabled={disabled} />
       <span className="flex flex-col gap-0.5">
-        <span className="font-medium text-foreground">{label}</span>
+        <span className="font-medium text-foreground">{tr(label)}</span>
         <span className="text-muted-foreground">
-          {paidText}
-          {effect > 0 ? <> Rimasti investiti, oggi varresti <span className="tabular-nums text-foreground">{money(effect)}</span> in più.</> : null}
+          {tr(paidText)}
+          {effect > 0 ? <>{" "}{tr("Rimasti investiti, oggi varresti")}{" "}<span className="tabular-nums text-foreground">{money(effect)}</span>{" "}{tr("in più.")}</> : null}
         </span>
       </span>
     </label>
@@ -53,7 +60,11 @@ function Row({ label, paidText, effect, active, disabled, currency, onChange }: 
 
 /** Pulsante «Costi e imposte» con popover dei due interruttori «Rimetti i costi» e «Rimetti le imposte». */
 export function ReinvestmentControl({ impact, currency, includeFees, includeTaxes, onIncludeFeesChange, onIncludeTaxesChange }: ReinvestmentControlProps) {
-  const money = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
+  const { locale: formattingLocale } = useLocalization();
+
+
+  const { t: tr, features } = useLocalization();
+
   const effects = reinvestmentEffects(impact);
   const disabled = !impact.available;
   const activeCount = Number(!includeFees) + Number(!includeTaxes);
@@ -66,23 +77,23 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
             variant="outline"
             size="sm"
             className={cn("h-8 gap-1.5 rounded-full px-3 text-muted-foreground", simulating && "border-primary/40 bg-primary/10 text-primary hover:bg-primary/15")}
-            aria-label={simulating ? `Costi e imposte: simulazione attiva su ${activeCount} di 2` : "Costi e imposte: simulazione spenta"}
+            aria-label={simulating ? `Costi e imposte: simulazione attiva su ${activeCount} di 2` : tr("Costi e imposte: simulazione spenta")}
           />
         }
       >
         <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
-        <span>Costi e imposte</span>
+        <span>{tr("Costi e imposte")}</span>
         {simulating ? <span className="tabular-nums" aria-hidden="true">· {activeCount}</span> : null}
       </PopoverTrigger>
       <PopoverContent align="center" className="w-[22rem] max-w-[calc(100vw-2rem)] gap-3 rounded-2xl p-4">
         <div>
-          <h3 className="text-sm font-medium text-foreground">E se costi e imposte fossero rimasti investiti?</h3>
-          <p className="text-sm text-muted-foreground">Ogni importo pagato torna nel portafoglio il giorno in cui l&apos;hai versato e rende come il resto. Non cambia le tue operazioni.</p>
+          <h3 className="text-sm font-medium text-foreground">{tr("E se costi e imposte fossero rimasti investiti?")}</h3>
+          <p className="text-sm text-muted-foreground">{tr("Ogni importo pagato torna nel portafoglio il giorno in cui l'hai versato e rende come il resto. Non cambia le tue operazioni.")}</p>
         </div>
         <div className="flex flex-col gap-3 text-sm">
           <Row
-            label="Rimetti i costi nel portafoglio"
-            paidText={`Commissioni e costi pagati: ${money(impact.fees)}.`}
+            label={tr("Rimetti i costi nel portafoglio")}
+            paidText={"Commissioni e costi pagati: {0}."}
             effect={effects.fees}
             active={!includeFees}
             disabled={disabled}
@@ -90,8 +101,8 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
             onChange={(reinvest) => onIncludeFeesChange?.(!reinvest)}
           />
           <Row
-            label="Rimetti le imposte nel portafoglio"
-            paidText={`Imposte registrate e stimate sulle vendite: ${money(impact.taxes)}.`}
+            label={tr("Rimetti le imposte nel portafoglio")}
+            paidText={features.taxes ? "Imposte registrate e stimate sulle vendite: {0}." : "Imposte registrate: {0}."}
             effect={effects.taxes}
             active={!includeTaxes}
             disabled={disabled}
@@ -99,7 +110,7 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
             onChange={(reinvest) => onIncludeTaxesChange?.(!reinvest)}
           />
         </div>
-        {disabled ? <p className="text-sm text-muted-foreground">Non disponibile finché ogni strumento non ha un prezzo.</p> : null}
+        {disabled ? <p className="text-sm text-muted-foreground">{tr("Non disponibile finché ogni strumento non ha un prezzo.")}</p> : null}
       </PopoverContent>
     </Popover>
   );

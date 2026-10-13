@@ -1,12 +1,17 @@
+"use client";
+
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /** Riga del confronto col benchmark: invito a sceglierlo, attesa dei prezzi o "oggi avresti X invece di Y". */
 
 import { ProgressBar, type ProgressBarState } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import type { BenchmarkComparison, BenchmarkStatus } from "@/lib/calc/returns";
-import { formatCurrency, formatDateWithYear } from "@/lib/format";
+
 import { benchmarkVerdict, type BenchmarkWait } from "@/lib/investments/returns-insights";
 import { cn } from "@/lib/utils";
-import { formatSignedCurrency, formatSignedPct } from "./gain-text";
+
 
 const VERDICT_TEXT = {
   better: "Il tuo portafoglio ha fatto meglio",
@@ -31,7 +36,21 @@ export interface BenchmarkSummaryProps {
 }
 
 /** Testo dell'attesa del confronto: cosa sta succedendo e, se serve, cosa può fare l'utente. */
-function waitMessage(wait: BenchmarkWait, name: string): string {
+
+
+function waitProgress(wait: BenchmarkWait): ProgressBarState {
+  if (wait.kind === "checking") return { kind: "indeterminate" };
+  if (wait.kind !== "downloading") return { kind: "none" };
+  return wait.total ? { kind: "determinate", value: wait.saved, max: wait.total } : { kind: "indeterminate" };
+}
+
+export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying, asOf }: BenchmarkSummaryProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedCurrency, formatSignedPct } = localizedFormats(formattingLocale);
+
+
+  const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
+  function waitMessage(wait: BenchmarkWait, name: string): string {
   switch (wait.kind) {
     case "checking":
       return `Controllo i prezzi di ${name}…`;
@@ -48,20 +67,12 @@ function waitMessage(wait: BenchmarkWait, name: string): string {
   }
 }
 
-function waitProgress(wait: BenchmarkWait): ProgressBarState {
-  if (wait.kind === "checking") return { kind: "indeterminate" };
-  if (wait.kind !== "downloading") return { kind: "none" };
-  return wait.total ? { kind: "determinate", value: wait.saved, max: wait.total } : { kind: "indeterminate" };
-}
-
-export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying, asOf }: BenchmarkSummaryProps) {
+  const { t: tr } = useLocalization();
   if (status === "none") {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed p-3">
-        <p className="text-sm text-muted-foreground">Avresti fatto meglio con un indice? Confronta gli stessi versamenti con un ETF.</p>
-        <Button variant="outline" size="sm" onClick={onChoose}>
-          Scegli un confronto
-        </Button>
+        <p className="text-sm text-muted-foreground">{tr("Avresti fatto meglio con un indice? Confronta gli stessi versamenti con un ETF.")}</p>
+        <Button variant="outline" size="sm" onClick={onChoose}>{tr("Scegli un confronto")}</Button>
       </div>
     );
   }
@@ -77,15 +88,13 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
           <div className="-my-1 flex gap-1">
             {canRetry ? (
               <Button variant="outline" size="sm" onClick={onRetry} disabled={retrying}>
-                {retrying ? "Riprovo…" : "Riprova"}
+                {retrying ? tr("Riprovo…") : tr("Riprova")}
               </Button>
             ) : null}
-            <Button variant="ghost" size="sm" onClick={onChoose}>
-              Cambia
-            </Button>
+            <Button variant="ghost" size="sm" onClick={onChoose}>{tr("Cambia")}</Button>
           </div>
         </div>
-        <ProgressBar state={waitProgress(wait)} label={`Prezzi di ${name}`} />
+        <ProgressBar state={waitProgress(wait)} label={tr("Prezzi di {0}", {0: name})} />
       </div>
     );
   }
@@ -102,19 +111,15 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
             <span className={cn("tabular-nums", difference < 0 ? "text-neg" : "text-pos")}> ({formatSignedCurrency(difference, currency)})</span>
           ) : null}
         </p>
-        <Button variant="ghost" size="sm" className="-my-1" onClick={onChoose}>
-          Cambia
-        </Button>
+        <Button variant="ghost" size="sm" className="-my-1" onClick={onChoose}>{tr("Cambia")}</Button>
       </div>
-      <p className="text-sm text-muted-foreground">
-        Con gli stessi versamenti in <span className="text-foreground">{comparison.instrument.name}</span> {asOf ? `al ${formatDateWithYear(asOf)}` : "oggi"} avresti{" "}
-        <span className="font-medium tabular-nums text-foreground">{format(comparison.simulatedValue)}</span> invece di{" "}
-        <span className="font-medium tabular-nums text-foreground">{format(comparison.portfolioValue)}</span>. Nel periodo l&apos;ETF di confronto ha
-        reso <span className="tabular-nums">{formatSignedPct(comparison.twr)}</span>
-        {comparison.twrAnnual !== null ? <span className="tabular-nums"> ({formatSignedPct(comparison.twrAnnual)} l&apos;anno)</span> : null}.
+      <p className="text-sm text-muted-foreground">{tr("Con gli stessi versamenti in")}{" "}<span className="text-foreground">{comparison.instrument.name}</span>{" "}{asOf ? tr("al {0}", {0: formatDateWithYear(asOf)}) : tr("oggi")}{" "}{tr("avresti")}{" "}
+        <span className="font-medium tabular-nums text-foreground">{format(comparison.simulatedValue)}</span>{" "}{tr("invece di")}{" "}
+        <span className="font-medium tabular-nums text-foreground">{format(comparison.portfolioValue)}</span>{tr(". Nel periodo l'ETF di confronto ha reso")}{" "}<span className="tabular-nums">{formatSignedPct(comparison.twr)}</span>
+        {comparison.twrAnnual !== null ? <span className="tabular-nums"> ({formatSignedPct(comparison.twrAnnual)}{" "}{tr("l'anno)")}</span> : null}.
       </p>
       {comparison.depleted ? (
-        <p className="text-xs text-muted-foreground">Le vendite hanno superato il valore dell&apos;indice simulato, che si è azzerato.</p>
+        <p className="text-xs text-muted-foreground">{tr("Le vendite hanno superato il valore dell'indice simulato, che si è azzerato.")}</p>
       ) : null}
     </div>
   );

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * «Guida passo passo» in cima a ogni scheda: i passi numerati spiegano, con i numeri dell'utente, che cosa si sta
@@ -21,6 +22,7 @@ export interface GuidedReadingProps {
 }
 
 export function GuidedReading({ tab, steps }: GuidedReadingProps) {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = usePersistedFlag(`${GUIDED_READING_STORAGE_PREFIX}${tab}`, true);
   if (steps.length === 0) return null;
   return (
@@ -35,9 +37,7 @@ export function GuidedReading({ tab, steps }: GuidedReadingProps) {
           }}
           className="flex items-center gap-2 text-left text-sm font-semibold text-foreground"
         >
-          <ListOrdered className="size-4 text-primary" aria-hidden="true" />
-          Guida passo passo a questa analisi
-          <span className="font-normal text-muted-foreground">· {steps.length} passi</span>
+          <ListOrdered className="size-4 text-primary" aria-hidden="true" />{tr("Guida passo passo a questa analisi")}<span className="font-normal text-muted-foreground">· {steps.length}{" "}{tr("passi")}</span>
           <ChevronRight className={`ml-auto size-4 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} aria-hidden="true" />
         </button>
         {open ? (
@@ -48,7 +48,7 @@ export function GuidedReading({ tab, steps }: GuidedReadingProps) {
                   {index + 1}
                 </span>
                 <div className="flex flex-col gap-1 text-sm leading-relaxed text-muted-foreground">
-                  <h3 className="font-medium text-foreground">{step.title}</h3>
+                  <h3 className="font-medium text-foreground">{tr(step.title)}</h3>
                   {step.text.map((paragraph) => (
                     <p key={paragraph}>{paragraph}</p>
                   ))}

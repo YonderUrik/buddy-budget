@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Scheda Costi e tasse: costo annuo del portafoglio, erosione nel tempo e imposta se vendessi tutto oggi. */
 
@@ -12,7 +13,7 @@ import type { AnalyticsBase } from "@/lib/analitiche/base";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { money, pct } from "./analytics-format";
+import { money } from "./analytics-format";
 import { parseNumber, toFieldText } from "./assumptions-fields";
 import { GuidedReading } from "./guided-reading";
 import { costsSteps } from "./guided-steps";
@@ -33,6 +34,7 @@ const CONFIG: ChartConfig = {
 };
 
 export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: CostsTabProps) {
+  const { t: tr } = useLocalization();
   const { currency } = base;
   const [drafts, setDrafts] = React.useState<Record<string, string>>(() =>
     Object.fromEntries(Object.entries(assumptions.terByInstrument).map(([id, ter]) => [id, toFieldText(ter, true)]))
@@ -40,7 +42,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
   const [localError, setLocalError] = React.useState<string | null>(null);
   const positions = base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null }));
   const summary = summarizeCosts(positions);
-  if (positions.length === 0) return <MissingData>Servono posizioni di investimento aperte per calcolare costi e imposte.</MissingData>;
+  if (positions.length === 0) return <MissingData>{tr("Servono posizioni di investimento aperte per calcolare costi e imposte.")}</MissingData>;
 
   const save = async () => {
     setLocalError(null);
@@ -65,20 +67,20 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
   return (
     <div className="flex flex-col gap-4">
       <GuidedReading tab="costi" steps={costsSteps(summary, drag, liquidation, currency, DRAG_YEARS)} />
-      <AnalyticsCard title="Costi del portafoglio" explainer="costs">
+      <AnalyticsCard title={tr("Costi del portafoglio")} explainer="costs">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric label="Costo annuo" value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? `${pct(summary.annualPct, 2)} del portafoglio` : undefined} />
-          <Metric label={`Persi in ${DRAG_YEARS} anni`} value={last ? money(last.lost, currency) : "—"} tone="neg" sub="rispetto allo stesso portafoglio senza costi" />
-          <Metric label="Senza costo inserito" value={money(summary.missingTerValue, currency)} sub="valore delle posizioni senza costo inserito" />
+          <Metric label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? "{0} del portafoglio" : undefined} />
+          <Metric label={tr("Persi in {0} anni", {0: DRAG_YEARS})} value={last ? money(last.lost, currency) : "—"} tone="neg" sub="rispetto allo stesso portafoglio senza costi" />
+          <Metric label={tr("Senza costo inserito")} value={money(summary.missingTerValue, currency)} sub="valore delle posizioni senza costo inserito" />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[520px] text-sm tabular-nums">
             <thead>
               <tr className="text-left text-xs text-muted-foreground">
-                <th className="p-2 font-medium">Posizione</th>
-                <th className="p-2 text-right font-medium">Valore</th>
-                <th className="p-2 font-medium">Costo annuo fondo (TER, %)</th>
-                <th className="p-2 text-right font-medium">Costo totale/anno</th>
+                <th className="p-2 font-medium">{tr("Posizione")}</th>
+                <th className="p-2 text-right font-medium">{tr("Valore")}</th>
+                <th className="p-2 font-medium">{tr("Costo annuo fondo (TER, %)")}</th>
+                <th className="p-2 text-right font-medium">{tr("Costo totale/anno")}</th>
               </tr>
             </thead>
             <tbody>
@@ -90,10 +92,10 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
                     <td className="p-2 text-right">{money(p.value, currency)}</td>
                     <td className="p-2">
                       <Input
-                        aria-label={`Costo annuo di ${p.name}`}
+                        aria-label={tr("Costo annuo di {0}", {0: p.name})}
                         className="h-8 w-24"
                         inputMode="decimal"
-                        placeholder="es. 0,20"
+                        placeholder={tr("es. 0,20")}
                         value={drafts[p.id] ?? ""}
                         onChange={(e) => setDrafts({ ...drafts, [p.id]: e.target.value })}
                       />
@@ -105,10 +107,10 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-muted-foreground">Il TER lo trovi nel KID/scheda del fondo (per un ETF globale di solito 0,1-0,4%). Il bollo (0,2%) è incluso per i titoli in deposito; è escluso per le crypto.</p>
+        <p className="text-xs text-muted-foreground">{tr("Il TER lo trovi nel KID/scheda del fondo (per un ETF globale di solito 0,1-0,4%). Il bollo (0,2%) è incluso per i titoli in deposito; è escluso per le crypto.")}</p>
         {localError || error ? <p className="text-sm text-neg" role="alert">{localError ?? error}</p> : null}
         <div>
-          <Button onClick={save} disabled={saving}>{saving ? "Salvo…" : "Salva costi"}</Button>
+          <Button onClick={save} disabled={saving}>{saving ? tr("Salvo…") : tr("Salva costi")}</Button>
         </div>
         {drag.length > 0 ? (
           <ChartContainer config={CONFIG} className="h-56 w-full">
@@ -123,10 +125,10 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
                   const p = payload[0].payload as (typeof drag)[number];
                   return (
                     <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-md">
-                      <p className="font-medium">Tra {p.year} anni</p>
-                      <p>Senza costi: {money(p.withoutCosts, currency)}</p>
-                      <p>Con costi: {money(p.withCosts, currency)}</p>
-                      <p>Persi: {money(p.lost, currency)}</p>
+                      <p className="font-medium">{tr("Tra")}{" "}{p.year}{" "}{tr("anni")}</p>
+                      <p>{tr("Senza costi:")}{" "}{money(p.withoutCosts, currency)}</p>
+                      <p>{tr("Con costi:")}{" "}{money(p.withCosts, currency)}</p>
+                      <p>{tr("Persi:")}{" "}{money(p.lost, currency)}</p>
                     </div>
                   );
                 }}
@@ -138,11 +140,11 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
         ) : null}
       </AnalyticsCard>
 
-      <AnalyticsCard title="Se vendessi tutto oggi" explainer="liquidation">
+      <AnalyticsCard title={tr("Se vendessi tutto oggi")} explainer="liquidation">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric label="Valore di mercato" value={money(liquidation.grossValue, currency)} />
-          <Metric label="Imposta sulle plusvalenze" value={money(liquidation.latentTax, currency)} tone="neg" sub={liquidation.taxRatio !== null ? `${pct(liquidation.taxRatio)} del valore` : undefined} />
-          <Metric label="Netto dopo le imposte" value={money(liquidation.netValue, currency)} />
+          <Metric label={tr("Valore di mercato")} value={money(liquidation.grossValue, currency)} />
+          <Metric label={tr("Imposta sulle plusvalenze")} value={money(liquidation.latentTax, currency)} tone="neg" sub={liquidation.taxRatio !== null ? "{0} del valore" : undefined} />
+          <Metric label={tr("Netto dopo le imposte")} value={money(liquidation.netValue, currency)} />
         </div>
         {liquidation.byPosition.length > 0 ? (
           <ul className="flex flex-col gap-1 text-sm">
@@ -154,7 +156,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">Nessuna plusvalenza non realizzata: nessuna imposta latente.</p>
+          <p className="text-sm text-muted-foreground">{tr("Nessuna plusvalenza non realizzata: nessuna imposta latente.")}</p>
         )}
       </AnalyticsCard>
     </div>

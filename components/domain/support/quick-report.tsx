@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Segnalazione rapida: un foglio con il form «Scrivici» apribile da qualsiasi punto dell'app, dal pulsante fisso
@@ -45,6 +46,7 @@ export function QuickReportProvider({ children }: { children: React.ReactNode })
 }
 
 function QuickReportDialog({ options, onClose }: { options: OpenReportOptions | null; onClose: () => void }) {
+  const { t: tr } = useLocalization();
   const pathname = usePathname();
   const context = useReportContext(pathname);
   // Il contenuto resta durante l'animazione di chiusura.
@@ -55,15 +57,15 @@ function QuickReportDialog({ options, onClose }: { options: OpenReportOptions | 
     <Dialog open={options !== null} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-heading text-lg">{error ? "Segnala questo problema" : "Scrivici"}</DialogTitle>
-          <DialogDescription>Ti rispondiamo via email. Leggiamo tutto.</DialogDescription>
+          <DialogTitle className="font-heading text-lg">{error ? tr("Segnala questo problema") : tr("Scrivici")}</DialogTitle>
+          <DialogDescription>{tr("Ti rispondiamo via email. Leggiamo tutto.")}</DialogDescription>
         </DialogHeader>
         {error ? (
           <div className="flex items-start gap-2 rounded-lg bg-neg-soft p-3 text-sm">
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-neg" aria-hidden="true" />
             <div className="min-w-0">
-              <p className="font-medium text-foreground">{REPORT_ERROR_AREA_LABELS[error.area]}</p>
-              <p className="break-words text-muted-foreground">{error.message}</p>
+              <p className="font-medium text-foreground">{tr(REPORT_ERROR_AREA_LABELS[error.area])}</p>
+              <p className="break-words text-muted-foreground">{tr(error.message)}</p>
             </div>
           </div>
         ) : null}
@@ -82,23 +84,23 @@ export interface ReportErrorLinkProps {
 
 /** Link «Segnala questo problema» da mettere sotto un messaggio d'errore: apre il foglio con l'errore già allegato. */
 export function ReportErrorLink({ area, error, className }: ReportErrorLinkProps) {
+  const { t: tr } = useLocalization();
   const openReport = useQuickReport();
   return (
     <button
       type="button"
       onClick={() => openReport({ source: "errore", error: { area, message: error } })}
       className={className ?? "inline-flex min-h-9 w-fit items-center text-sm font-medium text-primary underline-offset-4 hover:underline"}
-    >
-      Segnala questo problema
-    </button>
+    >{tr("Segnala questo problema")}</button>
   );
 }
 
 /** Messaggio d'errore di un form con sotto il link per segnalarlo. */
 export function ErrorWithReport({ area, error, className }: ReportErrorLinkProps) {
+  const { t: tr } = useLocalization();
   return (
     <div className={className ?? "flex flex-col items-start"}>
-      <p role="alert" className="text-sm text-destructive">{error}</p>
+      <p role="alert" className="text-sm text-destructive">{tr(error)}</p>
       <ReportErrorLink area={area} error={error} />
     </div>
   );

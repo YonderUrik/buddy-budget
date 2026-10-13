@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * «Ricategorizza»: rifà le categorie messe dall'app con le regole e le proposte quasi certe di oggi. Mostra prima cosa
@@ -43,6 +44,7 @@ function checkedByDefault(group: RecategorizePreviewGroup): boolean {
 }
 
 function RecategorizeBody({ categories, currency, onDone }: { categories: Category[]; currency: string; onDone: () => void }) {
+  const { t: tr } = useLocalization();
   // Scelte dell'utente sopra il default di ogni gruppo.
   const [choices, setChoices] = React.useState<ReadonlyMap<string, boolean>>(new Map());
   const [logosShown, setLogosShown] = React.useState(false);
@@ -79,21 +81,16 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="font-heading text-lg font-medium">Ricategorizza</DialogTitle>
-        <DialogDescription>
-          Rifà le categorie che l&apos;app ha messo da sola, con le tue regole e le tue scelte di oggi. Quelle che hai scelto tu
-          non cambiano.
-        </DialogDescription>
+        <DialogTitle className="font-heading text-lg font-medium">{tr("Ricategorizza")}</DialogTitle>
+        <DialogDescription>{tr("Rifà le categorie che l'app ha messo da sola, con le tue regole e le tue scelte di oggi. Quelle che hai scelto tu non cambiano.")}</DialogDescription>
       </DialogHeader>
 
       {data?.lastRun ? (
         <div className="flex items-center justify-between gap-3 rounded-xl bg-foreground/[0.04] px-3 py-2 text-sm">
-          <span className="text-muted-foreground">
-            Ultima volta il {formatShortDate(data.lastRun.createdAt.slice(0, 10))}: {data.lastRun.changed === 1 ? "1 movimento" : `${data.lastRun.changed} movimenti`}
+          <span className="text-muted-foreground">{tr("Ultima volta il")}{" "}{formatShortDate(data.lastRun.createdAt.slice(0, 10))}: {data.lastRun.changed === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: data.lastRun.changed})}
           </span>
           <Button type="button" variant="ghost" size="sm" onClick={() => undoRun(data.lastRun!.id)} disabled={undoing} className="shrink-0">
-            <Undo2Icon /> Annulla
-          </Button>
+            <Undo2Icon />{" "}{tr("Annulla")}</Button>
         </div>
       ) : null}
 
@@ -107,14 +104,13 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
         </div>
       ) : groups.length === 0 ? (
         <div className="flex flex-col items-center gap-1 rounded-2xl border border-border p-6 text-center">
-          <p className="font-heading text-base font-medium text-foreground">Niente da cambiare</p>
-          <p className="max-w-sm text-sm text-muted-foreground">Le categorie messe dall&apos;app sono già quelle che sceglierebbero oggi le tue regole.</p>
+          <p className="font-heading text-base font-medium text-foreground">{tr("Niente da cambiare")}</p>
+          <p className="max-w-sm text-sm text-muted-foreground">{tr("Le categorie messe dall'app sono già quelle che sceglierebbero oggi le tue regole.")}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">
-            {data.changes === 1 ? "1 movimento cambierebbe categoria." : `${data.changes} movimenti cambierebbero categoria.`} Cambiano solo quelli con la spunta
-            {hasMaybeMine ? "; quelli «forse scelti da te» partono senza." : "."}
+            {data.changes === 1 ? tr("1 movimento cambierebbe categoria.") : tr("{0} movimenti cambierebbero categoria.", {0: data.changes})}{" "}{tr("Cambiano solo quelli con la spunta")}{hasMaybeMine ? tr("; quelli «forse scelti da te» partono senza.") : "."}
           </p>
           <ul className="flex flex-col divide-y divide-border">
             {groups.map((group) => (
@@ -135,12 +131,10 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
 
       <div className="sticky bottom-0 -mx-6 mt-auto flex items-center justify-end gap-3 border-t border-border bg-popover/95 px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
         {data && groups.length === 0 ? (
-          <Button type="button" variant="outline" onClick={onDone} className="h-10 px-5 sm:h-9">
-            Chiudi
-          </Button>
+          <Button type="button" variant="outline" onClick={onDone} className="h-10 px-5 sm:h-9">{tr("Chiudi")}</Button>
         ) : (
           <Button type="button" onClick={apply} disabled={!data || applying || selectedCount === 0} className="h-10 px-5 sm:h-9">
-            {!data ? "Cambia" : selectedCount === 0 ? "Spunta cosa cambiare" : selectedCount === 1 ? "Cambia 1 movimento" : `Cambia ${selectedCount} movimenti`}
+            {!data ? tr("Cambia") : selectedCount === 0 ? tr("Spunta cosa cambiare") : selectedCount === 1 ? tr("Cambia 1 movimento") : tr("Cambia {0} movimenti", {0: selectedCount})}
           </Button>
         )}
       </div>

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Tessera di una categoria nella board: avatar, nome e utilizzo; apre il dettaglio al clic ed è trascinabile tra i gruppi. */
 
@@ -20,6 +21,7 @@ export interface CategoryTileProps {
 }
 
 export function CategoryTile({ category, usageCount, draggable, isMoving, onOpen, onDragStart, onDragEnd }: CategoryTileProps) {
+  const { t: tr } = useLocalization();
   return (
     <button
       type="button"
@@ -31,7 +33,7 @@ export function CategoryTile({ category, usageCount, draggable, isMoving, onOpen
       }}
       onDragEnd={onDragEnd}
       onClick={() => onOpen(category)}
-      aria-label={`Modifica ${category.name}`}
+      aria-label={tr("Modifica {0}", {0: category.name})}
       className={cn(
         "group flex min-h-10 max-w-full items-center gap-2 rounded-full border border-border bg-card py-1 pr-3 pl-1 text-left text-sm transition-[background-color,box-shadow,opacity] hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         draggable && "cursor-grab active:cursor-grabbing",

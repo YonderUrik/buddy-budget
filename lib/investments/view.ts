@@ -1,3 +1,4 @@
+import { countryFeatures } from "@/lib/localization/config";
 import { investmentTaxReport } from "./tax-report";
 import { computePeriodGain, type PeriodGain } from "./period-gain";
 import { computeCostImpact, type CostImpact } from "./cost-impact";
@@ -130,7 +131,7 @@ export function buildInvestmentsView(data: InvestmentData, period: NetWorthPerio
     usedInstruments: usedInstruments(data.transactions, instrumentsById),
     returns,
     periodGain: computePeriodGain({ ...common, period, today, range: chartRange }),
-    costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0, investmentTaxReport(data, transactions, todayKey)),
+    costImpact: computeCostImpact({ ...common, period, today }, summary.unpricedCount > 0, countryFeatures(data.productCountry ?? "IT").taxes ? investmentTaxReport(data, transactions, todayKey) : null),
     benchmark: data.benchmark,
     benchmarkFirstPriceDate: data.benchmark ? (priceIndex.get(data.benchmark.id)?.[0]?.date ?? null) : null,
     income: computeIncomeHistory(insights, summary.costBasis, todayKey),

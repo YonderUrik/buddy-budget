@@ -1,3 +1,4 @@
+import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { loadUserPension } from "@/lib/pension/data";
@@ -11,4 +12,4 @@ async function handleGet(request: NextRequest) {
   return Response.json(await loadUserPension(session.user.id));
 }
 
-export const GET = withRoute("pension.list", handleGet);
+export const GET = withRoute("pension.list", withCountryGuard(handleGet));

@@ -1,8 +1,12 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /** Riga di un movimento: icona-categoria da toccare, descrizione, "Dividi" ben visibile e importo. Solo presentazione. */
 
 import * as React from "react";
 import { EllipsisIcon, SplitIcon } from "lucide-react";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 
 export interface MovementRowProps {
@@ -34,6 +38,10 @@ export interface MovementRowProps {
 }
 
 export function MovementRow(props: MovementRowProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const { description, rawDescription, categoryName, uncategorized, accountName, amount, fullAmount, isIncome, currency, avatar, excluded } = props;
   const isSplit = excluded > 0 && !props.isTransfer;
   return (
@@ -41,13 +49,13 @@ export function MovementRow(props: MovementRowProps) {
       {avatar}
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold" title={rawDescription ?? description}>
-          {description}
+          {tr(description)}
         </p>
         <p className={cn("truncate text-sm", uncategorized ? "font-medium text-neg" : "text-text-2")}>
           {categoryName}
           {props.categoryOrigin ? <> · {props.categoryOrigin}</> : null}
           {accountName ? ` · ${accountName}` : ""}
-          {isSplit && <span className="text-text-2"> · diviso</span>}
+          {isSplit && <span className="text-text-2">{" "}{tr("· diviso")}</span>}
         </p>
         {props.statusMessage && <p className="text-sm text-text-2">{props.statusMessage}</p>}
       </div>
@@ -55,24 +63,22 @@ export function MovementRow(props: MovementRowProps) {
         type="button"
         onClick={props.onSplit}
         aria-pressed={props.splitOpen}
-        aria-label={`Dividi ${description}`}
+        aria-label={tr("Dividi {0}", {0: description})}
         className={cn(
           "hidden min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-border px-3 text-sm font-semibold transition-colors hover:bg-muted sm:flex",
           props.splitOpen && "bg-muted"
         )}
       >
-        <SplitIcon className="size-4" aria-hidden="true" />
-        Dividi
-      </button>}
+        <SplitIcon className="size-4" aria-hidden="true" />{tr("Dividi")}</button>}
       <div className="min-w-[5.5rem] shrink-0 text-right">
         <p className={cn("font-heading font-semibold tabular-nums", props.isTransfer ? "text-text-2" : isIncome ? "text-pos" : "text-neg")}>
           {isIncome ? "+" : "−"}
           {formatCurrency(props.isTransfer ? fullAmount : amount, currency)}
         </p>
-        {props.isTransfer && <p className="text-xs text-text-2">Escluso dai conteggi</p>}
+        {props.isTransfer && <p className="text-xs text-text-2">{tr("Escluso dai conteggi")}</p>}
         {isSplit && (
           <p className="text-sm text-text-2">
-            <span className="sr-only">Importo pieno </span>
+            <span className="sr-only">{tr("Importo pieno")}{" "}</span>
             <span className="line-through">{formatCurrency(fullAmount, currency)}</span>
           </p>
         )}
@@ -82,7 +88,7 @@ export function MovementRow(props: MovementRowProps) {
         onClick={props.onToggleActions}
         aria-expanded={props.actionsOpen}
         aria-controls={props.actionsId}
-        aria-label={`Altre azioni per ${description}`}
+        aria-label={tr("Altre azioni per {0}", {0: description})}
         className="-mr-1 flex size-11 shrink-0 items-center justify-center rounded-xl text-text-2 hover:bg-muted"
       >
         <EllipsisIcon className="size-5" aria-hidden="true" />

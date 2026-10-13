@@ -1,5 +1,9 @@
 "use client";
 
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
+
 /** Card "Mese per mese": dividendi e cedole registrati in un anno, netto più ritenute (= lordo), con i totali. */
 
 import { IncomePayments } from "./income-payments";
@@ -8,9 +12,9 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { track } from "@/lib/analytics";
 import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
-import { formatCurrency } from "@/lib/format";
+
 import type { IncomeYearDetail } from "@/lib/investments/dividends";
-import { formatPct, shortMonthLabel } from "../percent";
+
 import { MonthBars } from "./month-bars";
 import { BanknoteIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
@@ -23,6 +27,13 @@ export interface IncomeMonthsCardProps {
 }
 
 export function IncomeMonthsCard({ years, payments, instrumentsById, currency }: IncomeMonthsCardProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPct, shortMonthLabel } = localizedFormats(formattingLocale);
+
+
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const options = years.map((y) => ({ value: String(y.year), label: String(y.year) }));
   const [selected, setSelected] = React.useState(options[0]?.value ?? "");
   const [expanded, setExpanded] = React.useState(false);
@@ -31,30 +42,30 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
 
   return (
-    <PanelSection icon={BanknoteIcon} title="Dividendi incassati" color="var(--swatch-amber)"
+    <PanelSection icon={BanknoteIcon} title={tr("Dividendi incassati")} color="var(--swatch-amber)"
       action={
-        options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel="Anno" /> : null
+        options.length > 0 ? <SegmentedControl options={options} value={String(year.year)} onChange={(value) => { setSelected(value); setExpanded(true); track("investment_dividends_details_opened", { source: "year" }); }} className="flex-wrap max-w-full" ariaLabel={tr("Anno")} /> : null
       }>
       <div className="flex flex-col gap-4">
         <dl className="grid grid-cols-3 gap-3 text-sm">
           <div>
-            <dt className="text-xs text-muted-foreground">Lordo</dt>
+            <dt className="text-xs text-muted-foreground">{tr("Lordo")}</dt>
             <dd className="font-heading text-lg font-medium tabular-nums text-foreground">{format(year.gross)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Ritenute e costi</dt>
+            <dt className="text-xs text-muted-foreground">{tr("Ritenute e costi")}</dt>
             <dd className="font-heading text-lg font-medium tabular-nums text-foreground">
               {format(year.withheld)}
               {year.gross > 0 ? <span className="ml-1 text-xs font-normal text-muted-foreground">{formatPct(year.withheld / year.gross, 0)}</span> : null}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Netto</dt>
+            <dt className="text-xs text-muted-foreground">{tr("Netto")}</dt>
             <dd className="font-heading text-lg font-medium tabular-nums text-pos">{format(year.net)}</dd>
           </div>
         </dl>
         <MonthBars
-          ariaLabel={`Incassi del ${year.year} per mese`}
+          ariaLabel={tr("Incassi del {0} per mese", {0: year.year})}
           bars={year.months.map((m) => ({
             key: String(m.month),
             label: shortMonthLabel(m.month),
@@ -65,14 +76,12 @@ export function IncomeMonthsCard({ years, payments, instrumentsById, currency }:
         />
         <p className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-sm bg-pos" aria-hidden="true" /> Netto
-          </span>
+            <span className="size-2.5 rounded-sm bg-pos" aria-hidden="true" />{" "}{tr("Netto")}</span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-sm bg-muted-foreground/30" aria-hidden="true" /> Ritenute e costi
-          </span>
+            <span className="size-2.5 rounded-sm bg-muted-foreground/30" aria-hidden="true" />{" "}{tr("Ritenute e costi")}</span>
         </p>
         <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
-          <summary className="cursor-pointer py-2 text-sm font-medium">Pagamenti del {year.year}</summary>
+          <summary className="cursor-pointer py-2 text-sm font-medium">{tr("Pagamenti del")}{" "}{year.year}</summary>
           <IncomePayments payments={payments.filter((payment) => payment.date.startsWith(String(year.year)))} currency={currency} instrumentsById={instrumentsById} />
         </details>
       </div>

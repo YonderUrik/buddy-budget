@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Pezzi comuni dei dialog di Investimenti, nello stile della Panoramica: intestazione con icona tinta nel colore
  * dell'ambito, sezioni aperte separate da filettature (niente riquadri), barra dei passi numerata e piede con le azioni.
@@ -28,15 +26,14 @@ export interface PanelDialogHeaderProps {
 
 /** Intestazione di un dialog: icona tinta, titolo e frase di contesto. Rende `DialogTitle`/`DialogDescription` per l'accessibilità. */
 export function PanelDialogHeader({ icon: Icon, title, description, color = PANEL_DEFAULT_COLOR, className }: PanelDialogHeaderProps) {
-  const { t: tr } = useLocalization();
   return (
     <DialogHeader className={cn("flex-row items-start gap-3", className)}>
       <span className="grid size-10 shrink-0 place-items-center rounded-full" style={tint(color)} aria-hidden="true">
         <Icon className="size-5" />
       </span>
       <div className="flex min-w-0 flex-col gap-1.5">
-        <DialogTitle className="text-lg leading-tight">{tr(title)}</DialogTitle>
-        {description ? <DialogDescription>{tr(description)}</DialogDescription> : null}
+        <DialogTitle className="text-lg leading-tight">{title}</DialogTitle>
+        {description ? <DialogDescription>{description}</DialogDescription> : null}
       </div>
     </DialogHeader>
   );
@@ -63,7 +60,6 @@ export interface DialogSectionProps {
 
 /** Sotto-sezione di un dialog: titolo breve (con icona tinta facoltativa), frase facoltativa e contenuto. */
 export function DialogSection({ title, icon: Icon, color = PANEL_DEFAULT_COLOR, description, children, className }: DialogSectionProps) {
-  const { t: tr } = useLocalization();
   const id = React.useId();
   return (
     <section aria-labelledby={title ? id : undefined} className={cn("flex min-w-0 flex-col gap-3", className)}>
@@ -75,11 +71,11 @@ export function DialogSection({ title, icon: Icon, color = PANEL_DEFAULT_COLOR, 
             </span>
           ) : null}
           <h3 id={id} className="text-sm font-semibold text-foreground">
-            {tr(title)}
+            {title}
           </h3>
         </div>
       ) : null}
-      {description ? <p className="text-sm text-muted-foreground">{tr(description)}</p> : null}
+      {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       {children}
     </section>
   );
@@ -107,9 +103,8 @@ export interface DialogStepsProps {
 
 /** Barra dei passi: numeri in cerchio (spunta sui passi fatti), etichetta e filo di collegamento. */
 export function DialogSteps({ steps, current, ariaLabel, className }: DialogStepsProps) {
-  const { t: tr } = useLocalization();
   return (
-    <ol className={cn("flex items-center gap-2", className)} aria-label={tr(ariaLabel)}>
+    <ol className={cn("flex items-center gap-2", className)} aria-label={ariaLabel}>
       {steps.map((label, i) => {
         const done = i < current;
         const active = i === current;
@@ -124,7 +119,7 @@ export function DialogSteps({ steps, current, ariaLabel, className }: DialogStep
             >
               {done ? <CheckIcon className="size-3.5" /> : i + 1}
             </span>
-            <span className={cn("truncate text-sm", active ? "font-medium text-foreground" : "text-muted-foreground")}>{tr(label)}</span>
+            <span className={cn("truncate text-sm", active ? "font-medium text-foreground" : "text-muted-foreground")}>{label}</span>
             {i < steps.length - 1 ? <span className={cn("h-px min-w-3 flex-1", done ? "bg-primary" : "bg-border")} aria-hidden="true" /> : null}
           </li>
         );

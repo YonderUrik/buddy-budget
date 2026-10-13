@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * AccountDetailsDialog
@@ -31,7 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
-
+import { formatCurrency } from "@/lib/format";
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon, UpdateAccountInput } from "@/lib/validation/accounts";
 import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
@@ -72,10 +69,6 @@ function AccountDetailsBody({
   onClose,
   onReconnect,
 }: Omit<AccountDetailsDialogProps, "account"> & { account: Account }) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const isAuto = account.source === "auto";
   const updateMutation = useUpdateAccountMutation();
   const deleteMutation = useDeleteAccountMutation();
@@ -134,12 +127,12 @@ function AccountDetailsBody({
         <div className="flex items-center gap-3">
           <AccountIconColorPicker value={{ color, icon }} onChange={handleAppearanceChange}>
             <AccountAvatar color={color} icon={icon} className="size-12" size={22} />
-            <span className="sr-only">{tr("Cambia icona e colore")}</span>
+            <span className="sr-only">Cambia icona e colore</span>
           </AccountIconColorPicker>
           <div className="min-w-0">
             <DialogTitle className="truncate">{account.name}</DialogTitle>
             <DialogDescription>
-              {isAuto ? tr("Collegato alla banca") : tr("Conto manuale")} · {tr(status.label)}
+              {isAuto ? "Collegato alla banca" : "Conto manuale"} · {status.label}
             </DialogDescription>
           </div>
         </div>
@@ -147,25 +140,29 @@ function AccountDetailsBody({
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="account-name" className={FIELD_LABEL}>{tr("Nome")}</label>
+          <label htmlFor="account-name" className={FIELD_LABEL}>
+            Nome
+          </label>
           <Input id="account-name" value={name} onChange={(e) => setName(e.target.value)} onBlur={commitName} className={TALL_CONTROL} />
         </div>
 
         {isAuto ? (
           <dl className="grid grid-cols-2 gap-3 rounded-lg bg-muted/40 p-3 text-sm">
             <div>
-              <dt className="text-text-2">{tr("Tipo")}</dt>
+              <dt className="text-text-2">Tipo</dt>
               <dd className="font-medium text-foreground">{account.type}</dd>
             </div>
             <div>
-              <dt className="text-text-2">{tr("Saldo dalla banca")}</dt>
+              <dt className="text-text-2">Saldo dalla banca</dt>
               <dd className="font-heading font-semibold tabular-nums text-foreground">{formatCurrency(Number(account.balance), currency)}</dd>
             </div>
           </dl>
         ) : (
           <>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="account-type" className={FIELD_LABEL}>{tr("Tipo")}</label>
+              <label htmlFor="account-type" className={FIELD_LABEL}>
+                Tipo
+              </label>
               <Select
                 value={isCustomType ? CUSTOM_TYPE_VALUE : type}
                 onValueChange={(value) => {
@@ -180,7 +177,7 @@ function AccountDetailsBody({
                 }}
               >
                 <SelectTrigger id="account-type" className={cn("w-full", TALL_CONTROL)}>
-                  <SelectValue placeholder={tr("Tipo")}>{isCustomType ? tr("Altro…") : type}</SelectValue>
+                  <SelectValue placeholder="Tipo">{isCustomType ? "Altro…" : type}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {ACCOUNT_TYPE_OPTIONS.map((option) => (
@@ -188,7 +185,7 @@ function AccountDetailsBody({
                       {option}
                     </SelectItem>
                   ))}
-                  <SelectItem value={CUSTOM_TYPE_VALUE}>{tr("Altro…")}</SelectItem>
+                  <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
                 </SelectContent>
               </Select>
               {isCustomType && (
@@ -196,14 +193,16 @@ function AccountDetailsBody({
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                   onBlur={() => commitType(type)}
-                  placeholder={tr("Es. Wallet crypto")}
-                  aria-label={tr("Tipo personalizzato")}
+                  placeholder="Es. Wallet crypto"
+                  aria-label="Tipo personalizzato"
                   className={TALL_CONTROL}
                 />
               )}
             </div>
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="account-balance" className={FIELD_LABEL}>{tr("Saldo")}</label>
+              <label htmlFor="account-balance" className={FIELD_LABEL}>
+                Saldo
+              </label>
               <CurrencyInput
                 id="account-balance"
                 value={balanceValue}
@@ -212,7 +211,7 @@ function AccountDetailsBody({
                 currency={currency}
                 className={cn("w-full text-right font-semibold", TALL_CONTROL)}
               />
-              <p className="text-sm text-text-2">{tr("Lo aggiorni tu: si salva quando esci dal campo.")}</p>
+              <p className="text-sm text-text-2">Lo aggiorni tu: si salva quando esci dal campo.</p>
             </div>
           </>
         )}
@@ -230,9 +229,13 @@ function AccountDetailsBody({
                 onClick={() => syncMutation.mutate(account.id)}
                 disabled={syncDisabled}
               >
-                <RefreshCw size={16} aria-hidden className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />{tr("Sincronizza ora")}</Button>
+                <RefreshCw size={16} aria-hidden className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />
+                Sincronizza ora
+              </Button>
               {needsReconnect && (
-                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={onReconnect}>{tr("Riconnetti la banca")}</Button>
+                <Button type="button" className={cn("flex-1 cursor-pointer gap-1.5", TALL_CONTROL)} onClick={onReconnect}>
+                  Riconnetti la banca
+                </Button>
               )}
             </div>
           </div>
@@ -240,7 +243,9 @@ function AccountDetailsBody({
 
         {movementsHref && (
           <Link href={movementsHref} className={cn(buttonVariants({ variant: "outline" }), "cursor-pointer gap-1.5", TALL_CONTROL)}>
-            <ListOrdered size={16} aria-hidden />{tr("Vedi i movimenti di questo conto")}</Link>
+            <ListOrdered size={16} aria-hidden />
+            Vedi i movimenti di questo conto
+          </Link>
         )}
 
         <Button
@@ -250,23 +255,23 @@ function AccountDetailsBody({
           onClick={() => setConfirmOpen(true)}
         >
           {isAuto ? <Link2Off size={16} aria-hidden /> : <Trash2 size={16} aria-hidden />}
-          {isAuto ? tr("Scollega il conto") : tr("Elimina il conto")}
+          {isAuto ? "Scollega il conto" : "Elimina il conto"}
         </Button>
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{isAuto ? tr("Scollegare questo conto?") : tr("Eliminare questo conto?")}</AlertDialogTitle>
+            <AlertDialogTitle>{isAuto ? "Scollegare questo conto?" : "Eliminare questo conto?"}</AlertDialogTitle>
             <AlertDialogDescription>
               {isAuto
-                ? tr("\"{0}\" verrà scollegato. L'azione non è reversibile.", {0: account.name})
-                : tr("\"{0}\" verrà eliminato definitivamente, insieme al suo saldo registrato.", {0: account.name})}
+                ? `"${account.name}" verrà scollegato. L'azione non è reversibile.`
+                : `"${account.name}" verrà eliminato definitivamente, insieme al suo saldo registrato.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemove}>{isAuto ? tr("Scollega") : tr("Elimina")}</AlertDialogAction>
+            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRemove}>{isAuto ? "Scollega" : "Elimina"}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

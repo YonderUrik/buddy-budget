@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Foglio «Personalizza» del passo «Categorie» dell'onboarding: un elenco per gruppo con un interruttore per categoria,
@@ -30,23 +29,22 @@ export function CategorySetupSheet({
   title = "Personalizza le categorie",
   description = "Spegni quelle che non usi e tocca un nome per cambiarlo.",
 }: CategorySetupSheetProps) {
-  const { t: tr } = useLocalization();
   const activeCount = setup.items.filter((item) => item.enabled).length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex flex-col gap-0 p-0 sm:max-h-[85dvh] sm:max-w-lg max-sm:px-0 max-sm:pb-0">
         <DialogHeader className="border-b border-border px-5 pt-5 pb-4 max-sm:pt-2">
-          <DialogTitle className="font-heading text-lg font-medium">{tr(title)}</DialogTitle>
-          <DialogDescription>{tr(description)}</DialogDescription>
+          <DialogTitle className="font-heading text-lg font-medium">{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5">
           {SETUP_GROUPS.map((group) => (
-            <section key={group.type} aria-label={tr(group.label)}>
+            <section key={group.type} aria-label={group.label}>
               <h3 className="sticky top-0 z-10 flex items-center gap-2 bg-popover pt-4 pb-1 text-xs font-medium text-muted-foreground">
                 <span className={cn("size-2 rounded-full", group.dotClassName)} aria-hidden="true" />
-                {tr(group.label)}
+                {group.label}
               </h3>
               <ul>
                 {setup.items.map((item, index) =>
@@ -72,8 +70,12 @@ export function CategorySetupSheet({
             </p>
           )}
           <div className="flex items-center justify-between gap-3">
-            <Button type="button" variant="ghost" onClick={setup.reset} disabled={!setup.customized} className="h-11 cursor-pointer sm:h-9">{tr("Ripristina")}</Button>
-            <Button type="button" onClick={() => onOpenChange(false)} className="h-11 cursor-pointer sm:h-9">{tr("Fatto ·")}{" "}{activeCount}{" "}{tr("attive")}</Button>
+            <Button type="button" variant="ghost" onClick={setup.reset} disabled={!setup.customized} className="h-11 cursor-pointer sm:h-9">
+              Ripristina
+            </Button>
+            <Button type="button" onClick={() => onOpenChange(false)} className="h-11 cursor-pointer sm:h-9">
+              Fatto · {activeCount} attive
+            </Button>
           </div>
         </div>
       </DialogContent>

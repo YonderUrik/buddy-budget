@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Un movimento con i suoi comportamenti: cambio categoria dall'icona, Dividi, nota e (per i manuali) modifica ed elimina.
@@ -61,7 +60,6 @@ function categoryAvatar(category: Category, className: string, iconSize: number)
 }
 
 export function MovementItem({ transaction, categories, usage, accountName, currency, onRemoteLogo }: MovementItemProps) {
-  const { t: tr } = useLocalization();
   const update = useUpdateTransactionMutation();
   const remove = useDeleteTransactionMutation();
   const createRule = useCreateRuleMutation();
@@ -103,7 +101,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
             );
           }
           toast.success(`Spostata in ${name}`, {
-            action: { label: tr("Annulla"), onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
+            action: { label: "Annulla", onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
           });
         },
       }
@@ -184,24 +182,27 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
       {actionsOpen && (
         <div id={`azioni-${transaction.id}`} className="flex flex-wrap items-center gap-1 px-2 pb-2">
           {category?.type !== "trasferimento" && <button type="button" className={cn(actionButton, "sm:hidden")} onClick={() => setPanel("split")}>
-            <SplitIcon className="size-4" aria-hidden="true" />{" "}{tr("Dividi")}</button>}
+            <SplitIcon className="size-4" aria-hidden="true" /> Dividi
+          </button>}
           <TransactionNotePopover transaction={transaction} />
           {!isAuto && (
             <>
               <button type="button" className={actionButton} onClick={() => setPanel((p) => (p === "edit" ? "none" : "edit"))}>
-                <PencilIcon className="size-4" aria-hidden="true" />{" "}{tr("Modifica")}</button>
+                <PencilIcon className="size-4" aria-hidden="true" /> Modifica
+              </button>
               <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                 <AlertDialogTrigger className={cn(actionButton, "hover:bg-destructive/10 hover:text-destructive")}>
-                  <Trash2Icon className="size-4" aria-hidden="true" />{" "}{tr("Elimina")}</AlertDialogTrigger>
+                  <Trash2Icon className="size-4" aria-hidden="true" /> Elimina
+                </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>{tr("Eliminare questo movimento?")}</AlertDialogTitle>
-                    <AlertDialogDescription>«{transaction.description}{tr("» verrà eliminato definitivamente.")}</AlertDialogDescription>
+                    <AlertDialogTitle>Eliminare questo movimento?</AlertDialogTitle>
+                    <AlertDialogDescription>«{transaction.description}» verrà eliminato definitivamente.</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
+                    <AlertDialogCancel>Annulla</AlertDialogCancel>
                     <AlertDialogAction disabled={remove.isPending} onClick={() => remove.mutate(transaction.id, { onSuccess: () => setConfirmOpen(false) })}>
-                      {remove.isPending ? tr("Eliminazione…") : tr("Elimina")}
+                      {remove.isPending ? "Eliminazione…" : "Elimina"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -210,7 +211,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
           )}
         </div>
       )}
-      <InlineOrSheet open={panel === "split"} onOpenChange={(open) => !open && setPanel("none")} title={tr("Dividi {0}", {0: transaction.description})}>
+      <InlineOrSheet open={panel === "split"} onOpenChange={(open) => !open && setPanel("none")} title={`Dividi ${transaction.description}`}>
         {(layout) => (
           <SplitPanel
             title={transaction.description}
@@ -225,7 +226,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
           />
         )}
       </InlineOrSheet>
-      <InlineOrSheet open={panel === "edit"} onOpenChange={(open) => !open && setPanel("none")} title={tr("Modifica movimento")} showTitle>
+      <InlineOrSheet open={panel === "edit"} onOpenChange={(open) => !open && setPanel("none")} title="Modifica movimento" showTitle>
         {(layout) => (
           <TransactionEditPanel
             transaction={transaction}

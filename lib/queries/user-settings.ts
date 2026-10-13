@@ -12,8 +12,6 @@ export type { UserDataSummary, UserSessionView };
 
 /** Profilo e preferenze come li restituisce `GET /api/user/settings`. */
 export interface UserSettings {
-  productCountry: "IT" | "DE";
-  language: "it" | "en" | "de";
   name: string;
   email: string;
   image: string | null;
@@ -83,11 +81,7 @@ export function useUpdateUserSettingsMutation() {
         "Impossibile salvare le impostazioni"
       );
     },
-    onSuccess: async (_data, input) => {
-      await queryClient.invalidateQueries();
-      // Reload the server-rendered tree and clear all country-dependent client caches together.
-      if (input.productCountry || input.language) window.location.reload();
-    },
+    onSuccess: () => queryClient.invalidateQueries(),
   });
 }
 

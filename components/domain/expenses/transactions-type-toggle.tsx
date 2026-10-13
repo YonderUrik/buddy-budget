@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Toggle Tutte/Uscite/Entrate per la lista transazioni (non influenza KPI/donut/trend, sempre uscite-only). */
 
@@ -21,6 +20,5 @@ export interface TransactionsTypeToggleProps {
 }
 
 export function TransactionsTypeToggle({ value, onChange, stretch, className }: TransactionsTypeToggleProps) {
-  const { t: tr } = useLocalization();
-  return <SegmentedControl options={OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel={tr("Tipo di transazione")} />;
+  return <SegmentedControl options={OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel="Tipo di transazione" />;
 }

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Contenuto di una domanda di Analitiche (risposta a parole, immagine) e, in fondo, i dettagli tecnici «Per esperti»
@@ -22,12 +21,11 @@ export interface QuestionSectionProps {
 }
 
 export function QuestionSection({ question, expertHint, renderExpert, children }: QuestionSectionProps) {
-  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   return (
     <section id={question.id} aria-labelledby={`${question.id}-title`} className="flex flex-col gap-5">
       <h2 id={`${question.id}-title`} className="sr-only">
-        {tr(question.title)}
+        {question.title}
       </h2>
       {children}
       <details
@@ -40,7 +38,8 @@ export function QuestionSection({ question, expertHint, renderExpert, children }
       >
         <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-muted-foreground marker:hidden">
           <ChevronRight className="size-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden="true" />
-          <span>{tr("Per esperti")}{" "}<span className="font-normal">· {expertHint}</span>
+          <span>
+            Per esperti <span className="font-normal">· {expertHint}</span>
           </span>
         </summary>
         {open ? <div className="pt-3">{renderExpert()}</div> : null}

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Controllo segmentato (scelta singola tra poche opzioni, es. tab o toggle di tipo). Generico sul tipo del valore.
@@ -35,10 +34,9 @@ export function SegmentedControl<T extends string>({
   stretch = false,
   className,
 }: SegmentedControlProps<T>) {
-  const { t: tr } = useLocalization();
   const pillId = React.useId();
   return (
-    <div role="group" aria-label={tr(ariaLabel)} className={cn(
+    <div role="group" aria-label={ariaLabel} className={cn(
         "items-center gap-1 rounded-lg bg-muted p-1",
         stretch ? "flex w-full" : "inline-flex w-fit",
         className
@@ -63,7 +61,7 @@ export function SegmentedControl<T extends string>({
               className="absolute inset-0 rounded-md bg-background shadow-sm"
             />
           ) : null}
-          <span className="relative">{tr(option.label)}</span>
+          <span className="relative">{option.label}</span>
         </button>
       ))}
     </div>

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Linea del tempo dell'aliquota in uscita: 15% fino a 15 anni dall'adesione, poi scende fino al 9% a 35 anni.
@@ -34,7 +33,6 @@ function clampYears(value: number): number {
 }
 
 export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChange, onCommit, onReset }: PensionTaxTimelineProps) {
-  const { t: tr } = useLocalization();
   const trackRef = React.useRef<HTMLDivElement>(null);
   const dragging = React.useRef(false);
   const changed = React.useRef(false);
@@ -85,7 +83,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
           <span className="h-full bg-gradient-to-r from-neg/70 to-pos" style={{ width: `${100 - flatShare}%` }} />
         </div>
         {interactive && shownYears !== realYears ? (
-          <span className="absolute bottom-0 h-3 w-0.5 -translate-x-1/2 rounded-full bg-foreground/40" style={{ left: `${realPosition}%` }} title={tr("Oggi")} aria-hidden="true" />
+          <span className="absolute bottom-0 h-3 w-0.5 -translate-x-1/2 rounded-full bg-foreground/40" style={{ left: `${realPosition}%` }} title="Oggi" aria-hidden="true" />
         ) : null}
         <div className="absolute top-0 -translate-x-1/2" style={{ left: `${position}%` }}>
           <div className="flex flex-col items-center">
@@ -93,7 +91,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
               <span
                 role="slider"
                 tabIndex={0}
-                aria-label={tr("Anni di partecipazione al fondo, per simulare l'aliquota in uscita")}
+                aria-label="Anni di partecipazione al fondo, per simulare l'aliquota in uscita"
                 aria-valuemin={0}
                 aria-valuemax={EXIT_TAX_TIMELINE_YEARS}
                 aria-valuenow={shownYears}
@@ -125,7 +123,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
       <ul className="relative h-9 text-xs text-text-2">
         {marks.map((mark) => (
           <li key={mark.title} className="absolute flex -translate-x-1/2 flex-col items-center whitespace-nowrap first:translate-x-0 first:items-start last:-translate-x-full last:items-end" style={{ left: `${mark.left}%` }}>
-            <span className="font-medium tabular-nums text-foreground">{tr(mark.title)}</span>
+            <span className="font-medium tabular-nums text-foreground">{mark.title}</span>
             <span>{mark.caption}</span>
           </li>
         ))}

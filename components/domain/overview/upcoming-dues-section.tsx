@@ -1,12 +1,9 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Sezione "Prossime rate": un'agenda delle scadenze dei finanziamenti, con giorno in evidenza. Senza riquadro. */
 
 import { CalendarClockIcon } from "lucide-react";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "./section-heading";
 
@@ -32,21 +29,15 @@ export interface UpcomingDuesSectionProps {
   className?: string;
 }
 
-
-
+const DAY = new Intl.DateTimeFormat("it-IT", { day: "numeric" });
+const MONTH = new Intl.DateTimeFormat("it-IT", { month: "short" });
 
 export function UpcomingDuesSection({ dues, currency, href = "/debiti", onLinkClick, footnote, className }: UpcomingDuesSectionProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-  const DAY = new Intl.DateTimeFormat(formattingLocale, { day: "numeric" });
-  const MONTH = new Intl.DateTimeFormat(formattingLocale, { month: "short" });
-
-  const { t: tr } = useLocalization();
   if (dues.length === 0) return null;
   const format = (value: number) => formatCurrency(value, currency, { maximumFractionDigits: 0 });
   return (
     <section aria-labelledby="overview-dues" className={cn("flex flex-col gap-3", className)}>
-      <SectionHeading id="overview-dues" icon={CalendarClockIcon} title={tr("Prossime rate")} color="var(--neg)" href={href} linkLabel={tr("Debiti")} onLinkClick={onLinkClick} />
+      <SectionHeading id="overview-dues" icon={CalendarClockIcon} title="Prossime rate" color="var(--neg)" href={href} linkLabel="Debiti" onLinkClick={onLinkClick} />
       <ul>
         {dues.slice(0, UPCOMING_DUES_LIMIT).map((due) => {
           const date = new Date(`${due.date}T00:00:00`);
@@ -58,8 +49,8 @@ export function UpcomingDuesSection({ dues, currency, href = "/debiti", onLinkCl
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-medium text-foreground">{due.name}</span>
-                {due.overdue ? <span className="block text-sm text-neg">{tr("Scaduta")}</span> : null}
-                <span className="sr-only">{tr(", scadenza {0}", {0: due.date})}</span>
+                {due.overdue ? <span className="block text-sm text-neg">Scaduta</span> : null}
+                <span className="sr-only">{`, scadenza ${due.date}`}</span>
               </span>
               <span className="shrink-0 font-heading text-base font-medium tabular-nums text-foreground">{format(due.amount)}</span>
             </li>

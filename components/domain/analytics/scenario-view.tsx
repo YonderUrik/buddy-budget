@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Corpo di Analitiche: titolo con l'anno del traguardo, quattro cursori «e se…», le quattro risposte e il grafico della
@@ -54,7 +53,6 @@ const VIEW_ICONS = { "dove-sono": TrendingUp, quando: CalendarClock, reggera: Sh
 const VIEW_LABELS = { "dove-sono": "Strada fatta", quando: "Arrivo", reggera: "Regge", costi: "Costi" } as const;
 
 export function ScenarioView({ base, assumptions, plan, returnInfo, saving, saveError, updatingPeriod, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
-  const { t: tr } = useLocalization();
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -72,7 +70,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
   const costs = React.useMemo(() => summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null }))), [base.positions, assumptions.terByInstrument]);
 
   const views: AnswerView[] = ANALYTICS_QUESTIONS.map((q) => {
-    const common = { id: q.id, label: tr(VIEW_LABELS[q.id]), icon: VIEW_ICONS[q.id] };
+    const common = { id: q.id, label: VIEW_LABELS[q.id], icon: VIEW_ICONS[q.id] };
     switch (q.id) {
       case "dove-sono":
         return { ...common, value: scenarioPlan.progress !== null ? pct(Math.min(scenarioPlan.progress, 9.99), 0) : "—", note: scenarioPlan.target !== null ? `${money(scenarioPlan.wealth, currency)} su ${money(scenarioPlan.target, currency)}` : money(scenarioPlan.wealth, currency) };
@@ -157,7 +155,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
       />
       {saveError && !dialogOpen ? (
         <p className="text-sm text-neg" role="alert">
-          {tr(saveError)}
+          {saveError}
         </p>
       ) : null}
       <div className="flex flex-col gap-6">
@@ -180,8 +178,8 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{tr("Tutte le ipotesi")}</DialogTitle>
-            <DialogDescription>{tr("Quelle che cambi raramente. Si applicano a tutta la pagina e restano salvate.")}</DialogDescription>
+            <DialogTitle>Tutte le ipotesi</DialogTitle>
+            <DialogDescription>Quelle che cambi raramente. Si applicano a tutta la pagina e restano salvate.</DialogDescription>
           </DialogHeader>
           <AssumptionsPanel
             assumptions={assumptions}

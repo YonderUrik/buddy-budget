@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Sezione «Notifiche»: sceglie quali email non di servizio ricevere (riepilogo, avvisi su budget e scadenze) e ogni
@@ -34,7 +33,6 @@ const FIELD_BY_KIND = { digest: "digestEnabled", budget: "budgetAlertsEnabled", 
 const KINDS: readonly NotificationKind[] = ["digest", "budget", "deadlines"];
 
 export function NotificationsSection({ email }: { email: string }) {
-  const { t: tr } = useLocalization();
   const { data: preferences, isLoading, isError } = useNotificationPreferencesQuery();
   const update = useUpdateNotificationPreferencesMutation();
   const example = useSendNotificationExampleMutation();
@@ -42,22 +40,24 @@ export function NotificationsSection({ email }: { email: string }) {
   return (
     <SettingsSection
       id="impostazioni-notifiche"
-      title={tr("Notifiche")}
+      title="Notifiche"
       icon={Mail}
       preview={<EmailPreview />}
-      description={tr("Email di riepilogo e di avviso a {0}. Sono facoltative e partono spente; ognuna ha il link per disattivarla. Le email di servizio (link di accesso, sicurezza, account) non si possono disattivare.", {0: email})}
+      description={`Email di riepilogo e di avviso a ${email}. Sono facoltative e partono spente; ognuna ha il link per disattivarla. Le email di servizio (link di accesso, sicurezza, account) non si possono disattivare.`}
     >
       {isLoading ? (
         <div className="h-24 animate-pulse rounded-lg bg-muted" aria-busy="true" />
       ) : isError || !preferences ? (
-        <p className="text-sm text-neg" role="alert">{tr("Impossibile caricare le preferenze sulle notifiche.")}</p>
+        <p className="text-sm text-neg" role="alert">
+          Impossibile caricare le preferenze sulle notifiche.
+        </p>
       ) : (
         <>
           {KINDS.map((kind) => {
             const info = NOTIFICATION_KIND_INFO[kind];
             const field = FIELD_BY_KIND[kind];
             return (
-              <SettingsRow key={kind} label={tr(info.label)} hint={tr(info.hint)} htmlFor={`notifiche-${kind}`}>
+              <SettingsRow key={kind} label={info.label} hint={info.hint} htmlFor={`notifiche-${kind}`}>
                 <Switch
                   id={`notifiche-${kind}`}
                   checked={preferences[field]}
@@ -65,13 +65,13 @@ export function NotificationsSection({ email }: { email: string }) {
                   onCheckedChange={(checked) =>
                     update.mutate({ [field]: checked }, { onSuccess: () => track("notifications_toggled", { kind, enabled: checked }) })
                   }
-                  aria-label={tr(info.label)}
+                  aria-label={info.label}
                 />
               </SettingsRow>
             );
           })}
           {preferences.digestEnabled && (
-            <SettingsRow label={tr("Frequenza del riepilogo")} hint={tr("Il riepilogo parla dell'ultimo periodo concluso.")} htmlFor="notifiche-frequenza">
+            <SettingsRow label="Frequenza del riepilogo" hint="Il riepilogo parla dell'ultimo periodo concluso." htmlFor="notifiche-frequenza">
               <Select
                 value={preferences.digestFrequency}
                 onValueChange={(value) =>
@@ -84,7 +84,7 @@ export function NotificationsSection({ email }: { email: string }) {
                 }
                 disabled={update.isPending}
               >
-                <SelectTrigger id="notifiche-frequenza" className="w-full sm:w-56" aria-label={tr("Frequenza del riepilogo")}>
+                <SelectTrigger id="notifiche-frequenza" className="w-full sm:w-56" aria-label="Frequenza del riepilogo">
                   <SelectValue>{(value: string | null) => (value ? FREQUENCY_LABEL[value as DigestFrequency] : "")}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -97,24 +97,24 @@ export function NotificationsSection({ email }: { email: string }) {
               </Select>
             </SettingsRow>
           )}
-          <SettingsRow label={tr("Vedi un esempio")} hint={tr("Ti mandiamo il riepilogo dell'ultimo mese con i tuoi dati. Non attiva nulla.")}>
+          <SettingsRow label="Vedi un esempio" hint="Ti mandiamo il riepilogo dell'ultimo mese con i tuoi dati. Non attiva nulla.">
             <Button
               variant="outline"
               disabled={example.isPending}
               onClick={() => example.mutate(undefined, { onSuccess: () => track("notifications_test_sent") })}
             >
-              {example.isPending ? tr("Invio…") : tr("Mandami un esempio")}
+              {example.isPending ? "Invio…" : "Mandami un esempio"}
             </Button>
-            {example.isSuccess && <p className="text-xs text-muted-foreground">{tr("Inviato: controlla la posta.")}</p>}
+            {example.isSuccess && <p className="text-xs text-muted-foreground">Inviato: controlla la posta.</p>}
             {example.isError && (
               <p className="text-xs text-neg" role="alert">
-                {tr(example.error.message)}
+                {example.error.message}
               </p>
             )}
           </SettingsRow>
           {update.isError && (
             <p className="text-sm text-neg" role="alert">
-              {tr(update.error.message)}
+              {update.error.message}
             </p>
           )}
         </>

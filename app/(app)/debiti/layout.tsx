@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Layout di Debiti: titolo e "Aggiungi debito". Il dialog di aggiunta vive qui, così ogni scheda può aprirlo.
@@ -17,7 +16,6 @@ import { authClient } from "@/lib/auth/client";
 const DETAIL_PAGES_BASE = "/debiti/finanziamenti";
 
 export default function DebitiLayout({ children }: { children: React.ReactNode }) {
-  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const isDetail = usePathname().startsWith(DETAIL_PAGES_BASE);
   const [addOpen, setAddOpen] = React.useState(false);
@@ -29,11 +27,12 @@ export default function DebitiLayout({ children }: { children: React.ReactNode }
         <div className={isDetail ? "hidden" : "flex flex-col gap-3"}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Debiti")}</h1>
-              <p className="text-sm text-muted-foreground">{tr("Cosa pagare, cosa pesa, come uscirne")}</p>
+              <h1 className="font-heading text-2xl font-medium text-foreground">Debiti</h1>
+              <p className="text-sm text-muted-foreground">Cosa pagare, cosa pesa, come uscirne</p>
             </div>
             <Button className="gap-1.5 shadow-xs" onClick={actions.openAdd}>
-              <Plus size={15} aria-hidden="true" />{" "}{tr("Aggiungi")}</Button>
+              <Plus size={15} aria-hidden="true" /> Aggiungi
+            </Button>
           </div>
         </div>
         {children}

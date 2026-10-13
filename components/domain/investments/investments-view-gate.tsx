@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Stati comuni delle schede di Investimenti: caricamento, errore e portafoglio vuoto (con "Registra un acquisto" e
@@ -33,7 +32,6 @@ export function InvestmentsViewGate({
   errorMessage = "Impossibile caricare gli investimenti.",
   children,
 }: InvestmentsViewGateProps) {
-  const { t: tr } = useLocalization();
   const { disabled, showAll } = useBrokerSelection();
   const { openRegister, openImport } = useInvestmentsActions();
   if (loading) {
@@ -45,13 +43,13 @@ export function InvestmentsViewGate({
     );
   }
   if (error) return <LoadError message={errorMessage} onRetry={onRetry} />;
-  if (empty && disabled.size) return <div className="space-y-3 rounded-xl border p-6 text-center"><p>{tr("Nessuna operazione per i broker selezionati.")}</p><Button variant="outline" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all" }); }}>{tr("Mostra tutti i broker")}</Button></div>;
+  if (empty && disabled.size) return <div className="space-y-3 rounded-xl border p-6 text-center"><p>Nessuna operazione per i broker selezionati.</p><Button variant="outline" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all" }); }}>Mostra tutti i broker</Button></div>;
   if (empty) {
     return (
       <EmptyState
         icon={TrendingUpIcon}
-        title={tr("Registra il tuo primo investimento")}
-        description={tr("Cerca uno strumento per nome, ticker o ISIN (ETF, azioni, BTP, fondi, crypto) e inserisci l'acquisto: valore e guadagno si aggiornano da soli con i prezzi di chiusura.")}
+        title="Registra il tuo primo investimento"
+        description="Cerca uno strumento per nome, ticker o ISIN (ETF, azioni, BTP, fondi, crypto) e inserisci l'acquisto: valore e guadagno si aggiornano da soli con i prezzi di chiusura."
         primary={{ label: "Registra un acquisto", onClick: () => openRegister({ instrument: null }) }}
         secondary={{ label: "Importa da file CSV", onClick: openImport }}
       />

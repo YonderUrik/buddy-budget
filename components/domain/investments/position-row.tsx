@@ -1,9 +1,5 @@
 "use client";
 
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
-
 /**
  * Una posizione aperta. Da `md` in su è una riga di tabella su una sola linea (strumento, quantità, carico medio,
  * prezzo, valore, utile, peso); sotto `md` è una scheda compatta (nome, valore, utile) che si apre al tocco per
@@ -17,9 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PositionRow } from "@/lib/calc/investments";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
+import { formatSignedCurrency, formatSignedPct } from "./gain-text";
 import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
 import { InstrumentIcon } from "./instrument-icon";
 import { percent, PRICE_FORMAT, priceNote, QUANTITY_FORMAT } from "./positions-format";
@@ -44,13 +40,6 @@ function gainClass(gain: number | null): string {
 }
 
 export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice, onRemoteLogo, hrefBase = "/investimenti/titoli" }: PositionRowViewProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatSignedCurrency, formatSignedPct } = localizedFormats(formattingLocale);
-
-
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const detailsId = React.useId();
   const note = priceNote(row, todayKey);
@@ -69,8 +58,8 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
       variant="ghost"
       size="icon"
       className="size-9 shrink-0"
-      aria-label={tr("Inserisci un prezzo per {0}", {0: row.instrument.name})}
-      title={tr("Inserisci un prezzo")}
+      aria-label={`Inserisci un prezzo per ${row.instrument.name}`}
+      title="Inserisci un prezzo"
       onClick={() => onManualPrice(row)}
     >
       <PencilLineIcon className="size-4" aria-hidden="true" />
@@ -89,7 +78,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
                 <span className="truncate font-medium text-foreground" title={row.instrument.name}>
                   {row.instrument.name}
                 </span>
-                {loadingHistory ? <Badge variant="secondary">{tr("Storico in caricamento")}</Badge> : null}
+                {loadingHistory ? <Badge variant="secondary">Storico in caricamento</Badge> : null}
               </span>
               <span className="block truncate text-xs text-muted-foreground">
                 {INSTRUMENT_TYPE_SINGULAR[row.instrument.type]}
@@ -106,7 +95,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
           className="-mr-2 flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted @3xl:hidden"
           aria-expanded={open}
           aria-controls={detailsId}
-          aria-label={tr("Dettagli di {0}", {0: row.instrument.name})}
+          aria-label={`Dettagli di ${row.instrument.name}`}
           onClick={() => setOpen((v) => !v)}
         >
           <ChevronDownIcon className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden="true" />
@@ -116,7 +105,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
         {/* Colonne solo desktop */}
         <div className="hidden min-w-0 whitespace-nowrap @3xl:block">
           <p className="truncate text-sm tabular-nums text-foreground">{quantity}</p>
-          <p className="truncate text-xs tabular-nums text-muted-foreground">{tr("carico")}{" "}{average}</p>
+          <p className="truncate text-xs tabular-nums text-muted-foreground">carico {average}</p>
         </div>
         <div className="hidden min-w-0 whitespace-nowrap @3xl:block">
           <p className={cn("flex items-center gap-1 text-sm tabular-nums", note.stale ? "text-neg" : "text-foreground")}>
@@ -129,10 +118,10 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
         </div>
         <p className="hidden whitespace-nowrap text-right font-heading text-base font-medium tabular-nums text-foreground @3xl:block">{value}</p>
         <div className={cn("hidden text-right text-sm tabular-nums whitespace-nowrap @3xl:block", gainClass(gain))}>
-          <p>{gain === null ? tr("senza prezzo") : formatSignedCurrency(gain, currency)}</p>
+          <p>{gain === null ? "senza prezzo" : formatSignedCurrency(gain, currency)}</p>
           {row.unrealizedGainPct !== null && gain !== null ? <p className="text-xs">{formatSignedPct(row.unrealizedGainPct)}</p> : null}
         </div>
-        <div className="hidden items-center gap-2 @3xl:flex" aria-label={tr("Peso {0}", {0: weight})}>
+        <div className="hidden items-center gap-2 @3xl:flex" aria-label={`Peso ${weight}`}>
           <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
             {row.weight !== null ? (
               <div className="h-full rounded-full" style={{ width: `${Math.max(row.weight * 100, 1)}%`, backgroundColor: color }} />
@@ -143,30 +132,32 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
         <div className="hidden @3xl:block">{manualPriceButton}</div>
       </div>
 
-      {note.hint ? <p className="hidden pb-2 pl-12 text-xs text-neg @3xl:block">{tr(note.hint)}</p> : null}
+      {note.hint ? <p className="hidden pb-2 pl-12 text-xs text-neg @3xl:block">{note.hint}</p> : null}
 
       {/* Dettagli sotto md */}
       <div id={detailsId} hidden={!open} className="@3xl:hidden">
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 pb-3 pl-12 text-sm">
           <div>
-            <dt className="text-xs text-muted-foreground">{tr("Quantità")}</dt>
+            <dt className="text-xs text-muted-foreground">Quantità</dt>
             <dd className="tabular-nums">{quantity}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">{tr("Carico medio")}</dt>
+            <dt className="text-xs text-muted-foreground">Carico medio</dt>
             <dd className="tabular-nums">{average}</dd>
           </div>
           <div className="col-span-2 flex items-end justify-between gap-2">
             <div className="min-w-0">
-              <dt className="text-xs text-muted-foreground">{tr("Ultimo prezzo")}</dt>
+              <dt className="text-xs text-muted-foreground">Ultimo prezzo</dt>
               <dd className={cn("tabular-nums", note.stale && "text-neg")}>
                 {note.price ?? "Nessun prezzo"}
                 <span className="block text-xs">{note.detail}</span>
-                {note.hint ? <span className="block text-xs">{tr(note.hint)}</span> : null}
+                {note.hint ? <span className="block text-xs">{note.hint}</span> : null}
               </dd>
             </div>
             <Button variant="outline" size="sm" className="shrink-0" onClick={() => onManualPrice(row)}>
-              <PencilLineIcon className="size-3.5" aria-hidden="true" />{tr("Inserisci prezzo")}</Button>
+              <PencilLineIcon className="size-3.5" aria-hidden="true" />
+              Inserisci prezzo
+            </Button>
           </div>
         </dl>
       </div>

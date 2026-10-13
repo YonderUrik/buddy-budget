@@ -1,8 +1,5 @@
 "use client";
 
-
-import { useLocalization } from "@/lib/localization/provider";
-
 /** Riga di un abbonamento: logo dell'esercente (o iniziale colorata), nome, cadenza e prossimo addebito, importo; sotto, le azioni rapide opzionali. */
 
 import * as React from "react";
@@ -36,7 +33,6 @@ export interface SubscriptionRowProps {
 }
 
 export function SubscriptionRow({ item, currency, today, onOpen, actions, onRemoteLogo, className }: SubscriptionRowProps) {
-  const { t: tr } = useLocalization();
   const color = avatarColor(item.key);
   const showMonthly = item.cadence !== null && item.cadence !== "mensile" && item.monthly !== null;
   const rise = item.priceChange && item.priceChange.to > item.priceChange.from ? item.priceChange : null;
@@ -46,7 +42,7 @@ export function SubscriptionRow({ item, currency, today, onOpen, actions, onRemo
         type="button"
         onClick={() => onOpen(item)}
         className="flex min-h-16 w-full cursor-pointer items-center gap-3.5 rounded-2xl px-4 py-3 text-left transition-colors hover:bg-foreground/[0.04] focus-visible:outline-2 focus-visible:outline-ring"
-        aria-label={tr("{0}: apri i dettagli", {0: item.name})}
+        aria-label={`${item.name}: apri i dettagli`}
       >
         <MerchantLogo
           name={item.name}
@@ -67,10 +63,11 @@ export function SubscriptionRow({ item, currency, today, onOpen, actions, onRemo
           <span className="block font-mono font-semibold tabular-nums">{item.amount !== null ? formatCurrency(item.amount, currency) : "—"}</span>
           {rise ? (
             <span className="inline-flex items-center gap-1 text-xs font-semibold text-neg">
-              <TrendingUpIcon className="size-3.5" aria-hidden="true" />{tr("era")}{" "}{formatCurrency(rise.from, currency)}
+              <TrendingUpIcon className="size-3.5" aria-hidden="true" />
+              era {formatCurrency(rise.from, currency)}
             </span>
           ) : showMonthly ? (
-            <span className="block text-xs text-text-2">{formatCurrency(item.monthly ?? 0, currency)}{tr("/mese")}</span>
+            <span className="block text-xs text-text-2">{formatCurrency(item.monthly ?? 0, currency)}/mese</span>
           ) : null}
         </span>
       </button>

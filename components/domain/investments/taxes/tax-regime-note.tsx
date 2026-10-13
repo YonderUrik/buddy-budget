@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Nota in fondo alla scheda Tasse: avvertenza sulle stime e scelta compatta del regime (amministrato o dichiarativo),
@@ -24,18 +23,19 @@ export interface TaxRegimeNoteProps {
 }
 
 export function TaxRegimeNote({ regime, onChange, saving }: TaxRegimeNoteProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-      <p className="max-w-prose">{tr("Sono stime secondo le regole italiane, non un calcolo fiscale: per la dichiarazione fai riferimento al broker o a un commercialista.")}</p>
+      <p className="max-w-prose">
+        Sono stime secondo le regole italiane, non un calcolo fiscale: per la dichiarazione fai riferimento al broker o a un commercialista.
+      </p>
       <div className="flex shrink-0 items-center gap-2">
-        <span>{tr("Regime")}</span>
-        <InfoHint label={tr("Cos'è: regime")}>{REGIME_HINT}</InfoHint>
+        <span>Regime</span>
+        <InfoHint label="Cos'è: regime">{REGIME_HINT}</InfoHint>
         <SegmentedControl
           options={OPTIONS}
           value={regime}
           onChange={(value) => !saving && value !== regime && onChange(value)}
-          ariaLabel={tr("Regime fiscale del portafoglio")}
+          ariaLabel="Regime fiscale del portafoglio"
         />
       </div>
     </div>

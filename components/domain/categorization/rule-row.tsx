@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga singola di `RulesManager`: pattern e categoria/tipo match editabili inline
@@ -40,7 +39,6 @@ export interface RuleRowProps {
 }
 
 export function RuleRow({ rule, categories, onRemoteLogo }: RuleRowProps) {
-  const { t: tr } = useLocalization();
   const updateMutation = useUpdateRuleMutation();
   const deleteMutation = useDeleteRuleMutation();
   const notifyRuleSaved = useRuleSavedFeedback();
@@ -105,18 +103,18 @@ export function RuleRow({ rule, categories, onRemoteLogo }: RuleRowProps) {
               if (e.key === "Enter") e.currentTarget.blur();
             }}
             className="h-7 w-full text-sm font-medium"
-            aria-label={tr("Pattern della regola")}
+            aria-label="Pattern della regola"
           />
           <div className="flex flex-wrap items-center gap-1.5">
             <Select value={rule.matchType} onValueChange={commitMatchType}>
               <SelectTrigger size="sm" className="h-6 w-fit text-xs">
                 <SelectValue>
-                  {(value: "merchant" | "contains") => tr(RULE_MATCH_TYPE_LABELS[value])}
+                  {(value: "merchant" | "contains") => RULE_MATCH_TYPE_LABELS[value]}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="merchant">{tr("Esatta")}</SelectItem>
-                <SelectItem value="contains">{tr("Contiene")}</SelectItem>
+                <SelectItem value="merchant">Esatta</SelectItem>
+                <SelectItem value="contains">Contiene</SelectItem>
               </SelectContent>
             </Select>
             <Select value={rule.categoryId} onValueChange={commitCategory}>
@@ -137,29 +135,32 @@ export function RuleRow({ rule, categories, onRemoteLogo }: RuleRowProps) {
 
       <div className="flex shrink-0 items-center gap-2">
         <Badge variant="secondary" className="text-[10px]">
-          {tr(RULE_SOURCE_LABELS[rule.source])}
+          {RULE_SOURCE_LABELS[rule.source]}
         </Badge>
-        <span className="text-xs text-muted-foreground">{tr("usata")}{" "}{rule.hitCount}{" "}{tr("volte")}</span>
+        <span className="text-xs text-muted-foreground">usata {rule.hitCount} volte</span>
 
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogTrigger
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-            aria-label={tr("Elimina regola")}
+            aria-label="Elimina regola"
           >
             <Trash2 size={14} />
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>{tr("Eliminare questa regola?")}</AlertDialogTitle>
-              <AlertDialogDescription>{tr("Il pattern \"")}{rule.pattern}{tr("\" non verrà più applicato automaticamente alle nuove transazioni.")}</AlertDialogDescription>
+              <AlertDialogTitle>Eliminare questa regola?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Il pattern &quot;{rule.pattern}&quot; non verrà più applicato automaticamente alle nuove
+                transazioni.
+              </AlertDialogDescription>
             </AlertDialogHeader>
             {deleteMutation.isError && (
-              <p className="text-sm text-destructive">{tr("Eliminazione non riuscita, riprova.")}</p>
+              <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>
             )}
             <AlertDialogFooter>
-              <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
+              <AlertDialogCancel>Annulla</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? tr("Eliminazione...") : tr("Elimina")}
+                {deleteMutation.isPending ? "Eliminazione..." : "Elimina"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

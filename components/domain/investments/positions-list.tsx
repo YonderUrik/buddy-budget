@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Posizioni aperte, dalla più pesante. In testa una lettura della concentrazione e una barra composta con il peso di
@@ -39,15 +38,14 @@ export interface PositionsListProps {
 }
 
 export function PositionsList({ rows, concentration, currency, todayKey, backfill, onManualPrice, action, titleHrefBase }: PositionsListProps) {
-  const { t: tr } = useLocalization();
   const [logosShown, setLogosShown] = React.useState(false);
   const loading = new Set(backfill.filter((b) => b.status === "running" && !b.interrupted).map((b) => b.instrumentId));
   const insight = concentrationText(concentration);
   const weighted = rows.filter((r) => r.weight !== null);
   return (
-    <PanelSection icon={ChartPieIcon} title={tr("Posizioni")} className="@container" description={insight} action={action}>
+    <PanelSection icon={ChartPieIcon} title="Posizioni" className="@container" description={insight} action={action}>
       {weighted.length > 1 ? (
-        <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" role="img" aria-label={tr("Peso di ogni posizione nel portafoglio")}>
+        <div className="flex h-2 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Peso di ogni posizione nel portafoglio">
           {weighted.map((r) => (
             <div
               key={r.instrument.id}
@@ -59,7 +57,7 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
         </div>
       ) : null}
       {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{tr("Nessuna posizione aperta.")}</p>
+        <p className="text-sm text-muted-foreground">Nessuna posizione aperta.</p>
       ) : (
         <>
           <div
@@ -68,7 +66,7 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
           >
             {COLUMN_LABELS.map((label, i) => (
               <span key={i} className={i === 3 || i === 4 ? "text-right" : undefined}>
-                {tr(label)}
+                {label}
               </span>
             ))}
           </div>
@@ -87,8 +85,11 @@ export function PositionsList({ rows, concentration, currency, todayKey, backfil
             ))}
           </ul>
           {logosShown ? (
-            <p className="text-xs text-muted-foreground">{tr("Loghi forniti da")}{" "}
-              <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{tr("Logo.dev")}</a>
+            <p className="text-xs text-muted-foreground">
+              Loghi forniti da{" "}
+              <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
+                Logo.dev
+              </a>
             </p>
           ) : null}
         </>

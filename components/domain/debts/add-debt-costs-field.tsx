@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Spese accessorie del finanziamento (istruttoria, assicurazione, incasso rata): voci libere, decise dall'utente. */
 
@@ -18,34 +17,34 @@ export interface AddDebtCostsFieldProps {
 }
 
 export function AddDebtCostsField({ costs, onChange }: AddDebtCostsFieldProps) {
-  const { t: tr } = useLocalization();
   const update = (index: number, patch: Partial<AddDebtCostField>) => onChange(costs.map((c, i) => (i === index ? { ...c, ...patch } : c)));
   return (
     <div className="flex flex-col gap-2">
       {costs.map((cost, index) => (
         <div key={index} className="grid grid-cols-[1fr_6rem_7.5rem_auto] items-center gap-2">
-          <Input aria-label={tr("Nome della spesa")} placeholder={tr("Es. Assicurazione")} value={cost.label} onChange={(e) => update(index, { label: e.target.value })} />
-          <Input aria-label={tr("Importo della spesa")} inputMode="decimal" placeholder={tr("€")} value={cost.amount} onChange={(e) => update(index, { amount: e.target.value })} />
+          <Input aria-label="Nome della spesa" placeholder="Es. Assicurazione" value={cost.label} onChange={(e) => update(index, { label: e.target.value })} />
+          <Input aria-label="Importo della spesa" inputMode="decimal" placeholder="€" value={cost.amount} onChange={(e) => update(index, { amount: e.target.value })} />
           <Select value={cost.kind} onValueChange={(v) => v && update(index, { kind: v as AddDebtCostField["kind"] })}>
-            <SelectTrigger aria-label={tr("Quando si paga")}>
-              <SelectValue>{(v: string | null) => (v ? tr(KIND_LABELS[v as AddDebtCostField["kind"]]) : "")}</SelectValue>
+            <SelectTrigger aria-label="Quando si paga">
+              <SelectValue>{(v: string | null) => (v ? KIND_LABELS[v as AddDebtCostField["kind"]] : "")}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {(Object.keys(KIND_LABELS) as AddDebtCostField["kind"][]).map((kind) => (
                 <SelectItem key={kind} value={kind}>
-                  {tr(KIND_LABELS[kind])}
+                  {KIND_LABELS[kind]}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button type="button" variant="ghost" size="icon" className="size-8" aria-label={tr("Togli la spesa")} onClick={() => onChange(costs.filter((_, i) => i !== index))}>
+          <Button type="button" variant="ghost" size="icon" className="size-8" aria-label="Togli la spesa" onClick={() => onChange(costs.filter((_, i) => i !== index))}>
             <X size={15} aria-hidden="true" />
           </Button>
         </div>
       ))}
       {costs.length < DEBT_MAX_COSTS ? (
         <Button type="button" variant="ghost" size="sm" className="self-start gap-1" onClick={() => onChange([...costs, { label: "", amount: "", kind: "una_tantum" }])}>
-          <Plus size={14} aria-hidden="true" />{" "}{tr("Aggiungi una spesa")}</Button>
+          <Plus size={14} aria-hidden="true" /> Aggiungi una spesa
+        </Button>
       ) : null}
     </div>
   );

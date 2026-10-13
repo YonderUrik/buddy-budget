@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Anello di avanzamento con un'etichetta al centro (es. "26%" e "restituito"). Solo SVG, colori dai token del tema. */
 
 export interface DebtRingProps {
@@ -16,7 +14,6 @@ const RING_STROKE = 12;
 const DEFAULT_RING_SIZE = 112;
 
 export function DebtRing({ fraction, label, caption, size = DEFAULT_RING_SIZE }: DebtRingProps) {
-  const { t: tr } = useLocalization();
   const radius = size / 2 - RING_STROKE / 2;
   const circumference = 2 * Math.PI * radius;
   const clamped = Math.min(1, Math.max(0, fraction));
@@ -35,7 +32,7 @@ export function DebtRing({ fraction, label, caption, size = DEFAULT_RING_SIZE }:
         className="stroke-primary"
       />
       <text x="50%" y="47%" textAnchor="middle" className="fill-foreground font-heading" fontSize={size * 0.2}>
-        {tr(label)}
+        {label}
       </text>
       <text x="50%" y="63%" textAnchor="middle" className="fill-muted-foreground" fontSize={size * 0.105}>
         {caption}

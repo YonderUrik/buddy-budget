@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Pulsante con conferma che riassegna un colore univoco a ogni categoria non-fallback. */
 
@@ -20,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { useDistributeColorsMutation } from "@/lib/queries/categories";
 
 export function DistributeColorsButton() {
-  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const mutation = useDistributeColorsMutation();
 
@@ -35,21 +33,26 @@ export function DistributeColorsButton() {
       <AlertDialogTrigger
         render={
           <Button variant="outline" size="sm">
-            <Shuffle size={14} />{tr("Distribuisci colori")}</Button>
+            <Shuffle size={14} />
+            Distribuisci colori
+          </Button>
         }
       />
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{tr("Distribuire i colori automaticamente?")}</AlertDialogTitle>
-          <AlertDialogDescription>{tr("Ogni categoria (esclusa \"Da categorizzare\") riceverà un colore diverso dalle altre. I colori attualmente assegnati manualmente verranno sovrascritti.")}</AlertDialogDescription>
+          <AlertDialogTitle>Distribuire i colori automaticamente?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Ogni categoria (esclusa &quot;Da categorizzare&quot;) riceverà un colore diverso dalle altre.
+            I colori attualmente assegnati manualmente verranno sovrascritti.
+          </AlertDialogDescription>
         </AlertDialogHeader>
         {mutation.isError && (
-          <p className="text-sm text-destructive">{tr("Distribuzione non riuscita, riprova.")}</p>
+          <p className="text-sm text-destructive">Distribuzione non riuscita, riprova.</p>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
+          <AlertDialogCancel>Annulla</AlertDialogCancel>
           <AlertDialogAction onClick={handleConfirm} disabled={mutation.isPending}>
-            {mutation.isPending ? tr("Distribuzione...") : tr("Distribuisci")}
+            {mutation.isPending ? "Distribuzione..." : "Distribuisci"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Interruttore Categorie | Regole della scheda "Categorie e regole": due pagine vere, link con stato attivo. */
 
 import Link from "next/link";
@@ -17,9 +15,8 @@ export interface ManagementSwitchProps {
 }
 
 export function ManagementSwitch({ options, activeHref, ariaLabel = "Categorie o regole" }: ManagementSwitchProps) {
-  const { t: tr } = useLocalization();
   return (
-    <nav aria-label={tr(ariaLabel)} className="inline-flex w-fit rounded-full bg-muted p-1">
+    <nav aria-label={ariaLabel} className="inline-flex w-fit rounded-full bg-muted p-1">
       {options.map((option) => {
         const active = option.href === activeHref;
         return (
@@ -32,7 +29,7 @@ export function ManagementSwitch({ options, activeHref, ariaLabel = "Categorie o
               active ? "bg-card text-foreground shadow-xs" : "text-text-2 hover:text-foreground",
             )}
           >
-            {tr(option.label)}
+            {option.label}
           </Link>
         );
       })}

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * AuthSheetExample
@@ -37,8 +36,6 @@ export function AuthSheetExample({
   caption = "La banca si collega in sola lettura (PSD2): BuddyBudget non può muovere soldi.",
   className,
 }: AuthSheetExampleProps) {
-  const { t: tr, language } = useLocalization();
-  rows = rows.filter(row => language !== "de" || row.name !== "Tasse se vendo");
   // Quante righe sono già «sistemate»: 0 = tutto il foglio di prima, rows.length = tutto BuddyBudget.
   const [step, setStep] = React.useState(0);
   const reduced = useReducedMotion() ?? false;
@@ -53,12 +50,12 @@ export function AuthSheetExample({
 
   return (
     <figure className={cn("overflow-hidden rounded-xl border border-border bg-card shadow-sm", className)}>
-      <figcaption className="border-b border-border px-4 py-3 font-heading text-base font-medium">{tr(title)}</figcaption>
+      <figcaption className="border-b border-border px-4 py-3 font-heading text-base font-medium">{title}</figcaption>
       <table className="w-full border-collapse text-sm">
         <thead className="sr-only">
           <tr>
-            <th scope="col">{tr("Voce")}</th>
-            <th scope="col">{tr("Valore")}</th>
+            <th scope="col">Voce</th>
+            <th scope="col">Valore</th>
           </tr>
         </thead>
         <tbody>
@@ -68,7 +65,7 @@ export function AuthSheetExample({
             return (
               <tr key={row.name} className="border-t border-border first:border-t-0">
                 <th scope="row" className="w-[42%] px-4 py-2.5 text-left align-top font-medium">
-                  {tr(row.name)}
+                  {row.name}
                 </th>
                 <td
                   className={cn(
@@ -85,7 +82,7 @@ export function AuthSheetExample({
                     <TextMorph>{fixed ? row.appValue : row.sheetValue}</TextMorph>
                   </span>
                   <span className={cn("block text-xs transition-colors duration-300", fixed ? "text-pos" : "text-text-3")}>
-                    {tr(fixed ? row.appNote : row.sheetNote)}
+                    {fixed ? row.appNote : row.sheetNote}
                   </span>
                 </td>
               </tr>
@@ -93,7 +90,7 @@ export function AuthSheetExample({
           })}
         </tbody>
       </table>
-      <p className="border-t border-border bg-muted/50 px-4 py-2.5 text-xs text-text-3">{tr(caption)}</p>
+      <p className="border-t border-border bg-muted/50 px-4 py-2.5 text-xs text-text-3">{caption}</p>
     </figure>
   );
 }

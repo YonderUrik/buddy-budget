@@ -1,4 +1,3 @@
-import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -89,7 +88,6 @@ async function handlePost(request: NextRequest) {
       maxHistoricalDays: parsed.data.transactionTotalDays,
       redirectUrl,
       reference: connection.id,
-      language: resolveProfile(session.user).language.toUpperCase() as "IT" | "EN" | "DE",
     });
 
     await db

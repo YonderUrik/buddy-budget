@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pannello d'azione legato a una riga (es. Dividi, Modifica): da `sm` in su si apre sotto la riga, sul telefono in un
@@ -24,13 +23,12 @@ export interface InlineOrSheetProps {
 }
 
 export function InlineOrSheet({ open, onOpenChange, title, showTitle = false, children }: InlineOrSheetProps) {
-  const { t: tr } = useLocalization();
   const sheet = useMediaQuery(SHEET_QUERY);
   if (!sheet) return open ? <>{children("inline")}</> : null;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="gap-3">
-        <DialogTitle className={showTitle ? undefined : "sr-only"}>{tr(title)}</DialogTitle>
+        <DialogTitle className={showTitle ? undefined : "sr-only"}>{title}</DialogTitle>
         {children("sheet")}
       </DialogContent>
     </Dialog>

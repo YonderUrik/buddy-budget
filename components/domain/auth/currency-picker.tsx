@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Scelta della valuta principale come gruppo di radio (tessere grandi), navigabile con le frecce. */
 
@@ -14,7 +13,6 @@ export interface CurrencyPickerProps {
 }
 
 export function CurrencyPicker({ value, onChange, disabled = false }: CurrencyPickerProps) {
-  const { t: tr } = useLocalization();
   const refs = React.useRef<(HTMLButtonElement | null)[]>([]);
 
   function handleKeyDown(e: React.KeyboardEvent, index: number) {
@@ -27,7 +25,7 @@ export function CurrencyPicker({ value, onChange, disabled = false }: CurrencyPi
   }
 
   return (
-    <div role="radiogroup" aria-label={tr("Valuta principale")} className="grid grid-cols-2 gap-3">
+    <div role="radiogroup" aria-label="Valuta principale" className="grid grid-cols-2 gap-3">
       {SUPPORTED_CURRENCIES.map((c, index) => {
         const isSelected = value === c.value;
         return (
@@ -52,7 +50,7 @@ export function CurrencyPicker({ value, onChange, disabled = false }: CurrencyPi
             )}
           >
             <span className={cn("font-heading text-2xl font-medium", isSelected && "text-primary")}>{c.symbol}</span>
-            <span className="text-sm font-medium">{tr(c.label)}</span>
+            <span className="text-sm font-medium">{c.label}</span>
             <span className="text-xs text-text-3">{c.value}</span>
           </button>
         );

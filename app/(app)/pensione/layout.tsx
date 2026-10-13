@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Layout di Pensione: titolo, selettore del fondo e schede; gestisce caricamento, errore e stato vuoto. */
 
@@ -11,7 +10,6 @@ import { PensionProvider, usePensionView } from "@/lib/pension/pension-context";
 import { useCreatePensionFundMutation } from "@/lib/queries/pension";
 
 function PensioneShell({ children }: { children: React.ReactNode }) {
-  const { t: tr } = useLocalization();
   const pathname = usePathname();
   const view = usePensionView();
   const createFund = useCreatePensionFundMutation();
@@ -19,14 +17,14 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
     <div className="mx-auto flex max-w-4xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
       <div className="flex flex-col gap-3">
         <SectionHeading
-          title={tr("Pensione")}
-          subtitle={tr("Il tuo fondo pensione: quanto rende, quanto ti resterebbe e dove arriverà")}
+          title="Pensione"
+          subtitle="Il tuo fondo pensione: quanto rende, quanto ti resterebbe e dove arriverà"
           tabs={view.fund ? PENSION_TABS : []}
           activeHref={pathname}
           analyticsKey="pensione"
         />
         {view.funds.length > 1 && view.fund ? <PensionFundSelector funds={view.funds} value={view.fund.id} onChange={view.selectFund} /> : null}
-        {view.fund ? <SectionTabs tabs={PENSION_TABS} activeHref={pathname} ariaLabel={tr("Sezioni di Pensione")} /> : null}
+        {view.fund ? <SectionTabs tabs={PENSION_TABS} activeHref={pathname} ariaLabel="Sezioni di Pensione" /> : null}
       </div>
       {view.isLoading ? (
         <div className="flex flex-col gap-4" aria-busy="true">
@@ -45,7 +43,7 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
       ) : (
         <>
           {children}
-          <p className="text-xs text-text-2">{tr("Stime a scopo informativo, non consulenza finanziaria o fiscale: regole e aliquote vanno verificate con un professionista.")}</p>
+          <p className="text-xs text-text-2">Stime a scopo informativo, non consulenza finanziaria o fiscale: regole e aliquote vanno verificate con un professionista.</p>
         </>
       )}
     </div>

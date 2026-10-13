@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Isola di un job di sync: una pillola scura con anello di avanzamento e titolo che luccica mentre lavora; toccandola
@@ -35,7 +34,6 @@ export interface SyncIslandProps {
 }
 
 export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) {
-  const { t: tr } = useLocalization();
   const isRunning = job.status === "running";
   const [expanded, setExpanded] = React.useState(!isRunning);
   const detailsId = React.useId();
@@ -68,7 +66,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
       <motion.div layout="position" className="flex items-center gap-2 py-2 pr-2 pl-3">
         <span className="flex size-6 shrink-0 items-center justify-center">
           {isRunning ? (
-            <SyncProgressRing progress={progress} label={tr(title)} />
+            <SyncProgressRing progress={progress} label={title} />
           ) : failed ? (
             <AlertCircle className="size-5 text-neg" aria-hidden="true" />
           ) : (
@@ -86,7 +84,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
           className="flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-island-foreground/60"
         >
           <span className="min-w-0 truncate" aria-live="polite">
-            {isRunning ? <TextShimmer>{tr(title)}</TextShimmer> : <TextMorph>{tr(title)}</TextMorph>}
+            {isRunning ? <TextShimmer>{title}</TextShimmer> : <TextMorph>{title}</TextMorph>}
           </span>
           <ChevronDown
             size={16}

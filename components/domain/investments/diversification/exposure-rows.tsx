@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Elenco ordinato di una ripartizione (aree o settori): etichetta, quota, barra colorata e importo. Con `icon` ogni
@@ -12,7 +9,7 @@ import * as React from "react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CompositionSlice } from "@/lib/calc/investments";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** Righe mostrate prima di "Mostra tutti". */
@@ -36,16 +33,12 @@ function formatShare(share: number): string {
 }
 
 export function ExposureRows({ slices, currency, labelFor, colorFor, iconFor, activeKey = null, onActiveChange, label }: ExposureRowsProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [showAll, setShowAll] = React.useState(false);
   const visible = showAll ? slices : slices.slice(0, EXPOSURE_ROWS_VISIBLE);
   const max = Math.max(...slices.map((s) => s.share), 0.01);
   return (
     <div className="flex flex-col gap-2">
-      <ul className="flex flex-col" aria-label={tr(label)}>
+      <ul className="flex flex-col" aria-label={label}>
         {visible.map((slice) => {
           const color = colorFor(slice.key);
           const Icon = iconFor?.(slice.key);
@@ -114,7 +107,7 @@ export function ExposureRows({ slices, currency, labelFor, colorFor, iconFor, ac
       </ul>
       {slices.length > EXPOSURE_ROWS_VISIBLE ? (
         <Button variant="ghost" size="sm" className="self-start text-muted-foreground" onClick={() => setShowAll((v) => !v)}>
-          {showAll ? tr("Mostra meno") : tr("Mostra tutti ({0})", {0: slices.length})}
+          {showAll ? "Mostra meno" : `Mostra tutti (${slices.length})`}
         </Button>
       ) : null}
     </div>

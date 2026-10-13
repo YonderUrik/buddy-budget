@@ -1,4 +1,3 @@
-import { isSupportedProfile, resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -20,7 +19,6 @@ async function handleGet(request: NextRequest) {
     name: user.name,
     email: user.email,
     image: user.image ?? null,
-    ...resolveProfile(user),
     currency: user.currency,
     homePage: resolveHomePage(user.homePage),
     hideAmounts: user.hideAmounts === true,
@@ -39,12 +37,6 @@ async function handlePatch(request: NextRequest) {
   const parsed = updateUserSettingsSchema.safeParse(await readJson(request));
   if (!parsed.success) {
     return Response.json({ error: parsed.error.issues[0]?.message ?? "Dati non validi" }, { status: 400 });
-  }
-  const current = resolveProfile(session.user);
-  const country = parsed.data.productCountry ?? current.productCountry;
-  const language = parsed.data.language ?? current.language;
-  if (!isSupportedProfile(country, language)) {
-    return Response.json({ error: "Unsupported country and language combination", code: "unsupported_locale" }, { status: 400 });
   }
   await db
     .update(authUser)

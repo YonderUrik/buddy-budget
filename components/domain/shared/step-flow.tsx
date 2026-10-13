@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pezzi comuni dei form «a passi»: un'unica domanda alla volta, avanzamento visibile, indietro sempre disponibile.
@@ -55,14 +54,14 @@ export interface StepProgressProps {
 
 /** «Passo 2 di 3» con una barra a segmenti: i segmenti fatti si riempiono con una molla. */
 export function StepProgress({ index, count, label, className }: StepProgressProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <p className="text-xs font-medium text-muted-foreground" aria-live="polite">{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{count}
+      <p className="text-xs font-medium text-muted-foreground" aria-live="polite">
+        Passo {index + 1} di {count}
       </p>
       <div
         role="progressbar"
-        aria-label={tr(label)}
+        aria-label={label}
         aria-valuemin={1}
         aria-valuemax={count}
         aria-valuenow={index + 1}
@@ -140,11 +139,10 @@ export interface StepHeadingProps {
 
 /** Titolo del passo: una domanda o un'azione in poche parole, con una riga di spiegazione solo se serve. */
 export function StepHeading({ title, description, className }: StepHeadingProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      <h2 className="font-heading text-xl font-medium tracking-tight text-foreground">{tr(title)}</h2>
-      {description ? <p className="text-sm text-muted-foreground">{tr(description)}</p> : null}
+      <h2 className="font-heading text-xl font-medium tracking-tight text-foreground">{title}</h2>
+      {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
     </div>
   );
 }
@@ -162,18 +160,17 @@ export interface StepActionsProps {
 
 /** Riga dei comandi: «Indietro» a sinistra, azione principale a destra (a tutta larghezza sul telefono). */
 export function StepActions({ backLabel, onBack, primaryLabel, pending = false, disabled = false, className }: StepActionsProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between", className)}>
       {backLabel && onBack ? (
         <Button type="button" variant="ghost" onClick={onBack} disabled={pending} className="h-11 cursor-pointer sm:h-9">
-          {tr(backLabel)}
+          {backLabel}
         </Button>
       ) : (
         <span />
       )}
       <Button type="submit" disabled={pending || disabled} className="h-11 cursor-pointer sm:h-9 sm:min-w-32">
-        {tr(primaryLabel)}
+        {primaryLabel}
       </Button>
     </div>
   );

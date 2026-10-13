@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Riepilogo del passo «Categorie» dell'onboarding: le categorie accese come etichette, divise per gruppo. */
 
@@ -14,17 +13,16 @@ export interface CategorySetupSummaryProps {
 }
 
 export function CategorySetupSummary({ items, className }: CategorySetupSummaryProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-4", className)}>
       {SETUP_GROUPS.map((group) => {
         const active = items.filter((item) => item.enabled && item.type === group.type);
         if (active.length === 0) return null;
         return (
-          <section key={group.type} aria-label={tr(group.label)} className="flex flex-col gap-2">
+          <section key={group.type} aria-label={group.label} className="flex flex-col gap-2">
             <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <span className={cn("size-2 rounded-full", group.dotClassName)} aria-hidden="true" />
-              {tr(group.label)}
+              {group.label}
               <span className="text-text-3">· {active.length}</span>
             </h3>
             <ul className="flex flex-wrap gap-1.5">

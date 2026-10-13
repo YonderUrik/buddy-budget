@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Sezione della pagina Impostazioni: icona colorata, titolo, descrizione opzionale, anteprima opzionale e contenuto, senza riquadro. */
 
 import type { LucideIcon } from "lucide-react";
@@ -21,7 +19,6 @@ export interface SettingsSectionProps {
 }
 
 export function SettingsSection({ title, description, id, icon: Icon, preview, tone = "default", children }: SettingsSectionProps) {
-  const { t: tr } = useLocalization();
   const danger = tone === "danger";
   return (
     <section aria-labelledby={id} className="flex flex-col gap-4">
@@ -33,9 +30,9 @@ export function SettingsSection({ title, description, id, icon: Icon, preview, t
         ) : null}
         <div className="flex min-w-0 flex-col gap-0.5">
           <h3 id={id} className={cn("font-heading text-base font-medium", danger ? "text-neg" : "text-foreground")}>
-            {tr(title)}
+            {title}
           </h3>
-          {description && <p className="text-sm text-muted-foreground">{tr(description)}</p>}
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
         </div>
       </header>
       {preview}
@@ -56,14 +53,13 @@ export function SettingsRow({
   htmlFor?: string;
   children: React.ReactNode;
 }) {
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-2 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
       <div className="flex min-w-0 flex-col gap-0.5 sm:max-w-[55%]">
         <label htmlFor={htmlFor} className="text-sm font-medium text-foreground">
-          {tr(label)}
+          {label}
         </label>
-        {hint && <p className="text-xs text-muted-foreground">{tr(hint)}</p>}
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       </div>
       <div className="flex min-w-0 flex-col gap-1 sm:items-end">{children}</div>
     </div>

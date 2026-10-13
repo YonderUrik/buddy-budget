@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** UI "Dividi": ripartisce l'importo di una transazione (spesa o entrata) tra quota effettiva e quota esclusa dal conteggio. */
 
@@ -9,7 +6,7 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
-
+import { formatCurrency } from "@/lib/format";
 import { useUpdateTransactionMutation } from "@/lib/queries/transactions";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import { clampExcluded, computeSplitExcluded } from "./split-slider.utils";
@@ -23,10 +20,6 @@ export interface SplitSliderProps {
 }
 
 export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const updateMutation = useUpdateTransactionMutation();
   const totalAmount = Math.abs(Number(transaction.amount));
   const isIncome = Number(transaction.amount) > 0;
@@ -61,8 +54,8 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
     <div className="flex flex-col gap-2 border-t border-border bg-muted/50 px-4 py-3">
       <p className="text-xs text-muted-foreground">
         {isIncome
-          ? tr("Sposta il cursore per escludere una parte dal conteggio: è entrata sul conto, ma non è reddito reale (rimborsi, giroconto, storni).")
-          : tr("Sposta il cursore per escludere una parte dal conteggio: è uscita dal conto, ma non è una spesa (rimborsi, quote di altri, giroconto).")}
+          ? "Sposta il cursore per escludere una parte dal conteggio: è entrata sul conto, ma non è reddito reale (rimborsi, giroconto, storni)."
+          : "Sposta il cursore per escludere una parte dal conteggio: è uscita dal conto, ma non è una spesa (rimborsi, quote di altri, giroconto)."}
       </p>
       <div className="flex gap-1.5">
         {SPLIT_SHORTCUTS.map((n) => (
@@ -73,13 +66,14 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
             size="sm"
             disabled={updateMutation.isPending}
             onClick={() => applySplit(n)}
-          >{tr("÷")}{n}
+          >
+            ÷{n}
           </Button>
         ))}
       </div>
       <div className="flex items-center gap-2">
         <label htmlFor={`spesa-effettiva-${transaction.id}`} className="text-xs text-muted-foreground">
-          {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}
+          {isIncome ? "Entrata effettiva" : "Spesa effettiva"}
         </label>
         <Input
           id={`spesa-effettiva-${transaction.id}`}
@@ -114,12 +108,12 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
       />
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>
-          {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}: {formatCurrency(totalAmount - excluded, currency)}
+          {isIncome ? "Entrata effettiva" : "Spesa effettiva"}: {formatCurrency(totalAmount - excluded, currency)}
         </span>
-        <span>{tr("Esclusa dal conteggio:")}{" "}{formatCurrency(excluded, currency)}</span>
+        <span>Esclusa dal conteggio: {formatCurrency(excluded, currency)}</span>
       </div>
-      {updateMutation.isPending && <p className="text-xs text-muted-foreground">{tr("Salvataggio in corso...")}</p>}
-      {updateMutation.isError && <p className="text-xs text-destructive">{tr("Salvataggio non riuscito, riprova.")}</p>}
+      {updateMutation.isPending && <p className="text-xs text-muted-foreground">Salvataggio in corso...</p>}
+      {updateMutation.isError && <p className="text-xs text-destructive">Salvataggio non riuscito, riprova.</p>}
     </div>
   );
 }

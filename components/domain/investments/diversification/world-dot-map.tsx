@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Mappa del mondo a punti con le aree dove sei investito: i punti delle aree che possiedi si colorano (più intensi se
  * pesano di più), il resto resta grigio. Italia e Giappone sono piccoli e hanno un cerchio attorno. È una mappa delle
@@ -62,9 +60,8 @@ export interface WorldDotMapProps {
 }
 
 export function WorldDotMap({ shares, active = null, className }: WorldDotMapProps) {
-  const { t: tr } = useLocalization();
   return (
-    <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className={className} role="img" aria-label={tr("Mappa delle aree geografiche in cui sei investito")}>
+    <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className={className} role="img" aria-label="Mappa delle aree geografiche in cui sei investito">
       {LAYERS.map((layer) => {
         const share = layer.area ? (shares[layer.area] ?? 0) : 0;
         const held = share > 0;

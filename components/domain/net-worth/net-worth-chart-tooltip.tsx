@@ -1,20 +1,17 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Tooltip del grafico del patrimonio netto: data, valore di ogni classe di asset (dall'alto) e totale. */
 
 import { parseDateOnly } from "@/lib/calc/expenses";
 import type { NetWorthSeriesPoint } from "@/lib/calc/net-worth";
-
+import { formatCurrency } from "@/lib/format";
 import { assetClassColor, assetClassLabel } from "./asset-classes";
 
 const ESTIMATED_LABEL = "stimato";
 const TOTAL_LABEL = "Totale";
 /** I debiti non sono un'area del grafico: nel tooltip si dice che sono già dentro il totale. */
 const LABEL_OVERRIDES: Record<string, string> = { debiti: "Debiti (già sottratti)" };
-
+const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
 
 export interface NetWorthChartTooltipProps {
   active?: boolean;
@@ -27,11 +24,6 @@ export interface NetWorthChartTooltipProps {
 }
 
 export function NetWorthChartTooltip({ active, payload, currency, classes, totalLabel = TOTAL_LABEL }: NetWorthChartTooltipProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-  const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", year: "numeric" });
-
-
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
   const showBreakdown = classes.length > 1;

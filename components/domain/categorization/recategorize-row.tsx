@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga dell'anteprima di «Ricategorizza»: un esercente, quanti movimenti e quando, da quale categoria a quale e perché
@@ -45,19 +44,18 @@ function maybeMineText(legacyCount: number, count: number): string {
 }
 
 export function RecategorizeRow({ group, categoryById, currency, checked, onCheckedChange, onRemoteLogo }: RecategorizeRowProps) {
-  const { t: tr } = useLocalization();
   const checkboxId = React.useId();
   const isIncome = group.totalAmount > 0;
   return (
     <li className={cn("flex gap-3 py-3 transition-opacity", !checked && "opacity-55")}>
-      <Checkbox id={checkboxId} checked={checked} onCheckedChange={(value) => onCheckedChange(value === true)} className="mt-3" aria-label={tr("Sposta {0}", {0: group.label})} />
+      <Checkbox id={checkboxId} checked={checked} onCheckedChange={(value) => onCheckedChange(value === true)} className="mt-3" aria-label={`Sposta ${group.label}`} />
       <MerchantLogo name={group.label} logoPath={group.logoPath} size="sm" onRemoteLogo={onRemoteLogo} />
       <label htmlFor={checkboxId} className="flex min-w-0 flex-1 cursor-pointer flex-col gap-1.5">
         <span className="flex items-start justify-between gap-3">
           <span className="flex min-w-0 flex-col">
-            <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{tr(group.label)}</span>
+            <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{group.label}</span>
             <span className="text-xs text-muted-foreground tabular-nums">
-              {group.count === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: group.count})} · {dateRangeLabel([group.firstDate, group.lastDate])}
+              {group.count === 1 ? "1 movimento" : `${group.count} movimenti`} · {dateRangeLabel([group.firstDate, group.lastDate])}
               {group.legacyCount > 0 ? ` · ${maybeMineText(group.legacyCount, group.count)}` : ""}
             </span>
           </span>
@@ -67,7 +65,7 @@ export function RecategorizeRow({ group, categoryById, currency, checked, onChec
         </span>
         <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <CategoryChip category={categoryById.get(group.fromCategoryId)} muted />
-          <ArrowRightIcon className="size-3.5 shrink-0 text-muted-foreground" aria-label={tr("diventa")} />
+          <ArrowRightIcon className="size-3.5 shrink-0 text-muted-foreground" aria-label="diventa" />
           <CategoryChip category={categoryById.get(group.toCategoryId)} />
           <AutoOriginBadge source={group.source} confidence={group.confidence} className="ml-auto" />
         </span>

@@ -1,6 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
-import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
  * AppSidebar
@@ -126,7 +124,6 @@ function NavLink({
   badge?: NavBadge;
   onNavigate?: () => void;
 }) {
-  const { t: tr } = useLocalization();
   const Icon = item.icon;
   const showBadge = badge !== undefined && badge.count > 0;
 
@@ -134,7 +131,7 @@ function NavLink({
     return (
       <span
         aria-disabled="true"
-        title={collapsed ? tr("{0} (in arrivo)", {0: item.label}) : undefined}
+        title={collapsed ? `${item.label} (in arrivo)` : undefined}
         className={cn(
           "flex cursor-default items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
           "text-sidebar-foreground/40",
@@ -144,7 +141,7 @@ function NavLink({
         <Icon className={cn("shrink-0", collapsed ? "size-5" : "size-4")} aria-hidden="true" />
         {!collapsed && (
           <>
-            <span className="truncate leading-none">{tr(item.label)}</span>
+            <span className="truncate leading-none">{item.label}</span>
             <span className="ml-auto rounded-full border border-sidebar-border px-1.5 py-0.5 text-[10px] leading-none text-sidebar-foreground/60">
               {COMING_SOON_LABEL}
             </span>
@@ -194,11 +191,11 @@ function NavLink({
         )}
       </span>
       {!collapsed && (
-        <span className="relative z-10 truncate leading-none">{tr(item.label)}</span>
+        <span className="relative z-10 truncate leading-none">{item.label}</span>
       )}
       {showBadge && !collapsed && (
         <span
-          aria-label={tr(badge.ariaLabel)}
+          aria-label={badge.ariaLabel}
           className="relative z-10 ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-sidebar-primary px-1.5 text-xs font-bold leading-none text-sidebar-primary-foreground tabular-nums"
         >
           {badge.countLabel ?? badge.count}
@@ -210,12 +207,11 @@ function NavLink({
 
 /** Avatar utente: immagine profilo se disponibile, altrimenti iniziali. */
 function UserAvatar({ initials, image }: { initials: string; image?: string | null }) {
-  const { t: tr } = useLocalization();
   if (image) {
     return (
       <Image
         src={image}
-        alt={tr("")}
+        alt=""
         width={32}
         height={32}
         className="size-8 shrink-0 rounded-full object-cover"
@@ -276,8 +272,6 @@ export function AppSidebar({
   extra,
   onOpenSupport,
 }: AppSidebarProps) {
-  const { t: tr } = useLocalization();
-  const { productCountry } = useLocalization();
   const { collapsed, toggleCollapsed } = useSidebar();
   const { hidden, toggle: toggleHidden } = usePrivacy();
   const router = useRouter();
@@ -316,7 +310,7 @@ export function AppSidebar({
         "transition-[width] duration-300 ease-in-out overflow-hidden",
         isCollapsed ? "w-[64px]" : "w-[240px]"
       )}
-      aria-label={tr("Navigazione principale")}
+      aria-label="Navigazione principale"
     >
       {/* ── Header: Logo / Brand ── */}
       <div
@@ -328,7 +322,7 @@ export function AppSidebar({
         {isCollapsed ? (
           <Image
             src="/brand/logo-mark.svg"
-            alt={tr("BuddyBudget")}
+            alt="BuddyBudget"
             width={28}
             height={34}
             className="h-8 w-auto"
@@ -337,22 +331,24 @@ export function AppSidebar({
           <span className="flex items-center gap-2 min-w-0">
             <Image
               src="/brand/logo-mark.svg"
-              alt={tr("")}
+              alt=""
               width={24}
               height={29}
               className="h-6 w-auto shrink-0"
               aria-hidden="true"
             />
-            <span className="font-heading text-base font-bold text-sidebar-foreground truncate">{tr("BuddyBudget")}</span>
+            <span className="font-heading text-base font-bold text-sidebar-foreground truncate">
+              BuddyBudget
+            </span>
           </span>
         )}
       </div>
 
       {/* ── Navigazione ── */}
-      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label={tr("Menu")}>
+      <nav className="sidebar-nav flex-1 overflow-y-auto px-2 py-3" aria-label="Menu">
         <LayoutGroup id={navGroupId}>
           <ul className="flex flex-col gap-0.5" role="list">
-            {items.filter(item => isCountryPathAvailable(productCountry, item.href)).map((item) => {
+            {items.map((item) => {
               return (
                 <li key={item.href}>
                   <NavLink
@@ -395,7 +391,7 @@ export function AppSidebar({
               onOpenSupport();
               onClose?.();
             }}
-            title={isCollapsed ? tr("Scrivici") : undefined}
+            title={isCollapsed ? "Scrivici" : undefined}
             className={cn(
               "mb-2 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm text-sidebar-foreground/75",
               "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150",
@@ -403,7 +399,7 @@ export function AppSidebar({
             )}
           >
             <MessageCircleQuestion className="size-4 shrink-0" aria-hidden="true" />
-            {!isCollapsed && <span className="flex-1 text-left">{tr("Scrivici")}</span>}
+            {!isCollapsed && <span className="flex-1 text-left">Scrivici</span>}
           </button>
         ) : null}
         {/* Card utente — apre dropdown con logout */}
@@ -415,7 +411,7 @@ export function AppSidebar({
               "transition-colors duration-150 cursor-pointer",
               isCollapsed && "justify-center"
             )}
-            aria-label={tr("Opzioni utente")}
+            aria-label="Opzioni utente"
           >
             <UserAvatar initials={userInitials} image={userImage} />
             {!isCollapsed && (
@@ -442,7 +438,9 @@ export function AppSidebar({
               }}
               className="cursor-pointer"
             >
-              <Settings className="mr-2 size-4" aria-hidden="true" />{tr("Impostazioni")}</DropdownMenuItem>
+              <Settings className="mr-2 size-4" aria-hidden="true" />
+              Impostazioni
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
                 router.push(pathname.startsWith(supportHref) ? supportHref : `${supportHref}?da=${encodeURIComponent(pathname)}`);
@@ -450,7 +448,9 @@ export function AppSidebar({
               }}
               className="cursor-pointer"
             >
-              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />{tr("Aiuto e segnalazioni")}</DropdownMenuItem>
+              <LifeBuoy className="mr-2 size-4" aria-hidden="true" />
+              Aiuto e segnalazioni
+            </DropdownMenuItem>
             <DropdownMenuCheckboxItem
               checked={hidden}
               onCheckedChange={(checked) => {
@@ -459,14 +459,18 @@ export function AppSidebar({
               }}
               className="cursor-pointer"
             >
-              <Eye className="mr-2 size-4" aria-hidden="true" />{tr("Nascondi gli importi")}</DropdownMenuCheckboxItem>
+              <Eye className="mr-2 size-4" aria-hidden="true" />
+              Nascondi gli importi
+            </DropdownMenuCheckboxItem>
             <ThemeSubmenu
               onChange={(choice) =>
                 track("theme_changed", { choice: THEME_EVENT_CHOICE[choice], source: "menu_utente" })
               }
             />
             <DropdownMenuItem onClick={handleSignOut} className="text-neg focus:text-neg cursor-pointer">
-              <LogOut className="mr-2 size-4" aria-hidden="true" />{tr("Esci")}</DropdownMenuItem>
+              <LogOut className="mr-2 size-4" aria-hidden="true" />
+              Esci
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -480,15 +484,15 @@ export function AppSidebar({
               "hover:bg-sidebar-accent transition-colors duration-150",
               isCollapsed ? "justify-center" : "gap-2"
             )}
-            aria-label={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
-            title={isCollapsed ? tr("Espandi sidebar") : tr("Comprimi sidebar")}
+            aria-label={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
+            title={isCollapsed ? "Espandi sidebar" : "Comprimi sidebar"}
           >
             {isCollapsed ? (
               <ChevronRight className="size-4" aria-hidden="true" />
             ) : (
               <>
                 <ChevronLeft className="size-4" aria-hidden="true" />
-                <span>{tr("Comprimi")}</span>
+                <span>Comprimi</span>
               </>
             )}
           </button>

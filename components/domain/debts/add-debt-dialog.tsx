@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Dialog "Aggiungi debito": prima la scelta nuovo/in corso, poi i dati con il calcolatore della variabile mancante. */
 
@@ -29,18 +28,17 @@ const STEP_COPY = {
 } as const;
 
 function AddDebtFlow({ currency, onClose }: { currency: string; onClose: () => void }) {
-  const { t: tr } = useLocalization();
   const [state, setState] = React.useState<AddDebtFormState | null>(null);
   const flow = useStepFlow(ADD_DEBT_STEPS);
   const step = state ? "details" : "start";
   const done = () => {
-    toast.success(tr("Debito aggiunto"));
+    toast.success("Debito aggiunto");
     onClose();
   };
   return (
     <>
-      <PanelDialogHeader icon={LandmarkIcon} title={tr(STEP_COPY[step].title)} description={tr(STEP_COPY[step].description)} />
-      <StepProgress index={flow.index} count={flow.count} label={tr("Passi per aggiungere un debito")} />
+      <PanelDialogHeader icon={LandmarkIcon} title={STEP_COPY[step].title} description={STEP_COPY[step].description} />
+      <StepProgress index={flow.index} count={flow.count} label="Passi per aggiungere un debito" />
       <StepStage stepKey={step === "start" ? "start" : `details-${flow.index}`} direction={flow.direction} className="flex flex-col gap-5">
         {step === "start" ? (
           <AddDebtStartStep

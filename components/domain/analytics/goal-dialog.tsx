@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * «Il tuo traguardo»: chiede una sola cifra, quanto ti serve all'anno, e mostra subito il patrimonio che basta per
@@ -37,13 +36,15 @@ export interface GoalDialogProps {
 const FIELD_ID = "goal-spending";
 
 export function GoalDialog({ open, onOpenChange, ...rest }: GoalDialogProps) {
-  const { t: tr } = useLocalization();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{tr("Il tuo traguardo")}</DialogTitle>
-          <DialogDescription>{tr("Il traguardo è il patrimonio che ti permette di vivere dei tuoi soldi: ogni anno ne prelevi una piccola parte e ti basta per le spese. Ti serve una sola cifra.")}</DialogDescription>
+          <DialogTitle>Il tuo traguardo</DialogTitle>
+          <DialogDescription>
+            Il traguardo è il patrimonio che ti permette di vivere dei tuoi soldi: ogni anno ne prelevi una piccola parte e ti basta per le spese. Ti serve una
+            sola cifra.
+          </DialogDescription>
         </DialogHeader>
         {/* Il modulo si rimonta a ogni apertura, così riparte dalle ipotesi salvate. */}
         {open ? <GoalForm {...rest} onClose={() => onOpenChange(false)} /> : null}
@@ -53,7 +54,6 @@ export function GoalDialog({ open, onOpenChange, ...rest }: GoalDialogProps) {
 }
 
 function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSaved, onClose }: Omit<GoalDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
-  const { t: tr } = useLocalization();
   const dataSpending = plan.spendingSource === "dati" ? plan.spending : null;
   const [text, setText] = React.useState(plan.spending !== null ? Math.round(plan.spending).toLocaleString("it-IT") : "");
   const [localError, setLocalError] = React.useState<string | null>(null);
@@ -82,12 +82,12 @@ function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSav
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={FIELD_ID}>{tr("Quanto ti serve in un anno")}</Label>
-        <Input id={FIELD_ID} inputMode="numeric" autoComplete="off" placeholder={tr("Per esempio 24.000")} value={text} onChange={(e) => setText(e.target.value)} />
+        <Label htmlFor={FIELD_ID}>Quanto ti serve in un anno</Label>
+        <Input id={FIELD_ID} inputMode="numeric" autoComplete="off" placeholder="Per esempio 24.000" value={text} onChange={(e) => setText(e.target.value)} />
         <p className="text-xs leading-relaxed text-muted-foreground">
           {dataSpending !== null
-            ? tr("Dai tuoi movimenti spendi circa {0} l'anno: puoi tenerla o scrivere la cifra con cui vorresti vivere.", {0: money(dataSpending, base.currency)})
-            : tr("Tutte le spese di un anno: casa, spesa, svago. Se non la sai, parti da 12 volte quello che spendi in un mese.")}
+            ? `Dai tuoi movimenti spendi circa ${money(dataSpending, base.currency)} l'anno: puoi tenerla o scrivere la cifra con cui vorresti vivere.`
+            : "Tutte le spese di un anno: casa, spesa, svago. Se non la sai, parti da 12 volte quello che spendi in un mese."}
         </p>
       </div>
       <GoalPreview preview={preview} withdrawalRate={assumptions.withdrawalRate} currency={base.currency} today={today} />
@@ -97,9 +97,11 @@ function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSav
         </p>
       ) : null}
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose}>{tr("Annulla")}</Button>
+        <Button type="button" variant="outline" onClick={onClose}>
+          Annulla
+        </Button>
         <Button type="submit" disabled={saving}>
-          {saving ? tr("Salvo…") : tr("Salva il traguardo")}
+          {saving ? "Salvo…" : "Salva il traguardo"}
         </Button>
       </DialogFooter>
     </form>
@@ -108,9 +110,8 @@ function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSav
 
 /** Il traguardo che esce dalla cifra scritta e quando ci arrivi. */
 function GoalPreview({ preview, withdrawalRate, currency, today }: { preview: AnalyticsPlan | null; withdrawalRate: number; currency: string; today: Date }) {
-  const { t: tr } = useLocalization();
   if (!preview || preview.target === null) {
-    return <p className="text-sm text-muted-foreground">{tr("Scrivi la cifra: qui compare il patrimonio che ti serve.")}</p>;
+    return <p className="text-sm text-muted-foreground">Scrivi la cifra: qui compare il patrimonio che ti serve.</p>;
   }
   const years = preview.yearsToFire;
   const when =
@@ -123,11 +124,12 @@ function GoalPreview({ preview, withdrawalRate, currency, today }: { preview: An
           : `Ai ritmi di oggi ci arrivi intorno al ${today.getFullYear() + Math.ceil(years)}, tra ${formatYears(years)}.`;
   return (
     <div className="flex flex-col gap-1" aria-live="polite">
-      <p className="text-sm text-muted-foreground">{tr("Il tuo traguardo")}</p>
+      <p className="text-sm text-muted-foreground">Il tuo traguardo</p>
       <p className="font-heading text-3xl font-medium tracking-tight text-foreground tabular-nums">{money(preview.target, currency)}</p>
-      <p className="text-sm text-text-2">{tr("Prelevandone il")}{" "}{pct(withdrawalRate)}{" "}{tr("ogni anno ricavi quello che ti serve.")}{" "}{when}
+      <p className="text-sm text-text-2">
+        Prelevandone il {pct(withdrawalRate)} ogni anno ricavi quello che ti serve. {when}
       </p>
-      <p className="text-xs text-muted-foreground">{tr("Rendimento, prelievo e il resto si cambiano dopo, da «Tutte le ipotesi».")}</p>
+      <p className="text-xs text-muted-foreground">Rendimento, prelievo e il resto si cambiano dopo, da «Tutte le ipotesi».</p>
     </div>
   );
 }

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pagina "Categorizza": «Da decidere» (carte o elenco per le proposte incerte e i movimenti senza proposta) e «Messe
@@ -43,7 +42,6 @@ const VIEW_OPTIONS: readonly SegmentedControlOption<View>[] = [
 ];
 
 export default function CategorizzaPage() {
-  const { t: tr } = useLocalization();
   useMarkMovementsSeen();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -108,8 +106,8 @@ export default function CategorizzaPage() {
       />
     ) : null;
   const tabOptions: readonly SegmentedControlOption<Tab>[] = [
-    { value: "da-decidere", label: isLoading ? tr("Da decidere") : tr("Da decidere · {0}", { 0: toDecideTotal }) },
-    { value: "fatte", label: auto.autoData ? tr("Messe dall'app · {0}", { 0: auto.autoData.total }) : tr("Messe dall'app") },
+    { value: "da-decidere", label: isLoading ? "Da decidere" : `Da decidere · ${toDecideTotal}` },
+    { value: "fatte", label: auto.autoData ? `Messe dall'app · ${auto.autoData.total}` : "Messe dall'app" },
   ];
 
   return (
@@ -117,8 +115,8 @@ export default function CategorizzaPage() {
       {/* In basso: il menu «⋯» sta all'altezza del titolo, non del link in alto. */}
       <div className="flex items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <BackLink href="/liquidita" label={tr("Movimenti")} className="-my-1.5" />
-          <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">{tr("Categorizza")}</h1>
+          <BackLink href="/liquidita" label="Movimenti" className="-my-1.5" />
+          <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">Categorizza</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
             Quando è quasi certa l&apos;app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.
           </p>

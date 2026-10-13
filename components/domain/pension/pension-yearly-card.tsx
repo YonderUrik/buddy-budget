@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Anno per anno: quanto hai versato e quanto ha reso il fondo, in barre impilate (il rendimento negativo scende sotto lo zero). */
 
@@ -25,7 +24,6 @@ const CHART_CONFIG: ChartConfig = {
 const CHART_HEIGHT = 240;
 
 export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
-  const { t: tr } = useLocalization();
   const data = years.map((row) => ({
     label: row.partial ? `${row.year}*` : String(row.year),
     contributions: row.contributions,
@@ -40,9 +38,9 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
   return (
     <PensionSection
       icon={ChartNoAxesColumnIcon}
-      title={tr("Anno per anno")}
+      title="Anno per anno"
       color="var(--swatch-green)"
-      description={tr("Quanto hai versato e quanto ha reso il fondo in ogni anno, anche in percentuale: rendimento diviso per il valore a inizio anno più i versamenti. * anno in corso, non annualizzato.")}
+      description="Quanto hai versato e quanto ha reso il fondo in ogni anno, anche in percentuale: rendimento diviso per il valore a inizio anno più i versamenti. * anno in corso, non annualizzato."
     >
       <div className="flex flex-col gap-4">
         <div className="-mx-4 sm:-mx-6">
@@ -59,26 +57,26 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
           </ChartContainer>
         </div>
         <ul className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-text-2">
-          <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />{tr("Versato")}</li>
-          <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-pos" aria-hidden="true" />{tr("Rendimento")}</li>
-          <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-neg" aria-hidden="true" />{tr("Perdita")}</li>
+          <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />Versato</li>
+          <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-pos" aria-hidden="true" />Rendimento</li>
+          <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-neg" aria-hidden="true" />Perdita</li>
         </ul>
-        <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm" aria-label={tr("Rendimento percentuale per anno")}>
+        <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm" aria-label="Rendimento percentuale per anno">
           {data.map((row) => (
             <li key={row.label} className="flex items-baseline gap-1.5">
-              <span className="text-text-2">{tr(row.label)}</span>
-              <span className={`font-semibold tabular-nums ${row.returnRate === null ? "text-text-2" : row.gain < 0 ? "text-neg" : "text-pos"}`}>{row.returnRate !== null ? formatSignedPercent(row.returnRate) : tr("n.d.")}</span>
+              <span className="text-text-2">{row.label}</span>
+              <span className={`font-semibold tabular-nums ${row.returnRate === null ? "text-text-2" : row.gain < 0 ? "text-neg" : "text-pos"}`}>{row.returnRate !== null ? formatSignedPercent(row.returnRate) : "n.d."}</span>
             </li>
           ))}
         </ul>
         {best && worst && years.length > 1 ? (
           <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             <div className="border-t border-border pt-3">
-              <dt className="text-sm text-text-2">{tr("Anno migliore")}</dt>
+              <dt className="text-sm text-text-2">Anno migliore</dt>
               <dd className="font-heading text-xl font-medium tabular-nums text-pos">{best.year} · {best.gain >= 0 ? "+" : "−"}{money(Math.abs(best.gain), currency)}{best.returnRate !== null ? <span className="text-sm text-text-2"> ({formatSignedPercent(best.returnRate)})</span> : null}</dd>
             </div>
             <div className="border-t border-border pt-3">
-              <dt className="text-sm text-text-2">{tr("Anno peggiore")}</dt>
+              <dt className="text-sm text-text-2">Anno peggiore</dt>
               <dd className={`font-heading text-xl font-medium tabular-nums ${worst.gain < 0 ? "text-neg" : "text-foreground"}`}>{worst.year} · {worst.gain >= 0 ? "+" : "−"}{money(Math.abs(worst.gain), currency)}{worst.returnRate !== null ? <span className="text-sm text-text-2"> ({formatSignedPercent(worst.returnRate)})</span> : null}</dd>
             </div>
           </dl>

@@ -1,5 +1,4 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
+"use client"
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
@@ -283,7 +282,6 @@ function ChartLegendContent({
   hideIcon?: boolean
   nameKey?: string
 } & RechartsPrimitive.DefaultLegendContentProps) {
-  const { t: tr } = useLocalization();
   const { config } = useChart()
 
   if (!payload?.length) {
@@ -321,7 +319,7 @@ function ChartLegendContent({
                   }}
                 />
               )}
-              {tr(itemConfig?.label)}
+              {itemConfig?.label}
             </div>
           )
         })}

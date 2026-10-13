@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Dialog per inserire a mano il prezzo di uno strumento in una data: vale solo per il tuo portafoglio. */
 
@@ -22,7 +21,6 @@ export interface ManualPriceDialogProps {
 }
 
 export function ManualPriceDialog({ instrument, onClose }: ManualPriceDialogProps) {
-  const { t: tr } = useLocalization();
   const save = useSaveManualPriceMutation();
   const [date, setDate] = React.useState(localTodayKey());
   const [close, setClose] = React.useState("");
@@ -45,19 +43,25 @@ export function ManualPriceDialog({ instrument, onClose }: ManualPriceDialogProp
   return (
     <Dialog open={instrument !== null} onOpenChange={(open) => !open && onClose()}>
       <FormDialogContent>
-        <PanelDialogHeader icon={PencilLineIcon} title={<>{tr("Prezzo di")}{" "}{instrument?.name}</>} color="var(--swatch-amber)" />
+        <PanelDialogHeader icon={PencilLineIcon} title={<>Prezzo di {instrument?.name}</>} color="var(--swatch-amber)" />
         <form onSubmit={submit} className="flex flex-col gap-5">
-          <p className="text-sm text-muted-foreground">{tr("Vale solo per il tuo portafoglio e ha la precedenza sui prezzi automatici dello stesso giorno.")}</p>
-          <label className="flex flex-col gap-1 text-xs text-muted-foreground">{tr("Data")}<Input type="date" value={date} max={localTodayKey()} onChange={(e) => setDate(e.target.value)} />
+          <p className="text-sm text-muted-foreground">
+            Vale solo per il tuo portafoglio e ha la precedenza sui prezzi automatici dello stesso giorno.
+          </p>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            Data
+            <Input type="date" value={date} max={localTodayKey()} onChange={(e) => setDate(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             {priceLabel(instrument?.priceUnit)} ({instrument?.currency})
             <Input inputMode="decimal" value={close} onChange={(e) => setClose(e.target.value)} />
           </label>
-          {save.isError ? <p className="text-sm text-destructive">{tr(save.error.message)}</p> : null}
+          {save.isError ? <p className="text-sm text-destructive">{save.error.message}</p> : null}
           <DialogActions>
             <span />
-            <Button type="submit" disabled={!value || value <= 0 || save.isPending}>{tr("Salva prezzo")}</Button>
+            <Button type="submit" disabled={!value || value <= 0 || save.isPending}>
+              Salva prezzo
+            </Button>
           </DialogActions>
         </form>
       </FormDialogContent>

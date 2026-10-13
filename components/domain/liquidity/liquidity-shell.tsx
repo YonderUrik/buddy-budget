@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Struttura di Liquidità: stato condiviso, testata con schede e i dialog globali (nuovo movimento, nuovo conto, rinnovo
@@ -27,7 +26,6 @@ const IMPORT_HREF = "/importazioni";
 const SUBTITLE = "Conti, saldi e movimenti in un posto solo";
 
 function Frame({ children }: { children: React.ReactNode }) {
-  const { t: tr } = useLocalization();
   useMarkMovementsSeen();
   const pathname = usePathname();
   const router = useRouter();
@@ -67,7 +65,7 @@ function Frame({ children }: { children: React.ReactNode }) {
       </div>
       <Dialog open={addTransactionOpen} onOpenChange={setAddTransactionOpen}>
         <FormDialogContent>
-                    <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title={tr("Nuovo movimento")} description={tr("Una spesa o un'entrata su un conto manuale.")} />
+                    <PanelDialogHeader className="pr-10" icon={ReceiptTextIcon} title="Nuovo movimento" description="Una spesa o un'entrata su un conto manuale." />
           <AddTransactionForm
             categories={categories ?? []}
             currency={currency}

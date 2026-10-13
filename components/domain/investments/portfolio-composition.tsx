@@ -1,7 +1,3 @@
-"use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Composizione del portafoglio: una barra segmentata per dimensione (tipo di strumento, valuta) con legenda e una
  * frase che ne dice il senso (es. quanto sei esposto a valute diverse dalla tua).
@@ -9,7 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { ReactNode } from "react";
 import type { CompositionSlice } from "@/lib/calc/investments";
-
+import { formatCurrency } from "@/lib/format";
 import { ChartPieIcon } from "lucide-react";
 import { PanelSection } from "./panel-section";
 
@@ -40,23 +36,19 @@ function formatShare(share: number): string {
 }
 
 export function PortfolioComposition({ groups, currency, title = "Composizione", subtitle = null, children }: PortfolioCompositionProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   return (
-    <PanelSection icon={ChartPieIcon} title={tr(title)} color="var(--primary)">
-      {subtitle ? <p className="text-sm text-muted-foreground">{tr(subtitle)}</p> : null}
+    <PanelSection icon={ChartPieIcon} title={title} color="var(--primary)">
+      {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
           {groups.map((group) => (
-            <section key={group.title} className="flex flex-col gap-3" aria-label={tr(group.title)}>
+            <section key={group.title} className="flex flex-col gap-3" aria-label={group.title}>
               <div>
-                <p className="text-sm font-medium text-foreground">{tr(group.title)}</p>
+                <p className="text-sm font-medium text-foreground">{group.title}</p>
                 {group.insight ? <p className="text-sm text-muted-foreground">{group.insight}</p> : null}
               </div>
               {group.slices.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{tr("Nessun valore da mostrare.")}</p>
+                <p className="text-sm text-muted-foreground">Nessun valore da mostrare.</p>
               ) : (
                 <>
                   <div className="flex h-3 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden="true">

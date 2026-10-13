@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pannello di dettaglio di una categoria: nome, descrizione, gruppo, colore e icona (salvataggio immediato/on-blur)
@@ -41,7 +40,6 @@ export function CategoryDetailDialog({ category, usageCount, onClose }: Category
 }
 
 function DetailBody({ category, usageCount, onClose }: { category: Category; usageCount?: number; onClose: () => void }) {
-  const { t: tr } = useLocalization();
   const updateMutation = useUpdateCategoryMutation();
   const deleteMutation = useDeleteCategoryMutation();
   const [name, setName] = React.useState(category.name);
@@ -81,7 +79,7 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
           <div className="min-w-0">
             <DialogTitle className="truncate font-heading text-lg font-medium">{category.name}</DialogTitle>
             <DialogDescription>
-              {usageCount ? tr("{0} transazioni nell'ultimo anno", {0: usageCount}) : tr("Nessuna transazione nell'ultimo anno")}
+              {usageCount ? `${usageCount} transazioni nell'ultimo anno` : "Nessuna transazione nell'ultimo anno"}
             </DialogDescription>
           </div>
         </div>
@@ -89,7 +87,7 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="category-name" className="text-xs font-medium text-muted-foreground">{tr("Nome")}</label>
+          <label htmlFor="category-name" className="text-xs font-medium text-muted-foreground">Nome</label>
           <Input
             id="category-name"
             value={name}
@@ -98,12 +96,12 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
             onBlur={commitName}
             onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}
           />
-          {error && <p className="text-xs text-destructive">{tr(error)}</p>}
+          {error && <p className="text-xs text-destructive">{error}</p>}
         </div>
 
         {!category.isFallback && (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="category-description" className="text-xs font-medium text-muted-foreground">{tr("Cosa ci va (facoltativo)")}</label>
+            <label htmlFor="category-description" className="text-xs font-medium text-muted-foreground">Cosa ci va (facoltativo)</label>
             <Input
               id="category-description"
               value={description}
@@ -113,15 +111,15 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
               onBlur={commitDescription}
               onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}
             />
-            <p className="text-xs text-text-3">{tr("Aiuta l'assistente a proporre questa categoria agli esercenti giusti.")}</p>
+            <p className="text-xs text-text-3">Aiuta l&apos;assistente a proporre questa categoria agli esercenti giusti.</p>
           </div>
         )}
 
         {!category.isFallback && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-muted-foreground">{tr("Gruppo")}</span>
+            <span className="text-xs font-medium text-muted-foreground">Gruppo</span>
             <SegmentedControl<CategoryType>
-              ariaLabel={tr("Gruppo della categoria")}
+              ariaLabel="Gruppo della categoria"
               options={TYPE_OPTIONS}
               value={category.type as CategoryType}
               onChange={(type) => type !== category.type && updateMutation.mutate({ id: category.id, input: { type } })}
@@ -137,22 +135,26 @@ function DetailBody({ category, usageCount, onClose }: { category: Category; usa
         <div className="border-t border-border pt-4">
           {confirmingDelete ? (
             <div className="flex flex-col gap-3">
-              <p className="text-sm text-muted-foreground">{tr("Le transazioni collegate passeranno a \"Da categorizzare\" e il budget associato verrà rimosso.")}</p>
-              {deleteMutation.isError && <p className="text-sm text-destructive">{tr("Eliminazione non riuscita, riprova.")}</p>}
+              <p className="text-sm text-muted-foreground">
+                Le transazioni collegate passeranno a &quot;Da categorizzare&quot; e il budget associato verrà rimosso.
+              </p>
+              {deleteMutation.isError && <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setConfirmingDelete(false)}>{tr("Annulla")}</Button>
+                <Button variant="outline" onClick={() => setConfirmingDelete(false)}>Annulla</Button>
                 <Button
                   variant="destructive"
                   disabled={deleteMutation.isPending}
                   onClick={() => deleteMutation.mutate(category.id, { onSuccess: onClose })}
                 >
-                  {deleteMutation.isPending ? tr("Eliminazione...") : tr("Elimina categoria")}
+                  {deleteMutation.isPending ? "Eliminazione..." : "Elimina categoria"}
                 </Button>
               </div>
             </div>
           ) : (
             <Button variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setConfirmingDelete(true)}>
-              <Trash2 size={14} />{tr("Elimina categoria")}</Button>
+              <Trash2 size={14} />
+              Elimina categoria
+            </Button>
           )}
         </div>
       )}

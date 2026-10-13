@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog "Obiettivo": pesi per strumento che devono fare 100%. Parte dall'obiettivo salvato o dai pesi attuali;
@@ -65,7 +64,6 @@ export function TargetsDialog(props: TargetsDialogProps) {
 }
 
 function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggestions, currency }: TargetsDialogProps) {
-  const { t: tr } = useLocalization();
   const update = useUpdateTargetsMutation();
   const [rows, setRows] = React.useState<TargetRow[]>(() =>
     initial
@@ -99,9 +97,9 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
 
   return (
     <>
-      <PanelDialogHeader icon={TargetIcon} title={tr("Obiettivo di allocazione")} description={tr("Quanto vuoi che pesi ogni strumento sul totale. Serve per vedere quanto ti sei allontanato e dove mettere il prossimo versamento.")} color="var(--swatch-emerald)" />
+      <PanelDialogHeader icon={TargetIcon} title="Obiettivo di allocazione" description="Quanto vuoi che pesi ogni strumento sul totale. Serve per vedere quanto ti sei allontanato e dove mettere il prossimo versamento." color="var(--swatch-emerald)" />
       <DialogSections>
-      <DialogSection title={tr("Pesi")} icon={ScaleIcon} color="var(--swatch-emerald)">
+      <DialogSection title="Pesi" icon={ScaleIcon} color="var(--swatch-emerald)">
       <ul className="flex max-h-72 flex-col gap-2 overflow-y-auto pr-1">
         {rows.map((row, index) => (
           <li key={row.instrument.id} className="flex items-center gap-2">
@@ -111,14 +109,14 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
               className="h-8 w-20 text-right tabular-nums"
               value={row.text}
               onChange={(e) => setText(index, e.target.value)}
-              aria-label={tr("Peso obiettivo di {0} in percentuale", {0: row.instrument.name})}
+              aria-label={`Peso obiettivo di ${row.instrument.name} in percentuale`}
             />
             <span className="text-sm text-muted-foreground">%</span>
             <Button
               variant="ghost"
               size="icon"
               className="size-8"
-              aria-label={tr("Togli {0}", {0: row.instrument.name})}
+              aria-label={`Togli ${row.instrument.name}`}
               onClick={() => setRows((prev) => prev.filter((_, i) => i !== index))}
             >
               <XIcon className="size-4" aria-hidden="true" />
@@ -131,34 +129,39 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
         onChange={add}
         defaultCurrency={currency}
         suggestions={suggestions.filter((s) => !rows.some((r) => r.instrument.id === s.id))}
-        placeholder={tr("Aggiungi uno strumento")}
+        placeholder="Aggiungi uno strumento"
       />
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-        <span className={cn("tabular-nums", Math.abs(remainder) <= SUM_TOLERANCE_PERCENT ? "text-muted-foreground" : "text-destructive")}>{tr("Totale")}{" "}{formatPercent(sum)}
+        <span className={cn("tabular-nums", Math.abs(remainder) <= SUM_TOLERANCE_PERCENT ? "text-muted-foreground" : "text-destructive")}>
+          Totale {formatPercent(sum)}
           {Math.abs(remainder) > SUM_TOLERANCE_PERCENT ? (remainder > 0 ? ` · mancano ${formatPercent(remainder)}` : ` · ${formatPercent(-remainder)} di troppo`) : ""}
         </span>
         {last && Math.abs(remainder) > SUM_TOLERANCE_PERCENT && (parsePercent(last.text) || 0) + remainder > 0 ? (
           <Button variant="ghost" size="sm" onClick={fillRemainder}>
-            {remainder > 0 ? tr("Aggiungi") : tr("Togli")}{" "}{tr("la differenza a")}{" "}{last.instrument.name.length > 24 ? tr("l'ultimo") : last.instrument.name}
+            {remainder > 0 ? "Aggiungi" : "Togli"} la differenza a {last.instrument.name.length > 24 ? "l'ultimo" : last.instrument.name}
           </Button>
         ) : null}
       </div>
       </DialogSection>
       </DialogSections>
-      {update.isError ? <p className="text-sm text-destructive">{tr(update.error.message)}</p> : null}
+      {update.isError ? <p className="text-sm text-destructive">{update.error.message}</p> : null}
       <DialogActions>
         {hasSaved ? (
-          <Button variant="ghost" className="text-muted-foreground" disabled={update.isPending} onClick={() => save([])}>{tr("Togli l'obiettivo")}</Button>
+          <Button variant="ghost" className="text-muted-foreground" disabled={update.isPending} onClick={() => save([])}>
+            Togli l&apos;obiettivo
+          </Button>
         ) : (
           <span />
         )}
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={update.isPending}>{tr("Annulla")}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={update.isPending}>
+            Annulla
+          </Button>
           <Button
             disabled={!valid || update.isPending}
             onClick={() => save(rows.map((r, i) => ({ instrumentId: r.instrument.id, weight: Math.round(values[i] * 10) / 1000 })))}
           >
-            {update.isPending ? tr("Salvo…") : tr("Salva")}
+            {update.isPending ? "Salvo…" : "Salva"}
           </Button>
         </div>
       </DialogActions>

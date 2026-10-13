@@ -1,12 +1,9 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Riga scorrevole di conti usati come filtro: "Tutti" più un chip per conto con il saldo; il filtro vale per grafico ed elenco. */
 
 import { AlertTriangleIcon, PlusIcon } from "lucide-react";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface AccountChip {
@@ -32,10 +29,6 @@ const CHIP_BASE =
   "flex min-h-14 shrink-0 flex-col justify-center rounded-2xl border-[1.5px] px-4 py-1.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 
 export function AccountChips({ accounts, total, currency, selectedId, onSelect, onAdd, className }: AccountChipsProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const chip = (id: string | null, name: string, amount: number, attention = false) => {
     const active = selectedId === id;
     return (
@@ -52,7 +45,7 @@ export function AccountChips({ accounts, total, currency, selectedId, onSelect, 
           {attention && (
             <>
               <AlertTriangleIcon className="size-3.5 text-neg" aria-hidden="true" />
-              <span className="sr-only">{tr(": serve un intervento")}</span>
+              <span className="sr-only">: serve un intervento</span>
             </>
           )}
         </span>
@@ -60,7 +53,7 @@ export function AccountChips({ accounts, total, currency, selectedId, onSelect, 
     );
   };
   return (
-    <div role="group" aria-label={tr("Filtra per conto")} className={cn("scrollbar-hidden -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0", className)}>
+    <div role="group" aria-label="Filtra per conto" className={cn("scrollbar-hidden -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0", className)}>
       {chip(null, "Tutti i conti", total)}
       {accounts.map((account) => chip(account.id, account.name, account.balance, account.needsAttention))}
       {onAdd && (
@@ -69,7 +62,9 @@ export function AccountChips({ accounts, total, currency, selectedId, onSelect, 
           onClick={onAdd}
           className={cn(CHIP_BASE, "flex-row items-center gap-1.5 border-dashed border-border font-semibold text-primary hover:bg-foreground/[0.04]")}
         >
-          <PlusIcon className="size-4" aria-hidden="true" />{tr("Conto")}</button>
+          <PlusIcon className="size-4" aria-hidden="true" />
+          Conto
+        </button>
       )}
     </div>
   );

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Operazioni registrate raggruppate per mese (dal più recente), con filtro per anno, totali dell'anno scelto
@@ -46,7 +45,6 @@ export function InvestmentTransactionsList({
   onDelete,
   deletingId,
 }: InvestmentTransactionsListProps) {
-  const { t: tr } = useLocalization();
   const years = React.useMemo(() => operationYears(months), [months]);
   const [year, setYear] = React.useState<string>(ALL_YEARS);
   // Se l'anno scelto sparisce (operazioni eliminate) si torna a tutti gli anni.
@@ -58,19 +56,19 @@ export function InvestmentTransactionsList({
   const totals = React.useMemo(() => sumOperationTotals(filtered.flatMap((m) => m.operations)), [filtered]);
   const visible = showAll ? filtered : filtered.slice(0, RECENT_OPERATION_MONTHS_LIMIT);
   const yearOptions = [
-    { value: ALL_YEARS, label: tr("Tutti") },
+    { value: ALL_YEARS, label: "Tutti" },
     ...years.map((y) => ({ value: String(y), label: String(y) })),
   ];
 
   return (
     <PanelSection
       icon={ArrowLeftRightIcon}
-      title={tr("Operazioni")}
+      title="Operazioni"
       color="var(--swatch-indigo)"
       action={
         years.length > 1 ? (
           <div className="max-w-full overflow-x-auto">
-            <SegmentedControl options={yearOptions} value={selectedYear} onChange={setYear} ariaLabel={tr("Anno delle operazioni")} />
+            <SegmentedControl options={yearOptions} value={selectedYear} onChange={setYear} ariaLabel="Anno delle operazioni" />
           </div>
         ) : null
       }
@@ -81,7 +79,7 @@ export function InvestmentTransactionsList({
         </>
       ) : null}
       {months.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{tr("Nessuna operazione registrata.")}</p>
+        <p className="text-sm text-muted-foreground">Nessuna operazione registrata.</p>
       ) : (
         <div className="-mx-4 border-t border-border sm:-mx-6">
           {visible.map((group) => (
@@ -100,7 +98,7 @@ export function InvestmentTransactionsList({
       {filtered.length > RECENT_OPERATION_MONTHS_LIMIT ? (
         <div>
           <Button variant="link" className="px-0" onClick={onToggleShowAll}>
-            {showAll ? tr("Mostra solo i mesi più recenti") : tr("Mostra tutti i mesi ({0})", {0: filtered.length})}
+            {showAll ? "Mostra solo i mesi più recenti" : `Mostra tutti i mesi (${filtered.length})`}
           </Button>
         </div>
       ) : null}

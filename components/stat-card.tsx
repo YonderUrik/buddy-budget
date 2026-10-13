@@ -1,11 +1,13 @@
-"use client";
-
-
-import { useLocalization } from "@/lib/localization/provider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-
+function formatAmount(value: number) {
+  return new Intl.NumberFormat("it-IT", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 interface StatCardProps {
   label: string;
@@ -15,23 +17,13 @@ interface StatCardProps {
 }
 
 export function StatCard({ label, value, subtitle, className }: StatCardProps) {
-  const { locale: formattingLocale } = useLocalization();
-  function formatAmount(value: number) {
-  return new Intl.NumberFormat(formattingLocale, {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-  const { t: tr } = useLocalization();
   const isNegative = value < 0;
 
   return (
     <Card className={cn(className)}>
       <CardHeader>
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {tr(label)}
+          {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -44,7 +36,7 @@ export function StatCard({ label, value, subtitle, className }: StatCardProps) {
           {formatAmount(value)}
         </p>
         {subtitle ? (
-          <p className="mt-1 text-sm text-muted-foreground">{tr(subtitle)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         ) : null}
       </CardContent>
     </Card>

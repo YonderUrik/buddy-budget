@@ -6,7 +6,6 @@
  * sempre. Con il movimento ridotto il numero cambia senza animazione; il lettore di schermo legge il valore intero.
  */
 
-import { useLocalization } from "@/lib/localization/provider";
 import NumberFlow, { type Format } from "@number-flow/react";
 import { cn } from "@/lib/utils";
 
@@ -27,16 +26,15 @@ const MUTED_TAIL_CLASS =
 export function AnimatedNumber({
   value,
   format,
-  locales,
+  locales = "it-IT",
   mutedTail = false,
   className,
 }: AnimatedNumberProps) {
-  const { locale } = useLocalization();
   return (
     <NumberFlow
       value={value}
       format={format}
-      locales={locales ?? locale}
+      locales={locales}
       animated
       respectMotionPreference
       className={cn("tabular-nums", mutedTail && MUTED_TAIL_CLASS, className)}

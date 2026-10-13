@@ -24,6 +24,7 @@ function input(transactions: InvestmentTransactionInput[], prices: PriceInput[],
     userCurrency: "EUR",
     inflation: [],
     today: TODAY,
+    window: { fromKey: "2024-10-12", toKey: "2026-10-12" },
     currentValue: 20_000,
     unpricedCount: 0,
     ...extra,
@@ -43,10 +44,28 @@ describe("historicalReturn", () => {
     expect(r.real).toBeNull();
   });
 
-  it("con meno di 24 mesi di storico usa gli ultimi 12", () => {
-    const r = historicalReturn(input([buy("2025-04-01", 100, 100)], [price("2025-10-01", 100), price("2026-10-09", 105)]));
-    expect(r).toMatchObject({ status: "ok", months: 12 });
+  it("con il periodo di 12 mesi usa solo gli ultimi 12", () => {
+    const r = historicalReturn(input([buy("2025-04-01", 100, 100)], [price("2025-10-01", 100), price("2026-10-09", 105)], { window: { fromKey: "2025-10-12", toKey: "2026-10-12" } }));
+    expect(r).toMatchObject({ status: "ok", months: 12, shorterThanPeriod: false });
     if (r.status === "ok") expect(r.nominal).toBeCloseTo(0.05, 2);
+  });
+
+  it("se si investe da meno del periodo scelto parte dal primo acquisto", () => {
+    const r = historicalReturn(input([buy("2025-04-12", 100, 100)], [price("2025-04-12", 100), price("2026-10-09", 110)]));
+    expect(r).toMatchObject({ status: "ok", months: 18, shorterThanPeriod: true });
+    if (r.status === "ok") expect(r.nominal).toBeCloseTo(Math.pow(1.1, 365 / 548) - 1, 2);
+  });
+
+  it("un periodo scelto nel passato usa solo quei mesi", () => {
+    const prices = [price("2023-12-29", 100), price("2024-12-31", 120), price("2026-10-09", 90)];
+    const r = historicalReturn(input([buy("2023-06-01", 100, 100)], prices, { window: { fromKey: "2024-01-01", toKey: "2024-12-31" } }));
+    expect(r).toMatchObject({ status: "ok", months: 12, toKey: "2024-12-31" });
+    if (r.status === "ok") expect(r.nominal).toBeCloseTo(0.2, 2);
+  });
+
+  it("sotto i 12 mesi di periodo non annualizza", () => {
+    const r = historicalReturn(input([buy("2023-06-01", 100, 100)], [price("2026-10-09", 105)], { window: { fromKey: "2026-04-01", toKey: "2026-09-30" } }));
+    expect(r).toEqual({ status: "manca", reason: "periodo-breve" });
   });
 
   it("tiene conto dell'inflazione osservata se l'indice copre il periodo", () => {
@@ -54,7 +73,7 @@ describe("historicalReturn", () => {
       { month: "2025-10", value: 100 },
       { month: "2026-10", value: 103 },
     ];
-    const r = historicalReturn(input([buy("2025-04-01", 100, 100)], [price("2025-10-01", 100), price("2026-10-09", 105)], { inflation }));
+    const r = historicalReturn(input([buy("2025-04-01", 100, 100)], [price("2025-10-01", 100), price("2026-10-09", 105)], { inflation, window: { fromKey: "2025-10-12", toKey: "2026-10-12" } }));
     expect(r.status === "ok" ? r.real : null).toBeCloseTo(1.05 / 1.03 - 1, 2);
   });
 
@@ -67,7 +86,7 @@ describe("historicalReturn", () => {
 });
 
 describe("resolveExpectedReturn", () => {
-  const ok = (nominal: number, real: number | null = null): HistoricalReturnResult => ({ status: "ok", months: 24, fromKey: "2024-10-12", toKey: "2026-10-12", nominal, real });
+  const ok = (nominal: number, real: number | null = null): HistoricalReturnResult => ({ status: "ok", months: 24, shorterThanPeriod: false, fromKey: "2024-10-12", toKey: "2026-10-12", nominal, real });
 
   it("in automatico usa il reale dello storico, con l'inflazione delle ipotesi se manca quella osservata", () => {
     const info = resolveExpectedReturn(DEFAULT_ASSUMPTIONS, ok(0.1));

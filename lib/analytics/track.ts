@@ -160,8 +160,14 @@ export interface ProductEvents {
   analytics_scenario_changed: { field: "annualSavings" | "annualSpending" | "expectedReturn" | "withdrawalRate" };
   /** Rendimento atteso passato dallo storico a un valore scelto a mano o viceversa; `source`: quello nuovo. */
   analytics_return_source_changed: { source: "storico" | "manuale" };
-  /** Origine del rendimento atteso mostrato all'apertura di Analitiche (una volta per visita): storico a 24 o 12 mesi, valore prudente o scelto a mano. */
-  analytics_return_source_shown: { source: "storico-24" | "storico-12" | "prudente" | "manuale" };
+  /** Origine del rendimento atteso mostrato all'apertura di Analitiche (una volta per visita): storico (con il periodo scelto), valore prudente o scelto a mano. */
+  analytics_return_source_shown: { source: "storico-24" | "storico-12" | "storico-personalizzato" | "prudente" | "manuale" };
+  /** Periodo dei dati di Analitiche cambiato; `period`: quello nuovo. */
+  analytics_period_changed: { period: "ultimi-12" | "ultimi-24" | "personalizzato" };
+  /** Spesa o risparmio scritti a mano riportati al dato dei movimenti; `field`: quale. */
+  analytics_figure_reset_to_data: { field: "annualSavings" | "annualSpending" };
+  /** Origine di spesa e risparmio all'apertura di Analitiche (una volta per visita): dai movimenti, scritti a mano o mancanti. */
+  analytics_cashflow_source_shown: { spending: "dati" | "ipotesi" | "manca"; savings: "dati" | "ipotesi" | "manca" };
   /** Cursori riportati alle ipotesi salvate. */
   analytics_scenario_reset: undefined;
   /** Valori dei cursori salvati come ipotesi; `fields`: quanti. */

@@ -28,6 +28,8 @@ export const RULE_LABELS: Record<WithdrawalRule, string> = {
 
 export interface AssumptionsPanelProps {
   assumptions: AnalyticsAssumptions;
+  /** «negli ultimi 12 mesi» o «da gen 2024 a dic 2025»: il periodo da cui vengono spesa e risparmio. */
+  periodPhrase: string;
   plan: AnalyticsPlan;
   /** Origine del rendimento in uso: se il campo non viene toccato resta com'è (anche in automatico). */
   returnInfo: ExpectedReturnInfo;
@@ -48,7 +50,7 @@ function Field({ label, hint, children, id }: { label: string; hint: string; chi
   );
 }
 
-export function AssumptionsPanel({ assumptions, plan, returnInfo, currency, pensionValue, saving, error, onSave }: AssumptionsPanelProps) {
+export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, currency, pensionValue, saving, error, onSave }: AssumptionsPanelProps) {
   const initialPercents = React.useMemo(() => toPercentDraft(assumptions), [assumptions]);
   const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
   /** Vero = al salvataggio il rendimento torna a calcolarsi dallo storico. */
@@ -128,7 +130,7 @@ export function AssumptionsPanel({ assumptions, plan, returnInfo, currency, pens
             key={field.key}
             id={`ass-${field.key}`}
             label={`${field.label} (%)`}
-            hint={field.key === "expectedReturn" ? `${returnAuto ? "Torna a seguire il tuo storico al salvataggio." : returnSourceText(returnInfo, currency)} ${field.hint}` : field.hint}
+            hint={field.key === "expectedReturn" ? `${returnAuto ? "Torna a seguire il tuo storico al salvataggio." : returnSourceText(returnInfo, currency, assumptions.dataPeriod)} ${field.hint}` : field.hint}
           >
             <Input
               id={`ass-${field.key}`}
@@ -163,8 +165,8 @@ export function AssumptionsPanel({ assumptions, plan, returnInfo, currency, pens
           label={`Spesa annua in pensione (${currency})`}
           hint={
             plan.spendingSource === "dati" && plan.spending !== null
-              ? `Vuoto = uso le tue uscite degli ultimi 12 mesi: ${money(plan.spending, currency)}. Scrivi una cifra se in pensione spenderai diversamente.`
-              : "Vuoto = uso le tue uscite degli ultimi 12 mesi (servono almeno 3 mesi di movimenti)."
+              ? `Vuoto = uso le tue uscite ${periodPhrase}, riportate a un anno: ${money(plan.spending, currency)}. Scrivi una cifra se in pensione spenderai diversamente.`
+              : `Vuoto = uso le tue uscite ${periodPhrase}, riportate a un anno (servono almeno 3 mesi di movimenti).`
           }
         >
           <Input id="ass-spending" inputMode="numeric" value={spending} placeholder="Dai tuoi dati" onChange={(e) => setSpending(e.target.value)} />
@@ -174,8 +176,8 @@ export function AssumptionsPanel({ assumptions, plan, returnInfo, currency, pens
           label={`Risparmio annuo (${currency})`}
           hint={
             plan.savingsSource === "dati" && plan.savings !== null
-              ? `Vuoto = uso quanto hai messo da parte negli ultimi 12 mesi: ${money(plan.savings, currency)}.`
-              : "Vuoto = uso entrate meno uscite degli ultimi 12 mesi. Scrivi 0 se non versi più nulla."
+              ? `Vuoto = uso quanto hai messo da parte ${periodPhrase}, riportato a un anno: ${money(plan.savings, currency)}.`
+              : `Vuoto = uso entrate meno uscite ${periodPhrase}, riportate a un anno. Scrivi 0 se non versi più nulla.`
           }
         >
           <Input id="ass-savings" inputMode="numeric" value={savings} placeholder="Dai tuoi dati" onChange={(e) => setSavings(e.target.value)} />

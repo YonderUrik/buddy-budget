@@ -35,7 +35,7 @@ export function fireSteps(plan: AnalyticsPlan, a: AnalyticsAssumptions, currency
     {
       title: "Parti da quanto spendi",
       text: [
-        `La base di tutto è la tua spesa annua: ${money(plan.spending, currency)}. ${plan.spendingSource === "dati" ? "Viene dai tuoi movimenti degli ultimi 12 mesi." : "È il valore che hai scritto nelle ipotesi."}`,
+        `La base di tutto è la tua spesa annua: ${money(plan.spending, currency)}. ${plan.spendingSource === "dati" ? "Viene dai tuoi movimenti del periodo scelto in alto, riportati a un anno." : "È il valore che hai scritto nelle ipotesi."}`,
         "Conta più di qualunque altra ipotesi: ogni euro in meno di spesa abbassa il traguardo e, nello stesso tempo, ti lascia più risparmio.",
       ],
     },

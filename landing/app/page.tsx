@@ -33,10 +33,10 @@ export default function HomePage() {
         <SheetHero />
         <SupportedSources />
         <Tour />
+        <Fit />
         <ItalyRules />
         <Compare />
         <Security />
-        <Fit />
         <Faq />
         <Closing />
       </main>

@@ -13,7 +13,7 @@ export interface RevealProps {
   children: ReactNode;
 }
 
-/** Ingresso morbido (dissolvenza e risalita) quando l'elemento entra in vista. Senza movimento resta fermo e visibile. */
+/** Ingresso morbido (breve risalita, senza dissolvenza) quando l'elemento entra in vista. Senza movimento resta fermo e visibile. */
 export function Reveal({ as: Tag = "div", className, distance = 20, stagger = false, children }: RevealProps) {
   const ref = useRef<HTMLElement>(null);
 
@@ -23,8 +23,9 @@ export function Reveal({ as: Tag = "div", className, distance = 20, stagger = fa
       if (!el) return;
       const mm = gsap.matchMedia();
       mm.add(MOTION_OK, () => {
+        // Solo movimento, mai trasparenza: il contenuto è leggibile anche prima che l'animazione parta (catture,
+        // scorrimento veloce, motori di ricerca).
         gsap.from(stagger ? Array.from(el.children) : el, {
-          opacity: 0,
           y: distance,
           duration: 0.9,
           ease: EASE_OUT,

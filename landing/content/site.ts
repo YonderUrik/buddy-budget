@@ -52,11 +52,17 @@ export const SECURITY = {
   intro: "Le credenziali della banca restano alla banca: verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
   /** Fatti con la loro fonte ufficiale, sotto il diagramma. */
   facts: [
-    { text: "GoCardless SAS è autorizzata dall'ACPR, n. 17118", source: "https://gocardless.com/legal/bank-account-data/" },
-    { text: "Sola lettura con consenso esplicito (PSD2, art. 67)", source: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
+    { text: "Il collegamento lo fa GoCardless, autorizzata dalla vigilanza bancaria francese", source: "https://gocardless.com/legal/bank-account-data/" },
+    { text: "Solo lettura e solo col tuo permesso, come vuole la legge europea", source: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
     { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
   ],
   more: "Tutti i dettagli: cosa salviamo, cosa tiene GoCardless, come cancelli tutto",
+  /** Chi c'è dietro e come si parla con una persona: nei test con utenti nessuno lo trovava. */
+  who: {
+    title: "Chi c'è dietro",
+    text: "BuddyBudget è un progetto indipendente nato in Italia: non è una banca e non vende i tuoi dati. Il codice è pubblico, così chiunque può controllare cosa fa. Per un dubbio o un problema scrivi a",
+    tail: "e ti risponde una persona.",
+  },
   /** Il collegamento in parole semplici, prima del diagramma: chi ha provato la landing non conosceva «PSD2». */
   stepsTitle: "Come si collega la banca, in tre passi",
   steps: [
@@ -66,3 +72,6 @@ export const SECURITY = {
   ],
 } as const;
 
+
+/** Indirizzo a cui risponde una persona (lo stesso dell'app, «Scrivici»). */
+export const SUPPORT_EMAIL = "support@buddybudget.io";

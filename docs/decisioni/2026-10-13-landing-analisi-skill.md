@@ -1,0 +1,5 @@
+# Landing: apertura per chi non usa Excel, chi c'è dietro (2026-10-13)
+
+Dopo l'analisi con le skill `landing-pages-claude-skills` (primo schermo, chiarezza dell'offerta, fiducia), sopra il lavoro della PR #365: titolo «Tutti i tuoi soldi in un posto, senza aggiornarli a mano» con il risultato per chi non tiene un foglio Excel; il riquadro d'apertura parte dalla vista BuddyBudget invece che dal foglio con gli errori; «Fa per te?» subito dopo il giro dell'app; nella sezione Sicurezza le pillole in parole semplici (niente «ACPR n. 17118» o «PSD2, art. 67», che restano nella pagina /sicurezza) e un riquadro «Chi c'è dietro» con `support@buddybudget.io`, senza nome (tolto di proposito con la #342); contatto anche nei piè di pagina. `Reveal` anima solo lo spostamento, mai la trasparenza: le sezioni non sono più vuote prima dell'animazione.
+
+Rimandati: immagine dell'app più leggibile su telefono (oggi la Panoramica è piccola nel riquadro), misurare visite e clic per dispositivo in Umami prima del prossimo giro.

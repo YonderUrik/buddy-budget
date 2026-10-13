@@ -1,11 +1,13 @@
 import "./security.css";
 import Link from "next/link";
 import { CONTENT_PATHS } from "@/content/seo-pages";
-import { SECURITY } from "@/content/site";
+import { SECURITY, SOURCE_URL, SUPPORT_EMAIL } from "@/content/site";
+import { MailLink } from "./mail-link";
+import { SourceLink } from "./source-link";
 import { DataFlow } from "./data-flow";
 import { TrackedSection } from "./tracked-section";
 
-/** Sezione "Sicurezza e privacy" della home, volutamente breve: percorso dei dati (diagramma), tre fatti con fonte e il rimando alla pagina /sicurezza, dove sta tutto il resto. */
+/** Sezione "Sicurezza e privacy" della home, volutamente breve: percorso dei dati (diagramma), tre fatti con fonte, chi c'è dietro con un contatto e il rimando alla pagina /sicurezza, dove sta tutto il resto. */
 export function Security({ content = SECURITY }: { content?: typeof SECURITY }) {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sec sec-security">
@@ -31,6 +33,17 @@ export function Security({ content = SECURITY }: { content?: typeof SECURITY }) 
             </li>
           ))}
         </ul>
+        <div className="sec-who cell">
+          <h3>{content.who.title}</h3>
+          <p>
+            {content.who.text} <MailLink email={SUPPORT_EMAIL} /> {content.who.tail}
+            {SOURCE_URL && (
+              <>
+                {" "}<SourceLink href={SOURCE_URL} location="sezione">Vedi il codice</SourceLink>
+              </>
+            )}
+          </p>
+        </div>
         <p className="sec-more"><Link href={CONTENT_PATHS.sicurezza}>{content.more} →</Link></p>
       </div>
     </TrackedSection>

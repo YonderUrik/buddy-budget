@@ -12,3 +12,7 @@
 .sec-steps li > span:last-child { color: var(--ink2); font-size: 15px; line-height: 1.5; }
 .sec-step-n { width: 26px; height: 26px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--accent); color: var(--surface); font: 600 13px var(--f-b); }
 @media (max-width: 720px) { .sec-steps { grid-template-columns: minmax(0, 1fr); } }
+.sec-who { margin-top: 20px; padding: 18px 20px; }
+.sec-who h3 { font: 600 17px var(--f-h); color: var(--ink); margin: 0 0 6px; }
+.sec-who p { margin: 0; color: var(--ink2); font-size: 15px; line-height: 1.55; }
+.sec-who a { color: var(--accent); font-weight: 600; }

@@ -3,7 +3,8 @@ import Link from "next/link";
 import { LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { CLOSING } from "@/content/sheet";
-import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL, STATUS_URL } from "@/content/site";
+import { APP_LINKS, SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content/site";
+import { MailLink } from "./mail-link";
 import { CtaLink } from "./cta-link";
 import { Reveal } from "./reveal";
 import { SourceLink } from "./source-link";
@@ -29,6 +30,7 @@ export function Closing({ content = CLOSING }: { content?: typeof CLOSING }) {
         </Reveal>
         <footer className="end-foot">
           <span>© BuddyBudget</span>
+          <span>Scrivici: <MailLink email={SUPPORT_EMAIL} /></span>
           <span>Le schermate del sito usano dati di esempio inventati</span>
           {SOURCE_URL && (
             <span>
@@ -38,6 +40,7 @@ export function Closing({ content = CLOSING }: { content?: typeof CLOSING }) {
           <nav aria-label="Strumenti e guide">
             <Link href={CONTENT_PATHS.funzioni}>Funzioni</Link>
             <Link href={CONTENT_PATHS.schermate}>Schermate</Link>
+            <Link href={CONTENT_PATHS.strumenti}>Calcolatori</Link>
             <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale</Link>
             <Link href={CONTENT_PATHS.ammortamento}>Ammortamento</Link>
             <Link href={CONTENT_PATHS.guidaZainetto}>Guida</Link>

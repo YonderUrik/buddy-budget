@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.67.0](https://github.com/YonderUrik/buddy-budget/compare/v0.66.0...v0.67.0) (2026-10-13)
+
+
+### Novità
+
+* Analitiche prende risparmio, spesa e rendimento dai dati del periodo scelto ([#359](https://github.com/YonderUrik/buddy-budget/issues/359)) ([ee4e77e](https://github.com/YonderUrik/buddy-budget/commit/ee4e77ed57ac36003480e26f3885f2e690c376eb))
+
 ## [0.66.0](https://github.com/YonderUrik/buddy-budget/compare/v0.65.0...v0.66.0) (2026-10-12)
 
 

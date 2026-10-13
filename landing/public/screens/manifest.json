@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-12T19:41:47.978Z",
+  "capturedAt": "2026-10-13T12:54:57.959Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -117,7 +117,7 @@
       "theme": "light",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1608
+      "height": 1574
     },
     {
       "id": "panoramica",
@@ -229,7 +229,7 @@
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1608
+      "height": 1574
     }
   ]
 }

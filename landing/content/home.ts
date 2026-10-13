@@ -40,7 +40,7 @@ export interface ItalyRule {
 export const ITALY = {
   kicker: "Fatto per l'Italia",
   title: "Le regole italiane, già nei conti.",
-  lede: "Zainetto fiscale, aliquote, bollo, TFR: regole che un'app pensata per un altro paese non conosce. Qui entrano nei calcoli, come stime per decidere; il conteggio definitivo lo fanno l'intermediario o un professionista.",
+  lede: "Se investi, hai un mutuo o un fondo pensione, l'app applica da sola le regole italiane. Non sono articoli da leggere: a sinistra la regola, a destra cosa calcola BuddyBudget al posto tuo. Sono stime per decidere; il conteggio definitivo lo fanno l'intermediario o un professionista.",
   rules: [
     {
       icon: "backpack",
@@ -87,6 +87,7 @@ export const FIT = {
   title: "Fa per te?",
   yesTitle: "Sì, se",
   yes: [
+    "vuoi sapere dove vanno i soldi ogni mese, senza copiare l'estratto conto",
     "hai conti, investimenti e magari un mutuo sparsi in posti diversi",
     "investi in ETF o BTP e vuoi sapere quanto pagheresti di tasse prima di vendere",
     "hai un fondo pensione e non sai se rende più del TFR",

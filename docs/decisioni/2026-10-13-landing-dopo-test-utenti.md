@@ -1,0 +1,5 @@
+# Landing dopo i primi test con utenti (2026-10-13)
+
+Due test su Userbrain (13 ottobre): nessuno ha trovato la simulazione del futuro, il sito è sembrato «per esperti di investimenti», «PSD2» non diceva nulla e le card delle banche sembravano cliccabili ma non lo erano. Cambiato: calcolatore pubblico «Obiettivo di risparmio» (`/strumenti/obiettivo-di-risparmio`) e indice `/strumenti` (la voce «Calcolatori» del menu portava allo zainetto), scheda del giro «Obiettivi e futuro» con link ai calcolatori, apertura che parte dalle spese del mese, regole italiane presentate come calcoli dell'app, collegamento della banca spiegato in tre passi (home e FAQ), card di banche e broker che portano all'accesso con «Collega la tua banca». Nuovi eventi Umami: `savings_goal_used`, `source_card_click`.
+
+Rimandati: recensioni (non ce ne sono ancora), prezzo dopo la beta (deciso nel thread sui costi), sottomenu sotto «Funzioni», animazione delle formule su telefono. Il prossimo test fa creare l'account e usare «Esplora con dati d'esempio».

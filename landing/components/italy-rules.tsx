@@ -21,7 +21,7 @@ export function ItalyRules({ content = ITALY }: { content?: typeof ITALY }) {
             <thead>
               <tr>
                 <th scope="col">La regola</th>
-                <th scope="col">Cosa fa BuddyBudget</th>
+                <th scope="col">Cosa calcola l&apos;app per te</th>
                 <th scope="col"><span className="sr">Approfondimenti</span></th>
               </tr>
             </thead>

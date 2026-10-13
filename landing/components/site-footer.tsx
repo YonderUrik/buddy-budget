@@ -13,6 +13,7 @@ export function SiteFooter() {
         <nav aria-label="Strumenti e guide">
           <Link href={CONTENT_PATHS.funzioni}>Funzioni</Link>
           <Link href={CONTENT_PATHS.schermate}>Schermate</Link>
+          <Link href={CONTENT_PATHS.risparmio}>Obiettivo di risparmio</Link>
           <Link href={CONTENT_PATHS.zainetto}>Zainetto fiscale</Link>
           <Link href={CONTENT_PATHS.ammortamento}>Ammortamento</Link>
           <Link href={CONTENT_PATHS.guidaZainetto}>Guida</Link>

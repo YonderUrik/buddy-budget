@@ -8,6 +8,8 @@ export const CONTENT_DRAFT = false;
 export const CONTENT_PATHS = {
   zainetto: "/strumenti/zainetto-fiscale",
   ammortamento: "/strumenti/piano-ammortamento",
+  risparmio: "/strumenti/obiettivo-di-risparmio",
+  strumenti: "/strumenti",
   guidaZainetto: "/guide/zainetto-fiscale",
   funzioneInvestimenti: "/funzioni/investimenti",
   funzioni: "/funzioni",
@@ -29,3 +31,16 @@ export const SOURCES = {
   guidaMutuo: { label: "Banca d'Italia, Il mutuo ipotecario in parole semplici: estinzione anticipata senza compensi né penali per i mutui sull'abitazione", href: "https://www.bancaditalia.it/pubblicazioni/guide-bi/guida-mutuo/Le-guide-della-Banca-d-Italia_Comprare-una-casa_Il-mutuo-ipotecario-in-parole-semplici.pdf" },
   prestitoPersonale: { label: "Banca d'Italia, Economia per tutti: prestito personale e rimborso anticipato", href: "https://economiapertutti.bancaditalia.it/aree-tematiche/prestiti/prestito-personale/" },
 } as const satisfies Record<string, Source>;
+
+export interface ToolLink {
+  href: string;
+  title: string;
+  text: string;
+}
+
+/** Calcolatori gratuiti, senza account: indice `/strumenti`, voce «Calcolatori» del menu e «Altri strumenti» in fondo a ogni calcolatore. */
+export const TOOLS: readonly ToolLink[] = [
+  { href: CONTENT_PATHS.risparmio, title: "Obiettivo di risparmio", text: "Quanto ci metti a mettere da parte una cifra, e quanto prima ci arrivi risparmiando qualcosa in più." },
+  { href: CONTENT_PATHS.ammortamento, title: "Piano di ammortamento", text: "Rata, interessi ed estinzione anticipata di un mutuo o di un prestito." },
+  { href: CONTENT_PATHS.zainetto, title: "Zainetto fiscale", text: "Quanta imposta paghi su un guadagno di azioni, ETF o BTP, usando le perdite degli anni prima." },
+];

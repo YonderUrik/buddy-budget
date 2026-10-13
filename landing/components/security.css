@@ -5,3 +5,10 @@
 .sec-facts a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink2); font-size: 13.5px; text-decoration: none; }
 .sec-facts a::after { content: "↗"; color: var(--accent); }
 .sec-facts a:hover { border-color: var(--accent); color: var(--ink); }
+.sec-steps-title { font: 600 18px var(--f-h); color: var(--ink); margin: 32px 0 14px; scroll-margin-top: 96px; }
+.sec-steps { list-style: none; margin: 0 0 32px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.sec-steps li { padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.sec-steps b { color: var(--ink); }
+.sec-steps li > span:last-child { color: var(--ink2); font-size: 15px; line-height: 1.5; }
+.sec-step-n { width: 26px; height: 26px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--accent); color: var(--surface); font: 600 13px var(--f-b); }
+@media (max-width: 720px) { .sec-steps { grid-template-columns: minmax(0, 1fr); } }

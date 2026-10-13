@@ -6,6 +6,7 @@
  */
 import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";
+import { CONTENT_PATHS } from "./seo-pages";
 
 /** Riga del foglio d'esempio in apertura: voce, saldo (o errore), ultimo aggiornamento, nota a margine. */
 export interface SheetRow {
@@ -21,7 +22,7 @@ export const SHEET_HERO = {
   title: "Il foglio dei conti, senza aggiornarlo",
   /** Parole evidenziate come una cella selezionata, in coda al titolo. */
   titleMark: "a mano",
-  lede: "Movimenti dalla banca, investimenti con le tasse italiane, mutuo e fondo pensione. Le formule che scrivevi, BuddyBudget le fa già.",
+  lede: "Vedi dove vanno i soldi ogni mese, senza copiare l'estratto conto. E se hai investimenti, un mutuo o un fondo pensione, li trovi nello stesso posto, con le tasse italiane già calcolate.",
   fileName: "Conti_2026_DEFINITIVO_v3.xlsx",
   fileAge: "ultima modifica: 3 mesi fa",
   formulaCell: "B12",
@@ -84,6 +85,8 @@ export const SUPPORTED = {
     { code: "es", name: "Spagna" },
     { code: "gb", name: "Regno Unito" },
   ] satisfies readonly BankCountry[],
+  /** Sotto le banche: chi arriva qui vuole collegarne una. */
+  connect: { cta: "Collega la tua banca", how: "Come funziona, in tre passi" },
   otherLabel: "E per il resto",
   other: [
         { icon: "wallet", label: "Conti manuali e contanti" },
@@ -107,13 +110,15 @@ export interface TourTab {
   /** Cosa fa l'app; `strong` è la frase con la cifra d'esempio che si vede nella schermata. */
   after: { lead: string; strong?: string; tail?: string };
   shot?: ScreenId;
+  /** Calcolatore gratuito da provare senza account, sotto «Con BuddyBudget». */
+  link?: { href: string; label: string };
   specs: readonly (readonly [label: string, text: string])[];
 }
 
 export const TOUR = {
   kicker: "L'app, area per area",
   title: "Le formule che scrivevi, già fatte.",
-  lede: "Per ogni area: com'era nel foglio, cosa fa BuddyBudget e i dettagli da controllare prima di iscriversi.",
+  lede: "Per ogni area: com'era nel foglio, cosa fa BuddyBudget e i dettagli da controllare prima di iscriversi. Le cifre sono quelle dei dati d'esempio delle schermate.",
   tabs: [
     {
       id: "conti", tab: "Conti e spese", icon: "wallet", shot: "analisi",
@@ -149,6 +154,7 @@ export const TOUR = {
     {
       id: "tasse", tab: "Tasse", icon: "backpack", shot: "tasse",
       title: "Le tasse di una vendita, prima di vendere.",
+      link: { href: CONTENT_PATHS.zainetto, label: "Prova senza account: il calcolatore dello zainetto fiscale" },
       before: { formula: "=SE(ANNO(OGGI())-ANNO(E2)>4;0;MIN(F2;G2))*0,26", text: "Una formula per lo zainetto, un'altra per i BTP al 12,5%, una per il bollo. E il dubbio di aver sbagliato.", cost: "#RIF! al primo cambio" },
       after: { lead: "Scegli il titolo e le quote.", strong: "Vendendo l'ETF oggi pagheresti 145,93 €", tail: "su 561,28 € di guadagno, con zainetto e aliquota già considerati." },
       specs: [
@@ -163,6 +169,7 @@ export const TOUR = {
     {
       id: "debiti", tab: "Mutuo e prestiti", icon: "card", shot: "simulatore",
       title: "Il piano del mutuo, con l'estinzione già calcolata.",
+      link: { href: CONTENT_PATHS.ammortamento, label: "Prova senza account: il piano di ammortamento" },
       before: { formula: "=RATA(2,9%/12;120;-35000)", text: "Il piano sta in un PDF della banca. Per sapere cosa cambia versando di più, va rifatto da capo.", cost: "un pomeriggio" },
       after: { lead: "Con 200 € in più al mese", strong: "finisci 2 anni e 7 mesi prima e risparmi 1094 €", tail: "di interessi." },
       specs: [
@@ -185,8 +192,9 @@ export const TOUR = {
       ],
     },
     {
-      id: "futuro", tab: "Futuro", icon: "chart", shot: "analitiche",
-      title: "L'anno in cui puoi smettere di lavorare.",
+      id: "futuro", tab: "Obiettivi e futuro", icon: "chart", shot: "analitiche",
+      title: "Quando arrivi a un obiettivo, e quando puoi smettere di lavorare.",
+      link: { href: CONTENT_PATHS.risparmio, label: "Prova senza account: in quanto tempo metti da parte 20.000 €?" },
       before: { formula: "=NPER(4%;-5122;-29343;756614)", text: "Una cella con un'ipotesi fissa, che nessuno riapre.", cost: "una stima mai aggiornata" },
       after: { lead: "Quattro cursori su risparmio, spesa, rendimento e prelievo.", strong: "Ai ritmi di oggi: 2066.", tail: "Sposta un cursore e l'anno si sposta con lui." },
       specs: [

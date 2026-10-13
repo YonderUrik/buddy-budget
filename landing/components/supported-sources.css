@@ -5,7 +5,10 @@
 .ss-block h3:not(:first-child) { margin-top: 28px; }
 .ss-block ul { list-style: none; margin: 0; padding: 0; }
 .ss-brokers ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
-.ss-brokers li { padding: 14px; display: grid; gap: 4px; align-content: start; }
+.ss-brokers li { display: grid; }
+.ss-card { padding: 14px; display: grid; gap: 4px; align-content: start; color: inherit; text-decoration: none; transition: border-color 0.15s var(--ease), transform 0.15s var(--ease); }
+.ss-card:hover, .ss-pill:is(a):hover { border-color: var(--accent); }
+.ss-card:focus-visible, .ss-pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .ss-logo { height: 44px; display: flex; align-items: center; justify-content: center; background: var(--logo-bg); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 12px; margin-bottom: 8px; }
 .ss-logo img { max-height: 26px; max-width: 100%; width: auto; height: auto; }
 .ss-name { font-weight: 600; }
@@ -13,8 +16,10 @@
 .ss-more { border-style: dashed; }
 .ss-more-detail { font-size: 13.5px; line-height: 1.45; color: var(--ink2); }
 .ss-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-.ss-tags li { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 15px; }
+.ss-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 15px; color: inherit; text-decoration: none; }
+.ss-connect { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin: 18px 0 0; }
+.ss-connect a:not(.btn) { color: var(--accent); font-weight: 600; }
 .ss-flag { width: 20px; height: 15px; border-radius: 3px; object-fit: cover; box-shadow: 0 0 0 1px var(--line); }
 .ss-icon { color: var(--accent); }
 @media (max-width: 900px) { .ss-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 480px) { .ss-brokers ul { grid-template-columns: 1fr 1fr; } .ss-brokers ul { gap: 8px; } .ss-brokers li { padding: 12px; } }
+@media (max-width: 480px) { .ss-brokers ul { grid-template-columns: 1fr 1fr; } .ss-brokers ul { gap: 8px; } .ss-card { padding: 12px; } }

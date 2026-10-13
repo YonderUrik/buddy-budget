@@ -61,6 +61,7 @@
 .tool-card h2 { margin: 0 0 18px; font-size: 19px; }
 .res .key { border-bottom: 0; padding: 16px 0 8px; align-items: baseline; }
 .res .key b { font-size: clamp(32px, 5vw, 44px); letter-spacing: -0.03em; color: var(--accent); }
+.res .key.dur b { font-size: clamp(22px, 3vw, 30px); text-align: right; }
 @media (max-width: 760px) { .tool { grid-template-columns: 1fr; } .tool-card { padding: 16px 12px 4px; } .tool-card[aria-live] { padding: 16px; } }
 
 /* Funzioni: schede con icona su fondo tinto, come le regole italiane della home. */

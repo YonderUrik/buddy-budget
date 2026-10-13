@@ -52,4 +52,3 @@ export type PriceAlertDirection = (typeof PRICE_ALERT_DIRECTIONS)[number];
 
 export const PRICE_ALERT_STATUSES = ["attivo", "scattato"] as const;
 export type PriceAlertStatus = (typeof PRICE_ALERT_STATUSES)[number];
-

@@ -60,9 +60,6 @@ function Row({ label, paidText, effect, active, disabled, currency, onChange }: 
 
 /** Pulsante «Costi e imposte» con popover dei due interruttori «Rimetti i costi» e «Rimetti le imposte». */
 export function ReinvestmentControl({ impact, currency, includeFees, includeTaxes, onIncludeFeesChange, onIncludeTaxesChange }: ReinvestmentControlProps) {
-  const { locale: formattingLocale } = useLocalization();
-
-
   const { t: tr, features } = useLocalization();
 
   const effects = reinvestmentEffects(impact);

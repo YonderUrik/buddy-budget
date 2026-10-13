@@ -30,4 +30,3 @@ export type CreditLineDayCount = (typeof CREDIT_LINE_DAY_COUNTS)[number];
 /** Soglia di allerta dell'utilizzo: percentuale del fido o importo assoluto. */
 export const CREDIT_LINE_ALERT_TYPES = ["percent", "amount"] as const;
 export type CreditLineAlertType = (typeof CREDIT_LINE_ALERT_TYPES)[number];
-

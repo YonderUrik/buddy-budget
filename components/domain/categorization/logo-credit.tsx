@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Cita Logo.dev sotto un elenco che ha mostrato almeno un logo remoto (condizione del piano gratuito). */
 
 import { cn } from "@/lib/utils";
@@ -12,13 +14,11 @@ export interface LogoCreditProps {
 }
 
 export function LogoCredit({ visible, className }: LogoCreditProps) {
+  const { t: tr } = useLocalization();
   if (!visible) return null;
   return (
-    <p className={cn("text-xs text-muted-foreground", className)}>
-      Loghi forniti da{" "}
-      <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-        Logo.dev
-      </a>
+    <p className={cn("text-xs text-muted-foreground", className)}>{tr("Loghi forniti da")}{" "}
+      <a href={LOGO_SERVICE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">{tr("Logo.dev")}</a>
     </p>
   );
 }

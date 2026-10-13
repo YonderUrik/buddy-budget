@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Navigazione del periodo mostrato in Spese: frecce prev/next + click sull'etichetta per aprire
@@ -30,6 +31,7 @@ export interface ExpensesReferenceNavProps {
 }
 
 export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriodChange }: ExpensesReferenceNavProps) {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const [gridYear, setGridYear] = React.useState(referenceDate.getFullYear());
   const today = startOfDay(new Date());
@@ -54,7 +56,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
       <button
         type="button"
         onClick={() => onChange(shiftReferenceDate(period, referenceDate, -1))}
-        aria-label="Periodo precedente"
+        aria-label={tr("Periodo precedente")}
         className="flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground sm:size-7"
       >
         <ChevronLeftIcon className="size-4" />
@@ -69,7 +71,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
         </PopoverTrigger>
         <PopoverContent className="w-72 max-w-[calc(100vw-2rem)] p-3">
           {onPeriodChange && (
-            <div role="group" aria-label="Tipo di periodo" className="mb-3 grid grid-cols-4 gap-1 border-b border-border pb-3 sm:hidden">
+            <div role="group" aria-label={tr("Tipo di periodo")} className="mb-3 grid grid-cols-4 gap-1 border-b border-border pb-3 sm:hidden">
               {PERIOD_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -83,7 +85,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
-                  {option.label}
+                  {tr(option.label)}
                 </button>
               ))}
             </div>
@@ -92,7 +94,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
             <button
               type="button"
               onClick={() => setGridYear((y) => y - 1)}
-              aria-label="Anno precedente"
+              aria-label={tr("Anno precedente")}
               className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
             >
               <ChevronLeftIcon className="size-4" />
@@ -102,7 +104,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
               type="button"
               onClick={() => setGridYear((y) => y + 1)}
               disabled={isFutureGridYear}
-              aria-label="Anno successivo"
+              aria-label={tr("Anno successivo")}
               className={cn(
                 "rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground",
                 isFutureGridYear && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-muted-foreground"
@@ -126,7 +128,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
                     isFutureMonth && "cursor-not-allowed opacity-40 hover:bg-transparent"
                   )}
                 >
-                  {label}
+                  {tr(label)}
                 </button>
               );
             })}
@@ -138,7 +140,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
         type="button"
         onClick={() => onChange(shiftReferenceDate(period, referenceDate, 1))}
         disabled={isNextDisabled}
-        aria-label="Periodo successivo"
+        aria-label={tr("Periodo successivo")}
         className={cn(
           "flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground sm:size-7",
           isNextDisabled && "cursor-not-allowed opacity-40 hover:bg-transparent hover:text-muted-foreground"

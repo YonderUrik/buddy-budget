@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Scheda Dividendi di Investimenti: riepilogo di dividendi e cedole, previsione dei prossimi 12 mesi, proventi da
@@ -30,6 +31,7 @@ const PENDING_REFRESH_MS = 4000;
 const PENDING_REFRESH_MAX = 6;
 
 export default function DividendiPage() {
+  const { t: tr } = useLocalization();
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(INVESTMENTS_DEFAULT_PERIOD);
   const view = React.useMemo(() => (overview.data ? buildIncomeView(overview.data, today) : null), [overview.data, today]);
@@ -65,7 +67,7 @@ export default function DividendiPage() {
     dismiss.mutate(input, {
       onSuccess: () =>
         toast(items.length === 1 ? "Proposta ignorata" : `${items.length} proposte ignorate`, {
-          action: { label: "Annulla", onClick: () => dismiss.mutate({ ...input, restore: true }) },
+          action: { label: tr("Annulla"), onClick: () => dismiss.mutate({ ...input, restore: true }) },
         }),
       onError: (e) => errorToast(e.message, "operazione"),
     });
@@ -82,9 +84,7 @@ export default function DividendiPage() {
   if (overview.isError || !view) return <LoadError message="Impossibile caricare i dividendi." onRetry={() => overview.refetch()} />;
   if (!view.hasTransactions) {
     return (
-      <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
-        Qui vedrai dividendi e cedole: registra prima un acquisto nella scheda Portafoglio.
-      </p>
+      <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">{tr("Qui vedrai dividendi e cedole: registra prima un acquisto nella scheda Portafoglio.")}</p>
     );
   }
 
@@ -94,8 +94,7 @@ export default function DividendiPage() {
   return (
     <>
       {pending > 0 ? (
-        <p className="text-sm text-muted-foreground" role="status">
-          Scarico lo storico dei dividendi di {pending === 1 ? "uno strumento" : `${pending} strumenti`}…
+        <p className="text-sm text-muted-foreground" role="status">{tr("Scarico lo storico dei dividendi di")}{" "}{pending === 1 ? tr("uno strumento") : tr("{0} strumenti", {0: pending})}…
         </p>
       ) : null}
       <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
@@ -104,7 +103,7 @@ export default function DividendiPage() {
           {view.byInstrument.length > 0 ? (
             <IncomeInstrumentsCard payments={view.history.payments} rows={view.byInstrument} instrumentsById={view.instrumentsById} currency={currency} onEditCoupons={setCouponsFor} />
           ) : null}
-          {view.byMonth.length === 0 ? <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">Nessun dividendo o cedola registrato.</p> : null}
+          {view.byMonth.length === 0 ? <p className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">{tr("Nessun dividendo o cedola registrato.")}</p> : null}
         </div>
         <div className="flex flex-col gap-10 lg:col-span-2">
           {view.missing.length > 0 ? (

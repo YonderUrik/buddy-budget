@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocalization } from "@/lib/localization/provider";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { track } from "@/lib/analytics";
 import type { PensionOverviewData } from "@/lib/pension/types";
@@ -27,8 +28,10 @@ function useInvalidatePension() {
 
 /** Fondi di previdenza dell'utente con le fotografie: una sola richiesta per tutte le schede. */
 export function usePensionQuery() {
+  const { features, productCountry } = useLocalization();
   return useQuery<PensionOverviewData>({
-    queryKey: [...PENSION_QUERY_KEY],
+    queryKey: [...PENSION_QUERY_KEY, productCountry],
+    enabled: features.pension,
     staleTime: PENSION_STALE_TIME_MS,
     queryFn: async () => {
       const response = await fetch("/api/pension");

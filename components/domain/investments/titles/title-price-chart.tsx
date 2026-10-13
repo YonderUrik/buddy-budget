@@ -1,4 +1,9 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Grafico delle chiusure di un titolo con selettore del periodo. Colore verde o rosso secondo l'andamento del periodo;
@@ -12,13 +17,19 @@ import { PanelSection } from "../panel-section";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { parseDateOnly } from "@/lib/calc/expenses";
 import { TITLE_CHART_PERIODS, type CloseInput, type TitleChartPeriod } from "@/lib/investments/title-stats";
-import { formatPrice } from "./title-format";
+
 
 const PERIOD_OPTIONS = TITLE_CHART_PERIODS.map((p) => ({ value: p, label: p }));
-const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
-const AXIS_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "short", year: "2-digit" });
+
+
 
 function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { payload: CloseInput }[]; currency: string }) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPrice } = localizedFormats(formattingLocale);
+
+
+  const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", year: "numeric" });
+
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
   return (
@@ -53,21 +64,28 @@ export function purchaseMarkers(series: CloseInput[], purchases: { date: string;
 }
 
 export function TitlePriceChart({ series, currency, period, onPeriodChange, backfilling, purchases = [], averagePrice = null }: TitlePriceChartProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPrice } = localizedFormats(formattingLocale);
+
+
+  const AXIS_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { month: "short", year: "2-digit" });
+
+  const { t: tr } = useLocalization();
   const markers = purchaseMarkers(series, purchases);
   const up = series.length < 2 || series[series.length - 1].close >= series[0].close;
   const color = up ? "var(--pos)" : "var(--neg)";
-  const config = { close: { label: "Chiusura", color } } satisfies ChartConfig;
+  const config = { close: { label: tr("Chiusura"), color } } satisfies ChartConfig;
   return (
     <PanelSection
       icon={ChartSplineIcon}
-      title="Andamento"
+      title={tr("Andamento")}
       color={color}
-      action={<SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" stretch className="sm:w-auto" />}
+      action={<SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} stretch className="sm:w-auto" />}
     >
       <div>
         {series.length < 2 ? (
           <p className="py-10 text-center text-sm text-muted-foreground" role="status">
-            {backfilling ? "Sto scaricando lo storico dei prezzi…" : "Non ci sono ancora abbastanza prezzi per il grafico."}
+            {backfilling ? tr("Sto scaricando lo storico dei prezzi…") : tr("Non ci sono ancora abbastanza prezzi per il grafico.")}
           </p>
         ) : (
           <>
@@ -102,17 +120,16 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
               <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 {markers.length > 0 ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="size-2.5 rounded-full bg-primary" aria-hidden="true" /> I tuoi acquisti
-                  </span>
+                    <span className="size-2.5 rounded-full bg-primary" aria-hidden="true" />{" "}{tr("I tuoi acquisti")}</span>
                 ) : null}
                 {averagePrice !== null ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="w-4 border-t-2 border-dashed border-primary" aria-hidden="true" /> Il tuo prezzo medio ({formatPrice(averagePrice, currency)})
+                    <span className="w-4 border-t-2 border-dashed border-primary" aria-hidden="true" />{" "}{tr("Il tuo prezzo medio (")}{formatPrice(averagePrice, currency)})
                   </span>
                 ) : null}
               </p>
             ) : null}
-            {backfilling ? <p className="mt-2 text-xs text-muted-foreground">Sto ancora scaricando lo storico: il grafico si completa da solo.</p> : null}
+            {backfilling ? <p className="mt-2 text-xs text-muted-foreground">{tr("Sto ancora scaricando lo storico: il grafico si completa da solo.")}</p> : null}
           </>
         )}
       </div>

@@ -7,6 +7,8 @@ export const authUser = pgTable("auth_user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  productCountry: text("product_country").notNull().default("IT"),
+  language: text("language").notNull().default("it"),
   currency: text("currency").notNull().default("EUR"),
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   /** Pagina di atterraggio dopo il login (solo valori di `HOME_PAGE_PATHS`, validati dalla route impostazioni). */

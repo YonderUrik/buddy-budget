@@ -1,5 +1,8 @@
 "use client";
 
+
+import { useLocalization } from "@/lib/localization/provider";
+
 /** Parte alta della scheda Movimenti: frase del mese, cifra eroe con grafico e chip dei conti. Prende i dati e li passa ai componenti di sola vista. */
 
 import * as React from "react";
@@ -32,12 +35,16 @@ import { LiquidityHero } from "./liquidity-hero";
 import type { TrendPoint } from "./trend-chart";
 
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
-const MONTH_NAME = new Intl.DateTimeFormat("it-IT", { month: "long" });
+
 /** Altezza riservata, finché i dati non ci sono, alla frase del mese (tre righe) e alla riga dei chip: evita che la pagina salti quando arrivano i dati. */
 const VOICE_MIN_HEIGHT_CLASS = "min-h-28 sm:min-h-[6.25rem]";
 const CHIPS_PLACEHOLDER_CLASS = "h-[3.75rem] animate-pulse rounded-2xl bg-muted";
 
 export function LiquidityOverview() {
+  const { locale: formattingLocale } = useLocalization();
+  const MONTH_NAME = new Intl.DateTimeFormat(formattingLocale, { month: "long" });
+
+  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { today: now, accountId, setAccountId } = useLiquidity();
@@ -84,8 +91,7 @@ export function LiquidityOverview() {
     <div className="flex flex-col gap-6">
       <p className={cn("max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl", voiceLoading && VOICE_MIN_HEIGHT_CLASS)}>
         {accounts.length > 0 && (
-          <>
-            Hai <strong className="font-heading font-medium text-foreground">{new Intl.NumberFormat("it-IT", { style: "currency", currency, maximumFractionDigits: 0 }).format(total)}</strong> su {accounts.length} {accounts.length === 1 ? "conto" : "conti"}.{" "}
+          <>{tr("Hai")}{" "}<strong className="font-heading font-medium text-foreground">{new Intl.NumberFormat(formattingLocale, { style: "currency", currency, maximumFractionDigits: 0 }).format(total)}</strong>{" "}{tr("su")}{" "}{accounts.length}{" "}{accounts.length === 1 ? tr("conto") : tr("conti")}.{" "}
           </>
         )}
         {lines.map((line) => (
@@ -95,12 +101,11 @@ export function LiquidityOverview() {
         ))}
         {toFix > 0 && (
           <>
-            <strong className="font-heading font-medium text-foreground">{toFix} {toFix === 1 ? "movimento aspetta" : "movimenti aspettano"}</strong> una categoria.
-          </>
+            <strong className="font-heading font-medium text-foreground">{toFix}{" "}{toFix === 1 ? tr("movimento aspetta") : tr("movimenti aspettano")}</strong>{" "}{tr("una categoria.")}</>
         )}
       </p>
       <LiquidityHero
-        label={selected ? selected.name : "Liquidità totale"}
+        label={selected ? selected.name : tr("Liquidità totale")}
         value={selected ? Number(selected.balance) : total}
         currency={currency}
         delta={delta}

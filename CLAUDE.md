@@ -1,6 +1,6 @@
 # BuddyBudget
 
-App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e valuta sono scelte dall'utente in fase di onboarding (default italiano/EUR, non hardcoded). L'italiano resta la lingua di lavoro per ora perché l'i18n non è ancora implementato.
+App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e valuta sono scelte dall'utente in fase di onboarding (default italiano/EUR, non hardcoded). Paese del prodotto e lingua sono indipendenti: Italia (italiano/inglese), Germania (tedesco/inglese). Per la Germania restano disabilitati fiscalità italiana, pensione/TFR, proventi previsionali, analitiche pensionistiche e inflazione italiana; da integrare separatamente.
 
 ## Regole per Claude
 

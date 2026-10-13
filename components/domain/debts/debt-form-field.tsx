@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Campo di un form di Debiti: etichetta sopra, controllo e testo d'aiuto sotto. */
 
 import * as React from "react";
@@ -10,13 +12,14 @@ export interface DebtFormFieldProps {
 }
 
 export function DebtFormField({ label, htmlFor, hint, children }: DebtFormFieldProps) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <label className="text-xs text-muted-foreground" htmlFor={htmlFor}>
-        {label}
+        {tr(label)}
       </label>
       {children}
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="text-xs text-muted-foreground">{tr(hint)}</p> : null}
     </div>
   );
 }

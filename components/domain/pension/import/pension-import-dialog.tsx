@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog di import delle fotografie di un fondo da file CSV o Excel, in tre passi: file, colonne, riepilogo.
@@ -31,13 +32,14 @@ export interface PensionImportDialogProps {
 const STEP_LABELS: Record<PensionImportStep, string> = { file: "File", columns: "Colonne", summary: "Riepilogo" };
 
 function Stepper({ current }: { current: PensionImportStep }) {
+  const { t: tr } = useLocalization();
   const index = PENSION_IMPORT_STEPS.indexOf(current);
   return (
-    <ol className="flex gap-1.5" aria-label="Passi dell'import">
+    <ol className="flex gap-1.5" aria-label={tr("Passi dell'import")}>
       {PENSION_IMPORT_STEPS.map((step, i) => (
         <li key={step} className="flex flex-1 flex-col gap-1" aria-current={i === index ? "step" : undefined}>
           <span className={cn("h-1 rounded-full", i <= index ? "bg-primary" : "bg-foreground/10")} />
-          <span className={cn("text-sm", i === index ? "font-semibold text-foreground" : "text-text-2")}>{STEP_LABELS[step]}</span>
+          <span className={cn("text-sm", i === index ? "font-semibold text-foreground" : "text-text-2")}>{tr(STEP_LABELS[step])}</span>
         </li>
       ))}
     </ol>
@@ -45,6 +47,7 @@ function Stepper({ current }: { current: PensionImportStep }) {
 }
 
 function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImportDialogProps, "open" | "onOpenChange" | "fundName"> & { onClose: () => void }) {
+  const { t: tr } = useLocalization();
   const s = usePensionImport(fundId, existing, today);
   const discarded = s.rows.filter((r) => r.status === "error").length;
   const nothingToWrite = s.plan.counts.new + s.plan.counts.update === 0;
@@ -60,25 +63,21 @@ function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImpo
         ) : null}
         {s.step === "summary" ? <PensionImportSummaryStep plan={s.plan} currency={currency} discarded={discarded} done={s.done} /> : null}
       </div>
-      {s.error ? <p className="text-sm text-neg">{s.error}</p> : null}
+      {s.error ? <p className="text-sm text-neg">{tr(s.error)}</p> : null}
       <div className="flex justify-between gap-2">
         {s.done ? (
-          <Button className="ml-auto" onClick={onClose}>
-            Chiudi
-          </Button>
+          <Button className="ml-auto" onClick={onClose}>{tr("Chiudi")}</Button>
         ) : (
           <>
             <Button variant="ghost" onClick={s.step === "file" ? onClose : s.back} disabled={s.running}>
-              {s.step === "file" ? "Annulla" : "Indietro"}
+              {s.step === "file" ? tr("Annulla") : tr("Indietro")}
             </Button>
             {s.step === "columns" ? (
-              <Button onClick={s.toSummary} disabled={s.missing.length > 0 || s.plan.rows.length === 0}>
-                Avanti
-              </Button>
+              <Button onClick={s.toSummary} disabled={s.missing.length > 0 || s.plan.rows.length === 0}>{tr("Avanti")}</Button>
             ) : null}
             {s.step === "summary" ? (
               <Button onClick={s.confirm} disabled={nothingToWrite || blocked || s.running}>
-                {s.running ? "Importo…" : nothingToWrite ? "Niente di nuovo da importare" : `Importa ${s.plan.counts.new + s.plan.counts.update} fotografie`}
+                {s.running ? tr("Importo…") : nothingToWrite ? tr("Niente di nuovo da importare") : tr("Importa {0} fotografie", {0: s.plan.counts.new + s.plan.counts.update})}
               </Button>
             ) : null}
           </>
@@ -89,6 +88,7 @@ function Wizard({ onClose, fundId, existing, currency, today }: Omit<PensionImpo
 }
 
 export function PensionImportDialog({ open, onOpenChange, fundName, ...wizard }: PensionImportDialogProps) {
+  const { t: tr } = useLocalization();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FormDialogContent size="wide">
@@ -101,8 +101,8 @@ export function PensionImportDialog({ open, onOpenChange, fundName, ...wizard }:
             <FileUpIcon className="size-5" />
           </span>
           <div className="min-w-0">
-            <DialogTitle className="font-heading text-xl font-medium">Importa le fotografie</DialogTitle>
-            <DialogDescription>Da un file CSV o Excel, nel fondo «{fundName}».</DialogDescription>
+            <DialogTitle className="font-heading text-xl font-medium">{tr("Importa le fotografie")}</DialogTitle>
+            <DialogDescription>{tr("Da un file CSV o Excel, nel fondo «")}{fundName}».</DialogDescription>
           </div>
         </DialogHeader>
         {open ? <Wizard {...wizard} onClose={() => onOpenChange(false)} /> : null}

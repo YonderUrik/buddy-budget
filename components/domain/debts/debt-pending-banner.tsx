@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Avviso sulle rate passate non ancora segnate (da confermare o scadute), con il bottone per segnarle tutte pagate. */
 
@@ -15,6 +16,7 @@ export interface DebtPendingBannerProps {
 }
 
 export function DebtPendingBanner({ plan, onMarkAll, pending = false }: DebtPendingBannerProps) {
+  const { t: tr } = useLocalization();
   const unsettled = plan.rows.filter((r) => r.status === "da_confermare" || r.status === "scaduta");
   if (unsettled.length === 0) return null;
   const overdue = plan.totals.overdueCount;
@@ -34,9 +36,7 @@ export function DebtPendingBanner({ plan, onMarkAll, pending = false }: DebtPend
         </span>
         {text}
       </p>
-      <Button size="sm" variant="outline" disabled={pending} onClick={() => onMarkAll(unsettled[unsettled.length - 1].number)}>
-        Segna tutte come pagate
-      </Button>
+      <Button size="sm" variant="outline" disabled={pending} onClick={() => onMarkAll(unsettled[unsettled.length - 1].number)}>{tr("Segna tutte come pagate")}</Button>
     </div>
   );
 }

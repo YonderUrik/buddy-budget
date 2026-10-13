@@ -1,3 +1,4 @@
+import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { buildCommentaryPrompt, COMMENTARY_CACHE_TTL_SECONDS, commentatorFromEnv } from "@/lib/investments/commentary";
@@ -31,7 +32,8 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   const stats = computeTitleStats(await loadTitleCloses(session.user.id, instrument), new Date().toISOString().slice(0, 10));
   if (!stats) return Response.json({ error: "Non ci sono ancora prezzi per questo titolo" }, { status: 400 });
 
-  const cacheKey = `market:commentary:${session.user.id}:${id}:${stats.lastDate}`;
+  const { language } = resolveProfile(session.user);
+  const cacheKey = `market:commentary:${session.user.id}:${id}:${stats.lastDate}:${language}`;
   try {
     const cached = await redis.get(cacheKey);
     if (cached) return Response.json({ available: true, text: cached, cached: true });
@@ -44,6 +46,7 @@ async function handlePost(request: NextRequest, { params }: { params: Promise<{ 
   const fundamentals = await fundamentalsOnProviders(instrument);
   const text = await commentator.comment(
     buildCommentaryPrompt({
+      language,
       name: instrument.name,
       type: instrument.type,
       currency: instrument.currency,

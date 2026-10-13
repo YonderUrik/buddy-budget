@@ -1,9 +1,12 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Riga compatta di un titolo nella sidebar: sigla, nome, mini linea, valore e variazione. Porta alla pagina del titolo. */
 
 import Link from "next/link";
-import { formatSignedPct, TitleSparkline } from "@/components/domain/investments/light";
+import { TitleSparkline } from "@/components/domain/investments/light";
 import { cn } from "@/lib/utils";
 import { changeToneClass } from "./sidebar-insights.utils";
 
@@ -24,6 +27,10 @@ export interface InsightRowProps {
 }
 
 export function InsightRow({ href, label, name, valueText, changePct, spark, alert = false, onNavigate }: InsightRowProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedPct } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   return (
     <Link
       href={href}
@@ -33,9 +40,9 @@ export function InsightRow({ href, label, name, valueText, changePct, spark, ale
     >
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1 text-[13px] font-semibold leading-tight text-sidebar-foreground">
-          <span className="truncate">{label}</span>
+          <span className="truncate">{tr(label)}</span>
           {alert ? (
-            <span className="size-1.5 shrink-0 rounded-full bg-primary" role="img" aria-label="Avviso di prezzo scattato" />
+            <span className="size-1.5 shrink-0 rounded-full bg-primary" role="img" aria-label={tr("Avviso di prezzo scattato")} />
           ) : null}
         </span>
         <span className="block truncate text-[11px] leading-tight text-sidebar-foreground/60">{name}</span>

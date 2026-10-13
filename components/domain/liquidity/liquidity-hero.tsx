@@ -1,11 +1,14 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Cifra eroe di Liquidità (totale o di un conto) con variazione, grafico a tutta larghezza e selettore del periodo. */
 
 import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { MoneyHero } from "@/components/domain/net-worth";
 import { SegmentedControl } from "@/components/domain/shared";
-import { formatCurrency } from "@/lib/format";
+
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import { cn } from "@/lib/utils";
 import { TrendChart, type TrendPoint } from "./trend-chart";
@@ -39,6 +42,10 @@ export interface LiquidityHeroProps {
 }
 
 export function LiquidityHero({ label, value, currency, delta, period, onPeriodChange, points, className }: LiquidityHeroProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const up = (delta ?? 0) >= 0;
   const Icon = up ? TrendingUpIcon : TrendingDownIcon;
   const first = points[0];
@@ -46,8 +53,8 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
     ? `${label}: da ${formatCurrency(first.value, currency, { maximumFractionDigits: 0 })} a ${formatCurrency(value, currency, { maximumFractionDigits: 0 })} ${PERIOD_PHRASES[period]}.`
     : `${label}: ${formatCurrency(value, currency, { maximumFractionDigits: 0 })}.`;
   return (
-    <section aria-label={label} className={className}>
-      <p className="text-base text-text-2">{label}</p>
+    <section aria-label={tr(label)} className={className}>
+      <p className="text-base text-text-2">{tr(label)}</p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
       <div className="mt-3 min-h-5">
         {delta !== null && (
@@ -62,10 +69,10 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
         )}
       </div>
       <div className="-mx-4 mt-2 sm:-mx-6">
-        <TrendChart points={points} description={description} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
+        <TrendChart points={points} description={tr(description)} height={260} formatValue={(n) => formatCurrency(n, currency, { maximumFractionDigits: 0 })} />
       </div>
       <div className="mt-3 flex justify-center">
-        <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel="Periodo del grafico" />
+        <SegmentedControl options={PERIOD_OPTIONS} value={period} onChange={onPeriodChange} ariaLabel={tr("Periodo del grafico")} />
       </div>
     </section>
   );

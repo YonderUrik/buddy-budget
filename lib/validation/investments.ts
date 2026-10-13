@@ -1,15 +1,8 @@
 import { z } from "zod";
 import { TARGET_SUM_TOLERANCE } from "@/lib/investments/allocation";
 import { MANUAL_AREA_KEYS, MANUAL_SECTOR_KEYS } from "@/lib/investments/exposure-keys";
-import {
-  COUPON_FREQUENCIES,
-  INSTRUMENT_TYPES,
-  TAX_REGIMES,
-  INVESTMENT_TRANSACTION_TYPES,
-  PRICE_ALERT_DIRECTIONS,
-  PRICE_UNITS,
-  type InvestmentTransactionType,
-} from "@/lib/db/schema/investments";
+import { PRICE_ALERT_DIRECTIONS } from "@/lib/investments/constants";
+import { COUPON_FREQUENCIES, INSTRUMENT_TYPES, TAX_REGIMES, INVESTMENT_TRANSACTION_TYPES, PRICE_UNITS, type InvestmentTransactionType } from "@/lib/investments/constants";
 
 /** Lunghezza massima della nota di un'operazione (come per le transazioni). */
 export const INVESTMENT_NOTE_MAX_LENGTH = 500;

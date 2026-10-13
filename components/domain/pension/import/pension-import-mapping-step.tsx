@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Secondo passo dell'import: quale colonna è la data, i contributi e il controvalore, con anteprima delle righe lette. */
 
@@ -38,11 +39,12 @@ const DATE_ORDER_LABELS: Record<DateOrder, string> = {
 const DECIMAL_LABELS: Record<DecimalSeparator, string> = { ".": "Punto (1,234.56)", ",": "Virgola (1.234,56)" };
 
 function LabeledSelect<T extends string>(props: { label: string; value: T; options: readonly T[]; labelFor: (v: T) => string; onChange: (v: T) => void }) {
+  const { t: tr } = useLocalization();
   const id = React.useId();
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <span id={id} className="text-sm text-text-2">
-        {props.label}
+        {tr(props.label)}
       </span>
       <Select value={props.value} onValueChange={(v) => v !== null && props.onChange(v as T)}>
         <SelectTrigger className="w-full" aria-labelledby={id}>
@@ -61,6 +63,7 @@ function LabeledSelect<T extends string>(props: { label: string; value: T; optio
 }
 
 export function PensionImportMappingStep({ fileName, table, mapping, rows, missing, currency, onChange }: PensionImportMappingStepProps) {
+  const { t: tr } = useLocalization();
   const options = [NONE, ...table.headers.map((_, i) => String(i))];
   const sample = (column: number) => table.rows.find((r) => (r[column] ?? "").trim() !== "")?.[column] ?? "";
   const columnLabel = (value: string) => {
@@ -80,45 +83,43 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <SectionTitle icon={Columns3Icon} title="Colonne" color="var(--swatch-blue)" />
+        <SectionTitle icon={Columns3Icon} title={tr("Colonne")} color="var(--swatch-blue)" />
         <p className="mb-3 text-sm text-text-2">
-          {fileName ? <span className="font-semibold text-foreground">{fileName}</span> : "Testo incollato"} · controlla che ogni colonna sia quella giusta.
-        </p>
+          {fileName ? <span className="font-semibold text-foreground">{fileName}</span> : tr("Testo incollato")}{" "}{tr("· controlla che ogni colonna sia quella giusta.")}</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {PENSION_IMPORT_FIELDS.map((field) => (
             <LabeledSelect
               key={field}
-              label={PENSION_IMPORT_FIELD_LABELS[field]}
+              label={tr(PENSION_IMPORT_FIELD_LABELS[field])}
               value={mapping.columns[field] === undefined ? NONE : String(mapping.columns[field])}
               options={options}
               labelFor={columnLabel}
               onChange={(v) => setColumn(field, v)}
             />
           ))}
-          <LabeledSelect label="Formato delle date" value={mapping.dateOrder} options={DATE_ORDERS} labelFor={(v) => DATE_ORDER_LABELS[v]} onChange={(dateOrder) => onChange({ dateOrder })} />
-          <LabeledSelect label="Separatore dei decimali" value={mapping.decimal} options={DECIMAL_SEPARATORS} labelFor={(v) => DECIMAL_LABELS[v]} onChange={(decimal) => onChange({ decimal })} />
+          <LabeledSelect label={tr("Formato delle date")} value={mapping.dateOrder} options={DATE_ORDERS} labelFor={(v) => DATE_ORDER_LABELS[v]} onChange={(dateOrder) => onChange({ dateOrder })} />
+          <LabeledSelect label={tr("Separatore dei decimali")} value={mapping.decimal} options={DECIMAL_SEPARATORS} labelFor={(v) => DECIMAL_LABELS[v]} onChange={(decimal) => onChange({ decimal })} />
         </div>
       </section>
 
       <section>
-        <SectionTitle icon={TableIcon} title="Anteprima" color="var(--swatch-green)" />
+        <SectionTitle icon={TableIcon} title={tr("Anteprima")} color="var(--swatch-green)" />
         {missing.length > 0 ? (
-          <p className="text-sm text-neg">Indica quale colonna contiene: {missing.join(", ")}.</p>
+          <p className="text-sm text-neg">{tr("Indica quale colonna contiene:")}{" "}{missing.join(", ")}.</p>
         ) : (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-foreground">
-              <span className="font-semibold tabular-nums">{ok.length}</span> fotografie lette su {rows.length} righe
-              {problems.length > 0 ? `, ${problems.length} scartate` : ""}.
+              <span className="font-semibold tabular-nums">{ok.length}</span>{" "}{tr("fotografie lette su")}{" "}{rows.length}{" "}{tr("righe")}{problems.length > 0 ? tr(", {0} scartate", {0: problems.length}) : ""}.
             </p>
             {ok.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="text-text-2">
                     <tr className="border-b border-border">
-                      <th className="py-2 pr-2 font-normal">Riga</th>
-                      <th className="px-2 py-2 font-normal">Data</th>
-                      <th className="px-2 py-2 text-right font-normal">Contributi netti</th>
-                      <th className="py-2 pl-2 text-right font-normal">Controvalore</th>
+                      <th className="py-2 pr-2 font-normal">{tr("Riga")}</th>
+                      <th className="px-2 py-2 font-normal">{tr("Data")}</th>
+                      <th className="px-2 py-2 text-right font-normal">{tr("Contributi netti")}</th>
+                      <th className="py-2 pl-2 text-right font-normal">{tr("Controvalore")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -138,11 +139,10 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
               <ul className="flex flex-col gap-1 text-sm text-text-2">
                 {problems.slice(0, MAX_LISTED_PROBLEMS).map((row) => (
                   <li key={row.line} className="flex items-start gap-1.5">
-                    <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-neg" aria-hidden="true" />
-                    Riga {row.line}: {row.status === "error" ? row.message : ""}
+                    <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-neg" aria-hidden="true" />{tr("Riga")}{" "}{row.line}: {row.status === "error" ? row.message : ""}
                   </li>
                 ))}
-                {problems.length > MAX_LISTED_PROBLEMS ? <li>…e altre {problems.length - MAX_LISTED_PROBLEMS}</li> : null}
+                {problems.length > MAX_LISTED_PROBLEMS ? <li>{tr("…e altre")}{" "}{problems.length - MAX_LISTED_PROBLEMS}</li> : null}
               </ul>
             ) : null}
           </div>

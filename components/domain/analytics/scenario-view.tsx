@@ -12,7 +12,8 @@ import { track } from "@/lib/analytics";
 import type { AnalyticsAssumptions, UpdateAssumptionsInput } from "@/lib/analitiche/assumptions";
 import type { AnalyticsBase } from "@/lib/analitiche/base";
 import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
-import { resolvePlan, type AnalyticsPlan } from "@/lib/analitiche/plan";
+import { dataPeriodKind, type DataPeriod } from "@/lib/analitiche/period";
+import { cashflowFromData, resolvePlan, type AnalyticsPlan } from "@/lib/analitiche/plan";
 import { applyScenario, hasScenario, SCENARIO_FIELDS, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
 import { buildSimulationInput } from "@/lib/analitiche/simulation";
 import { summarizeCosts } from "@/lib/calc/costs";
@@ -22,8 +23,10 @@ import { ANALYTICS_QUESTIONS } from "./analytics-questions";
 import { money, pct } from "./analytics-format";
 import { AssumptionsPanel } from "./assumptions-panel";
 import { CostsSection } from "./costs-section";
+import { DataPeriodPicker } from "./data-period-picker";
 import { JourneySection } from "./journey-section";
 import { LastingSection } from "./lasting-section";
+import { periodPhrase } from "./period-text";
 import { lastingAnswer } from "./plain-answers";
 import { ScenarioControls } from "./scenario-controls";
 import { ScenarioHeadline } from "./scenario-headline";
@@ -38,6 +41,8 @@ export interface ScenarioViewProps {
   returnInfo: ExpectedReturnInfo;
   saving: boolean;
   saveError: string | null;
+  /** Arrivano i movimenti del periodo appena scelto. */
+  updatingPeriod: boolean;
   today: Date;
   onSaveAssumptions: (input: UpdateAssumptionsInput) => Promise<void>;
   onSaveTer: (terByInstrument: Record<string, number>) => Promise<void>;
@@ -47,7 +52,7 @@ const PANEL_ID = "analytics-view-panel";
 const VIEW_ICONS = { "dove-sono": TrendingUp, quando: CalendarClock, reggera: ShieldCheck, costi: Percent } as const;
 const VIEW_LABELS = { "dove-sono": "Strada fatta", quando: "Arrivo", reggera: "Regge", costi: "Costi" } as const;
 
-export function ScenarioView({ base, assumptions, plan, returnInfo, saving, saveError, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
+export function ScenarioView({ base, assumptions, plan, returnInfo, saving, saveError, updatingPeriod, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -89,11 +94,36 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
   const sectionData = { base, assumptions: scenarioAssumptions, plan: scenarioPlan, baseline: hasScenario(overrides) ? { assumptions, plan } : undefined };
   const deferredData = { ...sectionData, assumptions: deferred.assumptions, plan: deferred.plan };
   const question = (id: AnswerView["id"]) => ANALYTICS_QUESTIONS.find((q) => q.id === id)!;
+  const phrase = periodPhrase(assumptions.dataPeriod, base.cashflow.fromKey, base.cashflow.toKey);
+  const changePeriod = (dataPeriod: DataPeriod) => {
+    onSaveAssumptions({ dataPeriod })
+      .then(() => track("analytics_period_changed", { period: dataPeriodKind(dataPeriod) }))
+      .catch(() => undefined);
+  };
 
   return (
     <div className="flex flex-col gap-8">
       <ScenarioHeadline plan={scenarioPlan} baseline={plan} today={today} />
+      <DataPeriodPicker
+        period={assumptions.dataPeriod}
+        fromKey={base.cashflow.fromKey}
+        toKey={base.cashflow.toKey}
+        today={today}
+        updating={updatingPeriod}
+        saving={saving}
+        onChange={changePeriod}
+      />
       <ScenarioControls
+        period={assumptions.dataPeriod}
+        periodPhrase={phrase}
+        dataFigures={cashflowFromData(base)}
+        coveredMonths={base.cashflow.coveredMonths}
+        periodMonths={base.cashflow.months.length}
+        onUseData={(field) => {
+          onSaveAssumptions({ [field]: null })
+            .then(() => track("analytics_figure_reset_to_data", { field }))
+            .catch(() => undefined);
+        }}
         assumptions={assumptions}
         plan={plan}
         returnInfo={returnInfo}
@@ -153,6 +183,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
           </DialogHeader>
           <AssumptionsPanel
             assumptions={assumptions}
+            periodPhrase={phrase}
             plan={plan}
             returnInfo={returnInfo}
             currency={currency}

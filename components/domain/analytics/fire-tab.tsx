@@ -99,7 +99,7 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
         </div>
         <p className="text-sm text-muted-foreground">
           Con un risparmio di {money(savings, currency)} l&apos;anno e un rendimento reale del {pct(a.expectedReturn)}.{" "}
-          {plan.spendingSource === "dati" ? "La spesa viene dai tuoi ultimi 12 mesi. " : ""}
+          {plan.spendingSource === "dati" ? "La spesa viene dai tuoi movimenti del periodo scelto. " : ""}
           {lean !== null ? `Se vivessi solo con le spese Dovute e Saltuarie il numero scenderebbe a ${money(lean, currency)} («lean FIRE»).` : ""}
         </p>
       </AnalyticsCard>

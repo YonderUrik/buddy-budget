@@ -40,6 +40,16 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
 ];
 
+/** Le domande mostrate in home (e nel suo JSON-LD): le altre stanno nelle pagine di approfondimento e in `llms.txt`. */
+const HOME_FAQ_QUESTIONS = new Set([
+  "BuddyBudget è gratuito?",
+  "Come si collega la banca?",
+  "Calcola le tasse italiane sugli investimenti?",
+  "Dove sono i miei dati e posso portarli via?",
+  "Funziona su telefono?",
+]);
+export const HOME_FAQ: readonly FaqItem[] = FAQ.filter((q) => HOME_FAQ_QUESTIONS.has(q.question));
+
 /** Destinazioni dei pulsanti verso l'app. */
 /** Link verso l'app, con UTM per distinguere in Umami gli arrivi dalla landing. */
 const LOGIN_URL = `${APP_URL}/login?utm_source=landing&utm_medium=cta`;
@@ -49,7 +59,7 @@ export const APP_LINKS = { signup: LOGIN_URL, login: LOGIN_URL } as const;
 export const SECURITY = {
   kicker: "Sicurezza e privacy",
   title: "Cosa vede BuddyBudget dei tuoi dati, e cosa no.",
-  intro: "Le credenziali della banca restano alla banca: verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
+  intro: "Le credenziali della banca restano alla banca: verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura.",
   /** Fatti con la loro fonte ufficiale, sotto il diagramma. */
   facts: [
     { text: "Il collegamento lo fa GoCardless, autorizzata dalla vigilanza bancaria francese", source: "https://gocardless.com/legal/bank-account-data/" },

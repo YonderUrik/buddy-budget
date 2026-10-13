@@ -15,6 +15,7 @@ export const CONTENT_PATHS = {
   funzioni: "/funzioni",
   schermate: "/schermate",
   sicurezza: "/sicurezza",
+  tasse: "/tasse-italiane",
 } as const;
 
 export interface Source {

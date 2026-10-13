@@ -12,9 +12,9 @@ import { TrackedSection } from "./tracked-section";
 
 /**
  * «L'app, area per area»: un indice delle aree a sinistra (sotto, a griglia, sul telefono) e a destra il foglio di prima,
- * cosa fa l'app, la schermata intera (mai ritagliata) e la scheda tecnica. Tutte le schede sono nell'HTML (indicizzabili); si vede solo quella scelta. Invia `tour_tab_selected`.
+ * cosa fa l'app, la schermata intera (mai ritagliata) e, con `showSpecs`, la scheda tecnica (in home solo per le aree senza schermata). Tutte le schede sono nell'HTML (indicizzabili); si vede solo quella scelta. Invia `tour_tab_selected`.
  */
-export function Tour({ content = TOUR }: { content?: typeof TOUR }) {
+export function Tour({ content = TOUR, showSpecs = false }: { content?: typeof TOUR; showSpecs?: boolean }) {
   const [active, setActive] = useState<TourId>(content.tabs[0].id);
   const choose = (id: TourId) => {
     setActive(id);
@@ -61,14 +61,15 @@ export function Tour({ content = TOUR }: { content?: typeof TOUR }) {
                   </div>
                 </div>
                 {"shot" in t && t.shot ? <AppShot id={t.shot} className="tour-shot" /> : null}
-                <dl className="tour-specs">
+                {/* In home la scheda tecnica resta solo dove è il contenuto (senza schermata); il resto sta in /funzioni. */}
+                {(!("shot" in t && t.shot) || showSpecs) && <dl className="tour-specs">
                   {t.specs.map(([label, text]) => (
                     <div key={label}>
                       <dt>{label}</dt>
                       <dd>{text}</dd>
                     </div>
                   ))}
-                </dl>
+                </dl>}
               </div>
             ))}
           </div>

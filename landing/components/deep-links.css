@@ -1,0 +1,9 @@
+/* «Per approfondire»: quattro rimandi alle pagine interne. */
+.deep-grid { list-style: none; margin: 32px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.deep-card { display: grid; gap: 8px; align-content: start; height: 100%; padding: 20px; text-decoration: none; color: var(--ink2); transition: border-color 0.15s; }
+.deep-card:hover, .deep-card:focus-visible { border-color: var(--accent); }
+.deep-card b { color: var(--ink); font: 600 17px var(--f-h); }
+.deep-card span:last-child { font-size: 15px; line-height: 1.5; }
+.deep-ic { width: 36px; height: 36px; display: inline-grid; place-items: center; border-radius: var(--r-sm); background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); }
+@media (max-width: 1000px) { .deep-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .deep-grid { grid-template-columns: minmax(0, 1fr); } }

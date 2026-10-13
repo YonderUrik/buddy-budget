@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Riga del foglio «Personalizza»: icona, nome (si tocca per rinominarlo), descrizione e interruttore. */
 
@@ -22,7 +21,6 @@ export interface CategorySetupRowProps {
 }
 
 export function CategorySetupRow({ item, onToggle, onRename, optionalLabel = "Facoltativa", renameLabel = "Rinomina" }: CategorySetupRowProps) {
-  const { t: tr } = useLocalization();
   const [editing, setEditing] = React.useState(false);
   const [draft, setDraft] = React.useState(item.name);
   const [error, setError] = React.useState<string | null>(null);
@@ -60,12 +58,12 @@ export function CategorySetupRow({ item, onToggle, onRename, optionalLabel = "Fa
               }
               if (event.key === "Escape") close();
             }}
-            aria-label={tr("Nome di {0}", {0: item.name})}
+            aria-label={`Nome di ${item.name}`}
             aria-invalid={Boolean(error)}
             className="h-10"
           />
         ) : null}
-        {editing && error && <p className="mt-1 text-xs text-neg">{tr(error)}</p>}
+        {editing && error && <p className="mt-1 text-xs text-neg">{error}</p>}
         {!editing && (
           <button
             type="button"
@@ -79,11 +77,11 @@ export function CategorySetupRow({ item, onToggle, onRename, optionalLabel = "Fa
                 <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-normal text-primary">{optionalLabel}</span>
               )}
             </span>
-            {item.description && <span className="max-w-full truncate text-xs text-text-3">{tr(item.description)}</span>}
+            {item.description && <span className="max-w-full truncate text-xs text-text-3">{item.description}</span>}
           </button>
         )}
       </div>
-      <Switch checked={item.enabled} onCheckedChange={onToggle} aria-label={tr("Usa {0}", {0: item.name})} />
+      <Switch checked={item.enabled} onCheckedChange={onToggle} aria-label={`Usa ${item.name}`} />
     </li>
   );
 }

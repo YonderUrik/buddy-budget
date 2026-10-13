@@ -1,7 +1,3 @@
-"use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * StatCard
  *
@@ -16,7 +12,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -64,17 +60,13 @@ export function StatCard({
   valueOverride,
   tone = "auto",
 }: StatCardProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const resolvedTone = tone === "auto" ? (value < 0 ? "neg" : "pos") : tone;
 
   return (
     <Card className={cn(className)}>
       <CardHeader>
         <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {tr(label)}
+          {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -87,7 +79,7 @@ export function StatCard({
           {valueOverride ?? formatCurrency(value, currency, { maximumFractionDigits: 0 })}
         </p>
         {subtitle ? (
-          <p className="mt-1 text-sm text-muted-foreground">{tr(subtitle)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
         ) : null}
       </CardContent>
     </Card>

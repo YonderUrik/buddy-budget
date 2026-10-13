@@ -112,12 +112,3 @@ it("shows each switch's effect alone and ignores an unavailable impact", () => {
   expect(effects.taxes).toBeCloseTo(5.5);
   expect(reinvestmentEffects({ ...impact, available: false })).toEqual({ fees: 0, taxes: 0 });
 });
-
-it("without a country tax model, keeps recorded costs and taxes but adds no estimates", () => {
-  const params = inputs([tx({ taxes: "5" }), tx({ id: "sale", type: "vendita", date: "2026-02-01", quantity: "5", price: "110", fees: "2", taxes: "3" })]);
-  const result = computeImpact(params, false, null);
-  expect(result.fees).toBe(12);
-  expect(result.taxes).toBe(8);
-  expect(result.estimatedTaxes).toBe(0);
-  expect(computeCostImpact(params, false).estimatedTaxes).toBeGreaterThan(0);
-});

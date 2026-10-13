@@ -1,5 +1,3 @@
-import { getLocaleProfile } from "@/lib/localization/server";
-import { LocalizationProvider } from "@/lib/localization/provider";
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, Space_Grotesk, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -58,28 +56,27 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const profile = await getLocaleProfile();
   return (
     <html
-      lang={profile.language}
+      lang="it"
       className={`${hankenGrotesk.variable} ${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="h-full bg-background text-foreground font-sans">
         <Script src={UMAMI_SCRIPT_SRC} data-website-id={UMAMI_WEBSITE_ID} strategy="afterInteractive" />
-        <LocalizationProvider profile={profile}><QueryProvider>
+        <QueryProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <MotionProvider>
               {children}
               <Toaster />
             </MotionProvider>
           </ThemeProvider>
-        </QueryProvider></LocalizationProvider>
+        </QueryProvider>
         <PwaInstallTracker />
       </body>
     </html>

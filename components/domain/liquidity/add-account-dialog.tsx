@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog «Nuovo conto»: parte da una scelta (collega la banca, conto manuale, importa un file) e porta al passo giusto,
@@ -36,7 +35,6 @@ interface ChoiceProps {
 }
 
 function ChoiceBody({ icon: Icon, color, title, description, badge, unavailable = false }: ChoiceProps) {
-  const { t: tr } = useLocalization();
   return (
     <>
       <span className="grid size-11 shrink-0 place-items-center rounded-full" style={{ color, backgroundColor: `color-mix(in oklab, ${color} 16%, transparent)` }} aria-hidden="true">
@@ -44,10 +42,10 @@ function ChoiceBody({ icon: Icon, color, title, description, badge, unavailable 
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          {tr(title)}
+          {title}
           {badge ? <span className={unavailable ? "rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground" : "rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"}>{badge}</span> : null}
         </span>
-        <span className="text-sm text-muted-foreground">{tr(description)}</span>
+        <span className="text-sm text-muted-foreground">{description}</span>
       </span>
       {unavailable ? null : <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
     </>
@@ -65,7 +63,6 @@ export interface AddAccountDialogProps {
 }
 
 export function AddAccountDialog({ open, onOpenChange, currency, renew = false }: AddAccountDialogProps) {
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FormDialogContent>
@@ -76,7 +73,6 @@ export function AddAccountDialog({ open, onOpenChange, currency, renew = false }
 }
 
 function AddAccountSession({ currency, renew, onClose }: { currency: string; renew: boolean; onClose: () => void }) {
-  const { t: tr } = useLocalization();
   const [view, setView] = React.useState<AddAccountView>(renew ? "banca" : "scelta");
   const copy = VIEW_COPY[view];
   // Il rinnovo non passa da qui: per la banca già collegata resta possibile anche a posti finiti (lo decide il server).
@@ -95,26 +91,27 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
   };
   return (
     <>
-            <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? tr("Rinnova il collegamento") : copy.title} description={renew && view === "banca" ? tr("Scegli di nuovo la tua banca per rinnovare il consenso.") : copy.description} />
+            <PanelDialogHeader className="pr-10" icon={view === "manuale" ? PencilLineIcon : LandmarkIcon} title={renew ? "Rinnova il collegamento" : copy.title} description={renew && view === "banca" ? "Scegli di nuovo la tua banca per rinnovare il consenso." : copy.description} />
       {view === "scelta" ? (
         <div className="flex flex-col gap-3">
           <button type="button" className={CHOICE_CLASS} onClick={() => go("banca")} disabled={unavailable !== null}>
             {unavailable ? (
-              <ChoiceBody icon={ZapIcon} color="var(--text-3)" title={tr("Collega la tua banca")} badge={unavailable.badge} description={tr(unavailable.description)} unavailable />
+              <ChoiceBody icon={ZapIcon} color="var(--text-3)" title="Collega la tua banca" badge={unavailable.badge} description={unavailable.description} unavailable />
             ) : (
-              <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} badge="Automatico" description={tr("Saldi e movimenti si aggiornano da soli, in sola lettura.")} />
+              <ChoiceBody icon={ZapIcon} color="var(--primary)" title="Collega la tua banca" badge="Automatico" description="Saldi e movimenti si aggiornano da soli, in sola lettura." />
             )}
           </button>
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>
-            <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title={tr("Conto manuale")} description={tr("Per contanti, carte prepagate o banche che non si collegano.")} />
+            <ChoiceBody icon={PencilLineIcon} color="var(--swatch-indigo)" title="Conto manuale" description="Per contanti, carte prepagate o banche che non si collegano." />
           </button>
           <Link href="/importazioni" className={CHOICE_CLASS} onClick={() => { track("account_add_path_chosen", { path: "importa" }); onClose(); }}>
-            <ChoiceBody icon={FileSpreadsheetIcon} color="var(--swatch-amber)" title={tr("Importa un file CSV o Excel")} description={tr("Carica l'estratto conto: lo leggiamo e crei il conto con i suoi movimenti.")} />
+            <ChoiceBody icon={FileSpreadsheetIcon} color="var(--swatch-amber)" title="Importa un file CSV o Excel" description="Carica l'estratto conto: lo leggiamo e crei il conto con i suoi movimenti." />
           </Link>
         </div>
       ) : view === "banca" ? (
         <button type="button" onClick={() => setView("scelta")} className="-mt-2 inline-flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground sm:min-h-9">
-          <ArrowLeftIcon className="size-4" aria-hidden="true" />{" "}{tr("Cambia modo")}</button>
+          <ArrowLeftIcon className="size-4" aria-hidden="true" /> Cambia modo
+        </button>
       ) : null}
       {view === "banca" ? <ConnectBankFlow onChooseManual={() => setView("manuale")} /> : null}
       {view === "manuale" ? <AddAccountForm currency={currency} onSuccess={onClose} onExit={() => setView("scelta")} /> : null}

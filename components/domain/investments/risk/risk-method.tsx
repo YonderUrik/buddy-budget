@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** «Come è calcolato» per chi vuole approfondire: i passaggi del calcolo del rischio in parole semplici, con le soglie vere del codice. */
 
 import { MIN_RELATION_OBSERVATIONS, MIN_VOLATILITY_OBSERVATIONS } from "@/lib/calc/risk";
@@ -41,16 +39,15 @@ const STEPS: Step[] = [
 ];
 
 export function RiskMethod() {
-  const { t: tr } = useLocalization();
   return (
     <dl className="flex flex-col gap-3">
       {STEPS.map((step) => (
         <div key={step.title} className="flex flex-col gap-0.5">
-          <dt className="text-sm font-medium text-foreground">{tr(step.title)}</dt>
-          <dd className="text-sm leading-snug text-muted-foreground">{tr(step.body)}</dd>
+          <dt className="text-sm font-medium text-foreground">{step.title}</dt>
+          <dd className="text-sm leading-snug text-muted-foreground">{step.body}</dd>
         </div>
       ))}
-      <p className="text-xs text-muted-foreground">{tr("Il passato non dice come andrà in futuro: con meno di un anno di dati i numeri sono solo indicativi.")}</p>
+      <p className="text-xs text-muted-foreground">Il passato non dice come andrà in futuro: con meno di un anno di dati i numeri sono solo indicativi.</p>
     </dl>
   );
 }

@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** "Per settore": elenco ordinato con un'icona per ogni settore. */
 
 import type { CompositionSlice } from "@/lib/calc/investments";
@@ -15,15 +13,14 @@ export interface SectorSectionProps {
 }
 
 export function SectorSection({ slices, currency, insight }: SectorSectionProps) {
-  const { t: tr } = useLocalization();
   return (
-    <section className="flex flex-col gap-3" aria-label={tr("Per settore")}>
+    <section className="flex flex-col gap-3" aria-label="Per settore">
       <div>
-        <h3 className="text-sm font-medium text-foreground">{tr("Per settore")}</h3>
+        <h3 className="text-sm font-medium text-foreground">Per settore</h3>
         {insight ? <p className="text-sm text-muted-foreground">{insight}</p> : null}
       </div>
       <ExposureRows
-        label={tr("Settori")}
+        label="Settori"
         slices={slices}
         currency={currency}
         labelFor={(key) => SECTOR_LABELS[key as SectorKey] ?? key}

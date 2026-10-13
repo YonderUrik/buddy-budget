@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card "Da registrare": dividendi e cedole che probabilmente hai incassato ma non hai registrato, trovati confrontando
@@ -12,7 +9,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import type { Instrument } from "@/lib/db/schema/investments";
-
+import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import type { MissingIncome } from "@/lib/investments/dividends";
 import { CircleAlertIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
@@ -41,7 +38,9 @@ export interface MissingIncomeCardProps {
   todayKey: string;
 }
 
-
+function quantityText(value: number): string {
+  return value.toLocaleString("it-IT", { maximumFractionDigits: 4 });
+}
 
 export function MissingIncomeCard({
   missing,
@@ -53,13 +52,6 @@ export function MissingIncomeCard({
   dismissingKey,
   todayKey,
 }: MissingIncomeCardProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
-  function quantityText(value: number): string {
-  return value.toLocaleString(formattingLocale, { maximumFractionDigits: 4 });
-}
-
-  const { t: tr } = useLocalization();
   const [showAll, setShowAll] = React.useState(false);
   const oldBefore = monthsAgoKey(todayKey, OLD_MISSING_INCOME_MONTHS);
   const old = missing.filter((m) => m.date < oldBefore);
@@ -67,11 +59,12 @@ export function MissingIncomeCard({
   const count = missing.length;
 
   return (
-    <PanelSection icon={CircleAlertIcon} title={tr("Da registrare")} color="var(--neg)">
+    <PanelSection icon={CircleAlertIcon} title="Da registrare" color="var(--neg)">
       <div className="flex flex-col gap-3">
         <p className="max-w-prose text-sm text-muted-foreground">
-          {count === 1 ? tr("Un provento") : tr("{0} proventi", {0: count})}
-          {tr(" che probabilmente hai incassato: avevi le quote il giorno dello stacco, ma non c'è")}{" "}{tr("un dividendo o una cedola registrati vicino a quella data. Controlla l'importo netto sull'estratto del broker.")}</p>
+          {count === 1 ? "Un provento" : `${count} proventi`}
+          {" che probabilmente hai incassato: avevi le quote il giorno dello stacco, ma non c'è"} un dividendo o una cedola registrati vicino a quella data. Controlla l&apos;importo netto sull&apos;estratto del broker.
+        </p>
         <ul className="flex flex-col divide-y divide-border">
           {shown.map((item) => {
             const instrument = instrumentsById.get(item.instrumentId);
@@ -81,18 +74,23 @@ export function MissingIncomeCard({
                 <div className="min-w-0 text-sm">
                   <p className="truncate font-medium text-foreground">{instrument?.name ?? "Strumento"}</p>
                   <p className="text-muted-foreground">
-                    {item.kind === "cedola" ? tr("Cedola") : tr("Stacco")}{" "}{tr("del")}{" "}{formatDateWithYear(item.date)} · {quantityText(item.quantity)}{" "}
-                    {item.kind === "cedola" ? tr("di nominale") : tr("quote")}
+                    {item.kind === "cedola" ? "Cedola" : "Stacco"} del {formatDateWithYear(item.date)} · {quantityText(item.quantity)}{" "}
+                    {item.kind === "cedola" ? "di nominale" : "quote"}
                   </p>
                   <p className="tabular-nums text-foreground">
-                    {formatCurrency(item.gross, instrument?.currency ?? currency)}{" "}{tr("lordi")}{item.estimatedTax !== null ? (
-                      <span className="text-muted-foreground">{" "}{tr("· ritenuta stimata")}{" "}{formatCurrency(item.estimatedTax, currency)}</span>
+                    {formatCurrency(item.gross, instrument?.currency ?? currency)} lordi
+                    {item.estimatedTax !== null ? (
+                      <span className="text-muted-foreground"> · ritenuta stimata {formatCurrency(item.estimatedTax, currency)}</span>
                     ) : null}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <Button size="sm" onClick={() => onRegister(item)}>{tr("Registra")}</Button>
-                  <Button size="sm" variant="ghost" disabled={dismissingKey === key} onClick={() => onDismiss(item)}>{tr("Ignora")}</Button>
+                  <Button size="sm" onClick={() => onRegister(item)}>
+                    Registra
+                  </Button>
+                  <Button size="sm" variant="ghost" disabled={dismissingKey === key} onClick={() => onDismiss(item)}>
+                    Ignora
+                  </Button>
                 </div>
               </li>
             );
@@ -101,11 +99,13 @@ export function MissingIncomeCard({
         <div className="flex flex-wrap gap-2">
           {count > MISSING_INCOME_LIMIT ? (
             <Button variant="ghost" size="sm" onClick={() => setShowAll((v) => !v)}>
-              {showAll ? tr("Mostra meno") : tr("Mostra tutte ({0})", {0: count})}
+              {showAll ? "Mostra meno" : `Mostra tutte (${count})`}
             </Button>
           ) : null}
           {old.length > 1 ? (
-            <Button variant="ghost" size="sm" disabled={dismissingKey !== null} onClick={() => onDismissOld(old)}>{tr("Ignora le")}{" "}{old.length}{" "}{tr("più vecchie di un anno")}</Button>
+            <Button variant="ghost" size="sm" disabled={dismissingKey !== null} onClick={() => onDismissOld(old)}>
+              Ignora le {old.length} più vecchie di un anno
+            </Button>
           ) : null}
         </div>
       </div>

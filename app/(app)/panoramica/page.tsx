@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Pagina Panoramica: patrimonio netto nel tempo, composizione per classe di asset e riepilogo del mese corrente. */
 
@@ -38,7 +35,7 @@ import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";
-
+import { formatCurrency, formatDateWithYear } from "@/lib/format";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { NEW_ACCOUNT_HREF } from "@/lib/start";
@@ -53,25 +50,19 @@ const INVESTMENTS_PERIOD: NetWorthPeriod = "1mese";
 /** Porta in Conti e vi apre subito il flusso di rinnovo (il valore dice da dove si arriva). */
 const RENEW_PATH = "/liquidita/conti?rinnova=";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
-
+const MONTH_NAME_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "long" });
 /** Dove porta ogni tessera: il valore va nell'evento `overview_tile_clicked`. */
 const TILE_MONTH = "mese";
 const TILE_DUES = "scadenze";
 const TILE_INVESTMENTS = "investimenti";
-
-
-export default function PanoramicaPage() {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
-  const MONTH_NAME_FORMAT = new Intl.DateTimeFormat(formattingLocale, { month: "long" });
-  const HEADER_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, {
+const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric",
 });
 
-  const { t: tr } = useLocalization();
+export default function PanoramicaPage() {
   const { data: session } = authClient.useSession();
   // Il nome arriva dalla sessione nel browser: lo mostriamo dopo l'idratazione, così l'HTML del server coincide.
   const hydrated = useHydrated();
@@ -173,7 +164,7 @@ export default function PanoramicaPage() {
             {startStatus ? (
               <StartChecklistSection status={startStatus} forceVisible />
             ) : (
-              <EmptyState icon={WalletIcon} title={tr("Nessun conto ancora")} description={tr("Aggiungi un conto per vedere il tuo patrimonio netto.")} primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
+              <EmptyState icon={WalletIcon} title="Nessun conto ancora" description="Aggiungi un conto per vedere il tuo patrimonio netto." primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
             )}
           </div>
           <DemoOfferSection className="lg:col-span-2" />
@@ -192,7 +183,7 @@ export default function PanoramicaPage() {
           />
           <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
             <div className="flex flex-col gap-10 lg:col-span-3">
-              <NetWorthCompositionRow items={compositionItems} currency={currency} title={tr("Dove sta il patrimonio")}
+              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio"
                 className="bg-transparent p-0 ring-0"
                 onSliceSelect={(key) => {
                   if (key === "liquidita" || key === "investimenti" || key === "previdenza") track("overview_composition_slice_selected", { assetClass: key });

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Mini form "Non lo trovi?" del selettore strumenti. Un'obbligazione con ISIN valido si crea "solo ISIN" (prezzi da
@@ -23,7 +22,6 @@ export interface InstrumentManualFormProps {
 }
 
 export function InstrumentManualForm({ isin, defaultCurrency, pending, onCreate }: InstrumentManualFormProps) {
-  const { t: tr } = useLocalization();
   const [name, setName] = React.useState("");
   const [type, setType] = React.useState<InstrumentType>(isin?.startsWith("IT") ? "obbligazione" : "fondo");
   const [currency, setCurrency] = React.useState(defaultCurrency);
@@ -42,10 +40,10 @@ export function InstrumentManualForm({ isin, defaultCurrency, pending, onCreate 
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-2">
-      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={tr("Nome (es. BTP Valore 2029)")} aria-label={tr("Nome dello strumento")} />
+      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome (es. BTP Valore 2029)" aria-label="Nome dello strumento" />
       <div className="flex gap-2">
         <Select value={type} onValueChange={(value) => value && setType(value as InstrumentType)}>
-          <SelectTrigger className="flex-1" aria-label={tr("Tipo di strumento")}>
+          <SelectTrigger className="flex-1" aria-label="Tipo di strumento">
             <SelectValue>{(value: string | null) => (value ? INSTRUMENT_TYPE_SINGULAR[value as InstrumentType] : "")}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -60,16 +58,16 @@ export function InstrumentManualForm({ isin, defaultCurrency, pending, onCreate 
           value={currency}
           onChange={(e) => setCurrency(e.target.value.toUpperCase().slice(0, 3))}
           className="w-20"
-          aria-label={tr("Valuta (codice ISO, es. EUR)")}
+          aria-label="Valuta (codice ISO, es. EUR)"
         />
       </div>
       <p className="text-xs text-muted-foreground">
         {fromBorsaItaliana
-          ? tr("I prezzi arriveranno da Borsa Italiana (ISIN {0}).", {0: isin})
-          : tr("Strumento visibile solo a te: i prezzi li inserisci a mano.")}
+          ? `I prezzi arriveranno da Borsa Italiana (ISIN ${isin}).`
+          : "Strumento visibile solo a te: i prezzi li inserisci a mano."}
       </p>
       <Button type="submit" size="sm" disabled={pending || !name.trim() || !validCurrency}>
-        {pending ? tr("Aggiunta…") : tr("Aggiungi strumento")}
+        {pending ? "Aggiunta…" : "Aggiungi strumento"}
       </Button>
     </form>
   );

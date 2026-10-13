@@ -1,14 +1,11 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Stato di caricamento di ogni schermata dell'app: appare subito al cambio pagina, prima che arrivino codice e dati della
  * nuova route, con la stessa larghezza e un'altezza simile al contenuto per non far saltare la pagina.
  */
 export default function AppLoading() {
-  const { t: tr } = useLocalization();
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-4 sm:p-6" aria-busy="true" aria-live="polite">
-      <span className="sr-only">{tr("Caricamento in corso")}</span>
+      <span className="sr-only">Caricamento in corso</span>
       <div className="flex flex-col gap-2">
         <div className="h-8 w-48 animate-pulse rounded-md bg-muted" />
         <div className="h-4 w-72 max-w-full animate-pulse rounded-md bg-muted" />

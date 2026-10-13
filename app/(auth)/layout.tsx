@@ -1,5 +1,3 @@
-import { getTranslator } from "@/lib/localization/server";
-import { LanguagePicker } from "@/components/domain/auth/language-picker";
 import { AuthSheet, BrandLink } from "@/components/domain/auth";
 import { LANDING_URL } from "@/lib/legal";
 
@@ -18,11 +16,9 @@ const SHEET_NOTE = (
 const ASIDE_HIDDEN_ON = ["/onboarding"] as const;
 
 /** Layout delle pagine di autenticazione/onboarding: un foglio di calcolo con il form nella colonna B e l'esempio animato a destra (non nell'onboarding). */
-export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  const tr = await getTranslator();
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthSheet header={<BrandLink name={BRAND_NAME} className="text-xl" showBackLink />} note={tr(SHEET_NOTE)} asideHiddenOn={ASIDE_HIDDEN_ON}>
-      <LanguagePicker />
+    <AuthSheet header={<BrandLink name={BRAND_NAME} className="text-xl" showBackLink />} note={SHEET_NOTE} asideHiddenOn={ASIDE_HIDDEN_ON}>
       {children}
     </AuthSheet>
   );

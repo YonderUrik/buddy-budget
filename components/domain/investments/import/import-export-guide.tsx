@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Istruzioni per ottenere il file da un provider: passi numerati e, sotto, cosa viene importato e cosa no. */
 
 import type { ImportProviderInfo } from "@/lib/investments/import/providers";
@@ -11,10 +9,9 @@ export interface ImportExportGuideProps {
 }
 
 export function ImportExportGuide({ provider, children }: ImportExportGuideProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm font-medium text-foreground">{tr("Come ottenere il file da")}{" "}{provider.name}</p>
+      <p className="text-sm font-medium text-foreground">Come ottenere il file da {provider.name}</p>
       <ol className="flex flex-col gap-2">
         {provider.exportSteps.map((step, i) => (
           <li key={step} className="flex gap-2.5 text-sm text-muted-foreground">

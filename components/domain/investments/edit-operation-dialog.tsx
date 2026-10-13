@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Dialog "Modifica operazione": riusa il form di registrazione con i valori salvati. Lo strumento non si cambia. */
 
@@ -20,11 +19,10 @@ export interface EditOperationDialogProps {
 }
 
 export function EditOperationDialog({ transaction, instrument, currency, onClose }: EditOperationDialogProps) {
-  const { t: tr } = useLocalization();
   return (
     <Dialog open={transaction !== null} onOpenChange={(open) => !open && onClose()}>
       <FormDialogContent>
-        <PanelDialogHeader icon={PencilIcon} title={tr("Modifica operazione")} description={tr("Lo strumento non si cambia: per un altro strumento elimina e registra di nuovo.")} color="var(--swatch-indigo)" />
+        <PanelDialogHeader icon={PencilIcon} title="Modifica operazione" description="Lo strumento non si cambia: per un altro strumento elimina e registra di nuovo." color="var(--swatch-indigo)" />
         {transaction ? (
           <RegisterOperationForm
             key={transaction.id}

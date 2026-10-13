@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Selettore periodo Settimana/Mese/3 mesi/Anno per la schermata Transazioni. */
 
@@ -23,6 +22,5 @@ export interface ExpensesPeriodSelectorProps {
 }
 
 export function ExpensesPeriodSelector({ value, onChange, stretch, className }: ExpensesPeriodSelectorProps) {
-  const { t: tr } = useLocalization();
-  return <SegmentedControl options={PERIOD_OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel={tr("Periodo")} />;
+  return <SegmentedControl options={PERIOD_OPTIONS} value={value} onChange={onChange} stretch={stretch} className={className} ariaLabel="Periodo" />;
 }

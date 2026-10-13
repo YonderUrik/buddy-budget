@@ -1,4 +1,3 @@
-import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { readJson, sessionOrUnauthorized } from "@/lib/account/route-session";
 import { loadAssumptions, saveAssumptions } from "@/lib/analitiche/data";
@@ -37,5 +36,5 @@ async function handlePut(request: NextRequest) {
   return Response.json({ assumptions: next, walkthroughSeen: current.walkthroughSeen });
 }
 
-export const GET = withRoute("analytics.assumptions.get", withCountryGuard(handleGet));
-export const PUT = withRoute("analytics.assumptions.update", withCountryGuard(handlePut));
+export const GET = withRoute("analytics.assumptions.get", handleGet);
+export const PUT = withRoute("analytics.assumptions.update", handlePut);

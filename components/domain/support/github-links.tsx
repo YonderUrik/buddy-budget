@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Collegamenti al repository open source: segnalare su GitHub, vedere cosa è già aperto, novità e sicurezza. */
 
@@ -22,12 +21,11 @@ export interface GithubLinksProps {
 }
 
 export function GithubLinks({ context }: GithubLinksProps) {
-  const { t: tr } = useLocalization();
   const links: HelpLink[] = [
-    { id: "issue", label: tr("Apri una issue su GitHub"), hint: tr("Pubblica: per problemi e idee senza dati personali."), href: githubIssueUrl("problema", context) },
-    { id: "issue_aperte", label: tr("Vedi le segnalazioni aperte"), hint: tr("Controlla se qualcuno ha già scritto la stessa cosa."), href: `${REPO_URL}/issues` },
-    { id: "novita", label: tr("Novità e correzioni"), hint: tr("Cosa è cambiato in ogni versione."), href: `${REPO_URL}/releases` },
-    { id: "sicurezza", label: tr("Segnala una vulnerabilità"), hint: tr("In privato, mai in una issue pubblica."), href: `${REPO_URL}/security/policy` },
+    { id: "issue", label: "Apri una issue su GitHub", hint: "Pubblica: per problemi e idee senza dati personali.", href: githubIssueUrl("problema", context) },
+    { id: "issue_aperte", label: "Vedi le segnalazioni aperte", hint: "Controlla se qualcuno ha già scritto la stessa cosa.", href: `${REPO_URL}/issues` },
+    { id: "novita", label: "Novità e correzioni", hint: "Cosa è cambiato in ogni versione.", href: `${REPO_URL}/releases` },
+    { id: "sicurezza", label: "Segnala una vulnerabilità", hint: "In privato, mai in una issue pubblica.", href: `${REPO_URL}/security/policy` },
   ];
   return (
     <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -42,11 +40,11 @@ export function GithubLinks({ context }: GithubLinksProps) {
           >
             <span className="flex items-center gap-1.5 text-sm font-medium text-foreground group-hover:underline">
               {link.id === "issue" && <GithubIcon className="size-4" />}
-              {tr(link.label)}
+              {link.label}
               <ExternalLink className="size-3.5 text-muted-foreground" aria-hidden="true" />
-              <span className="sr-only">{tr("(si apre in una nuova scheda)")}</span>
+              <span className="sr-only">(si apre in una nuova scheda)</span>
             </span>
-            <span className="text-xs text-muted-foreground">{tr(link.hint)}</span>
+            <span className="text-xs text-muted-foreground">{link.hint}</span>
           </a>
         </li>
       ))}

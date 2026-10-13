@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Importazioni fatte, nel dialog «Importazioni» dell'intestazione di Investimenti: un elenco chiuso di default (per broker, con
@@ -32,7 +31,6 @@ async function personalRequest(id: string, token?: string): Promise<DeletionPrev
 
 /** Importazioni fatte e loro gestione; per i rendiconti dei broker l'eliminazione include i caricamenti successivi che ne dipendono. */
 export function ImportManagement({ embedded = false }: { embedded?: boolean } = {}) {
-  const { t: tr } = useLocalization();
   const query = useBrokerStatementsQuery();
   const personal = usePersonalImportsQuery();
   const client = useQueryClient();
@@ -74,28 +72,29 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
   const Shell = embedded ? EmbeddedShell : PanelShell;
   return (
     <Shell onImport={openImport}>
-      {loading ? <p role="status" className="text-sm text-muted-foreground">{tr("Caricamento importazioni…")}</p> : null}
-      {query.isError ? <p role="alert" className="text-sm text-destructive">{tr("Non riesco a leggere i rendiconti.")}{" "}<button type="button" className="font-medium underline" onClick={() => query.refetch()}>{tr("Riprova")}</button></p> : null}
-      {personal.isError ? <p role="alert" className="text-sm text-destructive">{tr("Non riesco a leggere i CSV personali.")}{" "}<button type="button" className="font-medium underline" onClick={() => personal.refetch()}>{tr("Riprova")}</button></p> : null}
+      {loading ? <p role="status" className="text-sm text-muted-foreground">Caricamento importazioni…</p> : null}
+      {query.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i rendiconti. <button type="button" className="font-medium underline" onClick={() => query.refetch()}>Riprova</button></p> : null}
+      {personal.isError ? <p role="alert" className="text-sm text-destructive">Non riesco a leggere i CSV personali. <button type="button" className="font-medium underline" onClick={() => personal.refetch()}>Riprova</button></p> : null}
       {!loading && !failed && history.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{tr("Non hai ancora importato nessun file: con «Importa un file» carichi il rendiconto del tuo broker.")}</p>
+        <p className="text-sm text-muted-foreground">Non hai ancora importato nessun file: con «Importa un file» carichi il rendiconto del tuo broker.</p>
       ) : null}
-      {deletionPreview.isPending ? <p role="status" className="text-sm text-muted-foreground">{tr("Verifico cosa verrebbe eliminato…")}</p> : null}
-      {deletionPreview.error ? <p role="alert" className="text-sm text-destructive">{tr(deletionPreview.error.message)}</p> : null}
-      {(deletion.isSuccess && !selection) || personalDeletion.isSuccess ? <p role="status" className="text-sm text-foreground">{tr("Importazione eliminata. Saldi e posizioni sono aggiornati.")}</p> : null}
+      {deletionPreview.isPending ? <p role="status" className="text-sm text-muted-foreground">Verifico cosa verrebbe eliminato…</p> : null}
+      {deletionPreview.error ? <p role="alert" className="text-sm text-destructive">{deletionPreview.error.message}</p> : null}
+      {(deletion.isSuccess && !selection) || personalDeletion.isSuccess ? <p role="status" className="text-sm text-foreground">Importazione eliminata. Saldi e posizioni sono aggiornati.</p> : null}
 
       {history.length > 0 ? (
-        <Disclosure bare title={tr("Vedi e gestisci i file caricati")} summary={summary}>
+        <Disclosure bare title="Vedi e gestisci i file caricati" summary={summary}>
           <ImportHistoryList groups={groups} busy={deletionPreview.isPending} onDelete={onDelete} />
           {history.length > VISIBLE_IMPORTS ? (
             <Button variant="ghost" size="sm" className="self-start" onClick={() => setShowAll((v) => !v)}>
-              {showAll ? tr("Mostra meno") : tr("Mostra tutte ({0})", {0: history.length})}
+              {showAll ? "Mostra meno" : `Mostra tutte (${history.length})`}
             </Button>
           ) : null}
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{tr("Annullare un'importazione:")}</span>{" "}{tr("«Elimina» toglie le operazioni e i saldi che quel file aveva portato; ti mostro cosa sparisce prima di confermare e puoi sempre reimportare il file.")}</p>
+            <span className="font-medium text-foreground">Annullare un&apos;importazione:</span> «Elimina» toglie le operazioni e i saldi che quel file aveva portato; ti mostro cosa sparisce prima di confermare e puoi sempre reimportare il file.</p>
           <details className="group">
-            <summary className="min-h-11 cursor-pointer list-none content-center text-sm font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">{tr("Opzioni avanzate")}{" "}<span className="font-normal">{tr("· ripartire da zero")}</span>
+            <summary className="min-h-11 cursor-pointer list-none content-center text-sm font-medium text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
+              Opzioni avanzate <span className="font-normal">· ripartire da zero</span>
             </summary>
             <div className="pt-2"><ResetInvestments /></div>
           </details>
@@ -104,7 +103,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
 
       <ImportDeleteDialog
         open={personalSelection !== null}
-        title={tr("Eliminare l'importazione «{0}»?", {0: personalSelection?.preview.name ?? ""})}
+        title={`Eliminare l'importazione «${personalSelection?.preview.name ?? ""}»?`}
         intro="I dati caricati con questo formato personale vengono tolti dal tuo patrimonio."
         items={personalSelection?.preview.uploads.map((u) => `Caricamento del ${formatImportDate(u.createdAt)}`) ?? []}
         removes={[
@@ -114,20 +113,20 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
         keeps={["Il formato personale, i conti e gli strumenti", "Puoi reimportare il CSV quando vuoi: i saldi si aggiornano di nuovo"]}
         pending={personalDeletion.isPending}
         error={personalDeletion.error?.message}
-        confirmLabel={tr("Elimina l'importazione")}
+        confirmLabel="Elimina l'importazione"
         onConfirm={() => { if (personalSelection) personalDeletion.mutate({ id: personalSelection.id, token: personalSelection.preview.token }); }}
         onCancel={() => setPersonalSelection(null)}
       />
       <ImportDeleteDialog
         open={selection !== null}
-        title={selection && selection.ids.length > 1 ? tr("Eliminare {0} importazioni di {1}?", {0: selection.ids.length, 1: brokerSource ?? "questo conto"}) : tr("Eliminare l'importazione di {0}?", {0: brokerSource ?? "questo conto"})}
+        title={selection && selection.ids.length > 1 ? `Eliminare ${selection.ids.length} importazioni di ${brokerSource ?? "questo conto"}?` : `Eliminare l'importazione di ${brokerSource ?? "questo conto"}?`}
         intro={selection && selection.ids.length > 1 ? "Insieme a quella scelta vanno tolti i caricamenti successivi dello stesso conto, perché i loro saldi partono da questo." : "Il rendiconto e le sue operazioni vengono tolti dal portafoglio."}
         items={selection?.items ?? []}
         removes={[brokerSource?.startsWith("Trade Republic") ? "Le operazioni di questi rendiconti e i movimenti del conto importati con loro" : "Le operazioni di questi rendiconti", "La liquidità torna all'ultima chiusura conservata, o a zero"]}
         keeps={["Strumenti e prezzi storici", "Puoi ripristinare tutto importando di nuovo i file originali"]}
         pending={deletion.isPending}
         error={deletion.error?.message}
-        confirmLabel={selection && selection.ids.length > 1 ? tr("Elimina {0} importazioni", {0: selection.ids.length}) : tr("Elimina l'importazione")}
+        confirmLabel={selection && selection.ids.length > 1 ? `Elimina ${selection.ids.length} importazioni` : "Elimina l'importazione"}
         onConfirm={confirm}
         onCancel={() => setSelection(null)}
       />
@@ -142,9 +141,8 @@ function EmbeddedShell({ children }: { children: React.ReactNode; onImport: () =
 
 /** Contenitore come sezione di pagina, con il pulsante «Importa un file». */
 function PanelShell({ children, onImport }: { children: React.ReactNode; onImport: () => void }) {
-  const { t: tr } = useLocalization();
   return (
-    <PanelSection icon={DatabaseIcon} title={tr("Importazioni")} color="var(--swatch-slate)" description={IMPORT_EXPLANATION} action={<Button variant="outline" size="sm" onClick={onImport}><UploadIcon className="size-4" aria-hidden="true" />{" "}{tr("Importa un file")}</Button>}>
+    <PanelSection icon={DatabaseIcon} title="Importazioni" color="var(--swatch-slate)" description={IMPORT_EXPLANATION} action={<Button variant="outline" size="sm" onClick={onImport}><UploadIcon className="size-4" aria-hidden="true" /> Importa un file</Button>}>
       {children}
     </PanelSection>
   );

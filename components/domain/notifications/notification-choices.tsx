@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Scelta delle email facoltative (riepilogo, avvisi su budget e scadenze) come righe con interruttore, pensata per
@@ -32,7 +31,6 @@ export interface NotificationChoicesProps {
 }
 
 export function NotificationChoices({ value, onChange, onToggle, disabled = false, info = NOTIFICATION_KIND_INFO, className }: NotificationChoicesProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       {NOTIFICATION_CHOICE_KINDS.map((kind, index) => {
@@ -65,8 +63,8 @@ export function NotificationChoices({ value, onChange, onToggle, disabled = fals
                 <Icon className="size-4" aria-hidden="true" />
               </motion.span>
               <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <span className="text-sm font-medium text-foreground">{tr(info[kind].label)}</span>
-                <span className="text-xs text-muted-foreground">{tr(info[kind].hint)}</span>
+                <span className="text-sm font-medium text-foreground">{info[kind].label}</span>
+                <span className="text-xs text-muted-foreground">{info[kind].hint}</span>
               </span>
               <Switch
                 id={`onboarding-notifiche-${kind}`}
@@ -76,7 +74,7 @@ export function NotificationChoices({ value, onChange, onToggle, disabled = fals
                   onChange({ ...value, [field]: enabled });
                   onToggle?.(kind, enabled);
                 }}
-                aria-label={tr(info[kind].label)}
+                aria-label={info[kind].label}
               />
             </label>
             {kind === "digest" && (
@@ -94,7 +92,7 @@ export function NotificationChoices({ value, onChange, onToggle, disabled = fals
                         options={DIGEST_FREQUENCY_OPTIONS}
                         value={value.digestFrequency}
                         onChange={(digestFrequency) => onChange({ ...value, digestFrequency })}
-                        ariaLabel={tr("Ogni quanto ricevere il riepilogo")}
+                        ariaLabel="Ogni quanto ricevere il riepilogo"
                         stretch
                       />
                     </div>

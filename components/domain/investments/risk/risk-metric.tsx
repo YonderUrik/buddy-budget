@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Un indicatore di rischio: titolo in parole semplici (con il nome tecnico nel popover "i"), valore in evidenza (neutro, non verde/rosso) e la frase che lo spiega. */
 
 import type { ReactNode } from "react";
@@ -19,18 +17,17 @@ export interface RiskMetricProps {
 }
 
 export function RiskMetric({ label, hint, value, note = null, description = null }: RiskMetricProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-1">
       <p className="flex items-center gap-1 text-sm font-medium text-foreground">
-        {tr(label)}
-        <InfoHint label={tr("Cos'è: {0}", {0: label})}>{tr(hint)}</InfoHint>
+        {label}
+        <InfoHint label={`Cos'è: ${label}`}>{hint}</InfoHint>
       </p>
       <p className="flex flex-wrap items-baseline gap-x-2">
         <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{value ?? "—"}</span>
         {note ? <span className="text-xs text-muted-foreground">{note}</span> : null}
       </p>
-      {description ? <p className="text-sm leading-snug text-muted-foreground">{tr(description)}</p> : null}
+      {description ? <p className="text-sm leading-snug text-muted-foreground">{description}</p> : null}
     </div>
   );
 }

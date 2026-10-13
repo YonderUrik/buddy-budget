@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Selettori inline di colore e icona di una categoria (usati nel pannello di dettaglio). */
 
@@ -16,11 +15,10 @@ export interface CategoryAppearanceFieldsProps {
 }
 
 export function CategoryAppearanceFields({ value, onChange }: CategoryAppearanceFieldsProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-xs font-medium text-muted-foreground">{tr("Colore")}</legend>
+        <legend className="text-xs font-medium text-muted-foreground">Colore</legend>
         <div className="flex flex-wrap gap-2">
           {SWATCH_BASE_COLORS.map((color) => (
             <button
@@ -39,7 +37,7 @@ export function CategoryAppearanceFields({ value, onChange }: CategoryAppearance
         </div>
       </fieldset>
       <fieldset className="flex flex-col gap-2">
-        <legend className="text-xs font-medium text-muted-foreground">{tr("Icona")}</legend>
+        <legend className="text-xs font-medium text-muted-foreground">Icona</legend>
         <div className="grid max-h-40 grid-cols-8 gap-1 overflow-y-auto pr-1">
           {CATEGORY_ICONS.map((icon) => {
             const Icon = ICON_MAP[icon];

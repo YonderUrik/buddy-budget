@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * «Nella tua casella»: le email che arriveranno con le scelte fatte, come righe di una casella di posta che entrano ed
@@ -27,19 +26,18 @@ export function InboxPreview({
   emptyText = "Nessuna email facoltativa. Puoi attivarle quando vuoi in Impostazioni.",
   className,
 }: InboxPreviewProps) {
-  const { t: tr } = useLocalization();
   const items = inboxPreview(preferences);
   return (
     <div className={cn("flex flex-col gap-2 rounded-xl border border-border bg-card p-3.5", className)} aria-live="polite">
       <span className="flex items-center gap-1.5 text-xs font-medium text-text-3">
         <Inbox className="size-3.5" aria-hidden="true" />
-        {tr(title)}
+        {title}
       </span>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground">{tr(emptyText)}</p>
+        <p className="text-xs text-muted-foreground">{emptyText}</p>
       ) : (
         <AnimatedList
-          ariaLabel={tr(title)}
+          ariaLabel={title}
           className="gap-1.5"
           itemClassName="flex items-baseline justify-between gap-3 border-t border-border pt-1.5 text-xs first:border-t-0 first:pt-0"
           items={items.map((item) => ({

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Form per registrare una spesa o un'entrata su un conto manuale, in due passi: importo e tipo, poi descrizione e
@@ -60,7 +59,6 @@ function yesterdayDateString(): string {
 const TRANSACTION_STEPS = 2;
 
 export function AddTransactionForm({ categories, currency, onSuccess, onAddAccount }: AddTransactionFormProps) {
-  const { t: tr } = useLocalization();
   const idBase = React.useId();
   const flow = useStepFlow(TRANSACTION_STEPS);
   const { data: accounts } = useAccountsQuery();
@@ -155,15 +153,15 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-      <StepProgress index={flow.index} count={flow.count} label={tr("Passi del nuovo movimento")} />
+      <StepProgress index={flow.index} count={flow.count} label="Passi del nuovo movimento" />
 
       <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-5">
         {flow.index === 0 ? (
           <>
-            <StepHeading title={tr("Quanto è stato?")} />
-            <SegmentedControl options={DIRECTION_OPTIONS} value={direction} onChange={handleDirectionChange} ariaLabel={tr("Tipo di movimento")} stretch />
+            <StepHeading title="Quanto è stato?" />
+            <SegmentedControl options={DIRECTION_OPTIONS} value={direction} onChange={handleDirectionChange} ariaLabel="Tipo di movimento" stretch />
             <div className={fieldClass}>
-              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-amount`}>{tr("Importo")}</label>
+              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-amount`}>Importo</label>
               <div ref={amountRef}>
                 <CurrencyInput
                   id={`${idBase}-amount`}
@@ -172,7 +170,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
                   onChange={setAmountValue}
                   currency={currency}
                   className={cn("w-full text-lg font-medium", FIELD_CLASS)}
-                  aria-label={tr("Importo")}
+                  aria-label="Importo"
                 />
               </div>
               <FieldError id={`${idBase}-amount-error`} message={errors.amount} />
@@ -182,15 +180,15 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
 
         {flow.index === 1 ? (
           <>
-            <StepHeading title={direction === "entrata" ? tr("Da dove arriva?") : tr("Per cosa è?")} />
+            <StepHeading title={direction === "entrata" ? "Da dove arriva?" : "Per cosa è?"} />
             <div className={fieldClass}>
-              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-description`}>{tr("Descrizione")}</label>
+              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-description`}>Descrizione</label>
               <Input
                 id={`${idBase}-description`}
                 data-autofocus
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder={direction === "entrata" ? tr("Es. Stipendio di ottobre") : tr("Es. Spesa al supermercato")}
+                placeholder={direction === "entrata" ? "Es. Stipendio di ottobre" : "Es. Spesa al supermercato"}
                 autoComplete="off"
                 aria-invalid={errors.description ? true : undefined}
                 aria-describedby={errors.description ? `${idBase}-description-error` : undefined}
@@ -199,52 +197,52 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
               <FieldError id={`${idBase}-description-error`} message={errors.description} />
             </div>
             <div className={fieldClass}>
-              <span className="text-sm font-medium text-foreground">{tr("Categoria")}</span>
+              <span className="text-sm font-medium text-foreground">Categoria</span>
               <CategoryPicker
                 categories={availableCategories}
                 value={categoryId}
                 onValueChange={setCategoryIdOverride}
                 usage={categoryUsage}
                 disabled={availableCategories.length === 0}
-                aria-label={tr("Categoria")}
+                aria-label="Categoria"
                 className={cn("w-full", FIELD_CLASS)}
               />
               <FieldError id={`${idBase}-category-error`} message={errors.category} />
               {availableCategories.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
                   {direction === "entrata"
-                    ? tr("Nessuna categoria di entrata disponibile: aggiungine una dalla scheda Categorie e regole.")
-                    : tr("Nessuna categoria disponibile: aggiungine una prima di registrare una spesa.")}
+                    ? "Nessuna categoria di entrata disponibile: aggiungine una dalla scheda Categorie e regole."
+                    : "Nessuna categoria disponibile: aggiungine una prima di registrare una spesa."}
                 </p>
               ) : null}
             </div>
             <details className="rounded-xl border p-3" open={Boolean(errors.account || errors.date) || noAccount}>
               <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 text-sm">
                 <span className="text-muted-foreground">
-                  {date === todayDateString() ? tr("Oggi") : date === yesterdayDateString() ? tr("Ieri") : date} · {manualAccounts.find((a) => a.id === accountId)?.name ?? "nessun conto"}
+                  {date === todayDateString() ? "Oggi" : date === yesterdayDateString() ? "Ieri" : date} · {manualAccounts.find((a) => a.id === accountId)?.name ?? "nessun conto"}
                 </span>
-                <span className="font-medium text-primary">{tr("Cambia")}</span>
+                <span className="font-medium text-primary">Cambia</span>
               </summary>
               <div className="mt-3 flex flex-col gap-4">
             <div className={fieldClass}>
-              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-date`}>{tr("Data")}</label>
+              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-date`}>Data</label>
               <div className="flex items-center gap-2">
                 <Input
                   id={`${idBase}-date`}
-
+                 
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   aria-invalid={errors.date ? true : undefined}
                   className={cn("w-full", FIELD_CLASS)}
                 />
-                <QuickDate label={tr("Oggi")} active={date === todayDateString()} onClick={() => setDate(todayDateString())} />
-                <QuickDate label={tr("Ieri")} active={date === yesterdayDateString()} onClick={() => setDate(yesterdayDateString())} />
+                <QuickDate label="Oggi" active={date === todayDateString()} onClick={() => setDate(todayDateString())} />
+                <QuickDate label="Ieri" active={date === yesterdayDateString()} onClick={() => setDate(yesterdayDateString())} />
               </div>
               <FieldError id={`${idBase}-date-error`} message={errors.date} />
             </div>
             <div className={fieldClass}>
-              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-account`}>{tr("Conto")}</label>
+              <label className="text-sm font-medium text-foreground" htmlFor={`${idBase}-account`}>Conto</label>
               <Select
                 value={accountId}
                 onValueChange={(value) => {
@@ -254,7 +252,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
                 disabled={manualAccounts.length === 0}
               >
                 <SelectTrigger id={`${idBase}-account`} className={cn("w-full", FIELD_CLASS)}>
-                  <SelectValue placeholder={tr("Scegli il conto")}>
+                  <SelectValue placeholder="Scegli il conto">
                     {(value: string | null) => manualAccounts.find((a) => a.id === value)?.name ?? ""}
                   </SelectValue>
                 </SelectTrigger>
@@ -269,7 +267,9 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
               <FieldError id={`${idBase}-account-error`} message={errors.account} />
             </div>
             {noAccount ? (
-              <p className="flex flex-wrap items-center gap-x-2 rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">{tr("I movimenti si registrano sui conti manuali, e non ne hai ancora uno.")}{onAddAccount ? <button type="button" onClick={onAddAccount} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">{tr("Aggiungi un conto")}</button> : null}
+              <p className="flex flex-wrap items-center gap-x-2 rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">
+                I movimenti si registrano sui conti manuali, e non ne hai ancora uno.
+                {onAddAccount ? <button type="button" onClick={onAddAccount} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">Aggiungi un conto</button> : null}
               </p>
             ) : null}
                         </div>
@@ -280,18 +280,20 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
       </StepStage>
 
       {flow.isLast ? (
-        <Button type="button" variant="outline" disabled={pending || noAccount} onClick={() => submit(true)} className="h-11 cursor-pointer sm:h-9">{tr("Aggiungi e inserisci un altro")}</Button>
+        <Button type="button" variant="outline" disabled={pending || noAccount} onClick={() => submit(true)} className="h-11 cursor-pointer sm:h-9">
+          Aggiungi e inserisci un altro
+        </Button>
       ) : null}
       <StepActions
-        backLabel={flow.isFirst ? undefined : tr("Indietro")}
+        backLabel={flow.isFirst ? undefined : "Indietro"}
         onBack={handleBack}
-        primaryLabel={flow.isLast ? (pending ? "Aggiungo…" : "Aggiungi") : tr("Continua")}
+        primaryLabel={flow.isLast ? (pending ? "Aggiungo…" : "Aggiungi") : "Continua"}
         pending={pending}
         disabled={flow.isLast && noAccount}
       />
 
       <p role="status" className={cn("flex items-center gap-1.5 text-sm text-muted-foreground", added === 0 && "sr-only")}>
-        {added > 0 ? <><CheckCircle2Icon className="size-4 text-pos" aria-hidden="true" />{" "}{added === 1 ? tr("Movimento aggiunto.") : tr("{0} movimenti aggiunti.", {0: added})}{" "}{tr("Puoi inserirne un altro.")}</> : null}
+        {added > 0 ? <><CheckCircle2Icon className="size-4 text-pos" aria-hidden="true" /> {added === 1 ? "Movimento aggiunto." : `${added} movimenti aggiunti.`} Puoi inserirne un altro.</> : null}
       </p>
       {errors.form ? <ErrorWithReport area="movimento" error={errors.form} /> : null}
     </form>
@@ -299,13 +301,11 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
 }
 
 function FieldError({ id, message }: { id: string; message?: string }) {
-  const { t: tr } = useLocalization();
   if (!message) return null;
-  return <p id={id} role="alert" className="text-sm text-destructive">{tr(message)}</p>;
+  return <p id={id} role="alert" className="text-sm text-destructive">{message}</p>;
 }
 
 function QuickDate({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  const { t: tr } = useLocalization();
   return (
     <button
       type="button"
@@ -316,7 +316,7 @@ function QuickDate({ label, active, onClick }: { label: string; active: boolean;
         active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground hover:text-foreground"
       )}
     >
-      {tr(label)}
+      {label}
     </button>
   );
 }

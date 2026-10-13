@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * AccountRow
@@ -15,7 +12,7 @@ import * as React from "react";
 import Link from "next/link";
 import { AlertTriangle, ChevronRight, ListOrdered, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { formatCurrency } from "@/lib/format";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import { AccountAvatar } from "./account-avatar";
@@ -45,10 +42,6 @@ const TONE_CLASS: Record<AccountStatusTone, string> = {
 };
 
 export function AccountRow({ account, currency, needsReconnect, syncInfo, syncing, movementsHref, onOpen }: AccountRowProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const isAuto = account.source === "auto";
   const status = buildAccountStatus({ isAuto, needsReconnect, syncing, syncInfo });
   const balance = Number(account.balance);
@@ -59,7 +52,7 @@ export function AccountRow({ account, currency, needsReconnect, syncInfo, syncin
       <button
         type="button"
         onClick={onOpen}
-        aria-label={tr("{0}, {1}, {2}. {3}. Apri i dettagli", {0: account.name, 1: account.type, 2: formatCurrency(balance, currency), 3: status.label})}
+        aria-label={`${account.name}, ${account.type}, ${formatCurrency(balance, currency)}. ${status.label}. Apri i dettagli`}
         className="group flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg px-4 py-3 text-left outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
       >
         <AccountAvatar color={account.color as AccountColor} icon={account.icon as AccountIcon} className="size-10" size={18} />
@@ -78,7 +71,7 @@ export function AccountRow({ account, currency, needsReconnect, syncInfo, syncin
           <span className="block truncate text-sm text-text-2">{account.type}</span>
           <span className={cn("mt-0.5 flex items-center gap-1 text-[13px]", TONE_CLASS[status.tone])}>
             {StatusIcon && <StatusIcon size={13} aria-hidden className={cn("shrink-0", status.tone === "progress" && "motion-safe:animate-spin")} />}
-            <span>{tr(status.label)}</span>
+            <span>{status.label}</span>
           </span>
         </span>
         <ChevronRight size={18} aria-hidden className="hidden shrink-0 sm:block text-text-3 transition-transform group-hover:translate-x-0.5" />
@@ -86,7 +79,7 @@ export function AccountRow({ account, currency, needsReconnect, syncInfo, syncin
       {movementsHref && (
         <Link
           href={movementsHref}
-          aria-label={tr("Vedi i movimenti di {0}", {0: account.name})}
+          aria-label={`Vedi i movimenti di ${account.name}`}
           className="flex w-12 shrink-0 items-center justify-center rounded-lg text-text-2 outline-none transition-colors hover:bg-muted/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
         >
           <ListOrdered size={18} aria-hidden />

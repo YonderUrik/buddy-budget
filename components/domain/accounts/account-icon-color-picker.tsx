@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Popover per scegliere colore e icona di un conto. Click sull'avatar apre il picker. */
 
@@ -29,7 +28,6 @@ export function AccountIconColorPicker({
   onChange,
   children,
 }: AccountIconColorPickerProps) {
-  const { t: tr } = useLocalization();
   return (
     <Popover.Root>
       <Popover.Trigger className="cursor-pointer rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
@@ -38,7 +36,9 @@ export function AccountIconColorPicker({
       <Popover.Portal>
         <Popover.Positioner sideOffset={8} className="z-[60]">
           <Popover.Popup className="z-[60] w-72 rounded-xl border border-border bg-popover p-3 shadow-lg outline-none">
-            <p className="mb-2 text-xs font-medium text-muted-foreground">{tr("Colore")}</p>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Colore
+            </p>
             <div className="mb-4 flex flex-wrap gap-2">
               {SWATCH_BASE_COLORS.map((color) => (
                 <button
@@ -51,13 +51,15 @@ export function AccountIconColorPicker({
                     value.color === color &&
                       "ring-2 ring-foreground ring-offset-2 ring-offset-popover"
                   )}
-                  aria-label={tr("Colore {0}", {0: COLOR_NAMES[color] ?? color})}
+                  aria-label={`Colore ${COLOR_NAMES[color] ?? color}`}
                   aria-pressed={value.color === color}
                 />
               ))}
             </div>
 
-            <p className="mb-2 text-xs font-medium text-muted-foreground">{tr("Icona")}</p>
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Icona
+            </p>
             <div className="grid grid-cols-6 gap-1">
               {ACCOUNT_ICONS.map((icon) => {
                 const Icon = ICON_MAP[icon];
@@ -70,7 +72,7 @@ export function AccountIconColorPicker({
                       "flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       value.icon === icon && "bg-accent text-accent-foreground"
                     )}
-                    aria-label={tr("Icona {0}", {0: icon})}
+                    aria-label={`Icona ${icon}`}
                     aria-pressed={value.icon === icon}
                   >
                     <Icon size={16} />

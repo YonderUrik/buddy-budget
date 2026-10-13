@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Obiettivo FIRE nella sidebar: barra di avanzamento verso il numero FIRE, quanto manca e gli anni stimati, con gli
@@ -37,7 +36,6 @@ export function SidebarFireModule({
   onNavigate,
   onItemClick,
 }: SidebarFireModuleProps) {
-  const { t: tr } = useLocalization();
   if (collapsed) return null;
   if (loading) {
     return <div className="mt-1 h-16 animate-pulse rounded-lg bg-sidebar-accent" aria-busy="true" />;
@@ -54,7 +52,7 @@ export function SidebarFireModule({
   return (
     <CollapsibleSection
       id="fire"
-      title={tr("Obiettivo FIRE")}
+      title="Obiettivo FIRE"
       summary={hasProgress ? formatFireProgress(progress) : undefined}
     >
       <Link
@@ -66,7 +64,7 @@ export function SidebarFireModule({
           <>
             <div
               role="progressbar"
-              aria-label={tr("Avanzamento verso il numero FIRE")}
+              aria-label="Avanzamento verso il numero FIRE"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(fireBarWidth(progress))}
@@ -76,16 +74,18 @@ export function SidebarFireModule({
             </div>
             <p className="mt-1.5 text-xs text-sidebar-foreground">
               <span className="font-heading text-sm font-semibold tabular-nums">{formatFireProgress(progress)}</span>{" "}
-              <span className="text-sidebar-foreground/60">{tr("del numero FIRE")}</span>
+              <span className="text-sidebar-foreground/60">del numero FIRE</span>
             </p>
             <p className="text-[11px] text-sidebar-foreground/60">
               {progress >= 1
-                ? tr("Obiettivo raggiunto")
-                : tr("Mancano {0}{1}", {0: formatSidebarAmount(Math.max(target - wealth, 0), currency, hidden), 1: years ? ` · ${years}` : ""})}
+                ? "Obiettivo raggiunto"
+                : `Mancano ${formatSidebarAmount(Math.max(target - wealth, 0), currency, hidden)}${years ? ` · ${years}` : ""}`}
             </p>
           </>
         ) : (
-          <p className="text-[11px] leading-snug text-sidebar-foreground/60">{tr("Indica la spesa annua in pensione in Analitiche per stimare il tuo numero FIRE.")}</p>
+          <p className="text-[11px] leading-snug text-sidebar-foreground/60">
+            Indica la spesa annua in pensione in Analitiche per stimare il tuo numero FIRE.
+          </p>
         )}
       </Link>
     </CollapsibleSection>

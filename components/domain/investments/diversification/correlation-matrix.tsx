@@ -62,7 +62,7 @@ export function CorrelationMatrix({ matrix, instrumentsById }: CorrelationMatrix
       <ol className="grid grid-cols-1 gap-x-4 gap-y-0.5 text-xs text-muted-foreground sm:grid-cols-2">
         {names.map((name, i) => (
           <li key={matrix.instrumentIds[i]} className="truncate">
-            <span className="tabular-nums text-foreground">{i + 1}.</span>{" "}{name}
+            <span className="tabular-nums text-foreground">{i + 1}.</span> {name}
           </li>
         ))}
       </ol>

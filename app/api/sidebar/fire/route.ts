@@ -1,4 +1,3 @@
-import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { bindRequestUser, withRoute } from "@/lib/observability";
@@ -14,4 +13,4 @@ async function handleGet(request: NextRequest) {
   return Response.json(await loadSidebarFire(session.user.id));
 }
 
-export const GET = withCountryGuard(withRoute("sidebar.fire", handleGet, { quietOnSuccess: true }));
+export const GET = withRoute("sidebar.fire", handleGet, { quietOnSuccess: true });

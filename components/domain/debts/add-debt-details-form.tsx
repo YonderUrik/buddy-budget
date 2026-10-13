@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Passi di dettaglio di "Aggiungi debito" (nome e data, dati del finanziamento, spese e conferma). Se l'utente ne lascia vuoto uno tra capitale, rata, rate e
@@ -21,7 +18,7 @@ import {
 } from "@/lib/debts/add-form";
 import { todayIso } from "@/lib/debts/dates";
 import { useCreateDebtMutation } from "@/lib/queries/debts";
-
+import { formatCurrency } from "@/lib/format";
 import type { LoanInputKey } from "@/lib/calc/amortization";
 import { AddDebtCostsField } from "./add-debt-costs-field";
 import { DebtFormField } from "./debt-form-field";
@@ -49,7 +46,11 @@ const CALCULATED_LABELS: Record<LoanInputKey, string> = {
 
 const TRAILING_ZEROS = /([.,]\d*?)0+$/;
 
-
+function formatCalculated(key: LoanInputKey, value: number, currency: string): string {
+  if (key === "annualRate") return `${value.toFixed(2).replace(".", ",")}%`;
+  if (key === "installments") return String(value);
+  return formatCurrency(value, currency);
+}
 
 /** Valore da mostrare nel campo vuoto che è stato calcolato (testo segnaposto). */
 function placeholderFor(key: LoanInputKey, calculated: LoanInputKey | undefined, value: number | undefined): string {
@@ -69,15 +70,6 @@ export interface AddDebtDetailsFormProps {
 }
 
 export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, onBack, onCreated }: AddDebtDetailsFormProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-  function formatCalculated(key: LoanInputKey, value: number, currency: string): string {
-  if (key === "annualRate") return `${value.toFixed(2).replace(".", ",")}%`;
-  if (key === "installments") return String(value);
-  return formatCurrency(value, currency);
-}
-
-  const { t: tr } = useLocalization();
   const mutation = useCreateDebtMutation();
   const [error, setError] = React.useState<string | null>(null);
   const id = React.useId();
@@ -90,7 +82,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
   function submit(event: React.FormEvent) {
     event.preventDefault();
     if (part === 0) {
-      if (state.name.trim() === "") return setError(tr("Dai un nome al debito, per riconoscerlo nell'elenco."));
+      if (state.name.trim() === "") return setError("Dai un nome al debito, per riconoscerlo nell'elenco.");
       setError(null);
       return onNext();
     }
@@ -112,10 +104,10 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
     <form onSubmit={submit} className="flex flex-col gap-5">
       {part === 0 ? (
         <>
-          <StepHeading title={tr("Come si chiama il finanziamento?")} description={tr("Il nome serve a riconoscerlo nell'elenco; poi la data della {0}.", {0: copy.firstDate.toLowerCase()})} />
+          <StepHeading title="Come si chiama il finanziamento?" description={`Il nome serve a riconoscerlo nell'elenco; poi la data della ${copy.firstDate.toLowerCase()}.`} />
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <DebtFormField label={tr("Nome")} htmlFor={`${id}-name`}>
-              <Input id={`${id}-name`} placeholder={tr("Es. Prestito auto")} value={state.name} onChange={(e) => set({ name: e.target.value })} />
+            <DebtFormField label="Nome" htmlFor={`${id}-name`}>
+              <Input id={`${id}-name`} placeholder="Es. Prestito auto" value={state.name} onChange={(e) => set({ name: e.target.value })} />
             </DebtFormField>
             <DebtFormField label={copy.firstDate} htmlFor={`${id}-date`}>
               <Input id={`${id}-date`} type="date" value={state.firstInstallmentDate} onChange={(e) => set({ firstInstallmentDate: e.target.value })} />
@@ -125,38 +117,41 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
       ) : null}
       {part === 1 ? (
         <>
-          <StepHeading title={tr("I dati che conosci")} description={tr("Compila quelli che hai. Se te ne manca uno, lascialo vuoto: lo calcoliamo dagli altri tre.")} />
+          <StepHeading title="I dati che conosci" description="Compila quelli che hai. Se te ne manca uno, lascialo vuoto: lo calcoliamo dagli altri tre." />
           <div className="grid grid-cols-2 gap-3">
             <DebtFormField label={copy.principal} htmlFor={`${id}-principal`}>
               <Input id={`${id}-principal`} inputMode="decimal" value={state.principal} placeholder={resolved ? placeholderFor("principal", calc, resolved.inputs.principal) : ""} onChange={(e) => set({ principal: e.target.value })} />
             </DebtFormField>
-            <DebtFormField label={tr("Rata mensile")} htmlFor={`${id}-installment`}>
+            <DebtFormField label="Rata mensile" htmlFor={`${id}-installment`}>
               <Input id={`${id}-installment`} inputMode="decimal" value={state.installment} placeholder={resolved ? placeholderFor("installment", calc, resolved.inputs.installment) : ""} onChange={(e) => set({ installment: e.target.value })} />
             </DebtFormField>
             <DebtFormField label={copy.installments} htmlFor={`${id}-installments`}>
               <Input id={`${id}-installments`} inputMode="numeric" value={state.installments} placeholder={resolved ? placeholderFor("installments", calc, resolved.inputs.installments) : ""} onChange={(e) => set({ installments: e.target.value })} />
             </DebtFormField>
-            <DebtFormField label={tr("Tasso annuo (TAN, %)")} htmlFor={`${id}-rate`}>
+            <DebtFormField label="Tasso annuo (TAN, %)" htmlFor={`${id}-rate`}>
               <Input id={`${id}-rate`} inputMode="decimal" value={state.annualRate} placeholder={resolved ? placeholderFor("annualRate", calc, resolved.inputs.annualRate) : ""} onChange={(e) => set({ annualRate: e.target.value })} />
             </DebtFormField>
           </div>
           {resolved && calc ? (
             <p className="flex items-start gap-2 text-sm text-foreground" role="status">
               <InfoIcon size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
-              <span>{tr("Abbiamo calcolato")}{" "}{tr(CALCULATED_LABELS[calc])}: <strong className="font-medium">{formatCalculated(calc, resolved.inputs[calc], currency)}</strong>{tr(". Può differire di poco da quello della banca, per gli arrotondamenti.")}</span>
+              <span>
+                Abbiamo calcolato {CALCULATED_LABELS[calc]}: <strong className="font-medium">{formatCalculated(calc, resolved.inputs[calc], currency)}</strong>. Può differire di poco da quello della banca, per gli arrotondamenti.
+              </span>
             </p>
           ) : null}
-          {!resolution.ok && resolution.message ? <p className="text-sm text-neg" role="alert">{tr(resolution.message)}</p> : null}
+          {!resolution.ok && resolution.message ? <p className="text-sm text-neg" role="alert">{resolution.message}</p> : null}
         </>
       ) : null}
       {part === 2 ? (
         <>
-          <StepHeading title={tr("Spese accessorie e conferma")} description={tr("Le spese sono facoltative; sotto vedi il piano che ne esce.")} />
+          <StepHeading title="Spese accessorie e conferma" description="Le spese sono facoltative; sotto vedi il piano che ne esce." />
           <details open={state.costs.length > 0} className="group">
             <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-foreground">
               <span className="grid size-7 place-items-center rounded-full bg-primary/10 text-primary" aria-hidden="true">
                 <ReceiptIcon className="size-3.5" />
-              </span>{tr("Spese accessorie")}{" "}<span className="font-normal text-muted-foreground">{tr("(facoltativo)")}</span>
+              </span>
+              Spese accessorie <span className="font-normal text-muted-foreground">(facoltativo)</span>
             </summary>
             <div className="mt-3">
               <AddDebtCostsField costs={state.costs} onChange={(costs) => set({ costs })} />
@@ -164,18 +159,18 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
           </details>
           {preview && resolved ? (
             <div className="flex flex-col gap-2">
-            <p className="text-sm font-medium text-foreground">{tr("Anteprima del piano")}</p>
-            <dl className="grid grid-cols-3 gap-3 text-sm" aria-label={tr("Anteprima del piano")}>
+            <p className="text-sm font-medium text-foreground">Anteprima del piano</p>
+            <dl className="grid grid-cols-3 gap-3 text-sm" aria-label="Anteprima del piano">
               <div>
-                <dt className="text-xs text-muted-foreground">{tr("Rata")}</dt>
+                <dt className="text-xs text-muted-foreground">Rata</dt>
                 <dd className="font-heading font-medium tabular-nums">{formatCurrency(preview.installment, currency)}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">{tr("Finisce a")}</dt>
+                <dt className="text-xs text-muted-foreground">Finisce a</dt>
                 <dd className="font-heading font-medium">{formatMonthYear(preview.endDate)}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted-foreground">{resolved.apr !== null ? tr("Interessi · TAEG") : tr("Interessi totali")}</dt>
+                <dt className="text-xs text-muted-foreground">{resolved.apr !== null ? "Interessi · TAEG" : "Interessi totali"}</dt>
                 <dd className="font-heading font-medium tabular-nums">
                   {formatCurrency(preview.totalInterest, currency, { maximumFractionDigits: 0 })}
                   {resolved.apr !== null ? ` · ${resolved.apr.toFixed(2).replace(".", ",")}%` : ""}
@@ -188,7 +183,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
       ) : null}
 
       {error ? <ErrorWithReport area="debito" error={error} /> : null}
-      <StepActions backLabel={tr("Indietro")} onBack={onBack} primaryLabel={last ? (mutation.isPending ? "Salvo…" : "Aggiungi debito") : tr("Continua")} pending={mutation.isPending} />
+      <StepActions backLabel="Indietro" onBack={onBack} primaryLabel={last ? (mutation.isPending ? "Salvo…" : "Aggiungi debito") : "Continua"} pending={mutation.isPending} />
     </form>
   );
 }

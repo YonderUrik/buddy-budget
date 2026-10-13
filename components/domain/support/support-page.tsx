@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Pagina «Aiuto e segnalazioni»: risposte rapide, form per scriverci e collegamenti a GitHub. Stile Panoramica: sezioni aperte con icona. */
 
@@ -13,7 +12,6 @@ import { track } from "@/lib/analytics";
 import { REPORT_KINDS, STATUS_URL, type ReportKind } from "@/lib/support";
 
 function Section({ id, icon: Icon, title, description, children }: { id: string; icon: React.ComponentType<{ className?: string }>; title: string; description: string; children: React.ReactNode }) {
-  const { t: tr } = useLocalization();
   return (
     <section aria-labelledby={id} className="flex flex-col gap-4">
       <header className="flex items-start gap-3">
@@ -21,8 +19,8 @@ function Section({ id, icon: Icon, title, description, children }: { id: string;
           <Icon className="size-4" />
         </span>
         <div>
-          <h2 id={id} className="font-heading text-lg font-medium text-foreground">{tr(title)}</h2>
-          <p className="text-sm text-muted-foreground">{tr(description)}</p>
+          <h2 id={id} className="font-heading text-lg font-medium text-foreground">{title}</h2>
+          <p className="text-sm text-muted-foreground">{description}</p>
         </div>
       </header>
       {children}
@@ -38,7 +36,6 @@ export interface SupportPageProps {
 }
 
 export function SupportPage({ from = null, kind = null }: SupportPageProps) {
-  const { t: tr } = useLocalization();
   const context = useReportContext(from);
   const initialKind = (REPORT_KINDS as readonly string[]).includes(kind ?? "") ? (kind as ReportKind) : undefined;
   return (
@@ -60,13 +57,13 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
           .
         </p>
       </div>
-      <Section id="aiuto-scrivici" icon={MessageSquare} title={tr("Scrivici")} description={tr("Un problema, una domanda o un'idea: ti rispondiamo via email.")}>
+      <Section id="aiuto-scrivici" icon={MessageSquare} title="Scrivici" description="Un problema, una domanda o un'idea: ti rispondiamo via email.">
         <ReportForm context={context} initialKind={initialKind} />
       </Section>
-      <Section id="aiuto-risposte" icon={HelpCircle} title={tr("Risposte rapide")} description={tr("Le domande che riceviamo più spesso.")}>
+      <Section id="aiuto-risposte" icon={HelpCircle} title="Risposte rapide" description="Le domande che riceviamo più spesso.">
         <FaqList />
       </Section>
-      <Section id="aiuto-github" icon={GithubIcon} title={tr("Su GitHub")} description={tr("BuddyBudget è open source: puoi seguire e segnalare anche da lì.")}>
+      <Section id="aiuto-github" icon={GithubIcon} title="Su GitHub" description="BuddyBudget è open source: puoi seguire e segnalare anche da lì.">
         <GithubLinks context={context} />
       </Section>
     </div>

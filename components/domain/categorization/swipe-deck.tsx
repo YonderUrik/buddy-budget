@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Categorizzazione rapida «a carte»: una carta per esercente, si conferma la proposta o si sceglie un'altra
@@ -89,7 +88,6 @@ interface ActiveCardProps extends Omit<CategorizeSwipeDeckProps, "groups" | "onS
 
 /** La carta in cima con i suoi pulsanti e scorciatoie; `changing` e `remember` valgono per una carta sola (si azzerano al cambio di carta). */
 function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, remaining, canUndo, onDecide, onSkip, onUndo, onRemoteLogo }: ActiveCardProps) {
-  const { t: tr } = useLocalization();
   // Lo stato vale per una carta sola: al cambio di carta si azzera durante il render (il componente resta montato per animare l'uscita).
   const [local, setLocal] = React.useState({ key: group.groupKey, changing: false, remember: false });
   if (local.key !== group.groupKey) setLocal({ key: group.groupKey, changing: false, remember: false });
@@ -170,7 +168,7 @@ function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, rem
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col gap-4 max-md:flex-1">
       <p className="text-center text-xs text-muted-foreground tabular-nums max-md:-mb-2" aria-live="polite">
-        {remaining === 1 ? tr("Ultima carta") : tr("{0} esercenti da categorizzare", {0: remaining})}
+        {remaining === 1 ? "Ultima carta" : `${remaining} esercenti da categorizzare`}
       </p>
       <div className="relative flex flex-col max-md:flex-1">
         {remaining > 2 && <div className="absolute inset-x-5 -bottom-4 h-10 rounded-2xl border border-border bg-card/60" aria-hidden />}
@@ -211,25 +209,28 @@ function ActiveCard({ group, nextGroup, categories, currency, categoryUsage, rem
         onOpenChange={setChanging}
         categories={selectable}
         usage={categoryUsage}
-        description={tr(group.label)}
+        description={group.label}
         onPick={pick}
       />
       <div className="flex items-center justify-center gap-3 max-md:pb-1">
-        <Button type="button" variant="ghost" size="icon" onClick={undoCard} disabled={!canUndo} aria-label={tr("Annulla l'ultima scelta")} title={tr("Annulla (Z)")}>
+        <Button type="button" variant="ghost" size="icon" onClick={undoCard} disabled={!canUndo} aria-label="Annulla l'ultima scelta" title="Annulla (Z)">
           <Undo2Icon />
         </Button>
-        <Button type="button" variant="outline" className="h-11 flex-1" onClick={() => setChanging((value) => !value)} title={tr("Un'altra categoria (←)")}>
-          <PencilIcon />{" "}{changing ? tr("Torna alla proposta") : tr("Cambia")}
+        <Button type="button" variant="outline" className="h-11 flex-1" onClick={() => setChanging((value) => !value)} title="Un'altra categoria (←)">
+          <PencilIcon /> {changing ? "Torna alla proposta" : "Cambia"}
         </Button>
         {suggestion && !changing && (
-          <Button type="button" className="h-11 flex-1" onClick={confirm} title={tr("Conferma (→ o Invio)")}>
-            <CheckIcon />{" "}{tr("Conferma")}</Button>
+          <Button type="button" className="h-11 flex-1" onClick={confirm} title="Conferma (→ o Invio)">
+            <CheckIcon /> Conferma
+          </Button>
         )}
-        <Button type="button" variant="ghost" size="icon" onClick={skipCard} aria-label={tr("Salta per ora")} title={tr("Salta (↓)")}>
+        <Button type="button" variant="ghost" size="icon" onClick={skipCard} aria-label="Salta per ora" title="Salta (↓)">
           <ChevronsDownIcon />
         </Button>
       </div>
-      <p className="hidden text-center text-xs text-muted-foreground sm:block">{tr("Frecce: → conferma, ← cambia, ↓ salta, Z annulla. Le scelte si salvano da sole dopo qualche secondo.")}</p>
+      <p className="hidden text-center text-xs text-muted-foreground sm:block">
+        Frecce: → conferma, ← cambia, ↓ salta, Z annulla. Le scelte si salvano da sole dopo qualche secondo.
+      </p>
       <SwipeTour />
     </div>
   );
@@ -255,17 +256,17 @@ function WaitingCard({ group, categories, currency }: { group: SuggestionGroup; 
 }
 
 export function CategorizeSwipeDeck({ groups, categories, currency, categoryUsage, onSave }: CategorizeSwipeDeckProps) {
-  const { t: tr } = useLocalization();
   const deck = useSwipeDeck({ groups, onSave });
   const [logosShown, setLogosShown] = React.useState(false);
   const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   if (!deck.top) {
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-border p-8 text-center">
-        <p className="font-heading text-lg font-medium text-foreground">{tr("Fatto, non c'è altro da categorizzare")}</p>
+        <p className="font-heading text-lg font-medium text-foreground">Fatto, non c&apos;è altro da categorizzare</p>
         {deck.canUndo && (
           <Button type="button" variant="ghost" size="sm" onClick={deck.undo}>
-            <Undo2Icon />{" "}{tr("Annulla l'ultima scelta")}</Button>
+            <Undo2Icon /> Annulla l&apos;ultima scelta
+          </Button>
         )}
       </div>
     );

@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Blocco "Per categoria": torta multilivello (layer interno gruppo di spesa — Dovute/Volute/Te futuro/Saltuarie
@@ -23,7 +20,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { formatCurrency } from "@/lib/format";
 import { useUpsertBudgetMutation } from "@/lib/queries/budgets";
 import { cn } from "@/lib/utils";
 import type { CategoryAmount, GroupTotals } from "@/lib/calc/expenses";
@@ -85,7 +82,18 @@ function renderCategoryIcon(props: PieLabelRenderProps) {
 }
 
 /** Formatta il valore del tooltip (nome + importo in valuta) al posto del default numerico di ChartTooltipContent. */
-
+function tooltipValueFormatter(currency: string) {
+  return function TooltipValue(value: ValueType | undefined, name: NameType | undefined) {
+    return (
+      <div className="flex w-full items-center justify-between gap-3">
+        <span className="text-muted-foreground">{name}</span>
+        <span className="font-mono font-medium tabular-nums text-foreground">
+          {formatCurrency(Number(value), currency)}
+        </span>
+      </div>
+    );
+  };
+}
 
 export interface CategoryBreakdownDonutProps {
   categoryAmounts: CategoryAmount[];
@@ -100,22 +108,6 @@ export function CategoryBreakdownDonut({
   budgets,
   currency,
 }: CategoryBreakdownDonutProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-  function tooltipValueFormatter(currency: string) {
-  return function TooltipValue(value: ValueType | undefined, name: NameType | undefined) {
-    return (
-      <div className="flex w-full items-center justify-between gap-3">
-        <span className="text-muted-foreground">{name}</span>
-        <span className="font-mono font-medium tabular-nums text-foreground">
-          {formatCurrency(Number(value), currency)}
-        </span>
-      </div>
-    );
-  };
-}
-
-  const { t: tr } = useLocalization();
   const upsertMutation = useUpsertBudgetMutation();
   const [pendingCategoryId, setPendingCategoryId] = React.useState<string | null>(null);
   const [errorCategoryId, setErrorCategoryId] = React.useState<string | null>(null);
@@ -211,7 +203,9 @@ export function CategoryBreakdownDonut({
   return (
     <Card className="p-0">
       <CardHeader className="pt-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Per categoria")}</CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Per categoria
+        </CardTitle>
         <CardAction className="flex items-center gap-1">
           <Select value={sortCriterion} onValueChange={(value) => handleCriterionChange(value as LegendSortCriterion)}>
             <SelectTrigger size="sm" className="w-36">
@@ -220,7 +214,7 @@ export function CategoryBreakdownDonut({
             <SelectContent>
               {LEGEND_SORT_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {tr(option.label)}
+                  {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -228,7 +222,7 @@ export function CategoryBreakdownDonut({
           <button
             type="button"
             onClick={() => setSortDirection((prev) => (prev === "desc" ? "asc" : "desc"))}
-            aria-label={sortDirection === "desc" ? tr("Ordina crescente") : tr("Ordina decrescente")}
+            aria-label={sortDirection === "desc" ? "Ordina crescente" : "Ordina decrescente"}
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             {sortDirection === "desc" ? <ArrowDownIcon className="size-4" /> : <ArrowUpIcon className="size-4" />}
@@ -327,10 +321,6 @@ function CategoryLegendRow({
   hasError,
   onCommitBudget,
 }: CategoryLegendRowProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [budgetInput, setBudgetInput] = React.useState(String(budgetAmount));
   const [syncedBudget, setSyncedBudget] = React.useState(budgetAmount);
 
@@ -354,7 +344,7 @@ function CategoryLegendRow({
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
-          title={tr(GROUP_DISPLAY[entry.group].label)}
+          title={GROUP_DISPLAY[entry.group].label}
           className={cn("size-2 shrink-0 rounded-full", GROUP_DISPLAY[entry.group].dotClassName)}
         />
         <CategoryAvatar
@@ -366,29 +356,29 @@ function CategoryLegendRow({
         <div>
           <p className="text-sm font-medium text-foreground">{entry.name}</p>
           <p className="text-xs text-muted-foreground">
-            {formatCurrency(entry.amount, currency)}{" "}{tr("speso ·")}{" "}{tr(GROUP_DISPLAY[entry.group].label)}
+            {formatCurrency(entry.amount, currency)} speso · {GROUP_DISPLAY[entry.group].label}
           </p>
         </div>
       </div>
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-1.5">
           <Badge variant="outline" className={isOverBudget ? "border-neg/40 bg-neg-soft text-neg" : ""}>
-            {saturazionePct === null ? "—" : tr("{0}% budget", {0: Math.round(saturazionePct)})}
+            {saturazionePct === null ? "—" : `${Math.round(saturazionePct)}% budget`}
           </Badge>
-          <Badge variant="outline">{quotaPct === null ? "—" : tr("{0}% totale", {0: Math.round(quotaPct)})}</Badge>
+          <Badge variant="outline">{quotaPct === null ? "—" : `${Math.round(quotaPct)}% totale`}</Badge>
         </div>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <span>{tr("Budget")}</span>
+          <span>Budget</span>
           <Input
             value={budgetInput}
             onChange={(e) => setBudgetInput(e.target.value)}
             onBlur={handleBlur}
             disabled={isSaving}
             className="h-7 w-20 text-right text-sm"
-            aria-label={tr("Budget mensile per {0}", {0: entry.name})}
+            aria-label={`Budget mensile per ${entry.name}`}
           />
         </div>
-        {hasError && <p className="text-sm text-destructive">{tr("Salvataggio non riuscito")}</p>}
+        {hasError && <p className="text-sm text-destructive">Salvataggio non riuscito</p>}
       </div>
     </div>
   );

@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Testata della Panoramica: saluto (che entra parola per parola) e due-tre frasi che dicono com'è il mese e cosa aspetta l'utente. */
 
 import type { ReactNode } from "react";
@@ -16,9 +14,8 @@ export interface OverviewVoiceProps extends VoiceInput {
 }
 
 export function OverviewVoice({ firstName, dateLabel, dateAside, ...input }: OverviewVoiceProps) {
-  const { language, t } = useLocalization();
-  const lines = buildVoiceLines({ ...input, language });
-  const greeting = t(greetingFor(input.today.getHours()));
+  const lines = buildVoiceLines(input);
+  const greeting = greetingFor(input.today.getHours());
   return (
     <header className="flex flex-col gap-3">
       <div>

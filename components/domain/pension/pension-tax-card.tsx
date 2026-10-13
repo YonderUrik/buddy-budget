@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Scheda "quando scende l'aliquota": la linea del tempo con il chip trascinabile per simulare, e cosa cambierebbe nel netto. */
 
@@ -26,15 +25,14 @@ export interface PensionTaxCardProps {
 }
 
 export function PensionTaxCard({ adhesionDate, years, realYears, isSimulated, scenario, baseline, currency, onYearsChange, onCommit, onReset }: PensionTaxCardProps) {
-  const { t: tr } = useLocalization();
   const adhesionYear = Number(adhesionDate.slice(0, 4));
   const delta = scenario && baseline ? scenario.netLow - baseline.netLow : null;
   return (
     <PensionSection
       icon={PercentIcon}
-      title={tr("Quando l'aliquota scende")}
+      title="Quando l'aliquota scende"
       color="var(--swatch-purple)"
-      description={tr("Sui contributi dal 2007 l'imposta in uscita è il 15%, ridotta di 0,30 punti per ogni anno oltre il quindicesimo di partecipazione, fino al 9%. Conta dalla prima adesione.")}
+      description="Sui contributi dal 2007 l'imposta in uscita è il 15%, ridotta di 0,30 punti per ogni anno oltre il quindicesimo di partecipazione, fino al 9%. Conta dalla prima adesione."
     >
       <div className="flex flex-col gap-4">
         <PensionTaxTimeline adhesionDate={adhesionDate} years={years} realYears={realYears} onYearsChange={onYearsChange} onCommit={onCommit} onReset={onReset} />
@@ -43,19 +41,23 @@ export function PensionTaxCard({ adhesionDate, years, realYears, isSimulated, sc
             <p className="min-w-0 flex-1 text-foreground">
               {isSimulated ? (
                 <>
-                  <strong className="font-semibold">{tr("Simulazione")}</strong>{tr(": dopo")}{" "}{years}{" "}{tr("anni di adesione (nel")}{" "}{adhesionYear + years}{tr(") l'aliquota sarebbe")}{" "}{formatPercent(scenario?.rate ?? 0)}
+                  <strong className="font-semibold">Simulazione</strong>: dopo {years} anni di adesione (nel {adhesionYear + years}) l&apos;aliquota sarebbe {formatPercent(scenario?.rate ?? 0)}
                   {scenario && delta !== null ? (
-                    <>{tr(", e alla pensione ti resterebbero almeno")}{" "}<strong className="font-semibold tabular-nums">{money(scenario.netLow, currency)}</strong> ({delta >= 0 ? "+" : "−"}{money(Math.abs(delta), currency)}{" "}{tr("rispetto a oggi).")}</>
+                    <>
+                      , e alla pensione ti resterebbero almeno <strong className="font-semibold tabular-nums">{money(scenario.netLow, currency)}</strong> ({delta >= 0 ? "+" : "−"}{money(Math.abs(delta), currency)} rispetto a oggi).
+                    </>
                   ) : (
                     "."
                   )}
                 </>
               ) : (
-                <span className="text-text-2">{tr("Trascina l'aliquota lungo la linea (o usa le frecce) per vedere cosa cambierebbe nelle stime. Resta solo su questa pagina: non viene salvato nulla.")}</span>
+                <span className="text-text-2">Trascina l&apos;aliquota lungo la linea (o usa le frecce) per vedere cosa cambierebbe nelle stime. Resta solo su questa pagina: non viene salvato nulla.</span>
               )}
             </p>
             {isSimulated ? (
-              <Button type="button" variant="outline" size="sm" onClick={onReset}>{tr("Torna a oggi")}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={onReset}>
+                Torna a oggi
+              </Button>
             ) : null}
           </div>
         ) : null}

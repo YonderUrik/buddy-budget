@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Form "+ Nuova regola": crea manualmente una regola di categorizzazione (pattern + categoria + tipo match). */
 
@@ -17,7 +16,6 @@ export interface AddRuleFormProps {
 }
 
 export function AddRuleForm({ categories }: AddRuleFormProps) {
-  const { t: tr } = useLocalization();
   const createMutation = useCreateRuleMutation();
   const notifyRuleSaved = useRuleSavedFeedback();
   // La fallback ("Da categorizzare") non è mai una categoria valida per una regola creata qui — vedi
@@ -33,11 +31,11 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
     setError(null);
 
     if (pattern.trim() === "") {
-      setError(tr("Il pattern è obbligatorio"));
+      setError("Il pattern è obbligatorio");
       return;
     }
     if (categoryId === "") {
-      setError(tr("Seleziona una categoria"));
+      setError("Seleziona una categoria");
       return;
     }
 
@@ -57,31 +55,33 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
       <div className="flex flex-1 flex-col gap-1">
-        <label className="text-xs font-medium text-foreground" htmlFor="new-rule-pattern">{tr("Pattern")}</label>
+        <label className="text-xs font-medium text-foreground" htmlFor="new-rule-pattern">
+          Pattern
+        </label>
         <Input
           id="new-rule-pattern"
           value={pattern}
           onChange={(e) => setPattern(e.target.value)}
-          placeholder={tr("Es. esselunga")}
+          placeholder="Es. esselunga"
           className="w-full"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-foreground">{tr("Tipo")}</label>
+        <label className="text-xs font-medium text-foreground">Tipo</label>
         <Select value={matchType} onValueChange={(value) => value && setMatchType(value as "merchant" | "contains")}>
           <SelectTrigger className="w-28">
-            <SelectValue>{(value: "merchant" | "contains") => tr(RULE_MATCH_TYPE_LABELS[value])}</SelectValue>
+            <SelectValue>{(value: "merchant" | "contains") => RULE_MATCH_TYPE_LABELS[value]}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="merchant">{tr("Esatta")}</SelectItem>
-            <SelectItem value="contains">{tr("Contiene")}</SelectItem>
+            <SelectItem value="merchant">Esatta</SelectItem>
+            <SelectItem value="contains">Contiene</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-foreground">{tr("Categoria")}</label>
+        <label className="text-xs font-medium text-foreground">Categoria</label>
         <Select value={categoryId} onValueChange={(value) => value && setCategoryId(value)}>
           <SelectTrigger className="w-40">
             <SelectValue>
@@ -99,10 +99,10 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
       </div>
 
       <Button type="submit" disabled={createMutation.isPending}>
-        {createMutation.isPending ? tr("Aggiunta in corso...") : tr("Aggiungi regola")}
+        {createMutation.isPending ? "Aggiunta in corso..." : "Aggiungi regola"}
       </Button>
 
-      {error && <p className="w-full text-sm text-destructive">{tr(error)}</p>}
+      {error && <p className="w-full text-sm text-destructive">{error}</p>}
     </form>
   );
 }

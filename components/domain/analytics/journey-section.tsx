@@ -1,19 +1,17 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Domanda 1, «Quanta strada ho fatto?»: patrimonio contro numero FIRE e da dove viene la crescita recente. */
 
 import { splitGrowth } from "@/lib/calc/growth-split";
 import { Metric } from "./analytics-card";
 import { GlossedText } from "./glossed-text";
-import { money } from "./analytics-format";
+import { money, pct } from "./analytics-format";
 import { GrowthTab } from "./growth-tab";
 import { journeySentences } from "./plain-answers";
 import { QuestionSection } from "./question-section";
 import type { QuestionSectionData } from "./section-props";
 
 export function JourneySection({ question, base, assumptions, plan }: QuestionSectionData) {
-  const { t: tr } = useLocalization();
   const { currency } = base;
   const split = splitGrowth(base.growthPoints);
   const sentences = journeySentences(plan, split.rows.length >= 2 ? split : null, currency, assumptions.withdrawalRate);
@@ -29,7 +27,7 @@ export function JourneySection({ question, base, assumptions, plan }: QuestionSe
       </div>
       {plan.target !== null ? (
         <div className="flex flex-col gap-2">
-          <div role="progressbar" aria-label={tr("Avanzamento verso il numero FIRE")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="h-3 overflow-hidden rounded-full bg-muted">
+          <div role="progressbar" aria-label="Avanzamento verso il numero FIRE" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="h-3 overflow-hidden rounded-full bg-muted">
             <div className="h-full rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
@@ -39,13 +37,13 @@ export function JourneySection({ question, base, assumptions, plan }: QuestionSe
         </div>
       ) : null}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Metric label={tr("Il tuo patrimonio")} value={money(plan.wealth, currency)} />
-        <Metric term="numero-fire" label={tr("Numero FIRE")} value={plan.target !== null ? money(plan.target, currency) : "—"} sub={plan.taxShare > 0 && plan.fireNumberGross ? "{0} prima delle imposte" : undefined} />
+        <Metric label="Il tuo patrimonio" value={money(plan.wealth, currency)} />
+        <Metric term="numero-fire" label="Numero FIRE" value={plan.target !== null ? money(plan.target, currency) : "—"} sub={plan.taxShare > 0 && plan.fireNumberGross ? `${money(plan.fireNumberGross, currency)} prima delle imposte` : undefined} />
         <Metric
-          label={tr("Ti mancano")}
+          label="Ti mancano"
           value={plan.target !== null ? money(Math.max(plan.target - plan.wealth, 0), currency) : "—"}
           tone={plan.target !== null && plan.wealth >= plan.target ? "pos" : "default"}
-          sub={plan.progress !== null ? "hai fatto il {0}" : undefined}
+          sub={plan.progress !== null ? `hai fatto il ${pct(plan.progress, 0)}` : undefined}
         />
       </div>
     </QuestionSection>

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Selettore periodo 1M/3M/1A/Max del grafico patrimonio netto. */
 
@@ -19,6 +18,5 @@ export interface NetWorthPeriodSelectorProps {
 }
 
 export function NetWorthPeriodSelector({ value, onChange }: NetWorthPeriodSelectorProps) {
-  const { t: tr } = useLocalization();
-  return <SegmentedControl options={PERIOD_OPTIONS} value={value} onChange={onChange} ariaLabel={tr("Periodo del grafico")} />;
+  return <SegmentedControl options={PERIOD_OPTIONS} value={value} onChange={onChange} ariaLabel="Periodo del grafico" />;
 }

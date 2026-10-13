@@ -1,7 +1,3 @@
-"use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * "Dove sta il tuo patrimonio": una barra divisa per classe di asset, una frase sulla quota investita e una riga per
  * classe (valore, peso, una sola cifra di sintesi) che porta alla sua sezione. Riassunto, non analisi: i dettagli
@@ -14,7 +10,7 @@ import { ChevronRightIcon } from "lucide-react";
 import { Cell, Pie, PieChart } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { assetClassColor } from "./asset-classes";
 import { computeInvestedShare, type NetWorthCompositionItem } from "./net-worth-composition-row.utils";
@@ -46,10 +42,6 @@ function investedSentence(share: number): string {
 }
 
 export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio", className, onSliceSelect }: NetWorthCompositionRowProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [hoveredKey, setHoveredKey] = React.useState<string | null>(null);
   const [lockedKey, setLockedKey] = React.useState<string | null>(null);
   if (items.length === 0) return null;
@@ -72,7 +64,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
   return (
     <Card className={className}>
       <CardHeader className="gap-1">
-        <CardTitle className="font-heading text-lg font-medium text-foreground">{tr(title)}</CardTitle>
+        <CardTitle className="font-heading text-lg font-medium text-foreground">{title}</CardTitle>
         {investedShare !== null && !showPie ? <p className="text-sm text-foreground">{investedSentence(investedShare)}</p> : null}
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
@@ -111,14 +103,14 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
               {focusItem ? (
                 <>
-                  <span className="max-w-full truncate text-xs text-muted-foreground">{tr(focusItem.label)}</span>
+                  <span className="max-w-full truncate text-xs text-muted-foreground">{focusItem.label}</span>
                   <span className="font-heading text-lg font-medium tabular-nums text-foreground">{format(focusItem.amount)}</span>
-                  <span className="text-xs tabular-nums text-muted-foreground">{percent(focusItem.share)}{" "}{tr("del totale")}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">{percent(focusItem.share)} del totale</span>
                 </>
               ) : investedShare !== null ? (
                 <>
                   <span className="font-heading text-2xl font-medium tabular-nums text-foreground">{percent(investedShare)}</span>
-                  <span className="text-xs text-muted-foreground">{tr("investito")}</span>
+                  <span className="text-xs text-muted-foreground">investito</span>
                 </>
               ) : null}
             </div>
@@ -141,13 +133,13 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
               >
                 <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: colorFor(item.key) }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-foreground">{tr(item.label)}</span>
+                  <span className="block text-sm font-medium text-foreground">{item.label}</span>
                   <span className="block text-xs text-muted-foreground">
                     {item.detail}
                     {assetCount > 1 && !item.isLiability ? (
                       <>
                         {` · ${percent(item.share)}`}
-                        <span className="hidden sm:inline">{" "}{tr("del totale")}</span>
+                        <span className="hidden sm:inline"> del totale</span>
                       </>
                     ) : null}
                   </span>
@@ -159,7 +151,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
                       {item.highlight.amount < 0 ? "−" : "+"}
                       {format(Math.abs(item.highlight.amount))}
                       {item.highlight.ratio !== null ? ` (${signedPercent(item.highlight.ratio)})` : ""}{" "}
-                      <span className="hidden text-muted-foreground sm:inline">{tr(item.highlight.label)}</span>
+                      <span className="hidden text-muted-foreground sm:inline">{item.highlight.label}</span>
                     </span>
                   ) : null}
                 </span>

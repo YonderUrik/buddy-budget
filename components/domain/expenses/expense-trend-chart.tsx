@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Grafico Spese: barre impilate "Andamento ultimi 6 mesi", segmenti per categoria ricalcolati mese per mese (top 6 + eventuale "Altro", ordine per importo di quel mese specifico). */
 
@@ -10,7 +7,7 @@ import type { TooltipContentProps } from "recharts";
 import { SWATCH_CHART_COLOR } from "@/components/domain/shared/color-swatches";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-
+import { formatCurrency } from "@/lib/format";
 import { OTHER_STACK_SEGMENT_KEY, type MonthlyCategoryStack, type MonthlyStackSegment } from "@/lib/calc/expenses";
 import type { CategoryColor } from "@/lib/validation/categories";
 
@@ -52,10 +49,6 @@ interface MonthlyStackTooltipProps extends Partial<TooltipContentProps<number, s
 
 /** Tooltip custom: legge i segmenti reali del mese sotto hover dalla riga dati (`payload[0].payload.segments`), perché nome/colore per slot cambiano ogni mese e il `formatter` di `ChartTooltipContent` assume un nome fisso per serie. */
 function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const row = payload?.[0]?.payload as MonthlyStackRow | undefined;
   if (!active || !row || row.segments.length === 0) return null;
 
@@ -72,7 +65,7 @@ function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipP
         </div>
       ))}
       <div className="flex w-full items-center justify-between gap-3 border-t border-border pt-1.5">
-        <span className="font-medium text-foreground">{tr("Totale")}</span>
+        <span className="font-medium text-foreground">Totale</span>
         <span className="font-mono font-semibold tabular-nums text-foreground">
           {formatCurrency(total, currency)}
         </span>
@@ -82,10 +75,6 @@ function MonthlyStackTooltip({ active, payload, currency }: MonthlyStackTooltipP
 }
 
 export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChartProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const maxSlots = monthlyStacks.reduce((max, month) => Math.max(max, month.segments.length), 0);
   const rows = buildRows(monthlyStacks, maxSlots);
   const slots = Array.from({ length: maxSlots }, (_, i) => i);
@@ -93,7 +82,9 @@ export function ExpenseTrendChart({ monthlyStacks, currency }: ExpenseTrendChart
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Andamento ultimi 6 mesi")}</CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Andamento ultimi 6 mesi
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={{}} className="max-h-56 w-full">

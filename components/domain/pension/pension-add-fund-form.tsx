@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Form per aggiungere un fondo di previdenza in due passi: il nome, poi la data di prima adesione a una forma pensionistica. */
 
@@ -20,7 +19,6 @@ export interface PensionAddFundFormProps {
 }
 
 export function PensionAddFundForm({ today, onSubmit, pending = false, errorMessage = null, defaultName = "" }: PensionAddFundFormProps) {
-  const { t: tr } = useLocalization();
   const [name, setName] = React.useState(defaultName);
   const [adhesionDate, setAdhesionDate] = React.useState("");
   const flow = useStepFlow(2);
@@ -39,30 +37,34 @@ export function PensionAddFundForm({ today, onSubmit, pending = false, errorMess
       }}
       className="flex flex-col gap-4"
     >
-      <StepProgress index={flow.index} count={flow.count} label={tr("Passi del nuovo fondo")} />
+      <StepProgress index={flow.index} count={flow.count} label="Passi del nuovo fondo" />
       <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-3">
         {flow.index === 0 ? (
           <>
-            <StepHeading title={tr("Come si chiama il fondo?")} />
-            <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">{tr("Nome del fondo")}<Input data-autofocus value={name} placeholder={tr("es. Piano pensione Moneyfarm")} maxLength={80} onChange={(e) => setName(e.target.value)} />
+            <StepHeading title="Come si chiama il fondo?" />
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
+              Nome del fondo
+              <Input data-autofocus value={name} placeholder="es. Piano pensione Moneyfarm" maxLength={80} onChange={(e) => setName(e.target.value)} />
             </label>
           </>
         ) : (
           <>
-            <StepHeading title={tr("Quando hai aderito?")} description={tr("Conta la prima adesione in assoluto a una forma pensionistica, anche in un'altra azienda: decide l'aliquota in uscita.")} />
-            <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">{tr("Data di prima adesione")}<Input data-autofocus type="date" value={adhesionDate} max={today} onChange={(e) => setAdhesionDate(e.target.value)} />
+            <StepHeading title="Quando hai aderito?" description="Conta la prima adesione in assoluto a una forma pensionistica, anche in un'altra azienda: decide l'aliquota in uscita." />
+            <label className="flex min-w-0 flex-col gap-1.5 text-sm text-text-2">
+              Data di prima adesione
+              <Input data-autofocus type="date" value={adhesionDate} max={today} onChange={(e) => setAdhesionDate(e.target.value)} />
             </label>
           </>
         )}
       </StepStage>
       {errorMessage ? <ErrorWithReport area="pensione" error={errorMessage} /> : null}
       <StepActions
-        backLabel={flow.isFirst ? undefined : tr("Indietro")}
+        backLabel={flow.isFirst ? undefined : "Indietro"}
         onBack={() => {
           track("form_step_back", { flow: "pension_fund", step: flow.index + 1 });
           flow.back();
         }}
-        primaryLabel={flow.isLast ? (pending ? "Salvataggio…" : "Aggiungi il fondo") : tr("Continua")}
+        primaryLabel={flow.isLast ? (pending ? "Salvataggio…" : "Aggiungi il fondo") : "Continua"}
         disabled={!canContinue}
         pending={pending}
       />

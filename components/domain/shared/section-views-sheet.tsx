@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Foglio dal basso con le viste di una sezione (icona, nome, descrizione): lo apre il titolo di `SectionHeading` su telefono. */
 
@@ -23,12 +22,11 @@ export interface SectionViewsSheetProps {
 }
 
 export function SectionViewsSheet({ open, onOpenChange, title, tabs, activeIndex, onChoose }: SectionViewsSheetProps) {
-  const { t: tr } = useLocalization();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="gap-3">
-        <DialogTitle className="px-1 font-heading text-lg font-medium">{tr(title)}</DialogTitle>
-        <nav aria-label={tr("Viste di {0}", {0: title})}>
+        <DialogTitle className="px-1 font-heading text-lg font-medium">{title}</DialogTitle>
+        <nav aria-label={`Viste di ${title}`}>
           <ul className="flex flex-col gap-1">
             {tabs.map((tab, index) => {
               const active = index === activeIndex;
@@ -51,8 +49,8 @@ export function SectionViewsSheet({ open, onOpenChange, title, tabs, activeIndex
                       <Icon size={VIEW_ICON_SIZE} aria-hidden="true" className={cn("shrink-0", active ? "text-primary" : "text-text-2")} />
                     ) : null}
                     <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="text-base font-medium text-foreground">{tr(tab.label)}</span>
-                      {tab.description ? <span className="text-sm text-text-2">{tr(tab.description)}</span> : null}
+                      <span className="text-base font-medium text-foreground">{tab.label}</span>
+                      {tab.description ? <span className="text-sm text-text-2">{tab.description}</span> : null}
                     </span>
                     {active ? <CheckIcon className="size-4 shrink-0 text-primary" aria-hidden="true" /> : null}
                   </Link>

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** I tuoi dati: inserimento delle fotografie (contributi netti e controvalore), profilo del fondo e altri fondi. */
 
@@ -17,7 +16,6 @@ import {
 } from "@/lib/queries/pension";
 
 export default function PensioneDatiPage() {
-  const { t: tr } = useLocalization();
   const { fund, funds, snapshots, today, currency, selectFund } = usePensionView();
   const [importOpen, setImportOpen] = React.useState(false);
   const saveSnapshot = useSavePensionSnapshotMutation();
@@ -62,7 +60,7 @@ export default function PensioneDatiPage() {
         }}
       />
       {funds.length < PENSION_MAX_FUNDS ? (
-        <PensionSection icon={PlusCircleIcon} title={tr("Hai un altro fondo?")} color="var(--swatch-indigo)" description={tr("Puoi tracciarne più di uno (per esempio un fondo negoziale e un PIP): il patrimonio netto li somma.")}>
+        <PensionSection icon={PlusCircleIcon} title="Hai un altro fondo?" color="var(--swatch-indigo)" description="Puoi tracciarne più di uno (per esempio un fondo negoziale e un PIP): il patrimonio netto li somma.">
           <PensionAddFundForm
             key={funds.length}
             today={today}

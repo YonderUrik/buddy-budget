@@ -1,6 +1,5 @@
 "use client";
 
-
 import * as React from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { setAmountsMasked } from "@/lib/format";
@@ -65,7 +64,6 @@ export function PrivacyProvider({ initialHidden, children }: PrivacyProviderProp
  * non si accorgerebbero del cambio. I dati restano in cache, quindi non ci sono nuove richieste.
  */
 export function PrivacyBoundary({ children }: { children: React.ReactNode }) {
-
   const { hidden } = usePrivacy();
   return <React.Fragment key={hidden ? "hidden" : "visible"}>{children}</React.Fragment>;
 }

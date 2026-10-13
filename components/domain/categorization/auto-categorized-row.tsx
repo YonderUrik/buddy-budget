@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga di «Messe dall'app»: un esercente con i movimenti categorizzati da soli, la categoria applicata (toccandola si
@@ -34,7 +33,6 @@ export interface AutoCategorizedRowProps {
 }
 
 export function AutoCategorizedRow({ group, categories, currency, categoryUsage, busy = false, onCorrect, onRemoteLogo }: AutoCategorizedRowProps) {
-  const { t: tr } = useLocalization();
   const [picking, setPicking] = React.useState(false);
   // Una correzione di solito vale anche per i prossimi movimenti: senza, una regola sbagliata li rimetterebbe lì.
   const [remember, setRemember] = React.useState(true);
@@ -64,9 +62,9 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
             aria-controls={detailsId}
             className="flex min-w-0 flex-col text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{tr(group.label)}</span>
+            <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{group.label}</span>
             <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
-              {count === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: count})} · {dateRangeLabel(group.transactionDates)}
+              {count === 1 ? "1 movimento" : `${count} movimenti`} · {dateRangeLabel(group.transactionDates)}
               <ChevronDownIcon className={cn("size-3.5 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
             </span>
           </button>
@@ -80,7 +78,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
             type="button"
             onClick={() => setPicking(true)}
             disabled={busy}
-            title={tr("Cambia categoria")}
+            title="Cambia categoria"
             className="flex min-h-9 max-w-full items-center gap-1.5 rounded-full bg-foreground/[0.05] py-1 pr-2.5 pl-1 text-sm font-medium text-foreground outline-none hover:bg-foreground/[0.09] focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60 sm:min-h-8"
           >
             {category ? <CategoryAvatar icon={category.icon as CategoryIcon} color={category.color as CategoryColor} size={12} className="size-6" /> : null}
@@ -93,7 +91,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
         {expanded ? (
           <div id={detailsId} className="border-l border-border pl-3">
             <MovementsPreview
-              label={tr(group.label)}
+              label={group.label}
               dates={group.transactionDates}
               amounts={group.transactionAmounts}
               descriptions={group.transactionDescriptions}
@@ -109,8 +107,8 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
         onOpenChange={setPicking}
         categories={selectable}
         usage={categoryUsage}
-        title={tr("Cambia categoria")}
-        description={tr(group.label)}
+        title="Cambia categoria"
+        description={group.label}
         onPick={(categoryId) => {
           setPicking(false);
           onCorrect(categoryId, remember);
@@ -118,7 +116,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
         footer={
           <label htmlFor={rememberId} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-foreground/[0.04] px-3 text-sm">
             <Checkbox id={rememberId} checked={remember} onCheckedChange={(checked) => setRemember(checked === true)} />
-            <span className="min-w-0">{tr("Usa sempre questa categoria per «")}{group.label}»</span>
+            <span className="min-w-0">Usa sempre questa categoria per «{group.label}»</span>
           </label>
         }
       />

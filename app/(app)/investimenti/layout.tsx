@@ -1,6 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
-import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
  * Layout di Investimenti: titolo, bottoni Importa/Registra, schede (Portafoglio, Proventi, Tasse) e i dialog
@@ -34,9 +32,6 @@ import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 const TITLE_PAGES_BASE = "/investimenti/titoli/";
 
 export default function InvestimentiLayout({ children }: { children: React.ReactNode }) {
-  const { t: tr } = useLocalization();
-  const { productCountry } = useLocalization();
-  const tabs = INVESTMENTS_TABS.filter(tab => isCountryPathAvailable(productCountry, tab.href));
   const pathname = usePathname();
   const isTitlePage = pathname.startsWith(TITLE_PAGES_BASE);
   const overview = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
@@ -58,17 +53,17 @@ export default function InvestimentiLayout({ children }: { children: React.React
         {isTitlePage ? null : (
           <div className="flex flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
-              <SectionHeading title={tr("Investimenti")} tabs={tabs} activeHref={pathname} analyticsKey="investimenti" />
+              <SectionHeading title="Investimenti" tabs={INVESTMENTS_TABS} activeHref={pathname} analyticsKey="investimenti" />
               <div className="flex shrink-0 gap-2">
-                <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label={tr("Importazioni fatte")} title={tr("Importazioni fatte")}>
+                <Button variant="ghost" size="icon" className="size-11 sm:size-9" onClick={() => setManagementOpen(true)} aria-label="Importazioni fatte" title="Importazioni fatte">
                   <DatabaseIcon size={16} aria-hidden="true" />
                 </Button>
                 {/* Su mobile solo icone: con le etichette la testata era più larga dello schermo e la pagina scorreva di lato. */}
-                <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label={tr("Importa")}>
-                  <Upload size={15} aria-hidden="true" />{" "}<span className="hidden sm:inline">{tr("Importa")}</span>
+                <Button variant="outline" className="size-11 gap-1.5 sm:size-auto" onClick={() => setImportOpen(true)} aria-label="Importa">
+                  <Upload size={15} aria-hidden="true" /> <span className="hidden sm:inline">Importa</span>
                 </Button>
-                <Button className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label={tr("Registra operazione")}>
-                  <Plus size={15} aria-hidden="true" />{" "}<span className="hidden sm:inline">{tr("Registra")}</span>
+                <Button className="size-11 gap-1.5 shadow-xs sm:size-auto" onClick={() => setRegisterInitial({ instrument: null })} aria-label="Registra operazione">
+                  <Plus size={15} aria-hidden="true" /> <span className="hidden sm:inline">Registra</span>
                 </Button>
               </div>
             </div>
@@ -81,7 +76,7 @@ export default function InvestimentiLayout({ children }: { children: React.React
 
       <Dialog open={registerInitial !== null} onOpenChange={(open) => !open && setRegisterInitial(null)}>
         <FormDialogContent>
-          <PanelDialogHeader icon={Plus} title={tr("Registra operazione")} description={tr("Un acquisto, una vendita, un dividendo o un altro movimento del portafoglio.")} color="var(--swatch-indigo)" />
+          <PanelDialogHeader icon={Plus} title="Registra operazione" description="Un acquisto, una vendita, un dividendo o un altro movimento del portafoglio." color="var(--swatch-indigo)" />
           {registerInitial ? (
             <RegisterOperationForm
               currency={currency}

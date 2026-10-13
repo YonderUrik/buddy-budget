@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Riquadro di errore di caricamento con bottone "Riprova", condiviso dalle pagine dell'app. */
 
@@ -16,16 +15,17 @@ export interface LoadErrorProps {
 }
 
 export function LoadError({ message, onRetry, reportArea = "caricamento" }: LoadErrorProps) {
-  const { t: tr } = useLocalization();
   return (
     <div
       role="alert"
       className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
     >
-      <span>{tr(message)}</span>
+      <span>{message}</span>
       <div className="flex items-center gap-3">
         <ReportErrorLink area={reportArea} error={message} />
-        <Button type="button" variant="outline" size="sm" onClick={onRetry}>{tr("Riprova")}</Button>
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+          Riprova
+        </Button>
       </div>
     </div>
   );

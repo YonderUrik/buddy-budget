@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Campo prezzo del form operazione, precompilato col prezzo dello strumento alla data scelta. Sotto dice da dove
@@ -23,18 +22,18 @@ export interface OperationPriceFieldProps {
 }
 
 export function OperationPriceField({ id, label, value, onChange, hint, restoreValue, onRestore }: OperationPriceFieldProps) {
-  const { t: tr } = useLocalization();
   const hintId = `${id}-hint`;
   return (
-    <OperationFormField label={tr(label)} htmlFor={id}>
+    <OperationFormField label={label} htmlFor={id}>
       <Input id={id} inputMode="decimal" value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={hint ? hintId : undefined} />
       {hint ? (
         <p id={hintId} className="text-xs text-muted-foreground" aria-live="polite">
-          {tr(hint)}
+          {hint}
           {restoreValue ? (
             <>
               {" · "}
-              <button type="button" onClick={onRestore} className="font-medium text-foreground underline underline-offset-2">{tr("Usa")}{" "}{restoreValue}
+              <button type="button" onClick={onRestore} className="font-medium text-foreground underline underline-offset-2">
+                Usa {restoreValue}
               </button>
             </>
           ) : null}

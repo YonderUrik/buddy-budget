@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga singola della lista Transazioni. In alto descrizione e importo, sotto data e categoria
@@ -25,7 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import { formatCurrency, formatShortDate } from "@/lib/format";
 import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/lib/queries/transactions";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import { mccLabel } from "@/lib/categorization/merchant-name";
@@ -49,10 +46,6 @@ const ACTION_BUTTON_CLASS =
 type OpenPanel = "none" | "split" | "edit";
 
 export function TransactionRow({ transaction, categories, currency }: TransactionRowProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency, formatShortDate } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const isAuto = transaction.source === "auto";
   const updateMutation = useUpdateTransactionMutation();
   const deleteMutation = useDeleteTransactionMutation();
@@ -96,7 +89,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           if (previousCategoryId === null) return;
           toast.success(`Spostata in ${nextName}`, {
             action: {
-              label: tr("Annulla"),
+              label: "Annulla",
               onClick: () => updateMutation.mutate({ id: transaction.id, input: { categoryId: previousCategoryId } }),
             },
           });
@@ -137,18 +130,20 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             {merchantKind && (
               <>
                 <span aria-hidden="true" className="hidden sm:inline">·</span>
-                <span className="hidden shrink-0 truncate sm:inline" title={tr("Tipo di esercente indicato dalla banca")}>
+                <span className="hidden shrink-0 truncate sm:inline" title="Tipo di esercente indicato dalla banca">
                   {merchantKind}
                 </span>
               </>
             )}
             {!isAuto && (
-              <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">{tr("Manuale")}</Badge>
+              <Badge variant="outline" className="hidden shrink-0 sm:inline-flex">
+                Manuale
+              </Badge>
             )}
           </div>
 
-          {updateMutation.isPending && <p className="text-xs text-muted-foreground">{tr("Salvataggio in corso...")}</p>}
-          {updateMutation.isError && <p className="text-xs text-destructive">{tr("Salvataggio non riuscito, riprova.")}</p>}
+          {updateMutation.isPending && <p className="text-xs text-muted-foreground">Salvataggio in corso...</p>}
+          {updateMutation.isError && <p className="text-xs text-destructive">Salvataggio non riuscito, riprova.</p>}
         </div>
 
         <div className="shrink-0 text-right">
@@ -156,10 +151,10 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             {isIncome && "+"}
             {formatCurrency(isSplit ? netAmount : fullAmount, currency)}
           </p>
-          {isTransfer && <p className="text-xs text-muted-foreground">{tr("Escluso dai conteggi")}</p>}
+          {isTransfer && <p className="text-xs text-muted-foreground">Escluso dai conteggi</p>}
           {isSplit && (
             <p className="text-xs text-muted-foreground">
-              <span className="sr-only">{tr("Diviso, importo pieno")}{" "}</span>
+              <span className="sr-only">Diviso, importo pieno </span>
               <span className="line-through">{formatCurrency(fullAmount, currency)}</span>
             </p>
           )}
@@ -170,7 +165,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
           onClick={() => setActionsOpen((open) => !open)}
           aria-expanded={actionsOpen}
           aria-controls={`azioni-${transaction.id}`}
-          aria-label={tr("Altre azioni")}
+          aria-label="Altre azioni"
           className="-mr-2 flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted sm:hidden"
         >
           <EllipsisIcon className="size-4" aria-hidden="true" />
@@ -190,9 +185,11 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             onClick={() => togglePanel("split")}
             className={cn(ACTION_BUTTON_CLASS, openPanel === "split" && "bg-muted text-foreground")}
             aria-pressed={openPanel === "split"}
-            title={tr("Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)")}
+            title="Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)"
           >
-            <SplitIcon className="size-4 sm:hidden" aria-hidden="true" />{tr("Dividi")}</button>}
+            <SplitIcon className="size-4 sm:hidden" aria-hidden="true" />
+            Dividi
+          </button>}
 
           {!isAuto && (
             <>
@@ -201,33 +198,34 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
                 onClick={() => togglePanel("edit")}
                 className={cn(ACTION_BUTTON_CLASS, openPanel === "edit" && "bg-muted text-foreground")}
                 aria-pressed={openPanel === "edit"}
-                aria-label={tr("Modifica transazione")}
+                aria-label="Modifica transazione"
               >
                 <PencilIcon className="size-4" aria-hidden="true" />
-                <span className="sm:sr-only">{tr("Modifica")}</span>
+                <span className="sm:sr-only">Modifica</span>
               </button>
 
               <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <AlertDialogTrigger
                   className={cn(ACTION_BUTTON_CLASS, "hover:bg-destructive/10 hover:text-destructive")}
-                  aria-label={tr("Elimina transazione")}
+                  aria-label="Elimina transazione"
                 >
                   <Trash2Icon className="size-4" aria-hidden="true" />
-                  <span className="sm:sr-only">{tr("Elimina")}</span>
+                  <span className="sm:sr-only">Elimina</span>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>{tr("Eliminare questa transazione?")}</AlertDialogTitle>
+                    <AlertDialogTitle>Eliminare questa transazione?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      &quot;{transaction.description}{tr("\" verrà eliminata definitivamente.")}</AlertDialogDescription>
+                      &quot;{transaction.description}&quot; verrà eliminata definitivamente.
+                    </AlertDialogDescription>
                   </AlertDialogHeader>
                   {deleteMutation.isError && (
-                    <p className="text-sm text-destructive">{tr("Eliminazione non riuscita, riprova.")}</p>
+                    <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>
                   )}
                   <AlertDialogFooter>
-                    <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
+                    <AlertDialogCancel>Annulla</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
-                      {deleteMutation.isPending ? tr("Eliminazione...") : tr("Elimina")}
+                      {deleteMutation.isPending ? "Eliminazione..." : "Elimina"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

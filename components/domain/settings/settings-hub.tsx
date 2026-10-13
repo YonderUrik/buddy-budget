@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * SettingsHub — impaginazione della pagina Impostazioni a gruppi.
@@ -24,7 +23,6 @@ export interface SettingsHubProps {
 }
 
 function GroupIcon({ group, size = "md" }: { group: SettingsGroupInfo; size?: "sm" | "md" }) {
-
   const Icon = group.icon;
   return (
     <span
@@ -40,7 +38,6 @@ function GroupIcon({ group, size = "md" }: { group: SettingsGroupInfo; size?: "s
 }
 
 export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GROUPS }: SettingsHubProps) {
-  const { t: tr } = useLocalization();
   const current = selected ?? groups[0].id;
   const currentGroup = groups.find((g) => g.id === current) ?? groups[0];
 
@@ -58,8 +55,8 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
               >
                 <GroupIcon group={group} />
                 <span className="min-w-0 flex-1">
-                  <span className={cn("block text-[15px] font-semibold leading-tight", group.danger && "text-neg")}>{tr(group.label)}</span>
-                  <span className="block text-xs leading-snug text-text-2">{tr(group.summary)}</span>
+                  <span className={cn("block text-[15px] font-semibold leading-tight", group.danger && "text-neg")}>{group.label}</span>
+                  <span className="block text-xs leading-snug text-text-2">{group.summary}</span>
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
               </button>
@@ -69,7 +66,7 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
       ) : null}
 
       {/* Indice desktop */}
-      <nav aria-label={tr("Gruppi di impostazioni")} className="sticky top-6 hidden w-56 shrink-0 flex-col gap-1 md:flex">
+      <nav aria-label="Gruppi di impostazioni" className="sticky top-6 hidden w-56 shrink-0 flex-col gap-1 md:flex">
         {groups.map((group) => {
           const active = group.id === current;
           return (
@@ -84,7 +81,7 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
               )}
             >
               <GroupIcon group={group} size="sm" />
-              <span className={cn("text-sm font-medium", group.danger && "text-neg")}>{tr(group.label)}</span>
+              <span className={cn("text-sm font-medium", group.danger && "text-neg")}>{group.label}</span>
             </button>
           );
         })}
@@ -92,9 +89,9 @@ export function SettingsHub({ selected, onSelect, content, groups = SETTINGS_GRO
 
       {/* Contenuto del gruppo */}
       <div className={cn("min-w-0 flex-1", selected === null && "max-md:hidden")}>
-        <BackLink onClick={() => onSelect(null)} label={tr("Impostazioni")} className="mb-3 md:hidden" />
-        <h2 className={cn("mb-1 font-heading text-xl font-medium", currentGroup.danger ? "text-neg" : "text-foreground")}>{tr(currentGroup.label)}</h2>
-        <p className="mb-5 text-sm text-muted-foreground">{tr(currentGroup.summary)}</p>
+        <BackLink onClick={() => onSelect(null)} label="Impostazioni" className="mb-3 md:hidden" />
+        <h2 className={cn("mb-1 font-heading text-xl font-medium", currentGroup.danger ? "text-neg" : "text-foreground")}>{currentGroup.label}</h2>
+        <p className="mb-5 text-sm text-muted-foreground">{currentGroup.summary}</p>
         <div className="flex flex-col gap-8">{content[current]}</div>
       </div>
     </div>

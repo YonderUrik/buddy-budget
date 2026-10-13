@@ -140,7 +140,7 @@ I componenti stanno su tre livelli con dipendenze solo verso il basso (`ui` ← 
 
 ## Stato del progetto
 
-BuddyBudget è in beta e lo sviluppa una persona sola, con l'aiuto di un assistente AI per il codice. Paese del prodotto e lingua si scelgono separatamente in onboarding e nelle Preferenze: Italia in italiano/inglese, Germania in tedesco/inglese. Per la Germania fiscalità italiana, pensione/TFR, proventi previsionali, Analitiche/FIRE e inflazione italiana sono temporaneamente disabilitati; i dati esistenti sono conservati. Le traduzioni delle email e la revisione dei documenti legali restano separate dall'interfaccia. In arrivo: modelli finanziari tedeschi e notifiche push. Il collegamento alla banca ha posti limitati durante la beta.
+BuddyBudget è in beta e lo sviluppa una persona sola, con l'aiuto di un assistente AI per il codice. L'interfaccia e la documentazione sono in italiano: lingua e valuta si scelgono già in onboarding, ma la traduzione non è ancora implementata. In arrivo: altre lingue e valute, notifiche push, la schermata Pianifica. Il collegamento alla banca ha posti limitati durante la beta.
 
 ## Contribuire, sicurezza e contatti
 
@@ -150,7 +150,7 @@ BuddyBudget è in beta e lo sviluppa una persona sola, con l'aiuto di un assiste
 
 ## English
 
-BuddyBudget is a personal finance web app: manual and Open Banking accounts, categorised transactions with budgets and recurring-payment detection, investment tracking (TWR/XIRR returns, benchmarks, risk, look-through diversification, Italian capital-gains tax estimates, broker imports), debts with amortisation and payoff simulations, pension funds, FIRE projections and net worth over time. Product country and interface language are independent: Italy supports Italian and English; Germany supports German and English. Italian tax calculations, pensions/TFR, income forecasts, retirement analytics/FIRE and Italian inflation are disabled for Germany pending dedicated models. Switching country preserves existing records. Email and legal-document localisation remain separate from the app interface.
+BuddyBudget is a personal finance web app: manual and Open Banking accounts, categorised transactions with budgets and recurring-payment detection, investment tracking (TWR/XIRR returns, benchmarks, risk, look-through diversification, Italian capital-gains tax estimates, broker imports), debts with amortisation and payoff simulations, pension funds, FIRE projections and net worth over time. The interface and docs are in Italian for now; multi-language support is planned.
 
 Self-host it with `./scripts/selfhost-init.sh && docker compose up -d` (see [`docs/self-hosting.md`](docs/self-hosting.md)), or run it for development with Node 24, pnpm, Postgres and Redis: `pnpm install`, copy `.env.local.example` to `.env.local`, `pnpm db:migrate`, `pnpm dev`. Email, Google sign-in and bank connections are optional. Tax and financial figures are informational estimates, not advice.
 

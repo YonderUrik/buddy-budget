@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Curva della spesa cumulata del mese contro la media dei mesi precedenti: linea piena "tu", tratteggiata "di solito".
@@ -10,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
-
+import { formatCurrency } from "@/lib/format";
 import type { MonthPace } from "@/lib/calc/month-pace";
 
 /** Larghezza di partenza (e di riserva fuori dal browser): poi il disegno prende quella reale, così il testo resta leggibile su mobile. */
@@ -26,10 +23,6 @@ export interface MonthPaceChartProps {
 }
 
 export function MonthPaceChart({ pace, currency }: MonthPaceChartProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const ref = React.useRef<HTMLDivElement>(null);
   const [width, setWidth] = React.useState(DEFAULT_WIDTH);
   React.useEffect(() => {
@@ -104,7 +97,9 @@ export function MonthPaceChart({ pace, currency }: MonthPaceChartProps) {
               y={y(typical[daysInMonth - 1]) + 19}
               fontSize={12}
               fill="var(--text-3)"
-            >{tr("di solito")}</text>
+            >
+              di solito
+            </text>
           </>
         ) : null}
         <path

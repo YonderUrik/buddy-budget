@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Sezione Sessioni: i dispositivi con un accesso ancora valido. Si può chiudere una sessione o tutte le altre;
@@ -12,16 +9,12 @@ import { Laptop, Loader2, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoadError } from "@/components/domain/shared";
 import { SESSION_EXPIRES_IN_DAYS } from "@/lib/auth/constants";
-
+import { formatLongDate, formatRelativeTime } from "@/lib/format";
 import { useRevokeSessionMutation, useUserSessionsQuery, type UserSessionView } from "@/lib/queries/user-settings";
 import { MonitorSmartphone } from "lucide-react";
 import { SettingsSection } from "./settings-section";
 
 function SessionRow({ session, onRevoke, revoking }: { session: UserSessionView; onRevoke: () => void; revoking: boolean }) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatLongDate, formatRelativeTime } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const Icon = session.mobile ? Smartphone : Laptop;
   return (
     <li className="flex items-center gap-3 border-t border-border py-3 first:border-t-0 first:pt-0">
@@ -29,21 +22,23 @@ function SessionRow({ session, onRevoke, revoking }: { session: UserSessionView;
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
           {session.device}
-          {session.current && <span className="ml-2 text-xs font-normal text-pos">{tr("questo dispositivo")}</span>}
+          {session.current && <span className="ml-2 text-xs font-normal text-pos">questo dispositivo</span>}
         </p>
-        <p className="text-xs text-muted-foreground">{tr("Attiva")}{" "}{formatRelativeTime(new Date(session.lastActiveAt))}{" "}{tr("· scade il")}{" "}{formatLongDate(new Date(session.expiresAt))}
+        <p className="text-xs text-muted-foreground">
+          Attiva {formatRelativeTime(new Date(session.lastActiveAt))} · scade il {formatLongDate(new Date(session.expiresAt))}
         </p>
       </div>
       {!session.current && (
         <Button type="button" size="sm" variant="outline" onClick={onRevoke} disabled={revoking}>
-          {revoking && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}{tr("Disconnetti")}</Button>
+          {revoking && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+          Disconnetti
+        </Button>
       )}
     </li>
   );
 }
 
 export function SessionsSection() {
-  const { t: tr } = useLocalization();
   const { data: sessions, isLoading, isError, refetch } = useUserSessionsQuery();
   const revoke = useRevokeSessionMutation();
   const others = sessions?.filter((s) => !s.current).length ?? 0;
@@ -51,9 +46,9 @@ export function SessionsSection() {
   return (
     <SettingsSection
       id="impostazioni-sessioni"
-      title={tr("Sessioni attive")}
+      title="Sessioni attive"
       icon={MonitorSmartphone}
-      description={tr("I dispositivi da cui hai fatto l'accesso. Una sessione scade dopo {0} giorni senza utilizzo.", {0: SESSION_EXPIRES_IN_DAYS})}
+      description={`I dispositivi da cui hai fatto l'accesso. Una sessione scade dopo ${SESSION_EXPIRES_IN_DAYS} giorni senza utilizzo.`}
     >
       {isLoading ? (
         <div className="h-24 animate-pulse rounded-lg bg-muted" aria-busy="true" />
@@ -79,11 +74,13 @@ export function SessionsSection() {
               onClick={() => revoke.mutate(undefined)}
               disabled={revoke.isPending}
             >
-              {revoke.isPending && revoke.variables === undefined && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}{tr("Esci da tutti gli altri dispositivi")}</Button>
+              {revoke.isPending && revoke.variables === undefined && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+              Esci da tutti gli altri dispositivi
+            </Button>
           )}
           {revoke.isError && (
             <p className="text-sm text-neg" role="alert">
-              {tr(revoke.error.message)}
+              {revoke.error.message}
             </p>
           )}
         </>

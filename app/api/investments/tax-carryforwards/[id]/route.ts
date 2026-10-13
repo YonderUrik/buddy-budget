@@ -1,4 +1,3 @@
-import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -24,4 +23,4 @@ async function handleDelete(request: NextRequest, { params }: { params: Promise<
   return new Response(null, { status: 204 });
 }
 
-export const DELETE = withRoute("tax_carryforwards.delete", withCountryGuard(handleDelete));
+export const DELETE = withRoute("tax_carryforwards.delete", handleDelete);

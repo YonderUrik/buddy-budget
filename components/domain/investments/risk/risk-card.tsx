@@ -1,8 +1,3 @@
-"use client";
-
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Card "Quanto rischia" (Investimenti › Performance): in alto un livello di rischio (da basso a molto alto) con una frase,
  * poi i numeri in parole semplici (oscillazione, perdita peggiore, rischio ripagato e, con un indice di confronto, quanto
@@ -15,9 +10,9 @@ import { PanelSection } from "../panel-section";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
 import type { MaxDrawdown, PortfolioRisk } from "@/lib/calc/risk";
 import { daysBetween } from "@/lib/calc/returns";
-
+import { formatDateWithYear } from "@/lib/format";
 import { betaInsight, riskLevel, sharpeInsight, sharpeLevel, volatilityInsight, type SharpeLevel } from "@/lib/investments/risk-insights";
-
+import { formatSignedPct } from "../gain-text";
 import { DrawdownChart } from "./drawdown-chart";
 import { RiskDetails } from "./risk-details";
 import { RiskLevelMeter } from "./risk-level-meter";
@@ -41,7 +36,12 @@ function decimal(value: number): string {
   return value.toFixed(2).replace(".", ",");
 }
 
-
+function drawdownText(drawdown: MaxDrawdown): string {
+  if (drawdown.depth === 0) return "Nel periodo non è mai sceso sotto il massimo precedente.";
+  const span = `Dal ${formatDateWithYear(drawdown.peakDate)} al ${formatDateWithYear(drawdown.troughDate)}`;
+  if (drawdown.recoveryDate) return `${span}; tornato al massimo in ${daysBetween(drawdown.troughDate, drawdown.recoveryDate)} giorni.`;
+  return `${span}; non è ancora tornato al massimo (a fine periodo ${formatSignedPct(drawdown.current)}).`;
+}
 
 function riskFreeNote(risk: PortfolioRisk, currency: string): string {
   if (risk.riskFreeRate !== null) return `Conto con il tasso €STR medio del periodo (${pct(risk.riskFreeRate)}).`;
@@ -59,23 +59,12 @@ export interface RiskCardProps {
 }
 
 export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }: RiskCardProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatSignedPct } = localizedFormats(formattingLocale);
-
-
-  const { formatDateWithYear } = localizedFormats(formattingLocale);
-  function drawdownText(drawdown: MaxDrawdown): string {
-  if (drawdown.depth === 0) return "Nel periodo non è mai sceso sotto il massimo precedente.";
-  const span = `Dal ${formatDateWithYear(drawdown.peakDate)} al ${formatDateWithYear(drawdown.troughDate)}`;
-  if (drawdown.recoveryDate) return `${span}; tornato al massimo in ${daysBetween(drawdown.troughDate, drawdown.recoveryDate)} giorni.`;
-  return `${span}; non è ancora tornato al massimo (a fine periodo ${formatSignedPct(drawdown.current)}).`;
-}
-
-  const { t: tr } = useLocalization();
   if (risk.volatility === null) {
     return (
-      <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel ?? tr(PERIOD_LABELS[period])}>
-        <p className="text-sm text-muted-foreground">{tr("Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.")}</p>
+      <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={periodLabel ?? PERIOD_LABELS[period]}>
+        <p className="text-sm text-muted-foreground">
+          Servono almeno 20 giorni di borsa nel periodo per misurare il rischio. Prova un periodo più lungo o torna tra qualche giorno.
+        </p>
       </PanelSection>
     );
   }
@@ -88,7 +77,7 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
     .filter(Boolean)
     .join(" ");
     return (
-    <PanelSection icon={ShieldAlertIcon} title={tr("Quanto rischia")} color="var(--swatch-orange)" description={periodLabel ?? tr(PERIOD_LABELS[period])}>
+    <PanelSection icon={ShieldAlertIcon} title="Quanto rischia" color="var(--swatch-orange)" description={periodLabel ?? PERIOD_LABELS[period]}>
       <div className="flex flex-col gap-5">
         <RiskLevelMeter
           level={riskLevel(risk.volatility)}
@@ -100,26 +89,26 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
 
         <div className="grid grid-cols-1 gap-x-8 gap-y-5 border-t pt-5 sm:grid-cols-2">
           <RiskMetric
-            label={tr("Perdita peggiore")}
+            label="Perdita peggiore"
             value={risk.drawdown && risk.drawdown.depth < 0 ? formatSignedPct(risk.drawdown.depth) : "0%"}
-            note={tr("dal massimo")}
+            note="dal massimo"
             description={risk.drawdown ? drawdownText(risk.drawdown) : null}
-            hint={tr("Nome tecnico: massima perdita dal picco (drawdown). Quanto hai visto scendere il portafoglio, al massimo, rispetto al suo valore più alto. Non conta i versamenti.")}
+            hint="Nome tecnico: massima perdita dal picco (drawdown). Quanto hai visto scendere il portafoglio, al massimo, rispetto al suo valore più alto. Non conta i versamenti."
           />
           <RiskMetric
-            label={tr("Rischio ripagato?")}
+            label="Rischio ripagato?"
             value={risk.sharpe === null ? null : SHARPE_WORDS[sharpeLevel(risk.sharpe)]}
-            note={risk.sharpe === null ? tr("servono 3 mesi di dati") : tr("Sharpe {0}", {0: decimal(risk.sharpe)})}
+            note={risk.sharpe === null ? "servono 3 mesi di dati" : `Sharpe ${decimal(risk.sharpe)}`}
             description={risk.sharpe === null ? null : sharpeInsight(risk.sharpe)}
-            hint={tr("Nome tecnico: Sharpe ratio. Quanto rendimento in più di un conto deposito hai avuto per ogni unità di rischio. Sotto 0,5 è poco, sopra 1 è buono.")}
+            hint="Nome tecnico: Sharpe ratio. Quanto rendimento in più di un conto deposito hai avuto per ogni unità di rischio. Sotto 0,5 è poco, sopra 1 è buono."
           />
           {benchmarkName ? (
             <RiskMetric
-              label={tr("Quanto segue l'indice")}
+              label="Quanto segue l'indice"
               value={bench?.beta === null || bench?.beta === undefined ? null : decimal(bench.beta)}
-              note={bench?.correlation != null ? tr("correlazione {0}", {0: decimal(bench.correlation)}) : tr("servono 3 mesi di dati")}
+              note={bench?.correlation != null ? `correlazione ${decimal(bench.correlation)}` : "servono 3 mesi di dati"}
               description={bench?.beta != null ? betaInsight(bench.beta, benchmarkName) : null}
-              hint={tr("Nome tecnico: beta rispetto a {0}. 1 vuol dire che si muove come l'indice, 0,5 la metà, 1,5 una volta e mezza. La correlazione (da −1 a 1) dice quanto i movimenti vanno nella stessa direzione.", {0: benchmarkName})}
+              hint={`Nome tecnico: beta rispetto a ${benchmarkName}. 1 vuol dire che si muove come l'indice, 0,5 la metà, 1,5 una volta e mezza. La correlazione (da −1 a 1) dice quanto i movimenti vanno nella stessa direzione.`}
             />
           ) : null}
         </div>
@@ -128,14 +117,14 @@ export function RiskCard({ risk, period, benchmarkName, currency, periodLabel }:
 
         <div className="flex flex-col">
           {risk.drawdownSeries.length >= 2 ? (
-            <RiskDetails title={tr("Guarda le cadute nel tempo")}>
+            <RiskDetails title="Guarda le cadute nel tempo">
               <div className="flex flex-col gap-1">
-                <p className="text-sm text-muted-foreground">{tr("Quanto il portafoglio era sotto il suo massimo, giorno per giorno.")}</p>
+                <p className="text-sm text-muted-foreground">Quanto il portafoglio era sotto il suo massimo, giorno per giorno.</p>
                 <DrawdownChart series={risk.drawdownSeries} />
               </div>
             </RiskDetails>
           ) : null}
-          <RiskDetails title={tr("Come è calcolato")}>
+          <RiskDetails title="Come è calcolato">
             <div className="flex flex-col gap-3">
               <RiskMethod />
               {risk.sharpe !== null ? <p className="text-sm text-muted-foreground">{riskFreeNote(risk, currency)}</p> : null}

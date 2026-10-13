@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Avviso dell'import, senza riquadro: icona tinta, titolo, spiegazione e — separata — la cosa da fare. Serve per errori
  * (il file non si legge), avvisi (qualcosa non viene importato) e informazioni.
@@ -33,7 +31,6 @@ const TONES: Record<ImportNoticeTone, { icon: LucideIcon; color: string }> = {
 };
 
 export function ImportNotice({ tone, title, children, hint, detail, action, className, ref }: ImportNoticeProps) {
-  const { t: tr } = useLocalization();
   const { icon: Icon, color } = TONES[tone];
   return (
     <div ref={ref} role={tone === "error" ? "alert" : "status"} className={cn("flex gap-3", className)}>
@@ -45,16 +42,16 @@ export function ImportNotice({ tone, title, children, hint, detail, action, clas
         <Icon className="size-4" />
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <p className="text-sm font-medium text-foreground">{tr(title)}</p>
+        <p className="text-sm font-medium text-foreground">{title}</p>
         {children ? <div className="text-sm text-muted-foreground">{children}</div> : null}
         {hint ? (
           <p className="text-sm text-foreground">
-            <span className="font-medium">{tr("Cosa fare:")}</span>{" "}{tr(hint)}
+            <span className="font-medium">Cosa fare:</span> {hint}
           </p>
         ) : null}
         {detail ? (
           <details className="text-xs text-muted-foreground">
-            <summary className="cursor-pointer">{tr("Dettaglio tecnico")}</summary>
+            <summary className="cursor-pointer">Dettaglio tecnico</summary>
             <p className="mt-1 break-words font-mono">{detail}</p>
           </details>
         ) : null}

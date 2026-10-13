@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * LegalAcceptancePanel
@@ -22,7 +21,6 @@ export interface LegalAcceptancePanelProps {
 }
 
 export function LegalAcceptancePanel({ afterAccept = "/" }: LegalAcceptancePanelProps) {
-  const { t: tr } = useLocalization();
   const { consent, setConsent, complete, payload } = useLegalConsent();
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -42,9 +40,9 @@ export function LegalAcceptancePanel({ afterAccept = "/" }: LegalAcceptancePanel
         window.location.assign(afterAccept);
         return;
       }
-      setError(tr("Non siamo riusciti a registrare l'accettazione. Riprova."));
+      setError("Non siamo riusciti a registrare l'accettazione. Riprova.");
     } catch {
-      setError(tr("Connessione non riuscita. Controlla la rete e riprova."));
+      setError("Connessione non riuscita. Controlla la rete e riprova.");
     }
     setLoading(false);
   }
@@ -57,25 +55,31 @@ export function LegalAcceptancePanel({ afterAccept = "/" }: LegalAcceptancePanel
   return (
     <div className="flex flex-col gap-8 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Abbiamo aggiornato Termini e Privacy")}</h1>
-        <p className="text-text-2">{tr("Per continuare a usare BuddyBudget leggi i documenti e accettali. Se non vuoi accettare puoi scaricare i tuoi dati ed eliminare l'account.")}</p>
+        <h1 className="font-heading text-3xl font-medium tracking-tight">Abbiamo aggiornato Termini e Privacy</h1>
+        <p className="text-text-2">
+          Per continuare a usare BuddyBudget leggi i documenti e accettali. Se non vuoi accettare puoi scaricare i tuoi dati ed eliminare l&apos;account.
+        </p>
       </div>
 
       <LegalConsentFields value={consent} onChange={setConsent} disabled={loading} />
 
       {error && (
         <p className="rounded-lg bg-neg-soft p-3 text-sm text-neg" role="alert">
-          {tr(error)}
+          {error}
         </p>
       )}
 
       <div className="flex flex-col gap-3">
         <Button type="button" className="h-11 w-full text-base" disabled={!complete || loading} onClick={() => void accept()}>
           {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
-          {loading ? tr("Salvataggio in corso…") : tr("Accetta e continua")}
+          {loading ? "Salvataggio in corso…" : "Accetta e continua"}
         </Button>
-        <Button type="button" variant="outline" className="h-11 w-full" onClick={() => void signOut()} disabled={loading}>{tr("Esci")}</Button>
-        <a href="/api/user/export" className="text-center text-sm text-text-3 underline underline-offset-2 hover:text-foreground">{tr("Scarica i miei dati")}</a>
+        <Button type="button" variant="outline" className="h-11 w-full" onClick={() => void signOut()} disabled={loading}>
+          Esci
+        </Button>
+        <a href="/api/user/export" className="text-center text-sm text-text-3 underline underline-offset-2 hover:text-foreground">
+          Scarica i miei dati
+        </a>
       </div>
     </div>
   );

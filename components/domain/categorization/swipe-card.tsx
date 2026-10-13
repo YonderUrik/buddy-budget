@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Carta di un esercente nella categorizzazione rapida: logo, nome, importo, quando (date e primi movimenti), categoria
@@ -17,7 +14,7 @@ import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import { dateRangeLabel } from "@/lib/categorization/origin";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
 import { MovementsPreview } from "./movements-preview";
@@ -76,10 +73,6 @@ export function SwipeCard({
   onSkip,
   onRemoteLogo,
 }: SwipeCardProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 300], [-MAX_TILT_DEGREES, MAX_TILT_DEGREES]);
   const y = useMotionValue(0);
@@ -122,13 +115,13 @@ export function SwipeCard({
       className={cn("relative flex touch-none flex-col gap-4 rounded-2xl border-2 bg-card transition-colors p-5 shadow-lg select-none max-md:flex-1 max-md:justify-between", zone === "conferma" ? "border-pos" : zone === "cambia" ? "border-neg" : zone === "salta" ? "border-muted-foreground" : "border-border")}
     >
       <motion.span style={{ opacity: confirmOpacity }} className={cn("pointer-events-none absolute top-4 left-4 rounded-md border-2 border-pos px-2 py-0.5 text-sm font-semibold text-pos", zone === "conferma" && "bg-pos text-background")}>
-        {zone === "conferma" ? tr("Lascia: è questa") : tr("È questa")}
+        {zone === "conferma" ? "Lascia: è questa" : "È questa"}
       </motion.span>
       <motion.span style={{ opacity: skipOpacity }} className={cn("pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-md border-2 border-muted-foreground px-2 py-0.5 text-sm font-semibold text-muted-foreground", zone === "salta" && "bg-muted-foreground text-background")}>
-        {zone === "salta" ? tr("Lascia: salta") : tr("Salta")}
+        {zone === "salta" ? "Lascia: salta" : "Salta"}
       </motion.span>
       <motion.span style={{ opacity: changeOpacity }} className={cn("pointer-events-none absolute top-4 right-4 rounded-md border-2 border-neg px-2 py-0.5 text-sm font-semibold text-neg", zone === "cambia" && "bg-neg text-background")}>
-        {zone === "cambia" ? tr("Lascia: un'altra") : tr("Un'altra")}
+        {zone === "cambia" ? "Lascia: un'altra" : "Un'altra"}
       </motion.span>
 
       <div className="flex flex-col items-center gap-1 pt-6 text-center">

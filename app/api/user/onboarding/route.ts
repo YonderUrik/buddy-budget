@@ -1,5 +1,3 @@
-import { localizeStarterCategories } from "@/lib/localization/categories.server";
-import { isSupportedProfile, resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -29,13 +27,6 @@ async function handlePost(request: NextRequest) {
     return Response.json({ error: "Richiesta non valida" }, { status: 400 });
   }
 
-  const currentProfile = resolveProfile(session.user);
-  const profileInput = body as { productCountry?: unknown; language?: unknown } | null;
-  const productCountry = profileInput?.productCountry ?? currentProfile.productCountry;
-  const language = profileInput?.language ?? currentProfile.language;
-  if (!isSupportedProfile(productCountry, language)) {
-    return Response.json({ error: "Unsupported country and language combination", code: "unsupported_locale" }, { status: 400 });
-  }
   const currency = (body as { currency?: unknown } | null)?.currency;
   // Una valuta non ISO valida farebbe lanciare Intl.NumberFormat in ogni pagina che mostra importi.
   if (!isSupportedCurrency(currency)) {
@@ -56,7 +47,7 @@ async function handlePost(request: NextRequest) {
 
   await db
     .update(authUser)
-    .set({ currency, productCountry: productCountry as string, language: language as string, onboardingCompleted: true, ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
+    .set({ currency, onboardingCompleted: true, ...(typeof aiCategorization === "boolean" ? { aiCategorizationConsentAt: aiConsent ? new Date() : null } : {}) })
     .where(eq(authUser.id, session.user.id));
   await recordLegalAcceptance(session.user.id);
   if (notifications.success) {
@@ -66,8 +57,6 @@ async function handlePost(request: NextRequest) {
   }
   requestLogger().info("legal.terms.accepted", { legalVersion: legal.version, trigger: "onboarding" });
   await applyOnboardingCategories((body as { categories?: unknown } | null)?.categories, session.user.id);
-
-  await localizeStarterCategories(session.user.id, resolveProfile({ productCountry: productCountry as string, language: language as string }));
 
   return new Response(null, { status: 200 });
 }

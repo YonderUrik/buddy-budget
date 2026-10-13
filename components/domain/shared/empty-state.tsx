@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Stato vuoto di una sezione: icona su fondo tinto, titolo, una frase che dice cosa si ottiene e l'azione giusta.
  * Senza riquadro, nello stile della Panoramica. Le azioni sono link (`href`) o bottoni (`onClick`).
@@ -33,24 +31,22 @@ export interface EmptyStateProps {
 }
 
 function ActionButton({ action, variant }: { action: EmptyStateAction; variant: "default" | "ghost" }) {
-  const { t: tr } = useLocalization();
   const className = cn(buttonVariants({ variant }), "h-11 px-4");
   if (action.href && !action.disabled) {
     return (
       <Link href={action.href} onClick={action.onClick} className={className}>
-        {tr(action.label)}
+        {action.label}
       </Link>
     );
   }
   return (
     <Button variant={variant} className="h-11 px-4" onClick={action.onClick} disabled={action.disabled}>
-      {tr(action.label)}
+      {action.label}
     </Button>
   );
 }
 
 export function EmptyState({ icon: Icon, title, description, primary, secondary, color = "var(--swatch-teal)", align = "start", className }: EmptyStateProps) {
-  const { t: tr } = useLocalization();
   const centered = align === "center";
   return (
     <div className={cn("flex flex-col gap-3 py-2", centered ? "items-center text-center" : "items-start", className)}>
@@ -62,8 +58,8 @@ export function EmptyState({ icon: Icon, title, description, primary, secondary,
         <Icon className="size-5" />
       </span>
       <div className="flex max-w-md flex-col gap-1">
-        <h2 className="font-heading text-xl font-medium text-foreground">{tr(title)}</h2>
-        <p className="text-sm text-text-2">{tr(description)}</p>
+        <h2 className="font-heading text-xl font-medium text-foreground">{title}</h2>
+        <p className="text-sm text-text-2">{description}</p>
       </div>
       {primary || secondary ? (
         <div className={cn("flex flex-wrap gap-2", centered && "justify-center")}>

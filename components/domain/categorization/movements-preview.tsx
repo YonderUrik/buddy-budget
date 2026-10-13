@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** I movimenti di un esercente in breve: data, importo e, se diversa dal nome, la descrizione della banca. */
 
 import { formatCurrency, formatShortDate } from "@/lib/format";
@@ -20,12 +18,11 @@ export interface MovementsPreviewProps {
 }
 
 export function MovementsPreview({ label, dates, amounts, descriptions, currency, limit = MOVEMENTS_PREVIEW_LIMIT, className }: MovementsPreviewProps) {
-  const { t: tr } = useLocalization();
   const order = dates.map((_, index) => index).sort((a, b) => dates[b].localeCompare(dates[a]));
   const shown = order.slice(0, limit);
   const hidden = order.length - shown.length;
   return (
-    <ul className={cn("flex flex-col gap-1 text-xs text-muted-foreground", className)} aria-label={tr("Movimenti")}>
+    <ul className={cn("flex flex-col gap-1 text-xs text-muted-foreground", className)} aria-label="Movimenti">
       {shown.map((index) => (
         <li key={index} className="flex items-baseline gap-2">
           <span className="w-12 shrink-0 tabular-nums">{formatShortDate(dates[index])}</span>
@@ -37,7 +34,7 @@ export function MovementsPreview({ label, dates, amounts, descriptions, currency
           </span>
         </li>
       ))}
-      {hidden > 0 ? <li className="pl-14">{tr("e")}{" "}{hidden === 1 ? tr("un altro") : tr("altri {0}", {0: hidden})}</li> : null}
+      {hidden > 0 ? <li className="pl-14">e {hidden === 1 ? "un altro" : `altri ${hidden}`}</li> : null}
     </ul>
   );
 }

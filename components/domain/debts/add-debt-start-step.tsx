@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Primo passo di "Aggiungi debito": nuovo o già in corso, con la spiegazione di ciascuna strada. */
 
@@ -40,7 +39,6 @@ export interface AddDebtStartStepProps {
 }
 
 export function AddDebtStartStep({ onChoose }: AddDebtStartStepProps) {
-  const { t: tr } = useLocalization();
   return (
     <ul>
       {START_OPTIONS.map((option) => {
@@ -56,8 +54,8 @@ export function AddDebtStartStep({ onChoose }: AddDebtStartStepProps) {
                 <Icon className="size-[18px]" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="font-medium text-foreground">{tr(option.title)}</span>
-                <span className="text-sm text-muted-foreground">{tr(option.description)}</span>
+                <span className="font-medium text-foreground">{option.title}</span>
+                <span className="text-sm text-muted-foreground">{option.description}</span>
               </span>
               <ChevronRightIcon size={16} className="mt-2.5 shrink-0 text-muted-foreground" aria-hidden="true" />
             </button>

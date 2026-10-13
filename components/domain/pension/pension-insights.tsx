@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Tre anteprime della Panoramica, ognuna porta alla sua scheda: fondo contro TFR, prelievo oggi, proiezione. */
 
 import type { ReactNode } from "react";
@@ -28,30 +26,29 @@ interface InsightProps {
 }
 
 function Insight({ href, eyebrow, headline, caption }: InsightProps) {
-  const { t: tr } = useLocalization();
   return (
     <Link href={href} className="group flex min-h-11 flex-col gap-1.5 border-t border-border pt-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
       <p className="text-sm text-text-2">{eyebrow}</p>
       <div className="font-heading text-2xl font-medium tabular-nums text-foreground">{headline}</div>
       <p className="text-sm text-text-2">{caption}</p>
-      <span className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:underline">{tr("Vedi i dettagli")}{" "}<ArrowRightIcon className="size-4 transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
+      <span className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:underline">
+        Vedi i dettagli <ArrowRightIcon className="size-4 transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
       </span>
     </Link>
   );
 }
 
 export function PensionInsights({ fundAnnualReturn, companyTfrRate, netRange, projection, currency }: PensionInsightsProps) {
-  const { t: tr } = useLocalization();
   const beats = fundAnnualReturn !== null && fundAnnualReturn >= companyTfrRate;
   return (
-    <PensionSection icon={CompassIcon} title={tr("Dove stai andando")} color="var(--swatch-teal)">
+    <PensionSection icon={CompassIcon} title="Dove stai andando" color="var(--swatch-teal)">
       <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-3">
         <Insight
           href="/pensione/scenari"
           eyebrow="Fondo o TFR in azienda"
           headline={
             <span className={beats ? "text-pos" : "text-neg"}>
-              {fundAnnualReturn !== null ? formatPercent(fundAnnualReturn) : "—"}{" "}<span className="text-base text-text-2">{tr("contro")}{" "}{formatPercent(companyTfrRate)}</span>
+              {fundAnnualReturn !== null ? formatPercent(fundAnnualReturn) : "—"} <span className="text-base text-text-2">contro {formatPercent(companyTfrRate)}</span>
             </span>
           }
           caption={beats ? "Il fondo rende più della rivalutazione del TFR lasciato in azienda." : "Il TFR in azienda si rivaluta più di quanto ha reso il fondo finora."}

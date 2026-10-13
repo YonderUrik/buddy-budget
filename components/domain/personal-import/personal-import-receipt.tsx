@@ -1,8 +1,5 @@
 "use client";
 
-
-import { useLocalization } from "@/lib/localization/provider";
-
 /**
  * Schermata «File ricevuto» dopo l'invio di un CSV personale: conferma che il file è in lista, mostra in che fase è
  * (dallo stato vero del lavoro), il risultato a lavoro finito e dove andare dopo.
@@ -60,9 +57,8 @@ function plural(n: number, one: string, many: string): string {
 
 /** Elenco delle fasi con icona: fatta, in corso, in attesa. */
 function Stages({ stage, failed }: { stage: number; failed: boolean }) {
-  const { t: tr } = useLocalization();
   return (
-    <ol aria-label={tr("Avanzamento dell'importazione")} className="flex flex-col gap-2.5">
+    <ol aria-label="Avanzamento dell'importazione" className="flex flex-col gap-2.5">
       {STAGES.map((label, i) => {
         const done = i < stage;
         const active = i === stage && !failed;
@@ -72,8 +68,8 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
             <span className={cn("grid size-6 shrink-0 place-items-center rounded-full", done ? "bg-pos-soft text-pos" : "bg-muted")} aria-hidden="true">
               <Icon className={cn("size-3.5", active && "animate-spin motion-reduce:animate-none")} />
             </span>
-            <span className={active ? "font-medium" : undefined}>{active ? <TextShimmer>{tr(label)}…</TextShimmer> : label}</span>
-            <span className="sr-only">{done ? tr("fatto") : active ? tr("in corso") : tr("in attesa")}</span>
+            <span className={active ? "font-medium" : undefined}>{active ? <TextShimmer>{label}…</TextShimmer> : label}</span>
+            <span className="sr-only">{done ? "fatto" : active ? "in corso" : "in attesa"}</span>
           </li>
         );
       })}
@@ -83,9 +79,6 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
 
 /** «File ricevuto»: nome, righe e fase; a fine lavoro il riepilogo e i link ai dati. */
 export function PersonalImportReceipt({ file, job, listId, onAnother }: PersonalImportReceiptProps) {
-  const { locale: formattingLocale } = useLocalization();
-
-  const { t: tr } = useLocalization();
   const headingRef = React.useRef<HTMLHeadingElement>(null);
   React.useEffect(() => {
     headingRef.current?.focus();
@@ -102,13 +95,13 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
       <div className="flex items-start gap-3">
         <Icon className={cn("mt-0.5 size-6 shrink-0", failed ? "text-destructive" : "text-pos")} aria-hidden="true" />
         <div className="flex min-w-0 flex-col gap-1">
-          <h2 id={`${listId}-receipt`} ref={headingRef} tabIndex={-1} className="font-heading text-2xl font-medium tracking-tight outline-none">{tr(title)}</h2>
+          <h2 id={`${listId}-receipt`} ref={headingRef} tabIndex={-1} className="font-heading text-2xl font-medium tracking-tight outline-none">{title}</h2>
           <p role="status" className="text-sm text-muted-foreground">
             {imported
-              ? tr("I dati sono già nel tuo conto.")
+              ? "I dati sono già nel tuo conto."
               : failed
                 ? job?.error ?? "Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista."
-                : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
+                : "L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando."}
           </p>
           {failed ? <ReportErrorLink area="import_movimenti" error={job?.error ?? title} /> : null}
         </div>
@@ -123,32 +116,32 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
       </div>
 
       <Stages stage={stage} failed={failed} />
-      {!imported && !failed ? <ProgressBar state={{ kind: "indeterminate" }} label={tr("Importazione in corso")} /> : null}
+      {!imported && !failed ? <ProgressBar state={{ kind: "indeterminate" }} label="Importazione in corso" /> : null}
 
       {imported && results ? (
         <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-          <li>{plural(results.cash, "movimento aggiunto", "movimenti aggiunti")}{" "}{tr("a Liquidità.")}</li>
-          <li>{plural(results.investments, "operazione aggiunta", "operazioni aggiunte")}{" "}{tr("a Investimenti.")}</li>
-          <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li>
+          <li>{plural(results.cash, "movimento aggiunto", "movimenti aggiunti")} a Liquidità.</li>
+          <li>{plural(results.investments, "operazione aggiunta", "operazioni aggiunte")} a Investimenti.</li>
+          <li>Le righe già presenti sono state saltate, senza doppioni.</li>
         </ul>
       ) : null}
 
       {!imported && !failed ? (
         <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-          <p className="text-foreground">{tr("Puoi chiudere questa pagina: ti scriviamo un'email appena abbiamo finito.")}</p>
-          {job ? <p>{tr("Stima: entro il")}{" "}{new Date(job.estimatedAt).toLocaleString(formattingLocale, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}{tr(". È una stima, non una scadenza garantita.")}</p> : null}
+          <p className="text-foreground">Puoi chiudere questa pagina: ti scriviamo un&apos;email appena abbiamo finito.</p>
+          {job ? <p>Stima: entro il {new Date(job.estimatedAt).toLocaleString("it-IT", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}. È una stima, non una scadenza garantita.</p> : null}
         </div>
       ) : null}
 
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         {imported ? (
           <>
-            {results && results.cash > 0 ? <Link href="/liquidita" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ className: LINK_CLASS })}>{tr("Vai a Liquidità")}</Link> : null}
-            {results && results.investments > 0 ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>{tr("Vai alle operazioni")}</Link> : null}
+            {results && results.cash > 0 ? <Link href="/liquidita" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ className: LINK_CLASS })}>Vai a Liquidità</Link> : null}
+            {results && results.investments > 0 ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>Vai alle operazioni</Link> : null}
           </>
         ) : null}
-        <a href={`#${listId}`} onClick={() => track("personal_csv_receipt_action", { action: "lista" })} className={buttonVariants({ variant: "outline", className: LINK_CLASS })}>{tr("Vedi le tue importazioni")}</a>
-        <Button variant="ghost" className="h-11 sm:h-8" onClick={() => { track("personal_csv_receipt_action", { action: "altro_file" }); onAnother(); }}>{tr("Carica un altro file")}</Button>
+        <a href={`#${listId}`} onClick={() => track("personal_csv_receipt_action", { action: "lista" })} className={buttonVariants({ variant: "outline", className: LINK_CLASS })}>Vedi le tue importazioni</a>
+        <Button variant="ghost" className="h-11 sm:h-8" onClick={() => { track("personal_csv_receipt_action", { action: "altro_file" }); onAnother(); }}>Carica un altro file</Button>
       </div>
     </section>
   );

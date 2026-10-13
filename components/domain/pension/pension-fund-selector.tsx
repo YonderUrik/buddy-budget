@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Selettore del fondo quando l'utente ne ha più di uno. */
 
@@ -12,6 +11,5 @@ export interface PensionFundSelectorProps {
 }
 
 export function PensionFundSelector({ funds, value, onChange }: PensionFundSelectorProps) {
-  const { t: tr } = useLocalization();
-  return <SegmentedControl options={funds.map((f) => ({ value: f.id, label: f.name }))} value={value} onChange={onChange} ariaLabel={tr("Fondo")} className="max-w-full overflow-x-auto" />;
+  return <SegmentedControl options={funds.map((f) => ({ value: f.id, label: f.name }))} value={value} onChange={onChange} ariaLabel="Fondo" className="max-w-full overflow-x-auto" />;
 }

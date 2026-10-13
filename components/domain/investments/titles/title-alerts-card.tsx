@@ -1,9 +1,5 @@
 "use client";
 
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
-
 /**
  * Card "Avvisi di prezzo": elenco degli avvisi del titolo (attivi e scattati) e form per crearne uno. La chiusura si
  * controlla ogni sera: quando raggiunge il livello arriva un'email, una volta sola.
@@ -17,9 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PriceAlertDirection, UserPriceAlert } from "@/lib/db/schema/investments";
 import { ALERT_DIRECTION_LABELS } from "@/lib/investments/alerts";
-
+import { formatShortDate } from "@/lib/format";
 import { useCreateAlertMutation, useDeleteAlertMutation } from "@/lib/queries/titles";
-
+import { formatPrice } from "./title-format";
 import { PanelSection } from "../panel-section";
 
 const DIRECTION_OPTIONS: { value: PriceAlertDirection; label: string }[] = [
@@ -43,13 +39,6 @@ export interface TitleAlertsCardProps {
 }
 
 export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, supported }: TitleAlertsCardProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatPrice } = localizedFormats(formattingLocale);
-
-
-  const { formatShortDate } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [direction, setDirection] = React.useState<PriceAlertDirection>("sopra");
   const [target, setTarget] = React.useState("");
   const create = useCreateAlertMutation(instrumentId);
@@ -63,7 +52,7 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
   }
 
   return (
-    <PanelSection icon={BellIcon} title={tr("Avvisi di prezzo")} color="var(--swatch-amber)">
+    <PanelSection icon={BellIcon} title="Avvisi di prezzo" color="var(--swatch-amber)">
       <div className="flex flex-col gap-4">
         {alerts.length > 0 ? (
           <ul className="flex flex-col divide-y rounded-lg border">
@@ -75,19 +64,19 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
                   <Icon size={16} aria-hidden="true" className={triggered ? "text-primary" : "text-muted-foreground"} />
                   <div className="min-w-0 flex-1 text-sm">
                     <p className="text-foreground">
-                      {tr(ALERT_DIRECTION_LABELS[alert.direction])[0].toUpperCase() + tr(ALERT_DIRECTION_LABELS[alert.direction]).slice(1)}{" "}
+                      {ALERT_DIRECTION_LABELS[alert.direction][0].toUpperCase() + ALERT_DIRECTION_LABELS[alert.direction].slice(1)}{" "}
                       <span className="font-medium tabular-nums">{formatPrice(Number(alert.targetPrice), currency)}</span>
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {triggered && alert.triggeredAt
-                        ? tr("Scattato il {0} con la chiusura a {1}", {0: formatShortDate(new Date(alert.triggeredAt).toISOString().slice(0, 10)), 1: formatPrice(Number(alert.triggeredPrice), currency)})
-                        : tr("In attesa: controllo ogni sera dopo la chiusura")}
+                        ? `Scattato il ${formatShortDate(new Date(alert.triggeredAt).toISOString().slice(0, 10))} con la chiusura a ${formatPrice(Number(alert.triggeredPrice), currency)}`
+                        : "In attesa: controllo ogni sera dopo la chiusura"}
                     </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label={tr("Elimina avviso")}
+                    aria-label="Elimina avviso"
                     disabled={remove.isPending}
                     onClick={() => remove.mutate(alert.id)}
                   >
@@ -99,30 +88,32 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
           </ul>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {supported ? tr("Nessun avviso. Ti scrivo per email quando la chiusura raggiunge il livello che scegli.") : tr("Gli avvisi funzionano solo per i titoli con prezzi automatici.")}
+            {supported ? "Nessun avviso. Ti scrivo per email quando la chiusura raggiunge il livello che scegli." : "Gli avvisi funzionano solo per i titoli con prezzi automatici."}
           </p>
         )}
 
         {supported ? (
           <form onSubmit={submit} className="flex flex-col gap-3">
-            <SegmentedControl options={DIRECTION_OPTIONS} value={direction} onChange={setDirection} ariaLabel={tr("Direzione dell'avviso")} stretch />
+            <SegmentedControl options={DIRECTION_OPTIONS} value={direction} onChange={setDirection} ariaLabel="Direzione dell'avviso" stretch />
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor={`alert-target-${instrumentId}`}>{tr("Livello (")}{currency})</Label>
+              <Label htmlFor={`alert-target-${instrumentId}`}>Livello ({currency})</Label>
               <div className="flex gap-2">
                 <Input
                   id={`alert-target-${instrumentId}`}
                   inputMode="decimal"
-                  placeholder={lastClose !== null ? tr("Ultima chiusura {0}", {0: formatPrice(lastClose, currency)}) : tr("Prezzo")}
+                  placeholder={lastClose !== null ? `Ultima chiusura ${formatPrice(lastClose, currency)}` : "Prezzo"}
                   value={target}
                   onChange={(event) => setTarget(event.target.value)}
                   aria-invalid={target.trim() !== "" && value === null}
                 />
-                <Button type="submit" disabled={value === null || create.isPending}>{tr("Crea avviso")}</Button>
+                <Button type="submit" disabled={value === null || create.isPending}>
+                  Crea avviso
+                </Button>
               </div>
             </div>
             {create.isError ? (
               <p role="alert" className="text-sm text-destructive">
-                {tr(create.error.message)}
+                {create.error.message}
               </p>
             ) : null}
           </form>

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Vista a elenco di «Categorizza»: revisione delle proposte per esercente, con selezione e applicazione in blocco. */
 
@@ -68,7 +67,6 @@ export interface CategorizeListViewProps {
 }
 
 export function CategorizeListView({ groups, isLoading }: CategorizeListViewProps) {
-  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: categories } = useCategoriesQuery();
@@ -176,7 +174,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">
           {isLoading
-            ? tr("Caricamento in corso...")
+            ? "Caricamento in corso..."
             : totalTransactionCount === 0
               ? "Nessuna transazione da categorizzare"
               : `${totalTransactionCount} movimenti da decidere, raggruppati per esercente.`}
@@ -207,9 +205,10 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
                 disabled={selectableGroupCount === 0 || applyMutation.isPending}
                 onCheckedChange={(checked) => handleSelectAll(checked === true)}
               />
-              <span>{tr("Seleziona tutti")}{" "}
+              <span>
+                Seleziona tutti{" "}
                 <span className="tabular-nums">
-                  ({selectableGroupCount}{" "}{selectableGroupCount === 1 ? tr("gruppo pronto") : tr("gruppi pronti")})
+                  ({selectableGroupCount} {selectableGroupCount === 1 ? "gruppo pronto" : "gruppi pronti"})
                 </span>
               </span>
             </label>
@@ -258,19 +257,23 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
                   ) : (
                     <>
                       <span className="font-medium text-foreground tabular-nums">{selectedTransactionCount}</span>{" "}
-                      {selectedTransactionCount === 1 ? tr("transazione") : tr("transazioni")}{" "}{tr("in")}{" "}{selectedGroups.length}{" "}
-                      {selectedGroups.length === 1 ? tr("gruppo") : tr("gruppi")}
+                      {selectedTransactionCount === 1 ? "transazione" : "transazioni"} in {selectedGroups.length}{" "}
+                      {selectedGroups.length === 1 ? "gruppo" : "gruppi"}
                     </>
                   )}
                 </p>
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox checked={rememberMerchants} onCheckedChange={(checked) => setRememberMerchants(checked === true)} />{tr("Ricorda gli esercenti")}</label>
+                  <Checkbox checked={rememberMerchants} onCheckedChange={(checked) => setRememberMerchants(checked === true)} />
+                  Ricorda gli esercenti
+                </label>
                 <Button
                   type="button"
                   onClick={handleApply}
                   disabled={selectedGroups.length === 0 || applyMutation.isPending}
                   className="h-10 shrink-0 px-5 sm:h-9"
-                >{tr("Applica")}</Button>
+                >
+                  Applica
+                </Button>
               </div>
             )}
           </div>

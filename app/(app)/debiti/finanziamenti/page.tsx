@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Un finanziamento: cifre, "E se…", piano, eventi e azioni. L'id arriva dall'elenco (?id=), senza id si apre il primo. */
 
@@ -13,7 +12,6 @@ import { useDebtsQuery } from "@/lib/queries/debts";
 import { cn } from "@/lib/utils";
 
 function FinanziamentiContent() {
-  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const router = useRouter();
@@ -26,7 +24,7 @@ function FinanziamentiContent() {
     <DebtsViewGate loading={query.isLoading} error={query.isError} empty={data?.debts.length === 0} onRetry={() => query.refetch()}>
       {data && selected ? (
         <>
-          <BackLink href="/debiti" label={tr("Debiti")} className="-mb-2" />
+          <BackLink href="/debiti" label="Debiti" className="-mb-2" />
           <div className="flex flex-wrap items-center gap-2 empty:hidden">
             {data.debts.length > 1
               ? data.debts.map((d) => (

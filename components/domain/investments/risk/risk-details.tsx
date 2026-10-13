@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Dettaglio a scomparsa (chiuso di default): il contenuto si monta solo da aperto, così i grafici misurano la larghezza giusta. */
 
@@ -13,7 +12,6 @@ export interface RiskDetailsProps {
 }
 
 export function RiskDetails({ title, children }: RiskDetailsProps) {
-  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const panelId = React.useId();
   return (
@@ -26,7 +24,7 @@ export function RiskDetails({ title, children }: RiskDetailsProps) {
         className="flex min-h-11 w-full items-center gap-1.5 rounded-md text-left text-sm font-medium text-foreground hover:text-primary sm:min-h-9"
       >
         <ChevronRight className={cn("size-4 shrink-0 transition-transform duration-150", open && "rotate-90")} aria-hidden="true" />
-        {tr(title)}
+        {title}
       </button>
       <div id={panelId} hidden={!open} className="pb-1 pt-2">
         {open ? children : null}

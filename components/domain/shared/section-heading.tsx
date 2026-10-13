@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Testata di una sezione con più viste (Liquidità, Investimenti, Pensione). Da `lg` in su: titolo della sezione,
@@ -42,7 +41,6 @@ export function SectionHeading({
   titleClassName = "text-2xl",
   subtitleClassName = "text-sm text-text-2",
 }: SectionHeadingProps) {
-  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const hasViews = tabs.length > 0;
   const activeIndex = activeSectionTabIndex(tabs, activeHref);
@@ -56,24 +54,24 @@ export function SectionHeading({
   return (
     <>
       <div className={cn("min-w-0", hasViews && "max-lg:hidden")}>
-        <h1 className={cn("font-heading font-medium tracking-tight text-foreground", titleClassName)}>{tr(title)}</h1>
-        {subtitle ? <p className={subtitleClassName}>{tr(subtitle)}</p> : null}
+        <h1 className={cn("font-heading font-medium tracking-tight text-foreground", titleClassName)}>{title}</h1>
+        {subtitle ? <p className={subtitleClassName}>{subtitle}</p> : null}
       </div>
       {hasViews && active ? (
         <div className="min-w-0 flex-1 lg:hidden">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-3">{tr(title)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-3">{title}</p>
           <h1>
             <button
               type="button"
               onClick={() => changeOpen(true)}
               aria-haspopup="dialog"
-              aria-label={tr("{0}: cambia vista di {1}", {0: active.label, 1: title})}
+              aria-label={`${active.label}: cambia vista di ${title}`}
               className={cn(
                 "-ml-1 flex min-h-11 max-w-full cursor-pointer items-center gap-1.5 rounded-lg px-1 text-left font-heading font-medium tracking-tight text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active.label.length > LONG_VIEW_LABEL_CHARS ? "text-xl" : "text-2xl"
               )}
             >
-              <span className="truncate">{tr(active.label)}</span>
+              <span className="truncate">{active.label}</span>
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-text-2" aria-hidden="true">
                 <ChevronDownIcon className="size-4" />
               </span>
@@ -82,7 +80,7 @@ export function SectionHeading({
           <SectionViewsSheet
             open={open}
             onOpenChange={changeOpen}
-            title={tr(title)}
+            title={title}
             tabs={tabs}
             activeIndex={activeIndex}
             onChoose={() => track("section_view_chosen", { section: analyticsKey })}

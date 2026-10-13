@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Barra filtri della schermata Transazioni: select categoria singola + ricerca testo (descrizione e nota), entrambi controllati. Il tasto "/" porta il focus sulla ricerca. */
 
@@ -28,7 +27,6 @@ export function ExpensesFilterBar({
   searchText,
   onSearchTextChange,
 }: ExpensesFilterBarProps) {
-  const { t: tr } = useLocalization();
   const searchRef = React.useRef<HTMLInputElement>(null);
 
   // "/" porta il focus sulla ricerca, salvo quando l'utente sta già scrivendo in un campo.
@@ -52,7 +50,7 @@ export function ExpensesFilterBar({
       >
         <SelectTrigger
           size="sm"
-          aria-label={tr("Filtra per categoria")}
+          aria-label="Filtra per categoria"
           className="order-2 w-full min-w-0 data-[size=sm]:h-9 sm:order-1 sm:w-56 sm:data-[size=sm]:h-8"
         >
           <SelectValue>
@@ -75,7 +73,7 @@ export function ExpensesFilterBar({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_CATEGORIES_VALUE}>{tr("Tutte le categorie")}</SelectItem>
+          <SelectItem value={ALL_CATEGORIES_VALUE}>Tutte le categorie</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.id}>
               <span className="flex items-center gap-1.5">
@@ -100,9 +98,9 @@ export function ExpensesFilterBar({
         onKeyDown={(e) => {
           if (e.key === "Escape") onSearchTextChange("");
         }}
-        placeholder={tr("Cerca…")}
+        placeholder="Cerca…"
         className="order-1 h-9 w-full min-w-0 sm:order-2 sm:h-8 sm:w-56"
-        aria-label={tr("Cerca transazioni per descrizione o nota")}
+        aria-label="Cerca transazioni per descrizione o nota"
         aria-keyshortcuts="/"
       />
     </div>

@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Form per un nuovo conto manuale in due passi: prima nome e tipo, poi il saldo di oggi (con icona e colore, già
@@ -45,7 +44,6 @@ export interface AddAccountFormProps {
 const ACCOUNT_FORM_STEPS = 2;
 
 export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormProps) {
-  const { t: tr } = useLocalization();
   const flow = useStepFlow(ACCOUNT_FORM_STEPS);
   const idBase = React.useId();
   const createMutation = useCreateAccountMutation();
@@ -106,19 +104,19 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
-      <StepProgress index={flow.index} count={flow.count} label={tr("Passi del nuovo conto")} />
+      <StepProgress index={flow.index} count={flow.count} label="Passi del nuovo conto" />
 
       <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-5">
         {flow.index === 0 ? (
           <>
-            <StepHeading title={tr("Come si chiama il conto?")} />
-            <Field id={`${idBase}-name`} label={tr("Nome del conto")} error={errors.name}>
+            <StepHeading title="Come si chiama il conto?" />
+            <Field id={`${idBase}-name`} label="Nome del conto" error={errors.name}>
               <Input
                 id={`${idBase}-name`}
                 data-autofocus
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={tr("Es. Conto Intesa")}
+                placeholder="Es. Conto Intesa"
                 autoComplete="off"
                 maxLength={80}
                 aria-invalid={errors.name ? true : undefined}
@@ -127,7 +125,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
               />
             </Field>
 
-            <Field id={`${idBase}-type`} label={tr("Tipo")} error={errors.type}>
+            <Field id={`${idBase}-type`} label="Tipo" error={errors.type}>
               <Select
                 value={isCustomType ? CUSTOM_TYPE_VALUE : type}
                 onValueChange={(value) => {
@@ -141,7 +139,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                 }}
               >
                 <SelectTrigger id={`${idBase}-type`} className={cn("w-full", FIELD_CLASS)}>
-                  <SelectValue placeholder={tr("Seleziona il tipo di conto")} />
+                  <SelectValue placeholder="Seleziona il tipo di conto" />
                 </SelectTrigger>
                 <SelectContent>
                   {ACCOUNT_TYPE_OPTIONS.map((option) => (
@@ -149,7 +147,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                       {option}
                     </SelectItem>
                   ))}
-                  <SelectItem value={CUSTOM_TYPE_VALUE}>{tr("Altro…")}</SelectItem>
+                  <SelectItem value={CUSTOM_TYPE_VALUE}>Altro…</SelectItem>
                 </SelectContent>
               </Select>
               {isCustomType && (
@@ -157,8 +155,8 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                   id={`${idBase}-type-custom`}
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  placeholder={tr("Es. Cassa contanti, Wallet crypto")}
-                  aria-label={tr("Tipo di conto personalizzato")}
+                  placeholder="Es. Cassa contanti, Wallet crypto"
+                  aria-label="Tipo di conto personalizzato"
                   aria-invalid={errors.type ? true : undefined}
                   aria-describedby={errors.type ? `${idBase}-type-error` : undefined}
                   className={cn("mt-1.5", FIELD_CLASS)}
@@ -168,8 +166,8 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
           </>
         ) : (
           <>
-            <StepHeading title={tr("Quanto c'è sul conto oggi?")} description={tr("Da qui in poi lo aggiornano i movimenti che registri.")} />
-            <Field id={`${idBase}-balance`} label={tr("Saldo di oggi")} error={errors.balance}>
+            <StepHeading title="Quanto c'è sul conto oggi?" description="Da qui in poi lo aggiornano i movimenti che registri." />
+            <Field id={`${idBase}-balance`} label="Saldo di oggi" error={errors.balance}>
               <CurrencyInput
                 id={`${idBase}-balance`}
                 data-autofocus
@@ -177,7 +175,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                 onChange={setBalanceValue}
                 currency={currency}
                 className={cn("w-full text-lg font-medium", FIELD_CLASS)}
-                aria-label={tr("Saldo di oggi")}
+                aria-label="Saldo di oggi"
               />
             </Field>
             <div className="flex items-center gap-3 rounded-xl border p-3">
@@ -194,7 +192,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
               </AccountIconColorPicker>
               <div className="space-y-0.5">
                 <p className="text-sm font-medium text-foreground">{name.trim() || "Il tuo conto"}</p>
-                <p className="text-xs text-muted-foreground">{tr("Tocca l'icona per cambiare icona e colore (facoltativo).")}</p>
+                <p className="text-xs text-muted-foreground">Tocca l&apos;icona per cambiare icona e colore (facoltativo).</p>
               </div>
             </div>
           </>
@@ -202,9 +200,9 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
       </StepStage>
 
       <StepActions
-        backLabel={flow.isFirst && !onExit ? undefined : tr("Indietro")}
+        backLabel={flow.isFirst && !onExit ? undefined : "Indietro"}
         onBack={handleBack}
-        primaryLabel={flow.isLast ? (createMutation.isPending ? "Aggiungo il conto…" : "Aggiungi il conto") : tr("Continua")}
+        primaryLabel={flow.isLast ? (createMutation.isPending ? "Aggiungo il conto…" : "Aggiungi il conto") : "Continua"}
         pending={createMutation.isPending}
       />
 
@@ -223,17 +221,16 @@ interface FieldProps {
 
 /** Campo con etichetta visibile collegata al controllo, suggerimento e messaggio d'errore annunciato (`role="alert"`). */
 function Field({ id, label, hint, error, children }: FieldProps) {
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-foreground" htmlFor={id}>
-        {tr(label)}
+        {label}
       </label>
-      {hint ? <p className="-mt-0.5 text-xs text-muted-foreground">{tr(hint)}</p> : null}
+      {hint ? <p className="-mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
       {children}
       {error ? (
         <p id={`${id}-error`} role="alert" className="text-sm text-destructive">
-          {tr(error)}
+          {error}
         </p>
       ) : null}
     </div>

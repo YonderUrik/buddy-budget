@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Selettori della mappatura: quale colonna alimenta ogni campo, formato di date e numeri, e traduzione dei valori
@@ -46,12 +45,11 @@ function LabeledSelect<T extends string>(props: {
   labelFor: (value: T) => string;
   onChange: (value: T) => void;
 }) {
-  const { t: tr } = useLocalization();
   const id = React.useId();
   return (
     <div className="flex min-w-0 flex-col gap-1">
       <span id={id} className="text-xs text-muted-foreground">
-        {tr(props.label)}
+        {props.label}
       </span>
       <Select value={props.value} onValueChange={(v) => v !== null && props.onChange(v as T)}>
         <SelectTrigger className="w-full" aria-labelledby={id}>
@@ -70,7 +68,6 @@ function LabeledSelect<T extends string>(props: {
 }
 
 export function ImportMappingFields({ table, mapping, onChange }: ImportMappingFieldsProps) {
-  const { t: tr } = useLocalization();
   const columnOptions = [NONE, ...table.headers.map((_, i) => String(i))];
   const sample = (column: number) => table.rows.find((r) => (r[column] ?? "").trim() !== "")?.[column] ?? "";
   const columnLabel = (value: string) => {
@@ -98,20 +95,20 @@ export function ImportMappingFields({ table, mapping, onChange }: ImportMappingF
         {ordered.map((field) => (
           <LabeledSelect
             key={field}
-            label={tr(IMPORT_FIELD_LABELS[field])}
+            label={IMPORT_FIELD_LABELS[field]}
             value={mapping.columns[field] === undefined ? NONE : String(mapping.columns[field])}
             options={columnOptions}
             labelFor={columnLabel}
             onChange={(v) => setColumn(field, v)}
           />
         ))}
-        <LabeledSelect label={tr("Formato delle date")} value={mapping.dateOrder} options={DATE_ORDERS} labelFor={(v) => DATE_ORDER_LABELS[v]} onChange={(dateOrder) => onChange({ dateOrder })} />
-        <LabeledSelect label={tr("Separatore dei decimali")} value={mapping.decimal} options={DECIMAL_SEPARATORS} labelFor={(v) => DECIMAL_LABELS[v]} onChange={(decimal) => onChange({ decimal })} />
+        <LabeledSelect label="Formato delle date" value={mapping.dateOrder} options={DATE_ORDERS} labelFor={(v) => DATE_ORDER_LABELS[v]} onChange={(dateOrder) => onChange({ dateOrder })} />
+        <LabeledSelect label="Separatore dei decimali" value={mapping.decimal} options={DECIMAL_SEPARATORS} labelFor={(v) => DECIMAL_LABELS[v]} onChange={(decimal) => onChange({ decimal })} />
       </div>
 
       {mapping.columns.type === undefined ? (
         <LabeledSelect
-          label={tr("Senza colonna tipo, ogni riga è un")}
+          label="Senza colonna tipo, ogni riga è un"
           value={mapping.defaultType}
           options={INVESTMENT_TRANSACTION_TYPES}
           labelFor={(v) => TRANSACTION_TYPE_LABELS[v]}
@@ -119,7 +116,7 @@ export function ImportMappingFields({ table, mapping, onChange }: ImportMappingF
         />
       ) : typeValues.length > 0 ? (
         <fieldset className="flex flex-col gap-2 rounded-lg border p-3">
-          <legend className="px-1 text-xs text-muted-foreground">{tr("Cosa significano i valori della colonna tipo")}</legend>
+          <legend className="px-1 text-xs text-muted-foreground">Cosa significano i valori della colonna tipo</legend>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {typeValues.map((value) => (
               <LabeledSelect

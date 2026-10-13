@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Surroga o nuova offerta su un finanziamento: l'offerta contro le condizioni attuali, spese e penale comprese. */
 
@@ -11,7 +8,7 @@ import { compareRefinance } from "@/lib/calc/debt-simulator";
 import { parseAmount } from "@/lib/debts/add-form";
 import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
-
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { formatMonthYear } from "./debts-format";
 import { DebtFormField } from "./debt-form-field";
@@ -22,14 +19,13 @@ export interface DebtRefinanceSimProps {
 }
 
 function Side({ title, rows }: { title: string; rows: { label: string; value: string }[] }) {
-  const { t: tr } = useLocalization();
   return (
     <div className="border-t pt-3">
-      <p className="mb-2 text-sm font-medium text-foreground">{tr(title)}</p>
+      <p className="mb-2 text-sm font-medium text-foreground">{title}</p>
       <dl className="flex flex-col gap-1">
         {rows.map((row) => (
           <div key={row.label} className="flex items-baseline justify-between gap-2 text-sm">
-            <dt className="text-muted-foreground">{tr(row.label)}</dt>
+            <dt className="text-muted-foreground">{row.label}</dt>
             <dd className="text-right tabular-nums text-foreground">{row.value}</dd>
           </div>
         ))}
@@ -39,10 +35,6 @@ function Side({ title, rows }: { title: string; rows: { label: string; value: st
 }
 
 export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [rate, setRate] = React.useState("");
   const [installments, setInstallments] = React.useState("");
   const [costs, setCosts] = React.useState("");
@@ -60,29 +52,29 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
   const saving = result?.netSaving ?? 0;
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-foreground">{tr("Un'altra banca offre un tasso migliore? Inserisci l'offerta e vedi se, spese incluse, conviene.")}</p>
+      <p className="text-sm text-foreground">Un&apos;altra banca offre un tasso migliore? Inserisci l&apos;offerta e vedi se, spese incluse, conviene.</p>
       <div className="grid grid-cols-2 gap-3">
-        <DebtFormField label={tr("Nuovo TAN (%)")} htmlFor={`${base}-rate`}>
-          <Input id={`${base}-rate`} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder={tr("es. 3,5")} />
+        <DebtFormField label="Nuovo TAN (%)" htmlFor={`${base}-rate`}>
+          <Input id={`${base}-rate`} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="es. 3,5" />
         </DebtFormField>
-        <DebtFormField label={tr("Numero di rate")} htmlFor={`${base}-n`}>
+        <DebtFormField label="Numero di rate" htmlFor={`${base}-n`}>
           <Input id={`${base}-n`} inputMode="numeric" value={installments} onChange={(e) => setInstallments(e.target.value)} placeholder={String(debt.plan.totals.remainingInstallments)} />
         </DebtFormField>
-        <DebtFormField label={tr("Spese della nuova offerta")} htmlFor={`${base}-costs`} hint={tr("Istruttoria, perizia, imposte")}>
-          <Input id={`${base}-costs`} inputMode="decimal" value={costs} onChange={(e) => setCosts(e.target.value)} placeholder={tr("0")} />
+        <DebtFormField label="Spese della nuova offerta" htmlFor={`${base}-costs`} hint="Istruttoria, perizia, imposte">
+          <Input id={`${base}-costs`} inputMode="decimal" value={costs} onChange={(e) => setCosts(e.target.value)} placeholder="0" />
         </DebtFormField>
-        <DebtFormField label={tr("Penale di estinzione")} htmlFor={`${base}-pen`} hint={tr("Quella sul finanziamento attuale")}>
-          <Input id={`${base}-pen`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} placeholder={tr("0")} />
+        <DebtFormField label="Penale di estinzione" htmlFor={`${base}-pen`} hint="Quella sul finanziamento attuale">
+          <Input id={`${base}-pen`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} placeholder="0" />
         </DebtFormField>
       </div>
       {result ? (
         <div className="grid gap-3 sm:grid-cols-2">
-          <Side title={tr("Resti dove sei")} rows={[
+          <Side title="Resti dove sei" rows={[
             { label: "Rata", value: money(result.currentInstallment) },
             { label: "Finisci", value: formatMonthYear(result.currentEndDate) },
             { label: "Interessi che restano", value: money(result.currentInterestRemaining) },
           ]} />
-          <Side title={tr("Cambi con la nuova offerta")} rows={[
+          <Side title="Cambi con la nuova offerta" rows={[
             { label: "Rata", value: money(result.newInstallment) },
             { label: "Finisci", value: formatMonthYear(result.newEndDate) },
             { label: "Interessi", value: money(result.newInterest) },
@@ -90,12 +82,12 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
           ]} />
           <p className={cn("text-sm sm:col-span-2", saving > 0 ? "text-pos" : "text-neg")}>
             {saving > 0
-              ? tr("Conviene: risparmi {0} al netto delle spese{1}.", {0: money(saving), 1: result.breakEvenMonths ? `, e le spese rientrano in ${result.breakEvenMonths} mesi` : ""})
-              : tr("Non conviene: spenderesti {0} in più tra interessi e spese.", {0: money(Math.abs(saving))})}
+              ? `Conviene: risparmi ${money(saving)} al netto delle spese${result.breakEvenMonths ? `, e le spese rientrano in ${result.breakEvenMonths} mesi` : ""}.`
+              : `Non conviene: spenderesti ${money(Math.abs(saving))} in più tra interessi e spese.`}
           </p>
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">{tr("Inserisci almeno il nuovo tasso e il numero di rate per vedere il confronto.")}</p>
+        <p className="text-xs text-muted-foreground">Inserisci almeno il nuovo tasso e il numero di rate per vedere il confronto.</p>
       )}
     </div>
   );

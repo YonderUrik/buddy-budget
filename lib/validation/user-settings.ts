@@ -12,8 +12,6 @@ export const updateUserSettingsSchema = z
       .min(1, "Il nome non può essere vuoto")
       .max(DISPLAY_NAME_MAX_LENGTH, `Massimo ${DISPLAY_NAME_MAX_LENGTH} caratteri`)
       .optional(),
-    productCountry: z.enum(["IT", "DE"]).optional(),
-    language: z.enum(["it", "en", "de"]).optional(),
     currency: z.string().refine(isSupportedCurrency, "Valuta non supportata").optional(),
     hideAmounts: z.boolean().optional(),
     homePage: z.string().refine(isHomePagePath, "Pagina non valida").optional(),

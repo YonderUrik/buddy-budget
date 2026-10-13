@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /** Sezione aperta di Pensione, nello stile della Panoramica: titolo con icona tinta, una riga di spiegazione e il contenuto senza riquadro. */
 
 import type { ReactNode } from "react";
@@ -22,17 +20,16 @@ export interface PensionSectionProps {
 }
 
 export function PensionSection({ icon, title, color, description, hint, children, className }: PensionSectionProps) {
-  const { t: tr } = useLocalization();
   return (
-    <section aria-label={tr(title)} className={cn("flex flex-col", className)}>
-      <SectionTitle icon={icon} title={tr(title)} color={color} />
+    <section aria-label={title} className={cn("flex flex-col", className)}>
+      <SectionTitle icon={icon} title={title} color={color} />
       {description || hint ? (
         <p className="-mt-1 mb-4 text-sm text-text-2">
-          {tr(description)}
+          {description}
           {hint ? (
             <>
               {" "}
-              <InfoHint label={tr(hint.label)}>{hint.text}</InfoHint>
+              <InfoHint label={hint.label}>{hint.text}</InfoHint>
             </>
           ) : null}
         </p>

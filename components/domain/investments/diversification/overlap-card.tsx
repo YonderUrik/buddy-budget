@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Card "Sovrapposizioni": ETF che sono in pratica lo stesso investimento, azioni che possiedi anche dentro un ETF e
  * quanto le posizioni si muovono insieme, tutto in linguaggio semplice (le soglie sono in `plain-labels.ts`).
@@ -27,19 +25,18 @@ export interface OverlapCardProps {
 }
 
 export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCardProps) {
-  const { t: tr } = useLocalization();
   const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
   const instrumentOf = (id: string) => instrumentsById.get(id);
   const insight = analysis.correlations ? correlationInsight(analysis.correlations) : null;
   const hasOverlaps = analysis.overlaps.length > 0 || analysis.stocksInFunds.length > 0;
   return (
-    <PanelSection icon={LayersIcon} title={tr("Sovrapposizioni")} color="var(--swatch-violet)">
-      <p className="text-sm text-muted-foreground">{tr("Quando due posizioni sono, in pratica, la stessa scommessa")}</p>
+    <PanelSection icon={LayersIcon} title="Sovrapposizioni" color="var(--swatch-violet)">
+      <p className="text-sm text-muted-foreground">Quando due posizioni sono, in pratica, la stessa scommessa</p>
       <div className="flex flex-col gap-8">
-        <section className="flex flex-col gap-3" aria-label={tr("Investimenti doppi")}>
+        <section className="flex flex-col gap-3" aria-label="Investimenti doppi">
           <div>
-            <h3 className="text-sm font-medium text-foreground">{tr("Investimenti doppi")}</h3>
-            <p className="text-sm text-muted-foreground">{tr("Fondi che contengono in buona parte le stesse aziende.")}</p>
+            <h3 className="text-sm font-medium text-foreground">Investimenti doppi</h3>
+            <p className="text-sm text-muted-foreground">Fondi che contengono in buona parte le stesse aziende.</p>
           </div>
           {hasOverlaps ? (
             <ul className="flex flex-col gap-2">
@@ -51,24 +48,24 @@ export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCard
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">{tr("Nessuna sovrapposizione rilevante tra le tue posizioni.")}</p>
+            <p className="text-sm text-muted-foreground">Nessuna sovrapposizione rilevante tra le tue posizioni.</p>
           )}
         </section>
 
         {analysis.correlations ? (
-          <section className="flex flex-col gap-3" aria-label={tr("Quanto si muovono insieme")}>
+          <section className="flex flex-col gap-3" aria-label="Quanto si muovono insieme">
             <div>
-              <h3 className="text-sm font-medium text-foreground">{tr("Quanto si muovono insieme")}</h3>
+              <h3 className="text-sm font-medium text-foreground">Quanto si muovono insieme</h3>
               <p className="text-sm text-muted-foreground">
                 {insight
-                  ? tr("In media {0}: più è vicino a 0, più le posizioni si compensano quando il mercato scende.", {0: decimal(insight.average)})
-                  : tr("Servono almeno 20 giorni di prezzi in comune per confrontare due posizioni.")}
+                  ? `In media ${decimal(insight.average)}: più è vicino a 0, più le posizioni si compensano quando il mercato scende.`
+                  : "Servono almeno 20 giorni di prezzi in comune per confrontare due posizioni."}
               </p>
             </div>
             {insight ? (
               <>
                 <CorrelationFamilies matrix={analysis.correlations} instrumentsById={instrumentsById} />
-                <Disclosure title={tr("Tutte le coppie")} summary="Quanto si muove insieme ogni coppia di posizioni">
+                <Disclosure title="Tutte le coppie" summary="Quanto si muove insieme ogni coppia di posizioni">
                   <CorrelationPairs matrix={analysis.correlations} instrumentsById={instrumentsById} />
                 </Disclosure>
               </>

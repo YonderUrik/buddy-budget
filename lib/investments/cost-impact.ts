@@ -16,7 +16,7 @@ export interface CostImpact {
 }
 
 /** Reinvest recorded charges from their payment dates using actual daily portfolio performance, independently of the visible chart window. */
-export function computeCostImpact(params: ReturnInputs, unpriced: boolean, report: TaxReport | null): CostImpact {
+export function computeCostImpact(params: ReturnInputs, unpriced: boolean, report: TaxReport): CostImpact {
   const to = toDateKey(params.today);
   const transactions = params.transactions.filter((t) => t.date <= to);
   let estimatedTaxes = 0;
@@ -29,7 +29,7 @@ export function computeCostImpact(params: ReturnInputs, unpriced: boolean, repor
     fees += Number(t.fees); taxes += Number(t.taxes);
     charges.set(t.date, day);
   }
-  for (const estimate of (report ? estimatedTaxCharges(report, to) : [])) {
+  for (const estimate of estimatedTaxCharges(report, to)) {
     const day = charges.get(estimate.date) ?? { fees: 0, taxes: 0, estimatedTaxes: 0 };
     day.estimatedTaxes += estimate.amount;
     estimatedTaxes += estimate.amount;

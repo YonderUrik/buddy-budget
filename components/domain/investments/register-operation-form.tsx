@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Form "Registra operazione": acquisto, vendita, dividendo, cedola, rimborso o split (solo il rapporto). Per acquisti e vendite il prezzo si
@@ -20,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { type Instrument } from "@/lib/db/schema/investments";
 import { INVESTMENT_TRANSACTION_TYPES, type InvestmentTransactionType } from "@/lib/investments/constants";
 import { TRANSACTION_TYPE_LABELS } from "@/lib/investments/labels";
-
+import { formatCurrency } from "@/lib/format";
 import {
   useCreateInvestmentTransactionMutation,
   useInstrumentPriceOnDateQuery,
@@ -85,10 +82,6 @@ function roundCents(value: number | null | undefined): number | null {
 }
 
 export function RegisterOperationForm({ currency, initial, usedInstruments = [], editing, onSuccess }: RegisterOperationFormProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const id = React.useId();
   const create = useCreateInvestmentTransactionMutation();
   const update = useUpdateInvestmentTransactionMutation();
@@ -127,7 +120,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    if (!instrument) return setError(tr("Scegli uno strumento"));
+    if (!instrument) return setError("Scegli uno strumento");
     if (!flow.isLast) {
       if (flow.index === 1 && fields.quantity && !(parseAmount(quantity) ?? 0)) return setError(type === "split" ? "Scrivi il rapporto dello split." : "Scrivi la quantità.");
       track("form_step_completed", { flow: "operation", step: flow.index + 1 });
@@ -150,15 +143,15 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   }
 
   const typeField = (
-    <Field label={tr("Tipo")}>
+    <Field label="Tipo">
       <Select value={type} onValueChange={(v) => v && setType(v as InvestmentTransactionType)}>
-        <SelectTrigger className="w-full" aria-label={tr("Tipo di operazione")}>
-          <SelectValue>{(v: string | null) => (v ? tr(TRANSACTION_TYPE_LABELS[v as InvestmentTransactionType]) : "")}</SelectValue>
+        <SelectTrigger className="w-full" aria-label="Tipo di operazione">
+          <SelectValue>{(v: string | null) => (v ? TRANSACTION_TYPE_LABELS[v as InvestmentTransactionType] : "")}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {INVESTMENT_TRANSACTION_TYPES.filter((t) => t !== "rettifica").map((t) => (
             <SelectItem key={t} value={t}>
-              {tr(TRANSACTION_TYPE_LABELS[t])}
+              {TRANSACTION_TYPE_LABELS[t]}
             </SelectItem>
           ))}
         </SelectContent>
@@ -166,12 +159,12 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     </Field>
   );
   const dateField = (
-    <Field label={tr("Data")} htmlFor={`${id}-date`}>
+    <Field label="Data" htmlFor={`${id}-date`}>
       <Input id={`${id}-date`} type="date" value={date} max={localTodayKey()} onChange={(e) => setDate(e.target.value)} />
     </Field>
   );
   const instrumentField = (
-    <Field label={tr("Strumento")}>
+    <Field label="Strumento">
       {editing ? (
         <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? "Strumento"}</p>
       ) : (
@@ -198,7 +191,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
         />
       ) : null}
       {fields.grossAmount ? (
-        <Field label={tr("Importo lordo{0}", {0: instrument ? ` (${instrument.currency})` : ""})} htmlFor={`${id}-gross`}>
+        <Field label={`Importo lordo${instrument ? ` (${instrument.currency})` : ""}`} htmlFor={`${id}-gross`}>
           <Input id={`${id}-gross`} inputMode="decimal" value={gross} onChange={(e) => setGross(e.target.value)} />
         </Field>
       ) : null}
@@ -208,17 +201,17 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     <>
       {fields.costs ? (
         <>
-          <Field label={tr("Commissioni ({0})", {0: currency})} htmlFor={`${id}-fees`}>
-            <Input id={`${id}-fees`} data-autofocus={!editing ? "" : undefined} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder={tr("0")} />
+          <Field label={`Commissioni (${currency})`} htmlFor={`${id}-fees`}>
+            <Input id={`${id}-fees`} data-autofocus={!editing ? "" : undefined} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder="0" />
           </Field>
-          <Field label={tr("Imposte trattenute ({0})", {0: currency})} htmlFor={`${id}-taxes`}>
-            <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder={tr("0")} />
+          <Field label={`Imposte trattenute (${currency})`} htmlFor={`${id}-taxes`}>
+            <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder="0" />
           </Field>
         </>
       ) : null}
       {needsFx ? (
-        <Field label={tr("Cambio 1 {0} = ? {1}", {0: instrument.currency, 1: currency})} htmlFor={`${id}-fx`}>
-          <Input id={`${id}-fx`} inputMode="decimal" value={fxRate} onChange={(e) => setFxRate(e.target.value)} placeholder={tr("BCE del giorno")} />
+        <Field label={`Cambio 1 ${instrument.currency} = ? ${currency}`} htmlFor={`${id}-fx`}>
+          <Input id={`${id}-fx`} inputMode="decimal" value={fxRate} onChange={(e) => setFxRate(e.target.value)} placeholder="BCE del giorno" />
         </Field>
       ) : null}
     </>
@@ -226,7 +219,8 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const controvalore = (
     <p className="text-sm text-muted-foreground">
       {grossValue !== null && instrument ? (
-        <>{tr("Controvalore")}{" "}<span className="font-heading text-base font-medium tabular-nums text-foreground">{formatCurrency(grossValue, instrument.currency)}</span>
+        <>
+          Controvalore <span className="font-heading text-base font-medium tabular-nums text-foreground">{formatCurrency(grossValue, instrument.currency)}</span>
         </>
       ) : null}
     </p>
@@ -237,14 +231,14 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     return (
       <form onSubmit={submit} className="flex flex-col gap-5">
         <DialogSections>
-          <DialogSection title={tr("Operazione")} icon={ArrowLeftRightIcon} color="var(--swatch-indigo)">
+          <DialogSection title="Operazione" icon={ArrowLeftRightIcon} color="var(--swatch-indigo)">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {typeField}
               {dateField}
             </div>
             {instrumentField}
           </DialogSection>
-          <DialogSection title={tr("Importi")} icon={CoinsIcon} color="var(--swatch-amber)" description={type === "split" ? SPLIT_RATIO_HINT : undefined}>
+          <DialogSection title="Importi" icon={CoinsIcon} color="var(--swatch-amber)" description={type === "split" ? SPLIT_RATIO_HINT : undefined}>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {amountFields}
               {costFields}
@@ -264,18 +258,18 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
-      <StepProgress index={flow.index} count={flow.count} label={tr("Passi della nuova operazione")} />
+      <StepProgress index={flow.index} count={flow.count} label="Passi della nuova operazione" />
       <StepStage stepKey={flow.index} direction={flow.direction} className="flex flex-col gap-4">
         {flow.index === 0 ? (
           <>
-            <StepHeading title={tr("Che operazione è?")} description={tr("Scegli il tipo e lo strumento.")} />
+            <StepHeading title="Che operazione è?" description="Scegli il tipo e lo strumento." />
             {typeField}
             {instrumentField}
           </>
         ) : null}
         {flow.index === 1 ? (
           <>
-            <StepHeading title={tr("Quando e quanto?")} description={type === "split" ? SPLIT_RATIO_HINT : instrument?.name} />
+            <StepHeading title="Quando e quanto?" description={type === "split" ? SPLIT_RATIO_HINT : instrument?.name} />
             {dateField}
             {amountFields}
             {flow.isLast ? controvalore : null}
@@ -283,7 +277,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
         ) : null}
         {flow.index === 2 ? (
           <>
-            <StepHeading title={tr("Costi e imposte")} description={tr("Facoltativi: lascia 0 se non ci sono.")} />
+            <StepHeading title="Costi e imposte" description="Facoltativi: lascia 0 se non ci sono." />
             {costFields}
             {controvalore}
           </>
@@ -291,13 +285,13 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
       </StepStage>
       {error ? <ErrorWithReport area="operazione" error={error} /> : null}
       <StepActions
-        backLabel={flow.isFirst ? undefined : tr("Indietro")}
+        backLabel={flow.isFirst ? undefined : "Indietro"}
         onBack={() => {
           track("form_step_back", { flow: "operation", step: flow.index + 1 });
           setError(null);
           flow.back();
         }}
-        primaryLabel={flow.isLast ? saveLabel : tr("Continua")}
+        primaryLabel={flow.isLast ? saveLabel : "Continua"}
         pending={save.isPending}
         disabled={flow.index === 0 && !instrument}
       />

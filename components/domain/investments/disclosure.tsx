@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Sezione che si apre su richiesta: riga-bottone con titolo, riassunto e freccia; il contenuto compare sotto solo da
@@ -24,7 +23,6 @@ export interface DisclosureProps {
 }
 
 export function Disclosure({ title, summary, trailing, defaultOpen = false, bare = false, children, className }: DisclosureProps) {
-  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(defaultOpen);
   const panelId = React.useId();
   return (
@@ -40,7 +38,7 @@ export function Disclosure({ title, summary, trailing, defaultOpen = false, bare
         )}
       >
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-foreground">{tr(title)}</span>
+          <span className="block text-sm font-medium text-foreground">{title}</span>
           {summary ? <span className="block text-sm text-muted-foreground">{summary}</span> : null}
         </span>
         {trailing}

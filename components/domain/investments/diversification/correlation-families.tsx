@@ -1,5 +1,3 @@
-"use client";
-import { useLocalization } from "@/lib/localization/provider";
 /**
  * Le posizioni raggruppate in "famiglie" che si muovono insieme (stessa famiglia = poca diversificazione tra loro) e,
  * a parte, quelle che vanno per conto loro: si capisce a colpo d'occhio dove sei davvero diversificato.
@@ -24,7 +22,6 @@ function Chip({ instrument }: { instrument: Instrument | undefined }) {
 }
 
 export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFamiliesProps) {
-  const { t: tr } = useLocalization();
   const { families, independent } = correlationFamilies(matrix);
   return (
     <div className="flex flex-col gap-3">
@@ -33,7 +30,9 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
           key={family.join("-")}
           className="flex flex-col gap-2 rounded-xl border border-[var(--swatch-amber)]/50 bg-[color-mix(in_oklab,var(--swatch-amber)_8%,transparent)] p-3"
         >
-          <p className="text-sm font-medium text-foreground">{tr("Famiglia")}{" "}{index + 1}{tr(": si muovono quasi insieme")}<span className="font-normal text-muted-foreground">{" "}{tr("· contano come una sola scommessa")}</span>
+          <p className="text-sm font-medium text-foreground">
+            Famiglia {index + 1}: si muovono quasi insieme
+            <span className="font-normal text-muted-foreground"> · contano come una sola scommessa</span>
           </p>
           <ul className="flex flex-wrap gap-2">
             {family.map((id) => (
@@ -45,8 +44,8 @@ export function CorrelationFamilies({ matrix, instrumentsById }: CorrelationFami
       {independent.length > 0 ? (
         <div className="flex flex-col gap-2 rounded-xl border p-3">
           <p className="text-sm font-medium text-foreground">
-            {families.length > 0 ? tr("Vanno per conto loro") : tr("Nessuna coppia si muove insieme")}
-            <span className="font-normal text-muted-foreground">{" "}{tr("· diversificano il resto")}</span>
+            {families.length > 0 ? "Vanno per conto loro" : "Nessuna coppia si muove insieme"}
+            <span className="font-normal text-muted-foreground"> · diversificano il resto</span>
           </p>
           <ul className="flex flex-wrap gap-2">
             {independent.map((id) => (

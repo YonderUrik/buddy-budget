@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card "Prezzi automatici" per uno strumento importato con prezzi manuali: cerca le quotazioni dell'ISIN
@@ -20,23 +19,28 @@ export interface TitleQuotationCardProps {
 }
 
 export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotationCardProps) {
-  const { t: tr } = useLocalization();
   const [searching, setSearching] = React.useState(false);
   const candidates = useQuotationCandidatesQuery(instrumentId, searching);
   const link = useLinkQuotationMutation(instrumentId);
   const data = candidates.data;
 
   return (
-    <PanelSection icon={LinkIcon} title={tr("Prezzi automatici")} color="var(--swatch-teal)" className="gap-3">
-        <p className="text-sm text-muted-foreground">{tr("Questo titolo ha solo i prezzi del rendiconto (")}{isin}{tr("). Collegalo a una quotazione in")}{" "}{currency}{" "}{tr("per avere prezzi aggiornati ogni giorno, rendimenti, settori e sovrapposizioni.")}</p>
+    <PanelSection icon={LinkIcon} title="Prezzi automatici" color="var(--swatch-teal)" className="gap-3">
+        <p className="text-sm text-muted-foreground">
+          Questo titolo ha solo i prezzi del rendiconto ({isin}). Collegalo a una quotazione in {currency} per avere prezzi aggiornati ogni giorno, rendimenti,
+          settori e sovrapposizioni.
+        </p>
         {!searching ? (
-          <Button className="self-start" onClick={() => setSearching(true)}>{tr("Cerca la quotazione")}</Button>
+          <Button className="self-start" onClick={() => setSearching(true)}>
+            Cerca la quotazione
+          </Button>
         ) : candidates.isLoading ? (
-          <p className="text-sm text-muted-foreground" aria-live="polite">{tr("Cerco le quotazioni di")}{" "}{isin}…
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            Cerco le quotazioni di {isin}…
           </p>
         ) : candidates.isError ? (
           <p role="alert" className="text-sm text-destructive">
-            {tr(candidates.error.message)}
+            {candidates.error.message}
           </p>
         ) : data?.status === "ok" ? (
           <ul className="flex flex-col divide-y">
@@ -48,18 +52,20 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
                     {candidate.exchange ?? "Borsa non indicata"} · {candidate.currency}
                   </p>
                 </div>
-                <Button size="sm" disabled={link.isPending} onClick={() => link.mutate(candidate.symbol)}>{tr("Collega")}</Button>
+                <Button size="sm" disabled={link.isPending} onClick={() => link.mutate(candidate.symbol)}>
+                  Collega
+                </Button>
               </li>
             ))}
           </ul>
         ) : data?.status === "unavailable" ? (
-          <p className="text-sm text-muted-foreground">{tr("Le fonti non rispondono in questo momento. Riprova tra poco.")}</p>
+          <p className="text-sm text-muted-foreground">Le fonti non rispondono in questo momento. Riprova tra poco.</p>
         ) : (
-          <p className="text-sm text-muted-foreground">{tr("Non ho trovato una quotazione in")}{" "}{currency}{" "}{tr("per questo ISIN: restano i prezzi del rendiconto.")}</p>
+          <p className="text-sm text-muted-foreground">Non ho trovato una quotazione in {currency} per questo ISIN: restano i prezzi del rendiconto.</p>
         )}
         {link.isError ? (
           <p role="alert" className="text-sm text-destructive">
-            {tr(link.error.message)}
+            {link.error.message}
           </p>
         ) : null}
     </PanelSection>

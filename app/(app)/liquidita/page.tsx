@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /** Liquidità · Movimenti: frase del mese, cifra eroe, chip dei conti, elenco a giorni e colonna "Il mese". */
 
@@ -38,7 +37,6 @@ import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categor
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
 export default function LiquiditaPage() {
-  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const { addAccount, addTransaction } = useLiquidityActions();
   const currency = session?.user.currency ?? "EUR";
@@ -79,7 +77,7 @@ export default function LiquiditaPage() {
   return (
     <div className="flex flex-col gap-8">
       <LiquidityOverview />
-      <Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">{tr("Importa da CSV o Excel →")}</Link>
+      <Link href="/importazioni" className="text-sm font-medium text-primary hover:underline">Importa da CSV o Excel →</Link>
       <div className="grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-2">
           <MovementsToolbar
@@ -94,7 +92,7 @@ export default function LiquiditaPage() {
             onClearCategory={() => setCategoryId(null)}
           />
           {isLoading ? (
-            <div className="flex flex-col gap-3 pt-4" aria-busy="true" aria-label={tr("Caricamento dei movimenti")}>
+            <div className="flex flex-col gap-3 pt-4" aria-busy="true" aria-label="Caricamento dei movimenti">
               {[0, 1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-14 animate-pulse rounded-2xl bg-muted" />
               ))}
@@ -104,8 +102,8 @@ export default function LiquiditaPage() {
           ) : all.length === 0 && !searchText && !categoryId && !toFixOnly && !accountId ? (
             <EmptyState
               icon={ArrowLeftRightIcon}
-              title={accounts.length === 0 ? tr("Prima serve un conto") : tr("Nessun movimento ancora")}
-              description={accounts.length === 0 ? tr("I movimenti vivono dentro un conto: crealo, poi aggiungi i movimenti a mano o importali da un file.") : tr("Importa il CSV o l'estratto conto della banca, oppure registra un movimento a mano: le categorie e il mese si riempiono da soli.")}
+              title={accounts.length === 0 ? "Prima serve un conto" : "Nessun movimento ancora"}
+              description={accounts.length === 0 ? "I movimenti vivono dentro un conto: crealo, poi aggiungi i movimenti a mano o importali da un file." : "Importa il CSV o l'estratto conto della banca, oppure registra un movimento a mano: le categorie e il mese si riempiono da soli."}
               primary={accounts.length === 0 ? { label: "Crea un conto", onClick: addAccount } : { label: "Importa un file", href: "/importazioni" }}
               secondary={accounts.length === 0 ? undefined : { label: "Aggiungi un movimento", onClick: addTransaction }}
               className="pt-6"
@@ -118,7 +116,7 @@ export default function LiquiditaPage() {
               accountNames={accountId ? undefined : accountNames}
               currency={currency}
               today={today}
-              emptyMessage={searchText || categoryId || toFixOnly ? tr("Nessun movimento corrisponde ai filtri.") : tr("Nessun movimento ancora: collega una banca o aggiungine uno a mano.")}
+              emptyMessage={searchText || categoryId || toFixOnly ? "Nessun movimento corrisponde ai filtri." : "Nessun movimento ancora: collega una banca o aggiungine uno a mano."}
             />
           )}
         </div>

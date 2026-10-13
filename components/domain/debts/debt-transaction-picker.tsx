@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Scelta facoltativa della transazione che corrisponde a una rata: mostra le uscite vicine alla scadenza, filtrabili per
@@ -18,7 +15,7 @@ import { track } from "@/lib/analytics";
 import { addDaysIso } from "@/lib/debts/dates";
 import { describeFilterUsage, rankInstallmentCandidates } from "@/lib/debts/transaction-candidates";
 import type { Transaction } from "@/lib/db/schema/transactions";
-
+import { formatCurrency, formatShortDate } from "@/lib/format";
 import { useCategoriesQuery } from "@/lib/queries/categories";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { cn } from "@/lib/utils";
@@ -39,10 +36,6 @@ export interface DebtTransactionPickerProps {
 }
 
 export function DebtTransactionPicker({ dueDate, expectedAmount, value, onChange, currency }: DebtTransactionPickerProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency, formatShortDate } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const query = useTransactionsQuery(
     addDaysIso(dueDate, -TRANSACTION_SEARCH_WINDOW_DAYS),
     addDaysIso(dueDate, TRANSACTION_SEARCH_WINDOW_DAYS),
@@ -81,7 +74,7 @@ export function DebtTransactionPicker({ dueDate, expectedAmount, value, onChange
             <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={10} className="size-5 shrink-0" />
           ) : null}
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate">{tr(t.description)}</span>
+            <span className="truncate">{t.description}</span>
             <span className="text-xs text-text-2">{formatShortDate(t.date)}</span>
           </span>
           <span className="shrink-0 font-heading tabular-nums">{formatCurrency(Math.abs(Number(t.amount)), currency)}</span>
@@ -102,19 +95,20 @@ export function DebtTransactionPicker({ dueDate, expectedAmount, value, onChange
       />
       {selected ? (
         <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-sm">
-          <span className="truncate">{tr("Collegata:")}{" "}{tr(selected.description)} · {formatCurrency(Math.abs(Number(selected.amount)), currency)}
+          <span className="truncate">
+            Collegata: {selected.description} · {formatCurrency(Math.abs(Number(selected.amount)), currency)}
           </span>
-          <Button type="button" variant="ghost" size="icon-sm" aria-label={tr("Scollega la transazione")} onClick={() => onChange(null)}>
+          <Button type="button" variant="ghost" size="icon-sm" aria-label="Scollega la transazione" onClick={() => onChange(null)}>
             <XIcon aria-hidden />
           </Button>
         </div>
       ) : null}
-      <ul role="radiogroup" aria-label={tr("Transazione collegata")} className={cn("flex flex-col overflow-y-auto rounded-md border", LIST_MAX_HEIGHT_CLASS)}>
+      <ul role="radiogroup" aria-label="Transazione collegata" className={cn("flex flex-col overflow-y-auto rounded-md border", LIST_MAX_HEIGHT_CLASS)}>
         {query.isPending ? (
-          <li className="px-2 py-3 text-sm text-text-2">{tr("Cerco le transazioni…")}</li>
+          <li className="px-2 py-3 text-sm text-text-2">Cerco le transazioni…</li>
         ) : visible.length === 0 ? (
           <li className="px-2 py-3 text-sm text-text-2">
-            {all.length === 0 ? tr("Nessuna uscita vicina alla scadenza.") : tr("Nessuna transazione corrisponde ai filtri.")}
+            {all.length === 0 ? "Nessuna uscita vicina alla scadenza." : "Nessuna transazione corrisponde ai filtri."}
           </li>
         ) : (
           visible.map(renderRow)

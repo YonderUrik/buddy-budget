@@ -1,5 +1,4 @@
 "use client";
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Secondo passo per un CSV a colonne: cosa ho letto e quanto verrà importato, poi come leggo le colonne. Se il formato
@@ -30,7 +29,6 @@ export interface ImportMappingStepProps {
 }
 
 export function ImportMappingStep({ fileName, providerName, table, preset, mapping, rows, missing, onChange }: ImportMappingStepProps) {
-  const { t: tr } = useLocalization();
   const ok = rows.filter((r) => r.status === "ok");
   const withWarning = ok.filter((r) => r.warnings.length > 0).length;
   const recognizedAs = providerName ?? preset?.label ?? null;
@@ -48,28 +46,30 @@ export function ImportMappingStep({ fileName, providerName, table, preset, mappi
             ]}
           />
         ) : (
-          <ImportNotice tone="warning" title={tr("Mi manca qualche colonna")} hint={tr("Indica quale colonna contiene {0}.", {0: missing.join(", ")})} />
+          <ImportNotice tone="warning" title="Mi manca qualche colonna" hint={`Indica quale colonna contiene ${missing.join(", ")}.`} />
         )}
       </DialogSection>
       {missing.length === 0 && ok.length > 0 ? (
-        <DialogSection title={tr("Le prime operazioni")} description={withWarning > 0 ? tr("{0} con un avviso: controllale prima di proseguire.", {0: withWarning}) : undefined}>
+        <DialogSection title="Le prime operazioni" description={withWarning > 0 ? `${withWarning} con un avviso: controllale prima di proseguire.` : undefined}>
           <ImportRowsPreview rows={rows} />
         </DialogSection>
       ) : null}
       {missing.length === 0 && ok.length === 0 && rows.length > 0 ? (
         <DialogSection>
-          <ImportNotice tone="error" title={tr("Con queste colonne non trovo nessuna operazione valida")} hint={tr("Controlla qui sotto che colonne e formati (date, decimali) siano quelli del tuo file.")} />
+          <ImportNotice tone="error" title="Con queste colonne non trovo nessuna operazione valida" hint="Controlla qui sotto che colonne e formati (date, decimali) siano quelli del tuo file." />
         </DialogSection>
       ) : null}
       {missing.length === 0 ? <SkippedRows rows={rows} /> : null}
       {recognizedAs && missing.length === 0 ? (
         <details className="group">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
-            <ChevronRightIcon className="size-4 transition-transform group-open:rotate-90" aria-hidden="true" />{tr("Come leggo le colonne")}</summary>
+            <ChevronRightIcon className="size-4 transition-transform group-open:rotate-90" aria-hidden="true" />
+            Come leggo le colonne
+          </summary>
           <div className="pt-2">{fields}</div>
         </details>
       ) : (
-        <DialogSection title={tr("Come leggo le colonne")} icon={TableIcon} color="var(--swatch-indigo)" description={tr("Per ogni informazione scegli la colonna del tuo file. La prossima volta ricordo la scelta per file con le stesse intestazioni.")}>
+        <DialogSection title="Come leggo le colonne" icon={TableIcon} color="var(--swatch-indigo)" description="Per ogni informazione scegli la colonna del tuo file. La prossima volta ricordo la scelta per file con le stesse intestazioni.">
           {fields}
         </DialogSection>
       )}

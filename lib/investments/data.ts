@@ -1,4 +1,3 @@
-import { countryFeatures, resolveProfile, type ProductCountry } from "@/lib/localization/config";
 import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
@@ -81,7 +80,6 @@ export async function loadUserTransactions(userId: string, instrumentId?: string
 
 /** Tutto quello che serve a calcolare il portafoglio di un utente lato client. */
 export interface InvestmentData {
-  productCountry?: ProductCountry;
   currency: string;
   brokerCash?: BrokerCash[];
   personalSources?: { id: string; name: string }[];
@@ -125,9 +123,8 @@ function shiftDays(dateKey: string, days: number): string {
  * dalla prima operazione: il grafico di un periodo corto non scarica anni di storico.
  */
 export async function loadInvestmentData(userId: string, pricesFrom: string | null): Promise<InvestmentData> {
-  const [user] = await db.select({ currency: authUser.currency, productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, userId));
+  const [user] = await db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId));
   const currency = user?.currency ?? "EUR";
-  const { productCountry } = resolveProfile(user);
   const [portfolios, transactions, brokerSources, cashAccounts, cashStatements, personalSources] = await Promise.all([
     db.select().from(investmentPortfolios).where(eq(investmentPortfolios.userId, userId)).orderBy(asc(investmentPortfolios.createdAt)),
     loadUserTransactions(userId),
@@ -178,7 +175,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   const ownedIds = [...new Set([...transactions.map((t) => t.instrumentId), ...targets.map((t) => t.instrumentId)])];
   if (ownedIds.length === 0) {
     return {
-      productCountry, currency,
+      currency,
       brokerSources,
       personalSources,
       brokerCash,
@@ -232,7 +229,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
           .from(fxRates)
           .where(and(inArray(fxRates.currency, currencies), gte(fxRates.date, from)))
           .orderBy(asc(fxRates.date)),
-    currency === INFLATION_CURRENCY && countryFeatures(productCountry).inflation ? loadInflationIndex() : Promise.resolve([]),
+    currency === INFLATION_CURRENCY ? loadInflationIndex() : Promise.resolve([]),
     loadProfiles(ownedIds),
     db
       .select({ instrumentId: userInstrumentBreakdowns.instrumentId, sectors: userInstrumentBreakdowns.sectors, areas: userInstrumentBreakdowns.areas })
@@ -243,7 +240,7 @@ export async function loadInvestmentData(userId: string, pricesFrom: string | nu
   ]);
 
   return {
-    productCountry, currency,
+    currency,
     brokerSources,
     personalSources,
     brokerCash,

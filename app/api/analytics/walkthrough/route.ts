@@ -1,4 +1,3 @@
-import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { sessionOrUnauthorized } from "@/lib/account/route-session";
 import { markWalkthroughSeen } from "@/lib/analitiche/data";
@@ -14,4 +13,4 @@ async function handlePost(request: NextRequest) {
   return new Response(null, { status: 204 });
 }
 
-export const POST = withRoute("analytics.walkthrough.seen", withCountryGuard(handlePost));
+export const POST = withRoute("analytics.walkthrough.seen", handlePost);

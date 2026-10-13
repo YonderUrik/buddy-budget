@@ -1,7 +1,4 @@
 "use client";
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riepilogo finanziario della sidebar: "Oggi" (patrimonio), "Portafoglio" (totale e posizioni) e "Watchlist". Ogni
@@ -11,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
-
+import { formatSignedPct } from "@/components/domain/investments/light";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarSummary } from "@/lib/sidebar/types";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
@@ -50,15 +47,14 @@ export interface SidebarInsightsProps {
 const SECTION_LINK_CLASS = "block rounded-md px-1.5 py-1 text-xs font-semibold text-primary hover:underline";
 
 function PrivacyToggle({ hidden, onToggle }: { hidden: boolean; onToggle: () => void }) {
-  const { t: tr } = useLocalization();
   const Icon = hidden ? EyeOff : Eye;
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={hidden}
-      aria-label={hidden ? tr("Mostra gli importi") : tr("Nascondi gli importi")}
-      title={hidden ? tr("Mostra gli importi") : tr("Nascondi gli importi")}
+      aria-label={hidden ? "Mostra gli importi" : "Nascondi gli importi"}
+      title={hidden ? "Mostra gli importi" : "Nascondi gli importi"}
       className="rounded-md p-1.5 text-sidebar-foreground/60 transition-colors hover:text-sidebar-foreground"
     >
       <Icon className="size-3.5" aria-hidden="true" />
@@ -67,9 +63,6 @@ function PrivacyToggle({ hidden, onToggle }: { hidden: boolean; onToggle: () => 
 }
 
 function ChangeChip({ value }: { value: number | null }) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatSignedPct } = localizedFormats(formattingLocale);
-
   if (value === null) return null;
   return (
     <span
@@ -96,10 +89,6 @@ export function SidebarInsights({
   show,
   privacyToggle = true,
 }: SidebarInsightsProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatSignedPct } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   const [pensionIncluded] = usePensionInNetWorth();
   if (loading) {
     return collapsed ? null : (
@@ -123,13 +112,13 @@ export function SidebarInsights({
       <Link
         href="/investimenti"
         onClick={onNavigate}
-        title={tr("Portafoglio {0}{1}", {0: total, 1: portfolio.dayChangePct !== null ? `, oggi ${formatSignedPct(portfolio.dayChangePct)}` : ""})}
+        title={`Portafoglio ${total}${portfolio.dayChangePct !== null ? `, oggi ${formatSignedPct(portfolio.dayChangePct)}` : ""}`}
         className="mx-auto mt-3 flex w-12 flex-col items-center rounded-lg bg-sidebar-accent/60 py-1.5 text-[10px] leading-tight hover:bg-sidebar-accent"
       >
         <span className={cn("font-semibold tabular-nums", changeToneClass(portfolio.dayChangePct))}>
           {portfolio.dayChangePct === null ? "—" : formatSignedPct(portfolio.dayChangePct)}
         </span>
-        <span className="text-sidebar-foreground/60">{tr("oggi")}</span>
+        <span className="text-sidebar-foreground/60">oggi</span>
       </Link>
     );
   }
@@ -151,7 +140,7 @@ export function SidebarInsights({
       {netWorth ? (
         <CollapsibleSection
           id="oggi"
-          title={tr("Oggi")}
+          title="Oggi"
           summary={formatSidebarAmount(netWorthTotal, currency, hidden)}
           action={eye("oggi")}
         >
@@ -159,12 +148,16 @@ export function SidebarInsights({
             <p className="font-heading text-xl font-semibold tabular-nums text-sidebar-foreground">
               {formatSidebarAmount(netWorthTotal, currency, hidden)}
             </p>
-            <p className="text-[11px] text-sidebar-foreground/60">{tr("Patrimonio netto")}{netWorthChange !== null ? (
+            <p className="text-[11px] text-sidebar-foreground/60">
+              Patrimonio netto
+              {netWorthChange !== null ? (
                 <>
                   {" · "}
                   <span className={cn("font-medium", changeToneClass(netWorthChange))}>
                     {formatSidebarSignedAmount(netWorthChange, currency, hidden)}
-                  </span>{" "}{tr("in 30 giorni")}</>
+                  </span>{" "}
+                  in 30 giorni
+                </>
               ) : null}
             </p>
           </div>
@@ -174,7 +167,7 @@ export function SidebarInsights({
       {portfolio ? (
         <CollapsibleSection
           id="portafoglio"
-          title={tr("Portafoglio")}
+          title="Portafoglio"
           summary={formatSidebarAmount(portfolio.totalValue, currency, hidden)}
           badge={<ChangeChip value={portfolio.dayChangePct} />}
           action={eye("portafoglio")}
@@ -187,7 +180,7 @@ export function SidebarInsights({
               <span className={cn("font-medium", changeToneClass(portfolio.totalGain))}>
                 {formatSidebarSignedAmount(portfolio.totalGain, currency, hidden)}
               </span>
-              {portfolio.totalGainPct !== null ? tr(" · {0} in totale", {0: formatSignedPct(portfolio.totalGainPct)}) : ""}
+              {portfolio.totalGainPct !== null ? ` · ${formatSignedPct(portfolio.totalGainPct)} in totale` : ""}
             </p>
           </div>
           <div className="mt-1 flex flex-col">
@@ -195,7 +188,7 @@ export function SidebarInsights({
               <InsightRow
                 key={h.instrumentId}
                 href={`${titlesHref}/${h.instrumentId}`}
-                label={tr(h.label)}
+                label={h.label}
                 name={h.name}
                 valueText={h.value === null ? "—" : formatSidebarAmount(h.value, currency, hidden)}
                 changePct={h.dayChangePct}
@@ -206,7 +199,8 @@ export function SidebarInsights({
             ))}
           </div>
           {portfolio.holdings.length > MAX_HOLDINGS_SHOWN ? (
-            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{portfolio.holdings.length}) →
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
+              Mostra tutti ({portfolio.holdings.length}) →
             </Link>
           ) : null}
         </CollapsibleSection>
@@ -215,13 +209,13 @@ export function SidebarInsights({
       {watchlist.length > 0 ? (
         <CollapsibleSection
           id="watchlist"
-          title={tr("Watchlist")}
+          title="Watchlist"
           defaultOpen={false}
           summary={`${watchlist.length} ${watchlist.length === 1 ? "titolo" : "titoli"}`}
           badge={
             watchAlerts > 0 ? (
               <span className="rounded-full bg-neg-soft px-1.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-neg">
-                {watchAlerts}{" "}{watchAlerts === 1 ? tr("avviso") : tr("avvisi")}
+                {watchAlerts} {watchAlerts === 1 ? "avviso" : "avvisi"}
               </span>
             ) : undefined
           }
@@ -232,7 +226,7 @@ export function SidebarInsights({
               <InsightRow
                 key={w.instrumentId}
                 href={`${titlesHref}/${w.instrumentId}`}
-                label={tr(w.label)}
+                label={w.label}
                 name={w.name}
                 valueText={w.lastClose === null ? "—" : formatSidebarPrice(w.lastClose, w.currency, hidden)}
                 changePct={w.dayChangePct}
@@ -243,7 +237,8 @@ export function SidebarInsights({
             ))}
           </div>
           {watchlist.length > MAX_WATCHLIST_SHOWN ? (
-            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{watchlist.length}) →
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>
+              Mostra tutti ({watchlist.length}) →
             </Link>
           ) : null}
         </CollapsibleSection>

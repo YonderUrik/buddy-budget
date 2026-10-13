@@ -1,9 +1,5 @@
 "use client";
 
-import { localizedFormats } from "@/lib/localization/format";
-
-import { useLocalization } from "@/lib/localization/provider";
-
 /**
  * Testata della pagina di un titolo: nome, tipo, codici, ultima chiusura grande (decimali attenuati) con variazione
  * del giorno e dell'anno, e le azioni Segui / Registra.
@@ -17,9 +13,9 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import { INSTRUMENT_TYPE_SINGULAR } from "@/lib/investments/labels";
 import type { TitleStats } from "@/lib/investments/title-stats";
 import { AnimatedNumber } from "@/components/motion";
-
+import { formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
+import { formatSignedPct } from "../gain-text";
 import { InstrumentIcon } from "../instrument-icon";
 
 /** Decimali del prezzo: quattro sotto 10 (come gli avvisi), altrimenti due. */
@@ -41,16 +37,9 @@ export interface TitleHeaderProps {
 }
 
 export function TitleHeader({ instrument, stats, watching, held, watchPending, onToggleWatch, onRegister, backHref = "/investimenti", tags = [] }: TitleHeaderProps) {
-  const { locale: formattingLocale } = useLocalization();
-  const { formatSignedPct } = localizedFormats(formattingLocale);
-
-
-  const { formatShortDate } = localizedFormats(formattingLocale);
-
-  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-3">
-      <BackLink href={backHref} label={tr("Portafoglio")} className="-mb-2" />
+      <BackLink href={backHref} label="Portafoglio" className="-mb-2" />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <InstrumentIcon type={instrument.type} name={instrument.name} instrumentId={instrument.id} className="mt-0.5" />
@@ -65,17 +54,18 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
                   {tag}
                 </Badge>
               ))}
-              {held ? <Badge variant="secondary">{tr("Posseduto")}</Badge> : null}
+              {held ? <Badge variant="secondary">Posseduto</Badge> : null}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-1.5" disabled={watchPending} aria-pressed={watching} onClick={onToggleWatch}>
             {watching ? <EyeOffIcon size={15} aria-hidden="true" /> : <EyeIcon size={15} aria-hidden="true" />}
-            {watching ? tr("Non seguire più") : tr("Segui")}
+            {watching ? "Non seguire più" : "Segui"}
           </Button>
           <Button className="gap-1.5 shadow-xs" onClick={onRegister}>
-            <PlusIcon size={15} aria-hidden="true" />{" "}{tr("Registra")}</Button>
+            <PlusIcon size={15} aria-hidden="true" /> Registra
+          </Button>
         </div>
       </div>
       {stats ? (
@@ -86,14 +76,15 @@ export function TitleHeader({ instrument, stats, watching, held, watchPending, o
           <p className="mt-1 text-sm text-muted-foreground">
             {stats.dayChange !== null ? (
               <>
-                <span className={cn("tabular-nums", stats.dayChange < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.dayChange)}</span>{" "}{tr("nel giorno ·")}{" "}
+                <span className={cn("tabular-nums", stats.dayChange < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.dayChange)}</span> nel giorno ·{" "}
               </>
             ) : null}
             {stats.returns["1A"] !== undefined ? (
               <>
-                <span className={cn("tabular-nums", stats.returns["1A"] < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.returns["1A"])}</span>{" "}{tr("in un anno ·")}{" "}
+                <span className={cn("tabular-nums", stats.returns["1A"] < 0 ? "text-neg" : "text-pos")}>{formatSignedPct(stats.returns["1A"])}</span> in un anno ·{" "}
               </>
-            ) : null}{tr("chiusura del")}{" "}{formatShortDate(stats.lastDate)}
+            ) : null}
+            chiusura del {formatShortDate(stats.lastDate)}
           </p>
         </div>
       ) : null}

@@ -1,11 +1,14 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Input valuta sempre formattato: simbolo statico + NumericFormat per la parte numerica. */
 
 import * as React from "react";
 import { NumericFormat } from "react-number-format";
 import { cn } from "@/lib/utils";
-import { getCurrencySymbol } from "@/lib/format";
+
 
 export interface CurrencyInputProps {
   value: number | null;
@@ -30,6 +33,11 @@ export function CurrencyInput({
   "aria-label": ariaLabel,
   "data-autofocus": dataAutofocus,
 }: CurrencyInputProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { getCurrencySymbol } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
+  const separators = new Intl.NumberFormat(formattingLocale).formatToParts(1234.5);
   const symbol = getCurrencySymbol(currency);
 
   return (
@@ -42,15 +50,15 @@ export function CurrencyInput({
         value={value ?? ""}
         onValueChange={({ floatValue }) => onChange(floatValue ?? null)}
         onBlur={onBlur}
-        thousandSeparator="."
-        decimalSeparator=","
+        thousandSeparator={separators.find(part => part.type === "group")?.value ?? ","}
+        decimalSeparator={separators.find(part => part.type === "decimal")?.value ?? "."}
         decimalScale={2}
         allowNegative
         className={cn(
           "h-8 min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm dark:bg-input/30",
           className
         )}
-        aria-label={ariaLabel}
+        aria-label={tr(ariaLabel)}
         data-autofocus={dataAutofocus ? "" : undefined}
       />
     </div>

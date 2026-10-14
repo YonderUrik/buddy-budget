@@ -37,6 +37,7 @@ export function makeCategory(overrides: Partial<Category>): Category {
     icon: "shopping-cart",
     description: null,
     isFallback: false,
+    defaultKey: null,
     createdAt: new Date(),
     ...overrides,
   };

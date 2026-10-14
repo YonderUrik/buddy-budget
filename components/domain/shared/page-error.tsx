@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Schermata mostrata quando una pagina dell'app si rompe durante il rendering (error boundary di Next). Manda l'errore
@@ -34,19 +35,20 @@ export function PageError({
   description = DEFAULT_DESCRIPTION,
   showReport = true,
 }: PageErrorProps) {
+  const { t: tr } = useLocalization();
   React.useEffect(() => {
     reportClientError(error, kind);
   }, [error, kind]);
 
-  const reference = error.digest ? `Codice errore: ${error.digest}` : null;
+  const reference = error.digest ? tr("Codice errore: {0}", { 0: error.digest }) : null;
   return (
     <div role="alert" className="mx-auto flex max-w-xl flex-col items-start gap-4 p-4 py-16 sm:p-6 sm:py-24">
-      <h1 className="font-heading text-2xl font-semibold text-foreground">{title}</h1>
-      <p className="text-sm text-text-2">{description}</p>
+      <h1 className="font-heading text-2xl font-semibold text-foreground">{tr(title)}</h1>
+      <p className="text-sm text-text-2">{tr(description)}</p>
       {reference ? <p className="font-mono text-xs text-text-3">{reference}</p> : null}
       <div className="flex flex-wrap items-center gap-4">
         <Button type="button" onClick={onRetry}>
-          {RETRY_LABEL}
+          {tr(RETRY_LABEL)}
         </Button>
         {showReport ? <ReportErrorLink area="caricamento" error={reference ? `${title}. ${reference}` : title} /> : null}
       </div>

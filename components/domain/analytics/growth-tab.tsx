@@ -1,5 +1,8 @@
 "use client";
 
+
+import { useLocalization } from "@/lib/localization/provider";
+
 /** Scheda Crescita: quanto dell'aumento del patrimonio finanziario viene dal risparmio e quanto dal mercato. */
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
@@ -11,9 +14,9 @@ import {
 import type { AnalyticsBase } from "@/lib/analitiche/base";
 import { splitGrowth } from "@/lib/calc/growth-split";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { GuidedReading } from "./guided-reading";
-import { growthSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface GrowthTabProps {
   base: AnalyticsBase;
@@ -24,48 +27,54 @@ const CONFIG: ChartConfig = {
   fromMarket: { label: "Da mercato e altro", color: "var(--swatch-teal)" },
 };
 
-const MONTH_FORMAT = new Intl.DateTimeFormat("it-IT", {
+
+
+
+export function GrowthTab({ base }: GrowthTabProps) {
+  const { growthSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const monthLabel = (key: string) =>
+  MONTH_FORMAT.format(new Date(`${key}-01T00:00:00Z`)).replace(".", "");
+  const MONTH_FORMAT = new Intl.DateTimeFormat(formattingLocale, {
   month: "short",
   year: "2-digit",
   timeZone: "UTC",
 });
-const monthLabel = (key: string) =>
-  MONTH_FORMAT.format(new Date(`${key}-01T00:00:00Z`)).replace(".", "");
 
-export function GrowthTab({ base }: GrowthTabProps) {
+  const { t: tr } = useLocalization();
   const { currency } = base;
   const split = splitGrowth(base.growthPoints);
   if (split.rows.length < 2) {
     return (
-      <MissingData>
-        Servono almeno due mesi di storico del patrimonio e dei movimenti. Con i
-        conti collegati o qualche mese di uso la scheda si riempie da sola.
-      </MissingData>
+      <MissingData>{tr("Servono almeno due mesi di storico del patrimonio e dei movimenti. Con i conti collegati o qualche mese di uso la scheda si riempie da sola.")}</MissingData>
     );
   }
   const data = split.rows.map((r) => ({ ...r, label: monthLabel(r.month) }));
   return (
     <div className="flex flex-col gap-4">
       <GuidedReading tab="crescita" steps={growthSteps(split, currency)} />
-      <AnalyticsCard title="Da dove arriva la crescita" explainer="growth">
+      <AnalyticsCard title={tr("Da dove arriva la crescita")} explainer="growth">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Metric
-            label="Variazione del patrimonio"
+            label={tr("Variazione del patrimonio")}
             value={money(split.totalDelta, currency)}
             tone={split.totalDelta >= 0 ? "pos" : "neg"}
             sub="liquidità + investimenti, ultimi 12 mesi"
           />
           <Metric
-            label="Dal tuo risparmio"
+            label={tr("Dal tuo risparmio")}
             value={money(split.totalFromSavings, currency)}
             sub={
               split.savingsShare !== null
-                ? `${pct(split.savingsShare, 0)} della crescita`
+                ? "{0} della crescita"
                 : undefined
             }
           />
           <Metric
-            label="Da mercato e altro"
+            label={tr("Da mercato e altro")}
             value={money(split.totalFromMarket, currency)}
             tone={split.totalFromMarket >= 0 ? "pos" : "neg"}
             sub="per differenza"
@@ -89,9 +98,9 @@ export function GrowthTab({ base }: GrowthTabProps) {
                 return (
                   <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-md">
                     <p className="font-medium">{p.label}</p>
-                    <p>Dal risparmio: {money(p.fromSavings, currency)}</p>
-                    <p>Da mercato e altro: {money(p.fromMarket, currency)}</p>
-                    <p>Variazione totale: {money(p.delta, currency)}</p>
+                    <p>{tr("Dal risparmio:")}{" "}{money(p.fromSavings, currency)}</p>
+                    <p>{tr("Da mercato e altro:")}{" "}{money(p.fromMarket, currency)}</p>
+                    <p>{tr("Variazione totale:")}{" "}{money(p.delta, currency)}</p>
                   </div>
                 );
               }}

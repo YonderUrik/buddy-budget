@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog per registrare un evento semplice (data + un valore): il cambio di tasso o la correzione del residuo.
@@ -54,6 +55,7 @@ export interface DebtEventDialogProps {
 }
 
 function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDialogKind; onDone: () => void }) {
+  const { t: tr } = useLocalization();
   const mutation = useCreateDebtEventMutation();
   const [date, setDate] = React.useState(todayIso());
   const [value, setValue] = React.useState("");
@@ -64,7 +66,7 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
   function submit(event: React.FormEvent) {
     event.preventDefault();
     const number = parseAmount(value);
-    if (number === undefined || number < 0 || (number === 0 && kind !== "rate_change")) return setError("Inserisci un valore valido");
+    if (number === undefined || number < 0 || (number === 0 && kind !== "rate_change")) return setError(tr("Inserisci un valore valido"));
     setError(null);
     const input = kind === "rate_change" ? ({ type: "rate_change", date, rate: number } as const) : ({ type: kind, date, amount: number } as const);
     mutation.mutate({ debtId, input }, { onSuccess: onDone, onError: (e) => setError(e.message) });
@@ -76,15 +78,15 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
         <DebtFormField label={copy.dateLabel} htmlFor={`${id}-date`}>
           <Input id={`${id}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </DebtFormField>
-        <DebtFormField label={copy.label} htmlFor={`${id}-value`} hint={copy.hint}>
+        <DebtFormField label={tr(copy.label)} htmlFor={`${id}-value`} hint={tr(copy.hint)}>
           <Input id={`${id}-value`} inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} />
         </DebtFormField>
       </div>
-      {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+      {error ? <p className="text-sm text-neg" role="alert">{tr(error)}</p> : null}
       <DialogActions>
         <span />
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Salvo…" : copy.submit}
+          {mutation.isPending ? tr("Salvo…") : tr(copy.submit)}
         </Button>
       </DialogActions>
     </form>
@@ -92,11 +94,12 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
 }
 
 export function DebtEventDialog({ debtId, kind, onOpenChange }: DebtEventDialogProps) {
+  const { t: tr } = useLocalization();
   const copy = kind ? COPY[kind] : null;
   return (
     <Dialog open={kind !== null} onOpenChange={onOpenChange}>
       <FormDialogContent>
-        <PanelDialogHeader icon={kind === "balance_correction" ? SlidersHorizontalIcon : PercentIcon} title={copy?.title ?? ""} description={copy?.description} />
+        <PanelDialogHeader icon={kind === "balance_correction" ? SlidersHorizontalIcon : PercentIcon} title={copy?.title ?? ""} description={tr(copy?.description)} />
         {kind ? <EventForm key={kind} debtId={debtId} kind={kind} onDone={() => onOpenChange(false)} /> : null}
       </FormDialogContent>
     </Dialog>

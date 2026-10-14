@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Colonna della board: intestazione del gruppo, tessere delle sue categorie e area di rilascio per il drag & drop. */
 
@@ -31,10 +32,11 @@ export function CategoryGroupColumn({
   title, description, dotClassName, categories, usage, dropType, isDropActive, movingId,
   onOpen, onDragStart, onDragEnd, onDragEnter, onDrop,
 }: CategoryGroupColumnProps) {
+  const { t: tr } = useLocalization();
   const canDrop = dropType !== undefined;
   return (
     <section
-      aria-label={title}
+      aria-label={tr(title)}
       onDragOver={canDrop ? (event) => event.preventDefault() : undefined}
       onDragEnter={canDrop ? onDragEnter : undefined}
       onDrop={canDrop ? (event) => { event.preventDefault(); onDrop(event.dataTransfer.getData("text/plain")); } : undefined}
@@ -46,10 +48,10 @@ export function CategoryGroupColumn({
       <header className="flex flex-col gap-0.5">
         <h2 className="flex items-center gap-2 font-heading text-base font-medium text-foreground">
           {dotClassName && <span aria-hidden="true" className={cn("size-2.5 rounded-full", dotClassName)} />}
-          {title}
+          {tr(title)}
           <span className="text-xs font-normal text-text-3 tabular-nums">{categories.length}</span>
         </h2>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        {description && <p className="text-xs text-muted-foreground">{tr(description)}</p>}
       </header>
       <div className="flex flex-wrap items-center gap-2">
         {categories.map((category) => (

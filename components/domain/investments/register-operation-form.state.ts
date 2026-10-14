@@ -1,6 +1,8 @@
 import type { ResolvedPrice } from "@/lib/calc/investments";
 import type { Instrument, InvestmentTransaction, InvestmentTransactionType, PriceUnit } from "@/lib/db/schema/investments";
 import { formatDateWithYear } from "@/lib/format";
+import { translate } from "@/lib/localization/messages";
+import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
 
 /** Campi visibili nel form a seconda del tipo di operazione. */
 export interface OperationFieldVisibility {
@@ -90,14 +92,14 @@ export interface PriceSuggestionState {
 }
 
 /** Frase sotto il campo prezzo: da dove viene il valore proposto, o perché manca. Null se non c'è niente da dire. */
-export function priceSuggestionHint(dateKey: string, state: PriceSuggestionState | undefined, fetching: boolean): string | null {
-  if (!state) return fetching ? "Cerco il prezzo di questa data…" : null;
-  if (state.loading) return "Scarico i prezzi di questa data…";
+export function priceSuggestionHint(dateKey: string, state: PriceSuggestionState | undefined, fetching: boolean, language: Language = "it"): string | null {
+  if (!state) return fetching ? translate(language, "Cerco il prezzo di questa data…") : null;
+  if (state.loading) return translate(language, "Scarico i prezzi di questa data…");
   const { price } = state;
-  if (!price) return "Nessun prezzo per questa data: inseriscilo tu.";
-  const when = formatDateWithYear(price.date);
-  if (price.origin === "manuale") return price.date === dateKey ? `Il tuo prezzo del ${when}` : `Il tuo ultimo prezzo prima di questa data, del ${when}`;
-  return price.date === dateKey ? `Chiusura del ${when}` : `Ultima chiusura prima di questa data, del ${when}`;
+  if (!price) return translate(language, "Nessun prezzo per questa data: inseriscilo tu.");
+  const when = formatDateWithYear(price.date, LANGUAGE_LOCALES[language]);
+  if (price.origin === "manuale") return price.date === dateKey ? translate(language, "Il tuo prezzo del {0}", {0: when}) : translate(language, "Il tuo ultimo prezzo prima di questa data, del {0}", {0: when});
+  return price.date === dateKey ? translate(language, "Chiusura del {0}", {0: when}) : translate(language, "Ultima chiusura prima di questa data, del {0}", {0: when});
 }
 
 /** Valori iniziali del form per modificare un'operazione salvata (le colonne numeric arrivano come stringhe). */

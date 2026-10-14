@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog delle impostazioni di uno strumento, solo per te: aliquota (automatica, 26% o 12,5%), ETF/fondo armonizzato
@@ -18,7 +21,7 @@ import { resolveTaxSettings, type InstrumentSettingInput } from "@/lib/investmen
 import { useUpdateInstrumentSettingsMutation } from "@/lib/queries/investments";
 import { parseAmount } from "@/lib/validation/accounts";
 import { OperationFormField as Field } from "../operation-form-field";
-import { formatPct } from "../percent";
+
 import { SlidersHorizontalIcon } from "lucide-react";
 import { PanelDialogHeader } from "../dialog-parts";
 import { CalendarClockIcon, LandmarkIcon } from "lucide-react";
@@ -55,6 +58,10 @@ function SettingsForm({
   setting: InstrumentSettingInput | undefined;
   onClose: () => void;
 }) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatPct } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const id = React.useId();
   const save = useUpdateInstrumentSettingsMutation();
   const isBond = instrument.type === "obbligazione";
@@ -66,8 +73,8 @@ function SettingsForm({
   const [error, setError] = React.useState<string | null>(null);
   // Il valore "automatico" è quello senza la correzione dell'utente.
   const automatic = resolveTaxSettings(instrument, undefined);
-  const autoRateLabel = `Automatica (${formatPct(automatic.taxRate)})`;
-  const autoHarmonizedLabel = `Automatico (${automatic.harmonized ? "sì" : "no"})`;
+  const autoRateLabel = tr("Automatica ({0})", { 0: formatPct(automatic.taxRate) });
+  const autoHarmonizedLabel = tr("Automatico ({0})", { 0: automatic.harmonized ? "sì" : "no" });
 
   function submit(values: Parameters<typeof save.mutate>[0]) {
     setError(null);
@@ -78,7 +85,7 @@ function SettingsForm({
     event.preventDefault();
     const couponPercent = couponRate.trim() ? parseAmount(couponRate) : null;
     const hasCoupons = isBond && (couponPercent !== null || maturity !== "");
-    if (hasCoupons && (!couponPercent || !maturity)) return setError("Per le cedole servono tasso e scadenza");
+    if (hasCoupons && (!couponPercent || !maturity)) return setError(tr("Per le cedole servono tasso e scadenza"));
     submit({
       instrumentId: instrument.id,
       taxRate: rate === AUTO ? null : (rate as "0.26" | "0.125"),
@@ -91,26 +98,26 @@ function SettingsForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <PanelDialogHeader icon={SlidersHorizontalIcon} title={instrument.name} description="Valgono solo per te: servono a stimare tasse e proventi." color="var(--swatch-slate)" />
+      <PanelDialogHeader icon={SlidersHorizontalIcon} title={instrument.name} description={tr("Valgono solo per te: servono a stimare tasse e proventi.")} color="var(--swatch-slate)" />
       <DialogSections>
-      <DialogSection title="Imposte" icon={LandmarkIcon} color="var(--neg)">
-      <Field label="Aliquota">
+      <DialogSection title={tr("Imposte")} icon={LandmarkIcon} color="var(--neg)">
+      <Field label={tr("Aliquota")}>
         <Select value={rate} onValueChange={(v) => v && setRate(v)}>
-          <SelectTrigger className="w-full" aria-label="Aliquota">
-            <SelectValue>{(v: string | null) => (v === AUTO || !v ? autoRateLabel : RATE_LABELS[v])}</SelectValue>
+          <SelectTrigger className="w-full" aria-label={tr("Aliquota")}>
+            <SelectValue>{(v: string | null) => (v === AUTO || !v ? autoRateLabel : tr(RATE_LABELS[v]))}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={AUTO}>{autoRateLabel}</SelectItem>
-            <SelectItem value="0.26">{RATE_LABELS["0.26"]}</SelectItem>
-            <SelectItem value="0.125">{RATE_LABELS["0.125"]}</SelectItem>
+            <SelectItem value="0.26">{tr(RATE_LABELS["0.26"])}</SelectItem>
+            <SelectItem value="0.125">{tr(RATE_LABELS["0.125"])}</SelectItem>
           </SelectContent>
         </Select>
       </Field>
       {isFund(instrument.type) ? (
-        <Field label="Armonizzato UE">
+        <Field label={tr("Armonizzato UE")}>
           <Select value={harmonized} onValueChange={(v) => v && setHarmonized(v)}>
-            <SelectTrigger className="w-full" aria-label="Armonizzato UE">
-              <SelectValue>{(v: string | null) => (v === AUTO || !v ? autoHarmonizedLabel : HARMONIZED_LABELS[v])}</SelectValue>
+            <SelectTrigger className="w-full" aria-label={tr("Armonizzato UE")}>
+              <SelectValue>{(v: string | null) => (v === AUTO || !v ? autoHarmonizedLabel : tr(HARMONIZED_LABELS[v]))}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={AUTO}>{autoHarmonizedLabel}</SelectItem>
@@ -122,45 +129,43 @@ function SettingsForm({
       ) : null}
       </DialogSection>
       {isBond ? (
-        <DialogSection title="Cedole" icon={CalendarClockIcon} color="var(--swatch-amber)">
+        <DialogSection title={tr("Cedole")} icon={CalendarClockIcon} color="var(--swatch-amber)">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Tasso annuo lordo (%)" htmlFor={`${id}-rate`}>
-              <Input id={`${id}-rate`} inputMode="decimal" value={couponRate} onChange={(e) => setCouponRate(e.target.value)} placeholder="Es. 3,85" />
+            <Field label={tr("Tasso annuo lordo (%)")} htmlFor={`${id}-rate`}>
+              <Input id={`${id}-rate`} inputMode="decimal" value={couponRate} onChange={(e) => setCouponRate(e.target.value)} placeholder={tr("Es. 3,85")} />
             </Field>
-            <Field label="Frequenza">
+            <Field label={tr("Frequenza")}>
               <Select value={frequency} onValueChange={(v) => v && setFrequency(v)}>
-                <SelectTrigger className="w-full" aria-label="Frequenza delle cedole">
-                  <SelectValue>{(v: string | null) => (v ? FREQUENCY_LABELS[Number(v) as CouponFrequency] : "")}</SelectValue>
+                <SelectTrigger className="w-full" aria-label={tr("Frequenza delle cedole")}>
+                  <SelectValue>{(v: string | null) => (v ? tr(FREQUENCY_LABELS[Number(v) as CouponFrequency]) : "")}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {COUPON_FREQUENCIES.map((f) => (
                     <SelectItem key={f} value={String(f)}>
-                      {FREQUENCY_LABELS[f]}
+                      {tr(FREQUENCY_LABELS[f])}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Field>
           </div>
-          <Field label="Scadenza" htmlFor={`${id}-maturity`}>
+          <Field label={tr("Scadenza")} htmlFor={`${id}-maturity`}>
             <Input id={`${id}-maturity`} type="date" value={maturity} onChange={(e) => setMaturity(e.target.value)} />
           </Field>
-          <p className="text-xs text-muted-foreground">Le date delle cedole si contano a ritroso dalla scadenza.</p>
+          <p className="text-xs text-muted-foreground">{tr("Le date delle cedole si contano a ritroso dalla scadenza.")}</p>
         </DialogSection>
       ) : null}
       </DialogSections>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p className="text-sm text-destructive">{tr(error)}</p> : null}
       <DialogActions>
         <Button
           type="button"
           variant="ghost"
           disabled={save.isPending || !setting}
           onClick={() => submit({ instrumentId: instrument.id, taxRate: null, taxHarmonized: null, couponRate: null, couponFrequency: null, maturityDate: null })}
-        >
-          Torna all&apos;automatico
-        </Button>
+        >{tr("Torna all'automatico")}</Button>
         <Button type="submit" disabled={save.isPending}>
-          {save.isPending ? "Salvataggio…" : "Salva"}
+          {save.isPending ? tr("Salvataggio…") : tr("Salva")}
         </Button>
       </DialogActions>
     </form>

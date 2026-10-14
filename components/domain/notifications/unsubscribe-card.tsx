@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Scheda della pagina di disiscrizione: un clic per disattivare, senza login. Il token firmato viene dal link dell'email. */
 
@@ -21,13 +22,14 @@ type Status = "idle" | "working" | "done" | "error";
 const scopeLabel = (scope: UnsubscribeScope) => (scope === "all" ? "tutte le email di riepilogo e avviso" : NOTIFICATION_KIND_INFO[scope].label.toLowerCase());
 
 export function UnsubscribeCard({ token, scope, preferencesHref, privacyEmail }: UnsubscribeCardProps) {
+  const { t: tr } = useLocalization();
   const [status, setStatus] = React.useState<Status>("idle");
 
   async function unsubscribe() {
     setStatus("working");
     try {
       const response = await fetch(`/api/email/unsubscribe?t=${encodeURIComponent(token)}&source=page`, { method: "POST" });
-      if (!response.ok) throw new Error("request failed");
+      if (!response.ok) throw new Error(tr("request failed"));
       setStatus("done");
       track("notifications_unsubscribed", { kind: scope });
     } catch {
@@ -39,31 +41,21 @@ export function UnsubscribeCard({ token, scope, preferencesHref, privacyEmail }:
     <div className="flex flex-col gap-4">
       {status === "done" ? (
         <>
-          <h1 className="font-heading text-2xl font-medium text-foreground">Fatto, non ti scriviamo più</h1>
-          <p className="text-sm text-muted-foreground">
-            Abbiamo disattivato {scopeLabel(scope)}. Se è stato un errore, puoi riattivarle quando vuoi da Impostazioni → Notifiche. Le email di
-            servizio (per esempio il link di accesso) restano attive: servono a usare l&apos;account.
-          </p>
+          <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Fatto, non ti scriviamo più")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Abbiamo disattivato")}{" "}{scopeLabel(scope)}{tr(". Se è stato un errore, puoi riattivarle quando vuoi da Impostazioni → Notifiche. Le email di servizio (per esempio il link di accesso) restano attive: servono a usare l'account.")}</p>
         </>
       ) : (
         <>
-          <h1 className="font-heading text-2xl font-medium text-foreground">Vuoi smettere di riceverle?</h1>
-          <p className="text-sm text-muted-foreground">
-            Disattiviamo {scopeLabel(scope)}. Basta un clic, non serve accedere. Le email di servizio (come il link di accesso) non si possono
-            disattivare.
-          </p>
+          <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Vuoi smettere di riceverle?")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Disattiviamo")}{" "}{scopeLabel(scope)}{tr(". Basta un clic, non serve accedere. Le email di servizio (come il link di accesso) non si possono disattivare.")}</p>
           <div className="flex flex-wrap items-center gap-3">
             <Button onClick={unsubscribe} disabled={status === "working"}>
-              {status === "working" ? "Un attimo…" : "Disattiva queste email"}
+              {status === "working" ? tr("Un attimo…") : tr("Disattiva queste email")}
             </Button>
-            <a href={preferencesHref} className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
-              Preferisco scegliere cosa ricevere
-            </a>
+            <a href={preferencesHref} className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">{tr("Preferisco scegliere cosa ricevere")}</a>
           </div>
           {status === "error" && (
-            <p className="text-sm text-neg" role="alert">
-              Non siamo riusciti a disattivarle. Riprova tra poco o scrivi a {privacyEmail}.
-            </p>
+            <p className="text-sm text-neg" role="alert">{tr("Non siamo riusciti a disattivarle. Riprova tra poco o scrivi a")}{" "}{privacyEmail}{"."}</p>
           )}
         </>
       )}

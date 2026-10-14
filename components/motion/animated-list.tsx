@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Lista i cui elementi entrano con una molla e fanno spazio agli altri scivolando, ed escono sfumando. Idea di
@@ -26,8 +27,9 @@ export interface AnimatedListProps {
 }
 
 export function AnimatedList({ items, className, itemClassName, ariaLabel }: AnimatedListProps) {
+  const { t: tr } = useLocalization();
   return (
-    <ul className={cn("flex flex-col", className)} aria-label={ariaLabel}>
+    <ul className={cn("flex flex-col", className)} aria-label={tr(ariaLabel)}>
       <AnimatePresence initial={false}>
         {items.map((item) => (
           <motion.li

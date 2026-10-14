@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * MobileMoreMenu
@@ -112,6 +113,7 @@ export function MobileMoreMenu({
   supportHref = "/aiuto",
   onAction,
 }: MobileMoreMenuProps) {
+  const { t: tr } = useLocalization();
   const router = useRouter();
   const pathname = usePathname();
   const [quadroOpen, setQuadroOpen] = React.useState(false);
@@ -121,7 +123,7 @@ export function MobileMoreMenu({
   const markNavigating = useBackToClose(open, onClose);
 
   const user = mounted ? sessionData?.user : undefined;
-  const userName = user?.name ?? "Il tuo account";
+  const userName = user?.name ?? tr("Il tuo account");
   const sections = items.filter((i) => !i.comingSoon);
 
   async function signOut() {
@@ -154,13 +156,13 @@ export function MobileMoreMenu({
     <DialogPrimitive.Root open={open} onOpenChange={(next) => (next ? undefined : onClose())}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Popup
-          aria-label="Altro"
+          aria-label={tr("Altro")}
           className="fixed inset-0 z-50 flex flex-col bg-background text-foreground outline-none duration-200 md:hidden data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-6 data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-6"
         >
           <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4 pt-[env(safe-area-inset-top)] box-content">
-            <DialogPrimitive.Title className="font-heading text-lg font-semibold">Altro</DialogPrimitive.Title>
+            <DialogPrimitive.Title className="font-heading text-lg font-semibold">{tr("Altro")}</DialogPrimitive.Title>
             <DialogPrimitive.Close
-              aria-label="Chiudi il menu"
+              aria-label={tr("Chiudi il menu")}
               className="-mr-2 flex size-11 items-center justify-center rounded-full text-text-2 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X className="size-5" aria-hidden="true" />
@@ -171,7 +173,7 @@ export function MobileMoreMenu({
             {/* Account */}
             <Link href={settingsHref} replace onClick={() => go("impostazioni")} className={cn(ROW_CLASS, "mt-3 min-h-16 bg-muted/60")}>
               {user?.image ? (
-                <Image src={user.image} alt="" width={40} height={40} className="size-10 shrink-0 rounded-full object-cover" />
+                <Image src={user.image} alt={""} width={40} height={40} className="size-10 shrink-0 rounded-full object-cover" />
               ) : (
                 <span
                   aria-hidden="true"
@@ -182,7 +184,7 @@ export function MobileMoreMenu({
               )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-semibold leading-tight">{userName}</span>
-                <span className="block truncate text-xs text-text-2">{user?.email ?? "Profilo e impostazioni"}</span>
+                <span className="block truncate text-xs text-text-2">{user?.email ?? tr("Profilo e impostazioni")}</span>
               </span>
               <Settings className="size-5 shrink-0 text-text-3" aria-hidden="true" />
             </Link>
@@ -190,7 +192,7 @@ export function MobileMoreMenu({
             {/* Sezioni */}
             {sections.length > 0 ? (
               <>
-                <h2 className={SECTION_TITLE_CLASS}>Altre sezioni</h2>
+                <h2 className={SECTION_TITLE_CLASS}>{tr("Altre sezioni")}</h2>
                 <ul className="flex flex-col">
                   {sections.map((item) => {
                     const Icon = item.icon;
@@ -209,12 +211,12 @@ export function MobileMoreMenu({
                             <Icon className="size-5" aria-hidden="true" />
                           </span>
                           <span className="min-w-0 flex-1">
-                            <span className="block text-[15px] font-semibold leading-tight">{item.label}</span>
-                            {hints[item.href] ? <span className="block text-xs leading-snug text-text-2">{hints[item.href]}</span> : null}
+                            <span className="block text-[15px] font-semibold leading-tight">{tr(item.label)}</span>
+                            {hints[item.href] ? <span className="block text-xs leading-snug text-text-2">{tr(hints[item.href])}</span> : null}
                           </span>
                           {badge && badge.count > 0 ? (
                             <span
-                              aria-label={badge.ariaLabel}
+                              aria-label={tr(badge.ariaLabel)}
                               className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold tabular-nums text-primary-foreground"
                             >
                               {badge.countLabel ?? badge.count}
@@ -230,7 +232,7 @@ export function MobileMoreMenu({
             ) : null}
 
             {/* Assistenza */}
-            <h2 className={SECTION_TITLE_CLASS}>Assistenza</h2>
+            <h2 className={SECTION_TITLE_CLASS}>{tr("Assistenza")}</h2>
             <ul className="flex flex-col">
               <li>
                 <Link href={settingsHref} replace onClick={() => go("impostazioni")} className={ROW_CLASS}>
@@ -238,8 +240,8 @@ export function MobileMoreMenu({
                     <SlidersHorizontal className="size-5" aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-tight">Impostazioni</span>
-                    <span className="block text-xs leading-snug text-text-2">Aspetto, notifiche, privacy e dati</span>
+                    <span className="block text-[15px] font-semibold leading-tight">{tr("Impostazioni")}</span>
+                    <span className="block text-xs leading-snug text-text-2">{tr("Aspetto, notifiche, privacy e dati")}</span>
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                 </Link>
@@ -250,8 +252,8 @@ export function MobileMoreMenu({
                     <LifeBuoy className="size-5" aria-hidden="true" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-tight">Aiuto e segnalazioni</span>
-                    <span className="block text-xs leading-snug text-text-2">Domande, problemi e idee</span>
+                    <span className="block text-[15px] font-semibold leading-tight">{tr("Aiuto e segnalazioni")}</span>
+                    <span className="block text-xs leading-snug text-text-2">{tr("Domande, problemi e idee")}</span>
                   </span>
                   <ChevronRight className="size-4 shrink-0 text-text-3" aria-hidden="true" />
                 </Link>
@@ -264,8 +266,8 @@ export function MobileMoreMenu({
                 <EyeOff className="size-5" aria-hidden="true" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-semibold leading-tight">Nascondi gli importi</span>
-                <span className="block text-xs leading-snug text-text-2">Utile quando qualcuno guarda lo schermo</span>
+                <span className="block text-[15px] font-semibold leading-tight">{tr("Nascondi gli importi")}</span>
+                <span className="block text-xs leading-snug text-text-2">{tr("Utile quando qualcuno guarda lo schermo")}</span>
               </span>
               <Switch
                 checked={hidden}
@@ -273,14 +275,14 @@ export function MobileMoreMenu({
                   toggle();
                   onAction?.("importi");
                 }}
-                aria-label="Nascondi gli importi"
+                aria-label={tr("Nascondi gli importi")}
               />
             </label>
 
             {/* Riepilogo: i moduli della sidebar, chiusi finché non si aprono (non caricano dati prima) */}
             {extra ? (
               <>
-                <h2 className={SECTION_TITLE_CLASS}>Il tuo quadro</h2>
+                <h2 className={SECTION_TITLE_CLASS}>{tr("Il tuo quadro")}</h2>
                 <button
                   type="button"
                   aria-expanded={quadroOpen}
@@ -289,8 +291,8 @@ export function MobileMoreMenu({
                   className={ROW_CLASS}
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[15px] font-semibold leading-tight">Patrimonio, scadenze e obiettivo</span>
-                    <span className="block text-xs leading-snug text-text-2">{quadroOpen ? "Tocca per chiudere" : "Tocca per aprire il riepilogo"}</span>
+                    <span className="block text-[15px] font-semibold leading-tight">{tr("Patrimonio, scadenze e obiettivo")}</span>
+                    <span className="block text-xs leading-snug text-text-2">{quadroOpen ? tr("Tocca per chiudere") : tr("Tocca per aprire il riepilogo")}</span>
                   </span>
                   <ChevronDown className={cn("size-4 shrink-0 text-text-3 transition-transform", quadroOpen && "rotate-180")} aria-hidden="true" />
                 </button>
@@ -310,9 +312,9 @@ export function MobileMoreMenu({
             <div className="mt-4 border-t border-border pt-3">
               <button type="button" onClick={signOut} className={cn(ROW_CLASS, "text-neg")}>
                 <LogOut className="size-5 shrink-0" aria-hidden="true" />
-                <span className="text-[15px] font-medium">Esci</span>
+                <span className="text-[15px] font-medium">{tr("Esci")}</span>
               </button>
-              <nav aria-label="Informazioni legali" className="mt-2 flex flex-wrap items-center gap-x-1 px-3">
+              <nav aria-label={tr("Informazioni legali")} className="mt-2 flex flex-wrap items-center gap-x-1 px-3">
                 {LEGAL_LINKS.map((l) => (
                   <a
                     key={l.id}
@@ -320,7 +322,7 @@ export function MobileMoreMenu({
                     onClick={() => onAction?.("informativa")}
                     className="flex min-h-11 items-center px-2 text-xs text-text-2 underline-offset-4 hover:underline"
                   >
-                    {l.label}
+                    {tr(l.label)}
                   </a>
                 ))}
                 <AppVersionLabel className="ml-auto text-text-3" />

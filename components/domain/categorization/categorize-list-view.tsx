@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Vista a elenco di «Categorizza»: revisione delle proposte per esercente, con selezione e applicazione in blocco. */
 
@@ -67,6 +68,7 @@ export interface CategorizeListViewProps {
 }
 
 export function CategorizeListView({ groups, isLoading }: CategorizeListViewProps) {
+  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { data: categories } = useCategoriesQuery();
@@ -140,8 +142,8 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
         onSuccess: (result) => {
           toast.success(
             result.rulesCreated > 0
-              ? `${result.applied} transazioni categorizzate, ${result.rulesCreated} regole create`
-              : `${result.applied} transazioni categorizzate`
+              ? tr("{0} transazioni categorizzate, {1} regole create", { 0: result.applied, 1: result.rulesCreated })
+              : tr("{0} transazioni categorizzate", { 0: result.applied })
           );
           setOverrides(new Map());
           setApplyProgress(null);
@@ -160,7 +162,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
               return next;
             });
             toast.error(
-              `Applicate ${error.partial.applied} transazioni prima dell'errore, le altre restano selezionate: ${error.message}`
+              tr("Applicate {0} transazioni prima dell'errore, le altre restano selezionate: {1}", { 0: error.partial.applied, 1: error.message })
             );
           }
           setApplyProgress(null);
@@ -174,17 +176,15 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">
           {isLoading
-            ? "Caricamento in corso..."
+            ? tr("Caricamento in corso...")
             : totalTransactionCount === 0
-              ? "Nessuna transazione da categorizzare"
-              : `${totalTransactionCount} movimenti da decidere, raggruppati per esercente.`}
+              ? tr("Nessuna transazione da categorizzare")
+              : tr("{0} movimenti da decidere, raggruppati per esercente.", { 0: totalTransactionCount })}
         </p>
         {!isLoading && totalTransactionCount > 0 && (
           <p className="text-sm text-muted-foreground">
-            Controlla la categoria proposta, spunta i gruppi giusti e premi{" "}
-            <span className="font-medium text-foreground">Applica</span>. Con «Ricorda gli esercenti» le prossime volte
-            si categorizzano da soli.
-          </p>
+            {tr("Controlla la categoria proposta, spunta i gruppi giusti e premi")}{" "}
+            <span className="font-medium text-foreground">{tr("Applica")}</span>{tr(". Con «Ricorda gli esercenti» le prossime volte si categorizzano da soli.")}</p>
         )}
       </div>
 
@@ -195,7 +195,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
           ))}
         </div>
       ) : groups.length === 0 ? (
-        <Card className="p-6 text-center text-sm text-muted-foreground">Niente da decidere</Card>
+        <Card className="p-6 text-center text-sm text-muted-foreground">{tr("Niente da decidere")}</Card>
       ) : (
         <>
           <Card className="gap-0 p-0">
@@ -205,11 +205,9 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
                 disabled={selectableGroupCount === 0 || applyMutation.isPending}
                 onCheckedChange={(checked) => handleSelectAll(checked === true)}
               />
-              <span>
-                Seleziona tutti{" "}
+              <span>{tr("Seleziona tutti")}{" "}
                 <span className="tabular-nums">
-                  ({selectableGroupCount} {selectableGroupCount === 1 ? "gruppo pronto" : "gruppi pronti"})
-                </span>
+                  {"("}{selectableGroupCount}{" "}{selectableGroupCount === 1 ? tr("gruppo pronto") : tr("gruppi pronti")}{")"}</span>
               </span>
             </label>
             {groups.map((group) => {
@@ -253,27 +251,23 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                   {selectedGroups.length === 0 ? (
-                    "Nessun gruppo selezionato"
+                    tr("Nessun gruppo selezionato")
                   ) : (
                     <>
                       <span className="font-medium text-foreground tabular-nums">{selectedTransactionCount}</span>{" "}
-                      {selectedTransactionCount === 1 ? "transazione" : "transazioni"} in {selectedGroups.length}{" "}
-                      {selectedGroups.length === 1 ? "gruppo" : "gruppi"}
+                      {selectedTransactionCount === 1 ? tr("transazione") : tr("transazioni")}{" "}{tr("in")}{" "}{selectedGroups.length}{" "}
+                      {selectedGroups.length === 1 ? tr("gruppo") : tr("gruppi")}
                     </>
                   )}
                 </p>
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox checked={rememberMerchants} onCheckedChange={(checked) => setRememberMerchants(checked === true)} />
-                  Ricorda gli esercenti
-                </label>
+                  <Checkbox checked={rememberMerchants} onCheckedChange={(checked) => setRememberMerchants(checked === true)} />{tr("Ricorda gli esercenti")}</label>
                 <Button
                   type="button"
                   onClick={handleApply}
                   disabled={selectedGroups.length === 0 || applyMutation.isPending}
                   className="h-10 shrink-0 px-5 sm:h-9"
-                >
-                  Applica
-                </Button>
+                >{tr("Applica")}</Button>
               </div>
             )}
           </div>

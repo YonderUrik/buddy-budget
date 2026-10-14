@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Viste di una sezione come link veri (ogni vista ha il suo URL), da `lg` in su: un controllo segmentato con il fondo
@@ -39,10 +40,11 @@ export function activeSectionTabIndex(tabs: readonly SectionTab[], pathname: str
 }
 
 export function SectionTabs({ tabs, activeHref, ariaLabel }: SectionTabsProps) {
+  const { t: tr } = useLocalization();
   const activeIndex = activeSectionTabIndex(tabs, activeHref);
   return (
     <div className="hidden lg:block">
-      <SectionTabsSegmented tabs={tabs} activeIndex={activeIndex} ariaLabel={ariaLabel} />
+      <SectionTabsSegmented tabs={tabs} activeIndex={activeIndex} ariaLabel={tr(ariaLabel)} />
     </div>
   );
 }

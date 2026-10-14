@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Campi condivisi dai dialog degli abbonamenti: nome, importo, cadenza, prossimo addebito, categoria. */
 
@@ -11,9 +12,10 @@ import type { Category } from "@/lib/db/schema/categories";
 import { cn } from "@/lib/utils";
 
 export function Field({ label, htmlFor, children, className }: { label: string; htmlFor: string; children: React.ReactNode; className?: string }) {
+  const { t: tr } = useLocalization();
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor}>{tr(label)}</Label>
       {children}
     </div>
   );
@@ -21,6 +23,7 @@ export function Field({ label, htmlFor, children, className }: { label: string; 
 
 /** Scelta della cadenza: menu nativo (accessibile e comodo da telefono). */
 export function CadenceSelect({ id, value, onChange }: { id: string; value: SubscriptionCadence; onChange: (cadence: SubscriptionCadence) => void }) {
+  const { t: tr } = useLocalization();
   return (
     <select
       id={id}
@@ -30,7 +33,7 @@ export function CadenceSelect({ id, value, onChange }: { id: string; value: Subs
     >
       {SUBSCRIPTION_CADENCES.map((cadence) => (
         <option key={cadence} value={cadence}>
-          {CADENCE_LABELS[cadence][0].toUpperCase() + CADENCE_LABELS[cadence].slice(1)}
+          {tr(CADENCE_LABELS[cadence])[0].toUpperCase() + tr(CADENCE_LABELS[cadence]).slice(1)}
         </option>
       ))}
     </select>
@@ -46,10 +49,11 @@ export interface SubscriptionCategoryFieldProps {
 
 /** Categoria di spesa dell'abbonamento (le entrate non c'entrano). */
 export function SubscriptionCategoryField({ id, categories, value, onChange }: SubscriptionCategoryFieldProps) {
+  const { t: tr } = useLocalization();
   const expense = React.useMemo(() => categories.filter((c) => c.type !== "entrata" && c.type !== "trasferimento"), [categories]);
   return (
-    <Field label="Categoria" htmlFor={id}>
-      <CategoryPicker categories={expense} value={value} onValueChange={onChange} placeholder="Nessuna categoria" aria-label="Categoria" />
+    <Field label={tr("Categoria")} htmlFor={id}>
+      <CategoryPicker categories={expense} value={value} onValueChange={onChange} placeholder={tr("Nessuna categoria")} aria-label={tr("Categoria")} />
     </Field>
   );
 }

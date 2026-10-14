@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Grafico del fondo nel tempo a tutta larghezza: i contributi netti (area) e il controvalore (linea), come nell'area clienti del fondo. */
 
@@ -6,7 +7,7 @@ import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { PensionSnapshot } from "@/lib/calc/pension";
 import { PensionChartTooltip } from "./pension-chart-tooltip";
-import { formatChartDate } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 
 export interface PensionTrendChartProps {
   snapshots: PensionSnapshot[];
@@ -23,9 +24,12 @@ const MIN_POINTS_FOR_CHART = 2;
 const DEFAULT_HEIGHT = 260;
 
 export function PensionTrendChart({ snapshots, currency, height = DEFAULT_HEIGHT }: PensionTrendChartProps) {
+  const { formatChartDate } = localizedPensionFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   const data = snapshots.map((s) => ({ ...s, label: formatChartDate(s.date) }));
   if (data.length < MIN_POINTS_FOR_CHART) {
-    return <p className="px-4 text-sm text-text-2 sm:px-6">Il grafico compare dalla seconda fotografia del fondo.</p>;
+    return <p className="px-4 text-sm text-text-2 sm:px-6">{tr("Il grafico compare dalla seconda fotografia del fondo.")}</p>;
   }
   return (
     <div>
@@ -45,8 +49,8 @@ export function PensionTrendChart({ snapshots, currency, height = DEFAULT_HEIGHT
         </ComposedChart>
       </ChartContainer>
       <ul className="mt-2 flex flex-wrap justify-center gap-x-5 gap-y-1 text-xs text-text-2">
-        <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />Controvalore</li>
-        <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-muted-foreground/60" aria-hidden="true" />Contributi netti</li>
+        <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-primary" aria-hidden="true" />{tr("Controvalore")}</li>
+        <li className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-muted-foreground/60" aria-hidden="true" />{tr("Contributi netti")}</li>
       </ul>
     </div>
   );

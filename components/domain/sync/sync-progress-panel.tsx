@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 import { AnimatePresence } from "motion/react";
 import type { SyncJobView } from "@/lib/sync-jobs/types";
@@ -20,9 +21,10 @@ export interface SyncProgressPanelProps {
  * Le isole entrano ed escono con una molla; ognuna si chiude solo a job concluso.
  */
 export function SyncProgressPanel({ jobs, onDismiss, categorizeHref = "/categorizza", children }: SyncProgressPanelProps) {
+  const { t } = useLocalization();
   return (
     <section
-      aria-label={PANEL_LABEL}
+      aria-label={t(PANEL_LABEL)}
       className="pointer-events-none fixed inset-x-4 bottom-[calc(1rem+var(--bottom-nav-offset,0px)+env(safe-area-inset-bottom))] z-50 flex flex-col items-center gap-2 md:bottom-4 sm:left-auto sm:right-4 sm:w-96 sm:items-end [&>*]:pointer-events-auto"
     >
       <AnimatePresence initial={false}>

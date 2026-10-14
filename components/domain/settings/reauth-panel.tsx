@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * ReauthPanel
@@ -23,6 +24,7 @@ export interface ReauthPanelProps {
 }
 
 export function ReauthPanel({ email, googleLinked, returnTo = "/impostazioni" }: ReauthPanelProps) {
+  const { t: tr } = useLocalization();
   const [state, setState] = React.useState<"idle" | "sending" | "sent" | "google">("idle");
   const [error, setError] = React.useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export function ReauthPanel({ email, googleLinked, returnTo = "/impostazioni" }:
       error: { status: 0 },
     }));
     if (authError) {
-      setError("Non siamo riusciti a inviare il link. Riprova tra poco.");
+      setError(tr("Non siamo riusciti a inviare il link. Riprova tra poco."));
       setState("idle");
       return;
     }
@@ -47,7 +49,7 @@ export function ReauthPanel({ email, googleLinked, returnTo = "/impostazioni" }:
       .social({ provider: "google", callbackURL: returnTo })
       .catch(() => ({ error: { status: 0 } }));
     if (authError) {
-      setError("Accesso con Google non riuscito. Riprova.");
+      setError(tr("Accesso con Google non riuscito. Riprova."));
       setState("idle");
     }
   }
@@ -57,36 +59,27 @@ export function ReauthPanel({ email, googleLinked, returnTo = "/impostazioni" }:
       <div className="flex items-start gap-3">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
         <div className="flex flex-col gap-1">
-          <p className="text-sm font-medium text-foreground">Per sicurezza, conferma che sei tu</p>
-          <p className="text-sm text-muted-foreground">
-            Questa azione richiede un accesso fatto negli ultimi {RECENT_LOGIN_MAX_AGE_MINUTES} minuti. Accedi di nuovo e
-            torni qui.
-          </p>
+          <p className="text-sm font-medium text-foreground">{tr("Per sicurezza, conferma che sei tu")}</p>
+          <p className="text-sm text-muted-foreground">{tr("Questa azione richiede un accesso fatto negli ultimi")}{" "}{RECENT_LOGIN_MAX_AGE_MINUTES}{" "}{tr("minuti. Accedi di nuovo e torni qui.")}</p>
         </div>
       </div>
 
       {state === "sent" ? (
         <p className="flex items-center gap-2 text-sm text-foreground">
-          <MailCheck className="size-4 text-pos" aria-hidden="true" />
-          Ti abbiamo inviato un link a <strong className="font-medium">{email}</strong>. Aprilo per continuare.
-        </p>
+          <MailCheck className="size-4 text-pos" aria-hidden="true" />{tr("Ti abbiamo inviato un link a")}{" "}<strong className="font-medium">{email}</strong>{tr(". Aprilo per continuare.")}</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           <Button type="button" size="sm" onClick={sendLink} disabled={state !== "idle"}>
-            {state === "sending" && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-            Inviami un link di accesso
-          </Button>
+            {state === "sending" && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}{tr("Inviami un link di accesso")}</Button>
           {googleLinked && (
             <Button type="button" size="sm" variant="outline" onClick={signInWithGoogle} disabled={state !== "idle"}>
-              {state === "google" ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-4" />}
-              Accedi con Google
-            </Button>
+              {state === "google" ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-4" />}{tr("Accedi con Google")}</Button>
           )}
         </div>
       )}
       {error && (
         <p className="text-sm text-neg" role="alert">
-          {error}
+          {tr(error)}
         </p>
       )}
     </div>

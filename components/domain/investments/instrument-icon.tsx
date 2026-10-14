@@ -1,5 +1,6 @@
 "use client";
 
+
 /**
  * Icona di uno strumento in un riquadro tondeggiante: icona della crypto, marchio dell'azienda (azioni) o sigla
  * dell'emittente/del nome (ETF, fondi, tutto il resto). Con `instrumentId`, per azioni ed ETF di un emittente noto
@@ -41,6 +42,7 @@ function wantsRemoteLogo(type: InstrumentType, name: string): boolean {
 }
 
 export function InstrumentIcon({ type, name, instrumentId, size = "md", onRemoteLogo, className }: InstrumentIconProps) {
+
   const icon = resolveInstrumentIcon({ type, name }, INSTRUMENT_TYPE_COLOR[type]);
   const [logo, setLogo] = React.useState<"pending" | "loaded" | "failed">("pending");
   // I marchi sono pensati per fondi chiari: il riquadro resta bianco anche nel tema scuro.
@@ -50,7 +52,7 @@ export function InstrumentIcon({ type, name, instrumentId, size = "md", onRemote
     return (
       <span aria-hidden="true" className={cn(tile, "bg-white ring-1 ring-border", pad, className)}>
         {/* eslint-disable-next-line @next/next/no-img-element -- SVG statico self-hosted, nessun bisogno dell'ottimizzatore */}
-        <img src={icon.src} alt="" loading="lazy" className="size-full object-contain" />
+        <img src={icon.src} alt={""} loading="lazy" className="size-full object-contain" />
       </span>
     );
   }
@@ -76,7 +78,7 @@ export function InstrumentIcon({ type, name, instrumentId, size = "md", onRemote
         // eslint-disable-next-line @next/next/no-img-element -- immagine dal nostro server, già ridimensionata
         <img
           src={`/api/instruments/${instrumentId}/logo`}
-          alt=""
+          alt={""}
           loading="lazy"
           onLoad={() => {
             setLogo("loaded");

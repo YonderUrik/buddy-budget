@@ -1,14 +1,18 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /** Sezione «I conti dell'azienda»: ricavi, utile netto e cassa libera per esercizio, poi margini e crescita dei ricavi. */
 
 import { ChartColumnIcon } from "lucide-react";
 import { MARGIN_KEYS, type StockFundamentals } from "@/lib/investments/title-fundamentals";
 import { cn } from "@/lib/utils";
-import { formatSignedPct } from "../gain-text";
+
 import { PanelSection } from "../panel-section";
 import { IndicatorGrid } from "./indicator-grid";
 import { IndicatorItem } from "./indicator-item";
 import { MiniBars } from "./mini-bars";
-import { formatCompactAmount } from "./title-format";
+
 
 const SERIES = [
   { key: "revenue", label: "Ricavi", color: "bg-[var(--swatch-blue)]" },
@@ -22,10 +26,14 @@ export interface TitleCompanySectionProps {
 }
 
 export function TitleCompanySection({ stock, priceCurrency }: TitleCompanySectionProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedPct, formatCompactAmount } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const last = stock.columns.length - 1;
   const { growth } = stock;
   return (
-    <PanelSection icon={ChartColumnIcon} title="I conti dell'azienda" color="var(--swatch-blue)" description="Esercizi annuali e ultimi 12 mesi, in valuta di bilancio.">
+    <PanelSection icon={ChartColumnIcon} title={tr("I conti dell'azienda")} color="var(--swatch-blue)" description={tr("Esercizi annuali e ultimi 12 mesi, in valuta di bilancio.")}>
       <div className="grid gap-6 sm:grid-cols-3">
         {SERIES.map((series) => {
           const values = stock.company[series.key];
@@ -33,15 +41,15 @@ export function TitleCompanySection({ stock, priceCurrency }: TitleCompanySectio
           return (
             <div key={series.key} className="flex flex-col gap-2">
               <div>
-                <p className="text-xs text-muted-foreground">{series.label}</p>
+                <p className="text-xs text-muted-foreground">{tr(series.label)}</p>
                 <p className={cn("font-heading text-xl font-medium tabular-nums", latest !== null && latest < 0 ? "text-neg" : "text-foreground")}>
                   {latest === null ? "—" : `${formatCompactAmount(latest)} ${stock.currency}`}
-                  <span className="ml-1.5 font-sans text-xs font-normal text-muted-foreground">{stock.columns[last].trailing ? "ultimi 12 mesi" : stock.columns[last].label}</span>
+                  <span className="ml-1.5 font-sans text-xs font-normal text-muted-foreground">{stock.columns[last].trailing ? tr("ultimi 12 mesi") : stock.columns[last].label}</span>
                 </p>
               </div>
               <MiniBars
                 colorClass={series.color}
-                ariaLabel={`${series.label} per esercizio`}
+                ariaLabel={tr("{0} per esercizio", {0: series.label})}
                 bars={stock.columns.map((c, i) => ({
                   label: c.trailing ? "12 m" : c.label,
                   value: values[i],
@@ -58,10 +66,10 @@ export function TitleCompanySection({ stock, priceCurrency }: TitleCompanySectio
         {growth.lastYear !== null ? (
           <dl>
             <IndicatorItem
-              label="Crescita dei ricavi"
+              label={tr("Crescita dei ricavi")}
               value={<span className={growth.lastYear < 0 ? "text-neg" : "text-pos"}>{formatSignedPct(growth.lastYear)}</span>}
               aside={growth.average !== null ? `media ${growth.averageYears} anni ${formatSignedPct(growth.average)}` : undefined}
-              hint="Ultimo esercizio rispetto al precedente."
+              hint={tr("Ultimo esercizio rispetto al precedente.")}
             />
           </dl>
         ) : null}

@@ -30,5 +30,5 @@ export { buildRenewalAlerts, describeRenewalAlert } from "./renewal-alerts";
 export type { RenewalAlert, RenewalSource } from "./renewal-alerts";
 export { AccountDetailsDialog } from "./account-details-dialog";
 export type { AccountDetailsDialogProps } from "./account-details-dialog";
-export { buildAccountStatus, describeSyncAvailability, sumBalances } from "./account-status";
+export { localizedAccountStatus, buildAccountStatus, describeSyncAvailability, sumBalances } from "./account-status";
 export type { AccountStatus, AccountSyncInfo } from "./account-status";

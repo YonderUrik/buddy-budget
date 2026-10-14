@@ -1,4 +1,6 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+
 
 /**
  * Stato del pulsante «Categorizza con l'AI»: registra il consenso se manca, avvia la generazione e ricarica l'elenco
@@ -26,6 +28,7 @@ export interface UseAiGenerationOptions {
 }
 
 export function useAiGeneration({ groups, refetch }: UseAiGenerationOptions) {
+  const { t: tr } = useLocalization();
   const { data: assistant } = useAiCategorizationQuery();
   const generateMutation = useGenerateAiSuggestionsMutation();
   const consentMutation = useUpdateAiCategorizationMutation();
@@ -45,10 +48,10 @@ export function useAiGeneration({ groups, refetch }: UseAiGenerationOptions) {
     try {
       if (!assistant?.enabled) await consentMutation.mutateAsync(true);
       const { status } = await generateMutation.mutateAsync();
-      if (status !== "started") throw new Error("L'assistente non è disponibile");
+      if (status !== "started") throw new Error(tr("L'assistente non è disponibile"));
     } catch (error) {
       setGenerating(false);
-      toast.error(error instanceof Error ? error.message : "Impossibile avviare l'assistente");
+      toast.error(error instanceof Error ? error.message : tr("Impossibile avviare l'assistente"));
       return;
     }
     const startedWith = missingRef.current;
@@ -68,10 +71,10 @@ export function useAiGeneration({ groups, refetch }: UseAiGenerationOptions) {
         setGenerating(false);
         const found = Math.max(0, startedWith - missingRef.current);
         setFoundCount(found);
-        toast.success(found === 1 ? "1 esercente ha una proposta" : `${found} esercenti hanno una proposta`);
+        toast.success(found === 1 ? tr("1 esercente ha una proposta") : tr("{0} esercenti hanno una proposta", {0: found}));
       }
     }, GENERATE_POLL_MS);
-  }, [assistant?.enabled, consentMutation, generateMutation, refetch]);
+  }, [assistant?.enabled, consentMutation, generateMutation, refetch, tr]);
 
   return {
     assistant,

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Tour guidato delle carte: cinque passi animati (la carta, destra, sinistra, alto, annulla e ricorda) che compaiono
@@ -57,6 +58,7 @@ function writeSeen() {
 
 /** Carta d'esempio che mostra il gesto del passo corrente. */
 function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) {
+  const { t: tr } = useLocalization();
   const loop = reduced ? { duration: 0 } : { duration: DEMO_LOOP_SECONDS, repeat: Infinity, repeatDelay: 0.5, ease: "easeInOut" as const };
   const keyframes = {
     carta: { x: [0, 0], y: [0, 0], rotate: [0, 0] },
@@ -65,7 +67,7 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
     alto: { x: 0, y: [0, -DEMO_TRAVEL_PX * 0.7, -DEMO_TRAVEL_PX * 0.7, 0], rotate: 0 },
     annulla: { x: [0, DEMO_TRAVEL_PX, 0, 0], y: 0, rotate: [0, 7, 0, 0] },
   }[gesture];
-  const stamp = { destra: "È questa", sinistra: "Un'altra", alto: "Salta", annulla: "Annullato", carta: "" }[gesture];
+  const stamp = { destra: tr("È questa"), sinistra: tr("Un'altra"), alto: tr("Salta"), annulla: "Annullato", carta: "" }[gesture];
   const stampTone = { destra: "border-pos text-pos", sinistra: "border-neg text-neg", alto: "border-muted-foreground text-muted-foreground", annulla: "border-primary text-primary", carta: "" }[gesture];
 
   return (
@@ -80,12 +82,11 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
             {stamp}
           </motion.span>
         )}
-        <span className="mt-1 text-sm font-medium text-foreground">Supermercato</span>
-        <span className="text-xs text-muted-foreground tabular-nums">-48,20 €</span>
-        <span className="mt-1 w-full rounded-lg bg-muted px-2 py-1.5 text-center text-xs text-foreground">Spesa</span>
+        <span className="mt-1 text-sm font-medium text-foreground">{tr("Supermercato")}</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{"-48,20 €"}</span>
+        <span className="mt-1 w-full rounded-lg bg-muted px-2 py-1.5 text-center text-xs text-foreground">{tr("Spesa")}</span>
         <span className="flex items-center gap-1.5 text-[0.65rem] text-muted-foreground">
-          <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> Usa sempre
-        </span>
+          <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> {tr("Usa sempre")}</span>
       </motion.div>
       <span className="absolute bottom-3 text-muted-foreground">
         {gesture === "destra" && <ArrowRightIcon className="size-5 text-pos" />}
@@ -98,6 +99,7 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
 }
 
 export function SwipeTour() {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const [index, setIndex] = React.useState(0);
   const reduced = useReducedMotion() ?? false;
@@ -130,8 +132,7 @@ export function SwipeTour() {
           setOpen(true);
         }}
       >
-        <CircleHelpIcon /> Come funziona
-      </Button>
+        <CircleHelpIcon />{" "}{tr("Come funziona")}</Button>
       <AnimatePresence>
         {open && (
           <motion.div
@@ -142,7 +143,7 @@ export function SwipeTour() {
             className="fixed inset-0 z-50 flex items-end justify-center bg-background/70 p-4 backdrop-blur-sm sm:items-center"
             role="dialog"
             aria-modal="true"
-            aria-label="Come funzionano le carte"
+            aria-label={tr("Come funzionano le carte")}
           >
             <motion.div
               initial={{ y: 40, opacity: 0, scale: 0.97 }}
@@ -162,23 +163,21 @@ export function SwipeTour() {
                 >
                   <DemoCard gesture={step.gesture} reduced={reduced} />
                   <div className="flex flex-col gap-1">
-                    <p className="font-heading text-lg font-medium text-foreground">{step.title}</p>
-                    <p className="text-sm text-muted-foreground">{step.text}</p>
-                    {step.keys && <p className="hidden text-xs text-muted-foreground sm:block">Da tastiera: {step.keys}</p>}
+                    <p className="font-heading text-lg font-medium text-foreground">{tr(step.title)}</p>
+                    <p className="text-sm text-muted-foreground">{tr(step.text)}</p>
+                    {step.keys && <p className="hidden text-xs text-muted-foreground sm:block">{tr("Da tastiera:")}{" "}{tr(step.keys)}</p>}
                   </div>
                 </motion.div>
               </AnimatePresence>
               <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-1.5" aria-label={`Passo ${index + 1} di ${STEPS.length}`}>
+                <div className="flex items-center gap-1.5" aria-label={tr("Passo {0} di {1}", {0: index + 1, 1: STEPS.length})}>
                   {STEPS.map((candidate, i) => (
                     <span key={candidate.gesture} className={cn("h-1.5 rounded-full transition-all", i === index ? "w-5 bg-primary" : "w-1.5 bg-muted-foreground/30")} />
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
                   {!isLast && (
-                    <Button type="button" variant="ghost" size="sm" onClick={() => close("salta")}>
-                      Salta
-                    </Button>
+                    <Button type="button" variant="ghost" size="sm" onClick={() => close("salta")}>{tr("Salta")}</Button>
                   )}
                   <Button
                     type="button"
@@ -189,7 +188,7 @@ export function SwipeTour() {
                       setIndex(index + 1);
                     }}
                   >
-                    {isLast ? "Inizia" : "Avanti"}
+                    {isLast ? tr("Inizia") : tr("Avanti")}
                   </Button>
                 </div>
               </div>

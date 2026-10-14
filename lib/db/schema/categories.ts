@@ -12,6 +12,8 @@ export const categories = pgTable(
       .notNull()
       .references(() => authUser.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    /** Stable identity for app-provided labels; null for custom categories. */
+    defaultKey: text("default_key"),
     type: categoryTypeEnum("type").notNull(),
     color: text("color").notNull().default("slate"),
     icon: text("icon").notNull().default("package"),

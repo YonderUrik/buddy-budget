@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Dialog per scegliere (o togliere) lo strumento con cui confrontare il rendimento del portafoglio. */
 
@@ -21,6 +22,7 @@ export interface BenchmarkDialogProps {
 }
 
 export function BenchmarkDialog({ open, onOpenChange, current, currency }: BenchmarkDialogProps) {
+  const { t: tr } = useLocalization();
   const update = useUpdatePortfolioMutation();
   const create = useCreateInstrumentMutation({ deferHistory: true });
   const pending = create.isPending || update.isPending;
@@ -42,10 +44,10 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
       }}
     >
       <FormDialogContent>
-        <PanelDialogHeader icon={GitCompareArrowsIcon} title="Confronta con un indice" description="Confrontiamo gli stessi versamenti, negli stessi giorni, con un ETF ad accumulazione." color="var(--swatch-indigo)" />
-        <section aria-label="Benchmark comuni" className="space-y-2">
-          <p className="text-sm font-medium">Benchmark comuni</p>
-          <p className="text-xs text-muted-foreground">Scegli un indice: il confronto usa l’ETF ad accumulazione indicato.</p>
+        <PanelDialogHeader icon={GitCompareArrowsIcon} title={tr("Confronta con un indice")} description={tr("Confrontiamo gli stessi versamenti, negli stessi giorni, con un ETF ad accumulazione.")} color="var(--swatch-indigo)" />
+        <section aria-label={tr("Benchmark comuni")} className="space-y-2">
+          <p className="text-sm font-medium">{tr("Benchmark comuni")}</p>
+          <p className="text-xs text-muted-foreground">{tr("Scegli un indice: il confronto usa l’ETF ad accumulazione indicato.")}</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {BENCHMARK_SUGGESTIONS.map((suggestion) => {
               const selected = current?.isin === suggestion.isin;
@@ -64,9 +66,9 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
                     );
                   }}
                 >
-                  <span>{suggestion.label}{selected ? " · Attuale" : ""}</span>
-                  <span className="text-xs font-normal text-muted-foreground">{suggestion.description}</span>
-                  <span className="text-xs font-normal text-muted-foreground">{suggestion.name} · {suggestion.yahooSymbol}</span>
+                  <span>{tr(suggestion.label)}{selected ? tr(" · Attuale") : ""}</span>
+                  <span className="text-xs font-normal text-muted-foreground">{tr(suggestion.description)}</span>
+                  <span className="text-xs font-normal text-muted-foreground">{suggestion.name} {"·"}{suggestion.yahooSymbol}</span>
                 </Button>
               );
             })}
@@ -78,14 +80,12 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
           defaultCurrency={currency}
           disabled={pending}
           deferHistory
-          placeholder="Oppure cerca un altro strumento"
+          placeholder={tr("Oppure cerca un altro strumento")}
         />
-        {pending ? <p role="status" className="text-sm text-muted-foreground">Salvo e scarico i prezzi…</p> : null}
+        {pending ? <p role="status" className="text-sm text-muted-foreground">{tr("Salvo e scarico i prezzi…")}</p> : null}
         {create.isError || update.isError ? <p role="alert" className="text-sm text-destructive">{create.error?.message ?? update.error?.message}</p> : null}
         {current ? (
-          <Button variant="ghost" className="self-start text-muted-foreground" disabled={pending} onClick={() => { create.reset(); save(null); }}>
-            Togli il confronto
-          </Button>
+          <Button variant="ghost" className="self-start text-muted-foreground" disabled={pending} onClick={() => { create.reset(); save(null); }}>{tr("Togli il confronto")}</Button>
         ) : null}
       </FormDialogContent>
     </Dialog>

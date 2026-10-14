@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Prossime scadenze nella sidebar: rate dei finanziamenti e collegamenti bancari da rinnovare, dalla più vicina.
@@ -10,7 +11,7 @@ import Link from "next/link";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarDeadlines } from "@/lib/sidebar/types";
 import { cn } from "@/lib/utils";
-import { formatDeadlineDay, formatSidebarAmount } from "./sidebar-insights.utils";
+import { localizedSidebarFormats, formatDeadlineDay } from "./sidebar-insights.utils";
 
 export interface SidebarDeadlinesProps {
   data: SidebarDeadlines | undefined;
@@ -24,6 +25,9 @@ export interface SidebarDeadlinesProps {
 }
 
 export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNavigate, onItemClick }: SidebarDeadlinesProps) {
+  const { formatDeadlineDay, formatSidebarAmount } = localizedSidebarFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   if (collapsed) return null;
   if (loading) {
     return <div className="mt-1 h-14 animate-pulse rounded-lg bg-sidebar-accent" aria-busy="true" />;
@@ -33,12 +37,12 @@ export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNav
   return (
     <CollapsibleSection
       id="scadenze"
-      title="Prossime scadenze"
+      title={tr("Prossime scadenze")}
       summary={data.items[0] ? formatDeadlineSummary(data.items[0].date) : undefined}
       badge={
         overdue > 0 ? (
           <span className="rounded-full bg-neg-soft px-1.5 py-0.5 text-[10px] font-semibold normal-case tracking-normal text-neg">
-            {overdue} {overdue === 1 ? "scaduta" : "scadute"}
+            {overdue}{" "}{overdue === 1 ? tr("scaduta") : tr("scadute")}
           </span>
         ) : undefined
       }
@@ -65,7 +69,7 @@ export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNav
                   <span className="text-[9px] font-semibold uppercase tracking-wide opacity-70">{month}</span>
                   <span className="font-heading text-sm font-semibold tabular-nums">{day}</span>
                 </span>
-                <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-sidebar-foreground">{item.label}</span>
+                <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-sidebar-foreground">{tr(item.label)}</span>
                 {item.amount !== null ? (
                   <span className="shrink-0 font-heading text-[13px] font-semibold tabular-nums text-sidebar-foreground">
                     {formatSidebarAmount(item.amount, data.currency, hidden)}

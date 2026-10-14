@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card "Rendimento nel tempo": heatmap dei rendimenti del portafoglio per giorno, settimana, mese o anno, con
@@ -9,10 +12,10 @@ import * as React from "react";
 import { SegmentedControl } from "@/components/domain/shared";
 import { CalendarRangeIcon } from "lucide-react";
 import { PanelSection } from "./panel-section";
-import { HEATMAP_LEVELS, type HeatmapCell, type HeatmapGrouping } from "@/lib/calc/return-heatmap";
+import { localizedHeatmap, type HeatmapCell, type HeatmapGrouping } from "@/lib/calc/return-heatmap";
 import type { DailyReturn } from "@/lib/calc/returns";
 import { heatmapFromDaily } from "@/lib/investments/return-heatmap-view";
-import { formatSignedCurrency, formatSignedPct } from "./gain-text";
+
 import { heatmapCellColor, ReturnHeatmapGrid } from "./return-heatmap-grid";
 
 const GROUPING_OPTIONS = [
@@ -44,9 +47,15 @@ export interface ReturnHeatmapCardProps {
 }
 
 export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: ReturnHeatmapCardProps) {
+  const { HEATMAP_LEVELS } = localizedHeatmap(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedCurrency, formatSignedPct } = localizedFormats(formattingLocale);
+
+  const { t: tr, language } = useLocalization();
   const [grouping, setGrouping] = React.useState<HeatmapGrouping>(DEFAULT_GROUPING);
   const [inspected, setInspected] = React.useState<HeatmapCell | null>(null);
-  const heatmap = React.useMemo(() => heatmapFromDaily(daily, grouping, today), [daily, grouping, today]);
+  const heatmap = React.useMemo(() => heatmapFromDaily(daily, grouping, today, language), [daily, grouping, today, language]);
 
   function changeGrouping(next: HeatmapGrouping) {
     setGrouping(next);
@@ -57,18 +66,16 @@ export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: Retur
   const [singular, plural] = GROUPING_NOUN[grouping];
   const summary =
     heatmap.counted === 0
-      ? `Ancora nessun ${singular} con un rendimento.`
-      : `${heatmap.positive} ${heatmap.positive === 1 ? singular : plural} in guadagno e ${heatmap.negative} in perdita${
-          heatmap.counted > heatmap.positive + heatmap.negative ? `, ${heatmap.counted - heatmap.positive - heatmap.negative} praticamente fermi` : ""
-        }.`;
+      ? tr("Ancora nessun {0} con un rendimento.", { 0: tr(singular) })
+      : tr("{0} {1} in guadagno e {2} in perdita{3}.", { 0: heatmap.positive, 1: tr(heatmap.positive === 1 ? singular : plural), 2: heatmap.negative, 3: heatmap.counted > heatmap.positive + heatmap.negative ? tr(", {0} praticamente fermi", {0: heatmap.counted - heatmap.positive - heatmap.negative}) : "" });
 
   return (
     <PanelSection
       icon={CalendarRangeIcon}
-      title="Rendimento TWR nel tempo"
+      title={tr("Rendimento TWR nel tempo")}
       color="var(--swatch-teal)"
-      description={<>{periodLabel ? `${periodLabel}. Mesi e anni ai bordi possono essere parziali. ` : ""}{summary}</>}
-      action={<SegmentedControl options={GROUPING_OPTIONS} value={grouping} onChange={changeGrouping} ariaLabel="Raggruppa i rendimenti per" />}
+      description={<>{periodLabel ? tr("{0}. Mesi e anni ai bordi possono essere parziali. ", {0: periodLabel}) : ""}{summary}</>}
+      action={<SegmentedControl options={GROUPING_OPTIONS} value={grouping} onChange={changeGrouping} ariaLabel={tr("Raggruppa i rendimenti per")} />}
     >
       <div className="flex flex-col gap-3">
         <ReturnHeatmapGrid heatmap={heatmap} onInspect={setInspected} selectedKey={inspected?.key ?? null} />
@@ -76,9 +83,9 @@ export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: Retur
           <p aria-live="polite" className="min-h-4 tabular-nums">
             {inspected ? (
               <>
-                <span className="text-foreground">{inspected.label}</span>
+                <span className="text-foreground">{tr(inspected.label)}</span>
                 {inspected.ret === null ? (
-                  " · niente investito"
+                  tr(" · niente investito")
                 ) : (
                   <>
                     {" · "}
@@ -88,11 +95,11 @@ export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: Retur
                 )}
               </>
             ) : (
-              "Passa sopra o tocca una casella per il dettaglio."
+              tr("Passa sopra o tocca una casella per il dettaglio.")
             )}
           </p>
           <div className="flex items-center gap-1.5" aria-hidden="true">
-            <span>Perdita</span>
+            <span>{tr("Perdita")}</span>
             {Array.from({ length: HEATMAP_LEVELS }, (_, i) => HEATMAP_LEVELS - i).map((level) => (
               <span key={`n${level}`} className="size-3 rounded-[3px]" style={{ backgroundColor: heatmapCellColor(legendCell(-1, level)) }} />
             ))}
@@ -100,7 +107,7 @@ export function ReturnHeatmapCard({ daily, currency, today, periodLabel }: Retur
             {Array.from({ length: HEATMAP_LEVELS }, (_, i) => i + 1).map((level) => (
               <span key={`p${level}`} className="size-3 rounded-[3px]" style={{ backgroundColor: heatmapCellColor(legendCell(1, level)) }} />
             ))}
-            <span>Guadagno</span>
+            <span>{tr("Guadagno")}</span>
           </div>
         </div>
       </div>

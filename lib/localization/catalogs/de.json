@@ -3718,5 +3718,17 @@
   "Ultima chiusura prima di questa data, del {0}": "Letzter Schlusskurs vor diesem Datum, vom {0}",
   "Corregge il rendimento TWR per l’aumento dei prezzi nel paese del prodotto ({0}, indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.": "Bereinigt die TWR um den Preisanstieg im Produktland ({0}, Eurostat-Index). Ein positiver Wert bedeutet einen Kaufkraftgewinn. Die Schätzung verwendet den letzten verfügbaren monatlichen Inflationswert; dessen Datum steht unter dem Ergebnis. Dies ist nicht die Linie im Diagramm.",
   "Inflazione ({2}) {0} fino a {1}": "Inflation ({2}) {0} bis {1}",
-  "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.": "TWR, MWR und inflationsbereinigte Renditen anhand der Inflation im Produktland (Italien oder Deutschland, Eurostat-Index), mit Erklärungen beim Überfahren. Die Werte folgen dem Datum im Diagramm; durch Ziehen lässt sich ein Zeitraum auswählen, auch für Risiko und Monatsrenditen. Zeigt außerdem, welchen Wert das Portfolio hätte, wenn Kosten und Steuern investiert geblieben wären."
+  "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.": "TWR, MWR und inflationsbereinigte Renditen anhand der Inflation im Produktland (Italien oder Deutschland, Eurostat-Index), mit Erklärungen beim Überfahren. Die Werte folgen dem Datum im Diagramm; durch Ziehen lässt sich ein Zeitraum auswählen, auch für Risiko und Monatsrenditen. Zeigt außerdem, welchen Wert das Portfolio hätte, wenn Kosten und Steuern investiert geblieben wären.",
+  "Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.": "Ein Link per E-Mail, kein Passwort. Beim ersten Mal wird das Konto automatisch angelegt.",
+  "Il link vale {0} minuti e si usa una volta sola.": "Der Link gilt {0} Minuten und funktioniert nur einmal.",
+  "Mandami il link": "Schick mir den Link",
+  "Sicurezza": "Sicherheit",
+  "Codice aperto": "Offener Code",
+  "Aiuto": "Hilfe",
+  "Link al sito": "Links zur Website",
+  "3 conti": "3 Konten",
+  "3 posizioni": "3 Positionen",
+  "3 debiti": "3 Schulden",
+  "6 di 6 · con i dati di una persona inventata": "6 von 6 · mit den Daten einer erfundenen Person",
+  "E in tutto, quanto ho?": "Und insgesamt, wie viel habe ich?"
 }

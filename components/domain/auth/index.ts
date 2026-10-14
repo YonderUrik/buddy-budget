@@ -4,14 +4,11 @@
  * Componenti delle pagine di autenticazione e onboarding.
  */
 
-export { AuthSheet } from "./auth-sheet";
-export type { AuthSheetProps } from "./auth-sheet";
-export { AuthSheetExample } from "./auth-sheet-example";
-export type { AuthSheetExampleProps } from "./auth-sheet-example";
-export { AUTH_SHEET_EXAMPLE_ROWS } from "./auth-sheet-example.data";
-export type { AuthSheetExampleRow } from "./auth-sheet-example.data";
-export { useSheetFormula } from "./auth-sheet-formula";
-export type { SheetFormula } from "./auth-sheet-formula";
+export { AuthFrame } from "./auth-frame";
+export type { AuthFrameProps } from "./auth-frame";
+export { AuthPreview } from "./auth-preview";
+export type { AuthPreviewProps } from "./auth-preview";
+export { AuthFootLinks } from "./auth-foot-links";
 export { BrandLink } from "./brand-link";
 export type { BrandLinkProps } from "./brand-link";
 export { LoginPanel } from "./login-panel";

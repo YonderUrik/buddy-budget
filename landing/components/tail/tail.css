@@ -1,0 +1,113 @@
+/*
+ * Sezioni in coda alla storia (funziona con, sicurezza, codice aperto, regole, calcolatori, domande, chiusura):
+ * righe e colonne separate da linee sottili, come le liste delle Impostazioni dell'app. Niente riquadri grigi con
+ * solo testo, niente gradienti.
+ */
+.tail section { padding: 96px 0; border-top: 1px solid var(--line); }
+.tail h2 { font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.08; max-width: 20ch; }
+.tail h3 { font: 600 21px/1.25 var(--f-h); letter-spacing: -0.015em; }
+.tail .intro { margin-top: 18px; max-width: 60ch; color: var(--ink2); font-size: 17px; }
+.tail .rows { margin: 40px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.tail .rows li { display: grid; grid-template-columns: 300px 1fr; gap: 24px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+.tail .rows li h3 { font-size: 19px; }
+.tail .rows li p { color: var(--ink2); font-size: 16px; line-height: 1.55; max-width: 62ch; }
+.tail .rows li .src { margin-top: 6px; font-size: 14px; }
+.tail .rows li .src a { color: var(--primary); font-weight: 600; text-decoration: none; }
+.tail .rows li .src a::after { content: " ↗"; font-weight: 400; }
+.tail .rows li .src a:hover { text-decoration: underline; }
+
+/* «funziona con»: una fascia di loghi e strumenti, non una tabella */
+.con .band { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 48px; }
+.con-cell { padding: 22px 0 0; border-top: 1px solid var(--line); }
+.con-cell h3 { font-size: 18px; }
+.con-cell p { margin-top: 6px; color: var(--ink2); font-size: 15.5px; line-height: 1.5; }
+.con-cell .art { margin-top: 18px; display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; min-height: 44px; }
+.con .flag { width: 44px; height: 33px; border-radius: 5px; }
+.con .logo { height: 24px; }
+.con .logo.ib { height: 30px; }
+.con .logo.fin { height: 22px; }
+.con .logo.tr { height: 19px; }
+.con .logo.yh { height: 26px; }
+.con .ibk { gap: 7px; font-size: 17px; }
+.con .csv { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border: 1px dashed var(--ink3); border-radius: var(--r-sm); font: 600 13px var(--f-b); color: var(--ink2); }
+.con .ichip { height: 36px; font-size: 14px; }
+.con .ichip i { width: 26px; height: 26px; font-size: 11px; }
+
+/* sicurezza: righe come nelle impostazioni dell'app, con l'icona tinta della sezione */
+.sicurezza .rows li { grid-template-columns: 340px 1fr; }
+.sicurezza .rows li p { max-width: 72ch; }
+.sicurezza .rows li h3 { display: flex; align-items: flex-start; gap: 12px; }
+.sicurezza .ic { flex: none; width: 34px; height: 34px; border-radius: var(--r-sm); display: inline-grid; place-items: center; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); }
+.sicurezza .limits { margin-top: 28px; padding: 22px 26px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.sicurezza .limits h3 { font-size: 16px; }
+.sicurezza .limits p { margin-top: 6px; color: var(--ink2); font-size: 15px; line-height: 1.5; }
+.sicurezza .more { display: inline-block; margin-top: 22px; font: 600 15px var(--f-b); color: var(--primary); text-decoration: none; }
+.sicurezza .more::after { content: " →"; }
+.sicurezza .more:hover { text-decoration: underline; }
+
+/* codice aperto: un blocco solo, con il marchio di GitHub e la scheda del repository */
+.oss { margin-top: 56px; padding: 36px 40px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); display: grid; grid-template-columns: 1fr 360px; gap: 40px; align-items: center; }
+.oss .ghm { width: 56px; height: 56px; color: var(--ink); display: block; }
+.oss h2 { font-size: clamp(26px, 2.6vw, 34px); margin-top: 18px; max-width: 18ch; }
+.oss p { margin-top: 12px; color: var(--ink2); font-size: 16px; line-height: 1.55; max-width: 52ch; }
+.oss .cta { margin-top: 22px; }
+.oss .cta svg { width: 16px; height: 16px; }
+.oss .cta .btn.main:hover svg, .oss .cta .btn.ghost:hover svg { transform: none; }
+.oss .repo { border: 1px solid var(--line); border-radius: var(--r-card); background: var(--bg); padding: 16px 18px; font-size: 14px; }
+.oss .repo .h { display: flex; align-items: center; gap: 8px; font-weight: 600; overflow-wrap: anywhere; }
+.oss .repo .h svg { width: 16px; height: 16px; flex: none; color: var(--ink2); }
+.oss .repo .h small { color: var(--ink3); font-weight: 500; }
+.oss .repo ul { list-style: none; margin: 12px 0 0; padding: 0; }
+.oss .repo li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--line); color: var(--ink2); }
+.oss .repo li b, .oss .repo li a { color: var(--ink); font-weight: 600; text-decoration: none; }
+.oss .repo li a:hover { text-decoration: underline; }
+.oss .who { margin-top: 18px; font-size: 14.5px; color: var(--ink2); line-height: 1.5; }
+.oss .who a { color: var(--primary); font-weight: 600; text-decoration: none; }
+.oss .who a:hover { text-decoration: underline; }
+
+/* regole italiane: due colonne di righe */
+.rules2 { margin: 40px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 0 48px; border-top: 1px solid var(--line); }
+.rules2 li { padding: 22px 0; border-bottom: 1px solid var(--line); }
+.rules2 li b { display: block; font: 600 17px/1.3 var(--f-h); letter-spacing: -0.01em; }
+.rules2 li p { margin-top: 6px; color: var(--ink2); font-size: 15.5px; line-height: 1.5; }
+.rules2 .links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font-size: 14px; }
+.rules2 .links a { color: var(--primary); font-weight: 600; text-decoration: none; }
+.rules2 .links a:hover { text-decoration: underline; }
+.rules2 .links a.src { color: var(--ink3); font-weight: 500; }
+.rules2 .links a.src::after { content: " ↗"; }
+
+/* calcolatori: una riga per strumento */
+.tools { margin: 40px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.tools li { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.tools li b { font: 600 20px var(--f-h); letter-spacing: -0.015em; }
+.tools li p { color: var(--ink2); margin-top: 4px; font-size: 15.5px; }
+.tools li a { color: var(--primary); font-weight: 600; white-space: nowrap; text-decoration: none; }
+.tools li a::after { content: " →"; }
+.tools li a:hover { text-decoration: underline; }
+
+/* domande: aperte, senza tendine, così il testo si legge e si indicizza */
+.qa { margin: 40px 0 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.qa li { padding: 20px 0; border-bottom: 1px solid var(--line); }
+.qa li h3 { font: 600 18px var(--f-h); letter-spacing: -0.01em; }
+.qa li p { margin-top: 6px; color: var(--ink2); font-size: 15.5px; line-height: 1.5; max-width: 70ch; }
+
+/* chiusura: fondo navy come la sidebar dell'app, poi il piè di pagina sullo stesso fondo */
+.close { padding: 110px 0; background: var(--navy); color: var(--on-navy); text-align: center; }
+.close h2 { color: var(--on-navy); margin-inline: auto; font-size: clamp(30px, 3.4vw, 46px); font-weight: 600; letter-spacing: -0.03em; line-height: 1.08; max-width: 20ch; }
+.close p { margin: 16px auto 0; color: var(--on-navy2); max-width: 40ch; }
+.close .cta { margin-top: 30px; justify-content: center; }
+.close .btn.ghost { background: var(--on-navy); color: var(--navy); border-color: var(--on-navy); }
+.close .btn.ghost:hover { background: color-mix(in srgb, var(--on-navy) 88%, var(--navy)); }
+.close .btn.plain { background: transparent; color: var(--on-navy); border-color: color-mix(in srgb, var(--on-navy) 30%, transparent); }
+.close .btn.plain:hover { border-color: var(--on-navy); }
+
+@media (max-width: 1000px) {
+  .tail section { padding: 72px 0; }
+  .tail .rows li, .sicurezza .rows li { grid-template-columns: 1fr; gap: 8px; }
+  .con .band { grid-template-columns: 1fr; gap: 18px; }
+  .sicurezza .limits { grid-template-columns: 1fr; }
+  .oss { grid-template-columns: 1fr; padding: 26px 22px; }
+  .rules2 { grid-template-columns: 1fr; }
+  .tools li { grid-template-columns: 1fr; gap: 8px; }
+  .close { padding: 80px 0; }
+}

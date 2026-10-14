@@ -12,8 +12,10 @@ import { APP_URL, FAQ, SITE_DESCRIPTION, SITE_NAME, SITE_URL, SOURCE_LICENSE, SO
 
 /** Pagine pubbliche descritte nel file, con la riga che dice a cosa servono. */
 const PAGES: readonly { path: string; title: string; text: string }[] = [
+  { path: CONTENT_PATHS.strumenti, title: "Calcolatori", text: "I tre calcolatori gratuiti, senza account: zainetto fiscale, piano di ammortamento, obiettivo di risparmio." },
   { path: CONTENT_PATHS.zainetto, title: "Calcolatore dello zainetto fiscale", text: "Quanta imposta si evita compensando plusvalenze con minusvalenze (regole italiane, 26% e 12,5%)." },
   { path: CONTENT_PATHS.ammortamento, title: "Calcolatore del piano di ammortamento", text: "Rata, interessi ed estinzione anticipata di mutui e prestiti." },
+  { path: CONTENT_PATHS.obiettivo, title: "Calcolatore dell'obiettivo di risparmio", text: "In quanti mesi si arriva a una cifra con un versamento mensile e un rendimento, e quanto serve al mese per arrivarci entro una data." },
   { path: CONTENT_PATHS.guidaZainetto, title: "Guida allo zainetto fiscale", text: "Come funzionano le minusvalenze a quattro anni, con esempi e fonti ufficiali." },
   { path: CONTENT_PATHS.funzioneInvestimenti, title: "Investimenti con le tasse italiane", text: "Rendimento vero, rischio, zainetto e bollo calcolati dalle operazioni." },
   { path: CONTENT_PATHS.funzioni, title: "Tutte le funzioni", text: "Elenco completo per area, con lo stato di ognuna." },

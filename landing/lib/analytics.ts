@@ -1,27 +1,26 @@
 import type { FeatureArea } from "@/content/catalog.generated";
 import type { ScreenId } from "@/content/screens";
-import type { TourId } from "@/content/sheet";
+import type { StoryStepId } from "@/content/story";
 
-/** Sezioni della pagina misurate con `section_view`. */
-export type SectionId =
-  | "hero" | "fonti" | "app" | "italia" | "schermate" | "funzioni" | "sicurezza" | "codice" | "perchi" | "confronto"
-  | "domande" | "fine";
+/** Sezioni misurate con `section_view`: la storia e le sezioni in coda della home, più la galleria delle schermate. */
+export type SectionId = "storia" | "con" | "sicurezza" | "codice" | "regole" | "strumenti" | "domande" | "fine" | "schermate";
 
 /**
  * Eventi di prodotto della landing inviati a Umami (sito Umami proprio della landing, non quello dell'app).
  * Props solo categoriche: mai dati personali. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface LandingEvents {
-  cta_click: { location: "nav" | "hero" | "closing" | "funzioni" | "schermate" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "guida_zainetto" | "funzione_investimenti" | "sicurezza"; target: "signup" | "login" | "calculator" };
+  cta_click: {
+    location: "nav" | "hero" | "story" | "closing" | "funzioni" | "schermate" | "strumenti" | "calcolatore_zainetto" | "calcolatore_ammortamento" | "calcolatore_obiettivo" | "guida_zainetto" | "funzione_investimenti" | "sicurezza";
+    target: "signup" | "login" | "calculator";
+  };
   section_view: { section: SectionId };
-  /** Apertura: il foglio d'esempio passa alla Panoramica dell'app, o torna al foglio. */
-  sheet_view_toggled: { view: "foglio" | "app" };
-  /** «L'app, area per area»: scheda aperta (conti, investimenti, tasse, debiti, pensione, futuro, limiti). */
-  tour_tab_selected: { tab: TourId };
+  /** Home: un passo della storia è entrato in vista per la prima volta (fin dove arriva chi legge). */
+  story_step_viewed: { step: StoryStepId };
+  /** Home: «Vedi la schermata vera» acceso o spento su un passo con il pannello vivo. */
+  story_real_toggled: { step: StoryStepId; real: boolean };
   screen_selected: { screen: ScreenId };
   catalog_area_selected: { area: FeatureArea };
-  simulator_used: { instrument: "azioni_etf" | "titoli_stato" };
-  hide_amounts_toggled: { hidden: boolean };
   theme_toggled: { theme: "light" | "dark" };
   /** Pagina /sicurezza: passaggio aperto nel diagramma del percorso dei dati. */
   security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };

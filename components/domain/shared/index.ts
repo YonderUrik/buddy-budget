@@ -10,6 +10,8 @@ export { InfoHint } from "./info-hint";
 export type { InfoHintProps } from "./info-hint";
 export { LoadError } from "./load-error";
 export type { LoadErrorProps } from "./load-error";
+export { PageError } from "./page-error";
+export type { PageErrorProps } from "./page-error";
 export { ProgressBar } from "./progress-bar";
 export type { ProgressBarProps, ProgressBarState } from "./progress-bar";
 export { CollapsibleSection, COLLAPSIBLE_STORAGE_PREFIX } from "./collapsible-section";

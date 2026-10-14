@@ -5,6 +5,8 @@ import { client, db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
+import { accounts } from "@/lib/db/schema/accounts";
+import { transactions } from "@/lib/db/schema/transactions";
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
@@ -164,5 +166,62 @@ describe("GET/POST /api/categorization-rules", () => {
     );
 
     expect(response.status).toBe(409);
+  });
+
+  it("con replaceExisting dà la categoria nuova alla regola che c'è già", async () => {
+    const [second] = await db.insert(categories).values({ userId, name: "Casa", type: "dovuta" }).returning();
+    const [existing] = await db
+      .insert(categorizationRules)
+      .values({ userId, matchType: "merchant", pattern: "esselunga", categoryId })
+      .returning();
+
+    const response = await POST(
+      new NextRequest("http://localhost/api/categorization-rules", {
+        method: "POST",
+        body: JSON.stringify({ matchType: "merchant", pattern: "ESSELUNGA", categoryId: second.id, replaceExisting: true }),
+      })
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.id).toBe(existing.id);
+    expect(body.categoryId).toBe(second.id);
+    const rules = await db.select().from(categorizationRules).where(eq(categorizationRules.userId, userId));
+    expect(rules).toHaveLength(1);
+  });
+
+  it("applica subito la regola ai movimenti ancora da categorizzare", async () => {
+    const [account] = await db.insert(accounts).values({ userId, name: "Conto", type: "Conto corrente", balance: "0" }).returning();
+    const [pending] = await db
+      .insert(transactions)
+      .values({ userId, accountId: account.id, categoryId: fallbackCategoryId, description: "Esselunga", amount: "-20.00", date: "2026-10-01" })
+      .returning();
+    // Già messo da solo in un'altra categoria: non cambia da sé, ma la risposta lo conta per «Cambiali».
+    const [svago] = await db.insert(categories).values({ userId, name: "Svago", type: "voluta" }).returning();
+    await db.insert(transactions).values({
+      userId,
+      accountId: account.id,
+      categoryId: svago.id,
+      description: "Esselunga",
+      amount: "-12.00",
+      date: "2026-09-01",
+      categorySource: "storico",
+      categorizedAt: new Date(),
+    });
+
+    const response = await POST(
+      new NextRequest("http://localhost/api/categorization-rules", {
+        method: "POST",
+        body: JSON.stringify({ matchType: "merchant", pattern: "Esselunga", categoryId }),
+      })
+    );
+
+    expect(response.status).toBe(201);
+    const body = await response.json();
+    expect(body.applied).toBe(1);
+    expect(body.pastMatches).toBe(1);
+    const [row] = await db.select().from(transactions).where(eq(transactions.id, pending.id));
+    expect(row.categoryId).toBe(categoryId);
+    expect(row.categorySource).toBe("regola");
   });
 });

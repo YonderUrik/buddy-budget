@@ -40,6 +40,8 @@ export function useUpdateAssumptionsMutation() {
     onSuccess: (next) => {
       const previous = queryClient.getQueryData<AssumptionsResponse>([...ANALYTICS_QUERY_KEY]);
       queryClient.setQueryData([...ANALYTICS_QUERY_KEY], next);
+      // Il modulo FIRE della sidebar usa le stesse ipotesi (periodo compreso).
+      queryClient.invalidateQueries({ queryKey: ["sidebar", "fire"] });
       track("analytics_assumptions_saved", { fields: previous ? countChangedFields(previous.assumptions, next.assumptions) : 0 });
     },
   });

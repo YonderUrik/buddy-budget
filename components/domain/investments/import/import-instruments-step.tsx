@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Terzo passo dell'import: per ogni titolo del file dice a cosa l'ho abbinato (già tuo, nuovo con quotazione
@@ -55,6 +56,7 @@ function InstrumentRow({
   onChoose: ImportInstrumentsStepProps["onChoose"];
   onToggleExcluded: ImportInstrumentsStepProps["onToggleExcluded"];
 }) {
+  const { t: tr } = useLocalization();
   const status = describeChoice(choice);
   const { icon: Icon, color } = TONE_STYLE[status.tone];
   const usable = choice !== undefined && choice.kind !== "skip";
@@ -66,7 +68,7 @@ function InstrumentRow({
       <Checkbox
         checked={included}
         disabled={!usable}
-        aria-label={`Importa ${identityLabel(identity)}`}
+        aria-label={tr("Importa {0}", {0: identityLabel(identity)})}
         onCheckedChange={(checked) => onToggleExcluded(identity.key, checked !== true)}
         className="mt-1"
       />
@@ -74,7 +76,7 @@ function InstrumentRow({
         <div className="flex items-baseline justify-between gap-3">
           <p className="min-w-0 truncate text-sm font-medium text-foreground">{identity.name ?? identity.symbol ?? identity.isin}</p>
           <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-            {identity.count} {identity.count === 1 ? "operazione" : "operazioni"}
+            {identity.count}{" "}{identity.count === 1 ? "operazione" : tr("operazioni")}
           </span>
         </div>
         {identity.name ? <p className="-mt-1.5 truncate font-mono text-xs text-muted-foreground">{[identity.symbol, identity.isin].filter(Boolean).join(" · ")}</p> : null}
@@ -83,14 +85,14 @@ function InstrumentRow({
             <Icon className="size-3" />
           </span>
           <span className="min-w-0">
-            <span className="font-medium text-foreground">{status.title}</span>
-            <span className="text-muted-foreground"> · {status.text}</span>
+            <span className="font-medium text-foreground">{tr(status.title)}</span>
+            <span className="text-muted-foreground"> {"·"}{status.text}</span>
           </span>
         </p>
         {chosen ? (
           <p className="pl-7 text-sm text-foreground">
             {chosen.name}
-            {chosen.detail ? <span className="text-muted-foreground"> · {chosen.detail}</span> : null}
+            {chosen.detail ? <span className="text-muted-foreground"> {"·"}{chosen.detail}</span> : null}
           </p>
         ) : null}
         <div className="pl-7">
@@ -102,13 +104,11 @@ function InstrumentRow({
                 setChanging(false);
               }}
               defaultCurrency={identity.currency ?? defaultCurrency}
-              placeholder={usable ? "Scegli un altro strumento…" : "Cerca lo strumento…"}
+              placeholder={usable ? tr("Scegli un altro strumento…") : tr("Cerca lo strumento…")}
               className="sm:max-w-xs"
             />
           ) : (
-            <Button type="button" variant="ghost" size="sm" className="-ml-2 text-muted-foreground" onClick={() => setChanging(true)}>
-              Non è questo? Cambia strumento
-            </Button>
+            <Button type="button" variant="ghost" size="sm" className="-ml-2 text-muted-foreground" onClick={() => setChanging(true)}>{tr("Non è questo? Cambia strumento")}</Button>
           )}
         </div>
       </div>
@@ -117,6 +117,7 @@ function InstrumentRow({
 }
 
 export function ImportInstrumentsStep(props: ImportInstrumentsStepProps) {
+  const { t: tr } = useLocalization();
   const { identities, choices, excluded, defaultCurrency, onChoose, onToggleExcluded } = props;
   // Ordine stabile preso all'apertura del passo: scegliere uno strumento non deve far saltare la riga altrove.
   const [order] = React.useState(() =>
@@ -129,11 +130,9 @@ export function ImportInstrumentsStep(props: ImportInstrumentsStepProps) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{included}</span> su {identities.length} {identities.length === 1 ? "titolo" : "titoli"} pronti da importare.
-        {missing > 0 ? ` ${missing} non ${missing === 1 ? "è stato trovato" : "sono stati trovati"}: cercali oppure lasciali fuori, e le loro operazioni non verranno importate.` : ""}
-        {toCheck > 0 ? ` ${toCheck} ${toCheck === 1 ? "è da controllare" : "sono da controllare"}.` : ""}
-        {" "}I titoli nuovi si aggiungono ai tuoi strumenti.
-      </p>
+        <span className="font-medium text-foreground">{included}</span>{" "}{tr("su")}{" "}{identities.length}{" "}{identities.length === 1 ? tr("titolo") : tr("titoli")}{" "}{tr("pronti da importare.")}{missing > 0 ? tr(" {0} non {1}: cercali oppure lasciali fuori, e le loro operazioni non verranno importate.", {0: missing, 1: missing === 1 ? "è stato trovato" : "sono stati trovati"}) : ""}
+        {toCheck > 0 ? ` ${toCheck} ${toCheck === 1 ? tr("è da controllare") : tr("sono da controllare")}.` : ""}
+        {" "}{tr("I titoli nuovi si aggiungono ai tuoi strumenti.")}</p>
       <ul className="flex flex-col divide-y">
         {sorted.map((identity) => {
           const choice = choices[identity.key];

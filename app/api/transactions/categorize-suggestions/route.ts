@@ -1,31 +1,16 @@
 import { NextRequest } from "next/server";
-import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db/client";
-import { categories } from "@/lib/db/schema/categories";
-import { categorizationRules } from "@/lib/db/schema/categorization-rules";
-import { categorizationSuggestions } from "@/lib/db/schema/categorization-suggestions";
-import { transactions } from "@/lib/db/schema/transactions";
-import { computeSuggestions, groupByMerchant, type SuggestTransaction } from "@/lib/categorization/suggest";
+import { autoApplicableGroups, loadCategorizationState } from "@/lib/categorization/load-groups";
+import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { bindRequestUser, withRoute } from "@/lib/observability";
-
-/** Transazione del DB nella forma attesa dal motore delle proposte (numeri già convertiti). */
-function toSuggestTransaction(row: typeof transactions.$inferSelect): SuggestTransaction {
-  return {
-    id: row.id,
-    description: row.description,
-    amount: Number(row.amount),
-    excludedAmount: Number(row.excludedAmount),
-    date: row.date,
-    categoryId: row.categoryId,
-  };
-}
 
 /**
  * GET /api/transactions/categorize-suggestions — transazioni ancora sulla categoria di fallback,
- * raggruppate per chiave merchant, ciascuna con l'eventuale proposta ricavata dalle regole esistenti o
- * dallo storico già categorizzato. Non interroga mai l'assistente (endpoint `ai` dedicato), quindi la
- * risposta non dipende dalla disponibilità di un modello.
+ * raggruppate per chiave merchant, ciascuna con l'eventuale proposta ricavata dalle regole esistenti,
+ * dallo storico già categorizzato o dall'assistente (proposte già salvate). Non interroga mai il modello.
+ * `autoApply.readyKeys` elenca i gruppi con una proposta sicura che si applicherebbero da soli: la pagina, se ce
+ * ne sono, chiede di applicarli (`POST categorize-auto`) e intanto non li mostra fra quelli da decidere.
+ * Ogni gruppo ha `logoPath`: il logo del marchio (dizionario, sito scritto nel movimento o nome da cercare), o null.
  */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -34,67 +19,21 @@ async function handleGet(request: NextRequest) {
   }
   bindRequestUser(session.user.id);
 
-  const userId = session.user.id;
-
-  const userCategories = await db.select().from(categories).where(eq(categories.userId, userId));
-  const fallbackIds = new Set(userCategories.filter((category) => category.isFallback).map((c) => c.id));
-
-  const allTransactions = await db.select().from(transactions).where(eq(transactions.userId, userId));
-  const uncategorized = allTransactions
-    .filter((transaction) => fallbackIds.has(transaction.categoryId))
-    .map(toSuggestTransaction);
-  const history = allTransactions
-    .filter((transaction) => !fallbackIds.has(transaction.categoryId))
-    .map(toSuggestTransaction);
-
-  const rules = await db
-    .select({
-      id: categorizationRules.id,
-      pattern: categorizationRules.pattern,
-      categoryId: categorizationRules.categoryId,
-      splitPercentage: categorizationRules.splitPercentage,
-    })
-    .from(categorizationRules)
-    .where(eq(categorizationRules.userId, userId));
-
-  const suggestions = computeSuggestions({
-    uncategorized,
-    history,
-    rules: rules.map((rule) => ({
-      ...rule,
-      splitPercentage: rule.splitPercentage === null ? null : Number(rule.splitPercentage),
-    })),
-    categories: userCategories.map((category) => ({
-      id: category.id,
-      type: category.type,
-      isFallback: category.isFallback,
-    })),
-  });
-
-  const groups = groupByMerchant(uncategorized, suggestions);
-
-  // Proposte dell'assistente già calcolate: riempiono solo i gruppi che regole e storico non coprono.
-  const stored = await db
-    .select()
-    .from(categorizationSuggestions)
-    .where(and(eq(categorizationSuggestions.userId, userId), eq(categorizationSuggestions.status, "in_attesa")));
-  const storedByKey = new Map(stored.map((row) => [`${row.merchantKey}::${row.direction}`, row]));
-  for (const group of groups) {
-    if (group.suggestion) continue;
-    const row = storedByKey.get(group.groupKey);
-    if (!row) continue;
-    group.suggestion = {
-      transactionId: group.transactionIds[0],
-      merchantKey: group.merchantKey,
-      suggestedCategoryId: row.categoryId,
-      source: "assistente",
-      confidence: Number(row.confidence),
-      reason: "Proposta dall'assistente",
-      suggestedSplitPercentage: null,
-    };
-  }
-
-  return Response.json({ groups });
+  const state = await loadCategorizationState(session.user.id);
+  const readyKeys = autoApplicableGroups(state).map((group) => group.groupKey);
+  const groups = await withMerchantLogos(
+    state.groups,
+    (group) => ({
+      label: group.label,
+      texts: group.transactionIds.flatMap((id) => {
+        const row = state.uncategorized.get(id);
+        return row ? [row.description, row.rawDescription] : [];
+      }),
+      isExpense: group.totalAmount < 0,
+    }),
+    session.user.id
+  );
+  return Response.json({ groups, autoApply: { enabled: state.autoApply, ready: readyKeys.length, readyKeys } });
 }
 
 export const GET = withRoute("transactions.categorize_suggestions", handleGet);

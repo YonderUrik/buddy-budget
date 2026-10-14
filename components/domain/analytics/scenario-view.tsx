@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Corpo di Analitiche: titolo con l'anno del traguardo, quattro cursori «e se…», le quattro risposte e il grafico della
@@ -11,18 +12,22 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { track } from "@/lib/analytics";
 import type { AnalyticsAssumptions, UpdateAssumptionsInput } from "@/lib/analitiche/assumptions";
 import type { AnalyticsBase } from "@/lib/analitiche/base";
-import { resolvePlan, type AnalyticsPlan } from "@/lib/analitiche/plan";
+import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
+import { dataPeriodKind, type DataPeriod } from "@/lib/analitiche/period";
+import { cashflowFromData, resolvePlan, type AnalyticsPlan } from "@/lib/analitiche/plan";
 import { applyScenario, hasScenario, SCENARIO_FIELDS, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
 import { buildSimulationInput } from "@/lib/analitiche/simulation";
 import { summarizeCosts } from "@/lib/calc/costs";
 import { compareRules } from "@/lib/calc/monte-carlo";
 import { AnswerViews, type AnswerView } from "./answer-views";
 import { ANALYTICS_QUESTIONS } from "./analytics-questions";
-import { money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { AssumptionsPanel } from "./assumptions-panel";
 import { CostsSection } from "./costs-section";
+import { DataPeriodPicker } from "./data-period-picker";
 import { JourneySection } from "./journey-section";
 import { LastingSection } from "./lasting-section";
+import { localizedPeriodText } from "./period-text";
 import { lastingAnswer } from "./plain-answers";
 import { ScenarioControls } from "./scenario-controls";
 import { ScenarioHeadline } from "./scenario-headline";
@@ -33,8 +38,12 @@ export interface ScenarioViewProps {
   /** Ipotesi e piano salvati. */
   assumptions: AnalyticsAssumptions;
   plan: AnalyticsPlan;
+  /** Da dove viene il rendimento in uso (storico, prudente o scelto). */
+  returnInfo: ExpectedReturnInfo;
   saving: boolean;
   saveError: string | null;
+  /** Arrivano i movimenti del periodo appena scelto. */
+  updatingPeriod: boolean;
   today: Date;
   onSaveAssumptions: (input: UpdateAssumptionsInput) => Promise<void>;
   onSaveTer: (terByInstrument: Record<string, number>) => Promise<void>;
@@ -44,7 +53,12 @@ const PANEL_ID = "analytics-view-panel";
 const VIEW_ICONS = { "dove-sono": TrendingUp, quando: CalendarClock, reggera: ShieldCheck, costi: Percent } as const;
 const VIEW_LABELS = { "dove-sono": "Strada fatta", quando: "Arrivo", reggera: "Regge", costi: "Costi" } as const;
 
-export function ScenarioView({ base, assumptions, plan, saving, saveError, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
+export function ScenarioView({ base, assumptions, plan, returnInfo, saving, saveError, updatingPeriod, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
+  const { periodPhrase } = localizedPeriodText(useLocalization().language);
+
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -62,16 +76,16 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
   const costs = React.useMemo(() => summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null }))), [base.positions, assumptions.terByInstrument]);
 
   const views: AnswerView[] = ANALYTICS_QUESTIONS.map((q) => {
-    const common = { id: q.id, label: VIEW_LABELS[q.id], icon: VIEW_ICONS[q.id] };
+    const common = { id: q.id, label: tr(VIEW_LABELS[q.id]), icon: VIEW_ICONS[q.id] };
     switch (q.id) {
       case "dove-sono":
-        return { ...common, value: scenarioPlan.progress !== null ? pct(Math.min(scenarioPlan.progress, 9.99), 0) : "—", note: scenarioPlan.target !== null ? `${money(scenarioPlan.wealth, currency)} su ${money(scenarioPlan.target, currency)}` : money(scenarioPlan.wealth, currency) };
+        return { ...common, value: scenarioPlan.progress !== null ? pct(Math.min(scenarioPlan.progress, 9.99), 0) : "—", note: scenarioPlan.target !== null ? tr("{0} su {1}", { 0: money(scenarioPlan.wealth, currency), 1: money(scenarioPlan.target, currency) }) : money(scenarioPlan.wealth, currency) };
       case "quando":
-        return { ...common, value: scenarioPlan.yearsToFire === null ? "—" : scenarioPlan.yearsToFire === 0 ? "Già qui" : String(today.getFullYear() + Math.ceil(scenarioPlan.yearsToFire)), note: hasScenario(overrides) ? "con i valori dei cursori" : "ai ritmi attuali" };
+        return { ...common, value: scenarioPlan.yearsToFire === null ? "—" : scenarioPlan.yearsToFire === 0 ? "Già qui" : String(today.getFullYear() + Math.ceil(scenarioPlan.yearsToFire)), note: hasScenario(overrides) ? tr("con i valori dei cursori") : tr("ai ritmi attuali") };
       case "reggera":
-        return { ...common, value: lasting ? pct(lasting.success, 0) : "—", note: lasting ? `su ${assumptions.retirementYears} anni, smettendo oggi` : "serve la spesa annua" };
+        return { ...common, value: lasting ? pct(lasting.success, 0) : "—", note: lasting ? tr("su {0} anni, smettendo oggi", { 0: assumptions.retirementYears }) : tr("serve la spesa annua") };
       case "costi":
-        return { ...common, value: costs.totalValue > 0 ? money(costs.annualCost, currency) : "—", note: costs.annualPct !== null ? `${pct(costs.annualPct, 2)} l'anno` : "costo annuo" };
+        return { ...common, value: costs.totalValue > 0 ? money(costs.annualCost, currency) : "—", note: costs.annualPct !== null ? tr("{0} l'anno", { 0: pct(costs.annualPct, 2) }) : tr("costo annuo") };
     }
   });
 
@@ -86,13 +100,39 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
   const sectionData = { base, assumptions: scenarioAssumptions, plan: scenarioPlan, baseline: hasScenario(overrides) ? { assumptions, plan } : undefined };
   const deferredData = { ...sectionData, assumptions: deferred.assumptions, plan: deferred.plan };
   const question = (id: AnswerView["id"]) => ANALYTICS_QUESTIONS.find((q) => q.id === id)!;
+  const phrase = periodPhrase(assumptions.dataPeriod, base.cashflow.fromKey, base.cashflow.toKey);
+  const changePeriod = (dataPeriod: DataPeriod) => {
+    onSaveAssumptions({ dataPeriod })
+      .then(() => track("analytics_period_changed", { period: dataPeriodKind(dataPeriod) }))
+      .catch(() => undefined);
+  };
 
   return (
     <div className="flex flex-col gap-8">
       <ScenarioHeadline plan={scenarioPlan} baseline={plan} today={today} />
+      <DataPeriodPicker
+        period={assumptions.dataPeriod}
+        fromKey={base.cashflow.fromKey}
+        toKey={base.cashflow.toKey}
+        today={today}
+        updating={updatingPeriod}
+        saving={saving}
+        onChange={changePeriod}
+      />
       <ScenarioControls
+        period={assumptions.dataPeriod}
+        periodPhrase={phrase}
+        dataFigures={cashflowFromData(base)}
+        coveredMonths={base.cashflow.coveredMonths}
+        periodMonths={base.cashflow.months.length}
+        onUseData={(field) => {
+          onSaveAssumptions({ [field]: null })
+            .then(() => track("analytics_figure_reset_to_data", { field }))
+            .catch(() => undefined);
+        }}
         assumptions={assumptions}
         plan={plan}
+        returnInfo={returnInfo}
         currency={currency}
         overrides={overrides}
         onChange={changeField}
@@ -103,16 +143,25 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
         }}
         onSave={() => {
           const fields = SCENARIO_FIELDS.filter((f) => overrides[f] !== undefined).length;
+          const toManual = overrides.expectedReturn !== undefined && returnInfo.source !== "manuale";
           onSaveAssumptions(overrides as UpdateAssumptionsInput)
-            .then(() => track("analytics_scenario_saved", { fields }))
+            .then(() => {
+              track("analytics_scenario_saved", { fields });
+              if (toManual) track("analytics_return_source_changed", { source: "manuale" });
+            })
             .catch(() => undefined);
         }}
         onOpenAllAssumptions={() => setDialogOpen(true)}
+        onUseHistoryReturn={() => {
+          onSaveAssumptions({ expectedReturnAuto: true })
+            .then(() => track("analytics_return_source_changed", { source: "storico" }))
+            .catch(() => undefined);
+        }}
         saving={saving}
       />
       {saveError && !dialogOpen ? (
         <p className="text-sm text-neg" role="alert">
-          {saveError}
+          {tr(saveError)}
         </p>
       ) : null}
       <div className="flex flex-col gap-6">
@@ -135,12 +184,14 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Tutte le ipotesi</DialogTitle>
-            <DialogDescription>Quelle che cambi raramente. Si applicano a tutta la pagina e restano salvate.</DialogDescription>
+            <DialogTitle>{tr("Tutte le ipotesi")}</DialogTitle>
+            <DialogDescription>{tr("Quelle che cambi raramente. Si applicano a tutta la pagina e restano salvate.")}</DialogDescription>
           </DialogHeader>
           <AssumptionsPanel
             assumptions={assumptions}
+            periodPhrase={phrase}
             plan={plan}
+            returnInfo={returnInfo}
             currency={currency}
             pensionValue={base.wealth.pension}
             saving={saving}
@@ -148,6 +199,10 @@ export function ScenarioView({ base, assumptions, plan, saving, saveError, today
             onSave={async (input) => {
               await onSaveAssumptions(input);
               setDialogOpen(false);
+              const nextAuto = input.expectedReturnAuto ?? (input.expectedReturn !== undefined ? false : undefined);
+              if (nextAuto !== undefined && nextAuto !== (returnInfo.source !== "manuale")) {
+                track("analytics_return_source_changed", { source: nextAuto ? "storico" : "manuale" });
+              }
             }}
           />
         </DialogContent>

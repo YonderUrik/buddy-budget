@@ -1,6 +1,6 @@
 import { buildFxTable } from "@/lib/calc/fx";
 import { buildPriceIndex } from "@/lib/calc/investments";
-import { buildReturnHeatmap, type HeatmapGrouping, type ReturnHeatmap } from "@/lib/calc/return-heatmap";
+import { localizedHeatmap, type HeatmapGrouping, type ReturnHeatmap } from "@/lib/calc/return-heatmap";
 import { computeHistoryDailyReturns, type DailyReturn } from "@/lib/calc/returns";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { startOfDay } from "@/lib/calc/expenses";
@@ -21,6 +21,6 @@ export function historyDailyReturns(data: InvestmentData, today: Date): DailyRet
 }
 
 /** Heatmap dei rendimenti con il raggruppamento scelto. */
-export function heatmapFromDaily(daily: DailyReturn[], grouping: HeatmapGrouping, today: Date): ReturnHeatmap | null {
-  return buildReturnHeatmap(daily, grouping, toDateKey(startOfDay(today)));
+export function heatmapFromDaily(daily: DailyReturn[], grouping: HeatmapGrouping, today: Date, language: import("@/lib/localization/config").Language = "it"): ReturnHeatmap | null {
+  return localizedHeatmap(language).buildReturnHeatmap(daily, grouping, toDateKey(startOfDay(today)));
 }

@@ -19,6 +19,13 @@ const data: DigestData = {
   investments: null,
 };
 
+describe("riepilogo: movimenti da decidere", () => {
+  it("lo dice solo se ce ne sono", () => {
+    expect(digestEmail({ ...data, toDecide: 3 }, ctx).text).toContain("3 movimenti aspettano una categoria in Categorizza");
+    expect(digestEmail({ ...data, toDecide: 0 }, ctx).text).not.toContain("aspettano una categoria");
+  });
+});
+
 describe("email: ogni email opzionale porta la disiscrizione", () => {
   const emails = {
     digest: digestEmail(data, ctx),

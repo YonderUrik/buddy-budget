@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Foglio per scegliere una categoria: dal basso su mobile, finestra centrata su schermi larghi. In cima la ricerca e le
@@ -30,6 +31,8 @@ export interface CategorySheetProps {
   description?: string;
   searchPlaceholder?: string;
   onPick: (categoryId: string) => void;
+  /** Contenuto fisso sotto la griglia (es. l'opzione «Usa sempre questa categoria»). */
+  footer?: React.ReactNode;
 }
 
 /** Da questa larghezza (breakpoint `sm`) il foglio è una finestra e la ricerca prende subito il focus; sotto, la tastiera coprirebbe la griglia. */
@@ -58,27 +61,31 @@ export function CategorySheet({
   description,
   searchPlaceholder = "Cerca categoria…",
   onPick,
+  footer,
 }: CategorySheetProps) {
+  const { t: tr } = useLocalization();
   const [query, setQuery] = React.useState("");
+  // Ogni apertura riparte con la ricerca vuota, anche quando il chiamante chiude il foglio cambiando `open` da sé
+  // (es. la carta successiva nel mazzo di Categorizza) invece di passare da `onOpenChange`.
+  const [wasOpen, setWasOpen] = React.useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setQuery("");
+  }
   const wide = useMediaQuery(WIDE_QUERY);
   const sections = React.useMemo(() => buildCategoryPickerSections(categories, usage, query), [categories, usage, query]);
   const firstResult = query.trim() !== "" ? sections[0]?.categories[0] : undefined;
 
-  function handleOpenChange(next: boolean) {
-    if (!next) setQuery("");
-    onOpenChange(next);
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-origin-animation="none"
         initialFocus={wide}
         className="flex h-[80dvh] flex-col gap-3 p-4 sm:h-[70vh] sm:max-w-lg"
       >
         <DialogHeader className="gap-0.5">
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className={description ? "truncate text-sm" : "sr-only"}>{description ?? "Cerca o scegli una categoria"}</DialogDescription>
+          <DialogTitle>{tr(title)}</DialogTitle>
+          <DialogDescription className={description ? "truncate text-sm" : "sr-only"}>{description ?? tr("Cerca o scegli una categoria")}</DialogDescription>
         </DialogHeader>
         <div className="relative shrink-0">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
@@ -92,17 +99,17 @@ export function CategorySheet({
               }
             }}
             placeholder={searchPlaceholder}
-            aria-label="Cerca categoria"
+            aria-label={tr("Cerca categoria")}
             className="pl-9"
           />
         </div>
         <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-2">
           {sections.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">Nessuna categoria trovata</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">{tr("Nessuna categoria trovata")}</p>
           ) : (
             sections.map((section) => (
               <section key={section.key} className="flex flex-col gap-1.5">
-                {section.label && <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{section.key === MOST_USED_KEY ? "Per te" : section.label}</h3>}
+                {section.label && <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{section.key === MOST_USED_KEY ? tr("Per te") : section.label}</h3>}
                 {section.key === MOST_USED_KEY ? (
                   <div className="flex flex-wrap gap-2">
                     {section.categories.map((category) => (
@@ -128,6 +135,7 @@ export function CategorySheet({
             ))
           )}
         </div>
+        {footer ? <div className="shrink-0">{footer}</div> : null}
       </DialogContent>
     </Dialog>
   );

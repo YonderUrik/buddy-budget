@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Isola globale delle importazioni personali: in ogni pagina mostra i file in elaborazione (anello che gira, nome della
@@ -16,12 +17,13 @@ import { SyncProgressRing } from "@/components/domain/sync/sync-progress-ring";
 import { SPRING_BOUNCY } from "@/lib/motion/springs";
 import { ISLAND_DISMISSED_STORAGE_KEY, islandJobs, islandState, runningImportIds } from "@/lib/personal-import/island";
 import { usePersonalImportsQuery, type PersonalImportListing } from "@/lib/queries/personal-imports";
+import { QUERY_KEYS_CHANGED_BY_CATEGORIZATION } from "@/lib/queries/categorization";
 import { cn } from "@/lib/utils";
 
 type Job = PersonalImportListing["jobs"][number];
 
 /** Dati che un import concluso può aver cambiato: da ricaricare quando l'isola vede la fine del lavoro. */
-const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["transactions"], ["investments"], ["net-worth-snapshots"]] as const;
+const QUERY_KEYS_CHANGED_BY_IMPORT = [["accounts"], ["investments"], ["net-worth-snapshots"], ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION] as const;
 const DISMISS_LABEL = "Chiudi riepilogo importazione";
 const MAX_DISMISSED_IDS = 50;
 
@@ -51,18 +53,19 @@ export interface PersonalImportIslandCardProps {
 
 /** Una pillola per importazione: titolo e stato, esito e link a fine lavoro. */
 export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImportIslandCardProps) {
+  const { t: tr } = useLocalization();
   const state = islandState(job);
   const running = state === "running";
   const failed = state === "failed";
   const results = job.results;
-  const title = running ? `${source}: importo il file` : failed ? `${source}: non riuscito` : `${source}: completato`;
+  const title = running ? tr("{0}: importo il file", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : tr("{0}: completato", { 0: source });
   const detail = running
-    ? "Puoi continuare a usare l'app."
+    ? tr("Puoi continuare a usare l'app.")
     : failed
-      ? "Vedi cosa fare."
+      ? tr("Vedi cosa fare.")
       : results
-        ? `${results.cash} movimenti · ${results.investments} operazioni`
-        : "Dati aggiunti.";
+        ? tr("{0} movimenti · {1} operazioni", { 0: results.cash, 1: results.investments })
+        : tr("Dati aggiunti.");
   return (
     <motion.div
       layout
@@ -75,7 +78,7 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
       <div className="flex items-center gap-3 py-2.5 pr-2 pl-3">
         <span className="flex size-6 shrink-0 items-center justify-center">
           {running ? (
-            <SyncProgressRing progress={{ kind: "indeterminate" }} label={title} />
+            <SyncProgressRing progress={{ kind: "indeterminate" }} label={tr(title)} />
           ) : failed ? (
             <AlertCircle className="size-5 text-neg" aria-hidden="true" />
           ) : (
@@ -83,12 +86,10 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
           )}
         </span>
         <div className="flex min-w-0 flex-1 flex-col" aria-live="polite">
-          <span className="truncate text-sm font-medium">{running ? <TextShimmer>{title}</TextShimmer> : <TextMorph>{title}</TextMorph>}</span>
+          <span className="truncate text-sm font-medium">{running ? <TextShimmer>{tr(title)}</TextShimmer> : <TextMorph>{tr(title)}</TextMorph>}</span>
           <span className="truncate text-xs text-muted-foreground">{detail}</span>
         </div>
-        <Link href={`/importazioni?job=${job.id}`} className={cn("inline-flex min-h-8 shrink-0 items-center rounded-full px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-island-foreground/60", running ? "text-muted-foreground hover:text-foreground" : "bg-island-foreground text-island hover:bg-island-foreground/90")}>
-          Dettaglio
-        </Link>
+        <Link href={`/importazioni?job=${job.id}`} className={cn("inline-flex min-h-8 shrink-0 items-center rounded-full px-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-island-foreground/60", running ? "text-muted-foreground hover:text-foreground" : "bg-island-foreground text-island hover:bg-island-foreground/90")}>{tr("Dettaglio")}</Link>
         {!running ? (
           <button type="button" onClick={() => onDismiss(job.id)} aria-label={DISMISS_LABEL} className="flex size-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-island-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-island-foreground/60">
             <X size={15} />

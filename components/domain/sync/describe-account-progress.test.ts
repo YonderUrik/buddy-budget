@@ -36,7 +36,7 @@ describe("describeAccountProgress", () => {
     expect(
       describeAccountProgress(account({ phase: "done", total: 3, processed: 3, inserted: 3, categorized: 2, uncategorized: 1 }), false)
     ).toEqual({
-      text: "3 nuove transazioni (2 categorizzate, 1 da categorizzare). Saldo aggiornato.",
+      text: "3 nuove transazioni (2 categorizzate da sole, 1 da decidere). Saldo aggiornato.",
       bar: { kind: "determinate", value: 1, max: 1 },
       tone: "success",
     });

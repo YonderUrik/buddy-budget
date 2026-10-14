@@ -5,7 +5,9 @@ import { db } from "@/lib/db/client";
 import { categories } from "@/lib/db/schema/categories";
 import { isValidExcludedAmount, transactions } from "@/lib/db/schema/transactions";
 import { updateTransactionSchema } from "@/lib/validation/transactions";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { countAutoCorrections } from "@/lib/categorization/auto-corrections";
+import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
+import { bindRequestUser, recordCategorizationAutoCorrected, requestLogger, withRoute } from "@/lib/observability";
 
 /** Recupera una transazione solo se appartiene all'utente indicato, altrimenti null. */
 async function getOwnedTransaction(userId: string, transactionId: string) {
@@ -118,17 +120,43 @@ async function handlePatch(
     }
   }
 
+  // Cambiare categoria a mano la rende una scelta dell'utente (esce da «Messe dall'app»); tornare a «Da categorizzare» la azzera.
+  const now = new Date();
+  const categoryChanged = resolvedCategory !== null && resolvedCategory.id !== transaction.categoryId;
+  // Anche cambiare a mano la quota esclusa («Dividi») di una categoria messa da sola la rende una scelta dell'utente:
+  // «Ricategorizza» non deve rifarla.
+  const splitByHand =
+    !categoryChanged &&
+    parsed.data.excludedAmount !== undefined &&
+    newExcludedAmount !== Number(transaction.excludedAmount) &&
+    isAutomaticCategorySource(transaction.categorySource);
+  const origin = categoryChanged
+    ? resolvedCategory!.isFallback
+      ? { categorySource: null, categoryConfidence: null, categorizedAt: null }
+      : { categorySource: "utente" as const, categoryConfidence: null, categorizedAt: now }
+    : splitByHand
+      ? { categorySource: "utente" as const, categoryConfidence: null, categorizedAt: now }
+      : {};
+
   const { amount, excludedAmount, ...rest } = parsed.data;
   const [updated] = await db
     .update(transactions)
     .set({
       ...rest,
+      ...origin,
       ...(amount !== undefined ? { amount: newAmount.toFixed(2) } : {}),
       ...(newExcludedAmount !== undefined ? { excludedAmount: newExcludedAmount.toFixed(2) } : {}),
-      updatedAt: new Date(),
+      updatedAt: now,
     })
     .where(eq(transactions.id, id))
     .returning();
+
+  if (categoryChanged) {
+    for (const [source, count] of countAutoCorrections([{ before: transaction, categoryId: resolvedCategory!.id }])) {
+      recordCategorizationAutoCorrected(source, count);
+      requestLogger().info("categorization.auto.corrected", { categorySource: source, count });
+    }
+  }
 
   return Response.json(updated);
 }

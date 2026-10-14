@@ -2,6 +2,42 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.67.0](https://github.com/YonderUrik/buddy-budget/compare/v0.66.0...v0.67.0) (2026-10-13)
+
+
+### Novità
+
+* Analitiche prende risparmio, spesa e rendimento dai dati del periodo scelto ([#359](https://github.com/YonderUrik/buddy-budget/issues/359)) ([ee4e77e](https://github.com/YonderUrik/buddy-budget/commit/ee4e77ed57ac36003480e26f3885f2e690c376eb))
+
+## [0.66.0](https://github.com/YonderUrik/buddy-budget/compare/v0.65.0...v0.66.0) (2026-10-12)
+
+
+### Novità
+
+* pagina d'errore per le schermate e errori del browser nei log ([#357](https://github.com/YonderUrik/buddy-budget/issues/357)) ([fd62455](https://github.com/YonderUrik/buddy-budget/commit/fd62455ce685e1695685c04ff31a2215fe5e5ff4))
+
+## [0.65.0](https://github.com/YonderUrik/buddy-budget/compare/v0.64.0...v0.65.0) (2026-10-12)
+
+
+### Novità
+
+* loghi degli esercenti in Movimenti, Abbonamenti e Regole ([#355](https://github.com/YonderUrik/buddy-budget/issues/355)) ([42d2d37](https://github.com/YonderUrik/buddy-budget/commit/42d2d3786671410ff3a2d6e78f35b7d6ecb0de1f))
+
+## [0.64.0](https://github.com/YonderUrik/buddy-budget/compare/v0.63.0...v0.64.0) (2026-10-12)
+
+
+### Novità
+
+* categorie sicure da sole, Ricategorizza e loghi degli esercenti ([#351](https://github.com/YonderUrik/buddy-budget/issues/351)) ([7c98127](https://github.com/YonderUrik/buddy-budget/commit/7c981277ae4f4a108d4619ee92ca77cf004fae35))
+* **landing:** accende i testi sulla cifratura di descrizioni e note ([#349](https://github.com/YonderUrik/buddy-budget/issues/349)) ([74a3ac5](https://github.com/YonderUrik/buddy-budget/commit/74a3ac5491c0101ba3701e9cef5e1c030ec3f40e))
+* rendimento atteso di Analitiche dallo storico degli ultimi 24 mesi, cursore fino al 50% ([#353](https://github.com/YonderUrik/buddy-budget/issues/353)) ([fd3bdcb](https://github.com/YonderUrik/buddy-budget/commit/fd3bdcb2ffc48213e8caee7828fc609abd2ffed1))
+
+
+### Correzioni
+
+* «Fissa il tuo traguardo» nei Primi passi apre un foglio con una sola cifra ([#348](https://github.com/YonderUrik/buddy-budget/issues/348)) ([e490aa1](https://github.com/YonderUrik/buddy-budget/commit/e490aa1fb47482a02b114e3a0ad809f2b0aa780d))
+* la pulizia GoCardless elimina le requisition nostre rimaste senza riga e i tentativi collegati senza conti ([#352](https://github.com/YonderUrik/buddy-budget/issues/352)) ([c8ac7ed](https://github.com/YonderUrik/buddy-budget/commit/c8ac7edac9f422e50dcd0a62e7a26a0e30f92edf))
+
 ## [0.63.0](https://github.com/YonderUrik/buddy-budget/compare/v0.62.0...v0.63.0) (2026-10-12)
 
 

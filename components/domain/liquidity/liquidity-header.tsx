@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Testata di Liquidità: titolo (su telefono è il selettore delle viste), sottotitolo, pulsante "Aggiungi" e le schede della sezione. */
 
@@ -19,12 +20,13 @@ export interface LiquidityHeaderProps {
 }
 
 export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, onAddAccount, onImport }: LiquidityHeaderProps) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <SectionHeading
-          title="Liquidità"
-          subtitle={subtitle}
+          title={tr("Liquidità")}
+          subtitle={tr(subtitle)}
           tabs={tabs}
           activeHref={activeHref}
           analyticsKey="liquidita"
@@ -32,24 +34,21 @@ export function LiquidityHeader({ subtitle, tabs, activeHref, onAddTransaction, 
           subtitleClassName="text-text-2"
         />
         <DropdownMenu>
-          <DropdownMenuTrigger className={cn(buttonVariants(), "h-11 shrink-0 cursor-pointer gap-1.5 px-4 text-sm shadow-xs")} aria-label="Aggiungi">
+          <DropdownMenuTrigger className={cn(buttonVariants(), "h-11 shrink-0 cursor-pointer gap-1.5 px-4 text-sm shadow-xs")} aria-label={tr("Aggiungi")}>
             <PlusIcon className="size-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Aggiungi</span>
+            <span className="hidden sm:inline">{tr("Aggiungi")}</span>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-60">
             <DropdownMenuItem className="min-h-11 gap-2" onClick={onAddTransaction}>
-              <ReceiptTextIcon className="size-4" aria-hidden="true" /> Un movimento
-            </DropdownMenuItem>
+              <ReceiptTextIcon className="size-4" aria-hidden="true" />{" "}{tr("Un movimento")}</DropdownMenuItem>
             <DropdownMenuItem className="min-h-11 gap-2" onClick={onAddAccount}>
-              <LandmarkIcon className="size-4" aria-hidden="true" /> Un conto o una banca
-            </DropdownMenuItem>
+              <LandmarkIcon className="size-4" aria-hidden="true" />{" "}{tr("Un conto o una banca")}</DropdownMenuItem>
             <DropdownMenuItem className="min-h-11 gap-2" onClick={onImport}>
-              <FileSpreadsheetIcon className="size-4" aria-hidden="true" /> Importa da CSV o Excel
-            </DropdownMenuItem>
+              <FileSpreadsheetIcon className="size-4" aria-hidden="true" />{" "}{tr("Importa da CSV o Excel")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <SectionTabs tabs={tabs} activeHref={activeHref} ariaLabel="Sezioni di Liquidità" />
+      <SectionTabs tabs={tabs} activeHref={activeHref} ariaLabel={tr("Sezioni di Liquidità")} />
     </div>
   );
 }

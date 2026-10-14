@@ -1,9 +1,12 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga di un gruppo di transazioni (stesso merchant) nella pagina di revisione categorizzazione.
- * Layout a colonna unica dopo la checkbox, così resta leggibile anche su mobile: nome e totale,
- * poi categoria + "Dividi", poi il perché della proposta e il dettaglio delle transazioni a richiesta.
+ * Layout a colonna unica dopo la checkbox, così resta leggibile anche su mobile: logo, nome, quando e totale,
+ * poi categoria + "Dividi", poi il perché della proposta e il dettaglio dei movimenti a richiesta.
  */
 
 import * as React from "react";
@@ -15,9 +18,12 @@ import { CategoryPicker } from "@/components/domain/categories";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
-import { formatCurrency } from "@/lib/format";
+import { localizedCategorizationText } from "@/lib/categorization/origin";
+
 import { cn } from "@/lib/utils";
-import { SuggestionSourceBadge } from "./suggestion-source-badge";
+import { MerchantLogo } from "./merchant-logo";
+import { MovementsPreview } from "./movements-preview";
+import { SuggestionOrigin } from "./suggestion-origin";
 
 export interface CategorizeGroupRowProps {
   group: SuggestionGroup;
@@ -33,11 +39,13 @@ export interface CategorizeGroupRowProps {
   onToggleSelected: (selected: boolean) => void;
   onCategoryChange: (categoryId: string) => void;
   onExcludedPercentageChange: (value: number) => void;
+  /** Chiamata quando la riga mostra un logo remoto (per citare la fonte dei loghi). */
+  onRemoteLogo?: () => void;
 }
 
-/** Numero di transazioni del gruppo con singolare/plurale corretto. */
-function transactionCountLabel(count: number): string {
-  return count === 1 ? "1 transazione" : `${count} transazioni`;
+/** Numero di movimenti del gruppo con singolare/plurale corretto. */
+function movementCountLabel(count: number): string {
+  return count === 1 ? "1 movimento" : `${count} movimenti`;
 }
 
 export function CategorizeGroupRow({
@@ -52,7 +60,14 @@ export function CategorizeGroupRow({
   onToggleSelected,
   onCategoryChange,
   onExcludedPercentageChange,
+  onRemoteLogo,
 }: CategorizeGroupRowProps) {
+  const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [expanded, setExpanded] = React.useState(false);
   const [splitOpen, setSplitOpen] = React.useState(false);
   const detailsId = React.useId();
@@ -77,14 +92,21 @@ export function CategorizeGroupRow({
         checked={selected}
         disabled={Boolean(disabledReason)}
         title={disabledReason}
-        aria-label={`Seleziona ${group.label}`}
+        aria-label={tr("Seleziona {0}", {0: group.label})}
         onCheckedChange={(checked) => onToggleSelected(checked === true)}
         className="mt-0.5"
       />
 
+      <MerchantLogo name={group.label} logoPath={group.logoPath} size="sm" onRemoteLogo={onRemoteLogo} className="-mt-0.5" />
+
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
-          <p className="line-clamp-2 min-w-0 text-sm font-medium break-words text-foreground">{group.label}</p>
+          <div className="flex min-w-0 flex-col">
+            <p className="line-clamp-2 min-w-0 text-sm font-medium break-words text-foreground">{group.label}</p>
+            <p className="text-xs text-muted-foreground tabular-nums">
+              {movementCountLabel(group.transactionIds.length)} {"·"}{dateRangeLabel(group.transactionDates)}
+            </p>
+          </div>
           <span className={cn("shrink-0 text-sm font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>
             {formatCurrency(group.totalAmount, currency)}
           </span>
@@ -96,7 +118,7 @@ export function CategorizeGroupRow({
             value={categoryId}
             onValueChange={onCategoryChange}
             usage={categoryUsage}
-            placeholder="Scegli categoria"
+            placeholder={tr("Scegli categoria")}
             className="min-w-0 flex-1 data-[size=default]:h-9 sm:w-60 sm:flex-none sm:data-[size=default]:h-8"
           />
           <Button
@@ -106,23 +128,19 @@ export function CategorizeGroupRow({
             onClick={() => setSplitOpen((v) => !v)}
             aria-pressed={splitOpen}
             className="h-9 shrink-0 sm:h-8"
-            title="Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)"
-          >
-            Dividi
-            {excludedPercentage > 0 && ` · ${Math.round(excludedPercentage * 100)}%`}
+            title={tr("Escludi una parte dell'importo dal conteggio (quote di altri, rimborsi, giroconti)")}
+          >{tr("Dividi")}{excludedPercentage > 0 && ` · ${Math.round(excludedPercentage * 100)}%`}
           </Button>
         </div>
 
         {disabledReason ? (
           <p className="text-xs text-muted-foreground">{disabledReason}</p>
         ) : (
-          group.suggestion && <SuggestionSourceBadge suggestion={group.suggestion} />
+          group.suggestion && <SuggestionOrigin suggestion={group.suggestion} />
         )}
 
         {group.hasDivergentSuggestions && (
-          <p className="text-xs text-neg">
-            Le transazioni di questo gruppo avevano proposte diverse — controlla prima di applicare.
-          </p>
+          <p className="text-xs text-neg">{tr("Le transazioni di questo gruppo avevano proposte diverse — controlla prima di applicare.")}</p>
         )}
 
         {splitOpen && (
@@ -132,16 +150,16 @@ export function CategorizeGroupRow({
               min={0}
               max={100}
               step={1}
-              aria-label="Quota esclusa dal conteggio"
+              aria-label={tr("Quota esclusa dal conteggio")}
               onValueChange={(value) => {
                 const next = Array.isArray(value) ? value[0] : value;
                 onExcludedPercentageChange(next / 100);
               }}
             />
             <div className="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
-              <span>Esclusa dal conteggio: {Math.round(excludedPercentage * 100)}%</span>
+              <span>{tr("Esclusa dal conteggio:")}{" "}{Math.round(excludedPercentage * 100)}{"%"}</span>
               <span>
-                {isIncome ? "Entrata effettiva" : "Spesa effettiva"}:{" "}
+                {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}{":"}{" "}
                 {formatCurrency(group.totalAmount * (1 - excludedPercentage), currency)}
               </span>
             </div>
@@ -155,18 +173,21 @@ export function CategorizeGroupRow({
           aria-controls={detailsId}
           className="-my-1 flex w-fit items-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          {expanded ? "Nascondi" : "Mostra"} {transactionCountLabel(group.transactionIds.length)}
+          {expanded ? tr("Nascondi") : tr("Mostra")}{" "}{group.transactionIds.length === 1 ? tr("il movimento") : tr("i {0} movimenti", { 0: group.transactionIds.length })}
           <ChevronDownIcon className={cn("size-3.5 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
         </button>
 
         {expanded && (
-          <ul id={detailsId} className="flex flex-col gap-1 border-l border-border pl-3 text-xs text-muted-foreground">
-            {group.transactionDescriptions.map((description, index) => (
-              <li key={group.transactionIds[index]} className="break-words">
-                {description}
-              </li>
-            ))}
-          </ul>
+          <div id={detailsId} className="border-l border-border pl-3">
+            <MovementsPreview
+              label={group.label}
+              dates={group.transactionDates}
+              amounts={group.transactionAmounts}
+              descriptions={group.transactionDescriptions}
+              currency={currency}
+              limit={group.transactionIds.length}
+            />
+          </div>
         )}
       </div>
     </div>

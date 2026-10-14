@@ -1,11 +1,16 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
-/** Un movimento con i suoi comportamenti: cambio categoria dall'icona, Dividi, nota e (per i manuali) modifica ed elimina. */
+/**
+ * Un movimento con i suoi comportamenti: cambio categoria dall'icona, Dividi, nota e (per i manuali) modifica ed elimina.
+ * Se c'è il logo dell'esercente prende il posto dell'icona, che resta piccola nell'angolo (si tocca sempre lì per cambiarla).
+ */
 
 import * as React from "react";
 import { PencilIcon, SplitIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { CategoryAvatar } from "@/components/domain/categories";
+import { AutoOriginBadge, MerchantLogo, useRuleSavedFeedback } from "@/components/domain/categorization";
 import { TransactionEditPanel, TransactionNotePopover } from "@/components/domain/expenses";
 import { InlineOrSheet } from "@/components/domain/shared";
 import {
@@ -23,9 +28,9 @@ import { track } from "@/lib/analytics";
 import { merchantKey } from "@/lib/categorization/merchant-key";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { Category } from "@/lib/db/schema/categories";
-import type { Transaction } from "@/lib/db/schema/transactions";
+import { isAutomaticCategorySource } from "@/lib/categorization/category-source";
 import { useCreateRuleMutation } from "@/lib/queries/categorization";
-import { useDeleteTransactionMutation, useUpdateTransactionMutation } from "@/lib/queries/transactions";
+import { useDeleteTransactionMutation, useUpdateTransactionMutation, type ListedTransaction } from "@/lib/queries/transactions";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { cn } from "@/lib/utils";
 import { CategorySheet } from "./category-sheet";
@@ -33,22 +38,38 @@ import { MovementRow } from "./movement-row";
 import { SplitPanel } from "./split-panel";
 
 export interface MovementItemProps {
-  transaction: Transaction;
+  /** Il movimento, con `logoPath` se il server ha trovato il logo dell'esercente. */
+  transaction: ListedTransaction;
   categories: readonly Category[];
   usage?: CategoryUsageCounts;
   accountName?: string;
   currency: string;
+  /** Chiamata quando la riga mostra il logo dell'esercente (per citare la fonte dei loghi sotto l'elenco). */
+  onRemoteLogo?: () => void;
 }
 
 type Panel = "none" | "split" | "edit";
 
-export function MovementItem({ transaction, categories, usage, accountName, currency }: MovementItemProps) {
+/** Messaggio dopo «Ricordala» quando la regola ha già sistemato altri movimenti da categorizzare. */
+function rememberedMessage(applied: number, categoryName: string): string {
+  return applied === 1 ? `Messo in ${categoryName} anche un altro movimento` : `Messi in ${categoryName} anche altri ${applied} movimenti`;
+}
+
+/** Icona della categoria alla misura richiesta. */
+function categoryAvatar(category: Category, className: string, iconSize: number) {
+  return <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={iconSize} className={className} />;
+}
+
+export function MovementItem({ transaction, categories, usage, accountName, currency, onRemoteLogo }: MovementItemProps) {
+  const { t: tr } = useLocalization();
   const update = useUpdateTransactionMutation();
   const remove = useDeleteTransactionMutation();
   const createRule = useCreateRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
   const [panel, setPanel] = React.useState<Panel>("none");
   const [actionsOpen, setActionsOpen] = React.useState(false);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [logoShown, setLogoShown] = React.useState(false);
 
   const full = Math.abs(Number(transaction.amount));
   const excluded = Math.abs(Number(transaction.excludedAmount));
@@ -61,6 +82,9 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
     [categories, isIncome]
   );
   const hasRaw = transaction.rawDescription && transaction.rawDescription !== transaction.description;
+  // Categoria messa da sola (regola, scelte passate, AI): lo si dice accanto al nome, così si sa cosa controllare.
+  const autoSource = isAutomaticCategorySource(transaction.categorySource) ? transaction.categorySource : undefined;
+  const autoConfidence = transaction.categoryConfidence === null ? null : Number(transaction.categoryConfidence);
 
   function chooseCategory(categoryId: string, remember: boolean) {
     const previous = transaction.categoryId;
@@ -70,9 +94,16 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
       {
         onSuccess: () => {
           track("liquidity_category_remembered", { remembered: remember });
-          if (remember) createRule.mutate({ matchType: "merchant", pattern: merchantKey(transaction.description), categoryId });
-          toast.success(`Spostata in ${name}`, {
-            action: { label: "Annulla", onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
+          if (autoSource) track("categorization_auto_corrected", { source: autoSource, count: 1, remember, from: "movimenti" });
+          // Se c'è già una regola per questo esercente, prende la categoria nuova: altrimenti i prossimi tornerebbero nella vecchia.
+          if (remember) {
+            createRule.mutate(
+              { matchType: "merchant", pattern: merchantKey(transaction.description), categoryId, replaceExisting: true },
+              { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name) : undefined) }
+            );
+          }
+          toast.success(tr("Spostata in {0}", { 0: name }), {
+            action: { label: tr("Annulla"), onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
           });
         },
       }
@@ -101,9 +132,24 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         <button
           type="button"
           aria-label={`Categoria: ${category.name}. Tocca per cambiarla`}
-          className="size-11 shrink-0 rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="relative size-11 shrink-0 rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={19} className="size-11" />
+          {transaction.logoPath ? (
+            <MerchantLogo
+              name={transaction.description}
+              logoPath={transaction.logoPath}
+              fallback={categoryAvatar(category, "size-11", 19)}
+              onRemoteLogo={() => {
+                setLogoShown(true);
+                onRemoteLogo?.();
+              }}
+            />
+          ) : (
+            categoryAvatar(category, "size-11", 19)
+          )}
+          {logoShown && transaction.logoPath ? (
+            <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-px">{categoryAvatar(category, "size-5", 11)}</span>
+          ) : null}
         </button>
       }
     />
@@ -118,6 +164,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
         description={transaction.description}
         rawDescription={hasRaw ? (transaction.rawDescription ?? undefined) : undefined}
         categoryName={category?.name ?? "Senza categoria"}
+        categoryOrigin={autoSource && !uncategorized ? <AutoOriginBadge source={autoSource} confidence={autoConfidence} compact className="align-[-0.15em]" /> : undefined}
         uncategorized={uncategorized}
         accountName={accountName}
         amount={full - excluded}
@@ -137,27 +184,24 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
       {actionsOpen && (
         <div id={`azioni-${transaction.id}`} className="flex flex-wrap items-center gap-1 px-2 pb-2">
           {category?.type !== "trasferimento" && <button type="button" className={cn(actionButton, "sm:hidden")} onClick={() => setPanel("split")}>
-            <SplitIcon className="size-4" aria-hidden="true" /> Dividi
-          </button>}
+            <SplitIcon className="size-4" aria-hidden="true" />{" "}{tr("Dividi")}</button>}
           <TransactionNotePopover transaction={transaction} />
           {!isAuto && (
             <>
               <button type="button" className={actionButton} onClick={() => setPanel((p) => (p === "edit" ? "none" : "edit"))}>
-                <PencilIcon className="size-4" aria-hidden="true" /> Modifica
-              </button>
+                <PencilIcon className="size-4" aria-hidden="true" />{" "}{tr("Modifica")}</button>
               <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
                 <AlertDialogTrigger className={cn(actionButton, "hover:bg-destructive/10 hover:text-destructive")}>
-                  <Trash2Icon className="size-4" aria-hidden="true" /> Elimina
-                </AlertDialogTrigger>
+                  <Trash2Icon className="size-4" aria-hidden="true" />{" "}{tr("Elimina")}</AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Eliminare questo movimento?</AlertDialogTitle>
-                    <AlertDialogDescription>«{transaction.description}» verrà eliminato definitivamente.</AlertDialogDescription>
+                    <AlertDialogTitle>{tr("Eliminare questo movimento?")}</AlertDialogTitle>
+                    <AlertDialogDescription>{"«"}{transaction.description}{tr("» verrà eliminato definitivamente.")}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                    <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
                     <AlertDialogAction disabled={remove.isPending} onClick={() => remove.mutate(transaction.id, { onSuccess: () => setConfirmOpen(false) })}>
-                      {remove.isPending ? "Eliminazione…" : "Elimina"}
+                      {remove.isPending ? tr("Eliminazione…") : tr("Elimina")}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -166,7 +210,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
           )}
         </div>
       )}
-      <InlineOrSheet open={panel === "split"} onOpenChange={(open) => !open && setPanel("none")} title={`Dividi ${transaction.description}`}>
+      <InlineOrSheet open={panel === "split"} onOpenChange={(open) => !open && setPanel("none")} title={tr("Dividi {0}", {0: transaction.description})}>
         {(layout) => (
           <SplitPanel
             title={transaction.description}
@@ -181,7 +225,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
           />
         )}
       </InlineOrSheet>
-      <InlineOrSheet open={panel === "edit"} onOpenChange={(open) => !open && setPanel("none")} title="Modifica movimento" showTitle>
+      <InlineOrSheet open={panel === "edit"} onOpenChange={(open) => !open && setPanel("none")} title={tr("Modifica movimento")} showTitle>
         {(layout) => (
           <TransactionEditPanel
             transaction={transaction}

@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Sezione principale di Investimenti (senza riquadro, come la Panoramica): valore di oggi, la sua lettura in parole ("hai pagato X, il mercato ha aggiunto Y"),
@@ -20,7 +23,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/
 import { parseDateOnly } from "@/lib/calc/expenses";
 import type { PortfolioSeriesPoint, PortfolioSummary } from "@/lib/calc/investments";
 import type { ValueBreakdown } from "@/lib/investments/insights";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 import { ValueBreakdownBar } from "./value-breakdown-bar";
 
@@ -33,21 +36,26 @@ const CHART_CONFIG = {
 const CHART_DOMAIN_LOW = 0.9;
 const CHART_DOMAIN_HIGH = 1.01;
 const AREA_FILL_ID = "portfolio-hero-fill";
-const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
+
 
 function pctText(ratio: number): string {
   return `${ratio < 0 ? "−" : "+"}${Math.abs(ratio * 100).toFixed(1).replace(".", ",")}%`;
 }
 
 function Tooltip({ active, payload, currency }: { active?: boolean; payload?: { payload: PortfolioSeriesPoint }[]; currency: string }) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+  const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", year: "numeric" });
+
+  const { t: tr } = useLocalization();
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
   const diff = point.value - point.invested;
   return (
     <div className="rounded-lg border bg-background px-3 py-2 text-xs shadow-sm">
       <p className="text-muted-foreground">{TOOLTIP_DATE_FORMAT.format(parseDateOnly(point.date))}</p>
-      <p className="tabular-nums text-foreground">Valore {formatCurrency(point.value, currency)}</p>
-      <p className="tabular-nums text-muted-foreground">Versato {formatCurrency(point.invested, currency)}</p>
+      <p className="tabular-nums text-foreground">{tr("Valore")}{" "}{formatCurrency(point.value, currency)}</p>
+      <p className="tabular-nums text-muted-foreground">{tr("Versato")}{" "}{formatCurrency(point.invested, currency)}</p>
       <p className={cn("tabular-nums", diff < 0 ? "text-neg" : "text-pos")}>
         {diff < 0 ? "−" : "+"}
         {formatCurrency(Math.abs(diff), currency)}
@@ -74,6 +82,10 @@ export interface PortfolioHeroCardProps extends Omit<PortfolioPeriodSelectorProp
 }
 
 export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFees = true, includeTaxes = true, onIncludeFeesChange, onIncludeTaxesChange, summary, breakdown, series, period, onPeriodChange, range, today, onRangeChange, currency }: PortfolioHeroCardProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const format = (amount: number) => formatCurrency(amount, currency, { maximumFractionDigits: 0 });
   const simulation = simulateCostExclusions(costImpact, series, summary.totalValue, includeFees, includeTaxes);
   const cashTotal = cash.reduce((total, account) => total + account.balance, 0);
@@ -88,46 +100,39 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
     <section aria-labelledby="portfolio-hero-title" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3 max-sm:order-1">
         <div className="space-y-1">
-          <h2 id="portfolio-hero-title" className="text-base font-medium text-muted-foreground">Il tuo portafoglio</h2>
+          <h2 id="portfolio-hero-title" className="text-base font-medium text-muted-foreground">{tr("Il tuo portafoglio")}</h2>
           <MoneyHero value={displayedValue} currency={currency} className="text-5xl sm:text-6xl" />
           {!simulation.active && summary.dayChange !== null && summary.dayChangePct !== null ? (
             <p className={cn("font-mono text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
               {summary.dayChange < 0 ? <TrendingDownIcon className="mr-1 inline size-4" aria-hidden="true" /> : <TrendingUpIcon className="mr-1 inline size-4" aria-hidden="true" />}
               {summary.dayChange < 0 ? "−" : "+"}
-              {format(Math.abs(summary.dayChange))} ({pctText(summary.dayChangePct)})
-              <span className="font-sans text-muted-foreground"> dall&apos;ultima chiusura</span>
+              {format(Math.abs(summary.dayChange))} {"("}{pctText(summary.dayChangePct)}{")"}<span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
             </p>
           ) : null}
           {cash.length > 0 ? (
-            <p className="text-sm text-muted-foreground">Solo titoli. In più hai {format(cashTotal)} di liquidità sui broker (totale {format(summary.totalValue + cashTotal)}).</p>
+            <p className="text-sm text-muted-foreground">{tr("Solo titoli. In più hai")}{" "}{format(cashTotal)}{" "}{tr("di liquidità sui broker (totale")}{" "}{format(summary.totalValue + cashTotal)}{")."}</p>
           ) : null}
-          {simulation.active ? <p className="text-sm text-muted-foreground">Simulazione · {simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)} rispetto al valore registrato.</p> : null}
+          {simulation.active ? <p className="text-sm text-muted-foreground">{tr("Simulazione ·")}{" "}{simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)}{" "}{tr("rispetto al valore registrato.")}</p> : null}
         </div>
       </div>
       {!simulation.active ? (
         <div className="flex max-w-3xl flex-col gap-3 max-sm:order-4">
           {showPeriodGain && periodGain ? <PeriodGainSummary gain={periodGain} currency={currency} /> : (
-          <p className="max-w-prose text-balance text-base text-foreground">
-            Per quello che possiedi hai pagato <span className="font-semibold tabular-nums">{format(breakdown.paid)}</span>: il mercato ha{" "}
-            {gaining ? "aggiunto" : "tolto"}{" "}
+          <p className="max-w-prose text-balance text-base text-foreground">{tr("Per quello che possiedi hai pagato")}{" "}<span className="font-semibold tabular-nums">{format(breakdown.paid)}</span>{tr(": il mercato ha")}{" "}
+            {gaining ? tr("aggiunto") : tr("tolto")}{" "}
             <span className={cn("font-semibold tabular-nums", gaining ? "text-pos" : "text-neg")}>
               {gaining ? "+" : "−"}
               {format(Math.abs(breakdown.market))}
               {marketPct !== null ? ` (${pctText(marketPct)})` : ""}
             </span>
-            .
-            {breakdown.cashedIn !== 0 ? (
+            {"."}{breakdown.cashedIn !== 0 ? (
               <span className="text-muted-foreground">
-                {" "}
-                Hai già {breakdown.cashedIn > 0 ? "incassato" : "perso"} {format(Math.abs(breakdown.cashedIn))} tra vendite, dividendi e cedole.
-              </span>
+                {" "}{tr("Hai già")}{" "}{breakdown.cashedIn > 0 ? tr("incassato") : tr("perso")}{" "}{format(Math.abs(breakdown.cashedIn))}{" "}{tr("tra vendite, dividendi e cedole.")}</span>
             ) : null}
             {summary.unpricedCount > 0 ? (
               <span className="text-muted-foreground">
                 {" "}
-                {summary.unpricedCount === 1 ? "Uno strumento non ha" : `${summary.unpricedCount} strumenti non hanno`} ancora un prezzo e
-                non è contato.
-              </span>
+                {summary.unpricedCount === 1 ? tr("Uno strumento non ha") : tr("{0} strumenti non hanno", {0: summary.unpricedCount})}{" "}{tr("ancora un prezzo e non è contato.")}</span>
             ) : null}
           </p>
           )}
@@ -156,20 +161,18 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
           </div>
           <p className="flex justify-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <span className="h-0.5 w-4 rounded-full bg-primary" aria-hidden="true" /> Valore{simulation.active ? " simulato" : ""}
+              <span className="h-0.5 w-4 rounded-full bg-primary" aria-hidden="true" />{" "}{tr("Valore")}{simulation.active ? tr(" simulato") : ""}
             </span>
             {simulation.active ? (
               <span className="flex items-center gap-1.5">
-                <span className="h-0.5 w-4 rounded-full bg-foreground" aria-hidden="true" /> Valore registrato (senza simulazione)
-              </span>
+                <span className="h-0.5 w-4 rounded-full bg-foreground" aria-hidden="true" />{" "}{tr("Valore registrato (senza simulazione)")}</span>
             ) : null}
             <span className="flex items-center gap-1.5">
-              <span className="w-4 border-t border-dashed border-muted-foreground" aria-hidden="true" /> Versato (acquisti meno vendite)
-            </span>
+              <span className="w-4 border-t border-dashed border-muted-foreground" aria-hidden="true" />{" "}{tr("Versato (acquisti meno vendite)")}</span>
           </p>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground max-sm:order-2">Nessun dato disponibile nel periodo selezionato.</p>
+        <p className="text-sm text-muted-foreground max-sm:order-2">{tr("Nessun dato disponibile nel periodo selezionato.")}</p>
       )}
       <div className="flex flex-wrap items-start justify-center gap-x-3 gap-y-2 max-sm:order-3">
         <PortfolioPeriodSelector value={period} onChange={onPeriodChange} range={range} today={today} onRangeChange={onRangeChange} />

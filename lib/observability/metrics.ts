@@ -3,6 +3,7 @@ import { APP_BUILD_INFO } from "@/lib/app-version";
 import type { ProviderId } from "@/lib/db/schema/investments";
 import type { FxProviderId, ProviderOutcome } from "@/lib/market-data/types";
 import type { MerchantNameSource } from "@/lib/categorization/merchant-name";
+import type { ClientErrorArea, ClientErrorKind } from "@/lib/client-errors";
 
 /** Prefisso comune di tutte le metriche applicative. */
 export const METRIC_PREFIX = "buddybudget_";
@@ -17,6 +18,8 @@ export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
 export type SupportReportOutcome = "sent" | "failed" | "rate_limited";
+/** Esito della ricezione di un errore del browser: registrato o scartato per il limite per utente. */
+export type ClientErrorOutcome = "reported" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
 /** Scelte dell'utente sugli abbonamenti (enum chiuso, mai il nome dell'abbonamento). */
 export type SubscriptionAction = "confirmed" | "excluded" | "ended" | "restored" | "added" | "updated" | "removed";
@@ -72,6 +75,8 @@ export type CleanupAction =
   | "expired_connection"
   | "unknown_requisition"
   | "unknown_agreement"
+  | "stale_requisition"
+  | "approved_requisition"
   | "skipped_linked"
   | "capped"
   | "failed";
@@ -141,11 +146,13 @@ interface MetricsState {
   cronRuns: Counter<"cron" | "outcome">;
   authEvents: Counter<"event">;
   supportReports: Counter<"kind" | "outcome">;
+  clientErrors: Counter<"kind" | "area" | "outcome">;
   subscriptionActions: Counter<"action">;
   subscriptionsDetect: Histogram<string>;
   categorizationAiRequests: Counter<"outcome">;
   categorizationAiDuration: Histogram<string>;
   categorizationSuggestions: Counter<"event">;
+  categorizationAuto: Counter<"source" | "event">;
   priceProvider: Counter<"provider" | "outcome">;
   logoRequests: Counter<"source" | "outcome">;
   fundamentalsRequests: Counter<"kind" | "outcome">;
@@ -237,6 +244,13 @@ function createState(): MetricsState {
     registers: r,
   });
 
+  state.clientErrors = new Counter({
+    name: `${METRIC_PREFIX}client_errors_total`,
+    help: "Errori del browser (pagine che si rompono) per tipo (sezione, globale), area dell'app ed esito (reported, rate_limited).",
+    labelNames: ["kind", "area", "outcome"],
+    registers: r,
+  });
+
   state.subscriptionActions = new Counter({
     name: `${METRIC_PREFIX}subscription_actions_total`,
     help: "Scelte degli utenti sugli abbonamenti (confermato, escluso, terminato, ripristinato, aggiunto, modificato, rimosso).",
@@ -268,6 +282,12 @@ function createState(): MetricsState {
     labelNames: ["event"],
     registers: r,
   });
+  state.categorizationAuto = new Counter({
+    name: `${METRIC_PREFIX}categorization_auto_total`,
+    help: "Movimenti categorizzati da soli (regole e proposte sicure dal 90%), poi corretti dall'utente, ricategorizzati con «Ricategorizza» e riportati indietro con l'annulla, per origine.",
+    labelNames: ["source", "event"],
+    registers: r,
+  });
 
   state.priceProvider = new Counter({
     name: `${METRIC_PREFIX}price_provider_requests_total`,
@@ -278,7 +298,7 @@ function createState(): MetricsState {
 
   state.logoRequests = new Counter({
     name: `${METRIC_PREFIX}logo_requests_total`,
-    help: "Richieste al servizio di loghi degli strumenti non servite dalla cache, per origine (issuer, isin) ed esito (hit, miss, error).",
+    help: "Richieste al servizio di loghi (strumenti ed esercenti) non servite dalla cache, per origine (issuer, isin, merchant, merchant_search = ricerca per nome) ed esito (hit, miss, error, skipped).",
     labelNames: ["source", "outcome"],
     registers: r,
   });
@@ -558,6 +578,11 @@ export function recordSupportReport(kind: SupportReportKind, outcome: SupportRep
   metrics().supportReports.inc({ kind, outcome });
 }
 
+/** Registra un errore del browser ricevuto da `POST /api/client-errors`. */
+export function recordClientError(kind: ClientErrorKind, area: ClientErrorArea, outcome: ClientErrorOutcome): void {
+  metrics().clientErrors.inc({ kind, area, outcome });
+}
+
 /** Registra una scelta dell'utente sugli abbonamenti. */
 export function recordSubscriptionAction(action: SubscriptionAction): void {
   metrics().subscriptionActions.inc({ action });
@@ -578,6 +603,29 @@ export function recordCategorizationAiRequest(outcome: "ok" | "error", durationM
   m.categorizationAiDuration.observe(durationMs / 1000);
 }
 
+/** Origine di una categoria applicata da sola (enum chiuso, come `AUTOMATIC_CATEGORY_SOURCES`). */
+export type AutoCategorySource = "regola" | "storico" | "assistente";
+
+/** Registra `count` movimenti categorizzati da soli per origine. */
+export function recordCategorizationAutoApplied(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "applied" }, count);
+}
+
+/** Registra `count` movimenti categorizzati da soli che l'utente ha poi spostato in un'altra categoria. */
+export function recordCategorizationAutoCorrected(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "corrected" }, count);
+}
+
+/** Registra `count` movimenti già categorizzati spostati da «Ricategorizza», per origine della nuova categoria. */
+export function recordCategorizationRecategorized(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "recategorized" }, count);
+}
+
+/** Registra `count` movimenti riportati com'erano dall'annulla di «Ricategorizza», per origine che avevano ricevuto. */
+export function recordCategorizationRecategorizeUndone(source: AutoCategorySource, count: number): void {
+  if (count > 0) metrics().categorizationAuto.inc({ source, event: "recategorize_undone" }, count);
+}
+
 /** Registra `count` proposte di categoria per un evento (salvate, bloccate dal filtro, confermate, corrette). */
 export function recordCategorizationSuggestions(event: CategorizationSuggestionEvent, count: number): void {
   if (count > 0) metrics().categorizationSuggestions.inc({ event }, count);
@@ -589,8 +637,9 @@ export function recordPriceProviderRequest(provider: ProviderId, outcome: Provid
 }
 
 /** Origine ed esito di una richiesta al servizio di loghi. */
-export type LogoSourceKind = "issuer" | "isin";
-export type LogoRequestOutcome = "hit" | "miss" | "error";
+export type LogoSourceKind = "issuer" | "isin" | "merchant" | "merchant_search";
+/** `skipped`: ricerca per nome non fatta perché il budget del giorno è finito. */
+export type LogoRequestOutcome = "hit" | "miss" | "error" | "skipped";
 
 /** Registra una richiesta al servizio di loghi che non è stata servita dalla cache. */
 export function recordLogoRequest(source: LogoSourceKind, outcome: LogoRequestOutcome): void {

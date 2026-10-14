@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dettaglio di un abbonamento: importo e cadenza, perché il rilevamento lo propone, storico degli addebiti e le scelte
@@ -15,10 +18,10 @@ import { Dialog } from "@/components/ui/dialog";
 import type { SubscriptionCadence } from "@/lib/calc/subscriptions";
 import type { Category } from "@/lib/db/schema/categories";
 import { parseAmount } from "@/lib/debts/add-form";
-import { formatCurrency, formatDateWithYear } from "@/lib/format";
+
 import { useDeleteSubscriptionMutation, useSaveSubscriptionMutation, useUpdateSubscriptionMutation } from "@/lib/queries/subscriptions";
 import type { SubscriptionItem } from "@/lib/subscriptions/view";
-import { itemHint, reasonSentence } from "./subscriptions-format";
+import { localizedSubscriptionFormats } from "./subscriptions-format";
 import { CadenceSelect, Field, Input, SubscriptionCategoryField } from "./subscription-fields";
 
 /** Quanti addebiti dello storico si mostrano (i più recenti). */
@@ -34,13 +37,19 @@ export interface SubscriptionDetailDialogProps {
 }
 
 function Details({ item, currency, today, categories, onDone }: Omit<SubscriptionDetailDialogProps, "onOpenChange"> & { item: SubscriptionItem; onDone: () => void }) {
+  const { itemHint, reasonSentence } = localizedSubscriptionFormats(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const save = useSaveSubscriptionMutation();
   const update = useUpdateSubscriptionMutation();
   const remove = useDeleteSubscriptionMutation();
   const id = React.useId();
   const manual = item.origin === "manuale";
   const [name, setName] = React.useState(item.name);
-  const [amount, setAmount] = React.useState(item.amount !== null ? item.amount.toFixed(2).replace(".", ",") : "");
+  const [amount, setAmount] = React.useState(item.amount !== null ? new Intl.NumberFormat(formattingLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(item.amount) : "");
   const [cadence, setCadence] = React.useState<SubscriptionCadence>(item.cadence ?? "mensile");
   const [nextDate, setNextDate] = React.useState(item.nextDate ?? today);
   const [categoryId, setCategoryId] = React.useState(item.categoryId ?? "");
@@ -52,7 +61,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
   function decide(status: "confermato" | "escluso" | "terminato") {
     setError(null);
     if (item.id) return update.mutate({ id: item.id, input: { status }, origin: item.origin }, { onSuccess: onDone, onError: fail });
-    if (item.amount === null || item.cadence === null) return setError("Mancano importo e cadenza");
+    if (item.amount === null || item.cadence === null) return setError(tr("Mancano importo e cadenza"));
     save.mutate({ origin: "rilevato", key: item.key, status, name: item.name, amount: item.amount, cadence: item.cadence, categoryId: item.categoryId }, { onSuccess: onDone, onError: fail });
   }
 
@@ -60,8 +69,8 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
     event.preventDefault();
     if (!item.id) return;
     const value = parseAmount(amount);
-    if (!name.trim()) return setError("Dai un nome all'abbonamento");
-    if (manual && (!value || value <= 0)) return setError("Inserisci l'importo di ogni addebito");
+    if (!name.trim()) return setError(tr("Dai un nome all'abbonamento"));
+    if (manual && (!value || value <= 0)) return setError(tr("Inserisci l'importo di ogni addebito"));
     setError(null);
     update.mutate(
       { id: item.id, origin: item.origin, input: { name: name.trim(), categoryId: categoryId || null, ...(manual ? { amount: value, cadence, nextDate } : {}) } },
@@ -76,12 +85,12 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
       <div>
         <p className="font-mono text-3xl font-medium tabular-nums">{item.amount !== null ? formatCurrency(item.amount, currency) : "—"}</p>
         <p className="mt-1 text-sm text-text-2">{itemHint(item, today)}</p>
-        {item.monthly !== null && item.cadence !== "mensile" ? <p className="text-sm text-text-2">Pesa {formatCurrency(item.monthly, currency)} al mese</p> : null}
+        {item.monthly !== null && item.cadence !== "mensile" ? <p className="text-sm text-text-2">{tr("Pesa")}{" "}{formatCurrency(item.monthly, currency)}{" "}{tr("al mese")}</p> : null}
       </div>
 
       <DialogSections>
         {item.reasons.length > 0 ? (
-          <DialogSection title="Perché lo vediamo qui" icon={InfoIcon} description="Il riconoscimento è un calcolo sui tuoi movimenti, senza AI: la decisione resta tua.">
+          <DialogSection title={tr("Perché lo vediamo qui")} icon={InfoIcon} description={tr("Il riconoscimento è un calcolo sui tuoi movimenti, senza AI: la decisione resta tua.")}>
             <ul className="flex flex-col gap-1.5 text-sm">
               {item.reasons.map((reason, index) => (
                 <li key={index} className="flex gap-2">
@@ -93,7 +102,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
           </DialogSection>
         ) : null}
         {history.length > 0 ? (
-          <DialogSection title="Ultimi addebiti" icon={HistoryIcon}>
+          <DialogSection title={tr("Ultimi addebiti")} icon={HistoryIcon}>
             <ul className="flex flex-col divide-y divide-border/60 text-sm">
               {history.map((charge) => (
                 <li key={charge.id} className="flex min-h-9 items-center justify-between gap-3">
@@ -105,39 +114,39 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
           </DialogSection>
         ) : null}
         {item.id ? (
-          <DialogSection title="Modifica" icon={RepeatIcon}>
+          <DialogSection title={tr("Modifica")} icon={RepeatIcon}>
             <form onSubmit={saveChanges} className="flex flex-col gap-4">
-              <Field label="Nome" htmlFor={`${id}-name`}>
+              <Field label={tr("Nome")} htmlFor={`${id}-name`}>
                 <Input id={`${id}-name`} value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="off" className="h-11 sm:h-8" />
               </Field>
               {manual ? (
                 <>
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Importo" htmlFor={`${id}-amount`}>
+                    <Field label={tr("Importo")} htmlFor={`${id}-amount`}>
                       <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="h-11 sm:h-8" />
                     </Field>
-                    <Field label="Ogni quanto" htmlFor={`${id}-cadence`}>
+                    <Field label={tr("Ogni quanto")} htmlFor={`${id}-cadence`}>
                       <CadenceSelect id={`${id}-cadence`} value={cadence} onChange={setCadence} />
                     </Field>
                   </div>
-                  <Field label="Prossimo addebito" htmlFor={`${id}-next`}>
+                  <Field label={tr("Prossimo addebito")} htmlFor={`${id}-next`}>
                     <Input id={`${id}-next`} type="date" value={nextDate} onChange={(e) => setNextDate(e.target.value)} className="h-11 sm:h-8" />
                   </Field>
                 </>
               ) : null}
               <SubscriptionCategoryField id={`${id}-category`} categories={categories} value={categoryId} onChange={setCategoryId} />
-              <Button type="submit" variant="outline" disabled={busy} className="h-11 self-start sm:h-8">Salva le modifiche</Button>
+              <Button type="submit" variant="outline" disabled={busy} className="h-11 self-start sm:h-8">{tr("Salva le modifiche")}</Button>
             </form>
           </DialogSection>
         ) : null}
       </DialogSections>
 
-      {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+      {error ? <p className="text-sm text-neg" role="alert">{tr(error)}</p> : null}
       <DialogActions>
         {item.id ? (
           <Button type="button" variant="ghost" disabled={busy} onClick={() => remove.mutate({ id: item.id!, origin: item.origin }, { onSuccess: onDone, onError: fail })} className="h-11 gap-1.5 text-text-2 sm:h-8">
             {manual ? <Trash2Icon className="size-4" aria-hidden="true" /> : <UndoIcon className="size-4" aria-hidden="true" />}
-            {manual ? "Elimina" : "Ripristina com'era"}
+            {manual ? tr("Elimina") : tr("Ripristina com'era")}
           </Button>
         ) : (
           <span />
@@ -145,15 +154,14 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
         <div className="flex flex-wrap gap-2">
           {item.decision !== "escluso" && !manual ? (
             <Button type="button" variant="outline" disabled={busy} onClick={() => decide("escluso")} className="h-11 gap-1.5 sm:h-8">
-              <XIcon className="size-4" aria-hidden="true" /> Non è un abbonamento
-            </Button>
+              <XIcon className="size-4" aria-hidden="true" />{" "}{tr("Non è un abbonamento")}</Button>
           ) : null}
           {item.decision !== "terminato" && (item.decision !== "da-confermare" || item.activity === "fermo") ? (
-            <Button type="button" variant="outline" disabled={busy} onClick={() => decide("terminato")} className="h-11 sm:h-8">È terminato</Button>
+            <Button type="button" variant="outline" disabled={busy} onClick={() => decide("terminato")} className="h-11 sm:h-8">{tr("È terminato")}</Button>
           ) : null}
           {item.decision !== "confermato" ? (
             <Button type="button" disabled={busy} onClick={() => decide("confermato")} className="h-11 gap-1.5 sm:h-8">
-              <CheckIcon className="size-4" aria-hidden="true" /> {archived ? "Rimettilo tra i miei" : "Sì, è un abbonamento"}
+              <CheckIcon className="size-4" aria-hidden="true" />{" "}{archived ? tr("Rimettilo tra i miei") : tr("Sì, è un abbonamento")}
             </Button>
           ) : null}
         </div>
@@ -163,10 +171,11 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
 }
 
 export function SubscriptionDetailDialog({ item, currency, today, categories, onOpenChange }: SubscriptionDetailDialogProps) {
+  const { t: tr } = useLocalization();
   return (
     <Dialog open={item !== null} onOpenChange={onOpenChange}>
       <FormDialogContent>
-        <PanelDialogHeader className="pr-10" icon={RepeatIcon} title={item?.name ?? "Abbonamento"} description={item?.origin === "manuale" ? "Aggiunto da te" : "Trovato nei tuoi movimenti"} />
+        <PanelDialogHeader className="pr-10" icon={RepeatIcon} title={item?.name ?? "Abbonamento"} description={item?.origin === "manuale" ? tr("Aggiunto da te") : tr("Trovato nei tuoi movimenti")} />
         {item ? <Details key={item.key} item={item} currency={currency} today={today} categories={categories} onDone={() => onOpenChange(false)} /> : null}
       </FormDialogContent>
     </Dialog>

@@ -1,3 +1,5 @@
+import { translate } from "@/lib/localization/messages";
+import type { Language } from "@/lib/localization/config";
 /**
  * Esposizione per settore e area geografica (look-through): per ogni strumento si sceglie una fonte per dimensione
  * (manuale → tipo → Yahoo → stima dall'indice → paese dell'ISIN), poi si somma pesando per il valore delle posizioni.
@@ -229,20 +231,20 @@ function pct(share: number): string {
 }
 
 /** Frase sui settori: il settore azionario prevalente, se pesa almeno il 10%. */
-export function sectorInsight(breakdown: ExposureBreakdown): string | null {
+export function sectorInsight(breakdown: ExposureBreakdown, language: Language = "it"): string | null {
   const top = breakdown.slices.find((s) => isEquitySector(s.key));
   if (!top || top.share < 0.1) return null;
-  const label = SECTOR_LABELS[top.key as SectorKey].toLowerCase();
-  return `Il settore che pesa di più è ${label} (${pct(top.share)} del portafoglio).`;
+  const label = translate(language, SECTOR_LABELS[top.key as SectorKey]).toLowerCase();
+  return translate(language, "Il settore che pesa di più è {0} ({1} del portafoglio).", {0: label, 1: pct(top.share)});
 }
 
 /** Frase sulle aree: area prevalente e quota in Italia, se c'è. */
-export function areaInsight(breakdown: ExposureBreakdown): string | null {
+export function areaInsight(breakdown: ExposureBreakdown, language: Language = "it"): string | null {
   const classified = breakdown.slices.filter((s) => s.key !== UNCLASSIFIED && s.key !== "nessuna");
   const top = classified[0];
   if (!top) return null;
   const italy = breakdown.slices.find((s) => s.key === "italia");
-  const main = `${pct(top.share)} in ${AREA_LABELS[top.key as AreaKey]}`;
-  if (italy && top.key !== "italia" && italy.share >= 0.05) return `${main}, ${pct(italy.share)} in Italia.`;
+  const main = translate(language, "{0} in {1}", {0: pct(top.share), 1: translate(language, AREA_LABELS[top.key as AreaKey])});
+  if (italy && top.key !== "italia" && italy.share >= 0.05) return translate(language, "{0}, {1} in Italia.", {0: main, 1: pct(italy.share)});
   return `${main}.`;
 }

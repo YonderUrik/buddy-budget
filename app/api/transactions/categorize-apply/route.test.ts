@@ -150,6 +150,36 @@ describe("POST /api/transactions/categorize-apply", () => {
       .from(transactions)
       .where(inArray(transactions.id, inserted.map((t) => t.id)));
     expect(updated.every((t) => t.categoryId === expenseCategoryId)).toBe(true);
+    expect(updated.every((t) => t.categorySource === "utente" && t.categoryConfidence === null && t.categorizedAt !== null)).toBe(true);
+  });
+
+  it("una correzione di una categoria messa da sola diventa una scelta dell'utente", async () => {
+    const [other] = await db.insert(categories).values({ userId, name: "Svago", type: "voluta" }).returning();
+    const [auto] = await db
+      .insert(transactions)
+      .values({
+        userId,
+        accountId,
+        categoryId: other.id,
+        description: "NETFLIX.COM",
+        amount: "-12.99",
+        date: "2026-02-01",
+        source: "manuale",
+        categorySource: "assistente",
+        categoryConfidence: "0.9500",
+        categorizedAt: new Date("2026-02-02T00:00:00Z"),
+      })
+      .returning();
+
+    const response = await POST(
+      makeRequest({ groups: [{ transactionIds: [auto.id], categoryId: expenseCategoryId, merchantKey: "netflix com", createRule: false }] })
+    );
+
+    expect(response.status).toBe(200);
+    const [updated] = await db.select().from(transactions).where(eq(transactions.id, auto.id));
+    expect(updated.categoryId).toBe(expenseCategoryId);
+    expect(updated.categorySource).toBe("utente");
+    expect(updated.categoryConfidence).toBeNull();
   });
 
   it("crea la regola merchant quando createRule è true", async () => {

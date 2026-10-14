@@ -1,3 +1,6 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
+import { localizedFormats } from "@/lib/localization/format";
 /** Guadagno con segno e percentuale ("+120 € · +4,5%"), verde o rosso secondo il segno. */
 
 import { formatCurrency } from "@/lib/format";
@@ -21,6 +24,8 @@ export interface GainTextProps {
 }
 
 export function GainText({ gain, pct = null, currency, className }: GainTextProps) {
+  const { locale } = useLocalization();
+  const { formatSignedCurrency, formatSignedPct } = localizedFormats(locale);
   return (
     <span className={cn("tabular-nums", gain < 0 ? "text-neg" : "text-pos", className)}>
       {formatSignedCurrency(gain, currency)}

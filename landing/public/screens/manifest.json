@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-12T13:26:42.427Z",
+  "capturedAt": "2026-10-14T10:03:15.512Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -33,7 +33,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1799
+      "height": 1769
     },
     {
       "id": "abbonamenti",
@@ -54,7 +54,7 @@
       "theme": "light",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1200
+      "height": 1473
     },
     {
       "id": "investimenti",
@@ -62,13 +62,6 @@
       "route": "/investimenti",
       "width": 1920,
       "height": 1949
-    },
-    {
-      "id": "performance",
-      "theme": "light",
-      "route": "/investimenti/performance",
-      "width": 1920,
-      "height": 1862
     },
     {
       "id": "diversificazione",
@@ -117,7 +110,7 @@
       "theme": "light",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1412
+      "height": 1574
     },
     {
       "id": "panoramica",
@@ -145,7 +138,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1799
+      "height": 1769
     },
     {
       "id": "abbonamenti",
@@ -166,7 +159,7 @@
       "theme": "dark",
       "route": "/categorizza",
       "width": 1920,
-      "height": 1200
+      "height": 1473
     },
     {
       "id": "investimenti",
@@ -174,13 +167,6 @@
       "route": "/investimenti",
       "width": 1920,
       "height": 1949
-    },
-    {
-      "id": "performance",
-      "theme": "dark",
-      "route": "/investimenti/performance",
-      "width": 1920,
-      "height": 1862
     },
     {
       "id": "diversificazione",
@@ -229,7 +215,21 @@
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1412
+      "height": 1574
+    },
+    {
+      "id": "performance",
+      "theme": "light",
+      "route": "/investimenti/performance",
+      "width": 1920,
+      "height": 1838
+    },
+    {
+      "id": "performance",
+      "theme": "dark",
+      "route": "/investimenti/performance",
+      "width": 1920,
+      "height": 1838
     }
   ]
 }

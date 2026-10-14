@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ const LINK_CLASS = "underline underline-offset-2 hover:text-foreground";
 
 /** Le tre dichiarazioni richieste per usare l'app: maggiore età, Termini e Privacy, approvazione specifica delle clausole. */
 export function LegalConsentFields({ value, onChange, disabled }: LegalConsentFieldsProps) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-3 rounded-lg border p-4 text-sm text-text-2">
       <div className="flex items-start gap-3">
@@ -25,9 +27,7 @@ export function LegalConsentFields({ value, onChange, disabled }: LegalConsentFi
           disabled={disabled}
           className="mt-0.5"
         />
-        <Label htmlFor="legal-age" className="font-normal leading-snug">
-          Dichiaro di avere almeno 18 anni.
-        </Label>
+        <Label htmlFor="legal-age" className="font-normal leading-snug">{tr("Dichiaro di avere almeno 18 anni.")}</Label>
       </div>
       <div className="flex items-start gap-3">
         <Checkbox
@@ -37,21 +37,11 @@ export function LegalConsentFields({ value, onChange, disabled }: LegalConsentFi
           disabled={disabled}
           className="mt-0.5"
         />
-        <Label htmlFor="legal-terms" className="block font-normal leading-snug">
-          Accetto i{" "}
-          <a href={legalHref("termini")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-            Termini di servizio
-          </a>{" "}
-          e dichiaro di aver letto la{" "}
-          <a href={legalHref("privacy")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-            Privacy
-          </a>{" "}
-          e l&apos;informativa sui{" "}
-          <a href={legalHref("cookie")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>
-            cookie
-          </a>
-          .
-        </Label>
+        <Label htmlFor="legal-terms" className="block font-normal leading-snug">{tr("Accetto i")}{" "}
+          <a href={legalHref("termini")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("Termini di servizio")}</a>{" "}{tr("e dichiaro di aver letto la")}{" "}
+          <a href={legalHref("privacy")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("Privacy")}</a>{" "}{tr("e l'informativa sui")}{" "}
+          <a href={legalHref("cookie")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("cookie")}</a>
+          {"."}</Label>
       </div>
       <div className="flex items-start gap-3">
         <Checkbox
@@ -61,9 +51,7 @@ export function LegalConsentFields({ value, onChange, disabled }: LegalConsentFi
           disabled={disabled}
           className="mt-0.5"
         />
-        <Label htmlFor="legal-clauses" className="font-normal leading-snug">
-          Approvo in modo specifico, ai sensi degli artt. 1341 e 1342 del codice civile, le sezioni dei Termini: {SPECIFIC_CLAUSE_SECTIONS.join(", ")}.
-        </Label>
+        <Label htmlFor="legal-clauses" className="font-normal leading-snug">{tr("Approvo in modo specifico, ai sensi degli artt. 1341 e 1342 del codice civile, le sezioni dei Termini:")}{" "}{SPECIFIC_CLAUSE_SECTIONS.join(", ")}{"."}</Label>
       </div>
     </div>
   );

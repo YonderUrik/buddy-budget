@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Risultati della ricerca strumenti divisi per tipo (ETF, azioni, fondi, obbligazioni, ETC, crypto), ognuno col
@@ -33,10 +34,11 @@ function TypeDot({ type }: { type: InstrumentType }) {
 
 /** Etichetta del tipo di uno strumento: pallino colorato + nome. */
 export function InstrumentTypeTag({ type }: { type: InstrumentType }) {
+  const { t: tr } = useLocalization();
   return (
     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs text-foreground">
       <TypeDot type={type} />
-      {INSTRUMENT_TYPE_SINGULAR[type]}
+      {tr(INSTRUMENT_TYPE_SINGULAR[type])}
     </span>
   );
 }
@@ -69,11 +71,12 @@ function ResultButton(props: {
 }
 
 function GroupHeader({ type, count }: { type: InstrumentType; count: number }) {
+  const { t: tr } = useLocalization();
   return (
     <p className="flex items-center gap-2 px-2 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-foreground">
       <TypeDot type={type} />
       <span>
-        {INSTRUMENT_TYPE_LABELS[type]} <span className="font-normal text-muted-foreground">({count})</span>
+        {tr(INSTRUMENT_TYPE_LABELS[type])}{" "}<span className="font-normal text-muted-foreground">{"("}{count}{")"}</span>
       </span>
     </p>
   );
@@ -96,6 +99,7 @@ export function InstrumentSearchResults({
   onChoose,
   onAdd,
 }: InstrumentSearchResultsProps) {
+  const { t: tr } = useLocalization();
   const [filter, setFilter] = React.useState<InstrumentType | null>(null);
   const types = groups.map((g) => g.type);
   // Un filtro su un tipo che non c'è più (ricerca cambiata) vale come "Tutti".
@@ -106,7 +110,7 @@ export function InstrumentSearchResults({
     <>
       {known.length ? (
         <div className="flex flex-col gap-0.5">
-          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{knownTitle}</p>
+          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{tr(knownTitle)}</p>
           {known.map((i) => (
             <ResultButton
               key={i.id}
@@ -121,7 +125,7 @@ export function InstrumentSearchResults({
         </div>
       ) : null}
       {groups.length > 1 ? (
-        <div role="group" aria-label="Filtra per tipo" className="flex flex-wrap gap-1 px-2 pt-3">
+        <div role="group" aria-label={tr("Filtra per tipo")} className="flex flex-wrap gap-1 px-2 pt-3">
           {[null, ...types].map((type) => (
             <button
               key={type ?? "tutti"}
@@ -134,7 +138,7 @@ export function InstrumentSearchResults({
               )}
             >
               {type ? <TypeDot type={type} /> : null}
-              {type ? INSTRUMENT_TYPE_LABELS[type] : "Tutti"}
+              {type ? tr(INSTRUMENT_TYPE_LABELS[type]) : tr("Tutti")}
             </button>
           ))}
         </div>

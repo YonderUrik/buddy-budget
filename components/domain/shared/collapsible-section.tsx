@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Sezione con intestazione cliccabile che si apre e si chiude, con lo stato ricordato tra le visite. Da chiusa può
@@ -38,10 +39,11 @@ export function CollapsibleSection({
   children,
   className,
 }: CollapsibleSectionProps) {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = usePersistedFlag(`${COLLAPSIBLE_STORAGE_PREFIX}${id}`, defaultOpen);
   const panelId = React.useId();
   return (
-    <section className={cn("border-t border-sidebar-border pt-2", className)} aria-label={title}>
+    <section className={cn("border-t border-sidebar-border pt-2", className)} aria-label={tr(title)}>
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -58,7 +60,7 @@ export function CollapsibleSection({
             className={cn("size-3 shrink-0 transition-transform duration-150", open && "rotate-90")}
             aria-hidden="true"
           />
-          <span className="truncate">{title}</span>
+          <span className="truncate">{tr(title)}</span>
           {badge}
           {!open && summary ? (
             <span className="ml-auto truncate pl-2 text-xs font-medium normal-case tracking-normal text-sidebar-foreground">

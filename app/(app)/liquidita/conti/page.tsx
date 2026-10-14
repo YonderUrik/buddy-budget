@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Liquidità · Conti: avviso di rinnovo, conti per banca con stato e saldo, collegamento di una banca o di un conto a mano. */
 
@@ -7,8 +10,8 @@ import { useRouter } from "next/navigation";
 import { BanknoteIcon, LandmarkIcon, PlusIcon } from "lucide-react";
 import {
   AccountDetailsDialog,
+  localizedAccountStatus,
   RenewalBanner,
-  buildAccountStatus,
   buildRenewalAlerts,
   groupAccounts,
   sumBalances,
@@ -22,7 +25,7 @@ import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
 import { buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
-import { formatCurrency } from "@/lib/format";
+
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
@@ -34,6 +37,11 @@ import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 const TREND_DAYS = 30;
 
 export default function LiquiditaContiPage() {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr, language } = useLocalization();
+  const { buildAccountStatus } = localizedAccountStatus(language);
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -46,17 +54,17 @@ export default function LiquiditaContiPage() {
 
   // Il link dei primi passi (?nuovo=1) apre subito «Nuovo conto», una volta sola.
   React.useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has("nuovo")) return;
+    if (!new URLSearchParams(window.location.search).has(tr("nuovo"))) return;
     // Il parametro si toglie solo allo scoccare del timer: in Strict Mode il primo effetto viene annullato e il secondo deve ritrovarlo.
     const timer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
-      params.delete("nuovo");
+      params.delete(tr("nuovo"));
       const query = params.toString();
       window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
       addAccount();
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [addAccount]);
+  }, [addAccount, tr]);
 
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const connections = useBankConnectionsStatusQuery().data ?? [];
@@ -77,26 +85,26 @@ export default function LiquiditaContiPage() {
     router.push(`${LIQUIDITY_HREF}?${LIQUIDITY_ACCOUNT_PARAM}=${accountId}`);
   }
 
-  if (isError) return <LoadError message="Impossibile caricare i conti." onRetry={() => refetch()} />;
+  if (isError) return <LoadError message={tr("Impossibile caricare i conti.")} onRetry={() => refetch()} />;
   return (
     <div className="flex flex-col gap-8" aria-busy={isLoading}>
       <RenewalBanner alerts={alerts} onRenew={() => renew("banner")} />
       {!isLoading && list.length === 0 ? (
         <EmptyState
           icon={LandmarkIcon}
-          title="Nessun conto ancora"
-          description="Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo."
+          title={tr("Nessun conto ancora")}
+          description={tr("Collega la banca o aggiungi un conto a mano: bastano un nome e il saldo.")}
           primary={{ label: "Aggiungi il primo conto", onClick: addAccount }}
           secondary={{ label: "Importa un file", href: "/importazioni" }}
         />
       ) : (
         groups.map((group) => (
-          <section key={group.key} aria-label={group.label}>
+          <section key={group.key} aria-label={tr(group.label)}>
             <div className="flex items-baseline justify-between gap-3">
-              <SectionTitle icon={group.key === "manuali" ? BanknoteIcon : LandmarkIcon} title={group.label} color="var(--swatch-teal)" />
+              <SectionTitle icon={group.key === "manuali" ? BanknoteIcon : LandmarkIcon} title={tr(group.label)} color="var(--swatch-teal)" />
               <span className="font-heading font-semibold tabular-nums">{formatCurrency(sumBalances(group.accounts), currency)}</span>
             </div>
-            <p className="-mt-1 mb-3 text-sm text-text-2">{group.hint}</p>
+            <p className="-mt-1 mb-3 text-sm text-text-2">{tr(group.hint)}</p>
             <ul className="flex flex-col gap-2">
               {group.accounts.map((account) => {
                 const status = buildAccountStatus({
@@ -132,8 +140,7 @@ export default function LiquiditaContiPage() {
       {list.length > 0 && (
         <div className="flex flex-wrap gap-2.5">
           <Button className="h-11 gap-1.5" onClick={addAccount}>
-            <PlusIcon className="size-4" aria-hidden="true" /> Aggiungi un conto
-          </Button>
+            <PlusIcon className="size-4" aria-hidden="true" />{" "}{tr("Aggiungi un conto")}</Button>
         </div>
       )}
       <AccountDetailsDialog

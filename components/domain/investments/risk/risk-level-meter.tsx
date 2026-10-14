@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * Livello di rischio in sintesi: parola grande nel colore del livello, oscillazione annua e una scala a 4 fasce
  * (dal verde al rosso) con un segnaposto che dice dove cade il portafoglio. Il colore non è mai l'unico segnale:
@@ -6,7 +8,7 @@
 
 import type { ReactNode } from "react";
 import { InfoHint } from "@/components/domain/shared";
-import { RISK_LEVEL_LABELS, riskLevelInsight, riskScalePosition, type RiskLevel } from "@/lib/investments/risk-insights";
+import { localizedRiskInsights, type RiskLevel } from "@/lib/investments/risk-insights";
 import { cn } from "@/lib/utils";
 
 const LEVELS: RiskLevel[] = [1, 2, 3, 4];
@@ -28,18 +30,20 @@ export interface RiskLevelMeterProps {
 }
 
 export function RiskLevelMeter({ level, volatility, volatilityText, volatilityNote = null, volatilityHint = null }: RiskLevelMeterProps) {
-  const label = RISK_LEVEL_LABELS[level];
+  const { RISK_LEVEL_LABELS, riskLevelInsight, riskScalePosition } = localizedRiskInsights(useLocalization().language);
+
+  const { t: tr } = useLocalization();
+  const label = tr(RISK_LEVEL_LABELS[level]);
   const position = riskScalePosition(volatility);
   return (
     <div className="flex flex-col gap-3">
       <p className="flex flex-wrap items-baseline gap-x-3">
-        <span className={cn("font-heading text-3xl font-medium", LEVEL_TEXT[level])}>{label}</span>
+        <span className={cn("font-heading text-3xl font-medium", LEVEL_TEXT[level])}>{tr(label)}</span>
         <span className="flex items-center gap-1 text-sm text-muted-foreground">
-          {volatilityText} all&rsquo;anno
-          {volatilityHint ? <InfoHint label="Cos'è: quanto oscilla">{volatilityHint}</InfoHint> : null}
+          {volatilityText}{" "}{tr("all’anno")}{volatilityHint ? <InfoHint label={tr("Cos'è: quanto oscilla")}>{volatilityHint}</InfoHint> : null}
         </span>
       </p>
-      <div role="img" aria-label={`Livello di rischio ${label}, ${level} su 4`} className="flex flex-col gap-1.5">
+      <div role="img" aria-label={tr("Livello di rischio {0}, {1} su 4", {0: label, 1: level})} className="flex flex-col gap-1.5">
         <div className="relative flex gap-1">
           {LEVELS.map((step) => (
             <span key={step} className={cn("h-2.5 flex-1 rounded-full", LEVEL_FILL[step], step === level ? "opacity-100" : "opacity-25")} />
@@ -52,14 +56,14 @@ export function RiskLevelMeter({ level, volatility, volatilityText, volatilityNo
         <div className="grid grid-cols-4 gap-1 text-xs text-muted-foreground" aria-hidden>
           {LEVELS.map((step) => (
             <span key={step} className={cn("text-center", step === level && "font-medium text-foreground")}>
-              {RISK_LEVEL_LABELS[step]}
+              {tr(RISK_LEVEL_LABELS[step])}
             </span>
           ))}
         </div>
       </div>
       <p className="max-w-prose text-sm text-muted-foreground">
         {riskLevelInsight(level)}
-        {volatilityNote ? <> {volatilityNote}</> : null}
+        {volatilityNote ? <>{" "}{volatilityNote}</> : null}
       </p>
     </div>
   );

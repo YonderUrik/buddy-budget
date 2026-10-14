@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riquadro "N transazioni da categorizzare" sopra la lista Transazioni: spiega cosa c'è da fare e offre
@@ -25,14 +26,15 @@ export function UncategorizedCallout({
   onToggleFilter,
   categorizeHref = "/categorizza",
 }: UncategorizedCalloutProps) {
-  const noun = count === 1 ? "transazione da categorizzare" : "transazioni da categorizzare";
+  const { t: tr } = useLocalization();
+  const noun = count === 1 ? tr("transazione da categorizzare") : tr("transazioni da categorizzare");
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-neg/30 bg-neg-soft/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="flex items-center gap-2 text-sm text-foreground">
         <span className="inline-flex size-2 shrink-0 rounded-full bg-neg" aria-hidden="true" />
         <span>
-          <span className="font-medium tabular-nums">{count}</span> {noun}
+          <span className="font-medium tabular-nums">{count}</span>{" "}{noun}
         </span>
       </p>
       <div className="grid grid-cols-2 gap-2 sm:flex">
@@ -46,11 +48,9 @@ export function UncategorizedCallout({
             filterActive && "border-neg/40 bg-neg-soft text-neg hover:bg-neg-soft"
           )}
         >
-          {filterActive ? "Mostra tutte" : "Mostra solo queste"}
+          {filterActive ? tr("Mostra tutte") : tr("Mostra solo queste")}
         </button>
-        <Link href={categorizeHref} className={cn(buttonVariants({ size: "sm" }), "h-9 gap-1 sm:h-8")}>
-          Categorizza
-          <ArrowRightIcon className="size-3.5" aria-hidden="true" />
+        <Link href={categorizeHref} className={cn(buttonVariants({ size: "sm" }), "h-9 gap-1 sm:h-8")}>{tr("Categorizza")}<ArrowRightIcon className="size-3.5" aria-hidden="true" />
         </Link>
       </div>
     </div>

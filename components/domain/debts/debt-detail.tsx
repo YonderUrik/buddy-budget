@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Dettaglio di un finanziamento: cifre, avviso sulle rate da confermare, piano rata per rata, registro eventi e azioni. */
 
@@ -42,6 +43,7 @@ export interface DebtDetailProps {
 }
 
 export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
+  const { t: tr } = useLocalization();
   const today = todayIso();
   const [payRow, setPayRow] = React.useState<LoanPlanRow | null>(null);
   const [eventKind, setEventKind] = React.useState<DebtEventDialogKind | null>(null);
@@ -56,25 +58,17 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-heading text-xl font-medium text-foreground">{debt.name}</h2>
-          <p className="text-xs text-muted-foreground">{START_MODE_LABELS[debt.startMode]}</p>
+          <p className="text-xs text-muted-foreground">{tr(START_MODE_LABELS[debt.startMode])}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" disabled={debt.plan.totals.finished} onClick={() => setEarlyOpen(true)}>
-            <PiggyBankIcon aria-hidden="true" />
-            Estinzione anticipata
-          </Button>
+            <PiggyBankIcon aria-hidden="true" />{tr("Estinzione anticipata")}</Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("rate_change")}>
-            <PercentIcon aria-hidden="true" />
-            Cambio tasso
-          </Button>
+            <PercentIcon aria-hidden="true" />{tr("Cambio tasso")}</Button>
           <Button size="sm" variant="outline" onClick={() => setEventKind("balance_correction")}>
-            <SlidersHorizontalIcon aria-hidden="true" />
-            Correggi residuo
-          </Button>
+            <SlidersHorizontalIcon aria-hidden="true" />{tr("Correggi residuo")}</Button>
           <Button size="sm" variant="ghost" className="text-neg" onClick={() => setConfirmDelete(true)}>
-            <Trash2Icon aria-hidden="true" />
-            Elimina
-          </Button>
+            <Trash2Icon aria-hidden="true" />{tr("Elimina")}</Button>
         </div>
       </header>
       <DebtFacts debt={debt} currency={currency} />
@@ -95,7 +89,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           </div>
         )}
         <div className={cn("min-w-0", debt.plan.totals.finished ? "lg:col-span-5" : "lg:col-span-2")}>
-          <PanelSection icon={HistoryIcon} title="Cosa hai registrato" color={DEBTS_COLORS.events}>
+          <PanelSection icon={HistoryIcon} title={tr("Cosa hai registrato")} color={DEBTS_COLORS.events}>
             <DebtEventsList
               events={debt.events}
               currency={currency}
@@ -104,7 +98,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
           </PanelSection>
         </div>
       </div>
-      <PanelSection icon={CalendarRangeIcon} title="Piano delle rate" color={DEBTS_COLORS.plan}>
+      <PanelSection icon={CalendarRangeIcon} title={tr("Piano delle rate")} color={DEBTS_COLORS.plan}>
         <DebtPlanTable rows={debt.plan.rows} currency={currency} today={today} onPay={setPayRow} />
       </PanelSection>
 
@@ -114,16 +108,14 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Eliminare «{debt.name}»?</AlertDialogTitle>
-            <AlertDialogDescription>Spariscono il piano e tutto ciò che hai registrato su questo debito. Le transazioni collegate restano dove sono.</AlertDialogDescription>
+            <AlertDialogTitle>{tr("Eliminare «")}{debt.name}{"»?"}</AlertDialogTitle>
+            <AlertDialogDescription>{tr("Spariscono il piano e tutto ciò che hai registrato su questo debito. Le transazioni collegate restano dove sono.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annulla</AlertDialogCancel>
+            <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteDebt.mutate(debt.id, { onSuccess: onDeleted, onError: (e) => errorToast(e.message, "debito") })}
-            >
-              Elimina
-            </AlertDialogAction>
+            >{tr("Elimina")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

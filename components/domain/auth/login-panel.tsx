@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * LoginPanel
@@ -37,6 +38,7 @@ export interface LoginPanelProps {
 
 /** Form di accesso del foglio: l'email è la cella selezionata e la barra della formula la ripete mentre si scrive. */
 export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
+  const { t: tr } = useLocalization();
   const [email, setEmail] = React.useState("");
   const [sent, setSent] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -63,7 +65,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
       setSent(true);
       setCooldown(MAGIC_LINK_RESEND_COOLDOWN_SECONDS);
     } catch {
-      setError("Connessione non riuscita. Controlla la rete e riprova.");
+      setError(tr("Connessione non riuscita. Controlla la rete e riprova."));
     } finally {
       setLoading(false);
     }
@@ -76,11 +78,11 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
       const { error: authError } = await authClient.signIn.social({ provider: "google", callbackURL: redirectTo });
       // Se va a buon fine il browser viene reindirizzato a Google: qui arriviamo solo in caso di errore.
       if (authError) {
-        setError("Accesso con Google non riuscito. Riprova o usa l'email.");
+        setError(tr("Accesso con Google non riuscito. Riprova o usa l'email."));
         setGoogleLoading(false);
       }
     } catch {
-      setError("Connessione non riuscita. Controlla la rete e riprova.");
+      setError(tr("Connessione non riuscita. Controlla la rete e riprova."));
       setGoogleLoading(false);
     }
   }
@@ -91,14 +93,11 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         <div className="mb-6 flex size-14 items-center justify-center rounded-full bg-pos-soft text-pos">
           <MailCheck className="size-7" aria-hidden="true" />
         </div>
-        <h1 className="font-heading text-3xl font-medium tracking-tight">Controlla la tua email</h1>
-        <p className="mt-3 text-text-2" role="status">
-          Abbiamo inviato un link di accesso a <strong className="font-medium text-foreground">{email}</strong>.
-          Resta valido per {MAGIC_LINK_EXPIRES_MINUTES} minuti.
-        </p>
-        <p className="mt-2 text-sm text-text-3">Non lo trovi? Guarda anche nella cartella spam.</p>
+        <h1 className="font-heading text-3xl font-medium tracking-tight">{tr("Controlla la tua email")}</h1>
+        <p className="mt-3 text-text-2" role="status">{tr("Abbiamo inviato un link di accesso a")}{" "}<strong className="font-medium text-foreground">{email}</strong>{tr(". Resta valido per")}{" "}{MAGIC_LINK_EXPIRES_MINUTES}{" "}{tr("minuti.")}</p>
+        <p className="mt-2 text-sm text-text-3">{tr("Non lo trovi? Guarda anche nella cartella spam.")}</p>
 
-        {error && <p className="mt-4 text-sm text-destructive" role="alert">{error}</p>}
+        {error && <p className="mt-4 text-sm text-destructive" role="alert">{tr(error)}</p>}
 
         <div className="mt-8 flex w-full flex-col gap-2">
           <Button
@@ -109,7 +108,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
             disabled={loading || cooldown > 0}
           >
             {loading && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-            {cooldown > 0 ? `Invia di nuovo tra ${cooldown}s` : "Invia di nuovo il link"}
+            {cooldown > 0 ? tr("Invia di nuovo tra {0}s", {0: cooldown}) : tr("Invia di nuovo il link")}
           </Button>
           <Button
             type="button"
@@ -119,9 +118,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
               setSent(false);
               setError(null);
             }}
-          >
-            Usa un&apos;altra email
-          </Button>
+          >{tr("Usa un'altra email")}</Button>
         </div>
       </div>
     );
@@ -137,13 +134,9 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         </p>
       )}
       <div className="flex flex-col gap-2">
-        <h1 className="font-heading text-3xl font-medium tracking-tight text-balance">
-          Entra in <mark className="rounded-sm bg-highlight px-1 text-foreground">BuddyBudget</mark>
+        <h1 className="font-heading text-3xl font-medium tracking-tight text-balance">{tr("Entra in")}{" "}<mark className="rounded-sm bg-highlight px-1 text-foreground">{tr("BuddyBudget")}</mark>
         </h1>
-        <p className="text-text-2">
-          Nessuna password: scrivi l&apos;email e premi Invio, ti mandiamo un link. Se è la prima volta, l&apos;account
-          si crea da solo.
-        </p>
+        <p className="text-text-2">{tr("Nessuna password: scrivi l'email e premi Invio, ti mandiamo un link. Se è la prima volta, l'account si crea da solo.")}</p>
       </div>
 
       <form
@@ -153,7 +146,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         }}
         className="flex flex-col gap-3"
       >
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{tr("Email")}</Label>
         <div className="relative">
           <Input
             id="email"
@@ -175,29 +168,26 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
         </div>
         {error && (
           <p id="login-error" className="text-sm text-destructive" role="alert">
-            {error}
+            {tr(error)}
           </p>
         )}
         <Button type="submit" className="h-11 w-full text-base" disabled={busy}>
           {loading && <Loader2 className="size-5 animate-spin" aria-hidden="true" />}
-          {loading ? "Invio in corso…" : "Inviami il link"}
+          {loading ? tr("Invio in corso…") : tr("Inviami il link")}
           {!loading && (
             <kbd className="ml-1 hidden rounded-sm border border-primary-foreground/30 px-1.5 font-mono text-xs sm:inline" aria-hidden="true">
-              ↵
-            </kbd>
+              {"↵"}</kbd>
           )}
         </Button>
       </form>
 
       <div className="flex items-center gap-3 text-sm text-text-3">
-        <span className="h-px flex-1 bg-border" />
-        oppure
-        <span className="h-px flex-1 bg-border" />
+        <span className="h-px flex-1 bg-border" />{tr("oppure")}<span className="h-px flex-1 bg-border" />
       </div>
 
       <Button variant="outline" className="h-11 w-full text-base" type="button" onClick={handleGoogle} disabled={busy}>
         {googleLoading ? <Loader2 className="size-5 animate-spin" aria-hidden="true" /> : <GoogleIcon className="size-5" />}
-        {googleLoading ? "Reindirizzamento…" : "Continua con Google"}
+        {googleLoading ? tr("Reindirizzamento…") : tr("Continua con Google")}
       </Button>
 
       <LegalLinksNote />

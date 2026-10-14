@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Icona "i" che apre una breve spiegazione in popover: funziona anche su touch, a differenza del `title` nativo. */
 
@@ -14,15 +15,16 @@ export interface InfoHintProps {
 }
 
 export function InfoHint({ children, label }: InfoHintProps) {
+  const { t: tr } = useLocalization();
   return (
     <Popover>
       <PopoverTrigger
         className="inline-flex size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-        aria-label={label}
+        aria-label={tr(label)}
       >
         <InfoIcon className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent className="max-w-72 text-sm leading-relaxed text-muted-foreground">{children}</PopoverContent>
+      <PopoverContent className="max-w-72 text-sm leading-relaxed text-muted-foreground">{tr(children)}</PopoverContent>
     </Popover>
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Griglia di indicatori calcolati (multipli, margini, redditività, solidità): solo quelli disponibili, nell'ordine dato. */
 
 import type { Indicator } from "@/lib/investments/title-fundamentals";
@@ -19,6 +21,7 @@ export interface IndicatorGridProps<K extends IndicatorKey> {
 }
 
 export function IndicatorGrid<K extends IndicatorKey>({ keys, values, currency, priceCurrency, withRange = false, className }: IndicatorGridProps<K>) {
+  const { t: tr } = useLocalization();
   const present = keys.filter((k) => values[k] !== undefined);
   if (present.length === 0) return null;
   return (
@@ -29,9 +32,9 @@ export function IndicatorGrid<K extends IndicatorKey>({ keys, values, currency, 
         return (
           <IndicatorItem
             key={key}
-            label={meta.label}
+            label={tr(meta.label)}
             value={formatIndicator(indicator.value, meta.format)}
-            hint={meta.hint}
+            hint={tr(meta.hint)}
             range={withRange && indicator.history ? { range: indicator.history, value: indicator.value, format: meta.format } : null}
             help={{ id: key, title: meta.label, formula: meta.formula, indicator, format: meta.format, currency, priceCurrency, source: CALCULATED_SOURCE }}
           />

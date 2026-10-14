@@ -1,10 +1,11 @@
 import type { InstrumentType } from "@/lib/db/schema/investments";
 import { findFundIssuer } from "../instrument-icon";
 
-/** Da dove si chiede il logo di uno strumento al servizio di loghi. */
+/** Da dove si chiede il logo al servizio di loghi: emittente o ISIN di uno strumento, oppure il marchio noto di un esercente. */
 export type LogoSource =
   | { kind: "issuer"; domain: string; key: string }
-  | { kind: "isin"; isin: string; key: string };
+  | { kind: "isin"; isin: string; key: string }
+  | { kind: "merchant"; domain: string; key: string };
 
 /** Forma di un ISIN: due lettere di paese, nove caratteri, una cifra di controllo. */
 const ISIN_PATTERN = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;

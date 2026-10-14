@@ -1,4 +1,6 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 
 /**
  * Schede di Investimenti come link veri (ogni scheda ha il suo URL): le stesse `SectionTabs` delle altre sezioni, con le
@@ -36,5 +38,7 @@ export interface InvestmentsTabsProps {
 }
 
 export function InvestmentsTabs({ activeHref, tabs = INVESTMENTS_TABS }: InvestmentsTabsProps) {
-  return <SectionTabs tabs={tabs} activeHref={activeHref} ariaLabel="Sezioni di Investimenti" />;
+  const { t: tr } = useLocalization();
+  const { productCountry } = useLocalization();
+  return <SectionTabs tabs={tabs.filter(tab => isCountryPathAvailable(productCountry, tab.href))} activeHref={activeHref} ariaLabel={tr("Sezioni di Investimenti")} />;
 }

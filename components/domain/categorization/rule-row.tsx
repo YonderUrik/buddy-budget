@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Riga singola di `RulesManager`: pattern e categoria/tipo match editabili inline
@@ -27,16 +28,22 @@ import { useDeleteRuleMutation, useUpdateRuleMutation } from "@/lib/queries/cate
 import type { CategorizationRuleWithCategoryName } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
+import { MerchantLogo } from "./merchant-logo";
+import { useRuleSavedFeedback } from "./rule-feedback";
 import { RULE_MATCH_TYPE_LABELS, RULE_SOURCE_LABELS } from "./rule-labels";
 
 export interface RuleRowProps {
   rule: CategorizationRuleWithCategoryName;
   categories: Category[];
+  /** Chiamata quando la riga mostra il logo dell'esercente (per citare la fonte dei loghi). */
+  onRemoteLogo?: () => void;
 }
 
-export function RuleRow({ rule, categories }: RuleRowProps) {
+export function RuleRow({ rule, categories, onRemoteLogo }: RuleRowProps) {
+  const { t: tr } = useLocalization();
   const updateMutation = useUpdateRuleMutation();
   const deleteMutation = useDeleteRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
 
   const [pattern, setPattern] = React.useState(rule.pattern);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
@@ -55,18 +62,21 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
     }
     updateMutation.mutate(
       { id: rule.id, input: { pattern: trimmed } },
-      { onError: () => setPattern(rule.pattern) }
+      { onSuccess: (saved) => notifyRuleSaved(saved), onError: () => setPattern(rule.pattern) }
     );
   }
 
   function commitCategory(categoryId: string | null) {
     if (categoryId === null || categoryId === rule.categoryId) return;
-    updateMutation.mutate({ id: rule.id, input: { categoryId } });
+    updateMutation.mutate({ id: rule.id, input: { categoryId } }, { onSuccess: (saved) => notifyRuleSaved(saved) });
   }
 
   function commitMatchType(matchType: string | null) {
     if (matchType === null || matchType === rule.matchType) return;
-    updateMutation.mutate({ id: rule.id, input: { matchType: matchType as "merchant" | "contains" } });
+    updateMutation.mutate(
+      { id: rule.id, input: { matchType: matchType as "merchant" | "contains" } },
+      { onSuccess: (saved) => notifyRuleSaved(saved) }
+    );
   }
 
   function handleDeleteConfirm() {
@@ -77,11 +87,13 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 last:border-b-0">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {category && (
-          <CategoryAvatar
-            color={category.color as CategoryColor}
-            icon={category.icon as CategoryIcon}
-            size={14}
+          <MerchantLogo
+            name={rule.pattern}
+            logoPath={rule.logoPath ?? null}
+            size="sm"
+            onRemoteLogo={onRemoteLogo}
             className="size-7"
+            fallback={<CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={14} className="size-7" />}
           />
         )}
         <div className="min-w-0 flex-1 space-y-1">
@@ -93,18 +105,18 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
               if (e.key === "Enter") e.currentTarget.blur();
             }}
             className="h-7 w-full text-sm font-medium"
-            aria-label="Pattern della regola"
+            aria-label={tr("Pattern della regola")}
           />
           <div className="flex flex-wrap items-center gap-1.5">
             <Select value={rule.matchType} onValueChange={commitMatchType}>
               <SelectTrigger size="sm" className="h-6 w-fit text-xs">
                 <SelectValue>
-                  {(value: "merchant" | "contains") => RULE_MATCH_TYPE_LABELS[value]}
+                  {(value: "merchant" | "contains") => tr(RULE_MATCH_TYPE_LABELS[value])}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="merchant">Esatta</SelectItem>
-                <SelectItem value="contains">Contiene</SelectItem>
+                <SelectItem value="merchant">{tr("Esatta")}</SelectItem>
+                <SelectItem value="contains">{tr("Contiene")}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={rule.categoryId} onValueChange={commitCategory}>
@@ -125,32 +137,29 @@ export function RuleRow({ rule, categories }: RuleRowProps) {
 
       <div className="flex shrink-0 items-center gap-2">
         <Badge variant="secondary" className="text-[10px]">
-          {RULE_SOURCE_LABELS[rule.source]}
+          {tr(RULE_SOURCE_LABELS[rule.source])}
         </Badge>
-        <span className="text-xs text-muted-foreground">usata {rule.hitCount} volte</span>
+        <span className="text-xs text-muted-foreground">{tr("usata")}{" "}{rule.hitCount}{" "}{tr("volte")}</span>
 
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogTrigger
             className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-            aria-label="Elimina regola"
+            aria-label={tr("Elimina regola")}
           >
             <Trash2 size={14} />
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Eliminare questa regola?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Il pattern &quot;{rule.pattern}&quot; non verrà più applicato automaticamente alle nuove
-                transazioni.
-              </AlertDialogDescription>
+              <AlertDialogTitle>{tr("Eliminare questa regola?")}</AlertDialogTitle>
+              <AlertDialogDescription>{tr("Il pattern \"")}{rule.pattern}{tr("\" non verrà più applicato automaticamente alle nuove transazioni.")}</AlertDialogDescription>
             </AlertDialogHeader>
             {deleteMutation.isError && (
-              <p className="text-sm text-destructive">Eliminazione non riuscita, riprova.</p>
+              <p className="text-sm text-destructive">{tr("Eliminazione non riuscita, riprova.")}</p>
             )}
             <AlertDialogFooter>
-              <AlertDialogCancel>Annulla</AlertDialogCancel>
+              <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>
               <AlertDialogAction onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
-                {deleteMutation.isPending ? "Eliminazione..." : "Elimina"}
+                {deleteMutation.isPending ? tr("Eliminazione...") : tr("Elimina")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

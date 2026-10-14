@@ -1,5 +1,8 @@
 "use client";
 
+
+import { useLocalization } from "@/lib/localization/provider";
+
 /**
  * Grafico ad area a tutta larghezza: una linea con sfumatura morbida, senza assi pesanti. Accessibile via descrizione testuale.
  * Al passaggio del mouse o al tocco compare il punto più vicino con data e valore (e il valore di confronto, se c'è).
@@ -31,13 +34,11 @@ export interface TrendChartProps {
   referenceLabel?: string;
 }
 
-const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
+
 /** Margine (in percentuale della larghezza) entro cui il tooltip si ferma per non uscire dal grafico. */
 const TOOLTIP_EDGE_PERCENT = 14;
 
-function formatPointDate(label: string): string {
-  return /^\d{4}-\d{2}-\d{2}$/.test(label) ? TOOLTIP_DATE_FORMAT.format(parseDateOnly(label)) : label;
-}
+
 
 const VIEW_WIDTH = 1000;
 const PADDING_RATIO = 0.12;
@@ -54,6 +55,13 @@ export function smoothPath(points: readonly { x: number; y: number }[]): string 
 }
 
 export function TrendChart({ points, description, color = "var(--primary)", reference, height = 260, className, formatValue, referenceLabel = "Di solito" }: TrendChartProps) {
+  const { locale: formattingLocale } = useLocalization();
+  function formatPointDate(label: string): string {
+  return /^\d{4}-\d{2}-\d{2}$/.test(label) ? TOOLTIP_DATE_FORMAT.format(parseDateOnly(label)) : label;
+}
+  const TOOLTIP_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, { day: "numeric", month: "long", year: "numeric" });
+
+  const { t: tr } = useLocalization();
   const gradientId = React.useId();
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
   if (points.length < 2) return <div className={cn("rounded-xl bg-muted/50", className)} style={{ height }} aria-hidden="true" />;
@@ -87,7 +95,7 @@ export function TrendChart({ points, description, color = "var(--primary)", refe
       viewBox={`0 0 ${VIEW_WIDTH} ${height}`}
       preserveAspectRatio="none"
       role="img"
-      aria-label={description}
+      aria-label={tr(description)}
       className={cn("block w-full", className)}
       style={{ height }}
     >
@@ -120,7 +128,7 @@ export function TrendChart({ points, description, color = "var(--primary)", refe
             <p className="font-heading font-medium tabular-nums text-foreground">{formatValue(activePoint.value)}</p>
             {referenceValue !== undefined && (
               <p className="text-text-2">
-                {referenceLabel}: <span className="tabular-nums">{formatValue(referenceValue)}</span>
+                {referenceLabel}{":"}<span className="tabular-nums">{formatValue(referenceValue)}</span>
               </p>
             )}
           </div>

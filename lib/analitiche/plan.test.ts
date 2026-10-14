@@ -6,12 +6,13 @@ import { resolvePlan } from "./plan";
 const BASE: AnalyticsBase = {
   currency: "EUR",
   wealth: { liquidity: 50_000, investments: 250_000, pension: 40_000, debts: 0 },
-  cashflow: { months: [], annualIncome: 50_000, annualSpending: 30_000, annualSavings: 20_000, savingsRate: 0.4, leanSpending: 20_000, monthsWithData: 12 },
+  cashflow: { months: [], fromKey: "2025-10-01", toKey: "2026-09-30", coveredMonths: 12, annualIncome: 50_000, annualSpending: 30_000, annualSavings: 20_000, savingsRate: 0.4, leanSpending: 20_000, monthsWithData: 12 },
   positions: [{ id: "a", name: "A", value: 250_000, ter: null, subjectToBollo: true, unrealizedGain: 100_000, taxRate: 0.26 }],
   growthPoints: [],
   risk: null,
   riskContribution: null,
   names: {},
+  historicalReturn: { status: "manca", reason: "nessun-investimento" },
 };
 
 describe("resolvePlan", () => {

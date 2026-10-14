@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Elenco dei provider del primo passo dell'import: una riga per broker (logo, nome, cosa si carica); nessuna riga scelta
@@ -19,8 +20,9 @@ export interface ImportProviderPickerProps {
 }
 
 export function ImportProviderPicker({ value, onChange, renderSelected }: ImportProviderPickerProps) {
+  const { t: tr } = useLocalization();
   return (
-    <div role="group" aria-label="Da dove arriva il file" className="flex flex-col divide-y">
+    <div role="group" aria-label={tr("Da dove arriva il file")} className="flex flex-col divide-y">
       {IMPORT_PROVIDERS.map((provider) => {
         const selected = value === provider.id;
         return (

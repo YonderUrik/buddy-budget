@@ -43,7 +43,7 @@ export const WALKTHROUGH_STEPS: readonly WalkthroughStep[] = [
   {
     title: "Le ipotesi e «Per esperti»",
     body: [
-      "I cursori (risparmio, spesa, rendimento, prelievo) provano un'ipotesi senza salvarla: l'anno e le risposte si aggiornano subito e ti dicono quanto guadagni o perdi rispetto a quelle salvate. «Salva queste ipotesi» le rende definitive, «Ripristina» le annulla. Spesa e risparmio, se non li hai scritti tu, vengono dai tuoi movimenti degli ultimi 12 mesi; le altre ipotesi sono in «Tutte le ipotesi».",
+      "I cursori (risparmio, spesa, rendimento, prelievo) provano un'ipotesi senza salvarla: l'anno e le risposte si aggiornano subito e ti dicono quanto guadagni o perdi rispetto a quelle salvate. «Salva queste ipotesi» le rende definitive, «Ripristina» le annulla. Spesa, risparmio e rendimento, se non li hai scritti tu, vengono dai tuoi dati del periodo che scegli sopra i cursori (ultimi 12 mesi, 24 o mesi a scelta); le altre ipotesi sono in «Tutte le ipotesi».",
       "In fondo a ogni domanda, «Per esperti» apre l'analisi completa con la guida passo passo, la formula e i limiti. Puoi riaprire questa guida dal pulsante «Guida».",
     ],
   },

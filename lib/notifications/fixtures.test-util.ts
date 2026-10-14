@@ -18,6 +18,9 @@ export function makeTransaction(overrides: Partial<Transaction>): Transaction {
     date: "2026-09-10",
     source: "manuale",
     externalId: null,
+    categorySource: null,
+    categoryConfidence: null,
+    categorizedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -34,6 +37,7 @@ export function makeCategory(overrides: Partial<Category>): Category {
     icon: "shopping-cart",
     description: null,
     isFallback: false,
+    defaultKey: null,
     createdAt: new Date(),
     ...overrides,
   };

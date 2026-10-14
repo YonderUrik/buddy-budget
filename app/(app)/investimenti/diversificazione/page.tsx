@@ -5,6 +5,7 @@
  * sovrapposizioni e correlazioni, allocazione obiettivo con il suggerimento del prossimo versamento.
  */
 
+import { useLocalization } from "@/lib/localization/provider";
 import * as React from "react";
 import {
   AllocationCard,
@@ -26,12 +27,13 @@ function typeLabel(key: string): string {
 }
 
 /** Frase sull'esposizione valutaria: sotto soglia non c'è rischio di cambio da segnalare. */
-function currencyInsight(exposure: number, currency: string): string {
-  if (exposure < CURRENCY_EXPOSURE_THRESHOLD) return `Quasi tutto in ${currency}: il cambio non sposta il valore.`;
-  return `Il ${Math.round(exposure * 100)}% è in altre valute: il cambio muove il valore anche a mercati fermi.`;
+function currencyInsight(exposure: number, currency: string, tr: (source: string, values?: Record<string, string | number>) => string): string {
+  if (exposure < CURRENCY_EXPOSURE_THRESHOLD) return tr("Quasi tutto in {0}: il cambio non sposta il valore.", {0: currency});
+  return tr("Il {0}% è in altre valute: il cambio muove il valore anche a mercati fermi.", {0: Math.round(exposure * 100)});
 }
 
 export default function DiversificazionePage() {
+  const { t: tr } = useLocalization();
   const { overview, view, today } = useInvestmentsView(INVESTMENTS_DEFAULT_PERIOD);
   const registerPurchase = useRegisterPurchase(view, today);
   const currency = view?.currency ?? "EUR";
@@ -54,13 +56,13 @@ export default function DiversificazionePage() {
                 slices: view.byType,
                 labelFor: typeLabel,
                 colorFor: (key) => INSTRUMENT_TYPE_COLOR[key as InstrumentType] ?? "var(--swatch-slate)",
-                insight: view.byType[0] ? `Soprattutto ${typeLabel(view.byType[0].key)} (${Math.round(view.byType[0].share * 100)}%).` : null,
+                insight: view.byType[0] ? tr("Soprattutto {0} ({1}%).", {0: tr(typeLabel(view.byType[0].key)), 1: Math.round(view.byType[0].share * 100)}) : null,
               },
               {
                 title: "Per valuta",
                 slices: view.byCurrency,
                 colorFor: (_key, index) => CURRENCY_COLORS[index % CURRENCY_COLORS.length],
-                insight: currencyInsight(computeCurrencyExposure(view.byCurrency, currency), currency),
+                insight: currencyInsight(computeCurrencyExposure(view.byCurrency, currency), currency, tr),
               },
             ]}
           />

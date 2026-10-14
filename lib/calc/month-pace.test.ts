@@ -18,6 +18,9 @@ function tx(date: string, amount: string, categoryId = "c1"): Transaction {
     date,
     source: "manuale",
     externalId: null,
+    categorySource: null,
+    categoryConfidence: null,
+    categorizedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   } as Transaction;

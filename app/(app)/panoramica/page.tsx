@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Pagina Panoramica: patrimonio netto nel tempo, composizione per classe di asset e riepilogo del mese corrente. */
 
@@ -35,7 +38,7 @@ import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";
-import { formatCurrency, formatDateWithYear } from "@/lib/format";
+
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { NEW_ACCOUNT_HREF } from "@/lib/start";
@@ -50,19 +53,25 @@ const INVESTMENTS_PERIOD: NetWorthPeriod = "1mese";
 /** Porta in Conti e vi apre subito il flusso di rinnovo (il valore dice da dove si arriva). */
 const RENEW_PATH = "/liquidita/conti?rinnova=";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
-const MONTH_NAME_FORMAT = new Intl.DateTimeFormat("it-IT", { month: "long" });
+
 /** Dove porta ogni tessera: il valore va nell'evento `overview_tile_clicked`. */
 const TILE_MONTH = "mese";
 const TILE_DUES = "scadenze";
 const TILE_INVESTMENTS = "investimenti";
-const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
+
+
+export default function PanoramicaPage() {
+  const { locale: formattingLocale, language } = useLocalization();
+  const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
+  const MONTH_NAME_FORMAT = new Intl.DateTimeFormat(formattingLocale, { month: "long" });
+  const HEADER_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric",
 });
 
-export default function PanoramicaPage() {
+  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   // Il nome arriva dalla sessione nel browser: lo mostriamo dopo l'idratazione, così l'HTML del server coincide.
   const hydrated = useHydrated();
@@ -125,14 +134,14 @@ export default function PanoramicaPage() {
   // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null);
+  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null, language);
   const pace = React.useMemo(
     () => computeMonthPace(monthTransactionsQuery.data ?? [], budgetsQuery.data ?? [], today),
     [monthTransactionsQuery.data, budgetsQuery.data, today]
   );
   const monthLabel = MONTH_NAME_FORMAT.format(today);
   const dues = debtsData?.nextDue ?? [];
-  const debtsFootnote = debtsData ? `Residuo dei debiti: ${formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 })}${debtsData.debtFreeDate ? `, ultima rata il ${formatDateWithYear(debtsData.debtFreeDate)}` : ""}` : undefined;
+  const debtsFootnote = debtsData ? tr("Residuo dei debiti: {0}{1}", { 0: formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 }), 1: debtsData.debtFreeDate ? tr(", ultima rata il {0}", {0: formatDateWithYear(debtsData.debtFreeDate)}) : "" }) : undefined;
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
   return (
@@ -157,14 +166,14 @@ export default function PanoramicaPage() {
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
         </div>
       ) : isError ? (
-        <LoadError message="Impossibile caricare i dati della panoramica." onRetry={retry} />
+        <LoadError message={tr("Impossibile caricare i dati della panoramica.")} onRetry={retry} />
       ) : accounts.length === 0 && !investments && !pension ? (
         <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
           <div className="lg:col-span-3">
             {startStatus ? (
               <StartChecklistSection status={startStatus} forceVisible />
             ) : (
-              <EmptyState icon={WalletIcon} title="Nessun conto ancora" description="Aggiungi un conto per vedere il tuo patrimonio netto." primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
+              <EmptyState icon={WalletIcon} title={tr("Nessun conto ancora")} description={tr("Aggiungi un conto per vedere il tuo patrimonio netto.")} primary={{ label: "Crea un conto", href: NEW_ACCOUNT_HREF }} />
             )}
           </div>
           <DemoOfferSection className="lg:col-span-2" />
@@ -183,7 +192,7 @@ export default function PanoramicaPage() {
           />
           <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
             <div className="flex flex-col gap-10 lg:col-span-3">
-              <NetWorthCompositionRow items={compositionItems} currency={currency} title="Dove sta il patrimonio"
+              <NetWorthCompositionRow items={compositionItems} currency={currency} title={tr("Dove sta il patrimonio")}
                 className="bg-transparent p-0 ring-0"
                 onSliceSelect={(key) => {
                   if (key === "liquidita" || key === "investimenti" || key === "previdenza") track("overview_composition_slice_selected", { assetClass: key });

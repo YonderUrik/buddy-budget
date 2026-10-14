@@ -8,6 +8,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { SUBSCRIPTION_LOOKBACK_MONTHS, addMonthsIso, detectSubscriptions } from "@/lib/calc/subscriptions";
 import { recordSubscriptionsDetect, requestLogger } from "@/lib/observability";
 import type { CategoryType } from "@/lib/categories/groups";
+import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
 import { buildSubscriptionsView, type StoredSubscriptionRow, type SubscriptionsView } from "./view";
 
 /** Gruppi di categorie le cui uscite non entrano mai nel rilevamento. */
@@ -31,7 +32,7 @@ export async function loadStoredSubscriptions(userId: string): Promise<StoredSub
   }));
 }
 
-/** Rilevamento + scelte salvate per l'utente: legge le uscite degli ultimi 26 mesi e costruisce la vista. */
+/** Rilevamento + scelte salvate per l'utente: legge le uscite degli ultimi 26 mesi e costruisce la vista, con i loghi. */
 export async function loadSubscriptions(userId: string, now: Date = new Date()): Promise<SubscriptionsResponse> {
   const started = performance.now();
   const today = now.toISOString().slice(0, 10);
@@ -60,5 +61,11 @@ export async function loadSubscriptions(userId: string, now: Date = new Date()):
     pending: view.totals.pendingCount,
     stopped: view.items.filter((i) => i.activity === "fermo").length,
   });
-  return { ...view, currency: user?.currency ?? "EUR", today };
+  const descriptions = new Map(spending.map((tx) => [tx.id, tx.description]));
+  const items = await withMerchantLogos(
+    view.items,
+    (item) => ({ label: item.name, texts: item.charges.map((charge) => descriptions.get(charge.id)), isExpense: true }),
+    userId
+  );
+  return { ...view, items, currency: user?.currency ?? "EUR", today };
 }

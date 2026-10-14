@@ -55,7 +55,8 @@ describe("GET /api/cron/market-prices", () => {
     expect(await response.json()).toMatchObject({
       ok: true,
       ...SUMMARY,
-      inflationMonths: 36,
+      inflationMonths: 72,
+      inflationByArea: { IT: 36, DE: 36 },
       riskFreeDays: 21,
       profiles: { candidates: 2, saved: 1, empty: 1, failed: 0 },
     });

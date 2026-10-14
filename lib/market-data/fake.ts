@@ -124,9 +124,10 @@ export function fakeCryptoSearch(query: string): { id: string; name: string; sym
 }
 
 
-/** Indice dei prezzi finto: 100 a gennaio 2015, +2% l'anno composto, fino al mese scorso (come Eurostat). */
+/** Indice dei prezzi finto: 100 a gennaio 2025, +2% l'anno composto, fino al mese scorso (come Eurostat). */
 export const FAKE_INFLATION_PROVIDER: InflationProvider = {
   id: "eurostat",
+  seriesKey: "eurostat:prc_hicp_minr:I25:TOTAL",
   async fetchMonthlyIndex(_area, fromMonth) {
     const now = new Date();
     const lastMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1)).toISOString().slice(0, 7);
@@ -135,8 +136,8 @@ export const FAKE_INFLATION_PROVIDER: InflationProvider = {
       for (let month = 1; month <= 12; month += 1) {
         const key = `${year}-${String(month).padStart(2, "0")}`;
         if (key < fromMonth || key > lastMonth) continue;
-        const monthsFrom2015 = (year - 2015) * 12 + (month - 1);
-        values.push({ month: key, value: Math.round(100 * 1.02 ** (monthsFrom2015 / 12) * 100) / 100 });
+        const monthsFrom2025 = (year - 2025) * 12 + (month - 1);
+        values.push({ month: key, value: Math.round(100 * 1.02 ** (monthsFrom2025 / 12) * 100) / 100 });
       }
     }
     return values;

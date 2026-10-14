@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * "E se…" di un finanziamento: tre ipotesi nello stesso foglio (più ogni mese, estinzione di una parte, surroga).
@@ -32,22 +33,21 @@ export interface DebtSimulationPanelProps {
 }
 
 export function DebtSimulationPanel({ debt, currency, onOpenEarly }: DebtSimulationPanelProps) {
+  const { t: tr } = useLocalization();
   const [kind, setKind] = React.useState<SimulationKind>("extra");
   const select = (next: SimulationKind) => {
     setKind(next);
     track("debt_simulation_opened", { kind: next });
   };
   return (
-    <PanelSection icon={LightbulbIcon} title="E se…" color={DEBTS_COLORS.simulate}>
-      <SegmentedControl options={OPTIONS} value={kind} onChange={select} ariaLabel="Ipotesi da simulare" stretch />
+    <PanelSection icon={LightbulbIcon} title={tr("E se…")} color={DEBTS_COLORS.simulate}>
+      <SegmentedControl options={OPTIONS} value={kind} onChange={select} ariaLabel={tr("Ipotesi da simulare")} stretch />
       {kind === "extra" ? <DebtExtraSim debt={debt} currency={currency} /> : null}
       {kind === "estinzione" ? (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-foreground">E se versassi una somma in più, una volta? Vedi quanto risparmi di interessi e se ti conviene ridurre la rata o la durata. Se l&apos;hai già fatto, da qui puoi anche registrarla.</p>
+          <p className="text-sm text-foreground">{tr("E se versassi una somma in più, una volta? Vedi quanto risparmi di interessi e se ti conviene ridurre la rata o la durata. Se l'hai già fatto, da qui puoi anche registrarla.")}</p>
           <Button className="w-fit" disabled={debt.plan.totals.finished} onClick={onOpenEarly}>
-            <PiggyBankIcon aria-hidden="true" />
-            Simula l&apos;estinzione
-          </Button>
+            <PiggyBankIcon aria-hidden="true" />{tr("Simula l'estinzione")}</Button>
         </div>
       ) : null}
       {kind === "surroga" ? <DebtRefinanceSim debt={debt} currency={currency} /> : null}

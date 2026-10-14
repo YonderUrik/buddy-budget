@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Form "+ Nuova regola": crea manualmente una regola di categorizzazione (pattern + categoria + tipo match). */
 
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateRuleMutation } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
+import { useRuleSavedFeedback } from "./rule-feedback";
 import { RULE_MATCH_TYPE_LABELS } from "./rule-labels";
 
 export interface AddRuleFormProps {
@@ -15,7 +17,9 @@ export interface AddRuleFormProps {
 }
 
 export function AddRuleForm({ categories }: AddRuleFormProps) {
+  const { t: tr } = useLocalization();
   const createMutation = useCreateRuleMutation();
+  const notifyRuleSaved = useRuleSavedFeedback();
   // La fallback ("Da categorizzare") non è mai una categoria valida per una regola creata qui — vedi
   // lo stesso ragionamento in RuleRow: una regola sulla fallback resta sempre inutilizzata a runtime.
   const assignableCategories = React.useMemo(() => categories.filter((c) => !c.isFallback), [categories]);
@@ -29,20 +33,21 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
     setError(null);
 
     if (pattern.trim() === "") {
-      setError("Il pattern è obbligatorio");
+      setError(tr("Il pattern è obbligatorio"));
       return;
     }
     if (categoryId === "") {
-      setError("Seleziona una categoria");
+      setError(tr("Seleziona una categoria"));
       return;
     }
 
     createMutation.mutate(
       { pattern: pattern.trim(), categoryId, matchType },
       {
-        onSuccess: () => {
+        onSuccess: (rule) => {
           setPattern("");
           setMatchType("contains");
+          notifyRuleSaved(rule);
         },
         onError: (mutationError) => setError(mutationError.message),
       }
@@ -52,33 +57,31 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
       <div className="flex flex-1 flex-col gap-1">
-        <label className="text-xs font-medium text-foreground" htmlFor="new-rule-pattern">
-          Pattern
-        </label>
+        <label className="text-xs font-medium text-foreground" htmlFor="new-rule-pattern">{tr("Pattern")}</label>
         <Input
           id="new-rule-pattern"
           value={pattern}
           onChange={(e) => setPattern(e.target.value)}
-          placeholder="Es. esselunga"
+          placeholder={tr("Es. esselunga")}
           className="w-full"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-foreground">Tipo</label>
+        <label className="text-xs font-medium text-foreground">{tr("Tipo")}</label>
         <Select value={matchType} onValueChange={(value) => value && setMatchType(value as "merchant" | "contains")}>
           <SelectTrigger className="w-28">
-            <SelectValue>{(value: "merchant" | "contains") => RULE_MATCH_TYPE_LABELS[value]}</SelectValue>
+            <SelectValue>{(value: "merchant" | "contains") => tr(RULE_MATCH_TYPE_LABELS[value])}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="merchant">Esatta</SelectItem>
-            <SelectItem value="contains">Contiene</SelectItem>
+            <SelectItem value="merchant">{tr("Esatta")}</SelectItem>
+            <SelectItem value="contains">{tr("Contiene")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-foreground">Categoria</label>
+        <label className="text-xs font-medium text-foreground">{tr("Categoria")}</label>
         <Select value={categoryId} onValueChange={(value) => value && setCategoryId(value)}>
           <SelectTrigger className="w-40">
             <SelectValue>
@@ -96,10 +99,10 @@ export function AddRuleForm({ categories }: AddRuleFormProps) {
       </div>
 
       <Button type="submit" disabled={createMutation.isPending}>
-        {createMutation.isPending ? "Aggiunta in corso..." : "Aggiungi regola"}
+        {createMutation.isPending ? tr("Aggiunta in corso...") : tr("Aggiungi regola")}
       </Button>
 
-      {error && <p className="w-full text-sm text-destructive">{error}</p>}
+      {error && <p className="w-full text-sm text-destructive">{tr(error)}</p>}
     </form>
   );
 }

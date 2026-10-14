@@ -19,7 +19,7 @@ export interface ProductEvents {
   /** Apertura del foglio «Scrivici» (pulsante fisso o link sotto un errore), anche se poi non si invia. */
   support_sheet_opened: { source: Exclude<ReportSource, "pagina">; area?: ReportErrorArea };
   /** Clic su un collegamento esterno di «Aiuto» (GitHub, novità, sicurezza). */
-  support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" };
+  support_link_opened: { link: "issue" | "issue_aperte" | "novita" | "sicurezza" | "repo" | "stato" };
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };
@@ -77,7 +77,7 @@ export interface ProductEvents {
   transaction_added: { direction: "entrata" | "uscita" };
   transaction_category_changed: { source: "row" | "categorizza" };
   categorization_applied: { groups: number };
-  categorization_rule_saved: { matchType: "merchant" | "contains" };
+  categorization_rule_saved: { matchType: "merchant" | "contains"; applied: number };
   transaction_split: undefined;
   /** Su telefono: foglio delle viste aperto toccando il titolo della sezione. */
   section_views_opened: { section: SectionViewsKey };
@@ -158,12 +158,26 @@ export interface ProductEvents {
   analytics_view_selected: { view: "dove-sono" | "quando" | "reggera" | "costi" };
   /** Un cursore «e se…» lasciato; `field`: quale ipotesi. */
   analytics_scenario_changed: { field: "annualSavings" | "annualSpending" | "expectedReturn" | "withdrawalRate" };
+  /** Rendimento atteso passato dallo storico a un valore scelto a mano o viceversa; `source`: quello nuovo. */
+  analytics_return_source_changed: { source: "storico" | "manuale" };
+  /** Origine del rendimento atteso mostrato all'apertura di Analitiche (una volta per visita): storico (con il periodo scelto), valore prudente o scelto a mano. */
+  analytics_return_source_shown: { source: "storico-24" | "storico-12" | "storico-personalizzato" | "prudente" | "manuale" };
+  /** Periodo dei dati di Analitiche cambiato; `period`: quello nuovo. */
+  analytics_period_changed: { period: "ultimi-12" | "ultimi-24" | "personalizzato" };
+  /** Spesa o risparmio scritti a mano riportati al dato dei movimenti; `field`: quale. */
+  analytics_figure_reset_to_data: { field: "annualSavings" | "annualSpending" };
+  /** Origine di spesa e risparmio all'apertura di Analitiche (una volta per visita): dai movimenti, scritti a mano o mancanti. */
+  analytics_cashflow_source_shown: { spending: "dati" | "ipotesi" | "manca"; savings: "dati" | "ipotesi" | "manca" };
   /** Cursori riportati alle ipotesi salvate. */
   analytics_scenario_reset: undefined;
   /** Valori dei cursori salvati come ipotesi; `fields`: quanti. */
   analytics_scenario_saved: { fields: number };
   /** Apertura/chiusura di «Per esperti» di una domanda. */
   analytics_expert_toggled: { question: "dove-sono" | "quando" | "reggera" | "costi"; state: "aperta" | "chiusa" };
+  /** «Il tuo traguardo» aperto; `from`: da dove (oggi solo dai Primi passi della Panoramica). */
+  analytics_goal_opened: { from: "primi-passi" };
+  /** Traguardo salvato; `source`: spesa lasciata ai movimenti o scritta dall'utente. */
+  analytics_goal_saved: { source: "dati" | "scritta" };
   /** Ipotesi salvate; `fields`: quanti campi sono cambiati. */
   analytics_assumptions_saved: { fields: number };
   /** Guida iniziale: `step` è l'ultimo passo visto (1-based), `outcome` come è finita. */
@@ -204,6 +218,20 @@ export interface ProductEvents {
   categorize_tour: { action: "avanti" | "salta" | "fine" | "riapri"; step: number };
   /** Carta della categorizzazione rapida: scelta dell'utente; `source` = da dove veniva la proposta. */
   categorize_card_decided: { action: "conferma" | "cambia" | "salta" | "annulla"; source: "regola" | "storico" | "assistente" | "nessuna"; remember: boolean };
+  /** Interruttore «Lascia che l'app scelga quando è quasi certa»; `from` = dove l'utente l'ha cambiato. */
+  categorization_auto_apply_toggled: { enabled: boolean; from: "categorizza" | "impostazioni" };
+  /** Movimenti categorizzati da soli quando la pagina Categorizza ha trovato proposte sicure pronte. */
+  categorization_auto_applied: { count: number; groups: number };
+  /** «Va tutto bene» in «Messe dall'app»: movimenti controllati in un colpo. */
+  categorization_auto_reviewed: { count: number };
+  /** L'utente ha cambiato una categoria applicata da sola; `source` = da dove veniva. */
+  categorization_auto_corrected: { source: "regola" | "storico" | "assistente"; count: number; remember: boolean; from: "categorizza" | "movimenti" };
+  /** Anteprima di «Ricategorizza» aperta; `scope` = tutto (Categorizza) o una regola appena salvata, `changes` = movimenti che cambierebbero. */
+  recategorize_previewed: { scope: "tutto" | "regola"; changes: number };
+  /** «Ricategorizza» applicata: movimenti spostati e gruppi scelti; `legacy` = inclusi i movimenti categorizzati prima che se ne segnasse l'origine. */
+  recategorize_applied: { scope: "tutto" | "regola"; count: number; groups: number; legacy: boolean };
+  /** Annulla dell'ultima «Ricategorizza»: movimenti riportati com'erano. */
+  recategorize_undone: { count: number };
   notifications_frequency_changed: { frequency: "settimanale" | "mensile" };
   /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
   notifications_test_sent: undefined;

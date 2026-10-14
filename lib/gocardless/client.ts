@@ -165,6 +165,7 @@ export async function createRequisition(params: {
   maxHistoricalDays: number;
   redirectUrl: string;
   reference: string;
+  language?: "IT" | "EN" | "DE";
 }): Promise<Requisition> {
   const { data: agreement } = await request<{ id: string }>("agreements.create", "/agreements/enduser/", {
     method: "POST",
@@ -183,7 +184,7 @@ export async function createRequisition(params: {
       institution_id: params.institutionId,
       reference: params.reference,
       agreement: agreement.id,
-      user_language: "IT",
+      user_language: params.language ?? "IT",
     }),
   });
 
@@ -211,13 +212,15 @@ export async function deleteRequisition(requisitionId: string): Promise<void> {
   }
 }
 
-/** Requisition come elencata dall'API: `created` (ISO), `agreement` e `reference` (id della nostra connessione). */
+/** Requisition come elencata dall'API: `created` (ISO), `agreement`, `reference` (id della nostra connessione) e `redirect`. */
 export interface RemoteRequisition {
   id: string;
   created: string;
   status: string;
   reference?: string;
   agreement?: string;
+  /** URL di ritorno passato alla creazione: dice da quale ambiente è partita. */
+  redirect?: string;
 }
 
 export interface RemoteAgreement {

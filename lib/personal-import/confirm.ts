@@ -9,6 +9,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { instruments, investmentPortfolios, investmentTransactions } from "@/lib/db/schema/investments";
 import { getUserCurrency, toRowValues } from "@/lib/investments/operations";
 import { findOversoldTransaction } from "@/lib/calc/investments";
+import { extractMerchantName } from "@/lib/categorization/merchant-name";
 import { digest, unseal } from "./crypto";
 import { ImportError, validateOutcomes, type Outcome } from "./contract";
 export type Preview = { headers: string[]; currency: string; records: { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null }[] };
@@ -63,10 +64,15 @@ export async function confirmImport(userId: string, id: string) {
       if (findOversoldTransaction(combined)) throw new ImportError("Lo storico vende più quote di quelle possedute: aggiungi gli acquisti precedenti");
     }
     let categoryId: string | undefined;
+    // Giroconti e movimenti di cassa delle operazioni sui titoli vanno nei trasferimenti dell'utente, se ne ha uno:
+    // sono esclusi per intero e non hanno niente da decidere in Categorizza.
+    let transferCategoryId: string | undefined;
     if (financial.length) {
       const [fallback] = await tx.select().from(categories).where(and(eq(categories.userId, userId), eq(categories.isFallback, true)));
       categoryId = fallback?.id;
       if (!categoryId) { const [created] = await tx.insert(categories).values({ userId, name: "Da categorizzare", type: "voluta", color: "red", icon: "help-circle", isFallback: true }).returning(); categoryId = created.id; }
+      const [transfer] = await tx.select({ id: categories.id }).from(categories).where(and(eq(categories.userId, userId), eq(categories.type, "trasferimento"), eq(categories.isFallback, false))).orderBy(categories.createdAt).limit(1);
+      transferCategoryId = transfer?.id;
     }
     let deltaCents = 0;
     const cashValues: (typeof transactions.$inferInsert)[] = [];
@@ -77,7 +83,10 @@ export async function confirmImport(userId: string, id: string) {
       const cents = Math.round(amount * r.rate! * 100);
       if (!Number.isSafeInteger(cents) || Math.abs(cents) >= 1e12) throw new ImportError("Importo fuori limite");
       deltaCents += cents;
-      cashValues.push({ id: randomUUID(), userId, accountId: accountId!, categoryId: categoryId!, description: o.description, date: o.date, amount: (cents / 100).toFixed(2), excludedAmount: o.kind === "investment" || o.transfer ? (cents / 100).toFixed(2) : "0", source: "manuale", externalId: `personal:${format.id}:${r.key}` });
+      const excluded = o.kind === "investment" || o.transfer;
+      // Nome pulito come nella sync della banca (il testo originale resta in rawDescription per le regole già scritte su di esso).
+      const description = o.kind === "cash" && !o.transfer ? extractMerchantName({ rawText: o.description, counterpartyName: null }).name : o.description;
+      cashValues.push({ id: randomUUID(), userId, accountId: accountId!, categoryId: excluded && transferCategoryId ? transferCategoryId : categoryId!, description, rawDescription: o.description, date: o.date, amount: (cents / 100).toFixed(2), excludedAmount: excluded ? (cents / 100).toFixed(2) : "0", source: "manuale", externalId: `personal:${format.id}:${r.key}` });
     }
     for (let i = 0; i < tradeValues.length; i += 500) await tx.insert(investmentTransactions).values(tradeValues.slice(i, i + 500));
     for (let i = 0; i < cashValues.length; i += 500) await tx.insert(transactions).values(cashValues.slice(i, i + 500));

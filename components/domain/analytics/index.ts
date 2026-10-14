@@ -32,3 +32,5 @@ export { Term } from "./term";
 export type { TermProps } from "./term";
 export { GLOSSARY } from "./glossary";
 export type { GlossaryId } from "./glossary";
+export { GoalDialog } from "./goal-dialog";
+export type { GoalDialogProps, GoalSource } from "./goal-dialog";

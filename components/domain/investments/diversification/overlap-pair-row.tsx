@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Riga di una coppia di fondi che si sovrappongono: disegno, giudizio in parole, nomi e perché lo diciamo. */
 
 import type { Instrument } from "@/lib/db/schema/investments";
@@ -22,17 +24,18 @@ function PairName({ instrument }: { instrument: Pick<Instrument, "id" | "name" |
 }
 
 export function OverlapPairRow({ overlap, instrumentOf }: OverlapPairRowProps) {
+  const { t: tr } = useLocalization();
   const verdict = overlapLabel(overlap.share);
   return (
     <li className="flex items-start gap-3 rounded-xl border p-3">
       <OverlapVenn share={overlap.share} severity={verdict.severity} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground">
-          {verdict.label} <span className="tabular-nums text-muted-foreground">· {Math.round(overlap.share * 100)}% in comune</span>
+          {tr(verdict.label)}{" "}<span className="tabular-nums text-muted-foreground">{"·"}{Math.round(overlap.share * 100)}{tr("% in comune")}</span>
         </p>
         <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-muted-foreground">
-          <PairName instrument={instrumentOf(overlap.aId)} /> <span aria-hidden="true">+</span>
-          <span className="sr-only">e</span> <PairName instrument={instrumentOf(overlap.bId)} />
+          <PairName instrument={instrumentOf(overlap.aId)} />{" "}<span aria-hidden="true">{"+"}</span>
+          <span className="sr-only">{tr("e")}</span>{" "}<PairName instrument={instrumentOf(overlap.bId)} />
         </p>
         <p className="text-xs text-muted-foreground">{METHOD_NOTE[overlap.method]}</p>
       </div>

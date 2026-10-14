@@ -1,11 +1,12 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Domanda 2, «Quando posso smettere di lavorare?»: la salita del patrimonio verso il traguardo. */
 
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { MissingData } from "./analytics-card";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { FireTab } from "./fire-tab";
 import { Term } from "./term";
 import { timelineSeries } from "./plain-answers";
@@ -19,12 +20,15 @@ const CONFIG: ChartConfig = {
 
 /** Domanda 2: la salita del patrimonio verso il numero FIRE; con i cursori mossi, la linea tratteggiata mostra le ipotesi salvate. */
 export function TimelineSection({ question, base, assumptions, plan, baseline }: QuestionSectionData) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   const { currency } = base;
   const expert = () => <FireTab base={base} assumptions={assumptions} plan={plan} />;
   if (plan.target === null || plan.spending === null) {
     return (
       <QuestionSection question={question} expertHint="sensibilità, Coast FIRE" renderExpert={expert}>
-        <MissingData>Per stimare quando arrivi serve la tua spesa annua. Scrivila nelle ipotesi, oppure registra almeno 3 mesi di movimenti e la ricavo da lì.</MissingData>
+        <MissingData>{tr("Per stimare quando arrivi serve la tua spesa annua. Scrivila nelle ipotesi, oppure registra almeno 3 mesi di movimenti e la ricavo da lì.")}</MissingData>
       </QuestionSection>
     );
   }
@@ -34,9 +38,7 @@ export function TimelineSection({ question, base, assumptions, plan, baseline }:
   const data = series.map((p, i) => ({ ...p, baseline: baselineSeries?.[i]?.wealth }));
   return (
     <QuestionSection question={question} expertHint="sensibilità alle ipotesi, Coast FIRE, lean FIRE" renderExpert={expert}>
-      <p className="text-base leading-relaxed text-muted-foreground">
-        Con {money(plan.savings ?? 0, currency)} risparmiati l&apos;anno e un <Term id="rendimento-reale">rendimento reale</Term> del {(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}%, in <Term id="euro-di-oggi">euro di oggi</Term>.
-        {baseline ? " La linea tratteggiata è il percorso con le ipotesi salvate." : ""}
+      <p className="text-base leading-relaxed text-muted-foreground">{tr("Con")}{" "}{money(plan.savings ?? 0, currency)}{" "}{tr("risparmiati l'anno e un")}{" "}<Term id="rendimento-reale">{tr("rendimento reale")}</Term>{" "}{tr("del")}{" "}{(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}{tr("%, in")}{" "}<Term id="euro-di-oggi">{tr("euro di oggi")}</Term>{"."}{baseline ? tr(" La linea tratteggiata è il percorso con le ipotesi salvate.") : ""}
       </p>
       <ChartContainer config={CONFIG} className="h-56 w-full">
         <ComposedChart data={data}>
@@ -51,8 +53,8 @@ export function TimelineSection({ question, base, assumptions, plan, baseline }:
               return (
                 <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-md">
                   <p className="font-medium">{today.getFullYear() + p.year}</p>
-                  <p>Patrimonio: {money(p.wealth, currency)}</p>
-                  {p.baseline !== undefined ? <p className="text-muted-foreground">Ipotesi salvate: {money(p.baseline, currency)}</p> : null}
+                  <p>{tr("Patrimonio:")}{" "}{money(p.wealth, currency)}</p>
+                  {p.baseline !== undefined ? <p className="text-muted-foreground">{tr("Ipotesi salvate:")}{" "}{money(p.baseline, currency)}</p> : null}
                 </div>
               );
             }}

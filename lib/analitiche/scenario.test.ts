@@ -22,7 +22,7 @@ describe("scenarioSlider", () => {
   });
   it("tiene i percentuali in un intervallo sensato", () => {
     expect(scenarioSlider("withdrawalRate", null)).toMatchObject({ min: 0.02, max: 0.06 });
-    expect(scenarioSlider("expectedReturn", null)).toMatchObject({ min: 0, max: 0.08 });
+    expect(scenarioSlider("expectedReturn", null)).toMatchObject({ min: -0.02, max: 0.5 });
   });
 });
 

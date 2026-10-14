@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Ciambella delle spese con il totale al centro. Interattiva come quella della Panoramica: al passaggio (o al tocco) di una fetta le altre si attenuano
@@ -8,7 +11,7 @@
 import * as React from "react";
 import { Cell, Pie, PieChart } from "recharts";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
-import { formatCurrency } from "@/lib/format";
+
 
 export interface DonutSlice {
   key: string;
@@ -41,13 +44,17 @@ function percent(ratio: number): string {
 }
 
 export function CategoryDonut({ slices, currency, centerLabel, size = 220, focusKey = null, onHoverChange, onSelect }: CategoryDonutProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
   const focus = slices.find((s) => s.key === focusKey) ?? null;
   const config: ChartConfig = Object.fromEntries(slices.map((s) => [s.label, { label: s.label, color: s.color }]));
-  const description = `Spese per categoria, totale ${money(total)}: ${slices.map((s) => `${s.label} ${percent(s.value / (total || 1))}`).join(", ")}.`;
+  const description = tr("Spese per categoria, totale {0}: {1}.", { 0: money(total), 1: slices.map((s) => `${s.label} ${percent(s.value / (total || 1))}`).join(", ") });
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={description}>
+    <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={tr(description)}>
       <ChartContainer config={config} className="aspect-square" style={{ width: size, height: size }}>
         <PieChart>
           <Pie
@@ -76,14 +83,14 @@ export function CategoryDonut({ slices, currency, centerLabel, size = 220, focus
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-8 text-center">
         {focus ? (
           <>
-            <span className="max-w-full truncate text-sm text-text-2">{focus.label}</span>
+            <span className="max-w-full truncate text-sm text-text-2">{tr(focus.label)}</span>
             <span className="font-heading text-xl font-medium tabular-nums">{money(focus.value)}</span>
-            <span className="text-sm tabular-nums text-text-2">{percent(focus.value / (total || 1))} delle spese</span>
+            <span className="text-sm tabular-nums text-text-2">{percent(focus.value / (total || 1))}{" "}{tr("delle spese")}</span>
           </>
         ) : (
           <>
             <span className="font-heading text-2xl font-medium tabular-nums">{money(total)}</span>
-            <span className="text-sm text-text-2">{centerLabel}</span>
+            <span className="text-sm text-text-2">{tr(centerLabel)}</span>
           </>
         )}
       </div>

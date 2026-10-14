@@ -1,19 +1,14 @@
-import { formatAlertPrice } from "@/lib/investments/alerts";
+import { localizedFormats } from "@/lib/localization/format";
 
-/** Prezzo nella valuta dello strumento (più decimali sotto i 10). */
-export const formatPrice = formatAlertPrice;
+import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
 
-/** "3,1 mld" / "820 mln": grandezze grandi in forma breve (bilioni = 10¹², miliardi = 10⁹). */
-export function formatCompactAmount(value: number): string {
-  const abs = Math.abs(value);
-  const one = (n: number) => n.toFixed(1).replace(".", ",").replace(/,0$/, "");
-  if (abs >= 1e12) return `${one(value / 1e12)} bln`;
-  if (abs >= 1e9) return `${one(value / 1e9)} mld`;
-  if (abs >= 1e6) return `${one(value / 1e6)} mln`;
-  return new Intl.NumberFormat("it-IT", { maximumFractionDigits: 0 }).format(value);
+/** Bind presentation text and formatting to one language without shared mutable state. */
+export function localizedTitleFormats(language: Language) {
+  const locale = LANGUAGE_LOCALES[language];
+
+const { formatPrice, formatCompactAmount, formatRatio } = localizedFormats(locale);
+  return { formatPrice, formatCompactAmount, formatRatio };
 }
 
-/** "12,3" (numero con una cifra decimale, virgola). */
-export function formatRatio(value: number, digits = 1): string {
-  return value.toFixed(digits).replace(".", ",");
-}
+/** Italian defaults retained for existing callers and pure calculation tests. */
+export const { formatPrice, formatCompactAmount, formatRatio } = localizedTitleFormats("it");

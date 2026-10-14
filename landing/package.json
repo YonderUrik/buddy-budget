@@ -1,6 +1,6 @@
 {
   "name": "buddy-budget-landing",
-  "version": "0.63.0",
+  "version": "0.67.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "description": "Landing page di BuddyBudget (buddybudget.io): sito statico, deploy separato dall'app.",

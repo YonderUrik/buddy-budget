@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Riquadro «Come leggere e come è calcolato» di un'analitica: sempre in pagina, i dettagli si aprono a richiesta. */
 
@@ -12,10 +13,11 @@ export interface ExplainerProps {
 }
 
 export function Explainer({ id }: ExplainerProps) {
+  const { t: tr } = useLocalization();
   const content = EXPLAINERS[id];
   return (
     <div className="rounded-lg bg-muted/40 px-3.5 py-3 text-sm">
-      <p className="text-muted-foreground">{content.what}</p>
+      <p className="text-muted-foreground">{tr(content.what)}</p>
       <details
         className="group mt-2"
         onToggle={(event) => {
@@ -23,32 +25,30 @@ export function Explainer({ id }: ExplainerProps) {
         }}
       >
         <summary className="inline-flex cursor-pointer list-none items-center gap-1 font-medium text-foreground marker:hidden">
-          <ChevronRight className="size-4 transition-transform group-open:rotate-90" aria-hidden="true" />
-          Come leggerla e come è calcolata
-        </summary>
+          <ChevronRight className="size-4 transition-transform group-open:rotate-90" aria-hidden="true" />{tr("Come leggerla e come è calcolata")}</summary>
         <dl className="mt-2 flex flex-col gap-2.5 text-muted-foreground">
           <div>
-            <dt className="font-medium text-foreground">Come leggerla</dt>
-            <dd>{content.read}</dd>
+            <dt className="font-medium text-foreground">{tr("Come leggerla")}</dt>
+            <dd>{tr(content.read)}</dd>
           </div>
           <div>
-            <dt className="font-medium text-foreground">Come è calcolata</dt>
-            <dd>{content.how}</dd>
+            <dt className="font-medium text-foreground">{tr("Come è calcolata")}</dt>
+            <dd>{tr(content.how)}</dd>
           </div>
           <div>
-            <dt className="font-medium text-foreground">Limiti</dt>
-            <dd>{content.limits}</dd>
+            <dt className="font-medium text-foreground">{tr("Limiti")}</dt>
+            <dd>{tr(content.limits)}</dd>
           </div>
           {"sources" in content && content.sources ? (
             <div>
-              <dt className="font-medium text-foreground">Fonti</dt>
+              <dt className="font-medium text-foreground">{tr("Fonti")}</dt>
               <dd>
                 <ul className="list-disc pl-4">
                   {content.sources.map((source) => (
                     <li key={source.label}>
                       {"url" in source && source.url ? (
                         <a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">
-                          {source.label}
+                          {tr(source.label)}
                         </a>
                       ) : (
                         source.label

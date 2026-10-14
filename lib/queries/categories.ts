@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/lib/validation/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
+import { useLocalization } from "@/lib/localization/provider";
+import { localizeCategory } from "@/lib/localization/categories";
 import { track } from "@/lib/analytics";
 
 const CATEGORIES_QUERY_KEY = ["categories"] as const;
@@ -18,7 +20,8 @@ async function fetchCategories(): Promise<Category[]> {
 
 /** Recupera la lista delle categorie dell'utente autenticato. */
 export function useCategoriesQuery() {
-  return useQuery({ queryKey: CATEGORIES_QUERY_KEY, queryFn: fetchCategories });
+  const profile = useLocalization();
+  return useQuery({ queryKey: CATEGORIES_QUERY_KEY, queryFn: fetchCategories, select: rows => rows.map(row => localizeCategory(row, profile)) });
 }
 
 // Sotto-chiave di CATEGORIES_QUERY_KEY: le mutation sulle categorie la invalidano già per prefisso.

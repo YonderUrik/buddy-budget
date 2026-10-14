@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Versione desktop di `SectionTabs`: controllo segmentato di link, con il fondo della vista attiva che scivola. */
 
@@ -18,9 +19,10 @@ export interface SectionTabsSegmentedProps {
 }
 
 export function SectionTabsSegmented({ tabs, activeIndex, ariaLabel }: SectionTabsSegmentedProps) {
+  const { t: tr } = useLocalization();
   const thumbId = React.useId();
   return (
-    <nav aria-label={ariaLabel} className="scrollbar-hidden max-w-full overflow-x-auto">
+    <nav aria-label={tr(ariaLabel)} className="scrollbar-hidden max-w-full overflow-x-auto">
       <ul className="inline-flex w-max items-center gap-1 rounded-lg bg-muted p-1">
         {tabs.map((tab, index) => {
           const active = index === activeIndex;
@@ -50,7 +52,7 @@ export function SectionTabsSegmented({ tabs, activeIndex, ariaLabel }: SectionTa
                     className={cn("relative shrink-0", active ? "text-primary" : "text-muted-foreground/70")}
                   />
                 ) : null}
-                <span className="relative">{tab.label}</span>
+                <span className="relative">{tr(tab.label)}</span>
               </Link>
             </li>
           );

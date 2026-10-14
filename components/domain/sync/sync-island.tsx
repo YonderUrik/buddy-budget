@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Isola di un job di sync: una pillola scura con anello di avanzamento e titolo che luccica mentre lavora; toccandola
@@ -34,6 +35,7 @@ export interface SyncIslandProps {
 }
 
 export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) {
+  const { t: tr } = useLocalization();
   const isRunning = job.status === "running";
   const [expanded, setExpanded] = React.useState(!isRunning);
   const detailsId = React.useId();
@@ -66,7 +68,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
       <motion.div layout="position" className="flex items-center gap-2 py-2 pr-2 pl-3">
         <span className="flex size-6 shrink-0 items-center justify-center">
           {isRunning ? (
-            <SyncProgressRing progress={progress} label={title} />
+            <SyncProgressRing progress={progress} label={tr(title)} />
           ) : failed ? (
             <AlertCircle className="size-5 text-neg" aria-hidden="true" />
           ) : (
@@ -84,7 +86,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
           className="flex min-h-8 min-w-0 flex-1 items-center gap-2 rounded-md text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-island-foreground/60"
         >
           <span className="min-w-0 truncate" aria-live="polite">
-            {isRunning ? <TextShimmer>{title}</TextShimmer> : <TextMorph>{title}</TextMorph>}
+            {isRunning ? <TextShimmer>{tr(title)}</TextShimmer> : <TextMorph>{tr(title)}</TextMorph>}
           </span>
           <ChevronDown
             size={16}
@@ -133,7 +135,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
                 href={categorizeHref}
                 className="mt-3 inline-flex rounded-full bg-island-foreground px-3 py-1 text-sm font-medium text-island hover:bg-island-foreground/90"
               >
-                {CATEGORIZE_LABEL}
+                {tr(CATEGORIZE_LABEL)}
               </Link>
             )}
           </motion.div>

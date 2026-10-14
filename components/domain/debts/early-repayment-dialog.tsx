@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog "Estinzione anticipata": con importo, data e penale mostra subito le due alternative (riduci rata / riduci
@@ -37,6 +38,7 @@ export interface EarlyRepaymentDialogProps {
 }
 
 function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; currency: string; onDone: () => void }) {
+  const { t: tr } = useLocalization();
   const mutation = useCreateDebtEventMutation();
   const today = todayIso();
   const [mode, setMode] = React.useState<EarlyRepaymentMode>("once");
@@ -72,30 +74,30 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
   return (
     <div className="flex flex-col gap-5">
       <DialogSections>
-        <DialogSection title="Quanto e quando" icon={BanknoteIcon}>
-          <SegmentedControl options={MODE_OPTIONS} value={mode} onChange={changeMode} ariaLabel="Quante volte" stretch />
+        <DialogSection title={tr("Quanto e quando")} icon={BanknoteIcon}>
+          <SegmentedControl options={MODE_OPTIONS} value={mode} onChange={changeMode} ariaLabel={tr("Quante volte")} stretch />
           <div className="grid grid-cols-2 gap-3">
-            <DebtFormField label={mode === "once" ? "Importo che estingui" : "Extra ogni mese"} htmlFor={`${id}-amount`}>
+            <DebtFormField label={mode === "once" ? tr("Importo che estingui") : tr("Extra ogni mese")} htmlFor={`${id}-amount`}>
               <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </DebtFormField>
             {mode === "once" ? (
-              <DebtFormField label="Data" htmlFor={`${id}-date`}>
+              <DebtFormField label={tr("Data")} htmlFor={`${id}-date`}>
                 <Input id={`${id}-date`} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
               </DebtFormField>
             ) : null}
           </div>
           {mode === "once" ? (
-            <DebtFormField label="Penale di estinzione (facoltativa)" htmlFor={`${id}-penalty`} hint="La trovi nel contratto: spesso fino all'1% della somma">
+            <DebtFormField label={tr("Penale di estinzione (facoltativa)")} htmlFor={`${id}-penalty`} hint={tr("La trovi nel contratto: spesso fino all'1% della somma")}>
               <div className="flex gap-2">
                 <Input id={`${id}-penalty`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} />
                 <Select value={penaltyUnit} onValueChange={(v) => setPenaltyUnit(v as PenaltyUnit)}>
-                  <SelectTrigger className="w-40" aria-label="Unità della penale">
-                    <SelectValue>{UNIT_LABELS[penaltyUnit]}</SelectValue>
+                  <SelectTrigger className="w-40" aria-label={tr("Unità della penale")}>
+                    <SelectValue>{tr(UNIT_LABELS[penaltyUnit])}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {(Object.keys(UNIT_LABELS) as PenaltyUnit[]).map((unit) => (
                       <SelectItem key={unit} value={unit}>
-                        {UNIT_LABELS[unit]}
+                        {tr(UNIT_LABELS[unit])}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -106,11 +108,11 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
         </DialogSection>
 
         {preview.kind !== "empty" || error ? (
-          <DialogSection title="Cosa cambia" icon={GitCompareArrowsIcon}>
-            {preview.kind === "error" ? <p className="text-sm text-neg" role="alert">{preview.message}</p> : null}
+          <DialogSection title={tr("Cosa cambia")} icon={GitCompareArrowsIcon}>
+            {preview.kind === "error" ? <p className="text-sm text-neg" role="alert">{tr(preview.message)}</p> : null}
             {preview.kind === "once" ? <EarlyRepaymentCompare preview={preview} currency={currency} selected={effect} onSelect={setEffect} /> : null}
             {preview.kind === "monthly" ? <EarlyRepaymentMonthly preview={preview} currency={currency} /> : null}
-            {error ? <p className="text-sm text-neg" role="alert">{error}</p> : null}
+            {error ? <p className="text-sm text-neg" role="alert">{tr(error)}</p> : null}
           </DialogSection>
         ) : null}
       </DialogSections>
@@ -120,7 +122,7 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
           <span />
           <Button type="button" onClick={register} disabled={mutation.isPending || preview.kind !== "once" || !effect}>
             {effect && !mutation.isPending ? <CheckIcon aria-hidden="true" /> : null}
-            {mutation.isPending ? "Salvo…" : effect ? "Registra come fatto" : "Scegli un'alternativa per registrarla"}
+            {mutation.isPending ? tr("Salvo…") : effect ? tr("Registra come fatto") : tr("Scegli un'alternativa per registrarla")}
           </Button>
         </DialogActions>
       ) : null}
@@ -129,10 +131,11 @@ function EarlyRepaymentForm({ debt, currency, onDone }: { debt: DebtView; curren
 }
 
 export function EarlyRepaymentDialog({ debt, currency, open, onOpenChange }: EarlyRepaymentDialogProps) {
+  const { t: tr } = useLocalization();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FormDialogContent>
-        <PanelDialogHeader icon={PiggyBankIcon} title="Estinzione anticipata" description={DESCRIPTION} />
+        <PanelDialogHeader icon={PiggyBankIcon} title={tr("Estinzione anticipata")} description={DESCRIPTION} />
         {open ? <EarlyRepaymentForm debt={debt} currency={currency} onDone={() => onOpenChange(false)} /> : null}
       </FormDialogContent>
     </Dialog>

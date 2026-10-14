@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Primo passo dell'import: carica il file (il formato lo riconosce da solo). Chi non sa come esportarlo apre «Come lo
@@ -28,6 +29,7 @@ export interface ImportFileStepProps {
 }
 
 export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false }: ImportFileStepProps) {
+  const { t: tr } = useLocalization();
   const id = React.useId();
   const [dragging, setDragging] = React.useState(false);
   const [showGuide, setShowGuide] = React.useState(provider !== null);
@@ -46,7 +48,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
         const sheet = readXlsx(new Uint8Array(await files[0].arrayBuffer()));
         onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
       } else onLoad(await files[0].text(), files[0].name);
-    } catch (e) { setFileError(e instanceof Error ? e.message : "Impossibile leggere i file"); }
+    } catch (e) { setFileError(e instanceof Error ? e.message : tr("Impossibile leggere i file")); }
     finally { setLoading(false); }
   }
   const busy = reading || loading;
@@ -70,9 +72,9 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-dashed p-8 text-center transition-colors hover:bg-muted/50 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 ${dragging ? "border-primary bg-primary/5" : ""}`}
       >
         <UploadIcon className="size-6 text-muted-foreground" aria-hidden="true" />
-        <span className="text-sm font-medium text-foreground">{busy ? "Leggo il file…" : "Scegli il file del tuo broker"}</span>
+        <span className="text-sm font-medium text-foreground">{busy ? tr("Leggo il file…") : tr("Scegli il file del tuo broker")}</span>
         <span className="text-xs text-muted-foreground">
-          {busy ? "Un attimo" : chosen?.fileLabel ? `Ti serve: ${chosen.fileLabel}. Oppure trascinalo qui.` : "CSV o Excel, oppure trascinalo qui."}
+          {busy ? tr("Un attimo") : chosen?.fileLabel ? tr("Ti serve: {0}. Oppure trascinalo qui.", {0: chosen.fileLabel}) : tr("CSV o Excel, oppure trascinalo qui.")}
         </span>
         <input
           id={`${id}-file`}
@@ -85,8 +87,8 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
           onChange={(e) => { void readFiles(e.target.files); e.target.value = ""; }}
         />
       </label>
-      {explained ? <ImportNotice tone="error" title={explained.text} hint={explained.hint} detail={fileError ?? undefined} action={<ReportErrorLink area="import_investimenti" error={fileError ?? explained.text} />} /> : null}
-      {onFiles ? <p className="text-center text-sm text-muted-foreground">Più rendiconti? Selezionali insieme (fino a 20): IBKR, DEGIRO e Trade Republic.</p> : null}
+      {explained ? <ImportNotice tone="error" title={explained.text} hint={tr(explained.hint)} detail={fileError ?? undefined} action={<ReportErrorLink area="import_investimenti" error={fileError ?? explained.text} />} /> : null}
+      {onFiles ? <p className="text-center text-sm text-muted-foreground">{tr("Più rendiconti? Selezionali insieme (fino a 20): IBKR, DEGIRO e Trade Republic.")}</p> : null}
 
       <div className="flex flex-col gap-3 border-t pt-3">
         <button
@@ -94,20 +96,14 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
           aria-expanded={showGuide}
           onClick={() => setShowGuide((open) => !open)}
           className="flex min-h-11 w-fit cursor-pointer items-center gap-1.5 text-sm font-medium text-primary hover:underline sm:min-h-9"
-        >
-          Come ottengo il file?
-          <ChevronDownIcon className={`size-4 transition-transform ${showGuide ? "rotate-180" : ""}`} aria-hidden="true" />
+        >{tr("Come ottengo il file?")}<ChevronDownIcon className={`size-4 transition-transform ${showGuide ? "rotate-180" : ""}`} aria-hidden="true" />
         </button>
         {showGuide ? (
           <ImportProviderPicker value={provider} onChange={onProviderChange} renderSelected={(info) => <ImportExportGuide provider={info} />} />
         ) : null}
-        <p className="text-sm text-muted-foreground">
-          Il tuo broker non c&apos;è?{" "}
-          <Link href="/importazioni" className="font-medium text-primary hover:underline">
-            Crea il tuo formato
-          </Link>
-          .
-        </p>
+        <p className="text-sm text-muted-foreground">{tr("Il tuo broker non c'è?")}{" "}
+          <Link href="/importazioni" className="font-medium text-primary hover:underline">{tr("Crea il tuo formato")}</Link>
+          {"."}</p>
       </div>
     </div>
   );

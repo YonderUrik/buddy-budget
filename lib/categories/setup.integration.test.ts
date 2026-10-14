@@ -71,3 +71,19 @@ describe("applyCategorySetup", () => {
     expect(await applyCategorySetup(userId, items)).toEqual({ outcome: "skipped", reason: "invalid" });
   });
 });
+
+
+describe("default category identity", () => {
+  it("retains default identity for translated onboarding labels and clears it for custom names", async () => {
+    const { localizedCategoryProposal } = await import("@/lib/localization/categories");
+    const userId = await makeUser();
+    const items = localizedCategoryProposal({ productCountry: "IT", language: "en" }).map(item =>
+      item.key === "spesa" ? { ...item, name: "Weekly food" } : item.key === "animali" ? { ...item, enabled: true } : item
+    );
+    expect((await applyCategorySetup(userId, items)).outcome).toBe("applied");
+    const rows = await db.select().from(categories).where(eq(categories.userId, userId));
+    expect(rows.find(row => row.name === "Weekly food")?.defaultKey).toBeNull();
+    expect(rows.find(row => row.defaultKey === "trasferimenti")).toBeDefined();
+    expect(rows.find(row => row.defaultKey === "animali")).toBeDefined();
+  });
+});

@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Liquidità · Regole: le regole che assegnano da sole la categoria ai movimenti riconosciuti. */
 
@@ -17,6 +18,7 @@ const OPTIONS = [
 ] as const;
 
 export default function LiquiditaRegolePage() {
+  const { t: tr } = useLocalization();
   const pathname = usePathname();
   const { data: categories, isLoading, isError, refetch } = useCategoriesQuery();
 
@@ -26,12 +28,12 @@ export default function LiquiditaRegolePage() {
     <div className="flex max-w-3xl flex-col gap-6">
       <ManagementSwitch options={OPTIONS} activeHref={pathname} />
       <section>
-        <SectionTitle icon={WandSparklesIcon} title="Regole automatiche" color="var(--swatch-purple)" />
-        <p className="mb-4 text-sm text-text-2">Le regole assegnano da sole la categoria ai movimenti che riconoscono.</p>
+        <SectionTitle icon={WandSparklesIcon} title={tr("Regole automatiche")} color="var(--swatch-purple)" />
+        <p className="mb-4 text-sm text-text-2">{tr("Le regole assegnano da sole la categoria ai movimenti che riconoscono.")}</p>
         {isLoading ? (
           <div className="h-48 animate-pulse rounded-2xl bg-muted" aria-busy="true" />
         ) : isError ? (
-          <LoadError message="Impossibile caricare le categorie." onRetry={() => refetch()} />
+          <LoadError message={tr("Impossibile caricare le categorie.")} onRetry={() => refetch()} />
         ) : (
           <RulesManager categories={categories ?? []} />
         )}

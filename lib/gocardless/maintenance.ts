@@ -11,6 +11,11 @@ export function parseMaintenanceMode(value: string | undefined): MaintenanceMode
   return value === "off" || value === "execute" ? value : "dry-run";
 }
 
+/** Legge `GOCARDLESS_CLEANUP_APPROVED_REQUISITIONS`: id separati da virgola o spazi, approvati a mano uno per uno. */
+export function parseApprovedRequisitions(value: string | undefined): Set<string> {
+  return new Set((value ?? "").split(/[\s,]+/).filter(Boolean));
+}
+
 export interface MaintenanceResult {
   expiredMarked: number;
   notices: { sent: number; failed: number };
@@ -26,6 +31,7 @@ export interface MaintenanceResult {
 export async function runGoCardlessMaintenance(options: {
   mode: MaintenanceMode;
   deleteUnknown?: boolean;
+  approvedRequisitionIds?: ReadonlySet<string>;
   now?: Date;
   log?: Logger;
 }): Promise<MaintenanceResult> {
@@ -36,6 +42,12 @@ export async function runGoCardlessMaintenance(options: {
   const cleanup =
     options.mode === "off"
       ? null
-      : await runGoCardlessCleanup({ mode: options.mode, deleteUnknown: options.deleteUnknown, now, log: options.log });
+      : await runGoCardlessCleanup({
+          mode: options.mode,
+          deleteUnknown: options.deleteUnknown,
+          approvedRequisitionIds: options.approvedRequisitionIds,
+          now,
+          log: options.log,
+        });
   return { expiredMarked, notices, cleanup, failed: notices.failed + (cleanup?.failed ?? 0) };
 }

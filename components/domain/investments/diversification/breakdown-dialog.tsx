@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog per correggere a mano area e settore di uno strumento. Parte dai valori in uso (automatici o già corretti);
@@ -75,6 +76,7 @@ export function BreakdownDialog({ row, onClose }: BreakdownDialogProps) {
 }
 
 function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void }) {
+  const { t: tr } = useLocalization();
   const update = useUpdateBreakdownMutation();
   const [dimension, setDimension] = React.useState<Dimension>("areas");
   const [state, setState] = React.useState(() => initialState(row));
@@ -122,53 +124,47 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
   const isManual = source === "manuale" && !current.reset;
   return (
     <>
-      <PanelDialogHeader icon={GlobeIcon} title={<>Correggi {row.instrument.name}</>} description="Metti le percentuali che trovi nella scheda dell&apos;emittente (KID o sito del fondo). Quello che manca a 100% resta &ldquo;non classificato&rdquo;. La correzione vale solo per te." color="var(--swatch-blue)" />
+      <PanelDialogHeader icon={GlobeIcon} title={<>{tr("Correggi")}{" "}{row.instrument.name}</>} description={tr("Metti le percentuali che trovi nella scheda dell'emittente (KID o sito del fondo). Quello che manca a 100% resta “non classificato”. La correzione vale solo per te.")} color="var(--swatch-blue)" />
       <DialogSections>
       <DialogSection
-        title="Percentuali"
+        title={tr("Percentuali")}
         icon={PercentIcon}
         color="var(--swatch-blue)"
-        description={current.reset ? "Tornerà ai dati automatici quando salvi." : `Ora: ${EXPOSURE_SOURCE_LABELS[current.dirty ? "manuale" : source]}.`}
+        description={current.reset ? tr("Tornerà ai dati automatici quando salvi.") : tr("Ora: {0}.", {0: EXPOSURE_SOURCE_LABELS[current.dirty ? "manuale" : source]})}
       >
-      <SegmentedControl options={DIMENSION_OPTIONS} value={dimension} onChange={setDimension} ariaLabel="Cosa correggere" stretch />
+      <SegmentedControl options={DIMENSION_OPTIONS} value={dimension} onChange={setDimension} ariaLabel={tr("Cosa correggere")} stretch />
       <div className="grid max-h-72 grid-cols-2 gap-x-4 gap-y-2 overflow-y-auto pr-1">
         {KEYS[dimension].map((key) => (
           <label key={key} className="flex items-center justify-between gap-2 text-sm text-foreground">
-            <span className="min-w-0 truncate">{LABELS[dimension][key]}</span>
+            <span className="min-w-0 truncate">{tr(LABELS[dimension])[key]}</span>
             <span className="flex items-center gap-1">
               <Input
                 inputMode="decimal"
                 className="h-8 w-16 text-right tabular-nums"
                 value={current.text[key] ?? ""}
                 onChange={(e) => setValue(key, e.target.value)}
-                aria-label={`${LABELS[dimension][key]} in percentuale`}
+                aria-label={tr("{0} in percentuale", {0: LABELS[dimension][key]})}
               />
-              <span className="text-muted-foreground">%</span>
+              <span className="text-muted-foreground">{"%"}</span>
             </span>
           </label>
         ))}
       </div>
-      <p className={cn("text-sm tabular-nums", sum > 100 + SUM_TOLERANCE_PERCENT ? "text-destructive" : "text-muted-foreground")}>
-        Totale {sum.toFixed(1).replace(".", ",")}%
-        {sum < 100 - SUM_TOLERANCE_PERCENT ? ` · non classificato ${(100 - sum).toFixed(1).replace(".", ",")}%` : ""}
+      <p className={cn("text-sm tabular-nums", sum > 100 + SUM_TOLERANCE_PERCENT ? "text-destructive" : "text-muted-foreground")}>{tr("Totale")}{" "}{sum.toFixed(1).replace(".", ",")}{"%"}{sum < 100 - SUM_TOLERANCE_PERCENT ? tr(" · non classificato {0}%", {0: (100 - sum).toFixed(1).replace(".", ",")}) : ""}
       </p>
       </DialogSection>
       </DialogSections>
-      {update.isError ? <p className="text-sm text-destructive">{update.error.message}</p> : null}
+      {update.isError ? <p className="text-sm text-destructive">{tr(update.error.message)}</p> : null}
       <DialogActions>
         {isManual || current.dirty ? (
-          <Button variant="ghost" className="text-muted-foreground" onClick={resetDimension} disabled={update.isPending}>
-            Torna all&apos;automatico
-          </Button>
+          <Button variant="ghost" className="text-muted-foreground" onClick={resetDimension} disabled={update.isPending}>{tr("Torna all'automatico")}</Button>
         ) : (
           <span />
         )}
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onClose} disabled={update.isPending}>
-            Annulla
-          </Button>
+          <Button variant="outline" onClick={onClose} disabled={update.isPending}>{tr("Annulla")}</Button>
           <Button onClick={save} disabled={invalid || update.isPending}>
-            {update.isPending ? "Salvo…" : "Salva"}
+            {update.isPending ? tr("Salvo…") : tr("Salva")}
           </Button>
         </div>
       </DialogActions>

@@ -1,12 +1,16 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Elenco dei movimenti a giorni: intestazione con etichetta e totale del giorno, poi i movimenti. Mostra a blocchi, con "Mostra altri". */
 
 import * as React from "react";
 import type { Category } from "@/lib/db/schema/categories";
-import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
-import { formatCurrency } from "@/lib/format";
+import { LogoCredit } from "@/components/domain/categorization";
+import type { ListedTransaction } from "@/lib/queries/transactions";
+
 import { groupByDay } from "@/lib/liquidity/day-groups";
 import { MovementItem } from "./movement-item";
 
@@ -14,7 +18,7 @@ import { MovementItem } from "./movement-item";
 const DAYS_PER_PAGE = 10;
 
 export interface MovementFeedProps {
-  transactions: readonly Transaction[];
+  transactions: readonly ListedTransaction[];
   categories: readonly Category[];
   usage?: CategoryUsageCounts;
   /** Nome del conto per id; con un solo conto filtrato si può omettere per non ripeterlo su ogni riga. */
@@ -25,15 +29,21 @@ export interface MovementFeedProps {
 }
 
 export function MovementFeed({ transactions, categories, usage, accountNames, currency, today, emptyMessage }: MovementFeedProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [days, setDays] = React.useState(DAYS_PER_PAGE);
-  const groups = React.useMemo(() => groupByDay([...transactions], today), [transactions, today]);
-  if (groups.length === 0) return <p className="py-10 text-center text-text-2">{emptyMessage}</p>;
+  const [logosShown, setLogosShown] = React.useState(false);
+  const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
+  const groups = React.useMemo(() => groupByDay([...transactions], today, formattingLocale), [transactions, today, formattingLocale]);
+  if (groups.length === 0) return <p className="py-10 text-center text-text-2">{tr(emptyMessage)}</p>;
   return (
     <div>
       {groups.slice(0, days).map((group) => (
-        <section key={group.date} aria-label={group.label}>
+        <section key={group.date} aria-label={tr(group.label)}>
           <div className="flex items-baseline justify-between px-1.5 pt-5 pb-1 text-sm font-semibold text-text-2">
-            <h3 className="capitalize">{group.label}</h3>
+            <h3 className="capitalize">{tr(group.label)}</h3>
             <span className="font-mono tabular-nums">
               {group.total >= 0 ? "+" : "−"}
               {formatCurrency(Math.abs(group.total), currency)}
@@ -48,6 +58,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
                 usage={usage}
                 accountName={accountNames?.get(transaction.accountId)}
                 currency={currency}
+                onRemoteLogo={showLogoCredit}
               />
             ))}
           </ul>
@@ -55,11 +66,10 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
       ))}
       {groups.length > days && (
         <div className="flex justify-center pt-5">
-          <button type="button" onClick={() => setDays((d) => d + DAYS_PER_PAGE)} className="min-h-11 rounded-xl px-4 font-semibold text-primary hover:underline">
-            Mostra altri movimenti
-          </button>
+          <button type="button" onClick={() => setDays((d) => d + DAYS_PER_PAGE)} className="min-h-11 rounded-xl px-4 font-semibold text-primary hover:underline">{tr("Mostra altri movimenti")}</button>
         </div>
       )}
+      <LogoCredit visible={logosShown} className="pt-4" />
     </div>
   );
 }

@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Spese per gruppo (Dovute, Volute, Te futuro, Saltuarie): la ciambella ha al più cinque fette qualunque sia il numero di categorie,
@@ -8,7 +11,7 @@
 import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { CategoryAvatar } from "@/components/domain/categories";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { CategoryDonut } from "./category-donut";
@@ -56,6 +59,10 @@ interface GroupBlockProps {
 }
 
 function GroupBlock({ group, total, currency, visible, open, highlighted, locked, onToggle, onHoverChange, onPickCategory }: GroupBlockProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [all, setAll] = React.useState(false);
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
   const shown = all ? group.categories : group.categories.slice(0, visible);
@@ -75,9 +82,9 @@ function GroupBlock({ group, total, currency, visible, open, highlighted, locked
       >
         <span className="size-3.5 shrink-0 rounded-full" style={{ backgroundColor: group.color }} aria-hidden="true" />
         <span className="min-w-0 flex-1">
-          <span className="block font-semibold">{group.label}</span>
+          <span className="block font-semibold">{tr(group.label)}</span>
           <span className="block text-sm text-text-2">
-            {Math.round((group.amount / (total || 1)) * 100)}% delle spese · {group.categories.length} {group.categories.length === 1 ? "categoria" : "categorie"}
+            {Math.round((group.amount / (total || 1)) * 100)}{tr("% delle spese ·")}{" "}{group.categories.length}{" "}{group.categories.length === 1 ? tr("categoria") : tr("categorie")}
           </span>
         </span>
         <span className="font-heading font-semibold tabular-nums">{money(group.amount)}</span>
@@ -106,7 +113,7 @@ function GroupBlock({ group, total, currency, visible, open, highlighted, locked
           {group.categories.length > visible && (
             <li>
               <button type="button" onClick={() => setAll((v) => !v)} className="min-h-11 w-full rounded-xl px-2 text-left text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-ring">
-                {all ? "Mostra meno" : `Mostra tutte (${group.categories.length})`}
+                {all ? tr("Mostra meno") : tr("Mostra tutte ({0})", {0: group.categories.length})}
               </button>
             </li>
           )}

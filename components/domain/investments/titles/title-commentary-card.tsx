@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card "Commento" scritta da un modello locale (Ollama) a partire dai soli dati pubblici del titolo. Compare solo se il
@@ -15,14 +16,15 @@ export interface TitleCommentaryCardProps {
 }
 
 export function TitleCommentaryCard({ instrumentId }: TitleCommentaryCardProps) {
+  const { t: tr } = useLocalization();
   const commentary = useCommentaryMutation(instrumentId);
   const text = commentary.data?.text ?? null;
   return (
-    <PanelSection icon={SparklesIcon} title="Commento" color="var(--swatch-violet)"
+    <PanelSection icon={SparklesIcon} title={tr("Commento")} color="var(--swatch-violet)"
       action={
         <Button variant="outline" size="sm" className="gap-1.5" disabled={commentary.isPending} onClick={() => commentary.mutate()}>
           <SparklesIcon size={14} aria-hidden="true" />
-          {commentary.isPending ? "Sto scrivendo…" : text ? "Riscrivi" : "Genera commento"}
+          {commentary.isPending ? tr("Sto scrivendo…") : text ? tr("Riscrivi") : tr("Genera commento")}
         </Button>
       }>
       <div className="flex flex-col gap-2">
@@ -30,16 +32,14 @@ export function TitleCommentaryCard({ instrumentId }: TitleCommentaryCardProps) 
           <p className="whitespace-pre-line text-sm leading-relaxed text-foreground">{text}</p>
         ) : commentary.isError ? (
           <p role="alert" className="text-sm text-destructive">
-            {commentary.error.message}
+            {tr(commentary.error.message)}
           </p>
         ) : commentary.data && commentary.data.available && !text ? (
-          <p className="text-sm text-muted-foreground">Il modello non ha risposto. Riprova tra poco.</p>
+          <p className="text-sm text-muted-foreground">{tr("Il modello non ha risposto. Riprova tra poco.")}</p>
         ) : (
-          <p className="text-sm text-muted-foreground">Un riassunto in parole semplici di come è andato il titolo, scritto da un modello in esecuzione sul server.</p>
+          <p className="text-sm text-muted-foreground">{tr("Un riassunto in parole semplici di come è andato il titolo, scritto da un modello in esecuzione sul server.")}</p>
         )}
-        <p className="text-xs text-muted-foreground">
-          Generato automaticamente da dati di prezzo e numeri chiave: può sbagliare e non è una raccomandazione di investimento.
-        </p>
+        <p className="text-xs text-muted-foreground">{tr("Generato automaticamente da dati di prezzo e numeri chiave: può sbagliare e non è una raccomandazione di investimento.")}</p>
       </div>
     </PanelSection>
   );

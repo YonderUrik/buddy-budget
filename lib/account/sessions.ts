@@ -8,6 +8,8 @@ import { describeUserAgent, formatDevice } from "./user-agent";
 export interface UserSessionView {
   id: string;
   device: string;
+  browser: string;
+  os: string;
   mobile: boolean;
   createdAt: string;
   lastActiveAt: string;
@@ -34,6 +36,8 @@ export async function listUserSessions(userId: string, currentSessionId: string,
       return {
         id: row.id,
         device: formatDevice(device),
+        browser: device.browser,
+        os: device.os,
         mobile: device.mobile,
         createdAt: row.createdAt.toISOString(),
         lastActiveAt: row.updatedAt.toISOString(),

@@ -1,3 +1,4 @@
+import { withCountryGuard } from "@/lib/localization/guard";
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
@@ -32,4 +33,4 @@ async function handlePost(request: NextRequest) {
   return Response.json(created, { status: 201 });
 }
 
-export const POST = withRoute("tax_carryforwards.create", handlePost);
+export const POST = withRoute("tax_carryforwards.create", withCountryGuard(handlePost));

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
+import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { authClient } from "@/lib/auth/client";
 import { computeAccountsKpi } from "@/components/domain/accounts";
@@ -14,16 +14,23 @@ import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import type { AnalyticsAssumptions, UpdateAssumptionsInput } from "./assumptions";
-import { ANALYTICS_HISTORY_MONTHS, buildAnalyticsBase, type AnalyticsBase } from "./base";
+import { analyticsTransactionsRange, buildAnalyticsBase, type AnalyticsBase } from "./base";
+import { DEFAULT_DATA_PERIOD } from "./period";
+import { resolveExpectedReturn, withExpectedReturn, type ExpectedReturnInfo } from "./historical-return";
 import { resolvePlan, type AnalyticsPlan } from "./plan";
 
 /** Valore condiviso dalle schede di Analitiche: dati di partenza, ipotesi e cifre risultanti. */
 export interface AnalyticsContextValue {
   isLoading: boolean;
+  /** Arrivano i movimenti di un periodo appena scelto: le cifre sono ancora quelle del periodo di prima. */
+  isUpdatingPeriod: boolean;
   isError: boolean;
   refetch: () => void;
   base: AnalyticsBase | null;
+  /** Ipotesi in uso: quelle salvate, con il rendimento dallo storico se è in automatico. */
   assumptions: AnalyticsAssumptions | null;
+  /** Da dove viene il rendimento in uso (storico, valore prudente o scelto dall'utente). */
+  returnInfo: ExpectedReturnInfo | null;
   plan: AnalyticsPlan | null;
   walkthroughSeen: boolean;
   saveAssumptions: (input: UpdateAssumptionsInput) => Promise<void>;
@@ -40,26 +47,35 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const { data: session } = authClient.useSession();
   const accounts = useAccountsQuery();
-  const range = React.useMemo(() => ({ from: startOfMonth(addMonths(today, -(ANALYTICS_HISTORY_MONTHS - 1))), to: endOfMonth(today) }), [today]);
-  const transactions = useTransactionsQuery(toDateKey(range.from), toDateKey(range.to), "tutte");
+  const assumptionsQuery = useAnalyticsAssumptionsQuery();
+  // Il periodo dei dati decide quali movimenti leggere: finché le ipotesi non arrivano si parte da quello di default.
+  const period = assumptionsQuery.data?.assumptions.dataPeriod ?? DEFAULT_DATA_PERIOD;
+  const periodKey = JSON.stringify(period);
+  const range = React.useMemo(() => analyticsTransactionsRange(JSON.parse(periodKey), today), [periodKey, today]);
+  const transactions = useTransactionsQuery(range.from, range.to, "tutte", { enabled: assumptionsQuery.isSuccess, keepPrevious: true });
   const categories = useCategoriesQuery();
   const investments = useInvestmentsOverviewQuery("max");
   const pension = usePensionQuery();
   const debts = useDebtsQuery();
   const snapshots = useNetWorthSnapshotsQuery("2000-01-01", toDateKey(today));
-  const assumptionsQuery = useAnalyticsAssumptionsQuery();
   const update = useUpdateAssumptionsMutation();
   const markSeen = useMarkWalkthroughSeenMutation();
 
+  // Cambiando periodo restano i movimenti di prima finché arrivano i nuovi: i conti si fanno sul periodo che hanno davvero.
+  const [shownPeriodKey, setShownPeriodKey] = React.useState(periodKey);
+  if (transactions.data && !transactions.isPlaceholderData && shownPeriodKey !== periodKey) setShownPeriodKey(periodKey);
+
   const critical = [accounts, transactions, categories, assumptionsQuery, snapshots];
-  const isLoading = critical.some((q) => q.isLoading) || investments.isLoading;
+  // isPending e non isLoading: i movimenti aspettano le ipotesi (per il periodo) e intanto non stanno caricando.
   const isError = critical.some((q) => q.isError);
+  const isLoading = !isError && (critical.some((q) => q.isPending) || investments.isLoading);
 
   const base = React.useMemo(() => {
     if (!accounts.data || !transactions.data || !categories.data || !snapshots.data) return null;
     return buildAnalyticsBase({
       today,
       currency: session?.user.currency ?? "EUR",
+      period: JSON.parse(shownPeriodKey),
       liquidity: computeAccountsKpi(accounts.data).totalLiquidity,
       transactions: transactions.data,
       categories: categories.data,
@@ -68,19 +84,23 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       debtsTotal: debts.data?.overview.totalDebt ?? 0,
       snapshots: snapshots.data,
     });
-  }, [accounts.data, transactions.data, categories.data, snapshots.data, investments.data, pension.data, debts.data, session?.user.currency, today]);
+  }, [accounts.data, transactions.data, categories.data, snapshots.data, investments.data, pension.data, debts.data, session?.user.currency, today, shownPeriodKey]);
 
-  const assumptions = assumptionsQuery.data?.assumptions ?? null;
+  const stored = assumptionsQuery.data?.assumptions ?? null;
+  const returnInfo = React.useMemo(() => (base && stored ? resolveExpectedReturn(stored, base.historicalReturn) : null), [base, stored]);
+  const assumptions = React.useMemo(() => (stored && returnInfo ? withExpectedReturn(stored, returnInfo) : stored), [stored, returnInfo]);
   const plan = React.useMemo(() => (base && assumptions ? resolvePlan(base, assumptions) : null), [base, assumptions]);
 
   const value: AnalyticsContextValue = {
     isLoading,
+    isUpdatingPeriod: shownPeriodKey !== periodKey,
     isError,
     refetch: () => {
       for (const q of [...critical, investments]) q.refetch();
     },
     base,
     assumptions,
+    returnInfo,
     plan,
     walkthroughSeen: assumptionsQuery.data?.walkthroughSeen ?? true,
     saveAssumptions: async (input) => {

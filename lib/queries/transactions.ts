@@ -1,17 +1,20 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import type { CreateTransactionInput, UpdateTransactionInput } from "@/lib/validation/transactions";
 import { track } from "@/lib/analytics";
 
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
 
+/** Movimento come arriva dall'elenco: con l'indirizzo del logo dell'esercente, se il server ne ha trovato uno. */
+export type ListedTransaction = Transaction & { logoPath?: string | null };
+
 function transactionsQueryKey(from: string, to: string, type: TransactionDirectionParam) {
   return ["transactions", from, to, type] as const;
 }
 
-async function fetchTransactions(from: string, to: string, type: TransactionDirectionParam): Promise<Transaction[]> {
+async function fetchTransactions(from: string, to: string, type: TransactionDirectionParam): Promise<ListedTransaction[]> {
   const response = await fetch(`/api/transactions?from=${from}&to=${to}&type=${type}`);
   if (!response.ok) {
     throw new Error("Impossibile caricare le transazioni");
@@ -19,9 +22,20 @@ async function fetchTransactions(from: string, to: string, type: TransactionDire
   return response.json();
 }
 
+/** Opzioni di `useTransactionsQuery`: `enabled` per aspettare un dato che serve all'intervallo, `keepPrevious` per tenere i movimenti precedenti mentre arrivano quelli di un intervallo nuovo. */
+export interface TransactionsQueryOptions {
+  enabled?: boolean;
+  keepPrevious?: boolean;
+}
+
 /** Recupera le transazioni dell'utente nell'intervallo [from, to] (YYYY-MM-DD), filtrate per direzione (default "uscita"). */
-export function useTransactionsQuery(from: string, to: string, type: TransactionDirectionParam = "uscita") {
-  return useQuery({ queryKey: transactionsQueryKey(from, to, type), queryFn: () => fetchTransactions(from, to, type) });
+export function useTransactionsQuery(from: string, to: string, type: TransactionDirectionParam = "uscita", options: TransactionsQueryOptions = {}) {
+  return useQuery({
+    queryKey: transactionsQueryKey(from, to, type),
+    queryFn: () => fetchTransactions(from, to, type),
+    enabled: options.enabled ?? true,
+    placeholderData: options.keepPrevious ? keepPreviousData : undefined,
+  });
 }
 
 /** Crea una spesa manuale e invalida tutte le liste di transazioni in cache. */

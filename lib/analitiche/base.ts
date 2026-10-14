@@ -27,9 +27,13 @@ import type { InvestmentData } from "@/lib/investments/data";
 import { buildInvestmentsView, toTransactionInputs } from "@/lib/investments/view";
 import { pensionTotalOn } from "@/lib/net-worth/pension-history";
 import type { PensionFundData } from "@/lib/pension/types";
+import { historicalReturn, type HistoricalReturnResult } from "./historical-return";
+import { resolvePeriodRange, type DataPeriod } from "./period";
 
-/** Mesi di transazioni letti: 12 per la spesa annua più uno per il mese in corso (parziale). */
+/** Mesi di transazioni letti per la crescita del patrimonio: gli ultimi 12 più il mese in corso (parziale). */
 export const ANALYTICS_HISTORY_MONTHS = 13;
+/** Mesi con movimenti sotto cui spesa e risparmio non si ricavano dai dati (una media su meno mesi dice poco). */
+export const MIN_MONTHS_FOR_CASHFLOW = 3;
 /** Posizioni considerate nel contributo al rischio (le più grandi), per tenere leggero il calcolo. */
 export const MAX_RISK_POSITIONS = 8;
 /** Giorni in comune minimi tra le serie per calcolare il contributo al rischio. */
@@ -37,9 +41,18 @@ const MIN_COMMON_DAYS = 60;
 /** Gruppi di spesa che formano la spesa "lean": il necessario e le spese rare ma inevitabili. */
 const LEAN_GROUPS = new Set(["dovuta", "saltuaria"]);
 
+/** Movimenti da leggere: il periodo dei dati e, per la crescita, gli ultimi 12 mesi con il mese in corso. */
+export function analyticsTransactionsRange(period: DataPeriod, today: Date): { from: string; to: string } {
+  const recent = startOfMonth(addMonths(today, -(ANALYTICS_HISTORY_MONTHS - 1)));
+  const chosen = resolvePeriodRange(period, today).from;
+  return { from: toDateKey(chosen < recent ? chosen : recent), to: toDateKey(endOfMonth(today)) };
+}
+
 export interface AnalyticsBaseInput {
   today: Date;
   currency: string;
+  /** Periodo da cui si ricavano spesa, risparmio e rendimento. */
+  period: DataPeriod;
   liquidity: number;
   transactions: Transaction[];
   categories: Category[];
@@ -67,8 +80,14 @@ export interface AnalyticsBase {
   currency: string;
   wealth: { liquidity: number; investments: number; pension: number; debts: number };
   cashflow: {
-    /** Mesi interi usati (gli ultimi 12 completi, escluso il corrente). */
+    /** Mesi interi del periodo scelto (il mese in corso non conta mai). */
     months: CashflowMonthlyEntry[];
+    /** Inizio e fine del periodo (AAAA-MM-GG). */
+    fromKey: string;
+    toKey: string;
+    /** Mesi su cui si fa la media: dal primo mese con movimenti alla fine del periodo. */
+    coveredMonths: number;
+    /** Entrate, uscite e risparmio sono riportati a un anno (media mensile × 12). */
     annualIncome: number;
     annualSpending: number;
     annualSavings: number;
@@ -84,11 +103,8 @@ export interface AnalyticsBase {
   riskContribution: RiskContribution[] | null;
   /** Nomi per id, per etichettare i contributi al rischio. */
   names: Record<string, string>;
-}
-
-function fullMonthsRange(today: Date): { from: Date; to: Date } {
-  const lastFull = addMonths(today, -1);
-  return { from: startOfMonth(addMonths(lastFull, -11)), to: endOfMonth(lastFull) };
+  /** Rendimento nel periodo scelto, da cui parte il rendimento atteso se l'utente non ne sceglie uno. */
+  historicalReturn: HistoricalReturnResult;
 }
 
 function leanShare(transactions: Transaction[], categories: Category[], range: { from: Date; to: Date }): number | null {
@@ -123,11 +139,16 @@ function commonReturns(series: Map<string, number>[]): number[][] | null {
 export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
   const { today, investments } = input;
   const todayKey = toDateKey(today);
-  const range = fullMonthsRange(today);
-  const months = computeMonthlySeries(input.transactions, range);
-  const monthsWithData = months.filter((m) => m.entrate > 0 || m.uscite > 0).length;
-  const annualIncome = months.reduce((s, m) => s + m.entrate, 0);
-  const annualSpending = months.reduce((s, m) => s + m.uscite, 0);
+  const range = resolvePeriodRange(input.period, today);
+  const months = range.months > 0 ? computeMonthlySeries(input.transactions, range) : [];
+  const hasData = (m: CashflowMonthlyEntry) => m.entrate > 0 || m.uscite > 0;
+  const monthsWithData = months.filter(hasData).length;
+  // Chi ha iniziato a registrare a metà periodo: la media si fa sui mesi da allora, non su quelli vuoti di prima.
+  const firstWithData = months.findIndex(hasData);
+  const coveredMonths = firstWithData < 0 ? 0 : months.length - firstWithData;
+  const perYear = coveredMonths > 0 ? 12 / coveredMonths : 0;
+  const annualIncome = months.reduce((s, m) => s + m.entrate, 0) * perYear;
+  const annualSpending = months.reduce((s, m) => s + m.uscite, 0) * perYear;
   const share = leanShare(input.transactions, input.categories, range);
 
   let positions: AnalyticsBase["positions"] = [];
@@ -135,6 +156,7 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
   let risk: AnalyticsRisk | null = null;
   const names: Record<string, string> = {};
   let investmentsValue = 0;
+  let history: HistoricalReturnResult = { status: "manca", reason: "nessun-investimento" };
   if (investments && investments.transactions.length > 0) {
     const view = buildInvestmentsView(investments, "max", today);
     investmentsValue = view.summary.totalValue;
@@ -174,11 +196,27 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
       };
     }
 
+    const transactionInputs = toTransactionInputs(investments);
+    history = historicalReturn({
+      transactions: transactionInputs,
+      instruments: investments.instruments,
+      priceIndex: view.priceIndex,
+      fx: buildFxTable(investments.fxRates),
+      userCurrency: investments.currency,
+      inflation: investments.inflation,
+      today,
+      window:
+        input.period.kind === "ultimi"
+          ? { fromKey: toDateKey(addMonths(today, -input.period.months)), toKey: todayKey }
+          : { fromKey: toDateKey(range.from), toKey: toDateKey(range.to) },
+      currentValue: investmentsValue,
+      unpricedCount: view.summary.unpricedCount,
+    });
+
     const top = [...positions].sort((a, b) => b.value - a.value).slice(0, MAX_RISK_POSITIONS);
     if (top.length >= 2) {
-      const transactions = toTransactionInputs(investments);
-      const first = transactions.map((t) => t.date).sort()[0];
-      const priceIndex = buildPriceIndex(investments.prices, investments.manualPrices, transactions);
+      const first = transactionInputs.map((t) => t.date).sort()[0];
+      const priceIndex = buildPriceIndex(investments.prices, investments.manualPrices, transactionInputs);
       const fx = buildFxTable(investments.fxRates);
       const series = top.map((p) => {
         const instrument = view.instruments.find((i) => i.id === p.id);
@@ -217,6 +255,9 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
     },
     cashflow: {
       months,
+      fromKey: toDateKey(range.from),
+      toKey: toDateKey(range.to),
+      coveredMonths,
       annualIncome,
       annualSpending,
       annualSavings: annualIncome - annualSpending,
@@ -229,5 +270,6 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
     risk,
     riskContribution,
     names,
+    historicalReturn: history,
   };
 }

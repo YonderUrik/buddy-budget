@@ -1,0 +1,6 @@
+# «Fissa il tuo traguardo» nei Primi passi (2026-10-12)
+
+Il quarto passo dei Primi passi («Imposta un obiettivo», link generico ad Analitiche) non diceva cosa fare: si arrivava tra cursori e risposte senza un campo da compilare. L'intenzione era far salvare almeno un'ipotesi del piano FIRE (o un budget), e l'ipotesi che conta davvero è la spesa annua da coprire, da cui escono numero FIRE e anno di arrivo.
+Decisione: tenere il passo e renderlo chiaro invece di toglierlo. Ora si chiama «Fissa il tuo traguardo» e porta a `/analitiche?traguardo=1`, che apre il foglio «Il tuo traguardo»: una sola cifra (quanto ti serve in un anno, precompilata dai movimenti), con il patrimonio che basta e l'anno in cui ci arrivi calcolati mentre si scrive. Se la cifra resta quella dei movimenti si salva come «dai miei dati» (si aggiorna da sola). Chi arriva da lì non si vede aprire sopra la guida iniziale di Analitiche.
+Il passo resta fatto anche con un budget, come prima, per non far ricomparire la checklist a chi l'aveva completata così.
+Osservabilità: eventi Umami `analytics_goal_opened` e `analytics_goal_saved` (`source`: dati/scritta); il salvataggio passa dalla route esistente con il log `analytics.assumptions.saved`.

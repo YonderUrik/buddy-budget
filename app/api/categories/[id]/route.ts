@@ -1,3 +1,5 @@
+import { localizeCategory } from "@/lib/localization/categories";
+import { resolveProfile } from "@/lib/localization/config";
 import { NextRequest } from "next/server";
 import { and, eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -53,6 +55,13 @@ async function handlePatch(
     return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
+  // Saving a displayed default label is not a rename (including the protected fallback).
+  const displayed = localizeCategory(category, resolveProfile(session.user));
+  if (parsed.data.name === displayed.name) delete parsed.data.name;
+  if (parsed.data.description === displayed.description) delete parsed.data.description;
+
+  if (Object.keys(parsed.data).length === 0) return Response.json(category);
+
   if (category.isFallback && parsed.data.name && parsed.data.name !== category.name) {
     return Response.json(
       { error: "Il nome della categoria di fallback non può essere modificato" },
@@ -74,7 +83,7 @@ async function handlePatch(
     return Response.json({ error: "La categoria da categorizzare non può diventare un trasferimento" }, { status: 400 });
   }
   const updated = await db.transaction(async (tx) => {
-    const [row] = await tx.update(categories).set(parsed.data).where(eq(categories.id, id)).returning();
+    const [row] = await tx.update(categories).set({ ...parsed.data, ...(parsed.data.name && parsed.data.name !== category.name ? { defaultKey: null } : {}) }).where(eq(categories.id, id)).returning();
     if (parsed.data.type && parsed.data.type !== category.type &&
         (parsed.data.type === "trasferimento" || category.type === "trasferimento")) {
       await tx.update(transactions).set({
@@ -126,7 +135,14 @@ async function handleDelete(
   await db.transaction(async (tx) => {
     await tx
       .update(transactions)
-      .set({ categoryId: fallback.id, ...(category.type === "trasferimento" ? { excludedAmount: "0" } : {}) })
+      // Tornano «Da categorizzare»: senza origine, altrimenti resterebbero tra le «Messe dall'app» con una categoria che non c'è più.
+      .set({
+        categoryId: fallback.id,
+        categorySource: null,
+        categoryConfidence: null,
+        categorizedAt: null,
+        ...(category.type === "trasferimento" ? { excludedAmount: "0" } : {}),
+      })
       .where(eq(transactions.categoryId, id));
     await tx.delete(budgets).where(eq(budgets.categoryId, id));
     await tx.delete(categories).where(eq(categories.id, id));

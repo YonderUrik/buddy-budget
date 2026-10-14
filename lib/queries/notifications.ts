@@ -57,6 +57,8 @@ export interface AiCategorizationState {
   enabled: boolean;
   available: boolean;
   instructions: string;
+  /** Le proposte sicure (dal 90%) si applicano da sole. */
+  autoApply: boolean;
 }
 
 /** Legge il consenso alle proposte dell'assistente. */
@@ -71,10 +73,10 @@ export function useAiCategorizationQuery() {
   });
 }
 
-/** Attiva o revoca il consenso alle proposte dell'assistente. */
+/** Attiva o revoca il consenso alle proposte dell'assistente, salva le istruzioni o accende l'applicazione automatica. */
 export function useUpdateAiCategorizationMutation() {
   const queryClient = useQueryClient();
-  return useMutation<AiCategorizationState, Error, boolean | { instructions: string }>({
+  return useMutation<AiCategorizationState, Error, boolean | { instructions: string } | { autoApply: boolean }>({
     mutationFn: async (enabled) => {
       const response = await fetch("/api/user/ai-categorization", {
         method: "PATCH",
@@ -87,6 +89,7 @@ export function useUpdateAiCategorizationMutation() {
     onSuccess: (state) => {
       queryClient.setQueryData(AI_CATEGORIZATION_KEY, state);
       queryClient.invalidateQueries({ queryKey: ["categorize-suggestions"] });
+      queryClient.invalidateQueries({ queryKey: ["auto-categorized"] });
     },
   });
 }

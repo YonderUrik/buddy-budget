@@ -6,6 +6,8 @@ import { authUser } from "@/lib/db/schema/auth";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationSuggestions } from "@/lib/db/schema/categorization-suggestions";
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
+const afterMock = vi.hoisted(() => vi.fn());
+vi.mock("next/server", async (importOriginal) => ({ ...(await importOriginal<typeof import("next/server")>()), after: afterMock }));
 import { auth } from "@/lib/auth";
 import { GET, PATCH } from "./route";
 const id = `test-ai-instructions-${crypto.randomUUID()}`;
@@ -44,6 +46,14 @@ it("rifiuta istruzioni troppo lunghe", async () => {
 });
 it("consente di rimuovere le istruzioni", async () => {
   expect(await (await PATCH(req({ instructions: "" }))).json()).toMatchObject({ instructions: "", enabled: true });
+});
+it("accende e spegne l'applicazione automatica; accesa, la esegue subito dopo la risposta", async () => {
+  const off = await PATCH(req({ autoApply: false }));
+  expect(await off.json()).toMatchObject({ autoApply: false });
+  expect(afterMock).not.toHaveBeenCalled();
+  const on = await PATCH(req({ autoApply: true }));
+  expect(await on.json()).toMatchObject({ autoApply: true });
+  expect(afterMock).toHaveBeenCalledTimes(1);
 });
 it("richiede autenticazione", async () => {
   vi.mocked(auth.api.getSession).mockResolvedValueOnce(null);

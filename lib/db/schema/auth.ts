@@ -7,6 +7,8 @@ export const authUser = pgTable("auth_user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  productCountry: text("product_country").notNull().default("IT"),
+  language: text("language").notNull().default("it"),
   currency: text("currency").notNull().default("EUR"),
   onboardingCompleted: boolean("onboarding_completed").notNull().default(false),
   /** Pagina di atterraggio dopo il login (solo valori di `HOME_PAGE_PATHS`, validati dalla route impostazioni). */
@@ -28,6 +30,10 @@ export const authUser = pgTable("auth_user", {
   /** Quando l'utente ha acconsentito all'assistente per le categorie (invio del nome pulito dell'esercente a un servizio esterno). Null = spento. */
   aiCategorizationInstructions: text("ai_categorization_instructions").notNull().default(""),
   aiCategorizationConsentAt: timestamp("ai_categorization_consent_at", { withTimezone: true }),
+  /** Le proposte di categoria sicure (dal 90%) si applicano da sole. Spento per chi aveva acconsentito all'AI prima che esistesse. */
+  categorizationAutoApply: boolean("categorization_auto_apply").notNull().default(true),
+  /** Ultima volta che l'utente ha controllato le categorie applicate da sole: quelle dopo restano in «Messe dall'app». */
+  autoCategorizedSeenAt: timestamp("auto_categorized_seen_at", { withTimezone: true }).notNull().defaultNow(),
   /** Ultimo accesso dell'utente (creazione o rinnovo di una sessione): sopravvive alla pulizia delle sessioni scadute. Base del calcolo dell'inattività. */
   lastActiveAt: timestamp("last_active_at", { withTimezone: true }).notNull().defaultNow(),
   /** Quando è partito l'avviso «account inattivo»; null = nessun avviso in corso. Un nuovo accesso lo azzera (cron `inactive-accounts`). */

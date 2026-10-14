@@ -23,7 +23,7 @@ describe("buildSyncSummaryMessage", () => {
         uncategorizedCount: 2,
         balanceUpdated: true,
       })
-    ).toBe("5 nuove transazioni (3 categorizzate, 2 da categorizzare). Saldo aggiornato.");
+    ).toBe("5 nuove transazioni (3 categorizzate da sole, 2 da decidere). Saldo aggiornato.");
   });
 
   it("usa il singolare per una sola transazione categorizzata", () => {
@@ -35,7 +35,7 @@ describe("buildSyncSummaryMessage", () => {
         uncategorizedCount: 0,
         balanceUpdated: true,
       })
-    ).toBe("1 nuova transazione (1 categorizzata). Saldo aggiornato.");
+    ).toBe("1 nuova transazione (1 categorizzata da sola). Saldo aggiornato.");
   });
 
   it("combina singolare categorizzata e plurale da categorizzare", () => {
@@ -47,7 +47,7 @@ describe("buildSyncSummaryMessage", () => {
         uncategorizedCount: 2,
         balanceUpdated: true,
       })
-    ).toBe("3 nuove transazioni (1 categorizzata, 2 da categorizzare). Saldo aggiornato.");
+    ).toBe("3 nuove transazioni (1 categorizzata da sola, 2 da decidere). Saldo aggiornato.");
   });
 
   it("omette la parte categorizzate quando il conteggio è zero", () => {
@@ -59,7 +59,7 @@ describe("buildSyncSummaryMessage", () => {
         uncategorizedCount: 2,
         balanceUpdated: true,
       })
-    ).toBe("2 nuove transazioni (2 da categorizzare). Saldo aggiornato.");
+    ).toBe("2 nuove transazioni (2 da decidere). Saldo aggiornato.");
   });
 });
 

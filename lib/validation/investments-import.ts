@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { INSTRUMENT_TYPES, INVESTMENT_TRANSACTION_TYPES } from "@/lib/db/schema/investments";
+import { INSTRUMENT_TYPES, INVESTMENT_TRANSACTION_TYPES } from "@/lib/investments/constants";
 import { createInstrumentSchema, INVESTMENT_NOTE_MAX_LENGTH } from "./investments";
 
 /** Strumenti distinti al massimo per richiesta di abbinamento (ognuno può costare una ricerca sulle fonti). */

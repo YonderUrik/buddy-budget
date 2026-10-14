@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { inflationIndex } from "@/lib/db/schema/investments";
 import type { InflationPoint } from "@/lib/calc/returns";
@@ -19,7 +19,7 @@ function monthsBefore(today: Date, months: number): string {
 
 /**
  * Aggiorna l'indice dei prezzi dell'area: gli ultimi `INFLATION_REFRESH_MONTHS` mesi, o tutto dal 2000 se non c'è
- * ancora niente. Restituisce quanti mesi ha salvato. Un errore della fonte non si propaga: l'inflazione non deve
+ * ancora niente o cambia la serie/base di riferimento. Restituisce quanti mesi ha salvato. Un errore della fonte non si propaga: l'inflazione non deve
  * far fallire l'aggiornamento dei prezzi.
  */
 export async function updateInflationIndex(
@@ -30,22 +30,27 @@ export async function updateInflationIndex(
   const provider = options.provider ?? eurostatProvider;
   const area = options.area ?? DEFAULT_INFLATION_AREA;
   const log = options.log ?? logger;
+  const source = provider.seriesKey;
   try {
-    const [existing] = await db.select({ count: sql<number>`count(*)::int` }).from(inflationIndex).where(eq(inflationIndex.area, area));
-    const fromMonth = existing && existing.count > 0 ? monthsBefore(today, INFLATION_REFRESH_MONTHS) : INFLATION_HISTORY_START;
+    const [existing] = await db.select({ count: sql<number>`count(*)::int`, incompatible: sql<number>`count(*) filter (where ${inflationIndex.source} <> ${source})::int` }).from(inflationIndex).where(eq(inflationIndex.area, area));
+    const fromMonth = existing && existing.count > 0 && existing.incompatible === 0 ? monthsBefore(today, INFLATION_REFRESH_MONTHS) : INFLATION_HISTORY_START;
     const values = await provider.fetchMonthlyIndex(area, fromMonth, ctx);
     if (values.length === 0) return 0;
-    await db
-      .insert(inflationIndex)
-      .values(values.map((v) => ({ area, month: v.month, value: v.value.toFixed(4), source: provider.id })))
-      .onConflictDoUpdate({
-        target: [inflationIndex.area, inflationIndex.month],
-        set: { value: sql`excluded.value`, source: sql`excluded.source`, updatedAt: sql`now()` },
-      });
-    log.info("market.inflation.updated", { provider: provider.id, count: values.length });
+    await db.transaction(async tx => {
+      // Replace the whole area on a dataset/base change. Readers see either series, never a mixture.
+      if (existing?.incompatible > 0) await tx.delete(inflationIndex).where(eq(inflationIndex.area, area));
+      await tx
+        .insert(inflationIndex)
+        .values(values.map((v) => ({ area, month: v.month, value: v.value.toFixed(4), source })))
+        .onConflictDoUpdate({
+          target: [inflationIndex.area, inflationIndex.month],
+          set: { value: sql`excluded.value`, source: sql`excluded.source`, updatedAt: sql`now()` },
+        });
+    });
+    log.info("market.inflation.updated", { provider: provider.id, reason: area, count: values.length });
     return values.length;
   } catch (error) {
-    log.warn("market.inflation.failed", { provider: provider.id, error });
+    log.warn("market.inflation.failed", { provider: provider.id, reason: area, error });
     return 0;
   }
 }
@@ -55,7 +60,7 @@ export async function loadInflationIndex(area: string = DEFAULT_INFLATION_AREA):
   const rows = await db
     .select({ month: inflationIndex.month, value: inflationIndex.value })
     .from(inflationIndex)
-    .where(eq(inflationIndex.area, area))
+    .where(and(eq(inflationIndex.area, area), eq(inflationIndex.source, eurostatProvider.seriesKey)))
     .orderBy(asc(inflationIndex.month));
   return rows.map((r) => ({ month: r.month, value: Number(r.value) }));
 }

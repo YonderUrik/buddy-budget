@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * DangerActionDialog
@@ -68,6 +69,7 @@ export function DangerActionDialog({
   googleLinked,
   children,
 }: DangerActionDialogProps) {
+  const { t: tr } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const needsReauth = !recentLogin || (error?.reauthRequired ?? false);
 
@@ -80,21 +82,21 @@ export function DangerActionDialog({
   return (
     <div className="flex flex-col gap-3 border-t border-border pt-4 first:border-t-0 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
       <div className="flex min-w-0 flex-col gap-0.5">
-        <p className="text-sm font-medium text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground">{summary}</p>
+        <p className="text-sm font-medium text-foreground">{tr(title)}</p>
+        <p className="text-xs text-muted-foreground">{tr(summary)}</p>
       </div>
       <AlertDialog open={open} onOpenChange={handleOpenChange}>
         <AlertDialogTrigger
           render={
             <Button variant="destructive" className="w-fit shrink-0">
-              {triggerLabel}
+              {tr(triggerLabel)}
             </Button>
           }
         />
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{dialogTitle}</AlertDialogTitle>
-            <AlertDialogDescription render={<div />}>{dialogDescription}</AlertDialogDescription>
+            <AlertDialogTitle>{tr(dialogTitle)}</AlertDialogTitle>
+            <AlertDialogDescription render={<div />}>{tr(dialogDescription)}</AlertDialogDescription>
           </AlertDialogHeader>
           {needsReauth ? (
             <ReauthPanel email={email} googleLinked={googleLinked} />
@@ -103,17 +105,17 @@ export function DangerActionDialog({
               {children}
               {error && (
                 <p className="text-sm text-neg" role="alert">
-                  {error.message}
+                  {tr(error.message)}
                 </p>
               )}
             </>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={pending}>Annulla</AlertDialogCancel>
+            <AlertDialogCancel disabled={pending}>{tr("Annulla")}</AlertDialogCancel>
             {!needsReauth && (
               <AlertDialogAction variant="destructive" onClick={onConfirm} disabled={!canConfirm || pending}>
                 {pending && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-                {confirmLabel}
+                {tr(confirmLabel)}
               </AlertDialogAction>
             )}
           </AlertDialogFooter>

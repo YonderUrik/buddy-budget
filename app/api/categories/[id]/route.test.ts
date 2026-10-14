@@ -67,6 +67,18 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
     await client.end();
   });
 
+  it("keeps default identity on translated no-op saves and clears it on an explicit rename", async () => {
+    mockedGetSession.mockResolvedValue({ user: { id: userId, productCountry: "IT", language: "en" } } as never);
+    const [category] = await db.insert(categories).values({ userId, name: "Spesa", type: "dovuta", defaultKey: "spesa" }).returning();
+    const save = (name: string) => PATCH(new NextRequest(`http://localhost/api/categories/${category.id}`, { method: "PATCH", body: JSON.stringify({ name }) }), { params: Promise.resolve({ id: category.id }) });
+    const unchanged = await save("Groceries");
+    expect(unchanged.status).toBe(200);
+    expect(await unchanged.json()).toMatchObject({ name: "Spesa", defaultKey: "spesa" });
+    const renamed = await save("Weekly food");
+    expect(renamed.status).toBe(200);
+    expect(await renamed.json()).toMatchObject({ name: "Weekly food", defaultKey: null });
+  });
+
   it("rinomina una categoria propria", async () => {
     const [category] = await db
       .insert(categories)
@@ -206,6 +218,8 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
         description: "Cinema",
         amount: "-15.00",
         date: "2026-07-01",
+        categorySource: "regola",
+        categorizedAt: new Date(),
       })
       .returning();
 
@@ -221,6 +235,9 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
 
     const [reassigned] = await db.select().from(transactions).where(eq(transactions.id, transaction.id));
     expect(reassigned.categoryId).toBe(fallbackCategoryId);
+    // Senza origine: non deve restare tra le «Messe dall'app».
+    expect(reassigned.categorySource).toBeNull();
+    expect(reassigned.categorizedAt).toBeNull();
   });
 
   it("risponde 409 eliminando la categoria fallback", async () => {

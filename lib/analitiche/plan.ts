@@ -1,7 +1,7 @@
 import { coastNumber, fireNumber, fireNumberAfterTax, yearsToTarget } from "@/lib/calc/fire";
 import { computeLiquidation, type LiquidationResult } from "@/lib/calc/liquidation";
 import type { AnalyticsAssumptions } from "./assumptions";
-import type { AnalyticsBase } from "./base";
+import { MIN_MONTHS_FOR_CASHFLOW, type AnalyticsBase } from "./base";
 
 /** Orizzonti (anni) mostrati per il coast number: dal pensionamento tradizionale vicino a quello lontano. */
 export const COAST_HORIZONS = [10, 15, 20, 25, 30];
@@ -30,11 +30,19 @@ export interface AnalyticsPlan {
   coast: { years: number; number: number }[];
 }
 
+/** Spesa e risparmio annui ricavati dai movimenti del periodo; null se i mesi con movimenti sono troppo pochi. */
+export function cashflowFromData(base: AnalyticsBase): { spending: number | null; savings: number | null } {
+  const enough = base.cashflow.monthsWithData >= MIN_MONTHS_FOR_CASHFLOW;
+  return {
+    spending: enough && base.cashflow.annualSpending > 0 ? base.cashflow.annualSpending : null,
+    savings: enough ? base.cashflow.annualSavings : null,
+  };
+}
+
 /** Applica le ipotesi ai dati. Pura: stessi input, stessi numeri. */
 export function resolvePlan(base: AnalyticsBase, a: AnalyticsAssumptions): AnalyticsPlan {
-  const dataSpending = base.cashflow.monthsWithData >= 3 && base.cashflow.annualSpending > 0 ? base.cashflow.annualSpending : null;
+  const { spending: dataSpending, savings: dataSavings } = cashflowFromData(base);
   const spending = a.annualSpending ?? dataSpending;
-  const dataSavings = base.cashflow.monthsWithData >= 3 ? base.cashflow.annualSavings : null;
   const savings = a.annualSavings ?? dataSavings;
 
   const wealth = base.wealth.liquidity + base.wealth.investments + (a.includePensionFunds ? base.wealth.pension : 0);

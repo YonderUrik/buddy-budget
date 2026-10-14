@@ -1,11 +1,15 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /** Anteprima di un'estinzione anticipata: le due alternative affiancate (o l'esito di un extra mensile), con i numeri che contano. */
 
 import { CalendarCheckIcon, TrendingDownIcon } from "lucide-react";
 import type { EarlyRepaymentOutcome } from "@/lib/calc/early-repayment";
 import type { EarlyRepaymentPreview } from "@/lib/debts/early-repayment-form";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 
 type PreviewOnce = Extract<EarlyRepaymentPreview, { kind: "once" }>;
 type PreviewMonthly = Extract<EarlyRepaymentPreview, { kind: "monthly" }>;
@@ -21,28 +25,35 @@ function monthsLabel(months: number): string {
 }
 
 function Row({ label, value, strong, positive }: { label: string; value: string; strong?: boolean; positive?: boolean }) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex items-baseline justify-between gap-2 text-sm">
-      <dt className="text-muted-foreground">{label}</dt>
+      <dt className="text-muted-foreground">{tr(label)}</dt>
       <dd className={cn("text-right tabular-nums text-foreground", strong && "font-medium", positive && "text-pos")}>{value}</dd>
     </div>
   );
 }
 
 function OutcomeCard({ outcome, currency, selectable, selected, onSelect }: { outcome: EarlyRepaymentOutcome; currency: string; selectable: boolean; selected: boolean; onSelect: () => void }) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const copy = EFFECT_COPY[outcome.effect];
   const body = (
     <>
       <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
         <copy.Icon size={15} className="text-primary" aria-hidden="true" />
-        {copy.title}
+        {tr(copy.title)}
       </p>
       <p className="mb-2 text-xs text-muted-foreground">{copy.detail}</p>
       <dl className="flex flex-col gap-1">
-        <Row label="Prossima rata" value={outcome.closesDebt ? "—" : formatCurrency(outcome.nextInstallment, currency)} />
-        <Row label="Finisci" value={`${formatMonthYear(outcome.endDate)} · ${monthsLabel(outcome.monthsSaved)}`} />
-        <Row label="Interessi risparmiati" value={formatCurrency(outcome.interestSaved, currency)} strong positive />
-        <Row label="Al netto della penale" value={formatCurrency(outcome.netBenefit, currency)} strong positive={outcome.netBenefit > 0} />
+        <Row label={tr("Prossima rata")} value={outcome.closesDebt ? "—" : formatCurrency(outcome.nextInstallment, currency)} />
+        <Row label={tr("Finisci")} value={`${formatMonthYear(outcome.endDate)} · ${monthsLabel(outcome.monthsSaved)}`} />
+        <Row label={tr("Interessi risparmiati")} value={formatCurrency(outcome.interestSaved, currency)} strong positive />
+        <Row label={tr("Al netto della penale")} value={formatCurrency(outcome.netBenefit, currency)} strong positive={outcome.netBenefit > 0} />
       </dl>
     </>
   );
@@ -65,13 +76,17 @@ export interface EarlyRepaymentCompareProps {
 
 /** Confronto "riduci la rata / riduci la durata" per un'estinzione una tantum. */
 export function EarlyRepaymentCompare({ preview, currency, selected, onSelect }: EarlyRepaymentCompareProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const { comparison } = preview;
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs text-muted-foreground">
-        Senza estinzione: rata {formatCurrency(comparison.baselineInstallment, currency)}, fine {formatMonthYear(comparison.baselineEndDate)}, ancora{" "}
-        {formatCurrency(comparison.baselineInterest, currency)} di interessi.
-      </p>
+      <p className="text-xs text-muted-foreground">{tr("Senza estinzione: rata")}{" "}{formatCurrency(comparison.baselineInstallment, currency)}{tr(", fine")}{" "}{formatMonthYear(comparison.baselineEndDate)}{tr(", ancora")}{" "}
+        {formatCurrency(comparison.baselineInterest, currency)}{" "}{tr("di interessi.")}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <OutcomeCard outcome={comparison.reduceInstallment} currency={currency} selectable selected={selected === "reduce_installment"} onSelect={() => onSelect("reduce_installment")} />
         <OutcomeCard outcome={comparison.reduceDuration} currency={currency} selectable selected={selected === "reduce_duration"} onSelect={() => onSelect("reduce_duration")} />
@@ -87,16 +102,22 @@ export interface EarlyRepaymentMonthlyProps {
 
 /** Esito di un extra versato ogni mese (solo simulazione). */
 export function EarlyRepaymentMonthly({ preview, currency }: EarlyRepaymentMonthlyProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const { result } = preview;
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-foreground">Con {formatCurrency(preview.amount, currency)} in più ogni mese</p>
+      <p className="mb-2 text-sm font-medium text-foreground">{tr("Con")}{" "}{formatCurrency(preview.amount, currency)}{" "}{tr("in più ogni mese")}</p>
       <dl className="flex flex-col gap-1">
-        <Row label="Finisci" value={`${formatMonthYear(result.endDate)} · ${monthsLabel(result.monthsSaved)}`} />
-        <Row label="Interessi risparmiati" value={formatCurrency(result.interestSaved, currency)} strong positive />
-        <Row label="Versato in extra in totale" value={formatCurrency(result.extraPaid, currency)} />
+        <Row label={tr("Finisci")} value={`${formatMonthYear(result.endDate)} · ${monthsLabel(result.monthsSaved)}`} />
+        <Row label={tr("Interessi risparmiati")} value={formatCurrency(result.interestSaved, currency)} strong positive />
+        <Row label={tr("Versato in extra in totale")} value={formatCurrency(result.extraPaid, currency)} />
       </dl>
-      <p className="mt-2 text-xs text-muted-foreground">È solo una simulazione: non si registra. Per registrarle, inserisci le singole estinzioni quando le fai.</p>
+      <p className="mt-2 text-xs text-muted-foreground">{tr("È solo una simulazione: non si registra. Per registrarle, inserisci le singole estinzioni quando le fai.")}</p>
     </div>
   );
 }

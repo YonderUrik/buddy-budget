@@ -1,8 +1,11 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+import { localizedFormats } from "@/lib/localization/format";
+
 
 /** Mini andamento della liquidità negli ultimi 30 giorni: linea con area e variazione a parole. Non compare con meno di due punti. */
 
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 
 const TREND_WIDTH = 220;
@@ -28,6 +31,9 @@ export function buildTrendPoints(values: number[]): string[] {
 }
 
 export function AccountsTrend({ values, currency, className }: AccountsTrendProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
   if (values.length < 2) return null;
   const points = buildTrendPoints(values);
   const delta = values[values.length - 1] - values[0];

@@ -1,23 +1,23 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Vista a elenco di «Categorizza»: revisione delle proposte per esercente, con selezione e applicazione in blocco. */
 
 import * as React from "react";
 import { toast } from "sonner";
 import { CategorizeGroupRow } from "./categorize-group-row";
-import { LoadError, ProgressBar } from "@/components/domain/shared";
+import { LogoCredit } from "./logo-credit";
+import { ProgressBar } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authClient } from "@/lib/auth/client";
-import type { CategorizeSuggestion, SuggestionGroup } from "@/lib/categorization/suggest";
+import type { SuggestionGroup } from "@/lib/categorization/suggest";
 import type { Category } from "@/lib/db/schema/categories";
 import {
   ApplyCategorizationPartialError,
   type ApplyCategorizationProgress,
-  useAiSuggestionsMutation,
   useApplyCategorizationMutation,
-  useCategorizeSuggestionsQuery,
 } from "@/lib/queries/categorization";
 import { useCategoriesQuery, useCategoryUsageQuery } from "@/lib/queries/categories";
 
@@ -61,53 +61,23 @@ function disabledReason(group: SuggestionGroup, categories: Category[], category
   return undefined;
 }
 
-export function CategorizeListView() {
+export interface CategorizeListViewProps {
+  /** Gruppi da decidere (senza quelli che si stanno applicando da soli). */
+  groups: SuggestionGroup[];
+  isLoading: boolean;
+}
+
+export function CategorizeListView({ groups, isLoading }: CategorizeListViewProps) {
+  const { t: tr } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
-  const { data: groups, isLoading, isError, refetch } = useCategorizeSuggestionsQuery();
   const { data: categories } = useCategoriesQuery();
   const { data: categoryUsage } = useCategoryUsageQuery();
   const applyMutation = useApplyCategorizationMutation();
-  const aiSuggestionsMutation = useAiSuggestionsMutation();
   const [overrides, setOverrides] = React.useState<Map<string, GroupOverride>>(new Map());
-  const [aiSuggestionsByMerchant, setAiSuggestionsByMerchant] = React.useState<Map<string, CategorizeSuggestion>>(
-    new Map()
-  );
   const [rememberMerchants, setRememberMerchants] = React.useState(false);
   const [applyProgress, setApplyProgress] = React.useState<ApplyCategorizationProgress | null>(null);
-  const aiRequestedRef = React.useRef(false);
-
-  // Richiama l'assistente una sola volta per i gruppi rimasti senza proposta, appena i dati sono
-  // arrivati. Un fallimento non produce mai un errore visibile: la mutation stessa risolve sempre
-  // con { groups: [] } in quel caso, quindi qui c'è solo il caso "nessuna proposta aggiuntiva".
-  React.useEffect(() => {
-    if (isLoading || isError || !groups || aiRequestedRef.current) return;
-    aiRequestedRef.current = true;
-
-    const unsuggestedIds = groups.filter((group) => !group.suggestion).flatMap((group) => group.transactionIds);
-    if (unsuggestedIds.length === 0) return;
-
-    aiSuggestionsMutation.mutate(unsuggestedIds, {
-      onSuccess: (result) => {
-        setAiSuggestionsByMerchant((prev) => {
-          const next = new Map(prev);
-          for (const group of result.groups) {
-            if (group.suggestion) next.set(group.groupKey, group.suggestion);
-          }
-          return next;
-        });
-      },
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, isError, groups]);
-
-  const safeGroups = React.useMemo(() => {
-    return (groups ?? []).map((group) => {
-      if (group.suggestion) return group;
-      const aiSuggestion = aiSuggestionsByMerchant.get(group.groupKey);
-      return aiSuggestion ? { ...group, suggestion: aiSuggestion } : group;
-    });
-  }, [groups, aiSuggestionsByMerchant]);
+  const [logosShown, setLogosShown] = React.useState(false);
   const safeCategories = categories ?? [];
 
   function getOverride(group: SuggestionGroup): GroupOverride {
@@ -131,7 +101,7 @@ export function CategorizeListView() {
   function handleSelectAll(selectAll: boolean) {
     setOverrides((prev) => {
       const next = new Map(prev);
-      for (const group of safeGroups) {
+      for (const group of groups) {
         const override = getOverride(group);
         // Un gruppo senza categoria compatibile, o senza ancora una categoria scelta, non può mai
         // essere selezionato da "Seleziona tutto" — solo una scelta esplicita dal dropdown lo sblocca.
@@ -142,12 +112,12 @@ export function CategorizeListView() {
     });
   }
 
-  const selectedGroups = safeGroups.filter(
+  const selectedGroups = groups.filter(
     (group) => getOverride(group).selected && !disabledReason(group, safeCategories, getOverride(group).categoryId)
   );
-  const totalTransactionCount = safeGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
+  const totalTransactionCount = groups.reduce((sum, group) => sum + group.transactionIds.length, 0);
   const selectedTransactionCount = selectedGroups.reduce((sum, group) => sum + group.transactionIds.length, 0);
-  const selectableGroupCount = safeGroups.filter(
+  const selectableGroupCount = groups.filter(
     (group) => !disabledReason(group, safeCategories, getOverride(group).categoryId)
   ).length;
   const allSelected = selectableGroupCount > 0 && selectedGroups.length === selectableGroupCount;
@@ -172,8 +142,8 @@ export function CategorizeListView() {
         onSuccess: (result) => {
           toast.success(
             result.rulesCreated > 0
-              ? `${result.applied} transazioni categorizzate, ${result.rulesCreated} regole create`
-              : `${result.applied} transazioni categorizzate`
+              ? tr("{0} transazioni categorizzate, {1} regole create", { 0: result.applied, 1: result.rulesCreated })
+              : tr("{0} transazioni categorizzate", { 0: result.applied })
           );
           setOverrides(new Map());
           setApplyProgress(null);
@@ -192,7 +162,7 @@ export function CategorizeListView() {
               return next;
             });
             toast.error(
-              `Applicate ${error.partial.applied} transazioni prima dell'errore, le altre restano selezionate: ${error.message}`
+              tr("Applicate {0} transazioni prima dell'errore, le altre restano selezionate: {1}", { 0: error.partial.applied, 1: error.message })
             );
           }
           setApplyProgress(null);
@@ -206,20 +176,15 @@ export function CategorizeListView() {
       <div className="flex flex-col gap-1">
         <p className="text-sm text-muted-foreground">
           {isLoading
-            ? "Caricamento in corso..."
+            ? tr("Caricamento in corso...")
             : totalTransactionCount === 0
-              ? "Nessuna transazione da categorizzare"
-              : `${totalTransactionCount} transazioni in attesa, raggruppate per esercente.`}
+              ? tr("Nessuna transazione da categorizzare")
+              : tr("{0} movimenti da decidere, raggruppati per esercente.", { 0: totalTransactionCount })}
         </p>
         {!isLoading && totalTransactionCount > 0 && (
           <p className="text-sm text-muted-foreground">
-            Controlla la categoria proposta, spunta i gruppi giusti e premi{" "}
-            <span className="font-medium text-foreground">Applica</span>. Le categorie non diventano regole, a meno che
-            tu non spunti «Ricorda gli esercenti».
-          </p>
-        )}
-        {aiSuggestionsMutation.isPending && (
-          <p className="text-xs text-muted-foreground">Ricerca di altre proposte in corso…</p>
+            {tr("Controlla la categoria proposta, spunta i gruppi giusti e premi")}{" "}
+            <span className="font-medium text-foreground">{tr("Applica")}</span>{tr(". Con «Ricorda gli esercenti» le prossime volte si categorizzano da soli.")}</p>
         )}
       </div>
 
@@ -229,10 +194,8 @@ export function CategorizeListView() {
             <div key={i} className="h-24 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : isError ? (
-        <LoadError message="Impossibile caricare le proposte di categorizzazione." onRetry={() => refetch()} />
-      ) : safeGroups.length === 0 ? (
-        <Card className="p-6 text-center text-sm text-muted-foreground">Nessuna transazione da categorizzare</Card>
+      ) : groups.length === 0 ? (
+        <Card className="p-6 text-center text-sm text-muted-foreground">{tr("Niente da decidere")}</Card>
       ) : (
         <>
           <Card className="gap-0 p-0">
@@ -242,14 +205,12 @@ export function CategorizeListView() {
                 disabled={selectableGroupCount === 0 || applyMutation.isPending}
                 onCheckedChange={(checked) => handleSelectAll(checked === true)}
               />
-              <span>
-                Seleziona tutti{" "}
+              <span>{tr("Seleziona tutti")}{" "}
                 <span className="tabular-nums">
-                  ({selectableGroupCount} {selectableGroupCount === 1 ? "gruppo pronto" : "gruppi pronti"})
-                </span>
+                  {"("}{selectableGroupCount}{" "}{selectableGroupCount === 1 ? tr("gruppo pronto") : tr("gruppi pronti")}{")"}</span>
               </span>
             </label>
-            {safeGroups.map((group) => {
+            {groups.map((group) => {
               const override = getOverride(group);
               return (
                 <CategorizeGroupRow
@@ -266,10 +227,12 @@ export function CategorizeListView() {
                   // Scegliere una categoria è già una conferma: il gruppo si seleziona da solo.
                   onCategoryChange={(categoryId) => updateOverride(group, { categoryId, selected: true })}
                   onExcludedPercentageChange={(excludedPercentage) => updateOverride(group, { excludedPercentage })}
+                  onRemoteLogo={() => setLogosShown(true)}
                 />
               );
             })}
           </Card>
+          <LogoCredit visible={logosShown} className="-mt-3" />
 
           <div className="sticky bottom-0 z-10 -mx-4 -mb-4 border-t border-border bg-background/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
             {applyMutation.isPending && applyProgress ? (
@@ -288,27 +251,23 @@ export function CategorizeListView() {
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                   {selectedGroups.length === 0 ? (
-                    "Nessun gruppo selezionato"
+                    tr("Nessun gruppo selezionato")
                   ) : (
                     <>
                       <span className="font-medium text-foreground tabular-nums">{selectedTransactionCount}</span>{" "}
-                      {selectedTransactionCount === 1 ? "transazione" : "transazioni"} in {selectedGroups.length}{" "}
-                      {selectedGroups.length === 1 ? "gruppo" : "gruppi"}
+                      {selectedTransactionCount === 1 ? tr("transazione") : tr("transazioni")}{" "}{tr("in")}{" "}{selectedGroups.length}{" "}
+                      {selectedGroups.length === 1 ? tr("gruppo") : tr("gruppi")}
                     </>
                   )}
                 </p>
                 <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                  <Checkbox checked={rememberMerchants} onCheckedChange={(checked) => setRememberMerchants(checked === true)} />
-                  Ricorda gli esercenti
-                </label>
+                  <Checkbox checked={rememberMerchants} onCheckedChange={(checked) => setRememberMerchants(checked === true)} />{tr("Ricorda gli esercenti")}</label>
                 <Button
                   type="button"
                   onClick={handleApply}
                   disabled={selectedGroups.length === 0 || applyMutation.isPending}
                   className="h-10 shrink-0 px-5 sm:h-9"
-                >
-                  Applica
-                </Button>
+                >{tr("Applica")}</Button>
               </div>
             )}
           </div>

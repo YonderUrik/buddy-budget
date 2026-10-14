@@ -1,9 +1,10 @@
 import "server-only";
 import { and, asc, eq, gte, lte } from "drizzle-orm";
-import { addMonths, endOfMonth, startOfDay, startOfMonth } from "@/lib/calc/expenses";
+import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
-import { ANALYTICS_HISTORY_MONTHS, buildAnalyticsBase } from "@/lib/analitiche/base";
+import { analyticsTransactionsRange, buildAnalyticsBase } from "@/lib/analitiche/base";
 import { loadAssumptions } from "@/lib/analitiche/data";
+import { resolveExpectedReturn, withExpectedReturn } from "@/lib/analitiche/historical-return";
 import { resolvePlan } from "@/lib/analitiche/plan";
 import { db } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
@@ -25,10 +26,11 @@ import type { SidebarFire } from "./types";
  */
 export async function loadSidebarFire(userId: string): Promise<SidebarFire> {
   const today = startOfDay(new Date());
-  const from = toDateKey(startOfMonth(addMonths(today, -(ANALYTICS_HISTORY_MONTHS - 1))));
-  const to = toDateKey(endOfMonth(today));
   const todayKey = toDateKey(today);
-  const [[user], liquid, txs, cats, snapshots, investments, pension, debtData, { assumptions }] = await Promise.all([
+  // Le ipotesi servono prima: il periodo scelto dice quali movimenti leggere.
+  const { assumptions } = await loadAssumptions(userId);
+  const { from, to } = analyticsTransactionsRange(assumptions.dataPeriod, today);
+  const [[user], liquid, txs, cats, snapshots, investments, pension, debtData] = await Promise.all([
     db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),
     liquidity(userId),
     db.select().from(transactions).where(and(eq(transactions.userId, userId), gte(transactions.date, from), lte(transactions.date, to))),
@@ -37,13 +39,13 @@ export async function loadSidebarFire(userId: string): Promise<SidebarFire> {
     loadInvestmentData(userId, null),
     loadUserPension(userId),
     loadUserDebts(userId),
-    loadAssumptions(userId),
   ]);
   const currency = user?.currency ?? "EUR";
   const debtsTotal = buildDebtsView(debtData.debts, debtData.events, todayKey).overview.totalDebt;
   const base = buildAnalyticsBase({
     today,
     currency,
+    period: assumptions.dataPeriod,
     liquidity: liquid,
     transactions: txs,
     categories: cats,
@@ -52,5 +54,7 @@ export async function loadSidebarFire(userId: string): Promise<SidebarFire> {
     debtsTotal,
     snapshots,
   });
-  return toSidebarFire(resolvePlan(base, assumptions), currency);
+  // Come in Analitiche: il rendimento in automatico viene dallo storico, non dal valore di riserva salvato.
+  const used = withExpectedReturn(assumptions, resolveExpectedReturn(assumptions, base.historicalReturn));
+  return toSidebarFire(resolvePlan(base, used), currency);
 }

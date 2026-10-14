@@ -16,6 +16,11 @@ export interface StartStepDef {
 /** Link che apre subito il dialog «Nuovo conto» in Liquidità · Conti. */
 export const NEW_ACCOUNT_HREF = "/liquidita/conti?nuovo=1";
 
+/** Parametro che apre «Il tuo traguardo» in Analitiche. */
+export const GOAL_PARAM = "traguardo";
+/** Link che apre subito «Il tuo traguardo» in Analitiche. */
+export const GOAL_HREF = `/analitiche?${GOAL_PARAM}=1`;
+
 export const START_STEPS: readonly StartStepDef[] = [
   {
     id: "conto",
@@ -40,10 +45,10 @@ export const START_STEPS: readonly StartStepDef[] = [
   },
   {
     id: "obiettivo",
-    title: "Imposta un obiettivo",
-    description: "Scegli le ipotesi del tuo piano in Analitiche o un budget per categoria.",
-    href: "/analitiche",
-    cta: "Vai alle analitiche",
+    title: "Fissa il tuo traguardo",
+    description: "Dicci quanto ti serve in un anno: calcoliamo il patrimonio che ti basta per vivere di rendita e quando ci arrivi.",
+    href: GOAL_HREF,
+    cta: "Fissa il traguardo",
   },
 ];
 

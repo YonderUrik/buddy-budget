@@ -45,6 +45,8 @@ export interface ConnectionCleanupAction {
   requisitionId: string | null;
   /** Se eliminare anche la riga a DB (non ha più conti) oppure tenerla e azzerare solo la requisition. */
   deleteRow: boolean;
+  /** Da quando la connessione risulta senza conti (serve se GoCardless dà il tentativo già collegato). */
+  orphanedAt?: Date | null;
 }
 
 export interface ConnectionCleanupPlan {
@@ -55,7 +57,7 @@ export interface ConnectionCleanupPlan {
   clearOrphaned: string[];
 }
 
-function olderThan(date: Date, days: number, now: Date): boolean {
+export function olderThan(date: Date, days: number, now: Date): boolean {
   return now.getTime() - date.getTime() > days * DAY_MS;
 }
 
@@ -83,6 +85,7 @@ export function planConnectionCleanup(
           kind: "abandoned_attempt",
           requisitionId: connection.requisitionId,
           deleteRow: true,
+          orphanedAt: connection.orphanedAt,
         });
       }
       continue;
@@ -120,43 +123,100 @@ export function planConnectionCleanup(
 }
 
 export interface RemoteSweepInput {
-  requisitions: { id: string; created: string; status: string; agreement?: string }[];
+  requisitions: { id: string; created: string; status: string; agreement?: string; reference?: string; redirect?: string }[];
   agreements: { id: string; created: string }[];
   /** Id delle requisition che l'app conosce (colonna `requisition_id`). */
   knownRequisitionIds: Set<string>;
+  /** Id delle connessioni a DB: la `reference` di ogni requisition creata dall'app è l'id della sua connessione. */
+  knownConnectionIds?: Set<string>;
+  /** URL di ritorno che l'app passa a GoCardless (`<APP_URL>/api/gocardless/callback`): distingue le nostre da quelle di altri ambienti. */
+  ownRedirect?: string;
+}
+
+/** Di chi è una requisition che a DB non risulta. */
+export type UnknownRequisitionOrigin =
+  /** Creata da questa app, la connessione esiste ancora ma punta a un'altra requisition (salvataggio fallito, sostituita). */
+  | "own_superseded"
+  /** Creata da questa app, la connessione non c'è più (utente eliminato o azzerato con revoca fallita, tentativo ripulito). */
+  | "own_row_gone"
+  /** Né la reference né l'URL di ritorno sono nostri: un altro ambiente sullo stesso account, o creata a mano. */
+  | "foreign";
+
+export interface LinkedUnknownRequisition {
+  id: string;
+  origin: UnknownRequisitionOrigin;
+  ageDays: number;
+  /** Host dell'URL di ritorno (es. `localhost` per lo sviluppo): aiuta a capire da dove viene. */
+  redirectHost: string | null;
 }
 
 export interface RemoteSweepPlan {
-  /** Requisition su GoCardless senza riga a DB, mai collegate (stato diverso da LN) e vecchie. */
+  /** Requisition nostre (reference o URL di ritorno), mai collegate e senza riga a DB: si eliminano dopo `abandonedGraceDays`. */
+  staleRequisitionIds: string[];
+  /** Requisition altrui senza riga a DB, mai collegate (stato diverso da LN) e vecchie: solo con `deleteUnknown`. */
   requisitionIds: string[];
   /** Agreement non referenziati da nessuna requisition (rimasti dopo una creazione fallita a metà). */
   agreementIds: string[];
-  /** Requisition sconosciute ma in stato LN (consenso dato): solo segnalate, mai eliminate. */
-  linkedUnknown: number;
+  /** Requisition sconosciute ma in stato LN (consenso dato): mai eliminate da sole, elencate per decidere a mano. */
+  linkedUnknown: LinkedUnknownRequisition[];
+}
+
+function redirectHost(redirect: string | undefined): string | null {
+  if (!redirect) return null;
+  try {
+    return new URL(redirect).hostname;
+  } catch {
+    return null;
+  }
+}
+
+/** Origine di una requisition sconosciuta: nostra se la reference è una nostra connessione o l'URL di ritorno è il nostro. */
+export function unknownRequisitionOrigin(
+  requisition: { reference?: string; redirect?: string },
+  knownConnectionIds: Set<string>,
+  ownRedirect: string | undefined
+): UnknownRequisitionOrigin {
+  if (requisition.reference && knownConnectionIds.has(requisition.reference)) return "own_superseded";
+  if (ownRedirect && requisition.redirect === ownRedirect) return "own_row_gone";
+  return "foreign";
 }
 
 /**
  * Cosa c'è su GoCardless che l'app non conosce. Se l'app non conosce NESSUNA requisition (DB vuoto,
- * ripristino sbagliato, ambiente che condivide l'account) non si propone nulla: meglio non fare niente.
+ * ripristino sbagliato) non si propone nulla: meglio non fare niente.
+ * Le requisition mai collegate create da questa app sono tentativi abbandonati (grazia breve); quelle di
+ * altri ambienti restano dietro `deleteUnknown` con la grazia lunga; quelle LN non si eliminano mai da sole.
  */
 export function planRemoteSweep(input: RemoteSweepInput, now: Date, policy: CleanupPolicy = DEFAULT_CLEANUP_POLICY): RemoteSweepPlan {
-  const empty: RemoteSweepPlan = { requisitionIds: [], agreementIds: [], linkedUnknown: 0 };
-  if (input.knownRequisitionIds.size === 0) return empty;
+  const plan: RemoteSweepPlan = { staleRequisitionIds: [], requisitionIds: [], agreementIds: [], linkedUnknown: [] };
+  if (input.knownRequisitionIds.size === 0) return plan;
+  const knownConnectionIds = input.knownConnectionIds ?? new Set<string>();
 
-  const requisitionIds: string[] = [];
-  let linkedUnknown = 0;
   for (const requisition of input.requisitions) {
     if (input.knownRequisitionIds.has(requisition.id)) continue;
-    if (!olderThan(new Date(requisition.created), policy.unknownGraceDays, now)) continue;
-    if (requisition.status === "LN") linkedUnknown += 1;
-    else requisitionIds.push(requisition.id);
+    const created = new Date(requisition.created);
+    const origin = unknownRequisitionOrigin(requisition, knownConnectionIds, input.ownRedirect);
+    if (requisition.status === "LN") {
+      if (olderThan(created, policy.abandonedGraceDays, now)) {
+        plan.linkedUnknown.push({
+          id: requisition.id,
+          origin,
+          ageDays: Math.floor((now.getTime() - created.getTime()) / DAY_MS),
+          redirectHost: redirectHost(requisition.redirect),
+        });
+      }
+    } else if (origin !== "foreign") {
+      if (olderThan(created, policy.abandonedGraceDays, now)) plan.staleRequisitionIds.push(requisition.id);
+    } else if (olderThan(created, policy.unknownGraceDays, now)) {
+      plan.requisitionIds.push(requisition.id);
+    }
   }
 
   // Un agreement è "in uso" se qualunque requisition (anche sconosciuta) lo cita: eliminare la requisition porta via il suo.
   const referenced = new Set(input.requisitions.map((requisition) => requisition.agreement).filter(Boolean));
-  const agreementIds = input.agreements
+  plan.agreementIds = input.agreements
     .filter((agreement) => !referenced.has(agreement.id) && olderThan(new Date(agreement.created), policy.unknownGraceDays, now))
     .map((agreement) => agreement.id);
 
-  return { requisitionIds, agreementIds, linkedUnknown };
+  return plan;
 }

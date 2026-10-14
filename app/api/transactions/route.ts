@@ -7,13 +7,18 @@ import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { createTransactionSchema } from "@/lib/validation/transactions";
 import { rejectIfDemoActive } from "@/lib/start/demo";
-import { bindRequestUser, withRoute } from "@/lib/observability";
+import { applyRulesToUncategorized } from "@/lib/categorization/auto-apply";
+import { withMerchantLogos } from "@/lib/categorization/merchant-logo/attach";
+import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 const VALID_TYPES = ["uscita", "entrata", "tutte"] as const;
 type TypeParam = (typeof VALID_TYPES)[number];
 
-/** GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per direzione (default "uscita", retrocompatibile). */
+/**
+ * GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per
+ * direzione (default "uscita", retrocompatibile). Ogni riga ha `logoPath`: il logo dell'esercente come in Categorizza, o null.
+ */
 async function handleGet(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -52,10 +57,19 @@ async function handleGet(request: NextRequest) {
     )
     .orderBy(desc(transactions.date));
 
-  return Response.json(rows);
+  const withLogos = await withMerchantLogos(
+    rows,
+    (row) => ({ label: row.description, texts: [row.rawDescription], isExpense: Number(row.amount) < 0 }),
+    session.user.id
+  );
+  return Response.json(withLogos);
 }
 
-/** POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta (entrata → positivo, gruppi di spesa → negato). */
+/**
+ * POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta
+ * (entrata → positivo, gruppi di spesa → negato). Una categoria scelta è una scelta dell'utente; se resta «Da
+ * categorizzare», le regole si applicano subito come per i movimenti della banca.
+ */
 async function handlePost(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -106,10 +120,15 @@ async function handlePost(request: NextRequest) {
       excludedAmount: category.type === "trasferimento" ? signedAmount.toFixed(2) : "0",
       date: parsed.data.date,
       source: "manuale",
+      ...(category.isFallback ? {} : { categorySource: "utente" as const, categorizedAt: new Date() }),
     })
     .returning();
 
-  return Response.json(transaction, { status: 201 });
+  if (!category.isFallback) return Response.json(transaction, { status: 201 });
+  const applied = await applyRulesToUncategorized(session.user.id, { log: requestLogger() });
+  if (applied === 0) return Response.json(transaction, { status: 201 });
+  const [categorized] = await db.select().from(transactions).where(eq(transactions.id, transaction.id));
+  return Response.json(categorized ?? transaction, { status: 201 });
 }
 
 export const GET = withRoute("transactions.list", handleGet);

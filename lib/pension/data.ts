@@ -1,3 +1,4 @@
+import { authUser } from "@/lib/db/schema/auth";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { pensionFunds, pensionSnapshots, type PensionFund } from "@/lib/db/schema/pension";
@@ -5,6 +6,8 @@ import type { PensionFundData, PensionOverviewData } from "./types";
 
 /** Fondi e fotografie dell'utente, con gli importi già come numeri, fondi dal più vecchio e fotografie in ordine di data. */
 export async function loadUserPension(userId: string): Promise<PensionOverviewData> {
+  const [user] = await db.select({ productCountry: authUser.productCountry }).from(authUser).where(eq(authUser.id, userId));
+  if (user?.productCountry === "DE") return { funds: [] };
   const [funds, snapshots] = await Promise.all([
     db.select().from(pensionFunds).where(eq(pensionFunds.userId, userId)).orderBy(asc(pensionFunds.createdAt)),
     db.select().from(pensionSnapshots).where(eq(pensionSnapshots.userId, userId)).orderBy(asc(pensionSnapshots.date)),

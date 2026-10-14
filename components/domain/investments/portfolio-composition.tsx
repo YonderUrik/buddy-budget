@@ -1,3 +1,7 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * Composizione del portafoglio: una barra segmentata per dimensione (tipo di strumento, valuta) con legenda e una
  * frase che ne dice il senso (es. quanto sei esposto a valute diverse dalla tua).
@@ -5,7 +9,7 @@
 
 import type { ReactNode } from "react";
 import type { CompositionSlice } from "@/lib/calc/investments";
-import { formatCurrency } from "@/lib/format";
+
 import { ChartPieIcon } from "lucide-react";
 import { PanelSection } from "./panel-section";
 
@@ -36,19 +40,23 @@ function formatShare(share: number): string {
 }
 
 export function PortfolioComposition({ groups, currency, title = "Composizione", subtitle = null, children }: PortfolioCompositionProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   return (
-    <PanelSection icon={ChartPieIcon} title={title} color="var(--primary)">
-      {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
+    <PanelSection icon={ChartPieIcon} title={tr(title)} color="var(--primary)">
+      {subtitle ? <p className="text-sm text-muted-foreground">{tr(subtitle)}</p> : null}
       <div className="flex flex-col gap-6">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
           {groups.map((group) => (
-            <section key={group.title} className="flex flex-col gap-3" aria-label={group.title}>
+            <section key={group.title} className="flex flex-col gap-3" aria-label={tr(group.title)}>
               <div>
-                <p className="text-sm font-medium text-foreground">{group.title}</p>
+                <p className="text-sm font-medium text-foreground">{tr(group.title)}</p>
                 {group.insight ? <p className="text-sm text-muted-foreground">{group.insight}</p> : null}
               </div>
               {group.slices.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nessun valore da mostrare.</p>
+                <p className="text-sm text-muted-foreground">{tr("Nessun valore da mostrare.")}</p>
               ) : (
                 <>
                   <div className="flex h-3 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
@@ -60,7 +68,7 @@ export function PortfolioComposition({ groups, currency, title = "Composizione",
                     {group.slices.map((slice, i) => (
                       <li key={slice.key} className="flex items-center gap-2 text-sm">
                         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: group.colorFor(slice.key, i) }} aria-hidden="true" />
-                        <span className="flex-1 text-foreground">{group.labelFor?.(slice.key) ?? slice.key}</span>
+                        <span className="flex-1 text-foreground">{tr(group.labelFor?.(slice.key) ?? slice.key)}</span>
                         <span className="tabular-nums text-muted-foreground">{formatCurrency(slice.value, currency, { maximumFractionDigits: 0 })}</span>
                         <span className="w-12 text-right font-medium tabular-nums text-foreground">{formatShare(slice.share)}</span>
                       </li>

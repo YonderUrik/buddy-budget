@@ -57,32 +57,11 @@
       "height": 1473
     },
     {
-      "id": "investimenti",
-      "theme": "light",
-      "route": "/investimenti",
-      "width": 1920,
-      "height": 1949
-    },
-    {
       "id": "diversificazione",
       "theme": "light",
       "route": "/investimenti/diversificazione",
       "width": 1920,
       "height": 1313
-    },
-    {
-      "id": "tasse",
-      "theme": "light",
-      "route": "/investimenti/tasse",
-      "width": 1920,
-      "height": 1913
-    },
-    {
-      "id": "pensione",
-      "theme": "light",
-      "route": "/pensione",
-      "width": 1920,
-      "height": 1475
     },
     {
       "id": "pensione-scenari",
@@ -104,13 +83,6 @@
       "route": "/debiti/finanziamenti",
       "width": 1920,
       "height": 1500
-    },
-    {
-      "id": "analitiche",
-      "theme": "light",
-      "route": "/analitiche",
-      "width": 1920,
-      "height": 1574
     },
     {
       "id": "panoramica",
@@ -162,32 +134,11 @@
       "height": 1473
     },
     {
-      "id": "investimenti",
-      "theme": "dark",
-      "route": "/investimenti",
-      "width": 1920,
-      "height": 1949
-    },
-    {
       "id": "diversificazione",
       "theme": "dark",
       "route": "/investimenti/diversificazione",
       "width": 1920,
       "height": 1313
-    },
-    {
-      "id": "tasse",
-      "theme": "dark",
-      "route": "/investimenti/tasse",
-      "width": 1920,
-      "height": 1913
-    },
-    {
-      "id": "pensione",
-      "theme": "dark",
-      "route": "/pensione",
-      "width": 1920,
-      "height": 1475
     },
     {
       "id": "pensione-scenari",
@@ -211,13 +162,6 @@
       "height": 1500
     },
     {
-      "id": "analitiche",
-      "theme": "dark",
-      "route": "/analitiche",
-      "width": 1920,
-      "height": 1574
-    },
-    {
       "id": "performance",
       "theme": "light",
       "route": "/investimenti/performance",
@@ -230,6 +174,62 @@
       "route": "/investimenti/performance",
       "width": 1920,
       "height": 1838
+    },
+    {
+      "id": "investimenti",
+      "theme": "light",
+      "route": "/investimenti",
+      "width": 1920,
+      "height": 2087
+    },
+    {
+      "id": "investimenti",
+      "theme": "dark",
+      "route": "/investimenti",
+      "width": 1920,
+      "height": 2087
+    },
+    {
+      "id": "tasse",
+      "theme": "light",
+      "route": "/investimenti/tasse",
+      "width": 1920,
+      "height": 1913
+    },
+    {
+      "id": "pensione",
+      "theme": "light",
+      "route": "/pensione",
+      "width": 1920,
+      "height": 1475
+    },
+    {
+      "id": "analitiche",
+      "theme": "light",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1574
+    },
+    {
+      "id": "tasse",
+      "theme": "dark",
+      "route": "/investimenti/tasse",
+      "width": 1920,
+      "height": 1913
+    },
+    {
+      "id": "pensione",
+      "theme": "dark",
+      "route": "/pensione",
+      "width": 1920,
+      "height": 1475
+    },
+    {
+      "id": "analitiche",
+      "theme": "dark",
+      "route": "/analitiche",
+      "width": 1920,
+      "height": 1574
     }
   ]
 }

@@ -1,4 +1,5 @@
 "use client";
+import { PlanningScreen } from "@/components/domain/financial-planning";
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
@@ -30,7 +31,7 @@ import { errorToast } from "@/lib/support/request-report";
 const PENDING_REFRESH_MS = 4000;
 const PENDING_REFRESH_MAX = 6;
 
-export default function DividendiPage() {
+function ItalianPage() {
   const { t: tr } = useLocalization();
   const today = React.useMemo(() => startOfDay(new Date()), []);
   const overview = useFilteredInvestmentsOverview(INVESTMENTS_DEFAULT_PERIOD);
@@ -127,4 +128,10 @@ export default function DividendiPage() {
       />
     </>
   );
+}
+
+/** Choose the country product before mounting its calculation hooks. */
+export default function CountryPage() {
+  const { productCountry } = useLocalization();
+  return productCountry === "DE" ? <PlanningScreen section="income" /> : <ItalianPage />;
 }

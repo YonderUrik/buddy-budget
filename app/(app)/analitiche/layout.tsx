@@ -1,4 +1,5 @@
 "use client";
+import { PlanningScreen } from "@/components/domain/financial-planning";
 import { useLocalization } from "@/lib/localization/provider";
 
 /** Layout di Analitiche: intestazione, guida iniziale e caricamento dei dati; il corpo (cursori e risposte) è la pagina. */
@@ -100,6 +101,8 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function AnalitricheLayout({ children }: { children: React.ReactNode }) {
+  const { productCountry } = useLocalization();
+  if (productCountry === "DE") return <PlanningScreen section="retirement" />;
   return (
     <AnalyticsProvider>
       <AnalyticsShell>{children}</AnalyticsShell>

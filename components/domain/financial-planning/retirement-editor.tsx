@@ -1,0 +1,20 @@
+"use client";
+import { germanRetirement, type GermanPlan } from "@/lib/financial-planning";
+import { useLocalization } from "@/lib/localization/provider";
+import { NumberField, Panel, Result, Amount } from "./fields";
+/** Retirement scenario with restricted pension assets, payment delays and explicit real-return assumptions. */
+export function RetirementEditor({ plan, onChange }: { plan: GermanPlan; onChange: (plan: GermanPlan) => void }) {
+  const { t } = useLocalization(); const r = plan.retirement; const result = germanRetirement(plan);
+  const update = (key: keyof typeof r, value: number) => onChange({ ...plan, retirement: { ...r, [key]: value } });
+  return <Panel title="Retirement planning">
+    <p className="text-sm text-muted-foreground">{t("All spending and liquid savings are in today's euros. Enter investable capital only, excluding pension contracts already listed in Pensions. Pension income starts at each contract's payment date. This deterministic scenario is not a guarantee or a success probability.")}</p>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <NumberField label="Liquid investment capital today (€)" value={r.liquidCapital} onChange={v => update('liquidCapital', v)} /><NumberField label="Annual saving in today's euros (€)" value={r.annualSaving} onChange={v => update('annualSaving', v)} /><NumberField label="Annual spending in today's euros (€)" value={r.annualSpending} onChange={v => update('annualSpending', v)} /><NumberField label="Years until retirement" value={r.yearsUntilRetirement} max={80} step={1} onChange={v => update('yearsUntilRetirement', v)} />
+      <NumberField label="Real annual return after costs (%)" value={r.realReturn * 100} min={-50} max={30} onChange={v => update('realReturn', v / 100)} /><NumberField label="Withdrawal rate for reference target (%)" value={r.withdrawalRate * 100} min={0.5} max={20} onChange={v => update('withdrawalRate', v / 100)} /><NumberField label="Annual inflation assumption (%)" value={r.inflation * 100} max={20} onChange={v => update('inflation', v / 100)} /><NumberField label="Assumed pension tax and social deductions (%)" value={r.pensionDeductionRate * 100} max={100} onChange={v => update('pensionDeductionRate', v / 100)} /><NumberField label="Assumed tax share of withdrawals (%)" value={r.withdrawalTaxShare * 100} max={90} onChange={v => update('withdrawalTaxShare', v / 100)} />
+    </div>
+    <p className="text-sm text-muted-foreground">{t("Deduction percentages are your assumptions, not calculated German tax rates. Nominal pensions are held constant and lose purchasing power with inflation. Choose either a lump sum or monthly income per contract to avoid counting it twice.")}</p>
+    <Result label="Liquid capital at retirement" value={result.atRetirement} /><Result label="Reference FIRE target before pension income" value={result.currentTarget} />
+    <p role="status">{r.annualSpending <= 0 ? t("Enter annual spending to assess your retirement plan.") : result.depletedAfter === null ? t("Capital lasts through the 50-year scenario under these assumptions.") : t("Capital runs out in retirement year {0}.", { 0: result.depletedAfter + 1 })}</p>
+    <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr><th className="text-left">{t("Retirement year")}</th><th>{t("Pension income")}</th><th>{t("Withdrawal")}</th><th>{t("Remaining capital")}</th></tr></thead><tbody>{result.rows.filter((_, i) => i === 0 || (i + 1) % 5 === 0).map(row => <tr className="border-b" key={row.year}><td className="py-2">{row.year + 1}</td><td className="text-right"><Amount value={row.pension} /></td><td className="text-right"><Amount value={row.withdrawal} /></td><td className="text-right"><Amount value={row.capital} /></td></tr>)}</tbody></table></div>
+  </Panel>;
+}

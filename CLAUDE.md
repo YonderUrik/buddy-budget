@@ -1,6 +1,6 @@
 # BuddyBudget
 
-App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e valuta sono scelte dall'utente in fase di onboarding (default italiano/EUR, non hardcoded). Paese del prodotto e lingua sono indipendenti: Italia (italiano/inglese), Germania (tedesco/inglese). Per la Germania restano disabilitati fiscalità italiana, pensione/TFR, proventi previsionali, analitiche pensionistiche e inflazione italiana; da integrare separatamente.
+App di gestione finanziaria personale. Multi-lingua e multi-valuta: lingua e valuta sono scelte dall'utente in fase di onboarding (default italiano/EUR, non hardcoded). Paese del prodotto e lingua sono indipendenti: Italia (italiano/inglese), Germania (tedesco/inglese). Germania: inflazione nazionale integrata; in sviluppo locale scenari fiscali 2026, fondi/ETF, crypto private, pensioni, proventi e pensionamento in EUR, separati dai motori italiani. Le API italiane pensione/TFR e analitiche restano bloccate in DE. Ambito, limiti e verifica: `docs/decisioni/2026-10-14-pianificazione-finanziaria-germania.md`.
 
 ## Regole per Claude
 

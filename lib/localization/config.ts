@@ -21,7 +21,7 @@ export function resolveProfile(user?: { productCountry?: string | null; language
   const language = isSupportedProfile(productCountry, user?.language) ? user!.language as Language : productCountry === "DE" ? "en" : "it";
   return { productCountry, language };
 }
-/** German calculations will be enabled individually once their country-specific rules are implemented. */
+/** Shared legacy-engine capabilities; dedicated country planning screens use the separate route policy below. */
 export function countryFeatures(country: string) {
   return financialCountry(country)?.features ?? DISABLED_FINANCIAL_FEATURES;
 }
@@ -29,6 +29,8 @@ const within = (path: string, prefix: string) => path === prefix || path.startsW
 /** Central route policy used by navigation, proxy and protected API handlers. */
 export function isCountryPathAvailable(country: string, path: string): boolean {
   if (country === "IT") return true;
+  // Dedicated German screens; legacy Italian APIs and subpages stay inaccessible.
+  if (country === "DE" && ["/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi", "/api/financial-planning"].includes(path)) return true;
   return ![
     "/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi",
     "/api/pension", "/api/analytics", "/api/sidebar/fire", "/api/investments/tax-carryforwards",

@@ -24,9 +24,9 @@ export interface CostsSectionProps extends QuestionSectionData {
 export function CostsSection({ question, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
   const { money } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, productCountry } = useLocalization();
   const { currency } = base;
-  const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })));
+  const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })), productCountry);
   const drag = summary.annualPct !== null ? costDrag(summary.totalValue, assumptions.expectedReturn, summary.annualPct, COST_DRAG_YEARS) : [];
   const sentences = costsSentences(summary, drag.at(-1)?.lost ?? null, COST_DRAG_YEARS, plan.liquidation, currency);
   return (

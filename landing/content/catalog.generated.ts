@@ -57,6 +57,7 @@ export const FEATURES: readonly Feature[] = [
   f("diversificazione", "Investimenti", "Diversificazione", "Per area e settore guardando dentro gli ETF.", "live"),
   f("allocazione-obiettivo", "Investimenti", "Allocazione obiettivo", "Con il suggerimento di dove mettere il prossimo versamento.", "live"),
   f("proventi", "Investimenti", "Dividendi", "Proventi incassati e previsti nei prossimi 12 mesi, mese per mese e per strumento, con lordo, ritenute e netto.", "live"),
+  f("pianificazione-germania", "Investimenti", "Pianificazione finanziaria Germania", "Stime fiscali 2026 in EUR con FIFO per deposito, franchigie e perdite distinte, scenari Vorabpauschale e crypto private. Pensioni tedesche e scenari lordi Altersvorsorgedepot (nuovi contratti dal 2027), separati dal capitale liquido, e piano pensionamento con ipotesi esplicite; interfaccia in inglese e tedesco.", "new"),
   f("tasse-italiane", "Investimenti", "Tasse italiane", "Plus e minus, zaino a 4 anni, titoli di Stato, crypto e bollo.", "live"),
   f("simulatore-prima-di-vendere", "Investimenti", "Simulatore «Prima di vendere»", "Ricalcola le tasse con la vendita in più, prima di farla.", "live"),
   f("titoli-watchlist-e-avvisi", "Investimenti", "Titoli, watchlist e avvisi", "Pagina per titolo, che si apre dalle posizioni o con la ricerca, con grafico dei tuoi acquisti, rischio, watchlist e avvisi di prezzo via email.", "live"),
@@ -73,7 +74,7 @@ export const FEATURES: readonly Feature[] = [
 
   f("tuoi-dati-tuo-controllo", "Account", "Tuoi dati, tuo controllo", "Esporti tutto in ZIP, azzeri o cancelli l'account con 30 giorni di ripensamento.", "live"),
   f("email-riepilogo-e-avvisi", "Account", "Email di riepilogo e avvisi", "Se vuoi, ricevi il riepilogo del mese o della settimana, con speso, entrato, guadagno degli investimenti e dividendi in poche righe, e un avviso quando un budget è quasi finito o una rata sta per scadere. Le scegli già al primo accesso, partono spente e ognuna si disattiva con un clic.", "new"),
-  f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Prodotto Italia in italiano e inglese; prodotto Germania in tedesco e inglese. Valute selezionabili. Per la Germania, fiscalità, pensione e pianificazione del pensionamento arriveranno in seguito.", "new"),
+  f("piu-lingue-e-valute", "Account", "Più lingue e valute", "Prodotto Italia in italiano e inglese; prodotto Germania in tedesco e inglese. Valute selezionabili. Per la Germania: scenari fiscali 2026 con FIFO per deposito, fondi e crypto private; pensioni e pianificazione in EUR con ipotesi esplicite. I casi non supportati sono indicati, senza applicare regole italiane.", "new"),
   f("notifiche-push", "Account", "Notifiche push", "Avvisi sul telefono, per esempio per i prezzi.", "soon"),
 ];
 

@@ -163,3 +163,21 @@ it("lista delle aliquote: posizioni aperte e titoli tassati nell'anno, non quell
   input.targets = [{ instrumentId: "obiettivo", weight: "1" }];
   expect(buildTaxView(input, NOW).rateListInstruments.map((i) => i.id)).toEqual(["etf", "venduto"]);
 });
+
+it("keeps German recorded charges while excluding Italian sale-tax estimates", () => {
+  const input = data();
+  input.transactions[0].fees = "10.50";
+  input.transactions[0].taxes = "3.25";
+  input.transactions.push({ ...input.transactions[0], id: "sale-de", type: "vendita", date: "2026-09-19", quantity: "5", price: "120", fees: "2.25", taxes: "1.50" });
+  input.productCountry = "DE";
+  const original = structuredClone(input);
+  const german = buildInvestmentsView(input, "max", NOW);
+  expect(german.costImpact.fees).toBeCloseTo(12.75);
+  expect(german.costImpact.taxes).toBeCloseTo(4.75);
+  expect(german.costImpact.estimatedTaxes).toBe(0);
+  expect(input).toEqual(original);
+  const italian = buildInvestmentsView({ ...input, productCountry: "IT" }, "max", NOW);
+  expect(italian.costImpact.estimatedTaxes).toBeGreaterThan(0);
+  expect(italian.costImpact.fees).toBe(german.costImpact.fees);
+  expect(italian.summary.totalValue).toBe(german.summary.totalValue);
+});

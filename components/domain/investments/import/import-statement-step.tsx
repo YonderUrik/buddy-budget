@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Secondo passo per un rendiconto già strutturato (Interactive Brokers, DEGIRO, Trade Republic): cosa ho letto, quanto
@@ -27,6 +28,7 @@ export interface ImportStatementStepProps {
 const MAX_LISTED_CASH = 4;
 
 export function ImportStatementStep({ fileName, providerName, rows, warnings, cashMovements, destination }: ImportStatementStepProps) {
+  const { t: tr } = useLocalization();
   const operations = rows.filter((r) => r.status === "ok").length;
   const notImported = rows.length - operations;
   return (
@@ -41,29 +43,29 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
           ]}
         />
         {operations === 0 && !cashMovements?.length ? (
-          <ImportNotice tone="error" title="Non ci sono operazioni da importare in questo file" hint="Controlla di aver esportato il periodo giusto e di aver scelto il file del broker corretto." />
+          <ImportNotice tone="error" title={tr("Non ci sono operazioni da importare in questo file")} hint={tr("Controlla di aver esportato il periodo giusto e di aver scelto il file del broker corretto.")} />
         ) : null}
       </DialogSection>
       {destination ? <DialogSection>{destination}</DialogSection> : null}
       {operations > 0 ? (
-        <DialogSection title="Le prime operazioni">
+        <DialogSection title={tr("Le prime operazioni")}>
           <ImportRowsPreview rows={rows} />
         </DialogSection>
       ) : null}
       {cashMovements && cashMovements.length > 0 ? (
-        <DialogSection title="Movimenti del conto" description="Pagamenti con carta, bonifici, interessi e bonus: finiscono in Liquidità → Movimenti, da categorizzare. Il saldo si calcola dallo storico completo partendo da zero, perché il file non contiene un saldo ufficiale.">
+        <DialogSection title={tr("Movimenti del conto")} description={tr("Pagamenti con carta, bonifici, interessi e bonus: finiscono in Liquidità → Movimenti, da categorizzare. Il saldo si calcola dallo storico completo partendo da zero, perché il file non contiene un saldo ufficiale.")}>
           <ul className="flex flex-col divide-y text-sm">
             {cashMovements.slice(0, MAX_LISTED_CASH).map((m) => (
               <li key={m.externalId} className="flex items-baseline justify-between gap-3 py-1.5">
                 <span className="min-w-0 truncate">
-                  <span className="text-muted-foreground">{m.date.split("-").reverse().join("/")} · </span>
+                  <span className="text-muted-foreground">{m.date.split("-").reverse().join("/")} {"·"}</span>
                   {m.description}
                 </span>
-                <span className="shrink-0 font-mono text-xs tabular-nums">{m.amount.toFixed(2)} {m.currency}</span>
+                <span className="shrink-0 font-mono text-xs tabular-nums">{m.amount.toFixed(2)}{" "}{m.currency}</span>
               </li>
             ))}
           </ul>
-          {cashMovements.length > MAX_LISTED_CASH ? <p className="text-xs text-muted-foreground">…e altri {cashMovements.length - MAX_LISTED_CASH} movimenti, tutti inclusi.</p> : null}
+          {cashMovements.length > MAX_LISTED_CASH ? <p className="text-xs text-muted-foreground">{tr("…e altri")}{" "}{cashMovements.length - MAX_LISTED_CASH}{" "}{tr("movimenti, tutti inclusi.")}</p> : null}
         </DialogSection>
       ) : null}
       <SkippedRows rows={rows} />

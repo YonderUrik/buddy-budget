@@ -1,4 +1,6 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+
 
 import * as React from "react";
 import {
@@ -26,6 +28,7 @@ const isXlsx = (file: File) => /\.xlsx$/i.test(file.name) || file.type.includes(
  * ricalcolano a ogni cambio di colonna e il piano (nuove, aggiornate, saltate) si confronta con le fotografie già salvate.
  */
 export function usePensionImport(fundId: string, existing: ExistingSnapshot[], today: string) {
+  const { t: tr } = useLocalization();
   const [step, setStep] = React.useState<PensionImportStep>("file");
   const [fileName, setFileName] = React.useState<string | null>(null);
   const [format, setFormat] = React.useState<PensionImportFormat>("csv");
@@ -42,7 +45,7 @@ export function usePensionImport(fundId: string, existing: ExistingSnapshot[], t
 
   function load(next: PensionImportTable, name: string | null, kind: PensionImportFormat) {
     if (next.headers.length < 2 || next.rows.length === 0) {
-      setError("Il file non sembra una tabella con intestazioni e almeno una riga");
+      setError(tr("Il file non sembra una tabella con intestazioni e almeno una riga"));
       return;
     }
     setTable(next);
@@ -59,7 +62,7 @@ export function usePensionImport(fundId: string, existing: ExistingSnapshot[], t
       if (isXlsx(file)) load(readXlsx(new Uint8Array(await file.arrayBuffer())), file.name, "xlsx");
       else load(readCsvTable(await file.text()), file.name, "csv");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Non riesco a leggere il file");
+      setError(e instanceof Error ? e.message : tr("Non riesco a leggere il file"));
     }
   }
 
@@ -75,7 +78,7 @@ export function usePensionImport(fundId: string, existing: ExistingSnapshot[], t
       const result = await run.mutateAsync({ fundId, input: { format, rows: valid } });
       setDone(result.counts);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Import non riuscito");
+      setError(e instanceof Error ? e.message : tr("Import non riuscito"));
     }
   }
 

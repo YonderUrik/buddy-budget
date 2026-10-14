@@ -14,20 +14,20 @@ export interface DayGroup<T extends Transaction = Transaction> {
   items: T[];
 }
 
-const DAY_FORMAT = new Intl.DateTimeFormat("it-IT", { weekday: "long", day: "numeric", month: "long" });
-const DAY_YEAR_FORMAT = new Intl.DateTimeFormat("it-IT", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+
 
 /** Etichetta di un giorno rispetto a `today`. */
-export function dayLabel(date: string, today: Date): string {
+export function dayLabel(date: string, today: Date, locale = "it-IT"): string {
   const todayStart = startOfDay(today);
   if (date === toDateKey(todayStart)) return "Oggi";
   if (date === toDateKey(addDays(todayStart, -1))) return "Ieri";
   const parsed = parseDateOnly(date);
-  return (parsed.getFullYear() === todayStart.getFullYear() ? DAY_FORMAT : DAY_YEAR_FORMAT).format(parsed);
+  return new Intl.DateTimeFormat(locale, {weekday: "long", day: "numeric", month: "long", ...(parsed.getFullYear() !== todayStart.getFullYear() ? {year: "numeric" as const} : {})}).format(parsed);
 }
 
 /** Raggruppa per data, giorni dal più recente; dentro il giorno l'ordine ricevuto è mantenuto. */
-export function groupByDay<T extends Transaction>(transactions: T[], today: Date): DayGroup<T>[] {
+export function groupByDay<T extends Transaction>(transactions: T[], today: Date, locale = "it-IT"): DayGroup<T>[] {
   const byDate = new Map<string, T[]>();
   for (const transaction of transactions) {
     byDate.set(transaction.date, [...(byDate.get(transaction.date) ?? []), transaction]);
@@ -36,7 +36,7 @@ export function groupByDay<T extends Transaction>(transactions: T[], today: Date
     .sort(([a], [b]) => (a < b ? 1 : a > b ? -1 : 0))
     .map(([date, items]) => ({
       date,
-      label: dayLabel(date, today),
+      label: dayLabel(date, today, locale),
       total: Math.round(items.reduce((sum, t) => sum + effectiveAmount(t), 0) * 100) / 100,
       items,
     }));

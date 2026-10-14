@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Carta di un esercente nella categorizzazione rapida: logo, nome, importo, quando (date e primi movimenti), categoria
@@ -13,8 +16,8 @@ import { Button } from "@/components/ui/button";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
-import { dateRangeLabel } from "@/lib/categorization/origin";
-import { formatCurrency } from "@/lib/format";
+import { localizedCategorizationText } from "@/lib/categorization/origin";
+
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
 import { MovementsPreview } from "./movements-preview";
@@ -73,6 +76,12 @@ export function SwipeCard({
   onSkip,
   onRemoteLogo,
 }: SwipeCardProps) {
+  const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
+
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 300], [-MAX_TILT_DEGREES, MAX_TILT_DEGREES]);
   const y = useMotionValue(0);
@@ -115,13 +124,13 @@ export function SwipeCard({
       className={cn("relative flex touch-none flex-col gap-4 rounded-2xl border-2 bg-card transition-colors p-5 shadow-lg select-none max-md:flex-1 max-md:justify-between", zone === "conferma" ? "border-pos" : zone === "cambia" ? "border-neg" : zone === "salta" ? "border-muted-foreground" : "border-border")}
     >
       <motion.span style={{ opacity: confirmOpacity }} className={cn("pointer-events-none absolute top-4 left-4 rounded-md border-2 border-pos px-2 py-0.5 text-sm font-semibold text-pos", zone === "conferma" && "bg-pos text-background")}>
-        {zone === "conferma" ? "Lascia: è questa" : "È questa"}
+        {zone === "conferma" ? tr("Lascia: è questa") : tr("È questa")}
       </motion.span>
       <motion.span style={{ opacity: skipOpacity }} className={cn("pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 rounded-md border-2 border-muted-foreground px-2 py-0.5 text-sm font-semibold text-muted-foreground", zone === "salta" && "bg-muted-foreground text-background")}>
-        {zone === "salta" ? "Lascia: salta" : "Salta"}
+        {zone === "salta" ? tr("Lascia: salta") : tr("Salta")}
       </motion.span>
       <motion.span style={{ opacity: changeOpacity }} className={cn("pointer-events-none absolute top-4 right-4 rounded-md border-2 border-neg px-2 py-0.5 text-sm font-semibold text-neg", zone === "cambia" && "bg-neg text-background")}>
-        {zone === "cambia" ? "Lascia: un'altra" : "Un'altra"}
+        {zone === "cambia" ? tr("Lascia: un'altra") : tr("Un'altra")}
       </motion.span>
 
       <div className="flex flex-col items-center gap-1 pt-6 text-center">
@@ -131,7 +140,7 @@ export function SwipeCard({
           {formatCurrency(group.totalAmount, currency)}
         </p>
         <p className="text-xs text-muted-foreground">
-          {count === 1 ? "1 movimento" : `${count} movimenti`} · {dateRangeLabel(group.transactionDates)}
+          {count === 1 ? tr("1 movimento") : tr("{0} movimenti", { 0: count })} {"·"}{dateRangeLabel(group.transactionDates)}
         </p>
       </div>
 
@@ -160,14 +169,13 @@ export function SwipeCard({
 
       {changing || !hasSuggestion ? (
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">{changing ? "Scegli la categoria giusta" : "Nessuna proposta: scegli tu la categoria"}</p>
+          <p className="text-sm text-muted-foreground">{changing ? tr("Scegli la categoria giusta") : tr("Nessuna proposta: scegli tu la categoria")}</p>
           <Button type="button" variant="outline" className="h-11 w-full" onClick={onChange}>
-            Scegli la categoria
-          </Button>
+            {tr("Scegli la categoria")}</Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/60 p-3 text-center md:p-4">
-          <p className="text-xs text-muted-foreground">Categoria proposta</p>
+          <p className="text-xs text-muted-foreground">{tr("Categoria proposta")}</p>
           {suggestedAppearance && <CategoryAvatar icon={suggestedAppearance.icon} color={suggestedAppearance.color} size={22} className="size-10 md:size-12" />}
           <p className="font-heading text-lg font-medium text-foreground">{suggestedName}</p>
           {group.suggestion && <SuggestionOrigin suggestion={group.suggestion} align="center" />}
@@ -177,7 +185,7 @@ export function SwipeCard({
       <label htmlFor={rememberId} className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
         <Checkbox id={rememberId} checked={remember} onCheckedChange={(checked) => onRememberChange(checked === true)} />
         <span className="min-w-0">
-          Usa sempre questa categoria<span className="max-sm:sr-only"> per «{group.label}»</span>
+          {tr("Usa sempre questa categoria")}<span className="max-sm:sr-only"> {tr("per «")}{group.label}{"»"}</span>
         </span>
       </label>
     </motion.div>

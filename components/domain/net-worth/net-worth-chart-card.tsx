@@ -1,4 +1,7 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Card principale della Panoramica: patrimonio netto attuale, variazione nel periodo, selettore periodo e grafico ad
@@ -14,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { computeNetWorthChange, restrictSeriesToClasses, type NetWorthChange, type NetWorthPeriod, type NetWorthSeriesPoint } from "@/lib/calc/net-worth";
 import { track } from "@/lib/analytics/track";
-import { formatCurrency } from "@/lib/format";
+
 import { cn } from "@/lib/utils";
 import { assetClassColor, assetClassesInSeries, assetClassLabel } from "./asset-classes";
 import { countedClasses, PENSION_CLASS, toggleHiddenClass, visibleClasses } from "./net-worth-chart.utils";
@@ -81,6 +84,10 @@ export function NetWorthChartCard({
   pensionIncluded = true,
   onPensionIncludedChange,
 }: NetWorthChartCardProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency, formatPct } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const [hidden, setHidden] = React.useState<ReadonlySet<string>>(() => new Set());
   const [view, setView] = React.useState<ChartView>("totale");
   const presentClasses = assetClassesInSeries(series);
@@ -97,7 +104,7 @@ export function NetWorthChartCard({
   const hasHistory = series.length >= 2;
   const isNegative = shownChange.delta < 0;
   const sign = isNegative ? "−" : "+";
-  const pctText = shownChange.deltaPct !== null ? ` (${sign}${Math.abs(shownChange.deltaPct * 100).toFixed(1)}%)` : "";
+  const pctText = shownChange.deltaPct !== null ? ` (${sign}${formatPct(Math.abs(shownChange.deltaPct))})` : "";
   const showDebts = hasDebts && !isPartial;
   const tooltipClasses = showDebts ? [...classes, LIABILITY_CLASS] : classes;
   const pensionVisibleExcluded = pensionExcluded && classes.includes(PENSION_CLASS);
@@ -118,7 +125,7 @@ export function NetWorthChartCard({
 
   const lastPoint = shownSeries[shownSeries.length - 1];
   const chartSummary = hasHistory
-    ? `Patrimonio netto ${PERIOD_CHANGE_LABELS[period]}: da ${formatCurrency(shownChange.start, currency, { maximumFractionDigits: 0 })} a ${formatCurrency(shownChange.end, currency, { maximumFractionDigits: 0 })}.`
+    ? tr("Patrimonio netto {0}: da {1} a {2}.", { 0: tr(PERIOD_CHANGE_LABELS[period]), 1: formatCurrency(shownChange.start, currency, { maximumFractionDigits: 0 }), 2: formatCurrency(shownChange.end, currency, { maximumFractionDigits: 0 }) })
     : "";
 
   const isTotalView = view === "totale";
@@ -133,13 +140,11 @@ export function NetWorthChartCard({
     <section aria-labelledby="net-worth-title" className="flex flex-col gap-4">
       <div className="flex flex-row flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <h2 id="net-worth-title" className="text-base font-medium text-muted-foreground">
-            Patrimonio netto
-          </h2>
+          <h2 id="net-worth-title" className="text-base font-medium text-muted-foreground">{tr("Patrimonio netto")}</h2>
           <MoneyHero value={shownChange.end} currency={currency} className="text-5xl sm:text-6xl" />
           {isPartial ? (
             <p className="text-sm font-medium text-muted-foreground">
-              {PARTIAL_TOTAL_LABEL}, nascosto: {hiddenLabels.join(", ")}
+              {tr(PARTIAL_TOTAL_LABEL)}{tr(", nascosto:")}{" "}{hiddenLabels.join(", ")}
             </p>
           ) : null}
           {hasHistory ? (
@@ -147,20 +152,20 @@ export function NetWorthChartCard({
               {isNegative ? <TrendingDownIcon className="mr-1 inline size-4" aria-hidden="true" /> : <TrendingUpIcon className="mr-1 inline size-4" aria-hidden="true" />}
               {sign}
               {formatCurrency(Math.abs(shownChange.delta), currency, { maximumFractionDigits: 0 })}
-              {pctText} <span className="font-sans text-muted-foreground">{PERIOD_CHANGE_LABELS[period]}</span>
+              {pctText}{" "}<span className="font-sans text-muted-foreground">{tr(PERIOD_CHANGE_LABELS[period])}</span>
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground">{NO_HISTORY_MESSAGE}</p>
+            <p className="text-sm text-muted-foreground">{tr(NO_HISTORY_MESSAGE)}</p>
           )}
         </div>
         {hasHistory && allClasses.length > 1 ? (
-          <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={handleViewChange} ariaLabel="Vista del grafico" />
+          <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={handleViewChange} ariaLabel={tr("Vista del grafico")} />
         ) : null}
         {hasPension && onPensionIncludedChange ? (
           <div className="flex w-full items-center gap-2">
             <Switch id="pension-in-net-worth" size="sm" checked={pensionIncluded} onCheckedChange={onPensionIncludedChange} />
             <Label htmlFor="pension-in-net-worth" className="text-sm font-normal text-muted-foreground">
-              {PENSION_SWITCH_LABEL}
+              {tr(PENSION_SWITCH_LABEL)}
             </Label>
           </div>
         ) : null}
@@ -257,16 +262,16 @@ export function NetWorthChartCard({
                         onClick={() => setHidden(new Set())}
                         className="min-h-11 rounded-full px-3 text-sm font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
                       >
-                        {SHOW_ALL_LABEL}
+                        {tr(SHOW_ALL_LABEL)}
                       </button>
                     </li>
                   ) : null}
                 </ul>
               ) : null}
               <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                {showNetLine ? <li>{NET_LINE_NOTE}</li> : null}
-                {showDebts ? <li>{DEBTS_NOTE}</li> : null}
-                {pensionVisibleExcluded ? <li>{PENSION_EXCLUDED_NOTE}</li> : null}
+                {showNetLine ? <li>{tr(NET_LINE_NOTE)}</li> : null}
+                {showDebts ? <li>{tr(DEBTS_NOTE)}</li> : null}
+                {pensionVisibleExcluded ? <li>{tr(PENSION_EXCLUDED_NOTE)}</li> : null}
               </ul>
             </div>
           ) : null}

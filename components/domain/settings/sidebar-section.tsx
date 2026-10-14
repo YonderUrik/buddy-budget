@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Sezione «Barra laterale»: sceglie quali moduli mostrare sotto il menu (patrimonio, portafoglio, watchlist, scadenze,
@@ -15,9 +16,10 @@ import { SidebarPreview } from "./settings-preview";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 function ModuleRow({ id, label, hint }: { id: SidebarModuleId; label: string; hint: string }) {
+  const { t: tr } = useLocalization();
   const [enabled, setEnabled] = useSidebarModule(id);
   return (
-    <SettingsRow label={label} hint={hint} htmlFor={`sidebar-module-${id}`}>
+    <SettingsRow label={tr(label)} hint={tr(hint)} htmlFor={`sidebar-module-${id}`}>
       <Switch
         id={`sidebar-module-${id}`}
         checked={enabled}
@@ -25,28 +27,29 @@ function ModuleRow({ id, label, hint }: { id: SidebarModuleId; label: string; hi
           setEnabled(checked);
           track("sidebar_module_toggled", { module: id, enabled: checked });
         }}
-        aria-label={label}
+        aria-label={tr(label)}
       />
     </SettingsRow>
   );
 }
 
 export function SidebarSection() {
+  const { t: tr, features } = useLocalization();
   const [bottomNav, setBottomNav] = useBottomNav();
   return (
     <SettingsSection
       id="impostazioni-barra-laterale"
-      title="Barra laterale"
+      title={tr("Barra laterale")}
       icon={PanelLeft}
       preview={<SidebarPreview />}
-      description="Scegli cosa vedere sotto il menu. Vale per questo dispositivo."
+      description={tr("Scegli cosa vedere sotto il menu. Vale per questo dispositivo.")}
     >
-      {SIDEBAR_MODULES.map((module) => (
-        <ModuleRow key={module.id} id={module.id} label={module.label} hint={module.hint} />
+      {SIDEBAR_MODULES.filter(module => features.retirement || module.id !== "fire").map((module) => (
+        <ModuleRow key={module.id} id={module.id} label={tr(module.label)} hint={tr(module.hint)} />
       ))}
       <SettingsRow
-        label="Barra in basso su mobile"
-        hint="Le sezioni principali in basso, con «Altro» per il resto. Spenta, torna il menu a scomparsa."
+        label={tr("Barra in basso su mobile")}
+        hint={tr("Le sezioni principali in basso, con «Altro» per il resto. Spenta, torna il menu a scomparsa.")}
         htmlFor="sidebar-bottom-nav"
       >
         <Switch
@@ -56,7 +59,7 @@ export function SidebarSection() {
             setBottomNav(checked);
             track("sidebar_module_toggled", { module: "barra_in_basso", enabled: checked });
           }}
-          aria-label="Barra in basso su mobile"
+          aria-label={tr("Barra in basso su mobile")}
         />
       </SettingsRow>
     </SettingsSection>

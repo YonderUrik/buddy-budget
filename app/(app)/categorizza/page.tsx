@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Pagina "Categorizza": «Da decidere» (carte o elenco per le proposte incerte e i movimenti senza proposta) e «Messe
@@ -42,6 +43,7 @@ const VIEW_OPTIONS: readonly SegmentedControlOption<View>[] = [
 ];
 
 export default function CategorizzaPage() {
+  const { t: tr } = useLocalization();
   useMarkMovementsSeen();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -85,11 +87,11 @@ export default function CategorizzaPage() {
       try {
         await saveChoices({ groups: items, onProgress: () => {} });
       } catch (error) {
-        errorToast(error instanceof Error ? error.message : "Impossibile salvare le scelte", "movimento");
+        errorToast(error instanceof Error ? error.message : tr("Impossibile salvare le scelte"), "movimento");
         throw error;
       }
     },
-    [groupByKey, saveChoices]
+    [groupByKey, saveChoices, tr]
   );
 
   const assistant = generation.assistant;
@@ -106,8 +108,8 @@ export default function CategorizzaPage() {
       />
     ) : null;
   const tabOptions: readonly SegmentedControlOption<Tab>[] = [
-    { value: "da-decidere", label: isLoading ? "Da decidere" : `Da decidere · ${toDecideTotal}` },
-    { value: "fatte", label: auto.autoData ? `Messe dall'app · ${auto.autoData.total}` : "Messe dall'app" },
+    { value: "da-decidere", label: isLoading ? tr("Da decidere") : tr("Da decidere · {0}", { 0: toDecideTotal }) },
+    { value: "fatte", label: auto.autoData ? tr("Messe dall'app · {0}", { 0: auto.autoData.total }) : tr("Messe dall'app") },
   ];
 
   return (
@@ -115,18 +117,17 @@ export default function CategorizzaPage() {
       {/* In basso: il menu «⋯» sta all'altezza del titolo, non del link in alto. */}
       <div className="flex items-end gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <BackLink href="/liquidita" label="Movimenti" className="-my-1.5" />
-          <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">Categorizza</h1>
+          <BackLink href="/liquidita" label={tr("Movimenti")} className="-my-1.5" />
+          <h1 className="font-heading text-xl font-medium text-foreground md:text-2xl">{tr("Categorizza")}</h1>
           <p className="text-sm text-muted-foreground max-md:hidden">
-            Quando è quasi certa l&apos;app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.
-          </p>
+            {tr("Quando è quasi certa l'app mette la categoria da sola: qui scegli le altre e controlli quelle già messe.")}</p>
         </div>
         {!isDesktop ? banner : null}
         {/* Strumento per chi cambia le regole: in un menu, così la pagina mostra solo le due schede. */}
         <DropdownMenu>
           <DropdownMenuTrigger
             className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-11 shrink-0 cursor-pointer md:size-9")}
-            aria-label="Altre azioni"
+            aria-label={tr("Altre azioni")}
             disabled={!categories}
           >
             <EllipsisIcon className="size-5" aria-hidden="true" />
@@ -135,8 +136,8 @@ export default function CategorizzaPage() {
             <DropdownMenuItem className="min-h-11 items-start gap-2 py-2" onClick={() => setRecategorizing(true)}>
               <RefreshCwIcon className="mt-0.5 size-4" aria-hidden="true" />
               <span className="flex flex-col gap-0.5">
-                <span>Ricategorizza</span>
-                <span className="text-xs text-muted-foreground">Rifà le categorie messe dall&apos;app con le regole di oggi</span>
+                <span>{tr("Ricategorizza")}</span>
+                <span className="text-xs text-muted-foreground">{tr("Rifà le categorie messe dall'app con le regole di oggi")}</span>
               </span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -144,17 +145,17 @@ export default function CategorizzaPage() {
       </div>
       {categories ? <RecategorizeDialog open={recategorizing} onOpenChange={setRecategorizing} categories={categories} currency={currency} /> : null}
 
-      <SegmentedControl options={tabOptions} value={tab} onChange={setChosenTab} ariaLabel="Movimenti da decidere o già categorizzati" stretch className="sm:max-w-sm" />
+      <SegmentedControl options={tabOptions} value={tab} onChange={setChosenTab} ariaLabel={tr("Movimenti da decidere o già categorizzati")} stretch className="sm:max-w-sm" />
       {suggestions && !autoApplyEnabled ? <AutoApplyPrompt onEnable={auto.enableAutoApply} pending={auto.enabling} /> : null}
       {isDesktop ? banner : null}
       {generation.generating ? <AiProgressStrip done={generation.done} total={generation.startMissing} /> : null}
 
       {tab === "da-decidere" ? (
         <>
-          {isDesktop ? <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} ariaLabel="Modo di categorizzare" /> : null}
+          {isDesktop ? <SegmentedControl options={VIEW_OPTIONS} value={view} onChange={setView} ariaLabel={tr("Modo di categorizzare")} /> : null}
           <div className={cn("flex flex-col", activeView === "carte" && "max-md:flex-1")}>
             {isError ? (
-              <LoadError message="Impossibile caricare le proposte di categorizzazione." onRetry={() => refetch()} />
+              <LoadError message={tr("Impossibile caricare le proposte di categorizzazione.")} onRetry={() => refetch()} />
             ) : activeView === "carte" ? (
               isLoading || !categories ? (
                 <div className="mx-auto h-80 w-full max-w-sm animate-pulse rounded-2xl bg-muted" aria-busy="true" />

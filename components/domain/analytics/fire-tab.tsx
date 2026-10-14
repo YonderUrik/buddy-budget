@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Scheda Obiettivo FIRE: numero, progresso, anni al traguardo, Coast FIRE e sensibilità alle ipotesi. */
 
@@ -8,9 +9,9 @@ import type { AnalyticsBase } from "@/lib/analitiche/base";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { cn } from "@/lib/utils";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { formatYears, money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats, pct } from "./analytics-format";
 import { GuidedReading } from "./guided-reading";
-import { fireSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface FireTabProps {
   base: AnalyticsBase;
@@ -28,11 +29,11 @@ function signed(value: number): string {
 }
 
 function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cells: SensitivityCell[][]; rowLabel: string; columnLabel: string; rows: string[]; columns: string[] }) {
+  const { t: tr } = useLocalization();
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[420px] text-sm tabular-nums">
-        <caption className="pb-1 text-left text-xs text-muted-foreground">
-          Righe: {rowLabel} · Colonne: {columnLabel}
+        <caption className="pb-1 text-left text-xs text-muted-foreground">{tr("Righe:")}{" "}{rowLabel}{" "}{tr("· Colonne:")}{" "}{columnLabel}
         </caption>
         <thead>
           <tr>
@@ -52,7 +53,7 @@ function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cel
               </th>
               {row.map((cell, j) => (
                 <td key={columns[j]} className={cn("p-1.5 text-right", i === 2 && j === 2 && "rounded bg-primary/10 font-medium")}>
-                  {cell.years === null ? "—" : cell.years === 0 ? "ok" : `${cell.years.toFixed(1).replace(".", ",")} a`}
+                  {cell.years === null ? "—" : cell.years === 0 ? tr("ok") : tr("{0} a", { 0: cell.years.toFixed(1).replace(".", ",") })}
                 </td>
               ))}
             </tr>
@@ -64,9 +65,14 @@ function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cel
 }
 
 export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
+  const { fireSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { formatYears, money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   const { currency } = base;
   if (plan.target === null || plan.spending === null) {
-    return <MissingData>Per calcolare il numero FIRE serve la tua spesa annua. Scrivila nelle ipotesi qui sopra, oppure registra almeno 3 mesi di movimenti e la ricavo da lì.</MissingData>;
+    return <MissingData>{tr("Per calcolare il numero FIRE serve la tua spesa annua. Scrivila nelle ipotesi qui sopra, oppure registra almeno 3 mesi di movimenti e la ricavo da lì.")}</MissingData>;
   }
   const savings = plan.savings ?? 0;
   const finishYear = plan.yearsToFire !== null ? new Date().getFullYear() + Math.ceil(plan.yearsToFire) : null;
@@ -88,31 +94,31 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
   return (
     <div className="flex flex-col gap-4">
       <GuidedReading tab="fire" steps={fireSteps(plan, a, currency, lean)} />
-      <AnalyticsCard title="Il tuo numero FIRE" explainer="fire-number">
+      <AnalyticsCard title={tr("Il tuo numero FIRE")} explainer="fire-number">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric label="Numero FIRE" value={money(plan.target, currency)} sub={plan.taxShare > 0 ? `${money(plan.fireNumberGross ?? 0, currency)} prima delle imposte` : `spesa ${money(plan.spending, currency)} ÷ ${pct(a.withdrawalRate)}`} />
-          <Metric label="Il tuo patrimonio" value={money(plan.wealth, currency)} sub={`${pct(plan.progress ?? 0, 0)} del traguardo`} />
-          <Metric label="Anni al traguardo" value={formatYears(plan.yearsToFire)} sub={finishYear ? `intorno al ${finishYear}` : savings <= 0 ? "con risparmio nullo non ci arrivi" : undefined} />
+          <Metric label={tr("Numero FIRE")} value={money(plan.target, currency)} sub={plan.taxShare > 0 ? "{0} prima delle imposte" : "spesa {0} ÷ {1}"} />
+          <Metric label={tr("Il tuo patrimonio")} value={money(plan.wealth, currency)} sub={"{0} del traguardo"} />
+          <Metric label={tr("Anni al traguardo")} value={formatYears(plan.yearsToFire)} sub={finishYear ? "intorno al {0}" : savings <= 0 ? "con risparmio nullo non ci arrivi" : undefined} />
         </div>
-        <div role="progressbar" aria-label="Avanzamento verso il numero FIRE" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="h-2 overflow-hidden rounded-full bg-muted">
+        <div role="progressbar" aria-label={tr("Avanzamento verso il numero FIRE")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} className="h-2 overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />
         </div>
         <p className="text-sm text-muted-foreground">
-          Con un risparmio di {money(savings, currency)} l&apos;anno e un rendimento reale del {pct(a.expectedReturn)}.{" "}
-          {plan.spendingSource === "dati" ? "La spesa viene dai tuoi movimenti del periodo scelto. " : ""}
-          {lean !== null ? `Se vivessi solo con le spese Dovute e Saltuarie il numero scenderebbe a ${money(lean, currency)} («lean FIRE»).` : ""}
+          {tr("Con un risparmio di")}{money(savings, currency)} {tr("l'anno e un rendimento reale del")}{pct(a.expectedReturn)}{"."}{" "}
+          {plan.spendingSource === "dati" ? tr("La spesa viene dai tuoi movimenti del periodo scelto. ") : ""}
+          {lean !== null ? tr("Se vivessi solo con le spese Dovute e Saltuarie il numero scenderebbe a {0} («lean FIRE»).", { 0: money(lean, currency) }) : ""}
         </p>
       </AnalyticsCard>
 
-      <AnalyticsCard title="Coast FIRE" explainer="coast">
+      <AnalyticsCard title={tr("Coast FIRE")} explainer="coast">
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {plan.coast.map((c) => (
-            <Metric key={c.years} label={`Fra ${c.years} anni`} value={money(c.number, currency)} tone={plan.wealth >= c.number ? "pos" : "default"} sub={plan.wealth >= c.number ? "già raggiunto" : undefined} />
+            <Metric key={c.years} label={tr("Fra {0} anni", {0: c.years})} value={money(c.number, currency)} tone={plan.wealth >= c.number ? "pos" : "default"} sub={plan.wealth >= c.number ? "già raggiunto" : undefined} />
           ))}
         </div>
       </AnalyticsCard>
 
-      <AnalyticsCard title="Sensibilità alle ipotesi" explainer="sensitivity">
+      <AnalyticsCard title={tr("Sensibilità alle ipotesi")} explainer="sensitivity">
         <SensitivityTable
           cells={rateCells}
           rowLabel="tasso di prelievo"
@@ -121,7 +127,7 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
           columns={returnCols.map((r) => pct(r))}
         />
         <SensitivityTable cells={spendCells} rowLabel="spesa" columnLabel="risparmio" rows={SPENDING_CHANGES.map(signed)} columns={SAVING_CHANGES.map(signed)} />
-        <p className="text-xs text-muted-foreground">Anni al numero FIRE. «—» = oltre 80 anni o mai; «ok» = già raggiunto. La cella evidenziata è la tua ipotesi.</p>
+        <p className="text-xs text-muted-foreground">{tr("Anni al numero FIRE. «—» = oltre 80 anni o mai; «ok» = già raggiunto. La cella evidenziata è la tua ipotesi.")}</p>
       </AnalyticsCard>
     </div>
   );

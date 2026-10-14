@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Flusso "Collega banca": paese, ricerca dell'istituto (con logo e storico disponibile) e redirect al consenso
@@ -35,6 +36,7 @@ function countryFlag(code: string): string {
 
 /** Logo dell'istituto se disponibile, altrimenti un'icona generica di fallback. */
 function InstitutionLogo({ institution }: { institution: Institution }) {
+
   const [errored, setErrored] = React.useState(false);
   if (!institution.logo || errored) {
     return (
@@ -45,7 +47,7 @@ function InstitutionLogo({ institution }: { institution: Institution }) {
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element -- logo di dominio esterno GoCardless
-    <img src={institution.logo} alt="" className="size-9 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
+    <img src={institution.logo} alt={""} className="size-9 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
   );
 }
 
@@ -62,8 +64,10 @@ export interface ConnectBankFlowProps {
 }
 
 export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
+  const { t: tr } = useLocalization();
   const fieldId = React.useId();
-  const [country, setCountry] = React.useState<string>(BANK_COUNTRY_OPTIONS[0].code);
+  const { productCountry } = useLocalization();
+  const [country, setCountry] = React.useState<string>(productCountry);
   const [search, setSearch] = React.useState("");
   const { data: institutions, isLoading, isError, refetch } = useInstitutionsQuery(country);
   const createConnection = useCreateConnectionMutation();
@@ -101,16 +105,14 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
       <p className="flex items-start gap-2.5 rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">
         <LockKeyholeIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span>
-          Ti porto sul sito della tua banca per dare il consenso. Il collegamento è in sola lettura: BuddyBudget non vede le tue credenziali e non può muovere denaro.{" "}
-          <a href={SECURITY_PAGE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Come funziona</a>
+          {tr("Ti porto sul sito della tua banca per dare il consenso. Il collegamento è in sola lettura: BuddyBudget non vede le tue credenziali e non può muovere denaro.")}{" "}
+          <a href={SECURITY_PAGE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">{tr("Come funziona")}</a>
         </span>
       </p>
 
       <div className="grid gap-3 sm:grid-cols-[11rem_1fr]">
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-foreground" htmlFor={`${fieldId}-country`}>
-            Paese
-          </label>
+          <label className="text-sm font-medium text-foreground" htmlFor={`${fieldId}-country`}>{tr("Paese")}</label>
           <Select value={country} onValueChange={(value) => { setCountry(value as string); setSearch(""); }} disabled={busy}>
             <SelectTrigger id={`${fieldId}-country`} className={cn("w-full", FIELD_CLASS)}>
               <SelectValue>{(value: string | null) => { const option = BANK_COUNTRY_OPTIONS.find((o) => o.code === value); return option ? `${countryFlag(option.code)} ${option.label}` : ""; }}</SelectValue>
@@ -118,44 +120,42 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
             <SelectContent>
               {BANK_COUNTRY_OPTIONS.map((option) => (
                 <SelectItem key={option.code} value={option.code}>
-                  {countryFlag(option.code)} {option.label}
+                  {countryFlag(option.code)}{" "}{tr(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-foreground" htmlFor={`${fieldId}-search`}>
-            Cerca la tua banca
-          </label>
-          <Input id={`${fieldId}-search`} type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Es. Intesa, Fineco, N26" autoComplete="off" disabled={busy} className={FIELD_CLASS} />
+          <label className="text-sm font-medium text-foreground" htmlFor={`${fieldId}-search`}>{tr("Cerca la tua banca")}</label>
+          <Input id={`${fieldId}-search`} type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr("Es. Intesa, Fineco, N26")} autoComplete="off" disabled={busy} className={FIELD_CLASS} />
         </div>
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-2" role="status" aria-label="Caricamento delle banche">
+        <div className="flex flex-col gap-2" role="status" aria-label={tr("Caricamento delle banche")}>
           {SKELETON_ROWS.map((i) => (
             <div key={i} className="h-14 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
       ) : isError ? (
         <div role="alert" className="flex flex-col items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
-          <p className="font-medium text-foreground">Non riesco a caricare l&apos;elenco delle banche.</p>
-          <p className="text-muted-foreground">Succede se la connessione cade o il servizio è occupato. Non hai perso nulla.</p>
+          <p className="font-medium text-foreground">{tr("Non riesco a caricare l'elenco delle banche.")}</p>
+          <p className="text-muted-foreground">{tr("Succede se la connessione cade o il servizio è occupato. Non hai perso nulla.")}</p>
           <div className="flex flex-wrap items-center gap-x-4">
-            <button type="button" onClick={() => void refetch()} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">Riprova</button>
+            <button type="button" onClick={() => void refetch()} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">{tr("Riprova")}</button>
             <ReportErrorLink area="collega_banca" error="Non riesco a caricare l'elenco delle banche." />
           </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-start gap-1 rounded-xl border border-dashed p-4 text-sm">
-          <p className="font-medium text-foreground">{search.trim() ? `Nessuna banca trovata per «${search.trim()}».` : "Nessuna banca disponibile in questo paese."}</p>
-          <p className="text-muted-foreground">Controlla il nome o cambia paese.{onChooseManual ? " Se non c'è, puoi tenere il conto a mano e importare i movimenti da un file." : ""}</p>
-          {onChooseManual ? <button type="button" onClick={onChooseManual} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">Aggiungi un conto manuale</button> : null}
+          <p className="font-medium text-foreground">{search.trim() ? tr("Nessuna banca trovata per «{0}».", {0: search.trim()}) : tr("Nessuna banca disponibile in questo paese.")}</p>
+          <p className="text-muted-foreground">{tr("Controlla il nome o cambia paese.")}{onChooseManual ? tr(" Se non c'è, puoi tenere il conto a mano e importare i movimenti da un file.") : ""}</p>
+          {onChooseManual ? <button type="button" onClick={onChooseManual} className="min-h-11 cursor-pointer font-medium text-primary hover:underline">{tr("Aggiungi un conto manuale")}</button> : null}
         </div>
       ) : (
         <>
-          <p className="text-xs text-muted-foreground" aria-live="polite">{filtered.length === 1 ? "1 banca" : `${filtered.length} banche`}</p>
+          <p className="text-xs text-muted-foreground" aria-live="polite">{filtered.length === 1 ? tr("1 banca") : tr("{0} banche", {0: filtered.length})}</p>
           <ul className="-mt-2 flex max-h-[min(22rem,45dvh)] flex-col gap-2 overflow-y-auto pr-0.5 max-sm:max-h-none">
             {filtered.map((institution) => {
               const history = describeHistory(institution.transaction_total_days);
@@ -182,8 +182,8 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
         </>
       )}
 
-      <p role="status" className="sr-only">{busy ? `Ti porto sul sito di ${chosenName ?? "la banca"}…` : ""}</p>
-      {busy ? <p className="text-sm text-muted-foreground" aria-hidden="true">Ti porto sul sito di {chosenName ?? "la banca"}…</p> : null}
+      <p role="status" className="sr-only">{busy ? tr("Ti porto sul sito di {0}…", {0: chosenName ?? "la banca"}) : ""}</p>
+      {busy ? <p className="text-sm text-muted-foreground" aria-hidden="true">{tr("Ti porto sul sito di")}{" "}{chosenName ?? tr("la banca")}{"…"}</p> : null}
       {error ? <ErrorWithReport area="collega_banca" error={error} /> : null}
     </div>
   );

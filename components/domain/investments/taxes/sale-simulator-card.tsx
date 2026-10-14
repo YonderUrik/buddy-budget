@@ -1,5 +1,9 @@
 "use client";
 
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
+
 /**
  * Card "Prima di vendere": scegli una posizione e quante quote, e vedi plus/minusvalenza, zaino usato o generato,
  * imposte in più (o in meno) quest'anno e quanto ti resta. Stesse regole del calcolo per anno.
@@ -11,10 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { InvestmentTransactionInput } from "@/lib/calc/investments";
 import { simulateSale, type ManualLossInput, type TaxCategory, type TaxInstrument } from "@/lib/calc/taxes";
 import type { TaxRegime } from "@/lib/db/schema/investments";
-import { formatCurrency } from "@/lib/format";
+
 import type { SellablePosition } from "@/lib/investments/tax-view";
 import { parseAmount } from "@/lib/validation/accounts";
-import { formatSignedCurrency } from "../gain-text";
+
 import { OperationFormField as Field } from "../operation-form-field";
 import { CalculatorIcon } from "lucide-react";
 import { PanelSection } from "../panel-section";
@@ -36,15 +40,23 @@ export interface SaleSimulatorCardProps {
 }
 
 function Line({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5 text-sm">
-      <dt className="text-muted-foreground">{label}</dt>
+      <dt className="text-muted-foreground">{tr(label)}</dt>
       <dd className={strong ? "font-semibold tabular-nums text-foreground" : "tabular-nums text-foreground"}>{value}</dd>
     </div>
   );
 }
 
 export function SaleSimulatorCard({ positions, transactions, instruments, regime, manualLosses, todayKey, currency }: SaleSimulatorCardProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatSignedCurrency } = localizedFormats(formattingLocale);
+
+
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const id = React.useId();
   const priced = positions.filter((p) => p.price !== null && p.fxRate !== null);
   const [instrumentId, setInstrumentId] = React.useState(priced[0]?.instrument.id ?? "");
@@ -70,10 +82,10 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
   const format = (amount: number) => formatCurrency(amount, currency);
 
   return (
-    <PanelSection icon={CalculatorIcon} title="Prima di vendere" color="var(--swatch-indigo)">
+    <PanelSection icon={CalculatorIcon} title={tr("Prima di vendere")} color="var(--swatch-indigo)">
       <div className="flex flex-col gap-4">
         <div className="grid gap-3 sm:grid-cols-[1fr_10rem]">
-          <Field label="Posizione">
+          <Field label={tr("Posizione")}>
             <Select
               value={position.instrument.id}
               onValueChange={(v) => {
@@ -82,7 +94,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
                 setQuantityText(null);
               }}
             >
-              <SelectTrigger className="w-full" aria-label="Posizione da vendere">
+              <SelectTrigger className="w-full" aria-label={tr("Posizione da vendere")}>
                 <SelectValue>{(v: string | null) => priced.find((p) => p.instrument.id === v)?.instrument.name ?? ""}</SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -94,7 +106,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
               </SelectContent>
             </Select>
           </Field>
-          <Field label={`Quote (di ${position.quantity.toLocaleString("it-IT", { maximumFractionDigits: 4 })})`} htmlFor={`${id}-qty`}>
+          <Field label={tr("Quote (di {0})", {0: position.quantity.toLocaleString(formattingLocale, { maximumFractionDigits: 4 })})} htmlFor={`${id}-qty`}>
             <Input
               id={`${id}-qty`}
               inputMode="decimal"
@@ -103,31 +115,29 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
             />
           </Field>
         </div>
-        <p className="text-xs text-muted-foreground">
-          All&apos;ultimo prezzo ({formatCurrency(position.price!, position.instrument.currency)}
-          {position.instrument.priceUnit === "percentuale_nominale" ? " ogni 100 di nominale" : ""}), senza commissioni.
-        </p>
+        <p className="text-xs text-muted-foreground">{tr("All'ultimo prezzo (")}{formatCurrency(position.price!, position.instrument.currency)}
+          {position.instrument.priceUnit === "percentuale_nominale" ? tr(" ogni 100 di nominale") : ""}{tr("), senza commissioni.")}</p>
         {result ? (
           <>
             <dl className="divide-y divide-border">
-              <Line label="Incasso" value={format(result.proceeds)} />
-              <Line label="Costo fiscale (prezzo medio)" value={format(result.cost)} />
-              <Line label={result.gain >= 0 ? "Plusvalenza" : "Minusvalenza"} value={formatSignedCurrency(result.gain, currency)} />
-              {result.lossesUsed > 0 ? <Line label="Zaino usato" value={format(result.lossesUsed)} /> : null}
-              {result.lossesCreated > 0 ? <Line label="Nuovo zaino" value={format(result.lossesCreated)} /> : null}
+              <Line label={tr("Incasso")} value={format(result.proceeds)} />
+              <Line label={tr("Costo fiscale (prezzo medio)")} value={format(result.cost)} />
+              <Line label={result.gain >= 0 ? tr("Plusvalenza") : tr("Minusvalenza")} value={formatSignedCurrency(result.gain, currency)} />
+              {result.lossesUsed > 0 ? <Line label={tr("Zaino usato")} value={format(result.lossesUsed)} /> : null}
+              {result.lossesCreated > 0 ? <Line label={tr("Nuovo zaino")} value={format(result.lossesCreated)} /> : null}
               <Line
-                label={result.taxDelta < 0 ? "Imposte in meno quest'anno" : regime === "amministrato" ? "Imposte trattenute" : "Imposte in più in dichiarazione"}
+                label={result.taxDelta < 0 ? tr("Imposte in meno quest'anno") : regime === "amministrato" ? tr("Imposte trattenute") : tr("Imposte in più in dichiarazione")}
                 value={format(Math.abs(result.taxDelta))}
               />
-              <Line label="Ti resta" value={format(result.net)} strong />
+              <Line label={tr("Ti resta")} value={format(result.net)} strong />
             </dl>
             <p className="text-sm text-muted-foreground">
-              {CATEGORY_TEXT[result.category]}
-              {result.nonHarmonized ? " ETF non armonizzato: in realtà a IRPEF, qui stimato al 26%." : ""}
+              {tr(CATEGORY_TEXT[result.category])}
+              {result.nonHarmonized ? tr(" ETF non armonizzato: in realtà a IRPEF, qui stimato al 26%.") : ""}
             </p>
           </>
         ) : (
-          <p className="text-sm text-muted-foreground">Inserisci quante quote vuoi vendere.</p>
+          <p className="text-sm text-muted-foreground">{tr("Inserisci quante quote vuoi vendere.")}</p>
         )}
       </div>
     </PanelSection>

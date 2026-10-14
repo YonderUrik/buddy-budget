@@ -83,6 +83,8 @@ export const auth = betterAuth({
     // `input: false` su tutti i campi: non si impostano da `/api/auth/update-user` (che non li validerebbe),
     // ma solo dalle route dell'app (onboarding, impostazioni, gestione account).
     additionalFields: {
+      productCountry: { type: "string", defaultValue: "IT", required: false, input: false },
+      language: { type: "string", defaultValue: "it", required: false, input: false },
       currency: {
         type: "string",
         defaultValue: "EUR",

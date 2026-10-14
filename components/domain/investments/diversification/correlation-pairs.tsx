@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * Quanto si muovono insieme le posizioni, a coppie e in parole: le più legate in alto, ognuna con un indicatore e un
  * giudizio. La tabella numerica completa resta per chi la vuole, in una sezione che si apre.
@@ -30,6 +32,7 @@ function PairName({ instrument }: { instrument: Instrument | undefined }) {
 }
 
 export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsProps) {
+  const { t: tr } = useLocalization();
   const [showAll, setShowAll] = React.useState(false);
   const pairs = correlationPairs(matrix);
   const visible = showAll ? pairs : pairs.slice(0, PAIRS_VISIBLE);
@@ -41,11 +44,11 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
           return (
             <li key={`${pair.aId}-${pair.bId}`} className="flex flex-col gap-1.5 rounded-xl border p-3">
               <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-foreground">
-                <PairName instrument={instrumentsById.get(pair.aId)} /> <span className="text-muted-foreground">e</span>{" "}
+                <PairName instrument={instrumentsById.get(pair.aId)} />{" "}<span className="text-muted-foreground">{tr("e")}</span>{" "}
                 <PairName instrument={instrumentsById.get(pair.bId)} />
               </p>
               <p className="text-xs text-muted-foreground">
-                {verdict.label} <span className="tabular-nums">({decimal(pair.value)})</span>
+                {tr(verdict.label)}{" "}<span className="tabular-nums">{"("}{decimal(pair.value)}{")"}</span>
               </p>
               <div className="h-1.5 w-full rounded-full bg-muted" aria-hidden="true">
                 <div
@@ -64,10 +67,10 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
       </ul>
       {pairs.length > PAIRS_VISIBLE ? (
         <Button variant="ghost" size="sm" className="self-start text-muted-foreground" onClick={() => setShowAll((v) => !v)}>
-          {showAll ? "Mostra meno" : `Mostra tutte le coppie (${pairs.length})`}
+          {showAll ? tr("Mostra meno") : tr("Mostra tutte le coppie ({0})", {0: pairs.length})}
         </Button>
       ) : null}
-      <Disclosure bare title="Tabella completa" summary="Per chi vuole tutti i numeri">
+      <Disclosure bare title={tr("Tabella completa")} summary="Per chi vuole tutti i numeri">
         <CorrelationMatrix matrix={matrix} instrumentsById={instrumentsById} />
       </Disclosure>
     </div>

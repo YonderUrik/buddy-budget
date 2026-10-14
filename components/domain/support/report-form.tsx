@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Form «Scrivici»: tipo, messaggio e contesto tecnico visibile (si può togliere). Per le idee propone anche GitHub. */
 
@@ -49,6 +50,7 @@ async function postReport(body: ReportInput): Promise<{ reference: string }> {
 }
 
 export function ReportForm({ context, initialKind = "problema", compact = false, source = "pagina", error }: ReportFormProps) {
+  const { t: tr } = useLocalization();
   const [kind, setKind] = React.useState<ReportKind>(error ? "problema" : initialKind);
   const [message, setMessage] = React.useState("");
   const [withContext, setWithContext] = React.useState(true);
@@ -65,13 +67,9 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
   if (mutation.isSuccess) {
     return (
       <div role="status" className="flex flex-col gap-2 rounded-lg bg-pos-soft p-4 text-sm">
-        <p className="font-medium text-foreground">Grazie, abbiamo ricevuto la segnalazione.</p>
-        <p className="text-muted-foreground">
-          Codice di riferimento <span className="font-mono text-foreground">{mutation.data.reference}</span>. Ti rispondiamo via email.
-        </p>
-        <Button variant="outline" size="sm" className="w-fit" onClick={() => mutation.reset()}>
-          Scrivi un&apos;altra segnalazione
-        </Button>
+        <p className="font-medium text-foreground">{tr("Grazie, abbiamo ricevuto la segnalazione.")}</p>
+        <p className="text-muted-foreground">{tr("Codice di riferimento")}{" "}<span className="font-mono text-foreground">{mutation.data.reference}</span>{tr(". Ti rispondiamo via email.")}</p>
+        <Button variant="outline" size="sm" className="w-fit" onClick={() => mutation.reset()}>{tr("Scrivi un'altra segnalazione")}</Button>
       </div>
     );
   }
@@ -85,11 +83,9 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
         mutation.mutate({ kind, message: message.trim(), context: withContext ? context : undefined, source, error });
       }}
     >
-      {error ? null : <SegmentedControl options={KIND_OPTIONS} value={kind} onChange={setKind} ariaLabel="Di cosa si tratta" stretch />}
+      {error ? null : <SegmentedControl options={KIND_OPTIONS} value={kind} onChange={setKind} ariaLabel={tr("Di cosa si tratta")} stretch />}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="support-message" className={compact ? "sr-only" : "text-sm font-medium text-foreground"}>
-          Racconta
-        </label>
+        <label htmlFor="support-message" className={compact ? "sr-only" : "text-sm font-medium text-foreground"}>{tr("Racconta")}</label>
         <Textarea
           id="support-message"
           value={message}
@@ -99,27 +95,20 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
           className={compact ? "min-h-24" : "min-h-28"}
           aria-describedby="support-message-hint"
         />
-        <p id="support-message-hint" className="text-xs text-muted-foreground">
-          Non scrivere IBAN, password o altri dati sensibili: non servono. Useremo la tua email solo per risponderti.
-        </p>
+        <p id="support-message-hint" className="text-xs text-muted-foreground">{tr("Non scrivere IBAN, password o altri dati sensibili: non servono. Useremo la tua email solo per risponderti.")}</p>
       </div>
       <label className="flex items-start gap-2 text-sm text-muted-foreground">
         <input type="checkbox" checked={withContext} onChange={(event) => setWithContext(event.target.checked)} className="mt-1 size-4" />
-        <span>
-          Allega il contesto tecnico:{" "}
-          <span className="text-foreground">
-            pagina {context.path}, versione {context.version}, schermo {context.viewport}, tema {context.theme}
-          </span>
-          . Nessun dato finanziario.
-        </span>
+        <span>{tr("Allega il contesto tecnico:")}{" "}
+          <span className="text-foreground">{tr("pagina")}{" "}{context.path}{tr(", versione")}{" "}{context.version}{tr(", schermo")}{" "}{context.viewport}{tr(", tema")}{" "}{tr(context.theme === "scuro" ? "Scuro" : "Chiaro")}
+          </span>{tr(". Nessun dato finanziario.")}</span>
       </label>
       {mutation.isError && (
         <p role="alert" className="text-sm text-neg">
-          {mutation.error.message} Puoi anche scrivere a {SUPPORT_EMAIL}.
-        </p>
+          {tr(mutation.error.message)}{" "}{tr("Puoi anche scrivere a")}{" "}{SUPPORT_EMAIL}{"."}</p>
       )}
       <Button type="submit" disabled={tooShort || mutation.isPending} className="w-full sm:w-fit">
-        {mutation.isPending ? "Invio…" : "Invia"}
+        {mutation.isPending ? tr("Invio…") : tr("Invia")}
       </Button>
     </form>
   );

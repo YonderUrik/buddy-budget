@@ -1,3 +1,5 @@
+import { isCountryPathAvailable, resolveProfile } from "@/lib/localization/config";
+import { translate } from "@/lib/localization/messages";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
@@ -86,6 +88,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  const profile = resolveProfile(session.user);
+  if (!isCountryPathAvailable(profile.productCountry, pathname)) {
+    if (pathname.startsWith("/api/")) return NextResponse.json({ code: "country_feature_unavailable", error: translate(profile.language, "Questa funzione non è ancora disponibile per la Germania.") }, { status: 403 });
+    return NextResponse.redirect(new URL("/country-unavailable", request.url));
+  }
   return NextResponse.next();
 }
 

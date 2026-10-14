@@ -1,3 +1,7 @@
+"use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 /**
  * AccountsKpi
  *
@@ -8,7 +12,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/format";
+
 import { computeAccountsKpi } from "./accounts-kpi.utils";
 import type { Account } from "@/lib/db/schema/accounts";
 
@@ -19,12 +23,16 @@ export interface AccountsKpiProps {
 }
 
 export function AccountsKpi({ accounts, currency }: AccountsKpiProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   const { totalLiquidity, linkedAccountsCount } = computeAccountsKpi(accounts);
   const isNegative = totalLiquidity < 0;
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="text-sm font-medium text-text-2">Liquidità totale</p>
+      <p className="text-sm font-medium text-text-2">{tr("Liquidità totale")}</p>
       <span
         className={cn(
           "font-heading text-4xl font-semibold tracking-tight tabular-nums",
@@ -35,10 +43,10 @@ export function AccountsKpi({ accounts, currency }: AccountsKpiProps) {
       </span>
       <p className="text-sm text-text-2">
         {linkedAccountsCount === 0
-          ? "Nessun conto ancora"
+          ? tr("Nessun conto ancora")
           : linkedAccountsCount === 1
-          ? "Somma di 1 conto"
-          : `Somma di ${linkedAccountsCount} conti`}
+          ? tr("Somma di 1 conto")
+          : tr("Somma di {0} conti", {0: linkedAccountsCount})}
       </p>
     </div>
   );

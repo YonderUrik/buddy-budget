@@ -1,3 +1,4 @@
+import { countryFeatures, resolveProfile } from "@/lib/localization/config";
 import { after, NextRequest } from "next/server";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
@@ -26,6 +27,7 @@ async function handlePatch(request: NextRequest) {
   const parsed = updatePortfolioSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const { benchmarkInstrumentId, taxRegime } = parsed.data;
+  if (!countryFeatures(resolveProfile(session.user).productCountry).taxes && (parsed.data.taxRegime !== undefined)) return Response.json({ code: "country_feature_unavailable", error: "Tax settings are not available for Germany" }, { status: 403 });
 
   const instrument = benchmarkInstrumentId ? await findVisibleInstrument(userId, benchmarkInstrumentId) : null;
   if (benchmarkInstrumentId && !instrument) return Response.json({ error: "Strumento non trovato" }, { status: 404 });

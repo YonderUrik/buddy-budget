@@ -47,6 +47,7 @@ function makeCategory(overrides: Partial<Category>): Category {
     icon: "package",
     description: null,
     isFallback: false,
+    defaultKey: null,
     createdAt: new Date(),
     ...overrides,
   };

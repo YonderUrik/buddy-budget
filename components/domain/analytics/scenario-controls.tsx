@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * I quattro cursori «e se…» di Analitiche: provano risparmio, spesa, rendimento e tasso di prelievo senza salvare nulla.
@@ -13,7 +14,7 @@ import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
 import type { DataPeriod } from "@/lib/analitiche/period";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { hasScenario, scenarioSlider, yearsToFireWith, type ScenarioField, type ScenarioOverrides } from "@/lib/analitiche/scenario";
-import { formatYears, money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats, formatYears } from "./analytics-format";
 import { CashflowSourceNote } from "./cashflow-source-note";
 import { ReturnSourceNote } from "./return-source-note";
 import { HIGH_RETURN_WARNING } from "./return-source";
@@ -68,12 +69,15 @@ function deltaText(base: number | null, next: number | null): string | null {
 }
 
 export function ScenarioControls(props: ScenarioControlsProps) {
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   const { assumptions, plan, returnInfo, currency, overrides, onChange, onCommit, onReset, onSave, onOpenAllAssumptions, onUseHistoryReturn, saving } = props;
   const rows: Row[] = [
-    { field: "annualSavings", label: "Risparmio annuo", baseline: plan.savings, format: (v) => money(v, currency), missingHint: "servono almeno 3 mesi di movimenti nel periodo scelto" },
-    { field: "annualSpending", label: "Spesa annua", baseline: plan.spending, format: (v) => money(v, currency), missingHint: "servono almeno 3 mesi di movimenti nel periodo scelto" },
-    { field: "expectedReturn", label: "Rendimento reale", term: "rendimento-reale", baseline: assumptions.expectedReturn, format: (v) => pct(v), missingHint: "" },
-    { field: "withdrawalRate", label: "Tasso di prelievo", term: "tasso-prelievo", baseline: assumptions.withdrawalRate, format: (v) => pct(v), missingHint: "" },
+    { field: "annualSavings", label: tr("Risparmio annuo"), baseline: plan.savings, format: (v) => money(v, currency), missingHint: tr("servono almeno 3 mesi di movimenti nel periodo scelto") },
+    { field: "annualSpending", label: tr("Spesa annua"), baseline: plan.spending, format: (v) => money(v, currency), missingHint: tr("servono almeno 3 mesi di movimenti nel periodo scelto") },
+    { field: "expectedReturn", label: tr("Rendimento reale"), term: "rendimento-reale", baseline: assumptions.expectedReturn, format: (v) => pct(v), missingHint: "" },
+    { field: "withdrawalRate", label: tr("Tasso di prelievo"), term: "tasso-prelievo", baseline: assumptions.withdrawalRate, format: (v) => pct(v), missingHint: "" },
   ];
   const active = hasScenario(overrides);
   return (
@@ -88,7 +92,7 @@ export function ScenarioControls(props: ScenarioControlsProps) {
             <div key={row.field} className="flex min-w-0 flex-col gap-2">
               <div className="flex items-baseline justify-between gap-2">
                 <span id={labelId} className="text-sm text-muted-foreground">
-                  {row.term ? <Term id={row.term}>{row.label}</Term> : row.label}
+                  {row.term ? <Term id={row.term}>{tr(row.label)}</Term> : row.label}
                 </span>
                 <span className="font-heading text-base font-medium tabular-nums text-foreground">{value !== null ? row.format(value) : "—"}</span>
               </div>
@@ -107,12 +111,11 @@ export function ScenarioControls(props: ScenarioControlsProps) {
                 />
               ) : (
                 <p className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                  Non nota
-                  <InfoHint label="Perché manca">Per calcolarla {row.missingHint}. Puoi scriverla in «Tutte le ipotesi».</InfoHint>
+                  {tr("Non nota")}<InfoHint label={tr("Perché manca")}>{tr("Per calcolarla")}{row.missingHint}{tr(". Puoi scriverla in «Tutte le ipotesi».")}</InfoHint>
                 </p>
               )}
               {overrides[row.field] !== undefined ? (
-                <p className={`min-h-4 text-xs ${delta ? "font-semibold text-pos" : "text-muted-foreground"}`}>{delta ?? "stesso traguardo"}</p>
+                <p className={`min-h-4 text-xs ${delta ? "font-semibold text-pos" : "text-muted-foreground"}`}>{delta ?? tr("stesso traguardo")}</p>
               ) : value === null || !spec ? null : row.field === "expectedReturn" ? (
                 <ReturnSourceNote info={returnInfo} value={value} currency={currency} period={props.period} saving={saving} onUseHistory={onUseHistoryReturn} />
               ) : row.field === "annualSavings" || row.field === "annualSpending" ? (
@@ -127,31 +130,26 @@ export function ScenarioControls(props: ScenarioControlsProps) {
                   onUseData={() => props.onUseData(row.field as "annualSavings" | "annualSpending")}
                 />
               ) : (
-                <p className="min-h-4 text-xs text-muted-foreground">ipotesi di partenza</p>
+                <p className="min-h-4 text-xs text-muted-foreground">{tr("ipotesi di partenza")}</p>
               )}
               {overrides[row.field] !== undefined && row.field === "expectedReturn" && (overrides.expectedReturn ?? 0) > HIGH_RETURN_WARNING ? (
-                <p className="text-xs text-risk-3" role="note">Stima ottimistica</p>
+                <p className="text-xs text-risk-3" role="note">{tr("Stima ottimistica")}</p>
               ) : null}
             </div>
           );
         })}
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-        <span>
-          Altre ipotesi: volatilità {pct(assumptions.volatility, 0)}, inflazione {pct(assumptions.inflation, 0)}, imposte {assumptions.includeLatentTax ? "contate" : "non contate"}
+        <span>{tr("Altre ipotesi: volatilità")}{" "}{pct(assumptions.volatility, 0)}{tr(", inflazione")}{" "}{pct(assumptions.inflation, 0)}{tr(", imposte")}{" "}{assumptions.includeLatentTax ? tr("contate") : tr("non contate")}
         </span>
         <Button type="button" variant="ghost" size="sm" onClick={onOpenAllAssumptions}>
-          <SlidersHorizontal className="size-4" aria-hidden="true" />
-          Tutte le ipotesi
-        </Button>
+          <SlidersHorizontal className="size-4" aria-hidden="true" />{tr("Tutte le ipotesi")}</Button>
         {active ? (
           <span className="ml-auto flex items-center gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onReset}>
-              <RotateCcw className="size-4" aria-hidden="true" />
-              Ripristina
-            </Button>
+              <RotateCcw className="size-4" aria-hidden="true" />{tr("Ripristina")}</Button>
             <Button type="button" size="sm" onClick={onSave} disabled={saving}>
-              {saving ? "Salvo…" : "Salva queste ipotesi"}
+              {saving ? tr("Salvo…") : tr("Salva queste ipotesi")}
             </Button>
           </span>
         ) : null}

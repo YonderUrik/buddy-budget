@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Novità come etichetta accanto alla data della Panoramica: un testo in colore primario con una scintilla che gira
@@ -22,6 +23,7 @@ export interface WhatsNewChipProps {
 }
 
 export function WhatsNewChip({ entry, onDismiss, delay = 0.6 }: WhatsNewChipProps) {
+  const { t: tr } = useLocalization();
   return (
     <Popover onOpenChange={(open) => open && track("whats_new_opened", { id: entry.id })}>
       <motion.span
@@ -39,15 +41,15 @@ export function WhatsNewChip({ entry, onDismiss, delay = 0.6 }: WhatsNewChipProp
           >
             <SparklesIcon className="size-3.5" aria-hidden />
           </motion.span>
-          <span className="text-sweep-once font-medium underline-offset-4 group-hover:underline">Novità: {entry.title}</span>
+          <span className="text-sweep-once font-medium underline-offset-4 group-hover:underline">{tr("Novità:")}{" "}{tr(entry.title)}</span>
         </PopoverTrigger>
       </motion.span>
       <PopoverContent align="start" className="w-80 gap-3 p-4">
         <PopoverTitle className="flex items-center gap-2 font-heading text-base font-medium">
           <SparklesIcon className="size-4 text-primary" aria-hidden />
-          {entry.title}
+          {tr(entry.title)}
         </PopoverTitle>
-        <PopoverDescription className="text-sm leading-relaxed text-muted-foreground">{entry.summary}</PopoverDescription>
+        <PopoverDescription className="text-sm leading-relaxed text-muted-foreground">{tr(entry.summary)}</PopoverDescription>
         <div className="flex items-center justify-between gap-2 pt-1">
           <Button
             type="button"
@@ -58,9 +60,7 @@ export function WhatsNewChip({ entry, onDismiss, delay = 0.6 }: WhatsNewChipProp
               track("whats_new_dismissed", { id: entry.id });
               onDismiss(entry.id);
             }}
-          >
-            Non mostrare più
-          </Button>
+          >{tr("Non mostrare più")}</Button>
           <Link href={entry.href} className={buttonVariants({ size: "sm" })} onClick={() => track("whats_new_clicked", { id: entry.id })}>
             {entry.ctaLabel}
           </Link>

@@ -1,11 +1,14 @@
 "use client";
+import { localizedFormats } from "@/lib/localization/format";
+
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Grafico "Entrate vs uscite": barre affiancate (non impilate) per ciascun mese del periodo selezionato. */
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
-import { formatCurrency } from "@/lib/format";
+
 import type { CashflowMonthlyEntry } from "@/lib/calc/cashflow";
 
 const CHART_CONFIG = {
@@ -19,12 +22,14 @@ export interface CashflowTrendChartProps {
 }
 
 export function CashflowTrendChart({ monthlySeries, currency }: CashflowTrendChartProps) {
+  const { locale: formattingLocale } = useLocalization();
+  const { formatCurrency } = localizedFormats(formattingLocale);
+
+  const { t: tr } = useLocalization();
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Entrate vs uscite
-        </CardTitle>
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tr("Entrate vs uscite")}</CardTitle>
       </CardHeader>
       <CardContent>
         <ChartContainer config={CHART_CONFIG} className="max-h-64 w-full">
@@ -41,7 +46,7 @@ export function CashflowTrendChart({ monthlySeries, currency }: CashflowTrendCha
                 <ChartTooltipContent
                   formatter={(value, name) => (
                     <div className="flex w-full items-center justify-between gap-3">
-                      <span className="text-muted-foreground">{name === "entrate" ? "Entrate" : "Uscite"}</span>
+                      <span className="text-muted-foreground">{name === "entrate" ? tr("Entrate") : tr("Uscite")}</span>
                       <span className="font-mono font-medium tabular-nums text-foreground">
                         {formatCurrency(Number(value), currency)}
                       </span>

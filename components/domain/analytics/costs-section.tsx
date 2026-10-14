@@ -1,11 +1,12 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Domanda 4, «Quanto mi costa il portafoglio?»: costi annui, erosione nel tempo e imposta se vendessi tutto. */
 
 import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { Metric } from "./analytics-card";
 import { GlossedText } from "./glossed-text";
-import { money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { CostsTab } from "./costs-tab";
 import { costsSentences } from "./plain-answers";
 import { QuestionSection } from "./question-section";
@@ -21,6 +22,9 @@ export interface CostsSectionProps extends QuestionSectionData {
 }
 
 export function CostsSection({ question, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
+  const { t: tr } = useLocalization();
   const { currency } = base;
   const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })));
   const drag = summary.annualPct !== null ? costDrag(summary.totalValue, assumptions.expectedReturn, summary.annualPct, COST_DRAG_YEARS) : [];
@@ -28,7 +32,7 @@ export function CostsSection({ question, base, assumptions, plan, saving, error,
   return (
     <QuestionSection
       question={question}
-     
+
       expertHint="costo di ogni fondo (TER), erosione, imposte"
       renderExpert={() => <CostsTab base={base} assumptions={assumptions} plan={plan} saving={saving} error={error} onSaveTer={onSaveTer} />}
     >
@@ -41,9 +45,9 @@ export function CostsSection({ question, base, assumptions, plan, saving, error,
       </div>
       {summary.totalValue > 0 ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <Metric term="ter" label="Costo annuo" value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? `${pct(summary.annualPct, 2)} del portafoglio` : undefined} />
-          <Metric term="erosione" label={`Persi in ${COST_DRAG_YEARS} anni`} value={drag.length ? money(drag.at(-1)!.lost, currency) : "—"} tone="neg" sub="a parità di rendimento" />
-          <Metric term="imposte-latenti" label="Imposte se vendessi tutto" value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? `${pct(plan.liquidation.taxRatio)} del valore` : undefined} />
+          <Metric term="ter" label={tr("Costo annuo")} value={money(summary.annualCost, currency)} sub={summary.annualPct !== null ? "{0} del portafoglio" : undefined} />
+          <Metric term="erosione" label={tr("Persi in {0} anni", {0: COST_DRAG_YEARS})} value={drag.length ? money(drag.at(-1)!.lost, currency) : "—"} tone="neg" sub="a parità di rendimento" />
+          <Metric term="imposte-latenti" label={tr("Imposte se vendessi tutto")} value={money(plan.liquidation.latentTax, currency)} sub={plan.liquidation.taxRatio !== null ? "{0} del valore" : undefined} />
         </div>
       ) : null}
     </QuestionSection>

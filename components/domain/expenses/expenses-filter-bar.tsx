@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Barra filtri della schermata Transazioni: select categoria singola + ricerca testo (descrizione e nota), entrambi controllati. Il tasto "/" porta il focus sulla ricerca. */
 
@@ -27,6 +28,7 @@ export function ExpensesFilterBar({
   searchText,
   onSearchTextChange,
 }: ExpensesFilterBarProps) {
+  const { t: tr } = useLocalization();
   const searchRef = React.useRef<HTMLInputElement>(null);
 
   // "/" porta il focus sulla ricerca, salvo quando l'utente sta già scrivendo in un campo.
@@ -50,14 +52,14 @@ export function ExpensesFilterBar({
       >
         <SelectTrigger
           size="sm"
-          aria-label="Filtra per categoria"
+          aria-label={tr("Filtra per categoria")}
           className="order-2 w-full min-w-0 data-[size=sm]:h-9 sm:order-1 sm:w-56 sm:data-[size=sm]:h-8"
         >
           <SelectValue>
             {(value: string) => {
-              if (value === ALL_CATEGORIES_VALUE) return "Tutte le categorie";
+              if (value === ALL_CATEGORIES_VALUE) return tr("Tutte le categorie");
               const selected = categories.find((c) => c.id === value);
-              if (!selected) return "Tutte le categorie";
+              if (!selected) return tr("Tutte le categorie");
               return (
                 <span className="flex min-w-0 items-center gap-1.5">
                   <CategoryAvatar
@@ -73,7 +75,7 @@ export function ExpensesFilterBar({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_CATEGORIES_VALUE}>Tutte le categorie</SelectItem>
+          <SelectItem value={ALL_CATEGORIES_VALUE}>{tr("Tutte le categorie")}</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category.id} value={category.id}>
               <span className="flex items-center gap-1.5">
@@ -98,9 +100,9 @@ export function ExpensesFilterBar({
         onKeyDown={(e) => {
           if (e.key === "Escape") onSearchTextChange("");
         }}
-        placeholder="Cerca…"
+        placeholder={tr("Cerca…")}
         className="order-1 h-9 w-full min-w-0 sm:order-2 sm:h-8 sm:w-56"
-        aria-label="Cerca transazioni per descrizione o nota"
+        aria-label={tr("Cerca transazioni per descrizione o nota")}
         aria-keyshortcuts="/"
       />
     </div>

@@ -253,6 +253,13 @@
       "when": 1791891584928,
       "tag": "0036_needy_azazel",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1791972887483,
+      "tag": "0037_category_default_identity",
+      "breakpoints": true
     }
   ]
 }

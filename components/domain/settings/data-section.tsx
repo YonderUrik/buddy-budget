@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /** Sezione "I tuoi dati": riepilogo di cosa c'è e download di tutto in uno ZIP (JSON completo + CSV per Excel). */
 
@@ -17,6 +18,7 @@ export interface DataSectionProps {
 }
 
 export function DataSection({ settings, recentLogin }: DataSectionProps) {
+  const { t: tr } = useLocalization();
   const { data: summary, isLoading, isError, refetch } = useUserDataSummaryQuery();
   const exportData = useExportDataMutation();
   const needsReauth = !recentLogin || (exportData.error?.reauthRequired ?? false);
@@ -24,22 +26,19 @@ export function DataSection({ settings, recentLogin }: DataSectionProps) {
   return (
     <SettingsSection
       id="impostazioni-dati"
-      title="I tuoi dati"
+      title={tr("I tuoi dati")}
       icon={Database}
-      description="Puoi scaricare in qualsiasi momento tutto quello che hai inserito o importato."
+      description={tr("Puoi scaricare in qualsiasi momento tutto quello che hai inserito o importato.")}
     >
       {isLoading ? (
         <div className="h-28 animate-pulse rounded-lg bg-muted" aria-busy="true" />
       ) : isError || !summary ? (
-        <LoadError message="Impossibile caricare il riepilogo dei dati." onRetry={() => refetch()} />
+        <LoadError message={tr("Impossibile caricare il riepilogo dei dati.")} onRetry={() => refetch()} />
       ) : (
         <DataSummaryList summary={summary} />
       )}
 
-      <p className="text-sm text-muted-foreground">
-        L&apos;archivio ZIP contiene un file JSON con tutti i dati e una tabella CSV per transazioni, conti, categorie,
-        budget, regole, investimenti e storico del patrimonio, da aprire con Excel.
-      </p>
+      <p className="text-sm text-muted-foreground">{tr("L'archivio ZIP contiene un file JSON con tutti i dati e una tabella CSV per transazioni, conti, categorie, budget, regole, investimenti e storico del patrimonio, da aprire con Excel.")}</p>
 
       {needsReauth ? (
         <ReauthPanel email={settings.email} googleLinked={settings.googleLinked} />
@@ -55,12 +54,12 @@ export function DataSection({ settings, recentLogin }: DataSectionProps) {
           ) : (
             <Download className="size-4" aria-hidden="true" />
           )}
-          {exportData.isPending ? "Preparazione in corso…" : "Scarica i miei dati"}
+          {exportData.isPending ? tr("Preparazione in corso…") : tr("Scarica i miei dati")}
         </Button>
       )}
       {exportData.isError && !exportData.error.reauthRequired && (
         <p className="text-sm text-neg" role="alert">
-          {exportData.error.message}
+          {tr(exportData.error.message)}
         </p>
       )}
     </SettingsSection>

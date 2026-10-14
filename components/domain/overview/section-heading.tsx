@@ -1,3 +1,5 @@
+"use client";
+import { useLocalization } from "@/lib/localization/provider";
 /** Intestazione di sezione della Panoramica: icona su fondo tinto del colore del suo ambito, titolo e link all'area. */
 
 import Link from "next/link";
@@ -16,6 +18,7 @@ export interface SectionHeadingProps {
 }
 
 export function SectionHeading({ icon: Icon, title, color, id, href, linkLabel, onLinkClick }: SectionHeadingProps) {
+  const { t: tr } = useLocalization();
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex items-center gap-2.5">
@@ -27,7 +30,7 @@ export function SectionHeading({ icon: Icon, title, color, id, href, linkLabel, 
           <Icon className="size-[18px]" />
         </span>
         <h2 id={id} className="font-heading text-lg font-medium text-foreground">
-          {title}
+          {tr(title)}
         </h2>
       </div>
       {href && linkLabel ? (
@@ -36,7 +39,7 @@ export function SectionHeading({ icon: Icon, title, color, id, href, linkLabel, 
           onClick={onLinkClick}
           className="-mr-2 flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          {linkLabel}
+          {tr(linkLabel)}
           <ArrowRightIcon className="size-4" aria-hidden="true" />
         </Link>
       ) : null}

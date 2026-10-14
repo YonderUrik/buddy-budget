@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-14T10:29:56.681Z",
+  "capturedAt": "2026-10-14T10:03:15.512Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -33,7 +33,7 @@
       "theme": "light",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1835
+      "height": 1769
     },
     {
       "id": "abbonamenti",
@@ -68,7 +68,7 @@
       "theme": "light",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1862
+      "height": 1838
     },
     {
       "id": "diversificazione",
@@ -145,7 +145,7 @@
       "theme": "dark",
       "route": "/liquidita/analisi",
       "width": 1920,
-      "height": 1835
+      "height": 1769
     },
     {
       "id": "abbonamenti",
@@ -180,7 +180,7 @@
       "theme": "dark",
       "route": "/investimenti/performance",
       "width": 1920,
-      "height": 1862
+      "height": 1838
     },
     {
       "id": "diversificazione",

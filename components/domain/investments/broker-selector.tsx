@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 import { track } from "@/lib/analytics";
 import { useMemo } from "react";
 import { LandmarkIcon } from "lucide-react";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
  * Il filtro è temporaneo: gli import restano salvati e patrimonio e saldi dei conti non cambiano.
  */
 export function BrokerSelector({ data }: { data: InvestmentData }) {
+  const { t: tr } = useLocalization();
   const { disabled, toggle, showAll } = useBrokerSelection();
   const groups = useMemo(() => investmentBrokerGroups(data), [data]);
   if (!groups.some((g) => g.id !== "manual")) return null;
@@ -21,24 +23,24 @@ export function BrokerSelector({ data }: { data: InvestmentData }) {
   const filtered = enabled.length < groups.length;
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      {!enabled.length ? <p role="status" className="text-sm text-muted-foreground">Nessun broker selezionato: riattivane uno per vedere i suoi investimenti.</p> : null}
+      {!enabled.length ? <p role="status" className="text-sm text-muted-foreground">{tr("Nessun broker selezionato: riattivane uno per vedere i suoi investimenti.")}</p> : null}
       <Popover>
-        <PopoverTrigger className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted", filtered && "border-primary/40 bg-primary/10 text-primary")} aria-label="Scegli i broker inclusi nei numeri">
+        <PopoverTrigger className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm hover:bg-muted", filtered && "border-primary/40 bg-primary/10 text-primary")} aria-label={tr("Scegli i broker inclusi nei numeri")}>
           <LandmarkIcon className="size-3.5" aria-hidden="true" />
-          {filtered ? `Broker: ${enabled.length} di ${groups.length}` : "Tutti i broker"}
+          {filtered ? tr("Broker: {0} di {1}", {0: enabled.length, 1: groups.length}) : tr("Tutti i broker")}
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72 space-y-3">
-          <p className="text-sm font-medium">Broker inclusi nei numeri</p>
+          <p className="text-sm font-medium">{tr("Broker inclusi nei numeri")}</p>
           <div className="flex flex-col gap-2">
             {groups.map((group) => (
               <label key={group.id} className="flex items-center gap-2 text-sm">
                 <input type="checkbox" className="accent-primary" checked={!disabled.has(group.id)} onChange={() => { toggle(group.id); track("investment_broker_filter_changed", { action: "toggle", selected: enabled.length + (disabled.has(group.id) ? 1 : -1) }); }} />
-                {group.label}
+                {tr(group.label)}
               </label>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">Vale per totali, posizioni, performance, proventi, tasse e operazioni. Gli import restano salvati e il patrimonio generale non cambia.</p>
-          {filtered ? <Button size="sm" variant="ghost" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all", selected: groups.length }); }}>Mostra tutti</Button> : null}
+          <p className="text-xs text-muted-foreground">{tr("Vale per totali, posizioni, performance, proventi, tasse e operazioni. Gli import restano salvati e il patrimonio generale non cambia.")}</p>
+          {filtered ? <Button size="sm" variant="ghost" onClick={() => { showAll(); track("investment_broker_filter_changed", { action: "all", selected: groups.length }); }}>{tr("Mostra tutti")}</Button> : null}
         </PopoverContent>
       </Popover>
     </div>

@@ -1,4 +1,6 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+
 
 import * as React from "react";
 import type { PreparedStatementFile } from "@/lib/investments/import/batch";
@@ -31,6 +33,7 @@ import {
  * ricalcolano a ogni modifica della mappatura, così l'anteprima dei valori letti è sempre quella vera.
  */
 export function useInvestmentImport(initialFile?: PreparedStatementFile) {
+  const { t: tr } = useLocalization();
   const portfolioQuery = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [portfolioId, setPortfolioId] = React.useState("");
   const [step, setStep] = React.useState<ImportStep>(initialFile ? "mapping" : "file");
@@ -45,6 +48,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   const [mapping, setMapping] = React.useState<ImportMapping | null>(null);
   const [choices, setChoices] = React.useState<Record<string, InstrumentChoice>>({});
   const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(new Set());
+  // Keep parser-recognized errors in their source form; ImportNotice translates the explanation.
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState(false);
   // Esito tenuto a parte: `data` della mutation si svuota mentre l'import è in corso e il riepilogo sparirebbe.
@@ -92,7 +96,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
         setError(null);
         setStep("mapping");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Impossibile leggere il file");
+        setError(e instanceof Error ? e.message : tr("Impossibile leggere il file"));
       }
       return;
     }
@@ -114,7 +118,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
         setError(null);
         setStep("mapping");
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Impossibile leggere il file");
+        setError(e instanceof Error ? e.message : tr("Impossibile leggere il file"));
       }
       return;
     }
@@ -143,7 +147,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   async function goToInstruments() {
     if (!statement && (!table || !mapping)) return;
     if (identities.length > IMPORT_MAX_IDENTITIES) {
-      setError(`Il file ha ${identities.length} strumenti: al massimo ${IMPORT_MAX_IDENTITIES} per import`);
+      setError(tr("Il file ha {0} strumenti: al massimo {1} per import", {0: identities.length, 1: IMPORT_MAX_IDENTITIES}));
       return;
     }
     if (table && mapping) saveMapping(table, mapping);
@@ -165,7 +169,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
       setExcluded(new Set());
       setStep("instruments");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Impossibile riconoscere gli strumenti");
+      setError(e instanceof Error ? e.message : tr("Impossibile riconoscere gli strumenti"));
     }
   }
 
@@ -189,7 +193,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   async function submit(dryRun: boolean) {
     const request = buildImportRequest(rows, choices, excluded, dryRun, statement ? statement.preset : table && provider === "fineco" ? "fineco" : (preset?.id ?? null)) ?? (statement?.cashMovements?.length ? { dryRun, preset: statement.preset, instruments: [], operations: [] } : null);
     if (!request) {
-      setError("Nessuna operazione da importare: scegli almeno uno strumento");
+      setError(tr("Nessuna operazione da importare: scegli almeno uno strumento"));
       return;
     }
     if (statementCsv) request.statementCsv = statementCsv;
@@ -202,7 +206,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
       if (dryRun && !result.error) setStep("summary");
       if (!dryRun && !result.error && result.counts.error === 0) setDone(true);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Import non riuscito");
+      setError(e instanceof Error ? e.message : tr("Import non riuscito"));
     }
   }
 

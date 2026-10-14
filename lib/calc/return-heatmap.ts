@@ -7,24 +7,7 @@
 import { parseDateOnly } from "./expenses";
 import { addDays, toDateKey } from "./net-worth";
 import type { DailyReturn } from "./returns";
-
-export const HEATMAP_GROUPINGS = ["giorno", "settimana", "mese", "anno"] as const;
 export type HeatmapGrouping = (typeof HEATMAP_GROUPINGS)[number];
-
-/** Giorni mostrati nella vista per giorno (un anno, come un calendario delle attività). */
-export const HEATMAP_DAY_WINDOW = 364;
-/** Percentile dei rendimenti (in valore assoluto) che vale l'intensità piena: pochi giorni estremi non appiattiscono gli altri. */
-export const HEATMAP_SCALE_PERCENTILE = 0.9;
-/** Sotto questo rendimento (0,05%) una casella è "piatta": colore neutro. */
-export const HEATMAP_FLAT_THRESHOLD = 0.0005;
-/** Livelli di intensità del colore oltre al neutro. */
-export const HEATMAP_LEVELS = 4;
-
-const WEEKDAY_LABELS = ["lun", "mar", "mer", "gio", "ven", "sab", "dom"];
-const MONTH_SHORT = new Intl.DateTimeFormat("it-IT", { month: "short" });
-const MONTH_LONG = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric" });
-const DAY_LONG = new Intl.DateTimeFormat("it-IT", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
-const DAY_SHORT = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
 
 /** Una casella: rendimento e guadagno del gruppo di giorni, null se in quei giorni non c'era niente investito. */
 export interface HeatmapCell {
@@ -65,6 +48,29 @@ interface Bucket {
   gain: number;
   hasReturn: boolean;
 }
+import { translate, type MessageValues } from "@/lib/localization/messages";
+import { LANGUAGE_LOCALES, type Language } from "@/lib/localization/config";
+
+/** Bind presentation text and formatting to one language without shared mutable state. */
+export function localizedHeatmap(language: Language) {
+  const locale = LANGUAGE_LOCALES[language];
+  const tr = (source: string, values?: MessageValues) => translate(language, source, values);
+const HEATMAP_GROUPINGS = ["giorno", "settimana", "mese", "anno"] as const;
+
+/** Giorni mostrati nella vista per giorno (un anno, come un calendario delle attività). */
+const HEATMAP_DAY_WINDOW = 364;
+/** Percentile dei rendimenti (in valore assoluto) che vale l'intensità piena: pochi giorni estremi non appiattiscono gli altri. */
+const HEATMAP_SCALE_PERCENTILE = 0.9;
+/** Sotto questo rendimento (0,05%) una casella è "piatta": colore neutro. */
+const HEATMAP_FLAT_THRESHOLD = 0.0005;
+/** Livelli di intensità del colore oltre al neutro. */
+const HEATMAP_LEVELS = 4;
+
+const WEEKDAY_LABELS = Array.from({length: 7}, (_, i) => new Intl.DateTimeFormat(locale, {weekday: "short"}).format(new Date(2026, 0, 5 + i)));
+const MONTH_SHORT = new Intl.DateTimeFormat(locale, { month: "short" });
+const MONTH_LONG = new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" });
+const DAY_LONG = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+const DAY_SHORT = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
 
 function mondayOf(date: Date): Date {
   const weekday = (date.getDay() + 6) % 7;
@@ -72,7 +78,7 @@ function mondayOf(date: Date): Date {
 }
 
 /** Numero della settimana ISO (1-53) e anno a cui appartiene. */
-export function isoWeek(date: Date): { year: number; week: number } {
+function isoWeek(date: Date): { year: number; week: number } {
   const thursday = addDays(mondayOf(date), 3);
   const year = thursday.getFullYear();
   const firstThursday = addDays(mondayOf(new Date(year, 0, 4)), 3);
@@ -85,14 +91,14 @@ function bucketKeyOf(dateKey: string, grouping: HeatmapGrouping): { key: string;
   if (grouping === "giorno") return { key: dateKey, label: DAY_LONG.format(date) };
   if (grouping === "settimana") {
     const { year, week } = isoWeek(date);
-    return { key: `${year}-W${String(week).padStart(2, "0")}`, label: `Settimana dal ${DAY_SHORT.format(mondayOf(date))} ${mondayOf(date).getFullYear()}` };
+    return { key: tr("{0}-W{1}", { 0: year, 1: String(week).padStart(2, "0") }), label: tr("Settimana dal {0} {1}", { 0: DAY_SHORT.format(mondayOf(date)), 1: mondayOf(date).getFullYear() }) };
   }
   if (grouping === "mese") return { key: dateKey.slice(0, 7), label: MONTH_LONG.format(date) };
   return { key: dateKey.slice(0, 4), label: dateKey.slice(0, 4) };
 }
 
 /** Raggruppa i rendimenti giornalieri: ogni gruppo concatena i rendimenti dei suoi giorni e somma i guadagni. */
-export function groupDailyReturns(daily: DailyReturn[], grouping: HeatmapGrouping): Map<string, Bucket> {
+function groupDailyReturns(daily: DailyReturn[], grouping: HeatmapGrouping): Map<string, Bucket> {
   const buckets = new Map<string, Bucket>();
   for (const day of daily) {
     const { key, label } = bucketKeyOf(day.date, grouping);
@@ -114,7 +120,7 @@ function percentile(sorted: number[], p: number): number {
 }
 
 /** Livello di colore di un rendimento rispetto alla scala. */
-export function heatmapLevel(ret: number | null, scale: number): number {
+function heatmapLevel(ret: number | null, scale: number): number {
   if (ret === null || Math.abs(ret) < HEATMAP_FLAT_THRESHOLD || scale <= 0) return 0;
   return Math.max(1, Math.min(HEATMAP_LEVELS, Math.ceil((Math.abs(ret) / scale) * HEATMAP_LEVELS)));
 }
@@ -159,7 +165,7 @@ function weekGrid(buckets: Map<string, Bucket>, firstKey: string, todayKey: stri
   const columns = Array.from({ length: 53 }, (_, i) => ((i + 1) % 4 === 1 ? String(i + 1) : ""));
   const rows = yearsBetween(firstKey, todayKey).map((year) => ({
     label: String(year),
-    cells: Array.from({ length: 53 }, (_, i) => toCell(buckets.get(`${year}-W${String(i + 1).padStart(2, "0")}`))),
+    cells: Array.from({ length: 53 }, (_, i) => toCell(buckets.get(tr("{0}-W{1}", { 0: year, 1: String(i + 1).padStart(2, "0") })))),
   }));
   return { columns, rows };
 }
@@ -185,7 +191,7 @@ function yearGrid(buckets: Map<string, Bucket>, firstKey: string, todayKey: stri
  * Heatmap dei rendimenti. `daily` sono i rendimenti di ogni giorno dalla prima operazione a oggi. Il colore di ogni
  * casella dipende dal suo rendimento rispetto alla scala (il 90° percentile dei rendimenti della griglia).
  */
-export function buildReturnHeatmap(daily: DailyReturn[], grouping: HeatmapGrouping, todayKey: string): ReturnHeatmap | null {
+function buildReturnHeatmap(daily: DailyReturn[], grouping: HeatmapGrouping, todayKey: string): ReturnHeatmap | null {
   const firstKey = daily.find((d) => d.ret !== null)?.date;
   if (!firstKey) return null;
   const relevant = daily.filter((d) => d.date >= firstKey && d.date <= todayKey);
@@ -223,3 +229,8 @@ const WEEKEND_START = 5;
 function isMoving(cell: HeatmapCell | null): boolean {
   return cell !== null && cell.ret !== null && Math.abs(cell.ret) >= HEATMAP_FLAT_THRESHOLD;
 }
+  return { HEATMAP_GROUPINGS, HEATMAP_DAY_WINDOW, HEATMAP_SCALE_PERCENTILE, HEATMAP_FLAT_THRESHOLD, HEATMAP_LEVELS, isoWeek, groupDailyReturns, heatmapLevel, buildReturnHeatmap };
+}
+
+/** Italian defaults retained for existing callers and pure calculation tests. */
+export const { HEATMAP_GROUPINGS, HEATMAP_DAY_WINDOW, HEATMAP_SCALE_PERCENTILE, HEATMAP_FLAT_THRESHOLD, HEATMAP_LEVELS, isoWeek, groupDailyReturns, heatmapLevel, buildReturnHeatmap } = localizedHeatmap("it");

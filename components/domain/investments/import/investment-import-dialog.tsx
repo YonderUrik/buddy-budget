@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Dialog di import in blocco delle operazioni da un file CSV, in quattro passi: file, colonne, strumenti,
@@ -39,6 +40,7 @@ export interface InvestmentImportDialogProps {
 }
 
 function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi" }: { currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
+  const { t: tr } = useLocalization();
   const s = useInvestmentImport(initialFile);
   const [direction, setDirection] = React.useState<StepDirection>(1);
   const forward = (action: () => void) => () => {
@@ -73,7 +75,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 
       <div className="min-h-0 overflow-y-auto">
         <StepStage stepKey={s.step} direction={direction}>
-        {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={error.hint} detail={error.text === s.error ? undefined : s.error ?? undefined} action={<ReportErrorLink area="import_investimenti" error={s.error ?? error.text} />} className="mb-5" /> : null}
+        {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={tr(error.hint)} detail={error.text === s.error ? undefined : s.error ?? undefined} action={<ReportErrorLink area="import_investimenti" error={s.error ?? error.text} />} className="mb-5" /> : null}
         {s.step === "file" ? (
           <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} />
         ) : null}
@@ -99,7 +101,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
             onChange={s.updateMapping}
           />
         ) : null}
-        {s.step === "instruments" && s.identities.length === 0 ? <p className="text-sm text-muted-foreground">Questo file contiene solo movimenti del conto: non ci sono strumenti da abbinare. Vai avanti per importarli tutti.</p> : null}
+        {s.step === "instruments" && s.identities.length === 0 ? <p className="text-sm text-muted-foreground">{tr("Questo file contiene solo movimenti del conto: non ci sono strumenti da abbinare. Vai avanti per importarli tutti.")}</p> : null}
         {s.step === "instruments" && s.identities.length > 0 ? (
           <ImportInstrumentsStep
             identities={s.identities}
@@ -118,8 +120,8 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 
       {s.reading || s.resolving || s.running ? (
         <div role="status" className="flex flex-col gap-2">
-          <ProgressBar state={{ kind: "indeterminate" }} label="Elaborazione in corso" />
-          <TextShimmer className="text-sm">{s.reading ? "Leggo il file…" : s.resolving ? "Cerco gli strumenti…" : s.step === "summary" ? "Importo le operazioni…" : "Controllo le operazioni…"}</TextShimmer>
+          <ProgressBar state={{ kind: "indeterminate" }} label={tr("Elaborazione in corso")} />
+          <TextShimmer className="text-sm">{s.reading ? tr("Leggo il file…") : s.resolving ? tr("Cerco gli strumenti…") : s.step === "summary" ? tr("Importo le operazioni…") : tr("Controllo le operazioni…")}</TextShimmer>
         </div>
       ) : null}
 
@@ -131,27 +133,27 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
         ) : (
           <>
             <Button variant="ghost" onClick={s.step === "file" ? onClose : backward} disabled={s.running || (!!initialFile && s.step === "mapping")}>
-              {s.step === "file" ? "Annulla" : "Indietro"}
+              {s.step === "file" ? tr("Annulla") : tr("Indietro")}
             </Button>
             {s.step === "mapping" ? (
               <Button onClick={forward(s.goToInstruments)} disabled={s.missing.length > 0 || validRows === 0 || s.resolving}>
-                {s.resolving ? "Cerco gli strumenti…" : "Avanti"}
+                {s.resolving ? tr("Cerco gli strumenti…") : tr("Avanti")}
               </Button>
             ) : null}
             {s.step === "instruments" ? (
               <Button onClick={forward(s.preview)} disabled={(included.length === 0 && cashCount === 0) || s.running}>
-                {s.running ? "Controllo…" : "Avanti"}
+                {s.running ? tr("Controllo…") : tr("Avanti")}
               </Button>
             ) : null}
             {s.step === "summary" && s.result ? (
               <Button onClick={s.result.counts.new === 0 && initialFile ? onClose : s.confirm} disabled={(s.result.counts.new === 0 && !initialFile) || s.result.counts.error > 0 || s.running}>
                 {s.running
-                  ? "Importo…"
+                  ? tr("Importo…")
                   : s.result.counts.error > 0
-                    ? "Correggi le righe per continuare"
+                    ? tr("Correggi le righe per continuare")
                     : s.result.counts.new === 0
-                    ? initialFile ? "Già importato · continua" : "Niente di nuovo da importare"
-                    : `Importa ${s.result.counts.new} ${s.result.counts.new === 1 ? "operazione" : "operazioni"}`}
+                    ? initialFile ? tr("Già importato · continua") : tr("Niente di nuovo da importare")
+                    : tr("Importa {0} {1}", {0: s.result.counts.new, 1: s.result.counts.new === 1 ? "operazione" : "operazioni"})}
               </Button>
             ) : null}
           </>
@@ -163,6 +165,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
 
 /** Keep every selected statement separate, including previews, failures and completed-file progress. */
 function ImportSession({ currency, onClose }: { currency: string; onClose: () => void }) {
+  const { t: tr } = useLocalization();
   const [files, setFiles] = useState<PreparedStatementFile[]>([]);
   const [index, setIndex] = useState(0);
   const parse = useParseStatementMutation();
@@ -171,15 +174,15 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
     for (const file of selected) {
       const text = await file.text();
       const provider = detectImportProvider(text);
-      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") throw new Error(`${file.name}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.`);
+      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") throw new Error(tr("{0}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.", { 0: file.name }));
       try { prepared.push({ name: file.name, text, parsed: await parse.mutateAsync(text) }); }
-      catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : "File non valido"}`); }
+      catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : tr("File non valido")}`); }
     }
     const ordered = orderStatementFiles(prepared);
     for (const file of ordered) track("investments_import_file_read", { provider: file.parsed.preset, chosen: false });
     setFiles(ordered); setIndex(0);
   }
-  if (files.length && index === files.length) return <div className="space-y-4"><p role="status">Tutti i {files.length} file sono stati elaborati. I file già importati sono stati saltati senza creare doppioni.</p><Button onClick={onClose}>Chiudi</Button></div>;
+  if (files.length && index === files.length) return <div className="space-y-4"><p role="status">{tr("Tutti i")}{" "}{files.length}{" "}{tr("file sono stati elaborati. I file già importati sono stati saltati senza creare doppioni.")}</p><Button onClick={onClose}>{tr("Chiudi")}</Button></div>;
   return <>
     {files.length ? <ImportBatchProgress files={files} index={index} /> : null}
     <ImportWizard key={files.length ? index : "single"} currency={currency} initialFile={files[index]} onFiles={loadFiles} onClose={files.length ? () => setIndex((i) => i + 1) : onClose} finishLabel={files.length ? "File successivo" : "Chiudi"} />
@@ -187,10 +190,11 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
 }
 
 export function InvestmentImportDialog({ open, onOpenChange, currency }: InvestmentImportDialogProps) {
+  const { t: tr } = useLocalization();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <FormDialogContent size="wide">
-        <PanelDialogHeader icon={UploadIcon} title="Importa operazioni" description="Carica il file del tuo broker: lo leggo, ti mostro cosa importerei e importo solo quando confermi." color="var(--primary)" />
+        <PanelDialogHeader icon={UploadIcon} title={tr("Importa operazioni")} description={tr("Carica il file del tuo broker: lo leggo, ti mostro cosa importerei e importo solo quando confermi.")} color="var(--primary)" />
         {open ? <ImportSession currency={currency} onClose={() => onOpenChange(false)} /> : null}
       </FormDialogContent>
     </Dialog>

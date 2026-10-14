@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useTheme } from "next-themes";
@@ -37,6 +38,7 @@ interface ThemeToggleProps {
 const subscribeNoop = () => () => {};
 
 export function ThemeToggle({ compact = false, surface = "app", className }: ThemeToggleProps) {
+  const { t: tr } = useLocalization();
   const { resolvedTheme, setTheme } = useTheme();
   // Il tema risolto è noto solo lato client (next-themes legge localStorage/preferenze OS):
   // finché non siamo sul client si mostra un placeholder, per evitare mismatch di idratazione.
@@ -70,8 +72,8 @@ export function ThemeToggle({ compact = false, surface = "app", className }: The
           "hover:bg-sidebar-accent transition-colors duration-150",
           className
         )}
-        aria-label={isDark ? "Passa al tema chiaro" : "Passa al tema scuro"}
-        title={isDark ? "Passa al tema chiaro" : "Passa al tema scuro"}
+        aria-label={isDark ? tr("Passa al tema chiaro") : tr("Passa al tema scuro")}
+        title={isDark ? tr("Passa al tema chiaro") : tr("Passa al tema scuro")}
       >
         <Icon className="size-4" aria-hidden="true" />
       </button>
@@ -88,9 +90,7 @@ export function ThemeToggle({ compact = false, surface = "app", className }: The
         onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
       />
       <Moon className={cn("size-4", iconClass)} aria-hidden="true" />
-      <Label htmlFor="theme-toggle" className="sr-only">
-        Attiva tema scuro
-      </Label>
+      <Label htmlFor="theme-toggle" className="sr-only">{tr("Attiva tema scuro")}</Label>
     </div>
   );
 }

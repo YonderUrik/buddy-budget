@@ -14,7 +14,8 @@ const REASONS: Record<TaxIssue["reason"], string> = {
 };
 /** German annual FIFO report and fund advance scenario, with completeness checks and explicit assumptions. */
 export function TaxEditor({ plan, onChange, data }: PlanEditorProps) {
-  const { t } = useLocalization();
+  const { t, locale } = useLocalization();
+  const formatDate = (date: string) => new Intl.DateTimeFormat(locale).format(new Date(`${date}T12:00:00`));
   const p = plan.tax;
   const update = (patch: Partial<typeof p>) => onChange({ ...plan, tax: { ...p, ...patch } });
   const report = germanPortfolioReport(data, p, new Date().toISOString().slice(0, 10));
@@ -46,12 +47,12 @@ export function TaxEditor({ plan, onChange, data }: PlanEditorProps) {
       <Result label="Recorded taxes (shown separately)" value={report.recordedTaxes} />
       <Result label="Remaining share losses" value={report.estimate?.remainingShareLosses ?? null} />
       <Result label="Remaining general losses" value={report.estimate?.remainingGeneralLosses ?? null} />
-      <details><summary>{t("Realised events included")}</summary>{report.events.map(e => <div className="flex justify-between gap-3 py-2 text-sm" key={e.id}><span>{e.date} · {names.get(e.instrumentId)}</span><Amount value={e.taxable} /></div>)}</details>
+      <details><summary>{t("Realised events included")}</summary>{report.events.map(e => <div className="flex justify-between gap-3 py-2 text-sm" key={e.id}><span>{formatDate(e.date)} · {names.get(e.instrumentId)}</span><Amount value={e.taxable} /></div>)}</details>
     </Panel>
     <Panel title="Funds and ETFs">
       <p className="text-sm text-muted-foreground">{t("Classification must come from the fund tax documents, not its name. Enter gross prior advances attributable to each sale before partial exemption. Enter this year's taxable advances above as additional capital income.")}</p>
       {funds.map(f => <Choice key={f.id} label={f.name} value={p.fundKinds[f.id] ?? "unknown"} options={FUND_OPTIONS} onChange={v => update({ fundKinds: { ...p.fundKinds, [f.id]: v as typeof plan.fund.kind } })} />)}
-      {sales.map(s => <NumberField key={s.id} label={`${names.get(s.instrumentId)} · ${s.date} · ${t("Prior gross advances (€)")}`} value={p.priorAdvancesBySale[s.id] ?? 0} onChange={v => update({ priorAdvancesBySale: { ...p.priorAdvancesBySale, [s.id]: v } })} />)}
+      {sales.map(s => <NumberField key={s.id} label={`${names.get(s.instrumentId)} · ${formatDate(s.date)} · ${t("Prior gross advances (€)")}`} value={p.priorAdvancesBySale[s.id] ?? 0} onChange={v => update({ priorAdvancesBySale: { ...p.priorAdvancesBySale, [s.id]: v } })} />)}
       <label className="flex gap-2 text-sm"><input type="checkbox" checked={p.fundHistoryConfirmed} onChange={e => update({ fundHistoryConfirmed: e.target.checked })} />{t("I checked prior advances and current-year advance income against broker records. The fund classification did not change during the holding period.")}</label>
       <h3 className="font-medium">{t("2026 Vorabpauschale scenario")}</h3>
       <Choice label="Fund classification" value={plan.fund.kind} options={FUND_OPTIONS} onChange={v => onChange({ ...plan, fund: { ...plan.fund, kind: v as typeof plan.fund.kind } })} />

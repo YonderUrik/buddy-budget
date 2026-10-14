@@ -123,7 +123,7 @@ export function MobileMoreMenu({
   const markNavigating = useBackToClose(open, onClose);
 
   const user = mounted ? sessionData?.user : undefined;
-  const userName = user?.name ?? "Il tuo account";
+  const userName = user?.name ?? tr("Il tuo account");
   const sections = items.filter((i) => !i.comingSoon);
 
   async function signOut() {
@@ -173,7 +173,7 @@ export function MobileMoreMenu({
             {/* Account */}
             <Link href={settingsHref} replace onClick={() => go("impostazioni")} className={cn(ROW_CLASS, "mt-3 min-h-16 bg-muted/60")}>
               {user?.image ? (
-                <Image src={user.image} alt={tr("")} width={40} height={40} className="size-10 shrink-0 rounded-full object-cover" />
+                <Image src={user.image} alt={""} width={40} height={40} className="size-10 shrink-0 rounded-full object-cover" />
               ) : (
                 <span
                   aria-hidden="true"
@@ -184,7 +184,7 @@ export function MobileMoreMenu({
               )}
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[15px] font-semibold leading-tight">{userName}</span>
-                <span className="block truncate text-xs text-text-2">{user?.email ?? "Profilo e impostazioni"}</span>
+                <span className="block truncate text-xs text-text-2">{user?.email ?? tr("Profilo e impostazioni")}</span>
               </span>
               <Settings className="size-5 shrink-0 text-text-3" aria-hidden="true" />
             </Link>
@@ -212,7 +212,7 @@ export function MobileMoreMenu({
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block text-[15px] font-semibold leading-tight">{tr(item.label)}</span>
-                            {hints[item.href] ? <span className="block text-xs leading-snug text-text-2">{hints[item.href]}</span> : null}
+                            {hints[item.href] ? <span className="block text-xs leading-snug text-text-2">{tr(hints[item.href])}</span> : null}
                           </span>
                           {badge && badge.count > 0 ? (
                             <span

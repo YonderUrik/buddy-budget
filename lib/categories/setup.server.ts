@@ -1,5 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
+import { isDefaultCategoryName } from "@/lib/localization/categories";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
 import { planCategorySetup, validateCategorySetup, type CategorySetupItem } from "./setup";
@@ -15,7 +16,7 @@ export type CategorySetupResult =
  */
 export async function applyCategorySetup(userId: string, items: CategorySetupItem[]): Promise<CategorySetupResult> {
   const existing = await db
-    .select({ id: categories.id, name: categories.name, isFallback: categories.isFallback })
+    .select({ id: categories.id, name: categories.name, isFallback: categories.isFallback, defaultKey: categories.defaultKey })
     .from(categories)
     .where(eq(categories.userId, userId));
   const fallbackNames = existing.filter((category) => category.isFallback).map((category) => category.name);
@@ -39,10 +40,10 @@ export async function applyCategorySetup(userId: string, items: CategorySetupIte
       await tx.update(categories).set({ name: `__rinomina_${rename.id}` }).where(eq(categories.id, rename.id));
     }
     for (const rename of plan.renames) {
-      await tx.update(categories).set({ name: rename.name }).where(eq(categories.id, rename.id));
+      await tx.update(categories).set({ name: rename.name, defaultKey: isDefaultCategoryName(existing.find(row => row.id === rename.id)?.defaultKey, rename.name) ? existing.find(row => row.id === rename.id)!.defaultKey : null }).where(eq(categories.id, rename.id));
     }
     if (plan.creates.length > 0) {
-      await tx.insert(categories).values(plan.creates.map((create) => ({ userId, ...create })));
+      await tx.insert(categories).values(plan.creates.map((create) => ({ userId, ...create, defaultKey: items.find(item => item.enabled && item.key && item.name.trim() === create.name && isDefaultCategoryName(item.key, create.name))?.key ?? null })));
     }
   });
   return { outcome: "applied", deleted: plan.deletions.length, updated: plan.renames.length, created: plan.creates.length };

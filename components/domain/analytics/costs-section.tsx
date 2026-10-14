@@ -6,7 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { Metric } from "./analytics-card";
 import { GlossedText } from "./glossed-text";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { CostsTab } from "./costs-tab";
 import { costsSentences } from "./plain-answers";
 import { QuestionSection } from "./question-section";
@@ -22,6 +22,8 @@ export interface CostsSectionProps extends QuestionSectionData {
 }
 
 export function CostsSection({ question, base, assumptions, plan, saving, error, onSaveTer }: CostsSectionProps) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { currency } = base;
   const summary = summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })));

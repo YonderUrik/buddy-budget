@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { Instrument } from "@/lib/db/schema/investments";
 import type { InvestmentsAnalysis } from "@/lib/investments/analysis-view";
-import { correlationInsight } from "@/lib/investments/risk-insights";
+import { localizedRiskInsights } from "@/lib/investments/risk-insights";
 import { Disclosure } from "../disclosure";
 import { CorrelationFamilies } from "./correlation-families";
 import { CorrelationPairs } from "./correlation-pairs";
@@ -27,6 +27,8 @@ export interface OverlapCardProps {
 }
 
 export function OverlapCard({ analysis, instrumentsById, currency }: OverlapCardProps) {
+  const { correlationInsight } = localizedRiskInsights(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const nameOf = (id: string) => instrumentsById.get(id)?.name ?? "—";
   const instrumentOf = (id: string) => instrumentsById.get(id);

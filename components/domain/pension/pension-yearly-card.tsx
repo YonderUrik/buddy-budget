@@ -7,7 +7,7 @@ import { Bar, BarChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { ChartNoAxesColumnIcon } from "lucide-react";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { YearBreakdown } from "@/lib/calc/pension";
-import { formatSignedPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 import { PensionYearlyTooltip } from "./pension-yearly-tooltip";
 
@@ -25,6 +25,8 @@ const CHART_CONFIG: ChartConfig = {
 const CHART_HEIGHT = 240;
 
 export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
+  const { formatSignedPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const data = years.map((row) => ({
     label: row.partial ? `${row.year}*` : String(row.year),
@@ -75,11 +77,11 @@ export function PensionYearlyCard({ years, currency }: PensionYearlyCardProps) {
           <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             <div className="border-t border-border pt-3">
               <dt className="text-sm text-text-2">{tr("Anno migliore")}</dt>
-              <dd className="font-heading text-xl font-medium tabular-nums text-pos">{best.year} · {best.gain >= 0 ? "+" : "−"}{money(Math.abs(best.gain), currency)}{best.returnRate !== null ? <span className="text-sm text-text-2"> ({formatSignedPercent(best.returnRate)})</span> : null}</dd>
+              <dd className="font-heading text-xl font-medium tabular-nums text-pos">{best.year} {"·"}{best.gain >= 0 ? "+" : "−"}{money(Math.abs(best.gain), currency)}{best.returnRate !== null ? <span className="text-sm text-text-2"> {"("}{formatSignedPercent(best.returnRate)}{")"}</span> : null}</dd>
             </div>
             <div className="border-t border-border pt-3">
               <dt className="text-sm text-text-2">{tr("Anno peggiore")}</dt>
-              <dd className={`font-heading text-xl font-medium tabular-nums ${worst.gain < 0 ? "text-neg" : "text-foreground"}`}>{worst.year} · {worst.gain >= 0 ? "+" : "−"}{money(Math.abs(worst.gain), currency)}{worst.returnRate !== null ? <span className="text-sm text-text-2"> ({formatSignedPercent(worst.returnRate)})</span> : null}</dd>
+              <dd className={`font-heading text-xl font-medium tabular-nums ${worst.gain < 0 ? "text-neg" : "text-foreground"}`}>{worst.year} {"·"}{worst.gain >= 0 ? "+" : "−"}{money(Math.abs(worst.gain), currency)}{worst.returnRate !== null ? <span className="text-sm text-text-2"> {"("}{formatSignedPercent(worst.returnRate)}{")"}</span> : null}</dd>
             </div>
           </dl>
         ) : null}

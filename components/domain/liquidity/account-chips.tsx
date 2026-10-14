@@ -61,7 +61,7 @@ export function AccountChips({ accounts, total, currency, selectedId, onSelect, 
   };
   return (
     <div role="group" aria-label={tr("Filtra per conto")} className={cn("scrollbar-hidden -mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0", className)}>
-      {chip(null, "Tutti i conti", total)}
+      {chip(null, tr("Tutti i conti"), total)}
       {accounts.map((account) => chip(account.id, account.name, account.balance, account.needsAttention))}
       {onAdd && (
         <button

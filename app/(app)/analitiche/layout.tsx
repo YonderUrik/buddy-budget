@@ -32,6 +32,7 @@ function Header({ onGuide }: { onGuide?: () => void }) {
 }
 
 function AnalyticsShell({ children }: { children: React.ReactNode }) {
+  const { t: tr } = useLocalization();
   const ctx = useAnalytics();
   const [guideOpen, setGuideOpen] = React.useState(false);
   const autoOpened = React.useRef(false);
@@ -90,7 +91,7 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
       ) : (
         <>
           {children}
-          <p className="text-xs text-muted-foreground">{DISCLAIMER}</p>
+          <p className="text-xs text-muted-foreground">{tr(DISCLAIMER)}</p>
         </>
       )}
       <WalkthroughDialog open={guideOpen} onClose={closeGuide} />

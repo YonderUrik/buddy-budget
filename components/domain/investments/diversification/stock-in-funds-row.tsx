@@ -34,15 +34,13 @@ export function StockInFundsRow({ item, nameOf, instrumentOf, currency }: StockI
       <p className="text-sm text-foreground">
         <span className="font-medium">{stock ? <InstrumentLabel instrument={stock} className="max-w-full" /> : "—"}</span>{" "}{tr("pesa in tutto")}{" "}
         <span className="font-medium tabular-nums">{money(item.totalValue, currency)}</span>{tr(", perché la hai anche dentro")}{" "}
-        {item.funds.length === 1 ? tr("un ETF") : tr("{0} ETF", {0: item.funds.length})}.
-      </p>
+        {item.funds.length === 1 ? tr("un ETF") : tr("{0} ETF", {0: item.funds.length})}{"."}</p>
       <div className="flex h-2 w-full gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
         <div className="h-full bg-[var(--swatch-blue)]" style={{ width: `${directShare * 100}%` }} />
         <div className="h-full flex-1 bg-[var(--swatch-amber)]" />
       </div>
       <p className="text-xs text-muted-foreground">
-        <span className="tabular-nums">{money(item.directValue, currency)}</span>{" "}{tr("come azioni ·")}{" "}<span className="tabular-nums">{money(via, currency)}</span>{" "}{tr("dentro gli ETF (")}{item.funds.map((f) => `${(f.weightInFund * 100).toFixed(1).replace(".", ",")}% di ${nameOf(f.fundId)}`).join(", ")})
-      </p>
+        <span className="tabular-nums">{money(item.directValue, currency)}</span>{" "}{tr("come azioni ·")}{" "}<span className="tabular-nums">{money(via, currency)}</span>{" "}{tr("dentro gli ETF (")}{item.funds.map((f) => tr("{0}% di {1}", { 0: (f.weightInFund * 100).toFixed(1).replace(".", ","), 1: nameOf(f.fundId) })).join(", ")}{")"}</p>
     </li>
   );
 }

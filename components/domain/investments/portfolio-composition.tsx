@@ -68,7 +68,7 @@ export function PortfolioComposition({ groups, currency, title = "Composizione",
                     {group.slices.map((slice, i) => (
                       <li key={slice.key} className="flex items-center gap-2 text-sm">
                         <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: group.colorFor(slice.key, i) }} aria-hidden="true" />
-                        <span className="flex-1 text-foreground">{group.labelFor?.(slice.key) ?? slice.key}</span>
+                        <span className="flex-1 text-foreground">{tr(group.labelFor?.(slice.key) ?? slice.key)}</span>
                         <span className="tabular-nums text-muted-foreground">{formatCurrency(slice.value, currency, { maximumFractionDigits: 0 })}</span>
                         <span className="w-12 text-right font-medium tabular-nums text-foreground">{formatShare(slice.share)}</span>
                       </li>

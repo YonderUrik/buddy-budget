@@ -40,7 +40,7 @@ export function QuestionSection({ question, expertHint, renderExpert, children }
       >
         <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-muted-foreground marker:hidden">
           <ChevronRight className="size-4 shrink-0 transition-transform group-open:rotate-90" aria-hidden="true" />
-          <span>{tr("Per esperti")}{" "}<span className="font-normal">· {expertHint}</span>
+          <span>{tr("Per esperti")}{" "}<span className="font-normal">{"· "}{tr(expertHint)}</span>
           </span>
         </summary>
         {open ? <div className="pt-3">{renderExpert()}</div> : null}

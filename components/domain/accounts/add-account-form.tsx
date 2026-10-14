@@ -141,12 +141,12 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                 }}
               >
                 <SelectTrigger id={`${idBase}-type`} className={cn("w-full", FIELD_CLASS)}>
-                  <SelectValue placeholder={tr("Seleziona il tipo di conto")} />
+                  <SelectValue placeholder={tr("Seleziona il tipo di conto")}>{(value: string | null) => value === CUSTOM_TYPE_VALUE ? tr("Altro…") : value ? tr(value) : null}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
+                    <SelectItem key={tr(option)} value={tr(option)}>
+                      {tr(option)}
                     </SelectItem>
                   ))}
                   <SelectItem value={CUSTOM_TYPE_VALUE}>{tr("Altro…")}</SelectItem>
@@ -193,7 +193,7 @@ export function AddAccountForm({ currency, onSuccess, onExit }: AddAccountFormPr
                 </div>
               </AccountIconColorPicker>
               <div className="space-y-0.5">
-                <p className="text-sm font-medium text-foreground">{name.trim() || "Il tuo conto"}</p>
+                <p className="text-sm font-medium text-foreground">{name.trim() || tr("Il tuo conto")}</p>
                 <p className="text-xs text-muted-foreground">{tr("Tocca l'icona per cambiare icona e colore (facoltativo).")}</p>
               </div>
             </div>

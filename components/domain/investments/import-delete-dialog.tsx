@@ -34,7 +34,7 @@ export function ImportDeleteDialog({ open, title, intro, items, removes, keeps, 
       <AlertDialogContent className="max-h-[85dvh] overflow-y-auto data-[size=default]:sm:max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle>{tr(title)}</AlertDialogTitle>
-          <AlertDialogDescription>{intro ?? "Controlla cosa viene eliminato prima di confermare."}</AlertDialogDescription>
+          <AlertDialogDescription>{intro ?? tr("Controlla cosa viene eliminato prima di confermare.")}</AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex flex-col gap-4 text-sm">
           <div className="flex flex-col gap-1.5">

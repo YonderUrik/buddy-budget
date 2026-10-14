@@ -10,8 +10,8 @@ import { useRouter } from "next/navigation";
 import { BanknoteIcon, LandmarkIcon, PlusIcon } from "lucide-react";
 import {
   AccountDetailsDialog,
+  localizedAccountStatus,
   RenewalBanner,
-  buildAccountStatus,
   buildRenewalAlerts,
   groupAccounts,
   sumBalances,
@@ -40,7 +40,8 @@ export default function LiquiditaContiPage() {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
+  const { buildAccountStatus } = localizedAccountStatus(language);
   const router = useRouter();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
@@ -53,17 +54,17 @@ export default function LiquiditaContiPage() {
 
   // Il link dei primi passi (?nuovo=1) apre subito «Nuovo conto», una volta sola.
   React.useEffect(() => {
-    if (!new URLSearchParams(window.location.search).has("nuovo")) return;
+    if (!new URLSearchParams(window.location.search).has(tr("nuovo"))) return;
     // Il parametro si toglie solo allo scoccare del timer: in Strict Mode il primo effetto viene annullato e il secondo deve ritrovarlo.
     const timer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
-      params.delete("nuovo");
+      params.delete(tr("nuovo"));
       const query = params.toString();
       window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
       addAccount();
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [addAccount]);
+  }, [addAccount, tr]);
 
   const { data: accounts, isLoading, isError, refetch } = useAccountsQuery();
   const connections = useBankConnectionsStatusQuery().data ?? [];
@@ -84,7 +85,7 @@ export default function LiquiditaContiPage() {
     router.push(`${LIQUIDITY_HREF}?${LIQUIDITY_ACCOUNT_PARAM}=${accountId}`);
   }
 
-  if (isError) return <LoadError message="Impossibile caricare i conti." onRetry={() => refetch()} />;
+  if (isError) return <LoadError message={tr("Impossibile caricare i conti.")} onRetry={() => refetch()} />;
   return (
     <div className="flex flex-col gap-8" aria-busy={isLoading}>
       <RenewalBanner alerts={alerts} onRenew={() => renew("banner")} />

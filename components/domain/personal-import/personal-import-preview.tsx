@@ -49,7 +49,7 @@ function RecordRow({ record, headers, currency }: { record: PreviewRecord; heade
     amount = <span className={o.amount < 0 ? "" : "text-pos"}>{formatCurrency(o.amount, o.currency)}</span>;
   } else if (o.kind === "investment") {
     title = o.name;
-    sub = `${tr(KIND_LABELS[o.type])}${o.quantity ? ` · ${o.quantity} × ${o.price} ${o.currency}` : ""} · riga ${line}`;
+    sub = `${tr(KIND_LABELS[o.type])}${o.quantity ? tr(" · {0} × {1} {2}", { 0: o.quantity, 1: o.price, 2: o.currency }) : ""} · riga ${line}`;
     amount = o.grossAmount !== null ? <span className="text-pos">{formatCurrency(o.grossAmount, o.currency)}</span> : <span>{formatCurrency(-(o.quantity * o.price) * (o.type === "vendita" ? -1 : 1), o.currency)}</span>;
   } else {
     title = o.reason;
@@ -67,9 +67,9 @@ function RecordRow({ record, headers, currency }: { record: PreviewRecord; heade
       </summary>
       <dl className="mt-2 flex flex-col gap-1 pl-[3.75rem] text-xs text-muted-foreground">
         {record.source.map((value, i) => (
-          <div key={i}><dt className="inline font-medium">{headers[i] ?? `Colonna ${i + 1}`}: </dt><dd className="inline break-all">{value}</dd></div>
+          <div key={i}><dt className="inline font-medium">{headers[i] ?? tr("Colonna {0}", { 0: i + 1 })}{":"}</dt><dd className="inline break-all">{value}</dd></div>
         ))}
-        {record.rate !== null ? <div>{tr("Cambio verso")}{" "}{currency}: {record.rate}</div> : null}
+        {record.rate !== null ? <div>{tr("Cambio verso")}{" "}{currency}{":"}{record.rate}</div> : null}
       </dl>
     </details>
   );
@@ -82,15 +82,15 @@ export function PersonalImportPreview({ id }: { id: string }) {
   const [shown, setShown] = useState(PAGE_SIZE);
   const { data, error, isPending } = useQuery({ queryKey: ["personal-import-preview", id], queryFn: () => personalImportApi<Preview>(`/${id}`), staleTime: 0 });
   if (isPending) return <p role="status" className="text-sm text-muted-foreground">{tr("Caricamento del dettaglio…")}</p>;
-  if (error || !data) return <p role="alert" className="text-sm text-destructive">{error?.message ?? "Dettaglio non disponibile"}</p>;
+  if (error || !data) return <p role="alert" className="text-sm text-destructive">{error?.message ?? tr("Dettaglio non disponibile")}</p>;
   if (hidden) return <p className="text-sm text-muted-foreground">{tr("Disattiva «Nascondi gli importi» per consultare il dettaglio.")}</p>;
 
   const groups = groupPreviewRecords(data.records);
   const current = tab ?? defaultPreviewTab(groups);
   const options = ([
-    { value: "importable", label: `Da importare · ${groups.importable.length}` },
-    ...(groups.ignored.length > 0 ? [{ value: "ignored", label: `Escluse · ${groups.ignored.length}` }] : []),
-    ...(groups.errors.length > 0 ? [{ value: "errors", label: `Errori · ${groups.errors.length}` }] : []),
+    { value: "importable", label: tr("Da importare · {0}", { 0: groups.importable.length }) },
+    ...(groups.ignored.length > 0 ? [{ value: "ignored", label: tr("Escluse · {0}", { 0: groups.ignored.length }) }] : []),
+    ...(groups.errors.length > 0 ? [{ value: "errors", label: tr("Errori · {0}", { 0: groups.errors.length }) }] : []),
   ] as { value: PreviewTab; label: string }[]);
   const rows = groups[current];
   const firstError = groups.errors[0]?.outcome;
@@ -134,7 +134,7 @@ export function PersonalImportPreview({ id }: { id: string }) {
       )}
       {rows.length > shown ? (
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs text-muted-foreground">1–{shown}{" "}{tr("di")}{" "}{rows.length}</span>
+          <span className="text-xs text-muted-foreground">{"1–"}{shown}{" "}{tr("di")}{" "}{rows.length}</span>
           <Button variant="outline" size="sm" onClick={() => setShown((n) => n + PAGE_SIZE)}>{tr("Mostra altre")}</Button>
         </div>
       ) : null}
@@ -143,7 +143,7 @@ export function PersonalImportPreview({ id }: { id: string }) {
         <summary className="min-h-11 cursor-pointer content-center font-medium text-foreground">{tr("Cosa succede quando importo")}</summary>
         <div className="flex flex-col gap-2 pb-2">
           <p>{tr("Creo un conto dedicato (e un portafoglio, se serve) con saldo di partenza zero: carica lo storico completo oppure correggi il saldo dopo l'import. Gli strumenti nuovi avranno prezzi manuali.")}</p>
-          <p>{tr("Le righe già importate con questo formato vengono saltate. Se descrizioni o colonne sono cambiate possono comparire doppioni: confrontali con lo storico. I cambi storici convertono i movimenti in")}{" "}{data.currency}.</p>
+          <p>{tr("Le righe già importate con questo formato vengono saltate. Se descrizioni o colonne sono cambiate possono comparire doppioni: confrontali con lo storico. I cambi storici convertono i movimenti in")}{" "}{data.currency}{"."}</p>
         </div>
       </details>
     </PanelSection>

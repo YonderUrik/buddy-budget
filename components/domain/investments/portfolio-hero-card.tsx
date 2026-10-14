@@ -106,12 +106,11 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
             <p className={cn("font-mono text-sm tabular-nums", summary.dayChange < 0 ? "text-neg" : "text-pos")}>
               {summary.dayChange < 0 ? <TrendingDownIcon className="mr-1 inline size-4" aria-hidden="true" /> : <TrendingUpIcon className="mr-1 inline size-4" aria-hidden="true" />}
               {summary.dayChange < 0 ? "−" : "+"}
-              {format(Math.abs(summary.dayChange))} ({pctText(summary.dayChangePct)})
-              <span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
+              {format(Math.abs(summary.dayChange))} {"("}{pctText(summary.dayChangePct)}{")"}<span className="font-sans text-muted-foreground">{" "}{tr("dall'ultima chiusura")}</span>
             </p>
           ) : null}
           {cash.length > 0 ? (
-            <p className="text-sm text-muted-foreground">{tr("Solo titoli. In più hai")}{" "}{format(cashTotal)}{" "}{tr("di liquidità sui broker (totale")}{" "}{format(summary.totalValue + cashTotal)}).</p>
+            <p className="text-sm text-muted-foreground">{tr("Solo titoli. In più hai")}{" "}{format(cashTotal)}{" "}{tr("di liquidità sui broker (totale")}{" "}{format(summary.totalValue + cashTotal)}{")."}</p>
           ) : null}
           {simulation.active ? <p className="text-sm text-muted-foreground">{tr("Simulazione ·")}{" "}{simulation.extra >= 0 ? "+" : ""}{formatCurrency(simulation.extra, currency)}{" "}{tr("rispetto al valore registrato.")}</p> : null}
         </div>
@@ -126,8 +125,7 @@ export function PortfolioHeroCard({ cash = [], costImpact, periodGain, includeFe
               {format(Math.abs(breakdown.market))}
               {marketPct !== null ? ` (${pctText(marketPct)})` : ""}
             </span>
-            .
-            {breakdown.cashedIn !== 0 ? (
+            {"."}{breakdown.cashedIn !== 0 ? (
               <span className="text-muted-foreground">
                 {" "}{tr("Hai già")}{" "}{breakdown.cashedIn > 0 ? tr("incassato") : tr("perso")}{" "}{format(Math.abs(breakdown.cashedIn))}{" "}{tr("tra vendite, dividendi e cedole.")}</span>
             ) : null}

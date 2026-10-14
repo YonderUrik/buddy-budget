@@ -9,7 +9,7 @@ import { ProgressBar, type ProgressBarState } from "@/components/domain/shared";
 import { Button } from "@/components/ui/button";
 import type { BenchmarkComparison, BenchmarkStatus } from "@/lib/calc/returns";
 
-import { benchmarkVerdict, type BenchmarkWait } from "@/lib/investments/returns-insights";
+import { localizedReturnInsights, type BenchmarkWait } from "@/lib/investments/returns-insights";
 import { cn } from "@/lib/utils";
 
 
@@ -45,6 +45,8 @@ function waitProgress(wait: BenchmarkWait): ProgressBarState {
 }
 
 export function BenchmarkSummary({ status, comparison, benchmarkName, currency, wait, onChoose, onRetry, retrying, asOf }: BenchmarkSummaryProps) {
+  const { benchmarkVerdict } = localizedReturnInsights(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedCurrency, formatSignedPct } = localizedFormats(formattingLocale);
 
@@ -53,17 +55,17 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
   function waitMessage(wait: BenchmarkWait, name: string): string {
   switch (wait.kind) {
     case "checking":
-      return `Controllo i prezzi di ${name}…`;
+      return tr("Controllo i prezzi di {0}…", { 0: name });
     case "downloading":
       return wait.total
-        ? `Scarico i prezzi di ${name}: ${wait.saved} giorni su ${wait.total}. Il confronto compare appena finito.`
-        : `Chiedo alle fonti lo storico dei prezzi di ${name}. Il confronto compare appena finito.`;
+        ? tr("Scarico i prezzi di {0}: {1} giorni su {2}. Il confronto compare appena finito.", { 0: name, 1: wait.saved, 2: wait.total })
+        : tr("Chiedo alle fonti lo storico dei prezzi di {0}. Il confronto compare appena finito.", { 0: name });
     case "failed":
-      return `Non sono riuscito a scaricare i prezzi di ${name}: le fonti non hanno risposto. Puoi riprovare o scegliere un altro indice.`;
+      return tr("Non sono riuscito a scaricare i prezzi di {0}: le fonti non hanno risposto. Puoi riprovare o scegliere un altro indice.", { 0: name });
     case "no_history":
-      return `${name} ha prezzi solo dal ${formatDateWithYear(wait.firstPriceDate)}, dopo l'inizio del periodo. Scegli un periodo più corto o un altro indice.`;
+      return tr("{0} ha prezzi solo dal {1}, dopo l'inizio del periodo. Scegli un periodo più corto o un altro indice.", { 0: name, 1: formatDateWithYear(wait.firstPriceDate) });
     case "incomplete":
-      return `Mancano alcuni prezzi o cambi di ${name} nel periodo. Riprova a scaricarli.`;
+      return tr("Mancano alcuni prezzi o cambi di {0} nel periodo. Riprova a scaricarli.", { 0: name });
   }
 }
 
@@ -108,7 +110,7 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
         <p className="text-sm font-medium text-foreground">
           {VERDICT_TEXT[verdict]}
           {verdict !== "even" ? (
-            <span className={cn("tabular-nums", difference < 0 ? "text-neg" : "text-pos")}> ({formatSignedCurrency(difference, currency)})</span>
+            <span className={cn("tabular-nums", difference < 0 ? "text-neg" : "text-pos")}> {"("}{formatSignedCurrency(difference, currency)}{")"}</span>
           ) : null}
         </p>
         <Button variant="ghost" size="sm" className="-my-1" onClick={onChoose}>{tr("Cambia")}</Button>
@@ -116,8 +118,7 @@ export function BenchmarkSummary({ status, comparison, benchmarkName, currency, 
       <p className="text-sm text-muted-foreground">{tr("Con gli stessi versamenti in")}{" "}<span className="text-foreground">{comparison.instrument.name}</span>{" "}{asOf ? tr("al {0}", {0: formatDateWithYear(asOf)}) : tr("oggi")}{" "}{tr("avresti")}{" "}
         <span className="font-medium tabular-nums text-foreground">{format(comparison.simulatedValue)}</span>{" "}{tr("invece di")}{" "}
         <span className="font-medium tabular-nums text-foreground">{format(comparison.portfolioValue)}</span>{tr(". Nel periodo l'ETF di confronto ha reso")}{" "}<span className="tabular-nums">{formatSignedPct(comparison.twr)}</span>
-        {comparison.twrAnnual !== null ? <span className="tabular-nums"> ({formatSignedPct(comparison.twrAnnual)}{" "}{tr("l'anno)")}</span> : null}.
-      </p>
+        {comparison.twrAnnual !== null ? <span className="tabular-nums"> {"("}{formatSignedPct(comparison.twrAnnual)}{" "}{tr("l'anno)")}</span> : null}{"."}</p>
       {comparison.depleted ? (
         <p className="text-xs text-muted-foreground">{tr("Le vendite hanno superato il valore dell'indice simulato, che si è azzerato.")}</p>
       ) : null}

@@ -114,7 +114,7 @@ export function SplitSlider({ transaction, currency, onClose }: SplitSliderProps
       />
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>
-          {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}: {formatCurrency(totalAmount - excluded, currency)}
+          {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}{":"}{formatCurrency(totalAmount - excluded, currency)}
         </span>
         <span>{tr("Esclusa dal conteggio:")}{" "}{formatCurrency(excluded, currency)}</span>
       </div>

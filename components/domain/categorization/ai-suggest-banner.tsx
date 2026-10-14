@@ -65,8 +65,8 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
   const status = generating
     ? null
     : foundCount !== undefined
-      ? `${foundCount} proposte pronte nelle carte`
-      : `${missingCount} ${missingCount === 1 ? "esercente senza" : "esercenti senza"} proposta`;
+      ? tr("{0} proposte pronte nelle carte", { 0: foundCount })
+      : tr("{0} {1} proposta", { 0: missingCount, 1: missingCount === 1 ? "esercente senza" : "esercenti senza" });
 
   const button = compact ? (
     <Button type="button" size="sm" className="ai-button h-9 shrink-0 border-0" onClick={handleClick} disabled={generating} aria-label={tr("Categorizza con l'AI")}>
@@ -99,14 +99,13 @@ export function AiSuggestBanner({ missingCount, consentGiven, generating, foundC
       <Dialog open={confirming} onOpenChange={setConfirming}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Attivare l&apos;assistente per le categorie?</DialogTitle>
+            <DialogTitle>{tr("Attivare l'assistente per le categorie?")}</DialogTitle>
             <DialogDescription>
-              Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell&apos;esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.{" "}
+              {tr("Inviamo a un servizio di intelligenza artificiale solo il nome pulito dell'esercente (mai importi, date, IBAN, note o nomi di persone), insieme alle categorie e alle eventuali istruzioni personali, con richiesta di non conservare i dati.")}{" "}
               {autoApplyEnabled
-                ? "Quando è quasi certa l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu."
-                : "Le proposte restano da confermare."}{" "}
-              Puoi disattivarlo quando vuoi in Impostazioni.
-            </DialogDescription>
+                ? tr("Quando è quasi certa l'app mette la categoria da sola, e la ritrovi in «Messe dall'app», dove puoi cambiarla; le altre le scegli tu.")
+                : tr("Le proposte restano da confermare.")}{" "}
+              {tr("Puoi disattivarlo quando vuoi in Impostazioni.")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setConfirming(false)}>{tr("Annulla")}</Button>

@@ -93,7 +93,7 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
   function dayLabel(iso: string): string {
   const date = new Date(iso);
   const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(date).setHours(0, 0, 0, 0)) / 86_400_000);
-  if (days <= 0) return `oggi ${date.toLocaleTimeString(formattingLocale, { hour: "2-digit", minute: "2-digit" })}`;
+  if (days <= 0) return tr("oggi {0}", { 0: date.toLocaleTimeString(formattingLocale, { hour: "2-digit", minute: "2-digit" }) });
   if (days === 1) return "ieri";
   return date.toLocaleDateString(formattingLocale, { day: "numeric", month: "short" });
 }

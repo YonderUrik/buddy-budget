@@ -134,7 +134,7 @@ function NavLink({
     return (
       <span
         aria-disabled="true"
-        title={collapsed ? tr("{0} (in arrivo)", {0: item.label}) : undefined}
+        title={collapsed ? tr("{0} (in arrivo)", {0: tr(item.label)}) : undefined}
         className={cn(
           "flex cursor-default items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
           "text-sidebar-foreground/40",
@@ -146,7 +146,7 @@ function NavLink({
           <>
             <span className="truncate leading-none">{tr(item.label)}</span>
             <span className="ml-auto rounded-full border border-sidebar-border px-1.5 py-0.5 text-[10px] leading-none text-sidebar-foreground/60">
-              {COMING_SOON_LABEL}
+              {tr(COMING_SOON_LABEL)}
             </span>
           </>
         )}
@@ -157,7 +157,7 @@ function NavLink({
   return (
     <Link
       href={item.href}
-      title={collapsed ? item.label : undefined}
+      title={collapsed ? tr(item.label) : undefined}
       aria-current={active ? "page" : undefined}
       onClick={onNavigate}
       className={cn(
@@ -210,12 +210,12 @@ function NavLink({
 
 /** Avatar utente: immagine profilo se disponibile, altrimenti iniziali. */
 function UserAvatar({ initials, image }: { initials: string; image?: string | null }) {
-  const { t: tr } = useLocalization();
+
   if (image) {
     return (
       <Image
         src={image}
-        alt={tr("")}
+        alt={""}
         width={32}
         height={32}
         className="size-8 shrink-0 rounded-full object-cover"
@@ -291,7 +291,7 @@ export function AppSidebar({
   const mounted = React.useSyncExternalStore(subscribeNoop, () => true, () => false);
   const session = mounted ? sessionData : null;
 
-  const userName = session?.user.name ?? "Utente";
+  const userName = session?.user.name ?? tr("Utente");
   const userImage = session?.user.image ?? null;
   const userInitials = userName
     .split(" ")
@@ -337,7 +337,7 @@ export function AppSidebar({
           <span className="flex items-center gap-2 min-w-0">
             <Image
               src="/brand/logo-mark.svg"
-              alt={tr("")}
+              alt={""}
               width={24}
               height={29}
               className="h-6 w-auto shrink-0"

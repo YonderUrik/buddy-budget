@@ -40,8 +40,8 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
       <section>
         <SectionTitle icon={CalendarDaysIcon} title={tr("Il mese")} color="var(--swatch-teal)" href={analysisHref} linkLabel={tr("Analisi")} />
         <div className="flex flex-col gap-1.5">
-          <SoftRow title={tr("Entrate")} end={<span className="font-heading font-semibold tabular-nums text-pos">+{money(income)}</span>} />
-          <SoftRow title={tr("Spese")} end={<span className="font-heading font-semibold tabular-nums text-neg">−{money(spent)}</span>} />
+          <SoftRow title={tr("Entrate")} end={<span className="font-heading font-semibold tabular-nums text-pos">{"+"}{money(income)}</span>} />
+          <SoftRow title={tr("Spese")} end={<span className="font-heading font-semibold tabular-nums text-neg">{"−"}{money(spent)}</span>} />
           <SoftRow
             title={tr("Avanzo finora")}
             hint={typicalSoFar !== null ? tr("Di solito a questo punto: {0} di spese", {0: money(typicalSoFar)}) : undefined}
@@ -51,11 +51,11 @@ export function MonthAside({ income, spent, typicalSoFar, toFix, groups, currenc
       </section>
       {toFix > 0 && (
         <section>
-          <SectionTitle icon={AlertTriangleIcon} title="Da decidere" color="var(--neg)" />
+          <SectionTitle icon={AlertTriangleIcon} title={tr("Da decidere")} color="var(--neg)" />
           <SoftRow
-            title={`${toFix} ${toFix === 1 ? "movimento" : "movimenti"}`}
+            title={tr(toFix === 1 ? "{0} movimento" : "{0} movimenti", {0: toFix})}
             hint="Senza categoria: decidili a gruppi, con le proposte"
-            end={<Link href={fixHref} className={cn(buttonVariants(), "h-11 shrink-0")}>Categorizza</Link>}
+            end={<Link href={fixHref} className={cn(buttonVariants(), "h-11 shrink-0")}>{tr("Categorizza")}</Link>}
           />
         </section>
       )}

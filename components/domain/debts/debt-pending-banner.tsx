@@ -22,8 +22,8 @@ export function DebtPendingBanner({ plan, onMarkAll, pending = false }: DebtPend
   const overdue = plan.totals.overdueCount;
   const text =
     overdue > 0
-      ? `${overdue === 1 ? "Una rata è scaduta" : `${overdue} rate sono scadute`} e non l'hai segnata come pagata.`
-      : `Il piano conta ${unsettled.length === 1 ? "una rata già passata" : `${unsettled.length} rate già passate`}: se le hai pagate, confermale.`;
+      ? tr("{0} e non l'hai segnata come pagata.", { 0: overdue === 1 ? tr("Una rata è scaduta") : tr("{0} rate sono scadute", {0: overdue}) })
+      : tr("Il piano conta {0}: se le hai pagate, confermale.", { 0: unsettled.length === 1 ? tr("una rata già passata") : tr("{0} rate già passate", {0: unsettled.length}) });
   return (
     <div className="flex flex-col gap-2 border-y py-3 sm:flex-row sm:items-center sm:justify-between">
       <p className="flex items-center gap-2.5 text-sm text-foreground">

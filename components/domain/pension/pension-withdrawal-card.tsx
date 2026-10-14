@@ -7,7 +7,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { WalletIcon } from "lucide-react";
 import type { WithdrawalReason, WithdrawalScenario } from "@/lib/calc/pension";
-import { formatPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 
 export interface PensionWithdrawalCardProps {
@@ -30,6 +30,8 @@ const RANGE_HINT =
   "Il valore alto presuppone che l'imposta si applichi solo ai contributi (i rendimenti hanno già pagato il 20% mentre maturavano). Il valore basso applica l'aliquota a tutto il controvalore. Quale sia giusto per te va confermato da un commercialista; non sono incluse eventuali penali del prodotto.";
 
 export function PensionWithdrawalCard({ scenarios, value, currency, baseline, isSimulated = false }: PensionWithdrawalCardProps) {
+  const { formatPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const total = Math.max(value, 1);
   return (
@@ -37,7 +39,7 @@ export function PensionWithdrawalCard({ scenarios, value, currency, baseline, is
       icon={WalletIcon}
       title={tr("Se prelevassi oggi")}
       color="var(--swatch-orange)"
-      hint={{ label: tr("Come si stima il netto"), text: RANGE_HINT }}
+      hint={{ label: tr("Come si stima il netto"), text: tr(RANGE_HINT) }}
       description={
         <>
           {isSimulated ? <strong className="font-medium text-foreground">{tr("Simulazione dell'aliquota in corso (vedi «Quando l'aliquota scende»).")}{" "}</strong> : null}{tr("Quanto ti resterebbe al netto delle tasse, in tre ipotesi. È una stima, non consulenza fiscale.")}</>
@@ -54,7 +56,7 @@ export function PensionWithdrawalCard({ scenarios, value, currency, baseline, is
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
                 <p className="font-semibold text-foreground">{tr(label.title)}</p>
                 <p className="font-heading text-xl font-medium tabular-nums text-foreground">
-                  {money(scenario.netLow, currency)}{" "}<span className="text-text-2">–</span>{" "}{money(scenario.netHigh, currency)}
+                  {money(scenario.netLow, currency)}{" "}<span className="text-text-2">{"–"}</span>{" "}{money(scenario.netHigh, currency)}
                 </p>
               </div>
               <div className="flex h-3.5 overflow-hidden rounded-full bg-neg/25" role="img" aria-label={tr("Netto tra {0} e {1} su {2}", {0: money(scenario.netLow, currency), 1: money(scenario.netHigh, currency), 2: money(value, currency)})}>
@@ -62,11 +64,11 @@ export function PensionWithdrawalCard({ scenarios, value, currency, baseline, is
                 <span className="h-full bg-primary/45" style={{ width: `${Math.max(0, highShare - lowShare)}%` }} />
               </div>
               <p className="text-sm text-text-2">
-                {label.detail}{" "}{tr("· aliquota")}{" "}{formatPercent(scenario.rate)}
+                {tr(label.detail)}{" "}{tr("· aliquota")}{" "}{formatPercent(scenario.rate)}
                 {delta !== 0 ? (
                   <span className={delta > 0 ? "text-pos" : "text-neg"}>
                     {" "}
-                    · {delta > 0 ? "+" : "−"}
+                    {"·"}{delta > 0 ? "+" : "−"}
                     {money(Math.abs(delta), currency)}{" "}{tr("rispetto a oggi")}</span>
                 ) : null}
               </p>

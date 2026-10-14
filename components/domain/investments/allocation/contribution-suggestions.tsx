@@ -52,8 +52,7 @@ export function ContributionSuggestions({ analysis, defaultAmount, instrumentsBy
                   <span className="font-medium tabular-nums">{formatCurrency(s.amount, currency, { maximumFractionDigits: 0 })}</span>{" "}{tr("di")}{" "}
                   {instrumentsById.get(s.instrumentId)?.name ?? "—"}
                 </p>
-                <p className="text-xs text-muted-foreground">{tr("arriva al")}{" "}{pct(s.weightAfter)}{" "}{tr("(obiettivo")}{" "}{pct(s.targetWeight)})
-                </p>
+                <p className="text-xs text-muted-foreground">{tr("arriva al")}{" "}{pct(s.weightAfter)}{" "}{tr("(obiettivo")}{" "}{pct(s.targetWeight)}{")"}</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => onRegister(s.instrumentId, s.amount)}>{tr("Registra")}</Button>
             </li>

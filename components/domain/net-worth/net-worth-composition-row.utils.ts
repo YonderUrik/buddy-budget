@@ -1,3 +1,5 @@
+import { translate } from "@/lib/localization/messages";
+import type { Language } from "@/lib/localization/config";
 import type { Account } from "@/lib/db/schema/accounts";
 import { ASSET_CLASS_LABELS } from "./asset-classes";
 
@@ -59,16 +61,18 @@ export function buildCompositionItems(
   accounts: Account[],
   investments: InvestmentsComposition | null = null,
   debts: DebtsComposition | null = null,
-  pension: PensionComposition | null = null
+  pension: PensionComposition | null = null,
+  language: Language = "it"
 ): NetWorthCompositionItem[] {
+  const tr = (source: string, values?: Record<string, string | number>) => translate(language, source, values);
   const items: Omit<NetWorthCompositionItem, "share">[] = [];
   if (accounts.length > 0) {
     const amount = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
-    const detail = accounts.length === 1 ? "1 conto" : `${accounts.length} conti`;
+    const detail = accounts.length === 1 ? tr("1 conto") : tr("{0} conti", {0: accounts.length});
     items.push({ key: "liquidita", label: ASSET_CLASS_LABELS.liquidita, detail, amount, href: "/liquidita/conti" });
   }
   if (investments) {
-    const detail = investments.positions === 1 ? "1 posizione" : `${investments.positions} posizioni`;
+    const detail = investments.positions === 1 ? tr("1 posizione") : tr("{0} posizioni", {0: investments.positions});
     items.push({
       key: "investimenti",
       label: ASSET_CLASS_LABELS.investimenti,
@@ -86,7 +90,7 @@ export function buildCompositionItems(
     items.push({
       key: "previdenza",
       label: ASSET_CLASS_LABELS.previdenza,
-      detail: `${pension.funds === 1 ? "1 fondo" : `${pension.funds} fondi`}${pension.excluded ? ` · ${PENSION_EXCLUDED_DETAIL}` : ""}`,
+      detail: `${pension.funds === 1 ? tr("1 fondo") : tr("{0} fondi", {0: pension.funds})}${pension.excluded ? ` · ${tr(PENSION_EXCLUDED_DETAIL)}` : ""}`,
       amount: pension.value,
       href: "/pensione",
     });
@@ -96,7 +100,7 @@ export function buildCompositionItems(
     liabilities.push({
       key: "debiti",
       label: ASSET_CLASS_LABELS.debiti,
-      detail: debts.count === 1 ? "1 debito" : `${debts.count} debiti`,
+      detail: debts.count === 1 ? tr("1 debito") : tr("{0} debiti", {0: debts.count}),
       amount: -debts.total,
       share: 0,
       href: "/debiti",

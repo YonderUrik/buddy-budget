@@ -113,7 +113,7 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
               onChange={(e) => setText(index, e.target.value)}
               aria-label={tr("Peso obiettivo di {0} in percentuale", {0: row.instrument.name})}
             />
-            <span className="text-sm text-muted-foreground">%</span>
+            <span className="text-sm text-muted-foreground">{"%"}</span>
             <Button
               variant="ghost"
               size="icon"
@@ -135,7 +135,7 @@ function TargetsForm({ onOpenChange, initial, hasSaved, instrumentsById, suggest
       />
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
         <span className={cn("tabular-nums", Math.abs(remainder) <= SUM_TOLERANCE_PERCENT ? "text-muted-foreground" : "text-destructive")}>{tr("Totale")}{" "}{formatPercent(sum)}
-          {Math.abs(remainder) > SUM_TOLERANCE_PERCENT ? (remainder > 0 ? ` · mancano ${formatPercent(remainder)}` : ` · ${formatPercent(-remainder)} di troppo`) : ""}
+          {Math.abs(remainder) > SUM_TOLERANCE_PERCENT ? (remainder > 0 ? tr(" · mancano {0}", { 0: formatPercent(remainder) }) : tr(" · {0} di troppo", { 0: formatPercent(-remainder) })) : ""}
         </span>
         {last && Math.abs(remainder) > SUM_TOLERANCE_PERCENT && (parsePercent(last.text) || 0) + remainder > 0 ? (
           <Button variant="ghost" size="sm" onClick={fillRemainder}>

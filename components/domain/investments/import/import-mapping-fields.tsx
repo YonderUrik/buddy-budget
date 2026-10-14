@@ -74,9 +74,9 @@ export function ImportMappingFields({ table, mapping, onChange }: ImportMappingF
   const columnOptions = [NONE, ...table.headers.map((_, i) => String(i))];
   const sample = (column: number) => table.rows.find((r) => (r[column] ?? "").trim() !== "")?.[column] ?? "";
   const columnLabel = (value: string) => {
-    if (value === NONE) return "Nessuna colonna";
+    if (value === NONE) return tr("Nessuna colonna");
     const example = sample(Number(value));
-    return `${table.headers[Number(value)] || `Colonna ${Number(value) + 1}`}${example ? ` — es. ${example}` : ""}`;
+    return `${table.headers[Number(value)] || `Colonna ${Number(value) + 1}`}${example ? tr(" — es. {0}", { 0: example }) : ""}`;
   };
   const setColumn = (field: ImportField, value: string) => {
     const columns = { ...mapping.columns };

@@ -40,7 +40,7 @@ export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeH
         <p className="max-w-prose text-base text-foreground">{tr("Negli ultimi 12 mesi hai incassato")}{" "}<span className="font-semibold tabular-nums text-pos">{format(income.trailing)}</span>{" "}{tr("netti")}{income.yieldOnCost !== null && income.trailing > 0 ? (
             <span className="text-muted-foreground">{tr(", il")}{" "}<span className="tabular-nums">{pct(income.yieldOnCost)}</span>{" "}{tr("di quanto hai pagato per quello che possiedi")}</span>
           ) : null}
-          .<span className="text-muted-foreground">{" "}{tr("Da sempre:")}{" "}{format(income.total)}.</span>
+          {"."}<span className="text-muted-foreground">{" "}{tr("Da sempre:")}{" "}{format(income.total)}{"."}</span>
         </p>
         <div className="grid gap-6 sm:grid-cols-2">
           <ul className="flex flex-col gap-2" aria-label={tr("Dividendi per anno")}>
@@ -66,7 +66,7 @@ export function IncomeHistoryCard({ income, instrumentsById, currency }: IncomeH
             <ul className="flex flex-col gap-1.5">
               {income.topInstruments.map((item) => (
                 <li key={item.instrumentId} className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="truncate text-foreground">{instrumentsById.get(item.instrumentId)?.name ?? "Strumento"}</span>
+                  <span className="truncate text-foreground">{instrumentsById.get(item.instrumentId)?.name ?? tr("Strumento")}</span>
                   <span className="shrink-0 tabular-nums text-muted-foreground">{format(item.trailing)}</span>
                 </li>
               ))}

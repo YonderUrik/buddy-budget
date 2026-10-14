@@ -102,7 +102,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
               { onSuccess: (rule) => notifyRuleSaved(rule, rule.applied > 0 ? rememberedMessage(rule.applied, name) : undefined) }
             );
           }
-          toast.success(`Spostata in ${name}`, {
+          toast.success(tr("Spostata in {0}", { 0: name }), {
             action: { label: tr("Annulla"), onClick: () => update.mutate({ id: transaction.id, input: { categoryId: previous } }) },
           });
         },
@@ -196,7 +196,7 @@ export function MovementItem({ transaction, categories, usage, accountName, curr
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>{tr("Eliminare questo movimento?")}</AlertDialogTitle>
-                    <AlertDialogDescription>«{transaction.description}{tr("» verrà eliminato definitivamente.")}</AlertDialogDescription>
+                    <AlertDialogDescription>{"«"}{transaction.description}{tr("» verrà eliminato definitivamente.")}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>{tr("Annulla")}</AlertDialogCancel>

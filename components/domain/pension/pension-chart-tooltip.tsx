@@ -5,7 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import type { ChartConfig } from "@/components/ui/chart";
-import { money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 
 export interface PensionTooltipRowProps {
   color: string;
@@ -58,6 +58,8 @@ export interface PensionChartTooltipProps {
 
 /** Tooltip a righe "serie · importo" per i grafici a linee/aree; le etichette vengono dalla config del grafico. */
 export function PensionChartTooltip({ active, payload, config, currency, title }: PensionChartTooltipProps) {
+  const { money } = localizedPensionFormats(useLocalization().language);
+
   const items = (payload ?? []).filter((item) => item.type !== "none" && typeof item.value === "number" && typeof item.dataKey === "string");
   if (!active || items.length === 0) return null;
   return (

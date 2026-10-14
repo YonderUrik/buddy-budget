@@ -83,7 +83,7 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
           {total > 0 ? (
             <>{tr("Puoi ancora compensare")}{" "}<span className="font-semibold tabular-nums">{format(total)}</span>{" "}{tr("di plusvalenze.")}</>
           ) : (
-            "Lo zaino è vuoto: nessuna minusvalenza da compensare."
+            tr("Lo zaino è vuoto: nessuna minusvalenza da compensare.")
           )}
         </p>
         {byExpiry.length > 0 ? (
@@ -101,8 +101,7 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
           </ul>
         ) : null}
         {cryptoByExpiry.length > 0 ? (
-          <p className="text-sm text-muted-foreground">{tr("Zaino crypto (compensabile solo con crypto):")}{" "}{format(cryptoByExpiry.reduce((s, e) => s + e.amount, 0))}.
-          </p>
+          <p className="text-sm text-muted-foreground">{tr("Zaino crypto (compensabile solo con crypto):")}{" "}{format(cryptoByExpiry.reduce((s, e) => s + e.amount, 0))}{"."}</p>
         ) : null}
         <div className="flex flex-col gap-2 border-t border-border pt-3">
           <p className="text-xs font-medium text-muted-foreground">{tr("Minusvalenze pregresse")}</p>
@@ -111,8 +110,8 @@ export function LossCarryforwardCard({ losses, carryforwards, currency, currentY
               {carryforwards.map((c) => (
                 <li key={c.id} className="flex items-center justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate text-foreground">
-                    {c.year} · <span className="tabular-nums">{formatCurrency(Number(c.amount), currency)}</span>
-                    {c.note ? <span className="text-muted-foreground"> · {c.note}</span> : null}
+                    {c.year} {"·"}<span className="tabular-nums">{formatCurrency(Number(c.amount), currency)}</span>
+                    {c.note ? <span className="text-muted-foreground"> {"·"}{c.note}</span> : null}
                   </span>
                   <Button
                     variant="ghost"

@@ -5,9 +5,9 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { AnalyticsBase } from "@/lib/analitiche/base";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { num, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { GuidedReading } from "./guided-reading";
-import { riskSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface RiskTabProps {
   base: AnalyticsBase;
@@ -16,6 +16,10 @@ export interface RiskTabProps {
 }
 
 export function RiskTab({ base, assumedVolatility }: RiskTabProps) {
+  const { riskSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { num, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { risk, riskContribution, names } = base;
   if (!risk) return <MissingData>{tr("Servono operazioni di investimento e almeno qualche settimana di prezzi per misurare il rischio del portafoglio.")}</MissingData>;

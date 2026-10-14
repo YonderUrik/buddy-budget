@@ -35,8 +35,7 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
     <div className="flex flex-col gap-3">
       <p className="text-sm text-foreground">
         <span className="font-medium tabular-nums">{ok.length}</span>{" "}{tr("operazioni lette su")}{" "}{rows.length}{" "}{tr("righe")}{problems.length > 0 ? tr(", {0} scartate", {0: problems.length}) : ""}
-        {warnings > 0 ? tr(", {0} con un avviso", {0: warnings}) : ""}.
-      </p>
+        {warnings > 0 ? tr(", {0} con un avviso", {0: warnings}) : ""}{"."}</p>
 
       {ok.length > 0 ? (
         <div className="overflow-x-auto rounded-lg border">
@@ -75,7 +74,7 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
         <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
           {problems.slice(0, MAX_LISTED_PROBLEMS).map((row) => (
             <li key={row.line} className="flex items-start gap-1.5">
-              <AlertTriangleIcon className="mt-0.5 size-3 shrink-0 text-destructive" aria-hidden="true" />{tr("Riga")}{" "}{row.line}: {tr(row.message)}
+              <AlertTriangleIcon className="mt-0.5 size-3 shrink-0 text-destructive" aria-hidden="true" />{tr("Riga")}{" "}{row.line}{":"}{tr(row.message)}
             </li>
           ))}
           {problems.length > MAX_LISTED_PROBLEMS ? <li>{tr("…e altre")}{" "}{problems.length - MAX_LISTED_PROBLEMS}</li> : null}

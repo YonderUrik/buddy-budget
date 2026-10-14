@@ -16,8 +16,8 @@ import { DEFAULT_ASSUMPTIONS, ASSUMPTION_LIMITS, type AnalyticsAssumptions, type
 import type { ExpectedReturnInfo } from "@/lib/analitiche/historical-return";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { WITHDRAWAL_RULES, type WithdrawalRule } from "@/lib/calc/monte-carlo";
-import { money, pct } from "./analytics-format";
-import { historyOffer, returnSourceText } from "./return-source";
+import { localizedAnalyticsFormats } from "./analytics-format";
+import { localizedReturnSource } from "./return-source";
 import { limitsOf, parseNumber, PERCENT_FIELDS, toFieldText, toPercentDraft, type PercentDraft, type PercentField } from "./assumptions-fields";
 
 export const RULE_LABELS: Record<WithdrawalRule, string> = {
@@ -53,6 +53,10 @@ function Field({ label, hint, children, id }: { label: string; hint: string; chi
 }
 
 export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, currency, pensionValue, saving, error, onSave }: AssumptionsPanelProps) {
+  const { historyOffer, returnSourceText } = localizedReturnSource(useLocalization().language);
+
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const initialPercents = React.useMemo(() => toPercentDraft(assumptions), [assumptions]);
   const [percents, setPercents] = React.useState<PercentDraft>(initialPercents);
@@ -91,7 +95,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
       const value = parseNumber(percents[field.key]);
       const { min, max } = limitsOf(field.key);
       if (value === null || value / 100 < min || value / 100 > max) {
-        setLocalError(`${field.label}: inserisci un valore tra ${pct(min)} e ${pct(max)}.`);
+        setLocalError(tr("{0}: inserisci un valore tra {1} e {2}.", { 0: field.label, 1: pct(min), 2: pct(max) }));
         return;
       }
       input[field.key] = value / 100;
@@ -105,7 +109,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
     }
     const yearsValue = parseNumber(years);
     if (yearsValue === null || !Number.isInteger(yearsValue) || yearsValue < ASSUMPTION_LIMITS.retirementYears.min || yearsValue > ASSUMPTION_LIMITS.retirementYears.max) {
-      setLocalError(`Anni di pensione: inserisci un numero intero tra ${ASSUMPTION_LIMITS.retirementYears.min} e ${ASSUMPTION_LIMITS.retirementYears.max}.`);
+      setLocalError(tr("Anni di pensione: inserisci un numero intero tra {0} e {1}.", { 0: ASSUMPTION_LIMITS.retirementYears.min, 1: ASSUMPTION_LIMITS.retirementYears.max }));
       return;
     }
     input.retirementYears = yearsValue;
@@ -153,8 +157,7 @@ export function AssumptionsPanel({ assumptions, periodPhrase, plan, returnInfo, 
                   setReturnAuto(true);
                 }}
               >
-                Usa il tuo rendimento ({pct(offer)})
-              </Button>
+                {tr("Usa il tuo rendimento (")}{pct(offer)}{")"}</Button>
             ) : null}
           </Field>
         ))}

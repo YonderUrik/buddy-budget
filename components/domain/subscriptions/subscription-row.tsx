@@ -11,7 +11,7 @@ import { MerchantLogo } from "@/components/domain/categorization";
 import { formatCurrency } from "@/lib/format";
 import type { SubscriptionItem } from "@/lib/subscriptions/view";
 import { cn } from "@/lib/utils";
-import { initialOf, itemHint } from "./subscriptions-format";
+import { localizedSubscriptionFormats } from "./subscriptions-format";
 
 /** Colori (token del tema) assegnati in modo stabile all'iniziale di ogni abbonamento. */
 const AVATAR_COLORS = ["--swatch-blue", "--swatch-teal", "--swatch-purple", "--swatch-orange", "--swatch-pink", "--swatch-indigo", "--swatch-cyan", "--swatch-amber"] as const;
@@ -36,6 +36,8 @@ export interface SubscriptionRowProps {
 }
 
 export function SubscriptionRow({ item, currency, today, onOpen, actions, onRemoteLogo, className }: SubscriptionRowProps) {
+  const { initialOf, itemHint } = localizedSubscriptionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const color = avatarColor(item.key);
   const showMonthly = item.cadence !== null && item.cadence !== "mensile" && item.monthly !== null;

@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
 import type { Account } from "@/lib/db/schema/accounts";
 import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 import { AccountAvatar } from "./account-avatar";
-import { buildAccountStatus, type AccountStatusTone, type AccountSyncInfo } from "./account-status";
+import { localizedAccountStatus, type AccountStatusTone, type AccountSyncInfo } from "./account-status";
 
 export interface AccountRowProps {
   account: Account;
@@ -45,6 +45,8 @@ const TONE_CLASS: Record<AccountStatusTone, string> = {
 };
 
 export function AccountRow({ account, currency, needsReconnect, syncInfo, syncing, movementsHref, onOpen }: AccountRowProps) {
+  const { buildAccountStatus } = localizedAccountStatus(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 

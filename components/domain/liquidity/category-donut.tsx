@@ -52,7 +52,7 @@ export function CategoryDonut({ slices, currency, centerLabel, size = 220, focus
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
   const focus = slices.find((s) => s.key === focusKey) ?? null;
   const config: ChartConfig = Object.fromEntries(slices.map((s) => [s.label, { label: s.label, color: s.color }]));
-  const description = `Spese per categoria, totale ${money(total)}: ${slices.map((s) => `${s.label} ${percent(s.value / (total || 1))}`).join(", ")}.`;
+  const description = tr("Spese per categoria, totale {0}: {1}.", { 0: money(total), 1: slices.map((s) => `${s.label} ${percent(s.value / (total || 1))}`).join(", ") });
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }} role="img" aria-label={tr(description)}>
       <ChartContainer config={config} className="aspect-square" style={{ width: size, height: size }}>
@@ -90,7 +90,7 @@ export function CategoryDonut({ slices, currency, centerLabel, size = 220, focus
         ) : (
           <>
             <span className="font-heading text-2xl font-medium tabular-nums">{money(total)}</span>
-            <span className="text-sm text-text-2">{centerLabel}</span>
+            <span className="text-sm text-text-2">{tr(centerLabel)}</span>
           </>
         )}
       </div>

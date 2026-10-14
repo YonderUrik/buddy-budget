@@ -30,7 +30,7 @@ export function TaxRegimeNote({ regime, onChange, saving }: TaxRegimeNoteProps) 
       <p className="max-w-prose">{tr("Sono stime secondo le regole italiane, non un calcolo fiscale: per la dichiarazione fai riferimento al broker o a un commercialista.")}</p>
       <div className="flex shrink-0 items-center gap-2">
         <span>{tr("Regime")}</span>
-        <InfoHint label={tr("Cos'è: regime")}>{REGIME_HINT}</InfoHint>
+        <InfoHint label={tr("Cos'è: regime")}>{tr(REGIME_HINT)}</InfoHint>
         <SegmentedControl
           options={OPTIONS}
           value={regime}

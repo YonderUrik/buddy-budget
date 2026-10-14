@@ -23,8 +23,8 @@ export interface PeriodStepperProps {
 }
 
 export function PeriodStepper({ period, onPeriodChange, referenceDate, onReferenceDateChange, latest }: PeriodStepperProps) {
-  const { t: tr } = useLocalization();
-  const label = formatPeriodLabel(period, getPeriodRange(period, referenceDate));
+  const { t: tr, locale } = useLocalization();
+  const label = formatPeriodLabel(period, getPeriodRange(period, referenceDate), locale);
   const atLatest = getPeriodRange(period, referenceDate).to.getTime() >= latest.getTime();
   const arrow = "flex size-11 items-center justify-center rounded-xl text-text-2 hover:bg-muted disabled:opacity-35 disabled:hover:bg-transparent";
   return (

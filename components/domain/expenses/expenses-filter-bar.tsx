@@ -57,9 +57,9 @@ export function ExpensesFilterBar({
         >
           <SelectValue>
             {(value: string) => {
-              if (value === ALL_CATEGORIES_VALUE) return "Tutte le categorie";
+              if (value === ALL_CATEGORIES_VALUE) return tr("Tutte le categorie");
               const selected = categories.find((c) => c.id === value);
-              if (!selected) return "Tutte le categorie";
+              if (!selected) return tr("Tutte le categorie");
               return (
                 <span className="flex min-w-0 items-center gap-1.5">
                   <CategoryAvatar

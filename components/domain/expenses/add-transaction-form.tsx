@@ -38,7 +38,7 @@ type Direction = "spesa" | "entrata";
 type FieldErrors = Partial<Record<"account" | "description" | "category" | "amount" | "date" | "form", string>>;
 
 const DIRECTION_OPTIONS = [
-  { value: "spesa", label: "Spesa" },
+  { value: "spesa", label: "Uscita" },
   { value: "entrata", label: "Entrata" },
 ] as const;
 
@@ -221,7 +221,7 @@ export function AddTransactionForm({ categories, currency, onSuccess, onAddAccou
             <details className="rounded-xl border p-3" open={Boolean(errors.account || errors.date) || noAccount}>
               <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-2 text-sm">
                 <span className="text-muted-foreground">
-                  {date === todayDateString() ? tr("Oggi") : date === yesterdayDateString() ? tr("Ieri") : date} · {manualAccounts.find((a) => a.id === accountId)?.name ?? "nessun conto"}
+                  {date === todayDateString() ? tr("Oggi") : date === yesterdayDateString() ? tr("Ieri") : date} {"·"}{manualAccounts.find((a) => a.id === accountId)?.name ?? tr("nessun conto")}
                 </span>
                 <span className="font-medium text-primary">{tr("Cambia")}</span>
               </summary>

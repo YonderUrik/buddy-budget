@@ -49,11 +49,11 @@ export function MovementRow(props: MovementRowProps) {
       {avatar}
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold" title={rawDescription ?? description}>
-          {tr(description)}
+          {description}
         </p>
         <p className={cn("truncate text-sm", uncategorized ? "font-medium text-neg" : "text-text-2")}>
           {categoryName}
-          {props.categoryOrigin ? <> · {props.categoryOrigin}</> : null}
+          {props.categoryOrigin ? <> {"·"}{props.categoryOrigin}</> : null}
           {accountName ? ` · ${accountName}` : ""}
           {isSplit && <span className="text-text-2">{" "}{tr("· diviso")}</span>}
         </p>

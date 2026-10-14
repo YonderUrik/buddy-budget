@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import Link from "next/link";
 import { TitleSparkline } from "@/components/domain/investments/light";
 import { cn } from "@/lib/utils";
-import { changeToneClass } from "./sidebar-insights.utils";
+import { localizedSidebarFormats } from "./sidebar-insights.utils";
 
 /** Larghezza della mini linea: la sidebar è stretta (240px). */
 const SPARK_WIDTH = 36;
@@ -27,6 +27,8 @@ export interface InsightRowProps {
 }
 
 export function InsightRow({ href, label, name, valueText, changePct, spark, alert = false, onNavigate }: InsightRowProps) {
+  const { changeToneClass } = localizedSidebarFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct } = localizedFormats(formattingLocale);
 

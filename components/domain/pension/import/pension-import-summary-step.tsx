@@ -6,7 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { AlertTriangleIcon, CheckCircle2Icon, ListChecksIcon } from "lucide-react";
 import { SectionTitle } from "@/components/domain/liquidity";
 import type { SnapshotImportPlan } from "@/lib/pension/import/plan";
-import { formatShortDateKey, money } from "../pension-format";
+import { localizedPensionFormats } from "../pension-format";
 
 export interface PensionImportSummaryStepProps {
   plan: SnapshotImportPlan;
@@ -31,6 +31,8 @@ function Stat({ value, label }: { value: number; label: string }) {
 }
 
 export function PensionImportSummaryStep({ plan, currency, discarded, done }: PensionImportSummaryStepProps) {
+  const { formatShortDateKey, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   if (done) {
     return (
@@ -91,7 +93,7 @@ export function PensionImportSummaryStep({ plan, currency, discarded, done }: Pe
           <ul className="flex flex-col gap-0.5 text-sm text-foreground">
             {plan.error ? <li>{tr(plan.error)}</li> : null}
             {errors.slice(0, MAX_LISTED).map((row) => (
-              <li key={row.line}>{tr("Riga")}{" "}{row.line}: {tr(row.message)}
+              <li key={row.line}>{tr("Riga")}{" "}{row.line}{":"}{tr(row.message)}
               </li>
             ))}
             {errors.length > MAX_LISTED ? <li>{tr("…e altre")}{" "}{errors.length - MAX_LISTED}</li> : null}

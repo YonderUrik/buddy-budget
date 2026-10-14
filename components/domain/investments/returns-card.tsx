@@ -13,7 +13,7 @@ import type { Instrument } from "@/lib/db/schema/investments";
 import type { PortfolioChartRange } from "@/lib/investments/chart-period";
 
 import type { BackfillStateView } from "@/lib/market-data/backfill-state";
-import { benchmarkWait, timingInsight } from "@/lib/investments/returns-insights";
+import { localizedReturnInsights } from "@/lib/investments/returns-insights";
 import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { BenchmarkDialog } from "./benchmark-dialog";
 import { BenchmarkSummary } from "./benchmark-summary";
@@ -34,6 +34,8 @@ export interface ReturnsCardProps {
 
 /** Tipi di rendimento espliciti; i numeri seguono la data ispezionata senza spostare il grafico. */
 export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benchmark, benchmarkFirstPriceDate, benchmarkBackfill, currency }: ReturnsCardProps) {
+  const { benchmarkWait, timingInsight } = localizedReturnInsights(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatMonthLabel, formatSignedPct } = localizedFormats(formattingLocale);
 
@@ -46,13 +48,13 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
   const values = inspected ?? returns;
   const wait = benchmarkWait({ backfill: benchmarkBackfill, firstPriceDate: benchmarkFirstPriceDate, baseKey: values.baseKey });
   const insight = timingInsight(values.twr, values.moneyWeighted);
-  const dates = values.days === 0 ? `Valore iniziale al ${formatDateWithYear(values.baseKey)}`
+  const dates = values.days === 0 ? tr("Valore iniziale al {0}", { 0: formatDateWithYear(values.baseKey) })
     : `${formatDateWithYear(values.fromKey)} – ${formatDateWithYear(values.toKey)}`;
   const { real } = values;
   return <>
     <PanelSection icon={TrendingUpIcon} title={tr("Rendimenti del periodo")}>
       <p className="text-sm text-muted-foreground" data-testid="performance-summary-period">
-        {inspected ? tr("Anteprima dal grafico") : tr("Periodo del grafico")} · {dates}
+        {inspected ? tr("Anteprima dal grafico") : tr("Periodo del grafico")} {"·"}{dates}
       </p>
       <p className="text-xs text-muted-foreground">{tr("Importi e rendimenti in")}{" "}{currency}{tr(". Passa su un numero per capire cosa misura.")}</p>
     <div className="flex flex-col gap-5">
@@ -82,7 +84,7 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
           hint={tr("Corregge il rendimento TWR per l’aumento dei prezzi in Italia (indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.")}
         />}
       </div>
-      <p className="min-h-5 text-sm text-muted-foreground">{insight ?? "TWR e MWR misurano aspetti diversi dello stesso periodo."}</p>
+      <p className="min-h-5 text-sm text-muted-foreground">{insight ?? tr("TWR e MWR misurano aspetti diversi dello stesso periodo.")}</p>
       <BenchmarkSummary status={values.benchmarkStatus} comparison={values.benchmark} asOf={values.toKey}
         benchmarkName={benchmark?.name ?? null} currency={currency} wait={wait}
         onChoose={() => setChoosing(true)} onRetry={() => benchmark && retry.mutate({ benchmarkInstrumentId: benchmark.id })} retrying={retry.isPending} />

@@ -46,23 +46,24 @@ export interface TitleFundamentalsCardProps {
 }
 
 export function TitleFundamentalsCard({ fundamentals, status, currency }: TitleFundamentalsCardProps) {
+
   const { locale: formattingLocale } = useLocalization();
   const { formatPct, formatCompactAmount, formatRatio } = localizedFormats(formattingLocale);
   function fundamentalsRows(f: TitleFundamentals, currency: string): Row[] {
   const rows: (Row | null)[] = [
-    f.expenseRatio !== null ? { label: "Costo annuo (TER)", value: formatPct(f.expenseRatio, 2), hint: "Quanto costa tenerlo ogni anno, già scalato dal prezzo." } : null,
-    f.totalAssets !== null ? { label: "Patrimonio gestito", value: `${formatCompactAmount(f.totalAssets)} ${currency}`, hint: "Più è grande, di solito più è facile comprarlo e venderlo." } : null,
-    f.marketCap !== null ? { label: "Capitalizzazione", value: `${formatCompactAmount(f.marketCap)} ${currency}`, hint: "Valore di mercato dell'intera azienda." } : null,
-    f.trailingPE !== null ? { label: "P/E", value: formatRatio(f.trailingPE), hint: "Anni di utili necessari a ripagare il prezzo, ai ritmi di oggi." } : null,
-    f.forwardPE !== null ? { label: "P/E atteso", value: formatRatio(f.forwardPE), hint: "Lo stesso calcolo sugli utili previsti dagli analisti." } : null,
-    f.priceToBook !== null ? { label: "Prezzo / patrimonio (P/B)", value: formatRatio(f.priceToBook), hint: "Sotto 1 costa meno del patrimonio contabile dell'azienda." } : null,
-    f.eps !== null ? { label: "Utile per azione", value: `${formatRatio(f.eps, 2)} ${currency}`, hint: "Utile degli ultimi 12 mesi diviso il numero di azioni." } : null,
-    f.dividendYield !== null ? { label: "Rendimento da dividendo", value: formatPct(f.dividendYield, 2), hint: "Dividendo annuo diviso il prezzo attuale." } : null,
-    f.profitMargin !== null ? { label: "Margine di profitto", value: formatPct(f.profitMargin), hint: "Quanto resta di utile su ogni 100 di ricavi." } : null,
-    f.returnOnEquity !== null ? { label: "Redditività del capitale (ROE)", value: formatPct(f.returnOnEquity), hint: "Utile in rapporto al capitale degli azionisti." } : null,
-    f.revenueGrowth !== null ? { label: "Crescita dei ricavi", value: formatPct(f.revenueGrowth), hint: "Rispetto allo stesso periodo dell'anno prima." } : null,
-    f.debtToEquity !== null ? { label: "Debiti / capitale", value: formatRatio(f.debtToEquity / 100, 2), hint: "Sopra 1 l'azienda ha più debiti che capitale proprio." } : null,
-    f.beta !== null ? { label: "Beta", value: formatRatio(f.beta, 2), hint: "Sopra 1 si muove più del mercato, sotto 1 meno." } : null,
+    f.expenseRatio !== null ? { label: tr("Costo annuo (TER)"), value: formatPct(f.expenseRatio, 2), hint: tr("Quanto costa tenerlo ogni anno, già scalato dal prezzo.") } : null,
+    f.totalAssets !== null ? { label: tr("Patrimonio gestito"), value: `${formatCompactAmount(f.totalAssets)} ${currency}`, hint: tr("Più è grande, di solito più è facile comprarlo e venderlo.") } : null,
+    f.marketCap !== null ? { label: tr("Capitalizzazione"), value: `${formatCompactAmount(f.marketCap)} ${currency}`, hint: tr("Valore di mercato dell'intera azienda.") } : null,
+    f.trailingPE !== null ? { label: "P/E", value: formatRatio(f.trailingPE), hint: tr("Anni di utili necessari a ripagare il prezzo, ai ritmi di oggi.") } : null,
+    f.forwardPE !== null ? { label: tr("P/E atteso"), value: formatRatio(f.forwardPE), hint: tr("Lo stesso calcolo sugli utili previsti dagli analisti.") } : null,
+    f.priceToBook !== null ? { label: tr("Prezzo / patrimonio (P/B)"), value: formatRatio(f.priceToBook), hint: tr("Sotto 1 costa meno del patrimonio contabile dell'azienda.") } : null,
+    f.eps !== null ? { label: tr("Utile per azione"), value: `${formatRatio(f.eps, 2)} ${currency}`, hint: tr("Utile degli ultimi 12 mesi diviso il numero di azioni.") } : null,
+    f.dividendYield !== null ? { label: tr("Rendimento da dividendo"), value: formatPct(f.dividendYield, 2), hint: tr("Dividendo annuo diviso il prezzo attuale.") } : null,
+    f.profitMargin !== null ? { label: tr("Margine di profitto"), value: formatPct(f.profitMargin), hint: tr("Quanto resta di utile su ogni 100 di ricavi.") } : null,
+    f.returnOnEquity !== null ? { label: tr("Redditività del capitale (ROE)"), value: formatPct(f.returnOnEquity), hint: tr("Utile in rapporto al capitale degli azionisti.") } : null,
+    f.revenueGrowth !== null ? { label: tr("Crescita dei ricavi"), value: formatPct(f.revenueGrowth), hint: tr("Rispetto allo stesso periodo dell'anno prima.") } : null,
+    f.debtToEquity !== null ? { label: tr("Debiti / capitale"), value: formatRatio(f.debtToEquity / 100, 2), hint: tr("Sopra 1 l'azienda ha più debiti che capitale proprio.") } : null,
+    f.beta !== null ? { label: "Beta", value: formatRatio(f.beta, 2), hint: tr("Sopra 1 si muove più del mercato, sotto 1 meno.") } : null,
   ];
   return rows.filter((r): r is Row => r !== null);
 }

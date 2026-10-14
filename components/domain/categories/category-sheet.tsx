@@ -85,7 +85,7 @@ export function CategorySheet({
       >
         <DialogHeader className="gap-0.5">
           <DialogTitle>{tr(title)}</DialogTitle>
-          <DialogDescription className={description ? "truncate text-sm" : "sr-only"}>{description ?? "Cerca o scegli una categoria"}</DialogDescription>
+          <DialogDescription className={description ? "truncate text-sm" : "sr-only"}>{description ?? tr("Cerca o scegli una categoria")}</DialogDescription>
         </DialogHeader>
         <div className="relative shrink-0">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />

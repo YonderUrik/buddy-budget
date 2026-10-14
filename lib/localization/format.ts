@@ -17,6 +17,7 @@ export function localizedFormats(locale: string) {
     formatDateWithYear: (value: string, override = locale) => base.formatDateWithYear(value, override),
     formatLongDate: (value: Date, override = locale) => base.formatLongDate(value, override),
     formatRelativeTime: (date: Date, now = new Date()) => {
+      if (locale === "it-IT") return base.formatRelativeTime(date, now);
       const minutes = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 60000));
       const relative = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
       if (minutes < 1) return relative.format(0, "second");

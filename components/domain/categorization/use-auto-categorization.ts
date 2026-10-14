@@ -1,4 +1,7 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
+import { translate, type MessageValues } from "@/lib/localization/messages";
+import type { Language } from "@/lib/localization/config";
 
 /**
  * Stato e azioni delle categorie applicate da sole in Categorizza: applica subito le proposte sicure che la pagina trova
@@ -20,8 +23,9 @@ import { useUpdateAiCategorizationMutation } from "@/lib/queries/notifications";
 import { errorToast } from "@/lib/support/request-report";
 
 /** «N movimenti categorizzati da soli» per il toast dopo un'applicazione automatica. */
-export function appliedToastText(count: number): string {
-  return count === 1 ? "1 movimento categorizzato da solo" : `${count} movimenti categorizzati da soli`;
+export function appliedToastText(count: number, language: Language = "it"): string {
+  const tr = (source: string, values?: MessageValues) => translate(language, source, values);
+  return count === 1 ? tr("1 movimento categorizzato da solo") : tr("{0} movimenti categorizzati da soli", {0: count});
 }
 
 export interface UseAutoCategorizationOptions {
@@ -33,6 +37,7 @@ export interface UseAutoCategorizationOptions {
 }
 
 export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplied }: UseAutoCategorizationOptions) {
+  const { t: tr, language } = useLocalization();
   const autoQuery = useAutoCategorizedQuery();
   const applyMutation = useApplyCategorizationMutation();
   const autoApplyMutation = useAutoApplyMutation();
@@ -58,13 +63,13 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
     autoApply(undefined, {
       onSuccess: (result) => {
         if (result.applied === 0) return;
-        toast.success(appliedToastText(result.applied), {
-          description: "Le trovi in «Messe dall'app».",
-          action: { label: "Guarda", onClick: () => onShowRef.current() },
+        toast.success(appliedToastText(result.applied, language), {
+          description: tr("Le trovi in «Messe dall'app»."),
+          action: { label: tr("Guarda"), onClick: () => onShowRef.current() },
         });
       },
     });
-  }, [readyKeys, autoApplying, dataUpdatedAt, autoApply]);
+  }, [readyKeys, autoApplying, dataUpdatedAt, autoApply, language, tr]);
 
   /** Una categoria applicata da sola non va: la si cambia per tutto il gruppo e, se richiesto, per i prossimi. */
   const correct = React.useCallback(
@@ -76,14 +81,14 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
           onProgress: () => {},
         });
         track("categorization_auto_corrected", { source: group.source, count: group.transactionIds.length, remember, from: "categorizza" });
-        toast.success(remember ? "Categoria cambiata, anche per i prossimi" : "Categoria cambiata");
+        toast.success(remember ? tr("Categoria cambiata, anche per i prossimi") : tr("Categoria cambiata"));
       } catch (error) {
-        errorToast(error instanceof Error ? error.message : "Impossibile cambiare la categoria", "movimento");
+        errorToast(error instanceof Error ? error.message : tr("Impossibile cambiare la categoria"), "movimento");
       } finally {
         setCorrectingKey(null);
       }
     },
-    [applyMutation]
+    [applyMutation, tr]
   );
 
   const autoGroups = autoQuery.data?.groups;
@@ -97,14 +102,14 @@ export function useAutoCategorization({ suggestions, dataUpdatedAt, onShowApplie
         { until, count: autoTotal },
         {
           onSuccess: () => {
-            toast.success("Fatto, le hai controllate tutte");
+            toast.success(tr("Fatto, le hai controllate tutte"));
             onDone?.();
           },
           onError: (error) => errorToast(error.message, "movimento"),
         }
       );
     },
-    [autoGroups, autoTotal, markSeenMutation]
+    [autoGroups, autoTotal, markSeenMutation, tr]
   );
 
   const enableAutoApply = React.useCallback(() => {

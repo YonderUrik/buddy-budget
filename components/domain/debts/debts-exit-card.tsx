@@ -17,7 +17,7 @@ import { todayIso } from "@/lib/debts/dates";
 import { buildExitPlan } from "@/lib/debts/overview-insights";
 import type { DebtView } from "@/lib/debts/view";
 
-import { formatDuration, formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 import { DEBTS_COLORS } from "./debts-theme";
 
 export interface DebtsExitCardProps {
@@ -30,6 +30,8 @@ const EXTRA_MAX = 1000;
 const EXTRA_STEP = 50;
 
 export function DebtsExitCard({ debts, currency }: DebtsExitCardProps) {
+  const { formatDuration, formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -72,7 +74,7 @@ export function DebtsExitCard({ debts, currency }: DebtsExitCardProps) {
                 {step.monthsSaved > 0 ? tr(" invece di {0}", {0: formatMonthYear(step.baselineEndDate)}) : ""}
               </p>
             </div>
-            {step.monthsSaved > 0 ? <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">−{formatDuration(step.monthsSaved)}</span> : null}
+            {step.monthsSaved > 0 ? <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">{"−"}{formatDuration(step.monthsSaved)}</span> : null}
           </li>
         ))}
       </ol>

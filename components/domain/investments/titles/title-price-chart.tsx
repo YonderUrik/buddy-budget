@@ -124,8 +124,7 @@ export function TitlePriceChart({ series, currency, period, onPeriodChange, back
                 ) : null}
                 {averagePrice !== null ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="w-4 border-t-2 border-dashed border-primary" aria-hidden="true" />{" "}{tr("Il tuo prezzo medio (")}{formatPrice(averagePrice, currency)})
-                  </span>
+                    <span className="w-4 border-t-2 border-dashed border-primary" aria-hidden="true" />{" "}{tr("Il tuo prezzo medio (")}{formatPrice(averagePrice, currency)}{")"}</span>
                 ) : null}
               </p>
             ) : null}

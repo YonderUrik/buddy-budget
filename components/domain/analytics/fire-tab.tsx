@@ -9,9 +9,9 @@ import type { AnalyticsBase } from "@/lib/analitiche/base";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { cn } from "@/lib/utils";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { formatYears, money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats, pct } from "./analytics-format";
 import { GuidedReading } from "./guided-reading";
-import { fireSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface FireTabProps {
   base: AnalyticsBase;
@@ -53,7 +53,7 @@ function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cel
               </th>
               {row.map((cell, j) => (
                 <td key={columns[j]} className={cn("p-1.5 text-right", i === 2 && j === 2 && "rounded bg-primary/10 font-medium")}>
-                  {cell.years === null ? "—" : cell.years === 0 ? tr("ok") : `${cell.years.toFixed(1).replace(".", ",")} a`}
+                  {cell.years === null ? "—" : cell.years === 0 ? tr("ok") : tr("{0} a", { 0: cell.years.toFixed(1).replace(".", ",") })}
                 </td>
               ))}
             </tr>
@@ -65,6 +65,10 @@ function SensitivityTable({ cells, rowLabel, columnLabel, rows, columns }: { cel
 }
 
 export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
+  const { fireSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { formatYears, money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { currency } = base;
   if (plan.target === null || plan.spending === null) {
@@ -100,9 +104,9 @@ export function FireTab({ base, assumptions: a, plan }: FireTabProps) {
           <div className="h-full rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />
         </div>
         <p className="text-sm text-muted-foreground">
-          Con un risparmio di {money(savings, currency)} l&apos;anno e un rendimento reale del {pct(a.expectedReturn)}.{" "}
-          {plan.spendingSource === "dati" ? "La spesa viene dai tuoi movimenti del periodo scelto. " : ""}
-          {lean !== null ? `Se vivessi solo con le spese Dovute e Saltuarie il numero scenderebbe a ${money(lean, currency)} («lean FIRE»).` : ""}
+          {tr("Con un risparmio di")}{money(savings, currency)} {tr("l'anno e un rendimento reale del")}{pct(a.expectedReturn)}{"."}{" "}
+          {plan.spendingSource === "dati" ? tr("La spesa viene dai tuoi movimenti del periodo scelto. ") : ""}
+          {lean !== null ? tr("Se vivessi solo con le spese Dovute e Saltuarie il numero scenderebbe a {0} («lean FIRE»).", { 0: money(lean, currency) }) : ""}
         </p>
       </AnalyticsCard>
 

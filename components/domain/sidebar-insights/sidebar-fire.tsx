@@ -9,12 +9,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import Link from "next/link";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarFire } from "@/lib/sidebar/types";
-import {
-  fireBarWidth,
-  formatFireProgress,
-  formatSidebarAmount,
-  formatYearsToFire,
-} from "./sidebar-insights.utils";
+import { localizedSidebarFormats } from "./sidebar-insights.utils";
 
 export interface SidebarFireModuleProps {
   data: SidebarFire | undefined;
@@ -37,6 +32,8 @@ export function SidebarFireModule({
   onNavigate,
   onItemClick,
 }: SidebarFireModuleProps) {
+  const { fireBarWidth, formatFireProgress, formatSidebarAmount, formatYearsToFire } = localizedSidebarFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   if (collapsed) return null;
   if (loading) {

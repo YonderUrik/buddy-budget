@@ -29,7 +29,7 @@ export function UnsubscribeCard({ token, scope, preferencesHref, privacyEmail }:
     setStatus("working");
     try {
       const response = await fetch(`/api/email/unsubscribe?t=${encodeURIComponent(token)}&source=page`, { method: "POST" });
-      if (!response.ok) throw new Error("request failed");
+      if (!response.ok) throw new Error(tr("request failed"));
       setStatus("done");
       track("notifications_unsubscribed", { kind: scope });
     } catch {
@@ -55,8 +55,7 @@ export function UnsubscribeCard({ token, scope, preferencesHref, privacyEmail }:
             <a href={preferencesHref} className="text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">{tr("Preferisco scegliere cosa ricevere")}</a>
           </div>
           {status === "error" && (
-            <p className="text-sm text-neg" role="alert">{tr("Non siamo riusciti a disattivarle. Riprova tra poco o scrivi a")}{" "}{privacyEmail}.
-            </p>
+            <p className="text-sm text-neg" role="alert">{tr("Non siamo riusciti a disattivarle. Riprova tra poco o scrivi a")}{" "}{privacyEmail}{"."}</p>
           )}
         </>
       )}

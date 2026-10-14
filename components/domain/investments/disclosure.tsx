@@ -41,7 +41,7 @@ export function Disclosure({ title, summary, trailing, defaultOpen = false, bare
       >
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-medium text-foreground">{tr(title)}</span>
-          {summary ? <span className="block text-sm text-muted-foreground">{summary}</span> : null}
+          {summary ? <span className="block text-sm text-muted-foreground">{tr(summary)}</span> : null}
         </span>
         {trailing}
         <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} aria-hidden="true" />

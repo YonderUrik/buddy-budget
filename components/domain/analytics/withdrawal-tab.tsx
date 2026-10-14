@@ -12,10 +12,10 @@ import { buildSimulationInput } from "@/lib/analitiche/simulation";
 import { compareRules, WITHDRAWAL_RULES } from "@/lib/calc/monte-carlo";
 import { cn } from "@/lib/utils";
 import { AnalyticsCard, MissingData } from "./analytics-card";
-import { money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { RULE_LABELS } from "./assumptions-panel";
 import { GuidedReading } from "./guided-reading";
-import { withdrawalSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface WithdrawalTabProps {
   assumptions: AnalyticsAssumptions;
@@ -30,6 +30,10 @@ const SPENDING_CONFIG: ChartConfig = {
 };
 
 export function WithdrawalTab({ assumptions, plan, currency }: WithdrawalTabProps) {
+  const { withdrawalSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const results = React.useMemo(() => {
     const input = buildSimulationInput(plan, assumptions, "oggi");

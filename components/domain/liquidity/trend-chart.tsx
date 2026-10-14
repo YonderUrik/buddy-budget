@@ -128,7 +128,7 @@ export function TrendChart({ points, description, color = "var(--primary)", refe
             <p className="font-heading font-medium tabular-nums text-foreground">{formatValue(activePoint.value)}</p>
             {referenceValue !== undefined && (
               <p className="text-text-2">
-                {referenceLabel}: <span className="tabular-nums">{formatValue(referenceValue)}</span>
+                {referenceLabel}{":"}<span className="tabular-nums">{formatValue(referenceValue)}</span>
               </p>
             )}
           </div>

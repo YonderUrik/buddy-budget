@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import type { ReactNode } from "react";
 import { InfoHint } from "@/components/domain/shared";
-import { RISK_LEVEL_LABELS, riskLevelInsight, riskScalePosition, type RiskLevel } from "@/lib/investments/risk-insights";
+import { localizedRiskInsights, type RiskLevel } from "@/lib/investments/risk-insights";
 import { cn } from "@/lib/utils";
 
 const LEVELS: RiskLevel[] = [1, 2, 3, 4];
@@ -30,6 +30,8 @@ export interface RiskLevelMeterProps {
 }
 
 export function RiskLevelMeter({ level, volatility, volatilityText, volatilityNote = null, volatilityHint = null }: RiskLevelMeterProps) {
+  const { RISK_LEVEL_LABELS, riskLevelInsight, riskScalePosition } = localizedRiskInsights(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const label = tr(RISK_LEVEL_LABELS[level]);
   const position = riskScalePosition(volatility);
@@ -38,7 +40,7 @@ export function RiskLevelMeter({ level, volatility, volatilityText, volatilityNo
       <p className="flex flex-wrap items-baseline gap-x-3">
         <span className={cn("font-heading text-3xl font-medium", LEVEL_TEXT[level])}>{tr(label)}</span>
         <span className="flex items-center gap-1 text-sm text-muted-foreground">
-          {volatilityText}{" "}{tr("all&rsquo;anno")}{volatilityHint ? <InfoHint label={tr("Cos'è: quanto oscilla")}>{volatilityHint}</InfoHint> : null}
+          {volatilityText}{" "}{tr("all’anno")}{volatilityHint ? <InfoHint label={tr("Cos'è: quanto oscilla")}>{volatilityHint}</InfoHint> : null}
         </span>
       </p>
       <div role="img" aria-label={tr("Livello di rischio {0}, {1} su 4", {0: label, 1: level})} className="flex flex-col gap-1.5">

@@ -40,8 +40,7 @@ export function TaxOpportunitiesCard({ opportunities, instrumentsById, currency,
         {expiringThisYear > 0 ? (
           <div className="flex flex-col gap-1.5">
             <p className="text-foreground">
-              <span className="font-semibold tabular-nums text-neg">{format(expiringThisYear)}</span>{" "}{tr("di minusvalenze scadono il 31 dicembre")}{" "}{currentYear}.
-              {compensableGains.length > 0
+              <span className="font-semibold tabular-nums text-neg">{format(expiringThisYear)}</span>{" "}{tr("di minusvalenze scadono il 31 dicembre")}{" "}{currentYear}{"."}{compensableGains.length > 0
                 ? tr(" Le posizioni in guadagno che potrebbero usarle valgono {0} di plusvalenze (base 26%):", {0: format(compensableTotal)})
                 : tr(" Non hai posizioni in guadagno che possano usarle: gli ETF non compensano lo zaino.")}
             </p>
@@ -50,7 +49,7 @@ export function TaxOpportunitiesCard({ opportunities, instrumentsById, currency,
                 {compensableGains.slice(0, OPPORTUNITY_ROWS_LIMIT).map((row) => (
                   <li key={row.instrumentId} className="flex justify-between gap-3">
                     <span className="truncate">{name(row.instrumentId)}</span>
-                    <span className="tabular-nums text-pos">+{format(row.unrealized)}</span>
+                    <span className="tabular-nums text-pos">{"+"}{format(row.unrealized)}</span>
                   </li>
                 ))}
               </ul>
@@ -64,7 +63,7 @@ export function TaxOpportunitiesCard({ opportunities, instrumentsById, currency,
               {losses.slice(0, OPPORTUNITY_ROWS_LIMIT).map((row) => (
                 <li key={row.instrumentId} className="flex justify-between gap-3">
                   <span className="truncate">{name(row.instrumentId)}</span>
-                  <span className="tabular-nums text-neg">−{format(Math.abs(row.unrealized))}</span>
+                  <span className="tabular-nums text-neg">{"−"}{format(Math.abs(row.unrealized))}</span>
                 </li>
               ))}
             </ul>

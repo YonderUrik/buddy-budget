@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 
 import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
 import { InstrumentIcon } from "./instrument-icon";
-import { percent, PRICE_FORMAT, priceNote, QUANTITY_FORMAT } from "./positions-format";
+import { localizedPositionFormats } from "./positions-format";
 
 /** Colonne della tabella desktop: la testata in `PositionsList` usa la stessa definizione. */
 export const POSITIONS_GRID_COLUMNS = "@3xl:grid-cols-[minmax(0,2.2fr)_minmax(0,1.5fr)_minmax(0,1.4fr)_minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.2fr)_2.25rem]";
@@ -44,6 +44,8 @@ function gainClass(gain: number | null): string {
 }
 
 export function PositionRowView({ row, currency, todayKey, loadingHistory, onManualPrice, onRemoteLogo, hrefBase = "/investimenti/titoli" }: PositionRowViewProps) {
+  const { percent, PRICE_FORMAT, priceNote, QUANTITY_FORMAT } = localizedPositionFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedCurrency, formatSignedPct } = localizedFormats(formattingLocale);
 
@@ -56,12 +58,12 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
   const note = priceNote(row, todayKey);
   const gain = row.unrealizedGain;
   const color = INSTRUMENT_TYPE_COLOR[row.instrument.type];
-  const unit = row.instrument.priceUnit === "percentuale_nominale" ? "nominale" : "quote";
+  const unit = row.instrument.priceUnit === "percentuale_nominale" ? "nominale" : tr("quote");
   const quantity = `${QUANTITY_FORMAT.format(row.quantity)} ${unit}`;
   const average = row.averagePrice !== null ? `${PRICE_FORMAT.format(row.averagePrice)} ${currency}` : "—";
   const value = row.value !== null ? formatCurrency(row.value, currency) : "—";
   const gainText =
-    gain === null ? "senza prezzo" : `${formatSignedCurrency(gain, currency)}${row.unrealizedGainPct !== null ? ` · ${formatSignedPct(row.unrealizedGainPct)}` : ""}`;
+    gain === null ? tr("senza prezzo") : `${formatSignedCurrency(gain, currency)}${row.unrealizedGainPct !== null ? ` · ${formatSignedPct(row.unrealizedGainPct)}` : ""}`;
   const weight = row.weight !== null ? percent(row.weight) : "—";
   const titleHref = `${hrefBase}/${row.instrument.id}`;
   const manualPriceButton = (
@@ -92,8 +94,8 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
                 {loadingHistory ? <Badge variant="secondary">{tr("Storico in caricamento")}</Badge> : null}
               </span>
               <span className="block truncate text-xs text-muted-foreground">
-                {INSTRUMENT_TYPE_SINGULAR[row.instrument.type]}
-                <span className="@3xl:hidden"> · {weight}</span>
+                {tr(INSTRUMENT_TYPE_SINGULAR[row.instrument.type])}
+                <span className="@3xl:hidden"> {"·"}{weight}</span>
               </span>
             </span>
             <span className="text-right @3xl:hidden">
@@ -160,7 +162,7 @@ export function PositionRowView({ row, currency, todayKey, loadingHistory, onMan
             <div className="min-w-0">
               <dt className="text-xs text-muted-foreground">{tr("Ultimo prezzo")}</dt>
               <dd className={cn("tabular-nums", note.stale && "text-neg")}>
-                {note.price ?? "Nessun prezzo"}
+                {note.price ?? tr("Nessun prezzo")}
                 <span className="block text-xs">{note.detail}</span>
                 {note.hint ? <span className="block text-xs">{tr(note.hint)}</span> : null}
               </dd>

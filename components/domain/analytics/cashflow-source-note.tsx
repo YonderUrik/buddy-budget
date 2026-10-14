@@ -5,7 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { InfoHint } from "@/components/domain/shared";
 import type { FigureSource } from "@/lib/analitiche/plan";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 
 export interface CashflowSourceNoteProps {
   source: FigureSource;
@@ -22,10 +22,12 @@ export interface CashflowSourceNoteProps {
 }
 
 export function CashflowSourceNote({ source, dataValue, periodPhrase, coveredMonths, periodMonths, currency, saving, onUseData }: CashflowSourceNoteProps) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   if (source === "manca") return null;
   if (source === "dati") {
-    const average = coveredMonths < periodMonths ? `dei ${coveredMonths} mesi da quando registri i movimenti` : `dei movimenti ${periodPhrase}`;
+    const average = coveredMonths < periodMonths ? tr("dei {0} mesi da quando registri i movimenti", { 0: coveredMonths }) : tr("dei movimenti {0}", { 0: periodPhrase });
     return (
       <p className="flex items-center gap-0.5 text-xs text-muted-foreground">{tr("Dai tuoi dati")}<InfoHint label={tr("Da dove viene questa cifra")}>{tr("Media mensile")}{" "}{average}{tr(", moltiplicata per 12. I giroconti tra i tuoi conti non contano.")}</InfoHint>
       </p>
@@ -33,8 +35,7 @@ export function CashflowSourceNote({ source, dataValue, periodPhrase, coveredMon
   }
   return (
     <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">{tr("Scritta a mano")}{dataValue !== null ? (
-        <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseData} disabled={saving}>{tr("Usa i tuoi dati (")}{money(dataValue, currency)})
-        </button>
+        <button type="button" className="font-medium text-foreground underline underline-offset-2 disabled:opacity-50" onClick={onUseData} disabled={saving}>{tr("Usa i tuoi dati (")}{money(dataValue, currency)}{")"}</button>
       ) : null}
     </p>
   );

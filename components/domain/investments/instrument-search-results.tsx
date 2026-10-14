@@ -34,10 +34,11 @@ function TypeDot({ type }: { type: InstrumentType }) {
 
 /** Etichetta del tipo di uno strumento: pallino colorato + nome. */
 export function InstrumentTypeTag({ type }: { type: InstrumentType }) {
+  const { t: tr } = useLocalization();
   return (
     <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs text-foreground">
       <TypeDot type={type} />
-      {INSTRUMENT_TYPE_SINGULAR[type]}
+      {tr(INSTRUMENT_TYPE_SINGULAR[type])}
     </span>
   );
 }
@@ -52,7 +53,6 @@ function ResultButton(props: {
   onClick: () => void;
   disabled?: boolean;
 }) {
-  const { t: tr } = useLocalization();
   return (
     <button
       type="button"
@@ -62,7 +62,7 @@ function ResultButton(props: {
     >
       <InstrumentIcon type={props.type} name={props.title} instrumentId={props.instrumentId} size="sm" />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm text-foreground">{tr(props.title)}</span>
+        <span className="truncate text-sm text-foreground">{props.title}</span>
         <span className="truncate text-xs text-muted-foreground">{props.detail}</span>
       </span>
       {props.tag}
@@ -76,7 +76,7 @@ function GroupHeader({ type, count }: { type: InstrumentType; count: number }) {
     <p className="flex items-center gap-2 px-2 pt-3 pb-1 text-xs font-semibold uppercase tracking-wide text-foreground">
       <TypeDot type={type} />
       <span>
-        {tr(INSTRUMENT_TYPE_LABELS[type])}{" "}<span className="font-normal text-muted-foreground">({count})</span>
+        {tr(INSTRUMENT_TYPE_LABELS[type])}{" "}<span className="font-normal text-muted-foreground">{"("}{count}{")"}</span>
       </span>
     </p>
   );
@@ -110,7 +110,7 @@ export function InstrumentSearchResults({
     <>
       {known.length ? (
         <div className="flex flex-col gap-0.5">
-          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{knownTitle}</p>
+          <p className="px-2 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{tr(knownTitle)}</p>
           {known.map((i) => (
             <ResultButton
               key={i.id}
@@ -150,7 +150,7 @@ export function InstrumentSearchResults({
           <div className="ml-2 flex flex-col gap-0.5 border-l-2 pl-1" style={{ borderLeftColor: INSTRUMENT_TYPE_COLOR[group.type] }}>
             {group.items.map((item) => {
               const view = itemView(item, cryptoCurrency);
-              return <ResultButton key={view.key} title={tr(view.title)} detail={view.detail} type={group.type} disabled={disabled} onClick={() => onAdd(item)} />;
+              return <ResultButton key={view.key} title={view.title} detail={view.detail} type={group.type} disabled={disabled} onClick={() => onAdd(item)} />;
             })}
           </div>
         </div>

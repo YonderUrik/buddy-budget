@@ -7,7 +7,7 @@ import { Area, ComposedChart, Line, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import type { PensionSnapshot } from "@/lib/calc/pension";
 import { PensionChartTooltip } from "./pension-chart-tooltip";
-import { formatChartDate } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 
 export interface PensionTrendChartProps {
   snapshots: PensionSnapshot[];
@@ -24,6 +24,8 @@ const MIN_POINTS_FOR_CHART = 2;
 const DEFAULT_HEIGHT = 260;
 
 export function PensionTrendChart({ snapshots, currency, height = DEFAULT_HEIGHT }: PensionTrendChartProps) {
+  const { formatChartDate } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const data = snapshots.map((s) => ({ ...s, label: formatChartDate(s.date) }));
   if (data.length < MIN_POINTS_FOR_CHART) {

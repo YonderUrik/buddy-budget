@@ -124,7 +124,7 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
   const isManual = source === "manuale" && !current.reset;
   return (
     <>
-      <PanelDialogHeader icon={GlobeIcon} title={<>{tr("Correggi")}{" "}{row.instrument.name}</>} description={tr("Metti le percentuali che trovi nella scheda dell'emittente (KID o sito del fondo). Quello che manca a 100% resta &ldquo;non classificato&rdquo;. La correzione vale solo per te.")} color="var(--swatch-blue)" />
+      <PanelDialogHeader icon={GlobeIcon} title={<>{tr("Correggi")}{" "}{row.instrument.name}</>} description={tr("Metti le percentuali che trovi nella scheda dell'emittente (KID o sito del fondo). Quello che manca a 100% resta “non classificato”. La correzione vale solo per te.")} color="var(--swatch-blue)" />
       <DialogSections>
       <DialogSection
         title={tr("Percentuali")}
@@ -145,13 +145,12 @@ function BreakdownForm({ row, onClose }: { row: ExposureRow; onClose: () => void
                 onChange={(e) => setValue(key, e.target.value)}
                 aria-label={tr("{0} in percentuale", {0: LABELS[dimension][key]})}
               />
-              <span className="text-muted-foreground">%</span>
+              <span className="text-muted-foreground">{"%"}</span>
             </span>
           </label>
         ))}
       </div>
-      <p className={cn("text-sm tabular-nums", sum > 100 + SUM_TOLERANCE_PERCENT ? "text-destructive" : "text-muted-foreground")}>{tr("Totale")}{" "}{sum.toFixed(1).replace(".", ",")}%
-        {sum < 100 - SUM_TOLERANCE_PERCENT ? tr(" · non classificato {0}%", {0: (100 - sum).toFixed(1).replace(".", ",")}) : ""}
+      <p className={cn("text-sm tabular-nums", sum > 100 + SUM_TOLERANCE_PERCENT ? "text-destructive" : "text-muted-foreground")}>{tr("Totale")}{" "}{sum.toFixed(1).replace(".", ",")}{"%"}{sum < 100 - SUM_TOLERANCE_PERCENT ? tr(" · non classificato {0}%", {0: (100 - sum).toFixed(1).replace(".", ",")}) : ""}
       </p>
       </DialogSection>
       </DialogSections>

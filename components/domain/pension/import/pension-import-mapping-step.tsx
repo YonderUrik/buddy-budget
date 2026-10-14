@@ -16,7 +16,7 @@ import {
   type PensionImportRow,
   type PensionImportTable,
 } from "@/lib/pension/import/mapping";
-import { formatShortDateKey, money } from "../pension-format";
+import { localizedPensionFormats } from "../pension-format";
 
 export interface PensionImportMappingStepProps {
   fileName: string | null;
@@ -63,13 +63,15 @@ function LabeledSelect<T extends string>(props: { label: string; value: T; optio
 }
 
 export function PensionImportMappingStep({ fileName, table, mapping, rows, missing, currency, onChange }: PensionImportMappingStepProps) {
+  const { formatShortDateKey, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const options = [NONE, ...table.headers.map((_, i) => String(i))];
   const sample = (column: number) => table.rows.find((r) => (r[column] ?? "").trim() !== "")?.[column] ?? "";
   const columnLabel = (value: string) => {
-    if (value === NONE) return "Nessuna colonna";
+    if (value === NONE) return tr("Nessuna colonna");
     const example = sample(Number(value));
-    return `${table.headers[Number(value)] || `Colonna ${Number(value) + 1}`}${example ? ` — es. ${example}` : ""}`;
+    return `${table.headers[Number(value)] || `Colonna ${Number(value) + 1}`}${example ? tr(" — es. {0}", { 0: example }) : ""}`;
   };
   const setColumn = (field: PensionImportField, value: string) => {
     const columns = { ...mapping.columns };
@@ -105,12 +107,11 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
       <section>
         <SectionTitle icon={TableIcon} title={tr("Anteprima")} color="var(--swatch-green)" />
         {missing.length > 0 ? (
-          <p className="text-sm text-neg">{tr("Indica quale colonna contiene:")}{" "}{missing.join(", ")}.</p>
+          <p className="text-sm text-neg">{tr("Indica quale colonna contiene:")}{" "}{missing.join(", ")}{"."}</p>
         ) : (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-foreground">
-              <span className="font-semibold tabular-nums">{ok.length}</span>{" "}{tr("fotografie lette su")}{" "}{rows.length}{" "}{tr("righe")}{problems.length > 0 ? tr(", {0} scartate", {0: problems.length}) : ""}.
-            </p>
+              <span className="font-semibold tabular-nums">{ok.length}</span>{" "}{tr("fotografie lette su")}{" "}{rows.length}{" "}{tr("righe")}{problems.length > 0 ? tr(", {0} scartate", {0: problems.length}) : ""}{"."}</p>
             {ok.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
@@ -139,7 +140,7 @@ export function PensionImportMappingStep({ fileName, table, mapping, rows, missi
               <ul className="flex flex-col gap-1 text-sm text-text-2">
                 {problems.slice(0, MAX_LISTED_PROBLEMS).map((row) => (
                   <li key={row.line} className="flex items-start gap-1.5">
-                    <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-neg" aria-hidden="true" />{tr("Riga")}{" "}{row.line}: {row.status === "error" ? row.message : ""}
+                    <AlertTriangleIcon className="mt-0.5 size-3.5 shrink-0 text-neg" aria-hidden="true" />{tr("Riga")}{" "}{row.line}{":"}{row.status === "error" ? row.message : ""}
                   </li>
                 ))}
                 {problems.length > MAX_LISTED_PROBLEMS ? <li>{tr("…e altre")}{" "}{problems.length - MAX_LISTED_PROBLEMS}</li> : null}

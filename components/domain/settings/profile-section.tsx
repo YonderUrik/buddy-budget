@@ -48,7 +48,7 @@ export function ProfileSection({ settings, returnTo = "/impostazioni" }: Profile
       error: { status: 0 },
     }));
     if (error) {
-      setLinkError("Collegamento non riuscito. Riprova.");
+      setLinkError(tr("Collegamento non riuscito. Riprova."));
       setLinking(false);
     }
   }

@@ -5,6 +5,7 @@ export function defaultCategoryRows(userId: string): NewCategory[] {
   return DEFAULT_CATEGORIES.map((category) => ({
     userId,
     name: category.name,
+    defaultKey: category.key,
     type: category.type,
     color: category.color,
     icon: category.icon,

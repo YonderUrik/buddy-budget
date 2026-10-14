@@ -100,13 +100,12 @@ export function ReportForm({ context, initialKind = "problema", compact = false,
       <label className="flex items-start gap-2 text-sm text-muted-foreground">
         <input type="checkbox" checked={withContext} onChange={(event) => setWithContext(event.target.checked)} className="mt-1 size-4" />
         <span>{tr("Allega il contesto tecnico:")}{" "}
-          <span className="text-foreground">{tr("pagina")}{" "}{context.path}{tr(", versione")}{" "}{context.version}{tr(", schermo")}{" "}{context.viewport}{tr(", tema")}{" "}{context.theme}
+          <span className="text-foreground">{tr("pagina")}{" "}{context.path}{tr(", versione")}{" "}{context.version}{tr(", schermo")}{" "}{context.viewport}{tr(", tema")}{" "}{tr(context.theme === "scuro" ? "Scuro" : "Chiaro")}
           </span>{tr(". Nessun dato finanziario.")}</span>
       </label>
       {mutation.isError && (
         <p role="alert" className="text-sm text-neg">
-          {tr(mutation.error.message)}{" "}{tr("Puoi anche scrivere a")}{" "}{SUPPORT_EMAIL}.
-        </p>
+          {tr(mutation.error.message)}{" "}{tr("Puoi anche scrivere a")}{" "}{SUPPORT_EMAIL}{"."}</p>
       )}
       <Button type="submit" disabled={tooShort || mutation.isPending} className="w-full sm:w-fit">
         {mutation.isPending ? tr("Invio…") : tr("Invia")}

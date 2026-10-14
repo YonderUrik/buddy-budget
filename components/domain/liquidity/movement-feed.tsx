@@ -36,7 +36,7 @@ export function MovementFeed({ transactions, categories, usage, accountNames, cu
   const [days, setDays] = React.useState(DAYS_PER_PAGE);
   const [logosShown, setLogosShown] = React.useState(false);
   const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
-  const groups = React.useMemo(() => groupByDay([...transactions], today), [transactions, today]);
+  const groups = React.useMemo(() => groupByDay([...transactions], today, formattingLocale), [transactions, today, formattingLocale]);
   if (groups.length === 0) return <p className="py-10 text-center text-text-2">{tr(emptyMessage)}</p>;
   return (
     <div>

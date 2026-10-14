@@ -52,7 +52,7 @@ export function TitleListCard({ items, hrefBase = "/investimenti/titoli" }: Titl
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">{instrument.name}</p>
                     <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                      <span>{INSTRUMENT_TYPE_SINGULAR[instrument.type]}</span>
+                      <span>{tr(INSTRUMENT_TYPE_SINGULAR[instrument.type])}</span>
                       {item.held ? <Badge variant="secondary">{tr("Posseduto")}</Badge> : null}
                       {item.watching && !item.held ? <Badge variant="outline">{tr("Seguito")}</Badge> : null}
                       {item.activeAlerts > 0 ? (

@@ -45,7 +45,7 @@ export function PensionProfileCard({ name, adhesionDate, today, onSave, onDelete
     try {
       await action();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Operazione non riuscita");
+      setError(e instanceof Error ? e.message : tr("Operazione non riuscita"));
     } finally {
       setBusy(false);
     }

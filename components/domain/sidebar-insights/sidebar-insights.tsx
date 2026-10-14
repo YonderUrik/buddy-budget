@@ -17,14 +17,7 @@ import type { SidebarSummary } from "@/lib/sidebar/types";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { cn } from "@/lib/utils";
 import { InsightRow } from "./insight-row";
-import {
-  changeToneClass,
-  formatSidebarAmount,
-  formatSidebarPrice,
-  formatSidebarSignedAmount,
-  MAX_HOLDINGS_SHOWN,
-  MAX_WATCHLIST_SHOWN,
-} from "./sidebar-insights.utils";
+import { localizedSidebarFormats } from "./sidebar-insights.utils";
 
 export interface SidebarInsightsProps {
   /** Dati caricati, o undefined mentre si caricano. */
@@ -67,6 +60,8 @@ function PrivacyToggle({ hidden, onToggle }: { hidden: boolean; onToggle: () => 
 }
 
 function ChangeChip({ value }: { value: number | null }) {
+  const { changeToneClass } = localizedSidebarFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct } = localizedFormats(formattingLocale);
 
@@ -96,6 +91,8 @@ export function SidebarInsights({
   show,
   privacyToggle = true,
 }: SidebarInsightsProps) {
+  const { changeToneClass, formatSidebarAmount, formatSidebarPrice, formatSidebarSignedAmount, MAX_HOLDINGS_SHOWN, MAX_WATCHLIST_SHOWN } = localizedSidebarFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct } = localizedFormats(formattingLocale);
 
@@ -206,8 +203,7 @@ export function SidebarInsights({
             ))}
           </div>
           {portfolio.holdings.length > MAX_HOLDINGS_SHOWN ? (
-            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{portfolio.holdings.length}) →
-            </Link>
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{portfolio.holdings.length}{") →"}</Link>
           ) : null}
         </CollapsibleSection>
       ) : null}
@@ -243,8 +239,7 @@ export function SidebarInsights({
             ))}
           </div>
           {watchlist.length > MAX_WATCHLIST_SHOWN ? (
-            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{watchlist.length}) →
-            </Link>
+            <Link href={titlesListHref} onClick={onNavigate} className={SECTION_LINK_CLASS}>{tr("Mostra tutti (")}{watchlist.length}{") →"}</Link>
           ) : null}
         </CollapsibleSection>
       ) : null}

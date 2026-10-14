@@ -5,7 +5,8 @@ vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 import { auth } from "@/lib/auth";
 import { db, client } from "@/lib/db/client";
 import { authUser } from "@/lib/db/schema/auth";
-import { categories, DEFAULT_CATEGORIES } from "@/lib/db/schema/categories";
+import { defaultCategoryRows } from "@/lib/categories/seed";
+import { categories } from "@/lib/db/schema/categories";
 import { PATCH } from "./settings/route";
 import { GET as pension } from "../pension/route";
 import { localizeStarterCategories } from "@/lib/localization/categories.server";
@@ -33,7 +34,7 @@ it("persists only supported pairs and preserves data across country switches", a
   expect((await db.select().from(categories).where(eq(categories.userId, id)))[0].name).toBe("My custom category");
 });
 it("localises untouched starter categories but preserves custom categories", async () => {
-  await db.insert(categories).values(DEFAULT_CATEGORIES.map(category => ({ userId: id, name: category.name, type: category.type, color: category.color, icon: category.icon, description: category.description, isFallback: category.isFallback })));
+  await db.insert(categories).values(defaultCategoryRows(id));
   await localizeStarterCategories(id, { productCountry: "DE", language: "de" });
   const rows = await db.select().from(categories).where(eq(categories.userId, id));
   expect(rows.find(c => c.name === "Steuern & Abgaben")?.description).toBe("Steuern und Abgaben");

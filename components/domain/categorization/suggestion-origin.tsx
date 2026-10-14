@@ -9,7 +9,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import type { LucideIcon } from "lucide-react";
 import { BookmarkCheckIcon, HistoryIcon, SparklesIcon } from "lucide-react";
 import { AUTO_APPLY_THRESHOLD, type CategorizeSuggestion } from "@/lib/categorization/suggest";
-import { autoOriginDescription, autoOriginLabel, confidencePercent, suggestionOriginText, type CategoryOrigin } from "@/lib/categorization/origin";
+import { localizedCategorizationText, type CategoryOrigin } from "@/lib/categorization/origin";
 import { cn } from "@/lib/utils";
 
 /** Icona di ogni origine: la stessa in carte, elenco, «Messe dall'app» e Movimenti. */
@@ -28,6 +28,8 @@ export interface SuggestionOriginProps {
 
 /** Perché si propone questa categoria, in una frase (la sicurezza è nel tooltip). */
 export function SuggestionOrigin({ suggestion, align = "start", className }: SuggestionOriginProps) {
+  const { confidencePercent, suggestionOriginText } = localizedCategorizationText(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const Icon = ORIGIN_ICONS[suggestion.source];
   const percent = confidencePercent(suggestion.confidence);
@@ -53,6 +55,8 @@ export interface AutoOriginBadgeProps {
 
 /** Etichetta di una categoria messa dall'app: «Regola», «Le tue scelte», «AI» (compatta: solo l'icona). */
 export function AutoOriginBadge({ source, confidence, compact = false, className }: AutoOriginBadgeProps) {
+  const { autoOriginDescription, autoOriginLabel } = localizedCategorizationText(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const Icon = ORIGIN_ICONS[source];
   const label = compact ? null : autoOriginLabel(source);

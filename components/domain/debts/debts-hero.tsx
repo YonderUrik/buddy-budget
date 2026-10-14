@@ -3,7 +3,7 @@ import { useLocalization } from "@/lib/localization/provider";
 /** Testata della panoramica Debiti, come in Panoramica: importo grande con i decimali attenuati e, sotto, una frase di contesto. */
 
 import { MoneyHero } from "@/components/domain/net-worth";
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 
 export interface DebtsHeroProps {
   /** Debito residuo totale. */
@@ -16,6 +16,8 @@ export interface DebtsHeroProps {
 }
 
 export function DebtsHero({ totalDebt, currency, openCount, freeDate }: DebtsHeroProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   return (
     <section aria-label={tr("Debito totale")} className="flex flex-col gap-1">

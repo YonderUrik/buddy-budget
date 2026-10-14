@@ -26,11 +26,11 @@ export function IncomePayments({ payments, currency, instrumentsById }: IncomePa
   return <ul className="divide-y divide-border" aria-label={tr("Pagamenti registrati")}>
     {payments.map((payment) => <li key={payment.id} className="space-y-2 py-3 text-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <span><time dateTime={payment.date}>{DATE_FORMAT.format(parseDateOnly(payment.date))}</time> · {payment.kind === "cedola" ? tr("Cedola") : tr("Dividendo")}</span>
-        {instrumentsById ? <span className="font-medium">{instrumentsById.get(payment.instrumentId)?.name ?? "Strumento"}</span> : null}
+        <span><time dateTime={payment.date}>{DATE_FORMAT.format(parseDateOnly(payment.date))}</time> {"·"}{payment.kind === "cedola" ? tr("Cedola") : tr("Dividendo")}</span>
+        {instrumentsById ? <span className="font-medium">{instrumentsById.get(payment.instrumentId)?.name ?? tr("Strumento")}</span> : null}
       </div>
       <dl className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-        {[["Lordo", payment.gross], ["Imposte", payment.taxes], ["Costi", payment.fees], ["Netto", payment.net]].map(([label, amount]) => <div key={label}><dt className="text-muted-foreground">{tr(label)}</dt><dd className="tabular-nums">{money(Number(amount))}</dd></div>)}
+        {[[tr("Lordo"), payment.gross], [tr("Imposte"), payment.taxes], [tr("Costi"), payment.fees], [tr("Netto"), payment.net]].map(([label, amount]) => <div key={label}><dt className="text-muted-foreground">{tr(label)}</dt><dd className="tabular-nums">{money(Number(amount))}</dd></div>)}
       </dl>
     </li>)}
   </ul>;

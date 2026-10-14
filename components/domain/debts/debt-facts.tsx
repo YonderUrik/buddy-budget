@@ -8,7 +8,7 @@ import { MoneyHero } from "@/components/domain/net-worth";
 import type { DebtView } from "@/lib/debts/view";
 
 import { DebtRing } from "./debt-ring";
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 
 export interface DebtFactsProps {
   debt: DebtView;
@@ -26,6 +26,8 @@ export function repaidShare(debt: DebtView): number {
 }
 
 export function DebtFacts({ debt, currency }: DebtFactsProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 

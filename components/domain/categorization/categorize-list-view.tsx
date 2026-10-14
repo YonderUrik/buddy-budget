@@ -142,8 +142,8 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
         onSuccess: (result) => {
           toast.success(
             result.rulesCreated > 0
-              ? `${result.applied} transazioni categorizzate, ${result.rulesCreated} regole create`
-              : `${result.applied} transazioni categorizzate`
+              ? tr("{0} transazioni categorizzate, {1} regole create", { 0: result.applied, 1: result.rulesCreated })
+              : tr("{0} transazioni categorizzate", { 0: result.applied })
           );
           setOverrides(new Map());
           setApplyProgress(null);
@@ -162,7 +162,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
               return next;
             });
             toast.error(
-              `Applicate ${error.partial.applied} transazioni prima dell'errore, le altre restano selezionate: ${error.message}`
+              tr("Applicate {0} transazioni prima dell'errore, le altre restano selezionate: {1}", { 0: error.partial.applied, 1: error.message })
             );
           }
           setApplyProgress(null);
@@ -178,15 +178,13 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
           {isLoading
             ? tr("Caricamento in corso...")
             : totalTransactionCount === 0
-              ? "Nessuna transazione da categorizzare"
-              : `${totalTransactionCount} movimenti da decidere, raggruppati per esercente.`}
+              ? tr("Nessuna transazione da categorizzare")
+              : tr("{0} movimenti da decidere, raggruppati per esercente.", { 0: totalTransactionCount })}
         </p>
         {!isLoading && totalTransactionCount > 0 && (
           <p className="text-sm text-muted-foreground">
-            Controlla la categoria proposta, spunta i gruppi giusti e premi{" "}
-            <span className="font-medium text-foreground">Applica</span>. Con «Ricorda gli esercenti» le prossime volte
-            si categorizzano da soli.
-          </p>
+            {tr("Controlla la categoria proposta, spunta i gruppi giusti e premi")}{" "}
+            <span className="font-medium text-foreground">{tr("Applica")}</span>{tr(". Con «Ricorda gli esercenti» le prossime volte si categorizzano da soli.")}</p>
         )}
       </div>
 
@@ -197,7 +195,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
           ))}
         </div>
       ) : groups.length === 0 ? (
-        <Card className="p-6 text-center text-sm text-muted-foreground">Niente da decidere</Card>
+        <Card className="p-6 text-center text-sm text-muted-foreground">{tr("Niente da decidere")}</Card>
       ) : (
         <>
           <Card className="gap-0 p-0">
@@ -209,8 +207,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
               />
               <span>{tr("Seleziona tutti")}{" "}
                 <span className="tabular-nums">
-                  ({selectableGroupCount}{" "}{selectableGroupCount === 1 ? tr("gruppo pronto") : tr("gruppi pronti")})
-                </span>
+                  {"("}{selectableGroupCount}{" "}{selectableGroupCount === 1 ? tr("gruppo pronto") : tr("gruppi pronti")}{")"}</span>
               </span>
             </label>
             {groups.map((group) => {
@@ -254,7 +251,7 @@ export function CategorizeListView({ groups, isLoading }: CategorizeListViewProp
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
                   {selectedGroups.length === 0 ? (
-                    "Nessun gruppo selezionato"
+                    tr("Nessun gruppo selezionato")
                   ) : (
                     <>
                       <span className="font-medium text-foreground tabular-nums">{selectedTransactionCount}</span>{" "}

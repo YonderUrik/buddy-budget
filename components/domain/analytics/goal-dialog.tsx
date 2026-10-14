@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { ASSUMPTION_LIMITS, type AnalyticsAssumptions, type UpdateAssumptionsInput } from "@/lib/analitiche/assumptions";
 import type { AnalyticsBase } from "@/lib/analitiche/base";
 import { resolvePlan, type AnalyticsPlan } from "@/lib/analitiche/plan";
-import { formatYears, money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { parseNumber } from "./assumptions-fields";
 
 /** Da dove viene la spesa salvata: lasciata ai movimenti (si aggiorna da sola) o scritta dall'utente. */
@@ -53,6 +53,8 @@ export function GoalDialog({ open, onOpenChange, ...rest }: GoalDialogProps) {
 }
 
 function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSaved, onClose }: Omit<GoalDialogProps, "open" | "onOpenChange"> & { onClose: () => void }) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const dataSpending = plan.spendingSource === "dati" ? plan.spending : null;
   const [text, setText] = React.useState(plan.spending !== null ? Math.round(plan.spending).toLocaleString("it-IT") : "");
@@ -66,7 +68,7 @@ function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSav
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!valid) {
-      setLocalError("Scrivi quanto ti serve in un anno, per esempio 24.000.");
+      setLocalError(tr("Scrivi quanto ti serve in un anno, per esempio 24.000."));
       return;
     }
     setLocalError(null);
@@ -108,6 +110,8 @@ function GoalForm({ base, assumptions, plan, saving, error, today, onSave, onSav
 
 /** Il traguardo che esce dalla cifra scritta e quando ci arrivi. */
 function GoalPreview({ preview, withdrawalRate, currency, today }: { preview: AnalyticsPlan | null; withdrawalRate: number; currency: string; today: Date }) {
+  const { formatYears, money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   if (!preview || preview.target === null) {
     return <p className="text-sm text-muted-foreground">{tr("Scrivi la cifra: qui compare il patrimonio che ti serve.")}</p>;
@@ -115,12 +119,12 @@ function GoalPreview({ preview, withdrawalRate, currency, today }: { preview: An
   const years = preview.yearsToFire;
   const when =
     preview.savingsSource === "manca"
-      ? "Per dirti quando ci arrivi servono almeno 3 mesi di movimenti."
+      ? tr("Per dirti quando ci arrivi servono almeno 3 mesi di movimenti.")
       : years === 0
-        ? "Il tuo patrimonio lo ha già raggiunto."
+        ? tr("Il tuo patrimonio lo ha già raggiunto.")
         : years === null
-          ? "Ai ritmi di oggi ci vorrebbero più di 80 anni."
-          : `Ai ritmi di oggi ci arrivi intorno al ${today.getFullYear() + Math.ceil(years)}, tra ${formatYears(years)}.`;
+          ? tr("Ai ritmi di oggi ci vorrebbero più di 80 anni.")
+          : tr("Ai ritmi di oggi ci arrivi intorno al {0}, tra {1}.", { 0: today.getFullYear() + Math.ceil(years), 1: formatYears(years) });
   return (
     <div className="flex flex-col gap-1" aria-live="polite">
       <p className="text-sm text-muted-foreground">{tr("Il tuo traguardo")}</p>

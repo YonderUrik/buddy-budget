@@ -87,7 +87,7 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
 
       {data?.lastRun ? (
         <div className="flex items-center justify-between gap-3 rounded-xl bg-foreground/[0.04] px-3 py-2 text-sm">
-          <span className="text-muted-foreground">{tr("Ultima volta il")}{" "}{formatShortDate(data.lastRun.createdAt.slice(0, 10))}: {data.lastRun.changed === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: data.lastRun.changed})}
+          <span className="text-muted-foreground">{tr("Ultima volta il")}{" "}{formatShortDate(data.lastRun.createdAt.slice(0, 10))}{":"}{data.lastRun.changed === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: data.lastRun.changed})}
           </span>
           <Button type="button" variant="ghost" size="sm" onClick={() => undoRun(data.lastRun!.id)} disabled={undoing} className="shrink-0">
             <Undo2Icon />{" "}{tr("Annulla")}</Button>
@@ -95,7 +95,7 @@ function RecategorizeBody({ categories, currency, onDone }: { categories: Catego
       ) : null}
 
       {isError ? (
-        <LoadError message="Impossibile calcolare cosa cambierebbe." onRetry={() => refetch()} />
+        <LoadError message={tr("Impossibile calcolare cosa cambierebbe.")} onRetry={() => refetch()} />
       ) : isLoading || !data ? (
         <div className="flex flex-col gap-3" aria-busy="true">
           {[0, 1, 2].map((index) => (

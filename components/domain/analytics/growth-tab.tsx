@@ -14,9 +14,9 @@ import {
 import type { AnalyticsBase } from "@/lib/analitiche/base";
 import { splitGrowth } from "@/lib/calc/growth-split";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { GuidedReading } from "./guided-reading";
-import { growthSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface GrowthTabProps {
   base: AnalyticsBase;
@@ -31,6 +31,10 @@ const CONFIG: ChartConfig = {
 
 
 export function GrowthTab({ base }: GrowthTabProps) {
+  const { growthSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const monthLabel = (key: string) =>
   MONTH_FORMAT.format(new Date(`${key}-01T00:00:00Z`)).replace(".", "");

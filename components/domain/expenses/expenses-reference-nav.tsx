@@ -31,7 +31,7 @@ export interface ExpensesReferenceNavProps {
 }
 
 export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriodChange }: ExpensesReferenceNavProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const [open, setOpen] = React.useState(false);
   const [gridYear, setGridYear] = React.useState(referenceDate.getFullYear());
   const today = startOfDay(new Date());
@@ -66,7 +66,7 @@ export function ExpensesReferenceNav({ period, referenceDate, onChange, onPeriod
         <PopoverTrigger
           className="flex min-h-9 min-w-[9rem] items-center justify-center gap-1 rounded-md px-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground sm:min-h-7"
         >
-          {formatPeriodLabel(period, range)}
+          {formatPeriodLabel(period, range, locale)}
           <ChevronDownIcon className="size-3.5 shrink-0" aria-hidden="true" />
         </PopoverTrigger>
         <PopoverContent className="w-72 max-w-[calc(100vw-2rem)] p-3">

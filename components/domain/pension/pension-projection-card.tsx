@@ -13,7 +13,7 @@ import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/
 import { Slider } from "@/components/ui/slider";
 import { projectPension, type ProjectionRates } from "@/lib/calc/pension";
 import { PensionChartTooltip } from "./pension-chart-tooltip";
-import { formatPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 
 export interface PensionProjectionCardProps {
@@ -46,6 +46,8 @@ const CHART_CONFIG: ChartConfig = {
 };
 
 export function PensionProjectionCard({ startValue, defaultQuarterlyContribution, currency, rates = DEFAULT_RATES }: PensionProjectionCardProps) {
+  const { formatPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const [years, setYears] = React.useState(DEFAULT_YEARS);
   const [contribution, setContribution] = React.useState(Math.round(defaultQuarterlyContribution / CONTRIBUTION_STEP) * CONTRIBUTION_STEP);

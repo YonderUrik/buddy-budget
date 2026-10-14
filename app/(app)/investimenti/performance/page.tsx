@@ -48,11 +48,11 @@ export default function PerformancePage() {
       </div>
       <div className="min-w-0 lg:col-span-2">
       {view.analysis.risk ? <RiskCard risk={view.analysis.risk} period={performance.calculationPeriod}
-        periodLabel={`Periodo del grafico · ${periodLabel}`} benchmarkName={view.benchmark?.name ?? null} currency={currency} /> : null}
+        periodLabel={tr("Periodo del grafico · {0}", {0: periodLabel})} benchmarkName={view.benchmark?.name ?? null} currency={currency} /> : null}
       </div>
       </div>
       {view.returns?.daily.length ? <ReturnHeatmapCard key={`${view.returns.fromKey}:${view.returns.toKey}`}
-        daily={view.returns.daily} currency={currency} today={parseDateOnly(view.returns.toKey)} periodLabel={`Periodo del grafico · ${periodLabel}`} /> : null}
+        daily={view.returns.daily} currency={currency} today={parseDateOnly(view.returns.toKey)} periodLabel={tr("Periodo del grafico · {0}", {0: periodLabel})} /> : null}
     </div> : null}
   </InvestmentsViewGate>;
 }

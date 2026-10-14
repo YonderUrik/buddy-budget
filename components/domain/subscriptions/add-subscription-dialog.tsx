@@ -54,7 +54,7 @@ function AddForm({ categories, today, onDone }: Omit<AddSubscriptionDialogProps,
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label={tr("Importo di ogni addebito")} htmlFor={`${id}-amount`}>
-          <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={tr("0,00")} className="h-11 sm:h-8" />
+          <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={"0,00"} className="h-11 sm:h-8" />
         </Field>
         <Field label={tr("Ogni quanto")} htmlFor={`${id}-cadence`}>
           <CadenceSelect id={`${id}-cadence`} value={cadence} onChange={setCadence} />

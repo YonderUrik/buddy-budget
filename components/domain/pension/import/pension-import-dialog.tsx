@@ -102,7 +102,7 @@ export function PensionImportDialog({ open, onOpenChange, fundName, ...wizard }:
           </span>
           <div className="min-w-0">
             <DialogTitle className="font-heading text-xl font-medium">{tr("Importa le fotografie")}</DialogTitle>
-            <DialogDescription>{tr("Da un file CSV o Excel, nel fondo «")}{fundName}».</DialogDescription>
+            <DialogDescription>{tr("Da un file CSV o Excel, nel fondo «")}{fundName}{"»."}</DialogDescription>
           </div>
         </DialogHeader>
         {open ? <Wizard {...wizard} onClose={() => onOpenChange(false)} /> : null}

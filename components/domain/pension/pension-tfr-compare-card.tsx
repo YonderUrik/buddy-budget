@@ -4,7 +4,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import { ScaleIcon } from "lucide-react";
 import type { CompanyTfrComparison } from "@/lib/calc/pension";
-import { formatPercent, formatSignedPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 
 export interface PensionTfrCompareCardProps {
@@ -21,6 +21,8 @@ const HINT =
   "In azienda il TFR si rivaluta ogni anno dell'1,5% più il 75% dell'inflazione, con un'imposta sostitutiva sulla rivalutazione. Il confronto usa un'inflazione costante e non include le tasse all'uscita (diverse nei due casi). Regole da validare con un professionista.";
 
 export function PensionTfrCompareCard({ fundValue, fundAnnualReturn, comparison, inflationRate, currency }: PensionTfrCompareCardProps) {
+  const { formatPercent, formatSignedPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const diff = fundValue - comparison.net;
   const diffPct = comparison.net > 0 ? diff / comparison.net : null;
@@ -36,7 +38,7 @@ export function PensionTfrCompareCard({ fundValue, fundAnnualReturn, comparison,
       title={tr("Fondo o TFR in azienda?")}
       color="var(--swatch-blue)"
       description={tr("Gli stessi versamenti, in due posti diversi.")}
-      hint={{ label: tr("Come funziona il confronto"), text: HINT }}
+      hint={{ label: tr("Come funziona il confronto"), text: tr(HINT) }}
     >
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-4">
@@ -56,7 +58,7 @@ export function PensionTfrCompareCard({ fundValue, fundAnnualReturn, comparison,
         <p className="text-sm text-text-2">
           {better ? tr("Finora il fondo ha reso") : tr("Finora il TFR in azienda avrebbe reso")}{" "}
           <strong className={`font-semibold tabular-nums ${better ? "text-pos" : "text-neg"}`}>{money(Math.abs(diff), currency)}</strong>
-          {diffPct !== null ? <> ({formatSignedPercent(Math.abs(diffPct))})</> : null}{" "}{tr("in più. Rivalutazione in azienda stimata al")}{" "}{formatPercent(comparison.annualRate)}{" "}{tr("l'anno con inflazione ipotizzata al")}{" "}{formatPercent(inflationRate)}{tr(": il confronto ha senso solo su periodi lunghi, perché il fondo oscilla.")}</p>
+          {diffPct !== null ? <> {"("}{formatSignedPercent(Math.abs(diffPct))}{")"}</> : null}{" "}{tr("in più. Rivalutazione in azienda stimata al")}{" "}{formatPercent(comparison.annualRate)}{" "}{tr("l'anno con inflazione ipotizzata al")}{" "}{formatPercent(inflationRate)}{tr(": il confronto ha senso solo su periodi lunghi, perché il fondo oscilla.")}</p>
       </div>
     </PensionSection>
   );

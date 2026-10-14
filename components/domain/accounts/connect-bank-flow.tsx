@@ -36,7 +36,7 @@ function countryFlag(code: string): string {
 
 /** Logo dell'istituto se disponibile, altrimenti un'icona generica di fallback. */
 function InstitutionLogo({ institution }: { institution: Institution }) {
-  const { t: tr } = useLocalization();
+
   const [errored, setErrored] = React.useState(false);
   if (!institution.logo || errored) {
     return (
@@ -47,7 +47,7 @@ function InstitutionLogo({ institution }: { institution: Institution }) {
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element -- logo di dominio esterno GoCardless
-    <img src={institution.logo} alt={tr("")} className="size-9 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
+    <img src={institution.logo} alt={""} className="size-9 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
   );
 }
 
@@ -105,8 +105,8 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
       <p className="flex items-start gap-2.5 rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">
         <LockKeyholeIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span>
-          Ti porto sul sito della tua banca per dare il consenso. Il collegamento è in sola lettura: BuddyBudget non vede le tue credenziali e non può muovere denaro.{" "}
-          <a href={SECURITY_PAGE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">Come funziona</a>
+          {tr("Ti porto sul sito della tua banca per dare il consenso. Il collegamento è in sola lettura: BuddyBudget non vede le tue credenziali e non può muovere denaro.")}{" "}
+          <a href={SECURITY_PAGE_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">{tr("Come funziona")}</a>
         </span>
       </p>
 
@@ -183,7 +183,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
       )}
 
       <p role="status" className="sr-only">{busy ? tr("Ti porto sul sito di {0}…", {0: chosenName ?? "la banca"}) : ""}</p>
-      {busy ? <p className="text-sm text-muted-foreground" aria-hidden="true">{tr("Ti porto sul sito di")}{" "}{chosenName ?? "la banca"}…</p> : null}
+      {busy ? <p className="text-sm text-muted-foreground" aria-hidden="true">{tr("Ti porto sul sito di")}{" "}{chosenName ?? tr("la banca")}{"…"}</p> : null}
       {error ? <ErrorWithReport area="collega_banca" error={error} /> : null}
     </div>
   );

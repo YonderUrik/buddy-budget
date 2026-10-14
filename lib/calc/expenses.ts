@@ -105,11 +105,11 @@ function capitalize(text: string): string {
 }
 
 /** Etichetta leggibile del periodo mostrato in Spese, formattata secondo il tipo (mese/settimana/3mesi/anno). */
-export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): string {
+export function formatPeriodLabel(period: ExpensePeriod, range: DateRange, locale = "it-IT"): string {
   const sameYear = range.from.getFullYear() === range.to.getFullYear();
   switch (period) {
     case "mese": {
-      const monthName = new Intl.DateTimeFormat("it-IT", { month: "long" }).format(range.from);
+      const monthName = new Intl.DateTimeFormat(locale, { month: "long" }).format(range.from);
       return `${capitalize(monthName)} ${range.from.getFullYear()}`;
     }
     case "anno":
@@ -117,21 +117,21 @@ export function formatPeriodLabel(period: ExpensePeriod, range: DateRange): stri
     case "settimana": {
       const sameMonth = sameYear && range.from.getMonth() === range.to.getMonth();
       if (sameMonth) {
-        const day = new Intl.DateTimeFormat("it-IT", { day: "numeric" }).format(range.from);
-        const dayMonth = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" }).format(range.to);
+        const day = new Intl.DateTimeFormat(locale, { day: "numeric" }).format(range.from);
+        const dayMonth = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(range.to);
         return `${day}–${dayMonth}`;
       }
       if (sameYear) {
-        const dayMonthFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short" });
+        const dayMonthFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
         return `${dayMonthFormat.format(range.from)} – ${dayMonthFormat.format(range.to)}`;
       }
-      const fullFormat = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "short", year: "numeric" });
+      const fullFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" });
       return `${fullFormat.format(range.from)} – ${fullFormat.format(range.to)}`;
     }
     case "3mesi": {
-      const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
+      const monthYearFormat = new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" });
       if (sameYear) {
-        const monthOnly = new Intl.DateTimeFormat("it-IT", { month: "short" }).format(range.from);
+        const monthOnly = new Intl.DateTimeFormat(locale, { month: "short" }).format(range.from);
         return `${capitalize(monthOnly)} – ${capitalize(monthYearFormat.format(range.to))}`;
       }
       return `${capitalize(monthYearFormat.format(range.from))} – ${capitalize(monthYearFormat.format(range.to))}`;

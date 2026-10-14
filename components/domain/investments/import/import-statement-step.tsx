@@ -58,8 +58,8 @@ export function ImportStatementStep({ fileName, providerName, rows, warnings, ca
             {cashMovements.slice(0, MAX_LISTED_CASH).map((m) => (
               <li key={m.externalId} className="flex items-baseline justify-between gap-3 py-1.5">
                 <span className="min-w-0 truncate">
-                  <span className="text-muted-foreground">{m.date.split("-").reverse().join("/")} · </span>
-                  {tr(m.description)}
+                  <span className="text-muted-foreground">{m.date.split("-").reverse().join("/")} {"·"}</span>
+                  {m.description}
                 </span>
                 <span className="shrink-0 font-mono text-xs tabular-nums">{m.amount.toFixed(2)}{" "}{m.currency}</span>
               </li>

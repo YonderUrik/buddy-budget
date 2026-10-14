@@ -49,20 +49,20 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
   function describe(t: InvestmentTransaction, instrument: Instrument | undefined): string {
   const currency = instrument?.currency ?? "";
-  if (t.type === "rettifica") return `Nessun movimento di cassa · base trasferita ${formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR")}`;
-  if (t.type === "split") return `ogni quota diventa ${QUANTITY_FORMAT.format(Number(t.quantity))}`;
+  if (t.type === "rettifica") return tr("Nessun movimento di cassa · base trasferita {0}", { 0: formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR") });
+  if (t.type === "split") return tr("ogni quota diventa {0}", { 0: QUANTITY_FORMAT.format(Number(t.quantity)) });
   if (t.type === "dividendo" || t.type === "cedola") {
-    return `${formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR")} lordi`;
+    return tr("{0} lordi", { 0: formatCurrency(Number(t.grossAmount ?? 0), currency || "EUR") });
   }
   const unit = instrument?.priceUnit === "percentuale_nominale" ? "% " : " ";
-  return `${QUANTITY_FORMAT.format(Number(t.quantity))} × ${Number(t.price).toLocaleString(formattingLocale)}${unit}${currency}`;
+  return tr("{0} × {1}{2}{3}", { 0: QUANTITY_FORMAT.format(Number(t.quantity)), 1: Number(t.price).toLocaleString(formattingLocale), 2: unit, 3: currency });
 }
   function remainingNote(insight: OperationInsight<InvestmentTransaction>): string | null {
   const t = insight.transaction;
   if (t.type !== "acquisto" || insight.remainingQuantity <= QUANTITY_EPSILON) return null;
   const bought = Number(t.quantity);
   if (bought - insight.remainingQuantity <= QUANTITY_EPSILON) return null;
-  return `ne restano ${REMAINING_FORMAT.format(insight.remainingQuantity)}`;
+  return tr("ne restano {0}", { 0: REMAINING_FORMAT.format(insight.remainingQuantity) });
 }
   const QUANTITY_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 6 });
   const REMAINING_FORMAT = new Intl.NumberFormat(formattingLocale, { maximumFractionDigits: 4 });
@@ -76,7 +76,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
   const details = [
     formatDateWithYear(t.date),
     describe(t, instrument),
-    Number(t.fees) > 0 ? `commissioni ${Number(t.fees).toLocaleString(formattingLocale)}` : null,
+    Number(t.fees) > 0 ? tr("commissioni {0}", {0: Number(t.fees).toLocaleString(formattingLocale)}) : null,
     remainingNote(insight),
   ].filter(Boolean);
   return (
@@ -87,7 +87,7 @@ export function OperationRow({ insight, instrument, currency, deleting, onEdit, 
           <Badge variant={t.type === "vendita" || t.type === "rimborso" ? "outline" : "secondary"}>
             {tr(TRANSACTION_TYPE_LABELS[t.type])}
           </Badge>
-          <p className="truncate text-sm font-medium text-foreground">{instrument?.name ?? "Strumento"}</p>
+          <p className="truncate text-sm font-medium text-foreground">{instrument?.name ?? tr("Strumento")}</p>
         </div>
         <p className="mt-0.5 text-xs text-muted-foreground">{details.join(" · ")}</p>
       </div>

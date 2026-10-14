@@ -43,7 +43,7 @@ export function IndicatorHelp({ id, title, formula, indicator, format = "multipl
         <p className="text-muted-foreground">{formula}</p>
         {indicator ? (
           <p className="rounded-lg bg-muted px-3 py-2 font-heading tabular-nums text-foreground">
-            {formatOperand(indicator.numerator, currency, priceCurrency)}{" "}{tr("÷")}{" "}{formatOperand(indicator.denominator, currency, priceCurrency)} ={" "}
+            {formatOperand(indicator.numerator, currency, priceCurrency)}{" "}{tr("÷")}{" "}{formatOperand(indicator.denominator, currency, priceCurrency)} {"="}{" "}
             <span className="font-medium">{formatIndicator(indicator.value, format)}</span>
           </p>
         ) : null}

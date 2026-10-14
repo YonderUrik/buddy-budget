@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import { ShieldAlertIcon } from "lucide-react";
-import { riskLevel } from "@/lib/investments/risk-insights";
+import { localizedRiskInsights } from "@/lib/investments/risk-insights";
 import type { TitleStats } from "@/lib/investments/title-stats";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,8 @@ export interface TitleRiskSectionProps {
 }
 
 export function TitleRiskSection({ stats }: TitleRiskSectionProps) {
+  const { riskLevel } = localizedRiskInsights(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatSignedPct, formatPct } = localizedFormats(formattingLocale);
 
@@ -40,8 +42,7 @@ export function TitleRiskSection({ stats }: TitleRiskSectionProps) {
           <span className={cn("font-medium tabular-nums", stats.maxDrawdown < -0.005 ? "text-neg" : "text-foreground")}>
             {stats.maxDrawdown < -0.005 ? formatSignedPct(stats.maxDrawdown) : tr("nessuno")}
           </span>
-          .
-        </p>
+          {"."}</p>
       ) : null}
     </PanelSection>
   );

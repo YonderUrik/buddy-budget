@@ -80,7 +80,7 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
       >
         <SlidersHorizontalIcon className="size-3.5" aria-hidden="true" />
         <span>{tr("Costi e imposte")}</span>
-        {simulating ? <span className="tabular-nums" aria-hidden="true">· {activeCount}</span> : null}
+        {simulating ? <span className="tabular-nums" aria-hidden="true">{"·"}{activeCount}</span> : null}
       </PopoverTrigger>
       <PopoverContent align="center" className="w-[22rem] max-w-[calc(100vw-2rem)] gap-3 rounded-2xl p-4">
         <div>

@@ -69,7 +69,7 @@ export function TitleStatsCard({ stats, currency }: TitleStatsCardProps) {
         {stats.high52 !== null && stats.low52 !== null ? (
           <div>
             <p className="mb-2 text-sm text-foreground">{tr("Forbice dell'ultimo anno")}{stats.fromHigh !== null && stats.fromHigh < -0.005 ? (
-                <span className="text-muted-foreground"> · {formatPct(-stats.fromHigh)}{" "}{tr("sotto il massimo")}</span>
+                <span className="text-muted-foreground"> {"·"}{formatPct(-stats.fromHigh)}{" "}{tr("sotto il massimo")}</span>
               ) : (
                 <span className="text-muted-foreground">{" "}{tr("· sui massimi")}</span>
               )}

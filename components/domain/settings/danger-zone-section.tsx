@@ -94,7 +94,7 @@ export function DangerZoneSection({ settings, recentLogin }: DangerZoneSectionPr
       <DangerActionDialog
         {...common}
         title={tr("Disattiva l'account")}
-        summary={`L'account si blocca subito e viene eliminato dopo ${DEACTIVATION_GRACE_DAYS} giorni. Rientrando prima puoi riattivarlo.`}
+        summary={tr("L'account si blocca subito e viene eliminato dopo {0} giorni. Rientrando prima puoi riattivarlo.", {0: DEACTIVATION_GRACE_DAYS})}
         triggerLabel="Disattiva"
         dialogTitle="Disattivare l'account?"
         dialogDescription={

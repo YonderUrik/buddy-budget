@@ -6,7 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { Button } from "@/components/ui/button";
 import { PercentIcon } from "lucide-react";
 import type { WithdrawalScenario } from "@/lib/calc/pension";
-import { formatPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 import { PensionTaxTimeline } from "./pension-tax-timeline";
 
@@ -26,6 +26,8 @@ export interface PensionTaxCardProps {
 }
 
 export function PensionTaxCard({ adhesionDate, years, realYears, isSimulated, scenario, baseline, currency, onYearsChange, onCommit, onReset }: PensionTaxCardProps) {
+  const { formatPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const adhesionYear = Number(adhesionDate.slice(0, 4));
   const delta = scenario && baseline ? scenario.netLow - baseline.netLow : null;
@@ -45,7 +47,7 @@ export function PensionTaxCard({ adhesionDate, years, realYears, isSimulated, sc
                 <>
                   <strong className="font-semibold">{tr("Simulazione")}</strong>{tr(": dopo")}{" "}{years}{" "}{tr("anni di adesione (nel")}{" "}{adhesionYear + years}{tr(") l'aliquota sarebbe")}{" "}{formatPercent(scenario?.rate ?? 0)}
                   {scenario && delta !== null ? (
-                    <>{tr(", e alla pensione ti resterebbero almeno")}{" "}<strong className="font-semibold tabular-nums">{money(scenario.netLow, currency)}</strong> ({delta >= 0 ? "+" : "−"}{money(Math.abs(delta), currency)}{" "}{tr("rispetto a oggi).")}</>
+                    <>{tr(", e alla pensione ti resterebbero almeno")}{" "}<strong className="font-semibold tabular-nums">{money(scenario.netLow, currency)}</strong> {"("}{delta >= 0 ? "+" : "−"}{money(Math.abs(delta), currency)}{" "}{tr("rispetto a oggi).")}</>
                   ) : (
                     "."
                   )}

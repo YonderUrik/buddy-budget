@@ -48,7 +48,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
         const sheet = readXlsx(new Uint8Array(await files[0].arrayBuffer()));
         onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
       } else onLoad(await files[0].text(), files[0].name);
-    } catch (e) { setFileError(e instanceof Error ? e.message : "Impossibile leggere i file"); }
+    } catch (e) { setFileError(e instanceof Error ? e.message : tr("Impossibile leggere i file")); }
     finally { setLoading(false); }
   }
   const busy = reading || loading;
@@ -103,8 +103,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
         ) : null}
         <p className="text-sm text-muted-foreground">{tr("Il tuo broker non c'è?")}{" "}
           <Link href="/importazioni" className="font-medium text-primary hover:underline">{tr("Crea il tuo formato")}</Link>
-          .
-        </p>
+          {"."}</p>
       </div>
     </div>
   );

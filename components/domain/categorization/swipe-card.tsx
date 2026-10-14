@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
-import { dateRangeLabel } from "@/lib/categorization/origin";
+import { localizedCategorizationText } from "@/lib/categorization/origin";
 
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
@@ -76,6 +76,8 @@ export function SwipeCard({
   onSkip,
   onRemoteLogo,
 }: SwipeCardProps) {
+  const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -138,7 +140,7 @@ export function SwipeCard({
           {formatCurrency(group.totalAmount, currency)}
         </p>
         <p className="text-xs text-muted-foreground">
-          {count === 1 ? "1 movimento" : `${count} movimenti`} · {dateRangeLabel(group.transactionDates)}
+          {count === 1 ? tr("1 movimento") : tr("{0} movimenti", { 0: count })} {"·"}{dateRangeLabel(group.transactionDates)}
         </p>
       </div>
 
@@ -167,14 +169,13 @@ export function SwipeCard({
 
       {changing || !hasSuggestion ? (
         <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted-foreground">{changing ? "Scegli la categoria giusta" : "Nessuna proposta: scegli tu la categoria"}</p>
+          <p className="text-sm text-muted-foreground">{changing ? tr("Scegli la categoria giusta") : tr("Nessuna proposta: scegli tu la categoria")}</p>
           <Button type="button" variant="outline" className="h-11 w-full" onClick={onChange}>
-            Scegli la categoria
-          </Button>
+            {tr("Scegli la categoria")}</Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 rounded-xl bg-muted/60 p-3 text-center md:p-4">
-          <p className="text-xs text-muted-foreground">Categoria proposta</p>
+          <p className="text-xs text-muted-foreground">{tr("Categoria proposta")}</p>
           {suggestedAppearance && <CategoryAvatar icon={suggestedAppearance.icon} color={suggestedAppearance.color} size={22} className="size-10 md:size-12" />}
           <p className="font-heading text-lg font-medium text-foreground">{suggestedName}</p>
           {group.suggestion && <SuggestionOrigin suggestion={group.suggestion} align="center" />}
@@ -184,7 +185,7 @@ export function SwipeCard({
       <label htmlFor={rememberId} className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
         <Checkbox id={rememberId} checked={remember} onCheckedChange={(checked) => onRememberChange(checked === true)} />
         <span className="min-w-0">
-          Usa sempre questa categoria<span className="max-sm:sr-only"> per «{group.label}»</span>
+          {tr("Usa sempre questa categoria")}<span className="max-sm:sr-only"> {tr("per «")}{group.label}{"»"}</span>
         </span>
       </label>
     </motion.div>

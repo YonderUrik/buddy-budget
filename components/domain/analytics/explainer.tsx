@@ -17,7 +17,7 @@ export function Explainer({ id }: ExplainerProps) {
   const content = EXPLAINERS[id];
   return (
     <div className="rounded-lg bg-muted/40 px-3.5 py-3 text-sm">
-      <p className="text-muted-foreground">{content.what}</p>
+      <p className="text-muted-foreground">{tr(content.what)}</p>
       <details
         className="group mt-2"
         onToggle={(event) => {
@@ -29,15 +29,15 @@ export function Explainer({ id }: ExplainerProps) {
         <dl className="mt-2 flex flex-col gap-2.5 text-muted-foreground">
           <div>
             <dt className="font-medium text-foreground">{tr("Come leggerla")}</dt>
-            <dd>{content.read}</dd>
+            <dd>{tr(content.read)}</dd>
           </div>
           <div>
             <dt className="font-medium text-foreground">{tr("Come è calcolata")}</dt>
-            <dd>{content.how}</dd>
+            <dd>{tr(content.how)}</dd>
           </div>
           <div>
             <dt className="font-medium text-foreground">{tr("Limiti")}</dt>
-            <dd>{content.limits}</dd>
+            <dd>{tr(content.limits)}</dd>
           </div>
           {"sources" in content && content.sources ? (
             <div>

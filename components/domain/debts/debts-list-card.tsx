@@ -9,7 +9,7 @@ import { ChevronRightIcon, LandmarkIcon } from "lucide-react";
 import { PanelSection } from "@/components/domain/investments/light";
 import type { DebtView } from "@/lib/debts/view";
 
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 import { repaidShare } from "./debt-facts";
 import { DEBTS_COLORS } from "./debts-theme";
 
@@ -18,7 +18,7 @@ export interface DebtsListCardProps {
   currency: string;
 }
 
-const percent = (value: number) => `${value.toFixed(2).replace(".", ",")}%`;
+
 
 function Row({ href, name, detail, amount, share }: { href: string; name: string; detail: string; amount: string; share: number }) {
   return (
@@ -39,8 +39,10 @@ function Row({ href, name, detail, amount, share }: { href: string; name: string
 }
 
 export function DebtsListCard({ debts, currency }: DebtsListCardProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatPct } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
   const money = (value: number) => formatCurrency(value, currency, { maximumFractionDigits: 0 });
@@ -52,7 +54,7 @@ export function DebtsListCard({ debts, currency }: DebtsListCardProps) {
             key={debt.id}
             href={`/debiti/finanziamenti?id=${debt.id}`}
             name={debt.name}
-            detail={debt.plan.totals.finished ? "Estinto" : `finisce a ${formatMonthYear(debt.plan.totals.endDate)}${debt.apr !== null ? ` · ${percent(debt.apr)} TAEG` : ""}`}
+            detail={debt.plan.totals.finished ? tr("Estinto") : tr("finisce a {0}{1}", {0: formatMonthYear(debt.plan.totals.endDate), 1: debt.apr !== null ? ` · ${formatPct(debt.apr / 100, 2)} ${tr("TAEG")}` : ""})}
             amount={money(debt.plan.totals.residual)}
             share={repaidShare(debt)}
           />

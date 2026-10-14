@@ -48,7 +48,7 @@ export function CorrelationPairs({ matrix, instrumentsById }: CorrelationPairsPr
                 <PairName instrument={instrumentsById.get(pair.bId)} />
               </p>
               <p className="text-xs text-muted-foreground">
-                {tr(verdict.label)}{" "}<span className="tabular-nums">({decimal(pair.value)})</span>
+                {tr(verdict.label)}{" "}<span className="tabular-nums">{"("}{decimal(pair.value)}{")"}</span>
               </p>
               <div className="h-1.5 w-full rounded-full bg-muted" aria-hidden="true">
                 <div

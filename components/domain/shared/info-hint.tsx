@@ -24,7 +24,7 @@ export function InfoHint({ children, label }: InfoHintProps) {
       >
         <InfoIcon className="size-3.5" aria-hidden="true" />
       </PopoverTrigger>
-      <PopoverContent className="max-w-72 text-sm leading-relaxed text-muted-foreground">{children}</PopoverContent>
+      <PopoverContent className="max-w-72 text-sm leading-relaxed text-muted-foreground">{tr(children)}</PopoverContent>
     </Popover>
   );
 }

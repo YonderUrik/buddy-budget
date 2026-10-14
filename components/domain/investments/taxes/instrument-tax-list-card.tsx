@@ -45,8 +45,8 @@ export function InstrumentTaxListCard({ instruments, resolved, onEdit }: Instrum
                 <div className="min-w-0">
                   <p className="truncate text-foreground">{instrument.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {formatPct(settings.taxRate)} · {tr(SOURCE_LABELS[settings.taxRateSource])}
-                    {isFund(instrument.type) ? ` · ${settings.harmonized ? "armonizzato" : "non armonizzato"}` : ""}
+                    {formatPct(settings.taxRate)} {"·"}{tr(SOURCE_LABELS[settings.taxRateSource])}
+                    {isFund(instrument.type) ? ` · ${settings.harmonized ? "armonizzato" : tr("non armonizzato")}` : ""}
                   </p>
                 </div>
               </div>

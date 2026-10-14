@@ -9,7 +9,7 @@ import type { EarlyRepaymentOutcome } from "@/lib/calc/early-repayment";
 import type { EarlyRepaymentPreview } from "@/lib/debts/early-repayment-form";
 
 import { cn } from "@/lib/utils";
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 
 type PreviewOnce = Extract<EarlyRepaymentPreview, { kind: "once" }>;
 type PreviewMonthly = Extract<EarlyRepaymentPreview, { kind: "monthly" }>;
@@ -35,6 +35,8 @@ function Row({ label, value, strong, positive }: { label: string; value: string;
 }
 
 function OutcomeCard({ outcome, currency, selectable, selected, onSelect }: { outcome: EarlyRepaymentOutcome; currency: string; selectable: boolean; selected: boolean; onSelect: () => void }) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -74,6 +76,8 @@ export interface EarlyRepaymentCompareProps {
 
 /** Confronto "riduci la rata / riduci la durata" per un'estinzione una tantum. */
 export function EarlyRepaymentCompare({ preview, currency, selected, onSelect }: EarlyRepaymentCompareProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -98,6 +102,8 @@ export interface EarlyRepaymentMonthlyProps {
 
 /** Esito di un extra versato ogni mese (solo simulazione). */
 export function EarlyRepaymentMonthly({ preview, currency }: EarlyRepaymentMonthlyProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 

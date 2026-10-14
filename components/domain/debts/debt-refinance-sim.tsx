@@ -13,7 +13,7 @@ import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
 
 import { cn } from "@/lib/utils";
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 import { DebtFormField } from "./debt-form-field";
 
 export interface DebtRefinanceSimProps {
@@ -39,6 +39,8 @@ function Side({ title, rows }: { title: string; rows: { label: string; value: st
 }
 
 export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -69,10 +71,10 @@ export function DebtRefinanceSim({ debt, currency }: DebtRefinanceSimProps) {
           <Input id={`${base}-n`} inputMode="numeric" value={installments} onChange={(e) => setInstallments(e.target.value)} placeholder={String(debt.plan.totals.remainingInstallments)} />
         </DebtFormField>
         <DebtFormField label={tr("Spese della nuova offerta")} htmlFor={`${base}-costs`} hint={tr("Istruttoria, perizia, imposte")}>
-          <Input id={`${base}-costs`} inputMode="decimal" value={costs} onChange={(e) => setCosts(e.target.value)} placeholder={tr("0")} />
+          <Input id={`${base}-costs`} inputMode="decimal" value={costs} onChange={(e) => setCosts(e.target.value)} placeholder={"0"} />
         </DebtFormField>
         <DebtFormField label={tr("Penale di estinzione")} htmlFor={`${base}-pen`} hint={tr("Quella sul finanziamento attuale")}>
-          <Input id={`${base}-pen`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} placeholder={tr("0")} />
+          <Input id={`${base}-pen`} inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} placeholder={"0"} />
         </DebtFormField>
       </div>
       {result ? (

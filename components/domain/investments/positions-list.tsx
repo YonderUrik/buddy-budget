@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import { PanelSection } from "./panel-section";
 import { INSTRUMENT_TYPE_COLOR } from "./instrument-colors";
 import { PositionRowView, POSITIONS_GRID_COLUMNS } from "./position-row";
-import { concentrationText, percent } from "./positions-format";
+import { localizedPositionFormats } from "./positions-format";
 
 export { STALE_PRICE_DAYS } from "./positions-format";
 
@@ -39,6 +39,8 @@ export interface PositionsListProps {
 }
 
 export function PositionsList({ rows, concentration, currency, todayKey, backfill, onManualPrice, action, titleHrefBase }: PositionsListProps) {
+  const { concentrationText, percent } = localizedPositionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const [logosShown, setLogosShown] = React.useState(false);
   const loading = new Set(backfill.filter((b) => b.status === "running" && !b.interrupted).map((b) => b.instrumentId));

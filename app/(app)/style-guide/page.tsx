@@ -162,7 +162,7 @@ export default function StyleGuidePage() {
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="amount">{tr("Importo")}</Label>
-              <Input id="amount" placeholder={tr("0,00 €")} />
+              <Input id="amount" placeholder={"0,00 €"} />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="note">{tr("Nota")}</Label>

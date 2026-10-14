@@ -11,7 +11,7 @@ import Link from "next/link";
 import { CollapsibleSection } from "@/components/domain/shared";
 import type { SidebarDeadlines } from "@/lib/sidebar/types";
 import { cn } from "@/lib/utils";
-import { formatDeadlineDay, formatSidebarAmount } from "./sidebar-insights.utils";
+import { localizedSidebarFormats, formatDeadlineDay } from "./sidebar-insights.utils";
 
 export interface SidebarDeadlinesProps {
   data: SidebarDeadlines | undefined;
@@ -25,6 +25,8 @@ export interface SidebarDeadlinesProps {
 }
 
 export function SidebarDeadlinesModule({ data, loading, hidden, collapsed, onNavigate, onItemClick }: SidebarDeadlinesProps) {
+  const { formatDeadlineDay, formatSidebarAmount } = localizedSidebarFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   if (collapsed) return null;
   if (loading) {

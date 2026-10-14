@@ -12,7 +12,7 @@ import { CategoryAvatar, CategorySheet } from "@/components/domain/categories";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { AutoCategorizedGroup } from "@/lib/categorization/auto-review";
-import { dateRangeLabel } from "@/lib/categorization/origin";
+import { localizedCategorizationText } from "@/lib/categorization/origin";
 import type { Category } from "@/lib/db/schema/categories";
 import { formatCurrency } from "@/lib/format";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
@@ -34,6 +34,8 @@ export interface AutoCategorizedRowProps {
 }
 
 export function AutoCategorizedRow({ group, categories, currency, categoryUsage, busy = false, onCorrect, onRemoteLogo }: AutoCategorizedRowProps) {
+  const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const [picking, setPicking] = React.useState(false);
   // Una correzione di solito vale anche per i prossimi movimenti: senza, una regola sbagliata li rimetterebbe lì.
@@ -66,7 +68,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
           >
             <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{tr(group.label)}</span>
             <span className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
-              {count === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: count})} · {dateRangeLabel(group.transactionDates)}
+              {count === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: count})} {"·"}{dateRangeLabel(group.transactionDates)}
               <ChevronDownIcon className={cn("size-3.5 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
             </span>
           </button>
@@ -84,7 +86,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
             className="flex min-h-9 max-w-full items-center gap-1.5 rounded-full bg-foreground/[0.05] py-1 pr-2.5 pl-1 text-sm font-medium text-foreground outline-none hover:bg-foreground/[0.09] focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60 sm:min-h-8"
           >
             {category ? <CategoryAvatar icon={category.icon as CategoryIcon} color={category.color as CategoryColor} size={12} className="size-6" /> : null}
-            <span className="truncate">{category?.name ?? "Categoria"}</span>
+            <span className="truncate">{category?.name ?? tr("Categoria")}</span>
             <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
           </button>
           <AutoOriginBadge source={group.source} confidence={group.confidence} />
@@ -118,7 +120,7 @@ export function AutoCategorizedRow({ group, categories, currency, categoryUsage,
         footer={
           <label htmlFor={rememberId} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl bg-foreground/[0.04] px-3 text-sm">
             <Checkbox id={rememberId} checked={remember} onCheckedChange={(checked) => setRemember(checked === true)} />
-            <span className="min-w-0">{tr("Usa sempre questa categoria per «")}{group.label}»</span>
+            <span className="min-w-0">{tr("Usa sempre questa categoria per «")}{group.label}{"»"}</span>
           </label>
         }
       />

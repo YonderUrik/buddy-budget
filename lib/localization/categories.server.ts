@@ -16,7 +16,7 @@ export async function localizeStarterCategories(userId: string, profile: LocaleP
     const proposals = localizedCategoryProposal(profile);
     for (const original of [...DEFAULT_CATEGORIES, ...OPTIONAL_DEFAULT_CATEGORIES]) {
       const translatedName = translate(profile.language, original.name);
-      const row = existing.find(c => (c.name === original.name || c.name === translatedName) && c.isFallback === Boolean(original.isFallback) && c.description === (original.description ?? null));
+      const row = existing.find(c => c.defaultKey === original.key && (c.name === original.name || c.name === translatedName) && c.isFallback === Boolean(original.isFallback) && c.description === (original.description ?? null));
       if (!row) continue;
       const name = existing.some(c => c.id !== row.id && c.name === translatedName) ? row.name : translatedName;
       const description = proposals.find(c => c.key === original.key)?.description ?? translate(profile.language, original.description ?? null);

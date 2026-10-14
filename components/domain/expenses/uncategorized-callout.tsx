@@ -27,7 +27,7 @@ export function UncategorizedCallout({
   categorizeHref = "/categorizza",
 }: UncategorizedCalloutProps) {
   const { t: tr } = useLocalization();
-  const noun = count === 1 ? "transazione da categorizzare" : "transazioni da categorizzare";
+  const noun = count === 1 ? tr("transazione da categorizzare") : tr("transazioni da categorizzare");
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-neg/30 bg-neg-soft/40 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">

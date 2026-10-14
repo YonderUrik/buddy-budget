@@ -94,7 +94,7 @@ export function CategorySheet({ categories, value, usage = {}, trigger, onSelect
         </div>
         {rememberLabel && (
           <label className="flex min-h-11 items-center justify-between gap-3 rounded-xl bg-foreground/[0.04] px-3 text-sm">
-            <span>{tr("Ricordala per i prossimi «")}{rememberLabel}»</span>
+            <span>{tr("Ricordala per i prossimi «")}{rememberLabel}{"»"}</span>
             <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} className="size-5 accent-[var(--primary)]" />
           </label>
         )}

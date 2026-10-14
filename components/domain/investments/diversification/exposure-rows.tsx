@@ -69,7 +69,7 @@ export function ExposureRows({ slices, currency, labelFor, colorFor, iconFor, ac
               )}
               <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <span className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="truncate text-foreground">{labelFor(slice.key)}</span>
+                  <span className="truncate text-foreground">{tr(labelFor(slice.key))}</span>
                   <span className="shrink-0 tabular-nums">
                     <span className="hidden text-muted-foreground sm:inline">
                       {formatCurrency(slice.value, currency, {

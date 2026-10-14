@@ -16,7 +16,6 @@ export function LegalLinksNote({ className = "text-center text-xs text-text-3" }
       <a href={legalHref("termini")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("Termini di servizio")}</a>{" "}{tr("e confermi di aver letto la")}{" "}
       <a href={legalHref("privacy")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("Privacy")}</a>{tr(". Usiamo solo")}{" "}
       <a href={legalHref("cookie")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("strumenti tecnici")}</a>
-      .
-    </p>
+      {"."}</p>
   );
 }

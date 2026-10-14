@@ -66,7 +66,7 @@ export default function DividendiPage() {
     const input = { items: items.map((item) => ({ instrumentId: item.instrumentId, date: item.date })) };
     dismiss.mutate(input, {
       onSuccess: () =>
-        toast(items.length === 1 ? "Proposta ignorata" : `${items.length} proposte ignorate`, {
+        toast(items.length === 1 ? tr("Proposta ignorata") : tr("{0} proposte ignorate", { 0: items.length }), {
           action: { label: tr("Annulla"), onClick: () => dismiss.mutate({ ...input, restore: true }) },
         }),
       onError: (e) => errorToast(e.message, "operazione"),
@@ -81,7 +81,7 @@ export default function DividendiPage() {
       </div>
     );
   }
-  if (overview.isError || !view) return <LoadError message="Impossibile caricare i dividendi." onRetry={() => overview.refetch()} />;
+  if (overview.isError || !view) return <LoadError message={tr("Impossibile caricare i dividendi.")} onRetry={() => overview.refetch()} />;
   if (!view.hasTransactions) {
     return (
       <p className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">{tr("Qui vedrai dividendi e cedole: registra prima un acquisto nella scheda Portafoglio.")}</p>
@@ -94,8 +94,7 @@ export default function DividendiPage() {
   return (
     <>
       {pending > 0 ? (
-        <p className="text-sm text-muted-foreground" role="status">{tr("Scarico lo storico dei dividendi di")}{" "}{pending === 1 ? tr("uno strumento") : tr("{0} strumenti", {0: pending})}…
-        </p>
+        <p className="text-sm text-muted-foreground" role="status">{tr("Scarico lo storico dei dividendi di")}{" "}{pending === 1 ? tr("uno strumento") : tr("{0} strumenti", {0: pending})}{"…"}</p>
       ) : null}
       <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
         <div className="flex flex-col gap-10 lg:col-span-3">

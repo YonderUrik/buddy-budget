@@ -39,7 +39,7 @@ export function TransactionsPeriodSummary({ expenses, income, currency }: Transa
         </dd>
       </div>
       <div className="min-w-0">
-        <dt className="flex items-center gap-0.5 text-xs text-muted-foreground">{tr("Saldo")}<InfoHint label={tr("Come sono calcolati questi importi?")}>{tr("Spese ed entrate sono al netto delle quote escluse con &ldquo;Dividi&rdquo; (quote di altri, rimborsi, giroconti).")}{totalExcluded > 0 && (
+        <dt className="flex items-center gap-0.5 text-xs text-muted-foreground">{tr("Saldo")}<InfoHint label={tr("Come sono calcolati questi importi?")}>{tr("Spese ed entrate sono al netto delle quote escluse con “Dividi” (quote di altri, rimborsi, giroconti).")}{totalExcluded > 0 && (
               <>
                 {" "}{tr("In questo periodo sono esclusi")}{" "}{formatCurrency(expenses.escluse, currency)}{" "}{tr("di uscite e")}{" "}
                 {formatCurrency(income.escluse, currency)}{" "}{tr("di entrate.")}</>

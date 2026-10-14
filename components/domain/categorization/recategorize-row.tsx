@@ -10,7 +10,7 @@ import * as React from "react";
 import { ArrowRightIcon } from "lucide-react";
 import { CategoryAvatar } from "@/components/domain/categories";
 import { Checkbox } from "@/components/ui/checkbox";
-import { dateRangeLabel } from "@/lib/categorization/origin";
+import { localizedCategorizationText } from "@/lib/categorization/origin";
 import type { RecategorizePreviewGroup } from "@/lib/categorization/recategorize-plan";
 import type { Category } from "@/lib/db/schema/categories";
 import { formatCurrency } from "@/lib/format";
@@ -45,6 +45,8 @@ function maybeMineText(legacyCount: number, count: number): string {
 }
 
 export function RecategorizeRow({ group, categoryById, currency, checked, onCheckedChange, onRemoteLogo }: RecategorizeRowProps) {
+  const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const checkboxId = React.useId();
   const isIncome = group.totalAmount > 0;
@@ -57,7 +59,7 @@ export function RecategorizeRow({ group, categoryById, currency, checked, onChec
           <span className="flex min-w-0 flex-col">
             <span className="line-clamp-2 text-sm font-medium break-words text-foreground">{tr(group.label)}</span>
             <span className="text-xs text-muted-foreground tabular-nums">
-              {group.count === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: group.count})} · {dateRangeLabel([group.firstDate, group.lastDate])}
+              {group.count === 1 ? tr("1 movimento") : tr("{0} movimenti", {0: group.count})} {"·"}{dateRangeLabel([group.firstDate, group.lastDate])}
               {group.legacyCount > 0 ? ` · ${maybeMineText(group.legacyCount, group.count)}` : ""}
             </span>
           </span>

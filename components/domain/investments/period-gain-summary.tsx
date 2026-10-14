@@ -34,15 +34,13 @@ export function PeriodGainSummary({ gain, currency }: PeriodGainSummaryProps) {
   return (
     <p className="max-w-prose text-balance text-base text-foreground">{tr("Da")}{" "}{DATE_FORMAT.format(parseDateOnly(gain.fromKey))}{" "}{tr("il valore è passato da")}{" "}
       <span className="font-semibold tabular-nums">{money(gain.startValue)}</span>{" "}{tr("a")}{" "}
-      <span className="font-semibold tabular-nums">{money(gain.endValue)}</span>.
-      {Math.abs(added) >= 0.5 ? <>{" "}{tr("Nel periodo hai")}{" "}{added > 0 ? tr("versato") : tr("ritirato")}{" "}{money(Math.abs(added))}{tr(": quello non è guadagno.")}</> : null}{" "}{tr("Il periodo ha")}{" "}{positive ? tr("reso") : tr("perso")}{" "}
+      <span className="font-semibold tabular-nums">{money(gain.endValue)}</span>{"."}{Math.abs(added) >= 0.5 ? <>{" "}{tr("Nel periodo hai")}{" "}{added > 0 ? tr("versato") : tr("ritirato")}{" "}{money(Math.abs(added))}{tr(": quello non è guadagno.")}</> : null}{" "}{tr("Il periodo ha")}{" "}{positive ? tr("reso") : tr("perso")}{" "}
       <span className={cn("font-semibold tabular-nums", positive ? "text-pos" : "text-neg")}>
         {positive ? "+" : "−"}
         {money(Math.abs(gain.gain))}
         {gain.twr !== null ? ` (${pctText(gain.twr)})` : ""}
       </span>
       {gain.income > 0.5 ? <span className="text-muted-foreground">{tr(", compresi")}{" "}{money(gain.income)}{" "}{tr("tra dividendi e cedole")}</span> : null}
-      .
-    </p>
+      {"."}</p>
   );
 }

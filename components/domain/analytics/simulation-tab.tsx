@@ -14,11 +14,11 @@ import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { buildSimulationInput, type RetireAt } from "@/lib/analitiche/simulation";
 import { runMonteCarlo } from "@/lib/calc/monte-carlo";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 
 import { successVerdict } from "./plain-answers";
 import { GuidedReading } from "./guided-reading";
-import { simulationSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface SimulationTabProps {
   /** Versione ridotta: solo il grafico dello scenario «smetto oggi», senza scelta, numeri, guida passo passo né riquadro «Come leggerla». */
@@ -40,6 +40,10 @@ const RETIRE_OPTIONS = [
 ] as const satisfies readonly { value: RetireAt; label: string }[];
 
 export function SimulationTab({ assumptions, plan, currency, compact = false }: SimulationTabProps) {
+  const { simulationSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
 
   const { t: tr } = useLocalization();

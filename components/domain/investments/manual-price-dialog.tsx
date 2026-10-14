@@ -51,8 +51,7 @@ export function ManualPriceDialog({ instrument, onClose }: ManualPriceDialogProp
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">{tr("Data")}<Input type="date" value={date} max={localTodayKey()} onChange={(e) => setDate(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-            {priceLabel(instrument?.priceUnit)} ({instrument?.currency})
-            <Input inputMode="decimal" value={close} onChange={(e) => setClose(e.target.value)} />
+            {tr(priceLabel(instrument?.priceUnit))} {"("}{instrument?.currency}{")"}<Input inputMode="decimal" value={close} onChange={(e) => setClose(e.target.value)} />
           </label>
           {save.isError ? <p className="text-sm text-destructive">{tr(save.error.message)}</p> : null}
           <DialogActions>

@@ -40,7 +40,7 @@ import type { Account } from "@/lib/db/schema/accounts";
 import { AccountAvatar } from "./account-avatar";
 import { AccountIconColorPicker } from "./account-icon-color-picker";
 import { CurrencyInput } from "./currency-input";
-import { buildAccountStatus, describeSyncAvailability, type AccountSyncInfo } from "./account-status";
+import { localizedAccountStatus, type AccountSyncInfo } from "./account-status";
 
 const CUSTOM_TYPE_VALUE = "__custom__";
 const FIELD_LABEL = "text-sm font-medium text-foreground";
@@ -72,6 +72,8 @@ function AccountDetailsBody({
   onClose,
   onReconnect,
 }: Omit<AccountDetailsDialogProps, "account"> & { account: Account }) {
+  const { buildAccountStatus, describeSyncAvailability } = localizedAccountStatus(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -139,7 +141,7 @@ function AccountDetailsBody({
           <div className="min-w-0">
             <DialogTitle className="truncate">{account.name}</DialogTitle>
             <DialogDescription>
-              {isAuto ? tr("Collegato alla banca") : tr("Conto manuale")} · {tr(status.label)}
+              {isAuto ? tr("Collegato alla banca") : tr("Conto manuale")} {"·"}{tr(status.label)}
             </DialogDescription>
           </div>
         </div>

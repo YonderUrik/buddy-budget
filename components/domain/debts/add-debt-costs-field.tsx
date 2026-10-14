@@ -25,7 +25,7 @@ export function AddDebtCostsField({ costs, onChange }: AddDebtCostsFieldProps) {
       {costs.map((cost, index) => (
         <div key={index} className="grid grid-cols-[1fr_6rem_7.5rem_auto] items-center gap-2">
           <Input aria-label={tr("Nome della spesa")} placeholder={tr("Es. Assicurazione")} value={cost.label} onChange={(e) => update(index, { label: e.target.value })} />
-          <Input aria-label={tr("Importo della spesa")} inputMode="decimal" placeholder={tr("€")} value={cost.amount} onChange={(e) => update(index, { amount: e.target.value })} />
+          <Input aria-label={tr("Importo della spesa")} inputMode="decimal" placeholder={"€"} value={cost.amount} onChange={(e) => update(index, { amount: e.target.value })} />
           <Select value={cost.kind} onValueChange={(v) => v && update(index, { kind: v as AddDebtCostField["kind"] })}>
             <SelectTrigger aria-label={tr("Quando si paga")}>
               <SelectValue>{(v: string | null) => (v ? tr(KIND_LABELS[v as AddDebtCostField["kind"]]) : "")}</SelectValue>

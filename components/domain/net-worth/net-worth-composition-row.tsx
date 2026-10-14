@@ -36,10 +36,6 @@ function percent(ratio: number): string {
   return `${Math.round(ratio * 100)}%`;
 }
 
-function signedPercent(ratio: number): string {
-  return `${ratio < 0 ? "−" : "+"}${Math.abs(ratio * 100).toFixed(1).replace(".", ",")}%`;
-}
-
 function investedSentence(share: number): string {
   if (share === 0) return "Per ora è tutto liquidità.";
   return `Il ${percent(share)} è investito, il resto è liquidità.`;
@@ -47,7 +43,7 @@ function investedSentence(share: number): string {
 
 export function NetWorthCompositionRow({ items, currency, title = "Dove sta il tuo patrimonio", className, onSliceSelect }: NetWorthCompositionRowProps) {
   const { locale: formattingLocale } = useLocalization();
-  const { formatCurrency } = localizedFormats(formattingLocale);
+  const { formatCurrency, formatSignedPct: signedPercent } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
   const [hoveredKey, setHoveredKey] = React.useState<string | null>(null);
@@ -67,7 +63,7 @@ export function NetWorthCompositionRow({ items, currency, title = "Dove sta il t
     setLockedKey((current) => (current === key ? null : key));
   };
   const pieConfig: ChartConfig = Object.fromEntries(pieItems.map((item) => [item.label, { label: item.label, color: colorFor(item.key) }]));
-  const pieSummary = `Composizione del patrimonio: ${pieItems.map((item) => `${item.label} ${percent(item.share)}`).join(", ")}.`;
+  const pieSummary = tr("Composizione del patrimonio: {0}.", { 0: pieItems.map((item) => `${tr(item.label)} ${percent(item.share)}`).join(", ") });
 
   return (
     <Card className={className}>

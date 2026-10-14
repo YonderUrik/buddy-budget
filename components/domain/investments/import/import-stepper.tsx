@@ -22,7 +22,7 @@ export function ImportStepper({ current, className }: ImportStepperProps) {
     <div className={cn("flex flex-col gap-2", className)}>
       <DialogSteps steps={labels} current={index} ariaLabel={tr("Passi dell'import")} className="hidden sm:flex" />
       <div className="flex flex-col gap-2 sm:hidden" role="group" aria-label={tr("Passi dell'import")}>
-        <p className="text-sm font-medium text-foreground" aria-current="step">{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{IMPORT_STEPS.length} · {labels[index]}
+        <p className="text-sm font-medium text-foreground" aria-current="step">{tr("Passo")}{" "}{index + 1}{" "}{tr("di")}{" "}{IMPORT_STEPS.length} {"·"}{labels[index]}
         </p>
         <div className="flex gap-1.5" aria-hidden="true">
           {IMPORT_STEPS.map((step, i) => (
@@ -30,7 +30,7 @@ export function ImportStepper({ current, className }: ImportStepperProps) {
           ))}
         </div>
       </div>
-      <p className="text-sm text-muted-foreground">{IMPORT_STEP_HINTS[current]}</p>
+      <p className="text-sm text-muted-foreground">{tr(IMPORT_STEP_HINTS[current])}</p>
     </div>
   );
 }

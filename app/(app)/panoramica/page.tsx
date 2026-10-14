@@ -61,7 +61,7 @@ const TILE_INVESTMENTS = "investimenti";
 
 
 export default function PanoramicaPage() {
-  const { locale: formattingLocale } = useLocalization();
+  const { locale: formattingLocale, language } = useLocalization();
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
   const MONTH_NAME_FORMAT = new Intl.DateTimeFormat(formattingLocale, { month: "long" });
   const HEADER_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, {
@@ -134,14 +134,14 @@ export default function PanoramicaPage() {
   // Escludere la previdenza toglie solo il totale: l'area resta nel grafico (in grigio).
   const series = pensionIncluded ? fullSeries : excludeClassFromSeries(fullSeries, "previdenza");
   const change = computeNetWorthChange(series);
-  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null);
+  const compositionItems = buildCompositionItems(accounts, investments, debts, pension ? { ...pension, excluded: !pensionIncluded } : null, language);
   const pace = React.useMemo(
     () => computeMonthPace(monthTransactionsQuery.data ?? [], budgetsQuery.data ?? [], today),
     [monthTransactionsQuery.data, budgetsQuery.data, today]
   );
   const monthLabel = MONTH_NAME_FORMAT.format(today);
   const dues = debtsData?.nextDue ?? [];
-  const debtsFootnote = debtsData ? `Residuo dei debiti: ${formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 })}${debtsData.debtFreeDate ? `, ultima rata il ${formatDateWithYear(debtsData.debtFreeDate)}` : ""}` : undefined;
+  const debtsFootnote = debtsData ? tr("Residuo dei debiti: {0}{1}", { 0: formatCurrency(debtsData.totalDebt, currency, { maximumFractionDigits: 0 }), 1: debtsData.debtFreeDate ? tr(", ultima rata il {0}", {0: formatDateWithYear(debtsData.debtFreeDate)}) : "" }) : undefined;
   const headerDate = HEADER_DATE_FORMAT.format(today);
 
   return (
@@ -166,7 +166,7 @@ export default function PanoramicaPage() {
           <div className="h-28 animate-pulse rounded-xl bg-muted" />
         </div>
       ) : isError ? (
-        <LoadError message="Impossibile caricare i dati della panoramica." onRetry={retry} />
+        <LoadError message={tr("Impossibile caricare i dati della panoramica.")} onRetry={retry} />
       ) : accounts.length === 0 && !investments && !pension ? (
         <div className="grid grid-cols-1 gap-x-10 gap-y-10 lg:grid-cols-5">
           <div className="lg:col-span-3">

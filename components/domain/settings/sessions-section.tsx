@@ -28,10 +28,10 @@ function SessionRow({ session, onRevoke, revoking }: { session: UserSessionView;
       <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-foreground">
-          {session.device}
+          {tr("{0} su {1}", {0: tr(session.browser), 1: tr(session.os)})}
           {session.current && <span className="ml-2 text-xs font-normal text-pos">{tr("questo dispositivo")}</span>}
         </p>
-        <p className="text-xs text-muted-foreground">{tr("Attiva")}{" "}{formatRelativeTime(new Date(session.lastActiveAt))}{" "}{tr("· scade il")}{" "}{formatLongDate(new Date(session.expiresAt))}
+        <p className="text-xs text-muted-foreground">{tr("Ultima attività")}{" "}{formatRelativeTime(new Date(session.lastActiveAt))}{" "}{tr("· scade il")}{" "}{formatLongDate(new Date(session.expiresAt))}
         </p>
       </div>
       {!session.current && (
@@ -58,7 +58,7 @@ export function SessionsSection() {
       {isLoading ? (
         <div className="h-24 animate-pulse rounded-lg bg-muted" aria-busy="true" />
       ) : isError ? (
-        <LoadError message="Impossibile caricare le sessioni." onRetry={() => refetch()} />
+        <LoadError message={tr("Impossibile caricare le sessioni.")} onRetry={() => refetch()} />
       ) : (
         <>
           <ul className="flex flex-col">

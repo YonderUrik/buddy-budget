@@ -33,7 +33,7 @@ export function DataSection({ settings, recentLogin }: DataSectionProps) {
       {isLoading ? (
         <div className="h-28 animate-pulse rounded-lg bg-muted" aria-busy="true" />
       ) : isError || !summary ? (
-        <LoadError message="Impossibile caricare il riepilogo dei dati." onRetry={() => refetch()} />
+        <LoadError message={tr("Impossibile caricare il riepilogo dei dati.")} onRetry={() => refetch()} />
       ) : (
         <DataSummaryList summary={summary} />
       )}

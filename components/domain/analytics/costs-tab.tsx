@@ -13,10 +13,10 @@ import type { AnalyticsBase } from "@/lib/analitiche/base";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { costDrag, summarizeCosts } from "@/lib/calc/costs";
 import { AnalyticsCard, Metric, MissingData } from "./analytics-card";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { parseNumber, toFieldText } from "./assumptions-fields";
 import { GuidedReading } from "./guided-reading";
-import { costsSteps } from "./guided-steps";
+import { localizedGuidedSteps } from "./guided-steps";
 
 export interface CostsTabProps {
   base: AnalyticsBase;
@@ -34,6 +34,10 @@ const CONFIG: ChartConfig = {
 };
 
 export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: CostsTabProps) {
+  const { costsSteps } = localizedGuidedSteps(useLocalization().language);
+
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { currency } = base;
   const [drafts, setDrafts] = React.useState<Record<string, string>>(() =>
@@ -52,7 +56,7 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
       if (text === undefined || text.trim() === "") continue;
       const value = parseNumber(text);
       if (value === null || value < 0 || value > 5) {
-        setLocalError(`Costo di «${p.name}»: inserisci un valore tra 0% e 5%.`);
+        setLocalError(tr("Costo di «{0}»: inserisci un valore tra 0% e 5%.", { 0: p.name }));
         return;
       }
       next[p.id] = value / 100;

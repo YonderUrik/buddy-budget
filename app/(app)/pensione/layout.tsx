@@ -34,7 +34,7 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
           <div className="h-32 animate-pulse rounded-2xl bg-foreground/[0.04]" />
         </div>
       ) : view.isError ? (
-        <LoadError message="Impossibile caricare i dati della pensione." onRetry={view.refetch} />
+        <LoadError message={tr("Impossibile caricare i dati della pensione.")} onRetry={view.refetch} />
       ) : !view.fund ? (
         <PensionEmptyState
           today={view.today}

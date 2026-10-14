@@ -1,16 +1,20 @@
 "use client";
 
+import { useLocalization } from "@/lib/localization/provider";
+import { localizedFormats } from "@/lib/localization/format";
 import * as React from "react";
 import { buildFxTable } from "@/lib/calc/fx";
 import { toDateKey, type NetWorthPeriod } from "@/lib/calc/net-worth";
 import { computePortfolioReturns } from "@/lib/calc/returns";
-import { formatDateWithYear } from "@/lib/format";
+
 import { portfolioChartRange, type PortfolioChartPeriod, type PortfolioChartRange } from "@/lib/investments/chart-period";
 import { toTransactionInputs } from "@/lib/investments/view";
 import { useInvestmentsView } from "./investments-view";
 
 /** Periodo del grafico, selezione trascinata persistente e anteprima temporanea del puntatore. */
 export function usePerformanceView() {
+  const { locale, t } = useLocalization();
+  const { formatDateWithYear } = localizedFormats(locale);
   const todayKey = React.useMemo(() => toDateKey(new Date()), []);
   const [period, setPeriod] = React.useState<PortfolioChartPeriod>("3mesi");
   const [customRange, setCustomRange] = React.useState<PortfolioChartRange>({ from: `${todayKey.slice(0, 4)}-01-01`, to: todayKey });
@@ -40,7 +44,7 @@ export function usePerformanceView() {
   }, [inspectedDate, view, overview.data, inputs, today, calculationPeriod]);
   const periodLabel = view?.returns
     ? `${formatDateWithYear(view.returns.fromKey)} – ${formatDateWithYear(view.returns.toKey)}`
-    : "Nessuna operazione nell’intervallo";
+    : t("Nessuna operazione nell’intervallo");
 
   function changePeriod(next: PortfolioChartPeriod) {
     setPeriod(next);

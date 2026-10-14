@@ -100,7 +100,7 @@ export default function LiquiditaPage() {
               ))}
             </div>
           ) : isError ? (
-            <LoadError message="Impossibile caricare i movimenti." onRetry={() => refetch()} />
+            <LoadError message={tr("Impossibile caricare i movimenti.")} onRetry={() => refetch()} />
           ) : all.length === 0 && !searchText && !categoryId && !toFixOnly && !accountId ? (
             <EmptyState
               icon={ArrowLeftRightIcon}

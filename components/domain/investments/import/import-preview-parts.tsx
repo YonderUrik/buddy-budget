@@ -30,7 +30,7 @@ export function PreviewHeader({ fileName, providerName }: PreviewHeaderProps) {
     <div className="flex flex-col gap-1">
       <p className="flex items-center gap-2 text-sm font-medium text-foreground">
         <FileTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="min-w-0 truncate">{fileName ?? "Testo incollato"}</span>
+        <span className="min-w-0 truncate">{fileName ?? tr("Testo incollato")}</span>
       </p>
       {providerName ? (
         <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -96,11 +96,11 @@ export function ImportRowsPreview({ rows, limit = 6 }: ImportRowsPreviewProps) {
             <span className="flex min-w-0 flex-col">
               <span className="truncate font-medium text-foreground">{row.identity.symbol ?? row.identity.isin ?? row.identity.name}</span>
               <span className="text-xs text-muted-foreground">
-                {dateLabel(row.operation.date)} · {tr(TRANSACTION_TYPE_LABELS[row.operation.type])}
+                {dateLabel(row.operation.date)} {"·"}{tr(TRANSACTION_TYPE_LABELS[row.operation.type])}
               </span>
             </span>
             <span className="shrink-0 text-right font-mono text-xs tabular-nums text-muted-foreground">
-              {row.operation.quantity ? `${NUMBER_FORMAT.format(row.operation.quantity)} × ` : ""}
+              {row.operation.quantity ? tr("{0} × ", { 0: NUMBER_FORMAT.format(row.operation.quantity) }) : ""}
               {NUMBER_FORMAT.format(row.operation.grossAmount ?? row.operation.price)}
             </span>
           </li>
@@ -160,7 +160,7 @@ export function SkippedRows({ rows }: { rows: ImportRow[] }) {
         <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
           {[...skipped.entries()].slice(0, MAX_LISTED).map(([message, lines]) => (
             <li key={message}>
-              {explainRowMessage(message).text}{" "}<span className="text-xs">({lines.length === 1 ? tr("riga {0}", {0: lines[0]}) : tr("{0} righe", {0: lines.length})})</span>
+              {explainRowMessage(message).text}{" "}<span className="text-xs">{"("}{lines.length === 1 ? tr("riga {0}", {0: lines[0]}) : tr("{0} righe", {0: lines.length})}{")"}</span>
             </li>
           ))}
           {skipped.size > MAX_LISTED ? <li>{tr("…e altri")}{" "}{skipped.size - MAX_LISTED}{" "}{tr("tipi di riga.")}</li> : null}
@@ -183,10 +183,10 @@ export function StatementWarnings({ warnings }: { warnings: ActivityIssue[] }) {
       >
         <ul className="flex flex-col gap-1">
           {warnings.slice(0, MAX_LISTED).map((w) => (
-            <li key={`${w.line}-${w.message}`}>{tr("Riga")}{" "}{w.line} · {w.section}: {tr(w.message)}
+            <li key={`${w.line}-${w.message}`}>{tr("Riga")}{" "}{w.line} {"·"}{w.section}{":"}{tr(w.message)}
             </li>
           ))}
-          {warnings.length > MAX_LISTED ? <li>{tr("…e altre")}{" "}{warnings.length - MAX_LISTED}.</li> : null}
+          {warnings.length > MAX_LISTED ? <li>{tr("…e altre")}{" "}{warnings.length - MAX_LISTED}{"."}</li> : null}
         </ul>
       </ImportNotice>
     </DialogSection>

@@ -67,7 +67,7 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
     alto: { x: 0, y: [0, -DEMO_TRAVEL_PX * 0.7, -DEMO_TRAVEL_PX * 0.7, 0], rotate: 0 },
     annulla: { x: [0, DEMO_TRAVEL_PX, 0, 0], y: 0, rotate: [0, 7, 0, 0] },
   }[gesture];
-  const stamp = { destra: "È questa", sinistra: "Un'altra", alto: "Salta", annulla: "Annullato", carta: "" }[gesture];
+  const stamp = { destra: tr("È questa"), sinistra: tr("Un'altra"), alto: tr("Salta"), annulla: "Annullato", carta: "" }[gesture];
   const stampTone = { destra: "border-pos text-pos", sinistra: "border-neg text-neg", alto: "border-muted-foreground text-muted-foreground", annulla: "border-primary text-primary", carta: "" }[gesture];
 
   return (
@@ -83,11 +83,10 @@ function DemoCard({ gesture, reduced }: { gesture: Gesture; reduced: boolean }) 
           </motion.span>
         )}
         <span className="mt-1 text-sm font-medium text-foreground">{tr("Supermercato")}</span>
-        <span className="text-xs text-muted-foreground tabular-nums">-48,20 €</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{"-48,20 €"}</span>
         <span className="mt-1 w-full rounded-lg bg-muted px-2 py-1.5 text-center text-xs text-foreground">{tr("Spesa")}</span>
         <span className="flex items-center gap-1.5 text-[0.65rem] text-muted-foreground">
-          <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> Usa sempre
-        </span>
+          <span className={cn("size-3 rounded-sm border border-input", gesture === "annulla" && "border-primary bg-primary/20")} /> {tr("Usa sempre")}</span>
       </motion.div>
       <span className="absolute bottom-3 text-muted-foreground">
         {gesture === "destra" && <ArrowRightIcon className="size-5 text-pos" />}
@@ -165,8 +164,8 @@ export function SwipeTour() {
                   <DemoCard gesture={step.gesture} reduced={reduced} />
                   <div className="flex flex-col gap-1">
                     <p className="font-heading text-lg font-medium text-foreground">{tr(step.title)}</p>
-                    <p className="text-sm text-muted-foreground">{step.text}</p>
-                    {step.keys && <p className="hidden text-xs text-muted-foreground sm:block">{tr("Da tastiera:")}{" "}{step.keys}</p>}
+                    <p className="text-sm text-muted-foreground">{tr(step.text)}</p>
+                    {step.keys && <p className="hidden text-xs text-muted-foreground sm:block">{tr("Da tastiera:")}{" "}{tr(step.keys)}</p>}
                   </div>
                 </motion.div>
               </AnimatePresence>

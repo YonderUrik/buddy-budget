@@ -135,7 +135,7 @@ export function SyncIsland({ job, onDismiss, categorizeHref }: SyncIslandProps) 
                 href={categorizeHref}
                 className="mt-3 inline-flex rounded-full bg-island-foreground px-3 py-1 text-sm font-medium text-island hover:bg-island-foreground/90"
               >
-                {CATEGORIZE_LABEL}
+                {tr(CATEGORIZE_LABEL)}
               </Link>
             )}
           </motion.div>

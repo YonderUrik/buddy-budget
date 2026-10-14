@@ -59,7 +59,7 @@ export function AuthSheet({ header, note, aside, asideHiddenOn = [], children, c
     <SheetFormulaProvider value={setFormula}>
       <div className={cn("flex min-h-dvh flex-col bg-background [--cols:3] [--rows-w:2rem] lg:[--cols:8] lg:[--rows-w:2.75rem]", className)}>
         <div className="flex h-10 shrink-0 items-center border-b border-border bg-card font-mono text-[13px]" aria-hidden="true">
-          <span className="grid h-full w-12 place-items-center border-r border-border text-text-2 lg:w-16">{ACTIVE_CELL}</span>
+          <span className="grid h-full w-12 place-items-center border-r border-border text-text-2 lg:w-16">{tr(ACTIVE_CELL)}</span>
           <span className="hidden h-full place-items-center border-r border-border px-3 italic text-text-3 sm:grid">{tr("fx")}</span>
           <span className="min-w-0 flex-1 truncate px-3.5">
             <FormulaText formula={formula ?? DEFAULT_FORMULA} />

@@ -52,7 +52,7 @@ export function DebtPlanTable({ rows, currency, today, onPay }: DebtPlanTablePro
         {visible.map((row) => (
           <li key={row.number} className={cn("flex flex-col gap-1.5 py-3", row.status === "pagata" && "text-muted-foreground")}>
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-sm font-medium tabular-nums">{tr("Rata")}{" "}{row.number} · {formatDateWithYear(row.dueDate)}
+              <span className="text-sm font-medium tabular-nums">{tr("Rata")}{" "}{row.number} {"·"}{formatDateWithYear(row.dueDate)}
               </span>
               <span className="font-heading text-base font-medium tabular-nums">{money(row.payment?.amount ?? row.installment)}</span>
             </div>

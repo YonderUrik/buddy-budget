@@ -25,7 +25,7 @@ export function CategorySetupSummary({ items, className }: CategorySetupSummaryP
             <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <span className={cn("size-2 rounded-full", group.dotClassName)} aria-hidden="true" />
               {tr(group.label)}
-              <span className="text-text-3">· {active.length}</span>
+              <span className="text-text-3">{"·"}{active.length}</span>
             </h3>
             <ul className="flex flex-wrap gap-1.5">
               {active.map((item) => (

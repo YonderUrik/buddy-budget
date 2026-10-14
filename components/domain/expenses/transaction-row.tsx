@@ -94,7 +94,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
       {
         onSuccess: () => {
           if (previousCategoryId === null) return;
-          toast.success(`Spostata in ${nextName}`, {
+          toast.success(tr("Spostata in {0}", { 0: nextName }), {
             action: {
               label: tr("Annulla"),
               onClick: () => updateMutation.mutate({ id: transaction.id, input: { categoryId: previousCategoryId } }),
@@ -122,7 +122,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             <time dateTime={transaction.date} className="shrink-0 tabular-nums">
               {formatShortDate(transaction.date)}
             </time>
-            <span aria-hidden="true">·</span>
+            <span aria-hidden="true">{"·"}</span>
             <CategoryPicker
               categories={selectableCategories}
               value={transaction.categoryId}
@@ -136,7 +136,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
             />
             {merchantKind && (
               <>
-                <span aria-hidden="true" className="hidden sm:inline">·</span>
+                <span aria-hidden="true" className="hidden sm:inline">{"·"}</span>
                 <span className="hidden shrink-0 truncate sm:inline" title={tr("Tipo di esercente indicato dalla banca")}>
                   {merchantKind}
                 </span>
@@ -219,7 +219,7 @@ export function TransactionRow({ transaction, categories, currency }: Transactio
                   <AlertDialogHeader>
                     <AlertDialogTitle>{tr("Eliminare questa transazione?")}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      &quot;{transaction.description}{tr("\" verrà eliminata definitivamente.")}</AlertDialogDescription>
+                      {"\""}{transaction.description}{tr("\" verrà eliminata definitivamente.")}</AlertDialogDescription>
                   </AlertDialogHeader>
                   {deleteMutation.isError && (
                     <p className="text-sm text-destructive">{tr("Eliminazione non riuscita, riprova.")}</p>

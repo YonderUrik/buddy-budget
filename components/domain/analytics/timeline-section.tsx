@@ -6,7 +6,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { Area, CartesianGrid, ComposedChart, Line, ReferenceLine, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartTooltip, type ChartConfig } from "@/components/ui/chart";
 import { MissingData } from "./analytics-card";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { FireTab } from "./fire-tab";
 import { Term } from "./term";
 import { timelineSeries } from "./plain-answers";
@@ -20,6 +20,8 @@ const CONFIG: ChartConfig = {
 
 /** Domanda 2: la salita del patrimonio verso il numero FIRE; con i cursori mossi, la linea tratteggiata mostra le ipotesi salvate. */
 export function TimelineSection({ question, base, assumptions, plan, baseline }: QuestionSectionData) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { currency } = base;
   const expert = () => <FireTab base={base} assumptions={assumptions} plan={plan} />;
@@ -36,8 +38,7 @@ export function TimelineSection({ question, base, assumptions, plan, baseline }:
   const data = series.map((p, i) => ({ ...p, baseline: baselineSeries?.[i]?.wealth }));
   return (
     <QuestionSection question={question} expertHint="sensibilità alle ipotesi, Coast FIRE, lean FIRE" renderExpert={expert}>
-      <p className="text-base leading-relaxed text-muted-foreground">{tr("Con")}{" "}{money(plan.savings ?? 0, currency)}{" "}{tr("risparmiati l'anno e un")}{" "}<Term id="rendimento-reale">{tr("rendimento reale")}</Term>{" "}{tr("del")}{" "}{(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}{tr("%, in")}{" "}<Term id="euro-di-oggi">{tr("euro di oggi")}</Term>.
-        {baseline ? tr(" La linea tratteggiata è il percorso con le ipotesi salvate.") : ""}
+      <p className="text-base leading-relaxed text-muted-foreground">{tr("Con")}{" "}{money(plan.savings ?? 0, currency)}{" "}{tr("risparmiati l'anno e un")}{" "}<Term id="rendimento-reale">{tr("rendimento reale")}</Term>{" "}{tr("del")}{" "}{(assumptions.expectedReturn * 100).toFixed(1).replace(".", ",")}{tr("%, in")}{" "}<Term id="euro-di-oggi">{tr("euro di oggi")}</Term>{"."}{baseline ? tr(" La linea tratteggiata è il percorso con le ipotesi salvate.") : ""}
       </p>
       <ChartContainer config={CONFIG} className="h-56 w-full">
         <ComposedChart data={data}>

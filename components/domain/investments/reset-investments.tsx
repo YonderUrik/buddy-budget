@@ -51,7 +51,7 @@ export function ResetInvestments() {
             <li>{preview.data.prices}{" "}{tr("prezzi personali da eliminare")}</li>
             <li>{preview.data.cashAccounts}{" "}{tr("conti di liquidità broker da azzerare")}</li>
           </ul>
-          <label htmlFor="reset-investments-confirmation" className="text-sm">{tr("Per confermare scrivi")}{" "}<strong>{CONFIRMATION}</strong></label>
+          <label htmlFor="reset-investments-confirmation" className="text-sm">{tr("Per confermare scrivi")}{" "}<strong>{tr(CONFIRMATION)}</strong></label>
           <Input id="reset-investments-confirmation" autoComplete="off" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} disabled={reset.isPending} />
         </> : null}
         {reset.error ? <p role="alert" className="text-sm text-destructive">{tr(reset.error.message)}</p> : null}

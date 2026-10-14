@@ -51,7 +51,7 @@ export function DebtsInterestCard({ interest, currency, hrefFor = defaultHref }:
               <span className={cn("size-3 shrink-0 rounded-sm", tone(index))} aria-hidden="true" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{item.name}</span>
               <span className="font-heading text-sm font-medium tabular-nums text-foreground">{money(item.yearly)}</span>
-              <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">{Math.round(item.share * 100)}%</span>
+              <span className="w-10 text-right text-xs tabular-nums text-muted-foreground">{Math.round(item.share * 100)}{"%"}</span>
             </Link>
           </li>
         ))}

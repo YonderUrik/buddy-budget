@@ -102,7 +102,7 @@ export function EmailPreview() {
           <p className="text-xs font-semibold text-foreground">{tr("Il tuo mese in BuddyBudget")}</p>
         </div>
         <div className="grid grid-cols-3 gap-2">
-          {["Entrate", "Spese", "Risparmio"].map((label, i) => (
+          {[tr("Entrate"), tr("Spese"), tr("Risparmio")].map((label, i) => (
             <div key={label} className="rounded-md bg-muted/70 px-2 py-1.5">
               <p className="text-[9px] text-text-3">{tr(label)}</p>
               <span className={cn("mt-1 block h-2 w-3/4 rounded-full", i === 0 ? "bg-pos/50" : i === 1 ? "bg-neg/50" : "bg-primary/40")} />

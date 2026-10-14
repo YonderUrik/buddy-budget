@@ -11,7 +11,7 @@ import { simulatePayoff } from "@/lib/calc/debt-simulator";
 import { todayIso } from "@/lib/debts/dates";
 import type { DebtView } from "@/lib/debts/view";
 
-import { formatDuration, formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 
 export interface DebtExtraSimProps {
   debt: DebtView;
@@ -23,6 +23,8 @@ const EXTRA_MAX = 1000;
 const EXTRA_STEP = 50;
 
 export function DebtExtraSim({ debt, currency }: DebtExtraSimProps) {
+  const { formatDuration, formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -48,7 +50,7 @@ export function DebtExtraSim({ debt, currency }: DebtExtraSimProps) {
         <Slider value={[extra]} min={0} max={EXTRA_MAX} step={EXTRA_STEP} onValueChange={(v) => setExtra(Array.isArray(v) ? v[0] : (v as number))} aria-labelledby={id} />
       </div>
       {extra > 0 && monthsSaved > 0 ? (
-        <p className="text-sm text-foreground">{tr("Finisci")}{" "}<strong className="font-medium">{formatDuration(monthsSaved)}{" "}{tr("prima")}</strong> ({formatMonthYear(result.faster.endDate)}{" "}{tr("invece di")}{" "}{formatMonthYear(result.base.endDate)}{tr(") e risparmi")}{" "}
+        <p className="text-sm text-foreground">{tr("Finisci")}{" "}<strong className="font-medium">{formatDuration(monthsSaved)}{" "}{tr("prima")}</strong> {"("}{formatMonthYear(result.faster.endDate)}{" "}{tr("invece di")}{" "}{formatMonthYear(result.base.endDate)}{tr(") e risparmi")}{" "}
           <strong className="font-medium tabular-nums text-pos">{money(saved)}</strong>{" "}{tr("di interessi.")}</p>
       ) : (
         <p className="text-sm text-muted-foreground">{tr("Muovi lo slider per vedere quanto anticipi la fine e quanto risparmi.")}</p>

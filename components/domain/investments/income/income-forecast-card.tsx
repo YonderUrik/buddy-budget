@@ -50,7 +50,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
   const label = (key: string) => format.format(new Date(Number(key.slice(0, 4)), Number(key.slice(5, 7)) - 1, 1));
   const first = forecast.months[0]?.key;
   const last = forecast.months.at(-1)?.key;
-  return first && last ? `${label(first)} a ${label(last)}` : "";
+  return first && last ? tr("{0} a {1}", { 0: label(first), 1: label(last) }) : "";
 }
 
   const { t: tr } = useLocalization();
@@ -66,7 +66,7 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
           <p className="text-sm text-muted-foreground">{tr("Nessun incasso previsto: i tuoi strumenti non hanno staccato dividendi nell'ultimo anno (es. ETF ad accumulazione).")}</p>
         ) : (
           <>
-            <p className="max-w-prose text-base text-foreground">{tr("Da")}{" "}{periodLabel(forecast)}{tr(", con le quote di oggi dovresti incassare circa")}{" "}<span className="font-semibold tabular-nums text-pos">{format(forecast.totalNet)}</span>{" "}{tr("netti")}<span className="text-muted-foreground"> ({format(forecast.totalGross)}{" "}{tr("lordi), circa")}{" "}{format(forecast.totalNet / 12)}{" "}{tr("al mese.")}</span>
+            <p className="max-w-prose text-base text-foreground">{tr("Da")}{" "}{periodLabel(forecast)}{tr(", con le quote di oggi dovresti incassare circa")}{" "}<span className="font-semibold tabular-nums text-pos">{format(forecast.totalNet)}</span>{" "}{tr("netti")}<span className="text-muted-foreground"> {"("}{format(forecast.totalGross)}{" "}{tr("lordi), circa")}{" "}{format(forecast.totalNet / 12)}{" "}{tr("al mese.")}</span>
             </p>
             <MonthBars
               ariaLabel={tr("Incassi previsti per mese")}
@@ -82,9 +82,9 @@ export function IncomeForecastCard({ forecast, instrumentsById, currency, onEdit
               {events.map((event) => (
                 <li key={`${event.instrumentId}-${event.kind}-${event.date}`} className="flex items-baseline justify-between gap-3 py-2 text-sm">
                   <span className="min-w-0">
-                    <span className="block truncate text-foreground">{instrumentsById.get(event.instrumentId)?.name ?? "Strumento"}</span>
+                    <span className="block truncate text-foreground">{instrumentsById.get(event.instrumentId)?.name ?? tr("Strumento")}</span>
                     <span className="text-xs text-muted-foreground">
-                      {event.kind === "rimborso" ? tr("Rimborso a scadenza") : event.kind === "cedola" ? tr("Cedola") : tr("Stacco")}{" "}{tr("del")}{" "}{formatDateWithYear(event.date)} ·{" "}
+                      {event.kind === "rimborso" ? tr("Rimborso a scadenza") : event.kind === "cedola" ? tr("Cedola") : tr("Stacco")}{" "}{tr("del")}{" "}{formatDateWithYear(event.date)} {"·"}{" "}
                       {tr(BASIS_LABELS[event.basis])}
                     </span>
                   </span>

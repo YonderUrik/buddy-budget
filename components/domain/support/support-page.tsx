@@ -44,10 +44,10 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 p-4 sm:gap-10 sm:p-6">
       <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">Aiuto e segnalazioni</h1>
-        <p className="text-sm text-muted-foreground">Puoi scriverci anche da qualsiasi pagina, con l&apos;icona del fumetto, e dai messaggi d&apos;errore.</p>
+        <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Aiuto e segnalazioni")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Puoi scriverci anche da qualsiasi pagina, con l'icona del fumetto, e dai messaggi d'errore.")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          L&apos;app è lenta o non risponde? Guarda prima lo{" "}
+          {tr("L'app è lenta o non risponde? Guarda prima lo")}{" "}
           <a
             href={STATUS_URL}
             target="_blank"
@@ -55,10 +55,9 @@ export function SupportPage({ from = null, kind = null }: SupportPageProps) {
             onClick={() => track("support_link_opened", { link: "stato" })}
             className="font-medium text-foreground underline underline-offset-2"
           >
-            stato del servizio<span className="sr-only"> (si apre in una nuova scheda)</span>
+            {tr("stato del servizio")}<span className="sr-only"> {tr("(si apre in una nuova scheda)")}</span>
           </a>
-          .
-        </p>
+          {"."}</p>
       </div>
       <Section id="aiuto-scrivici" icon={MessageSquare} title={tr("Scrivici")} description={tr("Un problema, una domanda o un'idea: ti rispondiamo via email.")}>
         <ReportForm context={context} initialKind={initialKind} />

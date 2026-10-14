@@ -87,7 +87,7 @@ export function InstrumentPicker({
           className
         )}
       >
-        <span className={cn("truncate", !value && "text-muted-foreground")}>{value?.name ?? placeholder}</span>
+        <span className={cn("truncate", !value && "text-muted-foreground")}>{value?.name ?? tr(placeholder)}</span>
         <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       </PopoverTrigger>
       <PopoverContent className="w-(--anchor-width) min-w-72 p-2" align="start">

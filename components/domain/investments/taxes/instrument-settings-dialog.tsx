@@ -73,8 +73,8 @@ function SettingsForm({
   const [error, setError] = React.useState<string | null>(null);
   // Il valore "automatico" è quello senza la correzione dell'utente.
   const automatic = resolveTaxSettings(instrument, undefined);
-  const autoRateLabel = `Automatica (${formatPct(automatic.taxRate)})`;
-  const autoHarmonizedLabel = `Automatico (${automatic.harmonized ? "sì" : "no"})`;
+  const autoRateLabel = tr("Automatica ({0})", { 0: formatPct(automatic.taxRate) });
+  const autoHarmonizedLabel = tr("Automatico ({0})", { 0: automatic.harmonized ? "sì" : "no" });
 
   function submit(values: Parameters<typeof save.mutate>[0]) {
     setError(null);

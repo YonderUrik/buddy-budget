@@ -67,16 +67,16 @@ export interface PersonalImportUploadProps {
 export function PersonalImportUpload({ formats, onQueued }: PersonalImportUploadProps) {
   const { locale: formattingLocale } = useLocalization();
   function formatFileSize(bytes: number): string {
-  return bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toLocaleString(formattingLocale, { maximumFractionDigits: 1 })} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return bytes >= 1024 * 1024 ? tr("{0} MB", { 0: (bytes / 1024 / 1024).toLocaleString(formattingLocale, { maximumFractionDigits: 1 }) }) : tr("{0} KB", { 0: Math.max(1, Math.round(bytes / 1024)) });
 }
   async function readPersonalImportFile(file: File): Promise<LoadedFile> {
   if (/\.xlsx$/i.test(file.name)) {
-    if (file.size > XLSX_MAX_FILE_BYTES) throw new Error(`Il file Excel pesa ${formatFileSize(file.size)}: il massimo è ${formatFileSize(XLSX_MAX_FILE_BYTES)}. Esporta il foglio in CSV e riprova.`);
+    if (file.size > XLSX_MAX_FILE_BYTES) throw new Error(tr("Il file Excel pesa {0}: il massimo è {1}. Esporta il foglio in CSV e riprova.", { 0: formatFileSize(file.size), 1: formatFileSize(XLSX_MAX_FILE_BYTES) }));
     const sheet = readXlsx(new Uint8Array(await file.arrayBuffer()));
     return { name: file.name, size: file.size, csv: gridToCsv([sheet.headers, ...sheet.rows]) };
   }
-  if (/\.xls$/i.test(file.name)) throw new Error("I file .xls (Excel antico) non si leggono. In Excel scegli «Salva con nome» e poi «Cartella di lavoro di Excel (.xlsx)» o «CSV».");
-  if (file.size > PERSONAL_IMPORT_MAX_BYTES) throw new Error(`Il file pesa ${formatFileSize(file.size)}: il massimo è ${formatFileSize(PERSONAL_IMPORT_MAX_BYTES)}.`);
+  if (/\.xls$/i.test(file.name)) throw new Error(tr("I file .xls (Excel antico) non si leggono. In Excel scegli «Salva con nome» e poi «Cartella di lavoro di Excel (.xlsx)» o «CSV»."));
+  if (file.size > PERSONAL_IMPORT_MAX_BYTES) throw new Error(tr("Il file pesa {0}: il massimo è {1}.", { 0: formatFileSize(file.size), 1: formatFileSize(PERSONAL_IMPORT_MAX_BYTES) }));
   return { name: file.name, size: file.size, csv: await file.text() };
 }
 
@@ -96,7 +96,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
 
   const upload = useMutation({
     mutationFn: async () => {
-      if (!file) throw new Error("Scegli un file da importare.");
+      if (!file) throw new Error(tr("Scegli un file da importare."));
       const source = formats.find((f) => f.id === formatId)?.name ?? name.trim();
       return personalImportApi<{ id: string }>("", { name: source, csv: file.csv, formatId: isNew ? undefined : formatId, regenerate, consent, consentVersion: CONSENT_VERSION });
     },
@@ -120,7 +120,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
       setFile(await readPersonalImportFile(chosen));
     } catch (e) {
       setFile(null);
-      setFileError(e instanceof Error ? e.message : "Non riesco a leggere questo file.");
+      setFileError(e instanceof Error ? e.message : tr("Non riesco a leggere questo file."));
     } finally {
       setReading(false);
     }
@@ -158,7 +158,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
               <label htmlFor={`${id}-format`} className="text-sm font-medium text-foreground">{tr("Formato")}</label>
               <Select value={formatId} onValueChange={(value) => { setFormatId(value as string); setRegenerate(false); }}>
                 <SelectTrigger id={`${id}-format`} className={cn("w-full", FIELD_CLASS)}>
-                  <SelectValue>{(value: string | null) => (value === NEW_FORMAT || !value ? "Nuova banca o broker" : formats.find((f) => f.id === value)?.name ?? "")}</SelectValue>
+                  <SelectValue>{(value: string | null) => (value === NEW_FORMAT || !value ? tr("Nuova banca o broker") : formats.find((f) => f.id === value)?.name ?? "")}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={NEW_FORMAT}>{tr("Nuova banca o broker")}</SelectItem>
@@ -246,7 +246,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
           pending={upload.isPending}
           disabled={!stepReady}
         />
-        {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">{tr("Per continuare:")}{" "}{stepMissing.join(", ")}.</p> : null}
+        {!stepReady ? <p id={`${id}-missing`} className="text-sm text-muted-foreground">{tr("Per continuare:")}{" "}{stepMissing.map((message) => tr(message)).join(", ")}{"."}</p> : null}
         {upload.error ? <ErrorWithReport area="import_movimenti" error={upload.error.message} /> : null}
       </div>
     </form>

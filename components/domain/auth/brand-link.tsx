@@ -32,7 +32,7 @@ export function BrandLink({ name, href = LANDING_URL, className, markClassName =
         onClick={() => track("landing_link_clicked", { from: "logo" })}
         className={`flex items-center gap-2.5 rounded-md font-heading font-bold outline-none focus-visible:ring-2 focus-visible:ring-ring ${className ?? ""}`}
       >
-        <Image src="/brand/logo-mark.svg" alt={tr("")} width={24} height={29} className={markClassName} aria-hidden="true" />
+        <Image src="/brand/logo-mark.svg" alt={""} width={24} height={29} className={markClassName} aria-hidden="true" />
         {name}
       </a>
       {showBackLink && (
@@ -42,7 +42,7 @@ export function BrandLink({ name, href = LANDING_URL, className, markClassName =
           className="flex items-center gap-1 rounded-md text-xs text-text-3 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          {BACK_LINK_LABEL}
+          {tr(BACK_LINK_LABEL)}
         </a>
       )}
     </div>

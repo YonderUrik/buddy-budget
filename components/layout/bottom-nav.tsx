@@ -131,7 +131,7 @@ export function BottomNav({ items, primaryHrefs = BOTTOM_NAV_HREFS, activeHref, 
           {!inPrimary ? <ActivePill /> : null}
           <MoreHorizontal className="relative z-10 size-5" aria-hidden="true" />
         </span>
-        <span className="leading-none">{MORE_LABEL}</span>
+        <span className="leading-none">{tr(MORE_LABEL)}</span>
       </button>
     </nav>
   );

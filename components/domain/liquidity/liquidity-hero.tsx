@@ -50,7 +50,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
   const Icon = up ? TrendingUpIcon : TrendingDownIcon;
   const first = points[0];
   const description = first
-    ? `${label}: da ${formatCurrency(first.value, currency, { maximumFractionDigits: 0 })} a ${formatCurrency(value, currency, { maximumFractionDigits: 0 })} ${PERIOD_PHRASES[period]}.`
+    ? tr("{0}: da {1} a {2} {3}.", { 0: label, 1: formatCurrency(first.value, currency, { maximumFractionDigits: 0 }), 2: formatCurrency(value, currency, { maximumFractionDigits: 0 }), 3: tr(PERIOD_PHRASES[period]) })
     : `${label}: ${formatCurrency(value, currency, { maximumFractionDigits: 0 })}.`;
   return (
     <section aria-label={tr(label)} className={className}>
@@ -64,7 +64,7 @@ export function LiquidityHero({ label, value, currency, delta, period, onPeriodC
               {up ? "+" : "−"}
               {formatCurrency(Math.abs(delta), currency, { maximumFractionDigits: 0 })}
             </span>
-            <span className="text-text-2">{PERIOD_PHRASES[period]}</span>
+            <span className="text-text-2">{tr(PERIOD_PHRASES[period])}</span>
           </p>
         )}
       </div>

@@ -72,14 +72,14 @@ export function ReturnHeatmapGrid({ heatmap, onInspect, selectedKey }: ReturnHea
         {hasRowLabels ? <span className="sticky left-0 z-10 bg-card" /> : null}
         {heatmap.columns.map((label, i) => (
           <span key={i} className="whitespace-nowrap text-left leading-4">
-            {tr(label)}
+            {label}
           </span>
         ))}
         {hasTotal ? <span className="text-center font-medium leading-4">{tr("Anno")}</span> : null}
         {heatmap.rows.map((row) => (
           <div key={row.label || "row"} className="contents">
             {hasRowLabels ? (
-              <span className="sticky left-0 z-10 flex items-center bg-card leading-none tabular-nums">{tr(row.label)}</span>
+              <span className="sticky left-0 z-10 flex items-center bg-card leading-none tabular-nums">{row.label}</span>
             ) : null}
             {row.cells.map((cell, i) => (
               <Cell key={cell?.key ?? `empty-${i}`} cell={cell} showValue={showValue} selected={cell?.key === selectedKey} onInspect={onInspect} />

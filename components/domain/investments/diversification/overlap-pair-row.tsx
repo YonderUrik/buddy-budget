@@ -31,10 +31,10 @@ export function OverlapPairRow({ overlap, instrumentOf }: OverlapPairRowProps) {
       <OverlapVenn share={overlap.share} severity={verdict.severity} />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground">
-          {tr(verdict.label)}{" "}<span className="tabular-nums text-muted-foreground">· {Math.round(overlap.share * 100)}{tr("% in comune")}</span>
+          {tr(verdict.label)}{" "}<span className="tabular-nums text-muted-foreground">{"·"}{Math.round(overlap.share * 100)}{tr("% in comune")}</span>
         </p>
         <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm text-muted-foreground">
-          <PairName instrument={instrumentOf(overlap.aId)} />{" "}<span aria-hidden="true">+</span>
+          <PairName instrument={instrumentOf(overlap.aId)} />{" "}<span aria-hidden="true">{"+"}</span>
           <span className="sr-only">{tr("e")}</span>{" "}<PairName instrument={instrumentOf(overlap.bId)} />
         </p>
         <p className="text-xs text-muted-foreground">{METHOD_NOTE[overlap.method]}</p>

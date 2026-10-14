@@ -14,7 +14,7 @@ export function ImportBatchProgress({ files, index }: ImportBatchProgressProps) 
   const { t: tr } = useLocalization();
   return (
     <div className="flex flex-col gap-2 text-sm">
-      <p role="status" className="font-medium text-foreground">{tr("File")}{" "}{index + 1}{" "}{tr("di")}{" "}{files.length}: {files[index].name}
+      <p role="status" className="font-medium text-foreground">{tr("File")}{" "}{index + 1}{" "}{tr("di")}{" "}{files.length}{":"}{files[index].name}
       </p>
       <p className="text-muted-foreground">{tr("Controlla e conferma un rendiconto alla volta: ognuno viene salvato da solo, quindi se ti fermi quelli già completati restano importati.")}</p>
       <ol className="flex max-h-28 flex-col gap-1 overflow-y-auto">

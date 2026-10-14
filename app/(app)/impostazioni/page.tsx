@@ -83,7 +83,7 @@ function ImpostazioniContent() {
           ))}
         </div>
       ) : isError || !settings ? (
-        <LoadError message="Impossibile caricare le impostazioni." onRetry={() => refetch()} />
+        <LoadError message={tr("Impossibile caricare le impostazioni.")} onRetry={() => refetch()} />
       ) : (
         <SettingsHub
           selected={selected}

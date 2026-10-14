@@ -61,17 +61,16 @@ export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashM
         </section>
         <DialogSection title={tr("Cosa è successo")}>
           <ul className="flex flex-col gap-1.5">
-            {result.replacement ? <Fact>{plural(result.replacement.statements, "rendiconto precedente sostituito", "rendiconti precedenti sostituiti")} ({result.replacement.operations}{" "}{tr("operazioni, dal")}{" "}{result.replacement.from}{" "}{tr("al")}{" "}{result.replacement.to}).</Fact> : null}
-            {result.instrumentsCreated > 0 ? <Fact>{plural(result.instrumentsCreated, "strumento nuovo aggiunto", "strumenti nuovi aggiunti")}{" "}{tr("ai tuoi strumenti.")}</Fact> : null}
-            {result.counts.duplicate > 0 ? <Fact>{plural(result.counts.duplicate, "operazione era già presente ed è stata saltata", "operazioni erano già presenti e sono state saltate")}{tr(": nessun doppione.")}</Fact> : null}
+            {result.replacement ? <Fact>{plural(result.replacement.statements, tr("rendiconto precedente sostituito"), tr("rendiconti precedenti sostituiti"))} {"("}{result.replacement.operations}{" "}{tr("operazioni, dal")}{" "}{result.replacement.from}{" "}{tr("al")}{" "}{result.replacement.to}{")."}</Fact> : null}
+            {result.instrumentsCreated > 0 ? <Fact>{plural(result.instrumentsCreated, tr("strumento nuovo aggiunto"), tr("strumenti nuovi aggiunti"))}{" "}{tr("ai tuoi strumenti.")}</Fact> : null}
+            {result.counts.duplicate > 0 ? <Fact>{plural(result.counts.duplicate, tr("operazione era già presente ed è stata saltata"), tr("operazioni erano già presenti e sono state saltate"))}{tr(": nessun doppione.")}</Fact> : null}
             {keepsOriginal ? <Fact>{tr("I dati originali del file sono conservati, così puoi sostituirli o cancellarli da «Gestisci importazioni».")}</Fact> : null}
           </ul>
         </DialogSection>
         <DialogSection title={tr("Cosa fare ora")}>
           <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
             <li>{tr("Trovi le operazioni in")}{" "}
-              <Link href="/investimenti/operazioni" onClick={onNavigate} className="font-medium text-primary hover:underline">{tr("Investimenti → Operazioni")}</Link>.
-            </li>
+              <Link href="/investimenti/operazioni" onClick={onNavigate} className="font-medium text-primary hover:underline">{tr("Investimenti → Operazioni")}</Link>{"."}</li>
             {hasCashMovements ? (
               <li>{tr("I movimenti del conto sono in")}{" "}
                 <Link href="/liquidita" onClick={onNavigate} className="font-medium text-primary hover:underline">{tr("Liquidità → Movimenti")}</Link>{tr(", da categorizzare.")}</li>
@@ -105,12 +104,12 @@ export function ImportSummaryStep({ result, rows, newInstruments, done, hasCashM
         ) : null}
         {result.counts.new === 0 && errors.length === 0 ? <ImportNotice tone="info" title={tr("Non c'è niente di nuovo da importare")}>{tr("Tutte le operazioni di questo file sono già presenti: puoi caricarlo di nuovo senza creare doppioni.")}</ImportNotice> : null}
         {result.replacement ? (
-          <ImportNotice tone="info" title={tr("Sostituisco {0} ({1} operazioni)", {0: plural(result.replacement.statements, "rendiconto", "rendiconti"), 1: result.replacement.operations})}>{tr("Il nuovo file copre il periodo")}{" "}{result.replacement.from} – {result.replacement.to}{" "}{tr("e prende il posto di quello che c'era. I periodi fuori da questo intervallo restano invariati. Se un controllo fallisce, non viene sostituito nulla.")}</ImportNotice>
+          <ImportNotice tone="info" title={tr("Sostituisco {0} ({1} operazioni)", {0: plural(result.replacement.statements, "rendiconto", "rendiconti"), 1: result.replacement.operations})}>{tr("Il nuovo file copre il periodo")}{" "}{result.replacement.from} {"–"}{result.replacement.to}{" "}{tr("e prende il posto di quello che c'era. I periodi fuori da questo intervallo restano invariati. Se un controllo fallisce, non viene sostituito nulla.")}</ImportNotice>
         ) : null}
         <ul className="flex flex-col gap-1.5">
           {result.counts.duplicate > 0 ? <Fact>{tr("Le operazioni già presenti vengono saltate: puoi reimportare lo stesso file senza creare doppioni.")}</Fact> : null}
-          {freeShares > 0 ? <Fact>{plural(freeShares, "acquisto a prezzo zero", "acquisti a prezzo zero")}{" "}{tr("(quote ricevute gratis, per esempio staking): abbassano il prezzo medio.")}</Fact> : null}
-          {discarded > 0 ? <Fact>{plural(discarded, "riga del file non viene importata", "righe del file non vengono importate")}{tr(": le hai viste nell'anteprima.")}</Fact> : null}
+          {freeShares > 0 ? <Fact>{plural(freeShares, tr("acquisto a prezzo zero"), tr("acquisti a prezzo zero"))}{" "}{tr("(quote ricevute gratis, per esempio staking): abbassano il prezzo medio.")}</Fact> : null}
+          {discarded > 0 ? <Fact>{plural(discarded, tr("riga del file non viene importata"), tr("righe del file non vengono importate"))}{tr(": le hai viste nell'anteprima.")}</Fact> : null}
         </ul>
       </DialogSection>
       {errors.length > 0 ? (

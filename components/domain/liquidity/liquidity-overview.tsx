@@ -44,7 +44,7 @@ export function LiquidityOverview() {
   const { locale: formattingLocale } = useLocalization();
   const MONTH_NAME = new Intl.DateTimeFormat(formattingLocale, { month: "long" });
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const { data: session } = authClient.useSession();
   const currency = session?.user.currency ?? "EUR";
   const { today: now, accountId, setAccountId } = useLiquidity();
@@ -83,7 +83,7 @@ export function LiquidityOverview() {
   }, [selected, transactions, snapshotsQuery.data, total, period, today]);
 
   const pace = React.useMemo(() => computeMonthPace(transactions, budgets, today), [transactions, budgets, today]);
-  const lines = buildVoiceLines({ pace, monthLabel: MONTH_NAME.format(today), currency, nextDue: null, today });
+  const lines = buildVoiceLines({ language, pace, monthLabel: MONTH_NAME.format(today), currency, nextDue: null, today });
   const toFix = attention?.uncategorizedCount ?? 0;
   const voiceLoading = accountsQuery.isPending || transactionsQuery.isPending || budgetsQuery.isPending;
 
@@ -91,7 +91,7 @@ export function LiquidityOverview() {
     <div className="flex flex-col gap-6">
       <p className={cn("max-w-[62ch] text-lg leading-relaxed text-text-2 sm:text-xl", voiceLoading && VOICE_MIN_HEIGHT_CLASS)}>
         {accounts.length > 0 && (
-          <>{tr("Hai")}{" "}<strong className="font-heading font-medium text-foreground">{new Intl.NumberFormat(formattingLocale, { style: "currency", currency, maximumFractionDigits: 0 }).format(total)}</strong>{" "}{tr("su")}{" "}{accounts.length}{" "}{accounts.length === 1 ? tr("conto") : tr("conti")}.{" "}
+          <>{tr("Hai")}{" "}<strong className="font-heading font-medium text-foreground">{new Intl.NumberFormat(formattingLocale, { style: "currency", currency, maximumFractionDigits: 0 }).format(total)}</strong>{" "}{tr("su")}{" "}{accounts.length}{" "}{accounts.length === 1 ? tr("conto") : tr("conti")}{"."}{" "}
           </>
         )}
         {lines.map((line) => (

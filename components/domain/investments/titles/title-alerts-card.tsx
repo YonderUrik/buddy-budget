@@ -107,7 +107,7 @@ export function TitleAlertsCard({ instrumentId, currency, alerts, lastClose, sup
           <form onSubmit={submit} className="flex flex-col gap-3">
             <SegmentedControl options={DIRECTION_OPTIONS} value={direction} onChange={setDirection} ariaLabel={tr("Direzione dell'avviso")} stretch />
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor={`alert-target-${instrumentId}`}>{tr("Livello (")}{currency})</Label>
+              <Label htmlFor={`alert-target-${instrumentId}`}>{tr("Livello (")}{currency}{")"}</Label>
               <div className="flex gap-2">
                 <Input
                   id={`alert-target-${instrumentId}`}

@@ -26,7 +26,7 @@ export interface StartChecklistProps {
 
 export function StartChecklist({ steps, definitions = START_STEPS, onStepClick, onDismiss, dismissing, className }: StartChecklistProps) {
   const { t: tr, features } = useLocalization();
-  const countryDefinitions = features.retirement ? definitions : definitions.map(step => step.id === "obiettivo" ? { ...step, description: "Imposta un budget per categoria.", href: "/liquidita/categorie", cta: "Vai alle categorie" } : step);
+  const countryDefinitions = features.retirement ? definitions : definitions.map(step => step.id === "obiettivo" ? { ...step, description: tr("Imposta un budget per categoria."), href: "/liquidita/categorie", cta: tr("Vai alle categorie") } : step);
   const done = countDoneSteps(steps);
   return (
     <section aria-labelledby="start-checklist" className={cn("flex flex-col gap-3", className)}>

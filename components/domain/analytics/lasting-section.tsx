@@ -9,7 +9,7 @@ import { MissingData } from "./analytics-card";
 import { GlossedText } from "./glossed-text";
 import type { GlossaryId } from "./glossary";
 import { Term } from "./term";
-import { pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { lastingAnswer } from "./plain-answers";
 import { QuestionSection } from "./question-section";
 import { RiskTab } from "./risk-tab";
@@ -27,6 +27,8 @@ export interface LastingSectionProps extends QuestionSectionData {
 }
 
 export function LastingSection({ question, base, assumptions, plan, results }: LastingSectionProps) {
+  const { pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { currency } = base;
   const answer = results ? lastingAnswer(results, assumptions.rule, assumptions.retirementYears) : null;
@@ -47,7 +49,7 @@ export function LastingSection({ question, base, assumptions, plan, results }: L
             <p className="font-heading text-xl font-medium text-foreground">
               <GlossedText text={answer.headline} />
             </p>
-            <p>{answer.verdict.text}.</p>
+            <p>{answer.verdict.text}{"."}</p>
             {answer.better ? (
               <p>{tr("Cambiando il modo di prelevare la situazione cambia: con la regola «")}{tr(answer.better.label)}{tr("» il patrimonio regge nel")}{" "}{pct(answer.better.success, 0)}{" "}{tr("dei casi.")}</p>
             ) : null}
@@ -55,7 +57,7 @@ export function LastingSection({ question, base, assumptions, plan, results }: L
           <ul className="flex flex-wrap gap-2" aria-label={tr("Probabilità di successo per regola di prelievo")}>
             {answer.rules.map((r) => (
               <li key={r.rule} className={cn("rounded-full px-3 py-1 text-xs font-semibold", r.success >= 0.9 ? TONE_CLASS.pos : r.success >= 0.75 ? TONE_CLASS.default : TONE_CLASS.neg)}>
-                <Term id={RULE_TERMS[r.rule]}>{tr(r.label)}</Term> · {pct(r.success, 0)}
+                <Term id={RULE_TERMS[r.rule]}>{tr(r.label)}</Term> {"·"}{pct(r.success, 0)}
               </li>
             ))}
           </ul>

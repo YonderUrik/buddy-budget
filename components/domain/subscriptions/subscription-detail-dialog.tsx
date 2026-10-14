@@ -21,7 +21,7 @@ import { parseAmount } from "@/lib/debts/add-form";
 
 import { useDeleteSubscriptionMutation, useSaveSubscriptionMutation, useUpdateSubscriptionMutation } from "@/lib/queries/subscriptions";
 import type { SubscriptionItem } from "@/lib/subscriptions/view";
-import { itemHint, reasonSentence } from "./subscriptions-format";
+import { localizedSubscriptionFormats } from "./subscriptions-format";
 import { CadenceSelect, Field, Input, SubscriptionCategoryField } from "./subscription-fields";
 
 /** Quanti addebiti dello storico si mostrano (i più recenti). */
@@ -37,6 +37,8 @@ export interface SubscriptionDetailDialogProps {
 }
 
 function Details({ item, currency, today, categories, onDone }: Omit<SubscriptionDetailDialogProps, "onOpenChange"> & { item: SubscriptionItem; onDone: () => void }) {
+  const { itemHint, reasonSentence } = localizedSubscriptionFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
 
@@ -47,7 +49,7 @@ function Details({ item, currency, today, categories, onDone }: Omit<Subscriptio
   const id = React.useId();
   const manual = item.origin === "manuale";
   const [name, setName] = React.useState(item.name);
-  const [amount, setAmount] = React.useState(item.amount !== null ? item.amount.toFixed(2).replace(".", ",") : "");
+  const [amount, setAmount] = React.useState(item.amount !== null ? new Intl.NumberFormat(formattingLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(item.amount) : "");
   const [cadence, setCadence] = React.useState<SubscriptionCadence>(item.cadence ?? "mensile");
   const [nextDate, setNextDate] = React.useState(item.nextDate ?? today);
   const [categoryId, setCategoryId] = React.useState(item.categoryId ?? "");

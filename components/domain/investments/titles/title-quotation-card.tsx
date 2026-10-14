@@ -32,8 +32,7 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
         {!searching ? (
           <Button className="self-start" onClick={() => setSearching(true)}>{tr("Cerca la quotazione")}</Button>
         ) : candidates.isLoading ? (
-          <p className="text-sm text-muted-foreground" aria-live="polite">{tr("Cerco le quotazioni di")}{" "}{isin}…
-          </p>
+          <p className="text-sm text-muted-foreground" aria-live="polite">{tr("Cerco le quotazioni di")}{" "}{isin}{"…"}</p>
         ) : candidates.isError ? (
           <p role="alert" className="text-sm text-destructive">
             {tr(candidates.error.message)}
@@ -45,7 +44,7 @@ export function TitleQuotationCard({ instrumentId, isin, currency }: TitleQuotat
                 <div className="min-w-0 flex-1 text-sm">
                   <p className="font-medium text-foreground">{candidate.symbol}</p>
                   <p className="text-xs text-muted-foreground">
-                    {candidate.exchange ?? "Borsa non indicata"} · {candidate.currency}
+                    {candidate.exchange ?? tr("Borsa non indicata")} {"·"}{candidate.currency}
                   </p>
                 </div>
                 <Button size="sm" disabled={link.isPending} onClick={() => link.mutate(candidate.symbol)}>{tr("Collega")}</Button>

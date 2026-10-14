@@ -101,10 +101,10 @@ export default function LiquiditaAnalisiPage() {
   const money = (n: number) => formatCurrency(n, currency, { maximumFractionDigits: 0 });
   const sentence =
     spent === 0
-      ? "In questo periodo non ci sono ancora spese."
-      : `${isCurrentMonth ? "Finora hai speso" : "Hai speso"} ${money(spent)}${spentBefore > 0 ? `, ${money(Math.abs(delta))} ${delta > 0 ? "in più" : "in meno"} del periodo prima` : ""}.${heaviest ? ` La voce che pesa di più è «${heaviest.name}», il ${Math.round((heaviest.amount / spent) * 100)}%.` : ""}`;
+      ? tr("In questo periodo non ci sono ancora spese.")
+      : `${isCurrentMonth ? tr("Finora hai speso") : tr("Hai speso")} ${money(spent)}${spentBefore > 0 ? tr(", {0} {1} del periodo prima", { 0: money(Math.abs(delta)), 1: delta > 0 ? "in più" : "in meno" }) : ""}.${heaviest ? tr(" La voce che pesa di più è «{0}», il {1}%.", { 0: heaviest.name, 1: Math.round((heaviest.amount / spent) * 100) }) : ""}`;
 
-  if (isError) return <LoadError message="Impossibile caricare i dati dell'analisi." onRetry={() => refetch()} />;
+  if (isError) return <LoadError message={tr("Impossibile caricare i dati dell'analisi.")} onRetry={() => refetch()} />;
   return (
     <div className="flex flex-col gap-8" aria-busy={isLoading}>
       <PeriodStepper period={period} onPeriodChange={setPeriod} referenceDate={referenceDate} onReferenceDateChange={setReferenceDate} latest={today} />
@@ -158,7 +158,7 @@ export default function LiquiditaAnalisiPage() {
                     key={s.categoryId}
                     title={s.name}
                     hint={s.quotaPct !== null ? tr("{0}% delle entrate", {0: Math.round(s.quotaPct)}) : undefined}
-                    end={<span className="font-heading font-semibold tabular-nums text-pos">+{money(s.amount)}</span>}
+                    end={<span className="font-heading font-semibold tabular-nums text-pos">{"+"}{money(s.amount)}</span>}
                   />
                 ))}
               </div>

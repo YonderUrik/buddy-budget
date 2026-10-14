@@ -132,7 +132,7 @@ export function SaleSimulatorCard({ positions, transactions, instruments, regime
               <Line label={tr("Ti resta")} value={format(result.net)} strong />
             </dl>
             <p className="text-sm text-muted-foreground">
-              {CATEGORY_TEXT[result.category]}
+              {tr(CATEGORY_TEXT[result.category])}
               {result.nonHarmonized ? tr(" ETF non armonizzato: in realtà a IRPEF, qui stimato al 26%.") : ""}
             </p>
           </>

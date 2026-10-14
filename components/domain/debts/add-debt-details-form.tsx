@@ -25,7 +25,7 @@ import { useCreateDebtMutation } from "@/lib/queries/debts";
 import type { LoanInputKey } from "@/lib/calc/amortization";
 import { AddDebtCostsField } from "./add-debt-costs-field";
 import { DebtFormField } from "./debt-form-field";
-import { formatMonthYear } from "./debts-format";
+import { localizedDebtFormats } from "./debts-format";
 import { ErrorWithReport } from "@/components/domain/support";
 
 interface FieldCopy {
@@ -69,6 +69,8 @@ export interface AddDebtDetailsFormProps {
 }
 
 export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, onBack, onCreated }: AddDebtDetailsFormProps) {
+  const { formatMonthYear } = localizedDebtFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
   function formatCalculated(key: LoanInputKey, value: number, currency: string): string {
@@ -143,7 +145,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
           {resolved && calc ? (
             <p className="flex items-start gap-2 text-sm text-foreground" role="status">
               <InfoIcon size={16} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
-              <span>{tr("Abbiamo calcolato")}{" "}{tr(CALCULATED_LABELS[calc])}: <strong className="font-medium">{formatCalculated(calc, resolved.inputs[calc], currency)}</strong>{tr(". Può differire di poco da quello della banca, per gli arrotondamenti.")}</span>
+              <span>{tr("Abbiamo calcolato")}{" "}{tr(CALCULATED_LABELS[calc])}{":"}<strong className="font-medium">{formatCalculated(calc, resolved.inputs[calc], currency)}</strong>{tr(". Può differire di poco da quello della banca, per gli arrotondamenti.")}</span>
             </p>
           ) : null}
           {!resolution.ok && resolution.message ? <p className="text-sm text-neg" role="alert">{tr(resolution.message)}</p> : null}
@@ -178,7 +180,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
                 <dt className="text-xs text-muted-foreground">{resolved.apr !== null ? tr("Interessi · TAEG") : tr("Interessi totali")}</dt>
                 <dd className="font-heading font-medium tabular-nums">
                   {formatCurrency(preview.totalInterest, currency, { maximumFractionDigits: 0 })}
-                  {resolved.apr !== null ? ` · ${resolved.apr.toFixed(2).replace(".", ",")}%` : ""}
+                  {resolved.apr !== null ? ` · ${new Intl.NumberFormat(formattingLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(resolved.apr)}%` : ""}
                 </dd>
               </div>
             </dl>

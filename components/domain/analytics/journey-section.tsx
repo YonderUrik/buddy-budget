@@ -6,13 +6,15 @@ import { useLocalization } from "@/lib/localization/provider";
 import { splitGrowth } from "@/lib/calc/growth-split";
 import { Metric } from "./analytics-card";
 import { GlossedText } from "./glossed-text";
-import { money } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { GrowthTab } from "./growth-tab";
 import { journeySentences } from "./plain-answers";
 import { QuestionSection } from "./question-section";
 import type { QuestionSectionData } from "./section-props";
 
 export function JourneySection({ question, base, assumptions, plan }: QuestionSectionData) {
+  const { money } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { currency } = base;
   const split = splitGrowth(base.growthPoints);
@@ -33,7 +35,7 @@ export function JourneySection({ question, base, assumptions, plan }: QuestionSe
             <div className="h-full rounded-full bg-primary" style={{ width: `${progress * 100}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground tabular-nums">
-            <span>0</span>
+            <span>{"0"}</span>
             <span>{money(plan.target, currency)}</span>
           </div>
         </div>

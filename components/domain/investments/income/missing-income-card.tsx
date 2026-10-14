@@ -79,9 +79,9 @@ export function MissingIncomeCard({
             return (
               <li key={key} className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0 text-sm">
-                  <p className="truncate font-medium text-foreground">{instrument?.name ?? "Strumento"}</p>
+                  <p className="truncate font-medium text-foreground">{instrument?.name ?? tr("Strumento")}</p>
                   <p className="text-muted-foreground">
-                    {item.kind === "cedola" ? tr("Cedola") : tr("Stacco")}{" "}{tr("del")}{" "}{formatDateWithYear(item.date)} · {quantityText(item.quantity)}{" "}
+                    {item.kind === "cedola" ? tr("Cedola") : tr("Stacco")}{" "}{tr("del")}{" "}{formatDateWithYear(item.date)} {"·"}{quantityText(item.quantity)}{" "}
                     {item.kind === "cedola" ? tr("di nominale") : tr("quote")}
                   </p>
                   <p className="tabular-nums text-foreground">

@@ -70,7 +70,7 @@ export function MobileTopbar({ brandName = "BuddyBudget", showMenuButton = true,
       <span className="flex items-center gap-2 font-heading text-base font-bold text-sidebar-foreground">
         <Image
           src="/brand/logo-mark.svg"
-          alt={tr("")}
+          alt={""}
           width={22}
           height={27}
           className="h-6 w-auto"

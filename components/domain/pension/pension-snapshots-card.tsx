@@ -11,7 +11,7 @@ import { DatabaseIcon, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { sortSnapshots, type PensionSnapshot } from "@/lib/calc/pension";
-import { formatLongDateKey, formatShortDateKey, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 
 export interface PensionSnapshotsCardProps {
@@ -34,6 +34,8 @@ const parseAmount = (raw: string): number | null => {
 };
 
 export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemove, onImport }: PensionSnapshotsCardProps) {
+  const { formatLongDateKey, formatShortDateKey, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const [date, setDate] = React.useState(today);
   const [contributions, setContributions] = React.useState("");
@@ -58,7 +60,7 @@ export function PensionSnapshotsCard({ snapshots, currency, today, onAdd, onRemo
       setContributions("");
       setValue("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Salvataggio non riuscito");
+      setError(e instanceof Error ? e.message : tr("Salvataggio non riuscito"));
     } finally {
       setSaving(false);
     }

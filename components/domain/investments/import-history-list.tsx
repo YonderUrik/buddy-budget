@@ -30,11 +30,11 @@ export function ImportHistoryList({ groups, busy = false, onDelete }: ImportHist
           <ul className="flex flex-col divide-y">
             {group.items.map((item) => {
               const color = TONE_COLOR[item.status.tone];
-              const label = `${item.source}${item.period ? `, ${item.period}` : ""}, caricato il ${formatImportDate(item.createdAt)}`;
+              const label = tr("{0}{1}, caricato il {2}", { 0: item.source, 1: item.period ? `, ${item.period}` : "", 2: formatImportDate(item.createdAt) });
               return (
                 <li key={item.key} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 py-3">
                   <div className="flex min-w-0 flex-col gap-0.5">
-                    <p className="text-sm font-medium text-foreground">{item.period ?? "File caricato"}</p>
+                    <p className="text-sm font-medium text-foreground">{item.period ?? tr("File caricato")}</p>
                     <p className="text-xs text-muted-foreground">{tr("Caricato il")}{" "}{formatImportDate(item.createdAt)}
                       {item.details.length > 0 ? ` · ${item.details.join(" · ")}` : ""}
                     </p>

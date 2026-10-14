@@ -174,9 +174,9 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
     for (const file of selected) {
       const text = await file.text();
       const provider = detectImportProvider(text);
-      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") throw new Error(`${file.name}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.`);
+      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") throw new Error(tr("{0}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.", { 0: file.name }));
       try { prepared.push({ name: file.name, text, parsed: await parse.mutateAsync(text) }); }
-      catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : "File non valido"}`); }
+      catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : tr("File non valido")}`); }
     }
     const ordered = orderStatementFiles(prepared);
     for (const file of ordered) track("investments_import_file_read", { provider: file.parsed.preset, chosen: false });

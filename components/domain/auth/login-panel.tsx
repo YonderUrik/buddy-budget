@@ -176,8 +176,7 @@ export function LoginPanel({ redirectTo, notice }: LoginPanelProps) {
           {loading ? tr("Invio in corso…") : tr("Inviami il link")}
           {!loading && (
             <kbd className="ml-1 hidden rounded-sm border border-primary-foreground/30 px-1.5 font-mono text-xs sm:inline" aria-hidden="true">
-              ↵
-            </kbd>
+              {"↵"}</kbd>
           )}
         </Button>
       </form>

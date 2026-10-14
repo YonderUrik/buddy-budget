@@ -5,7 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import { AnimatedNumber, TextMorph } from "@/components/motion";
 import type { AnalyticsPlan } from "@/lib/analitiche/plan";
 import { cn } from "@/lib/utils";
-import { formatYears } from "./analytics-format";
+import { localizedAnalyticsFormats, formatYears } from "./analytics-format";
 
 export interface ScenarioHeadlineProps {
   /** Piano con i valori dei cursori. */
@@ -24,6 +24,8 @@ function comparison(plan: AnalyticsPlan, baseline: AnalyticsPlan): { text: strin
 }
 
 export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProps) {
+  const { formatYears } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   if (plan.target === null) {
     return (
@@ -38,7 +40,7 @@ export function ScenarioHeadline({ plan, baseline, today }: ScenarioHeadlineProp
   const cmp = comparison(plan, baseline);
   const year = years === null || years === 0 ? null : today.getFullYear() + Math.ceil(years);
   const big =
-    years === null ? "Oltre 80 anni" : year === null ? "Già oggi" : <AnimatedNumber value={year} format={{ useGrouping: false }} />;
+    years === null ? tr("Oltre 80 anni") : year === null ? tr("Già oggi") : <AnimatedNumber value={year} format={{ useGrouping: false }} />;
   return (
     <div className="flex flex-col gap-1">
       <p className="text-muted-foreground">{years === 0 ? tr("Hai già raggiunto il numero FIRE") : tr("Puoi smettere di lavorare intorno al")}</p>

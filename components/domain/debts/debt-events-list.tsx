@@ -35,14 +35,14 @@ export function DebtEventsList({ events, currency, onDelete }: DebtEventsListPro
   function describeEvent(event: DebtEventView, currency: string): string {
   // Una rata segnata senza importo è quella del piano: niente «0,00 €».
   if (event.type === "payment")
-    return `Rata ${event.installmentNumber} pagata${event.amount ? ` · ${formatCurrency(event.amount, currency)}` : ""}`;
-  if (event.type === "rate_change") return `Tasso portato al ${String(event.rate).replace(".", ",")}%`;
+    return tr("Rata {0} pagata{1}", { 0: event.installmentNumber, 1: event.amount ? ` · ${formatCurrency(event.amount, currency)}` : "" });
+  if (event.type === "rate_change") return tr("Tasso portato al {0}%", { 0: String(event.rate).replace(".", ",") });
   if (event.type === "early_repayment") {
-    const how = event.effect === "reduce_installment" ? "rata ridotta" : "durata ridotta";
-    const penalty = event.penalty ? ` · penale ${formatCurrency(event.penalty, currency)}` : "";
-    return `Estinzione anticipata di ${formatCurrency(event.amount ?? 0, currency)} · ${how}${penalty}`;
+    const how = event.effect === "reduce_installment" ? tr("rata ridotta") : tr("durata ridotta");
+    const penalty = event.penalty ? tr(" · penale {0}", { 0: formatCurrency(event.penalty, currency) }) : "";
+    return tr("Estinzione anticipata di {0} · {1}{2}", { 0: formatCurrency(event.amount ?? 0, currency), 1: how, 2: penalty });
   }
-  return `Residuo corretto a ${formatCurrency(event.amount ?? 0, currency)}`;
+  return tr("Residuo corretto a {0}", { 0: formatCurrency(event.amount ?? 0, currency) });
 }
 
   const { t: tr } = useLocalization();

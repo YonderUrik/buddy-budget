@@ -68,7 +68,7 @@ export function BenchmarkDialog({ open, onOpenChange, current, currency }: Bench
                 >
                   <span>{tr(suggestion.label)}{selected ? tr(" · Attuale") : ""}</span>
                   <span className="text-xs font-normal text-muted-foreground">{tr(suggestion.description)}</span>
-                  <span className="text-xs font-normal text-muted-foreground">{suggestion.name} · {suggestion.yahooSymbol}</span>
+                  <span className="text-xs font-normal text-muted-foreground">{suggestion.name} {"·"}{suggestion.yahooSymbol}</span>
                 </Button>
               );
             })}

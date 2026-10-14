@@ -108,7 +108,7 @@ export function DebtDetail({ debt, currency, onDeleted }: DebtDetailProps) {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{tr("Eliminare «")}{debt.name}»?</AlertDialogTitle>
+            <AlertDialogTitle>{tr("Eliminare «")}{debt.name}{"»?"}</AlertDialogTitle>
             <AlertDialogDescription>{tr("Spariscono il piano e tutto ciò che hai registrato su questo debito. Le transazioni collegate restano dove sono.")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -36,7 +36,7 @@ export default function LiquiditaCategoriePage() {
         {isLoading ? (
           <div className="h-48 animate-pulse rounded-2xl bg-muted" aria-busy="true" />
         ) : isError ? (
-          <LoadError message="Impossibile caricare le categorie." onRetry={() => refetch()} />
+          <LoadError message={tr("Impossibile caricare le categorie.")} onRetry={() => refetch()} />
         ) : (
           <CategoryBoard categories={categories ?? []} />
         )}

@@ -76,7 +76,7 @@ function InstrumentRow({
         <div className="flex items-baseline justify-between gap-3">
           <p className="min-w-0 truncate text-sm font-medium text-foreground">{identity.name ?? identity.symbol ?? identity.isin}</p>
           <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-            {identity.count}{" "}{identity.count === 1 ? tr("operazione") : tr("operazioni")}
+            {identity.count}{" "}{identity.count === 1 ? "operazione" : tr("operazioni")}
           </span>
         </div>
         {identity.name ? <p className="-mt-1.5 truncate font-mono text-xs text-muted-foreground">{[identity.symbol, identity.isin].filter(Boolean).join(" · ")}</p> : null}
@@ -86,13 +86,13 @@ function InstrumentRow({
           </span>
           <span className="min-w-0">
             <span className="font-medium text-foreground">{tr(status.title)}</span>
-            <span className="text-muted-foreground"> · {status.text}</span>
+            <span className="text-muted-foreground"> {"·"}{status.text}</span>
           </span>
         </p>
         {chosen ? (
           <p className="pl-7 text-sm text-foreground">
             {chosen.name}
-            {chosen.detail ? <span className="text-muted-foreground"> · {chosen.detail}</span> : null}
+            {chosen.detail ? <span className="text-muted-foreground"> {"·"}{chosen.detail}</span> : null}
           </p>
         ) : null}
         <div className="pl-7">
@@ -131,7 +131,7 @@ export function ImportInstrumentsStep(props: ImportInstrumentsStepProps) {
     <div className="flex flex-col gap-4">
       <p className="text-sm text-muted-foreground">
         <span className="font-medium text-foreground">{included}</span>{" "}{tr("su")}{" "}{identities.length}{" "}{identities.length === 1 ? tr("titolo") : tr("titoli")}{" "}{tr("pronti da importare.")}{missing > 0 ? tr(" {0} non {1}: cercali oppure lasciali fuori, e le loro operazioni non verranno importate.", {0: missing, 1: missing === 1 ? "è stato trovato" : "sono stati trovati"}) : ""}
-        {toCheck > 0 ? ` ${toCheck} ${toCheck === 1 ? "è da controllare" : "sono da controllare"}.` : ""}
+        {toCheck > 0 ? ` ${toCheck} ${toCheck === 1 ? tr("è da controllare") : tr("sono da controllare")}.` : ""}
         {" "}{tr("I titoli nuovi si aggiungono ai tuoi strumenti.")}</p>
       <ul className="flex flex-col divide-y">
         {sorted.map((identity) => {

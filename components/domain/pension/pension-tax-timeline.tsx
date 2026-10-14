@@ -9,7 +9,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { EXIT_TAX_TIMELINE_YEARS, exitTaxMilestones, exitTaxRate } from "@/lib/calc/pension";
-import { formatPercent } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 
 export interface PensionTaxTimelineProps {
   adhesionDate: string;
@@ -34,6 +34,8 @@ function clampYears(value: number): number {
 }
 
 export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChange, onCommit, onReset }: PensionTaxTimelineProps) {
+  const { formatPercent } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const trackRef = React.useRef<HTMLDivElement>(null);
   const dragging = React.useRef(false);
@@ -48,7 +50,7 @@ export function PensionTaxTimeline({ adhesionDate, years, realYears, onYearsChan
   const rateLabel = formatPercent(exitTaxRate(shownYears), 1);
   const marks = [
     { left: 0, title: String(startYear), caption: "Adesione" },
-    { left: flatShare, title: milestones.reductionStartsOn.slice(0, 4), caption: "Inizia a scendere" },
+    { left: flatShare, title: milestones.reductionStartsOn.slice(0, 4), caption: tr("Inizia a scendere") },
     { left: 100, title: milestones.minRateOn.slice(0, 4), caption: "Minimo" },
   ];
 

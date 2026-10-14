@@ -22,7 +22,7 @@ import { AddSubscriptionDialog } from "./add-subscription-dialog";
 import { SubscriptionDetailDialog } from "./subscription-detail-dialog";
 import { LogoCredit } from "@/components/domain/categorization";
 import { SubscriptionRow } from "./subscription-row";
-import { fromDate, whenPhrase } from "./subscriptions-format";
+import { localizedSubscriptionFormats } from "./subscriptions-format";
 
 export interface SubscriptionsOverviewProps {
   data: SubscriptionsResponse;
@@ -33,6 +33,8 @@ export interface SubscriptionsOverviewProps {
 const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
 function Hero({ data }: { data: SubscriptionsResponse }) {
+  const { whenPhrase } = localizedSubscriptionFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -49,10 +51,9 @@ function Hero({ data }: { data: SubscriptionsResponse }) {
         {totals.count > 0 ? (
           <>
             <span className="font-mono font-semibold tabular-nums text-foreground">{formatCurrency(totals.yearly, currency, { maximumFractionDigits: 0 })}</span>{" "}{tr("all'anno, in")}{" "}{totals.count}{" "}
-            {plural(totals.count, "abbonamento confermato", "abbonamenti confermati")}.
-          </>
+            {plural(totals.count, tr("abbonamento confermato"), tr("abbonamenti confermati"))}{"."}</>
         ) : (
-          "Conferma quelli che riconosci qui sotto e li sommiamo."
+          tr("Conferma quelli che riconosci qui sotto e li sommiamo.")
         )}
         {totals.pendingCount > 0 ? (
           <>
@@ -81,9 +82,8 @@ function ArchiveList({ title, items, ...rowProps }: { title: string; items: Subs
   return (
     <details className="group rounded-2xl">
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-semibold text-text-2 marker:hidden focus-visible:outline-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
-        <span className="transition-transform group-open:rotate-90" aria-hidden="true">›</span>
-        {tr(title)} ({items.length})
-      </summary>
+        <span className="transition-transform group-open:rotate-90" aria-hidden="true">{"›"}</span>
+        {tr(title)} {"("}{items.length}{")"}</summary>
       <div className="mt-2 flex flex-col gap-2">
         {items.map((item) => (
           <SubscriptionRow key={item.key} item={item} {...rowProps} />
@@ -94,6 +94,8 @@ function ArchiveList({ title, items, ...rowProps }: { title: string; items: Subs
 }
 
 export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverviewProps) {
+  const { fromDate } = localizedSubscriptionFormats(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -203,7 +205,7 @@ export function SubscriptionsOverview({ data, onItemOpened }: SubscriptionsOverv
                 key={item.key}
                 title={item.name}
                 hint={tr("Da {0} a {1} {2}", {0: formatCurrency(item.priceChange!.from, currency), 1: formatCurrency(item.priceChange!.to, currency), 2: fromDate(item.priceChange!.since)})}
-                end={<span className="font-mono text-sm font-semibold tabular-nums text-neg">+{formatCurrency(item.priceChange!.to - item.priceChange!.from, currency)}</span>}
+                end={<span className="font-mono text-sm font-semibold tabular-nums text-neg">{"+"}{formatCurrency(item.priceChange!.to - item.priceChange!.from, currency)}</span>}
               />
             ))}
           </div>

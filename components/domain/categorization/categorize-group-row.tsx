@@ -18,7 +18,7 @@ import { CategoryPicker } from "@/components/domain/categories";
 import type { Category } from "@/lib/db/schema/categories";
 import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { SuggestionGroup } from "@/lib/categorization/suggest";
-import { dateRangeLabel } from "@/lib/categorization/origin";
+import { localizedCategorizationText } from "@/lib/categorization/origin";
 
 import { cn } from "@/lib/utils";
 import { MerchantLogo } from "./merchant-logo";
@@ -62,6 +62,8 @@ export function CategorizeGroupRow({
   onExcludedPercentageChange,
   onRemoteLogo,
 }: CategorizeGroupRowProps) {
+  const { dateRangeLabel } = localizedCategorizationText(useLocalization().language);
+
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -102,7 +104,7 @@ export function CategorizeGroupRow({
           <div className="flex min-w-0 flex-col">
             <p className="line-clamp-2 min-w-0 text-sm font-medium break-words text-foreground">{group.label}</p>
             <p className="text-xs text-muted-foreground tabular-nums">
-              {movementCountLabel(group.transactionIds.length)} · {dateRangeLabel(group.transactionDates)}
+              {movementCountLabel(group.transactionIds.length)} {"·"}{dateRangeLabel(group.transactionDates)}
             </p>
           </div>
           <span className={cn("shrink-0 text-sm font-medium tabular-nums", isIncome ? "text-pos" : "text-foreground")}>
@@ -155,9 +157,9 @@ export function CategorizeGroupRow({
               }}
             />
             <div className="flex flex-wrap justify-between gap-x-3 text-xs text-muted-foreground">
-              <span>{tr("Esclusa dal conteggio:")}{" "}{Math.round(excludedPercentage * 100)}%</span>
+              <span>{tr("Esclusa dal conteggio:")}{" "}{Math.round(excludedPercentage * 100)}{"%"}</span>
               <span>
-                {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}:{" "}
+                {isIncome ? tr("Entrata effettiva") : tr("Spesa effettiva")}{":"}{" "}
                 {formatCurrency(group.totalAmount * (1 - excludedPercentage), currency)}
               </span>
             </div>
@@ -171,7 +173,7 @@ export function CategorizeGroupRow({
           aria-controls={detailsId}
           className="-my-1 flex w-fit items-center gap-1 py-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          {expanded ? "Nascondi" : "Mostra"}{" "}{group.transactionIds.length === 1 ? "il movimento" : `i ${group.transactionIds.length} movimenti`}
+          {expanded ? tr("Nascondi") : tr("Mostra")}{" "}{group.transactionIds.length === 1 ? tr("il movimento") : tr("i {0} movimenti", { 0: group.transactionIds.length })}
           <ChevronDownIcon className={cn("size-3.5 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
         </button>
 

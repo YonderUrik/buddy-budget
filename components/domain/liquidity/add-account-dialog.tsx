@@ -102,7 +102,7 @@ function AddAccountSession({ currency, renew, onClose }: { currency: string; ren
             {unavailable ? (
               <ChoiceBody icon={ZapIcon} color="var(--text-3)" title={tr("Collega la tua banca")} badge={unavailable.badge} description={tr(unavailable.description)} unavailable />
             ) : (
-              <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} badge="Automatico" description={tr("Saldi e movimenti si aggiornano da soli, in sola lettura.")} />
+              <ChoiceBody icon={ZapIcon} color="var(--primary)" title={tr("Collega la tua banca")} badge={tr("Automatico")} description={tr("Saldi e movimenti si aggiornano da soli, in sola lettura.")} />
             )}
           </button>
           <button type="button" className={CHOICE_CLASS} onClick={() => go("manuale")}>

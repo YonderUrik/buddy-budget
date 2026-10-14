@@ -21,13 +21,13 @@ import { summarizeCosts } from "@/lib/calc/costs";
 import { compareRules } from "@/lib/calc/monte-carlo";
 import { AnswerViews, type AnswerView } from "./answer-views";
 import { ANALYTICS_QUESTIONS } from "./analytics-questions";
-import { money, pct } from "./analytics-format";
+import { localizedAnalyticsFormats } from "./analytics-format";
 import { AssumptionsPanel } from "./assumptions-panel";
 import { CostsSection } from "./costs-section";
 import { DataPeriodPicker } from "./data-period-picker";
 import { JourneySection } from "./journey-section";
 import { LastingSection } from "./lasting-section";
-import { periodPhrase } from "./period-text";
+import { localizedPeriodText } from "./period-text";
 import { lastingAnswer } from "./plain-answers";
 import { ScenarioControls } from "./scenario-controls";
 import { ScenarioHeadline } from "./scenario-headline";
@@ -54,6 +54,10 @@ const VIEW_ICONS = { "dove-sono": TrendingUp, quando: CalendarClock, reggera: Sh
 const VIEW_LABELS = { "dove-sono": "Strada fatta", quando: "Arrivo", reggera: "Regge", costi: "Costi" } as const;
 
 export function ScenarioView({ base, assumptions, plan, returnInfo, saving, saveError, updatingPeriod, today, onSaveAssumptions, onSaveTer }: ScenarioViewProps) {
+  const { periodPhrase } = localizedPeriodText(useLocalization().language);
+
+  const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
@@ -75,13 +79,13 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
     const common = { id: q.id, label: tr(VIEW_LABELS[q.id]), icon: VIEW_ICONS[q.id] };
     switch (q.id) {
       case "dove-sono":
-        return { ...common, value: scenarioPlan.progress !== null ? pct(Math.min(scenarioPlan.progress, 9.99), 0) : "—", note: scenarioPlan.target !== null ? `${money(scenarioPlan.wealth, currency)} su ${money(scenarioPlan.target, currency)}` : money(scenarioPlan.wealth, currency) };
+        return { ...common, value: scenarioPlan.progress !== null ? pct(Math.min(scenarioPlan.progress, 9.99), 0) : "—", note: scenarioPlan.target !== null ? tr("{0} su {1}", { 0: money(scenarioPlan.wealth, currency), 1: money(scenarioPlan.target, currency) }) : money(scenarioPlan.wealth, currency) };
       case "quando":
-        return { ...common, value: scenarioPlan.yearsToFire === null ? "—" : scenarioPlan.yearsToFire === 0 ? "Già qui" : String(today.getFullYear() + Math.ceil(scenarioPlan.yearsToFire)), note: hasScenario(overrides) ? "con i valori dei cursori" : "ai ritmi attuali" };
+        return { ...common, value: scenarioPlan.yearsToFire === null ? "—" : scenarioPlan.yearsToFire === 0 ? "Già qui" : String(today.getFullYear() + Math.ceil(scenarioPlan.yearsToFire)), note: hasScenario(overrides) ? tr("con i valori dei cursori") : tr("ai ritmi attuali") };
       case "reggera":
-        return { ...common, value: lasting ? pct(lasting.success, 0) : "—", note: lasting ? `su ${assumptions.retirementYears} anni, smettendo oggi` : "serve la spesa annua" };
+        return { ...common, value: lasting ? pct(lasting.success, 0) : "—", note: lasting ? tr("su {0} anni, smettendo oggi", { 0: assumptions.retirementYears }) : tr("serve la spesa annua") };
       case "costi":
-        return { ...common, value: costs.totalValue > 0 ? money(costs.annualCost, currency) : "—", note: costs.annualPct !== null ? `${pct(costs.annualPct, 2)} l'anno` : "costo annuo" };
+        return { ...common, value: costs.totalValue > 0 ? money(costs.annualCost, currency) : "—", note: costs.annualPct !== null ? tr("{0} l'anno", { 0: pct(costs.annualPct, 2) }) : tr("costo annuo") };
     }
   });
 

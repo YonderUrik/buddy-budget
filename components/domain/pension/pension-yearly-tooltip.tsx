@@ -3,7 +3,7 @@ import { useLocalization } from "@/lib/localization/provider";
 
 /** Tooltip del grafico anno per anno: versato, rendimento in valore e in percentuale, con la definizione della percentuale. */
 
-import { formatSignedPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionTooltipFrame, PensionTooltipRow } from "./pension-chart-tooltip";
 
 export interface PensionYearlyPoint {
@@ -25,6 +25,8 @@ const RETURN_DEFINITION = "Rendimento ÷ (valore a inizio anno + versamenti dell
 
 /** Tooltip a tre righe (versato, rendimento, rendimento %) per una barra dell'anno. */
 export function PensionYearlyTooltip({ active, payload, currency }: PensionYearlyTooltipProps) {
+  const { formatSignedPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const point = payload?.[0]?.payload;
   if (!active || !point) return null;
@@ -36,7 +38,7 @@ export function PensionYearlyTooltip({ active, payload, currency }: PensionYearl
       <PensionTooltipRow color="var(--primary)" label={tr("Versato")} value={money(point.contributions, currency)} />
       <PensionTooltipRow color={gainColor} label={isLoss ? tr("Perdita") : tr("Rendimento")} value={`${isLoss ? "−" : "+"}${money(Math.abs(point.gain), currency)}`} valueClassName={gainClass} />
       <PensionTooltipRow color={gainColor} label={tr("Rendimento %")} value={point.returnRate !== null ? formatSignedPercent(point.returnRate) : "n.d."} valueClassName={point.returnRate !== null ? gainClass : undefined} />
-      <p className="text-[11px] leading-snug text-muted-foreground">{RETURN_DEFINITION}{point.partial ? tr(", non annualizzato") : ""}</p>
+      <p className="text-[11px] leading-snug text-muted-foreground">{tr(RETURN_DEFINITION)}{point.partial ? tr(", non annualizzato") : ""}</p>
     </PensionTooltipFrame>
   );
 }

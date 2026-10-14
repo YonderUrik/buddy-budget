@@ -41,8 +41,7 @@ export function LegalConsentFields({ value, onChange, disabled }: LegalConsentFi
           <a href={legalHref("termini")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("Termini di servizio")}</a>{" "}{tr("e dichiaro di aver letto la")}{" "}
           <a href={legalHref("privacy")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("Privacy")}</a>{" "}{tr("e l'informativa sui")}{" "}
           <a href={legalHref("cookie")} target="_blank" rel="noopener noreferrer" className={LINK_CLASS}>{tr("cookie")}</a>
-          .
-        </Label>
+          {"."}</Label>
       </div>
       <div className="flex items-start gap-3">
         <Checkbox
@@ -52,8 +51,7 @@ export function LegalConsentFields({ value, onChange, disabled }: LegalConsentFi
           disabled={disabled}
           className="mt-0.5"
         />
-        <Label htmlFor="legal-clauses" className="font-normal leading-snug">{tr("Approvo in modo specifico, ai sensi degli artt. 1341 e 1342 del codice civile, le sezioni dei Termini:")}{" "}{SPECIFIC_CLAUSE_SECTIONS.join(", ")}.
-        </Label>
+        <Label htmlFor="legal-clauses" className="font-normal leading-snug">{tr("Approvo in modo specifico, ai sensi degli artt. 1341 e 1342 del codice civile, le sezioni dei Termini:")}{" "}{SPECIFIC_CLAUSE_SECTIONS.join(", ")}{"."}</Label>
       </div>
     </div>
   );

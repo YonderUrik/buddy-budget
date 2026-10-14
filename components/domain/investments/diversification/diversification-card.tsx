@@ -25,24 +25,19 @@ export interface DiversificationCardProps {
   currency: string;
 }
 
-function coverageText(areas: number, sectors: number): string | null {
-  const worst = Math.min(areas, sectors);
-  if (worst >= LOW_COVERAGE) return null;
-  return `Il ${Math.round((1 - worst) * 100)}% del valore non è classificato: puoi correggerlo da "Da dove vengono i dati".`;
-}
-
 export function DiversificationCard({ analysis, currency }: DiversificationCardProps) {
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const [editing, setEditing] = React.useState<ExposureRow | null>(null);
-  const coverage = coverageText(analysis.areas.classifiedShare, analysis.sectors.classifiedShare);
+  const worst = Math.min(analysis.areas.classifiedShare, analysis.sectors.classifiedShare);
+  const coverage = worst >= LOW_COVERAGE ? null : tr('Il {0}% del valore non è classificato: puoi correggerlo da "Da dove vengono i dati".', {0: Math.round((1 - worst) * 100)});
   return (
     <>
       <PanelSection icon={GlobeIcon} title={tr("Diversificazione")} color="var(--swatch-blue)">
         <p className="text-sm text-muted-foreground">{tr("Dove investi, guardando dentro ETF e fondi")}</p>
         <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <AreaSection slices={analysis.areas.slices} currency={currency} insight={areaInsight(analysis.areas)} />
-            <SectorSection slices={analysis.sectors.slices} currency={currency} insight={sectorInsight(analysis.sectors)} />
+            <AreaSection slices={analysis.areas.slices} currency={currency} insight={areaInsight(analysis.areas, language)} />
+            <SectorSection slices={analysis.sectors.slices} currency={currency} insight={sectorInsight(analysis.sectors, language)} />
           </div>
           {coverage ? <p className="text-sm text-muted-foreground">{coverage}</p> : null}
           <Disclosure title={tr("Da dove vengono i dati")} summary="Fonte di area e settore di ogni posizione, con la possibilità di correggerla">

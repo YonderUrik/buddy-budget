@@ -86,7 +86,7 @@ function EventForm({ debtId, kind, onDone }: { debtId: string; kind: DebtEventDi
       <DialogActions>
         <span />
         <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? tr("Salvo…") : copy.submit}
+          {mutation.isPending ? tr("Salvo…") : tr(copy.submit)}
         </Button>
       </DialogActions>
     </form>

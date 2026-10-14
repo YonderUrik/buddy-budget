@@ -5,7 +5,7 @@ import { useLocalization } from "@/lib/localization/provider";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRightIcon, CompassIcon } from "lucide-react";
-import { formatPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionSection } from "./pension-section";
 
 export interface PensionInsightsProps {
@@ -31,9 +31,9 @@ function Insight({ href, eyebrow, headline, caption }: InsightProps) {
   const { t: tr } = useLocalization();
   return (
     <Link href={href} className="group flex min-h-11 flex-col gap-1.5 border-t border-border pt-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
-      <p className="text-sm text-text-2">{eyebrow}</p>
+      <p className="text-sm text-text-2">{tr(eyebrow)}</p>
       <div className="font-heading text-2xl font-medium tabular-nums text-foreground">{headline}</div>
-      <p className="text-sm text-text-2">{caption}</p>
+      <p className="text-sm text-text-2">{tr(caption)}</p>
       <span className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:underline">{tr("Vedi i dettagli")}{" "}<ArrowRightIcon className="size-4 transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
       </span>
     </Link>
@@ -41,6 +41,8 @@ function Insight({ href, eyebrow, headline, caption }: InsightProps) {
 }
 
 export function PensionInsights({ fundAnnualReturn, companyTfrRate, netRange, projection, currency }: PensionInsightsProps) {
+  const { formatPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const beats = fundAnnualReturn !== null && fundAnnualReturn >= companyTfrRate;
   return (
@@ -62,7 +64,7 @@ export function PensionInsights({ fundAnnualReturn, companyTfrRate, netRange, pr
           headline={
             <>
               {money(netRange.low, currency)}
-              <span className="text-text-2"> – </span>
+              <span className="text-text-2"> {"–"}</span>
               {money(netRange.high, currency)}
             </>
           }
@@ -70,7 +72,7 @@ export function PensionInsights({ fundAnnualReturn, companyTfrRate, netRange, pr
         />
         <Insight
           href="/pensione/proiezione"
-          eyebrow={`Tra ${projection.years} anni`}
+          eyebrow={tr("Tra {0} anni", {0: projection.years})}
           headline={money(projection.base, currency)}
           caption="Scenario base, in euro di oggi: già al netto dell'inflazione."
         />

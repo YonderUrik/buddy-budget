@@ -25,7 +25,7 @@ export function ReturnMetric({ label, hint, value, annual = null, note = null, d
   const { formatSignedPct } = localizedFormats(formattingLocale);
 
   const { t: tr } = useLocalization();
-  const formatted = value === null ? "Non disponibile" : formatSignedPct(value);
+  const formatted = value === null ? tr("Non disponibile") : formatSignedPct(value);
   return <Popover>
     <PopoverTrigger
       openOnHover
@@ -42,7 +42,7 @@ export function ReturnMetric({ label, hint, value, annual = null, note = null, d
       {note ? <span className="text-xs text-muted-foreground">{note}</span> : null}
     </PopoverTrigger>
     <PopoverContent align="start" className="max-w-80 text-sm leading-relaxed">
-      <p className="font-medium">{tr(label)} · {formatted}</p>
+      <p className="font-medium">{tr(label)} {"·"}{formatted}</p>
       {periodLabel ? <p className="text-xs text-muted-foreground">{periodLabel}</p> : null}
       <div>{tr(hint)}</div>
       {value !== null ? <p className="text-xs text-muted-foreground">{tr("La percentuale principale è il rendimento complessivo di questo intervallo. Il valore annualizzato, quando presente, è il tasso annuo equivalente.")}</p> : null}

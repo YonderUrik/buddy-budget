@@ -69,7 +69,7 @@ export function ImportManagement({ embedded = false }: { embedded?: boolean } = 
   const groups = groupImports(showAll ? history : history.slice(0, VISIBLE_IMPORTS));
   const brokerSource = selection ? history.find((h) => h.id === selection.id)?.source : null;
   const sourceCount = new Set(history.map((h) => h.source)).size;
-  const summary = history.length > 0 ? `${plural(history.length, "file caricato", "file caricati")} da ${plural(sourceCount, "origine", "origini")} · ultimo il ${formatImportDate(history[0].createdAt)}` : undefined;
+  const summary = history.length > 0 ? tr("{0} da {1} · ultimo il {2}", { 0: plural(history.length, "file caricato", "file caricati"), 1: plural(sourceCount, "origine", "origini"), 2: formatImportDate(history[0].createdAt) }) : undefined;
 
   const Shell = embedded ? EmbeddedShell : PanelShell;
   return (

@@ -11,7 +11,7 @@ import { MoneyHero } from "@/components/domain/net-worth";
 import { InfoHint } from "@/components/domain/shared";
 import type { PensionPerformance, PensionSnapshot } from "@/lib/calc/pension";
 import { cn } from "@/lib/utils";
-import { formatLongDateKey, formatSignedPercent, money } from "./pension-format";
+import { localizedPensionFormats } from "./pension-format";
 import { PensionTrendChart } from "./pension-trend-chart";
 
 export interface PensionHeroProps {
@@ -39,6 +39,8 @@ function Measure({ label, children, hint }: { label: ReactNode; children: ReactN
 }
 
 export function PensionHero({ name, performance, snapshots, currency, className }: PensionHeroProps) {
+  const { formatLongDateKey, formatSignedPercent, money } = localizedPensionFormats(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const { value, netContributions, gain, gainPct, annualReturn, approximate, lastDate } = performance;
   const up = gain >= 0;
@@ -48,7 +50,7 @@ export function PensionHero({ name, performance, snapshots, currency, className 
   return (
     <section aria-label={name} className={className}>
       <p className="text-base text-text-2">
-        {name}{" "}<span aria-hidden="true">·</span>{" "}{tr("aggiornato al")}{" "}{formatLongDateKey(lastDate)}
+        {name}{" "}<span aria-hidden="true">{"·"}</span>{" "}{tr("aggiornato al")}{" "}{formatLongDateKey(lastDate)}
       </p>
       <MoneyHero value={value} currency={currency} className="text-5xl leading-none tracking-tight sm:text-7xl" />
       <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm">
@@ -67,7 +69,7 @@ export function PensionHero({ name, performance, snapshots, currency, className 
         <Measure label={tr("Sui contributi")}>
           <span className={tone}>{gainPct !== null ? formatSignedPercent(gainPct) : "—"}</span>
         </Measure>
-        <Measure label={<>{tr("Rendimento annuo")}{approximate ? tr(" (stima)") : ""}</>} hint={<InfoHint label={tr("Come si calcola il rendimento annuo")}>{ANNUAL_RETURN_HINT}</InfoHint>}>
+        <Measure label={<>{tr("Rendimento annuo")}{approximate ? tr(" (stima)") : ""}</>} hint={<InfoHint label={tr("Come si calcola il rendimento annuo")}>{tr(ANNUAL_RETURN_HINT)}</InfoHint>}>
           {annualReturn !== null ? formatSignedPercent(annualReturn) : "—"}
         </Measure>
       </dl>

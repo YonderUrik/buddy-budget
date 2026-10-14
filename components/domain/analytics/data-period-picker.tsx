@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CUSTOM_PERIOD_LIMITS, dataPeriodSchema, monthSpan, toMonthKey, type DataPeriod } from "@/lib/analitiche/period";
 import { addMonths } from "@/lib/calc/expenses";
-import { rangeText } from "./period-text";
+import { localizedPeriodText } from "./period-text";
 
 type Choice = "12" | "24" | "personalizzato";
 
@@ -78,6 +78,8 @@ function MonthYear({ label, value, years, onChange }: { label: string; value: st
 }
 
 export function DataPeriodPicker({ period, fromKey, toKey, today, updating, saving, onChange }: DataPeriodPickerProps) {
+  const { rangeText } = localizedPeriodText(useLocalization().language);
+
   const { t: tr } = useLocalization();
   const [choice, setChoice] = React.useState<Choice>(choiceOf(period));
   const lastFull = addMonths(today, -1);
@@ -89,11 +91,11 @@ export function DataPeriodPicker({ period, fromKey, toKey, today, updating, savi
   const span = monthSpan(from, to);
   const error =
     to > toMonthKey(lastFull)
-      ? "Il mese in corso non è finito: fermati al mese scorso."
+      ? tr("Il mese in corso non è finito: fermati al mese scorso.")
       : span < CUSTOM_PERIOD_LIMITS.minMonths
         ? tr("Scegli almeno {0} mesi.", { 0: CUSTOM_PERIOD_LIMITS.minMonths })
         : !dataPeriodSchema.safeParse(custom).success
-          ? "Scegli al massimo 10 anni."
+          ? tr("Scegli al massimo 10 anni.")
           : null;
   const unchanged = period.kind === "personalizzato" && period.from === from && period.to === to;
 

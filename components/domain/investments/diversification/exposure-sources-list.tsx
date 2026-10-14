@@ -33,11 +33,11 @@ export function ExposureSourcesList({ rows, onEdit }: ExposureSourcesListProps) 
             <InstrumentIcon type={row.instrument.type} name={row.instrument.name} instrumentId={row.instrument.id} size="sm" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm text-foreground">
-                {row.instrument.name}{" "}<span className="tabular-nums text-muted-foreground">· {sharePct(row.share)}</span>
+                {row.instrument.name}{" "}<span className="tabular-nums text-muted-foreground">{"·"}{sharePct(row.share)}</span>
               </p>
               <p className="text-xs text-muted-foreground">{tr("Area:")}{" "}{tr(EXPOSURE_SOURCE_LABELS[row.exposure.areaSource])}
                 <br className="sm:hidden" />
-                <span className="hidden sm:inline"> · </span>{tr("Settore:")}{" "}{tr(EXPOSURE_SOURCE_LABELS[row.exposure.sectorSource])}
+                <span className="hidden sm:inline"> {"·"}</span>{tr("Settore:")}{" "}{tr(EXPOSURE_SOURCE_LABELS[row.exposure.sectorSource])}
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={() => onEdit(row)}>{tr("Correggi")}</Button>

@@ -62,8 +62,8 @@ export function MonthPaceChart({ pace, currency }: MonthPaceChartProps) {
   const todayY = y(pace.spentSoFar);
   const typicalToday = typical ? typical[dayOfMonth - 1] : null;
   const summary = typical
-    ? `Spesa cumulata del mese: ${money(pace.spentSoFar)} al giorno ${dayOfMonth}, contro ${money(typicalToday ?? 0)} di solito; a fine mese il solito arriva a ${money(typical[daysInMonth - 1])}.`
-    : `Spesa cumulata del mese: ${money(pace.spentSoFar)} al giorno ${dayOfMonth}.`;
+    ? tr("Spesa cumulata del mese: {0} al giorno {1}, contro {2} di solito; a fine mese il solito arriva a {3}.", { 0: money(pace.spentSoFar), 1: dayOfMonth, 2: money(typicalToday ?? 0), 3: money(typical[daysInMonth - 1]) })
+    : tr("Spesa cumulata del mese: {0} al giorno {1}.", { 0: money(pace.spentSoFar), 1: dayOfMonth });
 
   return (
     <div ref={ref}>
@@ -137,8 +137,7 @@ export function MonthPaceChart({ pace, currency }: MonthPaceChartProps) {
         </text>
         <g fontSize={12} fill="var(--text-3)">
           <text x={x(1)} y={HEIGHT - 8}>
-            1
-          </text>
+            {"1"}</text>
           <text
             x={x(Math.ceil(daysInMonth / 2))}
             y={HEIGHT - 8}

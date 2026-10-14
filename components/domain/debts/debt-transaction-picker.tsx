@@ -81,7 +81,7 @@ export function DebtTransactionPicker({ dueDate, expectedAmount, value, onChange
             <CategoryAvatar color={category.color as CategoryColor} icon={category.icon as CategoryIcon} size={10} className="size-5 shrink-0" />
           ) : null}
           <span className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate">{tr(t.description)}</span>
+            <span className="truncate">{t.description}</span>
             <span className="text-xs text-text-2">{formatShortDate(t.date)}</span>
           </span>
           <span className="shrink-0 font-heading tabular-nums">{formatCurrency(Math.abs(Number(t.amount)), currency)}</span>
@@ -102,7 +102,7 @@ export function DebtTransactionPicker({ dueDate, expectedAmount, value, onChange
       />
       {selected ? (
         <div className="flex items-center justify-between gap-2 rounded-md border border-primary/40 bg-primary/5 px-2 py-1 text-sm">
-          <span className="truncate">{tr("Collegata:")}{" "}{tr(selected.description)} · {formatCurrency(Math.abs(Number(selected.amount)), currency)}
+          <span className="truncate">{tr("Collegata:")}{" "}{selected.description} {"·"}{formatCurrency(Math.abs(Number(selected.amount)), currency)}
           </span>
           <Button type="button" variant="ghost" size="icon-sm" aria-label={tr("Scollega la transazione")} onClick={() => onChange(null)}>
             <XIcon aria-hidden />

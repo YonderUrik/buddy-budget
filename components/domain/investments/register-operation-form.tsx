@@ -88,7 +88,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, language } = useLocalization();
   const id = React.useId();
   const create = useCreateInvestmentTransactionMutation();
   const update = useUpdateInvestmentTransactionMutation();
@@ -115,7 +115,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const suggested = suggestPrice && priceOnDate.data?.price ? priceText(priceOnDate.data.price.close) : null;
   // Senza prezzo alla data resta quello di partenza (es. l'ultimo prezzo stimato).
   const price = priceInput ?? suggested ?? numberText(initial?.price);
-  const priceHint = suggestPrice && instrument ? priceSuggestionHint(date, priceOnDate.data, priceOnDate.isFetching) : null;
+  const priceHint = suggestPrice && instrument ? priceSuggestionHint(date, priceOnDate.data, priceOnDate.isFetching, language) : null;
   const grossValue = computeGrossValue(type, parseAmount(quantity), parseAmount(price), parseAmount(gross), instrument?.priceUnit);
 
   function chooseInstrument(next: Instrument) {
@@ -129,7 +129,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
     setError(null);
     if (!instrument) return setError(tr("Scegli uno strumento"));
     if (!flow.isLast) {
-      if (flow.index === 1 && fields.quantity && !(parseAmount(quantity) ?? 0)) return setError(type === "split" ? "Scrivi il rapporto dello split." : "Scrivi la quantità.");
+      if (flow.index === 1 && fields.quantity && !(parseAmount(quantity) ?? 0)) return setError(type === "split" ? tr("Scrivi il rapporto dello split.") : tr("Scrivi la quantità."));
       track("form_step_completed", { flow: "operation", step: flow.index + 1 });
       flow.next();
       return;
@@ -173,7 +173,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
   const instrumentField = (
     <Field label={tr("Strumento")}>
       {editing ? (
-        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? "Strumento"}</p>
+        <p className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm text-foreground">{instrument?.name ?? tr("Strumento")}</p>
       ) : (
         <InstrumentPicker value={instrument} onChange={chooseInstrument} defaultCurrency={currency} suggestions={usedInstruments} />
       )}
@@ -189,7 +189,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
       {fields.price ? (
         <OperationPriceField
           id={`${id}-price`}
-          label={`${priceLabel(instrument?.priceUnit)}${instrument ? ` (${instrument.currency})` : ""}`}
+          label={`${tr(priceLabel(instrument?.priceUnit))}${instrument ? ` (${instrument.currency})` : ""}`}
           value={price}
           onChange={setPriceInput}
           hint={priceHint}
@@ -209,10 +209,10 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
       {fields.costs ? (
         <>
           <Field label={tr("Commissioni ({0})", {0: currency})} htmlFor={`${id}-fees`}>
-            <Input id={`${id}-fees`} data-autofocus={!editing ? "" : undefined} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder={tr("0")} />
+            <Input id={`${id}-fees`} data-autofocus={!editing ? "" : undefined} inputMode="decimal" value={fees} onChange={(e) => setFees(e.target.value)} placeholder={"0"} />
           </Field>
           <Field label={tr("Imposte trattenute ({0})", {0: currency})} htmlFor={`${id}-taxes`}>
-            <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder={tr("0")} />
+            <Input id={`${id}-taxes`} inputMode="decimal" value={taxes} onChange={(e) => setTaxes(e.target.value)} placeholder={"0"} />
           </Field>
         </>
       ) : null}
@@ -231,7 +231,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
       ) : null}
     </p>
   );
-  const saveLabel = editing ? (save.isPending ? "Salvataggio…" : "Salva modifiche") : save.isPending ? "Registrazione…" : "Registra operazione";
+  const saveLabel = editing ? (save.isPending ? tr("Salvataggio…") : tr("Salva modifiche")) : save.isPending ? "Registrazione…" : tr("Registra operazione");
 
   if (editing) {
     return (
@@ -275,7 +275,7 @@ export function RegisterOperationForm({ currency, initial, usedInstruments = [],
         ) : null}
         {flow.index === 1 ? (
           <>
-            <StepHeading title={tr("Quando e quanto?")} description={type === "split" ? SPLIT_RATIO_HINT : instrument?.name} />
+            <StepHeading title={tr("Quando e quanto?")} description={type === "split" ? tr(SPLIT_RATIO_HINT) : instrument?.name} />
             {dateField}
             {amountFields}
             {flow.isLast ? controvalore : null}

@@ -72,7 +72,7 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
             <span className={cn("grid size-6 shrink-0 place-items-center rounded-full", done ? "bg-pos-soft text-pos" : "bg-muted")} aria-hidden="true">
               <Icon className={cn("size-3.5", active && "animate-spin motion-reduce:animate-none")} />
             </span>
-            <span className={active ? "font-medium" : undefined}>{active ? <TextShimmer>{tr(label)}…</TextShimmer> : label}</span>
+            <span className={active ? "font-medium" : undefined}>{active ? <TextShimmer>{tr(label)}{"…"}</TextShimmer> : label}</span>
             <span className="sr-only">{done ? tr("fatto") : active ? tr("in corso") : tr("in attesa")}</span>
           </li>
         );
@@ -94,7 +94,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
   const failed = !!job && FAILED.includes(job.status);
   const stage = receiptStage(job?.status);
   const results = job?.results;
-  const title = imported ? "Importazione completata" : failed ? "Non siamo riusciti a importare il file" : "File ricevuto";
+  const title = imported ? tr("Importazione completata") : failed ? tr("Non siamo riusciti a importare il file") : tr("File ricevuto");
   const Icon = failed ? AlertCircleIcon : CheckCircle2Icon;
 
   return (
@@ -107,7 +107,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
             {imported
               ? tr("I dati sono già nel tuo conto.")
               : failed
-                ? job?.error ?? "Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista."
+                ? job?.error ?? tr("Puoi riprovare con un altro file, oppure aprire il dettaglio dalla lista.")
                 : tr("L'abbiamo aggiunto alla lista delle tue importazioni e lo stiamo elaborando.")}
           </p>
           {failed ? <ReportErrorLink area="import_movimenti" error={job?.error ?? title} /> : null}
@@ -118,7 +118,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-background text-muted-foreground" aria-hidden="true"><FileSpreadsheetIcon className="size-5" /></span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium text-foreground">{file.name}</span>
-          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size) : null, file.rows !== undefined ? plural(file.rows, "riga", "righe") : null].filter(Boolean).join(" · ")}</span>
+          <span className="text-xs text-muted-foreground">{[file.source, file.size !== undefined ? formatFileSize(file.size) : null, file.rows !== undefined ? plural(file.rows, "riga", tr("righe")) : null].filter(Boolean).join(" · ")}</span>
         </span>
       </div>
 
@@ -127,8 +127,8 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
 
       {imported && results ? (
         <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-          <li>{plural(results.cash, "movimento aggiunto", "movimenti aggiunti")}{" "}{tr("a Liquidità.")}</li>
-          <li>{plural(results.investments, "operazione aggiunta", "operazioni aggiunte")}{" "}{tr("a Investimenti.")}</li>
+          <li>{plural(results.cash, tr("movimento aggiunto"), tr("movimenti aggiunti"))}{" "}{tr("a Liquidità.")}</li>
+          <li>{plural(results.investments, tr("operazione aggiunta"), tr("operazioni aggiunte"))}{" "}{tr("a Investimenti.")}</li>
           <li>{tr("Le righe già presenti sono state saltate, senza doppioni.")}</li>
         </ul>
       ) : null}

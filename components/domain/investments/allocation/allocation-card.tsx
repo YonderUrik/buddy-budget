@@ -102,7 +102,7 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
                     <span className="min-w-0 truncate text-foreground">{instrumentsById.get(row.instrumentId)?.name ?? "—"}</span>
                     <span className="shrink-0 text-xs tabular-nums text-muted-foreground sm:text-sm">
                       {pct(row.currentWeight)}
-                      {row.inTarget ? tr(" su {0}", {0: pct(row.targetWeight)}) : ""} ·{" "}
+                      {row.inTarget ? tr(" su {0}", {0: pct(row.targetWeight)}) : ""} {"·"}{" "}
                       <span className={cn(row.status === "in_linea" ? "text-muted-foreground" : "font-medium text-foreground")}>{driftText(row)}</span>
                     </span>
                   </div>
@@ -111,8 +111,7 @@ export function AllocationCard({ allocation, targets, positions, instrumentsById
               ))}
             </ul>
             {allocation.unpricedIds.length > 0 ? (
-              <p className="text-xs text-muted-foreground">{tr("Esclusi perché senza prezzo:")}{" "}{allocation.unpricedIds.map((id) => instrumentsById.get(id)?.name ?? "—").join(", ")}.
-              </p>
+              <p className="text-xs text-muted-foreground">{tr("Esclusi perché senza prezzo:")}{" "}{allocation.unpricedIds.map((id) => instrumentsById.get(id)?.name ?? "—").join(", ")}{"."}</p>
             ) : null}
             <ContributionSuggestions
               analysis={allocation}

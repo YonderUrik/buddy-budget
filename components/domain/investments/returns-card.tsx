@@ -1,5 +1,6 @@
 "use client";
 
+import { financialCountry } from "@/lib/localization/financial-country";
 import { localizedFormats } from "@/lib/localization/format";
 
 import { useLocalization } from "@/lib/localization/provider";
@@ -42,7 +43,8 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
 
   const { formatDateWithYear } = localizedFormats(formattingLocale);
 
-  const { t: tr, features } = useLocalization();
+  const { t: tr, features, productCountry } = useLocalization();
+  const inflationCountry = tr(financialCountry(productCountry)?.name ?? productCountry);
   const [choosing, setChoosing] = React.useState(false);
   const retry = useUpdatePortfolioMutation();
   const values = inspected ?? returns;
@@ -79,9 +81,9 @@ export function ReturnsCard({ returns, inspected, onInspect, onSelectRange, benc
           label={tr("Potere d’acquisto · Reale")}
           value={real?.value ?? null}
           periodLabel={dates}
-          note={real ? tr("Inflazione {0} fino a {1}", {0: formatSignedPct(real.inflation), 1: formatMonthLabel(real.throughMonth).toLowerCase()}) : tr("Dati sull’inflazione insufficienti per questo intervallo.")}
+          note={real ? tr("Inflazione ({2}) {0} fino a {1}", {2: inflationCountry, 0: formatSignedPct(real.inflation), 1: formatMonthLabel(real.throughMonth).toLowerCase()}) : tr("Dati sull’inflazione insufficienti per questo intervallo.")}
           description={tr("Il TWR dopo l’effetto dell’inflazione.")}
-          hint={tr("Corregge il rendimento TWR per l’aumento dei prezzi in Italia (indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.")}
+          hint={tr("Corregge il rendimento TWR per l’aumento dei prezzi nel paese del prodotto ({0}, indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.", {0: inflationCountry})}
         />}
       </div>
       <p className="min-h-5 text-sm text-muted-foreground">{insight ?? tr("TWR e MWR misurano aspetti diversi dello stesso periodo.")}</p>

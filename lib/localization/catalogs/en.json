@@ -3715,5 +3715,8 @@
   "Il tuo prezzo del {0}": "Your price on {0}",
   "Il tuo ultimo prezzo prima di questa data, del {0}": "Your last price before this date, from {0}",
   "Chiusura del {0}": "Closing price on {0}",
-  "Ultima chiusura prima di questa data, del {0}": "Last closing price before this date, from {0}"
+  "Ultima chiusura prima di questa data, del {0}": "Last closing price before this date, from {0}",
+  "Corregge il rendimento TWR per l’aumento dei prezzi nel paese del prodotto ({0}, indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.": "Adjusts TWR for rising prices in your product country ({0}, Eurostat index). A positive value indicates increased purchasing power. This estimate uses the latest available monthly inflation figure; its date appears below the value. It is not the chart line.",
+  "Inflazione ({2}) {0} fino a {1}": "Inflation ({2}) {0} through {1}",
+  "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.": "TWR, MWR and inflation-adjusted returns using the product country’s inflation (Italy or Germany, Eurostat index), with hover explanations. Figures follow the chart date; drag to select a range, including for risk and monthly returns. Also shows what your investments would be worth if costs and taxes had remained invested."
 }

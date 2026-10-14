@@ -12,7 +12,7 @@ describe("independent product countries and languages", () => {
     for (const [country, language] of [["IT", "it"], ["IT", "en"], ["DE", "en"], ["DE", "de"]]) expect(isSupportedProfile(country, language)).toBe(true);
     for (const [country, language] of [["IT", "de"], ["DE", "it"], ["US", "en"], ["DE", "fr"]]) expect(isSupportedProfile(country, language)).toBe(false);
     expect(countryFeatures(resolveProfile({ productCountry: "IT", language: "en" }).productCountry).taxes).toBe(true);
-    expect(Object.values(countryFeatures("DE")).every(value => !value)).toBe(true);
+    expect(countryFeatures("DE")).toEqual({ taxes: false, pension: false, retirement: false, incomeForecasts: false, inflation: true });
   });
   it("blocks German financial features at page and API boundaries", () => {
     for (const path of ["/pensione", "/pensione/dati", "/analitiche", "/investimenti/tasse", "/investimenti/proventi", "/api/pension/funds/123", "/api/analytics/assumptions", "/api/sidebar/fire", "/api/investments/tax-carryforwards"]) {

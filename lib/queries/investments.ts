@@ -1,4 +1,5 @@
 "use client";
+import { useLocalization } from "@/lib/localization/provider";
 
 import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -52,8 +53,9 @@ function useInvalidateInvestments() {
 
 /** Operazioni, strumenti, prezzi e cambi dell'utente per il periodo del grafico. */
 export function useInvestmentsOverviewQuery(period: NetWorthPeriod) {
+  const { productCountry } = useLocalization();
   return useQuery({
-    queryKey: [...INVESTMENTS_QUERY_KEY, "overview", period],
+    queryKey: [...INVESTMENTS_QUERY_KEY, "overview", period, productCountry],
     queryFn: async (): Promise<InvestmentData> => {
       const response = await fetch(`/api/investments/overview?period=${period}`);
       if (!response.ok) throw new Error("Impossibile caricare gli investimenti");

@@ -200,7 +200,7 @@ export const investmentPlans = pgTable(
   (table) => [index("investment_plans_user_idx").on(table.userId)]
 );
 
-/** Indice mensile dei prezzi al consumo (HICP Eurostat, base 2015=100), comune a tutti gli utenti. */
+/** Indice mensile dei prezzi al consumo (HICP Eurostat; dataset e base identificati da source), comune a tutti gli utenti. */
 export const inflationIndex = pgTable(
   "inflation_index",
   {

@@ -3715,5 +3715,8 @@
   "Il tuo prezzo del {0}": "Dein Kurs vom {0}",
   "Il tuo ultimo prezzo prima di questa data, del {0}": "Dein letzter Kurs vor diesem Datum, vom {0}",
   "Chiusura del {0}": "Schlusskurs vom {0}",
-  "Ultima chiusura prima di questa data, del {0}": "Letzter Schlusskurs vor diesem Datum, vom {0}"
+  "Ultima chiusura prima di questa data, del {0}": "Letzter Schlusskurs vor diesem Datum, vom {0}",
+  "Corregge il rendimento TWR per l’aumento dei prezzi nel paese del prodotto ({0}, indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.": "Bereinigt die TWR um den Preisanstieg im Produktland ({0}, Eurostat-Index). Ein positiver Wert bedeutet einen Kaufkraftgewinn. Die Schätzung verwendet den letzten verfügbaren monatlichen Inflationswert; dessen Datum steht unter dem Ergebnis. Dies ist nicht die Linie im Diagramm.",
+  "Inflazione ({2}) {0} fino a {1}": "Inflation ({2}) {0} bis {1}",
+  "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.": "TWR, MWR und inflationsbereinigte Renditen anhand der Inflation im Produktland (Italien oder Deutschland, Eurostat-Index), mit Erklärungen beim Überfahren. Die Werte folgen dem Datum im Diagramm; durch Ziehen lässt sich ein Zeitraum auswählen, auch für Risiko und Monatsrenditen. Zeigt außerdem, welchen Wert das Portfolio hätte, wenn Kosten und Steuern investiert geblieben wären."
 }

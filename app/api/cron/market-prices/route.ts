@@ -1,3 +1,4 @@
+import { INFLATION_AREAS } from "@/lib/localization/financial-country";
 import type { NextRequest } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/cron/auth";
 import { marketDataDeps, refreshCryptoCatalogOnProviders } from "@/lib/market-data/runtime";
@@ -29,7 +30,11 @@ async function handleGet(request: NextRequest) {
     const deps = marketDataDeps();
     const summary = await updateHeldInstruments(new Date(), deps);
     // Non fa mai fallire il cron: un errore di Eurostat si logga dentro.
-    const inflationMonths = await updateInflationIndex(new Date(), deps.ctx, { provider: deps.inflationProvider, log });
+    const inflationByArea: Record<string, number> = {};
+    for (const area of INFLATION_AREAS) {
+      inflationByArea[area] = await updateInflationIndex(new Date(), deps.ctx, { provider: deps.inflationProvider, area, log });
+    }
+    const inflationMonths = Object.values(inflationByArea).reduce((total, count) => total + count, 0);
     // Come l'inflazione: un rifiuto di CoinGecko non fa fallire il cron, il catalogo vecchio resta valido una settimana.
     await refreshCryptoCatalogOnProviders().catch((error) => log.warn("market.crypto_catalog.failed", { error }));
     // Tasso privo di rischio e profili (settori, primi titoli): anche questi non fanno mai fallire il cron.
@@ -48,7 +53,7 @@ async function handleGet(request: NextRequest) {
       reason: `failed:${summary.failed},suspect:${summary.suspect},fx:${summary.fxRates}`,
     });
     await recordCronRun("market_prices", "success", durationMs, { store: redisOpsStore, log });
-    return Response.json({ ok: true, durationMs, ...summary, inflationMonths, riskFreeDays, profiles, dividends, alerts });
+    return Response.json({ ok: true, durationMs, ...summary, inflationMonths, inflationByArea, riskFreeDays, profiles, dividends, alerts });
   } catch (error) {
     await recordCronRun("market_prices", "error", Date.now() - startedAt, { store: redisOpsStore, log, error });
     return Response.json({ ok: false }, { status: 500 });

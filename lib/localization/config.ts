@@ -1,3 +1,4 @@
+import { financialCountry, DISABLED_FINANCIAL_FEATURES } from "./financial-country";
 /** Product rules and interface language are independent account preferences. */
 export const PRODUCT_COUNTRIES = ["IT", "DE"] as const;
 export const LANGUAGES = ["it", "en", "de"] as const;
@@ -22,8 +23,7 @@ export function resolveProfile(user?: { productCountry?: string | null; language
 }
 /** German calculations will be enabled individually once their country-specific rules are implemented. */
 export function countryFeatures(country: string) {
-  const italian = country === "IT";
-  return { taxes: italian, pension: italian, retirement: italian, incomeForecasts: italian, inflation: italian };
+  return financialCountry(country)?.features ?? DISABLED_FINANCIAL_FEATURES;
 }
 const within = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`);
 /** Central route policy used by navigation, proxy and protected API handlers. */

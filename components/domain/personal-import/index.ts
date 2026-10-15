@@ -8,7 +8,10 @@ export { PersonalImportUpload, countCsvRows, readPersonalImportFile, formatFileS
 export type { PersonalImportUploadProps } from "./personal-import-upload";
 export { PersonalImportProgress, PersonalImportList, isActiveJob, PERSONAL_IMPORT_ACTIVE } from "./personal-import-status";
 export type { PersonalImportProgressProps, PersonalImportListProps } from "./personal-import-status";
-export { PersonalImportPreview } from "./personal-import-preview";
+export { PersonalImportReview } from "./personal-import-review";
+export type { PersonalImportReviewProps } from "./personal-import-review";
+export { PersonalImportRows } from "./personal-import-rows";
+export type { PersonalImportRowsProps } from "./personal-import-rows";
 export { PersonalImportReceipt, receiptStage } from "./personal-import-receipt";
 export type { PersonalImportReceiptFile, PersonalImportReceiptProps } from "./personal-import-receipt";
 export { PersonalImportIsland, PersonalImportIslandCard } from "./personal-import-island";

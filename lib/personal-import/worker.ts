@@ -7,8 +7,8 @@ import { authUser } from "@/lib/db/schema/auth";
 import { personalImportJobs as jobs, personalParsers as parsers, personalFormats as formats } from "@/lib/db/schema/personal-imports";
 import { logger } from "@/lib/observability";
 import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
-import { confirmImport } from "./confirm";
-import { ImportError, readRawFile, parserSchema } from "./contract";
+import { confirmImport, type Preview } from "./confirm";
+import { ImportError, readRawFile, parserSchema, describeRowErrors } from "./contract";
 import { seal, unseal, digest } from "./crypto";
 import { RAW_PARSER_VERSION } from "./jobs";
 import { executeParser } from "./sandbox";
@@ -60,7 +60,10 @@ export async function processOne() {
       if (!errors.length && !parserId) {
         const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
       }
-      await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify({ headers: table.headers, currency, records }), job.userId), error: errors.length ? "Alcune righe richiedono verifica. Correggi il file o rigenera il formato." : null, lease: null, leaseUntil: null }).where(owned);
+      // Con righe da controllare il parser non è ancora del formato: viaggia cifrato nell'anteprima e viene salvato
+      // solo se l'utente importa saltando quelle righe (vedi `confirmImport`), mai se rianalizza o carica un altro file.
+      const preview: Preview = { headers: table.headers, currency, records, parser: errors.length && !parserId ? generated.parser : undefined };
+      await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, lease: null, leaseUntil: null }).where(owned);
     });
     logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length });
   } catch (error) {
@@ -101,7 +104,7 @@ export async function maintainJobs() {
     const [user] = await db.select({ email: authUser.email }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const { subject, text, html } = personalImportEmailContent(pending.status === "imported", { jobUrl: url, appUrl: process.env.APP_URL });
+    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL });
     const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}` });
     if (result.error) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));

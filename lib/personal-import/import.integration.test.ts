@@ -7,7 +7,7 @@ import { accounts } from "@/lib/db/schema/accounts";
 import { transactions } from "@/lib/db/schema/transactions";
 import { instruments, investmentTransactions, investmentPortfolios } from "@/lib/db/schema/investments";
 import { personalFormats as formats, personalImportJobs as jobs, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
-import { enqueue, getPreview, listImports } from "./jobs";
+import { enqueue, getPreview, listImports, reanalyze } from "./jobs";
 import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
@@ -42,7 +42,7 @@ describe("personal CSV durable flow", () => {
   it("creates an encrypted private job, previews without writes and atomically imports cash and investments once", async () => {
     const id = await prepare();
     expect((await readJob(id)).status).toBe("ready"); expect((await readJob(id)).encryptedCsv).toBeNull();
-    expect(await cash()).toHaveLength(0); expect((await getPreview(userId, id)).records).toHaveLength(4);
+    expect(await cash()).toHaveLength(0); expect((await getPreview(userId, id))!.records).toHaveLength(4);
     const results = await Promise.all([confirmImport(userId, id), confirmImport(userId, id)]);
     expect(results.map(r => r.inserted).sort()).toEqual([0, 3]);
     expect(await cash()).toHaveLength(3);
@@ -94,9 +94,45 @@ describe("personal CSV durable flow", () => {
   it("keeps unknown rows visible and blocks partial imports", async () => {
     const id = await prepare(csv + '\n2024-01-04,ERROR,1,Unknown');
     expect((await readJob(id)).status).toBe("review_failed");
-    expect((await getPreview(userId, id)).records.at(-1).outcome.kind).toBe("error");
+    expect((await getPreview(userId, id))!.records.at(-1)!.outcome.kind).toBe("error");
     await expect(confirmImport(userId, id)).rejects.toThrow(); expect(await cash()).toHaveLength(0);
     expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(id)).formatId))).toHaveLength(0);
+  });
+  it("imports the recognised rows on request, skipping the others without receipts, and keeps the parser", async () => {
+    const id = await prepare(csv + '\n2024-01-04,ERROR,1,Unknown');
+    expect((await readJob(id)).error).toContain("1 riga su 5");
+    expect((await getPreview(userId, id))).not.toHaveProperty("parser");
+    const result = await confirmImport(userId, id, { skipErrors: true });
+    expect(result).toMatchObject({ inserted: 3, skipped: 1, duplicates: 0 });
+    expect(await cash()).toHaveLength(3);
+    const job = await readJob(id);
+    expect(job.status).toBe("imported"); expect(job.importLedger?.skipped).toBe(1); expect(job.importLedger?.receiptKeys).toHaveLength(4);
+    expect((await listImports(userId)).jobs.find(j => j.id === id)?.results).toMatchObject({ cash: 3, investments: 1, skipped: 1 });
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, job.formatId))).toHaveLength(1);
+    // Il file corretto riusa il formato senza AI e la riga saltata, ora corretta, è nuova.
+    const next = await prepare(csv + '\n2024-01-04,CASH,1,Known', job.formatId);
+    expect(generateParser).toHaveBeenCalledTimes(1);
+    expect(await confirmImport(userId, next)).toMatchObject({ inserted: 1, duplicates: 4 });
+  });
+  it("refuses to skip when nothing is recognised and when the job is not under review", async () => {
+    const empty = await prepare('Date,Type,Value,Description\n2024-01-04,ERROR,1,Unknown');
+    await expect(confirmImport(userId, empty, { skipErrors: true })).rejects.toThrow("Nessuna riga riconosciuta");
+    expect((await readJob(empty)).status).toBe("review_failed");
+    const ready = await prepare();
+    expect(await confirmImport(userId, ready, { skipErrors: true })).toMatchObject({ inserted: 3, skipped: 0 });
+  });
+  it("reanalyses a reviewed file from its preview, replacing the old job", async () => {
+    const id = await prepare(csv + '\n2024-01-04,ERROR,1,Unknown');
+    await expect(reanalyze(randomUUID(), id)).rejects.toThrow("non disponibile");
+    const next = await reanalyze(userId, id);
+    expect(await readJob(id)).toBeUndefined();
+    expect((await readJob(next.id)).status).toBe("queued");
+    vi.mocked(generateParser).mockResolvedValueOnce({ parser: { kind: "javascript", code: code.replace("'ERROR'", "'NEVER'") }, model: "synthetic/model" });
+    await processOne();
+    expect(generateParser).toHaveBeenCalledTimes(2);
+    expect((await readJob(next.id)).status).toBe("ready");
+    expect((await getPreview(userId, next.id))!.records).toHaveLength(5);
+    await expect(reanalyze(userId, (await prepare()))).rejects.toThrow("non disponibile");
   });
   it("claims jobs once concurrently and recovers an expired lease", async () => {
     const { id } = await enqueue(userId, { csv, name: 'Lease bank' });

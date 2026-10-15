@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 import { FileSpreadsheet } from "lucide-react";
 import { BackLink } from "@/components/domain/shared";
 import {
+  PersonalImportCorrection,
   PersonalImportList,
   PersonalImportReceipt,
   PersonalImportReview,
@@ -27,6 +28,7 @@ function PersonalImports() {
   const { t: tr } = useLocalization();
   const params = useSearchParams();
   const [selected, setSelected] = useState<string | null>(params.get("job"));
+  const [correcting, setCorrecting] = useState<string | null>(null);
   const listing = usePersonalImportsQuery();
   // File appena inviato: sostituisce il modulo con «File ricevuto» finché non se ne carica un altro.
   const [receipt, setReceipt] = useState<{ jobId: string; file: PersonalImportReceiptFile } | null>(null);
@@ -47,7 +49,9 @@ function PersonalImports() {
         <p className="text-text-2">{tr("Per le banche e i broker che BuddyBudget non supporta ancora. L'AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.")}</p>
       </header>
 
-      {reportJob?.status === "review_failed" ? (
+      {reportJob && (correcting === reportJob.id || (reportJob.correctionOf && reportJob.status !== "imported")) ? (
+        <PersonalImportCorrection key={reportJob.id} job={reportJob} onSelect={id => { setCorrecting(null); setReceipt(null); setSelected(id); }} />
+      ) : reportJob?.status === "review_failed" ? (
         <PersonalImportReview
           key={reportJob.id}
           job={reportJob}
@@ -57,11 +61,11 @@ function PersonalImports() {
           onReanalyzed={(jobId) => { setSelected(jobId); setReceipt({ jobId, file: reportFile }); }}
         />
       ) : reportJob ? (
-        <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} />
+        <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onCorrect={() => setCorrecting(reportJob.id)} onAnother={() => { setReceipt(null); setSelected(null); }} />
       ) : null}
 
-      {receipt ? null : <div id="nuovo-import" className="scroll-mt-6"><PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} /></div>}
-      <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList onRetry={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>
+      {receipt || correcting || (reportJob?.correctionOf && reportJob.status !== "imported") ? null : <div id="nuovo-import" className="scroll-mt-6"><PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} /></div>}
+      <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList onRetry={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={id => { setReceipt(null); setCorrecting(null); setSelected(id); }} /></div>
     </main>
   );
 }

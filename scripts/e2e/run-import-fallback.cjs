@@ -11,6 +11,7 @@ const postgres = require('postgres');
   const url = new URL(process.env.DATABASE_URL);
   if (url.hostname !== '127.0.0.1') throw Error('Local Postgres required');
   const admin = postgres(url.toString());
+  const correction = process.argv.includes('--correction');
   const database = 'buddy_e2e_' + Date.now();
   const logs = fs.mkdtempSync(path.join(os.tmpdir(), 'buddy-import-e2e-'));
   const children = [];
@@ -31,7 +32,7 @@ const postgres = require('postgres');
     const [format] = await sql`insert into personal_formats(user_id,name) values('e2e-personal','Synthetic Bank') returning id`;
     const iv = crypto.randomBytes(12), cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(env.PERSONAL_CSV_ENCRYPTION_KEY, 'base64'), iv);
     cipher.setAAD(Buffer.from('e2e-personal'));
-    const encrypted = Buffer.concat([cipher.update(JSON.stringify({ kind: 'javascript', code: 'function(){throw Error("synthetic outdated parser")}' })), cipher.final()]);
+    const encrypted = Buffer.concat([cipher.update(JSON.stringify({ kind: 'javascript', code: correction ? "function(t){return t.rows.map((r,row)=>{if(row<2)return {row,kind:'ignore',reason:'Header'};const c=r[0].split(',');return {row,kind:'cash',date:c[0],amount:Number(c[1])*0.9,currency:c[2],description:c[3],transfer:false}})}" : 'function(){throw Error("synthetic outdated parser")}'  })), cipher.final()]);
     const sealed = Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString('base64');
     await sql`insert into personal_parsers(format_id,signature,encrypted_parser,model) values(${format.id},'raw-csv-v1',${sealed},'e2e-broken-parser')`;
     for (const [label, args] of [['server', ['node_modules/next/dist/bin/next', 'dev', '-p', '3317']], ['worker', ['--require', path.resolve('scripts/e2e/capture-mail.cjs'), '--import', 'tsx', '--conditions=react-server', 'scripts/personal-csv-worker.ts']]]) {
@@ -46,9 +47,9 @@ const postgres = require('postgres');
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
     if (!ready) throw Error('Server did not start');
-    const browser = spawnSync(process.execPath, ['scripts/e2e/import-fallback.cjs'], { env, stdio: 'inherit' });
+    const browser = spawnSync(process.execPath, [correction ? 'scripts/e2e/import-correction.cjs' : 'scripts/e2e/import-fallback.cjs'], { env, stdio: 'inherit' });
     if (browser.status) throw Error('Browser verification failed; see ' + logs);
-    console.log('Evidence: docs/evidence/import-fallback; local logs: ' + logs);
+    console.log('Evidence: docs/evidence/' + (correction ? 'import-correction' : 'import-fallback') + '; local logs: ' + logs);
   } finally {
     for (const child of children) child.kill('SIGTERM');
     if (sql) await sql.end();

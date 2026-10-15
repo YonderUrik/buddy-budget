@@ -10,7 +10,7 @@ import { digest } from "./crypto";
 import { ImportError } from "./contract";
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-async function deletionPlan(tx: Tx, userId: string, id: string) {
+export async function deletionPlan(tx: Tx, userId: string, id: string) {
   await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 91473)`);
   await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
   const [job] = await tx.select().from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.id, id))).for("update");
@@ -30,8 +30,8 @@ function summary(plan: Awaited<ReturnType<typeof deletionPlan>>) {
 export async function previewPersonalImportDeletion(userId: string, id: string) {
   return db.transaction(async tx => summary(await deletionPlan(tx, userId, id)));
 }
-export async function deletePersonalImport(userId: string, id: string, token: string) {
-  return db.transaction(async tx => {
+export async function deletePersonalImport(userId: string, id: string, token: string, transaction?: Tx) {
+  const run = async (tx: Tx) => {
     const plan = await deletionPlan(tx, userId, id);
     if (token !== plan.token) throw new ImportError("L’importazione è cambiata. Chiudi e riapri la conferma per verificare i dati aggiornati.");
     const removed = new Set(plan.trades.map(r => r.id));
@@ -49,5 +49,6 @@ export async function deletePersonalImport(userId: string, id: string, token: st
     if (plan.job.importLedger?.receiptKeys.length) await tx.delete(receipts).where(and(eq(receipts.formatId, plan.format.id), inArray(receipts.recordKey, plan.job.importLedger.receiptKeys)));
     await tx.delete(jobs).where(and(eq(jobs.userId, userId), inArray(jobs.id, plan.affected.map(j => j.id))));
     return summary(plan);
-  }, { isolationLevel: "serializable" });
+  };
+  return transaction ? run(transaction) : db.transaction(run, { isolationLevel: "serializable" });
 }

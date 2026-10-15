@@ -39,6 +39,7 @@ export interface PersonalImportReceiptProps {
   /** Id della sezione «Le tue importazioni», raggiunta dal pulsante. */
   listId: string;
   onAnother: () => void;
+  onCorrect?: () => void;
 }
 
 const STAGES = ["File ricevuto", "Analisi del formato", "Controlli e salvataggio", "Importato"] as const;
@@ -82,7 +83,7 @@ function Stages({ stage, failed }: { stage: number; failed: boolean }) {
 }
 
 /** «File ricevuto»: nome, righe e fase; a fine lavoro il riepilogo e i link ai dati. */
-export function PersonalImportReceipt({ file, job, listId, onAnother }: PersonalImportReceiptProps) {
+export function PersonalImportReceipt({ file, job, listId, onAnother, onCorrect }: PersonalImportReceiptProps) {
   const { locale: formattingLocale } = useLocalization();
 
   const { t: tr } = useLocalization();
@@ -148,6 +149,7 @@ export function PersonalImportReceipt({ file, job, listId, onAnother }: Personal
             {results && results.investments > 0 ? <Link href="/investimenti/operazioni" onClick={() => track("personal_csv_receipt_action", { action: "vai_ai_dati" })} className={buttonVariants({ variant: results.cash > 0 ? "outline" : "default", className: LINK_CLASS })}>{tr("Vai alle operazioni")}</Link> : null}
           </>
         ) : null}
+        {imported && onCorrect ? <Button variant="outline" onClick={onCorrect}>{tr("Il risultato è sbagliato")}</Button> : null}
         <a href={`#${listId}`} onClick={() => track("personal_csv_receipt_action", { action: "lista" })} className={buttonVariants({ variant: "outline", className: LINK_CLASS })}>{tr("Vedi le tue importazioni")}</a>
         <Button variant="ghost" className="h-11 sm:h-8" onClick={() => { track("personal_csv_receipt_action", { action: "altro_file" }); onAnother(); }}>{tr("Carica un altro file")}</Button>
       </div>

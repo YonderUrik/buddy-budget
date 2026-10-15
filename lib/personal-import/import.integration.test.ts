@@ -10,6 +10,7 @@ import { instruments, investmentTransactions, investmentPortfolios } from "@/lib
 import { personalFormats as formats, personalImportJobs as jobs, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
 import { enqueue, getPreview, listImports, reanalyze } from "./jobs";
 import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
+import { compareCorrection, replaceImport, discardCorrection } from "./correction";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
 import { generateParser } from "./generate";
@@ -301,5 +302,84 @@ describe("personal CSV durable flow", () => {
     await enqueue(userId, { csv, name: 'One' }); await enqueue(userId, { csv, name: 'Two' });
     await expect(enqueue(userId, { csv, name: 'Three' })).rejects.toThrow("Limite");
     await db.update(jobs).set({ status: "expired", encryptedCsv: null }).where(eq(jobs.userId, userId));
+  });
+});
+
+
+describe("import correction", () => {
+  async function startCorrection() {
+    const original = await prepare(); await confirmImport(userId, original);
+    vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: code.replace("price:100", "price:90"), metadata }, model: "synthetic/corrected" });
+    const candidate = await enqueue(userId, { csv, name: "Correction", correctionOf: original, feedback: "Il prezzo è sbagliato" });
+    await processOne();
+    return { original, candidate: candidate.id };
+  }
+  it("waits for explicit confirmation, compares and replaces atomically, then remains idempotent", async () => {
+    const { original, candidate } = await startCorrection();
+    expect(vi.mocked(generateParser).mock.calls.at(-1)?.[2]).toBe("Il prezzo è sbagliato");
+    expect((await readJob(candidate)).status).toBe("correction_ready");
+    await maintainJobs();
+    expect((await readJob(original)).status).toBe("imported");
+    expect((await cash()).map(r => Number(r.amount)).reduce((a,b) => a+b,0)).toBe(895);
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(candidate)).formatId))).toHaveLength(1);
+    await expect(confirmImport(userId,candidate)).rejects.toThrow("Confronta");
+    const comparison = await compareCorrection(userId,candidate);
+    expect(comparison.before.reduce((a,r)=>a+r.amount,0)).toBe(895);
+    expect(comparison.after.reduce((a,r)=>a+r.amount,0)).toBe(905);
+    await replaceImport(userId,candidate);
+    expect(await readJob(original)).toBeUndefined();
+    expect((await readJob(candidate)).encryptedCorrectionFeedback).toBeNull();
+    expect((await db.select().from(accounts).where(eq(accounts.userId,userId)))[0].balance).toBe("905.00");
+    expect(await cash()).toHaveLength(3);
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(candidate)).formatId))).toHaveLength(2);
+    expect(await replaceImport(userId,candidate)).toMatchObject({inserted:0,alreadyImported:true});
+    await expect(discardCorrection(userId,candidate)).rejects.toThrow("già stata confermata");
+  });
+  it("rejects ownership violations, duplicate corrections and missing feedback", async () => {
+    const { original, candidate } = await startCorrection();
+    await expect(enqueue(userId, {csv,name:"Correction",correctionOf:original,feedback:"again"})).rejects.toThrow("già una correzione");
+    await expect(enqueue(userId, {csv,name:"Correction",correctionOf:original})).rejects.toThrow("Descrivi");
+    await expect(enqueue(randomUUID(), {csv,name:"Correction",correctionOf:original,feedback:"wrong"})).rejects.toThrow("non disponibile");
+    await expect(compareCorrection(randomUUID(),candidate)).rejects.toThrow("non disponibile");
+    await expect(replaceImport(randomUUID(),candidate)).rejects.toThrow("non disponibile");
+  });
+  it("blocks replacement if the original was manually changed", async () => {
+    const { original, candidate } = await startCorrection();
+    const [row] = await cash();
+    await db.update(transactions).set({description:"Manual edit"}).where(eq(transactions.id,row.id));
+    await expect(compareCorrection(userId,candidate)).rejects.toThrow("è cambiata");
+    await expect(replaceImport(userId,candidate)).rejects.toThrow("è cambiata");
+    expect((await readJob(original)).status).toBe("imported");
+    expect(await cash()).toHaveLength(3);
+  });
+  it("rolls back deletion and balance reversal when the replacement fails validation", async () => {
+    const { original, candidate } = await startCorrection();
+    const snapshot = await cash();
+    const job = await readJob(candidate);
+    const preview = JSON.parse(unseal(job.encryptedPreview!,userId));
+    preview.currency = "USD";
+    await db.update(jobs).set({encryptedPreview:seal(JSON.stringify(preview),userId)}).where(eq(jobs.id,candidate));
+    await expect(replaceImport(userId,candidate)).rejects.toThrow("valuta");
+    expect((await readJob(original)).status).toBe("imported");
+    expect((await readJob(candidate)).status).toBe("correction_ready");
+    expect(await cash()).toEqual(snapshot);
+    expect((await db.select().from(accounts).where(eq(accounts.userId,userId)))[0].balance).toBe("895.00");
+  });
+  it("discards only the candidate and keeps the original reusable parser", async () => {
+    const { original, candidate } = await startCorrection();
+    await discardCorrection(userId,candidate);
+    expect(await readJob(candidate)).toBeUndefined();
+    expect((await readJob(original)).status).toBe("imported");
+    expect(await cash()).toHaveLength(3);
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(original)).formatId))).toHaveLength(1);
+  });
+  it("expires the proposal and encrypted feedback without touching imported data", async () => {
+    const { original, candidate } = await startCorrection();
+    await db.update(jobs).set({expiresAt:new Date(0)}).where(eq(jobs.id,candidate));
+    await maintainJobs();
+    expect((await readJob(candidate)).status).toBe("expired");
+    expect((await readJob(candidate)).encryptedCorrectionFeedback).toBeNull();
+    expect((await readJob(original)).status).toBe("imported");
+    expect(await cash()).toHaveLength(3);
   });
 });

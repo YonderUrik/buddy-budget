@@ -1,5 +1,5 @@
 {
-  "id": "11a4c647-c59d-48c7-96b9-78ce71b164ea",
+  "id": "93abc06b-4eb1-4e14-b342-1d29aa97bd73",
   "prevId": "246a597e-5c2f-4aa2-b767-fe437cb3a7d4",
   "version": "7",
   "dialect": "postgresql",
@@ -4401,6 +4401,18 @@
         "failure_report": {
           "name": "failure_report",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "broker_provider": {
+          "name": "broker_provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_fingerprint": {
+          "name": "source_fingerprint",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

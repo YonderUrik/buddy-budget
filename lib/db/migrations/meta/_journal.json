@@ -281,13 +281,6 @@
       "when": 1792099050502,
       "tag": "0040_smooth_luminals",
       "breakpoints": true
-    },
-    {
-      "idx": 41,
-      "version": "7",
-      "when": 1792099193081,
-      "tag": "0041_military_red_ghost",
-      "breakpoints": true
     }
   ]
 }

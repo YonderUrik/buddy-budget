@@ -45,3 +45,7 @@ The runner creates a uniquely named `buddy_e2e_*` database, migrates it, seeds t
 - `tsc --noEmit`: passed.
 - ESLint on personal-import, metadata, import APIs/UI and E2E scripts: passed.
 - Reproducible runner repeated successfully after rebasing onto current main; screenshots and `result.json` in this directory are from that final run.
+
+## Manual fixture
+
+Upload [synthetic-bank.csv](synthetic-bank.csv) through Investments → Import, enabling automatic AI analysis. Expected result: two cash movements, +1000.00 EUR and -12.50 EUR; institution Synthetic Bank. The file intentionally has a preamble so the standard broker reader cannot map it. Re-uploading this same broker file is deduplicated.

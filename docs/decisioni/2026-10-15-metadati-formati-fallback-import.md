@@ -11,3 +11,5 @@
 
 Browser reale, Postgres/Redis locali e OpenRouter reale: provati il parser personale salvato guasto e il CSV non riconosciuto dal dialogo broker. Le email Resend sono intercettate dal test, senza invii reali. Evidenze e riproduzione in `docs/evidence/import-fallback/README.md`.
 Il test ha rilevato un parser AI che eliminava il punto decimale (`-12.50` diventava `-1250`). Il controllo indipendente delle colonne importo direttamente mappate ora rifiuta tali risultati prima della persistenza; il prompt chiarisce entrambe le notazioni. Non copre riconciliazioni multi-colonna, sezioni o numeri ambigui: quelle restano un limite esplicito, non una garanzia implicita di accuratezza AI.
+
+Le migrazioni non rilasciate 0040 e 0041 sono state accorpate in 0040; il registro del database locale già migrato è stato riallineato senza cambiare dati o schema. Gli snapshot Drizzle sono marcati come generati in `.gitattributes`.

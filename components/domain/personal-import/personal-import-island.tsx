@@ -57,10 +57,13 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
   const state = islandState(job);
   const running = state === "running";
   const failed = state === "failed";
+  const review = job.status === "review_failed";
   const results = job.results;
-  const title = running ? tr("{0}: importo il file", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : tr("{0}: completato", { 0: source });
+  const title = running ? tr("{0}: importo il file", { 0: source }) : review ? tr("{0}: da controllare", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : tr("{0}: completato", { 0: source });
   const detail = running
     ? tr("Puoi continuare a usare l'app.")
+    : review
+      ? tr("Vedi quali righe e scegli cosa fare.")
     : failed
       ? tr("Vedi cosa fare.")
       : results

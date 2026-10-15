@@ -24,7 +24,10 @@ export interface ProductEvents {
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };
   personal_csv_deleted: { cash: number; investments: number };
-  personal_csv_imported: { rows: number };
+  /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */
+  personal_csv_imported: { rows: number; skipped?: number };
+  /** Scelta nella schermata «Righe da controllare» dell'import personale. */
+  personal_csv_review_action: { action: "importa_saltando" | "rianalizza" | "file_corretto" };
   /** Azione scelta nella schermata «File ricevuto» dell'import personale. */
   personal_csv_receipt_action: { action: "lista" | "altro_file" | "vai_ai_dati" };
   investment_dividends_details_opened: { source: "portfolio" | "year" | "instrument" };

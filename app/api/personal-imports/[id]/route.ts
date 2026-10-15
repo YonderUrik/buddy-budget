@@ -4,7 +4,7 @@ import { categorizeNewMovementsSafely } from "@/lib/categorization/auto-apply";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
-import { getPreview } from "@/lib/personal-import/jobs";
+import { getPreview, reanalyze } from "@/lib/personal-import/jobs";
 import { confirmImport } from "@/lib/personal-import/confirm";
 import { previewPersonalImportDeletion, deletePersonalImport } from "@/lib/personal-import/delete";
 export const maxDuration = 60;
@@ -21,13 +21,37 @@ export const GET = withRoute("personal_import.preview", async (request: NextRequ
   const preview = await getPreview(session.user.id, id.data);
   return Response.json(preview ?? { error: "Anteprima non disponibile" }, { status: preview ? 200 : 404, headers: { "Cache-Control": "no-store" } });
 });
+// Senza corpo conferma l'anteprima; `import_skipping_errors` importa le righe riconosciute saltando le altre;
+// `reanalyze` rimanda il file all'AI (consenso richiesto di nuovo, come al caricamento).
+const actionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("import_skipping_errors") }),
+  z.object({ action: z.literal("reanalyze"), consent: z.literal(true), consentVersion: z.literal("openrouter-raw-zdr-v2") }),
+]);
 export const POST = withRoute("personal_import.confirm", async (request: NextRequest) => {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
   if (request.headers.get("origin") !== new URL(process.env.APP_URL ?? request.url).origin) return new Response(null, { status: 403 });
   const id = idOf(request); if (!id.success) return new Response(null, { status: 404 });
-  try { const result = await confirmImport(session.user.id, id.data); const userId = session.user.id; after(() => categorizeNewMovementsSafely(userId)); requestLogger().info("personal_import.confirmed", { inserted: result.inserted }); return Response.json(result); }
+  const raw = await request.text();
+  let parsedBody: unknown = null;
+  if (raw) { try { parsedBody = JSON.parse(raw); } catch { return Response.json({ error: "Azione non valida" }, { status: 400 }); } }
+  const hasAction = typeof parsedBody === "object" && parsedBody !== null && "action" in parsedBody;
+  const body = hasAction ? actionSchema.safeParse(parsedBody) : null;
+  if (hasAction && !body?.success) return Response.json({ error: "Azione non valida" }, { status: 400 });
+  const action = body?.success ? body.data : null;
+  try {
+    if (action?.action === "reanalyze") {
+      const job = await reanalyze(session.user.id, id.data);
+      requestLogger().info("personal_import.reanalyzed", { jobId: job.id });
+      return Response.json(job, { status: 202 });
+    }
+    const skipErrors = action?.action === "import_skipping_errors";
+    const result = await confirmImport(session.user.id, id.data, { skipErrors });
+    const userId = session.user.id; after(() => categorizeNewMovementsSafely(userId));
+    requestLogger().info("personal_import.confirmed", { inserted: result.inserted, skipped: result.skipped ?? 0 });
+    return Response.json(result);
+  }
   catch (error) { return Response.json({ error: error instanceof ImportError ? error.message : "Importazione non riuscita: nessuna modifica salvata" }, { status: 422 }); }
 });
 

@@ -2,6 +2,24 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.68.0](https://github.com/YonderUrik/buddy-budget/compare/v0.67.0...v0.68.0) (2026-10-15)
+
+
+### Novità
+
+* add Claude settings configuration with allowed permissions and hooks ([5064002](https://github.com/YonderUrik/buddy-budget/commit/5064002dc6499de74fe9ed6c5b5c87ac2a617406))
+* add country-specific products and interface languages ([#361](https://github.com/YonderUrik/buddy-budget/issues/361)) ([4f377d5](https://github.com/YonderUrik/buddy-budget/commit/4f377d5d970ad0f2716f096e0cc6f702bdad5d8b))
+* enable German inflation-adjusted returns ([#369](https://github.com/YonderUrik/buddy-budget/issues/369)) ([7c6fd88](https://github.com/YonderUrik/buddy-budget/commit/7c6fd887b86de82d6482a289d6adc10861ea8f2d))
+* **importazioni:** righe da controllare con motivo per riga, importa saltando e rianalisi ([#374](https://github.com/YonderUrik/buddy-budget/issues/374)) ([642f471](https://github.com/YonderUrik/buddy-budget/commit/642f471ed715d0eb389033f2dbd38511d643a6a2))
+* **landing:** home «Sei domande», calcolatori e login nello stesso stile ([#371](https://github.com/YonderUrik/buddy-budget/issues/371)) ([bff06bc](https://github.com/YonderUrik/buddy-budget/commit/bff06bc432c03fe09c839e0549349e7e88f29741))
+* obiettivi di risparmio in Analitiche ([#375](https://github.com/YonderUrik/buddy-budget/issues/375)) ([b33309c](https://github.com/YonderUrik/buddy-budget/commit/b33309cb5c2429d20f922e7fea009fa4971e23ef))
+* restore country localization with complete interface translations ([#368](https://github.com/YonderUrik/buddy-budget/issues/368)) ([0f34866](https://github.com/YonderUrik/buddy-budget/commit/0f34866a533da224a819221ea0e2d1152d11fecc))
+
+
+### Correzioni
+
+* revert country and language localization from [#361](https://github.com/YonderUrik/buddy-budget/issues/361) ([#364](https://github.com/YonderUrik/buddy-budget/issues/364)) ([1cafcaa](https://github.com/YonderUrik/buddy-budget/commit/1cafcaa46e5b90cae82cc9a7dcefc0e7c7cee172))
+
 ## [0.67.0](https://github.com/YonderUrik/buddy-budget/compare/v0.66.0...v0.67.0) (2026-10-13)
 
 

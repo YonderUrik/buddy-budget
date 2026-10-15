@@ -67,7 +67,7 @@ export function germanPensionNet(payments: PensionPayment[], plan: GermanPlan) {
     const general = statutory + occupational;
     const reduced = privatePensions + settings.otherInsuranceIncome / 12;
     const assessed = Math.min(rules.monthlyCeiling, Math.max(rules.monthlyMinimum, general + reduced));
-    const generalBase = Math.min(assessed, reduced === 0 && general > 0 ? Math.max(general, rules.monthlyMinimum) : general);
+    const generalBase = Math.min(assessed, general);
     const reducedBase = Math.max(0, assessed - generalBase);
     const subsidy = settings.voluntarySubsidy ? Math.min(statutory, rules.monthlyCeiling) * (rules.healthRate + settings.additionalHealthRate) / 2 : 0;
     health = 12 * (generalBase * (rules.healthRate + settings.additionalHealthRate) + reducedBase * (rules.reducedHealthRate + settings.additionalHealthRate) - subsidy);

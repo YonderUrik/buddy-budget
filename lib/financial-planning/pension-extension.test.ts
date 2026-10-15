@@ -104,7 +104,7 @@ describe("German pension assessment", () => {
   it("does not grant the KVdR occupational exemption to voluntary members and respects the ceiling", () => {
     const p = plan(); p.pensionTax.insurance = "voluntary";
     const result = germanPensionNet([payment("occupational", 12000, { taxTreatment: "funded" })], p);
-    expect(result.health).toBeCloseTo(1318.33 * .175 * 12);
+    expect(result.health).toBeCloseTo((1000 * .175 + 318.33 * .169) * 12);
     p.pensionTax.otherInsuranceIncome = 120000;
     expect(germanPensionNet([], p).health).toBeCloseTo(5812.5 * .169 * 12);
   });

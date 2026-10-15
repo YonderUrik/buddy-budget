@@ -47,14 +47,10 @@ const CALCULATED_LABELS: Record<LoanInputKey, string> = {
   annualRate: "il tasso",
 };
 
-const TRAILING_ZEROS = /([.,]\d*?)0+$/;
-
-
-
 /** Valore da mostrare nel campo vuoto che è stato calcolato (testo segnaposto). */
-function placeholderFor(key: LoanInputKey, calculated: LoanInputKey | undefined, value: number | undefined): string {
+function placeholderFor(key: LoanInputKey, calculated: LoanInputKey | undefined, value: number | undefined, locale: string): string {
   if (calculated !== key || value === undefined) return "";
-  return String(Math.round(value * 100) / 100).replace(".", ",").replace(TRAILING_ZEROS, "$1").replace(/[.,]$/, "");
+  return new Intl.NumberFormat(locale, { useGrouping: false, maximumFractionDigits: 2 }).format(value);
 }
 
 export interface AddDebtDetailsFormProps {
@@ -79,7 +75,7 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
   return formatCurrency(value, currency);
 }
 
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const mutation = useCreateDebtMutation();
   const [error, setError] = React.useState<string | null>(null);
   const id = React.useId();
@@ -130,16 +126,16 @@ export function AddDebtDetailsForm({ state, onChange, currency, part, onNext, on
           <StepHeading title={tr("I dati che conosci")} description={tr("Compila quelli che hai. Se te ne manca uno, lascialo vuoto: lo calcoliamo dagli altri tre.")} />
           <div className="grid grid-cols-2 gap-3">
             <DebtFormField label={copy.principal} htmlFor={`${id}-principal`}>
-              <Input id={`${id}-principal`} inputMode="decimal" value={state.principal} placeholder={resolved ? placeholderFor("principal", calc, resolved.inputs.principal) : ""} onChange={(e) => set({ principal: e.target.value })} />
+              <Input id={`${id}-principal`} inputMode="decimal" value={state.principal} placeholder={resolved ? placeholderFor("principal", calc, resolved.inputs.principal, locale) : ""} onChange={(e) => set({ principal: e.target.value })} />
             </DebtFormField>
             <DebtFormField label={tr("Rata mensile")} htmlFor={`${id}-installment`}>
-              <Input id={`${id}-installment`} inputMode="decimal" value={state.installment} placeholder={resolved ? placeholderFor("installment", calc, resolved.inputs.installment) : ""} onChange={(e) => set({ installment: e.target.value })} />
+              <Input id={`${id}-installment`} inputMode="decimal" value={state.installment} placeholder={resolved ? placeholderFor("installment", calc, resolved.inputs.installment, locale) : ""} onChange={(e) => set({ installment: e.target.value })} />
             </DebtFormField>
             <DebtFormField label={copy.installments} htmlFor={`${id}-installments`}>
-              <Input id={`${id}-installments`} inputMode="numeric" value={state.installments} placeholder={resolved ? placeholderFor("installments", calc, resolved.inputs.installments) : ""} onChange={(e) => set({ installments: e.target.value })} />
+              <Input id={`${id}-installments`} inputMode="numeric" value={state.installments} placeholder={resolved ? placeholderFor("installments", calc, resolved.inputs.installments, locale) : ""} onChange={(e) => set({ installments: e.target.value })} />
             </DebtFormField>
             <DebtFormField label={tr("Tasso annuo (TAN, %)")} htmlFor={`${id}-rate`}>
-              <Input id={`${id}-rate`} inputMode="decimal" value={state.annualRate} placeholder={resolved ? placeholderFor("annualRate", calc, resolved.inputs.annualRate) : ""} onChange={(e) => set({ annualRate: e.target.value })} />
+              <Input id={`${id}-rate`} inputMode="decimal" value={state.annualRate} placeholder={resolved ? placeholderFor("annualRate", calc, resolved.inputs.annualRate, locale) : ""} onChange={(e) => set({ annualRate: e.target.value })} />
             </DebtFormField>
           </div>
           {resolved && calc ? (

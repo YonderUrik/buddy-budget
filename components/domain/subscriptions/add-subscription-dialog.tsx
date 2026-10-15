@@ -25,7 +25,7 @@ export interface AddSubscriptionDialogProps {
 }
 
 function AddForm({ categories, today, onDone }: Omit<AddSubscriptionDialogProps, "open" | "onOpenChange"> & { onDone: () => void }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, locale } = useLocalization();
   const mutation = useSaveSubscriptionMutation();
   const id = React.useId();
   const [name, setName] = React.useState("");
@@ -54,7 +54,7 @@ function AddForm({ categories, today, onDone }: Omit<AddSubscriptionDialogProps,
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label={tr("Importo di ogni addebito")} htmlFor={`${id}-amount`}>
-          <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={"0,00"} className="h-11 sm:h-8" />
+          <Input id={`${id}-amount`} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={new Intl.NumberFormat(locale, { minimumFractionDigits: 2 }).format(0)} className="h-11 sm:h-8" />
         </Field>
         <Field label={tr("Ogni quanto")} htmlFor={`${id}-cadence`}>
           <CadenceSelect id={`${id}-cadence`} value={cadence} onChange={setCadence} />

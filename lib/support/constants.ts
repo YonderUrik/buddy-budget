@@ -25,6 +25,7 @@ export const REPORT_ERROR_AREAS = [
   "debito",
   "abbonamento",
   "pensione",
+  "obiettivo",
   "caricamento",
   "salvataggio",
 ] as const;
@@ -41,6 +42,7 @@ export const REPORT_ERROR_AREA_LABELS: Record<ReportErrorArea, string> = {
   debito: "Salvataggio di un debito",
   abbonamento: "Salvataggio di un abbonamento",
   pensione: "Salvataggio della pensione",
+  obiettivo: "Salvataggio di un obiettivo",
   caricamento: "Caricamento della pagina",
   salvataggio: "Salvataggio",
 };

@@ -20,6 +20,15 @@ export const WHATS_NEW_MAX_AGE_DAYS = 45;
 
 export const WHATS_NEW_ENTRIES: readonly WhatsNewEntry[] = [
   {
+    id: "obiettivi-di-risparmio",
+    date: "2026-10-15",
+    title: "Obiettivi di risparmio",
+    summary:
+      "Dai un nome ai tuoi risparmi: un viaggio, la casa, un fondo per gli imprevisti. Scegli da quali conti o investimenti arrivano i soldi e vedi quando ci arrivi, se il risparmio basta per tutto e cosa cambia per il traguardo.",
+    href: "/analitiche/obiettivi?nuovo=1&da=novita",
+    ctaLabel: "Crea un obiettivo",
+  },
+  {
     id: "categorizza-con-ai",
     date: "2026-10-11",
     title: "Categorizza con l'AI",

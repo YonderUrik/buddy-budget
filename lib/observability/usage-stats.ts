@@ -23,6 +23,7 @@ interface UsageRow {
   f_debts: number;
   f_pension: number;
   f_subscriptions: number;
+  f_goals: number;
   r_accounts: number;
   r_transactions: number;
   r_investment_operations: number;
@@ -65,6 +66,7 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       (select count(distinct user_id)::int from debts) as f_debts,
       (select count(distinct user_id)::int from pension_funds) as f_pension,
       (select count(distinct user_id)::int from subscriptions where status = 'confermato') as f_subscriptions,
+      (select count(distinct user_id)::int from goals) as f_goals,
       (select count(*)::int from accounts where not is_demo) as r_accounts,
       (select count(*)::int from transactions t join accounts a on a.id = t.account_id where not a.is_demo) as r_transactions,
       (select count(*)::int from investment_transactions) as r_investment_operations,
@@ -76,6 +78,7 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       (select count(distinct u) ::int from (
         select user_id as u from budgets
         union select user_id from analytics_assumptions where data <> '{}'::jsonb
+        union select user_id from goals
       ) g) as a_obiettivo,
       (select count(*)::int from auth_user where start_checklist_completed_at is not null) as a_completa,
       (select count(*)::int from auth_user where start_checklist_dismissed_at is not null) as a_chiusa,
@@ -95,6 +98,7 @@ export async function readUsageSnapshot(now = Date.now()): Promise<UsageSnapshot
       debts: row.f_debts,
       pension: row.f_pension,
       subscriptions: row.f_subscriptions,
+      goals: row.f_goals,
     },
     records: {
       accounts: row.r_accounts,

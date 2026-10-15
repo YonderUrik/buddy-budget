@@ -34,3 +34,4 @@ export { GLOSSARY } from "./glossary";
 export type { GlossaryId } from "./glossary";
 export { GoalDialog } from "./goal-dialog";
 export type { GoalDialogProps, GoalSource } from "./goal-dialog";
+export { ANALYTICS_TABS, GOALS_BASE_PATH } from "./analytics-tabs";

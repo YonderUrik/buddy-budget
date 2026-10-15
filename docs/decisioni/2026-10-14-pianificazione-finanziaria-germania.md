@@ -109,3 +109,7 @@ Restano liquidità, budget, debiti, investimenti, rendimenti, proventi e tasse p
 La riattivazione avverrà una funzione alla volta dopo review, non automaticamente con il merge. Il catalogo pubblico riflette questo perimetro.
 
 Verifica del perimetro ridotto: 88 test mirati, lint, TypeScript e build superati. Browser EN/DE desktop/mobile: navigazione e URL sospesi bloccati, tasse/proventi accessibili, dati nascosti conservati dopo il salvataggio tasse; nessun errore browser. Anteprima locale aggiornata, nessun merge.
+
+### Allineamento prima del merge
+
+Integrate le modifiche di main agli Obiettivi, alle importazioni e alla landing. Conservate entrambe le serie di traduzioni. La migration finanziaria è rigenerata come `0039_equal_lilandra`, dopo `0038_goals` già su main; schema e snapshot includono entrambe le funzioni. Nell’anteprima locale la precedente migration finanziaria è stata riallineata senza cancellare piani.

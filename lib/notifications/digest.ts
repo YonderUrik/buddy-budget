@@ -15,6 +15,7 @@ import {
 import { DIGEST_MONTHLY_MAX_DAY, DIGEST_WEEKLY_WEEKDAYS, type DigestFrequency } from "./constants";
 import { romeDate, romeReferenceDate } from "./dates";
 import type { InvestmentDigest } from "./investments-digest";
+import type { GoalsDigest } from "./goals";
 
 const TOP_CATEGORIES = 3;
 const PERIOD_BY_FREQUENCY: Record<DigestFrequency, ExpensePeriod> = { settimanale: "settimana", mensile: "mese" };
@@ -69,6 +70,8 @@ export interface DigestInput {
   investments?: InvestmentDigest | null;
   /** Movimenti ancora «Da categorizzare» oggi (di qualunque data): l'email lo ricorda con un link a Categorizza. */
   toDecide?: number;
+  /** Obiettivi di risparmio aperti, in breve; null o assente = non se ne parla. */
+  goals?: GoalsDigest | null;
 }
 
 export interface DigestData {
@@ -84,6 +87,7 @@ export interface DigestData {
   investments: InvestmentDigest | null;
   /** Movimenti da decidere in Categorizza (0 o assente = niente da dire). */
   toDecide?: number;
+  goals?: GoalsDigest | null;
 }
 
 /** True se il riepilogo non avrebbe niente da dire (nessun movimento e nessun investimento): in quel caso non parte. */
@@ -92,7 +96,7 @@ export function isDigestEmpty(data: DigestData): boolean {
 }
 
 /** Cifre del riepilogo, calcolate con gli stessi motori delle schermate (`lib/calc/expenses`): nessun numero nuovo. */
-export function buildDigest({ transactions, categories, budgets, frequency, now, investments = null, toDecide = 0 }: DigestInput): DigestData {
+export function buildDigest({ transactions, categories, budgets, frequency, now, investments = null, toDecide = 0, goals = null }: DigestInput): DigestData {
   const period = digestPeriod(frequency, now);
   const range = getPeriodRange(period.period, period.referenceDate);
   const previousRange = getPreviousPeriodRange(period.period, period.referenceDate);
@@ -121,6 +125,7 @@ export function buildDigest({ transactions, categories, budgets, frequency, now,
     movements,
     investments,
     toDecide,
+    goals,
   };
 }
 

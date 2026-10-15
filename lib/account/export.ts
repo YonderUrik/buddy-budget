@@ -10,6 +10,7 @@ import { authUser } from "@/lib/db/schema/auth";
 import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connections";
 import { budgets } from "@/lib/db/schema/budgets";
 import { subscriptions } from "@/lib/db/schema/subscriptions";
+import { goals, goalSources } from "@/lib/db/schema/goals";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
@@ -100,6 +101,8 @@ async function loadUserData(userId: string) {
     brokerAccountRows,
     personalImports,
     notificationRows,
+    goalRows,
+    goalSourceRows,
   ] = await Promise.all([
     db
       .select({
@@ -365,9 +368,29 @@ async function loadUserData(userId: string) {
         digestFrequency: notificationPreferences.digestFrequency,
         budgetAlertsEnabled: notificationPreferences.budgetAlertsEnabled,
         deadlineAlertsEnabled: notificationPreferences.deadlineAlertsEnabled,
+        goalAlertsEnabled: notificationPreferences.goalAlertsEnabled,
       })
       .from(notificationPreferences)
       .where(eq(notificationPreferences.userId, userId)),
+    db
+      .select({
+        id: goals.id,
+        name: goals.name,
+        kind: goals.kind,
+        targetAmount: goals.targetAmount,
+        targetDate: goals.targetDate,
+        monthlyAmount: goals.monthlyAmount,
+        priority: goals.priority,
+        achievedAt: goals.achievedAt,
+        createdAt: goals.createdAt,
+      })
+      .from(goals)
+      .where(eq(goals.userId, userId))
+      .orderBy(asc(goals.priority)),
+    db
+      .select({ goalId: goalSources.goalId, accountId: goalSources.accountId, instrumentId: goalSources.instrumentId, amount: goalSources.amount })
+      .from(goalSources)
+      .where(eq(goalSources.userId, userId)),
   ]);
 
   return {
@@ -400,6 +423,8 @@ async function loadUserData(userId: string) {
     financialPlans: financialPlanRows,
     analyticsAssumptions: analyticsRows[0] ?? null,
     notificationPreferences: notificationRows[0] ?? null,
+    goals: goalRows,
+    goalSources: goalSourceRows,
   };
 }
 
@@ -412,6 +437,7 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
   const portfolioName = new Map(data.investmentPortfolios.map((p) => [p.id, p.name]));
   const debtName = new Map(data.debts.map((d) => [d.id, d.name]));
   const pensionFundName = new Map(data.pensionFunds.map((f) => [f.id, f.name]));
+  const instrumentName = new Map(data.investmentOperations.map((o) => [o.instrumentId, o.instrumentName]));
 
   const json = JSON.stringify({ format: "buddybudget-export", version: EXPORT_FORMAT_VERSION, exportedAt: now.toISOString(), ...data }, null, 2);
 
@@ -455,6 +481,16 @@ export function buildExportFiles(data: UserExportData, now: Date): Record<string
       { header: "Cadenza", value: (s) => s.cadence },
       { header: "Prossimo addebito", value: (s) => s.nextDate },
       { header: "Categoria", value: (s) => (s.categoryId ? categoryName.get(s.categoryId) : null) },
+    ]),
+    "obiettivi.csv": toCsv(data.goals, [
+      { header: "Nome", value: (g) => g.name },
+      { header: "Tipo", value: (g) => g.kind },
+      { header: "Cifra", value: (g) => decimal(g.targetAmount) },
+      { header: "Entro", value: (g) => g.targetDate },
+      { header: "Quota mensile", value: (g) => decimal(g.monthlyAmount) },
+      { header: "Priorità", value: (g) => g.priority + 1 },
+      { header: "Raggiunto il", value: (g) => g.achievedAt },
+      { header: "Fonti", value: (g) => data.goalSources.filter((s) => s.goalId === g.id).map((s) => `${s.accountId ? (accountName.get(s.accountId) ?? "") : (instrumentName.get(s.instrumentId ?? "") ?? "")} ${decimal(s.amount)}`).join(" | ") },
     ]),
     "regole-categorizzazione.csv": toCsv(data.rules, [
       { header: "Tipo", value: (r) => r.matchType },

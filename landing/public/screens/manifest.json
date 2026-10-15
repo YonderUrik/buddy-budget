@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-15T05:29:57.503Z",
+  "capturedAt": "2026-10-15T19:08:33.251Z",
   "app": "http://localhost:3300",
   "viewport": {
     "width": 1280,
@@ -17,7 +17,7 @@
       "theme": "light",
       "route": "/panoramica",
       "width": 1920,
-      "height": 2231,
+      "height": 2250,
       "phone": true
     },
     {
@@ -145,7 +145,7 @@
       "theme": "light",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1574,
+      "height": 1652,
       "phone": true
     },
     {
@@ -153,7 +153,7 @@
       "theme": "dark",
       "route": "/panoramica",
       "width": 1920,
-      "height": 2231,
+      "height": 2250,
       "phone": true
     },
     {
@@ -281,7 +281,7 @@
       "theme": "dark",
       "route": "/analitiche",
       "width": 1920,
-      "height": 1574,
+      "height": 1652,
       "phone": true
     }
   ]

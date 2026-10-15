@@ -12,6 +12,7 @@ export const PREFERENCE_FIELD_BY_KIND = {
   digest: "digestEnabled",
   budget: "budgetAlertsEnabled",
   deadlines: "deadlineAlertsEnabled",
+  goals: "goalAlertsEnabled",
 } as const satisfies Record<NotificationKind, keyof NotificationPreferences>;
 
 export const NOTIFICATION_CHOICE_KINDS: readonly NotificationKind[] = ["digest", "budget", "deadlines"];
@@ -26,6 +27,7 @@ export const ONBOARDING_NOTIFICATION_INFO: Record<NotificationKind, { label: str
   digest: { label: NOTIFICATION_KIND_INFO.digest.label, hint: "Speso, entrato e investimenti, in poche righe." },
   budget: { label: NOTIFICATION_KIND_INFO.budget.label, hint: "Quando una categoria si avvicina al limite del mese." },
   deadlines: { label: NOTIFICATION_KIND_INFO.deadlines.label, hint: "Prima della rata di un finanziamento." },
+  goals: { label: NOTIFICATION_KIND_INFO.goals.label, hint: "A che punto sono i tuoi obiettivi di risparmio." },
 };
 
 /** Una riga della «casella» d'anteprima: quando arriva e che email è. */
@@ -49,6 +51,7 @@ export function inboxPreview(preferences: NotificationPreferences): InboxPreview
     preferences.deadlineAlertsEnabled
       ? { kind: "deadlines", title: NOTIFICATION_KIND_INFO.deadlines.label, when: `${DEADLINE_LEAD_DAYS} giorni prima di una rata` }
       : null,
+    preferences.goalAlertsEnabled ? { kind: "goals", title: NOTIFICATION_KIND_INFO.goals.label, when: "Nei primi giorni del mese" } : null,
   ];
   return items.filter((item): item is InboxPreviewItem => item !== null);
 }

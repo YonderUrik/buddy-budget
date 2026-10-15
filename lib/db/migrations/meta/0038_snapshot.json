@@ -1,5 +1,5 @@
 {
-  "id": "c3db1036-4fc2-414b-a40c-346e867548a4",
+  "id": "866de4d5-5073-4dbe-bb90-f11fcc06d41e",
   "prevId": "93cfba88-aa99-4c70-9ba8-f6adabc8ae06",
   "version": "7",
   "dialect": "postgresql",
@@ -4778,6 +4778,13 @@
           "notNull": true,
           "default": false
         },
+        "goal_alerts_enabled": {
+          "name": "goal_alerts_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -5275,34 +5282,248 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.financial_plans": {
-      "name": "financial_plans",
+    "public.goal_sources": {
+      "name": "goal_sources",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "goal_id": {
+          "name": "goal_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "user_id": {
           "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "country": {
-          "name": "country",
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "instrument_id": {
+          "name": "instrument_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "goal_sources_user_idx": {
+          "name": "goal_sources_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "goal_sources_goal_account_unique": {
+          "name": "goal_sources_goal_account_unique",
+          "columns": [
+            {
+              "expression": "goal_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"goal_sources\".\"account_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "goal_sources_goal_instrument_unique": {
+          "name": "goal_sources_goal_instrument_unique",
+          "columns": [
+            {
+              "expression": "goal_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "instrument_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"goal_sources\".\"instrument_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "goal_sources_goal_id_goals_id_fk": {
+          "name": "goal_sources_goal_id_goals_id_fk",
+          "tableFrom": "goal_sources",
+          "tableTo": "goals",
+          "columnsFrom": [
+            "goal_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "goal_sources_user_id_auth_user_id_fk": {
+          "name": "goal_sources_user_id_auth_user_id_fk",
+          "tableFrom": "goal_sources",
+          "tableTo": "auth_user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "goal_sources_account_id_accounts_id_fk": {
+          "name": "goal_sources_account_id_accounts_id_fk",
+          "tableFrom": "goal_sources",
+          "tableTo": "accounts",
+          "columnsFrom": [
+            "account_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "goal_sources_instrument_id_instruments_id_fk": {
+          "name": "goal_sources_instrument_id_instruments_id_fk",
+          "tableFrom": "goal_sources",
+          "tableTo": "instruments",
+          "columnsFrom": [
+            "instrument_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "goal_sources_one_target": {
+          "name": "goal_sources_one_target",
+          "value": "(\"goal_sources\".\"account_id\" is null) <> (\"goal_sources\".\"instrument_id\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.goals": {
+      "name": "goals",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "data": {
-          "name": "data",
-          "type": "jsonb",
+        "name": {
+          "name": "name",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "revision": {
-          "name": "revision",
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_amount": {
+          "name": "target_amount",
+          "type": "numeric(14, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "target_date": {
+          "name": "target_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "monthly_amount": {
+          "name": "monthly_amount",
+          "type": "numeric(12, 2)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "priority": {
+          "name": "priority",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "achieved_at": {
+          "name": "achieved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         },
         "updated_at": {
           "name": "updated_at",
@@ -5312,11 +5533,27 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "goals_user_idx": {
+          "name": "goals_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "financial_plans_user_id_auth_user_id_fk": {
-          "name": "financial_plans_user_id_auth_user_id_fk",
-          "tableFrom": "financial_plans",
+        "goals_user_id_auth_user_id_fk": {
+          "name": "goals_user_id_auth_user_id_fk",
+          "tableFrom": "goals",
           "tableTo": "auth_user",
           "columnsFrom": [
             "user_id"
@@ -5328,15 +5565,7 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "financial_plans_user_id_country_pk": {
-          "name": "financial_plans_user_id_country_pk",
-          "columns": [
-            "user_id",
-            "country"
-          ]
-        }
-      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},

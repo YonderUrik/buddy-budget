@@ -5,16 +5,17 @@
  * una parte (proposta: quanto manca, fino al libero). È un'etichetta: i saldi veri non cambiano.
  */
 
-import { LandmarkIcon, TrendingUpIcon } from "lucide-react";
+import * as React from "react";
 import { CurrencyInput } from "@/components/domain/accounts";
+import { LogoCredit } from "@/components/domain/shared";
 import { StepHeading } from "@/components/domain/shared";
 import type { FreeSource } from "@/lib/goals/view";
 import { useLocalization } from "@/lib/localization/provider";
 import { cn } from "@/lib/utils";
 import { assignedTotal, sourceKey, type GoalDraft } from "./goal-form-state";
 import type { GoalFormatters } from "./goal-format";
-import { GoalIcon } from "./goal-icon";
 import { GoalNote } from "./goal-note";
+import { GoalSourceIcon } from "./goal-source-icon";
 
 export interface GoalSourcesStepProps {
   draft: GoalDraft;
@@ -25,13 +26,15 @@ export interface GoalSourcesStepProps {
 }
 
 const GROUPS = [
-  { kind: "account", title: "Liquidità", icon: LandmarkIcon, color: "var(--swatch-teal)" },
-  { kind: "instrument", title: "Investimenti", icon: TrendingUpIcon, color: "var(--swatch-blue)" },
+  { kind: "account", title: "Liquidità" },
+  { kind: "instrument", title: "Investimenti" },
 ] as const;
 
 export function GoalSourcesStep({ draft, sources, currency, fmt, onChange }: GoalSourcesStepProps) {
   const { t: tr } = useLocalization();
   const assigned = assignedTotal(draft);
+  const [logosShown, setLogosShown] = React.useState(false);
+  const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
   const toggle = (source: FreeSource) => {
     const key = sourceKey(source.kind, source.id);
     const next = { ...draft.sources };
@@ -57,7 +60,7 @@ export function GoalSourcesStep({ draft, sources, currency, fmt, onChange }: Goa
                 return (
                   <li key={key} className="flex items-center gap-3 border-b py-2.5 last:border-b-0">
                     <button type="button" aria-pressed={selected} onClick={() => toggle(source)} className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg text-left focus-visible:outline-2 focus-visible:outline-ring">
-                      <GoalIcon icon={group.icon} color={group.color} size="sm" />
+                      <GoalSourceIcon source={{ ...source, refId: source.id }} onRemoteLogo={showLogoCredit} />
                       <span className="flex min-w-0 flex-col">
                         <span className={cn("truncate text-sm font-medium", selected ? "text-primary" : "text-foreground")}>{source.name}</span>
                         <span className="text-xs text-text-3">{tr("{0} · {1} liberi", { 0: fmt.money(source.total), 1: fmt.money(source.free) })}</span>
@@ -84,6 +87,7 @@ export function GoalSourcesStep({ draft, sources, currency, fmt, onChange }: Goa
       <GoalNote>
         {tr("Assegnati {0} di {1}. Dove li tieni non cambia il saldo dei conti: è solo un'etichetta. Per i titoli contiamo il valore al netto dell'imposta stimata se li vendessi oggi.", { 0: fmt.money(assigned), 1: fmt.money(draft.target ?? 0) })}
       </GoalNote>
+      <LogoCredit visible={logosShown} />
     </>
   );
 }

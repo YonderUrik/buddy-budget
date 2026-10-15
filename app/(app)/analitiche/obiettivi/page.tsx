@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { GoalFormDialog, GoalsEmpty, GoalsOverview, useGoalFormatters } from "@/components/domain/goals";
+import { GoalFormDialog, GoalsEmpty, GoalsOverview, useGoalActions, useGoalFormatters } from "@/components/domain/goals";
 import { GOALS_BASE_PATH } from "@/components/domain/analytics";
 import { LoadError } from "@/components/domain/shared";
 import { track } from "@/lib/analytics";
@@ -28,6 +28,7 @@ export default function ObiettiviPage() {
   const notifications = useNotificationPreferencesQuery();
   const updateNotifications = useUpdateNotificationPreferencesMutation();
   const fmt = useGoalFormatters(query.data?.currency ?? "EUR");
+  const actions = useGoalActions({ view: query.data, fmt });
   const paramKind = params.get(KIND_PARAM);
   const [open, setOpen] = React.useState(false);
   const [presetKind, setPresetKind] = React.useState<GoalKind | null>(null);
@@ -68,7 +69,14 @@ export default function ObiettiviPage() {
       {view.goals.length === 0 ? (
         <GoalsEmpty view={view} fmt={fmt} onNew={openNew} />
       ) : (
-        <GoalsOverview view={view} fmt={fmt} hrefFor={(id) => `${GOALS_BASE_PATH}/${id}`} onReorder={(ids) => reorder.mutate(ids)} reordering={reorder.isPending} />
+        <GoalsOverview
+          view={view}
+          fmt={fmt}
+          hrefFor={(id) => `${GOALS_BASE_PATH}/${id}`}
+          onReorder={(ids) => reorder.mutate(ids)}
+          reordering={reorder.isPending}
+          onAction={actions.run}
+        />
       )}
       <GoalFormDialog
         open={dialogOpen}
@@ -85,6 +93,7 @@ export default function ObiettiviPage() {
         error={create.isError ? create.error.message : null}
         onSubmit={(payload) => create.mutate(payload, { onSuccess: () => changeOpen(false) })}
       />
+      {actions.dialogs}
     </>
   );
 }

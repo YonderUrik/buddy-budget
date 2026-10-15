@@ -81,7 +81,7 @@ function GoalForm({ view, todayKey, fmt, goal = null, startStep = "tipo", preset
       <StepProgress index={flow.index} count={flow.count} label={tr("Passi del nuovo obiettivo")} />
       <StepStage stepKey={step} direction={flow.direction} className="flex flex-col gap-4">
         {step === "tipo" ? <GoalKindStep draft={draft} onKind={(kind) => setDraft((d) => withKind(d, kind, view.essentialMonthly))} onName={(name) => patch({ name })} /> : null}
-        {step === "quanto" ? <GoalAmountStep draft={draft} currency={view.currency} todayKey={todayKey} essentialMonthly={view.essentialMonthly} capacity={capacity} fmt={fmt} onChange={patch} /> : null}
+        {step === "quanto" ? <GoalAmountStep draft={draft} currency={view.currency} todayKey={todayKey} essentialMonthly={view.essentialMonthly} essentialBasis={view.essentialBasis} capacity={capacity} fmt={fmt} onChange={patch} /> : null}
         {step === "fonti" ? <GoalSourcesStep draft={draft} sources={sources} currency={view.currency} fmt={fmt} onChange={(s) => patch({ sources: s })} /> : null}
         {step === "ritmo" ? <GoalPaceStep draft={draft} currency={view.currency} todayKey={todayKey} others={editing ? undefined : others} capacity={capacity} fmt={fmt} onChange={patch} /> : null}
         {step === "riepilogo" ? <GoalSummaryStep draft={draft} fmt={fmt} sourceNames={sourceNames} reminders={offerReminders ? { checked: remind, onChange: setRemind } : undefined} /> : null}

@@ -15,6 +15,8 @@ export interface GoalDraft {
   target: number | null;
   /** Mesi di spese coperti (solo fondo di emergenza); null = cifra scritta a mano. */
   emergencyMonths: number | null;
+  /** Spese al mese scritte a mano per il fondo di emergenza; null = quelle calcolate dai movimenti. */
+  monthlySpend: number | null;
   /** AAAA-MM o null. */
   targetMonth: string | null;
   monthly: number | null;
@@ -29,12 +31,13 @@ export const sourceKey = (kind: FreeSource["kind"], id: string) => `${kind}:${id
 
 /** Bozza vuota (nuovo obiettivo, in fondo alla lista) o ricavata da un obiettivo esistente. */
 export function initialDraft(goal: GoalView | null, goalsCount: number): GoalDraft {
-  if (!goal) return { kind: null, name: "", target: null, emergencyMonths: null, targetMonth: null, monthly: null, sources: {}, priority: goalsCount };
+  if (!goal) return { kind: null, name: "", target: null, emergencyMonths: null, monthlySpend: null, targetMonth: null, monthly: null, sources: {}, priority: goalsCount };
   return {
     kind: goal.kind,
     name: goal.name,
     target: goal.target,
     emergencyMonths: null,
+    monthlySpend: null,
     targetMonth: goal.targetDate ? goal.targetDate.slice(0, 7) : null,
     monthly: goal.monthly,
     sources: Object.fromEntries(goal.sources.map((s) => [sourceKey(s.kind, s.refId), s.amount])),
@@ -46,13 +49,15 @@ export function initialDraft(goal: GoalView | null, goalsCount: number): GoalDra
 export function withKind(draft: GoalDraft, kind: GoalKind, essentialMonthly: number | null): GoalDraft {
   const previousDefault = draft.kind ? GOAL_KIND_INFO[draft.kind].defaultName : "";
   const name = draft.name.trim() === "" || draft.name === previousDefault ? GOAL_KIND_INFO[kind].defaultName : draft.name;
-  if (kind === "emergenza" && essentialMonthly !== null && draft.target === null) {
-    return { ...draft, kind, name, emergencyMonths: DEFAULT_EMERGENCY_MONTHS, target: emergencyTarget(essentialMonthly, DEFAULT_EMERGENCY_MONTHS) };
+  if (kind === "emergenza" && draft.target === null) {
+    // Senza spese calcolate i mesi restano scelti: la cifra arriva quando l'utente scrive quanto spende.
+    const target = essentialMonthly === null ? null : emergencyTarget(essentialMonthly, DEFAULT_EMERGENCY_MONTHS);
+    return { ...draft, kind, name, emergencyMonths: DEFAULT_EMERGENCY_MONTHS, target };
   }
   return { ...draft, kind, name, emergencyMonths: kind === "emergenza" ? draft.emergencyMonths : null };
 }
 
-/** Cifra del fondo di emergenza: mesi di spese dovute, arrotondata alle centinaia. */
+/** Cifra del fondo di emergenza: mesi di spese, arrotondata alle centinaia. */
 export function emergencyTarget(essentialMonthly: number, months: number): number {
   return Math.round((essentialMonthly * months) / 100) * 100;
 }

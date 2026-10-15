@@ -12,6 +12,7 @@ const BASE: AnalyticsBase = {
   risk: null,
   riskContribution: null,
   names: {},
+  instrumentTypes: {},
   historicalReturn: { status: "manca", reason: "nessun-investimento" },
 };
 

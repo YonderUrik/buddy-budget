@@ -13,7 +13,7 @@ import type { CategoryUsageCounts } from "@/lib/categories/picker";
 import type { AutoCategorizedGroup } from "@/lib/categorization/auto-review";
 import type { Category } from "@/lib/db/schema/categories";
 import { AutoCategorizedRow } from "./auto-categorized-row";
-import { LogoCredit } from "./logo-credit";
+import { LogoCredit } from "@/components/domain/shared";
 
 export interface AutoCategorizedListProps {
   groups: AutoCategorizedGroup[];

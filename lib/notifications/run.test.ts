@@ -188,7 +188,7 @@ describe("runNotifications", () => {
       positions: [],
       capacity: 500,
       fire: null,
-      essentialMonthly: null,
+      essential: null,
       debtsTotal: 0,
     });
 

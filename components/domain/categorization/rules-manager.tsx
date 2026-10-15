@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCategorizationRulesQuery } from "@/lib/queries/categorization";
 import type { Category } from "@/lib/db/schema/categories";
 import { AddRuleForm } from "./add-rule-form";
-import { LogoCredit } from "./logo-credit";
+import { LogoCredit } from "@/components/domain/shared";
 import { RuleRow } from "./rule-row";
 
 export interface RulesManagerProps {

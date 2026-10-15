@@ -6,7 +6,7 @@ import { TrackedSection } from "../tracked-section";
 
 /** «Le regole italiane sono già nei conti»: la regola, cosa ne fa l'app, il calcolatore collegato e la fonte ufficiale, in due colonne di righe. */
 export function RulesHome() {
-  if (PROFILE.country === "DE") return <TrackedSection id="regole" section="regole"><div className="wrap"><h2>{trLanding("Il prodotto Germania, senza confondere le regole.")}</h2><p className="intro">{trLanding("Conti, budget, investimenti, rendimenti e debiti sono disponibili. Le stime fiscali sono parziali e indicano i dati necessari e i propri limiti.")}</p><p>{trLanding("Pensione, AVD e simulatori avanzati sono nascosti in attesa di revisione. Le aliquote e i calcolatori fiscali italiani non vengono applicati al prodotto Germania.")}</p></div></TrackedSection>;
+  if (PROFILE.country === "DE") return null;
   return (
     <TrackedSection id="regole" section="regole">
       <div className="wrap">

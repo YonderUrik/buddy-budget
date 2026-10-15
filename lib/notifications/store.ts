@@ -24,6 +24,7 @@ function toPreferences(row: typeof notificationPreferences.$inferSelect | undefi
     digestFrequency: row.digestFrequency === "settimanale" ? "settimanale" : "mensile",
     budgetAlertsEnabled: row.budgetAlertsEnabled,
     deadlineAlertsEnabled: row.deadlineAlertsEnabled,
+    goalAlertsEnabled: row.goalAlertsEnabled,
   };
 }
 
@@ -48,12 +49,14 @@ export async function saveNotificationPreferences(userId: string, patch: UpdateN
 export async function applyUnsubscribe(userId: string, scope: UnsubscribeScope): Promise<void> {
   const off: UpdateNotificationPreferencesInput =
     scope === "all"
-      ? { digestEnabled: false, budgetAlertsEnabled: false, deadlineAlertsEnabled: false }
+      ? { digestEnabled: false, budgetAlertsEnabled: false, deadlineAlertsEnabled: false, goalAlertsEnabled: false }
       : scope === "digest"
         ? { digestEnabled: false }
         : scope === "budget"
           ? { budgetAlertsEnabled: false }
-          : { deadlineAlertsEnabled: false };
+          : scope === "goals"
+            ? { goalAlertsEnabled: false }
+            : { deadlineAlertsEnabled: false };
   // Non crea righe per utenti che non esistono più: la chiave esterna rifiuta l'inserimento.
   await db
     .insert(notificationPreferences)

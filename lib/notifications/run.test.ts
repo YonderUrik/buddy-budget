@@ -4,6 +4,7 @@ import { parseNotificationsMode, runNotifications, type NotificationDeps, type N
 import { NOTIFICATION_DEFAULTS } from "./constants";
 import { verifyUnsubscribeToken } from "./token";
 import { createLogger } from "@/lib/observability/logger";
+import { buildGoalsView } from "@/lib/goals/view";
 
 const NOW = new Date("2026-10-02T07:00:00Z"); // 2 ottobre: giorno di riepilogo mensile
 const quiet = createLogger({ write: () => {} });
@@ -175,5 +176,41 @@ describe("runNotifications", () => {
     const email = (send.mock.calls[0] as unknown as [string, { text: string }])[1];
     expect(email.text).toContain("••••");
     expect(email.text).not.toMatch(/\d+,\d{2}/);
+  });
+
+  describe("obiettivi", () => {
+    const goalsView = buildGoalsView({
+      currency: "EUR",
+      todayKey: "2026-10-02",
+      goals: [{ id: "g1", name: "Giappone", kind: "viaggio", target: 4000, targetDate: null, monthly: 200, priority: 0, achievedAt: null, createdAt: "2026-09-01T00:00:00.000Z" }],
+      sources: [],
+      accounts: [],
+      positions: [],
+      capacity: 500,
+      fire: null,
+      essentialMonthly: null,
+      debtsTotal: 0,
+    });
+
+    it("a inizio mese manda il promemoria a chi l'ha acceso, e mai in Germania", async () => {
+      const users = [user({ goalAlertsEnabled: true }), user({ goalAlertsEnabled: true }, { id: "de", productCountry: "DE" })];
+      const loadGoals = vi.fn(async () => goalsView);
+      const { deps, send } = fakeDeps(users, { loadGoals });
+      await run(deps);
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(loadGoals).toHaveBeenCalledTimes(1);
+      expect((send.mock.calls[0] as unknown as [string, { subject: string }])[1].subject).toBe("I tuoi obiettivi di risparmio questo mese");
+      await run(deps);
+      expect(send).toHaveBeenCalledTimes(1);
+    });
+
+    it("il riepilogo parla degli obiettivi, e parte lo stesso se il loro calcolo fallisce", async () => {
+      const ok = fakeDeps([user({ digestEnabled: true })], { loadGoals: async () => goalsView });
+      await run(ok.deps);
+      expect((ok.send.mock.calls[0] as unknown as [string, { text: string }])[1].text).toContain("Obiettivi aperti");
+      const broken = fakeDeps([user({ digestEnabled: true })], { loadGoals: async () => { throw new Error("boom"); } });
+      await run(broken.deps);
+      expect(broken.send).toHaveBeenCalledTimes(1);
+    });
   });
 });

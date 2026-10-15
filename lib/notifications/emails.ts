@@ -4,6 +4,7 @@ import { NOTIFICATION_KIND_INFO, type NotificationKind } from "./constants";
 import type { BudgetAlert, DeadlineAlert } from "./alerts";
 import type { DigestData } from "./digest";
 import type { InvestmentDigest } from "./investments-digest";
+import type { GoalEmailRow, GoalNotice, GoalsDigest } from "./goals";
 
 /** Formatta un importo (già nascosto, se l'utente ha scelto «nascondi importi»). */
 export type MoneyFormatter = (value: number) => string;
@@ -72,7 +73,7 @@ function investmentRows(investments: InvestmentDigest, money: MoneyFormatter): E
  * che l'app già calcola. Nessun consiglio e nessun giudizio sui numeri. Pura, per poterla testare.
  */
 export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
-  const { period, spent, income, movements, investments, toDecide = 0 } = data;
+  const { period, spent, income, movements, investments, toDecide = 0, goals = null } = data;
   const monthly = period.period === "mese";
   const opening = monthly ? `A ${period.label.toLowerCase().replace(/ \d{4}$/, "")}` : `Nella settimana ${period.label}`;
   const sentences = [
@@ -85,6 +86,7 @@ export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
   const sections: EmailSection[] = [
     ...(movements > 0 ? [{ title: "Liquidità", rows: liquidityRows(data, ctx.money) }] : []),
     ...(investments ? [{ title: "Investimenti", rows: investmentRows(investments, ctx.money) }] : []),
+    ...(goals ? [{ title: "Obiettivi", rows: goalsRows(goals, ctx.money) }] : []),
   ];
   const rendered = renderEmail(
     {
@@ -99,6 +101,72 @@ export function digestEmail(data: DigestData, ctx: EmailContext): BuiltEmail {
     { appUrl: ctx.appUrl },
   );
   return { subject: monthly ? "Il riepilogo del tuo mese" : "Il riepilogo della tua settimana", ...rendered };
+}
+
+const MONTH = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric", timeZone: "UTC" });
+/** «giugno 2027» da AAAA-MM o AAAA-MM-GG. */
+function monthLabel(key: string): string {
+  return MONTH.format(new Date(`${key.slice(0, 7)}-01T12:00:00Z`));
+}
+
+/** Pagina degli obiettivi, con l'origine per l'evento d'uso. */
+export const GOALS_EMAIL_PATH = "/analitiche/obiettivi?da=email";
+
+/** Una riga del promemoria: a che punto è e quando ci arrivi. */
+function goalLine(goal: GoalEmailRow, money: MoneyFormatter): { label: string; value: string } {
+  const when =
+    goal.status === "in_ritardo" && goal.etaMonth && goal.targetDate
+      ? `in ritardo: a ${monthLabel(goal.etaMonth)} invece di ${monthLabel(goal.targetDate)}`
+      : goal.etaMonth
+        ? `ci arrivi a ${monthLabel(goal.etaMonth)}`
+        : "questo mese non riceve niente";
+  return { label: goal.name, value: `${money(goal.current)} di ${money(goal.target)} · ${when}` };
+}
+
+/**
+ * Email degli obiettivi: un obiettivo raggiunto, una data vicina che non torna o il promemoria di inizio mese, tutto in
+ * una sola email. Ricorda che i soldi messi da parte si aggiornano nell'app (le fonti sono etichette, non bonifici). Pura.
+ */
+export function goalsEmail(notice: GoalNotice, ctx: EmailContext): BuiltEmail {
+  const reached = notice.alerts.filter((a) => a.type === "raggiunto");
+  const due = notice.alerts.filter((a) => a.type === "scadenza");
+  const sentences: string[] = [];
+  if (reached.length === 1) sentences.push(`Hai messo da parte tutti i **${ctx.money(reached[0].goal.target)}** di **${reached[0].goal.name}**. Segnalo come raggiunto per liberare la sua quota del mese.`);
+  if (reached.length > 1) sentences.push(`Hai raggiunto **${reached.length} obiettivi**: segnali come raggiunti per liberare le loro quote del mese.`);
+  for (const { goal } of due) {
+    sentences.push(
+      `**${goal.name}** ha la data a **${monthLabel(goal.targetDate!)}** e mancano **${ctx.money(Math.max(0, goal.target - goal.current))}**${goal.required ? `: servirebbero ${ctx.money(goal.required)} al mese` : ""}. Puoi spostare la data o aumentare la quota.`,
+    );
+  }
+  if (notice.reminder) {
+    const { gap } = notice.reminder;
+    sentences.push(
+      `Ecco a che punto sono i tuoi obiettivi a inizio mese.${gap > 0.5 ? ` Il risparmio non basta per tutte le quote: ne mancano **${ctx.money(gap)}** al mese.` : ""} Se hai spostato soldi su un conto o comprato titoli per un obiettivo, aggiorna quanto hai messo da parte.`,
+    );
+  }
+  const rendered = renderEmail(
+    {
+      title: reached.length > 1 ? `Hai raggiunto ${reached.length} obiettivi` : reached.length === 1 ? "Hai raggiunto un obiettivo" : due.length > 0 ? "Un obiettivo è vicino alla data" : "I tuoi obiettivi a inizio mese",
+      lead: sentences.join(" "),
+      preheader: reached.length > 1 ? "Alcuni obiettivi di risparmio sono completi." : reached.length === 1 ? "Un obiettivo di risparmio è completo." : "A che punto sono i tuoi obiettivi di risparmio.",
+      details: notice.reminder ? notice.reminder.goals.map((g) => goalLine(g, ctx.money)) : due.map((a) => goalLine(a.goal, ctx.money)),
+      footnote: "Le date sono al ritmo di oggi, con il risparmio medio dei tuoi ultimi mesi. Stime a scopo informativo.",
+      cta: { label: "Apri i tuoi obiettivi", url: `${ctx.appUrl}${GOALS_EMAIL_PATH}` },
+      footer: footerFor("goals", ctx),
+    },
+    { appUrl: ctx.appUrl },
+  );
+  const subject = reached.length > 1 ? `Hai raggiunto ${reached.length} obiettivi di risparmio` : reached.length === 1 ? "Hai raggiunto un obiettivo di risparmio" : due.length > 0 ? "Un obiettivo si avvicina alla data" : "I tuoi obiettivi di risparmio questo mese";
+  return { subject, ...rendered };
+}
+
+/** Righe «Obiettivi» del riepilogo periodico. */
+function goalsRows(goals: GoalsDigest, money: MoneyFormatter): EmailSection["rows"] {
+  return [
+    { label: "Obiettivi aperti", value: String(goals.open) },
+    ...(goals.late > 0 ? [{ label: "In ritardo", value: String(goals.late) }] : []),
+    ...(goals.nearest ? [{ label: `Più vicino: ${goals.nearest.name}`, value: `${money(goals.nearest.current)} di ${money(goals.nearest.target)}` }] : []),
+  ];
 }
 
 /** Email degli avvisi sul budget del mese: una sola email per più categorie. Pura. */

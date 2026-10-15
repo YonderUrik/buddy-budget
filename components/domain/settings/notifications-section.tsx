@@ -23,18 +23,22 @@ import {
   useUpdateNotificationPreferencesMutation,
 } from "@/lib/queries/notifications";
 import { Mail } from "lucide-react";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 import { EmailPreview } from "./settings-preview";
 import { SettingsRow, SettingsSection } from "./settings-section";
 
 const FREQUENCY_LABEL: Record<DigestFrequency, string> = { settimanale: "Ogni settimana (lunedì)", mensile: "Ogni mese (primi giorni)" };
-const FIELD_BY_KIND = { digest: "digestEnabled", budget: "budgetAlertsEnabled", deadlines: "deadlineAlertsEnabled" } as const satisfies Record<
+const FIELD_BY_KIND = { digest: "digestEnabled", budget: "budgetAlertsEnabled", deadlines: "deadlineAlertsEnabled", goals: "goalAlertsEnabled" } as const satisfies Record<
   NotificationKind,
   keyof NotificationPreferences
 >;
-const KINDS: readonly NotificationKind[] = ["digest", "budget", "deadlines"];
+const KINDS: readonly NotificationKind[] = ["digest", "budget", "deadlines", "goals"];
+/** Tipi legati a una sezione: si mostrano solo dove la sezione esiste (gli obiettivi stanno in Analitiche). */
+const KIND_PATH: Partial<Record<NotificationKind, string>> = { goals: "/analitiche/obiettivi" };
 
 export function NotificationsSection({ email }: { email: string }) {
-  const { t: tr } = useLocalization();
+  const { t: tr, productCountry } = useLocalization();
+  const kinds = KINDS.filter((kind) => !KIND_PATH[kind] || isCountryPathAvailable(productCountry, KIND_PATH[kind]));
   const { data: preferences, isLoading, isError } = useNotificationPreferencesQuery();
   const update = useUpdateNotificationPreferencesMutation();
   const example = useSendNotificationExampleMutation();
@@ -53,7 +57,7 @@ export function NotificationsSection({ email }: { email: string }) {
         <p className="text-sm text-neg" role="alert">{tr("Impossibile caricare le preferenze sulle notifiche.")}</p>
       ) : (
         <>
-          {KINDS.map((kind) => {
+          {kinds.map((kind) => {
             const info = NOTIFICATION_KIND_INFO[kind];
             const field = FIELD_BY_KIND[kind];
             return (

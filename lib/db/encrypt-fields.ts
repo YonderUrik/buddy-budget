@@ -21,6 +21,7 @@ export const ENCRYPTED_COLUMNS: readonly { table: string; column: string }[] = [
   { table: "investment_transactions", column: "note" },
   { table: "investment_tax_carryforwards", column: "note" },
   { table: "gocardless_token", column: "access_token" },
+  { table: "goals", column: "name" },
 ];
 
 const BATCH_SIZE = 500;

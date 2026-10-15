@@ -14,6 +14,7 @@ import {
   NetWorthCompositionRow,
 } from "@/components/domain/net-worth";
 import { InvestmentsPulseSection, MonthPaceSection, OverviewVoice, UpcomingDuesSection } from "@/components/domain/overview";
+import { GoalsPanoramicaSection, useGoalFormatters } from "@/components/domain/goals";
 import { EmptyState, LoadError } from "@/components/domain/shared";
 import { DemoOfferSection, StartChecklistSection } from "@/components/domain/start";
 import { WhatsNewSection } from "@/components/domain/whats-new";
@@ -32,6 +33,8 @@ import {
 import { computeValueBreakdown } from "@/lib/investments/insights";
 import { buildInvestmentsView } from "@/lib/investments/view";
 import { useDebtsQuery } from "@/lib/queries/debts";
+import { useGoalsQuery } from "@/lib/queries/goals";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
@@ -58,10 +61,11 @@ const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
 const TILE_MONTH = "mese";
 const TILE_DUES = "scadenze";
 const TILE_INVESTMENTS = "investimenti";
+const TILE_GOALS = "obiettivi";
 
 
 export default function PanoramicaPage() {
-  const { locale: formattingLocale, language } = useLocalization();
+  const { locale: formattingLocale, language, productCountry } = useLocalization();
   const { formatCurrency, formatDateWithYear } = localizedFormats(formattingLocale);
   const MONTH_NAME_FORMAT = new Intl.DateTimeFormat(formattingLocale, { month: "long" });
   const HEADER_DATE_FORMAT = new Intl.DateTimeFormat(formattingLocale, {
@@ -76,6 +80,10 @@ export default function PanoramicaPage() {
   // Il nome arriva dalla sessione nel browser: lo mostriamo dopo l'idratazione, così l'HTML del server coincide.
   const hydrated = useHydrated();
   const currency = session?.user.currency ?? "EUR";
+  // Gli obiettivi vivono in Analitiche: dove le Analitiche non ci sono (Germania) non si chiedono.
+  const goalsAvailable = isCountryPathAvailable(productCountry, "/analitiche/obiettivi");
+  const goalsQuery = useGoalsQuery(goalsAvailable);
+  const goalFmt = useGoalFormatters(goalsQuery.data?.currency ?? currency);
   const [period, setPeriod] = React.useState<NetWorthPeriod>(DEFAULT_PERIOD);
   const today = React.useMemo(() => startOfDay(new Date()), []);
   // Il mese corrente più i precedenti: servono a dire se si spende più del solito a questo punto del mese.
@@ -202,6 +210,15 @@ export default function PanoramicaPage() {
             </div>
             <div className="flex flex-col gap-8 lg:col-span-2">
               <UpcomingDuesSection dues={dues} currency={currency} footnote={debtsFootnote} onLinkClick={() => track("overview_tile_clicked", { tile: TILE_DUES })} />
+              {goalsAvailable && goalsQuery.data ? (
+                <GoalsPanoramicaSection
+                  view={goalsQuery.data}
+                  fmt={goalFmt}
+                  href="/analitiche/obiettivi"
+                  newHref="/analitiche/obiettivi?nuovo=1&da=panoramica"
+                  onLinkClick={() => track("overview_tile_clicked", { tile: TILE_GOALS })}
+                />
+              ) : null}
               {investments ? (
                 <InvestmentsPulseSection
                   value={investments.value}

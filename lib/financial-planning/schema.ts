@@ -44,9 +44,11 @@ export const avdSchema = z.object({
 /** Household net-pension scenario. Unknown contract tax treatment must be confirmed. */
 export const pensionTaxSchema = z.object({
   mode: z.enum(["manual", "rules"]).default("manual"),
-  insurance: z.enum(["kvdr", "private"]).default("kvdr"),
+  insurance: z.enum(["kvdr", "voluntary", "private"]).default("kvdr"),
   additionalHealthRate: rate.max(0.1).default(0.029),
   childless: z.boolean().default(false), childrenUnder25: z.number().int().min(0).max(20).default(0),
+  otherInsuranceIncome: money.default(0),
+  voluntarySubsidy: z.boolean().default(false),
   annualPrivatePremium: money.default(0), annualDeductiblePremium: money.default(0),
   surchargeChildAllowance: money.default(0),
   otherTaxableIncome: money.default(0), otherDeductions: money.default(0),

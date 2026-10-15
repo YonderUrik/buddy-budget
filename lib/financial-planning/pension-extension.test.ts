@@ -85,6 +85,34 @@ describe("German pension assessment", () => {
     expect(germanProgressiveSurcharges(20450, false, 0).solidarity).toBe(11.9);
     expect(germanProgressiveSurcharges(40700, true, .09).solidarity).toBe(0);
   });
+  it("uses the voluntary minimum even before pension income starts", () => {
+    const p = plan(); p.pensionTax.insurance = "voluntary";
+    const result = germanPensionNet([], p);
+    expect(result.health).toBeCloseTo(1318.33 * (.14 + .029) * 12);
+    expect(result.care).toBeCloseTo(1318.33 * .036 * 12);
+    expect(result.net).toBeLessThan(0);
+  });
+  it("combines voluntary general/reduced bases and subtracts only a confirmed pension subsidy", () => {
+    const p = plan(); p.pensionTax.insurance = "voluntary"; p.pensionTax.otherInsuranceIncome = 6000;
+    const payments = [payment("statutory", 24000), payment("occupational", 12000, { taxTreatment: "funded" }), payment("private", 6000, { taxTreatment: "private-annuity" })];
+    const before = germanPensionNet(payments, p);
+    expect(before.health).toBeCloseTo((3000 * .175 + 1000 * .169) * 12);
+    p.pensionTax.voluntarySubsidy = true;
+    expect(germanPensionNet(payments, p).health).toBeCloseTo(before.health! - 24000 * .175 / 2);
+    expect(before.care).toBeCloseTo(48000 * .036);
+  });
+  it("does not grant the KVdR occupational exemption to voluntary members and respects the ceiling", () => {
+    const p = plan(); p.pensionTax.insurance = "voluntary";
+    const result = germanPensionNet([payment("occupational", 12000, { taxTreatment: "funded" })], p);
+    expect(result.health).toBeCloseTo(1318.33 * .175 * 12);
+    p.pensionTax.otherInsuranceIncome = 120000;
+    expect(germanPensionNet([], p).health).toBeCloseTo(5812.5 * .169 * 12);
+  });
+  it("blocks unassessed private lump sums in voluntary insurance", () => {
+    const p = plan(); p.pensionTax.insurance = "voluntary";
+    const entry = payment("avd", 10000, { taxTreatment: "funded" }); entry.lumpSum = 10000;
+    expect(germanPensionNet([entry], p).net).toBeNull();
+  });
   it("blocks the retirement result until all relevant contracts are classified", () => {
     const p = plan(); p.pensions = [pensionPlanSchema.parse({ id: "unknown", name: "Private", kind: "private", monthlyGross: 1000 })];
     expect(germanRetirement(p).rows).toEqual([]); expect(germanRetirement(p).issues).toEqual(["unknown"]);

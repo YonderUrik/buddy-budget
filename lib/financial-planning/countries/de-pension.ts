@@ -4,7 +4,7 @@ import { germanIncomeTax } from "./de";
 /** 2026 social-insurance parameters, not automatically rolled forward.
  * BMAS Sozialversicherungsrechengrößen-Verordnung 2026; SGB V §§226,229,249a; SGB XI §55.
  */
-export const DE_PENSION_2026 = { monthlyCeiling: 5812.50, occupationalExemption: 3955 / 20,
+export const DE_PENSION_2026 = { monthlyCeiling: 5812.50, monthlyMinimum: 1318.33, reducedHealthRate: .14, occupationalExemption: 3955 / 20,
   healthRate: .146, careRate: .036, childlessExtra: .006, childDiscount: .0025,
   solidarityThreshold: 20350 } as const;
 export function germanPensionTaxableShare(startYear: number) {
@@ -27,13 +27,19 @@ export interface PensionPayment { plan: PensionPlan; annual: number; lumpSum: nu
  */
 export function germanPensionNet(payments: PensionPayment[], plan: GermanPlan) {
   const settings = plan.pensionTax, rules = DE_PENSION_2026;
-  let gross = 0, taxable = 0, statutory = 0, occupational = 0;
+  let gross = 0, taxable = 0, statutory = 0, occupational = 0, privatePensions = 0;
   const issues: string[] = [];
+  const insuranceIssues: string[] = [];
   for (const payment of payments) {
     const p = payment.plan, total = payment.annual + payment.lumpSum;
     gross += total;
     if (p.kind === "statutory") statutory += payment.annual / 12;
     if (p.kind === "occupational") occupational += payment.annual / 12 + payment.occupationalMonthlyEquivalent;
+    if (!["statutory", "occupational"].includes(p.kind)) {
+      privatePensions += payment.annual / 12;
+      // Non-periodic private capital needs an insurer assessment; do not charge the entire principal as income.
+      if (settings.insurance === "voluntary" && payment.lumpSum > 0) { issues.push(p.id); insuranceIssues.push(p.id); }
+    }
     if (total === 0) continue;
     if (p.taxTreatment === "statement") taxable += Math.min(total, p.taxableAnnualFromStatement);
     else if (p.kind === "statutory" || p.kind === "ruerup") {
@@ -46,19 +52,28 @@ export function germanPensionNet(payments: PensionPayment[], plan: GermanPlan) {
     else if (p.taxTreatment === "private-annuity" && p.kind === "private" && payment.lumpSum === 0) taxable += payment.annual * germanAnnuityShare(p.ageAtPayment);
     else issues.push(p.id);
   }
-  if (issues.length) return { gross, taxable: null, health: null, care: null, incomeTax: null, solidarity: null, church: null, net: null, issues };
+  if (issues.length) return { gross, taxable: null, health: null, care: null, incomeTax: null, solidarity: null, church: null, net: null, issues, insuranceIssues };
   let health = 0, care = 0;
+  const careRate = rules.careRate + (settings.childless ? rules.childlessExtra : 0) - Math.min(4, Math.max(0, settings.childrenUnder25 - 1)) * rules.childDiscount;
   if (settings.insurance === "kvdr") {
     const statutoryBase = Math.min(statutory, rules.monthlyCeiling);
     const remaining = Math.max(0, rules.monthlyCeiling - statutoryBase);
     // One shared exemption across all bAV contracts; care uses a threshold, NOT a deduction.
     const occupationalHealth = Math.min(remaining, Math.max(0, occupational - rules.occupationalExemption));
     const occupationalCare = occupational > rules.occupationalExemption ? Math.min(remaining, occupational) : 0;
-    const careRate = rules.careRate + (settings.childless ? rules.childlessExtra : 0) - Math.min(4, Math.max(0, settings.childrenUnder25 - 1)) * rules.childDiscount;
     health = 12 * (statutoryBase * (rules.healthRate + settings.additionalHealthRate) / 2 + occupationalHealth * (rules.healthRate + settings.additionalHealthRate));
     care = 12 * (statutoryBase + occupationalCare) * careRate;
+  } else if (settings.insurance === "voluntary") {
+    const general = statutory + occupational;
+    const reduced = privatePensions + settings.otherInsuranceIncome / 12;
+    const assessed = Math.min(rules.monthlyCeiling, Math.max(rules.monthlyMinimum, general + reduced));
+    const generalBase = Math.min(assessed, reduced === 0 && general > 0 ? Math.max(general, rules.monthlyMinimum) : general);
+    const reducedBase = Math.max(0, assessed - generalBase);
+    const subsidy = settings.voluntarySubsidy ? Math.min(statutory, rules.monthlyCeiling) * (rules.healthRate + settings.additionalHealthRate) / 2 : 0;
+    health = 12 * (generalBase * (rules.healthRate + settings.additionalHealthRate) + reducedBase * (rules.reducedHealthRate + settings.additionalHealthRate) - subsidy);
+    care = 12 * assessed * careRate;
   } else health = settings.annualPrivatePremium;
-  const deductible = settings.insurance === "kvdr" ? health + care : Math.min(health, settings.annualDeductiblePremium);
+  const deductible = settings.insurance !== "private" ? health + care : Math.min(health, settings.annualDeductiblePremium);
   const base = Math.max(0, settings.otherTaxableIncome - settings.otherDeductions);
   // €102 expense allowance is applied once across pensions, not once per contract.
   const incomeTax = germanIncomeTax(Math.max(0, base + taxable - deductible - (taxable > 0 ? 102 : 0)), plan.tax.joint);
@@ -66,5 +81,5 @@ export function germanPensionNet(payments: PensionPayment[], plan: GermanPlan) {
   const charges = germanProgressiveSurcharges(germanIncomeTax(Math.max(0, base + taxable - deductible - (taxable > 0 ? 102 : 0) - settings.surchargeChildAllowance), plan.tax.joint), plan.tax.joint, plan.tax.churchRate);
   const before = germanProgressiveSurcharges(germanIncomeTax(Math.max(0, base - settings.surchargeChildAllowance), plan.tax.joint), plan.tax.joint, plan.tax.churchRate);
   const incrementalTax = incomeTax - baseTax, solidarity = charges.solidarity - before.solidarity, church = charges.church - before.church;
-  return { gross, taxable, health, care, incomeTax: incrementalTax, solidarity, church, net: gross - health - care - incrementalTax - solidarity - church, issues };
+  return { gross, taxable, health, care, incomeTax: incrementalTax, solidarity, church, net: gross - health - care - incrementalTax - solidarity - church, issues, insuranceIssues };
 }

@@ -3968,5 +3968,11 @@
   "3 posizioni": "3 holdings",
   "3 debiti": "3 debts",
   "6 di 6 · con i dati di una persona inventata": "6 of 6 · with the data of a made-up person",
-  "E in tutto, quanto ho?": "And all together, how much do I have?"
+  "E in tutto, quanto ho?": "And all together, how much do I have?",
+  "Voluntary statutory insurance": "Voluntary statutory insurance",
+  "Other annual income assessed for health insurance (€)": "Other annual income assessed for health insurance (€)",
+  "Statutory pension health-insurance subsidy confirmed": "Statutory pension health-insurance subsidy confirmed",
+  "Voluntary insurance includes private pensions and other assessed income, with 2026 minimum and maximum bases and no occupational exemption. Enter assessed rental and capital income, not total withdrawals. Private lump sums, employment, spouse-income attribution and special income types need an insurer calculation.": "Voluntary insurance includes private pensions and other assessed income, with 2026 minimum and maximum bases and no occupational exemption. Enter assessed rental and capital income, not total withdrawals. Private lump sums, employment, spouse-income attribution and special income types need an insurer calculation.",
+  "This projection applies the 2026 tax tariff and insurance thresholds unchanged to future years. Pension taxable shares follow the start-year schedule. Enter pensions for one insured person; joint assessment uses combined other taxable income. Special occupational arrangements require an individual calculation.": "This projection applies the 2026 tax tariff and insurance thresholds unchanged to future years. Pension taxable shares follow the start-year schedule. Enter pensions for one insured person; joint assessment uses combined other taxable income. Special occupational arrangements require an individual calculation.",
+  "Private lump-sum payments require an insurer contribution assessment in voluntary insurance. Set the lump sum to zero to compare recurring payments only.": "Private lump-sum payments require an insurer contribution assessment in voluntary insurance. Set the lump sum to zero to compare recurring payments only."
 }

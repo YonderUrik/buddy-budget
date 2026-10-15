@@ -1,4 +1,5 @@
 "use client";
+import { localPath } from "@/lib/localization";
 
 import { useRef, type ReactNode } from "react";
 import { track, type LandingEvents } from "@/lib/analytics";
@@ -52,7 +53,7 @@ export function CtaLink({ href, className, location, target, arrow = false, chil
   );
 
   return (
-    <a ref={ref} href={href} className={className} onClick={() => track("cta_click", { location, target })}>
+    <a ref={ref} href={localPath(href)} className={className} onClick={() => track("cta_click", { location, target })}>
       {children}
       {arrow && <ArrowIcon />}
     </a>

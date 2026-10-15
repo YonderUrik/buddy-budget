@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import "./legal-page.css";
 import "./content-page.css";
 import Link from "next/link";
@@ -26,25 +27,23 @@ export function ContentPage({ crumbs, children, ctaTitle, ctaText, ctaLocation, 
       <SiteNav current={current} />
       <main className="cp">
         <div className={`wrap cp-wrap${wide ? " cp-wide" : ""}`}>
-          <nav className="cp-crumbs" aria-label="Percorso">
+          <nav className="cp-crumbs" aria-label={trLanding("Percorso")}>
             {crumbs.map((c, i) => (
-              <span key={c.label}>{c.href ? <Link href={c.href}>{c.label}</Link> : c.label}{i < crumbs.length - 1 ? " / " : ""}</span>
+              <span key={c.label}>{c.href ? <Link href={c.href}>{trLanding(c.label)}</Link> : trLanding(c.label)}{trLanding(i < crumbs.length - 1 ? " / " : "")}</span>
             ))}
           </nav>
-          {kicker ? <span className="kicker">{kicker}</span> : null}
+          {kicker ? <span className="kicker">{trLanding(kicker)}</span> : null}
           {children}
-          {disclaimer ? <p className="cp-disclaimer" role="note"><strong>Solo a scopo informativo.</strong> I calcoli sono stime semplificate e i testi riassumono norme che cambiano: non sono consulenza fiscale né un riferimento assoluto. Verifica sempre con il tuo intermediario, la normativa in vigore o un consulente.</p> : null}
+          {disclaimer ? <p className="cp-disclaimer" role="note"><strong>{trLanding("Solo a scopo informativo.")}</strong>{trLanding(" I calcoli sono stime semplificate e i testi riassumono norme che cambiano: non sono consulenza fiscale né un riferimento assoluto. Verifica sempre con il tuo intermediario, la normativa in vigore o un consulente.")}</p> : null}
         </div>
         <aside className="cp-cta">
           <div className={`wrap cp-wrap${wide ? " cp-wide" : ""}`}>
             <div className="cp-cta-panel cell">
               <div>
-                <h2>{ctaTitle}</h2>
-                <p>{ctaText}</p>
+                <h2>{trLanding(ctaTitle)}</h2>
+                <p>{trLanding(ctaText)}</p>
               </div>
-              <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup" arrow>
-                Crea un account
-              </CtaLink>
+              <CtaLink className="btn main" href={APP_LINKS.signup} location={ctaLocation} target="signup" arrow>{trLanding("Crea un account")}</CtaLink>
             </div>
           </div>
         </aside>

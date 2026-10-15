@@ -1,6 +1,7 @@
+import { t as trLanding, PROFILE } from "@/lib/localization";
 import "./feature-areas.css";
 import Link from "next/link";
-import { FEATURE_AREAS, featuresByArea, type FeatureStatus } from "@/content/catalog.generated";
+import { FEATURE_AREAS, featuresByArea, type FeatureStatus } from "@/content/country-catalog";
 import { AREA_META } from "@/content/feature-areas";
 import { AreaJump } from "./area-jump";
 import { HomeIcon } from "./home-icon";
@@ -26,11 +27,11 @@ export function FeatureAreas() {
             <div className={`fa-head${meta.shot ? "" : " no-shot"}`}>
               <div>
                 <span className="fa-ic" aria-hidden="true"><HomeIcon name={meta.icon} size={20} /></span>
-                <h2 id={`${meta.slug}-t`}>{area} <small>{features.length}</small></h2>
-                <p>{meta.intro}</p>
-                {meta.more ? (
+                <h2 id={`${meta.slug}-t`}>{trLanding(area)} <small>{trLanding(features.length)}</small></h2>
+                <p>{trLanding(meta.intro)}</p>
+                {meta.more && (PROFILE.country === "IT" || area !== "Investimenti") ? (
                   <Link className="fa-more" href={meta.more.href}>
-                    {meta.more.label} <em aria-hidden="true">→</em>
+                    {trLanding(meta.more.label)} <em aria-hidden="true">→</em>
                   </Link>
                 ) : null}
               </div>
@@ -40,10 +41,10 @@ export function FeatureAreas() {
               {features.map((f) => (
                 <article key={f.id} className="fa-card">
                   <h3>
-                    {f.name}
-                    {STATUS_LABEL[f.status] ? <span className={`fa-tag ${f.status}`}>{STATUS_LABEL[f.status]}</span> : null}
+                    {trLanding(f.name)}
+                    {STATUS_LABEL[f.status] ? <span className={`fa-tag ${f.status}`}>{trLanding(STATUS_LABEL[f.status])}</span> : null}
                   </h3>
-                  <p>{f.description}</p>
+                  <p>{trLanding(f.description)}</p>
                 </article>
               ))}
             </Reveal>

@@ -1,3 +1,4 @@
+const PROFILE = { country: process.env.NEXT_PUBLIC_LANDING_COUNTRY ?? "IT", language: process.env.NEXT_PUBLIC_LANDING_LANGUAGE ?? "it" };
 /**
  * Schermate dell'app mostrate nella landing. Non sono disegnate a mano: sono screenshot dell'app vera con dati
  * demo, generati da `scripts/capture-screens.mjs` (vedi `docs/landing-screens.md`). Ogni voce punta alla route reale
@@ -36,7 +37,7 @@ export interface AppScreen {
   open?: { route: string; clickText: string };
 }
 
-export const SCREENS = [
+const ALL_SCREENS = [
   { id: "panoramica", area: "Panoramica", label: "Panoramica", route: "/panoramica", topCrop: true, phone: true, caption: "Patrimonio netto nel tempo, per liquidità, investimenti, previdenza e debiti.", alt: "Panoramica: patrimonio netto, grafico nel tempo e ripartizione per classe di asset" },
   { id: "conti", area: "Liquidità", label: "Conti", route: "/liquidita/conti", caption: "Banca collegata e conti manuali, con la liquidità dell'ultimo mese.", alt: "Conti: conto collegato alla banca e conti manuali con saldi" },
   { id: "movimenti", area: "Liquidità", label: "Movimenti", route: "/liquidita", maxHeight: 1200, caption: "Saldo, andamento e movimenti di tutti i conti; la categoria si cambia con un tocco.", alt: "Movimenti: elenco delle transazioni con categorie e importi" },
@@ -56,17 +57,19 @@ export const SCREENS = [
   { id: "analitiche", area: "Analitiche", label: "E se…", route: "/analitiche", phone: true, caption: "L'anno in cui puoi smettere di lavorare, che si sposta mentre muovi risparmio, spesa, rendimento e prelievo.", alt: "Analitiche: l'anno del traguardo, quattro cursori per provare le ipotesi e il grafico del patrimonio verso il numero FIRE" },
 ] as const satisfies readonly AppScreen[];
 
+export const SCREENS = PROFILE.country === "IT" ? ALL_SCREENS : ALL_SCREENS.filter(s => !["pensione", "pensione-scenari", "analitiche", "tasse"].includes(s.id));
+
 /** Id di una schermata (tipo chiuso: finisce negli eventi Umami). */
-export type ScreenId = (typeof SCREENS)[number]["id"];
+export type ScreenId = (typeof ALL_SCREENS)[number]["id"];
 
 /** Percorso pubblico dell'immagine di una schermata nel tema dato (`top`: solo la parte alta, se catturata). */
 export function screenSrc(id: ScreenId, theme: ScreenTheme, top = false): string {
-  return `/screens/${theme}/${id}${top ? "-top" : ""}.jpg`;
+  return `/screens/${PROFILE.language === "it" ? "" : `${PROFILE.country.toLowerCase()}-${PROFILE.language}/`}${theme}/${id}${top ? "-top" : ""}.jpg`;
 }
 
 /** Percorso della versione a misura di telefono (primo schermo, 390×844 a 2x), solo per le schermate con `phone`. */
 export function screenPhoneSrc(id: ScreenId, theme: ScreenTheme): string {
-  return `/screens/${theme}/${id}-phone.jpg`;
+  return `/screens/${PROFILE.language === "it" ? "" : `${PROFILE.country.toLowerCase()}-${PROFILE.language}/`}${theme}/${id}-phone.jpg`;
 }
 
 /** Larghezza della versione leggera (`-sm`), catturata a 1x per i telefoni. */
@@ -74,5 +77,5 @@ export const SCREEN_SMALL_WIDTH = 1280;
 
 /** Percorso della versione leggera a 1x di una schermata intera. */
 export function screenSmallSrc(id: ScreenId, theme: ScreenTheme): string {
-  return `/screens/${theme}/${id}-sm.jpg`;
+  return `/screens/${PROFILE.language === "it" ? "" : `${PROFILE.country.toLowerCase()}-${PROFILE.language}/`}${theme}/${id}-sm.jpg`;
 }

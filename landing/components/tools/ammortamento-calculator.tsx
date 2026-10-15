@@ -1,12 +1,12 @@
 "use client";
+import { t as trLanding, LOCALE } from "@/lib/localization";
 
 import { useState } from "react";
 import { SplitBar } from "@/components/viz/viz";
-import { groupThousands } from "@/lib/format";
 import { buildFrenchPlan, simulateEarlyRepayment } from "@/lib/tools/ammortamento";
 
 const MAX_MONTHS = 600;
-const eur2 = (n: number) => `${groupThousands(Math.trunc(n))},${Math.abs(Math.round((n - Math.trunc(n)) * 100)).toString().padStart(2, "0")} €`;
+const eur2 = (n: number) => new Intl.NumberFormat(LOCALE, { style: "currency", currency: "EUR" }).format(n);
 const num = (s: string) => (Number.isFinite(Number(s.replace(",", "."))) ? Number(s.replace(",", ".")) : 0);
 
 /** Calcolatore del piano di ammortamento alla francese, con simulazione di estinzione parziale. */
@@ -28,52 +28,52 @@ export function AmmortamentoCalculator() {
     <>
       <div className="tool">
         <div className="tool-card">
-          <h2>Il finanziamento</h2>
-          <div className="field"><label htmlFor="a-p">Importo (€)</label><input id="a-p" inputMode="decimal" value={principal} onChange={(e) => setPrincipal(e.target.value)} /></div>
-          <div className="field"><label htmlFor="a-r">Tasso nominale annuo, TAN (%)</label><input id="a-r" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
-          <div className="field"><label htmlFor="a-y">Durata (anni)</label><input id="a-y" inputMode="decimal" value={years} onChange={(e) => setYears(e.target.value)} /></div>
+          <h2>{trLanding("Il finanziamento")}</h2>
+          <div className="field"><label htmlFor="a-p">{trLanding("Importo (€)")}</label><input id="a-p" inputMode="decimal" value={principal} onChange={(e) => setPrincipal(e.target.value)} /></div>
+          <div className="field"><label htmlFor="a-r">{trLanding("Tasso nominale annuo, TAN (%)")}</label><input id="a-r" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
+          <div className="field"><label htmlFor="a-y">{trLanding("Durata (anni)")}</label><input id="a-y" inputMode="decimal" value={years} onChange={(e) => setYears(e.target.value)} /></div>
         </div>
         <div className="tool-card" aria-live="polite">
-          <h2>Il piano</h2>
+          <h2>{trLanding("Il piano")}</h2>
           {plan ? (
             <div className="res">
               <SplitBar parts={[{ label: "Capitale", value: P, tone: "pos" }, { label: "Interessi", value: plan.totalInterest, tone: "neg" }]} />
-              <div className="row key"><span>Rata mensile</span><b>{eur2(plan.installment)}</b></div>
-              <div className="row"><span>Interessi totali</span><b>{eur2(plan.totalInterest)}</b></div>
-              <div className="row"><span>Totale pagato</span><b>{eur2(plan.totalPaid)}</b></div>
-              <div className="row"><span>Numero di rate</span><b>{months}</b></div>
+              <div className="row key"><span>{trLanding("Rata mensile")}</span><b>{trLanding(eur2(plan.installment))}</b></div>
+              <div className="row"><span>{trLanding("Interessi totali")}</span><b>{trLanding(eur2(plan.totalInterest))}</b></div>
+              <div className="row"><span>{trLanding("Totale pagato")}</span><b>{trLanding(eur2(plan.totalPaid))}</b></div>
+              <div className="row"><span>{trLanding("Numero di rate")}</span><b>{trLanding(months)}</b></div>
             </div>
           ) : (
-            <p>Inserisci un importo e un tasso validi.</p>
+            <p>{trLanding("Inserisci un importo e un tasso validi.")}</p>
           )}
         </div>
       </div>
-      <h2>E se estinguo una parte in anticipo?</h2>
+      <h2>{trLanding("E se estinguo una parte in anticipo?")}</h2>
       <div className="tool">
         <div className="tool-card">
-          <div className="field"><label htmlFor="e-a">Dopo quanti anni (dall&apos;inizio)</label><input id="e-a" inputMode="decimal" value={after} onChange={(e) => setAfter(e.target.value)} /></div>
-          <div className="field"><label htmlFor="e-x">Capitale estinto (€)</label><input id="e-x" inputMode="decimal" value={extra} onChange={(e) => setExtra(e.target.value)} /></div>
-          <div className="field"><label htmlFor="e-p">Penale sul capitale estinto (%, di solito 0 per i mutui sull&apos;abitazione)</label><input id="e-p" inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} /></div>
+          <div className="field"><label htmlFor="e-a">{trLanding("Dopo quanti anni (dall'inizio)")}</label><input id="e-a" inputMode="decimal" value={after} onChange={(e) => setAfter(e.target.value)} /></div>
+          <div className="field"><label htmlFor="e-x">{trLanding("Capitale estinto (€)")}</label><input id="e-x" inputMode="decimal" value={extra} onChange={(e) => setExtra(e.target.value)} /></div>
+          <div className="field"><label htmlFor="e-p">{trLanding("Penale sul capitale estinto (%, di solito 0 per i mutui sull'abitazione)")}</label><input id="e-p" inputMode="decimal" value={penalty} onChange={(e) => setPenalty(e.target.value)} /></div>
         </div>
         <div className="tool-card" aria-live="polite">
           {early ? (
             <div className="res">
-              <div className="row"><span>Interessi risparmiati</span><b>{eur2(early.interestSaved)}</b></div>
-              <div className="row"><span>Penale</span><b>{early.penalty > 0 ? "−" : ""}{eur2(early.penalty)}</b></div>
-              <div className="row key"><span>Risparmio netto</span><b>{eur2(early.netSaving)}</b></div>
-              <div className="row"><span>Stessa rata: rate che restano</span><b>{early.monthsLeftSameInstallment}</b></div>
-              <div className="row"><span>Stessa durata: nuova rata</span><b>{eur2(early.newInstallmentSameTerm)}</b></div>
+              <div className="row"><span>{trLanding("Interessi risparmiati")}</span><b>{trLanding(eur2(early.interestSaved))}</b></div>
+              <div className="row"><span>{trLanding("Penale")}</span><b>{trLanding(early.penalty > 0 ? "−" : "")}{trLanding(eur2(early.penalty))}</b></div>
+              <div className="row key"><span>{trLanding("Risparmio netto")}</span><b>{trLanding(eur2(early.netSaving))}</b></div>
+              <div className="row"><span>{trLanding("Stessa rata: rate che restano")}</span><b>{trLanding(early.monthsLeftSameInstallment)}</b></div>
+              <div className="row"><span>{trLanding("Stessa durata: nuova rata")}</span><b>{trLanding(eur2(early.newInstallmentSameTerm))}</b></div>
             </div>
           ) : null}
         </div>
       </div>
       {plan ? (
-        <div className="sched" tabIndex={0} role="region" aria-label="Piano di ammortamento completo">
+        <div className="sched" tabIndex={0} role="region" aria-label={trLanding("Piano di ammortamento completo")}>
           <table>
-            <thead><tr><th>Rata</th><th>Quota capitale</th><th>Quota interessi</th><th>Debito residuo</th></tr></thead>
+            <thead><tr><th>{trLanding("Rata")}</th><th>{trLanding("Quota capitale")}</th><th>{trLanding("Quota interessi")}</th><th>{trLanding("Debito residuo")}</th></tr></thead>
             <tbody>
               {plan.rows.map((row) => (
-                <tr key={row.n}><td>{row.n}</td><td>{eur2(row.principal)}</td><td>{eur2(row.interest)}</td><td>{eur2(row.balance)}</td></tr>
+                <tr key={row.n}><td>{trLanding(row.n)}</td><td>{trLanding(eur2(row.principal))}</td><td>{trLanding(eur2(row.interest))}</td><td>{trLanding(eur2(row.balance))}</td></tr>
               ))}
             </tbody>
           </table>

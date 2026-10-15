@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 export interface FactListRow {
   label: string;
   text: string;
@@ -9,8 +10,8 @@ export function FactList({ rows }: { rows: readonly FactListRow[] }) {
     <dl className="sp-dl">
       {rows.map((row) => (
         <div key={row.label}>
-          <dt>{row.label}</dt>
-          <dd>{row.text}</dd>
+          <dt>{trLanding(row.label)}</dt>
+          <dd>{trLanding(row.text)}</dd>
         </div>
       ))}
     </dl>

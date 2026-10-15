@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import "./app-shot.css";
 import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
 import { screenSize } from "@/lib/screen-size";
@@ -28,7 +29,7 @@ export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", pr
         <i />
         <i />
         <i />
-        <span>{url ?? `app.buddybudget.io${screen.route}`}</span>
+        <span>{trLanding(url ?? `app.buddybudget.io${screen.route}`)}</span>
       </div>
       <div className="shot-imgs" style={{ aspectRatio: `${size.width} / ${size.height}` }}>
         {SCREEN_THEMES.map((theme) => (
@@ -40,7 +41,7 @@ export function AppShot({ id, url, sizes = "(max-width: 860px) 100vw, 900px", pr
             // I telefoni scaricano e decodificano la versione a 1x; la 1,5x solo dove serve (schermi larghi e densi).
             srcSet={size.width > SCREEN_SMALL_WIDTH ? `${screenSmallSrc(screen.id, theme)} ${SCREEN_SMALL_WIDTH}w, ${screenSrc(screen.id, theme)} ${size.width}w` : undefined}
             sizes={sizes}
-            alt={screen.alt}
+            alt={trLanding(screen.alt)}
             width={size.width}
             height={size.height}
             loading={priority ? "eager" : "lazy"}

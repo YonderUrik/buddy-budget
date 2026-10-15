@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding, LOCALE } from "@/lib/localization";
 
 import { useState, useSyncExternalStore } from "react";
 import { SplitBar } from "@/components/viz/viz";
@@ -15,8 +16,8 @@ const num = (s: string) => (Number.isFinite(Number(s.replace(",", "."))) ? Numbe
 function yearsAndMonths(months: number): string {
   const y = Math.floor(months / 12);
   const m = months % 12;
-  const parts = [y > 0 ? `${y} ${y === 1 ? "anno" : "anni"}` : "", m > 0 ? `${m} ${m === 1 ? "mese" : "mesi"}` : ""].filter(Boolean);
-  return parts.join(" e ") || "0 mesi";
+  const parts = [y > 0 ? `${y} ${trLanding(y === 1 ? "anno" : "anni")}` : "", m > 0 ? `${m} ${trLanding(m === 1 ? "mese" : "mesi")}` : ""].filter(Boolean);
+  return parts.join(trLanding(" e ")) || trLanding("0 mesi");
 }
 
 /** La data di oggi, letta solo nel browser: la pagina è statica e il mese di arrivo non deve essere quello della build. */
@@ -29,7 +30,7 @@ function useToday(): Date | null {
 /** Mese e anno di arrivo, a partire da oggi («giugno 2031»). */
 function arrivalLabel(from: Date, months: number): string {
   const d = new Date(from.getFullYear(), from.getMonth() + months, 1);
-  return d.toLocaleDateString("it-IT", { month: "long", year: "numeric" });
+  return d.toLocaleDateString(LOCALE, { month: "long", year: "numeric" });
 }
 
 /** Calcolatore dell'obiettivo di risparmio: in quanto tempo si arriva a una cifra, e quanto serve al mese per arrivarci entro una data. */
@@ -52,43 +53,43 @@ export function ObiettivoCalculator() {
     <>
       <div className="tool">
         <div className="tool-card">
-          <h2>L&apos;obiettivo</h2>
-          <div className="field"><label htmlFor="o-t">Cifra da raggiungere (€)</label><input id="o-t" inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} /></div>
-          <div className="field"><label htmlFor="o-s">Quanto hai già (€)</label><input id="o-s" inputMode="decimal" value={start} onChange={(e) => setStart(e.target.value)} /></div>
-          <div className="field"><label htmlFor="o-m">Quanto metti da parte ogni mese (€)</label><input id="o-m" inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} /></div>
-          <div className="field"><label htmlFor="o-r">Rendimento annuo (%, 0 se resta sul conto)</label><input id="o-r" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
+          <h2>{trLanding("L'obiettivo")}</h2>
+          <div className="field"><label htmlFor="o-t">{trLanding("Cifra da raggiungere (€)")}</label><input id="o-t" inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} /></div>
+          <div className="field"><label htmlFor="o-s">{trLanding("Quanto hai già (€)")}</label><input id="o-s" inputMode="decimal" value={start} onChange={(e) => setStart(e.target.value)} /></div>
+          <div className="field"><label htmlFor="o-m">{trLanding("Quanto metti da parte ogni mese (€)")}</label><input id="o-m" inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} /></div>
+          <div className="field"><label htmlFor="o-r">{trLanding("Rendimento annuo (%, 0 se resta sul conto)")}</label><input id="o-r" inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></div>
         </div>
         <div className="tool-card" aria-live="polite">
-          <h2>Quando ci arrivi</h2>
+          <h2>{trLanding("Quando ci arrivi")}</h2>
           {!plan ? (
-            <p>Inserisci la cifra da raggiungere.</p>
+            <p>{trLanding("Inserisci la cifra da raggiungere.")}</p>
           ) : plan.months === 0 ? (
-            <p>Ci sei già: quello che hai copre l&apos;obiettivo.</p>
+            <p>{trLanding("Ci sei già: quello che hai copre l'obiettivo.")}</p>
           ) : !reached ? (
-            <p>Così non ci arrivi: senza un versamento mensile (o con un rendimento troppo basso) la cifra resta lontana oltre {MAX_YEARS} anni.</p>
+            <p>{trLanding("Così non ci arrivi: senza un versamento mensile (o con un rendimento troppo basso) la cifra resta lontana oltre ")}{trLanding(MAX_YEARS)}{trLanding(" anni.")}</p>
           ) : (
             <div className="res">
               <SplitBar parts={[{ label: "Quello che hai", value: input.start, tone: "mut" }, { label: "Versamenti", value: plan.contributed, tone: "acc" }, { label: "Rendimento", value: plan.growth, tone: "pos" }]} />
-              <div className="row key"><span>Ci arrivi in</span><b>{yearsAndMonths(plan.months)}</b></div>
-              <div className="row"><span>Cioè verso</span><b>{today ? arrivalLabel(today, plan.months) : `tra ${plan.months} mesi`}</b></div>
-              <div className="row"><span>Versato in tutto</span><b>{eur0(plan.contributed)}</b></div>
-              <div className="row"><span>Dal rendimento</span><b>{eur0(plan.growth)}</b></div>
+              <div className="row key"><span>{trLanding("Ci arrivi in")}</span><b>{trLanding(yearsAndMonths(plan.months))}</b></div>
+              <div className="row"><span>{trLanding("Cioè verso")}</span><b>{trLanding(today ? arrivalLabel(today, plan.months) : `${trLanding("tra")} ${plan.months} ${trLanding("mesi")}`)}</b></div>
+              <div className="row"><span>{trLanding("Versato in tutto")}</span><b>{trLanding(eur0(plan.contributed))}</b></div>
+              <div className="row"><span>{trLanding("Dal rendimento")}</span><b>{trLanding(eur0(plan.growth))}</b></div>
             </div>
           )}
         </div>
       </div>
-      <h2>E per arrivarci entro una data?</h2>
+      <h2>{trLanding("E per arrivarci entro una data?")}</h2>
       <div className="tool">
         <div className="tool-card">
-          <div className="field"><label htmlFor="o-y">Entro quanti anni</label><input id="o-y" inputMode="decimal" value={years} onChange={(e) => setYears(e.target.value)} /></div>
+          <div className="field"><label htmlFor="o-y">{trLanding("Entro quanti anni")}</label><input id="o-y" inputMode="decimal" value={years} onChange={(e) => setYears(e.target.value)} /></div>
         </div>
         <div className="tool-card" aria-live="polite">
           {needed === null ? (
-            <p>Inserisci la cifra da raggiungere e un numero di anni.</p>
+            <p>{trLanding("Inserisci la cifra da raggiungere e un numero di anni.")}</p>
           ) : (
             <div className="res">
-              <div className="row key"><span>Servono al mese</span><b>{eur0(needed)}</b></div>
-              <div className="row"><span>Per {horizonMonths} mesi</span><b>{eur0(needed * horizonMonths)} versati</b></div>
+              <div className="row key"><span>{trLanding("Servono al mese")}</span><b>{trLanding(eur0(needed))}</b></div>
+              <div className="row"><span>{trLanding("Per ")}{trLanding(horizonMonths)}{trLanding(" mesi")}</span><b>{trLanding(eur0(needed * horizonMonths))}{trLanding(" versati")}</b></div>
             </div>
           )}
         </div>

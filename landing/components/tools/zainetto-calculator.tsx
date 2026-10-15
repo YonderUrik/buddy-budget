@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding } from "@/lib/localization";
 
 import { useState } from "react";
 import { SplitBar } from "@/components/viz/viz";
@@ -27,47 +28,47 @@ export function ZainettoCalculator() {
   return (
     <div className="tool">
       <div className="tool-card">
-        <h2>I tuoi dati</h2>
+        <h2>{trLanding("I tuoi dati")}</h2>
         <div className="field">
-          <span className="lab">Strumento venduto</span>
-          <div className="seg" role="group" aria-label="Strumento">
+          <span className="lab">{trLanding("Strumento venduto")}</span>
+          <div className="seg" role="group" aria-label={trLanding("Strumento")}>
             {INSTRUMENTS.map((i) => (
-              <button key={i.id} type="button" aria-pressed={i.id === instrument} onClick={() => setInstrument(i.id)}>{i.label}</button>
+              <button key={i.id} type="button" aria-pressed={i.id === instrument} onClick={() => setInstrument(i.id)}>{trLanding(i.label)}</button>
             ))}
           </div>
         </div>
         <div className="field">
-          <label htmlFor="z-gain">Plusvalenza realizzata nel {TAX_YEAR} (€)</label>
+          <label htmlFor="z-gain">{trLanding("Plusvalenza realizzata nel ")}{trLanding(TAX_YEAR)} (€)</label>
           <input id="z-gain" inputMode="decimal" value={gain} onChange={(e) => setGain(e.target.value)} />
         </div>
         <div className="field">
-          <span className="lab">Minusvalenze degli anni precedenti</span>
+          <span className="lab">{trLanding("Minusvalenze degli anni precedenti")}</span>
           {losses.map((l, i) => (
             <div key={i} className="loss-row">
-              <input aria-label={`Anno della minusvalenza ${i + 1}`} inputMode="numeric" value={l.year} onChange={(e) => setLosses(losses.map((x, k) => (k === i ? { ...x, year: e.target.value } : x)))} />
-              <input aria-label={`Importo della minusvalenza ${i + 1} (€)`} inputMode="decimal" value={l.amount} onChange={(e) => setLosses(losses.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} />
-              <button type="button" aria-label={`Rimuovi la minusvalenza ${i + 1}`} onClick={() => setLosses(losses.filter((_, k) => k !== i))}>×</button>
+              <input aria-label={trLanding(`${trLanding("Anno della minusvalenza")} ${i + 1}`)} inputMode="numeric" value={l.year} onChange={(e) => setLosses(losses.map((x, k) => (k === i ? { ...x, year: e.target.value } : x)))} />
+              <input aria-label={trLanding(`${trLanding("Importo della minusvalenza")} ${i + 1} (€)`)} inputMode="decimal" value={l.amount} onChange={(e) => setLosses(losses.map((x, k) => (k === i ? { ...x, amount: e.target.value } : x)))} />
+              <button type="button" aria-label={trLanding(`${trLanding("Rimuovi la minusvalenza")} ${i + 1}`)} onClick={() => setLosses(losses.filter((_, k) => k !== i))}>{trLanding("×")}</button>
             </div>
           ))}
-          <button type="button" className="link-btn" onClick={() => setLosses([...losses, { year: String(TAX_YEAR - 1), amount: "" }])}>+ Aggiungi minusvalenza</button>
+          <button type="button" className="link-btn" onClick={() => setLosses([...losses, { year: String(TAX_YEAR - 1), amount: "" }])}>{trLanding("+ Aggiungi minusvalenza")}</button>
         </div>
       </div>
       <div className="tool-card" aria-live="polite">
-        <h2>Risultato (stima)</h2>
+        <h2>{trLanding("Risultato (stima)")}</h2>
         <SplitBar parts={[{ label: "Compensata dalle minusvalenze", value: r.compensated, tone: "pos" }, { label: "Su cui paghi l'imposta", value: r.taxableGain, tone: "acc" }]} />
         <div style={{ height: 16 }} />
         <div className="res">
-          <div className="row"><span>Plusvalenza</span><b>{eur(r.gain)}</b></div>
-          <div className="row"><span>Minusvalenze compensate</span><b>−{eur(r.compensated)}</b></div>
-          <div className="row"><span>Base imponibile</span><b>{eur(r.taxableGain)}</b></div>
-          <div className="row key"><span>Imposta ({rate}%)</span><b>{eur(r.tax)}</b></div>
-          <div className="row good"><span>Imposta risparmiata</span><b>{eur(r.taxSaved)}</b></div>
-          <div className="row"><span>Minusvalenze ancora riportabili</span><b>{eur(r.remaining)}</b></div>
+          <div className="row"><span>{trLanding("Plusvalenza")}</span><b>{trLanding(eur(r.gain))}</b></div>
+          <div className="row"><span>{trLanding("Minusvalenze compensate")}</span><b>−{trLanding(eur(r.compensated))}</b></div>
+          <div className="row"><span>{trLanding("Base imponibile")}</span><b>{trLanding(eur(r.taxableGain))}</b></div>
+          <div className="row key"><span>{trLanding("Imposta (")}{trLanding(rate)}%)</span><b>{trLanding(eur(r.tax))}</b></div>
+          <div className="row good"><span>{trLanding("Imposta risparmiata")}</span><b>{trLanding(eur(r.taxSaved))}</b></div>
+          <div className="row"><span>{trLanding("Minusvalenze ancora riportabili")}</span><b>{trLanding(eur(r.remaining))}</b></div>
         </div>
         <div className="chips">
           {r.losses.map((l, i) => (
             <span key={i} className={`chip ${l.expired ? "off" : "on"}`}>
-              {l.year}: {l.expired ? "scaduta" : `utilizzabile fino al ${l.expiresYear}`}
+              {trLanding(l.year)}: {trLanding(l.expired ? "scaduta" : `utilizzabile fino al ${l.expiresYear}`)}
             </span>
           ))}
         </div>

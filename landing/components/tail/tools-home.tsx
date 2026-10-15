@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import { TOOLS_HOME } from "@/content/story";
 import { TOOLS } from "@/content/tools";
 import { CtaLink } from "../cta-link";
@@ -8,16 +9,16 @@ export function ToolsHome() {
   return (
     <TrackedSection id="strumenti" section="strumenti">
       <div className="wrap">
-        <h2>{TOOLS_HOME.title}</h2>
-        <p className="intro">{TOOLS_HOME.intro}</p>
+        <h2>{trLanding(TOOLS_HOME.title)}</h2>
+        <p className="intro">{trLanding(TOOLS_HOME.intro)}</p>
         <ul className="tools">
           {TOOLS.map((t) => (
             <li key={t.id}>
               <div>
-                <b>{t.name}</b>
-                <p>{t.text}</p>
+                <b>{trLanding(t.name)}</b>
+                <p>{trLanding(t.text)}</p>
               </div>
-              <CtaLink href={t.href} location="strumenti" target="calculator">{TOOLS_HOME.open}</CtaLink>
+              <CtaLink href={t.href} location="strumenti" target="calculator">{trLanding(TOOLS_HOME.open)}</CtaLink>
             </li>
           ))}
         </ul>

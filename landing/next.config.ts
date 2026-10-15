@@ -7,6 +7,7 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   output: "export",
+  basePath: process.env.NEXT_PUBLIC_LANDING_BASE_PATH ?? "",
   images: { unoptimized: true },
   reactStrictMode: true,
   // La cartella vive dentro la repo dell'app: senza questo Turbopack risale al lockfile della radice e ne prende config e proxy.

@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import { CONTENT_PATHS } from "@/content/seo-pages";
 import { APP_LINKS } from "@/content/site";
 import { CLOSE } from "@/content/story";
@@ -9,14 +10,14 @@ export function Closing() {
   return (
     <TrackedSection id="fine" section="fine" className="close">
       <div className="wrap">
-        <h2>{CLOSE.title}</h2>
-        <p>{CLOSE.note}</p>
+        <h2>{trLanding(CLOSE.title)}</h2>
+        <p>{trLanding(CLOSE.note)}</p>
         <div className="cta">
           <CtaLink className="btn ghost" href={APP_LINKS.signup} location="closing" target="signup" arrow>
-            {CLOSE.cta}
+            {trLanding(CLOSE.cta)}
           </CtaLink>
           <CtaLink className="btn plain" href={CONTENT_PATHS.strumenti} location="closing" target="calculator">
-            {CLOSE.tools}
+            {trLanding(CLOSE.tools)}
           </CtaLink>
         </div>
       </div>

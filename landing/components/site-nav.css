@@ -20,10 +20,18 @@
 .menu-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 6px; }
 .menu .menu-login { border-bottom: 0; color: var(--ink2); font: 500 16px var(--f-b); }
 .menu .tg { display: grid; }
-@media (max-width: 1000px) { .links { display: none; } .menu-btn { display: grid; } }
-@media (min-width: 1001px) { .menu { display: none; } }
+@media (max-width: 1250px) { .links { display: none; } .menu-btn { display: grid; } }
+@media (min-width: 1251px) { .menu { display: none; } }
 @media (max-width: 600px) { .nr .btn.ghost { display: none; } }
 /* telefoni: il pulsante principale non si comprime mai; si riducono padding e corpo, e sotto i 380px sparisce il cambio tema */
 @media (max-width: 480px) { .nav .btn.main { height: 38px; padding: 0 12px; font-size: 14px; } .nav .nr { gap: 8px; } }
 @media (max-width: 480px) { .nr > .tg { display: none; } }
 @media (max-width: 360px) { .nav .brand { font-size: 0; gap: 0; } }
+
+/* Country and language remain accessible on desktop and phone, outside the collapsible navigation. */
+.locale-selector{display:flex;align-items:center;gap:8px;font-size:12px}
+.locale-selector label{display:grid;gap:2px}
+.locale-selector label>span{font-size:10px;opacity:.75}
+.locale-selector select{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px;min-height:36px;max-width:110px}
+.locale-selector select:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+@media(max-width:1250px){.nav>.wrap{flex-wrap:wrap;height:auto;min-height:64px;padding-top:12px;padding-bottom:6px}.locale-selector{order:3;width:100%;justify-content:flex-end;padding:4px 0 8px}.locale-selector label{display:flex;align-items:center;gap:5px}.locale-selector select{max-width:100px}}

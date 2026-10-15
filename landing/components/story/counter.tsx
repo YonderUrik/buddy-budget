@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding } from "@/lib/localization";
 
 import { useEffect, useState, type ElementType } from "react";
 import { eur } from "@/lib/format";
@@ -59,7 +60,7 @@ export function Counter({ from, to, format, delay = DEFAULT_DELAY_MS, on, classN
     };
   }, [on, from, to, delay]);
 
-  return <b className={className}>{FORMAT[format](value)}</b>;
+  return <b className={className}>{trLanding(FORMAT[format](value))}</b>;
 }
 
 export interface SwapProps {
@@ -86,5 +87,5 @@ export function Swap({ before, after, delay = DEFAULT_DELAY_MS, on, as: Tag = "b
     return () => clearTimeout(timer);
   }, [on, delay]);
 
-  return <Tag className={className}>{swapped ? after : before}</Tag>;
+  return <Tag className={className}>{trLanding(swapped ? after : before)}</Tag>;
 }

@@ -1,3 +1,4 @@
+import { isPlanningAvailable } from "./planning-availability";
 import { financialCountry, DISABLED_FINANCIAL_FEATURES } from "./financial-country";
 /** Product rules and interface language are independent account preferences. */
 export const PRODUCT_COUNTRIES = ["IT", "DE"] as const;
@@ -21,7 +22,7 @@ export function resolveProfile(user?: { productCountry?: string | null; language
   const language = isSupportedProfile(productCountry, user?.language) ? user!.language as Language : productCountry === "DE" ? "en" : "it";
   return { productCountry, language };
 }
-/** German calculations will be enabled individually once their country-specific rules are implemented. */
+/** Shared legacy-engine capabilities; dedicated country planning screens use the separate route policy below. */
 export function countryFeatures(country: string) {
   return financialCountry(country)?.features ?? DISABLED_FINANCIAL_FEATURES;
 }
@@ -29,6 +30,10 @@ const within = (path: string, prefix: string) => path === prefix || path.startsW
 /** Central route policy used by navigation, proxy and protected API handlers. */
 export function isCountryPathAvailable(country: string, path: string): boolean {
   if (country === "IT") return true;
+  // Dedicated German screens; legacy Italian APIs and subpages stay inaccessible.
+  const planningRoutes = { "/pensione": "pension", "/analitiche": "retirement", "/investimenti/tasse": "tax", "/investimenti/proventi": "income" } as const;
+  if (Object.hasOwn(planningRoutes, path)) return isPlanningAvailable(country, planningRoutes[path as keyof typeof planningRoutes]);
+  if (country === "DE" && path === "/api/financial-planning") return true;
   return ![
     "/pensione", "/analitiche", "/investimenti/tasse", "/investimenti/proventi",
     "/api/pension", "/api/analytics", "/api/goals", "/api/sidebar/fire", "/api/investments/tax-carryforwards",

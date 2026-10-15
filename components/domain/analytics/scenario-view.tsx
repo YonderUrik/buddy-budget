@@ -58,7 +58,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
 
   const { money, pct } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, productCountry } = useLocalization();
   const [overrides, setOverrides] = React.useState<ScenarioOverrides>({});
   const [selected, setSelected] = React.useState<AnswerView["id"]>("quando");
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -73,7 +73,7 @@ export function ScenarioView({ base, assumptions, plan, returnInfo, saving, save
     return input ? compareRules(input) : null;
   }, [deferred]);
   const lasting = results ? lastingAnswer(results, deferred.assumptions.rule, deferred.assumptions.retirementYears) : null;
-  const costs = React.useMemo(() => summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null }))), [base.positions, assumptions.terByInstrument]);
+  const costs = React.useMemo(() => summarizeCosts(base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null })), productCountry), [base.positions, assumptions.terByInstrument, productCountry]);
 
   const views: AnswerView[] = ANALYTICS_QUESTIONS.map((q) => {
     const common = { id: q.id, label: tr(VIEW_LABELS[q.id]), icon: VIEW_ICONS[q.id] };

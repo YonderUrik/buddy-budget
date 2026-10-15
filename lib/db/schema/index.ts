@@ -20,4 +20,5 @@ export * from "./notifications";
 export * from "./subscriptions";
 export * from "./categorization-suggestions";
 export * from "./categorization-runs";
+export * from "./financial-plans";
 export * from "./goals";

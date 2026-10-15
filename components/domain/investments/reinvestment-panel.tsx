@@ -31,6 +31,7 @@ export interface ReinvestmentControlProps {
 interface RowProps {
   label: string;
   paidText: string;
+  paidAmount: number;
   effect: number;
   active: boolean;
   disabled: boolean;
@@ -38,7 +39,7 @@ interface RowProps {
   onChange?: (reinvest: boolean) => void;
 }
 
-function Row({ label, paidText, effect, active, disabled, currency, onChange }: RowProps) {
+function Row({ label, paidText, paidAmount, effect, active, disabled, currency, onChange }: RowProps) {
   const { locale: formattingLocale } = useLocalization();
   const { formatCurrency } = localizedFormats(formattingLocale);
 
@@ -50,7 +51,7 @@ function Row({ label, paidText, effect, active, disabled, currency, onChange }: 
       <span className="flex flex-col gap-0.5">
         <span className="font-medium text-foreground">{tr(label)}</span>
         <span className="text-muted-foreground">
-          {tr(paidText)}
+          {tr(paidText, {0: formatCurrency(paidAmount, currency)})}
           {effect > 0 ? <>{" "}{tr("Rimasti investiti, oggi varresti")}{" "}<span className="tabular-nums text-foreground">{money(effect)}</span>{" "}{tr("in più.")}</> : null}
         </span>
       </span>
@@ -74,7 +75,7 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
             variant="outline"
             size="sm"
             className={cn("h-8 gap-1.5 rounded-full px-3 text-muted-foreground", simulating && "border-primary/40 bg-primary/10 text-primary hover:bg-primary/15")}
-            aria-label={simulating ? `Costi e imposte: simulazione attiva su ${activeCount} di 2` : tr("Costi e imposte: simulazione spenta")}
+            aria-label={simulating ? tr("Costi e imposte: simulazione attiva su {0} di 2", {0: activeCount}) : tr("Costi e imposte: simulazione spenta")}
           />
         }
       >
@@ -91,6 +92,7 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
           <Row
             label={tr("Rimetti i costi nel portafoglio")}
             paidText={"Commissioni e costi pagati: {0}."}
+            paidAmount={impact.fees}
             effect={effects.fees}
             active={!includeFees}
             disabled={disabled}
@@ -100,6 +102,7 @@ export function ReinvestmentControl({ impact, currency, includeFees, includeTaxe
           <Row
             label={tr("Rimetti le imposte nel portafoglio")}
             paidText={features.taxes ? "Imposte registrate e stimate sulle vendite: {0}." : "Imposte registrate: {0}."}
+            paidAmount={impact.taxes}
             effect={effects.taxes}
             active={!includeTaxes}
             disabled={disabled}

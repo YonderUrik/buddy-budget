@@ -11,6 +11,7 @@ import { goals } from "@/lib/db/schema/goals";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debts } from "@/lib/db/schema/debts";
+import { financialPlans } from "@/lib/db/schema/financial-plans";
 import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { pensionFunds } from "@/lib/db/schema/pension";
 import {
@@ -138,6 +139,7 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(debts).where(eq(debts.userId, userId));
   // I fondi di previdenza portano con sé le loro fotografie (cascata).
   await tx.delete(pensionFunds).where(eq(pensionFunds.userId, userId));
+  await tx.delete(financialPlans).where(eq(financialPlans.userId, userId));
   await tx.delete(analyticsAssumptions).where(eq(analyticsAssumptions.userId, userId));
   // Tabella orfana: la funzione PAC è stata rimossa ma i dati restano finché non c'è una migration che la elimina.
   await tx.delete(investmentPlans).where(eq(investmentPlans.userId, userId));

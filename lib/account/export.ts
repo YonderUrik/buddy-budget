@@ -14,6 +14,7 @@ import { goals, goalSources } from "@/lib/db/schema/goals";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { financialPlans } from "@/lib/db/schema/financial-plans";
 import { analyticsAssumptions } from "@/lib/db/schema/analytics";
 import { notificationPreferences } from "@/lib/db/schema/notifications";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
@@ -94,6 +95,7 @@ async function loadUserData(userId: string) {
     debtEventRows,
     pensionFundRows,
     pensionSnapshotRows,
+    financialPlanRows,
     analyticsRows,
     brokerStatementRows,
     brokerAccountRows,
@@ -352,6 +354,7 @@ async function loadUserData(userId: string) {
       .from(pensionSnapshots)
       .where(eq(pensionSnapshots.userId, userId))
       .orderBy(asc(pensionSnapshots.date)),
+    db.select({ country: financialPlans.country, data: financialPlans.data }).from(financialPlans).where(eq(financialPlans.userId, userId)),
     db
       .select({ data: analyticsAssumptions.data, walkthroughSeenAt: analyticsAssumptions.walkthroughSeenAt })
       .from(analyticsAssumptions)
@@ -417,6 +420,7 @@ async function loadUserData(userId: string) {
     debtEvents: debtEventRows,
     pensionFunds: pensionFundRows,
     pensionSnapshots: pensionSnapshotRows,
+    financialPlans: financialPlanRows,
     analyticsAssumptions: analyticsRows[0] ?? null,
     notificationPreferences: notificationRows[0] ?? null,
     goals: goalRows,

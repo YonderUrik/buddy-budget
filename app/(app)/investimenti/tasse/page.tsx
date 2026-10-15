@@ -1,4 +1,6 @@
 "use client";
+import { PlanningScreen } from "@/components/domain/financial-planning";
+import { useLocalization } from "@/lib/localization/provider";
 
 /**
  * Scheda Tasse di Investimenti: cifre per anno (plus/minus, ETF, imposte, bollo), zaino delle
@@ -23,7 +25,7 @@ import { buildTaxView } from "@/lib/investments/tax-view";
 import { useUpdatePortfolioMutation } from "@/lib/queries/investments";
 import { errorToast } from "@/lib/support/request-report";
 
-export default function TassePage() {
+function ItalianPage() {
   const today = React.useMemo(() => startOfDay(new Date()), []);
   // Il bollo usa il valore a fine di ogni anno: serve tutto lo storico dei prezzi.
   const overview = useFilteredInvestmentsOverview("max");
@@ -78,4 +80,10 @@ export default function TassePage() {
       <InstrumentSettingsDialog instrument={editing} setting={editing ? view.settingsById.get(editing.id) : undefined} onClose={() => setEditing(null)} />
     </>
   );
+}
+
+/** Choose the country product before mounting its calculation hooks. */
+export default function CountryPage() {
+  const { productCountry } = useLocalization();
+  return productCountry === "DE" ? <PlanningScreen section="tax" /> : <ItalianPage />;
 }

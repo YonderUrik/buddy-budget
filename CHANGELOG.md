@@ -2,6 +2,18 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.69.0](https://github.com/YonderUrik/buddy-budget/compare/v0.68.0...v0.69.0) (2026-10-15)
+
+
+### Novità
+
+* enable essential German financial features with advanced planning hidden ([#370](https://github.com/YonderUrik/buddy-budget/issues/370)) ([cd0352f](https://github.com/YonderUrik/buddy-budget/commit/cd0352f66db818f86eff16f6487b29b75d809eb2))
+
+
+### Correzioni
+
+* **landing:** «Funziona con» in schede, con i loghi veri di Logo.dev ([#378](https://github.com/YonderUrik/buddy-budget/issues/378)) ([300975e](https://github.com/YonderUrik/buddy-budget/commit/300975e8b547b1aeeb5d5243b34172441050135c))
+
 ## [0.68.0](https://github.com/YonderUrik/buddy-budget/compare/v0.67.0...v0.68.0) (2026-10-15)
 
 

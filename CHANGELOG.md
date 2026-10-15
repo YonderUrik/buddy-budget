@@ -2,6 +2,13 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.69.1](https://github.com/YonderUrik/buddy-budget/compare/v0.69.0...v0.69.1) (2026-10-15)
+
+
+### Correzioni
+
+* localize text field hints and numeric placeholders ([#380](https://github.com/YonderUrik/buddy-budget/issues/380)) ([506e5ff](https://github.com/YonderUrik/buddy-budget/commit/506e5ff316511f3ddba34897d5f102de3ed3dcab))
+
 ## [0.69.0](https://github.com/YonderUrik/buddy-budget/compare/v0.68.0...v0.69.0) (2026-10-15)
 
 

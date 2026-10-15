@@ -24,7 +24,7 @@ import { ErrorWithReport } from "@/components/domain/support";
 
 export const PERSONAL_IMPORT_MAX_BYTES = 25 * 1024 * 1024;
 export const PERSONAL_IMPORT_MAX_ROWS = 50_000;
-const CONSENT_VERSION = "openrouter-raw-zdr-v2";
+const CONSENT_VERSION = "openrouter-raw-zdr-v3";
 const NEW_FORMAT = "__new__";
 const FIELD_CLASS = "h-11 sm:h-9";
 const PERSONAL_IMPORT_STEPS = 3;
@@ -222,7 +222,7 @@ export function PersonalImportUpload({ formats, onQueued }: PersonalImportUpload
           <StepHeading title={tr("Ultimo passo: il consenso")} description={tr("Per capire le colonne di un formato nuovo, il file viene letto da un modello AI.")} />
           <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm">
             <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-primary" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-            <span>{tr("Acconsento all'analisi AI del file. Se riuso un formato già creato, nessun dato va all'AI.")}</span>
+            <span>{tr("Acconsento all'analisi AI del file, anche automaticamente se il formato salvato non riesce a leggerlo.")}</span>
           </label>
           <details className="rounded-xl bg-muted/50 p-3 text-sm text-muted-foreground">
             <summary className="min-h-9 cursor-pointer font-medium text-foreground">{tr("Cosa succede ai tuoi dati")}</summary>

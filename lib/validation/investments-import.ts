@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { formatMetadataSchema } from "@/lib/imports";
 import { INSTRUMENT_TYPES, INVESTMENT_TRANSACTION_TYPES } from "@/lib/investments/constants";
 import { createInstrumentSchema, INVESTMENT_NOTE_MAX_LENGTH } from "./investments";
 
@@ -48,6 +49,7 @@ function checkImportedOperation(
 
 /** Import: a ogni chiave di strumento corrisponde uno strumento già esistente o da creare. */
 export const runImportSchema = z.object({
+  formatMetadata: formatMetadataSchema.optional(),
   dryRun: z.boolean(),
   portfolioId: z.string().uuid().optional(),
   /** CSV originale: il server ricalcola le operazioni e riconcilia il rendiconto. */

@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { IBKR_MAX_FILE_BYTES } from "@/lib/investments/import/interactive-brokers";
 import { parseBrokerStatement } from "@/lib/investments/import/parse-statement";
+import { statementFormatMetadata } from "@/lib/investments/import/format-metadata";
+import { saveFormatMetadata } from "@/lib/imports/store";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
 /** Raw CSV body; bounded while streaming, including when Content-Length is absent or incorrect. */
@@ -36,6 +38,9 @@ async function handlePost(request: NextRequest) {
   }
   try {
     const result = parseBrokerStatement(text, new Date().toISOString().slice(0, 10));
+    try {
+      await saveFormatMetadata(session.user.id, "native", statementFormatMetadata(result), [...result.operations, ...result.identities, ...(result.cashMovements ?? [])]);
+    } catch { requestLogger().warn("import.metadata.failed", { reason: "persistence_failed" }); }
     requestLogger().info("investment_import.parse.completed", {
       provider: result.preset,
       count: result.operations.length,

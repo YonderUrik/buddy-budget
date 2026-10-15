@@ -22,13 +22,15 @@ import { ReportErrorLink } from "@/components/domain/support";
 export interface ImportFileStepProps {
   provider: ImportProviderId | null;
   onProviderChange: (provider: ImportProviderId | null) => void;
-  onLoad: (text: string, fileName: string | null) => void;
+  onLoad: (text: string, fileName: string | null) => void | Promise<void>;
   onFiles?: (files: File[]) => Promise<void>;
   /** Il file scelto è in lettura sul server. */
   reading?: boolean;
+  aiFallbackEnabled?: boolean;
+  onAiFallbackChange?: (enabled: boolean) => void;
 }
 
-export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false }: ImportFileStepProps) {
+export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, reading = false, aiFallbackEnabled = false, onAiFallbackChange }: ImportFileStepProps) {
   const { t: tr } = useLocalization();
   const id = React.useId();
   const [dragging, setDragging] = React.useState(false);
@@ -46,8 +48,8 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
       else if (/\.xlsx$/i.test(files[0].name)) {
         // Fineco esporta in Excel: il foglio diventa testo e passa dallo stesso percorso dei CSV.
         const sheet = readXlsx(new Uint8Array(await files[0].arrayBuffer()));
-        onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
-      } else onLoad(await files[0].text(), files[0].name);
+        await onLoad(gridToCsv([sheet.headers, ...sheet.rows]), files[0].name);
+      } else await onLoad(await files[0].text(), files[0].name);
     } catch (e) { setFileError(e instanceof Error ? e.message : tr("Impossibile leggere i file")); }
     finally { setLoading(false); }
   }
@@ -57,6 +59,7 @@ export function ImportFileStep({ provider, onProviderChange, onLoad, onFiles, re
 
   return (
     <div className="flex flex-col gap-4">
+      {onAiFallbackChange ? <label className="flex items-start gap-2 text-sm text-muted-foreground"><input type="checkbox" checked={aiFallbackEnabled} disabled={busy} onChange={e => onAiFallbackChange(e.target.checked)} className="mt-1" /><span>{tr("Se la lettura fallisce, autorizzo l'analisi AI automatica del file completo tramite OpenRouter, inclusi eventuali dati personali, senza conservazione presso il provider. Dopo i controlli i dati vengono importati automaticamente e il supporto riceve un report tecnico.")}</span></label> : null}
       <label
         htmlFor={`${id}-file`}
         onDragOver={(e) => {

@@ -26,6 +26,7 @@ export interface ProductEvents {
   /** Domanda aperta tra le risposte rapide di «Aiuto». */
   support_faq_opened: { id: string };
   personal_csv_requested: { reuse: boolean };
+  investments_import_ai_fallback: Record<string, never>;
   personal_csv_deleted: { cash: number; investments: number };
   /** Import confermato; `skipped`: righe non riconosciute saltate per scelta dell'utente. */
   personal_csv_imported: { rows: number; skipped?: number };

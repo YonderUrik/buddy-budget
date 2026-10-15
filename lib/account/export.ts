@@ -1,4 +1,5 @@
 import { exportPersonalImports } from "@/lib/personal-import/export";
+import { importFormatProfiles } from "@/lib/db/schema/import-format-profiles";
 import "server-only";
 import { brokerImportAccounts } from "@/lib/db/schema/broker-import-accounts";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
@@ -100,6 +101,7 @@ async function loadUserData(userId: string) {
     brokerStatementRows,
     brokerAccountRows,
     personalImports,
+    importFormats,
     notificationRows,
     goalRows,
     goalSourceRows,
@@ -362,6 +364,7 @@ async function loadUserData(userId: string) {
     db.select().from(brokerStatements).where(eq(brokerStatements.userId, userId)),
     db.select().from(brokerImportAccounts).where(eq(brokerImportAccounts.userId, userId)),
     exportPersonalImports(userId),
+    db.select().from(importFormatProfiles).where(eq(importFormatProfiles.userId, userId)),
     db
       .select({
         digestEnabled: notificationPreferences.digestEnabled,
@@ -395,6 +398,7 @@ async function loadUserData(userId: string) {
 
   return {
     personalImports,
+    importFormats,
     brokerStatements: brokerStatementRows,
     brokerImportAccounts: brokerAccountRows,
     user,

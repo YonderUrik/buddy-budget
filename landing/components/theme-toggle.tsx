@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding } from "@/lib/localization";
 
 import "./theme-toggle.css";
 import { track } from "@/lib/analytics";
@@ -25,7 +26,7 @@ export function ThemeToggle() {
   };
 
   return (
-    <button className="tg" type="button" onClick={toggle} aria-label="Cambia tema">
+    <button className="tg" type="button" onClick={toggle} aria-label={trLanding("Cambia tema")}>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
         <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />
       </svg>

@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import { HERO, INSTRUMENTS, WORKS_WITH, type InstrumentChip } from "@/content/story";
 import { APP_LINKS, SOURCE_URL } from "@/content/site";
 import type { SupportedSource } from "@/content/sheet";
@@ -17,14 +18,14 @@ const FIRST_STEP_ANCHOR = "#storia-soldi";
 
 /** Logo di un broker; Interactive Brokers ha solo il simbolo, quindi accanto va il nome. */
 export function BrokerLogo({ source }: { source: SupportedSource }) {
-  if (!source.logo) return <span className="lbl">{source.name}</span>;
+  if (!source.logo) return <span className="lbl">{trLanding(source.name)}</span>;
   const cls = `logo${LOGO_CLASS[source.name] ? ` ${LOGO_CLASS[source.name]}` : ""}`;
   // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
-  const img = <img className={cls} src={source.logo.src} alt={source.name === "Interactive Brokers" ? "" : source.name} width={source.logo.width} height={source.logo.height} loading="lazy" decoding="async" />;
+  const img = <img className={cls} src={source.logo.src} alt={trLanding(source.name === "Interactive Brokers" ? "" : source.name)} width={source.logo.width} height={source.logo.height} loading="lazy" decoding="async" />;
   return source.name === "Interactive Brokers" ? (
     <span className="ibk">
-      {img}
-      <span>{source.name}</span>
+      {trLanding(img)}
+      <span>{trLanding(source.name)}</span>
     </span>
   ) : (
     img
@@ -37,7 +38,7 @@ export function CountryFlags({ size = 26 }: { size?: number }) {
     <span className="flags">
       {WORKS_WITH.countries.map((c) => (
         // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
-        <img key={c.code} className="flag" src={`/flags/${c.code}.svg`} alt={c.name} width={size} height={Math.round((size * 20) / 26)} loading="lazy" decoding="async" />
+        <img key={c.code} className="flag" src={`/flags/${c.code}.svg`} alt={trLanding(c.name)} width={size} height={Math.round((size * 20) / 26)} loading="lazy" decoding="async" />
       ))}
     </span>
   );
@@ -50,13 +51,13 @@ export function Chip({ chip }: { chip: InstrumentChip }) {
       {chip.logo ? (
         <i className="lg">
           {/* eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini */}
-          <img src={chip.logo} alt="" width={LOGO_PX} height={LOGO_PX} loading="lazy" decoding="async" />
+          <img src={chip.logo} alt={trLanding("")} width={LOGO_PX} height={LOGO_PX} loading="lazy" decoding="async" />
         </i>
       ) : (
         <i><HomeIcon name={chip.icon} size={14} /></i>
       )}
-      {chip.name}
-      {chip.kind ? <small>{chip.kind}</small> : null}
+      {trLanding(chip.name)}
+      {chip.kind ? <small>{trLanding(chip.kind)}</small> : null}
     </span>
   );
 }
@@ -65,34 +66,32 @@ export function Chip({ chip }: { chip: InstrumentChip }) {
 export function StoryHero({ on }: { on: boolean }) {
   return (
     <article className={`step hero-step${on ? " on" : ""}`} data-step="hero">
-      <h1>{HERO.title}</h1>
-      <p className="lede">{HERO.lede}</p>
+      <h1>{trLanding(HERO.title)}</h1>
+      <p className="lede">{trLanding(HERO.lede)}</p>
       <div className="cta">
         <CtaLink className="btn main" href={APP_LINKS.signup} location="hero" target="signup" arrow>
-          {HERO.cta}
+          {trLanding(HERO.cta)}
         </CtaLink>
-        <a className="btn ghost" href={FIRST_STEP_ANCHOR}>{HERO.scroll} ↓</a>
+        <a className="btn ghost" href={FIRST_STEP_ANCHOR}>{trLanding(HERO.scroll)} ↓</a>
       </div>
       <ul className="facts">
-        {HERO.facts.map((f) => <li key={f}>{f}</li>)}
+        {HERO.facts.map((f) => <li key={f}>{trLanding(f)}</li>)}
         {SOURCE_URL ? (
           <li>
             <SourceLink href={SOURCE_URL} location="sezione">
-              <GithubMark />
-              Codice aperto
-            </SourceLink>
+              <GithubMark />{trLanding("Codice aperto")}</SourceLink>
           </li>
         ) : null}
       </ul>
       <div className="with">
-        <p className="wl">{HERO.with.label}</p>
+        <p className="wl">{trLanding(HERO.with.label)}</p>
         <div className="row">
           <CountryFlags />
-          <span className="lbl">{HERO.with.banks}</span>
+          <span className="lbl">{trLanding(HERO.with.banks)}</span>
         </div>
         <div className="row">
           {WORKS_WITH.brokerLogos.filter((b) => HERO_BROKERS.includes(b.name)).map((b) => <BrokerLogo key={b.name} source={b} />)}
-          <span className="lbl">{HERO.with.brokers}</span>
+          <span className="lbl">{trLanding(HERO.with.brokers)}</span>
         </div>
         <div className="row">
           {INSTRUMENTS.map((chip) => <Chip key={chip.name} chip={chip} />)}

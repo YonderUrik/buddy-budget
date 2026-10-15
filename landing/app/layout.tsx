@@ -1,3 +1,5 @@
+import { localizedMetadata, localizedSchema } from "@/lib/localization/metadata";
+import { PROFILE, LOCALE } from "@/lib/localization";
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "@fontsource-variable/space-grotesk";
@@ -13,12 +15,12 @@ const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
 const UMAMI_SRC = process.env.NEXT_PUBLIC_UMAMI_SRC ?? `${APP_URL}/stats/script.js`;
 const UMAMI_DOMAINS = new URL(SITE_URL).hostname;
 
-export const metadata: Metadata = {
+const rawMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
-  openGraph: { title: SITE_TITLE, description: SITE_DESCRIPTION, url: SITE_URL, siteName: SITE_NAME, locale: "it_IT", type: "website", images: [OG_IMAGE] },
+  openGraph: { title: SITE_TITLE, description: SITE_DESCRIPTION, url: SITE_URL, siteName: SITE_NAME, locale: LOCALE.replace("-", "_"), type: "website", images: [OG_IMAGE] },
   twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [OG_IMAGE.url] },
   // Google chiede un'icona quadrata con lato multiplo di 48 px (ico/png/svg) e rilegge la favicon solo dopo una nuova scansione.
   icons: {
@@ -31,6 +33,8 @@ export const metadata: Metadata = {
     apple: "/icons/apple-touch-icon.png",
   },
 };
+
+export const metadata: Metadata = localizedMetadata(rawMetadata, "/");
 
 export const viewport: Viewport = {
   themeColor: [
@@ -48,7 +52,7 @@ const JSON_LD = {
   "@context": "https://schema.org",
   "@graph": [
     { "@type": "Organization", "@id": `${SITE_URL}/#organization`, name: SITE_NAME, url: SITE_URL, logo: `${SITE_URL}/icons/icon-512.png` },
-    { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, inLanguage: "it-IT", publisher: { "@id": `${SITE_URL}/#organization` } },
+    { "@type": "WebSite", "@id": `${SITE_URL}/#website`, url: SITE_URL, name: SITE_NAME, inLanguage: LOCALE, publisher: { "@id": `${SITE_URL}/#organization` } },
   ],
 };
 
@@ -58,12 +62,12 @@ if(window.matchMedia("(prefers-reduced-motion: no-preference)").matches)document
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it" suppressHydrationWarning>
+    <html lang={PROFILE.language} suppressHydrationWarning>
       <body>
         <Script id="boot" strategy="beforeInteractive">
           {BOOT_SCRIPT}
         </Script>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localizedSchema(JSON_LD)).replace(/</g, "\\u003c") }} />
         <BrandSprite />
         {children}
         {UMAMI_ID ? <Script src={UMAMI_SRC} data-website-id={UMAMI_ID} data-domains={UMAMI_DOMAINS} strategy="afterInteractive" /> : null}

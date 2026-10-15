@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding } from "@/lib/localization";
 
 import { useRef, useState } from "react";
 import "./screen-gallery.css";
@@ -45,14 +46,14 @@ export function ScreenGallery() {
 
   return (
     <TrackedSection id="schermate" section="schermate" className="gal">
-      <nav className="gal-nav" aria-label="Schermate dell'app">
-        {AREAS.map((area) => (
-          <div key={area} className="gal-area" role="group" aria-label={area}>
-            <span className="gal-area-t">{area}</span>
+      <nav className="gal-nav" aria-label={trLanding("Schermate dell'app")}>
+        {AREAS.filter(area => SCREENS.some(s => s.area === area)).map((area) => (
+          <div key={area} className="gal-area" role="group" aria-label={trLanding(area)}>
+            <span className="gal-area-t">{trLanding(area)}</span>
             <div className="gal-area-b">
               {SCREENS.filter((s) => s.area === area).map((s) => (
                 <button key={s.id} type="button" className="gal-tab" aria-pressed={s.id === selected} onClick={() => select(s.id)}>
-                  {s.label}
+                  {trLanding(s.label)}
                 </button>
               ))}
             </div>
@@ -60,7 +61,7 @@ export function ScreenGallery() {
         ))}
       </nav>
       <div className="gal-view" ref={view}>
-        <p className="gal-cap" aria-live="polite"><b>{current.label}</b>{current.caption}</p>
+        <p className="gal-cap" aria-live="polite"><b>{trLanding(current.label)}</b>{trLanding(current.caption)}</p>
         <AppShot id={current.id} />
       </div>
     </TrackedSection>

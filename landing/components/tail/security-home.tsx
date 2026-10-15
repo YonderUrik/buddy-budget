@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import Link from "next/link";
 import { OPEN_SOURCE, SECURITY_HOME } from "@/content/story";
 import { CONTENT_PATHS } from "@/content/seo-pages";
@@ -22,23 +23,23 @@ export function SecurityHome() {
   return (
     <TrackedSection id="sicurezza" section="sicurezza" className="sicurezza">
       <div className="wrap">
-        <h2>{s.title}</h2>
-        <p className="intro">{s.intro}</p>
+        <h2>{trLanding(s.title)}</h2>
+        <p className="intro">{trLanding(s.intro)}</p>
         <ul className="rows">
           {s.rows.map((row) => (
             <li key={row.title}>
               <h3>
                 <span className="ic" aria-hidden="true"><HomeIcon name={row.icon} size={18} /></span>
-                {row.title}
+                {trLanding(row.title)}
               </h3>
               <div>
-                <p>{row.text}</p>
+                <p>{trLanding(row.text)}</p>
                 {row.sources ? (
                   <p className="src">
                     {row.sources.map((src, i) => (
                       <span key={src.href}>
-                        {i > 0 ? " · " : ""}
-                        <a href={src.href} target="_blank" rel="noopener noreferrer">{src.label}</a>
+                        {trLanding(i > 0 ? " · " : "")}
+                        <a href={src.href} target="_blank" rel="noopener noreferrer">{trLanding(src.label)}</a>
                       </span>
                     ))}
                   </p>
@@ -47,12 +48,12 @@ export function SecurityHome() {
             </li>
           ))}
         </ul>
-        <Link className="more" href={CONTENT_PATHS.sicurezza}>{s.moreLabel}</Link>
+        <Link className="more" href={CONTENT_PATHS.sicurezza}>{trLanding(s.moreLabel)}</Link>
         <div className="limits">
           {s.limits.map((l) => (
             <div key={l.title}>
-              <h3>{l.title}</h3>
-              <p>{l.text}</p>
+              <h3>{trLanding(l.title)}</h3>
+              <p>{trLanding(l.text)}</p>
             </div>
           ))}
         </div>
@@ -69,29 +70,29 @@ function OpenSource() {
     <TrackedSection id="codice" section="codice" as="div" className="oss">
       <div>
         <GithubMark className="ghm" />
-        <h2>{o.title}</h2>
-        <p>{o.text}</p>
+        <h2>{trLanding(o.title)}</h2>
+        <p>{trLanding(o.text)}</p>
         <div className="cta">
           <SourceLink className="btn ghost" href={SOURCE_URL} location="sezione">
             <GithubMark />
-            {o.cta}
+            {trLanding(o.cta)}
           </SourceLink>
-          <a className="btn ghost" href={`${SOURCE_URL}${o.selfHostPath}`} target="_blank" rel="noopener noreferrer">{o.selfHost} →</a>
+          <a className="btn ghost" href={`${SOURCE_URL}${o.selfHostPath}`} target="_blank" rel="noopener noreferrer">{trLanding(o.selfHost)} →</a>
         </div>
         <p className="who">
-          {o.who} <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>{o.whoTail}
+          {trLanding(o.who)} <a href={`mailto:${SUPPORT_EMAIL}`}>{trLanding(SUPPORT_EMAIL)}</a>{trLanding(o.whoTail)}
         </p>
       </div>
       <div className="repo">
         <div className="h">
           <GithubMark />
-          {repoName(SOURCE_URL)} <small>· {o.repoLabel}</small>
+          {trLanding(repoName(SOURCE_URL))} <small>· {trLanding(o.repoLabel)}</small>
         </div>
         <ul>
           {o.facts.map((f) => (
             <li key={f.label}>
-              <span>{f.label}</span>
-              {"path" in f ? <a href={`${SOURCE_URL}${f.path}`} target="_blank" rel="noopener noreferrer">{f.value}</a> : <b>{f.value}</b>}
+              <span>{trLanding(f.label)}</span>
+              {"path" in f ? <a href={`${SOURCE_URL}${f.path}`} target="_blank" rel="noopener noreferrer">{trLanding(f.value)}</a> : <b>{trLanding(f.value)}</b>}
             </li>
           ))}
         </ul>

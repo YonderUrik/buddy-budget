@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding } from "@/lib/localization";
 
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -10,10 +11,11 @@ import { Mark } from "./brand";
 import { CtaLink } from "./cta-link";
 import { GithubMark } from "./github-mark";
 import { SourceLink } from "./source-link";
+import { LocaleSelector } from "./locale-selector";
 import { ThemeToggle } from "./theme-toggle";
 
 /** Larghezza (px) da cui le voci stanno nella barra; sotto si aprono dal pulsante menu (allineata a `site-nav.css`). */
-const NAV_MOBILE_BREAKPOINT = 1000;
+const NAV_MOBILE_BREAKPOINT = 1250;
 
 export interface NavLink {
   href: string;
@@ -51,41 +53,38 @@ export function SiteNav({ links = DEFAULT_NAV_LINKS, current }: { links?: readon
 
   const sourceLink = SOURCE_URL ? (
     <SourceLink className="gh" href={SOURCE_URL} location="sezione">
-      <GithubMark />
-      Open source
-    </SourceLink>
+      <GithubMark />{trLanding("Open source")}</SourceLink>
   ) : null;
 
   return (
     <header className={`nav${open ? " open" : ""}`}>
       <div className="wrap">
-        <Link className="brand" href="/" aria-label="BuddyBudget, home">
-          <Mark />
-          BuddyBudget
-        </Link>
-        <nav className="links" aria-label="Sezioni">
+        <Link className="brand" href="/" aria-label={trLanding("BuddyBudget, home")}>
+          <Mark />{trLanding("BuddyBudget")}</Link>
+        <LocaleSelector />
+        <nav className="links" aria-label={trLanding("Sezioni")}>
           {links.map((l) => (
-            <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined}>{l.label}</Link>
+            <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined}>{trLanding(l.label)}</Link>
           ))}
           {sourceLink}
         </nav>
         <div className="nr">
           <ThemeToggle />
-          <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">Accedi</CtaLink>
-          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">Crea un account</CtaLink>
-          <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={open ? "Chiudi il menu" : "Apri il menu"} onClick={() => setOpen((v) => !v)}>
+          <CtaLink className="btn ghost" href={APP_LINKS.login} location="nav" target="login">{trLanding("Accedi")}</CtaLink>
+          <CtaLink className="btn main" href={APP_LINKS.signup} location="nav" target="signup">{trLanding("Crea un account")}</CtaLink>
+          <button type="button" className="menu-btn" aria-expanded={open} aria-controls="nav-menu" aria-label={trLanding(open ? "Chiudi il menu" : "Apri il menu")} onClick={() => setOpen((v) => !v)}>
             {open ? <X size={20} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={20} strokeWidth={1.75} aria-hidden="true" />}
           </button>
         </div>
       </div>
-      <nav id="nav-menu" className="menu" aria-label="Sezioni" hidden={!open}>
+      <nav id="nav-menu" className="menu" aria-label={trLanding("Sezioni")} hidden={!open}>
         <div className="wrap">
           {links.map((l) => (
-            <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined} onClick={() => setOpen(false)}>{l.label}</Link>
+            <Link key={l.href} href={l.href} aria-current={l.href === current ? "page" : undefined} onClick={() => setOpen(false)}>{trLanding(l.label)}</Link>
           ))}
           {sourceLink}
           <div className="menu-foot">
-            <CtaLink className="menu-login" href={APP_LINKS.login} location="nav" target="login">Accedi</CtaLink>
+            <CtaLink className="menu-login" href={APP_LINKS.login} location="nav" target="login">{trLanding("Accedi")}</CtaLink>
             <ThemeToggle />
           </div>
         </div>

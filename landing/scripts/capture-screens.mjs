@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url";
 import { SCREENS, SCREEN_THEMES } from "../content/screens.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const profile = `${(process.env.NEXT_PUBLIC_LANDING_COUNTRY ?? "IT").toLowerCase()}-${process.env.NEXT_PUBLIC_LANDING_LANGUAGE ?? "it"}`;
+const screenRoot = join(root, "public", "screens", profile === "it-it" ? "" : profile);
 const APP = process.env.DEMO_APP_URL ?? "http://localhost:3300";
 const SECRET = process.env.BETTER_AUTH_SECRET;
 const TOKEN = process.env.DEMO_SESSION_TOKEN ?? "demo-session-token-0000000000000000";
@@ -59,11 +61,11 @@ async function openScreen(page, screen) {
     throw new Error(`${target}: l'app ha rimandato a ${page.url()} (sessione demo non valida o route cambiata)`);
   }
   if (screen.open) {
-    await page.getByRole("link", { name: screen.open.clickText }).first().click();
+    await page.locator('a[href*="/investimenti/titoli/"]').first().click();
     await page.waitForURL((url) => routeMatches(screen.route, url.pathname), { timeout: 60_000 });
     await page.waitForLoadState("networkidle");
   }
-  if (screen.clickFirst) await page.getByRole("button", { name: screen.clickFirst, exact: true }).first().click();
+  if (screen.clickFirst && (!process.env.NEXT_PUBLIC_LANDING_LANGUAGE || process.env.NEXT_PUBLIC_LANDING_LANGUAGE === "it")) await page.getByRole("button", { name: screen.clickFirst, exact: true }).first().click();
   // l'indicatore di sviluppo di Next non deve finire nelle immagini se l'app gira con `next dev`
   await page.addStyleTag({ content: "nextjs-portal,[data-nextjs-toast],[data-next-badge-root]{display:none!important}" });
   for (const [label, value] of screen.fill ?? []) await page.getByLabel(label, { exact: true }).first().fill(value);
@@ -72,7 +74,7 @@ async function openScreen(page, screen) {
 
 /** Contesto del browser con la sessione demo, il tema scelto e il tour di Categorizza già visto (si cattura la schermata, non la guida sopra). */
 async function demoContext(theme, options) {
-  const context = await browser.newContext({ colorScheme: theme, locale: "it-IT", ...options });
+  const context = await browser.newContext({ colorScheme: theme, locale: process.env.NEXT_PUBLIC_LANDING_LANGUAGE ?? "it", ...options });
   await context.addCookies([{ name: "better-auth.session_token", value: cookieValue, domain: host, path: "/" }]);
   await context.addInitScript((t) => {
     localStorage.setItem("theme", t);
@@ -84,22 +86,22 @@ async function demoContext(theme, options) {
 for (const theme of SCREEN_THEMES) {
   const context = await demoContext(theme, { viewport: VIEWPORT, deviceScaleFactor: SCALE });
   const page = await context.newPage();
-  mkdirSync(join(root, "public", "screens", theme), { recursive: true });
+  mkdirSync(join(screenRoot, theme), { recursive: true });
   for (const screen of selected) {
     await openScreen(page, screen);
     // L'app scorre dentro <main>: si allunga la finestra fino all'altezza del contenuto (con un tetto), poi si scatta.
     const contentHeight = await page.evaluate(() => document.querySelector("main")?.scrollHeight ?? 0);
     const height = Math.min(screen.maxHeight ?? MAX_HEIGHT, Math.max(VIEWPORT.height, contentHeight));
     await page.setViewportSize({ width: VIEWPORT.width, height });
-    if (screen.scrollToText) await page.getByText(screen.scrollToText).first().scrollIntoViewIfNeeded();
+    if (screen.scrollToText && (!process.env.NEXT_PUBLIC_LANDING_LANGUAGE || process.env.NEXT_PUBLIC_LANDING_LANGUAGE === "it")) await page.getByText(screen.scrollToText).first().scrollIntoViewIfNeeded();
     await page.waitForTimeout(SETTLE_MS / 3);
-    const file = join(root, "public", "screens", theme, `${screen.id}.jpg`);
+    const file = join(screenRoot, theme, `${screen.id}.jpg`);
     await page.screenshot({ path: file, type: "jpeg", quality: JPEG_QUALITY });
     // Versione leggera a 1x (1280 px di larghezza) per i telefoni: un terzo dei pixel da decodificare.
-    await page.screenshot({ path: join(root, "public", "screens", theme, `${screen.id}-sm.jpg`), type: "jpeg", quality: JPEG_QUALITY, scale: "css" });
+    await page.screenshot({ path: join(screenRoot, theme, `${screen.id}-sm.jpg`), type: "jpeg", quality: JPEG_QUALITY, scale: "css" });
     // Versione con solo la parte alta, per i riquadri a proporzione fissa (l'apertura della home).
     if (screen.topCrop) {
-      const top = join(root, "public", "screens", theme, `${screen.id}-top.jpg`);
+      const top = join(screenRoot, theme, `${screen.id}-top.jpg`);
       await page.screenshot({ path: top, type: "jpeg", quality: JPEG_QUALITY, clip: { x: 0, y: 0, ...VIEWPORT } });
     }
     await page.setViewportSize(VIEWPORT);
@@ -115,14 +117,14 @@ for (const theme of SCREEN_THEMES) {
     const phonePage = await phoneContext.newPage();
     for (const screen of phoneScreens) {
       await openScreen(phonePage, screen);
-      await phonePage.screenshot({ path: join(root, "public", "screens", theme, `${screen.id}-phone.jpg`), type: "jpeg", quality: JPEG_QUALITY });
+      await phonePage.screenshot({ path: join(screenRoot, theme, `${screen.id}-phone.jpg`), type: "jpeg", quality: JPEG_QUALITY });
       console.log(`${theme}/${screen.id}-phone`);
     }
     await phoneContext.close();
   }
 }
 await browser.close();
-const manifestPath = join(root, "public", "screens", "manifest.json");
+const manifestPath = join(screenRoot, "manifest.json");
 if (ONLY) {
   const previous = JSON.parse(readFileSync(manifestPath, "utf8"));
   const kept = previous.screens.filter((entry) => !ONLY.includes(entry.id));

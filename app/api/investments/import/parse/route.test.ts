@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/imports/store", () => ({ saveFormatMetadata: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/observability", () => ({ bindRequestUser: vi.fn(), requestLogger: () => ({ info: vi.fn(), warn: vi.fn() }), withRoute: (_name: string, handler: unknown) => handler }));
 import { auth } from "@/lib/auth";

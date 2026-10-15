@@ -1,4 +1,5 @@
 import { personalFormats } from "@/lib/db/schema/personal-imports";
+import { importFormatProfiles } from "@/lib/db/schema/import-format-profiles";
 import "server-only";
 import { and, count, countDistinct, eq, isNotNull, lte, ne, notExists } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -134,6 +135,7 @@ export async function clearUserRedisState(userId: string): Promise<void> {
 
 /** Cancella tutti i dati finanziari dell'utente, nell'ordine imposto dalle chiavi esterne. */
 async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
+  await tx.delete(importFormatProfiles).where(eq(importFormatProfiles.userId, userId));
   await tx.delete(personalFormats).where(eq(personalFormats.userId, userId));
   // I debiti portano con sé i loro eventi (cascata); le transazioni collegate restano e si cancellano più sotto.
   await tx.delete(debts).where(eq(debts.userId, userId));

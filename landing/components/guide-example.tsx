@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import "./guide-example.css";
 import { eur } from "@/lib/format";
 import { computeZainetto } from "@/lib/tools/zainetto";
@@ -12,15 +13,15 @@ export function GuideExample() {
   return (
     <div className="gx">
       <ol className="gx-steps">
-        <li><span className="gx-n">1</span><b>2023</b><em className="neg">−{eur(1500)}</em><span>Vendi in perdita</span></li>
-        <li><span className="gx-n">2</span><b>2025</b><em className="neg">−{eur(2000)}</em><span>Ancora in perdita</span></li>
-        <li><span className="gx-n">3</span><b>2026</b><em className="pos">+{eur(GAIN)}</em><span>Realizzi un guadagno</span></li>
+        <li><span className="gx-n">1</span><b>2023</b><em className="neg">−{trLanding(eur(1500))}</em><span>{trLanding("Vendi in perdita")}</span></li>
+        <li><span className="gx-n">2</span><b>2025</b><em className="neg">−{trLanding(eur(2000))}</em><span>{trLanding("Ancora in perdita")}</span></li>
+        <li><span className="gx-n">3</span><b>2026</b><em className="pos">+{trLanding(eur(GAIN))}</em><span>{trLanding("Realizzi un guadagno")}</span></li>
       </ol>
       <div className="gx-result">
-        <div><small>Compensi</small><b>{eur(r.compensated)}</b></div>
-        <div><small>Imposta dovuta</small><b>{eur(r.tax)}</b></div>
-        <div className="hi"><small>Imposta evitata</small><b>{eur(r.taxSaved)}</b></div>
-        <div><small>Ti restano (fino al 2029)</small><b>{eur(r.remaining)}</b></div>
+        <div><small>{trLanding("Compensi")}</small><b>{trLanding(eur(r.compensated))}</b></div>
+        <div><small>{trLanding("Imposta dovuta")}</small><b>{trLanding(eur(r.tax))}</b></div>
+        <div className="hi"><small>{trLanding("Imposta evitata")}</small><b>{trLanding(eur(r.taxSaved))}</b></div>
+        <div><small>{trLanding("Ti restano (fino al 2029)")}</small><b>{trLanding(eur(r.remaining))}</b></div>
       </div>
     </div>
   );

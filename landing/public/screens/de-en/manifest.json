@@ -1,0 +1,134 @@
+{
+  "screens": [
+    {
+      "id": "panoramica",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "conti",
+      "width": 1920,
+      "height": 1200
+    },
+    {
+      "id": "movimenti",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "analisi",
+      "width": 1920,
+      "height": 1669.5
+    },
+    {
+      "id": "abbonamenti",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "categorie",
+      "width": 1920,
+      "height": 1716
+    },
+    {
+      "id": "categorizza",
+      "width": 1920,
+      "height": 1473
+    },
+    {
+      "id": "investimenti",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "performance",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "diversificazione",
+      "width": 1920,
+      "height": 1312.5
+    },
+    {
+      "id": "titolo",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "debiti",
+      "width": 1920,
+      "height": 1671
+    },
+    {
+      "id": "simulatore",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "panoramica",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "conti",
+      "width": 1920,
+      "height": 1200
+    },
+    {
+      "id": "movimenti",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "analisi",
+      "width": 1920,
+      "height": 1669.5
+    },
+    {
+      "id": "abbonamenti",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "categorie",
+      "width": 1920,
+      "height": 1716
+    },
+    {
+      "id": "categorizza",
+      "width": 1920,
+      "height": 1473
+    },
+    {
+      "id": "investimenti",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "performance",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "diversificazione",
+      "width": 1920,
+      "height": 1312.5
+    },
+    {
+      "id": "titolo",
+      "width": 1920,
+      "height": 1800
+    },
+    {
+      "id": "debiti",
+      "width": 1920,
+      "height": 1671
+    },
+    {
+      "id": "simulatore",
+      "width": 1920,
+      "height": 1800
+    }
+  ]
+}

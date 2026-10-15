@@ -1,3 +1,4 @@
+import { PROFILE } from "./localization";
 /**
  * Numero intero con il punto come separatore delle migliaia, sempre (anche sotto 10.000).
  * Fatto a mano e non con `toLocaleString`: Node e il browser raggruppano diversamente le cifre a 4 cifre e
@@ -5,7 +6,7 @@
  */
 export function groupThousands(n: number): string {
   const sign = n < 0 ? "-" : "";
-  return sign + String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return sign + String(Math.abs(Math.round(n))).replace(/\B(?=(\d{3})+(?!\d))/g, PROFILE.language === "en" ? "," : ".");
 }
 
 /** Importo in euro, arrotondato all'unità, con separatore italiano delle migliaia. */

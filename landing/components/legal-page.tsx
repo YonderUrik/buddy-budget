@@ -1,3 +1,4 @@
+import { t as trLanding } from "@/lib/localization";
 import "./legal-page.css";
 import { LEGAL_OWNER, LEGAL_VERSION, type LegalDocument } from "@/content/legal";
 import { SiteNav } from "./site-nav";
@@ -9,15 +10,15 @@ import { SiteFooter } from "./site-footer";
  */
 function RichText({ text }: { text: string }) {
   const [before, ...rest] = text.split(LEGAL_OWNER.email);
-  if (rest.length === 0) return <>{text}</>;
+  if (rest.length === 0) return <>{trLanding(text)}</>;
   const link = `<!--email_off--><a href="mailto:${LEGAL_OWNER.email}">${LEGAL_OWNER.email}</a><!--/email_off-->`;
   return (
     <>
-      {before}
+      {trLanding(before)}
       {rest.map((part, i) => (
         <span key={i}>
           <span style={{ display: "contents" }} dangerouslySetInnerHTML={{ __html: link }} />
-          {part}
+          {trLanding(part)}
         </span>
       ))}
     </>
@@ -31,14 +32,14 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
       <SiteNav />
       <main className="legal">
         <div className="wrap legal-wrap">
-          <h1>{doc.title}</h1>
-          <p className="legal-meta">Versione del {LEGAL_VERSION}</p>
-          <p className="legal-intro">{doc.intro}</p>
-          <nav className="legal-toc" aria-label="Indice">
+          <h1>{trLanding(doc.title)}</h1>
+          <p className="legal-meta">{trLanding("Versione del ")}{trLanding(LEGAL_VERSION)}</p>
+          <p className="legal-intro">{trLanding(doc.intro)}</p>
+          <nav className="legal-toc" aria-label={trLanding("Indice")}>
             <ol>
               {doc.sections.map((section) => (
                 <li key={section.id}>
-                  <a href={`#${section.id}`}>{section.title}</a>
+                  <a href={`#${section.id}`}>{trLanding(section.title)}</a>
                 </li>
               ))}
             </ol>
@@ -46,7 +47,7 @@ export function LegalPage({ doc }: { doc: LegalDocument }) {
           {doc.sections.map((section, index) => (
             <section key={section.id} id={section.id}>
               <h2>
-                {index + 1}. {section.title}
+                {trLanding(index + 1)}. {trLanding(section.title)}
               </h2>
               {section.paragraphs?.map((text) => <p key={text}><RichText text={text} /></p>)}
               {section.items ? (

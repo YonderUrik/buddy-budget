@@ -1,3 +1,4 @@
+import { PROFILE } from "@/lib/localization";
 /**
  * Testi e numeri della home «Sei domande» (decisione 2026-10-14, `docs/decisioni/2026-10-14-landing-sei-domande.md`):
  * una finestra dell'app che resta ferma e risponde a sei domande mentre si scorre. Dove la schermata non racconta
@@ -35,7 +36,7 @@ export interface InstrumentChip {
   logo?: string;
 }
 
-export const INSTRUMENTS: readonly InstrumentChip[] = [
+const ALL_INSTRUMENTS: readonly InstrumentChip[] = [
   { icon: "candles", name: "Enel", kind: "azione", color: "sal", logo: "/logos/market/enel.webp" },
   { icon: "layers", name: "VWCE", kind: "ETF", color: "primary", logo: "/logos/market/vanguard.webp" },
   { icon: "landmark-gov", name: "BTP 2030", kind: "12,5%", color: "ink", logo: "/logos/market/mef.webp" },
@@ -44,8 +45,10 @@ export const INSTRUMENTS: readonly InstrumentChip[] = [
   { icon: "house", name: "Mutuo", color: "neg" },
 ];
 
+export const INSTRUMENTS = PROFILE.country === "IT" ? ALL_INSTRUMENTS : ALL_INSTRUMENTS.filter(c => c.icon !== "umbrella" && c.icon !== "landmark-gov");
+
 export const HERO = {
-  title: "Sei domande sui tuoi soldi.",
+  title: PROFILE.country === "DE" ? "Quattro domande sui tuoi soldi." : "Sei domande sui tuoi soldi.",
   lede: "Dove vanno ogni mese, quanto rendono, quanto pagheresti di tasse, quando chiudi il mutuo, quando puoi smettere di lavorare. BuddyBudget mette insieme conti, broker, mutuo e fondo pensione e risponde ogni mattina, con le regole italiane.",
   cta: "Crea un account gratis",
   scroll: "Scorri le domande",
@@ -92,7 +95,7 @@ export interface StoryStep {
   stageCaption: string;
 }
 
-export const STEPS: readonly StoryStep[] = [
+const ALL_STEPS: readonly StoryStep[] = [
   {
     id: "soldi",
     n: "1 di 6",
@@ -178,7 +181,7 @@ export const STEPS: readonly StoryStep[] = [
     n: "6 di 6",
     title: "E in tutto, quanto ho?",
     text: "È la somma di quello che hai appena visto, con i debiti già sottratti. Si aggiorna ogni mattina, da sola.",
-    amount: { value: "29.282", small: ",74 €" },
+    amount: PROFILE.country === "IT" ? { value: "29.282", small: ",74 €" } : { value: "18.200", small: ",67 €" },
     caption: "patrimonio netto: liquidità, investimenti e previdenza, meno i debiti",
     shot: "panoramica",
     focus: [390, 1160, 860, 440],
@@ -188,14 +191,16 @@ export const STEPS: readonly StoryStep[] = [
 ];
 
 /** Le voci del patrimonio nell'ultimo passo, come nella Panoramica. */
+export const STEPS: readonly StoryStep[] = PROFILE.country === "IT" ? ALL_STEPS : ALL_STEPS.filter(s => !["tasse", "futuro"].includes(s.id)).map((s, i) => ({ ...s, n: s.n ? `${i < 2 ? i + 1 : i} di 4` : undefined, focus: undefined }));
+
 export const LEDGER = {
   rows: [
     { label: "Liquidità · 3 conti", value: "22.706,19 €" },
     { label: "Investimenti · 3 posizioni", value: "35.431,71 €" },
-    { label: "Previdenza · 1 fondo", value: "11.082,07 €" },
+    ...(PROFILE.country === "IT" ? [{ label: "Previdenza · 1 fondo", value: "11.082,07 €" }] : []),
     { label: "Debiti · 3 debiti", value: "−39.937,23 €", tone: "neg" as const },
   ],
-  total: { label: "Patrimonio netto", value: "29.282,74 €" },
+  total: { label: "Patrimonio netto", value: PROFILE.country === "IT" ? "29.282,74 €" : "18.200,67 €" },
 } as const;
 
 /** Un movimento nel pannello «dove vanno i soldi»: finisce nel suo gruppo mentre si guarda. */

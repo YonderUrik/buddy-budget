@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding, PROFILE } from "@/lib/localization";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { HERO, REAL_TOGGLE } from "@/content/story";
@@ -79,14 +80,14 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
             <i />
             <i />
             <i />
-            <span>{view.url}</span>
+            <span>{trLanding(view.url)}</span>
           </div>
           <div className="view" ref={viewRef}>
             <MovementsPanel on={active === "soldi"} />
             <PerformancePanel on={active === "investimenti"} />
-            <TaxPanel on={active === "tasse"} />
+            {PROFILE.country === "IT" && <TaxPanel on={active === "tasse"} />}
             <DebtPanel on={active === "mutuo"} />
-            <FirePanel on={active === "futuro"} />
+            {PROFILE.country === "IT" && <FirePanel on={active === "futuro"} />}
             {STAGE_SHOTS.map((shot) => {
               const size = screenSize(shot.id);
               const shown = shotShown(view, shot.id, real);
@@ -101,7 +102,7 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
                   sizes={VIEW_SIZES}
                   width={size.width}
                   height={size.height}
-                  alt={alt(shot.id)}
+                  alt={trLanding(alt(shot.id))}
                   aria-hidden={!shown}
                   loading={shot.id === HERO.shot ? "eager" : "lazy"}
                   decoding="async"
@@ -115,9 +116,9 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
           <div>
             <MovementsPhonePanel on={active === "soldi"} />
             <PerformancePanel on={active === "investimenti"} />
-            <TaxPanel on={active === "tasse"} />
+            {PROFILE.country === "IT" && <TaxPanel on={active === "tasse"} />}
             <DebtPanel on={active === "mutuo"} />
-            <FirePanel on={active === "futuro"} />
+            {PROFILE.country === "IT" && <FirePanel on={active === "futuro"} />}
             {STAGE_SHOTS.map((shot) => {
               const shown = shotShown(view, shot.id, real);
               const load = shot.id === HERO.shot || armed;
@@ -130,7 +131,7 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
                   sizes={PHONE_SIZES}
                   width={PHONE_SHOT_SIZE.width}
                   height={PHONE_SHOT_SIZE.height}
-                  alt={alt(shot.id)}
+                  alt={trLanding(alt(shot.id))}
                   aria-hidden={!shown}
                   loading={shot.id === HERO.shot ? "eager" : "lazy"}
                   decoding="async"
@@ -140,9 +141,9 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
           </div>
         </div>
         <div className="stage-cap">
-          <p>{view.caption}</p>
+          <p>{trLanding(view.caption)}</p>
           <button type="button" className="real-btn" aria-pressed={real} onClick={onToggleReal}>
-            {real ? REAL_TOGGLE.hide : REAL_TOGGLE.show}
+            {trLanding(real ? REAL_TOGGLE.hide : REAL_TOGGLE.show)}
           </button>
         </div>
       </div>

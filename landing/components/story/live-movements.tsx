@@ -1,4 +1,5 @@
 "use client";
+import { t as trLanding } from "@/lib/localization";
 
 import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { GROUPS, MOVEMENTS_PANEL, type SpendGroup } from "@/content/story";
@@ -57,33 +58,33 @@ export function MovementsPanel({ on }: LivePanelProps) {
   return (
     <div className={`live${on ? " on" : ""}`} aria-hidden="true">
       <div className="lh">
-        <b>{MOVEMENTS_PANEL.title}</b>
+        <b>{trLanding(MOVEMENTS_PANEL.title)}</b>
         <span>
-          {MOVEMENTS_PANEL.subtitle}
-          <b>{MOVEMENTS_PANEL.total}</b>
+          {trLanding(MOVEMENTS_PANEL.subtitle)}
+          <b>{trLanding(MOVEMENTS_PANEL.total)}</b>
         </span>
       </div>
       <div className="board" ref={boardRef}>
-        <p className="in">{MOVEMENTS_PANEL.inbox}</p>
+        <p className="in">{trLanding(MOVEMENTS_PANEL.inbox)}</p>
         {MOVEMENTS_PANEL.groups.map((g, i) => (
           <div key={g.id} className="gh" style={{ "--c": GROUP_COLOR[g.id], "--w": `${g.share}%`, left: i * (groupWidth + GAP), width: groupWidth } as CSSProperties}>
-            <b>{GROUPS[i].label}</b>
-            <div className="t">{g.total}</div>
+            <b>{trLanding(GROUPS[i].label)}</b>
+            <div className="t">{trLanding(g.total)}</div>
             <div className="gbar"><i /></div>
           </div>
         ))}
         {movements.map((m) => (
           <div key={m.name} className="mv" style={m.style}>
             <i />
-            <span>{m.name}</span>
-            <em>{m.amount}</em>
+            <span>{trLanding(m.name)}</span>
+            <em>{trLanding(m.amount)}</em>
           </div>
         ))}
         <p className="st">
           {MOVEMENTS_PANEL.status.map((s) => (
             <span key={s.text}>
               <i style={{ "--dot": STATUS_COLOR[s.tone] } as CSSProperties} />
-              <b>{s.count}</b> {s.text}
+              <b>{trLanding(s.count)}</b> {trLanding(s.text)}
             </span>
           ))}
         </p>
@@ -97,14 +98,14 @@ export function MovementsPhonePanel({ on }: LivePanelProps) {
   return (
     <div className={`plive${on ? " on" : ""}`} aria-hidden="true">
       <p className="lh">
-        {MOVEMENTS_PANEL.phoneTitle}
-        <span>{MOVEMENTS_PANEL.phoneSubtitle}</span>
+        {trLanding(MOVEMENTS_PANEL.phoneTitle)}
+        <span>{trLanding(MOVEMENTS_PANEL.phoneSubtitle)}</span>
       </p>
       {MOVEMENTS_PANEL.groups.map((g, i) => (
         <div key={g.id} className="g" style={{ "--c": GROUP_COLOR[g.id], "--w": `${g.share}%` } as CSSProperties}>
           <b>
-            <span>{GROUPS[i].label}</span>
-            <em>{g.total}</em>
+            <span>{trLanding(GROUPS[i].label)}</span>
+            <em>{trLanding(g.total)}</em>
           </b>
           <div className="gbar"><i /></div>
         </div>
@@ -113,8 +114,8 @@ export function MovementsPhonePanel({ on }: LivePanelProps) {
         {MOVEMENTS_PANEL.phoneMovements.map((m, i) => (
           <li key={m.name} style={{ "--i": i, "--c": GROUP_COLOR[m.group] } as CSSProperties}>
             <i />
-            <span>{m.name}</span>
-            <em>{m.amount}</em>
+            <span>{trLanding(m.name)}</span>
+            <em>{trLanding(m.amount)}</em>
           </li>
         ))}
       </ul>

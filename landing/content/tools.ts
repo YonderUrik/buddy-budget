@@ -1,3 +1,4 @@
+import { PROFILE } from "@/lib/localization";
 /** I calcolatori aperti a tutti (`/strumenti`): gli stessi motori dell'app, senza account. Stime a scopo informativo. */
 import { CONTENT_PATHS } from "./seo-pages";
 
@@ -11,11 +12,13 @@ export interface Tool {
   href: string;
 }
 
-export const TOOLS: readonly Tool[] = [
+const ALL_TOOLS: readonly Tool[] = [
   { id: "zainetto", name: "Zainetto fiscale", text: "Quante minusvalenze puoi ancora usare e quanta imposta paghi su una plusvalenza.", href: CONTENT_PATHS.zainetto },
   { id: "ammortamento", name: "Piano di ammortamento", text: "Rata, interessi totali e quanto risparmi estinguendo una parte in anticipo.", href: CONTENT_PATHS.ammortamento },
   { id: "obiettivo", name: "Obiettivo di risparmio", text: "Quanto ci metti ad arrivare a una cifra, con quello che metti da parte ogni mese.", href: CONTENT_PATHS.obiettivo },
 ];
+
+export const TOOLS = PROFILE.country === "IT" ? ALL_TOOLS : ALL_TOOLS.filter(tool => tool.id !== "zainetto");
 
 /** Testi dell'elenco dei calcolatori (`/strumenti`). */
 export const TOOLS_PAGE = {

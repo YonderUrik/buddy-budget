@@ -1,4 +1,5 @@
 /** Indirizzi e testi della landing. Gli URL arrivano dall'env, con default di produzione. */
+import { PROFILE } from "@/lib/localization";
 import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
@@ -19,7 +20,7 @@ export const SITE_TITLE = "BuddyBudget: app per budget, investimenti, pensione e
 export const SITE_DESCRIPTION =
   "Gestisci conti, spese, investimenti, fondo pensione e debiti in un'unica app, con le tasse italiane già calcolate. Collega la banca, categorizza i movimenti e conosci il tuo patrimonio netto.";
 /** Immagine di anteprima per social e risultati arricchiti (1200×630, vedi `scripts/make-og-image.mjs`). */
-export const OG_IMAGE = { url: "/og.png", width: 1200, height: 630, alt: "BuddyBudget: conti, investimenti, pensione e debiti in un solo quadro" } as const;
+export const OG_IMAGE = { url: PROFILE.language === "it" ? "/og.png" : `/og-${PROFILE.country.toLowerCase()}-${PROFILE.language}.png`, width: 1200, height: 630, alt: "BuddyBudget: conti, investimenti, pensione e debiti in un solo quadro" } as const;
 
 export interface FaqItem {
   question: string;
@@ -32,7 +33,7 @@ export const FAQ: readonly FaqItem[] = [
   { question: "Serve collegare la banca?", answer: "No: puoi aggiungere i conti a mano o importare un CSV. Il collegamento, in sola lettura con l'Open Banking (PSD2), serve solo a non scrivere i movimenti." },
   { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane (zainetto a quattro anni, 26% o 12,5% per i titoli di Stato, bollo), pensate per decidere. Il conteggio definitivo è del tuo intermediario o del commercialista." },
   { question: "Cosa non fa?", answer: "Non dà consigli su cosa comprare o vendere, non sposta denaro e non fa ordini al broker. I prezzi sono chiusure di fine giornata, non in tempo reale." },
-  { question: "In quali lingue e paesi posso usare l’app?", answer: "Il prodotto Italia è disponibile in italiano e inglese; il prodotto Germania in tedesco e inglese. La valuta si sceglie nelle impostazioni. Per la Germania sono disponibili le funzioni essenziali e stime fiscali parziali con limiti espliciti; pensione, AVD e simulatori avanzati restano nascosti in attesa di revisione. Questo sito e gli esempi fiscali mostrati qui sono in italiano e si riferiscono al prodotto Italia." },
+  { question: "In quali lingue e paesi posso usare l’app?", answer: "Il prodotto Italia è disponibile in italiano e inglese; il prodotto Germania in tedesco e inglese. La valuta si sceglie nelle impostazioni. Per la Germania sono disponibili le funzioni essenziali e stime fiscali parziali con limiti espliciti; pensione, AVD e simulatori avanzati restano nascosti in attesa di revisione. Sul sito scegli paese e lingua dal selettore. Al primo accesso li suggeriamo dalle preferenze del browser; la scelta manuale viene ricordata." },
   { question: "Dove stanno i miei dati e posso portarli via?", answer: (FIELD_ENCRYPTION_LIVE ? "Su un server in Germania, con le connessioni cifrate e descrizioni e note dei movimenti cifrate anche nel database." : "Su un server in Germania, con le connessioni cifrate.") + " Non vendiamo i dati e non c'è pubblicità. Scarichi tutto in ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
   { question: "Funziona sul telefono?", answer: "Sì, dal browser, e si installa sulla schermata Home come app (PWA). Non è negli store." },
 ];

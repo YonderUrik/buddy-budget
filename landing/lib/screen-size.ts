@@ -1,3 +1,7 @@
+import { PROFILE } from "./localization";
+import itEn from "@/public/screens/it-en/manifest.json";
+import deEn from "@/public/screens/de-en/manifest.json";
+import deDe from "@/public/screens/de-de/manifest.json";
 import type { ScreenId } from "@/content/screens";
 import manifest from "@/public/screens/manifest.json";
 
@@ -14,7 +18,8 @@ export interface ScreenSize {
  * spazio (niente salti di layout) e alla camera della home, che ragiona in pixel dello screenshot.
  */
 export function screenSize(id: ScreenId): ScreenSize {
-  const entry = (manifest.screens as { id: string; width?: number; height?: number }[]).find((s) => s.id === id);
+  const selected = PROFILE.language === "it" ? manifest : PROFILE.country === "IT" ? itEn : PROFILE.language === "de" ? deDe : deEn;
+  const entry = (selected.screens as { id: string; width?: number; height?: number }[]).find((s) => s.id === id);
   return entry?.width && entry.height ? { width: entry.width, height: entry.height } : DEFAULT_SIZE;
 }
 

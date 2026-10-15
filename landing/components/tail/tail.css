@@ -19,7 +19,7 @@
 /* «funziona con»: quattro schede con margini e angoli, icona tinta in testa e, in fondo, i loghi o i chip */
 .con-grid { margin-top: 44px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 .con-col { display: flex; flex-direction: column; gap: 20px; }
-.con-cell { display: flex; flex-direction: column; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
+.con-cell { min-width: 0; display: flex; flex-direction: column; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
 .con-head { display: flex; align-items: center; gap: 14px; }
 .con-ic { flex: none; width: 40px; height: 40px; border-radius: var(--r); display: inline-grid; place-items: center; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); }
 .con-cell h3 { font-size: 19px; }
@@ -40,8 +40,8 @@
 .con .con-tile .ibk .logo { max-width: none; flex: none; }
 .con-csv { grid-column: 1 / -1; grid-auto-flow: column; justify-content: center; gap: 10px; background: transparent; border-style: dashed; border-color: var(--ink3); font: 600 15px var(--f-b); color: var(--ink2); }
 .con-chips { display: flex; flex-wrap: wrap; gap: 10px; }
-.con .ichip { height: 44px; padding: 0 14px 0 6px; gap: 10px; background: var(--bg); border-radius: var(--r); font-size: 15px; }
-.con .ichip i { width: 32px; height: 32px; border-radius: var(--r-sm); }
+.con .ichip { max-width: 100%; white-space: normal; min-height: 44px; height: auto; padding: 0 14px 0 6px; gap: 10px; background: var(--bg); border-radius: var(--r); font-size: 15px; }
+.con .ichip i { flex-shrink: 0; width: 32px; height: 32px; border-radius: var(--r-sm); }
 .con .ichip i svg { width: 18px; height: 18px; }
 .con .ichip small { font-size: 13px; }
 .con-src { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink3); font-size: 14px; }

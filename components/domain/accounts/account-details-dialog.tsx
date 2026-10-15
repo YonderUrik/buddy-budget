@@ -35,7 +35,7 @@ import { cn } from "@/lib/utils";
 import { ACCOUNT_TYPE_OPTIONS } from "@/lib/validation/accounts";
 import type { AccountColor, AccountIcon, UpdateAccountInput } from "@/lib/validation/accounts";
 import { useDeleteAccountMutation, useUpdateAccountMutation } from "@/lib/queries/accounts";
-import { useSyncAccountMutation } from "@/lib/queries/gocardless";
+import { useSyncAccountMutation } from "@/lib/queries/bank";
 import type { Account } from "@/lib/db/schema/accounts";
 import { AccountAvatar } from "./account-avatar";
 import { AccountIconColorPicker } from "./account-icon-color-picker";

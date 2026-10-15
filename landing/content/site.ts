@@ -1,4 +1,5 @@
 /** Indirizzi e testi della landing. Gli URL arrivano dall'env, con default di produzione. */
+import { BANK_PROVIDER, ENABLE_BANKING_LIVE } from "./bank-provider";
 import { FIELD_ENCRYPTION_LIVE } from "./security";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://buddybudget.io";
@@ -51,10 +52,10 @@ export const SECURITY = {
   intro: "Le credenziali della banca restano alla banca: verso BuddyBudget viaggiano solo saldi e movimenti, in sola lettura. Tocca un passaggio per vedere cosa riceve.",
   /** Fatti con la loro fonte ufficiale, sotto il diagramma. */
   facts: [
-    { text: "GoCardless SAS è autorizzata dall'ACPR, n. 17118", source: "https://gocardless.com/legal/bank-account-data/" },
+    { text: ENABLE_BANKING_LIVE ? "Enable Banking Oy è vigilata dalla FIN-FSA finlandese" : "GoCardless SAS è autorizzata dall'ACPR, n. 17118", source: BANK_PROVIDER.termsHref },
     { text: "Sola lettura con consenso esplicito (PSD2, art. 67)", source: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32015L2366" },
     { text: "Server in Germania, backup nell'UE per 14 giorni", source: "https://developers.cloudflare.com/r2/reference/data-location/" },
   ],
-  more: "Tutti i dettagli: cosa salviamo, cosa tiene GoCardless, come cancelli tutto",
+  more: `Tutti i dettagli: cosa salviamo, cosa tiene ${BANK_PROVIDER.name}, come cancelli tutto`,
 } as const;
 

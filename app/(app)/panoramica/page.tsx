@@ -37,7 +37,7 @@ import { useGoalsQuery } from "@/lib/queries/goals";
 import { isCountryPathAvailable } from "@/lib/localization/config";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
 import { useAccountsQuery } from "@/lib/queries/accounts";
-import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
+import { useBankConnectionsStatusQuery } from "@/lib/queries/bank";
 import { useInvestmentsOverviewQuery } from "@/lib/queries/investments";
 import { usePensionInNetWorth } from "@/lib/hooks/use-pension-in-net-worth";
 import { usePensionQuery } from "@/lib/queries/pension";

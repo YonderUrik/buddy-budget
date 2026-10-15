@@ -4,6 +4,7 @@
  * Solo fatti verificabili nel codice (paesi della banca in `connect-bank-flow.tsx`, file dei broker in
  * `lib/investments/import/providers.ts`, soglie del rischio in `lib/investments/risk-insights.ts`).
  */
+import { BANK_PROVIDER } from "./bank-provider";
 import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";
 
@@ -80,7 +81,7 @@ export const TOUR = {
       after: { lead: "I movimenti arrivano dalla banca in sola lettura.", strong: "Hai speso 21.088 € quest'anno,", tail: "e vedi subito la voce che pesa di più." },
       specs: [
         ["Banche", "Italia, Germania, Francia, Spagna e Regno Unito, con l'Open Banking (PSD2) in sola lettura. Le credenziali le inserisci sul sito della banca, mai da noi."],
-        ["Consenso", "Dura 90 giorni. Sette giorni prima ti avvisiamo per email e in app, e rinnovi con un clic."],
+        ["Consenso", `Dura ${BANK_PROVIDER.consent}. Sette giorni prima ti avvisiamo per email e in app, e rinnovi con un clic.`],
         ["Aggiornamento", "Ogni 12 ore, più un pulsante per aggiornare subito."],
         ["Se la banca non c'è", "Conto manuale, oppure carichi il CSV della banca: lo leggiamo anche se il formato è nuovo."],
         ["Categorie", "Confermi un negozio e scegli se ricordarlo. Le regole si leggono, si modificano e si cancellano."],

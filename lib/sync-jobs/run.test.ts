@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/gocardless/sync", () => ({ syncAccountLink: vi.fn() }));
+vi.mock("@/lib/bank-data/sync", () => ({ syncAccountLink: vi.fn() }));
 
-import { syncAccountLink, type SyncableLink } from "@/lib/gocardless/sync";
-import type { RateLimitStore } from "@/lib/gocardless/rate-limit";
+import { syncAccountLink, type SyncableLink } from "@/lib/bank-data/sync";
+import type { RateLimitStore } from "@/lib/bank-data/rate-limit";
 import { queuedAccount } from "./types";
 import { createMemorySyncJobKv, createSyncJobStore, type SyncJobStore } from "./store";
 import { createMemoryOpsKv, createOpsStore, getMetricsRegistry, resetMetricsForTests } from "@/lib/observability";
@@ -12,7 +12,7 @@ import { progressToPatch, resultToPatch, runSyncJob, syncTriggerForJob } from ".
 const rateLimitStore: RateLimitStore = { get: async () => null, set: async () => {} };
 
 function link(accountId: string): SyncableLink {
-  return { linkId: `l-${accountId}`, connectionId: "c", accountId, externalAccountId: `ext-${accountId}`, userId: "u1" };
+  return { linkId: `l-${accountId}`, connectionId: "c", provider: "gocardless", accountId, externalAccountId: `ext-${accountId}`, userId: "u1" };
 }
 
 describe("progressToPatch / resultToPatch", () => {
@@ -21,7 +21,7 @@ describe("progressToPatch / resultToPatch", () => {
     expect(
       resultToPatch({ status: "synced", newTransactionsCount: 4, categorizedCount: 3, uncategorizedCount: 1, balanceUpdated: true })
     ).toEqual({ phase: "done", inserted: 4, categorized: 3, uncategorized: 1 });
-    expect(resultToPatch({ status: "gocardless-limited" })).toEqual({ phase: "limited" });
+    expect(resultToPatch({ status: "bank-limited" })).toEqual({ phase: "limited" });
     expect(resultToPatch({ status: "expired" })).toEqual({ phase: "expired" });
   });
 });
@@ -134,7 +134,7 @@ describe("runSyncJob", () => {
     });
     await runSyncJob(job, [link("a")], { store, rateLimitStore });
     const text = await getMetricsRegistry().metrics();
-    expect(text).toContain('buddybudget_gocardless_sync_total{trigger="finalize",outcome="synced"} 1');
+    expect(text).toContain('buddybudget_bank_sync_total{provider="gocardless",trigger="finalize",outcome="synced"} 1');
     expect(text).toContain('buddybudget_transactions_imported_total{categorized="false"} 1');
   });
 });

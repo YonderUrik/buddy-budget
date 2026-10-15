@@ -12,7 +12,7 @@ export const SYNC_JOBS_POLL_INTERVAL_MS = 1000;
 /** Query invalidate a fine job: i dati che un sync può aver cambiato, compresi avvisi e Categorizza (giro automatico). */
 const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["accounts"],
-  ["gocardless", "connections", "status"],
+  ["bank", "connections", "status"],
   ["net-worth-snapshots"],
   ...QUERY_KEYS_CHANGED_BY_CATEGORIZATION,
 ] as const;

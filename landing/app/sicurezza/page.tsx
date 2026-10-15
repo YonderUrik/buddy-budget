@@ -9,7 +9,8 @@ import { JsonLd } from "@/components/json-ld";
 import { Sources } from "@/components/sources";
 import { LEGAL_OWNER, LEGAL_PATHS } from "@/content/legal";
 import { CONTENT_DRAFT, CONTENT_PATHS } from "@/content/seo-pages";
-import { ANALYTICS_DATA, CONTROLS, FLOW, GOCARDLESS_DATA, LIMITS, SECURITY_PAGE, SECURITY_SOURCES, SECURITY_SOURCES_CHECKED, STORED } from "@/content/security";
+import { ENABLE_BANKING_LIVE } from "@/content/bank-provider";
+import { ANALYTICS_DATA, CONTROLS, FLOW, LIMITS, PROVIDER_DATA, SECURITY_PAGE, SECURITY_SOURCES, SECURITY_SOURCES_CHECKED, STORED } from "@/content/security";
 import { SITE_URL } from "@/content/site";
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 
 /**
  * Pagina «Sicurezza e privacy»: in vista il percorso dei dati (diagramma interattivo) e cosa si conserva; il resto
- * (GoCardless, statistiche, cancellazione, limiti) in domande a tendina, per non sommergere chi legge. Testi in `content/security.ts`.
+ * (fornitore bancario, statistiche, cancellazione, limiti) in domande a tendina, per non sommergere chi legge. Testi in `content/security.ts`.
  */
 export default function Page() {
   return (
@@ -67,11 +68,15 @@ export default function Page() {
         <h2 id="sp-more">Le altre domande.</h2>
         <div className="faq-list sp-questions">
           <details className="faq-item">
-            <summary>{GOCARDLESS_DATA.question}</summary>
+            <summary>{PROVIDER_DATA.question}</summary>
             <div className="sp-answer">
-              <p>{GOCARDLESS_DATA.lede}</p>
-              <FactList rows={GOCARDLESS_DATA.rows} />
-              <p className="sp-note">Riassunto delle <a href={SECURITY_SOURCES.gocardlessTerms.href} rel="noopener" target="_blank">condizioni UE di GoCardless</a> e della sua <a href={SECURITY_SOURCES.gocardlessPrivacy.href} rel="noopener" target="_blank">informativa privacy</a>, dove trovi i contatti per esercitare i tuoi diritti.</p>
+              <p>{PROVIDER_DATA.lede}</p>
+              <FactList rows={PROVIDER_DATA.rows} />
+              {ENABLE_BANKING_LIVE ? (
+                <p className="sp-note">Dalle <a href={SECURITY_SOURCES.enableBankingTerms.href} rel="noopener" target="_blank">condizioni di Enable Banking</a> e dalla sua <a href={SECURITY_SOURCES.enableBankingPrivacy.href} rel="noopener" target="_blank">informativa privacy</a>. Per i collegamenti di prima valgono le <a href={SECURITY_SOURCES.gocardlessTerms.href} rel="noopener" target="_blank">condizioni UE di GoCardless</a>.</p>
+              ) : (
+                <p className="sp-note">Riassunto delle <a href={SECURITY_SOURCES.gocardlessTerms.href} rel="noopener" target="_blank">condizioni UE di GoCardless</a> e della sua <a href={SECURITY_SOURCES.gocardlessPrivacy.href} rel="noopener" target="_blank">informativa privacy</a>, dove trovi i contatti per esercitare i tuoi diritti.</p>
+              )}
             </div>
           </details>
           <details className="faq-item">

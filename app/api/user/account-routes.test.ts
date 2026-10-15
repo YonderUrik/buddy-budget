@@ -4,8 +4,8 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/account/emails", () => ({ sendAccountEmail: vi.fn() }));
-vi.mock("@/lib/gocardless/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/gocardless/client")>();
+vi.mock("@/lib/bank-data/gocardless/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/bank-data/gocardless/client")>();
   return { ...actual, deleteRequisition: vi.fn() };
 });
 

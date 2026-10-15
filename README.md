@@ -35,7 +35,7 @@ Chi tiene i conti di solito usa tre strumenti: un'app per le spese, un foglio pe
 | Area | Cosa trovi |
 | --- | --- |
 | **Panoramica** | Patrimonio netto nel tempo per classe di asset, storico ricostruito, primi passi guidati e dati d'esempio azzerabili. |
-| **Liquidità** | Conti manuali e collegati alla banca via Open Banking ([GoCardless](https://gocardless.com/bank-account-data/), sola lettura); movimenti con ricerca, filtri, «Dividi» ed esclusioni; categorie in quattro gruppi di spesa (Dovute, Volute, Te futuro, Saltuarie) con budget; categorizzazione a regole; analisi mese per mese; abbonamenti rilevati dai movimenti, con aumenti di prezzo. |
+| **Liquidità** | Conti manuali e collegati alla banca via Open Banking ([GoCardless](https://gocardless.com/bank-account-data/) o [Enable Banking](https://enablebanking.com/), sola lettura); movimenti con ricerca, filtri, «Dividi» ed esclusioni; categorie in quattro gruppi di spesa (Dovute, Volute, Te futuro, Saltuarie) con budget; categorizzazione a regole; analisi mese per mese; abbonamenti rilevati dai movimenti, con aumenti di prezzo. |
 | **Investimenti** | ETF, azioni, BTP, fondi e crypto con prezzi di fine giornata da fonti gratuite; import da Interactive Brokers, DEGIRO, Trade Republic, Fineco, Yahoo Finance o CSV generico; rendimento (TWR e XIRR) contro un indice e al netto dell'inflazione; rischio e diversificazione dentro gli ETF; dividendi; stima delle imposte italiane; scheda titolo con indicatori fondamentali, watchlist e avvisi di prezzo. |
 | **Debiti** | Finanziamenti dall'origine o dalla situazione di oggi, piano di ammortamento, TAEG, estinzioni anticipate e simulazioni (rata più alta, surroga, valanga e palla di neve). |
 | **Pensione** | Fondo pensione e TFR: rendimento reale, quanto ritireresti oggi al netto delle tasse, confronto con il TFR in azienda, proiezione. |
@@ -78,7 +78,7 @@ docker compose up -d         # poi apri http://localhost:3000
 
 Finché le immagini non sono pubblicate su ghcr.io, costruiscile dal sorgente: `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
-Email (Resend), accesso con Google e collegamento alla banca (GoCardless) sono facoltativi: senza Resend il link di accesso compare nei log. La guida [`docs/self-hosting.md`](docs/self-hosting.md) spiega cosa funziona senza servizi esterni, come mettere l'app dietro HTTPS, come aggiornarla e come fare i backup.
+Email (Resend), accesso con Google e collegamento alla banca (GoCardless o Enable Banking) sono facoltativi: senza Resend il link di accesso compare nei log. La guida [`docs/self-hosting.md`](docs/self-hosting.md) spiega cosa funziona senza servizi esterni, come mettere l'app dietro HTTPS, come aggiornarla e come fare i backup.
 
 ### Sviluppo in locale
 
@@ -92,7 +92,7 @@ pnpm demo:seed                     # facoltativo: utente fittizio con dati d'ese
 pnpm dev                           # http://localhost:3000
 ```
 
-Le variabili sono validate all'avvio da [`lib/env.ts`](lib/env.ts) e commentate una per una in [`.env.local.example`](.env.local.example). Google, Resend, GoCardless, le chiavi delle fonti di prezzo e l'osservabilità sono facoltativi.
+Le variabili sono validate all'avvio da [`lib/env.ts`](lib/env.ts) e commentate una per una in [`.env.local.example`](.env.local.example). Google, Resend, GoCardless, Enable Banking, le chiavi delle fonti di prezzo e l'osservabilità sono facoltativi.
 
 | Comando | Cosa fa |
 | --- | --- |

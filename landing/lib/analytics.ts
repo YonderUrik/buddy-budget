@@ -23,7 +23,7 @@ export interface LandingEvents {
   catalog_area_selected: { area: FeatureArea };
   theme_toggled: { theme: "light" | "dark" };
   /** Pagina /sicurezza: passaggio aperto nel diagramma del percorso dei dati. */
-  security_node_selected: { node: "tu" | "banca" | "gocardless" | "buddybudget" };
+  security_node_selected: { node: "tu" | "banca" | "fornitore" | "buddybudget" };
   source_link_click: { location: "footer" | "sezione" };
 }
 

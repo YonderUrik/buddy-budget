@@ -38,7 +38,7 @@ export interface LogFields {
   clientArea?: string;
   errorDigest?: string;
   reference?: string;
-  /** Id di una requisition GoCardless (non personale, serve solo con le nostre chiavi): per decidere a mano cosa eliminare. */
+  /** Id di un consenso bancario (requisition GoCardless o sessione Enable Banking: non personale, serve solo con le nostre chiavi): per decidere a mano cosa eliminare. */
   requisitionId?: string;
   /** Età in giorni di un elemento (es. una requisition sconosciuta). */
   ageDays?: number;
@@ -70,7 +70,7 @@ export interface LogFields {
   categorySource?: string;
   /** Come è stato ricavato il nome leggibile di una transazione (enum chiuso `MerchantNameSource`). */
   nameSource?: string;
-  /** Fonte di prezzi di mercato (id statico). */
+  /** Fonte di prezzi di mercato o fornitore dei dati bancari (id statico). */
   provider?: string;
   /** Simbolo di uno strumento comune a tutti gli utenti: mai insieme a quantità o importi dell'utente. */
   symbol?: string;

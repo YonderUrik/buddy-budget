@@ -10,15 +10,21 @@ export const bankConnectionStatusEnum = pgEnum("bank_connection_status", [
   "error",
 ]);
 
+/** Fornitore dei dati bancari (Open Banking) di una connessione: GoCardless (storico) o Enable Banking. */
+export const bankProviderEnum = pgEnum("bank_provider", ["gocardless", "enablebanking"]);
+
 export const bankConnections = pgTable("bank_connections", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id")
     .notNull()
     .references(() => authUser.id, { onDelete: "cascade" }),
+  // Le connessioni nate prima di Enable Banking sono tutte GoCardless (default della migration).
+  provider: bankProviderEnum("provider").notNull().default("gocardless"),
+  // Id della banca presso il fornitore (GoCardless: `INTESA_SANPAOLO_BCITITMM`; Enable Banking: `IT:Intesa Sanpaolo`).
   institutionId: text("institution_id").notNull(),
   institutionName: text("institution_name").notNull(),
-  // Nullable: nasce nulla quando la connessione è "pending" (creata prima ancora
-  // di aver chiamato GoCardless), valorizzata subito dopo dalla stessa richiesta.
+  // Id del consenso presso il fornitore: requisition GoCardless o sessione Enable Banking (il nome della colonna è storico).
+  // Nullable: nasce nulla quando la connessione è "pending"; GoCardless lo dà subito, Enable Banking solo al ritorno dalla banca.
   requisitionId: text("requisition_id"),
   status: bankConnectionStatusEnum("status").notNull().default("pending"),
   consentExpiresAt: timestamp("consent_expires_at", { withTimezone: true }),
@@ -57,8 +63,8 @@ export type BankAccountLink = typeof bankAccountLinks.$inferSelect;
 export type NewBankAccountLink = typeof bankAccountLinks.$inferInsert;
 
 /**
- * Registro delle requisition create su GoCardless (una riga per ogni consenso avviato, nuovo o rinnovo).
- * Non si cancella quando la connessione viene eliminata: il piano gratuito conta i collegamenti del mese
+ * Registro dei consensi avviati (una riga per ogni consenso, nuovo o rinnovo), per fornitore.
+ * Non si cancella quando la connessione viene eliminata: il piano gratuito GoCardless conta i collegamenti del mese
  * e non è documentato che eliminarne uno liberi il posto, quindi il tetto si calcola anche da qui.
  * `user_id` diventa null se l'utente viene eliminato (il conteggio globale resta giusto).
  */
@@ -67,6 +73,7 @@ export const bankConnectionAttempts = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: text("user_id").references(() => authUser.id, { onDelete: "set null" }),
+    provider: bankProviderEnum("provider").notNull().default("gocardless"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("bank_connection_attempts_created_at_idx").on(table.createdAt)]

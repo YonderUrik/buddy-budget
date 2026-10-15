@@ -7,9 +7,9 @@ import { createMemoryOpsKv, createOpsStore, type OpsStore } from "./ops-store";
 describe("OpsStore", () => {
   it("salva e rilegge l'ultimo successo dei cron, null se mai eseguito", async () => {
     const store = createOpsStore(createMemoryOpsKv());
-    await store.setCronSuccess("gocardless_sync", 1_790_000_000);
-    expect(await store.getCronSuccesses()).toEqual({ gocardless_sync: 1_790_000_000, net_worth_snapshot: null,
-      notifications: null, market_prices: null, account_deletion: null, gocardless_maintenance: null, inactive_accounts: null });
+    await store.setCronSuccess("bank_sync", 1_790_000_000);
+    expect(await store.getCronSuccesses()).toEqual({ bank_sync: 1_790_000_000, net_worth_snapshot: null,
+      notifications: null, market_prices: null, account_deletion: null, bank_maintenance: null, inactive_accounts: null });
   });
 
   it("separa job attivi e bloccati e pulisce le voci più vecchie del TTL", async () => {
@@ -44,7 +44,7 @@ describe("recordCronRun", () => {
   it("un errore di scrittura dell'heartbeat non fa fallire il cron", async () => {
     const failing = { setCronSuccess: async () => { throw new Error("redis giù"); } } as unknown as OpsStore;
     const { log, lines } = capture();
-    await expect(recordCronRun("gocardless_sync", "success", 1, { store: failing, log })).resolves.toBeUndefined();
+    await expect(recordCronRun("bank_sync", "success", 1, { store: failing, log })).resolves.toBeUndefined();
     expect(lines.at(-1)).toMatchObject({ event: "cron.heartbeat.write_failed", level: "warn" });
   });
 });

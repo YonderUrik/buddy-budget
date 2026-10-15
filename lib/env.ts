@@ -20,13 +20,18 @@ export const serverEnvSchema = z.object({
   APP_URL: z.url({ protocol: /^https?$/ }),
   // Integrazioni esterne (opzionali, per il self-hosting): senza Google il pulsante non funziona, senza Resend il
   // magic link finisce nei log del server (vedi lib/auth/magic-link-log.ts) e le altre email non partono, senza
-  // GoCardless non si collegano banche (restano conti manuali e import CSV).
+  // un fornitore bancario (GoCardless o Enable Banking) non si collegano banche (restano conti manuali e import CSV).
   GOOGLE_CLIENT_ID: optionalSecret,
   GOOGLE_CLIENT_SECRET: optionalSecret,
   RESEND_API_KEY: optionalSecret,
   RESEND_FROM: optionalSecret,
   GOCARDLESS_SECRET_ID: optionalSecret,
   GOCARDLESS_SECRET_KEY: optionalSecret,
+  // Enable Banking: id dell'applicazione e chiave privata RSA (PEM, anche in base64) scaricata alla registrazione.
+  ENABLE_BANKING_APP_ID: optionalSecret,
+  ENABLE_BANKING_PRIVATE_KEY: optionalSecret,
+  // Fornitore dei collegamenti NUOVI e dei rinnovi; quelli già attivi restano sul loro fino al rinnovo (vedi lib/bank-data/providers.ts).
+  BANK_DATA_PROVIDER: z.preprocess((value) => (value === "" ? undefined : value), z.enum(["gocardless", "enablebanking"]).optional()),
   CRON_SECRET: z.string().min(CRON_SECRET_MIN_LENGTH),
   OLLAMA_BASE_URL: z.string().optional(),
   OLLAMA_MODEL: z.string().optional(),

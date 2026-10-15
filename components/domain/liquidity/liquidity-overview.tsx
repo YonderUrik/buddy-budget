@@ -18,12 +18,12 @@ import {
   toDateKey,
   type NetWorthPeriod,
 } from "@/lib/calc/net-worth";
-import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
+import { computeConnectionHealth, needsRenewal } from "@/lib/bank-data/connection-health";
 import { buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
 import { buildVoiceLines } from "@/lib/overview/voice";
 import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useBudgetsQuery } from "@/lib/queries/budgets";
-import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
+import { useBankConnectionsStatusQuery } from "@/lib/queries/bank";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { cn } from "@/lib/utils";

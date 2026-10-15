@@ -2,8 +2,8 @@ import { eq, inArray } from "drizzle-orm";
 import { strFromU8, unzipSync } from "fflate";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/gocardless/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/gocardless/client")>();
+vi.mock("@/lib/bank-data/gocardless/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/bank-data/gocardless/client")>();
   return { ...actual, deleteRequisition: vi.fn() };
 });
 
@@ -27,8 +27,8 @@ import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { defaultCategoryRows } from "@/lib/categories/seed";
-import { deleteRequisition } from "@/lib/gocardless/client";
-import { findDueLinks } from "@/lib/gocardless/scheduler";
+import { deleteRequisition } from "@/lib/bank-data/gocardless/client";
+import { findDueLinks } from "@/lib/bank-data/scheduler";
 import { findUsersWithAccounts } from "@/lib/net-worth/scheduler";
 import { redis } from "@/lib/redis/client";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";

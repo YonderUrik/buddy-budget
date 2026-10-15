@@ -1,4 +1,4 @@
-import type { CapacityBlockReason } from "@/lib/gocardless/capacity";
+import type { CapacityBlockReason } from "@/lib/bank-data/capacity";
 
 /** Testi della scelta «Collega la tua banca» quando non è disponibile: etichetta breve e frase che indica le alternative. */
 export const BANK_UNAVAILABLE_COPY: Record<CapacityBlockReason, { badge: string; description: string }> = {

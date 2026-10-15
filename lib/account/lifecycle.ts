@@ -29,7 +29,7 @@ import {
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { transactions } from "@/lib/db/schema/transactions";
 import { defaultCategoryRows } from "@/lib/categories/seed";
-import { deleteRequisition } from "@/lib/gocardless/client";
+import { getBankProvider } from "@/lib/bank-data/providers";
 import { redis } from "@/lib/redis/client";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { toJobView } from "@/lib/sync-jobs/view";
@@ -93,23 +93,23 @@ export async function hasActiveSync(userId: string, now: Date = new Date()): Pro
 }
 
 /**
- * Revoca su GoCardless i consensi delle connessioni bancarie dell'utente. Best effort: un errore non blocca
- * reset o eliminazione (il consenso scade comunque da solo entro 90 giorni) ma viene loggato.
+ * Revoca presso il fornitore (GoCardless o Enable Banking) i consensi delle connessioni bancarie dell'utente. Best
+ * effort: un errore non blocca reset o eliminazione (il consenso scade comunque da solo) ma viene loggato.
  */
 export async function revokeBankConsents(userId: string): Promise<{ revoked: number; failed: number }> {
   const rows = await db
-    .select({ requisitionId: bankConnections.requisitionId })
+    .select({ requisitionId: bankConnections.requisitionId, provider: bankConnections.provider })
     .from(bankConnections)
     .where(and(eq(bankConnections.userId, userId), isNotNull(bankConnections.requisitionId)));
   let revoked = 0;
   let failed = 0;
-  for (const { requisitionId } of rows) {
+  for (const { requisitionId, provider } of rows) {
     try {
-      await deleteRequisition(requisitionId!);
+      await getBankProvider(provider).revokeConsent(requisitionId!);
       revoked += 1;
     } catch (error) {
       failed += 1;
-      logger.warn("account.bank_consent.revoke_failed", { user: hashUserId(userId), error });
+      logger.warn("account.bank_consent.revoke_failed", { user: hashUserId(userId), provider, error });
     }
   }
   return { revoked, failed };

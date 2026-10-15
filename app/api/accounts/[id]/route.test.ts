@@ -11,13 +11,13 @@ import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connecti
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession: vi.fn() } },
 }));
-vi.mock("@/lib/gocardless/client", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/gocardless/client")>();
+vi.mock("@/lib/bank-data/gocardless/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/bank-data/gocardless/client")>();
   return { ...actual, deleteRequisition: vi.fn() };
 });
 
 import { auth } from "@/lib/auth";
-import { deleteRequisition } from "@/lib/gocardless/client";
+import { deleteRequisition } from "@/lib/bank-data/gocardless/client";
 import { PATCH, DELETE } from "./route";
 
 const mockedGetSession = vi.mocked(auth.api.getSession);

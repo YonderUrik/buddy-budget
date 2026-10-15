@@ -1,4 +1,4 @@
-import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
+import { computeConnectionHealth, needsRenewal } from "@/lib/bank-data/connection-health";
 import type { DebtDueItem } from "@/lib/debts/view";
 import { todayIso } from "@/lib/debts/dates";
 import type { SidebarDeadline } from "./types";

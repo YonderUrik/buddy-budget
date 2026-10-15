@@ -1,7 +1,7 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Pagina di selezione dei conti trovati dopo il consenso GoCardless: crea nuovi conti o ricollega uno esistente. */
+/** Pagina di selezione dei conti trovati dopo il consenso alla banca: crea nuovi conti o ricollega uno esistente. */
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -15,8 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useConnectionAccountsQuery, useFinalizeConnectionMutation } from "@/lib/queries/gocardless";
-import type { FinalizeSelectionInput } from "@/lib/validation/gocardless";
+import { useConnectionAccountsQuery, useFinalizeConnectionMutation } from "@/lib/queries/bank";
+import type { FinalizeSelectionInput } from "@/lib/validation/bank";
 
 const NEW_ACCOUNT_VALUE = "__new__";
 const CONFIRM_LABEL = "Conferma";

@@ -4,6 +4,7 @@
  * abbastanza, la finestra mostra l'app che lavora (pannelli «vivi» in HTML) e un pulsante apre la schermata vera.
  * Le cifre sono quelle dei dati d'esempio degli screenshot (`scripts/demo-seed.ts`), non di nessuno.
  */
+import { BANK_PROVIDER } from "./bank-provider";
 import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";
 import { CONTENT_PATHS } from "./seo-pages";
@@ -354,7 +355,7 @@ export const WORKS_WITH = {
   intro: "La banca si collega in sola lettura, dal broker importi l'estratto, del fondo pensione bastano due numeri. Niente da riscrivere a mano.",
   banks: {
     title: "Le banche di cinque paesi",
-    text: "Italia, Germania, Francia, Spagna e Regno Unito, tramite GoCardless (PSD2). Le credenziali le scrivi solo sul sito della banca; il consenso dura 90 giorni.",
+    text: `Italia, Germania, Francia, Spagna e Regno Unito, tramite ${BANK_PROVIDER.name} (PSD2). Le credenziali le scrivi solo sul sito della banca; il consenso dura ${BANK_PROVIDER.consent}.`,
   },
   brokers: {
     title: "I file del broker",
@@ -393,10 +394,10 @@ export const SECURITY_HOME = {
     {
       icon: "landmark",
       title: "PSD2, in due parole",
-      text: "È la direttiva europea sui pagamenti. Dice che la tua banca deve far leggere i conti a un servizio autorizzato, se glielo chiedi tu, e che le credenziali le dai solo alla banca. BuddyBudget usa GoCardless, istituto autorizzato in Francia (ACPR, n. 17118): accesso in sola lettura, nessun pagamento possibile, consenso che scade dopo 90 giorni o quando lo revochi tu.",
+      text: `È la direttiva europea sui pagamenti. Dice che la tua banca deve far leggere i conti a un servizio autorizzato, se glielo chiedi tu, e che le credenziali le dai solo alla banca. BuddyBudget usa ${BANK_PROVIDER.who}: accesso in sola lettura, nessun pagamento possibile, consenso che dura ${BANK_PROVIDER.consent} o finché non lo revochi tu.`,
       sources: [
         { label: "Direttiva (UE) 2015/2366, art. 67", href: SECURITY_SOURCES.psd2.href },
-        { label: "Condizioni GoCardless, art. 4", href: SECURITY_SOURCES.gocardlessTerms.href },
+        { label: BANK_PROVIDER.termsLabel, href: BANK_PROVIDER.termsHref },
       ],
     },
     {

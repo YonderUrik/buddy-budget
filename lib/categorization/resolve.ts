@@ -40,7 +40,7 @@ export interface RuleResolver {
   /**
    * Registra che `ruleId` ha effettivamente categorizzato una riga scritta a DB (non scartata da un
    * conflitto). Va chiamato dal chiamante solo dopo aver saputo l'esito dell'insert — `resolve` da sola
-   * non lo sa, perché GoCardless può restituire più volte la stessa transazione (finestra rolling di
+   * non lo sa, perché la banca può restituire più volte la stessa transazione (finestra rolling di
    * storico) e ogni ripetizione viene scartata da `onConflictDoNothing` senza essere un utilizzo reale.
    */
   recordHit(ruleId: string): void;

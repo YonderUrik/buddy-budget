@@ -26,7 +26,7 @@ export const transactions = pgTable(
       .references(() => categories.id),
     description: encryptedText("description").notNull(),
     // Testo grezzo remittanceInformationUnstructured originale (solo transazioni auto, quando
-    // GoCardless lo fornisce): usato per il tooltip quando `description` è stata sostituita dal
+    // la banca lo fornisce): usato per il tooltip quando `description` è stata sostituita dal
     // nome pulito creditorName/debtorName, mai per il matching di categorizzazione.
     rawDescription: encryptedText("raw_description"),
     // Codice di categoria dell'esercente (MCC, 4 cifre) fornito dalla banca: solo un'etichetta
@@ -43,7 +43,7 @@ export const transactions = pgTable(
     categorizedAt: timestamp("categorized_at", { withTimezone: true }),
     date: date("date").notNull(),
     source: dataSourceEnum("source").notNull().default("manuale"),
-    // Id della transazione lato GoCardless — nullable (le transazioni manuali non ce l'hanno),
+    // Id della transazione lato banca (Enable Banking con prefisso `eb:`) — nullable (le transazioni manuali non ce l'hanno),
     // usato per l'idempotenza dei sync periodici (nessun duplicato a ogni run del cron).
     externalId: text("external_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

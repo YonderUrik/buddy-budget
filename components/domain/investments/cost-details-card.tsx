@@ -31,7 +31,8 @@ export function CostDetailsCard({ impact, currency }: CostDetailsCardProps) {
         {features.taxes && <div className="flex justify-between gap-4 border-b py-2.5"><dt>{tr("Imposte aggiuntive stimate")}</dt><dd className="tabular-nums">{money(impact.estimatedTaxes)}</dd></div>}
         <div className="flex justify-between gap-4 py-2.5 font-medium"><dt>{tr("Totale costi e imposte")}</dt><dd className="font-heading text-base tabular-nums">{money(impact.fees + impact.taxes)}</dd></div>
       </dl>
-      <p className="text-sm text-muted-foreground">{tr(features.taxes ? "Stesse stime della scheda Tasse, con aliquote, regime e compensazione delle minusvalenze. Bollo escluso." : "Stime fiscali non disponibili per la Germania")}</p>
+      <p className="text-sm text-muted-foreground">{tr("I costi del fondo (TER) sono già riflessi nel prezzo: non vengono sottratti di nuovo né inclusi tra le commissioni registrate. Eventuali costi del broker non registrati non sono inclusi.")}</p>
+      <p className="text-sm text-muted-foreground">{tr(features.taxes ? "Stesse stime della scheda Tasse, con aliquote, regime e compensazione delle minusvalenze. Bollo escluso." : "Per la Germania mostriamo solo costi e imposte registrati. Non aggiungiamo il bollo italiano né stime fiscali tedesche.")}</p>
     </PanelSection>
   );
 }

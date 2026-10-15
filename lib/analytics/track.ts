@@ -15,6 +15,8 @@ export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "anali
  * nomi, descrizioni o id. Aggiungere un evento qui prima di usarlo (il tipo è chiuso di proposito).
  */
 export interface ProductEvents {
+  financial_sale_simulated: { country: "DE" };
+  financial_plan_saved: { country: "DE"; section: "tax" | "income" | "pension" | "retirement" };
   /** Segnalazione inviata da «Aiuto e segnalazioni»; `withContext`: l'utente ha lasciato il contesto tecnico allegato. */
   support_report_sent: { kind: "problema" | "domanda" | "idea"; withContext: boolean; source: ReportSource; area?: ReportErrorArea };
   /** Apertura del foglio «Scrivici» (pulsante fisso o link sotto un errore), anche se poi non si invia. */

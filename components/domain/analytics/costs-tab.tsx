@@ -38,14 +38,14 @@ export function CostsTab({ base, assumptions, plan, saving, error, onSaveTer }: 
 
   const { money } = localizedAnalyticsFormats(useLocalization().language);
 
-  const { t: tr } = useLocalization();
+  const { t: tr, productCountry } = useLocalization();
   const { currency } = base;
   const [drafts, setDrafts] = React.useState<Record<string, string>>(() =>
     Object.fromEntries(Object.entries(assumptions.terByInstrument).map(([id, ter]) => [id, toFieldText(ter, true)]))
   );
   const [localError, setLocalError] = React.useState<string | null>(null);
   const positions = base.positions.map((p) => ({ ...p, ter: assumptions.terByInstrument[p.id] ?? null }));
-  const summary = summarizeCosts(positions);
+  const summary = summarizeCosts(positions, productCountry);
   if (positions.length === 0) return <MissingData>{tr("Servono posizioni di investimento aperte per calcolare costi e imposte.")}</MissingData>;
 
   const save = async () => {

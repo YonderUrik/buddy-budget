@@ -1,7 +1,8 @@
 /**
  * Costi ricorrenti del portafoglio: TER dei fondi (inserito a mano) e bollo, e quanto pesano nel tempo.
  */
-import { BOLLO_RATE } from "./taxes";
+import { financialCountry } from "@/lib/localization/financial-country";
+import type { ProductCountry } from "@/lib/localization/config";
 
 export interface CostPosition {
   id: string;
@@ -35,12 +36,14 @@ export interface CostSummary {
 }
 
 /** Costo annuo per posizione (TER × valore + bollo) e totale. */
-export function summarizeCosts(positions: CostPosition[]): CostSummary {
+export function summarizeCosts(positions: CostPosition[], productCountry: ProductCountry): CostSummary {
+  const rules = financialCountry(productCountry)?.investmentCosts;
+  if (!rules) throw new Error("Unsupported investment-cost country");
   const rows = positions
     .filter((p) => p.value > 0)
     .map((p) => {
       const terCost = p.value * (p.ter ?? 0);
-      const bolloCost = p.subjectToBollo ? p.value * BOLLO_RATE : 0;
+      const bolloCost = p.subjectToBollo ? p.value * rules.annualStampDutyRate : 0;
       const total = terCost + bolloCost;
       return { id: p.id, name: p.name, value: p.value, terCost, bolloCost, total, pct: total / p.value };
     })

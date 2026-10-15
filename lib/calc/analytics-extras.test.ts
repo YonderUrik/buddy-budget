@@ -57,7 +57,7 @@ describe("costi e liquidazione", () => {
     const s = summarizeCosts([
       { id: "a", name: "A", value: 10_000, ter: 0.002, subjectToBollo: true },
       { id: "b", name: "B", value: 10_000, ter: null, subjectToBollo: false },
-    ]);
+    ], "IT");
     expect(s.annualCost).toBeCloseTo(20 + 20);
     expect(s.missingTerValue).toBe(10_000);
     expect(s.annualPct).toBeCloseTo(40 / 20_000);

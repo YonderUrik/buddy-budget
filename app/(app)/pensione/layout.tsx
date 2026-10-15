@@ -1,4 +1,5 @@
 "use client";
+import { PlanningScreen } from "@/components/domain/financial-planning";
 import { useLocalization } from "@/lib/localization/provider";
 
 /** Layout di Pensione: titolo, selettore del fondo e schede; gestisce caricamento, errore e stato vuoto. */
@@ -53,6 +54,8 @@ function PensioneShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function PensioneLayout({ children }: { children: React.ReactNode }) {
+  const { productCountry } = useLocalization();
+  if (productCountry === "DE") return <PlanningScreen section="pension" />;
   return (
     <PensionProvider>
       <PensioneShell>{children}</PensioneShell>

@@ -1,8 +1,5 @@
-/* La barra in alto è fissa (SiteNav, 68px): il contenuto parte sotto. */
-.cp { position: relative; padding-block: calc(108px + env(safe-area-inset-top, 0px)) 96px; background: var(--bg); color: var(--ink); }
-/* Intestazione sulla griglia del foglio, come l'apertura della home, che sfuma nel corpo. */
-.cp::before { content: ""; position: absolute; inset: 0 0 auto; height: 520px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 100% 32px, 120px 100%; mask-image: linear-gradient(#000 40%, transparent); -webkit-mask-image: linear-gradient(#000 40%, transparent); pointer-events: none; }
-.cp > * { position: relative; }
+/* Pagine di contenuto nello stesso stile della home: la barra in alto scorre via, il corpo parte poco sotto. */
+.cp { position: relative; padding-block: 48px 96px; background: var(--bg); color: var(--ink); }
 .cp-wrap { max-width: 920px; }
 .cp-wide { max-width: 1200px; }
 .cp-crumbs { font-size: 14px; color: var(--ink3); margin-bottom: 20px; }
@@ -51,7 +48,7 @@
 .cp .cp-disclaimer, .cp .note { position: relative; padding: 0 0 0 30px; margin: 0 0 28px; font-size: 14px; line-height: 1.6; color: var(--ink2); max-width: 68ch; background: none; border: 0; }
 .cp .note { margin: 24px 0; }
 .cp .cp-disclaimer strong { color: var(--ink); }
-.cp .cp-disclaimer::before, .cp .note::before { content: "i"; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: var(--sun); color: var(--on-sun); font: 700 12px/20px var(--f-h); text-align: center; }
+.cp .cp-disclaimer::before, .cp .note::before { content: "i"; position: absolute; left: 0; top: 1px; width: 20px; height: 20px; border-radius: 50%; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); font: 700 12px/20px var(--f-h); text-align: center; }
 .cp .note::before { content: "!"; }
 
 /* Calcolatori: una scheda come quelle della home; a destra il risultato su un pannello più chiaro. */
@@ -93,10 +90,10 @@
 .sources-box summary::marker { color: var(--accent); }
 .sources-box .note { margin-bottom: 18px; }
 
-/* Invito finale: una card come la chiusura della home, con il pulsante accanto al testo. */
+/* Invito finale: una card con il pulsante accanto al testo, prima del piè di pagina navy. */
 .cp { padding-bottom: 0; }
 .cp-cta { margin-top: 96px; }
 .cp-cta-panel { padding: 40px; display: flex; gap: 24px 32px; align-items: center; justify-content: space-between; flex-wrap: wrap; border-radius: var(--r-lg); box-shadow: 0 24px 60px -32px var(--shadow-win2); }
 .cp .cp-cta h2 { margin: 0 0 10px; font-size: clamp(24px, 3vw, 34px); max-width: 18em; }
 .cp .cp-cta p { margin: 0; }
-@media (max-width: 760px) { .cp-cta { margin-top: 64px; } .cp-cta-panel { padding: 28px; } }
+@media (max-width: 760px) { .cp { padding-top: 28px; } .cp-cta { margin-top: 64px; } .cp-cta-panel { padding: 28px; } }

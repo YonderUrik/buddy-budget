@@ -1,7 +1,7 @@
 /*
- * Token e base della landing «Il foglio» (2026-10-11): neutri, raggi, caratteri e pulsanti sono quelli dell'app; del
- * foglio di calcolo restano la carta a quadretti dell'apertura, numeri e formule in monospace e il giallo della cella
- * selezionata. I token --a-* sono quelli dell'app, usati dentro le schermate. Niente colori esadecimali nei componenti: solo token.
+ * Token e base della landing «Sei domande» (2026-10-14): neutri, raggi, caratteri e pulsanti sono quelli dell'app, così
+ * sito, accesso e app sembrano una cosa sola. I token --a-* sono quelli dell'app, usati dentro la finestra del prodotto
+ * (pannelli «vivi» e schermate). Niente colori esadecimali nei componenti, niente gradienti: solo token.
  */
 :root {
   --bg: #f7f7f8;
@@ -41,6 +41,7 @@
   --a-vol: #d97706;
   --a-fut: #16a34a;
   --a-sal: #2563eb;
+  --a-none: #94a3b8;
 
   /* spotlight dell'apertura e sfumatura dei titoli grandi */
   --glow: rgba(33, 158, 188, 0.22);
@@ -101,6 +102,7 @@
     --a-vol: #facc15;
     --a-fut: #4ade80;
     --a-sal: #60a5fa;
+    --a-none: #71717a;
     --grid: #1f1f23;
     --head: #232327;
     --sel-soft: #3a2f12;
@@ -140,6 +142,7 @@
   --a-vol: #facc15;
   --a-fut: #4ade80;
   --a-sal: #60a5fa;
+  --a-none: #71717a;
   --grid: #1f1f23;
   --head: #232327;
   --sel-soft: #3a2f12;
@@ -211,4 +214,4 @@ h2.t { font-size: clamp(30px, 4.2vw, 50px); font-weight: 600; letter-spacing: -0
 }
 /* testo solo per lettori di schermo */
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-section[id] { scroll-margin-top: calc(68px + 16px); }
+section[id], [id^="storia-"] { scroll-margin-top: 16px; }

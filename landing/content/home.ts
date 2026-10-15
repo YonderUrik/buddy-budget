@@ -1,7 +1,6 @@
 /**
- * Testi condivisi della home (fatti sotto l'apertura, regole italiane, per chi è, confronto), nati con la landing del
- * 2026-10-09 e ripresi da quella «Il foglio» del 2026-10-11 (il resto è in `sheet.ts`). Solo fatti verificabili nel
- * prodotto: niente numeri di utenti, recensioni o promesse.
+ * Regole italiane già calcolate (home «Sei domande», `llms.txt`) e i nomi delle icone usate nelle sezioni. Nati con la
+ * landing del 2026-10-09. Solo fatti verificabili nel prodotto: niente numeri di utenti, recensioni o promesse.
  */
 import { CONTENT_PATHS, SOURCES, type Source } from "./seo-pages";
 
@@ -12,19 +11,6 @@ export type HomeIcon =
   | "backpack" | "scale" | "stamp" | "landmark-gov" | "umbrella" | "house"
   | "wallet" | "trending" | "card" | "user" | "shield" | "pie"
   | "key" | "eye" | "ban" | "sliders" | "file-text" | "database" | "pencil" | "chart";
-
-export interface HeroFact {
-  icon: HomeIcon;
-  label: string;
-}
-
-/** Fatti sotto il pulsante d'apertura: ognuno è vero oggi e controllabile (codice, informativa, impostazioni). */
-export const HERO_FACTS: readonly HeroFact[] = [
-  { icon: "gift", label: "Gratis durante la beta" },
-  { icon: "landmark", label: "Banca in sola lettura" },
-  { icon: "server", label: "Server in Germania" },
-  { icon: "download", label: "Esporti tutto in ZIP" },
-];
 
 export interface ItalyRule {
   icon: HomeIcon;
@@ -80,47 +66,4 @@ export const ITALY = {
       source: SOURCES.guidaMutuo,
     },
   ] satisfies readonly ItalyRule[],
-} as const;
-
-/** Per chi è e per chi no: due colonne oneste, per non far registrare chi non troverebbe ciò che cerca. */
-export const FIT = {
-  title: "Fa per te?",
-  yesTitle: "Sì, se",
-  yes: [
-    "hai conti, investimenti e magari un mutuo sparsi in posti diversi",
-    "investi in ETF o BTP e vuoi sapere quanto pagheresti di tasse prima di vendere",
-    "hai un fondo pensione e non sai se rende più del TFR",
-    "oggi tieni i conti su un foglio Excel e ti costa tempo aggiornarlo",
-  ],
-  noTitle: "No, se",
-  no: [
-    "cerchi consigli su cosa comprare: BuddyBudget non fa consulenza",
-    "vuoi pagare o investire dall'app: non è una banca né un broker",
-    "vivi fuori dall'Italia o usi un'altra valuta: per ora è in italiano e in euro",
-    "vuoi un'app dagli store: si usa dal browser e si installa sulla schermata Home",
-  ],
-} as const;
-
-export type CompareValue = "si" | "no" | "parziale";
-
-export interface CompareRow {
-  label: string;
-  /** Foglio di calcolo, app di sola spesa, BuddyBudget: valore e breve spiegazione. */
-  cells: readonly [readonly [CompareValue, string], readonly [CompareValue, string], readonly [CompareValue, string]];
-}
-
-/** Confronto con le due alternative più comuni, senza nominare marchi: un foglio di calcolo e un'app che traccia solo le spese. */
-export const COMPARE = {
-  title: "Foglio di calcolo, app di spese o BuddyBudget.",
-  lede: "Le due alternative più comuni vanno bene entrambe. La differenza sta in quanto vuoi tenere insieme.",
-  columns: ["Foglio di calcolo", "App di sole spese", "BuddyBudget"] as const,
-  rows: [
-    { label: "Movimenti dalla banca", cells: [["no", "copiati a mano"], ["parziale", "dipende dall'app"], ["si", "con Open Banking in sola lettura"]] },
-    { label: "Categorie che ricordano i negozi", cells: [["no", "a mano"], ["si", "di solito"], ["si", "con regole che vedi e modifichi"]] },
-    { label: "Investimenti con le tasse italiane", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "con zainetto, bollo e aliquote"]] },
-    { label: "Fondo pensione e TFR", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "con rendimento e confronto"]] },
-    { label: "Mutui e finanziamenti", cells: [["parziale", "se scrivi le formule"], ["no", ""], ["si", "con piano, TAEG ed estinzione"]] },
-    { label: "Patrimonio netto nel tempo", cells: [["parziale", "aggiornato a mano"], ["no", ""], ["si", "ogni giorno"]] },
-    { label: "Dati tuoi, esportabili", cells: [["si", "il file è tuo"], ["parziale", "dipende dall'app"], ["si", "con ZIP completo quando vuoi"]] },
-  ] satisfies readonly CompareRow[],
 } as const;

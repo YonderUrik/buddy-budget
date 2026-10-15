@@ -3718,5 +3718,17 @@
   "Ultima chiusura prima di questa data, del {0}": "Last closing price before this date, from {0}",
   "Corregge il rendimento TWR per l’aumento dei prezzi nel paese del prodotto ({0}, indice Eurostat). Un valore positivo indica un aumento del potere d’acquisto. È una stima che usa l’ultimo dato mensile di inflazione disponibile: la data è indicata sotto il numero. Non è la linea del grafico.": "Adjusts TWR for rising prices in your product country ({0}, Eurostat index). A positive value indicates increased purchasing power. This estimate uses the latest available monthly inflation figure; its date appears below the value. It is not the chart line.",
   "Inflazione ({2}) {0} fino a {1}": "Inflation ({2}) {0} through {1}",
-  "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.": "TWR, MWR and inflation-adjusted returns using the product country’s inflation (Italy or Germany, Eurostat index), with hover explanations. Figures follow the chart date; drag to select a range, including for risk and monthly returns. Also shows what your investments would be worth if costs and taxes had remained invested."
+  "Rendimenti TWR, MWR e al netto dell'inflazione del paese del prodotto (Italia o Germania, indice Eurostat), con spiegazioni su hover. I numeri seguono la data del grafico; trascina per selezionare un intervallo, anche per rischio e rendimenti mensili. Mostra anche quanto varresti se costi e imposte fossero rimasti investiti.": "TWR, MWR and inflation-adjusted returns using the product country’s inflation (Italy or Germany, Eurostat index), with hover explanations. Figures follow the chart date; drag to select a range, including for risk and monthly returns. Also shows what your investments would be worth if costs and taxes had remained invested.",
+  "Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.": "A link by email, no password. If it's your first time, the account is created for you.",
+  "Il link vale {0} minuti e si usa una volta sola.": "The link is valid for {0} minutes and works once.",
+  "Mandami il link": "Send me the link",
+  "Sicurezza": "Security",
+  "Codice aperto": "Open source",
+  "Aiuto": "Help",
+  "Link al sito": "Website links",
+  "3 conti": "3 accounts",
+  "3 posizioni": "3 holdings",
+  "3 debiti": "3 debts",
+  "6 di 6 · con i dati di una persona inventata": "6 of 6 · with the data of a made-up person",
+  "E in tutto, quanto ho?": "And all together, how much do I have?"
 }

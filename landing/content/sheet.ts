@@ -1,53 +1,11 @@
 /**
- * Testi della home «Il foglio» (decisione 2026-10-11, `docs/decisioni/2026-10-11-landing-il-foglio.md`): si parte dal
- * foglio di calcolo che molti tengono a mano e si mostra cosa fa l'app al suo posto. Solo fatti verificabili nel codice
- * (paesi della banca in `connect-bank-flow.tsx`, file dei broker in `lib/investments/import/providers.ts`, soglie del
- * rischio in `lib/investments/risk-insights.ts`). Le cifre sono quelle dei dati d'esempio degli screenshot.
+ * Fonti supportate e giro dell'app area per area. Nati con la home «Il foglio» (2026-10-11); dalla home «Sei domande»
+ * (2026-10-14) `SUPPORTED` alimenta bandiere e loghi della storia e `TOUR` resta la scheda tecnica per `llms.txt`.
+ * Solo fatti verificabili nel codice (paesi della banca in `connect-bank-flow.tsx`, file dei broker in
+ * `lib/investments/import/providers.ts`, soglie del rischio in `lib/investments/risk-insights.ts`).
  */
 import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";
-
-/** Riga del foglio d'esempio in apertura: voce, saldo (o errore), ultimo aggiornamento, nota a margine. */
-export interface SheetRow {
-  label: string;
-  value: string;
-  /** Il valore è un errore di formula (#VALORE!, #RIF!): si mostra in rosso. */
-  error?: boolean;
-  updated: string;
-  note: string;
-}
-
-export const SHEET_HERO = {
-  title: "Il foglio dei conti, senza aggiornarlo",
-  /** Parole evidenziate come una cella selezionata, in coda al titolo. */
-  titleMark: "a mano",
-  lede: "Movimenti dalla banca, investimenti con le tasse italiane, mutuo e fondo pensione. Le formule che scrivevi, BuddyBudget le fa già.",
-  fileName: "Conti_2026_DEFINITIVO_v3.xlsx",
-  fileAge: "ultima modifica: 3 mesi fa",
-  formulaCell: "B12",
-  formula: "=SOMMA(B2:B9)-B11+SE(OGGI()>DATA(2026;9;1);0;C4)",
-  columns: ["Voce", "Saldo", "Agg.", "Note"],
-  rows: [
-    { label: "Conto corrente", value: "4.812,30", updated: "02/07", note: "copiare da estratto" },
-    { label: "Conto deposito", value: "6.000,00", updated: "15/06", note: "" },
-    { label: "ETF mondo", value: "19.207,05", updated: "??", note: "prezzo di quando?" },
-    { label: "BTP 2030", value: "#VALORE!", error: true, updated: "—", note: "cedola?" },
-    { label: "Crypto", value: "1.240,00", updated: "01/05", note: "" },
-    { label: "Fondo pensione", value: "10.700,00", updated: "gen", note: "guardare app fondo" },
-    { label: "Tasse se vendo", value: "#RIF!", error: true, updated: "—", note: "zainetto??" },
-    { label: "Contanti", value: "180,00", updated: "—", note: "" },
-    { label: "", value: "", updated: "", note: "" },
-    { label: "Mutuo residuo", value: "27.433,58", updated: "set", note: "piano in PDF" },
-  ] satisfies readonly SheetRow[],
-  totalLabel: "Patrimonio",
-  totalValue: "#VALORE!",
-  appFile: "app.buddybudget.io/panoramica",
-  appAge: "aggiornato stamattina",
-  appFormula: "29.343,45 € · patrimonio netto, si aggiorna da solo",
-  sheetTab: "Foglio1",
-  appTab: "BuddyBudget",
-  appAlt: "Lo stesso patrimonio nella Panoramica di BuddyBudget: 29.343,45 € con il grafico degli ultimi tre mesi",
-} as const;
 
 /** Fonte supportata, con logo se ne abbiamo il permesso d'uso (vedi `public/logos/ATTRIBUTION.md`). */
 export interface SupportedSource {
@@ -209,10 +167,4 @@ export const TOUR = {
       ],
     },
   ] satisfies readonly TourTab[],
-} as const;
-
-export const CLOSING = {
-  formula: '=CHIUDI("Conti_2026_DEFINITIVO_v3.xlsx")',
-  title: "Chiudi il foglio. Collega il primo conto.",
-  note: "Accedi con un link via email o con Google. Nessuna password da ricordare.",
 } as const;

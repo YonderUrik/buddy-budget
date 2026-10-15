@@ -1,15 +1,6 @@
 import "./app-shot.css";
 import { SCREEN_SMALL_WIDTH, SCREENS, screenSmallSrc, screenSrc, SCREEN_THEMES, type ScreenId } from "@/content/screens";
-import manifest from "@/public/screens/manifest.json";
-
-/** Dimensioni di ripiego, quelle della finestra di cattura (1280×800 a 1,5x). */
-const DEFAULT_SIZE = { width: 1920, height: 1200 } as const;
-
-/** Dimensioni in pixel dell'immagine intera, lette dal manifest della cattura: servono a riservare lo spazio. */
-function screenSize(id: ScreenId): { width: number; height: number } {
-  const entry = (manifest.screens as { id: string; width?: number; height?: number }[]).find((s) => s.id === id);
-  return entry?.width && entry.height ? { width: entry.width, height: entry.height } : DEFAULT_SIZE;
-}
+import { screenSize } from "@/lib/screen-size";
 
 export interface AppShotProps {
   /** Id di una schermata di `content/screens.ts`. */

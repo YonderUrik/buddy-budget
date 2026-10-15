@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { SCREENS, SCREEN_THEMES, screenSmallSrc, screenSrc } from "./screens";
+import { SCREENS, SCREEN_THEMES, screenPhoneSrc, screenSmallSrc, screenSrc } from "./screens";
 
 const LANDING_ROOT = join(__dirname, "..");
 const APP_PAGES = join(LANDING_ROOT, "..", "app", "(app)");
@@ -36,7 +36,13 @@ describe("schermate della landing", () => {
         expect(existsSync(join(LANDING_ROOT, "public", screenSmallSrc(screen.id, theme))), `${theme}/${screen.id}-sm`).toBe(true);
         if ("topCrop" in screen && screen.topCrop)
           expect(existsSync(join(LANDING_ROOT, "public", screenSrc(screen.id, theme, true))), `${theme}/${screen.id}-top`).toBe(true);
+        if ("phone" in screen && screen.phone)
+          expect(existsSync(join(LANDING_ROOT, "public", screenPhoneSrc(screen.id, theme))), `${theme}/${screen.id}-phone`).toBe(true);
       }
+  });
+
+  it("una schermata con segmento dinamico dice come aprirla", () => {
+    for (const screen of SCREENS) if (screen.route.includes("[")) expect("open" in screen && screen.open, `${screen.id}`).toBeTruthy();
   });
 
   it("gli id sono unici", () => {

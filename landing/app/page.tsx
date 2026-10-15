@@ -1,14 +1,14 @@
-import { Closing } from "@/components/closing";
-import { Compare } from "@/components/compare";
-import { Faq } from "@/components/faq";
-import { Fit } from "@/components/fit";
-import { ItalyRules } from "@/components/italy-rules";
+import "@/components/tail/tail.css";
 import { JsonLd } from "@/components/json-ld";
-import { Security } from "@/components/security";
-import { SheetHero } from "@/components/sheet-hero";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
-import { SupportedSources } from "@/components/supported-sources";
-import { Tour } from "@/components/tour";
+import { Story } from "@/components/story/story";
+import { Closing } from "@/components/tail/closing";
+import { FaqHome } from "@/components/tail/faq-home";
+import { RulesHome } from "@/components/tail/rules-home";
+import { SecurityHome } from "@/components/tail/security-home";
+import { ToolsHome } from "@/components/tail/tools-home";
+import { WorksWith } from "@/components/tail/works-with";
 import { FAQ, SITE_URL } from "@/content/site";
 
 /** Dati strutturati FAQ: le stesse domande della sezione visibile, solo in questa pagina. */
@@ -19,10 +19,9 @@ const FAQ_JSON_LD = {
   mainEntity: FAQ.map((q) => ({ "@type": "Question", name: q.question, acceptedAnswer: { "@type": "Answer", text: q.answer } })),
 };
 
-/** Schede del foglio sotto l'apertura: una per sezione, nell'ordine della pagina. */
 /**
- * Home «Il foglio»: si parte dal foglio dei conti tenuto a mano, poi le fonti supportate e il giro dell'app area per
- * area (schermate intere e scheda tecnica), le regole italiane, il confronto, la fiducia e le domande frequenti.
+ * Home «Sei domande» (2026-10-14): la finestra dell'app resta ferma e risponde a sei domande mentre si scorre; poi
+ * con cosa funziona, la sicurezza in chiaro con il codice aperto, le regole italiane, i calcolatori, le domande e la chiusura.
  */
 export default function HomePage() {
   return (
@@ -30,16 +29,17 @@ export default function HomePage() {
       <JsonLd data={FAQ_JSON_LD} />
       <SiteNav />
       <main>
-        <SheetHero />
-        <SupportedSources />
-        <Tour />
-        <ItalyRules />
-        <Compare />
-        <Security />
-        <Fit />
-        <Faq />
+        <Story />
+        <div className="tail">
+          <WorksWith />
+          <SecurityHome />
+          <RulesHome />
+          <ToolsHome />
+          <FaqHome />
+        </div>
         <Closing />
       </main>
+      <SiteFooter />
     </>
   );
 }

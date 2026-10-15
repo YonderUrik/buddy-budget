@@ -7,7 +7,7 @@ describe("track", () => {
   it("è no-op senza Umami", () => {
     expect(() => track("theme_toggled", { theme: "dark" })).not.toThrow();
     vi.stubGlobal("window", {});
-    expect(() => track("section_view", { section: "hero" })).not.toThrow();
+    expect(() => track("section_view", { section: "storia" })).not.toThrow();
   });
 
   it("inoltra nome e props a Umami", () => {
@@ -25,6 +25,6 @@ describe("track", () => {
         },
       },
     });
-    expect(() => track("hide_amounts_toggled", { hidden: true })).not.toThrow();
+    expect(() => track("story_real_toggled", { step: "soldi", real: true })).not.toThrow();
   });
 });

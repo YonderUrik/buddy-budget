@@ -1,6 +1,6 @@
 /* Domande frequenti in una card a righe, come le liste dell'app: titolo fermo a sinistra, risposte che si aprono a destra. */
 .faq-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 24px 64px; align-items: start; }
-.faq-grid > div:first-child { position: sticky; top: calc(68px + 64px); }
+.faq-grid > div:first-child { position: sticky; top: 24px; }
 .faq-list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); overflow: hidden; }
 .faq-item + .faq-item { border-top: 1px solid var(--line); }
 .faq-item summary { cursor: pointer; list-style: none; padding: 18px 20px 18px 46px; font: 600 clamp(17px, 1.8vw, 18px) / 1.35 var(--f-h); position: relative; }

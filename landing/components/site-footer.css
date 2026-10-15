@@ -1,6 +1,12 @@
-/* Piè di pagina delle pagine secondarie: lo stesso della chiusura della home, su fondo chiaro con una riga sopra. */
-.sf { color: var(--ink3); font: 500 14px var(--f-b); padding-block: 24px 40px; margin-top: 72px; }
-.sf .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; border-top: 1px solid var(--line); padding-top: 24px; }
-.sf nav { display: flex; flex-wrap: wrap; gap: 6px 18px; }
-.sf a { color: var(--ink3); text-decoration: none; }
-.sf a:hover { color: var(--ink); text-decoration: underline; }
+/* Piè di pagina su fondo navy, come la sidebar dell'app: dopo la chiusura della home non c'è stacco, nelle altre pagine sta sotto l'invito finale. */
+.sf { background: var(--navy); color: var(--on-navy2); font: 500 14px var(--f-b); padding-block: 24px 40px; margin-top: 72px; border-top: 1px solid color-mix(in srgb, var(--on-navy) 10%, transparent); }
+/* la home finisce con la chiusura navy: il footer le si attacca */
+main:has(.close) + .sf { margin-top: 0; }
+.sf .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+.sf nav { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
+.sf .sp { flex: 1; }
+.sf a { color: var(--on-navy2); text-decoration: none; }
+.sf a:hover { color: var(--on-navy); }
+.sf .gh { display: inline-flex; align-items: center; gap: 6px; }
+.sf .gh svg { width: 14px; height: 14px; }
+@media (max-width: 1000px) { .sf .sp { display: none; } }

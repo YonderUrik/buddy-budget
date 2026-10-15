@@ -2,8 +2,8 @@
 import { useLocalization } from "@/lib/localization/provider";
 
 /**
- * Flusso "Collega banca": paese, ricerca dell'istituto (con logo e storico disponibile) e redirect al consenso
- * GoCardless. Gestisce caricamento, errore con riprova, nessun risultato e l'attesa del redirect.
+ * Flusso "Collega banca": paese, ricerca dell'istituto (con logo e storico o durata del consenso) e redirect al
+ * consenso della banca tramite il fornitore in uso. Gestisce caricamento, errore con riprova, nessun risultato e l'attesa del redirect.
  */
 
 import * as React from "react";
@@ -11,8 +11,8 @@ import { Building2, ChevronRightIcon, Loader2Icon, LockKeyholeIcon } from "lucid
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries/gocardless";
-import type { Institution } from "@/lib/queries/gocardless";
+import { useCreateConnectionMutation, useInstitutionsQuery } from "@/lib/queries/bank";
+import type { Institution } from "@/lib/queries/bank";
 import { ErrorWithReport, ReportErrorLink } from "@/components/domain/support";
 import { LANDING_URL } from "@/lib/legal";
 
@@ -46,16 +46,22 @@ function InstitutionLogo({ institution }: { institution: Institution }) {
     );
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element -- logo di dominio esterno GoCardless
+    // eslint-disable-next-line @next/next/no-img-element -- logo di dominio esterno del fornitore bancario
     <img src={institution.logo} alt={""} className="size-9 shrink-0 rounded-full bg-white object-contain p-0.5 ring-1 ring-border" onError={() => setErrored(true)} />
   );
 }
 
 /** Frase sullo storico che la banca mette a disposizione, se il dato è valido. */
-export function describeHistory(days: string): string | null {
+export function describeHistory(days: string | undefined): string | null {
   const total = Number(days);
   if (!Number.isFinite(total) || total <= 0) return null;
   return total >= 365 ? `Storico fino a ${Math.round(total / 365) === 1 ? "1 anno" : `${Math.round(total / 365)} anni`}` : `Storico fino a ${total} giorni`;
+}
+
+/** Frase sulla durata del consenso (Enable Banking la dà per ogni banca), se il dato è valido. */
+export function describeConsentDays(days: number | undefined): string | null {
+  if (!days || !Number.isFinite(days) || days <= 0) return null;
+  return `Consenso valido ${days} giorni`;
 }
 
 export interface ConnectBankFlowProps {
@@ -83,7 +89,11 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
     setError(null);
     setChosenId(institution.id);
     createConnection.mutate(
-      { institutionId: institution.id, institutionName: institution.name, transactionTotalDays: Number(institution.transaction_total_days) },
+      {
+        institutionId: institution.id,
+        institutionName: institution.name,
+        transactionTotalDays: Number(institution.transaction_total_days) > 0 ? Number(institution.transaction_total_days) : undefined,
+      },
       {
         // Il redirect lascia la pagina: finché non parte restiamo nello stato «ti porto alla banca».
         onSuccess: (data) => {
@@ -158,7 +168,7 @@ export function ConnectBankFlow({ onChooseManual }: ConnectBankFlowProps) {
           <p className="text-xs text-muted-foreground" aria-live="polite">{filtered.length === 1 ? tr("1 banca") : tr("{0} banche", {0: filtered.length})}</p>
           <ul className="-mt-2 flex max-h-[min(22rem,45dvh)] flex-col gap-2 overflow-y-auto pr-0.5 max-sm:max-h-none">
             {filtered.map((institution) => {
-              const history = describeHistory(institution.transaction_total_days);
+              const history = describeHistory(institution.transaction_total_days) ?? describeConsentDays(institution.max_consent_days);
               const chosen = chosenId === institution.id;
               return (
                 <li key={institution.id}>

@@ -1,4 +1,4 @@
-import { buildSyncErrorMessage, buildSyncSummaryMessage } from "@/lib/gocardless/sync-messages";
+import { buildSyncErrorMessage, buildSyncSummaryMessage } from "@/lib/bank-data/sync-messages";
 import type { SyncJobAccount, SyncJobView } from "@/lib/sync-jobs/types";
 import type { ProgressBarState } from "@/components/domain/shared";
 
@@ -48,7 +48,7 @@ export function describeAccountProgress(account: SyncJobAccount, interrupted: bo
         tone: "success",
       };
     case "limited":
-      return { text: buildSyncErrorMessage({ status: "gocardless-limited" }), bar: NO_BAR, tone: "error" };
+      return { text: buildSyncErrorMessage({ status: "bank-limited" }), bar: NO_BAR, tone: "error" };
     case "expired":
       return { text: buildSyncErrorMessage({ status: "expired" }), bar: NO_BAR, tone: "error" };
     case "error":

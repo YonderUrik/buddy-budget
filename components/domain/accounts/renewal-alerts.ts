@@ -1,4 +1,4 @@
-import { computeConnectionHealth, needsRenewal, type ConnectionHealthState } from "@/lib/gocardless/connection-health";
+import { computeConnectionHealth, needsRenewal, type ConnectionHealthState } from "@/lib/bank-data/connection-health";
 
 /** Minimo dei dati di una connessione necessario a decidere cosa mostrare (compatibile con `BankConnectionStatus`). */
 export interface RenewalSource {

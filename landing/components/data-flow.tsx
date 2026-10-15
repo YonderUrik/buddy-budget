@@ -9,7 +9,7 @@ import { track } from "@/lib/analytics";
 const NODE_ICONS: Record<FlowNodeId, ComponentType<{ size?: number }>> = {
   tu: UserRound,
   banca: Building2,
-  gocardless: ShieldCheck,
+  fornitore: ShieldCheck,
   buddybudget: Server,
 };
 

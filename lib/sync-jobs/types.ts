@@ -20,7 +20,7 @@ export const FINAL_PHASES: ReadonlySet<SyncAccountPhase> = new Set(["done", "lim
 export const SYNC_JOB_TTL_SECONDS = 24 * 60 * 60;
 /** Oltre questo intervallo senza aggiornamenti un job "running" è considerato interrotto. */
 export const SYNC_JOB_STALE_MS = 60_000;
-/** Intervallo del keep-alive durante una chiamata GoCardless lenta: deve restare sotto SYNC_JOB_STALE_MS. */
+/** Intervallo del keep-alive durante una chiamata lenta al fornitore bancario: deve restare sotto SYNC_JOB_STALE_MS. */
 export const SYNC_JOB_HEARTBEAT_MS = 15_000;
 /** TTL del lock per conto: maxDuration delle route (300s) + margine. */
 export const SYNC_LOCK_TTL_SECONDS = 360;
@@ -29,7 +29,7 @@ export interface SyncJobAccount {
   accountId: string;
   name: string;
   phase: SyncAccountPhase;
-  /** Movimenti da elaborare: noto solo dopo lo scarico da GoCardless. */
+  /** Movimenti da elaborare: noto solo dopo lo scarico dalla banca. */
   total: number | null;
   /** Movimenti elaborati (nuovi + già presenti). */
   processed: number;

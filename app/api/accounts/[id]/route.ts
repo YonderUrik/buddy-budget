@@ -5,7 +5,7 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { transactions } from "@/lib/db/schema/transactions";
 import { bankAccountLinks } from "@/lib/db/schema/bank-connections";
-import { releaseConnectionIfUnused } from "@/lib/gocardless/release";
+import { releaseConnectionIfUnused } from "@/lib/bank-data/release";
 import { updateAccountSchema } from "@/lib/validation/accounts";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 
@@ -68,7 +68,7 @@ async function handlePatch(
 
 /**
  * Elimina o scollega un conto del proprio utente, manuale o auto; 404 se non proprio. Se era l'ultimo conto
- * di un collegamento bancario, il consenso viene revocato subito su GoCardless e il posto si libera.
+ * di un collegamento bancario, il consenso viene revocato subito presso il fornitore (GoCardless o Enable Banking) e il posto si libera.
  */
 async function handleDelete(
   request: NextRequest,

@@ -4,6 +4,8 @@
  * Non sono un parere legale: restano da far rivedere a un professionista.
  */
 
+import { BANK_PROVIDER, ENABLE_BANKING_LIVE, GOCARDLESS_CONSENT_DAYS } from "./bank-provider";
+
 /** Versione dei documenti (data dell'ultima modifica sostanziale). */
 export const LEGAL_VERSION = "2026-10-12";
 
@@ -21,7 +23,7 @@ const DEACTIVATION_DAYS = 30;
 const INACTIVITY_DAYS = 90;
 const INACTIVITY_NOTICE_DAYS = 7;
 const BACKUP_DAYS = 14;
-const BANK_CONSENT_DAYS = 90;
+const BANK_CONSENT_DAYS = GOCARDLESS_CONSENT_DAYS;
 /** Retention di Loki nel repo infra (`limits_config.retention_period`). */
 const LOG_DAYS = 30;
 /** Anteprima cifrata di un import CSV con AI (`expiresAt` in lib/personal-import/jobs.ts). */
@@ -68,7 +70,7 @@ export const PRIVACY: LegalDocument = {
       items: [
         "Dati dell'account: nome, indirizzo email, valuta e preferenze scelte. Se accedi con Google, anche la foto del profilo.",
         "Dati finanziari che inserisci tu o che importi: conti, saldi, transazioni (con descrizione, note e controparte), categorie, budget, investimenti, debiti, fondi pensione e patrimonio netto. Le descrizioni possono contenere informazioni su abitudini, acquisti o contesti personali: non ti chiediamo mai di inserire dati sulla salute, sulle opinioni o altre categorie particolari, ma possono emergere dai testi delle transazioni.",
-        "Dati bancari: se colleghi un conto con Open Banking, tramite GoCardless riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.",
+        `Dati bancari: se colleghi un conto con Open Banking, tramite ${ENABLE_BANKING_LIVE ? "Enable Banking (o GoCardless, per i collegamenti fatti prima del passaggio e non ancora rinnovati)" : "GoCardless"} riceviamo i conti e le transazioni che autorizzi. Non vediamo né conserviamo le credenziali della tua banca.`,
         "File che carichi per l'import: estratti conto e rendiconti (per esempio CSV o file dei broker). Se scegli l'import con intelligenza artificiale, il file viene conservato cifrato solo per il tempo dell'elaborazione (vedi la sezione dedicata).",
         "Proposte di categoria: se attivi l'assistente, per ogni esercente conserviamo il nome normalizzato, la categoria proposta e se l'hai confermata o corretta (mai importi o date), insieme alla data del tuo consenso.",
         "Messaggi al supporto: se scrivi dalla pagina Aiuto, riceviamo il testo, l'indirizzo email dell'account e, se non lo togli, un contesto tecnico (pagina, versione dell'app, dimensioni e tema dello schermo, tipo di browser).",
@@ -99,8 +101,16 @@ export const PRIVACY: LegalDocument = {
       id: "open-banking",
       title: "Collegamento bancario (Open Banking)",
       paragraphs: [
-        `Il collegamento passa da GoCardless Bank Account Data, un fornitore di servizi di informazione sui conti autorizzato ai sensi della direttiva PSD2. Autorizzi l'accesso direttamente presso la tua banca; l'autorizzazione dura al massimo ${BANK_CONSENT_DAYS} giorni, dopo i quali va rinnovata, e puoi revocarla quando vuoi.`,
-        "Il consenso che dai alla tua banca e a GoCardless è distinto da questa informativa. Se elimini l'account o fai il reset dei dati revochiamo i collegamenti attivi presso GoCardless. Possiamo rimuovere da GoCardless anche i collegamenti scaduti o non più usati.",
+        ...(ENABLE_BANKING_LIVE
+          ? [
+              `Il collegamento passa da Enable Banking (Enable Banking Oy, Finlandia), un fornitore di servizi di informazione sui conti registrato e vigilato dall'autorità finanziaria finlandese ai sensi della direttiva PSD2. Autorizzi l'accesso direttamente presso la tua banca; l'autorizzazione dura al massimo ${BANK_PROVIDER.maxConsentDays} giorni (la tua banca può concederne meno), dopo i quali va rinnovata, e puoi revocarla quando vuoi.`,
+              `I collegamenti fatti prima del passaggio restano su GoCardless Bank Account Data (GoCardless SAS, autorizzata in Francia) finché non li rinnovi, al massimo ${GOCARDLESS_CONSENT_DAYS} giorni: al rinnovo passano a Enable Banking e revochiamo il consenso su GoCardless.`,
+              "Il consenso che dai alla tua banca e al fornitore è distinto da questa informativa. Se elimini l'account o fai il reset dei dati revochiamo i collegamenti attivi presso il fornitore. Possiamo rimuovere anche i collegamenti scaduti o non più usati.",
+            ]
+          : [
+              `Il collegamento passa da GoCardless Bank Account Data, un fornitore di servizi di informazione sui conti autorizzato ai sensi della direttiva PSD2. Autorizzi l'accesso direttamente presso la tua banca; l'autorizzazione dura al massimo ${BANK_CONSENT_DAYS} giorni, dopo i quali va rinnovata, e puoi revocarla quando vuoi.`,
+              "Il consenso che dai alla tua banca e a GoCardless è distinto da questa informativa. Se elimini l'account o fai il reset dei dati revochiamo i collegamenti attivi presso GoCardless. Possiamo rimuovere da GoCardless anche i collegamenti scaduti o non più usati.",
+            ]),
       ],
     },
     {
@@ -130,7 +140,9 @@ export const PRIVACY: LegalDocument = {
       items: [
         "Hostinger: server (VPS) in Germania, dove girano app e database.",
         "Cloudflare: instradamento del traffico, DNS e archiviazione (R2) delle copie di sicurezza del database.",
-        "GoCardless: lettura dei conti bancari che colleghi, ai sensi di PSD2.",
+        ...(ENABLE_BANKING_LIVE
+          ? ["Enable Banking: lettura dei conti bancari che colleghi, ai sensi di PSD2.", "GoCardless: lettura dei conti collegati prima del passaggio a Enable Banking, fino al loro rinnovo."]
+          : ["GoCardless: lettura dei conti bancari che colleghi, ai sensi di PSD2."]),
         "Resend: invio delle email di servizio e, se le attivi, di riepilogo e avvisi (usa il tuo indirizzo email e il testo delle email, che può contenere cifre del tuo budget) e consegna dei messaggi che scrivi al supporto.",
         "OpenRouter e il fornitore del modello che questo seleziona: solo se usi l'import con intelligenza artificiale o le proposte di categoria, con il tuo consenso (vedi le sezioni dedicate).",
         "Google: solo se scegli di accedere con Google; agisce come titolare autonomo per l'autenticazione.",

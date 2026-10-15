@@ -3,10 +3,11 @@
  * in una fonte ufficiale citata in `SECURITY_SOURCES` (controllo del 2026-10-12). Prima di aggiungere una promessa,
  * cercarne la prova: quello che non si può dimostrare (cifratura del disco, audit, certificazioni) non va scritto.
  */
+import { BANK_PROVIDER, ENABLE_BANKING_LIVE, GOCARDLESS_CONSENT_DAYS } from "./bank-provider";
 import type { Source } from "./seo-pages";
 
-/** Giorni di validità del consenso alla banca (`access_valid_for_days` in `lib/gocardless/connection-health.ts`). */
-const BANK_CONSENT_DAYS = 90;
+/** Giorni massimi di validità del consenso alla banca, per il fornitore in uso (vedi `bank-provider.ts`). */
+const BANK_CONSENT_DAYS = BANK_PROVIDER.maxConsentDays;
 /** Retention di Loki nel repo infra. */
 const LOG_DAYS = 30;
 /** `retentionPolicy` dei backup CNPG nel repo infra. */
@@ -33,6 +34,8 @@ export const SECURITY_SOURCES = {
   gocardlessTerms: { label: "GoCardless, condizioni del servizio Bank Account Data (UE): GoCardless SAS, autorizzata dall'ACPR, n. 17118; cosa conserva e per cosa lo usa (art. 4.1), nessun altro terzo e credenziali mai viste (art. 4.3)", href: "https://gocardless.com/legal/bank-account-data/" },
   gocardlessPrivacy: { label: "GoCardless, informativa privacy per chi condivide i dati del proprio conto: dati raccolti e contatti del responsabile della protezione dei dati", href: "https://gocardless.com/privacy/account-holders/" },
   gocardlessPrivacyDetails: { label: "GoCardless, dettagli dell'informativa privacy: per quanto tempo conserva i dati, condivisione con le autorità e trasferimenti fuori dall'UE", href: "https://gocardless.com/privacy/details/" },
+  enableBankingTerms: { label: "Enable Banking, condizioni del servizio: Enable Banking Oy (n. 2988499-7), Espoo, Finlandia, prestatore di servizi di informazione sui conti registrato e vigilato dall'autorità finanziaria finlandese (FIN-FSA)", href: "https://enablebanking.com/terms" },
+  enableBankingPrivacy: { label: "Enable Banking, informativa privacy (riguarda sito e pannello di controllo; contatto support@enablebanking.com)", href: "https://enablebanking.com/privacy" },
   regafi: { label: "REGAFI, registro degli intermediari autorizzati in Francia (ACPR): cerca GoCardless SAS", href: "https://www.regafi.fr/" },
   ebaRegister: { label: "EBA, registro europeo degli istituti di pagamento", href: "https://www.eba.europa.eu/risk-and-data-analysis/data/registers/payment-institutions-register" },
   gdpr: { label: "Regolamento (UE) 2016/679 (GDPR): diritti di accesso, portabilità e cancellazione (artt. 15-20)", href: "https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32016R0679" },
@@ -41,7 +44,7 @@ export const SECURITY_SOURCES = {
   garante: { label: "Garante per la protezione dei dati personali: come presentare un reclamo", href: "https://www.garanteprivacy.it/" },
 } as const satisfies Record<string, Source>;
 
-export type FlowNodeId = "tu" | "banca" | "gocardless" | "buddybudget";
+export type FlowNodeId = "tu" | "banca" | "fornitore" | "buddybudget";
 
 export interface FlowNode {
   id: FlowNodeId;
@@ -79,14 +82,16 @@ export const FLOW = {
       label: "La tua banca",
       role: "Dove inserisci le credenziali",
       sees: ["Ti identifica con le sue credenziali e una conferma in più (autenticazione forte), come quando entri nell'home banking.", `Ti chiede di autorizzare la lettura dei conti per al massimo ${BANK_CONSENT_DAYS} giorni.`],
-      never: ["Non ricevono le tue credenziali né GoCardless né BuddyBudget: le scrivi solo nelle pagine della banca."],
+      never: [`Non ricevono le tue credenziali né ${BANK_PROVIDER.name} né BuddyBudget: le scrivi solo nelle pagine della banca.`],
     },
     {
-      id: "gocardless",
-      seesTitle: "Cosa riceve GoCardless",
-      label: "GoCardless",
+      id: "fornitore",
+      seesTitle: `Cosa riceve ${BANK_PROVIDER.name}`,
+      label: BANK_PROVIDER.name,
       role: "Fornitore autorizzato (PSD2)",
-      sees: ["GoCardless SAS è autorizzata dall'autorità francese di vigilanza (ACPR, n. 17118) a fornire servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti e li passa a BuddyBudget, perché l'hai chiesto tu. Ne conserva una copia secondo le sue condizioni e gli obblighi di legge."],
+      sees: ENABLE_BANKING_LIVE
+        ? ["Enable Banking Oy è registrata in Finlandia e vigilata dall'autorità finanziaria finlandese (FIN-FSA) come fornitore di servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti e li passa a BuddyBudget, perché l'hai chiesto tu.", `I collegamenti fatti prima del passaggio restano su GoCardless finché non li rinnovi (al massimo ${GOCARDLESS_CONSENT_DAYS} giorni).`]
+        : ["GoCardless SAS è autorizzata dall'autorità francese di vigilanza (ACPR, n. 17118) a fornire servizi di informazione sui conti.", "Riceve dalla banca saldi, dati del conto e movimenti e li passa a BuddyBudget, perché l'hai chiesto tu. Ne conserva una copia secondo le sue condizioni e gli obblighi di legge."],
       never: ["Non vede le tue credenziali e non può muovere denaro: il servizio è solo di lettura."],
     },
     {
@@ -153,6 +158,25 @@ export const GOCARDLESS_DATA = {
   ] satisfies readonly FactRow[],
 } as const;
 
+/**
+ * Cosa sappiamo di Enable Banking: solo quello che dicono le sue condizioni e la sua informativa. Quello che non
+ * pubblicano (per quanto tempo e dove conserva i dati di chi collega la banca) lo diciamo, invece di supporlo.
+ */
+export const ENABLE_BANKING_DATA = {
+  question: "Cosa conserva Enable Banking, e per quanto?",
+  lede: "Enable Banking non è un semplice tramite: è un fornitore registrato e vigilato, con obblighi propri. Ecco cosa si sa dalle sue pagine pubbliche, e cosa no.",
+  rows: [
+    { label: "Chi è", text: "Enable Banking Oy, con sede a Espoo, in Finlandia, registrata e vigilata dall'autorità finanziaria finlandese (FIN-FSA) come fornitore di servizi di informazione sui conti." },
+    { label: "Cosa riceve", text: "Saldi, dati del conto e movimenti dei conti che autorizzi, per passarli a BuddyBudget. Le credenziali della banca no: le scrivi solo nelle pagine della banca." },
+    { label: "Per quanto tempo", text: "Le sue pagine pubbliche non lo dicono per chi collega la banca: la sua informativa riguarda il sito e il pannello per gli sviluppatori. Puoi chiederlo a support@enablebanking.com (GDPR, art. 15)." },
+    { label: "Se scolleghi la banca", text: "Chiudiamo la sessione su Enable Banking e smette di leggere i tuoi conti. Per quello che ha già ricevuto puoi scrivere a Enable Banking (GDPR, artt. 15-17)." },
+    { label: "Collegamenti di prima", text: `Chi ha collegato la banca prima del passaggio resta su GoCardless finché non rinnova il consenso (al massimo ${GOCARDLESS_CONSENT_DAYS} giorni): al rinnovo passa a Enable Banking e il consenso su GoCardless viene revocato.` },
+  ] satisfies readonly FactRow[],
+} as const;
+
+/** La domanda sul fornitore in uso, nella pagina Sicurezza. */
+export const PROVIDER_DATA = ENABLE_BANKING_LIVE ? ENABLE_BANKING_DATA : GOCARDLESS_DATA;
+
 /** Statistiche d'uso (Umami): cosa contiamo e cosa no. Vedi `lib/analytics/track.ts` (tipo chiuso `ProductEvents`) e la pagina cookie. */
 export const ANALYTICS_DATA = {
   question: "Cosa contano le statistiche d'uso?",
@@ -174,7 +198,7 @@ export interface Pillar {
 export const CONTROLS = {
   question: "Come porto via o cancello i miei dati?",
   items: [
-    { title: "Scollega la banca", text: "Togliendo l'ultimo conto di una banca revochiamo subito il consenso su GoCardless. Il consenso scade comunque dopo 90 giorni e lo rinnovi solo se vuoi." },
+    { title: "Scollega la banca", text: `Togliendo l'ultimo conto di una banca revochiamo subito il consenso su ${BANK_PROVIDER.name}. Il consenso scade comunque dopo ${BANK_PROVIDER.consent} e lo rinnovi solo se vuoi.` },
     { title: "Scarica i tuoi dati", text: "Da Impostazioni scarichi un file ZIP con tutto, in JSON e CSV." },
     { title: "Elimina l'account", text: "Subito, oppure con 30 giorni per ripensarci. Con l'account si chiudono anche i collegamenti alle banche." },
     { title: "Conferma prima delle azioni delicate", text: `Export, azzeramento ed eliminazione chiedono un accesso fatto negli ultimi ${FRESH_LOGIN_MINUTES} minuti, e per cancellare devi scrivere una conferma.` },

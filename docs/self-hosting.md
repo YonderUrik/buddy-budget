@@ -33,7 +33,7 @@ e apri l'URL stampato (vale pochi minuti). L'account si crea al primo accesso; s
 |---|---|---|
 | Email (Resend) | `RESEND_API_KEY`, `RESEND_FROM` | Il link di accesso va nei log. Non partono avvisi di prezzo, email dell'account, avvisi di scadenza bancaria, segnalazioni dall'app. |
 | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Il pulsante «Continua con Google» compare ma risponde con un errore: usa il link via email. |
-| Banche (GoCardless) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` | Niente conti collegati; restano conti manuali, import CSV, investimenti, debiti, pensione. |
+| Banche (GoCardless o Enable Banking) | `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY` oppure `ENABLE_BANKING_APP_ID`, `ENABLE_BANKING_PRIVATE_KEY` (con entrambi, `BANK_DATA_PROVIDER` sceglie quello dei collegamenti nuovi) | Niente conti collegati; restano conti manuali, import CSV, investimenti, debiti, pensione. |
 
 Tutto il resto (movimenti, categorie e regole, budget, investimenti con i prezzi dalle fonti gratuite, debiti, analitiche) funziona senza chiavi. Il servizio `cron` aggiorna i prezzi e gli snapshot del patrimonio agli stessi orari della produzione (06:30/17:30/22:30 UTC).
 

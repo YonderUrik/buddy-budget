@@ -14,7 +14,7 @@ import { AddAccountForm, ConnectBankFlow } from "@/components/domain/accounts";
 import { PanelDialogHeader } from "@/components/domain/investments/light";
 import { Dialog } from "@/components/ui/dialog";
 import { track } from "@/lib/analytics";
-import { useBankCapacityQuery } from "@/lib/queries/gocardless";
+import { useBankCapacityQuery } from "@/lib/queries/bank";
 import { BANK_UNAVAILABLE_COPY } from "./bank-capacity.data";
 
 export type AddAccountView = "scelta" | "banca" | "manuale";

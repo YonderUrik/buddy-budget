@@ -23,11 +23,11 @@ import { track } from "@/lib/analytics";
 import { authClient } from "@/lib/auth/client";
 import { startOfDay } from "@/lib/calc/expenses";
 import { toDateKey } from "@/lib/calc/net-worth";
-import { computeConnectionHealth, needsRenewal } from "@/lib/gocardless/connection-health";
+import { computeConnectionHealth, needsRenewal } from "@/lib/bank-data/connection-health";
 import { buildAccountBalanceSeries } from "@/lib/liquidity/account-series";
 
 import { useAccountsQuery } from "@/lib/queries/accounts";
-import { useBankConnectionsStatusQuery } from "@/lib/queries/gocardless";
+import { useBankConnectionsStatusQuery } from "@/lib/queries/bank";
 import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 import { isAccountSyncing } from "@/lib/sync-jobs/view";

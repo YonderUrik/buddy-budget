@@ -13,7 +13,7 @@ export const DURATION_BUCKETS_SECONDS = [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30
 
 export type SyncTrigger = "manual" | "cron" | "finalize";
 export type SyncOutcome = "synced" | "limited" | "expired" | "error";
-export type CronName = "gocardless_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "gocardless_maintenance" | "notifications" | "inactive_accounts";
+export type CronName = "bank_sync" | "net_worth_snapshot" | "market_prices" | "account_deletion" | "bank_maintenance" | "notifications" | "inactive_accounts";
 export type CronOutcome = "success" | "error";
 export type AuthEvent = "magic_link_sent" | "magic_link_failed" | "sign_in" | "rate_limited";
 export type SupportReportKind = "problema" | "domanda" | "idea";
@@ -43,6 +43,23 @@ export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed"
 export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions" | "goals";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
+/** Fornitore dei dati bancari (Open Banking) di una connessione. */
+export type BankProviderId = "gocardless" | "enablebanking";
+
+/** Template statici degli endpoint Enable Banking (mai il path reale: contiene id di sessione e di conto). */
+export type EnableBankingEndpoint =
+  | "aspsps.list"
+  | "auth.start"
+  | "sessions.create"
+  | "sessions.get"
+  | "sessions.delete"
+  | "accounts.details"
+  | "accounts.balances"
+  | "accounts.transactions";
+
+/** Endpoint di un qualunque fornitore, per la metrica `bank_api_requests_total`. */
+export type BankApiEndpoint = GoCardlessEndpoint | EnableBankingEndpoint;
+
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
 export type GoCardlessEndpoint =
   | "token.new"
@@ -59,16 +76,16 @@ export type GoCardlessEndpoint =
   | "accounts.transactions";
 
 export const CRON_NAMES: readonly CronName[] = [
-  "gocardless_sync",
+  "bank_sync",
   "net_worth_snapshot",
   "market_prices",
   "account_deletion",
-  "gocardless_maintenance",
+  "bank_maintenance",
   "notifications",
   "inactive_accounts",
 ];
 
-/** Modalità del cron di pulizia GoCardless (`dry-run` conta soltanto, non elimina). */
+/** Modalità del cron di pulizia delle connessioni bancarie (`dry-run` conta soltanto, non elimina). */
 export type CleanupMode = "dry-run" | "execute";
 /** Cosa ha deciso/fatto la pulizia: `*_candidate` solo in dry-run, `*_deleted` solo in execute. */
 export type CleanupAction =
@@ -82,11 +99,11 @@ export type CleanupAction =
   | "skipped_linked"
   | "capped"
   | "failed";
-/** Perché si libera subito una connessione GoCardless rimasta senza conti: conto scollegato o consenso rinnovato. */
-export type GoCardlessReleaseTrigger = "account_removed" | "renewed";
-export type GoCardlessReleaseOutcome = "released" | "failed";
-/** Esito di una richiesta di collegamento: avviata, bloccata da un limite, rifiutata da GoCardless (402) o fallita. */
-export type GoCardlessConnectOutcome =
+/** Perché si libera subito una connessione bancaria rimasta senza conti: conto scollegato o consenso rinnovato. */
+export type BankReleaseTrigger = "account_removed" | "renewed";
+export type BankReleaseOutcome = "released" | "failed";
+/** Esito di una richiesta di collegamento: avviata, bloccata da un limite, rifiutata dal fornitore (posti finiti) o fallita. */
+export type BankConnectOutcome =
   | "started"
   | "user_limit"
   | "user_attempts"
@@ -94,8 +111,9 @@ export type GoCardlessConnectOutcome =
   | "provider_limit"
   | "provider_refused"
   | "failed";
-/** Posti GoCardless letti allo scrape: requisition vive, consensi recenti, posti usati (il maggiore dei due), limiti e utenti oltre il limite per utente. */
-export interface GoCardlessCapacityReading {
+/** Posti dei collegamenti letti allo scrape (fornitore dei collegamenti nuovi): consensi vivi, recenti, usati (il maggiore dei due), limiti e utenti oltre il limite per utente. */
+export interface BankCapacityReading {
+  provider: BankProviderId;
   live: number;
   recent: number;
   used: number;
@@ -132,7 +150,7 @@ export interface AsyncGaugeDeps {
   cronLastSuccess?: () => Promise<Partial<Record<CronName, number | null>>>;
   syncJobs?: () => Promise<{ active: number; stale: number }>;
   usage?: () => Promise<UsageSnapshot>;
-  gocardlessCapacity?: () => Promise<GoCardlessCapacityReading>;
+  bankCapacity?: () => Promise<BankCapacityReading>;
 }
 
 interface MetricsState {
@@ -140,9 +158,9 @@ interface MetricsState {
   deps: AsyncGaugeDeps;
   httpRequests: Counter<"route" | "method" | "status_class">;
   httpDuration: Histogram<"route" | "method">;
-  syncTotal: Counter<"trigger" | "outcome">;
-  syncDuration: Histogram<"trigger">;
-  gcApi: Counter<"endpoint" | "status_class">;
+  syncTotal: Counter<"provider" | "trigger" | "outcome">;
+  syncDuration: Histogram<"provider" | "trigger">;
+  bankApi: Counter<"provider" | "endpoint" | "status_class">;
   imported: Counter<"categorized">;
   merchantNames: Counter<"source">;
   cronRuns: Counter<"cron" | "outcome">;
@@ -161,9 +179,9 @@ interface MetricsState {
   fundamentalsRequests: Counter<"kind" | "outcome">;
   fxProvider: Counter<"provider" | "outcome">;
   priceInstruments: Counter<"outcome">;
-  gcCleanup: Counter<"action" | "mode">;
-  gcRelease: Counter<"trigger" | "outcome">;
-  gcConnect: Counter<"kind" | "outcome">;
+  bankCleanup: Counter<"action" | "mode">;
+  bankRelease: Counter<"provider" | "trigger" | "outcome">;
+  bankConnect: Counter<"provider" | "kind" | "outcome">;
   inactiveAccounts: Counter<"action" | "mode">;
   consentNotices: Counter<"kind" | "outcome">;
   startEvents: Counter<"event">;
@@ -197,27 +215,27 @@ function createState(): MetricsState {
     registers: r,
   });
   state.syncTotal = new Counter({
-    name: `${METRIC_PREFIX}gocardless_sync_total`,
-    help: "Sync GoCardless di un conto per origine ed esito.",
-    labelNames: ["trigger", "outcome"],
+    name: `${METRIC_PREFIX}bank_sync_total`,
+    help: "Sync di un conto collegato alla banca per fornitore, origine ed esito.",
+    labelNames: ["provider", "trigger", "outcome"],
     registers: r,
   });
   state.syncDuration = new Histogram({
-    name: `${METRIC_PREFIX}gocardless_sync_duration_seconds`,
-    help: "Durata del sync GoCardless di un conto.",
-    labelNames: ["trigger"],
+    name: `${METRIC_PREFIX}bank_sync_duration_seconds`,
+    help: "Durata del sync di un conto collegato alla banca.",
+    labelNames: ["provider", "trigger"],
     buckets: DURATION_BUCKETS_SECONDS,
     registers: r,
   });
-  state.gcApi = new Counter({
-    name: `${METRIC_PREFIX}gocardless_api_requests_total`,
-    help: "Chiamate all'API GoCardless per endpoint (template) e classe di status.",
-    labelNames: ["endpoint", "status_class"],
+  state.bankApi = new Counter({
+    name: `${METRIC_PREFIX}bank_api_requests_total`,
+    help: "Chiamate all'API del fornitore bancario (GoCardless, Enable Banking) per endpoint (template) e classe di status.",
+    labelNames: ["provider", "endpoint", "status_class"],
     registers: r,
   });
   state.imported = new Counter({
     name: `${METRIC_PREFIX}transactions_imported_total`,
-    help: "Transazioni importate da GoCardless, divise per categorizzate automaticamente o no.",
+    help: "Transazioni importate dalla banca, divise per categorizzate automaticamente o no.",
     labelNames: ["categorized"],
     registers: r,
   });
@@ -331,22 +349,22 @@ function createState(): MetricsState {
     labelNames: ["outcome"],
     registers: r,
   });
-  state.gcCleanup = new Counter({
-    name: `${METRIC_PREFIX}gocardless_cleanup_total`,
-    help: "Requisition/agreement GoCardless trovate dalla pulizia per tipo di azione e modalità (dry-run o execute).",
+  state.bankCleanup = new Counter({
+    name: `${METRIC_PREFIX}bank_cleanup_total`,
+    help: "Consensi bancari (requisition GoCardless, sessioni Enable Banking) trovati dalla pulizia per tipo di azione e modalità (dry-run o execute).",
     labelNames: ["action", "mode"],
     registers: r,
   });
-  state.gcRelease = new Counter({
-    name: `${METRIC_PREFIX}gocardless_releases_total`,
-    help: "Connessioni GoCardless liberate subito (requisition eliminata) per motivo (conto scollegato, rinnovo) ed esito.",
-    labelNames: ["trigger", "outcome"],
+  state.bankRelease = new Counter({
+    name: `${METRIC_PREFIX}bank_releases_total`,
+    help: "Connessioni bancarie liberate subito (consenso revocato) per fornitore, motivo (conto scollegato, rinnovo) ed esito.",
+    labelNames: ["provider", "trigger", "outcome"],
     registers: r,
   });
-  state.gcConnect = new Counter({
-    name: `${METRIC_PREFIX}gocardless_connect_attempts_total`,
-    help: "Richieste di collegamento bancario per tipo (nuova banca o rinnovo) ed esito (avviata, bloccata da un limite, rifiutata da GoCardless, fallita).",
-    labelNames: ["kind", "outcome"],
+  state.bankConnect = new Counter({
+    name: `${METRIC_PREFIX}bank_connect_attempts_total`,
+    help: "Richieste di collegamento bancario per fornitore, tipo (nuova banca o rinnovo) ed esito (avviata, bloccata da un limite, rifiutata dal fornitore, fallita).",
+    labelNames: ["provider", "kind", "outcome"],
     registers: r,
   });
   state.inactiveAccounts = new Counter({
@@ -362,7 +380,7 @@ function createState(): MetricsState {
     registers: r,
   });
   state.consentNotices = new Counter({
-    name: `${METRIC_PREFIX}gocardless_consent_notices_total`,
+    name: `${METRIC_PREFIX}bank_consent_notices_total`,
     help: "Email di avviso sul consenso bancario (in scadenza o scaduto) per esito dell'invio.",
     labelNames: ["kind", "outcome"],
     registers: r,
@@ -451,16 +469,17 @@ function createState(): MetricsState {
   });
 
   new Gauge({
-    name: `${METRIC_PREFIX}gocardless_capacity`,
-    help: "Posti dei collegamenti GoCardless: live (requisition vive), recent (consensi negli ultimi 31 giorni), used (il maggiore), limit_global, limit_provider, users_over_limit.",
-    labelNames: ["measure"],
+    name: `${METRIC_PREFIX}bank_capacity`,
+    help: "Posti dei collegamenti bancari del fornitore in uso: live (consensi vivi), recent (consensi negli ultimi 31 giorni), used (il maggiore), limit_global, limit_provider, users_over_limit.",
+    labelNames: ["provider", "measure"],
     registers: r,
     async collect() {
       this.reset();
-      const read = state.deps.gocardlessCapacity;
+      const read = state.deps.bankCapacity;
       if (!read) return;
       try {
-        for (const [measure, n] of Object.entries(await read())) this.set({ measure }, n);
+        const { provider, ...measures } = await read();
+        for (const [measure, n] of Object.entries(measures)) this.set({ provider, measure }, n);
       } catch {
         // assenza del dato per questo scrape
       }
@@ -548,16 +567,16 @@ export function recordHttpRequest(route: string, method: string, status: number,
   m.httpDuration.observe({ route: safeRoute, method }, durationMs / 1000);
 }
 
-/** Registra l'esito del sync GoCardless di un conto. */
-export function recordGoCardlessSync(trigger: SyncTrigger, outcome: SyncOutcome, durationMs: number): void {
+/** Registra l'esito del sync di un conto collegato alla banca. */
+export function recordBankSync(provider: BankProviderId, trigger: SyncTrigger, outcome: SyncOutcome, durationMs: number): void {
   const m = metrics();
-  m.syncTotal.inc({ trigger, outcome });
-  m.syncDuration.observe({ trigger }, durationMs / 1000);
+  m.syncTotal.inc({ provider, trigger, outcome });
+  m.syncDuration.observe({ provider, trigger }, durationMs / 1000);
 }
 
-/** Registra una chiamata all'API GoCardless (status 0 = errore di rete). */
-export function recordGoCardlessApiRequest(endpoint: GoCardlessEndpoint, status: number): void {
-  metrics().gcApi.inc({ endpoint, status_class: status === 0 ? "network_error" : statusClass(status) });
+/** Registra una chiamata all'API di un fornitore bancario (status 0 = errore di rete). */
+export function recordBankApiRequest(provider: BankProviderId, endpoint: BankApiEndpoint, status: number): void {
+  metrics().bankApi.inc({ provider, endpoint, status_class: status === 0 ? "network_error" : statusClass(status) });
 }
 
 /** Registra quante transazioni importate sono state categorizzate automaticamente e quante no. */
@@ -684,19 +703,19 @@ export function recordPriceInstruments(outcome: PriceInstrumentOutcome, count: n
   if (count > 0) metrics().priceInstruments.inc({ outcome }, count);
 }
 
-/** Registra `count` elementi su cui la pulizia GoCardless ha deciso (dry-run) o agito (execute) per tipo di azione. */
-export function recordGoCardlessCleanup(action: CleanupAction, mode: CleanupMode, count = 1): void {
-  if (count > 0) metrics().gcCleanup.inc({ action, mode }, count);
+/** Registra `count` elementi su cui la pulizia delle connessioni bancarie ha deciso (dry-run) o agito (execute) per tipo di azione. */
+export function recordBankCleanup(action: CleanupAction, mode: CleanupMode, count = 1): void {
+  if (count > 0) metrics().bankCleanup.inc({ action, mode }, count);
 }
 
-/** Registra una connessione GoCardless liberata subito (o il tentativo fallito, che resta alla pulizia giornaliera). */
-export function recordGoCardlessRelease(trigger: GoCardlessReleaseTrigger, outcome: GoCardlessReleaseOutcome): void {
-  metrics().gcRelease.inc({ trigger, outcome });
+/** Registra una connessione bancaria liberata subito (o il tentativo fallito, che resta alla pulizia giornaliera). */
+export function recordBankRelease(provider: BankProviderId, trigger: BankReleaseTrigger, outcome: BankReleaseOutcome): void {
+  metrics().bankRelease.inc({ provider, trigger, outcome });
 }
 
 /** Registra l'esito di una richiesta di collegamento bancario. */
-export function recordGoCardlessConnect(kind: "new" | "renewal", outcome: GoCardlessConnectOutcome): void {
-  metrics().gcConnect.inc({ kind, outcome });
+export function recordBankConnect(provider: BankProviderId, kind: "new" | "renewal", outcome: BankConnectOutcome): void {
+  metrics().bankConnect.inc({ provider, kind, outcome });
 }
 
 /** Registra `count` account su cui il cron degli inattivi ha deciso (dry-run) o agito (execute) per tipo di azione. */

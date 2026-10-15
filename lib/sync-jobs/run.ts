@@ -1,7 +1,7 @@
-import type { SyncProgress, SyncResult, SyncableLink } from "@/lib/gocardless/sync";
-import { syncAccountLinkObserved } from "@/lib/gocardless/sync-telemetry";
+import type { SyncProgress, SyncResult, SyncableLink } from "@/lib/bank-data/sync";
+import { syncAccountLinkObserved } from "@/lib/bank-data/sync-telemetry";
 import { logger as appLogger, type Logger, type OpsStore, type SyncTrigger } from "@/lib/observability";
-import type { RateLimitStore } from "@/lib/gocardless/rate-limit";
+import type { RateLimitStore } from "@/lib/bank-data/rate-limit";
 import type { SyncJobStore } from "./store";
 import { SYNC_JOB_HEARTBEAT_MS, type SyncJobAccountPatch, type SyncJobKind } from "./types";
 
@@ -36,7 +36,7 @@ export function resultToPatch(result: SyncResult): SyncJobAccountPatch {
         categorized: result.categorizedCount,
         uncategorized: result.uncategorizedCount,
       };
-    case "gocardless-limited":
+    case "bank-limited":
       return { phase: "limited" };
     case "expired":
       return { phase: "expired" };
@@ -52,7 +52,7 @@ async function runAccount(job: RunnableJob, link: SyncableLink, deps: RunSyncJob
     }
   };
 
-  // Le chiamate GoCardless (saldo/movimenti) possono restare in attesa a lungo senza che
+  // Le chiamate al fornitore bancario (saldo/movimenti) possono restare in attesa a lungo senza che
   // syncAccountLink emetta un progress: senza questo keep-alive l'heartbeat scade e il job
   // sembra interrotto pur essendo ancora in corso.
   const heartbeat = setInterval(() => {

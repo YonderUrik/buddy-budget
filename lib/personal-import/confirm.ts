@@ -1,3 +1,4 @@
+import { validateBitpandaSettlements } from "./validate-bitpanda";
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
@@ -11,7 +12,7 @@ import { getUserCurrency, toRowValues } from "@/lib/investments/operations";
 import { findOversoldTransaction } from "@/lib/calc/investments";
 import { extractMerchantName } from "@/lib/categorization/merchant-name";
 import { digest, seal, unseal } from "./crypto";
-import { ImportError, validateOutcomes, type Outcome, type PersonalParser } from "./contract";
+import { ImportError, readRawFile, validateOutcomes, type Outcome, type PersonalParser } from "./contract";
 import { RAW_PARSER_VERSION } from "./jobs";
 import { brokerStatements } from "@/lib/db/schema/broker-statements";
 export type PreviewRecord = { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null };
@@ -47,6 +48,9 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     const allowed = options.skipErrors ? ["ready", "review_failed"] : ["ready"];
     if (!allowed.includes(job.status) || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
     const stored: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+    if (stored.records.every(r => r.source.length === 1)) {
+      validateBitpandaSettlements(readRawFile(stored.records.map(r => r.source[0]).join("\n")), stored.records.map(r => r.outcome));
+    }
     if (stored.currency !== currency) throw new ImportError("La valuta del profilo è cambiata: carica nuovamente il CSV");
     const { records, skippedKeys } = options.skipErrors ? skipErrorRecords(stored.records) : { records: stored.records, skippedKeys: new Set<string>() };
     const preview: Preview = { ...stored, records };

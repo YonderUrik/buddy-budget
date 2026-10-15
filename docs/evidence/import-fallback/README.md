@@ -49,3 +49,19 @@ The runner creates a uniquely named `buddy_e2e_*` database, migrates it, seeds t
 ## Manual fixture
 
 Upload [synthetic-bank.csv](synthetic-bank.csv) through Investments → Import, enabling automatic AI analysis. Expected result: two cash movements, +1000.00 EUR and -12.50 EUR; institution Synthetic Bank. The file intentionally has a preamble so the standard broker reader cannot map it. Re-uploading this same broker file is deduplicated.
+
+## Bitpanda inclusive-fee regression
+
+The AI can also mistake a separately displayed fee for an additional debit. For recognized Bitpanda crypto exports, `Amount Fiat` is now independently reconciled with quantity × pre-fee execution price plus/minus fees. Validation runs for reused and generated parsers and again when confirming an existing preview. Source quantities and fees must match; unsupported tax/fee-currency conventions fail closed.
+
+The synthetic database test imports a 200 EUR purchase with a 1.99 EUR included fee, retaining that fee and deriving a 198.01 EUR principal. It verifies a 100 EUR remaining balance, a 200 EUR acquisition cost and no writes from a stale double-counting preview. No original user CSV or personal parser is included in this repository.
+
+To generate a **fresh real AI parser**, without manual code changes, using the synthetic fixture:
+
+```sh
+node --env-file=.env.local --import tsx --conditions=react-server scripts/e2e/verify-bitpanda-ai.ts
+```
+
+This additional check exercises the improved prompt and deterministic reconciliation without modifying a database or sending emails. It uses up to three provider calls; invalid model outputs are rejected rather than silently accepted.
+
+Live synthetic rerun with the strengthened prompt (16 October 2026): `deepseek/deepseek-v4.1-flash`, first attempt accepted, remaining balance 100 EUR, no manual parser edits. Unit and database regressions cover double fees, altered quantities/fees, omitted transactions, unsupported costs and stale previews.

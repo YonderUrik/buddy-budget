@@ -1,10 +1,11 @@
+import { BITPANDA_RECONCILIATION_ERROR, validateBitpandaSettlements } from "./validate-bitpanda";
 import { validateSourceAmounts } from "./validate-source-amounts";
 import { parserSchema, type Outcome, type PersonalParser, type PersonalTable } from "./contract";
 import { ZodError } from "zod";
 
 export type AnalysisFailure = { phase: "parse" | "generate" | "fx" | "save"; reason: string; detail?: string; rows?: number[]; count?: number; fallback: boolean };
 export type GeneratedParser = { parser: PersonalParser; model: string };
-const SAFE_ERRORS = new Set(["Importo diverso dalla colonna originale", "Il parser non rende conto di tutte le righe", "Quantità, prezzo o provento non validi", "Valore investimento fuori limite", "Importo non valido", "Parser non deterministico", "Tempo massimo del parser superato", "Risultato troppo grande", "Risultato del parser non valido", "Sandbox non disponibile", "Parser non valido", "Parser interrotto: codice non valido o limiti superati"]);
+const SAFE_ERRORS = new Set([BITPANDA_RECONCILIATION_ERROR, "Importo diverso dalla colonna originale", "Il parser non rende conto di tutte le righe", "Quantità, prezzo o provento non validi", "Valore investimento fuori limite", "Importo non valido", "Parser non deterministico", "Tempo massimo del parser superato", "Risultato troppo grande", "Risultato del parser non valido", "Sandbox non disponibile", "Parser non valido", "Parser interrotto: codice non valido o limiti superati"]);
 /** Report validation locations and known internal errors without copying arbitrary provider or CSV text. */
 export function parserFailureDetail(error: unknown): string {
   if (error instanceof ZodError) return error.issues.slice(0, 10).map(issue => `${issue.path.map(p => typeof p === "number" ? p + 1 : p).join(".")}: ${issue.code}`).join("; ");
@@ -17,6 +18,7 @@ export async function runCheckedParser(parser: PersonalParser, table: PersonalTa
   const repeated = await execute(parser, table);
   if (JSON.stringify(outcomes) !== JSON.stringify(repeated)) throw new Error("Parser non deterministico");
   validateSourceAmounts(parser, table, outcomes);
+  validateBitpandaSettlements(table, outcomes);
   return outcomes;
 }
 

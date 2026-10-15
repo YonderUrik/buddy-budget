@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { eq, inArray } from "drizzle-orm";
@@ -12,7 +13,7 @@ import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
 import { generateParser } from "./generate";
-import { seal } from "./crypto";
+import { seal, unseal } from "./crypto";
 import { importFormatProfiles } from "@/lib/db/schema/import-format-profiles";
 import { saveFormatMetadata } from "@/lib/imports/store";
 import { notifyImportSupport } from "./support-report";
@@ -45,6 +46,31 @@ async function prepare(text = csv, formatId?: string) { const job = await enqueu
 const readJob = async (id: string) => (await db.select().from(jobs).where(eq(jobs.id, id)))[0];
 const cash = () => db.select().from(transactions).where(eq(transactions.userId, userId));
 describe("personal CSV durable flow", () => {
+  it("reconciles Bitpanda cash and acquisition cost without double-counting inclusive fees", async () => {
+    const csv = readFileSync(new URL("./fixtures/bitpanda-inclusive-fees.csv", import.meta.url), "utf8");
+    const bitpandaCode = `function(t){return t.rows.map((r,row)=>{if(row<2)return {row,kind:'ignore',reason:'Header'};const c=r[0].split(',');const amount=Number(c[4]);if(c[2]==='deposit')return {row,kind:'cash',date:c[1].slice(0,10),currency:c[5],description:'Deposit',amount,transfer:true};const quantity=Number(c[6]),fees=Number(c[12]);return {row,kind:'investment',date:c[1].slice(0,10),currency:c[5],description:'Buy',type:'acquisto',name:'BTC',isin:null,instrumentType:'crypto',quantity,price:(amount-fees)/quantity,grossAmount:null,fees,taxes:0}})}`;
+    vi.mocked(generateParser).mockResolvedValue({parser:{kind:"javascript",code:bitpandaCode.replace("(amount-fees)/quantity", "amount/quantity")},model:"synthetic/wrong-inclusive-fees"});
+    const rejected = await prepare(csv);
+    expect((await readJob(rejected)).status).toBe("queued");
+    expect(await cash()).toHaveLength(0);
+    await db.update(jobs).set({status:"expired"}).where(eq(jobs.id,rejected));
+    vi.mocked(generateParser).mockResolvedValue({parser:{kind:"javascript",code:bitpandaCode},model:"synthetic/correct-inclusive-fees"});
+    const id = await prepare(csv);
+    const validPreview = (await readJob(id)).encryptedPreview!;
+    const stale = JSON.parse(unseal(validPreview,userId));
+    stale.records.find((r: {outcome: {kind: string}}) => r.outcome.kind === "investment").outcome.price = 40000;
+    await db.update(jobs).set({encryptedPreview:seal(JSON.stringify(stale),userId)}).where(eq(jobs.id,id));
+    await expect(confirmImport(userId,id)).rejects.toThrow("non riconcilia");
+    expect(await cash()).toHaveLength(0);
+    await db.update(jobs).set({encryptedPreview:validPreview}).where(eq(jobs.id,id));
+    await maintainJobs();
+    expect((await readJob(id)).status).toBe("imported");
+    expect((await db.select().from(accounts).where(eq(accounts.userId,userId)))[0].balance).toBe("100.00");
+    const [trade] = await db.select().from(investmentTransactions).where(eq(investmentTransactions.userId,userId));
+    expect(Number(trade.quantity)).toBe(0.005);
+    expect(trade.fees).toBe("1.99");
+    expect(Number(trade.quantity)*Number(trade.price)+Number(trade.fees)).toBeCloseTo(200,2);
+  });
   it("rejects AI decimal scaling errors before creating movements or saving the parser", async () => {
     const directMetadata: FormatMetadata = { ...metadata, columns: [{ section: null, index: 2, name: "Amount", mapsTo: ["amount"] }] };
     vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: code.replace("amount:Number(r[2])", "amount:Number(r[2])*100"), metadata: directMetadata }, model: "synthetic/scaling-error" });

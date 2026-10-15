@@ -13,3 +13,8 @@ Browser reale, Postgres/Redis locali e OpenRouter reale: provati il parser perso
 Il test ha rilevato un parser AI che eliminava il punto decimale (`-12.50` diventava `-1250`). Il controllo indipendente delle colonne importo direttamente mappate ora rifiuta tali risultati prima della persistenza; il prompt chiarisce entrambe le notazioni. Non copre riconciliazioni multi-colonna, sezioni o numeri ambigui: quelle restano un limite esplicito, non una garanzia implicita di accuratezza AI.
 
 Le migrazioni non rilasciate 0040 e 0041 sono state accorpate in 0040; il registro del database locale già migrato è stato riallineato senza cambiare dati o schema. Gli snapshot Drizzle sono marcati come generati in `.gitattributes`.
+
+## Commissioni inclusive di Bitpanda
+
+Una verifica locale ha trovato un secondo errore: il parser AI aggiungeva le commissioni a un prezzo che le includeva già. Il prompt ora impone la riconciliazione di ogni addebito/accredito e spiega come ricavare il prezzo prima delle commissioni senza alterare quantità o azzerare costi. La convenzione è documentata da [Bitpanda](https://support.bitpanda.com/hc/it/articles/360000902525-Quali-commissioni-e-sovrapprezzi-posso-aspettarmi-di-pagare-su-Bitpanda).
+Un controllo indipendente confronta importi fiat, quantità e commissioni degli export crypto Bitpanda riconosciuti sia dopo l'esecuzione del parser sia prima di confermare l'anteprima. Comprende anche i parser salvati; non assume la stessa convenzione per altri broker. Tasse non nulle, costi in altra valuta e classi non supportate richiedono revisione. Le fixture committate sono interamente sintetiche.

@@ -38,3 +38,10 @@ node scripts/e2e/run-import-fallback.cjs
 ```
 
 The runner creates a uniquely named `buddy_e2e_*` database, migrates it, seeds two synthetic sessions and one broken saved parser, starts the app/worker, uploads through the UI, checks persistence and captures screenshots. It drops its database and stops its processes on completion. It makes real AI requests (provider charges apply), but intercepts all worker Resend requests. It never writes production data. Evidence is regenerated in this directory.
+
+## Regression checks on the PR base
+
+- 180 tests passed across 26 files: personal-import, import metadata, existing broker parsers and import API routes (16 October 2026).
+- `tsc --noEmit`: passed.
+- ESLint on personal-import, metadata, import APIs/UI and E2E scripts: passed.
+- Reproducible runner repeated successfully after rebasing onto current main; screenshots and `result.json` in this directory are from that final run.

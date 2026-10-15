@@ -1,9 +1,9 @@
 {
-  "testedAt": "2026-10-15T22:10:25.535Z",
+  "testedAt": "2026-10-15T22:12:45.133Z",
   "ai": "real OpenRouter request",
   "email": "Resend intercepted locally; no real delivery",
-  "personalId": "72a85ef7-46ba-4419-8dcd-c2837122714e",
-  "brokerId": "46e1eace-802d-4e4c-b33f-66e1e5cc0e61",
+  "personalId": "12d46b3f-401a-48e3-b8e3-0ae57c695b18",
+  "brokerId": "2c004823-472e-4e1f-b5c6-9db7fbc7f9f7",
   "personal": {
     "status": "imported",
     "error": null,
@@ -15,7 +15,7 @@
     },
     "encrypted_csv": null,
     "encrypted_preview": null,
-    "support_notified_at": "2026-10-15T22:09:01.343Z"
+    "support_notified_at": "2026-10-15T22:12:25.450Z"
   },
   "broker": {
     "status": "imported",
@@ -27,7 +27,7 @@
     },
     "encrypted_csv": null,
     "encrypted_preview": null,
-    "support_notified_at": "2026-10-15T22:10:25.115Z"
+    "support_notified_at": "2026-10-15T22:12:44.715Z"
   },
   "transactions": [
     {
@@ -155,28 +155,28 @@
     {
       "body": {
         "from": "test@example.test",
-        "subject": "Importazione: report 72a85ef7-46ba-4419-8dcd-c2837122714e",
-        "text": "Importazione: 72a85ef7-46ba-4419-8dcd-c2837122714e\nEsito attuale: imported\nTentativi: 1\nFase del primo errore: parse\nCausa: Il parser salvato non supera i controlli di esecuzione, struttura, copertura delle righe o determinismo.\nDiagnosi: Parser interrotto: codice non valido o limiti superati\nFallback AI: avviato automaticamente",
+        "subject": "Importazione: report 12d46b3f-401a-48e3-b8e3-0ae57c695b18",
+        "text": "Importazione: 12d46b3f-401a-48e3-b8e3-0ae57c695b18\nEsito attuale: imported\nTentativi: 1\nFase del primo errore: parse\nCausa: Il parser salvato non supera i controlli di esecuzione, struttura, copertura delle righe o determinismo.\nDiagnosi: Parser interrotto: codice non valido o limiti superati\nFallback AI: avviato automaticamente",
         "to": "support@buddybudget.io"
       },
       "headers": {
         "authorization": "redacted",
         "content-type": "application/json",
-        "idempotency-key": "import-support-72a85ef7-46ba-4419-8dcd-c2837122714e",
+        "idempotency-key": "import-support-12d46b3f-401a-48e3-b8e3-0ae57c695b18",
         "user-agent": "resend-node:6.16.0"
       }
     },
     {
       "body": {
         "from": "test@example.test",
-        "subject": "Importazione: report 46e1eace-802d-4e4c-b33f-66e1e5cc0e61",
-        "text": "Importazione: 46e1eace-802d-4e4c-b33f-66e1e5cc0e61\nEsito attuale: imported\nTentativi: 2\nFase del primo errore: parse\nCausa: Il lettore del broker non riesce a interpretare la struttura del documento.\nFallback AI: avviato automaticamente",
+        "subject": "Importazione: report 2c004823-472e-4e1f-b5c6-9db7fbc7f9f7",
+        "text": "Importazione: 2c004823-472e-4e1f-b5c6-9db7fbc7f9f7\nEsito attuale: imported\nTentativi: 1\nFase del primo errore: parse\nCausa: Il lettore del broker non riesce a interpretare la struttura del documento.\nFallback AI: avviato automaticamente",
         "to": "support@buddybudget.io"
       },
       "headers": {
         "authorization": "redacted",
         "content-type": "application/json",
-        "idempotency-key": "import-support-46e1eace-802d-4e4c-b33f-66e1e5cc0e61",
+        "idempotency-key": "import-support-2c004823-472e-4e1f-b5c6-9db7fbc7f9f7",
         "user-agent": "resend-node:6.16.0"
       }
     }

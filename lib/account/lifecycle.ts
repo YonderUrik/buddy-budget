@@ -7,6 +7,7 @@ import { authSession, authUser } from "@/lib/db/schema/auth";
 import { bankConnections } from "@/lib/db/schema/bank-connections";
 import { budgets } from "@/lib/db/schema/budgets";
 import { subscriptions } from "@/lib/db/schema/subscriptions";
+import { goals } from "@/lib/db/schema/goals";
 import { categories } from "@/lib/db/schema/categories";
 import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { debts } from "@/lib/db/schema/debts";
@@ -164,6 +165,8 @@ async function deleteFinancialData(tx: Tx, userId: string): Promise<void> {
   await tx.delete(transactions).where(eq(transactions.userId, userId));
   await tx.delete(budgets).where(eq(budgets.userId, userId));
   await tx.delete(subscriptions).where(eq(subscriptions.userId, userId));
+  // Le parti assegnate (goal_sources) vanno via in cascata con l'obiettivo.
+  await tx.delete(goals).where(eq(goals.userId, userId));
   await tx.delete(categorizationRules).where(eq(categorizationRules.userId, userId));
   // I link conto↔banca spariscono in cascata con la connessione e con il conto.
   await tx.delete(bankConnections).where(eq(bankConnections.userId, userId));

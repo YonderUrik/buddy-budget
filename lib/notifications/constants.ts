@@ -1,5 +1,5 @@
 /** Tipi di email non di servizio, con il testo con cui li spieghiamo nelle impostazioni e nel piè di pagina delle email. */
-export const NOTIFICATION_KINDS = ["digest", "budget", "deadlines"] as const;
+export const NOTIFICATION_KINDS = ["digest", "budget", "deadlines", "goals"] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
 /** Che cosa disattiva un link di disiscrizione: un solo tipo oppure tutti. */
@@ -32,6 +32,11 @@ export const NOTIFICATION_KIND_INFO: Record<NotificationKind, NotificationKindIn
     reason: "gli avvisi sulle scadenze",
     hint: "Una email quando manca poco alla rata di un finanziamento, o quando è scaduta.",
   },
+  goals: {
+    label: "Promemoria sugli obiettivi",
+    reason: "i promemoria sugli obiettivi di risparmio",
+    hint: "A inizio mese a che punto sono i tuoi obiettivi, e una email quando ne raggiungi uno o quando la data si avvicina.",
+  },
 };
 
 /** Preferenze di chi non le ha mai salvate. Tutto spento: queste email partono solo dopo una scelta esplicita (opt-in). */
@@ -40,6 +45,7 @@ export const NOTIFICATION_DEFAULTS = {
   digestFrequency: "mensile" as DigestFrequency,
   budgetAlertsEnabled: false,
   deadlineAlertsEnabled: false,
+  goalAlertsEnabled: false,
 };
 
 export interface NotificationPreferences {
@@ -47,6 +53,7 @@ export interface NotificationPreferences {
   digestFrequency: DigestFrequency;
   budgetAlertsEnabled: boolean;
   deadlineAlertsEnabled: boolean;
+  goalAlertsEnabled: boolean;
 }
 
 /** Soglie (percentuale del budget mensile speso) che fanno scattare un avviso. */
@@ -60,6 +67,8 @@ export const ALERT_MAX_PER_WEEK = 3;
 /** Il riepilogo mensile parte nei primi giorni del mese, il settimanale il lunedì e il martedì: il cron è giornaliero, i giorni in più servono a ritentare. */
 export const DIGEST_MONTHLY_MAX_DAY = 3;
 export const DIGEST_WEEKLY_WEEKDAYS = [1, 2] as const;
+/** Il promemoria mensile sugli obiettivi parte nei primi giorni del mese, come il riepilogo mensile. */
+export const GOAL_REMINDER_MAX_DAY = 3;
 /** Le righe del registro più vecchie di così si eliminano (la deduplica serve solo per il mese in corso). */
 export const NOTIFICATION_LOG_RETENTION_DAYS = 90;
 /** Email di prova dal pulsante in Impostazioni: massimo all'ora per utente. */

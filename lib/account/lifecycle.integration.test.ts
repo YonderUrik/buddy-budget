@@ -207,6 +207,7 @@ describe("gestione account (integrazione)", () => {
         "investimenti-avvisi-prezzo.csv",
         "investimenti-operazioni.csv",
         "investimenti-titoli-seguiti.csv",
+        "obiettivi.csv",
         "patrimonio-netto.csv",
         "previdenza-fondi.csv",
         "previdenza-fotografie.csv",

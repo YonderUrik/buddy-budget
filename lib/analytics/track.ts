@@ -3,11 +3,12 @@ import type { InvestmentTransactionType } from "@/lib/db/schema/investments";
 import type { SupportedCurrency } from "@/lib/validation/currency";
 import type { SidebarModuleId } from "@/lib/sidebar/modules";
 import type { ReportErrorArea, ReportSource } from "@/lib/support/constants";
+import type { GoalKind } from "@/lib/goals/constants";
 
 /** Percorsi a passi tracciati da `form_step_completed` / `form_step_back`. */
-export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import";
+export type FormFlow = "onboarding" | "account_manual" | "transaction" | "operation" | "debt_add" | "pension_fund" | "personal_import" | "goal";
 /** Sezioni con più viste, per gli eventi del selettore delle viste su telefono. */
-export type SectionViewsKey = "liquidita" | "investimenti" | "pensione";
+export type SectionViewsKey = "liquidita" | "investimenti" | "pensione" | "analitiche";
 
 /**
  * Eventi di prodotto inviati a Umami, con props solo categoriche o conteggi: mai importi,
@@ -97,6 +98,15 @@ export interface ProductEvents {
   subscription_added: { cadence: "settimanale" | "mensile" | "trimestrale" | "semestrale" | "annuale" };
   subscription_updated: undefined;
   subscription_removed: undefined;
+  /** Obiettivo di risparmio creato; `sources`: quante parti di conti e titoli, `dated`: ha una data. */
+  goal_created: { kind: GoalKind; sources: number; dated: boolean };
+  goal_updated: { kind: GoalKind; sources: number };
+  goal_deleted: { kind: GoalKind };
+  /** Segnato come raggiunto (`achieved: true`) o rimesso tra quelli aperti. */
+  goal_achieved: { kind: GoalKind; achieved: boolean };
+  goal_reordered: { count: number };
+  /** Da dove si è aperta la vista Obiettivi: Panoramica, novità, email o Analitiche. */
+  goals_opened: { from: "panoramica" | "novita" | "email" | "analitiche" };
   /** Dettaglio di un abbonamento aperto dalla lista; `decision`: lo stato in cui era. */
   subscription_details_opened: { decision: "da-confermare" | "confermato" | "escluso" | "terminato" };
   category_created: { group: CategoryType };
@@ -147,8 +157,8 @@ export interface ProductEvents {
   attention_link_clicked: { from: "home" };
   /** Clic su una voce della legenda del patrimonio netto per mostrarla o nasconderla; `visible`: lo stato dopo il clic. */
   net_worth_class_toggled: { assetClass: "liquidita" | "investimenti" | "previdenza" | "altro"; visible: boolean };
-  /** Clic su una tessera della Panoramica; `tile`: quale (mese, scadenze, investimenti). */
-  overview_tile_clicked: { tile: "mese" | "scadenze" | "investimenti" };
+  /** Clic su una tessera della Panoramica; `tile`: quale (mese, scadenze, investimenti, obiettivi). */
+  overview_tile_clicked: { tile: "mese" | "scadenze" | "investimenti" | "obiettivi" };
   /** `context`: onboarding (nuovo account) o aggiornamento (nuova versione dei documenti per un utente esistente). */
   terms_accepted: { context: "onboarding" | "aggiornamento" };
   /** Clic su una richiesta privacy (apre la bozza di email al titolare); `type`: quale diritto. */
@@ -205,7 +215,7 @@ export interface ProductEvents {
   settings_group_opened: { group: "account" | "aspetto" | "notifiche" | "privacy" | "pericolo" };
   more_menu_clicked: { target: "sezione" | "impostazioni" | "aiuto" | "importi" | "esci" | "informativa" | "quadro" };
   /** Interruttore di un tipo di email (riepilogo, avvisi budget/scadenze) in Impostazioni → Notifiche. */
-  notifications_toggled: { kind: "digest" | "budget" | "deadlines"; enabled: boolean };
+  notifications_toggled: { kind: "digest" | "budget" | "deadlines" | "goals"; enabled: boolean };
   /** Consenso alle proposte dell'assistente in Impostazioni. */
   ai_categorization_instructions_saved: undefined;
   ai_categorization_toggled: { enabled: boolean };
@@ -239,9 +249,9 @@ export interface ProductEvents {
   /** Email di esempio del riepilogo richiesta dal pulsante in Impostazioni. */
   notifications_test_sent: undefined;
   /** Email facoltative scelte nel passo «Notifiche» dell'onboarding (anche nessuna); `digest`: frequenza o `off`. */
-  onboarding_notifications_chosen: { digest: "settimanale" | "mensile" | "off"; budget: boolean; deadlines: boolean };
+  onboarding_notifications_chosen: { digest: "settimanale" | "mensile" | "off"; budget: boolean; deadlines: boolean; goals?: boolean };
   /** Disiscrizione dalla pagina aperta dal link dell'email; `kind`: tipo disattivato o tutti. */
-  notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "all" };
+  notifications_unsubscribed: { kind: "digest" | "budget" | "deadlines" | "goals" | "all" };
   account_data_exported: undefined;
   account_reset: undefined;
   account_deactivated: undefined;

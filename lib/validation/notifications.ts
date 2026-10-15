@@ -8,6 +8,7 @@ export const updateNotificationPreferencesSchema = z
     digestFrequency: z.enum(DIGEST_FREQUENCIES),
     budgetAlertsEnabled: z.boolean(),
     deadlineAlertsEnabled: z.boolean(),
+    goalAlertsEnabled: z.boolean(),
   })
   .partial()
   .strict()
@@ -22,5 +23,7 @@ export const notificationPreferencesSchema = z
     digestFrequency: z.enum(DIGEST_FREQUENCIES),
     budgetAlertsEnabled: z.boolean(),
     deadlineAlertsEnabled: z.boolean(),
+    /** Facoltativo: l'onboarding non lo chiede (chi si iscrive non ha ancora obiettivi). */
+    goalAlertsEnabled: z.boolean().optional(),
   })
   .strict();

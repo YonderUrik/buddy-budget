@@ -14,6 +14,8 @@ export const notificationPreferences = pgTable("notification_preferences", {
   digestFrequency: text("digest_frequency").notNull().default("mensile"),
   budgetAlertsEnabled: boolean("budget_alerts_enabled").notNull().default(false),
   deadlineAlertsEnabled: boolean("deadline_alerts_enabled").notNull().default(false),
+  /** Promemoria sugli obiettivi di risparmio: raggiunto, in ritardo, data vicina. */
+  goalAlertsEnabled: boolean("goal_alerts_enabled").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

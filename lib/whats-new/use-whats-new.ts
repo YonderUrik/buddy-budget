@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
+import { isCountryPathAvailable } from "@/lib/localization/config";
+import { useLocalization } from "@/lib/localization/provider";
 import { WHATS_NEW_ENTRIES, type WhatsNewEntry } from "./entries";
 import { pickWhatsNew } from "./pick";
 
@@ -28,11 +30,14 @@ function subscribe(onChange: () => void) {
 /**
  * La novità da mostrare nel riquadro e il modo di chiuderla. Sul server non c'è nulla da mostrare: la voce compare
  * dopo l'idratazione, prima che arrivino i dati della pagina, quindi non sposta niente. Se il localStorage non è
- * disponibile, la voce torna a comparire a ogni visita finché è recente.
+ * disponibile, la voce torna a comparire a ogni visita finché è recente. Le novità di funzioni non disponibili nel
+ * paese dell'utente non compaiono.
  */
 export function useWhatsNew(now: Date = new Date()): { entry: WhatsNewEntry | null; dismiss: (id: string) => void } {
+  const { productCountry } = useLocalization();
   const raw = useSyncExternalStore(subscribe, readRaw, () => null);
-  const entry = raw === null ? null : pickWhatsNew(WHATS_NEW_ENTRIES, raw.split(",").filter(Boolean), now);
+  const entries = WHATS_NEW_ENTRIES.filter((e) => isCountryPathAvailable(productCountry, e.href.split("?")[0]));
+  const entry = raw === null ? null : pickWhatsNew(entries, raw.split(",").filter(Boolean), now);
 
   const dismiss = useCallback((id: string) => {
     try {

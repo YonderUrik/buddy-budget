@@ -159,7 +159,7 @@ export const STEPS: readonly StoryStep[] = [
     id: "futuro",
     n: "5 di 6",
     title: "Quando posso smettere di lavorare?",
-    text: "Risparmio, spesa e rendimento partono dai tuoi dati degli ultimi mesi. Quattro cursori per provare «e se…», e quattro risposte in parole semplici: quanta strada hai fatto, l'anno di arrivo, se regge, quanto costa.",
+    text: "Risparmio, spesa e rendimento partono dai tuoi dati degli ultimi mesi. Quattro cursori per provare «e se…», e quattro risposte in parole semplici: quanta strada hai fatto, l'anno di arrivo, se regge, quanto costa. Gli obiettivi di risparmio, come un viaggio o l'anticipo di casa, dicono quando ci arrivi e di quanto spostano quell'anno.",
     amount: { value: "2045" },
     caption: "tra 18,8 anni, ai ritmi di oggi · le ipotesi sono scritte sotto i cursori, mai nascoste",
     more: { href: CONTENT_PATHS.funzioni, label: "Tutto sul futuro" },

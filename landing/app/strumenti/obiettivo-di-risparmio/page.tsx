@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <ContentPage kicker="Calcolatore gratuito, senza account" crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Obiettivo di risparmio" }]} ctaTitle="Il risparmio vero, dai tuoi movimenti." ctaText="In BuddyBudget quanto metti da parte ogni mese si legge dai conti collegati, e le Analitiche ti dicono l'anno in cui puoi smettere di lavorare, con quattro cursori per provare «e se…»." ctaLocation="calcolatore_obiettivo">
+    <ContentPage kicker="Calcolatore gratuito, senza account" crumbs={[{ href: "/", label: "BuddyBudget" }, { href: CONTENT_PATHS.strumenti, label: "Calcolatori" }, { label: "Obiettivo di risparmio" }]} ctaTitle="I tuoi obiettivi, con i soldi veri." ctaText="In BuddyBudget quanto metti da parte ogni mese si legge dai conti collegati. Crei un obiettivo, scegli da quali conti o investimenti arrivano i soldi e vedi quando ci arrivi, se il risparmio basta per tutti gli obiettivi e di quanto ognuno sposta l'anno in cui puoi smettere di lavorare." ctaLocation="calcolatore_obiettivo">
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: OBIETTIVO_PAGE.h1, url: `${SITE_URL}${CONTENT_PATHS.obiettivo}`, inLanguage: "it-IT", description: OBIETTIVO_PAGE.description, isPartOf: { "@id": `${SITE_URL}/#website` } }} />
       <h1>{OBIETTIVO_PAGE.h1}</h1>
       <p className="lead">{OBIETTIVO_PAGE.lead}</p>

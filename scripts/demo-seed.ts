@@ -19,6 +19,7 @@ import { categorizationRules } from "@/lib/db/schema/categorization-rules";
 import { categorizationSuggestions } from "@/lib/db/schema/categorization-suggestions";
 import { merchantKey } from "@/lib/categorization/merchant-key";
 import { debtEvents, debts } from "@/lib/db/schema/debts";
+import { goalSources, goals } from "@/lib/db/schema/goals";
 import { pensionFunds, pensionSnapshots } from "@/lib/db/schema/pension";
 import {
   instrumentPrices,
@@ -344,6 +345,23 @@ async function main() {
   ops.push({ userId: DEMO_USER_ID, portfolioId: portfolio.id, instrumentId: stock.id, type: "vendita", date: iso(daysAgo(45)), quantity: "190", price: priceOn(stock.id, 45).toFixed(4), fees: "4.95" });
   await db.insert(investmentTransactions).values(ops);
 
+  // Obiettivi di risparmio (Analitiche → Obiettivi): fondo di emergenza dal conto deposito, un viaggio con data e la casa
+  // finanziata in parte dall'ETF, così la vista mostra priorità, una data e lo spostamento del traguardo.
+  const monthStart = (monthsAhead: number) => iso(new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + monthsAhead, 1)));
+  const [emergency, trip, home] = await db
+    .insert(goals)
+    .values([
+      { userId: DEMO_USER_ID, name: "Fondo di emergenza", kind: "emergenza", targetAmount: "9000.00", monthlyAmount: "150.00", priority: 0 },
+      { userId: DEMO_USER_ID, name: "Viaggio in Giappone", kind: "viaggio", targetAmount: "4500.00", targetDate: monthStart(10), monthlyAmount: "200.00", priority: 1 },
+      { userId: DEMO_USER_ID, name: "Anticipo casa", kind: "casa", targetAmount: "40000.00", targetDate: monthStart(60), monthlyAmount: "250.00", priority: 2 },
+    ])
+    .returning();
+  await db.insert(goalSources).values([
+    { userId: DEMO_USER_ID, goalId: emergency.id, accountId: savings.id, amount: "7500.00" },
+    { userId: DEMO_USER_ID, goalId: trip.id, accountId: savings.id, amount: "1800.00" },
+    { userId: DEMO_USER_ID, goalId: home.id, instrumentId: etf.id, amount: "12000.00" },
+  ]);
+
   // Debiti: mutuo a tasso fisso e una linea di credito Lombard (valori inventati).
   const mortgageStart = new Date(Date.UTC(today.getUTCFullYear() - 3, today.getUTCMonth(), 5));
   const [mortgage] = await db
@@ -408,7 +426,6 @@ async function main() {
   await snapshotUser(DEMO_USER_ID);
 
   console.log(`Demo pronta: ${rows.length} movimenti, ${ops.length} operazioni, ${priceRows.length} prezzi.`);
-  void savings;
   void cash;
   await client.end();
   process.exit(0);

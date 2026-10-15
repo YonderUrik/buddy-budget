@@ -23,6 +23,8 @@ export type ClientErrorOutcome = "reported" | "rate_limited";
 export type DependencyName = "postgres" | "redis";
 /** Scelte dell'utente sugli abbonamenti (enum chiuso, mai il nome dell'abbonamento). */
 export type SubscriptionAction = "confirmed" | "excluded" | "ended" | "restored" | "added" | "updated" | "removed";
+/** Azioni sugli obiettivi di risparmio (enum chiuso). */
+export type GoalAction = "created" | "updated" | "deleted" | "achieved" | "reopened" | "reordered";
 
 /** Numeri aggregati di utilizzo (nessun dato personale: solo conteggi), letti dal DB allo scrape. */
 export interface UsageSnapshot {
@@ -38,7 +40,7 @@ export interface UsageSnapshot {
 }
 export type ActivationStep = "conto" | "import" | "investimento" | "obiettivo" | "completa" | "chiusa" | "demo_attiva";
 export type StartEvent = "demo_started" | "demo_cleared" | "checklist_dismissed" | "checklist_reopened" | "checklist_completed";
-export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions";
+export type UsageFeature = "accounts" | "bank_connection" | "transactions" | "budgets" | "rules" | "investments" | "debts" | "pension" | "subscriptions" | "goals";
 export type UsageRecordKind = "accounts" | "transactions" | "investment_operations" | "debts" | "pension_snapshots";
 
 /** Template statici degli endpoint GoCardless (mai il path reale: contiene id di conto). */
@@ -111,10 +113,10 @@ export type ConsentNoticeKind = "expiring" | "expired";
 export type ConsentNoticeOutcome = "sent" | "failed";
 
 /** Email non di servizio (riepilogo, avvisi budget e scadenze) per esito: `dry_run` conta senza inviare, `capped` = rimandata dal tetto di frequenza. */
-export type NotificationEmailKind = "digest" | "budget" | "deadlines" | "test";
+export type NotificationEmailKind = "digest" | "budget" | "deadlines" | "goals" | "test";
 export type NotificationEmailOutcome = "sent" | "failed" | "dry_run" | "capped" | "empty";
 /** Sezione facoltativa del riepilogo e come è andata: `included` = c'è, `absent` = l'utente non ne ha i dati, `failed` = calcolo fallito (il riepilogo parte senza). */
-export type NotificationDigestSection = "investments";
+export type NotificationDigestSection = "investments" | "goals";
 export type NotificationDigestSectionOutcome = "included" | "absent" | "failed";
 /** Da dove arriva una disiscrizione: link nell'email, one-click del client di posta (RFC 8058) o preferenze in app. */
 export type NotificationUnsubscribeSource = "page" | "one_click" | "settings";
@@ -149,6 +151,7 @@ interface MetricsState {
   clientErrors: Counter<"kind" | "area" | "outcome">;
   subscriptionActions: Counter<"action">;
   subscriptionsDetect: Histogram<string>;
+  goalActions: Counter<"action" | "kind">;
   categorizationAiRequests: Counter<"outcome">;
   categorizationAiDuration: Histogram<string>;
   categorizationSuggestions: Counter<"event">;
@@ -255,6 +258,12 @@ function createState(): MetricsState {
     name: `${METRIC_PREFIX}subscription_actions_total`,
     help: "Scelte degli utenti sugli abbonamenti (confermato, escluso, terminato, ripristinato, aggiunto, modificato, rimosso).",
     labelNames: ["action"],
+    registers: r,
+  });
+  state.goalActions = new Counter({
+    name: `${METRIC_PREFIX}goal_actions_total`,
+    help: "Azioni degli utenti sugli obiettivi di risparmio (creato, modificato, eliminato, raggiunto, riaperto, riordinato) per tipo di obiettivo.",
+    labelNames: ["action", "kind"],
     registers: r,
   });
   state.subscriptionsDetect = new Histogram({
@@ -483,7 +492,7 @@ function createState(): MetricsState {
   usageGauge("users", "Utenti per stato: registered (tutti), onboarded (onboarding finito), deactivated (in attesa di eliminazione).", "state", (u) => u.users);
   usageGauge("users_new", "Utenti registrati nella finestra indicata (7d, 30d).", "window", (u) => u.newUsers);
   usageGauge("users_active", "Utenti con una sessione attiva nella finestra indicata (24h, 7d, 30d).", "window", (u) => u.activeUsers);
-  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza, abbonamenti confermati).", "feature", (u) => u.usersWithFeature);
+  usageGauge("users_with_feature", "Utenti con almeno un dato per funzione (conti, banca, movimenti, budget, regole, investimenti, debiti, previdenza, abbonamenti confermati, obiettivi di risparmio).", "feature", (u) => u.usersWithFeature);
   usageGauge("users_activation", "Utenti per passo dei primi passi fatto (conto, import, investimento, obiettivo), checklist completa o chiusa, e con dati d'esempio attivi.", "step", (u) => u.activation);
   usageGauge("records", "Righe totali per tipo di dato (conti, movimenti, operazioni di investimento, debiti, fotografie della previdenza).", "kind", (u) => u.records);
 
@@ -586,6 +595,11 @@ export function recordClientError(kind: ClientErrorKind, area: ClientErrorArea, 
 /** Registra una scelta dell'utente sugli abbonamenti. */
 export function recordSubscriptionAction(action: SubscriptionAction): void {
   metrics().subscriptionActions.inc({ action });
+}
+
+/** Registra un'azione su un obiettivo di risparmio; `kind` è il tipo di obiettivo (enum chiuso) o `all` per il riordino. */
+export function recordGoalAction(action: GoalAction, kind: string): void {
+  metrics().goalActions.inc({ action, kind });
 }
 
 /** Registra la durata di un rilevamento degli abbonamenti. */

@@ -9,8 +9,8 @@ import { FileSpreadsheet } from "lucide-react";
 import { BackLink } from "@/components/domain/shared";
 import {
   PersonalImportList,
-  PersonalImportPreview,
   PersonalImportReceipt,
+  PersonalImportReview,
   isActiveJob,
   type PersonalImportReceiptFile,
   PersonalImportUpload,
@@ -47,8 +47,18 @@ function PersonalImports() {
         <p className="text-text-2">{tr("Per le banche e i broker che BuddyBudget non supporta ancora. L'AI riconosce le colonne e il formato resta tuo: lo riusi ai file successivi senza altre analisi.")}</p>
       </header>
 
-      {reportJob ? <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} /> : null}
-      {selectedJob?.status === "review_failed" ? <PersonalImportPreview key={selectedJob.id} id={selectedJob.id} /> : null}
+      {reportJob?.status === "review_failed" ? (
+        <PersonalImportReview
+          key={reportJob.id}
+          job={reportJob}
+          file={reportFile}
+          listId={LIST_ID}
+          onUploadCorrected={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }}
+          onReanalyzed={(jobId) => { setSelected(jobId); setReceipt({ jobId, file: reportFile }); }}
+        />
+      ) : reportJob ? (
+        <PersonalImportReceipt key={reportJob.id} file={reportFile} job={receipt ? jobs?.find((j) => j.id === receipt.jobId) : reportJob} listId={LIST_ID} onAnother={() => { setReceipt(null); setSelected(null); }} />
+      ) : null}
 
       {receipt ? null : <div id="nuovo-import" className="scroll-mt-6"><PersonalImportUpload formats={listing.data?.formats ?? []} onQueued={(jobId, file) => { setSelected(jobId); setReceipt({ jobId, file }); }} /></div>}
       <div id={LIST_ID} className="scroll-mt-6"><PersonalImportList onRetry={() => { setReceipt(null); setSelected(null); requestAnimationFrame(() => document.getElementById("nuovo-import")?.scrollIntoView({ behavior: "smooth", block: "start" })); }} listing={listing} selectedId={selectedJob?.id ?? selected} onSelect={setSelected} /></div>

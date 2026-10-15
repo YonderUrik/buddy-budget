@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { personalFormats as formats, personalImportJobs as jobs, personalImportReceipts as receipts } from "@/lib/db/schema/personal-imports";
+import { personalFormats as formats, personalImportJobs as jobs, personalImportReceipts as receipts, personalParsers as parsers } from "@/lib/db/schema/personal-imports";
 import { accounts } from "@/lib/db/schema/accounts";
 import { categories } from "@/lib/db/schema/categories";
 import { transactions } from "@/lib/db/schema/transactions";
@@ -10,31 +10,53 @@ import { instruments, investmentPortfolios, investmentTransactions } from "@/lib
 import { getUserCurrency, toRowValues } from "@/lib/investments/operations";
 import { findOversoldTransaction } from "@/lib/calc/investments";
 import { extractMerchantName } from "@/lib/categorization/merchant-name";
-import { digest, unseal } from "./crypto";
-import { ImportError, validateOutcomes, type Outcome } from "./contract";
-export type Preview = { headers: string[]; currency: string; records: { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null }[] };
+import { digest, seal, unseal } from "./crypto";
+import { ImportError, validateOutcomes, type Outcome, type PersonalParser } from "./contract";
+import { RAW_PARSER_VERSION } from "./jobs";
+export type PreviewRecord = { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null };
+/** `parser`: solo lato server, per le analisi con righe da controllare il cui parser non è ancora salvato (vedi `confirmImport`). */
+export type Preview = { headers: string[]; currency: string; records: PreviewRecord[]; parser?: PersonalParser };
+export interface ConfirmOptions {
+  /** Importa saltando le righe non riconosciute (scelta esplicita dell'utente su un lavoro in `review_failed`). */
+  skipErrors?: boolean;
+}
+/** Le righe non riconosciute diventano escluse; il motivo resta leggibile. Pura, per poterla testare. */
+export function skipErrorRecords(records: PreviewRecord[]): { records: PreviewRecord[]; skippedKeys: Set<string> } {
+  const skippedKeys = new Set<string>();
+  const next = records.map(r => {
+    if (r.outcome.kind !== "error") return r;
+    skippedKeys.add(r.key);
+    return { ...r, outcome: { row: r.outcome.row, kind: "ignore" as const, reason: `Saltata: ${r.outcome.reason}`.slice(0, 300) } };
+  });
+  return { records: next, skippedKeys };
+}
 export function outcomeHash(outcome: Outcome) {
   const { row: _row, ...fields } = outcome;
   void _row;
   return digest(JSON.stringify(fields));
 }
-export async function confirmImport(userId: string, id: string) {
+export async function confirmImport(userId: string, id: string, options: ConfirmOptions = {}) {
   const currency = await getUserCurrency(userId);
   return db.transaction(async tx => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 91473)`);
     const [job] = await tx.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId))).for("update");
     if (!job) throw new ImportError("Importazione non disponibile");
     if (job.status === "imported") return { inserted: 0, alreadyImported: true };
-    if (job.status !== "ready" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
-    const preview: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
-    if (preview.currency !== currency) throw new ImportError("La valuta del profilo è cambiata: carica nuovamente il CSV");
+    const allowed = options.skipErrors ? ["ready", "review_failed"] : ["ready"];
+    if (!allowed.includes(job.status) || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
+    const stored: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+    if (stored.currency !== currency) throw new ImportError("La valuta del profilo è cambiata: carica nuovamente il CSV");
+    const { records, skippedKeys } = options.skipErrors ? skipErrorRecords(stored.records) : { records: stored.records, skippedKeys: new Set<string>() };
+    const preview: Preview = { ...stored, records };
     validateOutcomes(preview.records.map(r => r.outcome), { headers: preview.headers, delimiter: ",", rows: preview.records.map(r => r.source) });
     if (preview.records.some(r => r.outcome.kind === "error")) throw new ImportError("Ci sono righe non riconosciute");
+    if (options.skipErrors && !preview.records.some(r => r.outcome.kind === "cash" || r.outcome.kind === "investment")) throw new ImportError("Nessuna riga riconosciuta da importare: rianalizza il file o caricane uno corretto");
     const [format] = await tx.select().from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, userId))).for("update");
     if (!format) throw new ImportError("Formato non disponibile");
     const prior = new Map((await tx.select().from(receipts).where(eq(receipts.formatId, format.id))).map(r => [r.recordKey, r.outcomeHash]));
     for (const r of preview.records) if (prior.has(r.key) && prior.get(r.key) !== outcomeHash(r.outcome)) throw new ImportError("Una riga già importata ha una nuova interpretazione: verifica lo storico prima di proseguire");
-    const fresh = preview.records.filter(r => !prior.has(r.key));
+    // Le righe saltate non lasciano ricevuta: corrette e ricaricate, o lette da un formato rianalizzato, tornano nuove.
+    const fresh = preview.records.filter(r => !prior.has(r.key) && !skippedKeys.has(r.key));
     const financial = fresh.filter(r => r.outcome.kind === "cash" || r.outcome.kind === "investment");
     if (financial.some(r => !r.rate || !Number.isFinite(r.rate) || r.rate <= 0)) throw new ImportError("Cambio storico non disponibile: ricarica il CSV più tardi");
     let portfolioId = format.portfolioId, accountId = format.accountId;
@@ -93,7 +115,13 @@ export async function confirmImport(userId: string, id: string) {
     if (accountId && financial.length) await tx.update(accounts).set({ balance: sql`${accounts.balance} + ${(deltaCents / 100).toFixed(2)}`, updatedAt: new Date() }).where(and(eq(accounts.id, accountId), eq(accounts.userId, userId)));
     for (let i = 0; i < fresh.length; i += 500) await tx.insert(receipts).values(fresh.slice(i, i + 500).map(r => ({ formatId: format.id, recordKey: r.key, outcomeHash: outcomeHash(r.outcome) })));
     await tx.update(formats).set({ accountId, portfolioId }).where(eq(formats.id, format.id));
-    await tx.update(jobs).set({ status: "imported", notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key) } }).where(eq(jobs.id, id));
-    return { inserted: financial.length, duplicates: preview.records.length - fresh.length };
+    // Importare saltando le righe vuol dire accettare il formato: il parser diventa quello del formato per i file successivi.
+    let parserId = job.parserId;
+    if (!parserId && stored.parser) {
+      const [version] = await tx.insert(parsers).values({ formatId: format.id, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(stored.parser), userId), model: "accepted-with-skips" }).returning();
+      parserId = version.id;
+    }
+    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size } }).where(eq(jobs.id, id));
+    return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, skipped: skippedKeys.size };
   });
 }

@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 import { personalFormats as formats, personalParsers as parsers, personalImportJobs as jobs } from "@/lib/db/schema/personal-imports";
 import { seal, unseal } from "./crypto";
 import { ImportError, readRawFile } from "./contract";
+import type { Preview } from "./confirm";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
 export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean }) {
@@ -27,10 +28,29 @@ export async function listImports(userId: string) {
     db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
-  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length } : null })) };
+  return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0 } : null })) };
 }
-export async function getPreview(userId: string, id: string) {
+/** Anteprima per il client: il parser generato (se presente) resta sul server. */
+export async function getPreview(userId: string, id: string): Promise<Omit<Preview, "parser"> | null> {
   const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
   if (!job || !job.encryptedPreview || job.expiresAt < new Date()) return null;
-  return JSON.parse(unseal(job.encryptedPreview, userId));
+  const { parser: _parser, ...preview }: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+  void _parser;
+  return preview;
+}
+/**
+ * Rianalizza con l'AI un file con righe da controllare, senza ricaricarlo: il testo si ricostruisce dalle righe
+ * dell'anteprima (una per riga fisica), il lavoro vecchio viene tolto dalla lista e ne parte uno nuovo con
+ * «rileggi il formato». Stesso consenso del primo caricamento, richiesto di nuovo dalla route.
+ */
+export async function reanalyze(userId: string, id: string) {
+  const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
+  if (!job || job.status !== "review_failed" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
+  const preview: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
+  if (preview.records.some(r => r.source.length !== 1)) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
+  const [format] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, userId)));
+  if (!format) throw new ImportError("Formato non disponibile");
+  const next = await enqueue(userId, { csv: preview.records.map(r => r.source[0]).join("\n"), name: format.name, formatId: job.formatId, regenerate: true });
+  await db.delete(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId), eq(jobs.status, "review_failed")));
+  return next;
 }

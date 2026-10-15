@@ -16,22 +16,36 @@
 .tail .rows li .src a::after { content: " ↗"; font-weight: 400; }
 .tail .rows li .src a:hover { text-decoration: underline; }
 
-/* «funziona con»: una fascia di loghi e strumenti, non una tabella */
-.con .band { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 28px 48px; }
-.con-cell { padding: 22px 0 0; border-top: 1px solid var(--line); }
-.con-cell h3 { font-size: 18px; }
-.con-cell p { margin-top: 6px; color: var(--ink2); font-size: 15.5px; line-height: 1.5; }
-.con-cell .art { margin-top: 18px; display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap; min-height: 44px; }
-.con .flag { width: 44px; height: 33px; border-radius: 5px; }
-.con .logo { height: 24px; }
-.con .logo.ib { height: 30px; }
-.con .logo.fin { height: 22px; }
-.con .logo.tr { height: 19px; }
-.con .logo.yh { height: 26px; }
-.con .ibk { gap: 7px; font-size: 17px; }
-.con .csv { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border: 1px dashed var(--ink3); border-radius: var(--r-sm); font: 600 13px var(--f-b); color: var(--ink2); }
-.con .ichip { height: 36px; font-size: 14px; }
-.con .ichip i { width: 26px; height: 26px; font-size: 11px; }
+/* «funziona con»: quattro schede con margini e angoli, icona tinta in testa e, in fondo, i loghi o i chip */
+.con-grid { margin-top: 44px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.con-col { display: flex; flex-direction: column; gap: 20px; }
+.con-cell { display: flex; flex-direction: column; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); }
+.con-head { display: flex; align-items: center; gap: 14px; }
+.con-ic { flex: none; width: 40px; height: 40px; border-radius: var(--r); display: inline-grid; place-items: center; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--accent); }
+.con-cell h3 { font-size: 19px; }
+.con-cell p { margin-top: 14px; color: var(--ink2); font-size: 15.5px; line-height: 1.55; }
+.con-art { margin: 0; padding: 24px 0 0; list-style: none; }
+.con-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.con-pill { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px 0 9px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); font: 500 15px var(--f-b); color: var(--ink); }
+.con .flag { width: 30px; height: 23px; border-radius: 4px; }
+/* tessere dei loghi: tutte della stessa altezza, su fondo chiaro anche nel tema scuro (i marchi sono pensati per il chiaro) */
+.con-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.con-tile { display: grid; place-items: center; height: 60px; padding: 0 18px; background: var(--logo-bg); border: 1px solid var(--line); border-radius: var(--r); }
+.con .con-tile .logo { --lh: 22px; width: auto; height: auto; max-width: 100%; max-height: var(--lh); }
+.con .con-tile .logo.ib { --lh: 28px; }
+.con .con-tile .logo.fin { --lh: 28px; }
+.con .con-tile .logo.tr { --lh: 15px; }
+.con .con-tile .logo.yh { --lh: 24px; }
+.con .con-tile .ibk { gap: 9px; font-size: 16px; color: var(--navy); white-space: nowrap; }
+.con .con-tile .ibk .logo { max-width: none; flex: none; }
+.con-csv { grid-column: 1 / -1; grid-auto-flow: column; justify-content: center; gap: 10px; background: transparent; border-style: dashed; border-color: var(--ink3); font: 600 15px var(--f-b); color: var(--ink2); }
+.con-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.con .ichip { height: 44px; padding: 0 14px 0 6px; gap: 10px; background: var(--bg); border-radius: var(--r); font-size: 15px; }
+.con .ichip i { width: 32px; height: 32px; border-radius: var(--r-sm); }
+.con .ichip i svg { width: 18px; height: 18px; }
+.con .ichip small { font-size: 13px; }
+.con-src { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--ink3); font-size: 14px; }
+.con-src .con-tile { height: 44px; min-width: 112px; padding: 0 16px; }
 
 /* sicurezza: righe come nelle impostazioni dell'app, con l'icona tinta della sezione */
 .sicurezza .rows li { grid-template-columns: 340px 1fr; }
@@ -104,10 +118,16 @@
 @media (max-width: 1000px) {
   .tail section { padding: 72px 0; }
   .tail .rows li, .sicurezza .rows li { grid-template-columns: 1fr; gap: 8px; }
-  .con .band { grid-template-columns: 1fr; gap: 18px; }
+  /* sul telefono le due colonne si sciolgono e le schede tornano nell'ordine del testo */
+  .con-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 32px; }
+  .con-col { display: contents; }
+  .con-cell { padding: 22px; order: var(--n); }
   .sicurezza .limits { grid-template-columns: 1fr; }
   .oss { grid-template-columns: 1fr; padding: 26px 22px; }
   .rules2 { grid-template-columns: 1fr; }
   .tools li { grid-template-columns: 1fr; gap: 8px; }
   .close { padding: 80px 0; }
+}
+@media (max-width: 600px) {
+  .con-tiles { grid-template-columns: 1fr; }
 }

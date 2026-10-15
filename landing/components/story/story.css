@@ -44,15 +44,20 @@
 .logo.tr { height: 13px; }
 .logo.yh { height: 17px; }
 .ibk { display: inline-flex; align-items: center; gap: 5px; font: 700 13px var(--f-b); letter-spacing: -0.01em; color: var(--ink); }
-/* i loghi dei broker sono pensati per il chiaro: nel tema scuro stanno su una targhetta chiara */
-:root[data-theme="dark"] .logo { background: var(--logo-bg); padding: 2px 4px; border-radius: 4px; box-sizing: content-box; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .logo { background: var(--logo-bg); padding: 2px 4px; border-radius: 4px; box-sizing: content-box; } }
-.ichip { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px 0 4px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; font-size: 13px; color: var(--ink); white-space: nowrap; }
-.ichip i { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; font: 700 9.5px var(--f-h); color: var(--on-navy); font-style: normal; letter-spacing: 0; background: var(--chip, var(--ink)); }
+/* i loghi dei broker sono pensati per il chiaro: nel tema scuro, nell'apertura, stanno su una targhetta chiara (le schede di «funziona con» ne hanno una propria) */
+:root[data-theme="dark"] .with .logo { background: var(--logo-bg); padding: 2px 4px; border-radius: 4px; box-sizing: content-box; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .with .logo { background: var(--logo-bg); padding: 2px 4px; border-radius: 4px; box-sizing: content-box; } }
+/* strumento: icona in un riquadro tinto del suo colore, come le icone delle sezioni dell'app */
+.ichip { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px 0 4px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-sm); font-size: 13px; color: var(--ink); white-space: nowrap; }
+.ichip i { width: 22px; height: 22px; border-radius: calc(var(--r-sm) - 3px); display: inline-grid; place-items: center; color: var(--chip, var(--ink)); background: color-mix(in srgb, var(--chip, var(--ink)) 14%, transparent); }
+.ichip i svg { width: 13px; height: 13px; }
+/* con il logo vero il riquadro è una targhetta chiara (i marchi sono pensati per il chiaro, anche nel tema scuro) */
+.ichip i.lg { background: var(--logo-bg); box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+.ichip i.lg img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .ichip small { color: var(--ink3); font-size: 12px; }
 .ichip-sal { --chip: var(--a-sal); }
 .ichip-primary { --chip: var(--primary); }
-.ichip-navy { --chip: var(--navy); }
+.ichip-ink { --chip: var(--ink); }
 .ichip-vol { --chip: var(--a-vol); }
 .ichip-fut { --chip: var(--a-fut); }
 .ichip-neg { --chip: var(--a-neg); }

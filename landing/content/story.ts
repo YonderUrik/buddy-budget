@@ -23,21 +23,25 @@ export const GROUPS: readonly { id: SpendGroup; label: string }[] = [
   { id: "saltuaria", label: "Saltuarie" },
 ];
 
-/** Strumento d'esempio nei chip «funziona con»: sigla, nome, tipo e colore del tondino (token `--chip-*`). */
+/**
+ * Strumento d'esempio nei chip «funziona con»: nome, tipo e riquadro. Se ha un `logo` (file in `public/`, scaricato
+ * con `scripts/fetch-market-logos.mjs`) il riquadro mostra quello; altrimenti l'`icona` nel colore dell'app (vedi `story.css`).
+ */
 export interface InstrumentChip {
-  code: string;
+  icon: HomeIcon;
   name: string;
   kind?: string;
-  color: "sal" | "primary" | "navy" | "vol" | "fut" | "neg" | "mut";
+  color: "sal" | "primary" | "ink" | "vol" | "fut" | "neg" | "mut";
+  logo?: string;
 }
 
 export const INSTRUMENTS: readonly InstrumentChip[] = [
-  { code: "EN", name: "Enel", kind: "azione", color: "sal" },
-  { code: "VW", name: "VWCE", kind: "ETF", color: "primary" },
-  { code: "BT", name: "BTP 2030", kind: "12,5%", color: "navy" },
-  { code: "₿", name: "Bitcoin", color: "vol" },
-  { code: "FP", name: "Fondo pensione", color: "fut" },
-  { code: "MU", name: "Mutuo", color: "neg" },
+  { icon: "candles", name: "Enel", kind: "azione", color: "sal", logo: "/logos/market/enel.webp" },
+  { icon: "layers", name: "VWCE", kind: "ETF", color: "primary", logo: "/logos/market/vanguard.webp" },
+  { icon: "landmark-gov", name: "BTP 2030", kind: "12,5%", color: "ink", logo: "/logos/market/mef.webp" },
+  { icon: "bitcoin", name: "Bitcoin", color: "vol", logo: "/logos/market/bitcoin.webp" },
+  { icon: "umbrella", name: "Fondo pensione", color: "fut" },
+  { icon: "house", name: "Mutuo", color: "neg" },
 ];
 
 export const HERO = {
@@ -353,25 +357,30 @@ export const WORKS_WITH = {
   title: "Funziona con quello che hai già.",
   intro: "La banca si collega in sola lettura, dal broker importi l'estratto, del fondo pensione bastano due numeri. Niente da riscrivere a mano.",
   banks: {
+    icon: "landmark" satisfies HomeIcon,
     title: "Le banche di cinque paesi",
     text: "Italia, Germania, Francia, Spagna e Regno Unito, tramite GoCardless (PSD2). Le credenziali le scrivi solo sul sito della banca; il consenso dura 90 giorni.",
   },
   brokers: {
+    icon: "spreadsheet" satisfies HomeIcon,
     title: "I file del broker",
     text: "Interactive Brokers, DEGIRO, Trade Republic e Fineco hanno un lettore pronto; per gli altri l'app impara il formato dal tuo CSV. Nessun accesso al conto titoli.",
     csv: "CSV di chiunque",
   },
   instruments: {
+    icon: "trending" satisfies HomeIcon,
     title: "Azioni, ETF, titoli di Stato, cripto",
     text: "Ogni strumento ha la sua scheda e la sua aliquota. I prezzi arrivano da fonti gratuite tre volte al giorno, come chiusure di fine giornata.",
+    source: "Tra le fonti dei prezzi",
   },
   rest: {
+    icon: "umbrella" satisfies HomeIcon,
     title: "Fondo pensione, mutuo e prestiti",
     text: "Del fondo bastano contributi versati e controvalore, ogni tanto; del mutuo importo, tasso e durata, una volta. Da lì rendimento, prelievo netto e piano rata per rata.",
     chips: [
-      { code: "FP", name: "Fondo pensione", kind: "TFR a confronto", color: "fut" },
-      { code: "MU", name: "Mutuo casa", color: "neg" },
-      { code: "PA", name: "Prestito auto", color: "mut" },
+      { icon: "umbrella", name: "Fondo pensione", kind: "TFR a confronto", color: "fut" },
+      { icon: "house", name: "Mutuo casa", color: "neg" },
+      { icon: "car", name: "Prestito auto", color: "mut" },
     ] satisfies readonly InstrumentChip[],
   },
   countries: SUPPORTED.countries,

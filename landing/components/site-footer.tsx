@@ -6,6 +6,9 @@ import { SOURCE_LICENSE, SOURCE_URL, STATUS_URL, SUPPORT_EMAIL } from "@/content
 import { GithubMark } from "./github-mark";
 import { SourceLink } from "./source-link";
 
+/** Pagina di Logo.dev, citata sotto i loghi degli strumenti (condizione del piano gratuito). */
+const LOGO_CREDIT_URL = "https://logo.dev";
+
 /** Piè di pagina, lo stesso in ogni pagina: fondo navy come la sidebar dell'app, i rimandi principali, il codice e il supporto. */
 export function SiteFooter() {
   return (
@@ -29,6 +32,7 @@ export function SiteFooter() {
               GitHub · {SOURCE_LICENSE}
             </SourceLink>
           ) : null}
+          <a href={LOGO_CREDIT_URL} target="_blank" rel="noopener noreferrer">Loghi forniti da Logo.dev</a>
           <a href={STATUS_URL} target="_blank" rel="noopener noreferrer">Stato del servizio</a>
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
         </nav>

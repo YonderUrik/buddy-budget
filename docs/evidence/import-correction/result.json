@@ -1,0 +1,13 @@
+{
+  "testedAt": "2026-10-15T22:55:26.168Z",
+  "ai": "Real OpenRouter request; synthetic CSV and feedback",
+  "email": "Intercepted locally; no real delivery",
+  "balanceBefore": 888.75,
+  "balanceBeforeConfirmation": 888.75,
+  "balanceAfter": 987.5,
+  "movements": 2,
+  "reusableParsersBeforeConfirmation": 1,
+  "explicitConfirmation": true,
+  "mobileOverflow": false,
+  "rawPayloadsDeleted": true
+}

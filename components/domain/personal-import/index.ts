@@ -16,3 +16,5 @@ export { PersonalImportReceipt, receiptStage } from "./personal-import-receipt";
 export type { PersonalImportReceiptFile, PersonalImportReceiptProps } from "./personal-import-receipt";
 export { PersonalImportIsland, PersonalImportIslandCard } from "./personal-import-island";
 export type { PersonalImportIslandCardProps } from "./personal-import-island";
+
+export { PersonalImportCorrection } from "./personal-import-correction";

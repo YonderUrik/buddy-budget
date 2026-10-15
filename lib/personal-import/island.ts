@@ -4,7 +4,7 @@ import type { PersonalImportListing } from "@/lib/queries/personal-imports";
 
 type Job = PersonalImportListing["jobs"][number];
 
-export type IslandState = "running" | "done" | "failed";
+export type IslandState = "running" | "done" | "failed" | "review";
 
 /** Un'importazione resta visibile (se non chiusa) per un giorno dal caricamento. */
 export const ISLAND_VISIBLE_MS = 24 * 60 * 60 * 1000;
@@ -15,6 +15,7 @@ const FAILED = ["failed", "review_failed"];
 
 /** Stato mostrato dall'isola; `null` per i file scaduti, che non interessano più. */
 export function islandState(job: Pick<Job, "status">): IslandState | null {
+  if (job.status === "correction_ready") return "review";
   if (RUNNING.includes(job.status)) return "running";
   if (job.status === "imported") return "done";
   if (FAILED.includes(job.status)) return "failed";

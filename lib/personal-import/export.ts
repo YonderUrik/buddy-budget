@@ -10,5 +10,5 @@ export async function exportPersonalImports(userId: string) {
     db.select().from(personalParsers).where(inArray(personalParsers.formatId, formats.map(f => f.id))),
     db.select().from(personalImportJobs).where(and(eq(personalImportJobs.userId, userId), gt(personalImportJobs.expiresAt, new Date()))),
   ]);
-  return { formats, parsers: parsers.map(({ encryptedParser, ...p }) => ({ ...p, parser: JSON.parse(unseal(encryptedParser, userId)) })), jobs: jobs.map(({ encryptedCsv, encryptedPreview, lease: _lease, ...j }) => { void _lease; return { ...j, csv: encryptedCsv ? unseal(encryptedCsv, userId) : null, preview: encryptedPreview ? JSON.parse(unseal(encryptedPreview, userId)) : null }; }) };
+  return { formats, parsers: parsers.map(({ encryptedParser, ...p }) => ({ ...p, parser: JSON.parse(unseal(encryptedParser, userId)) })), jobs: jobs.map(({ encryptedCsv, encryptedPreview, encryptedCorrectionFeedback, correctionToken: _correctionToken, lease: _lease, ...j }) => { void _lease; void _correctionToken; return { ...j, correctionFeedback: encryptedCorrectionFeedback ? unseal(encryptedCorrectionFeedback, userId) : null, csv: encryptedCsv ? unseal(encryptedCsv, userId) : null, preview: encryptedPreview ? JSON.parse(unseal(encryptedPreview, userId)) : null }; }) };
 }

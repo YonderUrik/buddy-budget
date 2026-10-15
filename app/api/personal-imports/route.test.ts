@@ -3,8 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { auth } from "@/lib/auth";
 import { deletePersonalImport, previewPersonalImportDeletion } from "@/lib/personal-import/delete";
 import { enqueue, getPreview } from "@/lib/personal-import/jobs";
+import { compareCorrection, replaceImport, discardCorrection } from "@/lib/personal-import/correction";
 import { GET, POST } from "./route";
 import { GET as preview, POST as confirm, DELETE as remove } from "./[id]/route";
+vi.mock("next/server", async original => ({ ...await original<typeof import("next/server")>(), after: vi.fn() }));
+vi.mock("@/lib/personal-import/correction", () => ({ compareCorrection: vi.fn().mockResolvedValue({before:[],after:[]}), replaceImport: vi.fn().mockResolvedValue({inserted:2}), discardCorrection: vi.fn().mockResolvedValue({cashCount:0}) }));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: vi.fn() } } }));
 vi.mock("@/lib/personal-import/jobs", () => ({ enqueue: vi.fn().mockResolvedValue({ id: "job" }), listImports: vi.fn().mockResolvedValue({ formats: [], jobs: [] }), getPreview: vi.fn().mockResolvedValue(null) }));
 vi.mock("@/lib/personal-import/delete", () => ({ previewPersonalImportDeletion: vi.fn().mockResolvedValue({ token: "a".repeat(64) }), deletePersonalImport: vi.fn().mockResolvedValue({ cashCount: 0, investmentCount: 0 }) }));
@@ -39,5 +42,30 @@ describe("personal import API", () => {
     expect(enqueue).toHaveBeenCalledWith("owner", expect.objectContaining({ name: "Test" }));
     expect((await preview(req("GET", undefined, "/d42c811b-f061-4a42-8023-0c84c8e1ce85"))).status).toBe(404);
     expect(getPreview).toHaveBeenCalledWith("owner", "d42c811b-f061-4a42-8023-0c84c8e1ce85");
+  });
+});
+
+
+describe("correction API", () => {
+  const id = "d42c811b-f061-4a42-8023-0c84c8e1ce85";
+  it("uses the session owner for comparison, replacement and cancellation", async () => {
+    expect((await preview(req("GET",undefined,`/${id}?correction=1`))).status).toBe(200);
+    expect(compareCorrection).toHaveBeenCalledWith("owner",id);
+    expect((await confirm(req("POST",{action:"replace_import"},`/${id}`))).status).toBe(200);
+    expect(replaceImport).toHaveBeenCalledWith("owner",id);
+    expect((await confirm(req("POST",{action:"discard_correction"},`/${id}`))).status).toBe(200);
+    expect(discardCorrection).toHaveBeenCalledWith("owner",id);
+  });
+  it("rejects cross-origin correction actions and uploads without current consent", async () => {
+    expect((await confirm(req("POST",{action:"replace_import"},`/${id}`,"https://other.example"))).status).toBe(403);
+    expect((await confirm(req("POST",{action:"discard_correction"},`/${id}`,"https://other.example"))).status).toBe(403);
+    expect((await POST(req("POST",{csv:"a,b",name:"Correction",correctionOf:id,feedback:"Wrong"}))).status).toBe(400);
+    expect(replaceImport).not.toHaveBeenCalled(); expect(discardCorrection).not.toHaveBeenCalled(); expect(enqueue).not.toHaveBeenCalled();
+  });
+  it("bounds feedback and passes it with the original job to the queue", async () => {
+    const body = {csv:"a,b",name:"Correction",correctionOf:id,feedback:"Wrong",consent:true,consentVersion:"openrouter-raw-zdr-v3"};
+    expect((await POST(req("POST",{...body,feedback:"x".repeat(2001)}))).status).toBe(400);
+    expect((await POST(req("POST",body))).status).toBe(202);
+    expect(enqueue).toHaveBeenCalledWith("owner",expect.objectContaining({correctionOf:id,feedback:"Wrong"}));
   });
 });

@@ -57,10 +57,11 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
   const state = islandState(job);
   const running = state === "running";
   const failed = state === "failed";
-  const review = job.status === "review_failed";
+  const correctionReady = job.status === "correction_ready";
+  const review = job.status === "review_failed" || correctionReady;
   const results = job.results;
   const title = running ? tr("{0}: importo il file", { 0: source }) : review ? tr("{0}: da controllare", { 0: source }) : failed ? tr("{0}: non riuscito", { 0: source }) : tr("{0}: completato", { 0: source });
-  const detail = running
+  const detail = correctionReady ? tr("Confronta la correzione prima di confermare.") : running
     ? tr("Puoi continuare a usare l'app.")
     : review
       ? tr("Vedi quali righe e scegli cosa fare.")
@@ -82,6 +83,8 @@ export function PersonalImportIslandCard({ job, source, onDismiss }: PersonalImp
         <span className="flex size-6 shrink-0 items-center justify-center">
           {running ? (
             <SyncProgressRing progress={{ kind: "indeterminate" }} label={tr(title)} />
+          ) : correctionReady ? (
+            <AlertCircle className="size-5 text-primary" aria-hidden="true" />
           ) : failed ? (
             <AlertCircle className="size-5 text-neg" aria-hidden="true" />
           ) : (

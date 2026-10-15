@@ -1,8 +1,12 @@
 import { renderEmail } from "@/lib/email";
 
 /** Oggetto, testo e HTML dell'email sull'esito dell'import CSV personale. Pura, per poterla testare. */
-export type PersonalImportEmailOutcome = "imported" | "review" | "failed";
+export type PersonalImportEmailOutcome = "imported" | "review" | "failed" | "correction_ready" | "correction_failed";
 export function personalImportEmailContent(outcome: PersonalImportEmailOutcome, params: { jobUrl: string; appUrl: string }): { subject: string; text: string; html: string } {
+  if (outcome === "correction_ready" || outcome === "correction_failed") {
+    const ready = outcome === "correction_ready";
+    return { subject: ready ? "La correzione del CSV è pronta da confrontare" : "La correzione del CSV richiede attenzione", ...renderEmail({ title: ready ? "Confronta la correzione" : "Correzione non completata", lead: "L’importazione originale è rimasta invariata. Apri BuddyBudget per controllare il risultato: i dati saranno sostituiti solo dopo la tua conferma.", cta: { label: "Controlla la correzione", url: params.jobUrl } }, { appUrl: params.appUrl }) };
+  }
   if (outcome === "imported") {
     return {
       subject: "Il tuo CSV è stato importato",

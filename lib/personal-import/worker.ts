@@ -43,7 +43,7 @@ export async function processOne() {
     const generated = await analyzeWithFallback({
       table,
       saved: saved ? () => ({ parser: parserSchema.parse(JSON.parse(unseal(saved.encryptedParser, job.userId))), model: saved.model }) : undefined,
-      generate: () => generateParser(table, source?.name), execute: executeParser,
+      generate: () => generateParser(table, source?.name, job.encryptedCorrectionFeedback ? unseal(job.encryptedCorrectionFeedback, job.userId) : undefined), execute: executeParser,
       onFallback: async failureReport => {
         if (job.consentVersion !== "openrouter-raw-zdr-v3") throw new ModelInputError("Il formato salvato non legge questo file. Avvia una nuova analisi per autorizzare il tentativo automatico con l'AI.");
         const claimed = await db.update(jobs).set({ parserId: null, failureReport: job.failureReport ?? failureReport }).where(owned).returning({ id: jobs.id });
@@ -71,13 +71,13 @@ export async function processOne() {
       const [current] = await tx.select().from(jobs).where(owned).for("update");
       if (!current) return;
       let parserId = generated.reused ? saved?.id : undefined;
-      if (!errors.length && !parserId) {
+      if (!errors.length && !parserId && !job.correctionOf) {
         const [version] = await tx.insert(parsers).values({ formatId: job.formatId, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(generated.parser), job.userId), model: generated.model }).returning(); parserId = version.id;
       }
       // Con righe da controllare il parser non è ancora del formato: viaggia cifrato nell'anteprima e viene salvato
       // solo se l'utente importa saltando quelle righe (vedi `confirmImport`), mai se rianalizza o carica un altro file.
-      const preview: Preview = { headers: table.headers, currency, records, parser: errors.length && !parserId ? generated.parser : undefined };
-      await tx.update(jobs).set({ status: errors.length ? "review_failed" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, failureReport: current.failureReport ?? (errors.length ? { phase: "parse", reason: "unrecognized_rows", rows: errors.slice(0, 100).map(o => o.row + 1), count: errors.length, fallback: false } : null), lease: null, leaseUntil: null }).where(owned);
+      const preview: Preview = { headers: table.headers, currency, records, parser: (errors.length || job.correctionOf) && !parserId ? generated.parser : undefined };
+      await tx.update(jobs).set({ status: errors.length ? "review_failed" : job.correctionOf ? "correction_ready" : "ready", parserId, encryptedCsv: null, encryptedPreview: seal(JSON.stringify(preview), job.userId), error: errors.length ? describeRowErrors(errors.length, outcomes.length) : null, failureReport: current.failureReport ?? (errors.length ? { phase: "parse", reason: "unrecognized_rows", rows: errors.slice(0, 100).map(o => o.row + 1), count: errors.length, fallback: false } : null), lease: null, leaseUntil: null }).where(owned);
     });
     logger.info("personal_import.completed", { jobId: job.id, count: outcomes.length, rejected: errors.length });
   } catch (error) {
@@ -91,7 +91,7 @@ export async function processOne() {
 
 export async function maintainJobs() {
   await notifyImportSupport();
-  await db.update(jobs).set({ encryptedCsv: null, encryptedPreview: null, status: "expired", lease: null, leaseUntil: null }).where(and(lte(jobs.expiresAt, new Date()), sql`${jobs.status} not in ('imported', 'expired')`));
+  await db.update(jobs).set({ encryptedCsv: null, encryptedPreview: null, encryptedCorrectionFeedback: null, status: "expired", lease: null, leaseUntil: null }).where(and(lte(jobs.expiresAt, new Date()), sql`${jobs.status} not in ('imported', 'expired')`));
   // Ready is durable: a restart after analysis resumes the atomic import without another AI call.
   const [ready] = await db.select().from(jobs).where(and(eq(jobs.status, "ready"), lte(jobs.availableAt, new Date()))).orderBy(jobs.createdAt).limit(1);
   if (ready) {
@@ -109,7 +109,7 @@ export async function maintainJobs() {
   }
   // Atomic notification claim; independent retries never rerun the parser or import financial data.
   const pending = await db.transaction(async tx => {
-    const [job] = await tx.select().from(jobs).where(and(inArray(jobs.status, ["imported", "review_failed", "failed"]), sql`${jobs.notifiedAt} is null`, lte(jobs.notifyAfter, new Date()))).limit(1).for("update", { skipLocked: true });
+    const [job] = await tx.select().from(jobs).where(and(inArray(jobs.status, ["imported", "review_failed", "failed", "correction_ready"]), sql`${jobs.notifiedAt} is null`, lte(jobs.notifyAfter, new Date()))).limit(1).for("update", { skipLocked: true });
     if (!job) return null;
     await tx.update(jobs).set({ notifyAfter: new Date(Date.now() + 15 * 60000) }).where(eq(jobs.id, job.id));
     return job;
@@ -120,8 +120,8 @@ export async function maintainJobs() {
     const [user] = await db.select({ email: authUser.email }).from(authUser).where(eq(authUser.id, pending.userId));
     if (!user) return;
     const url = new URL(`/importazioni?job=${pending.id}`, process.env.APP_URL).toString();
-    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL });
-    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}` });
+    const { subject, text, html } = personalImportEmailContent(pending.status === "imported" ? "imported" : pending.correctionOf ? pending.status === "correction_ready" ? "correction_ready" : "correction_failed" : pending.status === "review_failed" ? "review" : "failed", { jobUrl: url, appUrl: process.env.APP_URL });
+    const result = await new Resend(process.env.RESEND_API_KEY).emails.send({ from: process.env.RESEND_FROM, to: user.email, subject, text, html }, { idempotencyKey: `personal-csv-${pending.id}${pending.correctionOf ? `-${pending.status}` : ""}` });
     if (result.error) throw new Error("Invio fallito");
     await db.update(jobs).set({ notifiedAt: new Date() }).where(eq(jobs.id, pending.id));
   } catch { logger.warn("personal_import.email_failed", { jobId: pending.id, reason: "delivery_failed" }); }

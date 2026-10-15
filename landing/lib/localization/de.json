@@ -790,9 +790,7 @@
   "Password": "Passwort",
   "Paese": "Land",
   "Lingua": "Sprache",
-  "Rileva": "Erkennen",
   "Paese e lingua": "Land und Sprache",
-  "Usa le preferenze del browser": "Browsereinstellungen verwenden",
   "Chiudi il menu": "Menü schließen",
   "Quattro domande sui tuoi soldi.": "Vier Fragen zu deinem Geld.",
   "Le quattro domande": "Die vier Fragen",
@@ -885,7 +883,6 @@
   "patrimonio netto: liquidità, investimenti e previdenza, meno i debiti": "Nettovermögen: Liquidität, Anlagen und Altersvorsorge abzüglich Schulden",
   "Panoramica › Dove sta il patrimonio: le stesse quattro voci, sommate.": "Übersicht › Vermögensverteilung: dieselben vier Positionen zusammengezählt.",
   "Come funziona il collegamento alla banca in sola lettura (PSD2), cosa salviamo e cosa no, dove sono i server e come cancelli tutto. Con le fonti ufficiali.": "So funktioniert der Bank-Lesezugriff (PSD2): gespeicherte Daten, Serverstandorte und vollständige Löschung. Mit offiziellen Quellen.",
-  "Sul sito ricordiamo paese e lingua scelti nel browser (bb-landing-profile-v1). Al primo accesso usiamo le preferenze linguistiche del browser, senza GPS o geolocalizzazione IP. Il pulsante Rileva cancella la scelta salvata e ripete il rilevamento.": "Die Website speichert das gewählte Land und die Sprache im Browser (bb-landing-profile-v1). Beim ersten Besuch nutzt sie die Spracheinstellungen des Browsers, ohne GPS oder IP-Ortung. Die Schaltfläche Erkennen löscht die gespeicherte Wahl und erkennt erneut.",
   "1 di 4": "1 von 4",
   "2 di 4": "2 von 4",
   "3 di 4": "3 von 4",
@@ -912,5 +909,6 @@
   "Salva saldi e movimenti per mostrarteli e calcolare budget e patrimonio; descrizioni e note le cifra prima di salvarle.": "Es speichert Salden und Buchungen für die Anzeige sowie Budget- und Vermögensberechnungen. Beschreibungen und Notizen werden vor der Speicherung verschlüsselt.",
   "Salva saldi e movimenti (data, importo, descrizione) per mostrarteli e calcolare budget e patrimonio.": "Es speichert Salden und Buchungen (Datum, Betrag, Beschreibung) für die Anzeige sowie Budget- und Vermögensberechnungen.",
   "L'IBAN serve solo a farti scegliere il conto e non viene salvato.": "Die IBAN dient nur zur Kontoauswahl und wird nicht gespeichert.",
-  "Non vende i dati, non fa pubblicità e non li usa per profilarti.": "Es verkauft keine Daten, zeigt keine Werbung und nutzt die Daten nicht zur Profilbildung."
+  "Non vende i dati, non fa pubblicità e non li usa per profilarti.": "Es verkauft keine Daten, zeigt keine Werbung und nutzt die Daten nicht zur Profilbildung.",
+  "Sul sito ricordiamo paese e lingua scelti nel browser (bb-landing-profile-v1). Al primo accesso usiamo le preferenze linguistiche del browser, senza GPS o geolocalizzazione IP.": "Die Website speichert das gewählte Land und die Sprache im Browser (bb-landing-profile-v1). Beim ersten Besuch nutzt sie die Spracheinstellungen des Browsers, ohne GPS oder IP-Ortung."
 }

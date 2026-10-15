@@ -310,7 +310,7 @@ export const COOKIE: LegalDocument = {
       items: [
         `Cookie di sessione dell'app (app.buddybudget.io): ti tiene collegato dopo l'accesso, scade dopo ${SESSION_DAYS} giorni senza utilizzo e sparisce all'uscita.`,
         "Cookie di sicurezza temporanei durante l'accesso (per esempio quando scegli Google), necessari a completarlo.",
-        "Sul sito ricordiamo paese e lingua scelti nel browser (bb-landing-profile-v1). Al primo accesso usiamo le preferenze linguistiche del browser, senza GPS o geolocalizzazione IP. Il pulsante Rileva cancella la scelta salvata e ripete il rilevamento.",
+        "Sul sito ricordiamo paese e lingua scelti nel browser (bb-landing-profile-v1). Al primo accesso usiamo le preferenze linguistiche del browser, senza GPS o geolocalizzazione IP.",
         "Archivio locale del browser: ricorda tema chiaro o scuro, stato della barra laterale, sezioni chiuse, scelta di nascondere gli importi, la scelta sulle statistiche e le preferenze delle schermate.",
         "Questi strumenti servono a erogare ciò che chiedi: per i cookie tecnici il Garante (Linee guida, par. 5) richiede solo l'informativa e non il consenso.",
       ],

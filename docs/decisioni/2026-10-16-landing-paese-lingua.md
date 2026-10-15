@@ -4,7 +4,7 @@ La landing offre Italia in italiano/inglese e Germania in tedesco/inglese. La se
 
 ## Rilevamento e preferenze
 
-Gli ingressi senza prefisso usano le preferenze linguistiche/regionali del browser. Non si raccolgono GPS o indirizzi IP per localizzare. Un tag con regione IT/DE suggerisce il prodotto, altrimenti il tedesco suggerisce DE e il fallback è IT/en. La scelta manuale è salvata in localStorage; ha precedenza nei successivi ingressi senza prefisso. Gli URL espliciti mantengono il profilo condiviso. Rileva elimina la preferenza salvata. Nessuna impostazione dell'account nell'app viene cambiata.
+Gli ingressi senza prefisso usano le preferenze linguistiche/regionali del browser. Non si raccolgono GPS o indirizzi IP per localizzare. Un tag con regione IT/DE suggerisce il prodotto, altrimenti il tedesco suggerisce DE e il fallback è IT/en. La scelta manuale è salvata in localStorage; ha precedenza nei successivi ingressi senza prefisso. Gli URL espliciti mantengono il profilo condiviso. Il rilevamento è automatico al primo ingresso; non esiste un pulsante per avviarlo. Nessuna impostazione dell'account nell'app viene cambiata.
 
 ## Pubblicazione statica
 
@@ -16,4 +16,4 @@ I cataloghi della landing sono separati dai testi dell'app. `profiles.ts` contie
 
 Schermate vere da database demo isolato, con profili IT/en, DE/en e DE/de, temi chiaro/scuro e versioni desktop/telefono. I nomi propri e le descrizioni inserite nei dati demo restano contenuti dell'utente. Anteprime social dedicate ai profili tradotti. Per rigenerare gli screenshot, impostare nel demo il profilo desiderato e passare `NEXT_PUBLIC_LANDING_COUNTRY` e `NEXT_PUBLIC_LANDING_LANGUAGE` allo script; non usare dati di produzione.
 
-Verifiche: build statica dei cinque ingressi, test della landing (inclusi rilevamento, fallback, URL e metadata), lint e controlli browser su traduzioni, calcolatori, selettori, persistenza, reset, HTML senza JavaScript e layout mobile.
+Verifiche: build statica dei cinque ingressi, test della landing (inclusi rilevamento, fallback, URL e metadata), lint e controlli browser su traduzioni, calcolatori, selettori, persistenza, HTML senza JavaScript e layout mobile.

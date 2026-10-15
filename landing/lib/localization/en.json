@@ -790,9 +790,7 @@
   "Password": "Password",
   "Paese": "Country",
   "Lingua": "Language",
-  "Rileva": "Detect",
   "Paese e lingua": "Country and language",
-  "Usa le preferenze del browser": "Use browser preferences",
   "Chiudi il menu": "Close menu",
   "Quattro domande sui tuoi soldi.": "Four questions about your money.",
   "Le quattro domande": "The four questions",
@@ -885,7 +883,6 @@
   "patrimonio netto: liquidità, investimenti e previdenza, meno i debiti": "net worth: cash, investments and pensions minus debts",
   "Panoramica › Dove sta il patrimonio: le stesse quattro voci, sommate.": "Overview › Where your wealth is: the same four items, added up.",
   "Come funziona il collegamento alla banca in sola lettura (PSD2), cosa salviamo e cosa no, dove sono i server e come cancelli tutto. Con le fonti ufficiali.": "How read-only bank connections work (PSD2), what we store, server locations and how to delete everything. With official sources.",
-  "Sul sito ricordiamo paese e lingua scelti nel browser (bb-landing-profile-v1). Al primo accesso usiamo le preferenze linguistiche del browser, senza GPS o geolocalizzazione IP. Il pulsante Rileva cancella la scelta salvata e ripete il rilevamento.": "The website remembers your selected country and language in browser storage (bb-landing-profile-v1). On your first visit, it uses browser language preferences, without GPS or IP geolocation. The Detect button clears the saved choice and detects again.",
   "1 di 4": "1 of 4",
   "2 di 4": "2 of 4",
   "3 di 4": "3 of 4",
@@ -913,5 +910,6 @@
   "Salva saldi e movimenti per mostrarteli e calcolare budget e patrimonio; descrizioni e note le cifra prima di salvarle.": "It stores balances and transactions to display them and calculate budgets and wealth; descriptions and notes are encrypted before storage.",
   "Salva saldi e movimenti (data, importo, descrizione) per mostrarteli e calcolare budget e patrimonio.": "It stores balances and transactions (date, amount, description) to display them and calculate budgets and wealth.",
   "L'IBAN serve solo a farti scegliere il conto e non viene salvato.": "The IBAN is used only to select your account and is not stored.",
-  "Non vende i dati, non fa pubblicità e non li usa per profilarti.": "It does not sell data, show advertising or use data to profile you."
+  "Non vende i dati, non fa pubblicità e non li usa per profilarti.": "It does not sell data, show advertising or use data to profile you.",
+  "Sul sito ricordiamo paese e lingua scelti nel browser (bb-landing-profile-v1). Al primo accesso usiamo le preferenze linguistiche del browser, senza GPS o geolocalizzazione IP.": "The website remembers your selected country and language in browser storage (bb-landing-profile-v1). On your first visit, it uses browser language preferences, without GPS or IP geolocation."
 }

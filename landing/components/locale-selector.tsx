@@ -16,8 +16,8 @@ export function LocaleSelector() {
       location.replace(profile.path + path + location.search + location.hash);
     }
   }, []);
-  function select(profile: Profile, remember = true) {
-    try { if (remember) localStorage.setItem(PREFERENCE_KEY, JSON.stringify({ country: profile.country, language: profile.language })); else localStorage.removeItem(PREFERENCE_KEY); } catch { /* Selection still works when browser storage is unavailable. */ }
+  function select(profile: Profile) {
+    try { localStorage.setItem(PREFERENCE_KEY, JSON.stringify({ country: profile.country, language: profile.language })); } catch { /* Selection still works when browser storage is unavailable. */ }
     const page = pagePath(location.pathname);
     location.assign(profile.path + (availablePage(profile.country, page) ? page : "/") + location.search + location.hash);
   }
@@ -28,6 +28,5 @@ export function LocaleSelector() {
     <label><span>{t("Lingua")}</span><select aria-label={t("Lingua")} value={PROFILE.language} onChange={e => select(resolveProfile(PROFILE.country, e.target.value))}>
       {PROFILES.filter(p => p.country === PROFILE.country).map(p => <option key={p.language} value={p.language}>{{ it: "Italiano", en: "English", de: "Deutsch" }[p.language]}</option>)}
     </select></label>
-    <button type="button" onClick={() => select(detectProfile(navigator.languages ?? [navigator.language]), false)} title={t("Usa le preferenze del browser")}>{t("Rileva")}</button>
   </div>;
 }

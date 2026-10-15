@@ -1,7 +1,7 @@
-# Riepilogo liquidità del Portafoglio
+# Portfolio cash summary
 
-Data: 2026-10-06
+Date: 2026-10-06
 
-Rimosso dal Portafoglio il dettaglio espandibile della liquidità dei broker, con nomi dei conti, saldi individuali e date dei rendiconti, e i due testi esplicativi sottostanti.
-Restano l’interruttore Includi liquidità e il riepilogo Titoli / Liquidità. Nessun cambiamento ai calcoli, ai saldi o alla simulazione di costi e imposte.
-Screenshot della PR con soli dati sintetici. Nessun cambiamento al catalogo funzionale o alle schermate landing del demo, che non ha conti broker collegati.
+Removed from the Portfolio the expandable detail of broker cash, with account names, individual balances and statement dates, and the two explanatory texts below it.
+The Includi liquidità ("Include cash") toggle and the Titoli / Liquidità (Securities / Cash) summary remain. No change to calculations, balances or the cost and tax simulation.
+PR screenshots with synthetic data only. No change to the feature catalog or to the landing screens of the demo, which has no linked broker accounts.

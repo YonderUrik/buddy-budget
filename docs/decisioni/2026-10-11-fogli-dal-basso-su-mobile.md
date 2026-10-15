@@ -1,7 +1,7 @@
-# Fogli dal basso su mobile per popover, dialog e conferme
+# Bottom sheets on mobile for popovers, dialogs and confirmations
 
-Data: 2026-10-11
+Date: 2026-10-11
 
-Su telefono (sotto `sm`, 640px) popover, dialog e conferme non sono più finestre ancorate o centrate da far scorrere: si aprono come foglio dal basso a tutta larghezza, con sfondo scuro, maniglia e chiusura trascinando giù (o toccando fuori). È il comportamento di default di `PopoverContent`, `DialogContent` e `AlertDialogContent`, quindi vale in tutta l'app senza toccare i chiamanti; da `sm` in su non cambia nulla. I form lunghi restano a tutto schermo (`FormDialogContent` passa `mobileLayout="fullscreen"`). I pannelli che su desktop si aprono sotto la riga (Dividi, Modifica di un movimento) usano `InlineOrSheet`: inline da `sm` in su, foglio sul telefono. Il gesto sta in `lib/motion/sheet.ts`.
+On phone (below `sm`, 640px) popovers, dialogs and confirmations are no longer anchored or centred windows to scroll: they open as a full-width bottom sheet, with a dark backdrop, a handle and closing by dragging down (or tapping outside). It is the default behaviour of `PopoverContent`, `DialogContent` and `AlertDialogContent`, so it applies throughout the app without touching the callers; from `sm` up nothing changes. Long forms remain full screen (`FormDialogContent` passes `mobileLayout="fullscreen"`). Panels that on desktop open below the row (Dividi, editing a transaction) use `InlineOrSheet`: inline from `sm` up, sheet on phone. The gesture is in `lib/motion/sheet.ts`.
 
-Rimandato: menu a tendina (`DropdownMenu`) e `Select` restano ancorati al pulsante; le carte di Categorizza e la scheda «Quanto rischia» non sono state toccate (lavori in corso in altri thread).
+Postponed: dropdown menus (`DropdownMenu`) and `Select` stay anchored to the button; the Categorizza cards and the «Quanto rischia» ("How much it risks") card were not touched (work in progress in other threads).

@@ -1,6 +1,6 @@
-# 2026-10-09 — Login: il grafico scorre come un nastro
+# 2026-10-09 — Login: the chart scrolls like a ribbon
 
-- **Decisione**: il grafico del patrimonio nel login non si trasforma più tutto insieme a ogni movimento: ha una scala fissa e una finestra di 24 periodi che scorre verso sinistra, con un punto nuovo che entra da destra e i vecchi che escono. Niente punti annotati: solo la linea con l'etichetta sul punto finale.
-- **Dati di esempio**: la finestra iniziale è deterministica (stessa su server e browser, niente errori di idratazione); i periodi nuovi sono una passeggiata casuale che torna verso la media e resta entro limiti fissi (`login-horizon.model.ts`), quindi mai fuori scala. Numero grande e variazione seguono l'ultimo periodo e possono anche scendere. La linea non sale sopra il form su desktop.
-- **Reduced motion**: resta ferma sulla finestra iniziale.
-- **Rimandato**: `login-mosaic.model.ts` resta solo per i propri test; da eliminare se non serve più.
+- **Decision**: the net worth chart on the login no longer transforms all at once at every move: it has a fixed scale and a 24-period window that scrolls left, with a new point entering from the right and old ones leaving. No annotated points: only the line with the label on the last point.
+- **Sample data**: the initial window is deterministic (same on server and browser, no hydration errors); new periods are a random walk that reverts towards the mean and stays within fixed limits (`login-horizon.model.ts`), so never off scale. The big number and the change follow the last period and can also go down. The line does not rise above the form on desktop.
+- **Reduced motion**: it stays still on the initial window.
+- **Postponed**: `login-mosaic.model.ts` remains only for its own tests; to be deleted if no longer needed.

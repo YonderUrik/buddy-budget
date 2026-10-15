@@ -1,21 +1,21 @@
-# Spese — filtro per categoria e per testo
+# Spese — filter by category and by text
 
-Data: 2026-07-22
+Date: 2026-07-22
 
-## Obiettivo
+## Goal
 
-Nella schermata Spese, permettere di filtrare le transazioni per categoria e/o per testo libero (descrizione). Il filtro è **globale**: ricalcola non solo la lista transazioni ma anche KPI, torta multilivello "Per categoria" e grafico "Andamento 6 mesi", per una vista coerente end-to-end sui dati filtrati.
+In the Spese (Expenses) screen, allow filtering transactions by category and/or by free text (description). The filter is **global**: it recomputes not only the transaction list but also the KPIs, the "Per categoria" (by category) multi-level pie and the "Andamento 6 mesi" (6-month trend) chart, for a consistent end-to-end view of the filtered data.
 
-## Architettura / data flow
+## Architecture / data flow
 
-Nuovo stato locale in `app/(app)/spese/page.tsx`:
+New local state in `app/(app)/spese/page.tsx`:
 
 ```ts
-const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null); // null = tutte le categorie
+const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null); // null = all categories
 const [searchText, setSearchText] = React.useState("");
 ```
 
-Nuova funzione pura in `lib/calc/expenses.ts`:
+New pure function in `lib/calc/expenses.ts`:
 
 ```ts
 export interface TransactionFilter {
@@ -29,26 +29,26 @@ export function filterTransactions(
 ): Transaction[]
 ```
 
-Comportamento:
-- `categoryId` non null → mantiene solo transazioni con `categoryId` esattamente uguale.
-- `searchText` non vuoto (dopo trim) → mantiene solo transazioni la cui `description` contiene la stringa, confronto case-insensitive (`.toLocaleLowerCase()`).
-- Entrambi i filtri si applicano in AND.
-- Nessun filtro impostato → passthrough (stesso array, comportamento attuale).
+Behaviour:
+- `categoryId` not null → keeps only transactions whose `categoryId` is exactly equal.
+- `searchText` not empty (after trim) → keeps only transactions whose `description` contains the string, case-insensitive comparison (`.toLocaleLowerCase()`).
+- Both filters apply in AND.
+- No filter set → passthrough (same array, current behaviour).
 
-`page.tsx` calcola `filteredTransactions = filterTransactions(safeTransactions, { categoryId: categoryFilter, searchText })` e lo passa **al posto di** `safeTransactions` a:
+`page.tsx` computes `filteredTransactions = filterTransactions(safeTransactions, { categoryId: categoryFilter, searchText })` and passes it **instead of** `safeTransactions` to:
 - `ExpensesKpiCards` (prop `transactions`)
-- `computeCategoryBreakdown` / `computeFixedVsVariable` (per `CategoryBreakdownDonut`)
-- `compute6MonthTrend` (per `ExpenseTrendChart`)
-- `computeSummary` (riepilogo uscite/escluse/spese effettive sopra la lista)
-- base per `transactionsInPeriodAll` → lista transazioni (invariato il resto della pipeline: filtro periodo, poi eventuale `showUncategorizedOnly`)
+- `computeCategoryBreakdown` / `computeFixedVsVariable` (for `CategoryBreakdownDonut`)
+- `compute6MonthTrend` (for `ExpenseTrendChart`)
+- `computeSummary` (outflows/excluded/actual spending summary above the list)
+- the base for `transactionsInPeriodAll` → transaction list (the rest of the pipeline unchanged: period filter, then the optional `showUncategorizedOnly`)
 
-**Budget scoping**: quando `categoryFilter` è impostato, `ExpensesKpiCards` riceve `budgets: safeBudgets.filter(b => b.categoryId === categoryFilter)` invece di `safeBudgets` — così "Budget rimanente" confronta lo speso filtrato col budget della sola categoria selezionata. Nessuna modifica di firma alle funzioni in `lib/calc/expenses.ts`, solo cosa gli passa `page.tsx`.
+**Budget scoping**: when `categoryFilter` is set, `ExpensesKpiCards` receives `budgets: safeBudgets.filter(b => b.categoryId === categoryFilter)` instead of `safeBudgets` — so "Budget rimanente" (remaining budget) compares the filtered spending with the budget of the selected category only. No signature change to the functions in `lib/calc/expenses.ts`, only what `page.tsx` passes to them.
 
-Il toggle esistente `showUncategorizedOnly` (chip "Da categorizzare") **resta indipendente**, applicato in AND dopo `filterTransactions`, esattamente come oggi si applica dopo il filtro periodo. Nessuna unificazione dei due meccanismi (scelta esplicita: combinare categoria specifica + "Da categorizzare" può dare lista vuota, accettato come edge case noto).
+The existing `showUncategorizedOnly` toggle ("Da categorizzare" chip) **stays independent**, applied in AND after `filterTransactions`, exactly as today it is applied after the period filter. No unification of the two mechanisms (explicit choice: combining a specific category + "Da categorizzare" can give an empty list, accepted as a known edge case).
 
-## Componente UI
+## UI component
 
-Nuovo `components/domain/expenses/expenses-filter-bar.tsx`:
+New `components/domain/expenses/expenses-filter-bar.tsx`:
 
 ```ts
 export interface ExpensesFilterBarProps {
@@ -60,30 +60,30 @@ export interface ExpensesFilterBarProps {
 }
 ```
 
-- `Select` categoria: opzione "Tutte le categorie" (sentinel value interno, mappata a `null` verso l'esterno) + una `SelectItem` per categoria con `CategoryAvatar` + nome, stesso pattern visivo già usato in `TransactionRow` per il select categoria della riga.
-- `Input` testo: placeholder "Cerca per descrizione...", `onChange` diretto (nessun debounce — filtro client-side su dataset già in memoria, nessuna chiamata di rete).
-- Nessuna dipendenza hardcoded: tutto arriva da props, componente riusabile.
-- Esportato dal barrel `components/domain/expenses/index.ts`.
+- Category `Select`: a "Tutte le categorie" ("All categories") option (internal sentinel value, mapped to `null` externally) + one `SelectItem` per category with `CategoryAvatar` + name, the same visual pattern already used in `TransactionRow` for the row's category select.
+- Text `Input`: placeholder "Cerca per descrizione..." ("Search by description..."), direct `onChange` (no debounce — client-side filter on a dataset already in memory, no network call).
+- No hardcoded dependencies: everything comes from props, reusable component.
+- Exported from the barrel `components/domain/expenses/index.ts`.
 
-Posizionamento in `page.tsx`: nuova riga sotto l'header esistente (titolo/periodo/link categorie/chip uncategorized), sopra le KPI cards.
+Placement in `page.tsx`: a new row under the existing header (title/period/categories link/uncategorised chip), above the KPI cards.
 
-## Edge case
+## Edge cases
 
-- Filtri attivi con zero risultati nel periodo → messaggio lista aggiornato: se `categoryFilter !== null || searchText.trim() !== ""`, mostra "Nessuna transazione corrisponde ai filtri applicati in questo periodo" invece del messaggio attuale "Nessuna transazione in questo periodo...".
-- Categoria filtrata senza budget impostato → `budgetTotale` KPI = 0, `budgetRimanente` = `-speso` se c'è spesa: comportamento già esistente della formula, nessun caso speciale da aggiungere.
-- Reset filtri: nessun bottone dedicato — si torna a "Tutte le categorie" dal select e si svuota l'input testo manualmente.
+- Active filters with zero results in the period → updated list message: if `categoryFilter !== null || searchText.trim() !== ""`, show "Nessuna transazione corrisponde ai filtri applicati in questo periodo" ("No transaction matches the filters applied in this period") instead of the current message "Nessuna transazione in questo periodo..." ("No transactions in this period...").
+- Filtered category with no budget set → KPI `budgetTotale` = 0, `budgetRimanente` = `-spent` if there is spending: existing behaviour of the formula, no special case to add.
+- Resetting filters: no dedicated button — go back to "Tutte le categorie" from the select and clear the text input manually.
 
-## Test
+## Tests
 
-Unit test in `lib/calc/expenses.test.ts` per `filterTransactions`:
-- nessun filtro → passthrough
-- solo categoria
-- solo testo (case-insensitive, substring)
-- categoria + testo combinati (AND)
-- nessun match → array vuoto
+Unit tests in `lib/calc/expenses.test.ts` for `filterTransactions`:
+- no filter → passthrough
+- category only
+- text only (case-insensitive, substring)
+- category + text combined (AND)
+- no match → empty array
 
-## Fuori scope
+## Out of scope
 
-- Filtro per intervallo di importo o per source (auto/manuale) — non richiesto.
-- Multi-selezione categorie — deciso esplicitamente singola selezione.
-- Persistenza dei filtri tra sessioni/URL — non richiesta, stato locale del componente pagina.
+- Filter by amount range or by source (auto/manual) — not requested.
+- Multi-selection of categories — explicitly decided single selection.
+- Persistence of filters across sessions/URL — not requested, local state of the page component.

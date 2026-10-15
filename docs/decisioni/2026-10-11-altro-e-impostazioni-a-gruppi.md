@@ -1,8 +1,8 @@
-# Altro più corto e Impostazioni a gruppi (2026-10-11)
+# Shorter Altro ("More") and Impostazioni (Settings) in groups (2026-10-11)
 
-- **Altro (mobile)**: account, «Altre sezioni», «Assistenza» (Impostazioni, Aiuto e segnalazioni), l'unico interruttore veloce «Nascondi gli importi» e «Il tuo quadro» chiuso di default (i moduli non caricano dati finché non si apre). Il tema è solo in Impostazioni.
-- **Impostazioni**: cinque gruppi (Account, Aspetto e uso, Notifiche e assistente, Privacy e dati, Zona pericolosa) invece di nove blocchi in fila. Desktop: indice a sinistra, un gruppo alla volta. Mobile: elenco dei gruppi, poi il gruppo con freccia indietro. Il gruppo sta in `?sezione=`; i vecchi link con ancora (`#impostazioni-notifiche` nelle email già inviate) rimandano al gruppo giusto.
-- **Anteprime** (`settings-preview.tsx`): disegni con i token del tema per barra laterale/barra in basso (reagiscono davvero agli interruttori), email di riepilogo e proposta dell'assistente.
-- «Statistiche d'uso anonime» passa da Preferenze a Privacy. Sezioni senza riquadro grigio, con icona colorata (standard Panoramica).
-- Evento Umami nuovo `settings_group_opened`; `more_menu_clicked` perde `tema` e guadagna `aiuto`.
-- Rimandati: anteprime per valuta/pagina iniziale, ricerca nelle impostazioni, scroll-spy.
+- **Altro (mobile)**: account, «Altre sezioni» ("Other sections"), «Assistenza» ("Support": Impostazioni, Aiuto e segnalazioni), the only quick toggle «Nascondi gli importi» ("Hide amounts") and «Il tuo quadro» ("Your picture") collapsed by default (the modules do not load data until it is opened). The theme is only in Impostazioni.
+- **Impostazioni**: five groups (Account, Aspetto e uso, Notifiche e assistente, Privacy e dati, Zona pericolosa — "Account, Appearance and use, Notifications and assistant, Privacy and data, Danger zone") instead of nine blocks in a row. Desktop: index on the left, one group at a time. Mobile: list of groups, then the group with a back arrow. The group is in `?sezione=`; old links with an anchor (`#impostazioni-notifiche` in emails already sent) redirect to the right group.
+- **Previews** (`settings-preview.tsx`): drawings with the theme tokens for sidebar/bottom bar (they really react to the toggles), summary email and assistant proposal.
+- «Statistiche d'uso anonime» ("Anonymous usage statistics") moves from Preferenze to Privacy. Sections without grey box, with coloured icon (Panoramica standard).
+- New Umami event `settings_group_opened`; `more_menu_clicked` loses `tema` and gains `aiuto`.
+- Postponed: previews for currency/start page, search in settings, scroll-spy.

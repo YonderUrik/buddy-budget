@@ -1,34 +1,34 @@
-# Categorizza automaticamente in Spese — Implementation Plan
+# Categorizza automaticamente ("Categorize automatically") in Spese (Expenses) — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aggiungere in Spese un bottone "Categorizza automaticamente" che suggerisce categoria (e split) per le transazioni "Da categorizzare" basandosi su descrizioni identiche già categorizzate in passato, con conferma esplicita transazione per transazione in un wizard sequenziale.
+**Goal:** Add a "Categorizza automaticamente" button in Spese that suggests a category (and split) for "Da categorizzare" ("To categorize") transactions based on identical descriptions categorized in the past, with explicit transaction-by-transaction confirmation in a sequential wizard.
 
-**Architecture:** Motore di calcolo puro (`computeCategorizeSuggestions`) → nuovo endpoint `GET /api/transactions/categorize-suggestions` che lo invoca sui dati dell'utente → hook TanStack Query lazy (`enabled: false`) → componente `AutoCategorizeButton` (trigger + stato zero-risultati) che apre `AutoCategorizeWizard` (dialog sequenziale), il quale riusa il PATCH transazione già esistente per applicare ogni conferma.
+**Architecture:** Pure calculation engine (`computeCategorizeSuggestions`) → new endpoint `GET /api/transactions/categorize-suggestions` that invokes it on the user's data → lazy TanStack Query hook (`enabled: false`) → `AutoCategorizeButton` component (trigger + zero-results state) that opens `AutoCategorizeWizard` (sequential dialog), which reuses the already existing transaction PATCH to apply each confirmation.
 
-**Tech Stack:** Next.js Route Handlers, Drizzle ORM, TanStack Query, Zod (nessuno schema nuovo: riusa `updateTransactionSchema`), vitest, componenti `@base-ui/react` via `components/ui/*` (Dialog, Select, Slider, Button).
+**Tech Stack:** Next.js Route Handlers, Drizzle ORM, TanStack Query, Zod (no new schema: reuses `updateTransactionSchema`), vitest, `@base-ui/react` components via `components/ui/*` (Dialog, Select, Slider, Button).
 
 ## Global Constraints
 
-- Match solo su `description` esatta (case-insensitive, trim), nessun fuzzy/token matching.
-- Nessun filtro periodo nello scan: considera tutto lo storico dell'utente.
-- Nessun nuovo endpoint di scrittura: l'applicazione dei suggerimenti riusa `PATCH /api/transactions/[id]`.
-- Categoria suggerita = più frequente tra i match storici; pareggio → quella con la transazione più recente (`date` desc) tra le candidate a pari conteggio.
-- Percentuale split suggerita calcolata solo sui match della categoria vincente; coerente (tutte uguali, arrotondate a 4 decimali) → quella percentuale, altrimenti `null` (nessuna proposta, editabile a 0 di default).
-- Wizard sequenziale (una transazione alla volta), categoria e split sempre editabili prima di confermare; "Salta" non applica nulla; chiusura anticipata lascia applicate le conferme già fatte.
-- Stringhe utente in italiano (nessuna i18n).
-- Tutte le stringhe visibili derivano da questa spec, nessun valore hardcoded di colore/raggio (riusa i token tema esistenti).
+- Match only on exact `description` (case-insensitive, trim), no fuzzy/token matching.
+- No period filter in the scan: consider the user's whole history.
+- No new write endpoint: applying the suggestions reuses `PATCH /api/transactions/[id]`.
+- Suggested category = most frequent among the historical matches; tie → the one with the most recent transaction (`date` desc) among the candidates with equal count.
+- Suggested split percentage computed only on the matches of the winning category; consistent (all equal, rounded to 4 decimals) → that percentage, otherwise `null` (no proposal, editable, 0 by default).
+- Sequential wizard (one transaction at a time), category and split always editable before confirming; "Salta" ("Skip") applies nothing; closing early leaves the confirmations already made applied.
+- User strings in Italian (no i18n).
+- All visible strings come from this spec, no hardcoded color/radius values (reuse the existing theme tokens).
 
 ---
 
-### Task 1: Motore di calcolo puro `computeCategorizeSuggestions`
+### Task 1: Pure calculation engine `computeCategorizeSuggestions`
 
 **Files:**
 - Create: `lib/calc/categorize-suggestions.ts`
 - Test: `lib/calc/categorize-suggestions.test.ts`
 
 **Interfaces:**
-- Consumes: tipo `Transaction` da `@/lib/db/schema/transactions` (campi usati: `id`, `categoryId`, `description`, `amount`, `excludedAmount`, `date`).
+- Consumes: type `Transaction` from `@/lib/db/schema/transactions` (fields used: `id`, `categoryId`, `description`, `amount`, `excludedAmount`, `date`).
 - Produces:
   ```ts
   export interface CategorizeSuggestion {
@@ -42,11 +42,11 @@
     historical: Transaction[]
   ): CategorizeSuggestion[]
   ```
-  Usato da Task 2 (route handler).
+  Used by Task 2 (route handler).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Crea `lib/calc/categorize-suggestions.test.ts`:
+Create `lib/calc/categorize-suggestions.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -167,14 +167,14 @@ describe("computeCategorizeSuggestions", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm test lib/calc/categorize-suggestions.test.ts`
-Expected: FAIL — `Cannot find module './categorize-suggestions'` (il file non esiste ancora).
+Expected: FAIL — `Cannot find module './categorize-suggestions'` (the file does not exist yet).
 
-- [ ] **Step 3: Scrivi l'implementazione**
+- [ ] **Step 3: Write the implementation**
 
-Crea `lib/calc/categorize-suggestions.ts`:
+Create `lib/calc/categorize-suggestions.ts`:
 
 ```ts
 import type { Transaction } from "@/lib/db/schema/transactions";
@@ -190,7 +190,7 @@ function normalizeDescription(description: string): string {
   return description.trim().toLowerCase();
 }
 
-/** Percentuale di importo esclusa dal conteggio ("Dividi"), arrotondata per confronti di coerenza tra transazioni diverse. */
+/** Percentage of the amount excluded from the count ("Dividi"), rounded for consistency comparisons between different transactions. */
 function splitPercentage(transaction: Transaction): number {
   const amount = Math.abs(Number(transaction.amount));
   const excluded = Math.abs(Number(transaction.excludedAmount));
@@ -199,9 +199,9 @@ function splitPercentage(transaction: Transaction): number {
 }
 
 /**
- * Per ogni transazione "Da categorizzare" con almeno un match storico (stessa descrizione, esatta
- * case-insensitive), suggerisce la categoria più frequente tra i match (pareggio → la più recente) e,
- * se lo split storico della categoria vincente è coerente, la percentuale da riproporre.
+ * For each "Da categorizzare" transaction with at least one historical match (same description, exact
+ * case-insensitive), suggests the most frequent category among the matches (tie → the most recent) and,
+ * if the historical split of the winning category is consistent, the percentage to propose again.
  */
 export function computeCategorizeSuggestions(
   uncategorized: Transaction[],
@@ -264,10 +264,10 @@ export function computeCategorizeSuggestions(
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm test lib/calc/categorize-suggestions.test.ts`
-Expected: PASS (7 test)
+Expected: PASS (7 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -285,12 +285,12 @@ git commit -m "feat: aggiungi motore di calcolo per suggerimenti di categorizzaz
 - Test: `app/api/transactions/categorize-suggestions/route.test.ts`
 
 **Interfaces:**
-- Consumes: `computeCategorizeSuggestions` e `CategorizeSuggestion` da Task 1 (`@/lib/calc/categorize-suggestions`); `categories` (campo `isFallback`) e `transactions` da `@/lib/db/schema/*`; `auth` da `@/lib/auth`; `db` da `@/lib/db/client`.
-- Produces: `GET` handler che ritorna `CategorizeSuggestion[]` in JSON (401 se non autenticato). Consumato da Task 3 (hook).
+- Consumes: `computeCategorizeSuggestions` and `CategorizeSuggestion` from Task 1 (`@/lib/calc/categorize-suggestions`); `categories` (field `isFallback`) and `transactions` from `@/lib/db/schema/*`; `auth` from `@/lib/auth`; `db` from `@/lib/db/client`.
+- Produces: `GET` handler that returns `CategorizeSuggestion[]` as JSON (401 if not authenticated). Consumed by Task 3 (hook).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Crea `app/api/transactions/categorize-suggestions/route.test.ts`:
+Create `app/api/transactions/categorize-suggestions/route.test.ts`:
 
 ```ts
 import { NextRequest } from "next/server";
@@ -468,14 +468,14 @@ describe("GET /api/transactions/categorize-suggestions", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm test app/api/transactions/categorize-suggestions/route.test.ts`
-Expected: FAIL — `Cannot find module './route'` (il file non esiste ancora).
+Expected: FAIL — `Cannot find module './route'` (the file does not exist yet).
 
-- [ ] **Step 3: Scrivi l'implementazione**
+- [ ] **Step 3: Write the implementation**
 
-Crea `app/api/transactions/categorize-suggestions/route.ts`:
+Create `app/api/transactions/categorize-suggestions/route.ts`:
 
 ```ts
 import { NextRequest } from "next/server";
@@ -487,10 +487,10 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { computeCategorizeSuggestions } from "@/lib/calc/categorize-suggestions";
 
 /**
- * GET /api/transactions/categorize-suggestions — per ogni transazione "Da categorizzare" dell'utente
- * con almeno un match storico (stessa descrizione già categorizzata in passato), suggerisce la
- * categoria più frequente e, se coerente, la percentuale di split da riproporre. Nessun filtro
- * periodo: considera l'intero storico dell'utente autenticato.
+ * GET /api/transactions/categorize-suggestions — for each "Da categorizzare" transaction of the user
+ * with at least one historical match (same description already categorized in the past), suggests the
+ * most frequent category and, if consistent, the split percentage to propose again. No period
+ * filter: considers the authenticated user's whole history.
  */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -514,10 +514,10 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm test app/api/transactions/categorize-suggestions/route.test.ts`
-Expected: PASS (4 test)
+Expected: PASS (4 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -534,20 +534,20 @@ git commit -m "feat: aggiungi endpoint GET /api/transactions/categorize-suggesti
 - Modify: `lib/queries/transactions.ts`
 
 **Interfaces:**
-- Consumes: tipo `CategorizeSuggestion` da `@/lib/calc/categorize-suggestions` (Task 1); endpoint `GET /api/transactions/categorize-suggestions` (Task 2).
-- Produces: `useCategorizeSuggestionsQuery(): UseQueryResult<CategorizeSuggestion[]>` con `enabled: false` — non parte al mount, va invocata con `.refetch()`. Consumato da Task 4 (`AutoCategorizeButton`).
+- Consumes: type `CategorizeSuggestion` from `@/lib/calc/categorize-suggestions` (Task 1); endpoint `GET /api/transactions/categorize-suggestions` (Task 2).
+- Produces: `useCategorizeSuggestionsQuery(): UseQueryResult<CategorizeSuggestion[]>` with `enabled: false` — it does not start on mount, it must be invoked with `.refetch()`. Consumed by Task 4 (`AutoCategorizeButton`).
 
-- [ ] **Step 1: Aggiungi l'import del tipo**
+- [ ] **Step 1: Add the type import**
 
-In `lib/queries/transactions.ts`, aggiungi in cima (sotto gli import esistenti):
+In `lib/queries/transactions.ts`, add at the top (below the existing imports):
 
 ```ts
 import type { CategorizeSuggestion } from "@/lib/calc/categorize-suggestions";
 ```
 
-- [ ] **Step 2: Aggiungi fetch function e hook**
+- [ ] **Step 2: Add fetch function and hook**
 
-Aggiungi in fondo a `lib/queries/transactions.ts` (dopo `useDeleteTransactionMutation`):
+Add at the bottom of `lib/queries/transactions.ts` (after `useDeleteTransactionMutation`):
 
 ```ts
 async function fetchCategorizeSuggestions(): Promise<CategorizeSuggestion[]> {
@@ -558,7 +558,7 @@ async function fetchCategorizeSuggestions(): Promise<CategorizeSuggestion[]> {
   return response.json();
 }
 
-/** Suggerimenti di categorizzazione automatica basati sullo storico; non parte al mount, va invocata con refetch(). */
+/** Automatic categorization suggestions based on history; does not start on mount, must be invoked with refetch(). */
 export function useCategorizeSuggestionsQuery() {
   return useQuery({
     queryKey: ["transactions", "categorize-suggestions"] as const,
@@ -568,10 +568,10 @@ export function useCategorizeSuggestionsQuery() {
 }
 ```
 
-- [ ] **Step 3: Verifica il type-check**
+- [ ] **Step 3: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore relativo a `lib/queries/transactions.ts`.
+Expected: no errors related to `lib/queries/transactions.ts`.
 
 - [ ] **Step 4: Commit**
 
@@ -582,7 +582,7 @@ git commit -m "feat: aggiungi useCategorizeSuggestionsQuery"
 
 ---
 
-### Task 4: UI — bottone "Categorizza automaticamente" + wizard di conferma
+### Task 4: UI — "Categorizza automaticamente" button + confirmation wizard
 
 **Files:**
 - Create: `components/domain/expenses/auto-categorize-wizard.tsx`
@@ -591,17 +591,17 @@ git commit -m "feat: aggiungi useCategorizeSuggestionsQuery"
 - Modify: `app/(app)/spese/page.tsx`
 
 **Interfaces:**
-- Consumes: `CategorizeSuggestion` (Task 1), `useCategorizeSuggestionsQuery` e `useUpdateTransactionMutation` (Task 3 / esistente in `lib/queries/transactions.ts`), `clampExcluded` da `./split-slider.utils`, `CategoryAvatar` da `@/components/domain/categories`, primitive `Dialog*`/`Select*`/`Slider`/`Button` da `@/components/ui/*`, `Category`/`CategoryColor`/`CategoryIcon` esistenti.
-- Produces: `AutoCategorizeButton` (props: `categories: Category[]`, `currency: string`), usato in `app/(app)/spese/page.tsx`.
+- Consumes: `CategorizeSuggestion` (Task 1), `useCategorizeSuggestionsQuery` and `useUpdateTransactionMutation` (Task 3 / existing in `lib/queries/transactions.ts`), `clampExcluded` from `./split-slider.utils`, `CategoryAvatar` from `@/components/domain/categories`, `Dialog*`/`Select*`/`Slider`/`Button` primitives from `@/components/ui/*`, existing `Category`/`CategoryColor`/`CategoryIcon`.
+- Produces: `AutoCategorizeButton` (props: `categories: Category[]`, `currency: string`), used in `app/(app)/spese/page.tsx`.
 
-- [ ] **Step 1: Crea il componente step del wizard e il wizard**
+- [ ] **Step 1: Create the wizard step component and the wizard**
 
-Crea `components/domain/expenses/auto-categorize-wizard.tsx`:
+Create `components/domain/expenses/auto-categorize-wizard.tsx`:
 
 ```tsx
 "use client";
 
-/** Wizard sequenziale "Categorizza automaticamente": propone categoria e split per le transazioni "Da categorizzare" con match storico, una alla volta, con conferma esplicita per ciascuna. */
+/** Sequential "Categorizza automaticamente" wizard: proposes category and split for "Da categorizzare" transactions with a historical match, one at a time, with explicit confirmation for each. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -635,7 +635,7 @@ interface AutoCategorizeStepProps {
   onConfirm: (categoryId: string, excludedAmount: number) => void;
 }
 
-/** Chiave in `key` sul chiamante: un remount per ogni nuovo suggerimento resetta lo stato locale senza sincronizzazioni via effect. */
+/** `key` set by the caller: a remount for each new suggestion resets the local state without syncing via effect. */
 function AutoCategorizeStep({
   suggestion,
   categories,
@@ -806,14 +806,14 @@ export function AutoCategorizeWizard({ suggestions, categories, currency, onClos
 }
 ```
 
-- [ ] **Step 2: Crea il bottone trigger**
+- [ ] **Step 2: Create the trigger button**
 
-Crea `components/domain/expenses/auto-categorize-button.tsx`:
+Create `components/domain/expenses/auto-categorize-button.tsx`:
 
 ```tsx
 "use client";
 
-/** Bottone "Categorizza automaticamente": scansiona le transazioni "Da categorizzare" e apre il wizard di conferma se trova suggerimenti. */
+/** "Categorizza automaticamente" button: scans the "Da categorizzare" transactions and opens the confirmation wizard if it finds suggestions. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -865,9 +865,9 @@ export function AutoCategorizeButton({ categories, currency }: AutoCategorizeBut
 }
 ```
 
-- [ ] **Step 3: Esporta i nuovi componenti dal barrel**
+- [ ] **Step 3: Export the new components from the barrel**
 
-In `components/domain/expenses/index.ts`, aggiungi in fondo:
+In `components/domain/expenses/index.ts`, add at the bottom:
 
 ```ts
 export { AutoCategorizeButton } from "./auto-categorize-button";
@@ -876,11 +876,11 @@ export { AutoCategorizeWizard } from "./auto-categorize-wizard";
 export type { AutoCategorizeWizardProps } from "./auto-categorize-wizard";
 ```
 
-- [ ] **Step 4: Integra il bottone nella pagina Spese**
+- [ ] **Step 4: Integrate the button in the Spese page**
 
 In `app/(app)/spese/page.tsx`:
 
-Modifica l'import (riga 6-15) aggiungendo `AutoCategorizeButton`:
+Change the import (lines 6-15) by adding `AutoCategorizeButton`:
 
 ```tsx
 import {
@@ -896,7 +896,7 @@ import {
 } from "@/components/domain/expenses";
 ```
 
-Nella riga dell'header (dopo il link "Gestisci categorie", prima del blocco `{uncategorizedCount > 0 && (...)}`), aggiungi:
+In the header row (after the "Gestisci categorie" link, before the `{uncategorizedCount > 0 && (...)}` block), add:
 
 ```tsx
         <a
@@ -909,18 +909,18 @@ Nella riga dell'header (dopo il link "Gestisci categorie", prima del blocco `{un
         {uncategorizedCount > 0 && (
 ```
 
-(sostituisce le due righe esistenti `</a>` seguita da `{uncategorizedCount > 0 && (` con le tre righe sopra — l'unica modifica è l'inserimento della riga `<AutoCategorizeButton .../>` in mezzo).
+(replaces the two existing lines `</a>` followed by `{uncategorizedCount > 0 && (` with the three lines above — the only change is inserting the `<AutoCategorizeButton .../>` line in between).
 
-- [ ] **Step 5: Verifica type-check, lint e build**
+- [ ] **Step 5: Verify type-check, lint and build**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore (il progetto ha già 2 warning noti pre-esistenti su `react-hooks/set-state-in-effect`, non toccati da questo task).
+Expected: no new errors (the project already has 2 known pre-existing warnings on `react-hooks/set-state-in-effect`, not touched by this task).
 
 Run: `pnpm build`
-Expected: build completata senza errori.
+Expected: build completed without errors.
 
 - [ ] **Step 6: Commit**
 
@@ -931,10 +931,10 @@ git commit -m "feat: aggiungi bottone e wizard Categorizza automaticamente in Sp
 
 ---
 
-## Verifica manuale utente (fuori scope agente)
+## Manual user verification (outside agent scope)
 
-Nessun Postgres/Redis disponibile nel sandbox agentico per un browser reale (stesso vincolo delle feature precedenti su Spese/Categorie). Da verificare manualmente a fine implementazione:
-- Il bottone appare e, senza match, mostra il messaggio "Nessuna transazione simile trovata da suggerire".
-- Con almeno un match, il wizard si apre, mostra la categoria e (se presente) lo split corretti, permette di modificarli, "Salta" avanza senza salvare, "Conferma" salva e avanza.
-- Chiudere il wizard a metà lascia applicate le conferme già fatte.
-- Il riepilogo finale mostra il conteggio corretto di transazioni applicate.
+No Postgres/Redis available in the agentic sandbox for a real browser (same constraint as the previous Spese/Categorie features). To verify manually at the end of the implementation:
+- The button appears and, with no match, shows the message "Nessuna transazione simile trovata da suggerire".
+- With at least one match, the wizard opens, shows the correct category and (if present) split, allows editing them, "Salta" advances without saving, "Conferma" saves and advances.
+- Closing the wizard halfway leaves the confirmations already made applied.
+- The final summary shows the correct count of applied transactions.

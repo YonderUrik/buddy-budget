@@ -1,199 +1,199 @@
-# Investimenti — portafoglio, prezzi di mercato gratuiti, statistiche
+# Investimenti — portfolio, free market prices, statistics
 
-**Data**: 2026-09-27
-**Stato**: design approvato dall'utente il 2026-09-27 ("procediamo"), piano della Fase 1 scritto: `docs/superpowers/plans/2026-09-27-investimenti-fase-1.md`. La prova di copertura (sezione 3) è diventata il primo task del piano e non blocca il resto: l'ordine delle fonti è configurabile.
-**Schermata**: Investimenti (oggi `comingSoon` in sidebar), sezione 5 di `docs/functional-spec.md`
+**Date**: 2026-09-27
+**Status**: design approved by the user on 2026-09-27 ("procediamo" — "let's proceed"), Phase 1 plan written: `docs/superpowers/plans/2026-09-27-investimenti-fase-1.md`. The coverage test (section 3) became the first task of the plan and does not block the rest: the order of the sources is configurable.
+**Screen**: Investimenti ("Investments", today `comingSoon` in the sidebar), section 5 of `docs/functional-spec.md`
 
-## Obiettivo
+## Goal
 
-L'utente vuole uno strumento a 360° per gli investimenti: **tracciare il proprio portafoglio giorno per giorno** con statistiche (rendimenti, diversificazione, rischio) e, più avanti, **analizzare singoli strumenti** (azioni, ETF…). Vincolo non negoziabile: **costo zero**. Solo fonti di dati gratuite, niente abbonamenti a provider.
+The user wants an all-round tool for investments: **tracking their portfolio day by day** with statistics (returns, diversification, risk) and, later on, **analyzing individual instruments** (stocks, ETFs…). Non-negotiable constraint: **zero cost**. Only free data sources, no subscriptions to providers.
 
-## Contesto dell'utente (dal brainstorming)
+## User context (from brainstorming)
 
-- Portafoglio con **un po' di tutto**: ETF, azioni quotate, obbligazioni/titoli di Stato, fondi, crypto. **Nessuna azione non quotata.**
-- Broker: **Fineco**, con un **PAC attivo**.
-- **Import CSV del broker: rimandato** su scelta dell'utente (sezione "Rimandato consapevolmente").
-- **Analisi dei singoli titoli: rimandata**, ma da tenere tracciata (backlog + questa spec).
-- **Fiscalità italiana: interessa**, in una fase dedicata. Però il modello dati della Fase 1 salva già i dati che servono.
+- Portfolio with **a bit of everything**: ETFs, listed stocks, bonds/government bonds, funds, crypto. **No unlisted stocks.**
+- Broker: **Fineco**, with an **active PAC** (piano di accumulo, a recurring investment plan).
+- **Broker CSV import: deferred** by the user's choice (section "Knowingly deferred").
+- **Analysis of individual securities: deferred**, but to be kept tracked (backlog + this spec).
+- **Italian taxation: of interest**, in a dedicated phase. However the Phase 1 data model already stores the data it needs.
 
-## Decisioni prese in brainstorming
+## Decisions made in brainstorming
 
-| Tema | Scelta | Alternative scartate |
+| Topic | Choice | Discarded alternatives |
 |---|---|---|
-| Da cosa partire | **Prima il tracciamento del portafoglio**, poi l'analisi dei titoli | Tutto insieme: l'analisi richiede dati ricchi (fondamentali, look-through, screener), che gratis sono deboli e fragili |
-| Fonte prezzi | **Catena di fonti gratuite con riserva automatica** per tipo di strumento (sezione 2.1), Yahoo Finance in testa quasi ovunque | API a pagamento (vincolo costo zero); una sola fonte (un blocco di Yahoo fermerebbe tutto) |
-| Frequenza prezzi | **Chiusura giornaliera (EOD)** salvata in Postgres, più al massimo una quotazione del giorno in cache Redis | Tempo reale (inutile per un portafoglio di lungo periodo, e fragile gratis) |
-| Posizioni | **Calcolate dalle operazioni**, mai salvate | Posizioni salvate e modificate a mano (due fonti di verità, stesso problema già evitato con `effectiveAmount`) |
-| Metodo del costo | **Costo medio ponderato** (quello mostrato da Fineco e usato dal fisco italiano nel regime amministrato) | FIFO (non è il metodo fiscale italiano) |
+| Where to start | **Portfolio tracking first**, then securities analysis | Everything together: the analysis needs rich data (fundamentals, look-through, screener), which are weak and fragile when free |
+| Price source | **Chain of free sources with automatic fallback** per instrument type (section 2.1), Yahoo Finance first almost everywhere | Paid APIs (zero-cost constraint); a single source (a Yahoo block would stop everything) |
+| Price frequency | **Daily close (EOD)** stored in Postgres, plus at most one intraday quote cached in Redis | Real time (useless for a long-term portfolio, and fragile for free) |
+| Positions | **Computed from transactions**, never stored | Positions stored and edited by hand (two sources of truth, the same problem already avoided with `effectiveAmount`) |
+| Cost method | **Weighted average cost** (the one shown by Fineco and used by the Italian tax authorities in the regime amministrato — administered regime, where the broker withholds the tax) | FIFO (not the Italian tax method) |
 
 ## 1. Roadmap
 
-| Fase | Contenuto | Stato |
+| Phase | Content | Status |
 |---|---|---|
-| **0. Prova dati** | Verificare dalla VPS e in locale quali fonti rispondono e cosa coprono, su un campione di strumenti pubblici (sezione 3) | primo task del piano Fase 1 |
-| **1. Portafoglio base** | Strumenti, operazioni manuali, PAC, prezzi EOD + cambi BCE, valore/guadagno/perdita, composizione per tipo e valuta, grafico nel tempo, classe `investimenti` nel patrimonio netto | design qui sotto |
-| **2. Rendimenti e confronto** | Rendimento del portafoglio (TWR) e tuo rendimento effettivo (XIRR), confronto "stessi versamenti in un indice", split, storico dividendi/cedole, rendimento reale (inflazione Eurostat) | **implementata** il 2026-09-29, spec `2026-09-29-investimenti-fase-2-design.md` |
-| **3. Rischio e diversificazione** | Volatilità, massima perdita dal picco, Sharpe, beta, correlazioni; settore e geografia (look-through ETF dove i dati gratuiti lo permettono); sovrapposizione tra ETF; allocazione obiettivo e "dove mettere il prossimo PAC" | **implementata** il 2026-09-29, spec `2026-09-29-investimenti-fase-3-design.md` |
-| **4. Fiscalità italiana** | Plus/minusvalenze, zaino delle minusvalenze con scadenza a 4 anni, distinzione redditi diversi / redditi di capitale (le plus degli ETF armonizzati non compensano le minus), stima tasse prima di una vendita, bollo 0,2% | **implementata** il 2026-09-30, spec `2026-09-30-investimenti-fase-4-design.md` |
-| **5. Import CSV Fineco** | Import delle operazioni dall'export Fineco, con mappatura delle colonne riusabile per altri broker | **implementata** il 2026-09-29 (import CSV generico con formati riconosciuti) |
-| **6. Analisi titoli** | Pagina strumento (storico, fondamentali da Yahoo), watchlist, avvisi di prezzo (email / notifica PWA), commento opzionale via Ollama. Screener escluso (non realistico gratis) | **implementata** il 2026-09-30 (scheda Titoli); notifica PWA rimandata, vedi CLAUDE.md |
+| **0. Data test** | Check from the VPS and locally which sources respond and what they cover, on a sample of public instruments (section 3) | first task of the Phase 1 plan |
+| **1. Basic portfolio** | Instruments, manual transactions, PAC, EOD prices + ECB exchange rates, value/gain/loss, composition by type and currency, chart over time, `investimenti` class in net worth | design below |
+| **2. Returns and comparison** | Portfolio return (TWR) and your actual return (XIRR), "same contributions into an index" comparison, splits, dividend/coupon history, real return (Eurostat inflation) | **implemented** on 2026-09-29, spec `2026-09-29-investimenti-fase-2-design.md` |
+| **3. Risk and diversification** | Volatility, maximum drawdown from peak, Sharpe, beta, correlations; sector and geography (ETF look-through where free data allows); overlap between ETFs; target allocation and "where to put the next PAC" | **implemented** on 2026-09-29, spec `2026-09-29-investimenti-fase-3-design.md` |
+| **4. Italian taxation** | Plusvalenze/minusvalenze (capital gains/losses), zainetto delle minusvalenze (tax-loss carryforward) expiring after 4 years, distinction between redditi diversi / redditi di capitale (miscellaneous income / capital income: gains on harmonized ETFs don't offset losses), tax estimate before a sale, bollo (stamp duty) 0.2% | **implemented** on 2026-09-30, spec `2026-09-30-investimenti-fase-4-design.md` |
+| **5. Fineco CSV import** | Import of transactions from the Fineco export, with a column mapping reusable for other brokers | **implemented** on 2026-09-29 (generic CSV import with recognized formats) |
+| **6. Securities analysis** | Instrument page (history, fundamentals from Yahoo), watchlist, price alerts (email / PWA notification), optional comment via Ollama. Screener excluded (not realistic for free) | **implemented** on 2026-09-30 (Titoli (Securities) tab); PWA notification deferred, see CLAUDE.md |
 
-## 2. Fonti di dati gratuite
+## 2. Free data sources
 
-| Serve per | Fonte | Note e rischi |
+| Needed for | Source | Notes and risks |
 |---|---|---|
-| Prezzi EOD, storico, ricerca per ISIN/nome, fondamentali (Fase 6), settori ETF (Fase 3) | **Yahoo Finance** via `yahoo-finance2` | Non ufficiale: può rompersi (meccanismo cookie/"crumb") e i termini d'uso ne vietano l'uso non personale. Accettabile per uso personale; se l'app si apre a utenti esterni va rivalutato, e l'interfaccia `PriceProvider` serve a questo |
-| Tutto ciò che è quotato a Milano (MOT/BTP, ETFplus, azioni) | **Borsa Italiana**, endpoint JSON non documentato dei grafici (`grafici.borsaitaliana.it`, lo usa la libreria LGPL `Librefolio/borsaItaliana-scraping`) | Unica fonte gratuita buona per i BTP. Protetto da WAF Imperva con token anonimo: fragile, può bloccare IP di datacenter, zona grigia sui termini. Solo uso personale |
-| Riserva ETF/azioni EU | **Stooq** (CSV EOD) | Dal 2026 richiede una `apikey` ottenuta una volta con captcha. Copertura parziale sugli strumenti europei |
-| Riserva ETF/azioni EU con chiave | **Alpha Vantage** (25 chiamate/giorno) | Borse globali incluse; il limite basta per l'aggiornamento giornaliero di ~20 strumenti, non per il recupero dello storico |
-| Riserva azioni USA | **Twelve Data** (800/giorno), **Finnhub** (60/min, storico 1 anno), **Tiingo** | Piani gratuiti ufficiali ma **solo USA**: utili soltanto per le azioni americane |
-| Fondi comuni (NAV) | Nessuna API gratuita ufficiale | Yahoo con id Morningstar `0P…` se c'è, altrimenti prezzo manuale. Gli endpoint non documentati di Morningstar sono troppo fragili per dipenderne |
-| Crypto | **CoinGecko** (piano gratuito); riserva: API pubbliche di **Binance/Kraken** (senza chiave) | Id propri, niente ISIN |
-| Cambi | **BCE** (Data API, ufficiale) | Base EUR, un fixing al giorno (no weekend/festivi: si usa l'ultimo disponibile) |
-| Inflazione (Fase 2) | **Eurostat HICP** | Serve anche ad Analitiche |
-| ISIN → ticker | **OpenFIGI** (gratuito, chiave facoltativa) | Riserva se la ricerca Yahoo per ISIN non trova lo strumento |
+| EOD prices, history, search by ISIN/name, fundamentals (Phase 6), ETF sectors (Phase 3) | **Yahoo Finance** via `yahoo-finance2` | Unofficial: can break (cookie/"crumb" mechanism) and the terms of use forbid non-personal use. Acceptable for personal use; if the app opens to external users it must be reconsidered, and the `PriceProvider` interface is there for this |
+| Everything listed in Milan (MOT/BTP, ETFplus, stocks) | **Borsa Italiana**, undocumented JSON endpoint of the charts (`grafici.borsaitaliana.it`, used by the LGPL library `Librefolio/borsaItaliana-scraping`) | The only good free source for BTPs (Italian government bonds). Protected by an Imperva WAF with an anonymous token: fragile, may block datacenter IPs, grey area on the terms. Personal use only |
+| EU ETF/stock fallback | **Stooq** (EOD CSV) | Since 2026 requires an `apikey` obtained once with a captcha. Partial coverage of European instruments |
+| EU ETF/stock fallback with key | **Alpha Vantage** (25 calls/day) | Global exchanges included; the limit is enough for the daily update of ~20 instruments, not for backfilling history |
+| US stock fallback | **Twelve Data** (800/day), **Finnhub** (60/min, 1 year of history), **Tiingo** | Official free plans but **US only**: useful only for American stocks |
+| Mutual funds (NAV) | No official free API | Yahoo with a Morningstar `0P…` id if there is one, otherwise manual price. Morningstar's undocumented endpoints are too fragile to depend on |
+| Crypto | **CoinGecko** (free plan); fallback: public **Binance/Kraken** APIs (no key) | Their own ids, no ISIN |
+| Exchange rates | **ECB** (Data API, official) | EUR base, one fixing per day (no weekends/holidays: the latest available is used) |
+| Inflation (Phase 2) | **Eurostat HICP** | Also needed by Analitiche (Analytics) |
+| ISIN → ticker | **OpenFIGI** (free, optional key) | Fallback if the Yahoo ISIN search doesn't find the instrument |
 
-**Prezzo manuale sempre disponibile** (decisione già presa in `functional-spec.md`): ogni strumento può avere `priceSource = "manuale"`, e l'utente può inserire un prezzo a mano anche per uno strumento automatico. È la rete di sicurezza per BTP e fondi se la copertura gratuita non basta.
+**Manual price always available** (decision already made in `functional-spec.md`): every instrument can have `priceSource = "manuale"`, and the user can enter a price by hand even for an automatic instrument. It is the safety net for BTPs and funds if free coverage isn't enough.
 
-### 2.1 Catena di fonti con riserva automatica
+### 2.1 Source chain with automatic fallback
 
-Richiesta esplicita dell'utente (2026-09-27): nessuna fonte gratuita è affidabile da sola, quindi ogni prezzo si chiede a **più fonti in ordine**, e se la prima fallisce si passa alla successiva senza intervento dell'utente.
+Explicit request from the user (2026-09-27): no free source is reliable on its own, so every price is requested from **several sources in order**, and if the first fails the next one is tried without user intervention.
 
-**Interfaccia comune** (`lib/market-data/`): ogni fonte implementa `PriceProvider` con `id`, `requiresKey`, `fetchDailyCloses(symbol, from, to)` (chiusure giornaliere con valuta) e, dove esiste, `searchByIsin(isin)`. I cambi hanno un'interfaccia separata `FxProvider`.
+**Common interface** (`lib/market-data/`): each source implements `PriceProvider` with `id`, `requiresKey`, `fetchDailyCloses(symbol, from, to)` (daily closes with currency) and, where available, `searchByIsin(isin)`. Exchange rates have a separate `FxProvider` interface.
 
-**Ordine predefinito per tipo di strumento** (costante `PROVIDER_CHAINS`, modificabile in un solo punto dopo la prova di copertura):
+**Default order per instrument type** (constant `PROVIDER_CHAINS`, changeable in one place after the coverage test):
 
-| Tipo | Catena |
+| Type | Chain |
 |---|---|
-| ETF / ETC / azioni europee | Yahoo → Borsa Italiana (solo se quotato a Milano) → Stooq → Alpha Vantage |
-| Azioni USA | Yahoo → Stooq → Twelve Data → Alpha Vantage |
-| Obbligazioni / BTP | Borsa Italiana → Yahoo |
-| Fondi comuni | Yahoo (id `0P…`) → nessuna riserva: prezzo manuale |
+| ETF / ETC / European stocks | Yahoo → Borsa Italiana (only if listed in Milan) → Stooq → Alpha Vantage |
+| US stocks | Yahoo → Stooq → Twelve Data → Alpha Vantage |
+| Bonds / BTP | Borsa Italiana → Yahoo |
+| Mutual funds | Yahoo (`0P…` id) → no fallback: manual price |
 | Crypto | CoinGecko → Kraken |
-| Cambi | BCE → Frankfurter (stessi dati BCE, altra via d'accesso) |
+| Exchange rates | ECB → Frankfurter (same ECB data, another access route) |
 
-**Simboli per fonte**: ogni fonte usa un suo simbolo (`VWCE.DE` su Yahoo, `vwce.de` su Stooq, `VWCE.DEX` su Alpha Vantage, id numerico su Borsa Italiana). Per questo i simboli stanno in una tabella `instrument_symbols (instrumentId, provider, symbol)` e non in una colonna unica. Si risolvono alla creazione dello strumento (ricerca per ISIN su ogni fonte che la supporta, altrimenti derivazione dal simbolo Yahoo e borsa); una fonte senza simbolo per quello strumento viene saltata. La risoluzione si ritenta nei giorni successivi per le fonti rimaste senza simbolo.
+**Symbols per source**: each source uses its own symbol (`VWCE.DE` on Yahoo, `vwce.de` on Stooq, `VWCE.DEX` on Alpha Vantage, numeric id on Borsa Italiana). That's why symbols live in an `instrument_symbols (instrumentId, provider, symbol)` table and not in a single column. They are resolved when the instrument is created (ISIN search on every source that supports it, otherwise derived from the Yahoo symbol and exchange); a source without a symbol for that instrument is skipped. Resolution is retried on the following days for the sources still without a symbol.
 
-**Regole della catena**:
-1. Si provano le fonti in ordine; vince la **prima risposta valida**. Valida significa: almeno una chiusura nel periodo chiesto, prezzo > 0, **valuta uguale a quella dello strumento**. Una quotazione in un'altra valuta (es. la stessa azione quotata in USD) viene scartata: mescolare valute falserebbe il valore.
-2. Ogni riga di `instrument_prices` salva la **fonte che l'ha fornita** (`source`). Così si vede quanto spesso si finisce sulle riserve.
-3. **Fonte senza chiave = disattivata, non in errore.** Stooq, Alpha Vantage, Twelve Data e CoinGecko leggono chiavi facoltative da variabili d'ambiente; se manca, la fonte si salta in silenzio (stesso principio di Ollama: "non configurato" è uno stato normale).
-4. **Interruttore per fonte** (circuit breaker): dentro un'esecuzione del cron, dopo 3 errori consecutivi della stessa fonte (429, 5xx, blocco del firewall, timeout) quella fonte si salta per il resto dell'esecuzione. Evita di martellare una fonte che ci ha bloccato.
-5. **Budget per le fonti a quota**: Alpha Vantage (25/giorno) ha un contatore giornaliero su Redis; esaurito il budget, la fonte si salta fino al giorno dopo. Pausa minima tra richieste configurata per fonte.
-6. **Recupero dello storico** solo dalle fonti senza limite di profondità (Yahoo, Borsa Italiana, Stooq); le fonti a quota servono solo all'aggiornamento giornaliero.
-7. **Controllo di plausibilità**: se la nuova chiusura si scosta di oltre il 20% dalla precedente **e** arriva da una fonte diversa, si salva comunque ma si logga `market.prices.suspect` (le crypto sono escluse dalla soglia). In Fase 1 niente blocco automatico: solo visibilità.
-8. Se **tutte** le fonti falliscono resta l'ultimo prezzo valido, mostrato con la sua data. Il prezzo manuale dell'utente, se più recente, vince sempre.
+**Chain rules**:
+1. Sources are tried in order; the **first valid response** wins. Valid means: at least one close in the requested period, price > 0, **currency equal to the instrument's**. A quote in another currency (e.g. the same stock listed in USD) is discarded: mixing currencies would distort the value.
+2. Each row of `instrument_prices` stores the **source that provided it** (`source`). This shows how often we end up on the fallbacks.
+3. **Source without a key = disabled, not in error.** Stooq, Alpha Vantage, Twelve Data and CoinGecko read optional keys from environment variables; if missing, the source is silently skipped (same principle as Ollama: "not configured" is a normal state).
+4. **Per-source switch** (circuit breaker): within one cron run, after 3 consecutive errors from the same source (429, 5xx, firewall block, timeout) that source is skipped for the rest of the run. Avoids hammering a source that has blocked us.
+5. **Budget for quota-limited sources**: Alpha Vantage (25/day) has a daily counter on Redis; once the budget is exhausted, the source is skipped until the next day. Minimum pause between requests configured per source.
+6. **History backfill** only from sources without a depth limit (Yahoo, Borsa Italiana, Stooq); quota-limited sources are used only for the daily update.
+7. **Plausibility check**: if the new close deviates by more than 20% from the previous one **and** comes from a different source, it is saved anyway but `market.prices.suspect` is logged (crypto excluded from the threshold). In Phase 1 no automatic blocking: visibility only.
+8. If **all** sources fail, the last valid price remains, shown with its date. The user's manual price, if more recent, always wins.
 
-**Osservabilità**: metrica `buddybudget_price_provider_requests_total{provider, outcome}` con `outcome` da enum chiuso (`success`, `empty`, `currency_mismatch`, `error`, `rate_limited`, `skipped`); log `market.prices.fallback_used` quando serve una riserva. Un alert su "troppe riserve" o "prezzi fermi" si aggiunge dopo aver visto i numeri reali.
+**Observability**: metric `buddybudget_price_provider_requests_total{provider, outcome}` with `outcome` from a closed enum (`success`, `empty`, `currency_mismatch`, `error`, `rate_limited`, `skipped`); log `market.prices.fallback_used` when a fallback is needed. An alert on "too many fallbacks" or "stale prices" is added after seeing real numbers.
 
-## 3. Fase 0 — prova di copertura (primo task del piano)
+## 3. Phase 0 — coverage test (first task of the plan)
 
-Da eseguire **dalla VPS di produzione** (IP di datacenter Hostinger, dove Yahoo a volte risponde 429 o blocca) **e** in locale. Dal sandbox cloud non si può: il 2026-09-27 le richieste a Yahoo, Stooq e BCE hanno ricevuto 403 dalla policy di rete dell'ambiente.
+To be run **from the production VPS** (Hostinger datacenter IP, where Yahoo sometimes answers 429 or blocks) **and** locally. It can't be done from the cloud sandbox: on 2026-09-27 requests to Yahoo, Stooq and the ECB got 403 from the environment's network policy.
 
-L'utente ha scelto di non fornire i propri ISIN (2026-09-27). Lo script di prova usa un **campione di strumenti pubblici** per ogni tipo (ETF UCITS su Xetra e Milano, azione italiana, azione USA, un BTP, un fondo comune, una crypto) e verifica:
+The user chose not to provide their own ISINs (2026-09-27). The test script uses a **sample of public instruments** for each type (UCITS ETF on Xetra and Milan, Italian stock, US stock, a BTP, a mutual fund, a crypto) and checks:
 
-1. la ricerca per ISIN restituisce un simbolo Yahoo, e su quale borsa (per gli ETF preferire la quotazione in EUR: Xetra `.DE` o Borsa Italiana `.MI`);
-2. lo storico giornaliero arriva, fino a quando e in quale valuta;
-3. **BTP e obbligazioni**: copertura su Yahoo (probabilmente scarsa) e sull'endpoint di Borsa Italiana (probabilmente buona), prezzo in percentuale del nominale;
-4. **fondi comuni** (non quotati in borsa, NAV giornaliero): se Yahoo li espone (di solito con id Morningstar tipo `0P0000…`);
-5. **Borsa Italiana dalla VPS**: se il WAF Imperva lascia passare le richieste dall'IP del datacenter;
-6. crypto su CoinGecko e cambi BCE;
-7. ripetuto per qualche giorno dalla VPS, per vedere se arrivano errori 429 o blocchi.
+1. the ISIN search returns a Yahoo symbol, and on which exchange (for ETFs prefer the EUR listing: Xetra `.DE` or Borsa Italiana `.MI`);
+2. the daily history arrives, how far back and in which currency;
+3. **BTPs and bonds**: coverage on Yahoo (probably poor) and on the Borsa Italiana endpoint (probably good), price as a percentage of face value;
+4. **mutual funds** (not exchange-listed, daily NAV): whether Yahoo exposes them (usually with a Morningstar id like `0P0000…`);
+5. **Borsa Italiana from the VPS**: whether the Imperva WAF lets requests from the datacenter IP through;
+6. crypto on CoinGecko and ECB exchange rates;
+7. repeated for a few days from the VPS, to see whether 429 errors or blocks arrive.
 
-Esito: una tabella tipo di strumento → fonti che funzionano, usata per confermare o riordinare `PROVIDER_CHAINS`, più le risposte reali salvate come fixture per i test dei parser (dal sandbox cloud le fonti non si raggiungono). Se Borsa Italiana è bloccata dalla VPS, il suo provider si implementa comunque ma resta in fondo alle catene, e i BTP ricadono sul prezzo manuale.
+Outcome: a table instrument type → working sources, used to confirm or reorder `PROVIDER_CHAINS`, plus the real responses saved as fixtures for the parser tests (sources can't be reached from the cloud sandbox). If Borsa Italiana is blocked from the VPS, its provider is implemented anyway but stays at the bottom of the chains, and BTPs fall back to the manual price.
 
-## 4. Fase 1 — design proposto
+## 4. Phase 1 — proposed design
 
-### 4.1 Dati
+### 4.1 Data
 
-Tutte le nuove tabelle tramite migration Drizzle versionata (`pnpm db:generate` + `db:migrate`, regola del 2026-09-26). Tipi e sorgenti sono `text` + costanti TypeScript, non enum Postgres, così si aggiungono valori senza migrazioni (stesso criterio di `net_worth_snapshots.assetClass`).
+All new tables via versioned Drizzle migrations (`pnpm db:generate` + `db:migrate`, rule of 2026-09-26). Types and sources are `text` + TypeScript constants, not Postgres enums, so values can be added without migrations (same criterion as `net_worth_snapshots.assetClass`).
 
-**`instruments`**: **comune a tutti gli utenti**, perché i prezzi di VWCE sono gli stessi per tutti.
+**`instruments`**: **shared by all users**, because VWCE's prices are the same for everyone.
 
-| Colonna | Note |
+| Column | Notes |
 |---|---|
 | `id` | uuid |
-| `isin` | nullable (le crypto non l'hanno), unique quando presente |
-| `name` | nome visualizzato |
-| `type` | `etf` / `azione` / `obbligazione` / `fondo` / `crypto` / `etc` (materie prime) |
-| `currency` | valuta di quotazione (ISO 4217) |
-| `priceMode` | `auto` (catena di fonti) o `manuale` (solo prezzi inseriti dall'utente) |
-| `exchange` | facoltativo, informativo |
-| `priceUnit` | `unita` (prezzo per quota) o `percentuale_nominale` (obbligazioni: valore = nominale × prezzo / 100) |
-| `taxRate` | aliquota italiana: 26% di default, 12,5% per titoli di Stato e assimilati (serve alla Fase 4, salvato subito) |
-| `taxHarmonized` | per ETF/fondi: armonizzato UE sì/no (Fase 4) |
+| `isin` | nullable (crypto don't have one), unique when present |
+| `name` | display name |
+| `type` | `etf` / `azione` / `obbligazione` / `fondo` / `crypto` / `etc` (commodities) |
+| `currency` | quote currency (ISO 4217) |
+| `priceMode` | `auto` (source chain) or `manuale` (only prices entered by the user) |
+| `exchange` | optional, informative |
+| `priceUnit` | `unita` (price per unit) or `percentuale_nominale` (bonds: value = face value × price / 100) |
+| `taxRate` | Italian rate: 26% by default, 12.5% for government bonds and similar (needed by Phase 4, stored right away) |
+| `taxHarmonized` | for ETFs/funds: EU-harmonized yes/no (Phase 4) |
 
-Uno strumento `manuale` creato da un utente resta visibile solo a lui (`createdByUserId` nullable): non inquina la ricerca degli altri con nomi o prezzi inventati.
+A `manuale` instrument created by a user stays visible only to them (`createdByUserId` nullable): it doesn't pollute other users' search with made-up names or prices.
 
-**`instrument_symbols`**: `(instrumentId, provider)` unique, `symbol`, `resolvedAt`. Vedi sezione 2.1.
+**`instrument_symbols`**: `(instrumentId, provider)` unique, `symbol`, `resolvedAt`. See section 2.1.
 
-**`instrument_prices`**: `(instrumentId, date)` unique, `close` numeric(20,8), `source` (la fonte che ha fornito il prezzo). Una riga al giorno per strumento; i prezzi manuali stanno in una tabella per utente (`user_instrument_prices`), perché un prezzo inserito a mano da un utente non deve cambiare il portafoglio di un altro.
+**`instrument_prices`**: `(instrumentId, date)` unique, `close` numeric(20,8), `source` (the source that provided the price). One row per day per instrument; manual prices live in a per-user table (`user_instrument_prices`), because a price entered by hand by one user must not change another user's portfolio.
 
-**`fx_rates`**: `(date, currency)` unique, `perEur` (1 EUR = x valuta, come pubblica la BCE). La conversione tra due valute qualsiasi passa dall'EUR: l'app è multi-valuta e la valuta dell'utente non è per forza l'EUR.
+**`fx_rates`**: `(date, currency)` unique, `perEur` (1 EUR = x currency, as published by the ECB). Conversion between any two currencies goes through EUR: the app is multi-currency and the user's currency is not necessarily EUR.
 
-**`investment_portfolios`**: per utente (`name`, `broker` facoltativo). Di solito uno ("Fineco"), ma se ne possono avere più di uno.
+**`investment_portfolios`**: per user (`name`, optional `broker`). Usually one ("Fineco"), but there can be more than one.
 
-**`investment_transactions`**: per utente.
+**`investment_transactions`**: per user.
 
-| Colonna | Note |
+| Column | Notes |
 |---|---|
-| `type` | `acquisto` / `vendita` / `dividendo` / `cedola` / `rimborso` (scadenza obbligazione). `split` in Fase 2 |
-| `date` | data dell'operazione |
-| `quantity` | numeric(24,10): frazioni di crypto e quote di fondi; nominale per le obbligazioni |
-| `price` | numeric(20,8) nella valuta dello strumento |
-| `fxRate` | cambio valuta strumento → valuta utente alla data; default dalla BCE, modificabile (Fineco applica il suo cambio) |
-| `fees` | commissioni, nella valuta dell'utente |
-| `taxes` | imposte trattenute (plusvalenza, ritenuta su dividendi), per la Fase 4 |
-| `grossAmount` | per `dividendo`/`cedola`: importo lordo |
-| `note` | facoltativa |
+| `type` | `acquisto` / `vendita` / `dividendo` / `cedola` / `rimborso` (buy / sell / dividend / coupon / redemption at bond maturity). `split` in Phase 2 |
+| `date` | date of the transaction |
+| `quantity` | numeric(24,10): fractions of crypto and fund units; face value for bonds |
+| `price` | numeric(20,8) in the instrument's currency |
+| `fxRate` | exchange rate instrument currency → user currency at the date; default from the ECB, editable (Fineco applies its own rate) |
+| `fees` | commissions, in the user's currency |
+| `taxes` | taxes withheld (capital gains, withholding on dividends), for Phase 4 |
+| `grossAmount` | for `dividendo`/`cedola`: gross amount |
+| `note` | optional |
 
-Controllo lato server: una vendita non può superare le quote possedute a quella data (decisione già presa in `functional-spec.md`).
+Server-side check: a sale cannot exceed the units held at that date (decision already made in `functional-spec.md`).
 
-**`investment_plans`** (PAC): `portfolioId`, `instrumentId`, `amount`, `frequency` (mensile / bimestrale / trimestrale), `dayOfMonth`, `active`. In Fase 1 serve a mostrare l'importo del PAC nei KPI e a **precompilare** il form "Registra operazione" (strumento e importo). **Non genera operazioni da solo**: prezzo e quote reali di esecuzione li decide Fineco, e un acquisto inventato renderebbe falsi prezzo medio e guadagno.
+**`investment_plans`** (PAC): `portfolioId`, `instrumentId`, `amount`, `frequency` (monthly / bimonthly / quarterly), `dayOfMonth`, `active`. In Phase 1 it is used to show the PAC amount in the KPIs and to **prefill** the "Registra operazione" ("Record transaction") form (instrument and amount). **It does not generate transactions by itself**: the real execution price and units are decided by Fineco, and a made-up purchase would make the average price and gain false.
 
-**Patrimonio netto**: `ASSET_CLASSES` in `net_worth_snapshots.ts` si allarga a `"investimenti"` (colonna `text`, niente migrazione). Il cron `net-worth-snapshot` (23:50) scrive anche la riga investimenti. Grazie a operazioni + prezzi storici, lo storico passato si ricostruisce come righe `derivato`, stesso meccanismo della liquidità: la Panoramica mostra subito due classi, e si sblocca il donut di allocazione rimandato il 2026-09-13.
+**Net worth**: `ASSET_CLASSES` in `net_worth_snapshots.ts` is extended to `"investimenti"` (`text` column, no migration). The `net-worth-snapshot` cron (23:50) also writes the investments row. Thanks to transactions + historical prices, the past history is rebuilt as `derivato` (derived) rows, the same mechanism as for cash: the Panoramica (Overview) immediately shows two classes, and the allocation donut deferred on 2026-09-13 is unlocked.
 
-### 4.2 Calcoli (funzioni pure, `lib/calc/investments.ts`)
+### 4.2 Computations (pure functions, `lib/calc/investments.ts`)
 
-- **Posizioni a una data**: quote, costo medio ponderato (commissioni di acquisto incluse), guadagno realizzato sulle vendite (prezzo di vendita − costo medio, al netto di commissioni), dividendi e cedole incassati.
-- **Valore a una data**: quote × ultimo prezzo disponibile ≤ data (automatico o manuale, vince il manuale più recente) × cambio. Il prezzo più recente mostra **sempre la sua data**: un prezzo vecchio di giorni si vede, non si nasconde.
-- **Serie del valore nel tempo** e **investito netto nel tempo** (versamenti − rientri), per il grafico. Si calcola su richiesta da operazioni + prezzi, con cache Redis. Niente snapshot per singolo strumento: i dati di partenza sono già deterministici.
-- **Composizione** per tipo di strumento e per valuta. Settore e geografia in Fase 3.
+- **Positions at a date**: units, weighted average cost (purchase commissions included), realized gain on sales (sale price − average cost, net of commissions), dividends and coupons received.
+- **Value at a date**: units × latest available price ≤ date (automatic or manual, the most recent manual wins) × exchange rate. The most recent price **always shows its date**: a price that is days old is visible, not hidden.
+- **Value series over time** and **net invested over time** (contributions − withdrawals), for the chart. Computed on demand from transactions + prices, with Redis cache. No per-instrument snapshots: the source data is already deterministic.
+- **Composition** by instrument type and by currency. Sector and geography in Phase 3.
 
-### 4.3 Aggiornamento prezzi
+### 4.3 Price updates
 
-- **CronJob k8s `market-prices`** → `GET /api/cron/market-prices` (protetto da `CRON_SECRET`, come gli altri), **ogni giorno alle ~23:00** Europe/Rome (dopo la chiusura USA; anche nel weekend per le crypto). Gira **prima** di `net-worth-snapshot` (23:50).
-- Aggiorna solo gli strumenti posseduti da almeno un utente, più i cambi. Ogni strumento passa dalla catena di fonti della sezione 2.1; un errore su uno strumento non interrompe gli altri.
-- **Recupero dello storico** quando uno strumento viene usato per la prima volta (o quando si registra un'operazione più vecchia dello storico presente): job in background secondo lo standard "Operazioni lunghe" (`after()` + stato su Redis + indicatore globale). Scarica dalla data della prima operazione.
-- **Osservabilità**: `recordCronRun("market_prices", …)` più quanto descritto nella sezione 2.1. **Mai quantità, importi o composizione del portafoglio di un utente nei log**: il simbolo di uno strumento comune non è un dato personale, il fatto che un certo utente lo possieda sì.
+- **k8s CronJob `market-prices`** → `GET /api/cron/market-prices` (protected by `CRON_SECRET`, like the others), **every day at ~23:00** Europe/Rome (after the US close; on weekends too for crypto). It runs **before** `net-worth-snapshot` (23:50).
+- Updates only the instruments held by at least one user, plus exchange rates. Each instrument goes through the source chain of section 2.1; an error on one instrument doesn't interrupt the others.
+- **History backfill** when an instrument is used for the first time (or when a transaction older than the existing history is recorded): background job following the "Operazioni lunghe" ("Long operations") standard (`after()` + state on Redis + global indicator). Downloads from the date of the first transaction.
+- **Observability**: `recordCronRun("market_prices", …)` plus what is described in section 2.1. **Never a user's quantities, amounts or portfolio composition in the logs**: the symbol of a shared instrument is not personal data, the fact that a certain user holds it is.
 
-### 4.4 Interfaccia (`/investimenti`)
+### 4.4 Interface (`/investimenti`)
 
-- **KPI**: valore del portafoglio (con variazione dall'ultima chiusura), guadagno totale (non realizzato + realizzato + dividendi, in € e %), investito netto con importo PAC mensile.
-- **Grafico**: valore vs investito nel tempo, periodi 1M/3M/1A/Max (stesso selettore della Panoramica).
-- **Posizioni**: strumento, quote, prezzo medio, ultimo prezzo con data, valore, guadagno €/%, peso %. Nome modificabile, ISIN no (decisione in `functional-spec.md`).
-- **Composizione**: per tipo di strumento e per valuta.
-- **Operazioni**: lista + "Registra operazione" (tipo, strumento cercato per ISIN o nome tramite la ricerca del provider, quote, prezzo, data, commissioni, cambio precompilato, totale calcolato). Stesso schema di dialog del "+ Aggiungi" di Transazioni.
-- **PAC**: card con piani attivi, importo mensile e bottone "Registra esecuzione" che precompila il form.
-- A implementazione completata: togliere `comingSoon` da `NAV_ITEMS` e la voce da `UPCOMING_FEATURES` (regola "Schermate in arrivo" di CLAUDE.md).
+- **KPIs**: portfolio value (with change since the last close), total gain (unrealized + realized + dividends, in € and %), net invested with monthly PAC amount.
+- **Chart**: value vs invested over time, periods 1M/3M/1A/Max (same selector as Panoramica).
+- **Positions**: instrument, units, average price, latest price with date, value, gain €/%, weight %. Name editable, ISIN not (decision in `functional-spec.md`).
+- **Composition**: by instrument type and by currency.
+- **Transactions**: list + "Registra operazione" (type, instrument searched by ISIN or name through the provider search, units, price, date, commissions, prefilled exchange rate, computed total). Same dialog scheme as Transazioni's "+ Aggiungi" ("+ Add").
+- **PAC**: card with active plans, monthly amount and a "Registra esecuzione" ("Record execution") button that prefills the form.
+- Once implementation is complete: remove `comingSoon` from `NAV_ITEMS` and the entry from `UPCOMING_FEATURES` (CLAUDE.md "coming soon screens" rule).
 
-### 4.5 Rapporto con Conti e Transazioni
+### 4.5 Relationship with Conti and Transazioni
 
-Un versamento del PAC esce dal conto corrente Fineco (se collegato via GoCardless) e compare in Transazioni come uscita. **In Fase 1 non si collegano i due movimenti**: il movimento bancario va categorizzato in una categoria del gruppo **"Te futuro"** (che per la decisione del 2026-09-23 conta già come spesa prioritaria), mentre l'operazione di investimento vive in Investimenti. Il patrimonio netto resta coerente: la liquidità scende e gli investimenti salgono. Il collegamento automatico movimento ↔ operazione (es. proporre di registrare l'esecuzione del PAC quando arriva il movimento) è un possibile miglioramento successivo.
+A PAC contribution leaves the Fineco current account (if linked via GoCardless) and shows up in Transazioni (Transactions) as an expense. **In Phase 1 the two movements are not linked**: the bank transaction is to be categorized in a category of the **"Te futuro"** ("Future you") group (which per the 2026-09-23 decision already counts as a priority expense), while the investment transaction lives in Investimenti. Net worth stays consistent: cash goes down and investments go up. Automatic linking of bank transaction ↔ investment transaction (e.g. suggesting to record the PAC execution when the bank transaction arrives) is a possible later improvement.
 
-## Rimandato consapevolmente
+## Knowingly deferred
 
-- **Import CSV Fineco**: scelta dell'utente il 2026-09-27; Fase 5. Da riprendere quando inserire le operazioni a mano diventa il collo di bottiglia.
-- **Analisi dei singoli titoli**: scelta dell'utente il 2026-09-27, da tenere tracciata; Fase 6. Screener escluso anche lì.
-- **Split, TWR/XIRR, benchmark**: Fase 2. Uno split in Fase 1 si gestisce a mano (vendita + acquisto equivalenti).
-- **Ratei delle obbligazioni** (interessi maturati tra una cedola e l'altra): esclusi dal valore in Fase 1, piccola imprecisione accettata.
-- **Tempo reale**: escluso, prezzi di chiusura.
-- **Collegamento automatico movimento bancario ↔ operazione**: successivo alla Fase 1.
+- **Fineco CSV import**: user's choice on 2026-09-27; Phase 5. To be picked up when entering transactions by hand becomes the bottleneck.
+- **Analysis of individual securities**: user's choice on 2026-09-27, to be kept tracked; Phase 6. Screener excluded there too.
+- **Splits, TWR/XIRR, benchmarks**: Phase 2. A split in Phase 1 is handled by hand (equivalent sale + purchase).
+- **Bond accrued interest** (interest accrued between one coupon and the next): excluded from the value in Phase 1, small inaccuracy accepted.
+- **Real time**: excluded, closing prices.
+- **Automatic linking bank transaction ↔ investment transaction**: after Phase 1.
 
-## Default adottati
+## Defaults adopted
 
-L'utente ha chiesto di procedere il 2026-09-27 senza rispondere punto per punto, quindi valgono le proposte della spec:
+The user asked to proceed on 2026-09-27 without answering point by point, so the spec's proposals apply:
 
-1. Fase 0 su un campione di strumenti pubblici, non sugli ISIN dell'utente.
-2. Il PAC precompila il form, non genera operazioni da solo.
-3. Ratei obbligazionari esclusi dalla Fase 1.
+1. Phase 0 on a sample of public instruments, not on the user's ISINs.
+2. The PAC prefills the form, it doesn't generate transactions by itself.
+3. Bond accrued interest excluded from Phase 1.

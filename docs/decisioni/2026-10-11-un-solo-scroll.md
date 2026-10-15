@@ -1,6 +1,6 @@
-# 2026-10-11 — Nell'app scorre solo <main>
+# 2026-10-11 — In the app only <main> scrolls
 
-- `html` e `body` non scorrono mai quando c'è la shell dell'app (`:has(#main-content)`): una seconda barra accanto a quella di `<main>` non può più comparire per un documento più alto della finestra. Login, landing e pagine pubbliche non cambiano.
-- `<main>` non scorre di lato (`overflow-x: hidden`): un elemento che sborda non apre una barra orizzontale.
-- Causa trovata su mobile: la testata di Investimenti (titolo + tre pulsanti con etichetta) era più larga dello schermo. Ora su mobile i pulsanti sono solo icone, come «Aggiungi» in Liquidità.
-- Tolta la scritta «Prezzi di chiusura aggiornati ogni sera».
+- `html` and `body` never scroll when the app shell is present (`:has(#main-content)`): a second scrollbar next to `<main>`'s can no longer appear for a document taller than the window. Login, landing and public pages do not change.
+- `<main>` does not scroll sideways (`overflow-x: hidden`): an overflowing element does not open a horizontal scrollbar.
+- Cause found on mobile: the Investimenti header (title + three labelled buttons) was wider than the screen. Now on mobile the buttons are icons only, like «Aggiungi» ("Add") in Liquidità.
+- Removed the text «Prezzi di chiusura aggiornati ogni sera» ("Closing prices updated every evening").

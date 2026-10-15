@@ -1,6 +1,6 @@
-# Bandiere
+# Flags
 
-Le bandiere in questa cartella (it, de, fr, es, gb, formato 4:3) provengono da [flag-icons](https://github.com/lipis/flag-icons) di Panayiotis Lipiridis, versione 7.2.3, distribuite con licenza MIT. La bandiera spagnola è semplificata (senza stemma, come la bandiera civile) per non caricare 90 KB in una miniatura. Il testo completo della licenza segue.
+The flags in this folder (it, de, fr, es, gb, 4:3 format) come from [flag-icons](https://github.com/lipis/flag-icons) by Panayiotis Lipiridis, version 7.2.3, distributed under the MIT license. The Spanish flag is simplified (without the coat of arms, like the civil flag) to avoid loading 90 KB in a thumbnail. The full license text follows.
 
 ```
 The MIT License (MIT)

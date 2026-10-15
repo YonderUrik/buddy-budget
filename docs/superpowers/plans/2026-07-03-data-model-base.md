@@ -1,74 +1,74 @@
-# Modello dati base (Conti, Categorie, Transazioni, Budget) Implementation Plan
+# Base data model (Accounts, Categories, Transactions, Budgets) Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Schema Drizzle/Postgres per `users` (stub), `categories`, `accounts`, `transactions`, `budgets`, con migration versionate applicate a un Postgres reale (Neon, solo sviluppo) e un test di integrazione end-to-end che verifica il round trip completo.
+**Goal:** Drizzle/Postgres schema for `users` (stub), `categories`, `accounts`, `transactions`, `budgets`, with versioned migrations applied to a real Postgres (Neon, development only) and an end-to-end integration test that verifies the full round trip.
 
-**Architecture:** Un modulo `lib/db/` con uno schema Drizzle per entità (barrel `lib/db/schema/index.ts`), un client Postgres condiviso (`lib/db/client.ts`), migration generate con `drizzle-kit` e applicate con uno script dedicato (non `drizzle-kit push`, per restare coerenti col workflow a migration-file già previsto nel piano infra). Nessuna UI, nessuna API, nessuna autenticazione: solo il livello dati.
+**Architecture:** A `lib/db/` module with one Drizzle schema per entity (barrel `lib/db/schema/index.ts`), a shared Postgres client (`lib/db/client.ts`), migrations generated with `drizzle-kit` and applied with a dedicated script (not `drizzle-kit push`, to stay consistent with the migration-file workflow already planned in the infra plan). No UI, no API, no authentication: only the data layer.
 
-**Tech Stack:** Drizzle ORM, driver `postgres` (postgres.js), Postgres su Neon (solo sviluppo), Vitest per i test, `tsx` per eseguire script TypeScript standalone (seed, migrate).
+**Tech Stack:** Drizzle ORM, `postgres` driver (postgres.js), Postgres on Neon (development only), Vitest for tests, `tsx` to run standalone TypeScript scripts (seed, migrate).
 
 ## Global Constraints
 
 - Package manager: **pnpm**.
-- **L'agente non esegue MAI comandi git in questo repo** (regola di progetto in `CLAUDE.md`). Ogni step che normalmente prevede `git add`/`commit` va presentato all'utente come comando esatto da eseguire lui stesso, con richiesta di conferma prima di procedere al task successivo.
-- Schema conforme a `docs/superpowers/specs/2026-07-03-data-model-base-design.md`: tutte le tabelle referenziano `users.id` con `onDelete: "cascade"`; `excluded_amount` validato **solo a livello applicativo** (funzione pura `isValidExcludedAmount`), **nessun CHECK constraint DB** in questa fase (deciso esplicitamente nello spec).
-- Migration **versionate** (`drizzle-kit generate` + script di migrate dedicato), non `drizzle-kit push` — per restare coerenti con il Job Kubernetes già previsto in `docs/superpowers/plans/2026-07-03-infra-foundation.md` (oggi in pausa) quando la produzione arriverà.
-- Barrel file obbligatorio per lo schema (`lib/db/schema/index.ts`), come da convenzione di progetto.
-- Le 8 categorie seed: **fisse** → Affitto, Bollette & casa, Abbonamenti; **variabili** → Spesa alimentare, Ristoranti, Altro, Svago, Trasporti.
+- **The agent NEVER runs git commands in this repo** (project rule in `CLAUDE.md`). Every step that would normally involve `git add`/`commit` must be presented to the user as the exact command to run themselves, asking for confirmation before moving on to the next task.
+- Schema compliant with `docs/superpowers/specs/2026-07-03-data-model-base-design.md`: all tables reference `users.id` with `onDelete: "cascade"`; `excluded_amount` validated **only at the application level** (pure function `isValidExcludedAmount`), **no DB CHECK constraint** in this phase (explicitly decided in the spec).
+- **Versioned** migrations (`drizzle-kit generate` + dedicated migrate script), not `drizzle-kit push` — to stay consistent with the Kubernetes Job already planned in `docs/superpowers/plans/2026-07-03-infra-foundation.md` (currently paused) when production arrives.
+- Barrel file mandatory for the schema (`lib/db/schema/index.ts`), per project convention.
+- The 8 seed categories: **fixed** (fisse) → Affitto, Bollette & casa, Abbonamenti; **variable** (variabili) → Spesa alimentare, Ristoranti, Altro, Svago, Trasporti.
 
 ---
 
 ## File Structure
 
-- `.env.local.example` (nuovo) — template della connection string, committato.
-- `.env.local` (nuovo, **non committato**) — connection string reale di Neon, creato dall'utente nel Task 1.
-- `.gitignore` (modifica) — aggiunge un'eccezione per committare `.env.local.example` nonostante il pattern `.env*`.
-- `drizzle.config.ts` (nuovo, root) — configurazione `drizzle-kit`.
-- `vitest.config.ts` (nuovo, root) — configurazione test runner.
-- `vitest.setup.ts` (nuovo, root) — carica `.env.local` prima dei test.
-- `package.json` (modifica) — nuove dipendenze e script `db:generate`/`db:migrate`/`db:seed`/`test`.
-- `lib/db/client.ts` (nuovo) — client Drizzle/postgres.js condiviso.
-- `lib/db/migrate.ts` (nuovo) — script che applica le migration generate.
-- `lib/db/seed.ts` (nuovo) — crea un utente di sviluppo e le sue 8 categorie.
-- `lib/db/schema/shared.ts` (nuovo) — enum `dataSourceEnum` condiviso tra `accounts` e `transactions`.
-- `lib/db/schema/users.ts` (nuovo)
-- `lib/db/schema/categories.ts` (nuovo) — include `DEFAULT_CATEGORIES`.
-- `lib/db/schema/accounts.ts` (nuovo)
-- `lib/db/schema/transactions.ts` (nuovo) — include `isValidExcludedAmount`.
-- `lib/db/schema/budgets.ts` (nuovo)
-- `lib/db/schema/index.ts` (nuovo) — barrel.
-- `lib/db/schema/transactions.test.ts` (nuovo) — unit test puro (nessun DB) per `isValidExcludedAmount`.
-- `lib/db/integration.test.ts` (nuovo) — round trip completo contro Neon.
+- `.env.local.example` (new) — connection string template, committed.
+- `.env.local` (new, **not committed**) — real Neon connection string, created by the user in Task 1.
+- `.gitignore` (modify) — adds an exception to commit `.env.local.example` despite the `.env*` pattern.
+- `drizzle.config.ts` (new, root) — `drizzle-kit` configuration.
+- `vitest.config.ts` (new, root) — test runner configuration.
+- `vitest.setup.ts` (new, root) — loads `.env.local` before the tests.
+- `package.json` (modify) — new dependencies and `db:generate`/`db:migrate`/`db:seed`/`test` scripts.
+- `lib/db/client.ts` (new) — shared Drizzle/postgres.js client.
+- `lib/db/migrate.ts` (new) — script that applies the generated migrations.
+- `lib/db/seed.ts` (new) — creates a development user and its 8 categories.
+- `lib/db/schema/shared.ts` (new) — `dataSourceEnum` enum shared between `accounts` and `transactions`.
+- `lib/db/schema/users.ts` (new)
+- `lib/db/schema/categories.ts` (new) — includes `DEFAULT_CATEGORIES`.
+- `lib/db/schema/accounts.ts` (new)
+- `lib/db/schema/transactions.ts` (new) — includes `isValidExcludedAmount`.
+- `lib/db/schema/budgets.ts` (new)
+- `lib/db/schema/index.ts` (new) — barrel.
+- `lib/db/schema/transactions.test.ts` (new) — pure unit test (no DB) for `isValidExcludedAmount`.
+- `lib/db/integration.test.ts` (new) — full round trip against Neon.
 
 ---
 
-### Task 1 (Manuale — richiede un account esterno): Provisioning Neon + `.env.local`
+### Task 1 (Manual — requires an external account): Neon provisioning + `.env.local`
 
-Questo task richiede di creare un account su un servizio esterno; non è eseguibile da un agente senza le tue credenziali.
+This task requires creating an account on an external service; an agent cannot run it without your credentials.
 
 **Interfaces:**
-- Produces: una `DATABASE_URL` valida in `.env.local`, che tutti i task successivi (a partire dal Task 8) useranno per connettersi a un Postgres reale.
+- Produces: a valid `DATABASE_URL` in `.env.local`, which all later tasks (from Task 8 on) will use to connect to a real Postgres.
 
-- [ ] **Step 1: Creare un progetto Neon gratuito**
+- [ ] **Step 1: Create a free Neon project**
 
-Su https://neon.tech (o via `neonctl` se preferisci la CLI): crea un account, poi un nuovo progetto (piano free tier). Neon crea automaticamente un database e ti mostra una connection string nel formato:
+On https://neon.tech (or via `neonctl` if you prefer the CLI): create an account, then a new project (free tier plan). Neon automatically creates a database and shows you a connection string in the format:
 
 ```
 postgresql://<user>:<password>@<host>/<database>?sslmode=require
 ```
 
-- [ ] **Step 2: Creare `.env.local` nella root del repo**
+- [ ] **Step 2: Create `.env.local` in the repo root**
 
 ```
 DATABASE_URL="postgresql://<user>:<password>@<host>/<database>?sslmode=require"
 ```
 
-Sostituisci il valore con la connection string reale copiata da Neon. Questo file non va mai committato (è già coperto da `.env*` in `.gitignore`).
+Replace the value with the real connection string copied from Neon. This file must never be committed (it is already covered by `.env*` in `.gitignore`).
 
 ---
 
-### Task 2: Dipendenze, config Drizzle/Vitest, script package.json
+### Task 2: Dependencies, Drizzle/Vitest config, package.json scripts
 
 **Files:**
 - Create: `.env.local.example`
@@ -80,37 +80,37 @@ Sostituisci il valore con la connection string reale copiata da Neon. Questo fil
 
 **Interfaces:**
 - Consumes: `DATABASE_URL` in `.env.local` (Task 1).
-- Produces: comandi `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm test` disponibili per i task successivi; `vitest.setup.ts` carica `.env.local` prima di ogni test run, assunto da `lib/db/integration.test.ts` (Task 10).
+- Produces: `pnpm db:generate`, `pnpm db:migrate`, `pnpm db:seed`, `pnpm test` commands available to later tasks; `vitest.setup.ts` loads `.env.local` before every test run, which `lib/db/integration.test.ts` (Task 10) relies on.
 
-- [ ] **Step 1: Installare le dipendenze**
+- [ ] **Step 1: Install the dependencies**
 
 Run: `pnpm add drizzle-orm postgres`
 Run: `pnpm add -D drizzle-kit vitest tsx dotenv`
 
-Expected: entrambi i comandi terminano senza errori e `package.json` mostra le nuove dipendenze in `dependencies`/`devDependencies`.
+Expected: both commands finish without errors and `package.json` shows the new dependencies in `dependencies`/`devDependencies`.
 
-- [ ] **Step 2: Creare `.env.local.example`**
+- [ ] **Step 2: Create `.env.local.example`**
 
 ```
 DATABASE_URL="postgresql://<user>:<password>@<host>/<database>?sslmode=require"
 ```
 
-- [ ] **Step 3: Permettere il commit di `.env.local.example` nonostante `.env*`**
+- [ ] **Step 3: Allow committing `.env.local.example` despite `.env*`**
 
-Nel file `.gitignore`, subito dopo il blocco:
+In the `.gitignore` file, right after the block:
 
 ```
 # env files (can opt-in for committing if needed)
 .env*
 ```
 
-aggiungi:
+add:
 
 ```
 !.env.local.example
 ```
 
-- [ ] **Step 4: Creare `drizzle.config.ts`**
+- [ ] **Step 4: Create `drizzle.config.ts`**
 
 ```ts
 import { config } from "dotenv";
@@ -132,7 +132,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 5: Creare `vitest.setup.ts`**
+- [ ] **Step 5: Create `vitest.setup.ts`**
 
 ```ts
 import { config } from "dotenv";
@@ -140,7 +140,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 ```
 
-- [ ] **Step 6: Creare `vitest.config.ts`**
+- [ ] **Step 6: Create `vitest.config.ts`**
 
 ```ts
 import { defineConfig } from "vitest/config";
@@ -152,9 +152,9 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 7: Aggiungere gli script a `package.json`**
+- [ ] **Step 7: Add the scripts to `package.json`**
 
-Nel blocco `"scripts"` esistente, aggiungi:
+In the existing `"scripts"` block, add:
 
 ```json
 "test": "vitest run",
@@ -163,12 +163,12 @@ Nel blocco `"scripts"` esistente, aggiungi:
 "db:seed": "tsx lib/db/seed.ts"
 ```
 
-- [ ] **Step 8: Verificare che il type-check del progetto sia ancora pulito**
+- [ ] **Step 8: Verify that the project type-check is still clean**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore (i file creati finora sono solo config, nessun codice applicativo ancora).
+Expected: no errors (the files created so far are only config, no application code yet).
 
-- [ ] **Step 9: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 9: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add .env.local.example .gitignore drizzle.config.ts vitest.config.ts vitest.setup.ts package.json pnpm-lock.yaml
@@ -183,9 +183,9 @@ git commit -m "build: bootstrap Drizzle ORM and Vitest for the data layer"
 - Create: `lib/db/schema/users.ts`
 
 **Interfaces:**
-- Produces: `users` (tabella Drizzle), tipi `User`/`NewUser` — usati da `categories`, `accounts`, `transactions`, `budgets` (Task 4-7) come target della FK `user_id`.
+- Produces: `users` (Drizzle table), `User`/`NewUser` types — used by `categories`, `accounts`, `transactions`, `budgets` (Tasks 4-7) as the target of the `user_id` FK.
 
-- [ ] **Step 1: Creare `lib/db/schema/users.ts`**
+- [ ] **Step 1: Create `lib/db/schema/users.ts`**
 
 ```ts
 import { pgTable, uuid, text, timestamp } from "drizzle-orm/pg-core";
@@ -200,12 +200,12 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 ```
 
-- [ ] **Step 2: Verificare che il file compili**
+- [ ] **Step 2: Verify that the file compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 3: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 3: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/schema/users.ts
@@ -220,10 +220,10 @@ git commit -m "feat: add users table schema (auth stub)"
 - Create: `lib/db/schema/categories.ts`
 
 **Interfaces:**
-- Consumes: `users` da `lib/db/schema/users.ts` (Task 3).
-- Produces: `categories` (tabella), `DEFAULT_CATEGORIES` (array di seed) — usati da `lib/db/seed.ts` (Task 9) e da `transactions`/`budgets` (Task 6-7) come target della FK `category_id`.
+- Consumes: `users` from `lib/db/schema/users.ts` (Task 3).
+- Produces: `categories` (table), `DEFAULT_CATEGORIES` (seed array) — used by `lib/db/seed.ts` (Task 9) and by `transactions`/`budgets` (Tasks 6-7) as the target of the `category_id` FK.
 
-- [ ] **Step 1: Creare `lib/db/schema/categories.ts`**
+- [ ] **Step 1: Create `lib/db/schema/categories.ts`**
 
 ```ts
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -256,12 +256,12 @@ export const DEFAULT_CATEGORIES: { name: string; type: "fissa" | "variabile" }[]
 ];
 ```
 
-- [ ] **Step 2: Verificare che il file compili**
+- [ ] **Step 2: Verify that the file compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 3: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 3: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/schema/categories.ts
@@ -270,7 +270,7 @@ git commit -m "feat: add categories table schema with default seed list"
 
 ---
 
-### Task 5: Enum condiviso + schema `accounts`
+### Task 5: Shared enum + `accounts` schema
 
 **Files:**
 - Create: `lib/db/schema/shared.ts`
@@ -278,9 +278,9 @@ git commit -m "feat: add categories table schema with default seed list"
 
 **Interfaces:**
 - Consumes: `users` (Task 3).
-- Produces: `dataSourceEnum` (usato anche da `transactions`, Task 6), `accounts` (tabella), tipi `Account`/`NewAccount` — usati da `transactions` (Task 6) come target della FK `account_id`.
+- Produces: `dataSourceEnum` (also used by `transactions`, Task 6), `accounts` (table), `Account`/`NewAccount` types — used by `transactions` (Task 6) as the target of the `account_id` FK.
 
-- [ ] **Step 1: Creare `lib/db/schema/shared.ts`**
+- [ ] **Step 1: Create `lib/db/schema/shared.ts`**
 
 ```ts
 import { pgEnum } from "drizzle-orm/pg-core";
@@ -288,7 +288,7 @@ import { pgEnum } from "drizzle-orm/pg-core";
 export const dataSourceEnum = pgEnum("data_source", ["manuale", "auto"]);
 ```
 
-- [ ] **Step 2: Creare `lib/db/schema/accounts.ts`**
+- [ ] **Step 2: Create `lib/db/schema/accounts.ts`**
 
 ```ts
 import { numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -313,12 +313,12 @@ export type Account = typeof accounts.$inferSelect;
 export type NewAccount = typeof accounts.$inferInsert;
 ```
 
-- [ ] **Step 3: Verificare che il file compili**
+- [ ] **Step 3: Verify that the file compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/schema/shared.ts lib/db/schema/accounts.ts
@@ -327,7 +327,7 @@ git commit -m "feat: add accounts table schema"
 
 ---
 
-### Task 6: Schema `transactions` + validazione `excluded_amount` (TDD)
+### Task 6: `transactions` schema + `excluded_amount` validation (TDD)
 
 **Files:**
 - Create: `lib/db/schema/transactions.ts`
@@ -335,11 +335,11 @@ git commit -m "feat: add accounts table schema"
 
 **Interfaces:**
 - Consumes: `users` (Task 3), `accounts`+`dataSourceEnum` (Task 5), `categories` (Task 4).
-- Produces: `transactions` (tabella), tipi `Transaction`/`NewTransaction`, `isValidExcludedAmount(amount: number, excludedAmount: number): boolean` — quest'ultima è la funzione che il piano/spec della schermata Spese (futuro) userà per validare il meccanismo "Dividi" prima di scrivere su DB.
+- Produces: `transactions` (table), `Transaction`/`NewTransaction` types, `isValidExcludedAmount(amount: number, excludedAmount: number): boolean` — the latter is the function that the (future) Spese ("Expenses") screen plan/spec will use to validate the "Dividi" ("Split") mechanism before writing to the DB.
 
-- [ ] **Step 1: Scrivere il test (fallirà: il modulo non esiste ancora)**
+- [ ] **Step 1: Write the test (it will fail: the module does not exist yet)**
 
-Crea `lib/db/schema/transactions.test.ts`:
+Create `lib/db/schema/transactions.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -367,12 +367,12 @@ describe("isValidExcludedAmount", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test transactions.test.ts`
-Expected: FAIL — errore di risoluzione modulo (`lib/db/schema/transactions.ts` non esiste).
+Expected: FAIL — module resolution error (`lib/db/schema/transactions.ts` does not exist).
 
-- [ ] **Step 3: Creare `lib/db/schema/transactions.ts`**
+- [ ] **Step 3: Create `lib/db/schema/transactions.ts`**
 
 ```ts
 import { date, index, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -409,9 +409,9 @@ export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = typeof transactions.$inferInsert;
 
 /**
- * Verifica l'invariante del meccanismo "Dividi": la quota esclusa deve avere
- * lo stesso segno dell'importo (o essere zero) e valore assoluto non superiore.
- * Validazione solo applicativa, nessun CHECK constraint DB (per decisione di spec).
+ * Checks the invariant of the "Dividi" (split) mechanism: the excluded share must have
+ * the same sign as the amount (or be zero) and an absolute value no greater than it.
+ * Application-level validation only, no DB CHECK constraint (per spec decision).
  */
 export function isValidExcludedAmount(amount: number, excludedAmount: number): boolean {
   if (excludedAmount !== 0 && Math.sign(excludedAmount) !== Math.sign(amount)) {
@@ -421,17 +421,17 @@ export function isValidExcludedAmount(amount: number, excludedAmount: number): b
 }
 ```
 
-- [ ] **Step 4: Eseguire il test e verificare che passi**
+- [ ] **Step 4: Run the test and verify that it passes**
 
 Run: `pnpm test transactions.test.ts`
-Expected: PASS, 4 test superati.
+Expected: PASS, 4 tests passed.
 
-- [ ] **Step 5: Verificare che l'intero progetto compili**
+- [ ] **Step 5: Verify that the whole project compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 6: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 6: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/schema/transactions.ts lib/db/schema/transactions.test.ts
@@ -440,7 +440,7 @@ git commit -m "feat: add transactions table schema with excluded-amount validati
 
 ---
 
-### Task 7: Schema `budgets`, barrel, client Drizzle
+### Task 7: `budgets` schema, barrel, Drizzle client
 
 **Files:**
 - Create: `lib/db/schema/budgets.ts`
@@ -448,10 +448,10 @@ git commit -m "feat: add transactions table schema with excluded-amount validati
 - Create: `lib/db/client.ts`
 
 **Interfaces:**
-- Consumes: `users` (Task 3), `categories` (Task 4), tutte le tabelle precedenti (per il barrel).
-- Produces: `budgets` (tabella), tipi `Budget`/`NewBudget`; `lib/db/schema/index.ts` come unico punto di import per lo schema (usato da `drizzle.config.ts`, Task 2, e da tutti i task successivi); `db` (istanza Drizzle) e `client` (connessione postgres.js raw) da `lib/db/client.ts` — usati da `lib/db/migrate.ts` (Task 8), `lib/db/seed.ts` (Task 9), `lib/db/integration.test.ts` (Task 10).
+- Consumes: `users` (Task 3), `categories` (Task 4), all previous tables (for the barrel).
+- Produces: `budgets` (table), `Budget`/`NewBudget` types; `lib/db/schema/index.ts` as the single import point for the schema (used by `drizzle.config.ts`, Task 2, and by all later tasks); `db` (Drizzle instance) and `client` (raw postgres.js connection) from `lib/db/client.ts` — used by `lib/db/migrate.ts` (Task 8), `lib/db/seed.ts` (Task 9), `lib/db/integration.test.ts` (Task 10).
 
-- [ ] **Step 1: Creare `lib/db/schema/budgets.ts`**
+- [ ] **Step 1: Create `lib/db/schema/budgets.ts`**
 
 ```ts
 import { numeric, pgTable, timestamp, unique, uuid } from "drizzle-orm/pg-core";
@@ -479,7 +479,7 @@ export type Budget = typeof budgets.$inferSelect;
 export type NewBudget = typeof budgets.$inferInsert;
 ```
 
-- [ ] **Step 2: Creare il barrel `lib/db/schema/index.ts`**
+- [ ] **Step 2: Create the barrel `lib/db/schema/index.ts`**
 
 ```ts
 export * from "./shared";
@@ -490,7 +490,7 @@ export * from "./transactions";
 export * from "./budgets";
 ```
 
-- [ ] **Step 3: Creare `lib/db/client.ts`**
+- [ ] **Step 3: Create `lib/db/client.ts`**
 
 ```ts
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -507,12 +507,12 @@ export const client = postgres(connectionString, { ssl: "require" });
 export const db = drizzle(client, { schema });
 ```
 
-- [ ] **Step 4: Verificare che il progetto compili**
+- [ ] **Step 4: Verify that the project compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 5: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 5: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/schema/budgets.ts lib/db/schema/index.ts lib/db/client.ts
@@ -521,22 +521,22 @@ git commit -m "feat: add budgets table schema, schema barrel, and Drizzle client
 
 ---
 
-### Task 8: Generare e applicare la migration su Neon
+### Task 8: Generate and apply the migration on Neon
 
 **Files:**
-- Create: `lib/db/migrations/` (generato da `drizzle-kit generate`, contenuto esatto non prevedibile in anticipo)
+- Create: `lib/db/migrations/` (generated by `drizzle-kit generate`, exact content not predictable in advance)
 - Create: `lib/db/migrate.ts`
 
 **Interfaces:**
 - Consumes: `lib/db/schema/index.ts` (Task 7), `DATABASE_URL` (Task 1).
-- Produces: le 5 tabelle create realmente sul Postgres Neon di sviluppo — precondizione per `lib/db/seed.ts` (Task 9) e `lib/db/integration.test.ts` (Task 10).
+- Produces: the 5 tables actually created on the development Neon Postgres — precondition for `lib/db/seed.ts` (Task 9) and `lib/db/integration.test.ts` (Task 10).
 
-- [ ] **Step 1: Generare i file di migration dallo schema**
+- [ ] **Step 1: Generate the migration files from the schema**
 
 Run: `pnpm db:generate`
-Expected: output che conferma la creazione di un file SQL sotto `lib/db/migrations/` (es. `0000_<nome_casuale>.sql`), con 5 statement `CREATE TABLE` (`users`, `categories`, `accounts`, `transactions`, `budgets`) più i tipi enum.
+Expected: output confirming the creation of a SQL file under `lib/db/migrations/` (e.g. `0000_<nome_casuale>.sql`), with 5 `CREATE TABLE` statements (`users`, `categories`, `accounts`, `transactions`, `budgets`) plus the enum types.
 
-- [ ] **Step 2: Creare `lib/db/migrate.ts`**
+- [ ] **Step 2: Create `lib/db/migrate.ts`**
 
 ```ts
 import { migrate } from "drizzle-orm/postgres-js/migrator";
@@ -567,12 +567,12 @@ main()
   });
 ```
 
-- [ ] **Step 3: Applicare la migration a Neon e verificare che le tabelle esistano davvero**
+- [ ] **Step 3: Apply the migration to Neon and verify that the tables really exist**
 
 Run: `pnpm db:migrate`
-Expected: stampa `Tabelle presenti: [ 'accounts', 'budgets', 'categories', 'transactions', 'users' ]` seguito da `Migration completate.`, senza errori.
+Expected: prints `Tabelle presenti: [ 'accounts', 'budgets', 'categories', 'transactions', 'users' ]` followed by `Migration completate.`, with no errors.
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/migrations lib/db/migrate.ts
@@ -581,16 +581,16 @@ git commit -m "feat: generate and apply initial database migration"
 
 ---
 
-### Task 9: Script di seed (utente dev + categorie)
+### Task 9: Seed script (dev user + categories)
 
 **Files:**
 - Create: `lib/db/seed.ts`
 
 **Interfaces:**
-- Consumes: `db`, `client` (Task 7), `users`, `categories`, `DEFAULT_CATEGORIES` (Task 3-4), tabelle reali su Neon (Task 8).
-- Produces: una riga `users` e 8 righe `categories` reali su Neon — precondizione utile (non obbligatoria) per `lib/db/integration.test.ts` (Task 10), che comunque crea il proprio utente di test indipendente.
+- Consumes: `db`, `client` (Task 7), `users`, `categories`, `DEFAULT_CATEGORIES` (Tasks 3-4), real tables on Neon (Task 8).
+- Produces: one `users` row and 8 real `categories` rows on Neon — a useful (not mandatory) precondition for `lib/db/integration.test.ts` (Task 10), which creates its own independent test user anyway.
 
-- [ ] **Step 1: Creare `lib/db/seed.ts`**
+- [ ] **Step 1: Create `lib/db/seed.ts`**
 
 ```ts
 import { client, db } from "./client";
@@ -622,12 +622,12 @@ seed().catch((error) => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il seed e verificare l'esito**
+- [ ] **Step 2: Run the seed and check the result**
 
 Run: `pnpm db:seed`
-Expected: output `Utente dev creato: <uuid>` seguito da `Categorie create: 8`, senza errori.
+Expected: output `Utente dev creato: <uuid>` followed by `Categorie create: 8`, with no errors.
 
-- [ ] **Step 3: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 3: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/seed.ts
@@ -636,20 +636,20 @@ git commit -m "feat: add dev seed script for a user and default categories"
 
 ---
 
-### Task 10: Test di integrazione end-to-end
+### Task 10: End-to-end integration test
 
 **Files:**
 - Test: `lib/db/integration.test.ts`
 
 **Interfaces:**
-- Consumes: `db`, `users`, `categories`, `accounts`, `transactions`, `budgets`, `isValidExcludedAmount` (tutti i task precedenti).
-- Produces: nessuna nuova interfaccia — è la verifica finale che l'intero schema funziona insieme contro un Postgres reale.
+- Consumes: `db`, `users`, `categories`, `accounts`, `transactions`, `budgets`, `isValidExcludedAmount` (all previous tasks).
+- Produces: no new interface — it is the final check that the whole schema works together against a real Postgres.
 
-- [ ] **Step 1: Scrivere il test**
+- [ ] **Step 1: Write the test**
 
-Questo test non segue lo schema "rosso poi verde": lo schema e il client sono già stati implementati nei Task 3-7, quindi non c'è codice di produzione mancante da scrivere dopo. Il suo scopo è verificare che tutti i pezzi funzionino insieme contro un Postgres reale (compreso il comportamento `onDelete: cascade`), non guidare una nuova implementazione.
+This test does not follow the "red then green" pattern: the schema and client were already implemented in Tasks 3-7, so there is no missing production code to write afterwards. Its purpose is to verify that all the pieces work together against a real Postgres (including the `onDelete: cascade` behavior), not to drive a new implementation.
 
-Crea `lib/db/integration.test.ts`:
+Create `lib/db/integration.test.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -753,17 +753,17 @@ describe("modello dati base — round trip end-to-end", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che passi**
+- [ ] **Step 2: Run the test and verify that it passes**
 
 Run: `pnpm test integration.test.ts`
-Expected: PASS, 2 test superati, nessun errore di connessione a Neon.
+Expected: PASS, 2 tests passed, no connection errors to Neon.
 
-- [ ] **Step 3: Eseguire l'intera suite di test del progetto**
+- [ ] **Step 3: Run the project's whole test suite**
 
 Run: `pnpm test`
-Expected: PASS, tutti i test (unit `transactions.test.ts` + integration `integration.test.ts`) superati.
+Expected: PASS, all tests (unit `transactions.test.ts` + integration `integration.test.ts`) passed.
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/integration.test.ts
@@ -772,10 +772,10 @@ git commit -m "test: add end-to-end integration test for the base data model"
 
 ---
 
-## Fuori scope di questo piano (rimandato consapevolmente, vedi anche lo spec)
+## Out of scope for this plan (consciously deferred, see also the spec)
 
-- **UI, API, autenticazione vera**: questo piano produce solo lo schema dati.
-- **Storicizzazione budget per mese, categorie personalizzabili, multi-valuta per riga**: fuori scope come da spec.
-- **CHECK constraint DB per `excluded_amount`**: solo validazione applicativa (`isValidExcludedAmount`) per ora.
-- **Wiring della validazione negli insert/update reali**: `isValidExcludedAmount` è esportata e testata, ma non ancora usata da un layer di servizio/API (non esiste ancora) — sarà responsabilità dello spec della schermata Spese.
-- **Deploy in produzione**: il piano infra (`docs/superpowers/plans/2026-07-03-infra-foundation.md`) resta in pausa; Neon qui è usato solo per lo sviluppo.
+- **UI, API, real authentication**: this plan only produces the data schema.
+- **Per-month budget history, customizable categories, per-row multi-currency**: out of scope as per the spec.
+- **DB CHECK constraint for `excluded_amount`**: only application-level validation (`isValidExcludedAmount`) for now.
+- **Wiring the validation into real inserts/updates**: `isValidExcludedAmount` is exported and tested, but not yet used by a service/API layer (which does not exist yet) — that will be the responsibility of the Spese ("Expenses") screen spec.
+- **Production deploy**: the infra plan (`docs/superpowers/plans/2026-07-03-infra-foundation.md`) remains paused; Neon is used here for development only.

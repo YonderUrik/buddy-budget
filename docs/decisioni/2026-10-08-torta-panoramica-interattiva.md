@@ -1,8 +1,8 @@
-# Torta del patrimonio in Panoramica: etichette sobrie e interazione
+# Net worth pie in Panoramica (Overview): restrained labels and interaction
 
-- La scritta al centro della torta era troppo grande rispetto al resto della pagina: ora è più piccola (`text-2xl` + `text-xs`), con le stesse classi tipografiche delle righe accanto.
-- Al passaggio del mouse (o al focus sulla riga) la fetta si evidenzia, le altre si attenuano e il centro mostra nome, importo e quota. Al clic/tocco la fetta resta bloccata (secondo clic la sblocca): su touch non c'è hover, quindi il tocco è l'unico modo per leggere i numeri.
-- La legenda a fianco è più leggera: righe separate da linee sottili invece di riquadri, importi in corpo piccolo, freccia attenuata.
-- Torta e righe sono collegate nei due sensi; le righe restano link alle sezioni, nessun filtro né navigazione dalla fetta.
-- Il componente `NetWorthCompositionRow` è usato solo da Panoramica (la torta di Movimenti > Analisi è un altro componente, invariato).
-- Evento Umami `overview_composition_slice_selected` (solo classe di asset) al blocco di una fetta. Nessuna nuova API, metrica o dipendenza.
+- The label in the centre of the pie was too large compared with the rest of the page: it is now smaller (`text-2xl` + `text-xs`), with the same typographic classes as the rows beside it.
+- On mouse hover (or focus on the row) the slice is highlighted, the others dim and the centre shows name, amount and share. On click/tap the slice stays locked (a second click unlocks it): on touch there is no hover, so tapping is the only way to read the numbers.
+- The legend beside it is lighter: rows separated by thin lines instead of boxes, amounts in small type, dimmed arrow.
+- Pie and rows are linked both ways; the rows remain links to the sections, no filter or navigation from the slice.
+- The `NetWorthCompositionRow` component is used only by the Panoramica (the pie in Movimenti > Analisi is another component, unchanged).
+- Umami event `overview_composition_slice_selected` (asset class only) when a slice is locked. No new API, metric or dependency.

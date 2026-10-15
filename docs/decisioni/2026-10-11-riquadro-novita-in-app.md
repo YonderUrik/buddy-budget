@@ -1,10 +1,10 @@
-# Striscia «Novità» in app
+# In-app «Novità» ("What's new") strip
 
-Data: 2026-10-11
+Date: 2026-10-11
 
-- **Decisione**: le novità si annunciano con un riquadro nella Panoramica (una voce alla volta, chiudibile), non con un'email a tutti: l'email promozionale richiede una base giuridica e un testo privacy dedicati, da vedere con un professionista. La bozza `featureAnnouncementEmail` resta in repo, non collegata a nessun invio.
-- **Curato a mano**: `lib/whats-new/entries.ts` contiene solo le funzioni che meritano una voce, non ogni release. Una voce smette di comparire dopo 45 giorni; la chiusura si ricorda per dispositivo (localStorage).
-- **Perché localStorage**: evita una migration e una richiesta in più; il limite è che chi cambia dispositivo la rivede.
-- **Rimandato**: chiusura legata all'account, pagina con l'elenco di tutte le novità, voce nella sidebar, annuncio via email con preferenza dedicata.
-- **Landing**: nessun impatto. **Prestazioni**: nessun JS pesante aggiunto, nessuna immagine; la striscia compare dopo l'idratazione e prima dei dati, quindi senza salti.
-- **Aggiornamento**: dopo il primo giro la voce è diventata una striscia di una riga (senza immagine né testo lungo; la spiegazione è nel `title` del link) per essere poco invasiva. Rimandato: voce nella sidebar o pagina con tutte le novità.
+- **Decision**: new features are announced with a panel in the Panoramica (one item at a time, dismissible), not with an email to everyone: the promotional email requires a dedicated legal basis and privacy text, to be reviewed with a professional. The `featureAnnouncementEmail` draft stays in the repo, not wired to any sending.
+- **Hand-curated**: `lib/whats-new/entries.ts` contains only the features that deserve an item, not every release. An item stops appearing after 45 days; dismissal is remembered per device (localStorage).
+- **Why localStorage**: it avoids a migration and an extra request; the limit is that whoever changes device sees it again.
+- **Postponed**: dismissal tied to the account, page listing all what's-new items, sidebar item, email announcement with a dedicated preference.
+- **Landing**: no impact. **Performance**: no heavy JS added, no images; the strip appears after hydration and before the data, so without shifts.
+- **Update**: after the first round the item became a one-line strip (no image or long text; the explanation is in the link's `title`) to be unobtrusive. Postponed: sidebar item or page with all what's-new items.

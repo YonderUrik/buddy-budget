@@ -1,68 +1,68 @@
-# Import Interactive Brokers
+# Interactive Brokers import
 
-## Comportamento
+## Behavior
 
-Importare Activity Statement CSV inglesi completi, consecutivi e in ordine cronologico, iniziando dal periodo con saldi iniziali nulli. Il server rilegge il CSV: modificare le operazioni nella richiesta non modifica i dati importati. Ogni conto del broker ha un portafoglio dedicato e un conto di liquidità, anche negativo. Il saldo del conto usa la cassa del NAV alla data di chiusura, convertita nella valuta utente.
+Import complete, consecutive English Activity Statement CSVs in chronological order, starting from the period with zero opening balances. The server re-reads the CSV: changing the transactions in the request does not change the imported data. Each broker account has a dedicated portfolio and a cash account, which may be negative. The account balance uses the NAV cash at the closing date, converted into the user's currency.
 
-Sono conservati tutti i record originali, incluse le sezioni non normalizzate, nell'export dell'account. Rendiconti mostra NAV, posizioni, costo/P&L comunicati dal broker e movimenti di cassa in valuta originale. Depositi e trasferimenti di valuta non diventano entrate di budget; commissioni già incluse nei trade non vengono addebitate due volte.
+All original records, including non-normalized sections, are kept in the account export. Rendiconti ("Statements") shows NAV, positions, cost/P&L reported by the broker and cash movements in the original currency. Deposits and currency transfers do not become budget income; commissions already included in trades are not charged twice.
 
-La corrispondenza di cassa, quantità e periodi è necessaria prima del salvataggio atomico. Lock per utente e impronta del documento impediscono duplicati anche con richieste concorrenti. Un nuovo CSV sostituisce atomicamente i rendiconti che copre interamente; anteprima e conferma mostrano periodi e operazioni sostituiti. Sovrapposizioni parziali richiedono un export più ampio. Eventuali rendiconti successivi sono conservati solo se cassa e posizioni restano riconciliate. Un errore ripristina integralmente i dati precedenti. Le operazioni del portafoglio riconciliato non si modificano/eliminano singolarmente.
+Cash, quantity and period matching is required before the atomic save. A per-user lock and the document fingerprint prevent duplicates even with concurrent requests. A new CSV atomically replaces the statements it fully covers; preview and confirmation show the replaced periods and transactions. Partial overlaps require a wider export. Any later statements are kept only if cash and positions remain reconciled. An error fully restores the previous data. Transactions of the reconciled portfolio cannot be edited/deleted individually.
 
-## Gestione importazioni
+## Import management
 
-Da Operazioni → Gestisci importazioni: elenco per periodo, conto e data di caricamento; aggiornamento mediante nuovo CSV e cancellazione con conferma esplicita. La cancellazione di un periodo include i successivi dello stesso conto, perché dipendono dallo storico: l'elenco esatto è verificato nuovamente sul server sotto lock. Saldi e operazioni si aggiornano nella stessa transazione. La liquidità torna al precedente rendiconto o a zero; il conto vuoto, il catalogo e i prezzi storici restano disponibili. Il collegamento conto–portafoglio è persistente, quindi reimportare dopo una cancellazione riusa il conto di liquidità. Nessun dato di altri utenti o conti viene eliminato. Gli import generici precedenti non hanno metadati di batch e restano nella scheda Operazioni.
+From Operazioni ("Transactions") → Gestisci importazioni ("Manage imports"): list by period, account and upload date; update via a new CSV and deletion with explicit confirmation. Deleting a period includes the later ones of the same account, because they depend on the history: the exact list is verified again on the server under lock. Balances and transactions are updated in the same database transaction. Cash goes back to the previous statement or to zero; the empty account, the catalog and historical prices remain available. The account–portfolio link is persistent, so reimporting after a deletion reuses the cash account. No data of other users or accounts is deleted. Earlier generic imports have no batch metadata and remain in the Operazioni tab.
 
-## Identità e operazioni sul capitale
+## Identity and corporate actions
 
-Il cambio di ISIN presente nel rendiconto risolve gli alias nella stessa identità. ISIN e valuta vengono dal broker, senza scegliere automaticamente una diversa quotazione Yahoo. Gli strumenti manuali sono privati; gli indici distinguono utente e valuta. Si salvano prezzi di chiusura anche per posizioni senza trade nell'ultimo periodo.
+An ISIN change present in the statement resolves the aliases into the same identity. ISIN and currency come from the broker, without automatically choosing a different Yahoo listing. Manual instruments are private; the indexes distinguish user and currency. Closing prices are saved even for positions without trades in the last period.
 
-Per uno spinoff interamente ceduto nello stesso rendiconto, la somma delle basi delle vendite trasferisce base e quote dal titolo originario al nuovo titolo con rettifiche non monetarie. Se quantità o base non sono ricostruibili, l'import si blocca e chiede il dettaglio dei lotti. Altre operazioni sul capitale non supportate bloccano l'import.
+For a spinoff fully sold within the same statement, the sum of the sales' cost bases transfers basis and shares from the original security to the new security via non-monetary adjustments. If quantity or basis cannot be reconstructed, the import is blocked and asks for the lot detail. Other unsupported corporate actions block the import.
 
-## Limiti espliciti e lavoro futuro
+## Explicit limits and future work
 
-- Le fotografie IBKR sono valori storici esatti del file, non quotazioni correnti. Gli strumenti nuovi hanno prezzi manuali dal rendiconto; il collegamento a una fonte di quotazioni è successivo.
-- Costo medio e stime fiscali dell'app non sono il motore fiscale a lotti di IBKR. Revisioni retroattive della base di costo non spiegate dai movimenti sono conservate nei report, non inventate nel registro. Per equivalenza fiscale serve un export dei lotti/corporate actions.
-- La migrazione di precedenti import generici richiede un flusso dedicato. Non importare nuovamente lo stesso storico in un portafoglio generico, per evitare doppi conteggi complessivi.
-- Un file solo cassa, senza operazioni su titoli, non è ancora gestito dal wizard esistente.
+- IBKR snapshots are the file's exact historical values, not current quotes. New instruments have manual prices from the statement; linking them to a quote source comes later.
+- The app's average cost and tax estimates are not IBKR's lot-based tax engine. Retroactive cost-basis revisions not explained by the movements are kept in the reports, not invented in the ledger. Tax equivalence requires an export of lots/corporate actions.
+- Migrating earlier generic imports requires a dedicated flow. Do not import the same history again into a generic portfolio, to avoid double counting overall.
+- A cash-only file, without securities transactions, is not yet handled by the existing wizard.
 
-## Verifica
+## Verification
 
-Test di parsing, contabilità e integrazione PostgreSQL coprono anteprima senza scritture, serie consecutive, saldi/prezzi, duplicati concorrenti, isolamento utenti, input manomesso, sovrapposizioni e dati incoerenti. Fixture complete anonimizzate e CSV sintetici riconciliati in `lib/investments/import/__fixtures__`.
+Parsing, accounting and PostgreSQL integration tests cover preview without writes, consecutive series, balances/prices, concurrent duplicates, user isolation, tampered input, overlaps and inconsistent data. Complete anonymized fixtures and reconciled synthetic CSVs are in `lib/investments/import/__fixtures__`.
 
-Verifica locale sulle quattro esportazioni autorizzate: 134 operazioni (comprese due rettifiche), quattro documenti, nessun duplicato al secondo import. Risultati e dati personali solo nella directory ignorata `test-results/ibkr-replay`. Typecheck e lint senza errori; 111 test mirati superati. La suite completa ha rilevato un test del logger preesistente che cerca la stringa `mario` nello stack e intercetta il percorso locale del checkout; il fallimento del test parser emerso nello stesso run è stato corretto e riverificato nella suite mirata.
+Local verification on the four authorized exports: 134 transactions (including two adjustments), four documents, no duplicates on the second import. Results and personal data only in the ignored directory `test-results/ibkr-replay`. Typecheck and lint without errors; 111 targeted tests passed. The full suite flagged a pre-existing logger test that looks for the string `mario` in the stack and catches the local checkout path; the parser test failure that emerged in the same run was fixed and re-verified in the targeted suite.
 
-Verifica aggiuntiva gestione importazioni: 13 test di integrazione coprono sostituzioni YTD, più periodi coperti, import concorrenti, rollback dopo errore di scrittura, periodi successivi, conferme obsolete, isolamento utente/conto e cancellazione–reimport con riuso della liquidità. Flussi browser verificati con CSV sintetici; i quattro import personali non sono stati modificati.
+Additional import management verification: 13 integration tests cover YTD replacements, multiple covered periods, concurrent imports, rollback after a write error, later periods, stale confirmations, user/account isolation and delete–reimport reusing the cash account. Browser flows verified with synthetic CSVs; the four personal imports were not modified.
 
-## Osservabilità e rilascio
+## Observability and release
 
-Le API usano `withRoute`; import riuscito: `investments.import.completed`, conteggio inserimenti; gli errori di riconciliazione sono risposte 422, senza salvare movimenti. Il wizard mantiene l'evento Umami di import esistente; cancellazione osservabile con log `investments.import.deleted` e Umami `investments_import_deleted` (solo conteggi). Nessun nuovo job/cron/metrica. La deroga sincrona esistente resta: transazione locale breve, storico prezzi in background; la disponibilità dei cambi può richiedere un primo recupero.
+The APIs use `withRoute`; successful import: `investments.import.completed`, insert count; reconciliation errors are 422 responses, without saving movements. The wizard keeps the existing import Umami event; deletion is observable via the `investments.import.deleted` log and the Umami `investments_import_deleted` event (counts only). No new job/cron/metric. The existing synchronous exception remains: short local transaction, price history in the background; exchange rate availability may require an initial fetch.
 
-Catalogo funzioni, copia landing e otto screenshot delle schede investimenti aggiornati usando esclusivamente il database demo sintetico. Prima del rilascio applicare le migration versionate; nessuna modifica a produzione eseguita durante questa verifica locale.
+Feature catalog, landing copy and eight screenshots of the investment tabs updated using only the synthetic demo database. Before the release, apply the versioned migrations; no change to production was made during this local verification.
 
-### Gestione importazioni in Operazioni
+### Import management in Operazioni
 
-La gestione dei CSV importati è nella scheda Operazioni, in «Gestisci importazioni» (sezione espandibile chiusa inizialmente) sopra l’elenco delle transazioni, anche quando non ci sono operazioni. La scheda Rendiconti e il suo riepilogo nel Portafoglio sono stati rimossi; i vecchi link reindirizzano a Operazioni. Lo storico dei documenti e le funzioni di sostituzione e cancellazione restano disponibili senza modificare i dati salvati.
+Management of imported CSVs is in the Operazioni tab, in «Gestisci importazioni» ("Manage imports", an expandable section initially collapsed) above the transaction list, even when there are no transactions. The Rendiconti tab and its summary in the Portfolio were removed; old links redirect to Operazioni. The document history and the replace and delete functions remain available without changing the saved data.
 
-## Riparti da zero dopo import preesistenti
+## Start over after pre-existing imports
 
-Da **Operazioni → Gestisci importazioni → Rimuovi tutti gli import e azzera gli investimenti**, il riepilogo mostra quante operazioni, rendiconti, prezzi personali e conti broker saranno interessati. È obbligatorio digitare `AZZERA INVESTIMENTI`. I vecchi CSV non avevano una provenienza: per rimuovere anche quei duplicati il reset elimina **tutte** le operazioni di investimento, incluse quelle manuali e di altri CSV. Non è un reset dell'intero account.
+From **Operazioni → Gestisci importazioni → Rimuovi tutti gli import e azzera gli investimenti** ("Remove all imports and reset investments"), the summary shows how many transactions, statements, personal prices and broker accounts will be affected. Typing `AZZERA INVESTIMENTI` is mandatory. Old CSVs had no provenance: to also remove those duplicates, the reset deletes **all** investment transactions, including manual ones and those from other CSVs. It is not a reset of the whole account.
 
-Il server verifica l'impronta dei dati mostrati e rifiuta conferme obsolete. Reset atomico con lo stesso lock degli import; niente conversioni o richieste esterne. Rimuove anche gli snapshot della classe investimenti (compreso oggi), azzera solo i conti cassa esplicitamente collegati e aggiorna il totale liquidità di oggi. Conserva portafogli, associazioni ai conti cassa, strumenti, prezzi condivisi, impostazioni e minusvalenze inserite a mano. I precedenti snapshot aggregati della liquidità non vengono riscritti: non contengono la quota attribuibile al singolo broker.
+The server verifies the fingerprint of the data shown and rejects stale confirmations. Atomic reset with the same lock as the imports; no conversions or external requests. It also removes the snapshots of the investments class (including today), resets only the explicitly linked cash accounts and updates today's total cash. It keeps portfolios, cash account associations, instruments, shared prices, settings and manually entered minusvalenze (capital losses). Earlier aggregated cash snapshots are not rewritten: they do not contain the share attributable to the individual broker.
 
-Dopo il reset reimportare lo storico completo, dal periodo più vecchio al più recente. Banche e relativi movimenti, budget, debiti e pensioni non sono eliminati. Nessuna migration necessaria. Log `investments.import.reset_completed`/`reset_conflict` e evento Umami `investments_import_reset`, solo conteggi; nessuna nuova metrica o dipendenza. Controllare zero operazioni dopo il reset e un solo inserimento per riga al primo reimport. Schermata di gestione fuori dal tour landing; aggiornato il catalogo, nessun cambiamento alle schermate pubblicate.
+After the reset, reimport the full history, from the oldest period to the most recent. Banks and their movements, budgets, debts and pensions are not deleted. No migration needed. Logs `investments.import.reset_completed`/`reset_conflict` and Umami event `investments_import_reset`, counts only; no new metric or dependency. Check zero transactions after the reset and a single insert per row on the first reimport. The management screen is outside the landing tour; catalog updated, no change to the published screens.
 
-## Selezione multipla dei rendiconti
+## Multiple statement selection
 
-Il selettore e il trascinamento accettano fino a 20 file, 5 MB ciascuno e 25 MB complessivi. Tutti i file devono essere rendiconti completi IBKR o DEGIRO; altri CSV restano supportati singolarmente. Prima di iniziare la coda vengono letti e controllati tutti i file, segnalando il nome di quello non valido.
+The picker and drag-and-drop accept up to 20 files, 5 MB each and 25 MB in total. All files must be complete IBKR or DEGIRO statements; other CSVs remain supported one at a time. Before the queue starts, all files are read and checked, reporting the name of the invalid one.
 
-La coda ordina gli estratti IBKR per conto e periodo, poi DEGIRO (per consentire l'uso del portafoglio IBKR appena creato). Ogni rendiconto mantiene abbinamento strumenti, anteprima e conferma; «File successivo» prosegue senza dover selezionare nuovamente i file. Duplicati già presenti possono essere saltati. Ogni import è atomico separatamente: interrompere il dialogo conserva i file già completati, e una nuova selezione degli stessi file è idempotente. Non è un job in background né una transazione unica sull'intera selezione.
+The queue sorts IBKR statements by account and period, then DEGIRO (to allow using the IBKR portfolio just created). Each statement keeps instrument matching, preview and confirmation; «File successivo» ("Next file") continues without having to select the files again. Duplicates already present can be skipped. Each import is atomic on its own: interrupting the dialog keeps the files already completed, and a new selection of the same files is idempotent. It is neither a background job nor a single transaction over the whole selection.
 
-## Selezionare i broker
+## Selecting brokers
 
-Nelle schede Investimenti, i controlli «Broker inclusi nel portafoglio» consentono di vedere IBKR, DEGIRO o entrambi, senza modificare i dati salvati. La selezione si applica a totali, posizioni, performance (inclusa heatmap), diversificazione, proventi, stime fiscali e operazioni. Restano disponibili rendiconti, gestione importazioni e catalogo titoli completi. Il patrimonio generale, i conti e la sidebar restano riferiti a tutti gli asset. Il filtro è temporaneo, si mantiene cambiando scheda e si azzera ricaricando o lasciando la sezione.
+In the Investimenti ("Investments") tabs, the «Broker inclusi nel portafoglio» ("Brokers included in the portfolio") controls let you view IBKR, DEGIRO or both, without changing the saved data. The selection applies to totals, positions, performance (including the heatmap), diversification, income, tax estimates and transactions. Full statements, import management and the securities catalog remain available. Overall net worth, accounts and the sidebar still refer to all assets. The filter is temporary, persists when switching tabs and resets on reload or when leaving the section.
 
-Verifica: due broker nello stesso portafoglio/strumento, esclusione e riattivazione, nessun broker selezionato, persistenza tra schede, assenza di mutazioni dei dati originali. Evento `investment_broker_filter_changed`, solo azioni/conteggi. Nessuna nuova dipendenza o metrica server. Catalogo landing sincronizzato; i dati demo del tour non hanno fonti broker, quindi le schermate pubblicate restano invariate.
+Verification: two brokers in the same portfolio/instrument, exclusion and re-enabling, no broker selected, persistence across tabs, no mutation of the original data. Event `investment_broker_filter_changed`, actions/counts only. No new dependency or server metric. Landing catalog synced; the tour's demo data has no broker sources, so the published screens remain unchanged.
 
-### Liquidità nella vista Investimenti
+### Cash in the Investimenti view
 
-La card Portafoglio offre «Includi liquidità», attivo inizialmente: acceso mostra titoli + saldo dei conti broker collegati, spento solo titoli. La card mostra solo il riepilogo titoli/liquidità, senza dettaglio dei conti broker o date dei rendiconti. I filtri broker agiscono su entrambi; i saldi negativi riducono il totale. Ogni conto viene contato una sola volta, anche con più rendiconti o collegamenti precedenti. Il patrimonio generale include già questi conti nella liquidità e non viene modificato. Grafici, rendimenti e pesi delle posizioni continuano a riferirsi ai soli titoli.
+The Portfolio card offers «Includi liquidità» ("Include cash"), initially on: on shows securities + balance of the linked broker accounts, off shows securities only. The card shows only the securities/cash summary, without detail of the broker accounts or statement dates. The broker filters act on both; negative balances reduce the total. Each account is counted only once, even with multiple statements or earlier links. Overall net worth already includes these accounts in cash and is not changed. Charts, returns and position weights continue to refer to securities only.

@@ -1,10 +1,10 @@
-# Landing: nuova struttura e visibilità negli assistenti AI
+# Landing: new structure and visibility in AI assistants
 
-Data: 2026-10-09
+Date: 2026-10-09
 
-Dall'analisi dei competitor (Claude Doc «Landing page: analisi competitor e piano SEO», thread del 2026-10-09: YNAB, Monarch, Copilot, Wealthfolio, getquin, Finary, Moneyfarm e altri aperti direttamente) la home passa a: apertura con fatti verificabili e Panoramica vera che si raddrizza scorrendo, tre passi, le domande, «Le regole italiane, già nei conti» (6 regole con fonte e calcolatore), il metodo dei quattro gruppi con un mese d'esempio, funzioni, sicurezza, «Per chi è, e per chi no», confronto con foglio di calcolo e app di sole spese (tabella HTML vera), FAQ, chiusura. Testi in `landing/content/home.ts`; icone lucide come nell'app.
-Per gli assistenti AI: `/llms.txt` generato a ogni build dalle stesse fonti della pagina (`content/llms.ts`) e crawler AI ammessi per nome in `robots.txt`.
-Scelte: nessuna recensione, numero di utenti o promessa di risparmio finché non ci sono dati veri; la sezione dei calcolatori confluisce nelle regole italiane.
-Aperto (fasi successive, vedi il documento): una pagina per ogni domanda, pagina `/sicurezza`, confronti, glossario fiscale, pagine funzione Pensione e Debiti, changelog pubblico; misura Lighthouse.
+From the competitor analysis (Claude Doc «Landing page: analisi competitor e piano SEO», thread of 2026-10-09: YNAB, Monarch, Copilot, Wealthfolio, getquin, Finary, Moneyfarm and others opened directly) the home page becomes: opening with verifiable facts and a real Panoramica that straightens as you scroll, three steps, the questions, «Le regole italiane, già nei conti» ("The Italian rules, already in the numbers": 6 rules with source and calculator), the four-groups method with a sample month, features, security, «Per chi è, e per chi no» ("Who it's for, and who it isn't"), comparison with a spreadsheet and spending-only apps (real HTML table), FAQ, closing. Copy in `landing/content/home.ts`; lucide icons as in the app.
+For AI assistants: `/llms.txt` generated at every build from the same sources as the page (`content/llms.ts`) and AI crawlers allowed by name in `robots.txt`.
+Choices: no reviews, user counts or savings promises until there are real data; the calculators section merges into the Italian rules.
+Open (later phases, see the document): one page per question, `/sicurezza` page, comparisons, tax glossary, feature pages for Pensione and Debiti, public changelog; Lighthouse measurement.
 
-Pagine interne allineate alla home: un solo menu (`SiteNav`) su tutte le pagine, «Tutte le funzioni» per area con icona, ritaglio dell'app e schede (tutto il catalogo nell'HTML, non più una scheda alla volta), icone tinte e avviso fiscale in fondo nelle pagine di contenuto, galleria delle schermate con le schede sopra l'immagine. Privacy, Termini, Cookie e 404 cambiano solo nel menu.
+Inner pages aligned with the home: a single menu (`SiteNav`) on all pages, «Tutte le funzioni» ("All features") by area with icon, app crop and cards (the whole catalog in the HTML, no longer one card at a time), tinted icons and tax notice at the bottom of content pages, screen gallery with the tabs above the image. Privacy, Terms, Cookies and 404 change only in the menu.

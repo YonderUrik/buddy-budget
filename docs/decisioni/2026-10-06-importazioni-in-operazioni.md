@@ -1,9 +1,9 @@
-# Gestione importazioni nella scheda Operazioni
+# Import management in the Operazioni (Operations) tab
 
-Data: 2026-10-06
+Date: 2026-10-06
 
-Rimossa la scheda Rendiconti e il riepilogo broker dalla pagina Portafoglio su richiesta dell’utente.
-Gestisci importazioni è ora in una sezione espandibile, chiusa inizialmente, dentro Operazioni, fuori dal controllo dello stato vuoto: resta disponibile anche senza transazioni.
-I vecchi indirizzi Rendiconti e Importazioni reindirizzano a Operazioni; i dati importati e le API restano invariati.
-La visualizzazione separata dei saldi e dei rendiconti viene rimossa; nessuna cancellazione dello storico salvato.
-PR indipendente da #148, basata su main. Catalogo landing aggiornato e schermate Investimenti rigenerate con dati demo.
+Removed the Rendiconti (Statements) tab and the broker summary from the Portfolio page at the user's request.
+Gestisci importazioni ("Manage imports") is now in an expandable section, collapsed by default, inside Operazioni, outside the empty-state check: it remains available even without transactions.
+The old Rendiconti and Importazioni addresses redirect to Operazioni; imported data and APIs are unchanged.
+The separate view of balances and statements is removed; no deletion of the saved history.
+PR independent from #148, based on main. Landing catalog updated and Investimenti screens regenerated with demo data.

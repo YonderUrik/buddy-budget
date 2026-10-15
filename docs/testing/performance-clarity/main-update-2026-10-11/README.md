@@ -1,16 +1,16 @@
-# Aggiornamento a main — 11 ottobre 2026
+# Update to main — October 11, 2026
 
-Base integrata: `8150dfb` (scroll unico e correzione overflow mobile).
+Integrated base: `8150dfb` (single scroll and mobile overflow fix).
 
-Manteniamo PanelSection, layout desktop 3/5 + 2/5, scala del rischio, heatmap aperta e dialog standard di main. Non ripristiniamo il confronto broker rimosso da main. Su mobile i rendimenti rimangono in due colonne, i popover diventano fogli dal basso e i benchmark usano il form dialog a tutto schermo.
+We keep PanelSection, the desktop 3/5 + 2/5 layout, the risk scale, the open heatmap and main's standard dialogs. We do not restore the broker comparison removed from main. On mobile the returns stay in two columns, popovers become bottom sheets and benchmarks use the full-screen form dialog.
 
-Verifica Chrome sull’app reale e database demo isolato:
-- desktop 1440×726, chiaro/scuro;
-- mobile 390×844: larghezza documento 390 px, nessun overflow; popup largo 390 px e ancorato al fondo;
-- salvataggio MSCI World dai suggerimenti e successivo aggiornamento dei prezzi;
-- anteprima grafico al 28 agosto e trascinamento 24 luglio–21 settembre;
-- ripristino del periodo, coerenza delle date di rischio e heatmap.
+Chrome check on the real app and isolated demo database:
+- desktop 1440×726, light/dark;
+- mobile 390×844: document width 390 px, no overflow; popup 390 px wide and anchored to the bottom;
+- saving MSCI World from the suggestions and subsequent price update;
+- chart preview at August 28 and drag July 24–September 21;
+- period reset, consistency of the risk dates and heatmap.
 
-Le immagini sono dati fittizi. Il seed demo è stato allineato ai campi introdotti da main; la suite di integrazione gira separatamente su un database nuovo.
+The images are fictitious data. The demo seed was aligned with the fields introduced by main; the integration suite runs separately on a fresh database.
 
-Controlli: TypeScript ed ESLint sui file modificati passano. Suite completa su DB nuovo: 2043 test superati, uno fallisce in `lib/observability/logger.test.ts:66`, identico a main: cerca la stringa `mario` nello stack e trova il percorso locale `/Users/mario/`. I test mirati di performance, rischio e intervalli passano (83).
+Checks: TypeScript and ESLint on the modified files pass. Full suite on a fresh DB: 2043 tests passed, one fails in `lib/observability/logger.test.ts:66`, identical to main: it looks for the string `mario` in the stack and finds the local path `/Users/mario/`. The targeted performance, risk and range tests pass (83).

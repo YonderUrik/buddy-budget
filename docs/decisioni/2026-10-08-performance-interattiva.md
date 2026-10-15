@@ -1,11 +1,11 @@
-# Rendimenti legati al grafico
+# Returns linked to the chart
 
-La pagina Performance espone separatamente TWR del portafoglio, MWR dei flussi e TWR corretto per l’inflazione. Ogni numero indica il periodo, distingue cumulato da annualizzato e apre una spiegazione su hover, clic/tocco o attivazione da tastiera.
+The Performance page shows separately the portfolio TWR, the MWR of the flows and the inflation-adjusted TWR. Each number states the period, distinguishes cumulative from annualized and opens an explanation on hover, click/tap or keyboard activation.
 
-Il periodo è comune a grafico, rendimenti, rischio e heatmap. Il puntatore mostra un’anteprima temporanea fino alla data del grafico; uscire ripristina il periodo. Un trascinamento applica un intervallo persistente e ribasa il grafico. Le date personalizzate sono un’alternativa alla selezione con il mouse.
+The period is shared by chart, returns, risk and heatmap. The pointer shows a temporary preview up to the chart's date; leaving restores the period. A drag applies a persistent range and rebases the chart. Custom dates are an alternative to mouse selection.
 
-I calcoli includono la valorizzazione del giorno precedente come base, escludono i flussi successivi alla data ispezionata e mostrano il rendimento reale quando i dati mensili disponibili lo permettono. Rischio e heatmap seguono il periodo selezionato, senza oscillare durante l’anteprima del puntatore.
+The calculations include the previous day's valuation as the base, exclude flows after the inspected date and show the real return when the available monthly data allow it. Risk and heatmap follow the selected period, without oscillating during the pointer preview.
 
-## Integrazione con main dell’11 ottobre
+## Integration with main of 11 October
 
-Conservati i nuovi pannelli senza cornice, il layout affiancato, la scala del rischio e i fogli mobile. Il confronto broker eliminato su main resta eliminato. Il selettore del periodo resta prima dei numeri per rendere accessibili le date personalizzate e il ripristino dopo un trascinamento.
+Kept the new frameless panels, the side-by-side layout, the risk scale and the mobile sheets. The broker comparison removed on main stays removed. The period selector stays before the numbers to make the custom dates and the reset after a drag accessible.

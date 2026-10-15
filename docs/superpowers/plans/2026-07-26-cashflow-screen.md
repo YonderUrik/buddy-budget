@@ -10,56 +10,56 @@
 
 ## Global Constraints
 
-- Tutte le stringhe visibili in italiano (i18n non ancora implementata).
-- Nessun colore/raggio hardcoded: usa i token Tailwind/CSS var esistenti (`--pos`, `--neg`, `--chart-1`, `--chart-2`, `SWATCH_CHART_COLOR`).
-- JSDoc minimo (una riga `/** ... */`) su ogni componente/funzione pubblica nuova.
-- Barrel file (`index.ts`) per ogni cartella componenti nuova o toccata; import esterni sempre dal barrel.
-- Tipi delle props dei componenti pubblici sempre esportati.
-- Layer architecture: `components/domain/**` non dipende da `app/**`; `app/**` orchestra.
-- Package manager: `pnpm`. Test: `pnpm test` (= `vitest run`). Nessuno script `typecheck` dedicato: usa `pnpm exec tsc --noEmit` per la verifica di tipo dei task che toccano solo componenti/pagine React (nessuna convenzione di test automatico per `.tsx` in questo repo — solo `lib/calc/*.test.ts` e `app/api/**/route.test.ts` esistono).
-- **`pnpm db:push` va sempre eseguito dall'utente, mai da un agente** (convenzione consolidata di questo progetto — vedi CLAUDE.md). Il Task 1 include un checkpoint esplicito che richiede questo passaggio manuale prima di proseguire.
-- I test API (`route.test.ts`) girano contro un Postgres reale via `db`/`client` di `lib/db/client` — nessun mock del DB, solo mock di `auth.api.getSession`.
+- All visible strings in Italian (i18n not yet implemented).
+- No hardcoded color/radius: use the existing Tailwind tokens/CSS vars (`--pos`, `--neg`, `--chart-1`, `--chart-2`, `SWATCH_CHART_COLOR`).
+- Minimal JSDoc (one `/** ... */` line) on every new public component/function.
+- Barrel file (`index.ts`) for every new or touched component folder; external imports always from the barrel.
+- Prop types of public components always exported.
+- Layer architecture: `components/domain/**` does not depend on `app/**`; `app/**` orchestrates.
+- Package manager: `pnpm`. Tests: `pnpm test` (= `vitest run`). No dedicated `typecheck` script: use `pnpm exec tsc --noEmit` for the type check of the tasks that touch only React components/pages (no automated test convention for `.tsx` in this repo — only `lib/calc/*.test.ts` and `app/api/**/route.test.ts` exist).
+- **`pnpm db:push` is always run by the user, never by an agent** (established convention of this project — see CLAUDE.md). Task 1 includes an explicit checkpoint that requires this manual step before continuing.
+- The API tests (`route.test.ts`) run against a real Postgres via `db`/`client` of `lib/db/client` — no DB mock, only a mock of `auth.api.getSession`.
 
 ---
 
 ## File Structure
 
 **Create:**
-- `components/domain/expenses/transactions-type-toggle.tsx` — toggle Tutte/Uscite/Entrate per la lista transazioni.
-- `lib/calc/cashflow.ts` — motore di calcolo puro Cash flow.
-- `lib/calc/cashflow.test.ts` — test del motore.
-- `components/domain/cashflow/cashflow-period-selector.tsx` — pillole 3M/6M/12M/24M.
-- `components/domain/cashflow/cashflow-reference-nav.tsx` — frecce prev/next sul periodo.
+- `components/domain/expenses/transactions-type-toggle.tsx` — Tutte/Uscite/Entrate (All/Outflows/Income) toggle for the transaction list.
+- `lib/calc/cashflow.ts` — pure Cash flow calculation engine.
+- `lib/calc/cashflow.test.ts` — engine tests.
+- `components/domain/cashflow/cashflow-period-selector.tsx` — 3M/6M/12M/24M pills.
+- `components/domain/cashflow/cashflow-reference-nav.tsx` — prev/next arrows on the period.
 - `components/domain/cashflow/cashflow-kpi-cards.tsx` — 4 KPI.
-- `components/domain/cashflow/cashflow-trend-chart.tsx` — barre affiancate entrate/uscite.
-- `components/domain/cashflow/income-sources-list.tsx` — lista "Fonti di entrata".
-- `components/domain/cashflow/where-it-goes-breakdown.tsx` — blocco "Dove va ogni euro".
-- `components/domain/cashflow/accumulated-savings-chart.tsx` — grafico "Risparmio accumulato".
+- `components/domain/cashflow/cashflow-trend-chart.tsx` — side-by-side income/outflow bars.
+- `components/domain/cashflow/income-sources-list.tsx` — "Fonti di entrata" ("Income sources") list.
+- `components/domain/cashflow/where-it-goes-breakdown.tsx` — "Dove va ogni euro" ("Where every euro goes") block.
+- `components/domain/cashflow/accumulated-savings-chart.tsx` — "Risparmio accumulato" ("Accumulated savings") chart.
 - `components/domain/cashflow/index.ts` — barrel.
-- `app/(app)/cash-flow/page.tsx` — pagina orchestrazione (sola lettura).
+- `app/(app)/cash-flow/page.tsx` — orchestration page (read-only).
 
 **Modify:**
-- `lib/db/schema/categories.ts` — enum `+"entrata"`, 3 nuove `DEFAULT_CATEGORIES` di entrata, fix icona `"shield"` mancante (bug pre-esistente, blocca il file di test che questo task deve comunque toccare).
-- `lib/db/schema/categories.test.ts` — conteggio e assert aggiornati.
+- `lib/db/schema/categories.ts` — enum `+"entrata"`, 3 new income `DEFAULT_CATEGORIES`, fix for the missing `"shield"` icon (pre-existing bug, it blocks the test file that this task has to touch anyway).
+- `lib/db/schema/categories.test.ts` — updated count and asserts.
 - `lib/validation/categories.ts` — `createCategorySchema`/`updateCategorySchema` enum type `+"entrata"`.
-- `components/domain/categories/add-category-form.tsx` — opzione "Entrata".
-- `components/domain/categories/category-row.tsx` — opzione "Entrata".
-- `lib/calc/expenses.ts` — `isIncome`, `filterByTransactionType`, filtro entrata in `computeCategoryBreakdown`, export di `startOfMonth`/`endOfMonth`/`addMonths` (riusati da `cashflow.ts`).
-- `lib/calc/expenses.test.ts` — test delle aggiunte sopra.
-- `app/api/transactions/route.ts` — `GET` parametro `type`, `POST` segno derivato dalla categoria.
-- `app/api/transactions/route.test.ts` — test delle modifiche sopra.
-- `app/api/transactions/[id]/route.ts` — `PATCH` segno derivato + guard di compatibilità direzione/categoria.
-- `app/api/transactions/[id]/route.test.ts` — test delle modifiche sopra.
-- `lib/queries/transactions.ts` — `useTransactionsQuery` accetta un parametro `type`.
-- `components/domain/expenses/add-transaction-form.tsx` — toggle Spesa/Entrata, filtro categorie.
-- `components/domain/expenses/transaction-row.tsx` — select categoria filtrato per direzione, "Dividi" nascosto per le entrate.
+- `components/domain/categories/add-category-form.tsx` — "Entrata" ("Income") option.
+- `components/domain/categories/category-row.tsx` — "Entrata" option.
+- `lib/calc/expenses.ts` — `isIncome`, `filterByTransactionType`, income filter in `computeCategoryBreakdown`, export of `startOfMonth`/`endOfMonth`/`addMonths` (reused by `cashflow.ts`).
+- `lib/calc/expenses.test.ts` — tests for the additions above.
+- `app/api/transactions/route.ts` — `GET` `type` parameter, `POST` sign derived from the category.
+- `app/api/transactions/route.test.ts` — tests for the changes above.
+- `app/api/transactions/[id]/route.ts` — `PATCH` derived sign + direction/category compatibility guard.
+- `app/api/transactions/[id]/route.test.ts` — tests for the changes above.
+- `lib/queries/transactions.ts` — `useTransactionsQuery` accepts a `type` parameter.
+- `components/domain/expenses/add-transaction-form.tsx` — Spesa/Entrata (Expense/Income) toggle, category filter.
+- `components/domain/expenses/transaction-row.tsx` — category select filtered by direction, "Dividi" ("Split") hidden for income.
 - `components/domain/expenses/index.ts` — export `TransactionsTypeToggle`.
-- `app/(app)/spese/page.tsx` — rinomina a "Transazioni", toggle tipo lista, widget di analisi sempre uscite-only.
-- `components/layout/sidebar.tsx` — label nav `"Spese"` → `"Transazioni"`.
+- `app/(app)/spese/page.tsx` — renamed to "Transazioni", list type toggle, analysis widgets always outflows-only.
+- `components/layout/sidebar.tsx` — nav label `"Spese"` → `"Transazioni"`.
 
 ---
 
-### Task 1: Categorie di entrata — schema, validazione, seed, UI
+### Task 1: Income categories — schema, validation, seed, UI
 
 **Files:**
 - Modify: `lib/db/schema/categories.ts`
@@ -69,11 +69,11 @@
 - Modify: `components/domain/categories/category-row.tsx`
 
 **Interfaces:**
-- Produce: `categoryTypeEnum` con valori `["fissa", "variabile", "entrata"]`; `Category["type"]: "fissa" | "variabile" | "entrata"`; `createCategorySchema`/`updateCategorySchema` con lo stesso enum esteso — usati da tutti i task successivi che leggono/scrivono categorie.
+- Produces: `categoryTypeEnum` with values `["fissa", "variabile", "entrata"]`; `Category["type"]: "fissa" | "variabile" | "entrata"`; `createCategorySchema`/`updateCategorySchema` with the same extended enum — used by all the following tasks that read/write categories.
 
-- [ ] **Step 1: Scrivi il test che verifica il nuovo conteggio e le nuove categorie di entrata**
+- [ ] **Step 1: Write the test that checks the new count and the new income categories**
 
-Sostituisci il contenuto di `lib/db/schema/categories.test.ts`:
+Replace the contents of `lib/db/schema/categories.test.ts`:
 
 ```typescript
 import { describe, expect, it } from "vitest";
@@ -107,14 +107,14 @@ describe("DEFAULT_CATEGORIES", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm test lib/db/schema/categories.test.ts`
-Expected: FAIL — conteggio attuale è 15 (non 18), nessuna categoria `type === "entrata"` esiste ancora, e prima ancora il test "icona/colore validi" fallisce già oggi (bug pre-esistente: `"shield"` in `Assicurazioni & Tasse` non è in `CATEGORY_ICONS`).
+Expected: FAIL — the current count is 15 (not 18), no category with `type === "entrata"` exists yet, and even before that the "valid icon/color" test already fails today (pre-existing bug: `"shield"` in `Assicurazioni & Tasse` is not in `CATEGORY_ICONS`).
 
-- [ ] **Step 3: Estendi l'enum e i tipi di validazione**
+- [ ] **Step 3: Extend the enum and the validation types**
 
-In `lib/validation/categories.ts`, sostituisci le righe 22-40:
+In `lib/validation/categories.ts`, replace lines 22-40:
 
 ```typescript
 export const createCategorySchema = z.object({
@@ -138,7 +138,7 @@ export const updateCategorySchema = z
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 ```
 
-Aggiungi anche `"shield"` a `CATEGORY_ICONS` (riga 7-19), tra `"paw-print"` e `"shirt"` (fix del bug pre-esistente che blocca il test allo Step 2):
+Also add `"shield"` to `CATEGORY_ICONS` (lines 7-19), between `"paw-print"` and `"shirt"` (fix for the pre-existing bug that blocks the test at Step 2):
 
 ```typescript
 export const CATEGORY_ICONS = [
@@ -157,60 +157,60 @@ export const CATEGORY_ICONS = [
 export type CategoryIcon = (typeof CATEGORY_ICONS)[number];
 ```
 
-In `lib/db/schema/categories.ts`, cambia riga 5:
+In `lib/db/schema/categories.ts`, change line 5:
 
 ```typescript
 export const categoryTypeEnum = pgEnum("category_type", ["fissa", "variabile", "entrata"]);
 ```
 
-E aggiorna la firma dell'array `DEFAULT_CATEGORIES` (riga 27-32) e aggiungi le 3 nuove voci in fondo all'array (dopo `"Da categorizzare"`, riga 55):
+And update the signature of the `DEFAULT_CATEGORIES` array (lines 27-32) and add the 3 new entries at the bottom of the array (after `"Da categorizzare"`, line 55):
 
 ```typescript
 export const DEFAULT_CATEGORIES: {
   name: string;
   type: "fissa" | "variabile" | "entrata";
-  icon: string; // Es. Lucide Icons
+  icon: string; // E.g. Lucide Icons
   color: string;
   isFallback?: boolean;
 }[] = [
-  // --- SPESE FISSE (I tuoi impegni mensili/annuali) ---
+  // --- FIXED EXPENSES (your monthly/yearly commitments) ---
   { name: "Affitto & Mutuo", type: "fissa", icon: "home", color: "slate" },
   { name: "Bollette & Utenze", type: "fissa", icon: "zap", color: "yellow" },
   { name: "Abbonamenti", type: "fissa", icon: "tv", color: "purple" },
   { name: "Assicurazioni & Tasse", type: "fissa", icon: "shield", color: "indigo" },
   { name: "Risparmi & Investimenti", type: "fissa", icon: "piggy-bank", color: "emerald" },
 
-  // --- NECESSITÀ VARIABILI (Devi farle, ma l'importo cambia) ---
+  // --- VARIABLE NECESSITIES (you have to do them, but the amount changes) ---
   { name: "Spesa alimentare", type: "variabile", icon: "shopping-cart", color: "green" },
   { name: "Trasporti & Auto", type: "variabile", icon: "car", color: "blue" },
   { name: "Salute & Cura", type: "variabile", icon: "heart", color: "rose" },
 
-  // --- STILE DI VITA (Discrezionali, dove puoi tagliare se serve) ---
+  // --- LIFESTYLE (discretionary, where you can cut if needed) ---
   { name: "Ristoranti & Bar", type: "variabile", icon: "utensils", color: "orange" },
   { name: "Shopping", type: "variabile", icon: "shopping-bag", color: "pink" },
   { name: "Svago & Hobbies", type: "variabile", icon: "smile", color: "teal" },
   { name: "Viaggi", type: "variabile", icon: "plane", color: "cyan" },
   { name: "Regali", type: "variabile", icon: "gift", color: "fuchsia" },
 
-  // --- GESTIONE EMERGENZE E FALLBACK ---
+  // --- EMERGENCY MANAGEMENT AND FALLBACK ---
   { name: "Imprevisti", type: "variabile", icon: "alert-triangle", color: "amber" },
   { name: "Da categorizzare", type: "variabile", icon: "help-circle", color: "slate", isFallback: true },
 
-  // --- ENTRATE ---
+  // --- INCOME ---
   { name: "Stipendio", type: "entrata", icon: "banknote", color: "emerald" },
   { name: "Freelance", type: "entrata", icon: "briefcase", color: "blue" },
   { name: "Dividendi e interessi", type: "entrata", icon: "trending-up", color: "teal" },
 ];
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm test lib/db/schema/categories.test.ts`
-Expected: PASS (4 test verdi)
+Expected: PASS (4 green tests)
 
-- [ ] **Step 5: Aggiorna l'UI di gestione categorie per l'opzione "Entrata"**
+- [ ] **Step 5: Update the category management UI for the "Entrata" option**
 
-In `components/domain/categories/add-category-form.tsx`, sostituisci righe 11-14, 24, 66-73:
+In `components/domain/categories/add-category-form.tsx`, replace lines 11-14, 24, 66-73:
 
 ```typescript
 const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
@@ -237,7 +237,7 @@ const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
         </Select>
 ```
 
-In `components/domain/categories/category-row.tsx`, sostituisci righe 31-34, 65-67, 103-113:
+In `components/domain/categories/category-row.tsx`, replace lines 31-34, 65-67, 103-113:
 
 ```typescript
 const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
@@ -269,10 +269,10 @@ const TYPE_LABELS: Record<"fissa" | "variabile" | "entrata", string> = {
           </Select>
 ```
 
-- [ ] **Step 6: Verifica di tipo**
+- [ ] **Step 6: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 7: Commit**
 
@@ -281,25 +281,25 @@ git add lib/db/schema/categories.ts lib/db/schema/categories.test.ts lib/validat
 git commit -m "feat: aggiungi categorie di tipo entrata (schema, validazione, UI)"
 ```
 
-- [ ] **Step 8: CHECKPOINT MANUALE — richiedi all'utente `pnpm db:push`**
+- [ ] **Step 8: MANUAL CHECKPOINT — ask the user for `pnpm db:push`**
 
-Il nuovo valore enum `"entrata"` deve essere applicato al Postgres reale. Per convenzione di questo progetto, **non eseguire `pnpm db:push` autonomamente**: fermati qui e chiedi esplicitamente all'utente di eseguirlo dalla root del repository/worktree corrente, poi conferma che è stato fatto prima di procedere al Task 2. Senza questo passaggio, qualunque route API dei task successivi che inserisce una categoria `type: "entrata"` fallirà contro il DB reale (constraint enum non aggiornato).
+The new enum value `"entrata"` must be applied to the real Postgres. By convention of this project, **do not run `pnpm db:push` autonomously**: stop here and explicitly ask the user to run it from the root of the current repository/worktree, then confirm it has been done before moving on to Task 2. Without this step, any API route of the following tasks that inserts a category with `type: "entrata"` will fail against the real DB (enum constraint not updated).
 
 ---
 
-### Task 2: Motore di calcolo Spese — direzione transazione
+### Task 2: Spese calculation engine — transaction direction
 
 **Files:**
 - Modify: `lib/calc/expenses.ts`
 - Modify: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Consuma: `Transaction` (`lib/db/schema/transactions.ts`).
-- Produce: `isIncome(transaction): boolean`; `type TransactionDirection = "tutte" | "uscita" | "entrata"`; `filterByTransactionType(transactions, direction): Transaction[]`; `startOfMonth`/`endOfMonth`/`addMonths` ora esportate (usate da `lib/calc/cashflow.ts` nel Task 8). `computeCategoryBreakdown` esclude ora le categorie `type === "entrata"` dal risultato (il suo tipo di ritorno `CategoryAmount["type"]` resta `"fissa" | "variabile"`, invariato).
+- Consumes: `Transaction` (`lib/db/schema/transactions.ts`).
+- Produces: `isIncome(transaction): boolean`; `type TransactionDirection = "tutte" | "uscita" | "entrata"`; `filterByTransactionType(transactions, direction): Transaction[]`; `startOfMonth`/`endOfMonth`/`addMonths` now exported (used by `lib/calc/cashflow.ts` in Task 8). `computeCategoryBreakdown` now excludes categories with `type === "entrata"` from the result (its return type `CategoryAmount["type"]` stays `"fissa" | "variabile"`, unchanged).
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi a `lib/calc/expenses.test.ts` (nell'import in cima al file, aggiungi `isIncome`, `filterByTransactionType` alla lista già importata da `./expenses`), poi aggiungi questi blocchi `describe` in fondo al file:
+Add to `lib/calc/expenses.test.ts` (in the import at the top of the file, add `isIncome`, `filterByTransactionType` to the list already imported from `./expenses`), then add these `describe` blocks at the bottom of the file:
 
 ```typescript
 describe("isIncome", () => {
@@ -349,14 +349,14 @@ describe("computeCategoryBreakdown esclude le categorie di entrata", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm test lib/calc/expenses.test.ts`
-Expected: FAIL — `isIncome`/`filterByTransactionType` non esistono ancora; `computeCategoryBreakdown` include ancora la categoria entrata (amount 0, ma presente nel risultato).
+Expected: FAIL — `isIncome`/`filterByTransactionType` do not exist yet; `computeCategoryBreakdown` still includes the income category (amount 0, but present in the result).
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
-In `lib/calc/expenses.ts`, rendi pubbliche le tre funzioni di data-math già esistenti (righe 26-46): aggiungi `export` davanti a ciascuna:
+In `lib/calc/expenses.ts`, make public the three already existing date-math functions (lines 26-46): add `export` in front of each:
 
 ```typescript
 export function startOfMonth(date: Date): Date {
@@ -368,7 +368,7 @@ export function endOfMonth(date: Date): Date {
 }
 ```
 
-(lascia `startOfISOWeek`/`addDays` privati, non servono a `cashflow.ts`)
+(leave `startOfISOWeek`/`addDays` private, `cashflow.ts` does not need them)
 
 ```typescript
 export function addMonths(date: Date, months: number): Date {
@@ -376,18 +376,18 @@ export function addMonths(date: Date, months: number): Date {
 }
 ```
 
-Subito dopo `isExpense` (dopo la riga 149), aggiungi:
+Right after `isExpense` (after line 149), add:
 
 ```typescript
-/** Transazione di entrata reale: importo positivo. */
+/** Real income transaction: positive amount. */
 export function isIncome(transaction: Transaction): boolean {
   return Number(transaction.amount) > 0;
 }
 
-/** Direzione per il filtro tipo-lista della schermata Transazioni. */
+/** Direction for the list-type filter of the Transazioni screen. */
 export type TransactionDirection = "tutte" | "uscita" | "entrata";
 
-/** Filtra per direzione (entrata/uscita), o non filtra affatto ("tutte"). */
+/** Filters by direction (income/outflow), or does not filter at all ("tutte"). */
 export function filterByTransactionType(
   transactions: Transaction[],
   direction: TransactionDirection
@@ -403,7 +403,7 @@ export function filterByTransactionType(
 }
 ```
 
-In `computeCategoryBreakdown` (riga 246-273), aggiungi il filtro subito dopo la firma, prima del `return`:
+In `computeCategoryBreakdown` (lines 246-273), add the filter right after the signature, before the `return`:
 
 ```typescript
 export function computeCategoryBreakdown(
@@ -438,7 +438,7 @@ export function computeCategoryBreakdown(
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm test lib/calc/expenses.test.ts`
 Expected: PASS
@@ -452,7 +452,7 @@ git commit -m "feat: aggiungi isIncome/filterByTransactionType, escludi entrate 
 
 ---
 
-### Task 3: API transazioni — filtro tipo + segno derivato dalla categoria
+### Task 3: Transactions API — type filter + sign derived from the category
 
 **Files:**
 - Modify: `app/api/transactions/route.ts`
@@ -461,12 +461,12 @@ git commit -m "feat: aggiungi isIncome/filterByTransactionType, escludi entrate 
 - Modify: `app/api/transactions/[id]/route.test.ts`
 
 **Interfaces:**
-- Consuma: `categories.type` (Task 1).
-- Produce: `GET /api/transactions?type=uscita|entrata|tutte` (default `uscita`, retrocompatibile); `POST`/`PATCH` derivano il segno salvato dal `type` della categoria coinvolta invece di negare sempre l'importo.
+- Consumes: `categories.type` (Task 1).
+- Produces: `GET /api/transactions?type=uscita|entrata|tutte` (default `uscita`, backward compatible); `POST`/`PATCH` derive the stored sign from the `type` of the involved category instead of always negating the amount.
 
-- [ ] **Step 1: Scrivi i test falliti per GET/POST**
+- [ ] **Step 1: Write the failing tests for GET/POST**
 
-Aggiungi a `app/api/transactions/route.test.ts`, dentro il `describe` esistente, dopo il test `"crea una spesa manuale..."` (dopo la riga 140):
+Add to `app/api/transactions/route.test.ts`, inside the existing `describe`, after the test `"crea una spesa manuale..."` (after line 140):
 
 ```typescript
   it("crea un'entrata con importo positivo quando la categoria è di tipo entrata", async () => {
@@ -535,9 +535,9 @@ Aggiungi a `app/api/transactions/route.test.ts`, dentro il `describe` esistente,
   });
 ```
 
-- [ ] **Step 2: Scrivi i test falliti per PATCH**
+- [ ] **Step 2: Write the failing tests for PATCH**
 
-Aggiungi a `app/api/transactions/[id]/route.test.ts` due nuove variabili nel `describe` (dopo `otherUserCategoryId`, riga 25) e popolale nel `beforeEach` (dopo `otherUserCategory`, riga 78):
+Add to `app/api/transactions/[id]/route.test.ts` two new variables in the `describe` (after `otherUserCategoryId`, line 25) and populate them in the `beforeEach` (after `otherUserCategory`, line 78):
 
 ```typescript
   let incomeCategoryId: string;
@@ -558,7 +558,7 @@ Aggiungi a `app/api/transactions/[id]/route.test.ts` due nuove variabili nel `de
     fallbackCategoryId = fallbackCategory.id;
 ```
 
-Poi aggiungi questi test, dopo il test `"risponde 400 se categoryId appartiene a un altro utente"` (dopo la riga 279):
+Then add these tests, after the test `"risponde 400 se categoryId appartiene a un altro utente"` (after line 279):
 
 ```typescript
   it("risponde 400 se si cambia categoria con una di direzione incompatibile (entrata su una spesa)", async () => {
@@ -638,14 +638,14 @@ Poi aggiungi questi test, dopo il test `"risponde 400 se categoryId appartiene a
   });
 ```
 
-- [ ] **Step 3: Esegui i test e verifica che falliscano**
+- [ ] **Step 3: Run the tests and verify they fail**
 
 Run: `pnpm test app/api/transactions`
-Expected: FAIL su tutti i nuovi test (GET ignora `type`, POST nega sempre l'importo, PATCH non applica alcun guard).
+Expected: FAIL on all the new tests (GET ignores `type`, POST always negates the amount, PATCH applies no guard).
 
-- [ ] **Step 4: Implementa GET/POST**
+- [ ] **Step 4: Implement GET/POST**
 
-Sostituisci `app/api/transactions/route.ts` interamente:
+Replace `app/api/transactions/route.ts` entirely:
 
 ```typescript
 import { NextRequest } from "next/server";
@@ -661,7 +661,7 @@ const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 const VALID_TYPES = ["uscita", "entrata", "tutte"] as const;
 type TypeParam = (typeof VALID_TYPES)[number];
 
-/** GET /api/transactions?from&to&type — ritorna le transazioni dell'utente autenticato nel periodo indicato, filtrate per direzione (default "uscita", retrocompatibile). */
+/** GET /api/transactions?from&to&type — returns the authenticated user's transactions in the given period, filtered by direction (default "uscita", backward compatible). */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -702,7 +702,7 @@ export async function GET(request: NextRequest) {
   return Response.json(rows);
 }
 
-/** POST /api/transactions — crea una transazione manuale; il segno salvato è derivato dal type della categoria scelta (entrata → positivo, fissa/variabile → negato). */
+/** POST /api/transactions — creates a manual transaction; the stored sign is derived from the type of the chosen category (entrata → positive, fissa/variabile → negated). */
 export async function POST(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -756,9 +756,9 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 5: Implementa PATCH**
+- [ ] **Step 5: Implement PATCH**
 
-In `app/api/transactions/[id]/route.ts`, sostituisci il blocco righe 53-67 (dalla validazione di `categoryId` fino al calcolo di `newAmount`/`newExcludedAmount` incluso — non toccare il blocco successivo di rivalidazione `isValidExcludedAmount`, che resta invariato subito dopo):
+In `app/api/transactions/[id]/route.ts`, replace the block at lines 53-67 (from the `categoryId` validation up to and including the computation of `newAmount`/`newExcludedAmount` — do not touch the following `isValidExcludedAmount` revalidation block, which stays unchanged right after):
 
 ```typescript
   let resolvedCategory: typeof categories.$inferSelect | null = null;
@@ -775,9 +775,9 @@ In `app/api/transactions/[id]/route.ts`, sostituisci il blocco righe 53-67 (dall
 
   const currentIsIncome = Number(transaction.amount) > 0;
 
-  // Se si cambia categoria senza toccare l'importo, la nuova categoria deve avere una direzione
-  // compatibile con il segno già salvato (a meno che sia la categoria fallback, che non ha una
-  // direzione propria e può accogliere transazioni di entrambi i segni).
+  // If the category is changed without touching the amount, the new category must have a direction
+  // compatible with the already stored sign (unless it is the fallback category, which has no
+  // direction of its own and can accept transactions of both signs).
   if (resolvedCategory && parsed.data.amount === undefined && !resolvedCategory.isFallback) {
     const newCategoryIsIncome = resolvedCategory.type === "entrata";
     if (newCategoryIsIncome !== currentIsIncome) {
@@ -788,8 +788,8 @@ In `app/api/transactions/[id]/route.ts`, sostituisci il blocco righe 53-67 (dall
     }
   }
 
-  // Direzione da usare per il segno del nuovo importo: quella della categoria appena assegnata
-  // (se non fallback), altrimenti quella già in vigore sulla transazione.
+  // Direction to use for the sign of the new amount: that of the newly assigned category
+  // (if not fallback), otherwise the one already in effect on the transaction.
   const signIsIncome =
     resolvedCategory && !resolvedCategory.isFallback ? resolvedCategory.type === "entrata" : currentIsIncome;
 
@@ -805,12 +805,12 @@ In `app/api/transactions/[id]/route.ts`, sostituisci il blocco righe 53-67 (dall
   }
 ```
 
-Il resto del file (validazione `isValidExcludedAmount` e l'`update` finale) resta invariato.
+The rest of the file (`isValidExcludedAmount` validation and the final `update`) stays unchanged.
 
-- [ ] **Step 6: Esegui i test e verifica che passino**
+- [ ] **Step 6: Run the tests and verify they pass**
 
 Run: `pnpm test app/api/transactions`
-Expected: PASS (tutti i test esistenti + i nuovi)
+Expected: PASS (all the existing tests + the new ones)
 
 - [ ] **Step 7: Commit**
 
@@ -821,18 +821,18 @@ git commit -m "feat: API transazioni supportano entrate (filtro type, segno deri
 
 ---
 
-### Task 4: Hook query transazioni — parametro tipo
+### Task 4: Transactions query hook — type parameter
 
 **Files:**
 - Modify: `lib/queries/transactions.ts`
 
 **Interfaces:**
-- Consuma: `GET /api/transactions?type=` (Task 3).
-- Produce: `useTransactionsQuery(from, to, type: "uscita" | "entrata" | "tutte" = "uscita")` — i chiamanti esistenti (Spese) continuano a funzionare senza modifiche se non passano il terzo argomento.
+- Consumes: `GET /api/transactions?type=` (Task 3).
+- Produces: `useTransactionsQuery(from, to, type: "uscita" | "entrata" | "tutte" = "uscita")` — the existing callers (Spese) keep working without changes if they do not pass the third argument.
 
-- [ ] **Step 1: Implementa**
+- [ ] **Step 1: Implement**
 
-In `lib/queries/transactions.ts`, sostituisci righe 8-23:
+In `lib/queries/transactions.ts`, replace lines 8-23:
 
 ```typescript
 export type TransactionDirectionParam = "uscita" | "entrata" | "tutte";
@@ -849,16 +849,16 @@ async function fetchTransactions(from: string, to: string, type: TransactionDire
   return response.json();
 }
 
-/** Recupera le transazioni dell'utente nell'intervallo [from, to] (YYYY-MM-DD), filtrate per direzione (default "uscita"). */
+/** Fetches the user's transactions in the range [from, to] (YYYY-MM-DD), filtered by direction (default "uscita"). */
 export function useTransactionsQuery(from: string, to: string, type: TransactionDirectionParam = "uscita") {
   return useQuery({ queryKey: transactionsQueryKey(from, to, type), queryFn: () => fetchTransactions(from, to, type) });
 }
 ```
 
-- [ ] **Step 2: Verifica di tipo**
+- [ ] **Step 2: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore (la firma con default mantiene compatibili tutte le chiamate esistenti a un solo/due argomenti).
+Expected: no errors (the signature with a default keeps all the existing one/two-argument calls compatible).
 
 - [ ] **Step 3: Commit**
 
@@ -869,18 +869,18 @@ git commit -m "feat: useTransactionsQuery accetta un parametro di direzione"
 
 ---
 
-### Task 5: Form "Aggiungi transazione" — toggle Spesa/Entrata
+### Task 5: "Aggiungi transazione" ("Add transaction") form — Spesa/Entrata toggle
 
 **Files:**
 - Modify: `components/domain/expenses/add-transaction-form.tsx`
 
 **Interfaces:**
-- Consuma: `Category["type"]` (Task 1).
-- Produce: nessuna nuova prop pubblica — `AddTransactionFormProps` invariata (riceve ancora tutte le categorie, filtra internamente).
+- Consumes: `Category["type"]` (Task 1).
+- Produces: no new public prop — `AddTransactionFormProps` unchanged (it still receives all the categories, filters internally).
 
-- [ ] **Step 1: Implementa**
+- [ ] **Step 1: Implement**
 
-In `components/domain/expenses/add-transaction-form.tsx`, aggiungi lo stato di direzione e il filtro categorie. Sostituisci righe 29-46:
+In `components/domain/expenses/add-transaction-form.tsx`, add the direction state and the category filter. Replace lines 29-46:
 
 ```typescript
   const [accountIdOverride, setAccountIdOverride] = React.useState<string | null>(null);
@@ -898,7 +898,7 @@ In `components/domain/expenses/add-transaction-form.tsx`, aggiungi lo stato di d
     setCategoryIdOverride(null);
   }
 
-  // Preseleziona il primo conto/categoria disponibile finché l'utente non sceglie esplicitamente.
+  // Preselect the first available account/category until the user explicitly chooses.
   const accountId = accountIdOverride ?? manualAccounts[0]?.id ?? "";
   const categoryId = categoryIdOverride ?? availableCategories[0]?.id ?? "";
 
@@ -911,7 +911,7 @@ In `components/domain/expenses/add-transaction-form.tsx`, aggiungi lo stato di d
     date !== "";
 ```
 
-Aggiungi il toggle nel form JSX, subito prima del blocco "Conto" (prima della riga con `<div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">` che contiene "Conto"):
+Add the toggle in the form JSX, right before the "Conto" ("Account") block (before the line with `<div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">` that contains "Conto"):
 
 ```typescript
       <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
@@ -936,7 +936,7 @@ Aggiungi il toggle nel form JSX, subito prima del blocco "Conto" (prima della ri
       </div>
 ```
 
-E sostituisci il blocco select "Categoria" (righe 117-140) per usare `availableCategories` invece di `categories`:
+And replace the "Categoria" select block (lines 117-140) to use `availableCategories` instead of `categories`:
 
 ```typescript
       <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto">
@@ -965,7 +965,7 @@ E sostituisci il blocco select "Categoria" (righe 117-140) per usare `availableC
       </div>
 ```
 
-E aggiorna il messaggio di avviso "Nessuna categoria disponibile" (riga 178-182) per usare `availableCategories`:
+And update the "Nessuna categoria disponibile" warning message (lines 178-182) to use `availableCategories`:
 
 ```typescript
       {availableCategories.length === 0 && (
@@ -977,7 +977,7 @@ E aggiorna il messaggio di avviso "Nessuna categoria disponibile" (riga 178-182)
       )}
 ```
 
-Infine, resetta anche `direction` a `"spesa"` nell'`onSuccess` della mutation (dentro `handleSubmit`, accanto a `setDescription("")`/`setAmountValue(null)`):
+Finally, also reset `direction` to `"spesa"` in the mutation's `onSuccess` (inside `handleSubmit`, next to `setDescription("")`/`setAmountValue(null)`):
 
 ```typescript
         onSuccess: () => {
@@ -988,10 +988,10 @@ Infine, resetta anche `direction` a `"spesa"` nell'`onSuccess` della mutation (d
         },
 ```
 
-- [ ] **Step 2: Verifica di tipo**
+- [ ] **Step 2: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 3: Commit**
 
@@ -1002,18 +1002,18 @@ git commit -m "feat: form Aggiungi transazione supporta la creazione di entrate"
 
 ---
 
-### Task 6: Riga transazione — categoria filtrata per direzione, niente "Dividi" sulle entrate
+### Task 6: Transaction row — category filtered by direction, no "Dividi" on income
 
 **Files:**
 - Modify: `components/domain/expenses/transaction-row.tsx`
 
 **Interfaces:**
-- Consuma: `Category["type"]`, `isIncome`-equivalente inline (stesso criterio `amount > 0`).
-- Produce: nessuna nuova prop pubblica.
+- Consumes: `Category["type"]`, inline `isIncome` equivalent (same criterion `amount > 0`).
+- Produces: no new public prop.
 
-- [ ] **Step 1: Implementa**
+- [ ] **Step 1: Implement**
 
-In `components/domain/expenses/transaction-row.tsx`, sostituisci righe 46-55:
+In `components/domain/expenses/transaction-row.tsx`, replace lines 46-55:
 
 ```typescript
   const excludedAmount = Math.abs(Number(transaction.excludedAmount));
@@ -1032,7 +1032,7 @@ In `components/domain/expenses/transaction-row.tsx`, sostituisci righe 46-55:
   );
 ```
 
-E nascondi il bottone "Dividi" per le transazioni di entrata: sostituisci righe 220-227:
+And hide the "Dividi" button for income transactions: replace lines 220-227:
 
 ```typescript
           {!isIncome && (
@@ -1047,12 +1047,12 @@ E nascondi il bottone "Dividi" per le transazioni di entrata: sostituisci righe 
           )}
 ```
 
-E la resa condizionale di `SplitSlider` in fondo (righe 259-261) resta invariata (già condizionata da `splitOpen`, che ora non può più diventare `true` per una riga di entrata dato che il bottone che lo attiva è nascosto).
+And the conditional rendering of `SplitSlider` at the bottom (lines 259-261) stays unchanged (already conditioned by `splitOpen`, which now can no longer become `true` for an income row since the button that activates it is hidden).
 
-- [ ] **Step 2: Verifica di tipo**
+- [ ] **Step 2: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 3: Commit**
 
@@ -1063,7 +1063,7 @@ git commit -m "feat: riga transazione filtra la categoria per direzione e nascon
 
 ---
 
-### Task 7: Toggle tipo lista + pagina Transazioni (rebrand di Spese)
+### Task 7: List type toggle + Transazioni page (rebrand of Spese)
 
 **Files:**
 - Create: `components/domain/expenses/transactions-type-toggle.tsx`
@@ -1072,17 +1072,17 @@ git commit -m "feat: riga transazione filtra la categoria per direzione e nascon
 - Modify: `components/layout/sidebar.tsx`
 
 **Interfaces:**
-- Consuma: `TransactionDirection`, `filterByTransactionType`, `isExpense` (Task 2); `useTransactionsQuery(from, to, "tutte")` (Task 4).
-- Produce: `TransactionsTypeToggle` esportato dal barrel `components/domain/expenses`.
+- Consumes: `TransactionDirection`, `filterByTransactionType`, `isExpense` (Task 2); `useTransactionsQuery(from, to, "tutte")` (Task 4).
+- Produces: `TransactionsTypeToggle` exported from the `components/domain/expenses` barrel.
 
-- [ ] **Step 1: Crea il toggle**
+- [ ] **Step 1: Create the toggle**
 
-Crea `components/domain/expenses/transactions-type-toggle.tsx`:
+Create `components/domain/expenses/transactions-type-toggle.tsx`:
 
 ```typescript
 "use client";
 
-/** Toggle Tutte/Uscite/Entrate per la lista transazioni (non influenza KPI/donut/trend, sempre uscite-only). */
+/** Tutte/Uscite/Entrate toggle for the transaction list (does not affect KPI/donut/trend, always outflows-only). */
 
 import { cn } from "@/lib/utils";
 import type { TransactionDirection } from "@/lib/calc/expenses";
@@ -1122,29 +1122,29 @@ export function TransactionsTypeToggle({ value, onChange }: TransactionsTypeTogg
 }
 ```
 
-Aggiungi al barrel `components/domain/expenses/index.ts` (dopo l'export di `AutoCategorizeWizard`):
+Add to the barrel `components/domain/expenses/index.ts` (after the `AutoCategorizeWizard` export):
 
 ```typescript
 export { TransactionsTypeToggle } from "./transactions-type-toggle";
 export type { TransactionsTypeToggleProps } from "./transactions-type-toggle";
 ```
 
-- [ ] **Step 2: Rinomina la voce di navigazione**
+- [ ] **Step 2: Rename the navigation entry**
 
-In `components/layout/sidebar.tsx`, riga 70, cambia:
+In `components/layout/sidebar.tsx`, line 70, change:
 
 ```typescript
   { label: "Transazioni", href: "/spese", icon: ShoppingCart },
 ```
 
-- [ ] **Step 3: Wire della pagina**
+- [ ] **Step 3: Page wiring**
 
-In `app/(app)/spese/page.tsx`, sostituisci l'intero file:
+In `app/(app)/spese/page.tsx`, replace the whole file:
 
 ```typescript
 "use client";
 
-/** Pagina Transazioni (ex Spese): orchestra periodo, KPI, grafici, categorie/budget, lista transazioni e form di aggiunta. */
+/** Transazioni page (formerly Spese): orchestrates period, KPIs, charts, categories/budget, transaction list and add form. */
 
 import * as React from "react";
 import {
@@ -1182,7 +1182,7 @@ function toDateString(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-/** Finestra di fetch: dal 1° gennaio dell'anno precedente al 31 dicembre corrente — copre "anno", il confronto col periodo precedente e l'andamento 6 mesi. */
+/** Fetch window: from January 1 of the previous year to December 31 of the current one — covers "anno", the comparison with the previous period and the 6-month trend. */
 function fetchWindow(referenceDate: Date): { from: string; to: string } {
   const from = new Date(referenceDate.getFullYear() - 1, 0, 1);
   const to = new Date(referenceDate.getFullYear(), 11, 31);
@@ -1214,13 +1214,13 @@ export default function SpesePage() {
     searchText,
   });
 
-  // Widget di analisi (KPI/donut/trend): sempre e solo uscite, indipendentemente dal toggle tipo-lista.
+  // Analysis widgets (KPI/donut/trend): always and only outflows, regardless of the list-type toggle.
   const expenseTransactionsForAnalysis = filteredTransactions.filter(isExpense);
   const filteredBudgets = categoryFilter
     ? safeBudgets.filter((b) => b.categoryId === categoryFilter)
     : safeBudgets;
 
-  // Lista: rispetta il toggle Tutte/Uscite/Entrate.
+  // List: respects the Tutte/Uscite/Entrate toggle.
   const listFiltered = filterByTransactionType(filteredTransactions, listTypeFilter);
 
   const fallbackCategoryIds = new Set(
@@ -1367,10 +1367,10 @@ export default function SpesePage() {
 }
 ```
 
-- [ ] **Step 4: Verifica di tipo**
+- [ ] **Step 4: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 5: Commit**
 
@@ -1381,19 +1381,19 @@ git commit -m "feat: rinomina Spese in Transazioni, aggiungi toggle tipo lista"
 
 ---
 
-### Task 8: Motore di calcolo Cash flow
+### Task 8: Cash flow calculation engine
 
 **Files:**
 - Create: `lib/calc/cashflow.ts`
 - Create: `lib/calc/cashflow.test.ts`
 
 **Interfaces:**
-- Consuma: `Transaction`, `Category` (schema); `isExpense`, `isIncome`, `MONTH_LABELS`, `parseDateOnly`, `startOfDay`, `startOfMonth`, `endOfMonth`, `addMonths`, `type DateRange` da `lib/calc/expenses.ts` (Task 2).
-- Produce: `type CashflowPeriod`; `getCashflowPeriodRange`; `getPreviousCashflowPeriodRange`; `shiftCashflowReferenceDate`; `formatCashflowPeriodLabel`; `computeCashflowKpis`; `computeMonthlySeries`; `computeIncomeSources`; `computeWhereItGoes`; `computeAccumulatedSavings` — tutte usate dai Task 9-11.
+- Consumes: `Transaction`, `Category` (schema); `isExpense`, `isIncome`, `MONTH_LABELS`, `parseDateOnly`, `startOfDay`, `startOfMonth`, `endOfMonth`, `addMonths`, `type DateRange` from `lib/calc/expenses.ts` (Task 2).
+- Produces: `type CashflowPeriod`; `getCashflowPeriodRange`; `getPreviousCashflowPeriodRange`; `shiftCashflowReferenceDate`; `formatCashflowPeriodLabel`; `computeCashflowKpis`; `computeMonthlySeries`; `computeIncomeSources`; `computeWhereItGoes`; `computeAccumulatedSavings` — all used by Tasks 9-11.
 
-- [ ] **Step 1: Scrivi il test**
+- [ ] **Step 1: Write the test**
 
-Crea `lib/calc/cashflow.test.ts`:
+Create `lib/calc/cashflow.test.ts`:
 
 ```typescript
 import { describe, expect, it } from "vitest";
@@ -1445,14 +1445,14 @@ function makeCategory(overrides: Partial<Category>): Category {
 
 describe("getCashflowPeriodRange", () => {
   it("'3mesi' copre il mese di riferimento e i 2 precedenti", () => {
-    const range = getCashflowPeriodRange("3mesi", new Date(2026, 2, 15)); // 15 marzo 2026
-    expect(range.from).toEqual(new Date(2026, 0, 1)); // 1 gennaio
-    expect(range.to).toEqual(new Date(2026, 2, 31)); // 31 marzo
+    const range = getCashflowPeriodRange("3mesi", new Date(2026, 2, 15)); // March 15, 2026
+    expect(range.from).toEqual(new Date(2026, 0, 1)); // January 1
+    expect(range.to).toEqual(new Date(2026, 2, 31)); // March 31
   });
 
   it("'12mesi' copre 12 mesi calendariali fino al mese di riferimento incluso", () => {
     const range = getCashflowPeriodRange("12mesi", new Date(2026, 2, 15));
-    expect(range.from).toEqual(new Date(2025, 3, 1)); // aprile 2025
+    expect(range.from).toEqual(new Date(2025, 3, 1)); // April 2025
     expect(range.to).toEqual(new Date(2026, 2, 31));
   });
 });
@@ -1460,8 +1460,8 @@ describe("getCashflowPeriodRange", () => {
 describe("getPreviousCashflowPeriodRange / shiftCashflowReferenceDate", () => {
   it("il periodo precedente di '3mesi' è spostato indietro di 3 mesi", () => {
     const previous = getPreviousCashflowPeriodRange("3mesi", new Date(2026, 2, 15));
-    expect(previous.from).toEqual(new Date(2025, 9, 1)); // ottobre 2025
-    expect(previous.to).toEqual(new Date(2025, 11, 31)); // 31 dicembre 2025
+    expect(previous.from).toEqual(new Date(2025, 9, 1)); // October 2025
+    expect(previous.to).toEqual(new Date(2025, 11, 31)); // December 31, 2025
   });
 
   it("shiftCashflowReferenceDate avanti di '6mesi' sposta di 6 mesi", () => {
@@ -1478,7 +1478,7 @@ describe("formatCashflowPeriodLabel", () => {
 });
 
 describe("computeCashflowKpis", () => {
-  const range = { from: new Date(2026, 0, 1), to: new Date(2026, 1, 28) }; // gen-feb 2026
+  const range = { from: new Date(2026, 0, 1), to: new Date(2026, 1, 28) }; // Jan-Feb 2026
 
   it("calcola entrate/uscite medie, flusso netto e tasso di risparmio", () => {
     const transactions = [
@@ -1601,14 +1601,14 @@ describe("computeAccumulatedSavings", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm test lib/calc/cashflow.test.ts`
-Expected: FAIL — `lib/calc/cashflow.ts` non esiste ancora.
+Expected: FAIL — `lib/calc/cashflow.ts` does not exist yet.
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
-Crea `lib/calc/cashflow.ts`:
+Create `lib/calc/cashflow.ts`:
 
 ```typescript
 import type { Transaction } from "@/lib/db/schema/transactions";
@@ -1624,7 +1624,7 @@ import {
   type DateRange,
 } from "./expenses";
 
-/** Periodo selezionabile nella schermata Cash flow. */
+/** Selectable period in the Cash flow screen. */
 export type CashflowPeriod = "3mesi" | "6mesi" | "12mesi" | "24mesi";
 
 const PERIOD_MONTHS: Record<CashflowPeriod, number> = {
@@ -1653,25 +1653,25 @@ function monthsInRange(range: DateRange): Date[] {
   return months;
 }
 
-/** Intervallo calendariale del periodo Cash flow: `months` mesi calendariali fino a `referenceDate` incluso. */
+/** Calendar range of the Cash flow period: `months` calendar months up to and including `referenceDate`. */
 export function getCashflowPeriodRange(period: CashflowPeriod, referenceDate: Date): DateRange {
   const months = PERIOD_MONTHS[period];
   return { from: startOfMonth(addMonths(referenceDate, -(months - 1))), to: endOfMonth(referenceDate) };
 }
 
-/** Intervallo, di uguale lunghezza, immediatamente precedente al periodo Cash flow selezionato. */
+/** Range of equal length immediately preceding the selected Cash flow period. */
 export function getPreviousCashflowPeriodRange(period: CashflowPeriod, referenceDate: Date): DateRange {
   const months = PERIOD_MONTHS[period];
   return getCashflowPeriodRange(period, addMonths(referenceDate, -months));
 }
 
-/** Sposta referenceDate di un'unità di periodo Cash flow (avanti se direction=1, indietro se direction=-1). */
+/** Shifts referenceDate by one Cash flow period unit (forward if direction=1, backward if direction=-1). */
 export function shiftCashflowReferenceDate(period: CashflowPeriod, referenceDate: Date, direction: 1 | -1): Date {
   const months = PERIOD_MONTHS[period];
   return addMonths(referenceDate, months * direction);
 }
 
-/** Etichetta leggibile del periodo Cash flow, es. "Gen – Mar 2026" o "Gen 2025 – Dic 2026". */
+/** Readable label of the Cash flow period, e.g. "Gen – Mar 2026" or "Gen 2025 – Dic 2026". */
 export function formatCashflowPeriodLabel(range: DateRange): string {
   const sameYear = range.from.getFullYear() === range.to.getFullYear();
   const monthYearFormat = new Intl.DateTimeFormat("it-IT", { month: "short", year: "numeric" });
@@ -1686,11 +1686,11 @@ export interface CashflowKpis {
   entrateMedie: number;
   usciteMedie: number;
   flussoNetto: number;
-  /** null se le entrate nel periodo sono zero (non calcolabile). */
+  /** null if income in the period is zero (cannot be computed). */
   tassoRisparmio: number | null;
 }
 
-/** KPI principali di Cash flow: entrate/uscite medie mensili, flusso netto, tasso di risparmio sul periodo selezionato. */
+/** Main Cash flow KPIs: average monthly income/outflows, net flow, savings rate over the selected period. */
 export function computeCashflowKpis(transactions: Transaction[], range: DateRange): CashflowKpis {
   const inRange = transactions.filter((t) => isWithinRange(parseDateOnly(t.date), range));
   const entrate = inRange.filter(isIncome).reduce((sum, t) => sum + Number(t.amount), 0);
@@ -1714,7 +1714,7 @@ export interface CashflowMonthlyEntry {
   uscite: number;
 }
 
-/** Serie mensile entrate/uscite per ciascun mese calendariale nel range (inclusi i mesi senza transazioni, a 0). */
+/** Monthly income/outflow series for each calendar month in the range (including months without transactions, at 0). */
 export function computeMonthlySeries(transactions: Transaction[], range: DateRange): CashflowMonthlyEntry[] {
   return monthsInRange(range).map((monthDate) => {
     const monthRange: DateRange = { from: startOfMonth(monthDate), to: endOfMonth(monthDate) };
@@ -1735,11 +1735,11 @@ export interface IncomeSourceAmount {
   color: string;
   icon: string;
   amount: number;
-  /** null se il totale entrate nel periodo è zero (non calcolabile). */
+  /** null if total income in the period is zero (cannot be computed). */
   quotaPct: number | null;
 }
 
-/** Entrate per categoria di tipo "entrata" nel periodo, ordinate decrescenti, con quota % sul totale entrate. Esclude le fonti a importo zero. */
+/** Income by "entrata"-type category in the period, sorted descending, with % share of total income. Excludes zero-amount sources. */
 export function computeIncomeSources(
   transactions: Transaction[],
   categories: Category[],
@@ -1771,11 +1771,11 @@ export interface WhereItGoesEntry {
   key: "fisse" | "variabili" | "risparmio";
   label: string;
   amount: number;
-  /** null se le entrate del mese sono zero (non calcolabile). Il risparmio può essere negativo (nessun floor a zero). */
+  /** null if the month's income is zero (cannot be computed). Savings can be negative (no floor at zero). */
   quotaPct: number | null;
 }
 
-/** "Dove va ogni euro" del mese di riferimento: spese fisse, spese variabili, risparmio (entrate - fisse - variabili), con quota % sul totale entrate. */
+/** "Dove va ogni euro" for the reference month: fixed expenses, variable expenses, savings (income - fixed - variable), with % share of total income. */
 export function computeWhereItGoes(
   transactions: Transaction[],
   categories: Category[],
@@ -1809,7 +1809,7 @@ export interface AccumulatedSavingsEntry {
   cumulative: number;
 }
 
-/** Somma cumulata mese su mese del flusso netto (entrate - uscite) lungo il range selezionato. */
+/** Month-over-month cumulative sum of the net flow (income - outflows) over the selected range. */
 export function computeAccumulatedSavings(transactions: Transaction[], range: DateRange): AccumulatedSavingsEntry[] {
   const monthly = computeMonthlySeries(transactions, range);
   let running = 0;
@@ -1820,7 +1820,7 @@ export function computeAccumulatedSavings(transactions: Transaction[], range: Da
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm test lib/calc/cashflow.test.ts`
 Expected: PASS
@@ -1834,7 +1834,7 @@ git commit -m "feat: motore di calcolo puro per la schermata Cash flow"
 
 ---
 
-### Task 9: Componenti Cash flow — header (period selector, reference nav, KPI cards)
+### Task 9: Cash flow components — header (period selector, reference nav, KPI cards)
 
 **Files:**
 - Create: `components/domain/cashflow/cashflow-period-selector.tsx`
@@ -1843,17 +1843,17 @@ git commit -m "feat: motore di calcolo puro per la schermata Cash flow"
 - Create: `components/domain/cashflow/index.ts`
 
 **Interfaces:**
-- Consuma: `CashflowPeriod`, `getCashflowPeriodRange`, `shiftCashflowReferenceDate`, `formatCashflowPeriodLabel`, `computeCashflowKpis` (Task 8).
-- Produce: `CashflowPeriodSelector`, `CashflowReferenceNav`, `CashflowKpiCards` esportati dal barrel `components/domain/cashflow`, usati dal Task 11.
+- Consumes: `CashflowPeriod`, `getCashflowPeriodRange`, `shiftCashflowReferenceDate`, `formatCashflowPeriodLabel`, `computeCashflowKpis` (Task 8).
+- Produces: `CashflowPeriodSelector`, `CashflowReferenceNav`, `CashflowKpiCards` exported from the `components/domain/cashflow` barrel, used by Task 11.
 
-- [ ] **Step 1: Crea il selettore periodo**
+- [ ] **Step 1: Create the period selector**
 
-Crea `components/domain/cashflow/cashflow-period-selector.tsx`:
+Create `components/domain/cashflow/cashflow-period-selector.tsx`:
 
 ```typescript
 "use client";
 
-/** Selettore periodo 3M/6M/12M/24M per la schermata Cash flow (stesso pattern a pillole di ExpensesPeriodSelector). */
+/** 3M/6M/12M/24M period selector for the Cash flow screen (same pill pattern as ExpensesPeriodSelector). */
 
 import { cn } from "@/lib/utils";
 import type { CashflowPeriod } from "@/lib/calc/cashflow";
@@ -1894,14 +1894,14 @@ export function CashflowPeriodSelector({ value, onChange }: CashflowPeriodSelect
 }
 ```
 
-- [ ] **Step 2: Crea la navigazione periodo**
+- [ ] **Step 2: Create the period navigation**
 
-Crea `components/domain/cashflow/cashflow-reference-nav.tsx`:
+Create `components/domain/cashflow/cashflow-reference-nav.tsx`:
 
 ```typescript
 "use client";
 
-/** Navigazione del periodo Cash flow: sole frecce prev/next (nessun salto diretto a mese/anno, a differenza di Transazioni). */
+/** Cash flow period navigation: prev/next arrows only (no direct jump to month/year, unlike Transazioni). */
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -1956,12 +1956,12 @@ export function CashflowReferenceNav({ period, referenceDate, onChange }: Cashfl
 }
 ```
 
-- [ ] **Step 3: Crea le KPI card**
+- [ ] **Step 3: Create the KPI cards**
 
-Crea `components/domain/cashflow/cashflow-kpi-cards.tsx`:
+Create `components/domain/cashflow/cashflow-kpi-cards.tsx`:
 
 ```typescript
-/** 4 KPI di Cash flow: Entrate medie, Uscite medie, Flusso netto, Tasso di risparmio. */
+/** 4 Cash flow KPIs: average income, average outflows, net flow, savings rate. */
 
 import { StatCard } from "@/components/domain/stat-card";
 import { computeCashflowKpis, getCashflowPeriodRange, type CashflowPeriod } from "@/lib/calc/cashflow";
@@ -1998,19 +1998,19 @@ export function CashflowKpiCards({ transactions, period, currency, referenceDate
 }
 ```
 
-Nota: `StatCard` formatta sempre `value` come valuta; per "Tasso di risparmio" il valore numerico mostrato in cifra grande è fuorviante (è una card KPI che riusa `StatCard` solo per coerenza visiva di layout — il dato leggibile è nel `subtitle`). Questo è accettato per coerenza con le altre 3 card; non introdurre una variante di `StatCard` per un singolo caso d'uso (YAGNI).
+Note: `StatCard` always formats `value` as currency; for "Tasso di risparmio" ("Savings rate") the numeric value shown as the big figure is misleading (it is a KPI card that reuses `StatCard` only for visual layout consistency — the readable figure is in the `subtitle`). This is accepted for consistency with the other 3 cards; do not introduce a `StatCard` variant for a single use case (YAGNI).
 
-Aggiorna la firma di `computeCashflowKpis` non serve — nessuna modifica a `cashflow.ts` in questo task.
+No need to update the signature of `computeCashflowKpis` — no change to `cashflow.ts` in this task.
 
-- [ ] **Step 4: Crea il barrel**
+- [ ] **Step 4: Create the barrel**
 
-Crea `components/domain/cashflow/index.ts`:
+Create `components/domain/cashflow/index.ts`:
 
 ```typescript
 /**
  * components/domain/cashflow — barrel file
  *
- * Punto di ingresso unico per i componenti della schermata Cash flow.
+ * Single entry point for the components of the Cash flow screen.
  */
 
 export { CashflowPeriodSelector } from "./cashflow-period-selector";
@@ -2021,10 +2021,10 @@ export { CashflowKpiCards } from "./cashflow-kpi-cards";
 export type { CashflowKpiCardsProps } from "./cashflow-kpi-cards";
 ```
 
-- [ ] **Step 5: Verifica di tipo**
+- [ ] **Step 5: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 6: Commit**
 
@@ -2035,7 +2035,7 @@ git commit -m "feat: componenti header Cash flow (selettore periodo, nav, KPI)"
 
 ---
 
-### Task 10: Componenti Cash flow — grafici e liste
+### Task 10: Cash flow components — charts and lists
 
 **Files:**
 - Create: `components/domain/cashflow/cashflow-trend-chart.tsx`
@@ -2045,17 +2045,17 @@ git commit -m "feat: componenti header Cash flow (selettore periodo, nav, KPI)"
 - Modify: `components/domain/cashflow/index.ts`
 
 **Interfaces:**
-- Consuma: `computeMonthlySeries`, `computeIncomeSources`, `computeWhereItGoes`, `computeAccumulatedSavings` e i relativi tipi (Task 8); `CategoryAvatar`, `ICON_MAP` (`components/domain/categories`); `SWATCH_CHART_COLOR` (`components/domain/shared/color-swatches`).
-- Produce: `CashflowTrendChart`, `IncomeSourcesList`, `WhereItGoesBreakdown`, `AccumulatedSavingsChart` esportati dal barrel, usati dal Task 11.
+- Consumes: `computeMonthlySeries`, `computeIncomeSources`, `computeWhereItGoes`, `computeAccumulatedSavings` and the related types (Task 8); `CategoryAvatar`, `ICON_MAP` (`components/domain/categories`); `SWATCH_CHART_COLOR` (`components/domain/shared/color-swatches`).
+- Produces: `CashflowTrendChart`, `IncomeSourcesList`, `WhereItGoesBreakdown`, `AccumulatedSavingsChart` exported from the barrel, used by Task 11.
 
-- [ ] **Step 1: Grafico entrate vs uscite**
+- [ ] **Step 1: Income vs outflows chart**
 
-Crea `components/domain/cashflow/cashflow-trend-chart.tsx`:
+Create `components/domain/cashflow/cashflow-trend-chart.tsx`:
 
 ```typescript
 "use client";
 
-/** Grafico "Entrate vs uscite": barre affiancate (non impilate) per ciascun mese del periodo selezionato. */
+/** "Entrate vs uscite" chart: side-by-side (not stacked) bars for each month of the selected period. */
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2115,12 +2115,12 @@ export function CashflowTrendChart({ monthlySeries, currency }: CashflowTrendCha
 }
 ```
 
-- [ ] **Step 2: Lista fonti di entrata**
+- [ ] **Step 2: Income sources list**
 
-Crea `components/domain/cashflow/income-sources-list.tsx`:
+Create `components/domain/cashflow/income-sources-list.tsx`:
 
 ```typescript
-/** Blocco "Fonti di entrata": una riga per categoria di tipo entrata, con importo e quota % sul totale entrate del periodo. */
+/** "Fonti di entrata" block: one row per income-type category, with amount and % share of the period's total income. */
 
 import { CategoryAvatar } from "@/components/domain/categories";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2171,12 +2171,12 @@ export function IncomeSourcesList({ sources, currency }: IncomeSourcesListProps)
 }
 ```
 
-- [ ] **Step 3: Blocco "Dove va ogni euro"**
+- [ ] **Step 3: "Dove va ogni euro" block**
 
-Crea `components/domain/cashflow/where-it-goes-breakdown.tsx`:
+Create `components/domain/cashflow/where-it-goes-breakdown.tsx`:
 
 ```typescript
-/** Blocco "Dove va ogni euro" (mese corrente): Spese fisse, Spese variabili, Risparmio — importo e quota % sul totale entrate del mese. */
+/** "Dove va ogni euro" block (current month): fixed expenses, variable expenses, savings — amount and % share of the month's total income. */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -2221,14 +2221,14 @@ export function WhereItGoesBreakdown({ entries, currency }: WhereItGoesBreakdown
 }
 ```
 
-- [ ] **Step 4: Grafico risparmio accumulato**
+- [ ] **Step 4: Accumulated savings chart**
 
-Crea `components/domain/cashflow/accumulated-savings-chart.tsx`:
+Create `components/domain/cashflow/accumulated-savings-chart.tsx`:
 
 ```typescript
 "use client";
 
-/** Grafico "Risparmio accumulato": linea della somma cumulata del flusso netto lungo il periodo selezionato, con totale finale. */
+/** "Risparmio accumulato" chart: line of the cumulative sum of the net flow over the selected period, with the final total. */
 
 import { CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -2292,15 +2292,15 @@ export function AccumulatedSavingsChart({ entries, currency }: AccumulatedSaving
 }
 ```
 
-- [ ] **Step 5: Aggiorna il barrel**
+- [ ] **Step 5: Update the barrel**
 
-Sostituisci `components/domain/cashflow/index.ts` interamente:
+Replace `components/domain/cashflow/index.ts` entirely:
 
 ```typescript
 /**
  * components/domain/cashflow — barrel file
  *
- * Punto di ingresso unico per i componenti della schermata Cash flow.
+ * Single entry point for the components of the Cash flow screen.
  */
 
 export { CashflowPeriodSelector } from "./cashflow-period-selector";
@@ -2319,10 +2319,10 @@ export { AccumulatedSavingsChart } from "./accumulated-savings-chart";
 export type { AccumulatedSavingsChartProps } from "./accumulated-savings-chart";
 ```
 
-- [ ] **Step 6: Verifica di tipo**
+- [ ] **Step 6: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 7: Commit**
 
@@ -2333,22 +2333,22 @@ git commit -m "feat: grafici e liste Cash flow (entrate/uscite, fonti, dove va o
 
 ---
 
-### Task 11: Pagina Cash flow
+### Task 11: Cash flow page
 
 **Files:**
 - Create: `app/(app)/cash-flow/page.tsx`
 
 **Interfaces:**
-- Consuma: tutti i componenti del barrel `components/domain/cashflow` (Task 9-10); `useTransactionsQuery(from, to, "tutte")` (Task 4); `useCategoriesQuery`; `computeMonthlySeries`, `computeIncomeSources`, `computeWhereItGoes`, `computeAccumulatedSavings`, `getCashflowPeriodRange` (Task 8).
+- Consumes: all the components of the `components/domain/cashflow` barrel (Tasks 9-10); `useTransactionsQuery(from, to, "tutte")` (Task 4); `useCategoriesQuery`; `computeMonthlySeries`, `computeIncomeSources`, `computeWhereItGoes`, `computeAccumulatedSavings`, `getCashflowPeriodRange` (Task 8).
 
-- [ ] **Step 1: Implementa la pagina**
+- [ ] **Step 1: Implement the page**
 
-Crea `app/(app)/cash-flow/page.tsx`:
+Create `app/(app)/cash-flow/page.tsx`:
 
 ```typescript
 "use client";
 
-/** Pagina Cash flow: cruscotto di sola lettura — confronto entrate/uscite, fonti di entrata, dove va ogni euro, risparmio accumulato. */
+/** Cash flow page: read-only dashboard — income/outflow comparison, income sources, where every euro goes, accumulated savings. */
 
 import * as React from "react";
 import {
@@ -2376,7 +2376,7 @@ function toDateString(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-/** Finestra di fetch: 24 mesi prima del riferimento fino a oggi — copre il periodo massimo selezionabile (24M) più il confronto col periodo precedente. */
+/** Fetch window: 24 months before the reference date up to today — covers the maximum selectable period (24M) plus the comparison with the previous period. */
 function fetchWindow(referenceDate: Date): { from: string; to: string } {
   const from = new Date(referenceDate.getFullYear() - 4, referenceDate.getMonth(), 1);
   const to = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 0);
@@ -2453,15 +2453,15 @@ export default function CashFlowPage() {
 }
 ```
 
-- [ ] **Step 2: Verifica di tipo**
+- [ ] **Step 2: Type check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 3: Esegui l'intera suite per assicurarti che nulla si sia rotto**
+- [ ] **Step 3: Run the whole suite to make sure nothing broke**
 
 Run: `pnpm test`
-Expected: PASS su tutti i file (compresi quelli non toccati da questo piano).
+Expected: PASS on all files (including those not touched by this plan).
 
 - [ ] **Step 4: Commit**
 
@@ -2472,11 +2472,11 @@ git commit -m "feat: pagina Cash flow (KPI, entrate/uscite, fonti, dove va ogni 
 
 ---
 
-## Verifica manuale (non automatizzabile in questo sandbox)
+## Manual verification (cannot be automated in this sandbox)
 
-Nessun Postgres/Redis disponibile per un browser reale nelle sessioni agentiche di questo progetto (stesso vincolo di tutte le feature precedenti). Da verificare manualmente dall'utente dopo il merge:
-- Creare una categoria di tipo Entrata da `/categorie`, verificarne icona/colore.
-- Registrare un'entrata dal form di Transazioni (toggle Spesa/Entrata), verificare che compaia con importo positivo e non influenzi KPI/donut/trend di Transazioni.
-- Toggle Tutte/Uscite/Entrate sulla lista Transazioni.
-- Editare l'importo di un'entrata esistente (deve restare positiva) e provare a cambiarne la categoria verso una incompatibile (deve fallire, tranne verso "Da categorizzare").
-- Pagina Cash flow: 4 KPI, grafico entrate/uscite, fonti di entrata, dove va ogni euro (mese corrente), risparmio accumulato — su tutti e 4 i periodi (3M/6M/12M/24M) e navigando avanti/indietro.
+No Postgres/Redis available for a real browser in the agentic sessions of this project (same constraint as all the previous features). To be verified manually by the user after the merge:
+- Create an Entrata-type category from `/categorie`, check its icon/color.
+- Record an income entry from the Transazioni form (Spesa/Entrata toggle), verify that it appears with a positive amount and does not affect the KPI/donut/trend of Transazioni.
+- Tutte/Uscite/Entrate toggle on the Transazioni list.
+- Edit the amount of an existing income entry (it must stay positive) and try to change its category to an incompatible one (it must fail, except towards "Da categorizzare").
+- Cash flow page: 4 KPIs, income/outflow chart, income sources, where every euro goes (current month), accumulated savings — on all 4 periods (3M/6M/12M/24M) and navigating forward/backward.

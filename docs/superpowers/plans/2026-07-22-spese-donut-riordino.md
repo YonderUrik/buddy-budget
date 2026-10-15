@@ -1,52 +1,39 @@
-# Spese: torta multilivello e riordino sezioni — Implementation Plan
+# Spese: multi-level pie and section reordering — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Sostituire il donut "Fisse vs variabili" + la lista budget separata con una torta multilivello unica (layer interno tipo, layer esterno categoria) con legenda budget/percentuali integrata, e spostare la lista transazioni sopra il grafico "Andamento ultimi 6 mesi".
+**Goal:** Replace the "Fisse vs variabili" ("Fixed vs variable") donut + the separate budget list with a single multi-level pie (inner layer: type, outer layer: category) with an integrated budget/percentages legend, and move the transaction list above the "Andamento ultimi 6 mesi" ("Last 6 months trend") chart.
 
-**Architecture:** Nuovo componente `CategoryBreakdownDonut` (nested `<Pie>` recharts + legenda custom) sostituisce `CategoryBreakdown` e la parte donut di `ExpenseCharts`; `ExpenseCharts` viene rinominato `ExpenseTrendChart` e trattiene solo il bar chart. Nessuna nuova funzione di calcolo: `computeCategoryBreakdown`/`computeFixedVsVariable` esistenti bastano. Un nuovo modulo puro (`category-breakdown-donut.utils.ts`) isola ordinamento categorie e calcolo percentuali, testato con vitest.
+**Architecture:** A new `CategoryBreakdownDonut` component (nested recharts `<Pie>` + custom legend) replaces `CategoryBreakdown` and the donut part of `ExpenseCharts`; `ExpenseCharts` is renamed `ExpenseTrendChart` and keeps only the bar chart. No new calculation function: the existing `computeCategoryBreakdown`/`computeFixedVsVariable` are enough. A new pure module (`category-breakdown-donut.utils.ts`) isolates category sorting and percentage calculation, tested with vitest.
 
-**Tech Stack:** Next.js App Router, TypeScript, recharts (via `ChartContainer`/`ChartTooltip` di shadcn), TanStack Query (`useUpsertBudgetMutation` esistente), vitest.
+**Tech Stack:** Next.js App Router, TypeScript, recharts (via shadcn's `ChartContainer`/`ChartTooltip`), TanStack Query (existing `useUpsertBudgetMutation`), vitest.
 
 ## Global Constraints
 
-- Tutte le stringhe visibili all'utente in italiano (vedi CLAUDE.md — "Convenzioni componenti").
-- Nessun colore hardcoded nei componenti: usare token tema. Eccezione tecnica documentata in Task 1: i valori hex per la torta (fill di `Cell` recharts, che richiede un valore CSS letterale, non una classe Tailwind) vivono **solo** come nuovi token in `app/globals.css` (`:root` e `.dark`), mai come stringa letterale in un componente.
-- JSDoc minimo (una riga `/** ... */`) su ogni componente e funzione pubblica esportata.
-- Import esterni sempre dal barrel `components/domain/expenses/index.ts`, mai dai file interni.
-- `components/domain/` non deve dipendere da `app/`.
+- All user-visible strings in Italian (see CLAUDE.md — "Convenzioni componenti").
+- No hardcoded colors in components: use theme tokens. Technical exception documented in Task 1: the hex values for the pie (fill of recharts `Cell`, which requires a literal CSS value, not a Tailwind class) live **only** as new tokens in `app/globals.css` (`:root` and `.dark`), never as a literal string in a component.
+- Minimal JSDoc (one `/** ... */` line) on every exported public component and function.
+- External imports always from the `components/domain/expenses/index.ts` barrel, never from internal files.
+- `components/domain/` must not depend on `app/`.
 - Package manager: pnpm. Test: `pnpm exec vitest run <path>`. Build: `pnpm build`. Lint: `pnpm lint`.
-- Nessuna modifica a `lib/calc/expenses.ts`, alle route API, a `SplitSlider` o `TransactionRow`.
+- No changes to `lib/calc/expenses.ts`, the API routes, `SplitSlider` or `TransactionRow`.
 
 ---
 
-### Task 1: Token colore per la torta categorie
+### Task 1: Color tokens for the category pie
 
 **Files:**
-- Modify: `app/globals.css` (blocchi `:root` e `.dark`)
+- Modify: `app/globals.css` (`:root` and `.dark` blocks)
 - Modify: `components/domain/shared/color-swatches.ts`
 
 **Interfaces:**
-- Produces: `SWATCH_CHART_COLOR: Record<SwatchColor, string>` — mappa ogni `SwatchColor` (`slate`/`blue`/`green`/`yellow`/`purple`/`orange`/`red`/`teal`) a una stringa `var(--swatch-<colore>)` utilizzabile come `fill` letterale in un `Cell` recharts.
+- Produces: `SWATCH_CHART_COLOR: Record<SwatchColor, string>` — maps each `SwatchColor` (`slate`/`blue`/`green`/`yellow`/`purple`/`orange`/`red`/`teal`) to a `var(--swatch-<colore>)` string usable as a literal `fill` in a recharts `Cell`.
 
-**Nota:** nessun test dedicato per questo task — `COLOR_SWATCH_MAP` e `COLOR_DOT`, già esistenti nello stesso file, sono mappe statiche prive di test, stessa convenzione qui.
+**Note:** no dedicated test for this task — `COLOR_SWATCH_MAP` and `COLOR_DOT`, already in the same file, are static maps without tests; same convention here.
 
-- [ ] **Step 1: Aggiungi gli 8 nuovi token colore a `app/globals.css`**
+- [ ] **Step 1: Add the 8 new color tokens to `app/globals.css`**
 
-Nel blocco `:root` (dopo la riga `--chart-5: #b6c4bc;`, riga 87), aggiungi:
-
-```css
-  --swatch-slate: #94a3b8;
-  --swatch-blue: #3b82f6;
-  --swatch-green: #22c55e;
-  --swatch-yellow: #facc15;
-  --swatch-purple: #a855f6;
-  --swatch-orange: #f97316;
-  --swatch-red: #ef4444;
-  --swatch-teal: #14b8a6;
-```
-
-Nel blocco `.dark` (dopo la riga `--chart-5: #2f4940;`, riga 129), aggiungi lo stesso blocco (stessi valori — le swatch color già oggi non variano per tema, vedi `COLOR_DOT` nello stesso file che usa un'unica classe senza variante `dark:`):
+In the `:root` block (after the line `--chart-5: #b6c4bc;`, line 87), add:
 
 ```css
   --swatch-slate: #94a3b8;
@@ -59,12 +46,25 @@ Nel blocco `.dark` (dopo la riga `--chart-5: #2f4940;`, riga 129), aggiungi lo s
   --swatch-teal: #14b8a6;
 ```
 
-- [ ] **Step 2: Aggiungi la mappa `SWATCH_CHART_COLOR` in `color-swatches.ts`**
+In the `.dark` block (after the line `--chart-5: #2f4940;`, line 129), add the same block (same values — the swatch colors already don't vary by theme today, see `COLOR_DOT` in the same file, which uses a single class without a `dark:` variant):
 
-Apri `components/domain/shared/color-swatches.ts` e aggiungi in fondo al file (dopo `COLOR_DOT`):
+```css
+  --swatch-slate: #94a3b8;
+  --swatch-blue: #3b82f6;
+  --swatch-green: #22c55e;
+  --swatch-yellow: #facc15;
+  --swatch-purple: #a855f6;
+  --swatch-orange: #f97316;
+  --swatch-red: #ef4444;
+  --swatch-teal: #14b8a6;
+```
+
+- [ ] **Step 2: Add the `SWATCH_CHART_COLOR` map in `color-swatches.ts`**
+
+Open `components/domain/shared/color-swatches.ts` and add at the bottom of the file (after `COLOR_DOT`):
 
 ```ts
-/** Mappa colore -> CSS var per la torta multilivello (recharts richiede un valore letterale, non una classe Tailwind). */
+/** Color -> CSS var map for the multi-level pie (recharts requires a literal value, not a Tailwind class). */
 export const SWATCH_CHART_COLOR: Record<SwatchColor, string> = {
   slate: "var(--swatch-slate)",
   blue: "var(--swatch-blue)",
@@ -77,10 +77,10 @@ export const SWATCH_CHART_COLOR: Record<SwatchColor, string> = {
 };
 ```
 
-- [ ] **Step 3: Verifica che il progetto compili**
+- [ ] **Step 3: Check that the project compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore (il file esporta solo una nuova costante, nessun consumatore ancora).
+Expected: no errors (the file only exports a new constant, no consumers yet).
 
 - [ ] **Step 4: Commit**
 
@@ -91,22 +91,22 @@ git commit -m "feat: aggiunge token colore swatch per la torta categorie spese"
 
 ---
 
-### Task 2: Modulo puro `category-breakdown-donut.utils.ts` (TDD)
+### Task 2: Pure module `category-breakdown-donut.utils.ts` (TDD)
 
 **Files:**
 - Create: `components/domain/expenses/category-breakdown-donut.utils.ts`
 - Test: `components/domain/expenses/category-breakdown-donut.utils.test.ts`
 
 **Interfaces:**
-- Consumes: `CategoryAmount` da `@/lib/calc/expenses` (già esiste: `{ categoryId, name, type: "fissa"|"variabile", amount, color, icon }`).
+- Consumes: `CategoryAmount` from `@/lib/calc/expenses` (already exists: `{ categoryId, name, type: "fissa"|"variabile", amount, color, icon }`).
 - Produces:
   - `sortCategoryAmounts(categoryAmounts: CategoryAmount[]): CategoryAmount[]`
   - `computeBudgetStats(amount: number, budgetAmount: number, totalSpeso: number): BudgetStats`
   - `interface BudgetStats { saturazionePct: number | null; quotaPct: number | null }`
 
-- [ ] **Step 1: Scrivi i test (falliranno — il modulo non esiste ancora)**
+- [ ] **Step 1: Write the tests (they will fail — the module does not exist yet)**
 
-Crea `components/domain/expenses/category-breakdown-donut.utils.test.ts`:
+Create `components/domain/expenses/category-breakdown-donut.utils.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -184,21 +184,21 @@ describe("computeBudgetStats", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run components/domain/expenses/category-breakdown-donut.utils.test.ts`
 Expected: FAIL — `Cannot find module './category-breakdown-donut.utils'`
 
-- [ ] **Step 3: Implementa il modulo**
+- [ ] **Step 3: Implement the module**
 
-Crea `components/domain/expenses/category-breakdown-donut.utils.ts`:
+Create `components/domain/expenses/category-breakdown-donut.utils.ts`:
 
 ```ts
 import type { CategoryAmount } from "@/lib/calc/expenses";
 
 const TYPE_ORDER: Record<CategoryAmount["type"], number> = { fissa: 0, variabile: 1 };
 
-/** Ordina le categorie per tipo (fissa prima di variabile) e, dentro ogni gruppo, per importo speso decrescente. */
+/** Sorts categories by type (fixed before variable) and, within each group, by amount spent descending. */
 export function sortCategoryAmounts(categoryAmounts: CategoryAmount[]): CategoryAmount[] {
   return [...categoryAmounts].sort((a, b) => {
     if (a.type !== b.type) return TYPE_ORDER[a.type] - TYPE_ORDER[b.type];
@@ -207,13 +207,13 @@ export function sortCategoryAmounts(categoryAmounts: CategoryAmount[]): Category
 }
 
 export interface BudgetStats {
-  /** Percentuale di saturazione del budget (speso / budget * 100). null se il budget è 0 (non calcolabile). */
+  /** Budget saturation percentage (spent / budget * 100). null if the budget is 0 (cannot be computed). */
   saturazionePct: number | null;
-  /** Percentuale sul totale speso nel periodo (speso / totale * 100). null se il totale è 0 (non calcolabile). */
+  /** Percentage of the total spent in the period (spent / total * 100). null if the total is 0 (cannot be computed). */
   quotaPct: number | null;
 }
 
-/** Calcola le percentuali di saturazione budget e quota sul totale speso per una categoria. */
+/** Computes the budget saturation and share-of-total-spent percentages for a category. */
 export function computeBudgetStats(amount: number, budgetAmount: number, totalSpeso: number): BudgetStats {
   return {
     saturazionePct: budgetAmount > 0 ? (amount / budgetAmount) * 100 : null,
@@ -222,10 +222,10 @@ export function computeBudgetStats(amount: number, budgetAmount: number, totalSp
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run components/domain/expenses/category-breakdown-donut.utils.test.ts`
-Expected: PASS — 9 test verdi
+Expected: PASS — 9 green tests
 
 - [ ] **Step 5: Commit**
 
@@ -236,41 +236,41 @@ git commit -m "feat: aggiunge ordinamento categorie e calcolo percentuali budget
 
 ---
 
-### Task 3: Componente `CategoryBreakdownDonut`
+### Task 3: `CategoryBreakdownDonut` component
 
 **Files:**
 - Create: `components/domain/expenses/category-breakdown-donut.tsx`
 
 **Interfaces:**
 - Consumes:
-  - `sortCategoryAmounts`, `computeBudgetStats`, `BudgetStats` da `./category-breakdown-donut.utils` (Task 2)
-  - `SWATCH_CHART_COLOR` da `@/components/domain/shared/color-swatches` (Task 1)
-  - `CategoryAvatar` da `@/components/domain/categories`
-  - `useUpsertBudgetMutation` da `@/lib/queries/budgets`
-  - `CategoryAmount`, `FixedVsVariable` da `@/lib/calc/expenses`
-  - `Budget` da `@/lib/db/schema/budgets`
-  - `CategoryColor`, `CategoryIcon` da `@/lib/validation/categories`
-  - `ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `ChartConfig` da `@/components/ui/chart`
-  - `Card`, `CardContent`, `CardHeader`, `CardTitle` da `@/components/ui/card`
-  - `Input` da `@/components/ui/input`
-  - `Badge` da `@/components/ui/badge`
-  - `formatCurrency` da `@/lib/format`
-- Produces: `CategoryBreakdownDonut` componente, `CategoryBreakdownDonutProps { categoryAmounts: CategoryAmount[]; fixedVsVariable: FixedVsVariable; budgets: Budget[]; currency: string }` — consumati da Task 5 (`page.tsx`) e dal barrel (Task 5).
+  - `sortCategoryAmounts`, `computeBudgetStats`, `BudgetStats` from `./category-breakdown-donut.utils` (Task 2)
+  - `SWATCH_CHART_COLOR` from `@/components/domain/shared/color-swatches` (Task 1)
+  - `CategoryAvatar` from `@/components/domain/categories`
+  - `useUpsertBudgetMutation` from `@/lib/queries/budgets`
+  - `CategoryAmount`, `FixedVsVariable` from `@/lib/calc/expenses`
+  - `Budget` from `@/lib/db/schema/budgets`
+  - `CategoryColor`, `CategoryIcon` from `@/lib/validation/categories`
+  - `ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `ChartConfig` from `@/components/ui/chart`
+  - `Card`, `CardContent`, `CardHeader`, `CardTitle` from `@/components/ui/card`
+  - `Input` from `@/components/ui/input`
+  - `Badge` from `@/components/ui/badge`
+  - `formatCurrency` from `@/lib/format`
+- Produces: `CategoryBreakdownDonut` component, `CategoryBreakdownDonutProps { categoryAmounts: CategoryAmount[]; fixedVsVariable: FixedVsVariable; budgets: Budget[]; currency: string }` — consumed by Task 5 (`page.tsx`) and by the barrel (Task 5).
 
-**Nota testing:** nessun test unitario per questo file — è un componente React e il progetto non ha React Testing Library/jsdom configurati (stessa convenzione di `CategoryBreakdown`/`ExpenseCharts` esistenti, mai testati direttamente). Verifica tramite build/lint (Step 2) + verifica manuale utente finale.
+**Testing note:** no unit test for this file — it is a React component and the project has no React Testing Library/jsdom configured (same convention as the existing `CategoryBreakdown`/`ExpenseCharts`, never tested directly). Verified via build/lint (Step 2) + final manual verification by the user.
 
-- [ ] **Step 1: Crea il componente**
+- [ ] **Step 1: Create the component**
 
-Crea `components/domain/expenses/category-breakdown-donut.tsx`:
+Create `components/domain/expenses/category-breakdown-donut.tsx`:
 
 ```tsx
 "use client";
 
 /**
- * Blocco "Per categoria": torta multilivello (layer interno tipo fissa/variabile, layer esterno categoria) e
- * legenda con budget mensile editabile, percentuale di saturazione budget e percentuale sul totale speso nel
- * periodo. Unifica il vecchio donut "Fisse vs variabili" e la lista budget separata in un'unica card. Il
- * salvataggio del budget avviene on-blur, stessa convenzione di add-account-form.tsx.
+ * "Per categoria" ("By category") block: multi-level pie (inner layer: fixed/variable type, outer layer: category) and
+ * legend with editable monthly budget, budget saturation percentage and percentage of the total spent in the
+ * period. Merges the old "Fisse vs variabili" donut and the separate budget list into a single card. The
+ * budget is saved on blur, same convention as add-account-form.tsx.
  */
 
 import * as React from "react";
@@ -294,10 +294,10 @@ const TYPE_CONFIG = {
   variabile: { label: "Variabili", color: "var(--chart-2)" },
 } satisfies ChartConfig;
 
-/** Soglia di saturazione oltre la quale il badge budget passa allo stile "sopra budget". */
+/** Saturation threshold above which the budget badge switches to the "over budget" style. */
 const BUDGET_OVER_THRESHOLD_PCT = 100;
 
-/** Formatta il valore del tooltip (nome + importo in valuta) al posto del default numerico di ChartTooltipContent. */
+/** Formats the tooltip value (name + amount in currency) instead of ChartTooltipContent's numeric default. */
 function tooltipValueFormatter(currency: string) {
   return function TooltipValue(value: ValueType | undefined, name: NameType | undefined) {
     return (
@@ -333,7 +333,7 @@ export function CategoryBreakdownDonut({
     return budget ? Number(budget.monthlyAmount) : 0;
   }
 
-  /** Valida e invia il nuovo budget per una categoria. Ritorna false se il valore non è valido (nessuna mutation inviata). */
+  /** Validates and sends the new budget for a category. Returns false if the value is invalid (no mutation sent). */
   function commitBudget(categoryId: string, raw: string): boolean {
     const normalized = raw.trim().replace(",", ".");
     const value = Number(normalized);
@@ -429,15 +429,15 @@ interface CategoryLegendRowProps {
   saturazionePct: number | null;
   quotaPct: number | null;
   currency: string;
-  /** True mentre il budget di questa categoria è in salvataggio. */
+  /** True while this category's budget is being saved. */
   isSaving: boolean;
-  /** True se l'ultimo tentativo di salvataggio per questa categoria è fallito. */
+  /** True if the last save attempt for this category failed. */
   hasError: boolean;
-  /** Valida e invia il nuovo valore; ritorna false se non valido (l'input va ripristinato). */
+  /** Validates and sends the new value; returns false if invalid (the input must be restored). */
   onCommitBudget: (raw: string) => boolean;
 }
 
-/** Riga legenda: avatar+nome categoria, importo speso, budget editabile inline, badge saturazione/quota. */
+/** Legend row: category avatar+name, amount spent, inline-editable budget, saturation/share badge. */
 function CategoryLegendRow({
   entry,
   budgetAmount,
@@ -502,10 +502,10 @@ function CategoryLegendRow({
 }
 ```
 
-- [ ] **Step 2: Verifica che il progetto compili**
+- [ ] **Step 2: Check that the project compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore (il file non è ancora importato da nessuna parte, ma deve essere internamente coerente).
+Expected: no errors (the file is not imported anywhere yet, but it must be internally consistent).
 
 - [ ] **Step 3: Commit**
 
@@ -516,25 +516,25 @@ git commit -m "feat: aggiunge torta multilivello con legenda budget per Spese"
 
 ---
 
-### Task 4: `ExpenseTrendChart` (rinomina di `ExpenseCharts`)
+### Task 4: `ExpenseTrendChart` (rename of `ExpenseCharts`)
 
 **Files:**
 - Create: `components/domain/expenses/expense-trend-chart.tsx`
 - Delete: `components/domain/expenses/expense-charts.tsx`
 
 **Interfaces:**
-- Produces: `ExpenseTrendChart` componente, `ExpenseTrendChartProps { monthlyTrend: MonthlyTotal[]; currency: string }` — consumati da Task 5 (`page.tsx`) e dal barrel (Task 5).
+- Produces: `ExpenseTrendChart` component, `ExpenseTrendChartProps { monthlyTrend: MonthlyTotal[]; currency: string }` — consumed by Task 5 (`page.tsx`) and by the barrel (Task 5).
 
-**Nota testing:** nessun test unitario — stesso motivo del Task 3 (componente React, nessun harness di rendering nel progetto).
+**Testing note:** no unit test — same reason as Task 3 (React component, no rendering harness in the project).
 
-- [ ] **Step 1: Crea il nuovo file, solo bar chart**
+- [ ] **Step 1: Create the new file, bar chart only**
 
-Crea `components/domain/expenses/expense-trend-chart.tsx`:
+Create `components/domain/expenses/expense-trend-chart.tsx`:
 
 ```tsx
 "use client";
 
-/** Grafico Spese: barre "Andamento ultimi 6 mesi". */
+/** Spese chart: "Andamento ultimi 6 mesi" bars. */
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
@@ -552,7 +552,7 @@ export interface ExpenseTrendChartProps {
   currency: string;
 }
 
-/** Formatta il valore del tooltip (nome + importo in valuta) al posto del default numerico di ChartTooltipContent. */
+/** Formats the tooltip value (name + amount in currency) instead of ChartTooltipContent's numeric default. */
 function tooltipValueFormatter(currency: string) {
   return function TooltipValue(value: ValueType | undefined, name: NameType | undefined) {
     return (
@@ -592,16 +592,16 @@ export function ExpenseTrendChart({ monthlyTrend, currency }: ExpenseTrendChartP
 }
 ```
 
-- [ ] **Step 2: Elimina il vecchio file**
+- [ ] **Step 2: Delete the old file**
 
 ```bash
 git rm components/domain/expenses/expense-charts.tsx
 ```
 
-- [ ] **Step 3: Verifica che il progetto compili**
+- [ ] **Step 3: Check that the project compiles**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: errori attesi solo su `index.ts` e `page.tsx` (import ancora puntati al vecchio `expense-charts`/`category-breakdown` — risolti nel Task 5). Se compaiono altri errori inattesi, indagare prima di proseguire.
+Expected: errors expected only on `index.ts` and `page.tsx` (imports still pointing to the old `expense-charts`/`category-breakdown` — resolved in Task 5). If other unexpected errors appear, investigate before going on.
 
 - [ ] **Step 4: Commit**
 
@@ -612,7 +612,7 @@ git commit -m "refactor: rinomina expense-charts in expense-trend-chart, solo ba
 
 ---
 
-### Task 5: Barrel, riordino pagina Spese e pulizia
+### Task 5: Barrel, Spese page reordering and cleanup
 
 **Files:**
 - Modify: `components/domain/expenses/index.ts`
@@ -622,9 +622,9 @@ git commit -m "refactor: rinomina expense-charts in expense-trend-chart, solo ba
 **Interfaces:**
 - Consumes: `CategoryBreakdownDonut`/`CategoryBreakdownDonutProps` (Task 3), `ExpenseTrendChart`/`ExpenseTrendChartProps` (Task 4).
 
-- [ ] **Step 1: Aggiorna il barrel**
+- [ ] **Step 1: Update the barrel**
 
-In `components/domain/expenses/index.ts`, sostituisci:
+In `components/domain/expenses/index.ts`, replace:
 
 ```ts
 export { CategoryBreakdown } from "./category-breakdown";
@@ -633,7 +633,7 @@ export { ExpenseCharts } from "./expense-charts";
 export type { ExpenseChartsProps } from "./expense-charts";
 ```
 
-con:
+with:
 
 ```ts
 export { CategoryBreakdownDonut } from "./category-breakdown-donut";
@@ -642,15 +642,15 @@ export { ExpenseTrendChart } from "./expense-trend-chart";
 export type { ExpenseTrendChartProps } from "./expense-trend-chart";
 ```
 
-- [ ] **Step 2: Elimina il vecchio `category-breakdown.tsx`**
+- [ ] **Step 2: Delete the old `category-breakdown.tsx`**
 
 ```bash
 git rm components/domain/expenses/category-breakdown.tsx
 ```
 
-- [ ] **Step 3: Aggiorna l'import in `app/(app)/spese/page.tsx`**
+- [ ] **Step 3: Update the import in `app/(app)/spese/page.tsx`**
 
-Sostituisci (righe 6-13):
+Replace (lines 6-13):
 
 ```ts
 import {
@@ -663,7 +663,7 @@ import {
 } from "@/components/domain/expenses";
 ```
 
-con:
+with:
 
 ```ts
 import {
@@ -676,9 +676,9 @@ import {
 } from "@/components/domain/expenses";
 ```
 
-- [ ] **Step 4: Riordina il corpo della pagina**
+- [ ] **Step 4: Reorder the page body**
 
-Sostituisci l'intero blocco JSX tra `<>` e `</>` (righe 122-176 circa, dentro l'`else` del rendering principale) con:
+Replace the whole JSX block between `<>` and `</>` (roughly lines 122-176, inside the `else` of the main rendering) with:
 
 ```tsx
         <>
@@ -738,21 +738,21 @@ Sostituisci l'intero blocco JSX tra `<>` e `</>` (righe 122-176 circa, dentro l'
         </>
 ```
 
-- [ ] **Step 5: Verifica che il progetto compili, che il lint passi e che la build funzioni**
+- [ ] **Step 5: Check that the project compiles, lint passes and the build works**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 Run: `pnpm lint`
-Expected: nessun errore
+Expected: no errors
 
 Run: `pnpm build`
-Expected: build completata senza errori
+Expected: build completed without errors
 
-- [ ] **Step 6: Esegui l'intera suite di test**
+- [ ] **Step 6: Run the whole test suite**
 
 Run: `pnpm test`
-Expected: tutti i test passano (inclusi i nuovi 9 di `category-breakdown-donut.utils.test.ts`)
+Expected: all tests pass (including the 9 new ones in `category-breakdown-donut.utils.test.ts`)
 
 - [ ] **Step 7: Commit**
 
@@ -763,48 +763,48 @@ git commit -m "refactor: riordina pagina Spese, sostituisce blocco budget/donut 
 
 ---
 
-## Verifica manuale (non automatizzabile in questa sessione)
+## Manual verification (not automatable in this session)
 
-Come per le feature precedenti in questa schermata (vedi CLAUDE.md), nessun Postgres/Redis è disponibile nel sandbox agentico: la verifica visiva finale in browser resta da fare dall'utente. Punti da controllare:
-- Allineamento angolare tra layer interno (tipo) e layer esterno (categoria) della torta.
-- Leggibilità della legenda su mobile (colonna impilata) e desktop (affiancata).
-- Editing budget inline invariato (salvataggio on-blur, stato errore).
-- Badge percentuali nei casi limite: budget a 0 (`—`), categoria a spesa zero, saturazione oltre il 100% (stile "sopra budget").
-- Nuovo ordine sezioni: KPI → torta+legenda → lista transazioni → andamento 6 mesi.
+As for the earlier features on this screen (see CLAUDE.md), no Postgres/Redis is available in the agentic sandbox: the final visual check in the browser is left to the user. Points to check:
+- Angular alignment between the pie's inner layer (type) and outer layer (category).
+- Legend readability on mobile (stacked column) and desktop (side by side).
+- Inline budget editing unchanged (on-blur save, error state).
+- Percentage badges in edge cases: budget at 0 (`—`), category with zero spending, saturation above 100% ("over budget" style).
+- New section order: KPIs → pie+legend → transaction list → 6-month trend.
 
 ---
 
-### Task 6: Legenda scrollabile e icone categoria nelle fette (addendum post-review)
+### Task 6: Scrollable legend and category icons in the slices (post-review addendum)
 
-**Contesto:** dopo la review finale (Task 1-5 approvati, pronto al merge), l'utente ha chiesto due modifiche prima di mergiare, testate sul componente reale: con molte categorie la legenda occupa più spazio verticale del grafico, sbilanciando la card; e vorrebbe l'icona categoria leggibile direttamente nelle fette dell'anello esterno (nascosta se la fetta è troppo piccola). Dettagli di design in `docs/superpowers/specs/2026-07-22-spese-donut-riordino-design.md`, sezione "Addendum 2026-07-22".
+**Context:** after the final review (Tasks 1-5 approved, ready to merge), the user asked for two changes before merging, tested on the real component: with many categories the legend takes more vertical space than the chart, unbalancing the card; and they would like the category icon readable directly in the slices of the outer ring (hidden if the slice is too small). Design details in `docs/superpowers/specs/2026-07-22-spese-donut-riordino-design.md`, section "Addendum 2026-07-22".
 
 **Files:**
-- Modify: `components/domain/categories/index.ts` (barrel — aggiunge export di `ICON_MAP`)
+- Modify: `components/domain/categories/index.ts` (barrel — adds the `ICON_MAP` export)
 - Modify: `components/domain/expenses/category-breakdown-donut.tsx`
 
 **Interfaces:**
-- Consumes: `ICON_MAP: Record<CategoryIcon, LucideIcon>` (già esiste in `components/domain/categories/category-avatar.tsx`, non ancora esportato dal barrel — questo task lo espone).
-- Nessuna nuova funzione pura, nessun nuovo file di test (il filtro 5% usa il `percent` già calcolato da recharts, passthrough puro).
+- Consumes: `ICON_MAP: Record<CategoryIcon, LucideIcon>` (already exists in `components/domain/categories/category-avatar.tsx`, not yet exported from the barrel — this task exposes it).
+- No new pure function, no new test file (the 5% filter uses the `percent` already computed by recharts, pure passthrough).
 
-- [ ] **Step 1: Esporta `ICON_MAP` dal barrel delle categorie**
+- [ ] **Step 1: Export `ICON_MAP` from the categories barrel**
 
-In `components/domain/categories/index.ts`, sostituisci la riga:
+In `components/domain/categories/index.ts`, replace the line:
 
 ```ts
 export { CategoryAvatar } from "./category-avatar";
 ```
 
-con:
+with:
 
 ```ts
 export { CategoryAvatar, ICON_MAP } from "./category-avatar";
 ```
 
-(Il resto del file, incluso `export type { CategoryAvatarProps } from "./category-avatar";` e gli altri export, resta invariato.)
+(The rest of the file, including `export type { CategoryAvatarProps } from "./category-avatar";` and the other exports, stays unchanged.)
 
-- [ ] **Step 2: Aggiorna gli import in `category-breakdown-donut.tsx`**
+- [ ] **Step 2: Update the imports in `category-breakdown-donut.tsx`**
 
-Sostituisci il blocco import (righe 10-24) con:
+Replace the import block (lines 10-24) with:
 
 ```tsx
 import * as React from "react";
@@ -826,25 +826,25 @@ import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { computeBudgetStats, sortCategoryAmounts } from "./category-breakdown-donut.utils";
 ```
 
-- [ ] **Step 3: Aggiungi la funzione di rendering dell'icona, subito dopo `BUDGET_OVER_THRESHOLD_PCT`**
+- [ ] **Step 3: Add the icon rendering function, right after `BUDGET_OVER_THRESHOLD_PCT`**
 
-Trova questo blocco esistente:
+Find this existing block:
 
 ```tsx
-/** Soglia di saturazione oltre la quale il badge budget passa allo stile "sopra budget". */
+/** Saturation threshold above which the budget badge switches to the "over budget" style. */
 const BUDGET_OVER_THRESHOLD_PCT = 100;
 ```
 
-e aggiungi subito dopo (prima di `tooltipValueFormatter`):
+and add right after it (before `tooltipValueFormatter`):
 
 ```tsx
 
-/** Soglia sotto la quale l'icona categoria non viene mostrata nella fetta (troppo piccola per essere leggibile). */
+/** Threshold below which the category icon is not shown in the slice (too small to be readable). */
 const PIE_ICON_MIN_PERCENT = 0.05;
-/** Dimensione in px dell'icona categoria renderizzata dentro una fetta. */
+/** Size in px of the category icon rendered inside a slice. */
 const PIE_ICON_SIZE = 16;
 
-/** Renderizza l'icona della categoria al centro radiale della sua fetta nell'anello esterno; nasconde l'icona sotto PIE_ICON_MIN_PERCENT. */
+/** Renders the category icon at the radial center of its slice in the outer ring; hides the icon below PIE_ICON_MIN_PERCENT. */
 function renderCategoryIcon(props: PieLabelRenderProps) {
   const { cx, cy, midAngle, innerRadius, outerRadius, percent, payload } = props;
   if (percent === undefined || percent < PIE_ICON_MIN_PERCENT) return null;
@@ -865,9 +865,9 @@ function renderCategoryIcon(props: PieLabelRenderProps) {
 }
 ```
 
-- [ ] **Step 4: Aggiungi `icon` ai dati del layer esterno**
+- [ ] **Step 4: Add `icon` to the outer layer data**
 
-Sostituisci:
+Replace:
 
 ```tsx
   const outerData = sortedEntries
@@ -880,7 +880,7 @@ Sostituisci:
     }));
 ```
 
-con:
+with:
 
 ```tsx
   const outerData = sortedEntries
@@ -894,9 +894,9 @@ con:
     }));
 ```
 
-- [ ] **Step 5: Attiva le icone sul `<Pie>` esterno**
+- [ ] **Step 5: Enable the icons on the outer `<Pie>`**
 
-Sostituisci:
+Replace:
 
 ```tsx
             <Pie data={outerData} dataKey="value" nameKey="label" innerRadius={62} outerRadius={90}>
@@ -906,7 +906,7 @@ Sostituisci:
             </Pie>
 ```
 
-con:
+with:
 
 ```tsx
             <Pie
@@ -924,35 +924,35 @@ con:
             </Pie>
 ```
 
-- [ ] **Step 6: Rendi la legenda scrollabile con altezza massima pari al grafico**
+- [ ] **Step 6: Make the legend scrollable with a max height equal to the chart**
 
-Sostituisci:
+Replace:
 
 ```tsx
         <div className="divide-y divide-border">
 ```
 
-con:
+with:
 
 ```tsx
         <div className="max-h-56 divide-y divide-border overflow-y-auto">
 ```
 
-- [ ] **Step 7: Verifica che il progetto compili, che il lint non peggiori, e che la build funzioni**
+- [ ] **Step 7: Check that the project compiles, that lint does not get worse, and that the build works**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 Run: `pnpm lint`
-Expected: lo stesso conteggio di errori pre-esistente di prima di questo task (2 errori `react-hooks/set-state-in-effect`, non collegati — vedi Task 5). Nessun nuovo errore introdotto da questo task.
+Expected: the same pre-existing error count as before this task (2 `react-hooks/set-state-in-effect` errors, unrelated — see Task 5). No new errors introduced by this task.
 
 Run: `pnpm build`
-Expected: build completata senza errori
+Expected: build completed without errors
 
-- [ ] **Step 8: Esegui l'intera suite di test**
+- [ ] **Step 8: Run the whole test suite**
 
 Run: `pnpm test`
-Expected: stesso esito di prima di questo task (nessuna modifica a moduli testati; le uniche 2 failure pre-esistenti restano `lib/gocardless/scheduler.test.ts`)
+Expected: same outcome as before this task (no changes to tested modules; the only 2 pre-existing failures remain `lib/gocardless/scheduler.test.ts`)
 
 - [ ] **Step 9: Commit**
 

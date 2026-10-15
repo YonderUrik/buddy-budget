@@ -1,100 +1,100 @@
-# Schermata Conti (v1)
+# Conti screen (v1)
 
-**Data**: 2026-07-04
-**Stato**: approvato
+**Date**: 2026-07-04
+**Status**: approved
 
-## Contesto
+## Context
 
-Design system, layout shell e autenticazione sono completi (vedi log decisioni in `CLAUDE.md`). Questa è la prima schermata di dominio reale dell'app. `docs/functional-spec.md` (sezione 2, "Conti") definisce già cosa il mockup fa e le decisioni per il prodotto reale; questo spec le traduce in un design tecnico implementabile.
+Design system, layout shell and authentication are complete (see the decision log in `CLAUDE.md`). This is the first real domain screen of the app. `docs/functional-spec.md` (section 2, "Conti" — Accounts) already defines what the mockup does and the decisions for the real product; this spec turns them into an implementable technical design.
 
-## Cosa questo spec copre
+## What this spec covers
 
-- API (Route Handlers) per CRUD conti, scoped per utente
-- Layer di data fetching/mutation client (TanStack Query, nuova dipendenza)
-- Validazione input (Zod, nuova dipendenza)
-- Componenti UI in `components/domain/accounts/` e pagina `app/(app)/conti/page.tsx`
-- Gestione conti "Auto" (sola lettura + azione "Scollega") accanto ai conti manuali
-- Stati vuoto/caricamento/errore, conferma su azioni distruttive
-- Strategia di testing
+- API (Route Handlers) for account CRUD, scoped per user
+- Client data fetching/mutation layer (TanStack Query, new dependency)
+- Input validation (Zod, new dependency)
+- UI components in `components/domain/accounts/` and the page `app/(app)/conti/page.tsx`
+- Handling of "Auto" accounts (read-only + "Scollega" — "Disconnect" — action) next to manual accounts
+- Empty/loading/error states, confirmation on destructive actions
+- Testing strategy
 
-## Cosa NON copre (fuori scope)
+## What it does NOT cover (out of scope)
 
-- **Integrazione bancaria reale** (Open Banking/PSD2): resta fuori scope per intero. I conti "Auto" nella v1 non hanno alcun modo di essere creati automaticamente — la UI per gestirli (badge, sola lettura, "Scollega") viene costruita in anticipo, pronta per quando un'integrazione reale esisterà, ma nel frattempo un conto "Auto" può esistere solo se inserito manualmente nel DB (es. per test).
-- **KPI "Patrimonio netto"**: rimandato a quando esistono le entità Investimenti, Debiti e Immobile. La v1 mostra "Patrimonio netto (solo liquidità)" come sostituto esplicitamente etichettato, per non promettere una cifra che non è ancora reale.
-- Ricerca/paginazione/filtri sulla lista conti: non necessari al volume atteso (pochi conti per utente).
-- Modifica di banca/tipo per conti Auto: restano derivati dalla fonte, non modificabili (solo "Scollega").
+- **Real banking integration** (Open Banking/PSD2): stays entirely out of scope. In v1 "Auto" accounts have no way to be created automatically — the UI to manage them (badge, read-only, "Scollega") is built ahead of time, ready for when a real integration exists, but in the meantime an "Auto" account can only exist if inserted manually into the DB (e.g. for tests).
+- **"Patrimonio netto" (net worth) KPI**: deferred until the Investimenti, Debiti and Immobile entities exist. v1 shows "Patrimonio netto (solo liquidità)" (net worth, cash only) as an explicitly labelled substitute, so as not to promise a figure that is not real yet.
+- Search/pagination/filters on the account list: not needed at the expected volume (few accounts per user).
+- Editing the bank/type of Auto accounts: they stay derived from the source, not editable (only "Scollega").
 
 ---
 
-## 1. Modello dati
+## 1. Data model
 
-Nessuna modifica allo schema. `lib/db/schema/accounts.ts` copre già tutti i campi necessari:
+No schema changes. `lib/db/schema/accounts.ts` already covers all the needed fields:
 
-| Colonna | Tipo | Note |
+| Column | Type | Notes |
 |---|---|---|
 | `id` | uuid, PK | |
 | `user_id` | text, FK → `auth_user.id`, cascade | |
 | `name` | text, not null | |
-| `institution` | text, nullable | usato per iniziali visualizzate in UI |
-| `type` | text, not null | testo libero; UI propone una select con opzioni comuni + input libero |
+| `institution` | text, nullable | used for the initials shown in the UI |
+| `type` | text, not null | free text; the UI offers a select with common options + free input |
 | `balance` | numeric(12,2), not null, default 0 | |
 | `source` | enum `manuale` / `auto`, default `manuale` | |
 | `created_at` / `updated_at` | timestamp | |
 
-Le iniziali mostrate in UI (es. "BN" per "Banca Nazionale") sono derivate client-side da `institution` (o da `name` se `institution` è vuoto) — non serve una colonna dedicata.
+The initials shown in the UI (e.g. "BN" for "Banca Nazionale") are derived client-side from `institution` (or from `name` if `institution` is empty) — no dedicated column is needed.
 
 ## 2. API — Route Handlers
 
-Pattern seguito: `app/api/user/onboarding/route.ts` (sessione via `auth.api.getSession`, scoping per `userId`, nessun trust sui dati del body oltre l'id di sessione).
+Pattern followed: `app/api/user/onboarding/route.ts` (session via `auth.api.getSession`, scoping by `userId`, no trust in body data beyond the session id).
 
 **`app/api/accounts/route.ts`**
-- `GET`: lista conti dell'utente autenticato, ordinati per `createdAt` ascendente. 401 se non autenticato.
-- `POST`: crea conto manuale (`source` sempre `manuale`, non impostabile dal client). Valida body con Zod (`createAccountSchema`). 400 su validazione fallita, 401 su sessione mancante.
+- `GET`: list of the authenticated user's accounts, sorted by `createdAt` ascending. 401 if not authenticated.
+- `POST`: creates a manual account (`source` always `manuale`, not settable by the client). Validates the body with Zod (`createAccountSchema`). 400 on failed validation, 401 on missing session.
 
 **`app/api/accounts/[id]/route.ts`**
-- `PATCH`: aggiorna `name`/`institution`/`type`/`balance`. Se il conto è `source: auto`, rifiuta con 403 (nessun campo modificabile su un conto Auto — solo l'eliminazione/scollega è permessa). Verifica che il conto appartenga all'utente (404 altrimenti, non 403, per non rivelare l'esistenza di conti altrui).
-- `DELETE`: elimina il conto (usato sia per "elimina conto manuale" sia per "scollega conto auto" — stessa operazione lato dati, wording diverso solo in UI). Verifica ownership.
+- `PATCH`: updates `name`/`institution`/`type`/`balance`. If the account is `source: auto`, rejects with 403 (no editable field on an Auto account — only deletion/disconnect is allowed). Checks that the account belongs to the user (404 otherwise, not 403, so as not to reveal the existence of other people's accounts).
+- `DELETE`: deletes the account (used both for "delete manual account" and "disconnect auto account" — the same operation on the data side, different wording only in the UI). Checks ownership.
 
-Validazione condivisa in `lib/validation/accounts.ts` (Zod), usata sia nei Route Handlers sia (stessi schema) per la validazione client prima dell'invio.
+Shared validation in `lib/validation/accounts.ts` (Zod), used both in the Route Handlers and (same schemas) for client validation before sending.
 
-## 3. Data layer client — TanStack Query
+## 3. Client data layer — TanStack Query
 
-Nuova dipendenza (`@tanstack/react-query`), da aggiungere: era già prevista nell'architettura di `2026-07-03-tech-stack-architecture-design.md` ma non ancora installata.
+New dependency (`@tanstack/react-query`), to be added: it was already planned in the architecture of `2026-07-03-tech-stack-architecture-design.md` but not yet installed.
 
-- `QueryClientProvider` montato in `app/layout.tsx` (root, sopra `ThemeProvider`).
+- `QueryClientProvider` mounted in `app/layout.tsx` (root, above `ThemeProvider`).
 - `lib/queries/accounts.ts`:
   - `useAccountsQuery()` → `GET /api/accounts`
-  - `useCreateAccountMutation()` → `POST /api/accounts`, invalida la query lista al successo
-  - `useUpdateAccountMutation()` → `PATCH /api/accounts/:id`, invalida la query lista
-  - `useDeleteAccountMutation()` → `DELETE /api/accounts/:id`, invalida la query lista
+  - `useCreateAccountMutation()` → `POST /api/accounts`, invalidates the list query on success
+  - `useUpdateAccountMutation()` → `PATCH /api/accounts/:id`, invalidates the list query
+  - `useDeleteAccountMutation()` → `DELETE /api/accounts/:id`, invalidates the list query
 
-Nessun optimistic update per la v1: la lista è piccola, un refetch dopo mutazione è istantaneo (YAGNI — si introduce ottimistic update solo se la latenza percepita diventa un problema reale).
+No optimistic updates in v1: the list is small, a refetch after a mutation is instantaneous (YAGNI — optimistic updates will be introduced only if perceived latency becomes a real problem).
 
-## 4. Componenti UI
+## 4. UI components
 
-Layer `domain` (logica di dominio, compone primitive `ui`), pagina in `app/(app)/conti/`.
+`domain` layer (domain logic, composes `ui` primitives), page in `app/(app)/conti/`.
 
-- **`components/domain/accounts/accounts-kpi.tsx`** — 2 card KPI: "Liquidità totale" (somma balance), "Patrimonio netto (solo liquidità)" (stesso valore, etichetta esplicita), calcolate client-side con `useMemo` dalla lista già in cache. Conteggio "Conti collegati" come terzo valore (numero di righe).
-- **`components/domain/accounts/account-row.tsx`** — riga singola: iniziali istituto, nome, "banca · tipo", badge Auto/Manuale (`components/ui/badge.tsx` già esistente), saldo formattato secondo `authUser.currency` (`Intl.NumberFormat`). Conto manuale → nome/istituto/tipo/saldo editabili inline (salvataggio `onBlur` se il valore è cambiato ed è valido). Conto Auto → campi in sola lettura, bottone "Scollega" al posto del salvataggio inline.
-- **`components/domain/accounts/add-account-form.tsx`** — form "+ Aggiungi conto": nome, istituto (opzionale), tipo (select + libero), saldo iniziale. Submit → `useCreateAccountMutation`.
-- **`components/ui/alert-dialog.tsx`** — nuovo, da aggiungere via `pnpm dlx shadcn@latest add alert-dialog`. Riusato per conferma su "elimina conto manuale" e "scollega conto auto".
-- **`app/(app)/conti/page.tsx`** — orchestra: `useAccountsQuery`, rendering KPI + lista + form, stati loading/error/empty. Nessuna logica di business qui (solo composizione), coerente con la regola di `CLAUDE.md` su file di route.
+- **`components/domain/accounts/accounts-kpi.tsx`** — 2 KPI cards: "Liquidità totale" (total cash, sum of balances), "Patrimonio netto (solo liquidità)" (same value, explicit label), computed client-side with `useMemo` from the list already in cache. "Conti collegati" (connected accounts) count as a third value (number of rows).
+- **`components/domain/accounts/account-row.tsx`** — single row: institution initials, name, "bank · type", Auto/Manuale badge (`components/ui/badge.tsx`, already existing), balance formatted according to `authUser.currency` (`Intl.NumberFormat`). Manual account → name/institution/type/balance editable inline (saved `onBlur` if the value changed and is valid). Auto account → read-only fields, "Scollega" button instead of inline saving.
+- **`components/domain/accounts/add-account-form.tsx`** — "+ Aggiungi conto" (add account) form: name, institution (optional), type (select + free), initial balance. Submit → `useCreateAccountMutation`.
+- **`components/ui/alert-dialog.tsx`** — new, to be added via `pnpm dlx shadcn@latest add alert-dialog`. Reused for confirmation on "delete manual account" and "disconnect auto account".
+- **`app/(app)/conti/page.tsx`** — orchestrates: `useAccountsQuery`, rendering of KPIs + list + form, loading/error/empty states. No business logic here (composition only), consistent with the `CLAUDE.md` rule on route files.
 
-## 5. Stati e validazione
+## 5. States and validation
 
-- **Loading**: skeleton per le righe conto (no spinner a pagina intera).
-- **Empty** (nessun conto): messaggio esplicativo sopra il form "+ Aggiungi conto", che resta comunque visibile e utilizzabile.
-- **Errore** (fetch o mutation fallita): banner inline con testo errore + azione "Riprova". Nessun sistema di toast globale (non presente nello stack; da valutare se emerge un bisogno trasversale in più schermate).
-- **Validazione**: saldo/importi accettano sia virgola che punto come separatore decimale, convertiti prima dell'invio; nome non vuoto; tipo non vuoto (da select o libero). Stessa validazione Zod lato client (feedback immediato, prima della chiamata di rete) e lato server (fonte di verità, non bypassabile).
-- **Conferma obbligatoria** (via `alert-dialog`) prima di: eliminare un conto manuale, scollegare un conto Auto. Stesso componente, testo diverso.
+- **Loading**: skeletons for the account rows (no full-page spinner).
+- **Empty** (no accounts): an explanatory message above the "+ Aggiungi conto" form, which stays visible and usable anyway.
+- **Error** (failed fetch or mutation): inline banner with the error text + "Riprova" (retry) action. No global toast system (not in the stack; to be evaluated if a cross-cutting need emerges in several screens).
+- **Validation**: balance/amounts accept both comma and dot as decimal separator, converted before sending; name not empty; type not empty (from select or free). The same Zod validation on the client (immediate feedback, before the network call) and on the server (source of truth, not bypassable).
+- **Mandatory confirmation** (via `alert-dialog`) before: deleting a manual account, disconnecting an Auto account. Same component, different text.
 
 ## 6. Testing
 
-- **Unit**: schema Zod di `lib/validation/accounts.ts` (casi validi/invalidi: saldo negativo permesso o no, nome vuoto, tipo vuoto); funzione di calcolo KPI (`accounts-kpi`).
-- **Integration**: Route Handlers con DB reale, pattern già in uso in `lib/db/integration.test.ts` — copre: 401 senza sessione, scoping per utente (un utente non vede/modifica conti di un altro), CRUD completo su conto manuale, rifiuto di `PATCH` su conto Auto (403), `DELETE` funzionante sia su manuale che su auto.
-- **E2E**: non previsto per questa fase (nessun framework E2E nello stack attuale).
+- **Unit**: Zod schemas of `lib/validation/accounts.ts` (valid/invalid cases: negative balance allowed or not, empty name, empty type); KPI calculation function (`accounts-kpi`).
+- **Integration**: Route Handlers with a real DB, a pattern already used in `lib/db/integration.test.ts` — covers: 401 without session, per-user scoping (a user does not see/edit another user's accounts), full CRUD on a manual account, rejection of `PATCH` on an Auto account (403), `DELETE` working on both manual and auto.
+- **E2E**: not planned for this phase (no E2E framework in the current stack).
 
-## Implicazioni per fasi successive
+## Implications for later phases
 
-- Quando Investimenti/Debiti/Immobile esisteranno, il calcolo "Patrimonio netto" reale sostituirà l'attuale "(solo liquidità)" — probabilmente in un motore di calcolo condiviso (vedi `docs/functional-spec.md`, sezione "Implicazioni per il modello dati reale"), non ricalcolato localmente in questa schermata.
-- Quando arriverà un'integrazione bancaria reale, il flusso di creazione dei conti "Auto" (oggi assente) andrà definito: questo spec garantisce solo che la UI di consumo (badge, sola lettura, scollega) sia già pronta.
+- When Investimenti/Debiti/Immobile exist, the real "Patrimonio netto" calculation will replace the current "(solo liquidità)" one — probably in a shared calculation engine (see `docs/functional-spec.md`, section "Implicazioni per il modello dati reale"), not recomputed locally in this screen.
+- When a real banking integration arrives, the creation flow of "Auto" accounts (absent today) will have to be defined: this spec only guarantees that the consuming UI (badge, read-only, disconnect) is already ready.

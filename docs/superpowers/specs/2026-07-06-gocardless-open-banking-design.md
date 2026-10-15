@@ -1,92 +1,92 @@
 # Open Banking via GoCardless — design
 
-**Data**: 2026-07-06
-**Stato**: approvato, in attesa di piano di implementazione
+**Date**: 2026-07-06
+**Status**: approved, awaiting implementation plan
 
-## Contesto
+## Context
 
-`docs/functional-spec.md` e `CLAUDE.md` marcavano l'integrazione bancaria reale (Open Banking/PSD2) come fuori scope per la fase attuale, rimandata a quando si fosse scelto un provider. Provider scelto ora: **GoCardless Bank Account Data API** (ex Nordigen). Questo spec copre la prima integrazione end-to-end: connessione conto, sync automatico periodico, categorizzazione best-effort delle transazioni importate.
+`docs/functional-spec.md` and `CLAUDE.md` marked real banking integration (Open Banking/PSD2) as out of scope for the current phase, deferred until a provider was chosen. Provider chosen now: **GoCardless Bank Account Data API** (formerly Nordigen). This spec covers the first end-to-end integration: account connection, periodic automatic sync, best-effort categorisation of imported transactions.
 
-Il modello dati esistente era già predisposto: `accounts.source` e `transactions.source` (enum `data_source`: `manuale`/`auto`), UI dei conti Auto (sola lettura sui campi finanziari, badge, "Scollega") già costruita in `docs/superpowers/specs/2026-07-04-conti-screen-design.md`.
+The existing data model was already prepared: `accounts.source` and `transactions.source` (enum `data_source`: `manuale`/`auto`), UI for Auto accounts (read-only on financial fields, badge, "Scollega" — "Disconnect") already built in `docs/superpowers/specs/2026-07-04-conti-screen-design.md`.
 
-## Vincoli GoCardless rilevanti
+## Relevant GoCardless constraints
 
-- Autenticazione **a livello applicazione**, non per utente: `secret_id`/`secret_key` → `access_token` (valido 24h, refresh fino a 30 giorni). Nessun token utente da salvare/cifrare.
-- Consenso utente (End User Agreement + Requisition) ha scadenza configurabile, fino a 90 giorni; scaduto va rinnovato con un nuovo flusso di consenso.
-- Endpoint `GET /institutions` richiede parametro `country` — non esiste una ricerca cross-country in un'unica chiamata.
-- Rate limit per conto/endpoint esposto negli header di risposta (`remaining`/`reset`), variabile per banca — non un numero fisso documentato univoco.
-- Credenziali GoCardless non ancora esistenti: si parte in sandbox; passaggio a produzione è solo un cambio di env var, nessun impatto sul codice.
+- Authentication **at the application level**, not per user: `secret_id`/`secret_key` → `access_token` (valid 24h, refresh up to 30 days). No user token to store/encrypt.
+- The user consent (End User Agreement + Requisition) has a configurable expiry, up to 90 days; once expired it must be renewed with a new consent flow.
+- The `GET /institutions` endpoint requires a `country` parameter — there is no cross-country search in a single call.
+- Rate limit per account/endpoint exposed in the response headers (`remaining`/`reset`), varying by bank — not a single fixed documented number.
+- GoCardless credentials do not exist yet: we start in sandbox; switching to production is just an env var change, no impact on the code.
 
 ## Data model
 
-Nuove tabelle (Drizzle, `lib/db/schema/`):
+New tables (Drizzle, `lib/db/schema/`):
 
-- **`bank_connections`**: `id` (uuid), `userId` (FK `auth_user`), `institutionId` (text, id GoCardless), `institutionName` (text), `requisitionId` (text), `status` (enum: `pending` | `linked` | `expired` | `error`), `consentExpiresAt` (timestamp), `createdAt`, `updatedAt`.
-- **`bank_account_links`**: `id` (uuid), `connectionId` (FK `bank_connections`), `accountId` (FK `accounts`, il conto locale con `source: 'auto'`), `externalAccountId` (text, id conto GoCardless), `lastSyncedAt` (timestamp, nullable), `nextSyncEligibleAt` (timestamp, default now).
-- **`gocardless_token`**: singola riga di cache per l'access token applicativo — `accessToken` (text), `expiresAt` (timestamp). Refresh automatico via `secret_id`/`secret_key` quando scaduto.
+- **`bank_connections`**: `id` (uuid), `userId` (FK `auth_user`), `institutionId` (text, GoCardless id), `institutionName` (text), `requisitionId` (text), `status` (enum: `pending` | `linked` | `expired` | `error`), `consentExpiresAt` (timestamp), `createdAt`, `updatedAt`.
+- **`bank_account_links`**: `id` (uuid), `connectionId` (FK `bank_connections`), `accountId` (FK `accounts`, the local account with `source: 'auto'`), `externalAccountId` (text, GoCardless account id), `lastSyncedAt` (timestamp, nullable), `nextSyncEligibleAt` (timestamp, default now).
+- **`gocardless_token`**: a single cache row for the application access token — `accessToken` (text), `expiresAt` (timestamp). Automatic refresh via `secret_id`/`secret_key` when expired.
 
-Modifiche a tabelle esistenti:
+Changes to existing tables:
 
-- **`transactions`**: nuova colonna `externalId` (text, nullable, `unique` insieme a `accountId`) — usata per idempotenza sull'import (dedup ai sync successivi via `ON CONFLICT`).
-- **`categories`**: aggiunta `"Da categorizzare"` (type `variabile`) a `DEFAULT_CATEGORIES` — fallback quando il matching automatico non trova nulla. Nessuna modifica di schema.
+- **`transactions`**: new column `externalId` (text, nullable, `unique` together with `accountId`) — used for idempotent imports (dedup on later syncs via `ON CONFLICT`).
+- **`categories`**: `"Da categorizzare"` ("To categorise", type `variabile`) added to `DEFAULT_CATEGORIES` — fallback when automatic matching finds nothing. No schema change.
 
-## Flusso di connessione
+## Connection flow
 
-1. In "+ Aggiungi conto" (`add-account-form.tsx`): scelta iniziale "Manuale" (form esistente) / "Collega banca" (nuovo flusso).
-2. "Collega banca": selezione paese → ricerca/lista istituti in quel paese (`GET /institutions?country=`).
-3. Istituto scelto → backend crea una `requisition` GoCardless (redirect URL = nostro callback, `reference` = id della riga `bank_connections` appena creata con `status: pending`) → redirect del browser al link di consenso restituito.
-4. Utente autorizza sul sito/app della banca → la banca reindirizza a `/api/gocardless/callback?ref=...`.
-5. Il callback recupera la requisition; se `status: linked`, per ogni `accounts` esterno restituito recupera i dettagli (nome, IBAN, tipo) e redirige a una pagina client di selezione.
-6. La pagina mostra un checkbox per ogni conto esterno trovato. L'utente seleziona quali importare.
-7. Alla conferma: per ogni conto selezionato, crea riga `accounts` (`source: auto`) + riga `bank_account_links`; `bank_connections.status = linked`. Subito dopo lancia un sync iniziale mirato solo su questi conti (storico completo disponibile + saldo corrente).
+1. In "+ Aggiungi conto" (`add-account-form.tsx`): initial choice "Manuale" (existing form) / "Collega banca" ("Connect bank", new flow).
+2. "Collega banca": country selection → search/list of institutions in that country (`GET /institutions?country=`).
+3. Institution chosen → the backend creates a GoCardless `requisition` (redirect URL = our callback, `reference` = id of the `bank_connections` row just created with `status: pending`) → browser redirect to the returned consent link.
+4. The user authorises on the bank's site/app → the bank redirects to `/api/gocardless/callback?ref=...`.
+5. The callback fetches the requisition; if `status: linked`, for each external `accounts` entry returned it fetches the details (name, IBAN, type) and redirects to a client selection page.
+6. The page shows a checkbox for each external account found. The user selects which ones to import.
+7. On confirmation: for each selected account, create an `accounts` row (`source: auto`) + a `bank_account_links` row; `bank_connections.status = linked`. Right after, launch an initial sync targeted only at these accounts (full available history + current balance).
 
-### Riconnessione (consenso scaduto)
+### Reconnection (expired consent)
 
-Stesso flusso "Collega banca", ma alla selezione (passo 6) l'utente sceglie "collega a conto esistente" invece di "crea nuovo" — associa il conto esterno restituito a un `accounts.id` locale già presente. Aggiorna `connectionId`, `externalAccountId`, resetta `consentExpiresAt` sulla riga `bank_account_links` esistente. Transazioni e storico già importati restano intatti (nessuna riscrittura).
+Same "Collega banca" flow, but at selection (step 6) the user chooses "connect to existing account" instead of "create new" — it associates the returned external account with a local `accounts.id` that already exists. Updates `connectionId`, `externalAccountId`, resets `consentExpiresAt` on the existing `bank_account_links` row. Already imported transactions and history stay intact (no rewriting).
 
-### Errori nel flusso
+### Errors in the flow
 
-- Utente abbandona il consenso senza tornare al callback: nessuna riga creata oltre alla `bank_connections` iniziale (resta `pending`), niente cleanup necessario — stateless, ritentabile liberamente.
-- Requisition rifiutata/sospesa dalla banca: `bank_connections.status = 'error'`, toast d'errore, nessun conto creato.
-- Banca condivide zero conti: la pagina di selezione mostra stato vuoto.
+- The user abandons the consent without returning to the callback: no rows created other than the initial `bank_connections` one (stays `pending`), no cleanup needed — stateless, freely retryable.
+- Requisition rejected/suspended by the bank: `bank_connections.status = 'error'`, error toast, no account created.
+- The bank shares zero accounts: the selection page shows an empty state.
 
 ## Sync engine, rate limiting, scheduler
 
-- **Scheduler**: `node-cron`, avviato in `instrumentation.ts` (hook di boot Next.js), intervallo 12h. Gira in-process nel container Next.js (nessuna risorsa k8s aggiuntiva) — scelta consapevole nonostante il rischio di duplicazione/interruzione se si scala a più repliche, accettabile per ora (namespace `production` a istanza singola).
-- **Redis**: prima introduzione reale nel progetto (finora solo pianificata in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`, mai implementata). Richiede `REDIS_URL` + client `ioredis`. Usata per tracciare `remaining`/`reset` del rate limit per `externalAccountId` dopo ogni chiamata GoCardless.
-- **Ogni tick**:
-  1. Seleziona `bank_account_links` con `nextSyncEligibleAt <= now()` e connessione non `expired`/`error`.
-  2. Per ciascuno: garantisce un `access_token` GoCardless valido (cache `gocardless_token`, refresh se scaduto).
-  3. Controlla il contatore Redis per quel conto; se `remaining = 0` salta fino al `reset` salvato.
-  4. `GET /accounts/{id}/balances` → aggiorna `accounts.balance`.
-  5. `GET /accounts/{id}/transactions` → upsert in `transactions` via `externalId` (idempotente).
-  6. Categorizzazione best-effort: cerca l'ultima transazione dell'utente con stessa `description` (case-insensitive) che abbia già una categoria diversa da `"Da categorizzare"` → riusa quella categoria; altrimenti assegna `"Da categorizzare"`.
-  7. Aggiorna `lastSyncedAt = now()`, `nextSyncEligibleAt = now() + 12h`.
-- **Errore 401 / consenso scaduto**: `bank_connections.status = 'expired'`, badge "Riconnetti" lato UI (vedi sotto), nessun retry automatico finché l'utente non riconnette.
-- **Errore 5xx/rete GoCardless**: log, nessun retry immediato — si ritenta al tick successivo (12h).
-- **Fuori scope, deciso consapevolmente**: nessun bottone "Aggiorna ora" manuale in fase 1 (apre un secondo path di rate-limit da gestire, non richiesto) — riattivabile in una fase futura.
+- **Scheduler**: `node-cron`, started in `instrumentation.ts` (Next.js boot hook), 12h interval. Runs in-process in the Next.js container (no extra k8s resource) — a conscious choice despite the risk of duplication/interruption if scaled to multiple replicas, acceptable for now (single-instance `production` namespace).
+- **Redis**: first real introduction in the project (so far only planned in `docs/superpowers/specs/2026-07-03-tech-stack-architecture-design.md`, never implemented). Requires `REDIS_URL` + the `ioredis` client. Used to track the rate limit `remaining`/`reset` per `externalAccountId` after each GoCardless call.
+- **Each tick**:
+  1. Select `bank_account_links` with `nextSyncEligibleAt <= now()` and a connection that is not `expired`/`error`.
+  2. For each: ensure a valid GoCardless `access_token` (cache `gocardless_token`, refresh if expired).
+  3. Check the Redis counter for that account; if `remaining = 0` skip until the saved `reset`.
+  4. `GET /accounts/{id}/balances` → update `accounts.balance`.
+  5. `GET /accounts/{id}/transactions` → upsert into `transactions` via `externalId` (idempotent).
+  6. Best-effort categorisation: look for the user's latest transaction with the same `description` (case-insensitive) that already has a category other than `"Da categorizzare"` → reuse that category; otherwise assign `"Da categorizzare"`.
+  7. Update `lastSyncedAt = now()`, `nextSyncEligibleAt = now() + 12h`.
+- **401 error / expired consent**: `bank_connections.status = 'expired'`, "Riconnetti" ("Reconnect") badge in the UI (see below), no automatic retry until the user reconnects.
+- **GoCardless 5xx/network error**: log, no immediate retry — retried at the next tick (12h).
+- **Out of scope, consciously decided**: no manual "Aggiorna ora" ("Update now") button in phase 1 (it opens a second rate-limit path to manage, not requested) — can be enabled in a future phase.
 
 ## UI
 
-- `add-account-form.tsx`: step iniziale "Manuale" / "Collega banca".
-- Nuovo flusso "Collega banca": selezione paese → ricerca istituto → redirect consenso → (dopo callback) selezione conti esterni via checkbox, o dropdown "collega a conto esistente" in caso di riconnessione.
-- `account-row.tsx`: badge "Riconnetti" quando la connessione associata ha `status: expired`; bottone che riapre il flusso di consenso scoped a quel conto.
-- Icona/colore dei conti Auto creati da GoCardless: nessun fetch/uso dei loghi istituto (scope aggiuntivo non richiesto) — icona di default generica (`landmark`), personalizzabile dall'utente come già previsto per i conti Auto (`account-icon-color-picker.tsx`, invariato).
+- `add-account-form.tsx`: initial step "Manuale" / "Collega banca".
+- New "Collega banca" flow: country selection → institution search → consent redirect → (after the callback) selection of external accounts via checkboxes, or a "connect to existing account" dropdown in case of reconnection.
+- `account-row.tsx`: "Riconnetti" badge when the associated connection has `status: expired`; a button that reopens the consent flow scoped to that account.
+- Icon/colour of Auto accounts created by GoCardless: no fetching/use of institution logos (extra scope not requested) — generic default icon (`landmark`), customisable by the user as already planned for Auto accounts (`account-icon-color-picker.tsx`, unchanged).
 
 ## Testing
 
-- **Unit**: matching categoria (match trovato / fallback `"Da categorizzare"`), calcolo `nextSyncEligibleAt`, logica chiave rate-limit Redis (formato chiave, TTL, lettura `remaining`/`reset`).
-- **Integration**: CRUD e scoping per utente di `bank_connections`/`bank_account_links` (stesso pattern di `lib/db/integration.test.ts` già in uso per `accounts`), route di callback con client GoCardless mockato, idempotenza upsert transazioni (sync ripetuto sullo stesso `externalId` non duplica righe).
-- Nessuna chiamata reale a GoCardless nei test automatici — mock a livello HTTP. Le credenziali sandbox (da creare) servono solo per verifica manuale end-to-end.
+- **Unit**: category matching (match found / `"Da categorizzare"` fallback), `nextSyncEligibleAt` calculation, Redis rate-limit key logic (key format, TTL, reading `remaining`/`reset`).
+- **Integration**: CRUD and per-user scoping of `bank_connections`/`bank_account_links` (same pattern as `lib/db/integration.test.ts`, already used for `accounts`), callback route with a mocked GoCardless client, idempotency of the transaction upsert (a repeated sync on the same `externalId` does not duplicate rows).
+- No real calls to GoCardless in the automated tests — mocked at the HTTP level. The sandbox credentials (to be created) are only for manual end-to-end verification.
 
-## Scope esplicitamente escluso (per ora)
+## Scope explicitly excluded (for now)
 
-- Bottone di sync manuale "Aggiorna ora" (vedi sopra).
-- Notifiche email di scadenza consenso (solo badge in UI per ora; Resend è già configurato per auth, riutilizzabile in futuro).
-- Loghi istituto nella UI.
-- Retry automatico/backoff sofisticato sugli errori 5xx (si riprova al tick successivo, punto).
-- Multi-replica del processo Next.js: lo scheduler in-process assume istanza singola; se in futuro si scala orizzontalmente, lo scheduling andrà spostato a un CronJob k8s esterno (opzione valutata e scartata per ora in favore della semplicità di deploy).
+- Manual "Aggiorna ora" sync button (see above).
+- Email notifications of consent expiry (UI badge only for now; Resend is already configured for auth, reusable in the future).
+- Institution logos in the UI.
+- Automatic retry/sophisticated backoff on 5xx errors (retried at the next tick, full stop).
+- Multiple replicas of the Next.js process: the in-process scheduler assumes a single instance; if we scale horizontally in the future, scheduling will have to move to an external k8s CronJob (option evaluated and rejected for now in favour of deployment simplicity).
 
-## Domande aperte
+## Open questions
 
-Nessuna: tutte le decisioni di questa fase sono state prese durante il brainstorming (vedi sezioni sopra). Credenziali GoCardless (sandbox) da creare fuori da questo repo prima di poter testare end-to-end manualmente.
+None: all the decisions for this phase were made during brainstorming (see the sections above). GoCardless credentials (sandbox) to be created outside this repo before manual end-to-end testing is possible.

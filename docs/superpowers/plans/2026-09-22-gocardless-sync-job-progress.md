@@ -1,70 +1,70 @@
-# Sync GoCardless come job in background con avanzamento — Implementation Plan
+# GoCardless sync as a background job with progress — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Rendere l'import dei "Conti trovati" e il sync manuale veloci (insert a blocchi, conti in parallelo) ed eseguirli come job in background con un pannello globale che mostra l'avanzamento reale ("Importati 120 di 500 movimenti") su qualunque pagina.
+**Goal:** Make the import of the "Conti trovati" (Accounts found) and the manual sync fast (chunked inserts, accounts in parallel) and run them as background jobs with a global panel showing real progress ("Importati 120 di 500 movimenti" — "Imported 120 of 500 transactions") on any page.
 
-**Architecture:** Le route creano un job su Redis, rispondono subito con `{ jobId }` e fanno il lavoro in `after()` di Next.js. `syncAccountLink` inserisce a blocchi da 50 e notifica l'avanzamento via callback; un orchestratore (`runSyncJob`) scrive l'avanzamento su Redis (una chiave per conto). Il client interroga `GET /api/sync-jobs` ogni secondo solo mentre c'è un job in corso, da un pannello montato nel layout `(app)`.
+**Architecture:** The routes create a job on Redis, respond immediately with `{ jobId }` and do the work in Next.js `after()`. `syncAccountLink` inserts in chunks of 50 and reports progress via a callback; an orchestrator (`runSyncJob`) writes the progress to Redis (one key per account). The client polls `GET /api/sync-jobs` every second only while a job is running, from a panel mounted in the `(app)` layout.
 
-**Tech Stack:** Next.js 16.2 (App Router, `after` da `next/server`), Drizzle ORM su Postgres (Neon), ioredis 5, TanStack Query, vitest 4, Tailwind v4 + shadcn/ui (`@base-ui/react`), lucide-react.
+**Tech Stack:** Next.js 16.2 (App Router, `after` from `next/server`), Drizzle ORM on Postgres (Neon), ioredis 5, TanStack Query, vitest 4, Tailwind v4 + shadcn/ui (`@base-ui/react`), lucide-react.
 
 **Spec:** `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`
 
 ## Global Constraints
 
-- Deploy attuale: **Vercel serverless + Neon**. Niente processi in memoria di lunga durata; il lavoro in background passa solo da `after()`.
-- Ogni route che avvia lavoro in background esporta `export const maxDuration = 300;` (letterale: Next lo legge staticamente).
-- Stato dei job **solo su Redis**, TTL 24h (`SYNC_JOB_TTL_SECONDS = 86400`). Nessuna modifica allo schema Postgres, nessun `db:push`.
-- Heartbeat: job `running` con `updatedAt` più vecchio di `SYNC_JOB_STALE_MS = 60_000` → interrotto.
-- Lock per conto: `sync-lock:{accountId}`, TTL `SYNC_LOCK_TTL_SECONDS = 360` (maxDuration 300 + 60).
-- Insert a blocchi da `SYNC_INSERT_CHUNK_SIZE = 50`.
-- Polling client: `SYNC_JOBS_POLL_INTERVAL_MS = 1000`, attivo solo con almeno un job `running`.
-- Nessun colore esadecimale o raggio hardcoded nei componenti: solo token tema (`bg-primary`, `text-muted-foreground`, `text-destructive`, `text-pos`, ecc.).
-- Testi visibili in italiano, come costanti nominate (non letterali sparsi nel JSX).
-- JSDoc di una riga su ogni funzione/componente pubblico.
-- Chiavi Redis sempre prefissate con `userId` per i job: nessuna lettura/scrittura di job di un altro utente.
-- Invariati: categorizzazione a regole, guard di direzione, split, idempotenza `(accountId, externalId)`, budget di sync 4/giorno + gap 4h, `SyncResult`.
-- I test DB girano contro il Postgres reale di `.env.local` (`fileParallelism: false` già configurato); comando: `pnpm test <file>`.
-- 3 test di `lib/gocardless/scheduler.test.ts` falliscono già prima di questo piano (pre-esistenti, non correlati): non vanno "sistemati" qui, ma il numero di fallimenti non deve crescere.
+- Current deploy: **Vercel serverless + Neon**. No long-lived in-memory processes; background work goes only through `after()`.
+- Every route that starts background work exports `export const maxDuration = 300;` (literal: Next reads it statically).
+- Job state **only on Redis**, 24h TTL (`SYNC_JOB_TTL_SECONDS = 86400`). No changes to the Postgres schema, no `db:push`.
+- Heartbeat: a `running` job with `updatedAt` older than `SYNC_JOB_STALE_MS = 60_000` → interrupted.
+- Per-account lock: `sync-lock:{accountId}`, TTL `SYNC_LOCK_TTL_SECONDS = 360` (maxDuration 300 + 60).
+- Chunked inserts of `SYNC_INSERT_CHUNK_SIZE = 50`.
+- Client polling: `SYNC_JOBS_POLL_INTERVAL_MS = 1000`, active only with at least one `running` job.
+- No hardcoded hex colors or radii in components: only theme tokens (`bg-primary`, `text-muted-foreground`, `text-destructive`, `text-pos`, etc.).
+- Visible text in Italian, as named constants (not literals scattered in the JSX).
+- One-line JSDoc on every public function/component.
+- Redis keys for jobs always prefixed with `userId`: no reading/writing of another user's jobs.
+- Unchanged: rule-based categorisation, direction guard, split, `(accountId, externalId)` idempotency, sync budget 4/day + 4h gap, `SyncResult`.
+- DB tests run against the real Postgres in `.env.local` (`fileParallelism: false` already configured); command: `pnpm test <file>`.
+- 3 tests in `lib/gocardless/scheduler.test.ts` already fail before this plan (pre-existing, unrelated): they must not be "fixed" here, but the number of failures must not grow.
 
 ## Review Focus
 
-1. **Due conti che scrivono lo stesso job in parallelo** — nessun aggiornamento perso (chiave per conto). Test in Task 2 (`updateAccount` concorrenti su due conti).
-2. **Resync con storico già importato** — "Importati X di Y" conta le righe elaborate, mentre il riepilogo finale conta solo le nuove (`inserted`), senza gonfiare `hitCount`. Test in Task 3.
-3. **Funzione uccisa a metà (timeout Vercel)** — il job appare interrotto dopo 60s, non gira per sempre. Test in Task 1 (`toJobView`).
-4. **Doppio click / seconda tab sul sync manuale** — 409 "già in corso", nessuna seconda chiamata a GoCardless. Test in Task 6.
-5. **Redis irraggiungibile alla conferma dei Conti trovati** — 503 prima di creare qualunque conto (niente conti orfani). Test in Task 7.
+1. **Two accounts writing the same job in parallel** — no lost updates (one key per account). Test in Task 2 (concurrent `updateAccount` on two accounts).
+2. **Resync with history already imported** — "Importati X di Y" counts the processed rows, while the final summary counts only the new ones (`inserted`), without inflating `hitCount`. Test in Task 3.
+3. **Function killed halfway (Vercel timeout)** — the job shows as interrupted after 60s, it doesn't run forever. Test in Task 1 (`toJobView`).
+4. **Double click / second tab on manual sync** — 409 "already running", no second call to GoCardless. Test in Task 6.
+5. **Redis unreachable when confirming the Conti trovati** — 503 before creating any account (no orphan accounts). Test in Task 7.
 
 ---
 
 ## File Structure
 
-**Nuovi**
-- `lib/sync-jobs/types.ts` — tipi del job, costanti, `queuedAccount`, `deriveJobStatus` (client-safe, nessun import server).
-- `lib/sync-jobs/view.ts` — funzioni pure di presentazione: `toJobView`, `overallProgress`, `isAccountSyncing`, `runningJobIds`, `hasFinishedSince` (client-safe).
-- `lib/sync-jobs/store.ts` — `SyncJobKv` (primitive KV), `createSyncJobStore(kv)`, `createMemorySyncJobKv()` (per i test).
-- `lib/sync-jobs/redis-store.ts` — adapter ioredis + istanza `redisSyncJobStore` (server-only).
-- `lib/sync-jobs/run.ts` — `runSyncJob` orchestratore + `progressToPatch`/`resultToPatch`.
-- `app/api/sync-jobs/route.ts` — `GET` job dell'utente.
-- `app/api/sync-jobs/[id]/dismiss/route.ts` — `POST` chiusura riepilogo.
+**New**
+- `lib/sync-jobs/types.ts` — job types, constants, `queuedAccount`, `deriveJobStatus` (client-safe, no server imports).
+- `lib/sync-jobs/view.ts` — pure presentation functions: `toJobView`, `overallProgress`, `isAccountSyncing`, `runningJobIds`, `hasFinishedSince` (client-safe).
+- `lib/sync-jobs/store.ts` — `SyncJobKv` (KV primitives), `createSyncJobStore(kv)`, `createMemorySyncJobKv()` (for tests).
+- `lib/sync-jobs/redis-store.ts` — ioredis adapter + `redisSyncJobStore` instance (server-only).
+- `lib/sync-jobs/run.ts` — `runSyncJob` orchestrator + `progressToPatch`/`resultToPatch`.
+- `app/api/sync-jobs/route.ts` — `GET` the user's jobs.
+- `app/api/sync-jobs/[id]/dismiss/route.ts` — `POST` to close the summary.
 - `lib/queries/sync-jobs.ts` — `useSyncJobsQuery`, `useInvalidateOnSyncJobFinish`, `useDismissSyncJobMutation`.
-- `components/domain/sync/describe-account-progress.ts` — testi/barre per fase (puro, testato).
+- `components/domain/sync/describe-account-progress.ts` — texts/bars per phase (pure, tested).
 - `components/domain/sync/progress-bar.tsx`, `sync-account-progress-row.tsx`, `sync-progress-panel.tsx`, `sync-progress-indicator.tsx`, `index.ts`.
 
-**Modificati**
-- `lib/gocardless/sync.ts` — insert a blocchi + `onProgress`.
-- `lib/gocardless/client.ts` — cache token in memoria.
-- `lib/categorization/resolve.ts` — `flushRuleHits` in parallelo.
-- `lib/gocardless/scheduler.ts` — usa il lock per conto.
-- `lib/gocardless/sync-messages.ts` — nuovi errori `already-running`/`unavailable`.
+**Modified**
+- `lib/gocardless/sync.ts` — chunked inserts + `onProgress`.
+- `lib/gocardless/client.ts` — in-memory token cache.
+- `lib/categorization/resolve.ts` — `flushRuleHits` in parallel.
+- `lib/gocardless/scheduler.ts` — uses the per-account lock.
+- `lib/gocardless/sync-messages.ts` — new `already-running`/`unavailable` errors.
 - `app/api/gocardless/accounts/[accountId]/sync/route.ts`, `app/api/gocardless/connections/[id]/finalize/route.ts` — job + `after()`.
-- `lib/queries/gocardless.ts` — mutation adattate ai job.
+- `lib/queries/gocardless.ts` — mutations adapted to jobs.
 - `app/(app)/layout.tsx`, `app/(app)/conti/page.tsx`, `app/(app)/conti/collega/[connectionId]/page.tsx`, `components/domain/accounts/account-row.tsx`.
-- `CLAUDE.md` — stato progetto + log.
+- `CLAUDE.md` — project status + log.
 
 ---
 
-### Task 1: Tipi del job e funzioni pure di vista
+### Task 1: Job types and pure view functions
 
 **Files:**
 - Create: `lib/sync-jobs/types.ts`
@@ -72,7 +72,7 @@
 - Test: `lib/sync-jobs/view.test.ts`
 
 **Interfaces:**
-- Consumes: niente.
+- Consumes: nothing.
 - Produces:
   - `type SyncJobKind = "initial-import" | "manual-sync"`
   - `type SyncJobStatus = "running" | "done" | "failed"`
@@ -82,7 +82,7 @@
   - `type SyncJobAccountPatch = Partial<Omit<SyncJobAccount, "accountId" | "name">>`
   - `interface SyncJob { id; userId; kind; status; dismissed; startedAt: string; updatedAt: string; accounts: SyncJobAccount[] }`
   - `interface SyncJobView extends SyncJob { interrupted: boolean }`
-  - costanti `SYNC_JOB_TTL_SECONDS`, `SYNC_JOB_STALE_MS`, `SYNC_LOCK_TTL_SECONDS`
+  - constants `SYNC_JOB_TTL_SECONDS`, `SYNC_JOB_STALE_MS`, `SYNC_LOCK_TTL_SECONDS`
   - `queuedAccount(accountId: string, name: string): SyncJobAccount`
   - `deriveJobStatus(accounts: SyncJobAccount[]): SyncJobStatus`
   - `toJobView(job: SyncJob, now: Date): SyncJobView`
@@ -92,12 +92,12 @@
   - `runningJobIds(jobs: SyncJob[] | undefined): Set<string>`
   - `hasFinishedSince(previous: Set<string>, current: Set<string>): boolean`
 
-- [ ] **Step 1: Scrivi i tipi**
+- [ ] **Step 1: Write the types**
 
 `lib/sync-jobs/types.ts`:
 
 ```ts
-/** Tipo di lavoro che ha originato il job: import dopo "Conti trovati" o sync manuale di un conto. */
+/** Kind of work that originated the job: import after "Conti trovati" or manual sync of an account. */
 export type SyncJobKind = "initial-import" | "manual-sync";
 
 export type SyncJobStatus = "running" | "done" | "failed";
@@ -112,29 +112,29 @@ export type SyncAccountPhase =
   | "expired"
   | "error";
 
-/** Fasi dopo le quali un conto non cambia più stato. */
+/** Phases after which an account no longer changes state. */
 export const FINAL_PHASES: ReadonlySet<SyncAccountPhase> = new Set(["done", "limited", "expired", "error"]);
 
-/** Durata di vita dello stato di un job su Redis. */
+/** Lifetime of a job's state on Redis. */
 export const SYNC_JOB_TTL_SECONDS = 24 * 60 * 60;
-/** Oltre questo intervallo senza aggiornamenti un job "running" è considerato interrotto. */
+/** Beyond this interval without updates a "running" job is considered interrupted. */
 export const SYNC_JOB_STALE_MS = 60_000;
-/** TTL del lock per conto: maxDuration delle route (300s) + margine. */
+/** TTL of the per-account lock: maxDuration of the routes (300s) + margin. */
 export const SYNC_LOCK_TTL_SECONDS = 360;
 
 export interface SyncJobAccount {
   accountId: string;
   name: string;
   phase: SyncAccountPhase;
-  /** Movimenti da elaborare: noto solo dopo lo scarico da GoCardless. */
+  /** Transactions to process: known only after the download from GoCardless. */
   total: number | null;
-  /** Movimenti elaborati (nuovi + già presenti). */
+  /** Transactions processed (new + already present). */
   processed: number;
-  /** Movimenti nuovi davvero inseriti. */
+  /** New transactions actually inserted. */
   inserted: number;
   categorized: number;
   uncategorized: number;
-  /** Motivo di un `error` noto in anticipo (conto già in sync altrove). */
+  /** Reason for an `error` known in advance (account already syncing elsewhere). */
   errorReason?: "already-running";
 }
 
@@ -147,22 +147,22 @@ export interface SyncJob {
   status: SyncJobStatus;
   dismissed: boolean;
   startedAt: string;
-  /** Heartbeat: aggiornamento più recente tra metadati e conti. */
+  /** Heartbeat: most recent update among metadata and accounts. */
   updatedAt: string;
   accounts: SyncJobAccount[];
 }
 
-/** Job pronto per il client: `interrupted` indica un job rimasto senza heartbeat. */
+/** Job ready for the client: `interrupted` flags a job left without a heartbeat. */
 export interface SyncJobView extends SyncJob {
   interrupted: boolean;
 }
 
-/** Conto appena aggiunto a un job, in attesa di partire. */
+/** Account just added to a job, waiting to start. */
 export function queuedAccount(accountId: string, name: string): SyncJobAccount {
   return { accountId, name, phase: "queued", total: null, processed: 0, inserted: 0, categorized: 0, uncategorized: 0 };
 }
 
-/** Stato del job derivato dai conti: running finché un conto non è finale, failed solo se tutti in errore. */
+/** Job status derived from the accounts: running until an account is not final, failed only if all are in error. */
 export function deriveJobStatus(accounts: SyncJobAccount[]): SyncJobStatus {
   if (accounts.length === 0) return "running";
   if (accounts.some((account) => !FINAL_PHASES.has(account.phase))) return "running";
@@ -170,7 +170,7 @@ export function deriveJobStatus(accounts: SyncJobAccount[]): SyncJobStatus {
 }
 ```
 
-- [ ] **Step 2: Scrivi i test (falliscono: `view.ts` non esiste)**
+- [ ] **Step 2: Write the tests (they fail: `view.ts` does not exist)**
 
 `lib/sync-jobs/view.test.ts`:
 
@@ -284,12 +284,12 @@ describe("runningJobIds / hasFinishedSince", () => {
 });
 ```
 
-- [ ] **Step 3: Verifica che falliscano**
+- [ ] **Step 3: Check that they fail**
 
 Run: `pnpm test lib/sync-jobs/view.test.ts`
 Expected: FAIL, `Failed to resolve import "./view"`.
 
-- [ ] **Step 4: Implementa `view.ts`**
+- [ ] **Step 4: Implement `view.ts`**
 
 `lib/sync-jobs/view.ts`:
 
@@ -307,7 +307,7 @@ export type OverallProgress =
   | { kind: "determinate"; processed: number; total: number }
   | { kind: "indeterminate" };
 
-/** Prepara un job per il client: un job running senza heartbeat da oltre 60s è mostrato come interrotto. */
+/** Prepares a job for the client: a running job without a heartbeat for more than 60s is shown as interrupted. */
 export function toJobView(job: SyncJob, now: Date): SyncJobView {
   const isStale = job.status === "running" && now.getTime() - Date.parse(job.updatedAt) > SYNC_JOB_STALE_MS;
   if (!isStale) return { ...job, interrupted: false };
@@ -323,7 +323,7 @@ export function toJobView(job: SyncJob, now: Date): SyncJobView {
   };
 }
 
-/** Avanzamento complessivo: determinato solo quando ogni conto ancora attivo conosce il proprio totale. */
+/** Overall progress: determinate only when every still-active account knows its own total. */
 export function overallProgress(job: SyncJob): OverallProgress {
   if (job.status !== "running") return { kind: "complete" };
 
@@ -341,7 +341,7 @@ export function overallProgress(job: SyncJob): OverallProgress {
   return { kind: "determinate", processed, total };
 }
 
-/** True se il conto sta sincronizzando in un job ancora in corso. */
+/** True if the account is syncing in a job still in progress. */
 export function isAccountSyncing(jobs: SyncJob[], accountId: string): boolean {
   return jobs.some(
     (job) =>
@@ -350,12 +350,12 @@ export function isAccountSyncing(jobs: SyncJob[], accountId: string): boolean {
   );
 }
 
-/** Id dei job ancora in corso, per confrontare due poll successivi. */
+/** Ids of the jobs still in progress, to compare two successive polls. */
 export function runningJobIds(jobs: SyncJob[] | undefined): Set<string> {
   return new Set((jobs ?? []).filter((job) => job.status === "running").map((job) => job.id));
 }
 
-/** True se almeno un job che era in corso al poll precedente ora non lo è più. */
+/** True if at least one job that was in progress at the previous poll no longer is. */
 export function hasFinishedSince(previous: Set<string>, current: Set<string>): boolean {
   for (const id of previous) {
     if (!current.has(id)) return true;
@@ -364,10 +364,10 @@ export function hasFinishedSince(previous: Set<string>, current: Set<string>): b
 }
 ```
 
-- [ ] **Step 5: Verifica che passino**
+- [ ] **Step 5: Check that they pass**
 
 Run: `pnpm test lib/sync-jobs/view.test.ts`
-Expected: PASS (tutti i test del file).
+Expected: PASS (all tests in the file).
 
 - [ ] **Step 6: Commit**
 
@@ -378,7 +378,7 @@ git commit -m "feat: tipi e vista pura dei job di sync"
 
 ---
 
-### Task 2: Store dei job (KV astratto, fake in memoria, adapter Redis)
+### Task 2: Job store (abstract KV, in-memory fake, Redis adapter)
 
 **Files:**
 - Create: `lib/sync-jobs/store.ts`
@@ -392,9 +392,9 @@ git commit -m "feat: tipi e vista pura dei job di sync"
   - `interface SyncJobStore { createJob(input: { userId: string; kind: SyncJobKind; accounts?: SyncJobAccount[] }): Promise<SyncJob>; setAccounts(userId, jobId, accounts: SyncJobAccount[]): Promise<void>; updateAccount(userId, jobId, accountId, patch: SyncJobAccountPatch): Promise<void>; listJobs(userId): Promise<SyncJob[]>; dismissJob(userId, jobId): Promise<boolean>; acquireAccountLock(accountId): Promise<boolean>; releaseAccountLock(accountId): Promise<void> }`
   - `createSyncJobStore(kv: SyncJobKv, clock?: () => Date): SyncJobStore`
   - `createMemorySyncJobKv(): SyncJobKv`
-  - `redisSyncJobStore: SyncJobStore` (da `lib/sync-jobs/redis-store.ts`)
+  - `redisSyncJobStore: SyncJobStore` (from `lib/sync-jobs/redis-store.ts`)
 
-- [ ] **Step 1: Scrivi i test (falliscono: `store.ts` non esiste)**
+- [ ] **Step 1: Write the tests (they fail: `store.ts` does not exist)**
 
 `lib/sync-jobs/store.test.ts`:
 
@@ -482,12 +482,12 @@ describe("createSyncJobStore", () => {
 });
 ```
 
-- [ ] **Step 2: Verifica che falliscano**
+- [ ] **Step 2: Check that they fail**
 
 Run: `pnpm test lib/sync-jobs/store.test.ts`
 Expected: FAIL, `Failed to resolve import "./store"`.
 
-- [ ] **Step 3: Implementa `store.ts`**
+- [ ] **Step 3: Implement `store.ts`**
 
 `lib/sync-jobs/store.ts`:
 
@@ -502,11 +502,11 @@ import {
   type SyncJobKind,
 } from "./types";
 
-/** Primitive KV minime su cui gira lo store dei job — Redis in produzione, una Map nei test. */
+/** Minimal KV primitives the job store runs on — Redis in production, a Map in tests. */
 export interface SyncJobKv {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
-  /** Scrive solo se la chiave non esiste; true se ha scritto. */
+  /** Writes only if the key does not exist; true if it wrote. */
   setIfAbsent(key: string, value: string, ttlSeconds: number): Promise<boolean>;
   del(key: string): Promise<void>;
   addToSet(key: string, member: string, ttlSeconds: number): Promise<void>;
@@ -548,9 +548,9 @@ function withoutUndefined<T extends object>(patch: T): Partial<T> {
 }
 
 /**
- * Store dei job di sync. Metadati e conti vivono in chiavi separate: i conti di un job si
- * sincronizzano in parallelo e ognuno scrive solo la propria chiave, così nessun aggiornamento
- * si perde. Stato e heartbeat del job si calcolano in lettura.
+ * Sync job store. Metadata and accounts live in separate keys: the accounts of a job
+ * sync in parallel and each one writes only its own key, so no update
+ * is lost. Job status and heartbeat are computed on read.
  */
 export function createSyncJobStore(kv: SyncJobKv, clock: () => Date = () => new Date()): SyncJobStore {
   async function readMeta(userId: string, jobId: string): Promise<StoredJobMeta | null> {
@@ -639,7 +639,7 @@ export function createSyncJobStore(kv: SyncJobKv, clock: () => Date = () => new 
   };
 }
 
-/** KV in memoria per i test (nessuna scadenza: i test non ne dipendono). */
+/** In-memory KV for tests (no expiry: tests don't depend on it). */
 export function createMemorySyncJobKv(): SyncJobKv {
   const values = new Map<string, string>();
   const sets = new Map<string, Set<string>>();
@@ -670,9 +670,9 @@ export function createMemorySyncJobKv(): SyncJobKv {
 }
 ```
 
-Nota: `startedAt` usa ISO string, quindi `localeCompare` ordina correttamente per data.
+Note: `startedAt` uses an ISO string, so `localeCompare` sorts correctly by date.
 
-- [ ] **Step 4: Implementa l'adapter Redis**
+- [ ] **Step 4: Implement the Redis adapter**
 
 `lib/sync-jobs/redis-store.ts`:
 
@@ -681,7 +681,7 @@ import "server-only";
 import { redis } from "@/lib/redis/client";
 import { createSyncJobStore, type SyncJobKv } from "./store";
 
-/** Adapter ioredis di `SyncJobKv`. */
+/** ioredis adapter of `SyncJobKv`. */
 const redisSyncJobKv: SyncJobKv = {
   get: (key) => redis.get(key),
   async set(key, value, ttlSeconds) {
@@ -699,14 +699,14 @@ const redisSyncJobKv: SyncJobKv = {
   setMembers: (key) => redis.smembers(key),
 };
 
-/** Store dei job di sync usato dalle route e dallo scheduler. */
+/** Sync job store used by the routes and the scheduler. */
 export const redisSyncJobStore = createSyncJobStore(redisSyncJobKv);
 ```
 
-- [ ] **Step 5: Verifica test e tipi**
+- [ ] **Step 5: Check tests and types**
 
 Run: `pnpm test lib/sync-jobs/store.test.ts` → Expected: PASS.
-Run: `pnpm exec tsc --noEmit` → Expected: nessun errore nei file `lib/sync-jobs/*`.
+Run: `pnpm exec tsc --noEmit` → Expected: no errors in the `lib/sync-jobs/*` files.
 
 - [ ] **Step 6: Commit**
 
@@ -717,29 +717,29 @@ git commit -m "feat: store Redis dei job di sync con chiavi per conto e lock"
 
 ---
 
-### Task 3: `syncAccountLink` con insert a blocchi e `onProgress`
+### Task 3: `syncAccountLink` with chunked inserts and `onProgress`
 
 **Files:**
-- Modify: `lib/gocardless/sync.ts` (intero corpo del `try`, righe ~42-137)
+- Modify: `lib/gocardless/sync.ts` (whole body of the `try`, lines ~42-137)
 - Test: `lib/gocardless/sync.test.ts`
 
 **Interfaces:**
-- Consumes: niente di nuovo.
+- Consumes: nothing new.
 - Produces:
   - `SYNC_INSERT_CHUNK_SIZE = 50`
   - `interface SyncProgress { phase: "balance" | "fetching" | "saving"; total?: number; processed?: number; inserted?: number; categorized?: number; uncategorized?: number }`
   - `type SyncProgressCallback = (progress: SyncProgress) => Promise<void> | void`
-  - `syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore, onProgress?: SyncProgressCallback): Promise<SyncResult>` (firma retrocompatibile)
+  - `syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore, onProgress?: SyncProgressCallback): Promise<SyncResult>` (backward-compatible signature)
 
-- [ ] **Step 1: Aggiungi i test in fondo al `describe("syncAccountLink")`**
+- [ ] **Step 1: Add the tests at the end of `describe("syncAccountLink")`**
 
-In `lib/gocardless/sync.test.ts`, aggiungi l'import `SYNC_INSERT_CHUNK_SIZE, type SyncProgress` all'import esistente da `./sync`:
+In `lib/gocardless/sync.test.ts`, add the import `SYNC_INSERT_CHUNK_SIZE, type SyncProgress` to the existing import from `./sync`:
 
 ```ts
 import { SYNC_INSERT_CHUNK_SIZE, syncAccountLink, type SyncableLink, type SyncProgress } from "./sync";
 ```
 
-Aggiungi l'helper subito sotto `createMemoryStore`:
+Add the helper right below `createMemoryStore`:
 
 ```ts
 function mockBankResponses(count: number) {
@@ -759,7 +759,7 @@ function mockBankResponses(count: number) {
 }
 ```
 
-E questi test prima della chiusura del `describe`:
+And these tests before the closing of the `describe`:
 
 ```ts
   it("importa a blocchi e notifica l'avanzamento con processed cumulativo", async () => {
@@ -810,28 +810,28 @@ E questi test prima della chiusura del `describe`:
   });
 ```
 
-- [ ] **Step 2: Verifica che falliscano**
+- [ ] **Step 2: Check that they fail**
 
 Run: `pnpm test lib/gocardless/sync.test.ts`
-Expected: FAIL. `SYNC_INSERT_CHUNK_SIZE` non esportato (undefined) e nessuna chiamata di progresso.
+Expected: FAIL. `SYNC_INSERT_CHUNK_SIZE` not exported (undefined) and no progress calls.
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
 In `lib/gocardless/sync.ts`:
 
-1. Cambia l'import dello schema transazioni:
+1. Change the import of the transactions schema:
 
 ```ts
 import { transactions, type NewTransaction } from "@/lib/db/schema/transactions";
 ```
 
-2. Sotto `const MAX_STORED_SYNC_TIMESTAMPS = 4;` aggiungi:
+2. Below `const MAX_STORED_SYNC_TIMESTAMPS = 4;` add:
 
 ```ts
-/** Righe per singolo INSERT: abbastanza grande da evitare una query per movimento, abbastanza piccolo da dare un avanzamento granulare. */
+/** Rows per single INSERT: big enough to avoid one query per transaction, small enough to give granular progress. */
 export const SYNC_INSERT_CHUNK_SIZE = 50;
 
-/** Avanzamento di un sync, notificato a ogni fase e dopo ogni blocco salvato. */
+/** Progress of a sync, reported at every phase and after every saved chunk. */
 export interface SyncProgress {
   phase: "balance" | "fetching" | "saving";
   total?: number;
@@ -843,7 +843,7 @@ export interface SyncProgress {
 
 export type SyncProgressCallback = (progress: SyncProgress) => Promise<void> | void;
 
-/** L'avanzamento è informativo: un suo errore (es. Redis giù) non deve mai interrompere il sync. */
+/** Progress is informational: an error in it (e.g. Redis down) must never interrupt the sync. */
 async function reportProgress(onProgress: SyncProgressCallback | undefined, progress: SyncProgress): Promise<void> {
   if (!onProgress) return;
   try {
@@ -854,12 +854,12 @@ async function reportProgress(onProgress: SyncProgressCallback | undefined, prog
 }
 ```
 
-3. Sostituisci la firma e il JSDoc:
+3. Replace the signature and the JSDoc:
 
 ```ts
 /**
- * Sincronizza saldo e transazioni di un conto collegato; aggiorna i timestamp o marca la connessione scaduta.
- * `onProgress` (opzionale) riceve le fasi e, durante il salvataggio, i contatori dopo ogni blocco.
+ * Syncs balance and transactions of a linked account; updates the timestamps or marks the connection expired.
+ * `onProgress` (optional) receives the phases and, during saving, the counters after each chunk.
  */
 export async function syncAccountLink(
   link: SyncableLink,
@@ -868,19 +868,19 @@ export async function syncAccountLink(
 ): Promise<SyncResult> {
 ```
 
-4. Dentro il `try`, prima di `const { balance, rateLimit: balanceRateLimit } = await getAccountBalances(...)`:
+4. Inside the `try`, before `const { balance, rateLimit: balanceRateLimit } = await getAccountBalances(...)`:
 
 ```ts
     await reportProgress(onProgress, { phase: "balance" });
 ```
 
-e prima di `const { transactions: bankTransactions, ... } = await getAccountTransactions(...)`:
+and before `const { transactions: bankTransactions, ... } = await getAccountTransactions(...)`:
 
 ```ts
     await reportProgress(onProgress, { phase: "fetching" });
 ```
 
-5. Sostituisci tutto il blocco da `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` fino a `await flushRuleHits(ruleResolver.appliedRuleIds());` incluso con:
+5. Replace the whole block from `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` up to and including `await flushRuleHits(ruleResolver.appliedRuleIds());` with:
 
 ```ts
     const fallbackCategoryId = await getFallbackCategoryId(link.userId);
@@ -936,9 +936,9 @@ e prima di `const { transactions: bankTransactions, ... } = await getAccountTran
 
       for (const inserted of insertedRows) {
         newTransactionsCount += 1;
-        // hitCount va incrementato solo per righe davvero scritte: GoCardless restituisce una finestra
-        // rolling di storico, quindi la stessa transazione (scartata qui da onConflictDoNothing nei sync
-        // successivi) non deve gonfiare artificialmente l'utilizzo della regola che l'ha categorizzata.
+        // hitCount must be incremented only for rows actually written: GoCardless returns a rolling
+        // window of history, so the same transaction (discarded here by onConflictDoNothing in later
+        // syncs) must not artificially inflate the usage of the rule that categorised it.
         const ruleId = inserted.externalId ? ruleIdByExternalId.get(inserted.externalId) : undefined;
         if (ruleId) ruleResolver.recordHit(ruleId);
         if (inserted.categoryId === fallbackCategoryId) {
@@ -961,12 +961,12 @@ e prima di `const { transactions: bankTransactions, ... } = await getAccountTran
     await flushRuleHits(ruleResolver.appliedRuleIds());
 ```
 
-Il resto (aggiornamento `syncTimestamps`, `return`, `catch` 401) resta identico.
+The rest (`syncTimestamps` update, `return`, 401 `catch`) stays identical.
 
-- [ ] **Step 4: Verifica che passino tutti i test del file (vecchi e nuovi)**
+- [ ] **Step 4: Check that all the tests in the file pass (old and new)**
 
 Run: `pnpm test lib/gocardless/sync.test.ts`
-Expected: PASS. I test esistenti su hitCount, idempotenza, descrizioni e 401 devono restare verdi senza modifiche.
+Expected: PASS. The existing tests on hitCount, idempotency, descriptions and 401 must stay green without changes.
 
 - [ ] **Step 5: Commit**
 
@@ -977,7 +977,7 @@ git commit -m "perf: insert a blocchi e callback di avanzamento in syncAccountLi
 
 ---
 
-### Task 4: Ottimizzazioni minori (cache token in memoria, `flushRuleHits` in parallelo)
+### Task 4: Minor optimisations (in-memory token cache, `flushRuleHits` in parallel)
 
 **Files:**
 - Modify: `lib/gocardless/client.ts:35-53` (`getAccessToken`)
@@ -985,11 +985,11 @@ git commit -m "perf: insert a blocchi e callback di avanzamento in syncAccountLi
 - Test: `lib/gocardless/client.test.ts`
 
 **Interfaces:**
-- Produces: `resetAccessTokenCacheForTests(): void` (esportata da `client.ts`, solo per i test).
+- Produces: `resetAccessTokenCacheForTests(): void` (exported from `client.ts`, only for tests).
 
-- [ ] **Step 1: Aggiungi il test (fallisce)**
+- [ ] **Step 1: Add the test (it fails)**
 
-In `lib/gocardless/client.test.ts`: importa `resetAccessTokenCacheForTests` insieme a `getAccessToken`, chiamalo nel `beforeEach` esistente (prima di `vi.stubGlobal`) e aggiungi:
+In `lib/gocardless/client.test.ts`: import `resetAccessTokenCacheForTests` together with `getAccessToken`, call it in the existing `beforeEach` (before `vi.stubGlobal`) and add:
 
 ```ts
   it("dopo il primo recupero riusa il token dalla memoria, senza rileggere il DB", async () => {
@@ -998,7 +998,7 @@ In `lib/gocardless/client.test.ts`: importa `resetAccessTokenCacheForTests` insi
     );
     expect(await getAccessToken()).toBe("token-mem");
 
-    // Se il secondo recupero leggesse il DB, troverebbe la cache svuotata e chiamerebbe di nuovo fetch.
+    // If the second retrieval read the DB, it would find the cache emptied and would call fetch again.
     await db.delete(gocardlessToken);
     expect(await getAccessToken()).toBe("token-mem");
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -1006,28 +1006,28 @@ In `lib/gocardless/client.test.ts`: importa `resetAccessTokenCacheForTests` insi
 ```
 
 Run: `pnpm test lib/gocardless/client.test.ts`
-Expected: FAIL, `resetAccessTokenCacheForTests` non esportato.
+Expected: FAIL, `resetAccessTokenCacheForTests` not exported.
 
-- [ ] **Step 2: Implementa la cache**
+- [ ] **Step 2: Implement the cache**
 
-In `lib/gocardless/client.ts`, sopra `getAccessToken`:
+In `lib/gocardless/client.ts`, above `getAccessToken`:
 
 ```ts
 const TOKEN_EXPIRY_MARGIN_MS = 60_000;
 
-/** Cache di modulo: vive quanto l'istanza della funzione; la riga DB resta la cache condivisa tra istanze. */
+/** Module cache: lives as long as the function instance; the DB row stays the cache shared across instances. */
 let memoryToken: { accessToken: string; expiresAt: number } | null = null;
 
-/** Svuota la cache in memoria del token (solo per i test). */
+/** Clears the in-memory token cache (only for tests). */
 export function resetAccessTokenCacheForTests(): void {
   memoryToken = null;
 }
 ```
 
-E sostituisci `getAccessToken`:
+And replace `getAccessToken`:
 
 ```ts
-/** Restituisce un access token valido: memoria, poi cache DB, altrimenti ne genera uno nuovo. */
+/** Returns a valid access token: memory, then DB cache, otherwise generates a new one. */
 export async function getAccessToken(): Promise<string> {
   if (memoryToken && memoryToken.expiresAt > Date.now() + TOKEN_EXPIRY_MARGIN_MS) {
     return memoryToken.accessToken;
@@ -1054,9 +1054,9 @@ export async function getAccessToken(): Promise<string> {
 }
 ```
 
-- [ ] **Step 3: `flushRuleHits` in parallelo**
+- [ ] **Step 3: `flushRuleHits` in parallel**
 
-In `lib/categorization/resolve.ts` sostituisci il ciclo `for (const [id, count] of countById) { await db.update(...) }` con:
+In `lib/categorization/resolve.ts` replace the loop `for (const [id, count] of countById) { await db.update(...) }` with:
 
 ```ts
   await Promise.all(
@@ -1069,7 +1069,7 @@ In `lib/categorization/resolve.ts` sostituisci il ciclo `for (const [id, count] 
   );
 ```
 
-- [ ] **Step 4: Verifica**
+- [ ] **Step 4: Check**
 
 Run: `pnpm test lib/gocardless/client.test.ts lib/categorization/resolve.test.ts lib/gocardless/sync.test.ts`
 Expected: PASS.
@@ -1083,22 +1083,22 @@ git commit -m "perf: token GoCardless in memoria e flush degli hit delle regole 
 
 ---
 
-### Task 5: Orchestratore `runSyncJob` + lock nello scheduler
+### Task 5: `runSyncJob` orchestrator + lock in the scheduler
 
 **Files:**
 - Create: `lib/sync-jobs/run.ts`
 - Test: `lib/sync-jobs/run.test.ts`
 - Modify: `lib/gocardless/scheduler.ts` (`runDueSyncs`)
-- Modify: `lib/gocardless/scheduler.test.ts` (solo il mock dello store)
+- Modify: `lib/gocardless/scheduler.test.ts` (only the store mock)
 
 **Interfaces:**
 - Consumes: `SyncJobStore` (Task 2), `SyncJobAccountPatch` (Task 1), `syncAccountLink`, `SyncProgress`, `SyncResult`, `SyncableLink` (Task 3), `RateLimitStore`.
 - Produces:
   - `progressToPatch(progress: SyncProgress): SyncJobAccountPatch`
   - `resultToPatch(result: SyncResult): SyncJobAccountPatch`
-  - `runSyncJob(job: { id: string; userId: string }, links: SyncableLink[], deps: { store: SyncJobStore; rateLimitStore: RateLimitStore }): Promise<void>` (non lancia mai; rilascia sempre il lock di ogni link ricevuto)
+  - `runSyncJob(job: { id: string; userId: string }, links: SyncableLink[], deps: { store: SyncJobStore; rateLimitStore: RateLimitStore }): Promise<void>` (never throws; always releases the lock of every link received)
 
-- [ ] **Step 1: Scrivi i test (falliscono)**
+- [ ] **Step 1: Write the tests (they fail)**
 
 `lib/sync-jobs/run.test.ts`:
 
@@ -1151,7 +1151,7 @@ describe("runSyncJob", () => {
     const bStarted = new Promise<void>((resolve) => (markBStarted = resolve));
     vi.mocked(syncAccountLink).mockImplementation(async (l, _store, onProgress) => {
       if (l.accountId === "a") {
-        // "a" finisce solo dopo che "b" è partito: in esecuzione sequenziale questo test andrebbe in timeout.
+        // "a" finishes only after "b" has started: with sequential execution this test would time out.
         await bStarted;
         await onProgress?.({ phase: "saving", total: 2, processed: 2, inserted: 2, categorized: 2, uncategorized: 0 });
         return { status: "synced", newTransactionsCount: 2, categorizedCount: 2, uncategorizedCount: 0, balanceUpdated: true };
@@ -1186,7 +1186,7 @@ describe("runSyncJob", () => {
 Run: `pnpm test lib/sync-jobs/run.test.ts`
 Expected: FAIL, `Failed to resolve import "./run"`.
 
-- [ ] **Step 2: Implementa `run.ts`**
+- [ ] **Step 2: Implement `run.ts`**
 
 `lib/sync-jobs/run.ts`:
 
@@ -1201,12 +1201,12 @@ export interface RunSyncJobDeps {
   rateLimitStore: RateLimitStore;
 }
 
-/** Traduce l'avanzamento di `syncAccountLink` in una patch del conto nel job. */
+/** Translates the progress of `syncAccountLink` into a patch of the account in the job. */
 export function progressToPatch(progress: SyncProgress): SyncJobAccountPatch {
   return { ...progress };
 }
 
-/** Traduce l'esito finale di un sync nella fase conclusiva del conto. */
+/** Translates the final outcome of a sync into the account's closing phase. */
 export function resultToPatch(result: SyncResult): SyncJobAccountPatch {
   switch (result.status) {
     case "synced":
@@ -1248,8 +1248,8 @@ async function runAccount(job: { id: string; userId: string }, link: SyncableLin
 }
 
 /**
- * Esegue un job di sync: tutti i conti in parallelo, ognuno isolato dagli errori degli altri.
- * Pensato per girare in `after()`: non lancia mai e rilascia sempre il lock dei conti ricevuti.
+ * Runs a sync job: all accounts in parallel, each one isolated from the others' errors.
+ * Meant to run in `after()`: it never throws and always releases the lock of the accounts received.
  */
 export async function runSyncJob(
   job: { id: string; userId: string },
@@ -1260,22 +1260,22 @@ export async function runSyncJob(
 }
 ```
 
-- [ ] **Step 3: Lock nello scheduler**
+- [ ] **Step 3: Lock in the scheduler**
 
-In `lib/gocardless/scheduler.ts` aggiungi l'import:
+In `lib/gocardless/scheduler.ts` add the import:
 
 ```ts
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 ```
 
-e sostituisci il corpo del ciclo di `runDueSyncs`:
+and replace the body of the `runDueSyncs` loop:
 
 ```ts
   for (const link of due) {
     const timestamps = link.syncTimestamps.map((t) => new Date(t));
     if (!computeSyncEligibility(timestamps, now).eligible) continue;
-    // Un sync manuale o un import in corso sullo stesso conto ha la precedenza: si salta al prossimo tick.
-    // Con Redis irraggiungibile si procede comunque (import idempotente): il cron non deve fermarsi per il lock.
+    // A manual sync or an import in progress on the same account takes precedence: skip to the next tick.
+    // With Redis unreachable proceed anyway (idempotent import): the cron must not stop because of the lock.
     const locked = await redisSyncJobStore.acquireAccountLock(link.accountId).catch(() => true);
     if (!locked) continue;
     try {
@@ -1288,9 +1288,9 @@ e sostituisci il corpo del ciclo di `runDueSyncs`:
   }
 ```
 
-Aggiorna il JSDoc di `runDueSyncs` aggiungendo in fondo: `Salta anche i conti con un sync già in corso (lock per conto).`
+Update the JSDoc of `runDueSyncs` by adding at the end: `Also skips accounts with a sync already in progress (per-account lock).`
 
-In `lib/gocardless/scheduler.test.ts`, subito dopo il `vi.mock("@/lib/gocardless/sync", ...)` esistente, aggiungi:
+In `lib/gocardless/scheduler.test.ts`, right after the existing `vi.mock("@/lib/gocardless/sync", ...)`, add:
 
 ```ts
 vi.mock("@/lib/sync-jobs/redis-store", async () => {
@@ -1299,10 +1299,10 @@ vi.mock("@/lib/sync-jobs/redis-store", async () => {
 });
 ```
 
-- [ ] **Step 4: Verifica**
+- [ ] **Step 4: Check**
 
 Run: `pnpm test lib/sync-jobs/run.test.ts` → Expected: PASS.
-Run: `pnpm test lib/gocardless/scheduler.test.ts` → Expected: stessi 3 fallimenti pre-esistenti di prima, nessuno in più.
+Run: `pnpm test lib/gocardless/scheduler.test.ts` → Expected: the same 3 pre-existing failures as before, no more.
 
 - [ ] **Step 5: Commit**
 
@@ -1313,7 +1313,7 @@ git commit -m "feat: orchestratore runSyncJob e lock per conto nello scheduler"
 
 ---
 
-### Task 6: Route sync manuale come job
+### Task 6: Manual sync route as a job
 
 **Files:**
 - Modify: `app/api/gocardless/accounts/[accountId]/sync/route.ts`
@@ -1321,13 +1321,13 @@ git commit -m "feat: orchestratore runSyncJob e lock per conto nello scheduler"
 
 **Interfaces:**
 - Consumes: `redisSyncJobStore` (Task 2), `runSyncJob` (Task 5), `queuedAccount` (Task 1).
-- Produces (contratto HTTP per Task 9): `POST` → `202 { jobId: string }` | `404` | `429 { status: "not-eligible", nextEligibleAt, syncsRemainingToday }` | `409 { status: "already-running" }` | `503 { status: "unavailable" }`.
+- Produces (HTTP contract for Task 9): `POST` → `202 { jobId: string }` | `404` | `429 { status: "not-eligible", nextEligibleAt, syncsRemainingToday }` | `409 { status: "already-running" }` | `503 { status: "unavailable" }`.
 
-- [ ] **Step 1: Riscrivi i test**
+- [ ] **Step 1: Rewrite the tests**
 
 In `route.test.ts`:
 
-1. Sostituisci `import { NextRequest } from "next/server";` con i mock di `next/server` e dello store, prima degli altri `vi.mock`:
+1. Replace `import { NextRequest } from "next/server";` with the mocks of `next/server` and of the store, before the other `vi.mock`:
 
 ```ts
 import { NextRequest, after } from "next/server";
@@ -1344,7 +1344,7 @@ vi.mock("@/lib/sync-jobs/redis-store", async () => {
 });
 ```
 
-2. Aggiungi l'import `import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";`, una variabile di modulo `const afterTasks: Promise<unknown>[] = [];` e nel `beforeEach`:
+2. Add the import `import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";`, a module variable `const afterTasks: Promise<unknown>[] = [];` and in the `beforeEach`:
 
 ```ts
     afterTasks.length = 0;
@@ -1354,7 +1354,7 @@ vi.mock("@/lib/sync-jobs/redis-store", async () => {
     });
 ```
 
-3. Sostituisci i test `"sincronizza e restituisce il riepilogo quando eleggibile"` e `"mappa 'gocardless-limited' a 429 ed 'expired' a 409"` con:
+3. Replace the tests `"sincronizza e restituisce il riepilogo quando eleggibile"` and `"mappa 'gocardless-limited' a 429 ed 'expired' a 409"` with:
 
 ```ts
   function postSync() {
@@ -1405,12 +1405,12 @@ vi.mock("@/lib/sync-jobs/redis-store", async () => {
   });
 ```
 
-4. Nel test esistente `"risponde 429 senza chiamare syncAccountLink se il budget condiviso è esaurito"` aggiungi in fondo `expect(after).not.toHaveBeenCalled();`.
+4. In the existing test `"risponde 429 senza chiamare syncAccountLink se il budget condiviso è esaurito"` add at the end `expect(after).not.toHaveBeenCalled();`.
 
 Run: `pnpm test "app/api/gocardless/accounts/[accountId]/sync/route.test.ts"`
-Expected: FAIL (la route risponde ancora 200 in modo sincrono).
+Expected: FAIL (the route still responds 200 synchronously).
 
-- [ ] **Step 2: Riscrivi la route**
+- [ ] **Step 2: Rewrite the route**
 
 `app/api/gocardless/accounts/[accountId]/sync/route.ts`:
 
@@ -1427,14 +1427,14 @@ import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { runSyncJob } from "@/lib/sync-jobs/run";
 import { queuedAccount, type SyncJob } from "@/lib/sync-jobs/types";
 
-// Il sync gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
+// The sync runs in after(): on Vercel the function stays alive at most for this time (seconds).
 export const maxDuration = 300;
 
 /**
- * Avvia un sync manuale di un conto collegato come job in background.
- * Ownership, eleggibilità (budget condiviso 4/giorno + gap 4h) e lock per conto restano sincroni,
- * così gli errori prevedibili arrivano come risposta HTTP: 404, 429 not-eligible, 409 already-running,
- * 503 se lo store dei job non risponde. Altrimenti crea il job e risponde subito 202 { jobId }.
+ * Starts a manual sync of a linked account as a background job.
+ * Ownership, eligibility (shared budget 4/day + 4h gap) and per-account lock stay synchronous,
+ * so predictable errors arrive as an HTTP response: 404, 429 not-eligible, 409 already-running,
+ * 503 if the job store does not respond. Otherwise it creates the job and responds immediately 202 { jobId }.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ accountId: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -1516,7 +1516,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 }
 ```
 
-- [ ] **Step 3: Verifica**
+- [ ] **Step 3: Check**
 
 Run: `pnpm test "app/api/gocardless/accounts/[accountId]/sync/route.test.ts"`
 Expected: PASS (404, 429, 202, 409, 503).
@@ -1530,7 +1530,7 @@ git commit -m "feat: sync manuale come job in background con lock per conto"
 
 ---
 
-### Task 7: Route finalize (Conti trovati) come job
+### Task 7: Finalize route (Conti trovati) as a job
 
 **Files:**
 - Modify: `app/api/gocardless/connections/[id]/finalize/route.ts`
@@ -1538,11 +1538,11 @@ git commit -m "feat: sync manuale come job in background con lock per conto"
 
 **Interfaces:**
 - Consumes: `redisSyncJobStore`, `runSyncJob`, `queuedAccount`, `SyncJobAccount`.
-- Produces (contratto HTTP per Task 9): `POST` → `201 { jobId: string }` | `400` | `404` | `503 { error: string }`.
+- Produces (HTTP contract for Task 9): `POST` → `201 { jobId: string }` | `400` | `404` | `503 { error: string }`.
 
-- [ ] **Step 1: Aggiorna i test**
+- [ ] **Step 1: Update the tests**
 
-In `route.test.ts` applica lo stesso setup del Task 6 (import `after` da `next/server`, i due `vi.mock` di `next/server` e `@/lib/sync-jobs/redis-store`, `afterTasks` e il `mockImplementation` di `after` nel `beforeEach`, import di `redisSyncJobStore`). Cambia il mock di `syncAccountLink` in modo che restituisca un esito valido:
+In `route.test.ts` apply the same setup as Task 6 (import `after` from `next/server`, the two `vi.mock` of `next/server` and `@/lib/sync-jobs/redis-store`, `afterTasks` and the `mockImplementation` of `after` in the `beforeEach`, import of `redisSyncJobStore`). Change the `syncAccountLink` mock so that it returns a valid outcome:
 
 ```ts
 vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
@@ -1560,7 +1560,7 @@ vi.mock("@/lib/gocardless/sync", async (importOriginal) => {
 });
 ```
 
-Nel test `"crea un nuovo conto per una selezione 'new' e lancia il sync"`, dopo `expect(response.status).toBe(201);` sostituisci `expect(syncAccountLink).toHaveBeenCalledTimes(1);` con:
+In the test `"crea un nuovo conto per una selezione 'new' e lancia il sync"`, after `expect(response.status).toBe(201);` replace `expect(syncAccountLink).toHaveBeenCalledTimes(1);` with:
 
 ```ts
     const { jobId } = await response.json();
@@ -1572,7 +1572,7 @@ Nel test `"crea un nuovo conto per una selezione 'new' e lancia il sync"`, dopo 
     expect(job?.accounts[0]).toMatchObject({ name: "Conto Corrente", phase: "done" });
 ```
 
-Nel test `"risponde comunque 201 se il sync iniziale fallisce (l'account resta creato)"` aggiungi dopo l'assert sullo status:
+In the test `"risponde comunque 201 se il sync iniziale fallisce (l'account resta creato)"` add after the assert on the status:
 
 ```ts
     const { jobId } = await response.json();
@@ -1581,13 +1581,13 @@ Nel test `"risponde comunque 201 se il sync iniziale fallisce (l'account resta c
     expect(job?.accounts[0].phase).toBe("error");
 ```
 
-Nel test `"risponde 404 se existingAccountId appartiene a un altro utente"` aggiungi in fondo:
+In the test `"risponde 404 se existingAccountId appartiene a un altro utente"` add at the end:
 
 ```ts
     expect(await redisSyncJobStore.listJobs(userId)).toEqual([]);
 ```
 
-Aggiungi i nuovi test:
+Add the new tests:
 
 ```ts
   function postFinalize(selections: unknown[]) {
@@ -1625,11 +1625,11 @@ Aggiungi i nuovi test:
 ```
 
 Run: `pnpm test "app/api/gocardless/connections/[id]/finalize/route.test.ts"`
-Expected: FAIL (niente `jobId`, niente 503).
+Expected: FAIL (no `jobId`, no 503).
 
-- [ ] **Step 2: Riscrivi la route**
+- [ ] **Step 2: Rewrite the route**
 
-`app/api/gocardless/connections/[id]/finalize/route.ts`. Rispetto a oggi, la validazione delle selezioni `existing` passa **prima** della creazione del job, così un 400/404 non lascia né job orfani né conti aggiornati a metà:
+`app/api/gocardless/connections/[id]/finalize/route.ts`. Compared to today, the validation of the `existing` selections happens **before** the creation of the job, so a 400/404 leaves neither orphan jobs nor half-updated accounts:
 
 ```ts
 import { NextRequest, after } from "next/server";
@@ -1645,16 +1645,16 @@ import { runSyncJob } from "@/lib/sync-jobs/run";
 import { queuedAccount, type SyncJob, type SyncJobAccount } from "@/lib/sync-jobs/types";
 import { finalizeSelectionSchema } from "@/lib/validation/gocardless";
 
-// L'import iniziale gira in after(): su Vercel la funzione resta viva al massimo per questo tempo (secondi).
+// The initial import runs in after(): on Vercel the function stays alive at most for this time (seconds).
 export const maxDuration = 300;
 
 const STORE_UNAVAILABLE_MESSAGE = "Servizio temporaneamente non disponibile. Riprova tra poco.";
 
 /**
- * Finalizza la selezione dei "Conti trovati": crea o ricollega i conti e avvia l'import iniziale
- * come job in background (tutti i conti in parallelo). Risponde subito 201 { jobId }.
- * Validazione e ownership avvengono prima di creare il job; se lo store dei job non risponde,
- * 503 prima di creare qualunque conto.
+ * Finalises the selection of the "Conti trovati": creates or relinks the accounts and starts the initial import
+ * as a background job (all accounts in parallel). Responds immediately 201 { jobId }.
+ * Validation and ownership happen before creating the job; if the job store does not respond,
+ * 503 before creating any account.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -1674,15 +1674,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return Response.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  // Prima passata: solo verifiche, nessuna scrittura.
+  // First pass: checks only, no writes.
   const existingNames = new Map<string, string>();
   for (const selection of parsed.data.selections) {
     if (selection.mode !== "existing") continue;
     if (!selection.existingAccountId) {
       return Response.json({ error: "existingAccountId richiesto per mode 'existing'" }, { status: 400 });
     }
-    // L'account selezionato deve appartenere all'utente della sessione, altrimenti un utente
-    // potrebbe ricollegare (e quindi dirottare il sync) il conto "auto" di un altro utente.
+    // The selected account must belong to the session user, otherwise a user
+    // could relink (and thus hijack the sync of) another user's "auto" account.
     const [ownedAccount] = await db
       .select({ id: accounts.id, name: accounts.name })
       .from(accounts)
@@ -1704,7 +1704,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return Response.json({ error: STORE_UNAVAILABLE_MESSAGE }, { status: 503 });
   }
 
-  // Seconda passata: scritture.
+  // Second pass: writes.
   const created: { link: SyncableLink; name: string }[] = [];
   for (const selection of parsed.data.selections) {
     if (selection.mode === "existing" && selection.existingAccountId) {
@@ -1748,11 +1748,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
   }
 
-  // Un conto "existing" può avere già un sync in corso: non lo si duplica, lo si segnala nel job.
+  // An "existing" account may already have a sync in progress: don't duplicate it, flag it in the job.
   const linksToSync: SyncableLink[] = [];
   const jobAccounts: SyncJobAccount[] = [];
   for (const { link, name } of created) {
-    // Se il lock non si può leggere si procede comunque: l'import è idempotente.
+    // If the lock cannot be read proceed anyway: the import is idempotent.
     const locked = await store.acquireAccountLock(link.accountId).catch(() => true);
     if (locked) {
       linksToSync.push(link);
@@ -1765,22 +1765,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     await store.setAccounts(userId, job.id, jobAccounts);
   } catch (error) {
-    // I dati restano corretti: il sync parte comunque, il job verrà mostrato come interrotto.
+    // The data stays correct: the sync starts anyway, the job will be shown as interrupted.
     console.error(`Registrazione dei conti nel job ${job.id} fallita`, error);
   }
 
-  // Best-effort: gli account/link sono già creati. Un fallimento del sync iniziale finisce nel job
-  // come errore del conto, non fa fallire la richiesta (un retry duplicherebbe i conti "new").
+  // Best-effort: the accounts/links are already created. A failure of the initial sync ends up in the job
+  // as an account error, it does not fail the request (a retry would duplicate the "new" accounts).
   after(() => runSyncJob(job, linksToSync, { store, rateLimitStore: redisRateLimitStore }));
 
   return Response.json({ jobId: job.id }, { status: 201 });
 }
 ```
 
-- [ ] **Step 3: Verifica**
+- [ ] **Step 3: Check**
 
 Run: `pnpm test "app/api/gocardless/connections/[id]/finalize/route.test.ts"`
-Expected: PASS (tutti, inclusi 400/404 esistenti).
+Expected: PASS (all of them, including the existing 400/404).
 
 - [ ] **Step 4: Commit**
 
@@ -1791,7 +1791,7 @@ git commit -m "feat: import dei conti trovati come job in background, conti in p
 
 ---
 
-### Task 8: API di lettura e chiusura dei job
+### Task 8: API for reading and closing jobs
 
 **Files:**
 - Create: `app/api/sync-jobs/route.ts`
@@ -1800,9 +1800,9 @@ git commit -m "feat: import dei conti trovati come job in background, conti in p
 
 **Interfaces:**
 - Consumes: `redisSyncJobStore`, `toJobView`.
-- Produces (contratto HTTP per Task 9): `GET /api/sync-jobs` → `200 SyncJobView[]` (solo non `dismissed`, ordinati dal più recente) | `401` | `503`; `POST /api/sync-jobs/[id]/dismiss` → `204` | `401` | `404` | `503`.
+- Produces (HTTP contract for Task 9): `GET /api/sync-jobs` → `200 SyncJobView[]` (only non-`dismissed`, sorted from the most recent) | `401` | `503`; `POST /api/sync-jobs/[id]/dismiss` → `204` | `401` | `404` | `503`.
 
-- [ ] **Step 1: Scrivi i test**
+- [ ] **Step 1: Write the tests**
 
 `app/api/sync-jobs/route.test.ts`:
 
@@ -1874,9 +1874,9 @@ describe("API sync-jobs", () => {
 ```
 
 Run: `pnpm test app/api/sync-jobs/route.test.ts`
-Expected: FAIL, route inesistenti.
+Expected: FAIL, routes do not exist.
 
-- [ ] **Step 2: Implementa le route**
+- [ ] **Step 2: Implement the routes**
 
 `app/api/sync-jobs/route.ts`:
 
@@ -1886,7 +1886,7 @@ import { auth } from "@/lib/auth";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 import { toJobView } from "@/lib/sync-jobs/view";
 
-/** Job di sync dell'utente in sessione non ancora chiusi, già pronti per la UI (heartbeat valutato). */
+/** Sync jobs of the session user not yet closed, ready for the UI (heartbeat evaluated). */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
@@ -1909,7 +1909,7 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { redisSyncJobStore } from "@/lib/sync-jobs/redis-store";
 
-/** Chiude il riepilogo di un job: resta nascosto anche su altri dispositivi. Solo job dell'utente in sessione. */
+/** Closes a job's summary: it stays hidden on other devices too. Only jobs of the session user. */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) return new Response(null, { status: 401 });
@@ -1925,7 +1925,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 }
 ```
 
-- [ ] **Step 3: Verifica**
+- [ ] **Step 3: Check**
 
 Run: `pnpm test app/api/sync-jobs/route.test.ts` → Expected: PASS.
 
@@ -1938,7 +1938,7 @@ git commit -m "feat: API di lettura e chiusura dei job di sync"
 
 ---
 
-### Task 9: Hook client e mutation adattate ai job
+### Task 9: Client hooks and mutations adapted to jobs
 
 **Files:**
 - Create: `lib/queries/sync-jobs.ts`
@@ -1947,18 +1947,18 @@ git commit -m "feat: API di lettura e chiusura dei job di sync"
 - Test: `lib/gocardless/sync-messages.test.ts`
 
 **Interfaces:**
-- Consumes: contratti HTTP dei Task 6-8; `SyncJobView` (Task 1); `runningJobIds`, `hasFinishedSince` (Task 1).
+- Consumes: HTTP contracts of Tasks 6-8; `SyncJobView` (Task 1); `runningJobIds`, `hasFinishedSince` (Task 1).
 - Produces:
   - `SYNC_JOBS_QUERY_KEY = ["sync-jobs"] as const`, `SYNC_JOBS_POLL_INTERVAL_MS = 1000`
   - `useSyncJobsQuery(): UseQueryResult<SyncJobView[]>`
   - `useInvalidateOnSyncJobFinish(jobs: SyncJobView[] | undefined): void`
   - `useDismissSyncJobMutation(): UseMutationResult<void, Error, string>`
-  - `useSyncAccountMutation()` ora risolve con `{ jobId: string }`
-  - `SyncErrorInfo` include `{ status: "already-running" }` e `{ status: "unavailable" }`
+  - `useSyncAccountMutation()` now resolves with `{ jobId: string }`
+  - `SyncErrorInfo` includes `{ status: "already-running" }` and `{ status: "unavailable" }`
 
-- [ ] **Step 1: Test dei nuovi messaggi d'errore (falliscono)**
+- [ ] **Step 1: Tests for the new error messages (they fail)**
 
-In `lib/gocardless/sync-messages.test.ts` aggiungi, dentro il `describe` di `buildSyncErrorMessage` (o in un nuovo `describe` omonimo se non esiste):
+In `lib/gocardless/sync-messages.test.ts` add, inside the `describe` of `buildSyncErrorMessage` (or in a new `describe` with the same name if it doesn't exist):
 
 ```ts
   it("spiega un sync già in corso e un servizio non disponibile", () => {
@@ -1971,11 +1971,11 @@ In `lib/gocardless/sync-messages.test.ts` aggiungi, dentro il `describe` di `bui
   });
 ```
 
-Run: `pnpm test lib/gocardless/sync-messages.test.ts` → Expected: FAIL (errore di tipo/valore di default).
+Run: `pnpm test lib/gocardless/sync-messages.test.ts` → Expected: FAIL (type/default value error).
 
-- [ ] **Step 2: Estendi `sync-messages.ts`**
+- [ ] **Step 2: Extend `sync-messages.ts`**
 
-Aggiungi le due varianti a `SyncErrorInfo`:
+Add the two variants to `SyncErrorInfo`:
 
 ```ts
 export type SyncErrorInfo =
@@ -1987,7 +1987,7 @@ export type SyncErrorInfo =
   | { status: "unknown" };
 ```
 
-E in `buildSyncErrorMessage`, prima del `default`:
+And in `buildSyncErrorMessage`, before the `default`:
 
 ```ts
     case "already-running":
@@ -1998,7 +1998,7 @@ E in `buildSyncErrorMessage`, prima del `default`:
 
 Run: `pnpm test lib/gocardless/sync-messages.test.ts` → Expected: PASS.
 
-- [ ] **Step 3: Crea `lib/queries/sync-jobs.ts`**
+- [ ] **Step 3: Create `lib/queries/sync-jobs.ts`**
 
 ```ts
 "use client";
@@ -2011,7 +2011,7 @@ import { hasFinishedSince, runningJobIds } from "@/lib/sync-jobs/view";
 export const SYNC_JOBS_QUERY_KEY = ["sync-jobs"] as const;
 export const SYNC_JOBS_POLL_INTERVAL_MS = 1000;
 
-/** Query invalidate a fine job: i dati che un sync può aver cambiato. */
+/** Queries invalidated at the end of a job: the data a sync may have changed. */
 const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["accounts"],
   ["transactions"],
@@ -2019,7 +2019,7 @@ const QUERY_KEYS_CHANGED_BY_SYNC = [
   ["net-worth-snapshots"],
 ] as const;
 
-/** Job di sync dell'utente; interroga il server ogni secondo solo mentre almeno un job è in corso. */
+/** The user's sync jobs; polls the server every second only while at least one job is running. */
 export function useSyncJobsQuery() {
   return useQuery({
     queryKey: SYNC_JOBS_QUERY_KEY,
@@ -2032,7 +2032,7 @@ export function useSyncJobsQuery() {
   });
 }
 
-/** Quando un job termina, aggiorna conti, movimenti e patrimonio. Da usare in un solo punto (il pannello globale). */
+/** When a job ends, refreshes accounts, transactions and net worth. To be used in a single place (the global panel). */
 export function useInvalidateOnSyncJobFinish(jobs: SyncJobView[] | undefined): void {
   const queryClient = useQueryClient();
   const previous = React.useRef<Set<string>>(new Set());
@@ -2048,7 +2048,7 @@ export function useInvalidateOnSyncJobFinish(jobs: SyncJobView[] | undefined): v
   }, [jobs, queryClient]);
 }
 
-/** Chiude il riepilogo di un job concluso. */
+/** Closes the summary of a finished job. */
 export function useDismissSyncJobMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -2061,9 +2061,9 @@ export function useDismissSyncJobMutation() {
 }
 ```
 
-- [ ] **Step 4: Adatta `lib/queries/gocardless.ts`**
+- [ ] **Step 4: Adapt `lib/queries/gocardless.ts`**
 
-1. Sostituisci gli import da `sync-messages` con:
+1. Replace the imports from `sync-messages` with:
 
 ```ts
 import { buildSyncErrorMessage } from "@/lib/gocardless/sync-messages";
@@ -2071,16 +2071,16 @@ import type { SyncErrorInfo } from "@/lib/gocardless/sync-messages";
 import { SYNC_JOBS_QUERY_KEY } from "@/lib/queries/sync-jobs";
 ```
 
-2. In `useFinalizeConnectionMutation`, tipizza il ritorno di `mutationFn` come `Promise<{ jobId: string }>` e aggiungi nell'`onSuccess`:
+2. In `useFinalizeConnectionMutation`, type the return of `mutationFn` as `Promise<{ jobId: string }>` and add in `onSuccess`:
 
 ```ts
       queryClient.invalidateQueries({ queryKey: SYNC_JOBS_QUERY_KEY });
 ```
 
-3. Sostituisci `useSyncAccountMutation` e il suo JSDoc:
+3. Replace `useSyncAccountMutation` and its JSDoc:
 
 ```ts
-/** Avvia un sync manuale come job in background; l'avanzamento compare nel pannello globale. Gli errori immediati vanno in un toast. */
+/** Starts a manual sync as a background job; progress appears in the global panel. Immediate errors go to a toast. */
 export function useSyncAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -2101,11 +2101,11 @@ export function useSyncAccountMutation() {
 }
 ```
 
-`buildSyncSummaryMessage` resta esportata da `sync-messages.ts`: la riusa il pannello (Task 10).
+`buildSyncSummaryMessage` stays exported from `sync-messages.ts`: the panel reuses it (Task 10).
 
-- [ ] **Step 5: Verifica**
+- [ ] **Step 5: Check**
 
-Run: `pnpm exec tsc --noEmit` → Expected: nessun errore.
+Run: `pnpm exec tsc --noEmit` → Expected: no errors.
 Run: `pnpm test lib/gocardless/sync-messages.test.ts` → Expected: PASS.
 
 - [ ] **Step 6: Commit**
@@ -2117,7 +2117,7 @@ git commit -m "feat: hook client per i job di sync con polling solo durante i jo
 
 ---
 
-### Task 10: Pannello globale di avanzamento
+### Task 10: Global progress panel
 
 **Files:**
 - Create: `components/domain/sync/describe-account-progress.ts`
@@ -2130,7 +2130,7 @@ git commit -m "feat: hook client per i job di sync con polling solo durante i jo
 - Modify: `app/(app)/layout.tsx`
 
 **Interfaces:**
-- Consumes: `SyncJobAccount`, `SyncJobView` (Task 1), `overallProgress` (Task 1), `buildSyncSummaryMessage`, `buildSyncErrorMessage` (esistenti), hook del Task 9.
+- Consumes: `SyncJobAccount`, `SyncJobView` (Task 1), `overallProgress` (Task 1), `buildSyncSummaryMessage`, `buildSyncErrorMessage` (existing), Task 9 hooks.
 - Produces:
   - `type ProgressBarState = { kind: "none" } | { kind: "indeterminate" } | { kind: "determinate"; value: number; max: number }`
   - `interface AccountProgressDescription { text: string; bar: ProgressBarState; tone: "default" | "success" | "error" }`
@@ -2138,7 +2138,7 @@ git commit -m "feat: hook client per i job di sync con polling solo durante i jo
   - `describeJobTitle(job: SyncJobView): string`
   - `SyncProgressPanel({ jobs, onDismiss, categorizeHref? })`, `SyncProgressIndicator()`
 
-- [ ] **Step 1: Test dei testi per fase (falliscono)**
+- [ ] **Step 1: Tests for the per-phase texts (they fail)**
 
 `components/domain/sync/describe-account-progress.test.ts`:
 
@@ -2230,9 +2230,9 @@ describe("describeJobTitle", () => {
 });
 ```
 
-Run: `pnpm test components/domain/sync/describe-account-progress.test.ts` → Expected: FAIL, modulo inesistente.
+Run: `pnpm test components/domain/sync/describe-account-progress.test.ts` → Expected: FAIL, module does not exist.
 
-- [ ] **Step 2: Implementa `describe-account-progress.ts`**
+- [ ] **Step 2: Implement `describe-account-progress.ts`**
 
 ```ts
 import { buildSyncErrorMessage, buildSyncSummaryMessage } from "@/lib/gocardless/sync-messages";
@@ -2258,7 +2258,7 @@ const INTERRUPTED_TEXT = "Sincronizzazione interrotta. I movimenti già salvati 
 const NO_BAR: ProgressBarState = { kind: "none" };
 const FULL_BAR: ProgressBarState = { kind: "determinate", value: 1, max: 1 };
 
-/** Testo, barra e tono di un conto nel pannello di sincronizzazione, in base alla fase. */
+/** Text, bar and tone of an account in the sync panel, based on the phase. */
 export function describeAccountProgress(account: SyncJobAccount, interrupted: boolean): AccountProgressDescription {
   switch (account.phase) {
     case "queued":
@@ -2300,7 +2300,7 @@ export function describeAccountProgress(account: SyncJobAccount, interrupted: bo
   }
 }
 
-/** Titolo sintetico di un job per l'intestazione del pannello. */
+/** Short title of a job for the panel header. */
 export function describeJobTitle(job: SyncJobView): string {
   if (job.interrupted) return "Sincronizzazione interrotta";
   if (job.status === "done") return "Sincronizzazione completata";
@@ -2312,7 +2312,7 @@ export function describeJobTitle(job: SyncJobView): string {
 
 Run: `pnpm test components/domain/sync/describe-account-progress.test.ts` → Expected: PASS.
 
-- [ ] **Step 3: Componenti UI**
+- [ ] **Step 3: UI components**
 
 `components/domain/sync/progress-bar.tsx`:
 
@@ -2322,12 +2322,12 @@ import type { ProgressBarState } from "./describe-account-progress";
 
 export interface ProgressBarProps {
   state: ProgressBarState;
-  /** Etichetta accessibile della barra (es. il nome del conto). */
+  /** Accessible label of the bar (e.g. the account name). */
   label: string;
   className?: string;
 }
 
-/** Barra di avanzamento sottile: determinata (con aria-valuenow) o indeterminata (pulsante, solo se il movimento è consentito). */
+/** Thin progress bar: determinate (with aria-valuenow) or indeterminate (pulsing, only if motion is allowed). */
 export function ProgressBar({ state, label, className }: ProgressBarProps) {
   if (state.kind === "none") return null;
 
@@ -2376,7 +2376,7 @@ export interface SyncAccountProgressRowProps {
   interrupted: boolean;
 }
 
-/** Riga del pannello per un singolo conto: nome, stato testuale e barra. */
+/** Panel row for a single account: name, text status and bar. */
 export function SyncAccountProgressRow({ account, interrupted }: SyncAccountProgressRowProps) {
   const description = describeAccountProgress(account, interrupted);
   return (
@@ -2423,11 +2423,11 @@ const CATEGORIZE_LABEL = "Categorizza";
 export interface SyncProgressPanelProps {
   jobs: SyncJobView[];
   onDismiss: (jobId: string) => void;
-  /** Destinazione del link mostrato quando restano movimenti da categorizzare. */
+  /** Destination of the link shown when transactions to categorise remain. */
   categorizeHref?: string;
 }
 
-/** Pannello flottante con l'avanzamento dei job di sync; un riquadro per job, chiudibile solo a job concluso. */
+/** Floating panel with the progress of the sync jobs; one box per job, closable only once the job has finished. */
 export function SyncProgressPanel({ jobs, onDismiss, categorizeHref = "/categorizza" }: SyncProgressPanelProps) {
   if (jobs.length === 0) return null;
   return (
@@ -2530,7 +2530,7 @@ function SyncJobCard({
 import { useDismissSyncJobMutation, useInvalidateOnSyncJobFinish, useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { SyncProgressPanel } from "./sync-progress-panel";
 
-/** Contenitore del pannello: legge i job, aggiorna i dati a fine job e gestisce la chiusura. Va montato una sola volta nel layout. */
+/** Panel container: reads the jobs, refreshes the data at the end of a job and handles closing. Must be mounted only once in the layout. */
 export function SyncProgressIndicator() {
   const { data: jobs } = useSyncJobsQuery();
   const dismiss = useDismissSyncJobMutation();
@@ -2546,7 +2546,7 @@ export function SyncProgressIndicator() {
 /**
  * components/domain/sync — barrel file
  *
- * Pannello globale di avanzamento dei job di sincronizzazione bancaria.
+ * Global progress panel for the bank sync jobs.
  */
 
 export { SyncProgressIndicator } from "./sync-progress-indicator";
@@ -2560,7 +2560,7 @@ export { describeAccountProgress, describeJobTitle } from "./describe-account-pr
 export type { AccountProgressDescription, ProgressBarState } from "./describe-account-progress";
 ```
 
-- [ ] **Step 4: Monta il pannello nel layout**
+- [ ] **Step 4: Mount the panel in the layout**
 
 `app/(app)/layout.tsx`:
 
@@ -2568,7 +2568,7 @@ export type { AccountProgressDescription, ProgressBarState } from "./describe-ac
 import { AppShell } from "@/components/layout";
 import { SyncProgressIndicator } from "@/components/domain/sync";
 
-/** Layout per tutte le pagine dell'app autenticate: monta AppShell con sidebar e il pannello globale dei sync. */
+/** Layout for all authenticated app pages: mounts AppShell with the sidebar and the global sync panel. */
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -2579,11 +2579,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-- [ ] **Step 5: Verifica**
+- [ ] **Step 5: Check**
 
 Run: `pnpm test components/domain/sync` → Expected: PASS.
-Run: `pnpm exec tsc --noEmit` → Expected: nessun errore.
-Run: `pnpm lint` → Expected: nessun errore nuovo (restano solo i 2 `react-hooks/set-state-in-effect` pre-esistenti).
+Run: `pnpm exec tsc --noEmit` → Expected: no errors.
+Run: `pnpm lint` → Expected: no new errors (only the 2 pre-existing `react-hooks/set-state-in-effect` remain).
 
 - [ ] **Step 6: Commit**
 
@@ -2594,28 +2594,28 @@ git commit -m "feat: pannello globale di avanzamento dei sync bancari"
 
 ---
 
-### Task 11: Collegamento dei punti di partenza + documentazione
+### Task 11: Wiring the starting points + documentation
 
 **Files:**
-- Modify: `app/(app)/conti/collega/[connectionId]/page.tsx:129-131` (bottone Conferma)
-- Modify: `components/domain/accounts/account-row.tsx` (props + bottone sync)
-- Modify: `app/(app)/conti/page.tsx` (passa `syncing`)
-- Modify: `CLAUDE.md` (stato progetto + log)
+- Modify: `app/(app)/conti/collega/[connectionId]/page.tsx:129-131` (Conferma (Confirm) button)
+- Modify: `components/domain/accounts/account-row.tsx` (props + sync button)
+- Modify: `app/(app)/conti/page.tsx` (passes `syncing`)
+- Modify: `CLAUDE.md` (project status + log)
 
 **Interfaces:**
 - Consumes: `useSyncJobsQuery` (Task 9), `isAccountSyncing` (Task 1).
 - Produces: `AccountRowProps.syncing?: boolean`.
 
-- [ ] **Step 1: Bottone "Conferma"**
+- [ ] **Step 1: "Conferma" button**
 
-In `app/(app)/conti/collega/[connectionId]/page.tsx`, sopra il componente:
+In `app/(app)/conti/collega/[connectionId]/page.tsx`, above the component:
 
 ```ts
 const CONFIRM_LABEL = "Conferma";
 const CONFIRM_PENDING_LABEL = "Avvio…";
 ```
 
-e sostituisci il bottone:
+and replace the button:
 
 ```tsx
       <Button onClick={handleConfirm} disabled={finalize.isPending}>
@@ -2623,28 +2623,28 @@ e sostituisci il bottone:
       </Button>
 ```
 
-L'`onSuccess` resta `router.push("/conti")`: ora arriva subito, e il pannello mostra l'import.
+The `onSuccess` stays `router.push("/conti")`: now it arrives immediately, and the panel shows the import.
 
-- [ ] **Step 2: `AccountRow` con prop `syncing`**
+- [ ] **Step 2: `AccountRow` with a `syncing` prop**
 
 In `components/domain/accounts/account-row.tsx`:
 
-1. Aggiungi a `AccountRowProps`, dopo `syncInfo`:
+1. Add to `AccountRowProps`, after `syncInfo`:
 
 ```ts
-  /** True se il conto ha un sync in corso (anche partito da un'altra pagina o scheda). */
+  /** True if the account has a sync in progress (even one started from another page or tab). */
   syncing?: boolean;
 ```
 
-2. Aggiungi `syncing = false` alla destrutturazione delle props di `AccountRow`.
+2. Add `syncing = false` to the props destructuring of `AccountRow`.
 
-3. Cambia la firma di `buildSyncButtonTitle` aggiungendo il parametro `syncing: boolean` e, come prima riga del corpo:
+3. Change the signature of `buildSyncButtonTitle` adding the parameter `syncing: boolean` and, as the first line of the body:
 
 ```ts
   if (syncing) return "Sincronizzazione in corso";
 ```
 
-4. Nel bottone sync:
+4. In the sync button:
 
 ```tsx
             onClick={() => syncMutation.mutate(account.id)}
@@ -2656,9 +2656,9 @@ In `components/domain/accounts/account-row.tsx`:
             <RefreshCw size={15} className={syncMutation.isPending || syncing ? "motion-safe:animate-spin" : undefined} />
 ```
 
-Aggiorna il JSDoc del bottone/funzione se menziona solo `syncInfo`.
+Update the JSDoc of the button/function if it mentions only `syncInfo`.
 
-- [ ] **Step 3: Pagina Conti**
+- [ ] **Step 3: Conti (Accounts) page**
 
 In `app/(app)/conti/page.tsx`:
 
@@ -2667,37 +2667,37 @@ import { useSyncJobsQuery } from "@/lib/queries/sync-jobs";
 import { isAccountSyncing } from "@/lib/sync-jobs/view";
 ```
 
-Accanto a `useBankConnectionsStatusQuery()`:
+Next to `useBankConnectionsStatusQuery()`:
 
 ```ts
   const { data: syncJobs } = useSyncJobsQuery();
 ```
 
-E in `<AccountRow ...>`:
+And in `<AccountRow ...>`:
 
 ```tsx
               syncing={isAccountSyncing(syncJobs ?? [], account.id)}
 ```
 
-- [ ] **Step 4: Verifica completa**
+- [ ] **Step 4: Full check**
 
-Run: `pnpm exec tsc --noEmit` → Expected: nessun errore.
-Run: `pnpm lint` → Expected: nessun errore nuovo.
-Run: `pnpm test` → Expected: tutti verdi tranne i 3 pre-esistenti di `lib/gocardless/scheduler.test.ts`.
-Run: `pnpm build` → Expected: build riuscita, route `/api/sync-jobs` e `/api/sync-jobs/[id]/dismiss` presenti nell'elenco.
+Run: `pnpm exec tsc --noEmit` → Expected: no errors.
+Run: `pnpm lint` → Expected: no new errors.
+Run: `pnpm test` → Expected: all green except the 3 pre-existing ones in `lib/gocardless/scheduler.test.ts`.
+Run: `pnpm build` → Expected: successful build, routes `/api/sync-jobs` and `/api/sync-jobs/[id]/dismiss` present in the list.
 
-- [ ] **Step 5: Aggiorna CLAUDE.md**
+- [ ] **Step 5: Update CLAUDE.md**
 
-In "Stato del progetto" sostituisci la frase che inizia con `**In corso ora**: brainstorming (2026-09-22) di **import/sync GoCardless veloce con avanzamento visibile**` fino a `poi piano con \`superpowers:writing-plans\`.` con:
+In "Stato del progetto" (Project status) replace the sentence starting with `**In corso ora**: brainstorming (2026-09-22) di **import/sync GoCardless veloce con avanzamento visibile**` up to `poi piano con \`superpowers:writing-plans\`.` with:
 
 ```markdown
-**In corso ora**: nessun piano attivo. **Import/sync GoCardless come job in background con avanzamento visibile completato** (piano `docs/superpowers/plans/2026-09-22-gocardless-sync-job-progress.md`, 11/11 task) — primo caso dello standard "Operazioni lunghe". **Verifica manuale utente ancora da fare** (su Vercel): import multi-conto cambiando pagina durante il sync, contatore "Importati X di Y" che avanza, riepilogo e chiusura persistente, doppio click sul sync manuale → "già in corso", saldi/liste aggiornati a fine job, tempo di import prima/dopo.
+**In progress now**: no active plan. **GoCardless import/sync as a background job with visible progress completed** (plan `docs/superpowers/plans/2026-09-22-gocardless-sync-job-progress.md`, 11/11 tasks) — first case of the "Operazioni lunghe" (Long-running operations) standard. **Manual user verification still to do** (on Vercel): multi-account import changing page during the sync, "Importati X di Y" counter advancing, summary and persistent closing, double click on manual sync → "già in corso" (already running), balances/lists updated at the end of the job, import time before/after.
 ```
 
-Aggiungi in cima al "Log delle decisioni":
+Add at the top of the "Log delle decisioni" (Decision log):
 
 ```markdown
-- **<data di completamento>** — Completato il piano sync GoCardless come job in background (`docs/superpowers/plans/2026-09-22-gocardless-sync-job-progress.md`). Insert a blocchi da 50 con `RETURNING externalId` (hit delle regole solo su righe inserite), conti in parallelo, token GoCardless in memoria, stato dei job su Redis con **una chiave per conto** (evita aggiornamenti persi tra conti paralleli — correzione alla spec emersa scrivendo il piano), heartbeat 60s, lock per conto condiviso con lo scheduler, route che rispondono subito (`202`/`201 { jobId }`) e lavorano in `after()` con `maxDuration = 300`, pannello globale `SyncProgressIndicator` montato in `app/(app)/layout.tsx`. Il toast di successo del sync manuale è stato rimosso (il feedback è nel pannello); restano i toast degli errori immediati. Il finalize ora valida tutte le selezioni `existing` prima di scrivere qualunque cosa (prima un 404 a metà lasciava aggiornamenti parziali).
+- **<completion date>** — Completed the GoCardless sync as a background job plan (`docs/superpowers/plans/2026-09-22-gocardless-sync-job-progress.md`). Chunked inserts of 50 with `RETURNING externalId` (rule hits only on inserted rows), accounts in parallel, GoCardless token in memory, job state on Redis with **one key per account** (avoids lost updates between parallel accounts — a correction to the spec that emerged while writing the plan), 60s heartbeat, per-account lock shared with the scheduler, routes that respond immediately (`202`/`201 { jobId }`) and work in `after()` with `maxDuration = 300`, global `SyncProgressIndicator` panel mounted in `app/(app)/layout.tsx`. The success toast of the manual sync was removed (the feedback is in the panel); the toasts for immediate errors remain. Finalize now validates all the `existing` selections before writing anything (before, a 404 halfway left partial updates).
 ```
 
 - [ ] **Step 6: Commit**

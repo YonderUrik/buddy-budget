@@ -1,7 +1,7 @@
-# Investimenti su mobile: meno rumore, periodo sotto i grafici, via il confronto tra broker
+# Investimenti (Investments) on mobile: less noise, period below the charts, broker comparison removed
 
-**Data**: 2026-10-10
+**Date**: 2026-10-10
 
-- Su mobile (< 640 px) nel Portafoglio il grafico segue subito valore e variazione del giorno; la lettura in parole, la barra e i toggle «Rimetti costi/imposte» passano sotto il grafico e il selettore del periodo. Su desktop nulla cambia.
-- In Performance, su mobile (< 1024 px) il selettore del periodo sta sotto i grafici (prima della heatmap); su desktop resta in alto.
-- Rimosso «Confronto tra broker» (card, `lib/investments/broker-comparison.ts`, stato `overlay`, evento Umami `investment_broker_overlay_changed`, test). Il filtro «Broker inclusi» resta. Nessun impatto su catalogo e landing.
+- On mobile (< 640 px) in the Portfolio the chart immediately follows value and daily change; the reading in words, the bar and the «Rimetti costi/imposte» ("Put costs/taxes back") toggles move below the chart and the period selector. On desktop nothing changes.
+- In Performance, on mobile (< 1024 px) the period selector sits below the charts (before the heatmap); on desktop it stays at the top.
+- Removed «Confronto tra broker» ("Broker comparison": card, `lib/investments/broker-comparison.ts`, `overlay` state, Umami event `investment_broker_overlay_changed`, tests). The «Broker inclusi» ("Included brokers") filter remains. No impact on catalog and landing.

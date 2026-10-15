@@ -1,8 +1,8 @@
-# Menu «Altro» a tutto schermo su mobile
+# Full-screen «Altro» ("More") menu on mobile
 
-Data: 2026-10-10
+Date: 2026-10-10
 
-Su mobile «Altro» nella barra in basso apriva la sidebar come pannello laterale a mezzo schermo, con le stesse voci del desktop. Ora apre una vista a tutto schermo (`components/layout/mobile-more-menu.tsx`): account in alto (porta a Impostazioni), le sezioni fuori dalla barra (Pensione, Analitiche) con una riga che spiega cosa c'è dentro, «Il tuo quadro» (gli stessi moduli della sidebar, accesi o spenti da Impostazioni), preferenze veloci (tema chiaro/scuro/sistema, nascondi importi), Esci, link legali e versione.
-Si chiude con ×, Esc o il tasto indietro del telefono (all'apertura si aggiunge una voce di cronologia e si consuma alla chiusura). Righe alte almeno 44 px. Con la barra in basso spenta in Impostazioni resta l'hamburger con il pannello laterale di prima.
-Scelte mie, da confermare: nessun modulo nuovo, e il riepilogo riusa lo stile della sidebar (piccolo per il telefono ma già leggibile). Evento Umami `more_menu_clicked` con `target`.
-Rimandato: moduli del riepilogo ridisegnati per il telefono (numeri più grandi, nello stile Panoramica), voce Aiuto (non esiste ancora una pagina), riordino delle sezioni.
+On mobile, «Altro» in the bottom bar opened the sidebar as a half-screen side panel, with the same items as desktop. Now it opens a full-screen view (`components/layout/mobile-more-menu.tsx`): account at the top (leads to Impostazioni), the sections outside the bar (Pensione, Analitiche) with a row explaining what is inside, «Il tuo quadro» ("Your picture": the same modules as the sidebar, turned on or off from Impostazioni), quick preferences (light/dark/system theme, hide amounts), Esci (Sign out), legal links and version.
+It closes with ×, Esc or the phone's back button (on opening a history entry is added and consumed on closing). Rows at least 44 px tall. With the bottom bar turned off in Impostazioni, the hamburger with the previous side panel remains.
+My choices, to be confirmed: no new module, and the summary reuses the sidebar style (small for the phone but already readable). Umami event `more_menu_clicked` with `target`.
+Postponed: summary modules redesigned for the phone (larger numbers, in Panoramica style), Aiuto (Help) item (there is no page yet), reordering of sections.

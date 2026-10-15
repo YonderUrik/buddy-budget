@@ -1,5 +1,5 @@
-# Import IBKR riconciliato (branch locale)
+# Reconciled IBKR import (local branch)
 
-Data: 2026-10-04
+Date: 2026-10-04
 
-Il CSV originale viene riletto sul server e salvato integralmente con il rendiconto. L'import richiede continuità dei periodi e corrispondenza di cassa/quantità; reimport concorrenti sono idempotenti. Spinoff interamente ceduti trasferiscono quote e base senza inventare un acquisto. I valori comunicati da IBKR sono consultabili separatamente dai calcoli a costo medio. Strumenti manuali isolati per utente/ISIN/valuta. Nessun push o PR per richiesta dell'utente; specifica e limiti in [ibkr-import.md](ibkr-import.md).
+The original CSV is re-read on the server and saved in full with the statement. The import requires continuity of periods and a match of cash/quantities; concurrent re-imports are idempotent. Fully disposed spin-offs transfer shares and cost basis without inventing a purchase. The values reported by IBKR can be viewed separately from the average-cost calculations. Manual instruments isolated per user/ISIN/currency. No push or PR at the user's request; specification and limits in [ibkr-import.md](ibkr-import.md).

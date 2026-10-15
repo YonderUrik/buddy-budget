@@ -1,21 +1,21 @@
-## Prima
+## Before
 
-<!-- Cosa vede o non può fare oggi chi usa l'app. -->
+<!-- What people using the app see or cannot do today. -->
 
-## Dopo
+## After
 
-<!-- Cosa cambia per chi usa l'app. -->
+<!-- What changes for people using the app. -->
 
-## Come
+## How
 
-<!-- In breve: cosa fa la modifica e come l'hai verificata (test, prove in browser). -->
+<!-- In short: what the change does and how you verified it (tests, browser checks). -->
 
-## Controlli
+## Checks
 
-- [ ] `pnpm lint`, `pnpm test` e `pnpm exec tsc --noEmit` passano
-- [ ] Se cambia lo schema del database: migration generata e committata
-- [ ] Se cambia una funzione visibile: `lib/features/catalog.ts` e landing aggiornati (o «nessun impatto sulla landing»)
-- [ ] Se cambia l'interfaccia: tastiera, etichette, contrasto (chiaro e scuro) e `prefers-reduced-motion` controllati, oppure «nessun impatto sull'accessibilità» (vedi [`ACCESSIBILITY.md`](../ACCESSIBILITY.md))
-- [ ] Nessun dato personale o segreto nel codice, nei test o negli screenshot
-- [ ] Osservabilità: log, evento Umami, metriche, oppure «nessun nuovo segnale»
-- [ ] Il titolo è in formato Conventional Commits (`feat: …`, `fix: …`, `chore: …`): da lì si calcola la versione (vedi `docs/rilasci.md`)
+- [ ] `pnpm lint`, `pnpm test` and `pnpm exec tsc --noEmit` pass
+- [ ] If the database schema changes: migration generated and committed
+- [ ] If a visible feature changes: `lib/features/catalog.ts` and landing updated (or "no impact on the landing")
+- [ ] If the interface changes: keyboard, labels, contrast (light and dark) and `prefers-reduced-motion` checked, or "no impact on accessibility" (see [`ACCESSIBILITY.md`](../ACCESSIBILITY.md))
+- [ ] No personal data or secrets in code, tests or screenshots
+- [ ] Observability: logs, Umami event, metrics, or "no new signal"
+- [ ] The title is in Conventional Commits format (`feat: …`, `fix: …`, `chore: …`): the version is computed from it (see `docs/rilasci.md`)

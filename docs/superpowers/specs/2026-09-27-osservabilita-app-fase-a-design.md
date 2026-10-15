@@ -1,43 +1,43 @@
-# Osservabilità dell'app — Fase A: l'app si racconta — design
+# App observability — Phase A: the app tells its own story — design
 
-Data: 2026-09-27
-Stato: **approvata dall'utente il 2026-09-27, lato app implementata** (Task 1-9 del piano `docs/superpowers/plans/2026-09-27-osservabilita-app-fase-a.md`; manca il lavoro infra, Task 10). Deviazioni dall'implementazione: contesto della richiesta via AsyncLocalStorage (`requestLogger()`/`bindRequestUser()`) invece di `ctx.log`; `buddybudget_sync_jobs{state}` al posto di `buddybudget_sync_jobs_active`/`_stale`; `rate_limited` contato sui 429 della route `auth`.
-Contesto: gli strumenti di osservabilità esistono già nel cluster (Fase 5 migrazione VPS: VictoriaMetrics, Loki, Alloy, Grafana, alert Slack, UptimeRobot; ArgoCD da Fase 3; Umami da Fase 6), ma l'app non produce segnali utili: ~80 `console.*` in testo libero, nessuna metrica applicativa, nessun evento di prodotto.
+Date: 2026-09-27
+Status: **approved by the user on 2026-09-27, app side implemented** (Tasks 1-9 of the plan `docs/superpowers/plans/2026-09-27-osservabilita-app-fase-a.md`; the infra work, Task 10, is missing). Deviations in the implementation: request context via AsyncLocalStorage (`requestLogger()`/`bindRequestUser()`) instead of `ctx.log`; `buddybudget_sync_jobs{state}` instead of `buddybudget_sync_jobs_active`/`_stale`; `rate_limited` counted on the 429s of the `auth` route.
+Context: the observability tools already exist in the cluster (VPS migration Phase 5: VictoriaMetrics, Loki, Alloy, Grafana, Slack alerts, UptimeRobot; ArgoCD since Phase 3; Umami since Phase 6), but the app produces no useful signals: ~80 free-text `console.*` calls, no application metrics, no product events.
 
-## Visione in tre fasi (questa spec copre solo la A)
+## Three-phase vision (this spec covers only A)
 
-| Fase | Cosa | Dove | Esito |
+| Phase | What | Where | Outcome |
 |------|------|------|-------|
-| **A — l'app si racconta** | log strutturati, metriche Prometheus, heartbeat dei cron, eventi di prodotto Umami | repo app | i segnali esistono e hanno nomi stabili |
-| B — strumenti configurati per un umano | dashboard Grafana as-code, alert con runbook, canali Slack separati, notifiche ArgoCD, guida "come capire se qualcosa va storto" | repo infra + Slack | l'utente sa leggere lo stato dell'app |
-| C — accesso per agenti | MCP in sola lettura (Grafana, ArgoCD, Umami), service account per ruolo, base per Paperclip | fuori dalla VPS di produzione | agenti con ruoli che interrogano gli stessi segnali |
+| **A — the app tells its story** | structured logs, Prometheus metrics, cron heartbeats, Umami product events | app repo | the signals exist and have stable names |
+| B — tools configured for a human | Grafana dashboards as code, alerts with runbooks, separate Slack channels, ArgoCD notifications, guide "how to tell if something is wrong" | infra repo + Slack | the user can read the app's state |
+| C — access for agents | read-only MCP (Grafana, ArgoCD, Umami), service accounts per role, groundwork for Paperclip | outside the production VPS | agents with roles querying the same signals |
 
-Ordine voluto: un agente (C) è utile solo quanto i segnali che legge (A) e le domande che sappiamo già porci (B). La Fase A precede anche il cutover (Fase 7 migrazione VPS): non si sposta la produzione senza poter vedere se l'app sta bene.
+Intended order: an agent (C) is only as useful as the signals it reads (A) and the questions we already know how to ask (B). Phase A also comes before the cutover (VPS migration Phase 7): production isn't moved without being able to see whether the app is healthy.
 
-## Obiettivo della Fase A
+## Goal of Phase A
 
-Ogni evento rilevante dell'app (richiesta API, errore, sync GoCardless, cron, job in background, azione di prodotto) produce un segnale **strutturato, con nome stabile, senza dati personali**, interrogabile da Loki (log), VictoriaMetrics (metriche) e Umami (eventi di prodotto).
+Every relevant event in the app (API request, error, GoCardless sync, cron, background job, product action) produces a **structured signal, with a stable name, without personal data**, queryable from Loki (logs), VictoriaMetrics (metrics) and Umami (product events).
 
-Criterio di "fatto":
-- nessun `console.*` residuo nel codice server (eccetto script CLI in `lib/db/*` che parlano a un terminale umano);
-- `GET /api/metrics` (con token) restituisce le metriche elencate sotto, verificato con `curl` su dev e sul cluster;
-- un errore provocato di proposito compare in Loki come riga JSON filtrabile per `event`, `requestId`, `level`;
-- un cron eseguito aggiorna la metrica "ultimo successo" leggibile da qualunque pod;
-- gli eventi di prodotto compaiono in Umami → Events;
-- test unitari per logger (redazione), wrapper di route e registry metriche.
+"Done" criterion:
+- no `console.*` left in server code (except CLI scripts in `lib/db/*` that talk to a human terminal);
+- `GET /api/metrics` (with token) returns the metrics listed below, verified with `curl` on dev and on the cluster;
+- a deliberately triggered error shows up in Loki as a JSON line filterable by `event`, `requestId`, `level`;
+- a cron run updates the "last success" metric, readable from any pod;
+- product events show up in Umami → Events;
+- unit tests for the logger (redaction), the route wrapper and the metrics registry.
 
-## Decisioni
+## Decisions
 
-1. **Logger proprio, sottile, a campi tipizzati** (`lib/observability/logger.ts`), non `pino`. Scrive una riga JSON per evento su stdout/stderr. Motivi: i campi ammessi sono un tipo TypeScript chiuso (non si può passare "un oggetto qualunque" che si porta dietro importi o descrizioni), zero dipendenze, nessun problema di bundling con l'output `standalone` di Next (i transport di pino usano worker thread). Il formato resta quello standard che Loki/Grafana si aspettano (JSON per riga), quindi nulla di non trasferibile. Se in futuro servono prestazioni o feature di pino, la sostituzione è interna al modulo.
-2. **Metriche con `prom-client`** (libreria standard Prometheus per Node), registry singleton su `globalThis` (sopravvive all'HMR in dev), metriche di processo di default attive (heap, event loop lag, GC, CPU).
-3. **Endpoint `/api/metrics` protetto da token** (`METRICS_TOKEN`, bearer, confronto a tempo costante come `CRON_SECRET`). Variabile **opzionale**: se assente l'endpoint risponde 404 (su Vercel non serve). Difesa in profondità: anche se l'IngressRoute pubblica instrada tutto `app.buddybudget.io`, senza token non si legge nulla.
-4. **Stato dei cron su Redis, non in memoria**: i contatori `prom-client` sono per-pod e si azzerano a ogni riavvio, e il CronJob colpisce un pod a caso. "Il cron X è riuscito l'ultima volta alle…" va quindi scritto su Redis (`ops:heartbeat:<nome>` → timestamp, nessun TTL) e letto al momento dello scrape come gauge. Così l'alert "cron non eseguito da 26h" (Fase B) è affidabile con 2 repliche e sopravvive ai rollout.
-5. **Wrapper per le route API** (`withRoute("transactions.list", handler)`) invece di logica nel `proxy.ts`: il proxy non vede status né durata della risposta. Il nome passato al wrapper è un **template statico** (mai il path reale con id), per non esplodere la cardinalità delle metriche.
-6. **Identificativo utente pseudonimizzato**: nei log compare `user` = primi 16 caratteri esadecimali di `sha256(userId)`. Non reversibile senza il DB (gli id sono UUID casuali), ricalcolabile da chi ha accesso al DB per un debug mirato. Mai in etichette di metrica (cardinalità).
-7. **Umami: eventi tipizzati, senza dati** — helper `track(event, props?)` con unione chiusa di nomi evento e props solo categoriche/booleane (mai importi, nomi, descrizioni, id). No-op se lo script Umami non è caricato.
-8. **Naming**: eventi di log `dominio.oggetto.esito` (es. `gocardless.sync.failed`), metriche con prefisso `buddybudget_` e unità nel nome (`_seconds`, `_total`).
+1. **Own thin logger with typed fields** (`lib/observability/logger.ts`), not `pino`. It writes one JSON line per event to stdout/stderr. Reasons: the allowed fields are a closed TypeScript type (you can't pass "any object" that drags amounts or descriptions along), zero dependencies, no bundling issues with Next's `standalone` output (pino transports use worker threads). The format remains the standard one Loki/Grafana expect (JSON per line), so nothing non-transferable. If pino's performance or features are needed in the future, the replacement is internal to the module.
+2. **Metrics with `prom-client`** (the standard Prometheus library for Node), singleton registry on `globalThis` (survives HMR in dev), default process metrics enabled (heap, event loop lag, GC, CPU).
+3. **`/api/metrics` endpoint protected by a token** (`METRICS_TOKEN`, bearer, constant-time comparison like `CRON_SECRET`). **Optional** variable: if absent the endpoint responds 404 (not needed on Vercel). Defense in depth: even though the public IngressRoute routes all of `app.buddybudget.io`, nothing can be read without the token.
+4. **Cron state on Redis, not in memory**: `prom-client` counters are per pod and reset on every restart, and the CronJob hits a random pod. "Cron X last succeeded at…" must therefore be written to Redis (`ops:heartbeat:<name>` → timestamp, no TTL) and read as a gauge at scrape time. This way the "cron hasn't run for 26h" alert (Phase B) is reliable with 2 replicas and survives rollouts.
+5. **Wrapper for API routes** (`withRoute("transactions.list", handler)`) instead of logic in `proxy.ts`: the proxy sees neither the status nor the duration of the response. The name passed to the wrapper is a **static template** (never the real path with ids), so as not to blow up metric cardinality.
+6. **Pseudonymized user identifier**: in logs `user` appears as the first 16 hex characters of `sha256(userId)`. Not reversible without the DB (ids are random UUIDs), recomputable by whoever has DB access for targeted debugging. Never in metric labels (cardinality).
+7. **Umami: typed events, without data** — helper `track(event, props?)` with a closed union of event names and only categorical/boolean props (never amounts, names, descriptions, ids). No-op if the Umami script isn't loaded.
+8. **Naming**: log events `domain.object.outcome` (e.g. `gocardless.sync.failed`), metrics with the `buddybudget_` prefix and the unit in the name (`_seconds`, `_total`).
 
-## Componenti
+## Components
 
 ### 1. Logger — `lib/observability/logger.ts`
 
@@ -47,120 +47,120 @@ logger.error("cron.gocardless_sync.failed", { error });
 const log = logger.child({ requestId, route: "transactions.list", user: hashUserId(session.user.id) });
 ```
 
-Ogni riga: `ts` (ISO), `level` (`debug|info|warn|error`), `event`, `service: "buddy-budget"`, `version`/`commit` (da `APP_BUILD_INFO`), più i campi contestuali.
+Each line: `ts` (ISO), `level` (`debug|info|warn|error`), `event`, `service: "buddy-budget"`, `version`/`commit` (from `APP_BUILD_INFO`), plus the contextual fields.
 
-Campi ammessi (tipo chiuso `LogFields`): `requestId`, `route`, `method`, `status`, `durationMs`, `user` (già hashato), `accountId`, `jobId`, `connectionId`, `cron`, `phase`, `count`/contatori numerici nominati (`inserted`, `categorized`, `uncategorized`, `processed`, `total`), `reason` (stringa enumerata dal chiamante), `error`.
+Allowed fields (closed type `LogFields`): `requestId`, `route`, `method`, `status`, `durationMs`, `user` (already hashed), `accountId`, `jobId`, `connectionId`, `cron`, `phase`, `count`/named numeric counters (`inserted`, `categorized`, `uncategorized`, `processed`, `total`), `reason` (string enumerated by the caller), `error`.
 
-`error` viene serializzato come `{ name, message, stack }` (stack solo se `level` è `error`). Il messaggio di un errore esterno può contenere testo arbitrario: il logger tronca `message` a 500 caratteri e applica una redazione di pattern noti (email, IBAN, `Bearer …`, parametri `token=`/`secret=` in URL). La redazione è una rete di sicurezza, non il meccanismo principale: il principale è il tipo chiuso.
+`error` is serialized as `{ name, message, stack }` (stack only if `level` is `error`). The message of an external error can contain arbitrary text: the logger truncates `message` to 500 characters and applies redaction of known patterns (emails, IBANs, `Bearer …`, `token=`/`secret=` parameters in URLs). Redaction is a safety net, not the main mechanism: the main one is the closed type.
 
-**Mai nei log**: email, nomi, IBAN, importi, descrizioni/note delle transazioni, nomi dei merchant, token/segreti, cookie, body delle richieste, `userId` in chiaro. Regola da riportare in `CLAUDE.md` (sezione "Principi di architettura").
+**Never in logs**: emails, names, IBANs, amounts, transaction descriptions/notes, merchant names, tokens/secrets, cookies, request bodies, plaintext `userId`. Rule to be carried over into `CLAUDE.md` ("Architecture principles" section).
 
-Livello minimo da `LOG_LEVEL` (opzionale, default `info`; `debug` in dev).
+Minimum level from `LOG_LEVEL` (optional, default `info`; `debug` in dev).
 
-### 2. Wrapper delle route — `lib/observability/with-route.ts`
+### 2. Route wrapper — `lib/observability/with-route.ts`
 
-`withRoute(name, handler)` per ogni Route Handler in `app/api/**` (30 file oggi):
-- genera o riusa `requestId` (header `x-request-id` se presente e valido, altrimenti UUID) e lo rimanda in risposta;
-- misura la durata; al termine logga `http.request.completed` (`info` per 2xx/3xx/4xx previsti, `warn` per 429, `error` per 5xx) — le probe `/api/health*` e lo scrape `/api/metrics` loggano solo se falliscono, per non riempire Loki;
-- cattura le eccezioni non gestite: log `http.request.failed` con `error`, risposta 500 generica (nessun dettaglio al client);
-- aggiorna `buddybudget_http_requests_total{route,method,status_class}` e `buddybudget_http_request_duration_seconds{route,method}`.
-- espone il logger figlio al handler (`ctx.log`) così i log di dominio dentro la richiesta ereditano `requestId`/`route`/`user`.
+`withRoute(name, handler)` for every Route Handler in `app/api/**` (30 files today):
+- generates or reuses `requestId` (`x-request-id` header if present and valid, otherwise a UUID) and sends it back in the response;
+- measures the duration; at the end logs `http.request.completed` (`info` for 2xx/3xx/expected 4xx, `warn` for 429, `error` for 5xx) — the `/api/health*` probes and the `/api/metrics` scrape log only if they fail, so as not to flood Loki;
+- catches unhandled exceptions: logs `http.request.failed` with `error`, generic 500 response (no details to the client);
+- updates `buddybudget_http_requests_total{route,method,status_class}` and `buddybudget_http_request_duration_seconds{route,method}`.
+- exposes the child logger to the handler (`ctx.log`) so domain logs inside the request inherit `requestId`/`route`/`user`.
 
-Il lavoro in `after()` (job di sync) riceve un logger figlio con `requestId` e `jobId`, così la richiesta che ha avviato il job e il job stesso sono collegabili in Loki.
+Work in `after()` (sync jobs) receives a child logger with `requestId` and `jobId`, so the request that started the job and the job itself can be correlated in Loki.
 
-### 3. Errori non intercettati — `instrumentation.ts`
+### 3. Uncaught errors — `instrumentation.ts`
 
-Aggiunta di `onRequestError` (hook di Next.js) che logga `next.request_error` con path template, tipo di route (page/route/action) e `error`. Copre errori in Server Components e pagine che non passano dal wrapper.
+Addition of `onRequestError` (Next.js hook) that logs `next.request_error` with path template, route type (page/route/action) and `error`. It covers errors in Server Components and pages that don't go through the wrapper.
 
-### 4. Metriche — `lib/observability/metrics.ts` + `app/api/metrics/route.ts`
+### 4. Metrics — `lib/observability/metrics.ts` + `app/api/metrics/route.ts`
 
-| Metrica | Tipo | Etichette | Serve a |
+| Metric | Type | Labels | Used for |
 |---|---|---|---|
-| `buddybudget_http_requests_total` | counter | `route`, `method`, `status_class` | tasso di errori per route |
-| `buddybudget_http_request_duration_seconds` | histogram | `route`, `method` | latenze p50/p95 |
-| `buddybudget_gocardless_sync_total` | counter | `trigger` (`manual`/`cron`/`finalize`), `outcome` (`synced`/`limited`/`expired`/`error`) | sync falliti o limitati |
-| `buddybudget_gocardless_sync_duration_seconds` | histogram | `trigger` | sync lenti |
-| `buddybudget_gocardless_api_requests_total` | counter | `endpoint` (template), `status_class` | salute dell'API esterna, 429 |
-| `buddybudget_transactions_imported_total` | counter | `categorized` (`true`/`false`) | resa della categorizzazione automatica |
-| `buddybudget_sync_jobs` | gauge (letto da Redis allo scrape) | `state` (`active`/`stale`) | job in corso / con heartbeat scaduto |
-| `buddybudget_cron_last_success_timestamp_seconds` | gauge (letto da Redis allo scrape) | `cron` | "il cron è girato?" |
-| `buddybudget_cron_runs_total` | counter | `cron`, `outcome` | fallimenti dei cron |
-| `buddybudget_auth_events_total` | counter | `event` (`magic_link_sent`/`magic_link_failed`/`sign_in`/`rate_limited`) | problemi di login/email |
-| `buddybudget_dependency_up` | gauge (allo scrape, timeout 2s) | `dependency` (`postgres`/`redis`) | riusa `lib/health/readiness.ts` |
-| `buddybudget_build_info` | gauge = 1 | `version`, `commit` | quale versione gira su ogni pod |
-| metriche di processo di default | — | — | memoria, event loop lag |
+| `buddybudget_http_requests_total` | counter | `route`, `method`, `status_class` | error rate per route |
+| `buddybudget_http_request_duration_seconds` | histogram | `route`, `method` | p50/p95 latencies |
+| `buddybudget_gocardless_sync_total` | counter | `trigger` (`manual`/`cron`/`finalize`), `outcome` (`synced`/`limited`/`expired`/`error`) | failed or limited syncs |
+| `buddybudget_gocardless_sync_duration_seconds` | histogram | `trigger` | slow syncs |
+| `buddybudget_gocardless_api_requests_total` | counter | `endpoint` (template), `status_class` | health of the external API, 429s |
+| `buddybudget_transactions_imported_total` | counter | `categorized` (`true`/`false`) | yield of automatic categorization |
+| `buddybudget_sync_jobs` | gauge (read from Redis at scrape) | `state` (`active`/`stale`) | running jobs / jobs with expired heartbeat |
+| `buddybudget_cron_last_success_timestamp_seconds` | gauge (read from Redis at scrape) | `cron` | "did the cron run?" |
+| `buddybudget_cron_runs_total` | counter | `cron`, `outcome` | cron failures |
+| `buddybudget_auth_events_total` | counter | `event` (`magic_link_sent`/`magic_link_failed`/`sign_in`/`rate_limited`) | login/email problems |
+| `buddybudget_dependency_up` | gauge (at scrape, 2s timeout) | `dependency` (`postgres`/`redis`) | reuses `lib/health/readiness.ts` |
+| `buddybudget_build_info` | gauge = 1 | `version`, `commit` | which version runs on each pod |
+| default process metrics | — | — | memory, event loop lag |
 
-Nessuna etichetta ad alta cardinalità (id utente, id conto, path reali). Le gauge "lette da Redis" sono calcolate con `collect()` di `prom-client` al momento dello scrape: se Redis non risponde, la gauge non viene emessa (assenza del dato, gestibile in alert con `absent()`), mai un valore inventato.
+No high-cardinality labels (user id, account id, real paths). The gauges "read from Redis" are computed with `prom-client`'s `collect()` at scrape time: if Redis doesn't respond, the gauge is not emitted (missing data, manageable in alerts with `absent()`), never a made-up value.
 
-`/api/metrics`: aggiunto ai percorsi pubblici di `proxy.ts` (come `/api/cron`, protetto dal proprio token), `dynamic = "force-dynamic"`, `Cache-Control: no-store`, content-type Prometheus.
+`/api/metrics`: added to the public paths of `proxy.ts` (like `/api/cron`, protected by its own token), `dynamic = "force-dynamic"`, `Cache-Control: no-store`, Prometheus content-type.
 
-### 5. Heartbeat dei cron — `lib/observability/heartbeat.ts`
+### 5. Cron heartbeat — `lib/observability/heartbeat.ts`
 
-`recordCronRun(name, outcome, durationMs)`: incrementa `buddybudget_cron_runs_total`, logga `cron.<name>.completed|failed`, e solo su successo scrive `ops:heartbeat:cron:<name>` = epoch su Redis. Errori di scrittura su Redis sono loggati (`warn`) ma non fanno fallire il cron.
+`recordCronRun(name, outcome, durationMs)`: increments `buddybudget_cron_runs_total`, logs `cron.<name>.completed|failed`, and only on success writes `ops:heartbeat:cron:<name>` = epoch to Redis. Redis write errors are logged (`warn`) but don't make the cron fail.
 
-### 6. Eventi di prodotto Umami — `lib/analytics/track.ts`
+### 6. Umami product events — `lib/analytics/track.ts`
 
-Eventi iniziali (tutti client-side, dopo l'esito positivo della mutation corrispondente):
+Initial events (all client-side, after the successful outcome of the corresponding mutation):
 
-| Evento | Props ammesse |
+| Event | Allowed props |
 |---|---|
-| `onboarding_completed` | `currency` (codice ISO) |
+| `onboarding_completed` | `currency` (ISO code) |
 | `bank_connect_started` | — |
-| `bank_connect_completed` | `accounts` (conteggio) |
+| `bank_connect_completed` | `accounts` (count) |
 | `account_sync_manual` | — |
 | `transaction_added` | `direction` (`entrata`/`uscita`) |
 | `transaction_category_changed` | `source` (`row`/`categorizza`) |
-| `categorization_applied` | `groups` (conteggio) |
+| `categorization_applied` | `groups` (count) |
 | `categorization_rule_saved` | `matchType` |
 | `transaction_split` | — |
 | `category_created` | `group` |
-| `pwa_installed` | — (evento `appinstalled`) |
+| `pwa_installed` | — (`appinstalled` event) |
 
-Tipo chiuso `ProductEvent` = unione dei nomi con le props tipizzate per ciascuno. Nessun importo, nome, id.
+Closed type `ProductEvent` = union of the names with typed props for each. No amounts, names, ids.
 
-### 7. Migrazione dei `console.*` esistenti
+### 7. Migration of existing `console.*` calls
 
-Ogni `console.error/warn/log` nel codice server diventa una chiamata al logger con un `event` nominato (es. `"Sync fallito per il conto X"` → `logger.error("gocardless.sync.failed", { accountId, error })`). Restano `console.*` solo negli script CLI `lib/db/*.ts` (output per un umano al terminale). Regola ESLint `no-console` attiva su `app/`, `lib/` (esclusi `lib/db/*` script CLI) e `components/`, così la regressione è bloccata in CI.
+Every `console.error/warn/log` in server code becomes a logger call with a named `event` (e.g. `"Sync fallito per il conto X"` ("Sync failed for account X") → `logger.error("gocardless.sync.failed", { accountId, error })`). `console.*` remains only in the CLI scripts `lib/db/*.ts` (output for a human at the terminal). ESLint rule `no-console` active on `app/`, `lib/` (excluding the `lib/db/*` CLI scripts) and `components/`, so regressions are blocked in CI.
 
-### 8. Nuove variabili d'ambiente (opzionali)
+### 8. New environment variables (optional)
 
-- `METRICS_TOKEN` — min 32 caratteri; assente ⇒ `/api/metrics` risponde 404.
+- `METRICS_TOKEN` — min 32 characters; absent ⇒ `/api/metrics` responds 404.
 - `LOG_LEVEL` — `debug|info|warn|error`, default `info`.
 
-Aggiunte a `serverEnvSchema` come opzionali (l'app su Vercel continua ad avviarsi senza).
+Added to `serverEnvSchema` as optional (the app on Vercel keeps starting without them).
 
-## Lavoro lato infra (runbook nel repo `buddy-budget-infra`, parte del piano ma eseguito lì)
+## Infra-side work (runbook in the `buddy-budget-infra` repo, part of the plan but carried out there)
 
-- Secret `METRICS_TOKEN` cifrato SOPS nel namespace `app` (env dell'app) e nel namespace `observability` (per Alloy).
-- Alloy: `discovery.kubernetes` sui pod `app: buddy-budget` + `prometheus.scrape` di `/api/metrics` con `bearer_token_file`, intervallo 30s → `remote_write` verso VictoriaMetrics (stessa catena già esistente).
-- Alloy log: `stage.json` + `stage.labels` per promuovere **solo** `level` a label Loki (bassa cardinalità); il resto si interroga con `| json` in LogQL.
-- NetworkPolicy: eccezione `observability` → pod app porta 3000 nel namespace `app` (default-deny già attivo — stessa lezione di Tailscale/CNPG: va nello stesso commit dello scrape).
+- SOPS-encrypted `METRICS_TOKEN` Secret in the `app` namespace (app env) and in the `observability` namespace (for Alloy).
+- Alloy: `discovery.kubernetes` on the `app: buddy-budget` pods + `prometheus.scrape` of `/api/metrics` with `bearer_token_file`, 30s interval → `remote_write` to VictoriaMetrics (the same chain that already exists).
+- Alloy logs: `stage.json` + `stage.labels` to promote **only** `level` to a Loki label (low cardinality); the rest is queried with `| json` in LogQL.
+- NetworkPolicy: exception `observability` → app pod port 3000 in the `app` namespace (default-deny already active — same lesson as Tailscale/CNPG: it goes in the same commit as the scrape).
 
-## Canali Slack (preparazione per la Fase B, decisa ora)
+## Slack channels (preparation for Phase B, decided now)
 
-Scelta dell'utente: canali separati per tipo di messaggio.
+User's choice: separate channels per type of message.
 
-| Canale | Contenuto | Rumore atteso |
+| Channel | Content | Expected noise |
 |---|---|---|
-| `#bb-allarmi` | alert `severity=critical`: app giù, tasso 5xx alto, backup fallito, disco quasi pieno | raro, si guarda subito |
-| `#bb-avvisi` | alert `severity=warning`: cron non eseguito, sync falliti ripetuti, latenze alte, rate limit GoCardless | qualche volta a settimana |
-| `#bb-deploy` | notifiche ArgoCD (deploy riuscito/fallito, app fuori sync) e CI | a ogni merge |
-| `#bb-riepiloghi` | riepiloghi periodici (in futuro: report degli agenti della Fase C) | giornaliero/settimanale |
+| `#bb-allarmi` | `severity=critical` alerts: app down, high 5xx rate, failed backup, disk almost full | rare, looked at immediately |
+| `#bb-avvisi` | `severity=warning` alerts: cron not run, repeated failed syncs, high latencies, GoCardless rate limit | a few times a week |
+| `#bb-deploy` | ArgoCD notifications (deploy succeeded/failed, app out of sync) and CI | on every merge |
+| `#bb-riepiloghi` | periodic summaries (in future: reports from the Phase C agents) | daily/weekly |
 
-In Grafana ogni canale diventa un contact point (un webhook per canale); la notification policy instrada per label `severity`. **Stato (2026-09-27):** i quattro canali sono stati creati come **privati** nel workspace `buddybudget` tramite il connettore Slack (collegato dall'utente dopo la stesura della spec), ognuno con un messaggio che ne spiega lo scopo. Gli incoming webhook, uno per canale, li ha creati l'utente e li conserva lui: finiranno cifrati SOPS nel repo infra in Fase B, mai in chiaro in chat o nel repo.
+In Grafana each channel becomes a contact point (one webhook per channel); the notification policy routes by the `severity` label. **Status (2026-09-27):** the four channels have been created as **private** in the `buddybudget` workspace via the Slack connector (connected by the user after the spec was drafted), each with a message explaining its purpose. The incoming webhooks, one per channel, were created by the user and are kept by them: they will end up SOPS-encrypted in the infra repo in Phase B, never in plaintext in chat or in the repo.
 
-## Fuori scope, consapevolmente
+## Out of scope, knowingly
 
-- **Tracing distribuito (OpenTelemetry/Tempo)**: con un solo servizio e un DB, `requestId` nei log dà già la correlazione necessaria; Tempo costerebbe RAM su una VPS da 8 GB. Da rivalutare se arrivano più servizi.
-- **Error tracking dedicato (Sentry/GlitchTip)**: gli errori finiscono in Loki con stack e contesto; un alert su `level=error` copre il bisogno. GlitchTip self-hosted resta un'opzione se il volume di errori rende utile il raggruppamento.
-- **Real User Monitoring / Web Vitals**: rimandato; eventualmente via Umami o un endpoint dedicato in Fase B.
-- **Metriche di business sensibili** (importi totali, numero di transazioni per utente): mai come metriche; se servono analisi, si fanno sul DB, non nel sistema di osservabilità che leggeranno anche gli agenti.
-- **Dashboard, alert, guida alla lettura dei log, notifiche ArgoCD**: Fase B.
-- **MCP e agenti**: Fase C.
+- **Distributed tracing (OpenTelemetry/Tempo)**: with a single service and one DB, `requestId` in the logs already gives the needed correlation; Tempo would cost RAM on an 8 GB VPS. To be reconsidered if more services arrive.
+- **Dedicated error tracking (Sentry/GlitchTip)**: errors end up in Loki with stack and context; an alert on `level=error` covers the need. Self-hosted GlitchTip remains an option if the error volume makes grouping useful.
+- **Real User Monitoring / Web Vitals**: deferred; possibly via Umami or a dedicated endpoint in Phase B.
+- **Sensitive business metrics** (total amounts, number of transactions per user): never as metrics; if analysis is needed, it's done on the DB, not in the observability system that agents will also read.
+- **Dashboards, alerts, log-reading guide, ArgoCD notifications**: Phase B.
+- **MCP and agents**: Phase C.
 
-## Rischi e attenzioni
+## Risks and caveats
 
-- **Cardinalità**: una label sbagliata (path reale, id) può far crescere VictoriaMetrics senza limite. Mitigazione: nomi di route statici passati a mano al wrapper, test che verifica l'assenza di pattern UUID nei nomi di route registrati.
-- **Rumore nei log**: probe e scrape ogni 10-30s per 2 pod. Mitigazione: loggate solo se falliscono.
-- **Vercel fino al cutover**: log JSON funzionano anche lì (li mostra nei Runtime Logs), `/api/metrics` resta spento (niente `METRICS_TOKEN`). Nessuna regressione.
-- **Dati personali in messaggi di errore esterni** (es. errori GoCardless che riportano parametri): troncamento + redazione nel logger, e revisione manuale dei punti che loggano errori di librerie esterne durante l'implementazione.
+- **Cardinality**: a wrong label (real path, id) can make VictoriaMetrics grow without limit. Mitigation: static route names passed by hand to the wrapper, a test that checks for the absence of UUID patterns in registered route names.
+- **Log noise**: probes and scrapes every 10-30s for 2 pods. Mitigation: logged only if they fail.
+- **Vercel until the cutover**: JSON logs work there too (shown in Runtime Logs), `/api/metrics` stays off (no `METRICS_TOKEN`). No regression.
+- **Personal data in external error messages** (e.g. GoCardless errors echoing parameters): truncation + redaction in the logger, and manual review of the places that log errors from external libraries during implementation.

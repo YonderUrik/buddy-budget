@@ -1,12 +1,12 @@
-# Loghi di broker e fonti dati
+# Broker and data source logos
 
-Copia dei loghi in `public/import-providers/` dell'app, usati nella landing solo per indicare da quali file si importano i dati. Trademarks remain the property of their respective owners; no endorsement is implied.
+Copy of the logos in the app's `public/import-providers/`, used in the landing only to indicate which files data is imported from. Trademarks remain the property of their respective owners; no endorsement is implied.
 
 - **DEGIRO** — unmodified SVG from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Degiro_logo.svg), credited to Degiro. Listed as public domain (`PD-textlogo`); trademark restrictions remain applicable.
 - **Trade Republic** — unmodified SVG by **Secbot at Trade Republic**, from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Trade_Republic_Bank_Logo.svg), licensed under [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/). This SVG remains available under that license.
 
 The Fineco (FinecoBank) logo was supplied by the project owner (PNG, resized); the trademark remains FinecoBank's, used only to indicate the file source. The existing Interactive Brokers symbol was supplied by the project owner. The existing Yahoo Finance wordmark is from SVG Logos (CC0 collection).
 
-## `market/`: loghi degli strumenti d'esempio
+## `market/`: logos of the sample instruments
 
-Enel (`enel.com`), Vanguard (`vanguard.com`, per l'ETF VWCE), Ministero dell'Economia e delle Finanze (`mef.gov.it`, per il BTP) e Bitcoin (`crypto/btc`) scaricati da [Logo.dev](https://logo.dev) il 2026-10-15 con `scripts/fetch-market-logos.mjs` (WebP 128 px, non modificati), così il browser di chi visita non contatta Logo.dev. «Loghi forniti da Logo.dev» è citato nel piè di pagina. I marchi restano dei rispettivi titolari e sono usati solo per indicare gli strumenti d'esempio; nessuna approvazione è implicita.
+Enel (`enel.com`), Vanguard (`vanguard.com`, for the VWCE ETF), Ministero dell'Economia e delle Finanze (`mef.gov.it`, the Italian Ministry of Economy and Finance, for the BTP Italian government bond) and Bitcoin (`crypto/btc`) downloaded from [Logo.dev](https://logo.dev) on 2026-10-15 with `scripts/fetch-market-logos.mjs` (WebP 128 px, unmodified), so the visitor's browser does not contact Logo.dev. «Loghi forniti da Logo.dev» ("Logos provided by Logo.dev") is credited in the footer. The trademarks remain their respective owners' and are used only to indicate the sample instruments; no endorsement is implied.

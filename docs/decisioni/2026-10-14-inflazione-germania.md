@@ -1,40 +1,40 @@
-# Germania: prima fase, rendimenti al netto dell'inflazione
+# Germany: first phase, inflation-adjusted returns
 
-Abilitare una funzione per volta, dopo localizzazione, test e prova locale. Questa fase riguarda solo l'inflazione; fiscalità, previdenza, previsioni dei proventi e FIRE restano bloccati per DE.
+Enable one feature at a time, after localization, tests and a local trial. This phase concerns only inflation; taxation, pensions, income forecasts and FIRE remain blocked for DE.
 
-## Implementazione
+## Implementation
 
-- Registro finanziario per paese, indipendente dalla lingua: Italia usa IT, Germania DE; entrambe soltanto in EUR. Paesi o valute non supportati non ricevono un indice di un altro paese. Il cron aggiorna tutte le aree del registro e riporta i conteggi per area; i log distinguono l'area nel campo `reason`.
-- Eurostat ha sostituito `prc_hicp_midx` (2015=100) con `prc_hicp_minr` (2025=100), classificazione ECOICOP v2. Richieste esplicite: frequenza M, unità I25, coicop18 TOTAL e area nazionale. Il provider verifica le dimensioni della risposta.
-- `source` identifica dataset, base e voce. Un cambio di serie richiede lo storico completo dal gennaio 2000 e sostituisce l'area in una transazione. Nessuna combinazione di basi diverse; nessuna modifica dei movimenti. Errori o risposte vuote conservano i dati precedenti. I lettori espongono soltanto la nuova serie compatibile: fino al primo aggiornamento riuscito, il valore reale è indisponibile, non calcolato da dati misti.
-- Aggiornamenti successivi ricaricano gli ultimi 36 mesi, mantenendo lo storico. La UI indica paese e ultimo mese disponibile, in italiano, inglese e tedesco. Cache client separata per paese.
-- Formula invariata: (1 + rendimento nominale) / (1 + inflazione) - 1. HICP nazionale come misura della variazione del potere d'acquisto; non indice di spesa personale né previsione.
+- Financial registry per country, independent of language: Italy uses IT, Germany DE; both EUR only. Unsupported countries or currencies do not receive another country's index. The cron updates all registry areas and reports counts per area; the logs distinguish the area in the `reason` field.
+- Eurostat replaced `prc_hicp_midx` (2015=100) with `prc_hicp_minr` (2025=100), ECOICOP v2 classification. Explicit requests: frequency M, unit I25, coicop18 TOTAL and national area. The provider checks the dimensions of the response.
+- `source` identifies dataset, base and item. A change of series requires the full history from January 2000 and replaces the area in one transaction. No combination of different bases; no change to transactions. Errors or empty responses keep the previous data. Readers expose only the new compatible series: until the first successful update, the real value is unavailable, not computed from mixed data.
+- Subsequent updates reload the last 36 months, keeping the history. The UI shows the country and the last available month, in Italian, English and German. Client cache separate per country.
+- Formula unchanged: (1 + nominal return) / (1 + inflation) - 1. National HICP as a measure of the change in purchasing power; not a personal spending index nor a forecast.
 
-## Fonti verificate il 14 ottobre 2026
+## Sources verified on 14 October 2026
 
 - https://ec.europa.eu/eurostat/web/hicp/information-data
 - https://webgate.ec.europa.eu/eurostat/cache/metadata/en/prc_hicp_esms.htm
 - https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/prc_hicp_minr?geo=DE&coicop18=TOTAL&unit=I25&freq=M&sinceTimePeriod=2000-01
 
-Verifica reale: IT e DE hanno restituito 321 osservazioni, gennaio 2000–settembre 2026. Dati caricati soltanto nel database locale isolato. Nessuna migration strutturale richiesta.
+Real check: IT and DE returned 321 observations, January 2000–September 2026. Data loaded only into the isolated local database. No structural migration required.
 
-## Verifica in produzione dopo l'approvazione
+## Verification in production after approval
 
-Attendere il cron prezzi e controllare `inflationByArea` e `market.inflation.updated` per IT e DE; verificare il rendimento reale con paese Germania in inglese e tedesco, poi Italia in inglese e italiano. Dati assenti devono produrre un messaggio esplicito, senza ripiego sull'Italia. Pensione, tasse, proventi e Analitiche tedeschi restano non accessibili. Nessun merge/deploy incluso nella prova locale.
+Wait for the prices cron and check `inflationByArea` and `market.inflation.updated` for IT and DE; verify the real return with country Germany in English and German, then Italy in English and Italian. Missing data must produce an explicit message, with no fallback to Italy. German pension, taxes, income and Analitiche remain inaccessible. No merge/deploy included in the local trial.
 
-## Fasi successive
+## Next phases
 
-2. Costi degli investimenti senza ipotesi fiscali italiane.
-3. Fiscalità di base degli investimenti, versionata per anno.
-4. Fiscalità specifica di fondi ed ETF.
-5. Previsioni dei proventi, prima lordi poi netti.
-6. Registrazione dei prodotti pensionistici e separazione fra capitale ed entrate future.
-7. Proiezioni pensionistiche specifiche per prodotto.
-8. Pianificazione pensionamento/FIRE con i modelli già verificati.
-9. Crypto e casi fiscali speciali, ciascuno con il proprio ambito di supporto.
+2. Investment costs without Italian tax assumptions.
+3. Basic investment taxation, versioned per year.
+4. Specific taxation of funds and ETFs.
+5. Income forecasts, first gross then net.
+6. Recording of pension products and separation between capital and future income.
+7. Product-specific pension projections.
+8. Retirement/FIRE planning with the models already verified.
+9. Crypto and special tax cases, each with its own scope of support.
 
-Ogni fase: fonti ufficiali, logica per paese, traduzioni DE/EN, regressioni IT, prova localhost, PR separata, approvazione ed abilitazione.
+Each phase: official sources, per-country logic, DE/EN translations, IT regressions, localhost trial, separate PR, approval and enabling.
 
-## Esito verifica locale
+## Local verification outcome
 
-Build produzione e TypeScript riusciti. 55 test mirati superati, inclusi rollback transazionale e invarianza del rendimento al cambio di base; 3 test screenshot superati. Suite completa: 2.217 test superati e il solo errore noto del logger legato a `/Users/mario`; i due test aggiunti successivamente sono inclusi nei 55 mirati. Browser: quattro combinazioni paese/lingua, valori nazionali verificati nelle API, rendimento reale presente, spiegazione col paese corretto, blocchi tedeschi ancora attivi, nessun errore browser. Screenshot Performance aggiornati nei due temi. Preview lasciata in DE/en.
+Production build and TypeScript successful. 55 targeted tests passed, including transactional rollback and invariance of the return under a change of base; 3 screenshot tests passed. Full suite: 2,217 tests passed and only the known logger error tied to `/Users/mario`; the two tests added later are included in the 55 targeted ones. Browser: four country/language combinations, national values verified in the APIs, real return present, explanation with the correct country, German blocks still active, no browser errors. Performance screenshots updated in both themes. Preview left in DE/en.

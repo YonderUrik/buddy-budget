@@ -1,26 +1,26 @@
-# Categorie: icone/colori + gestione completa — Implementation Plan
+# Categorie: icons/colors + full management — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aggiungere icona/colore personalizzabili e gestione completa (crea/rinomina/elimina) alle categorie di spesa, con una pagina dedicata `/categorie` fuori sidebar.
+**Goal:** Add customizable icon/color and full management (create/rename/delete) to expense categories, with a dedicated `/categorie` page outside the sidebar.
 
-**Architecture:** Estensione dello schema `categories` (nuove colonne `text` `color`/`icon` + `boolean isFallback`, stesso pattern già usato in `accounts`), nuove route API `POST /api/categories` e `app/api/categories/[id]/route.ts` (PATCH/DELETE con ownership check e riassegnazione alla categoria fallback in cascata), nuovi componenti in `components/domain/categories/` che ricalcano 1:1 `components/domain/accounts/` (avatar, picker, row, form), estrazione della mappa colori condivisa (`components/domain/shared/color-swatches.ts`) per non duplicarla tra conti e categorie.
+**Architecture:** Extension of the `categories` schema (new `text` `color`/`icon` columns + `boolean isFallback`, the same pattern already used in `accounts`), new API routes `POST /api/categories` and `app/api/categories/[id]/route.ts` (PATCH/DELETE with ownership check and cascading reassignment to the fallback category), new components in `components/domain/categories/` that mirror `components/domain/accounts/` 1:1 (avatar, picker, row, form), extraction of the shared color map (`components/domain/shared/color-swatches.ts`) so it is not duplicated between accounts and categories.
 
 **Tech Stack:** Next.js App Router, Drizzle ORM (Postgres), Zod, TanStack Query, `@base-ui/react` (Select/Popover/AlertDialog), lucide-react, Vitest.
 
 ## Global Constraints
 
-- Niente colori esadecimali o hardcoded nei componenti: usa sempre classi Tailwind sui token/swatch condivisi (nessuna nuova stringa colore fuori da `color-swatches.ts`).
-- `categories.color`/`categories.icon` sono colonne `text` con default (NON `pgEnum`), stesso pattern di `accounts.color`/`accounts.icon` — validazione solo a livello Zod (`z.enum(...)`).
-- Ogni componente pubblico ha JSDoc minimo (una riga) e props esplicite; barrel file (`index.ts`) per ogni cartella nuova.
-- Ownership check su ogni route che legge/scrive una risorsa per id (`and(eq(id), eq(userId, session.user.id))`), 404 se non propria — mai 403/altro, per non rivelare l'esistenza di risorse altrui (pattern IDOR-safe già in uso in `app/api/accounts/[id]/route.ts` e `app/api/budgets/[categoryId]/route.ts`).
-- Modifiche allo schema si applicano con `pnpm db:push` (non esiste una migration SQL versionata per singola feature dopo la baseline `0000_silly_flatman.sql` — le modifiche incrementali successive, es. `budgets`, `excludedAmount`, sono state applicate così).
-- Testo utente sempre in italiano (i18n non ancora implementata).
-- Nessun comando git: mai eseguirlo in nessuna forma, nemmeno "dry-run" (regola di repository).
+- No hexadecimal or hardcoded colors in components: always use Tailwind classes on the shared tokens/swatches (no new color string outside `color-swatches.ts`).
+- `categories.color`/`categories.icon` are `text` columns with defaults (NOT `pgEnum`), same pattern as `accounts.color`/`accounts.icon` — validation only at the Zod level (`z.enum(...)`).
+- Every public component has minimal JSDoc (one line) and explicit props; a barrel file (`index.ts`) for every new folder.
+- Ownership check on every route that reads/writes a resource by id (`and(eq(id), eq(userId, session.user.id))`), 404 if not owned — never 403/other, so as not to reveal the existence of other users' resources (IDOR-safe pattern already used in `app/api/accounts/[id]/route.ts` and `app/api/budgets/[categoryId]/route.ts`).
+- Schema changes are applied with `pnpm db:push` (there is no versioned SQL migration per feature after the `0000_silly_flatman.sql` baseline — the later incremental changes, e.g. `budgets`, `excludedAmount`, were applied this way).
+- User-facing text always in Italian (i18n not implemented yet).
+- No git commands: never run them in any form, not even "dry-run" (repository rule).
 
 ---
 
-### Task 1: Estrazione palette colori condivisa (conti + categorie)
+### Task 1: Extraction of the shared color palette (accounts + categories)
 
 **Files:**
 - Create: `lib/validation/shared-colors.ts`
@@ -31,10 +31,10 @@
 - Test: `lib/validation/shared-colors.test.ts`
 
 **Interfaces:**
-- Produces: `SWATCH_COLORS: readonly ["slate","blue","green","yellow","purple","orange","red","teal"]`, `type SwatchColor` (da `lib/validation/shared-colors.ts`); `COLOR_SWATCH_MAP: Record<SwatchColor, { bg: string; fg: string }>`, `COLOR_DOT: Record<SwatchColor, string>` (da `components/domain/shared/color-swatches.ts`).
-- Consumes: nessuno (base per tutti i task successivi che toccano colori).
+- Produces: `SWATCH_COLORS: readonly ["slate","blue","green","yellow","purple","orange","red","teal"]`, `type SwatchColor` (from `lib/validation/shared-colors.ts`); `COLOR_SWATCH_MAP: Record<SwatchColor, { bg: string; fg: string }>`, `COLOR_DOT: Record<SwatchColor, string>` (from `components/domain/shared/color-swatches.ts`).
+- Consumes: none (base for all later tasks touching colors).
 
-- [ ] **Step 1: Scrivi il test che verifica l'elenco colori condiviso**
+- [ ] **Step 1: Write the test that checks the shared color list**
 
 ```ts
 // lib/validation/shared-colors.test.ts
@@ -55,26 +55,26 @@ describe("SWATCH_COLORS", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test, verifica che fallisca**
+- [ ] **Step 2: Run the test, verify it fails**
 
 Run: `pnpm test lib/validation/shared-colors.test.ts`
-Expected: FAIL — `shared-colors` e `categories` non esistono ancora.
+Expected: FAIL — `shared-colors` and `categories` do not exist yet.
 
-- [ ] **Step 3: Crea `lib/validation/shared-colors.ts`**
+- [ ] **Step 3: Create `lib/validation/shared-colors.ts`**
 
 ```ts
 // lib/validation/shared-colors.ts
 
-/** Palette di 8 colori condivisa da conti e categorie, per coerenza visiva tra le due entità. */
+/** 8-color palette shared by accounts and categories, for visual consistency between the two entities. */
 export const SWATCH_COLORS = [
   "slate", "blue", "green", "yellow", "purple", "orange", "red", "teal",
 ] as const;
 export type SwatchColor = (typeof SWATCH_COLORS)[number];
 ```
 
-- [ ] **Step 4: Aggiorna `lib/validation/accounts.ts` per riusare `SWATCH_COLORS`**
+- [ ] **Step 4: Update `lib/validation/accounts.ts` to reuse `SWATCH_COLORS`**
 
-Sostituisci le righe 11-14 (definizione locale di `ACCOUNT_COLORS`/`AccountColor`):
+Replace lines 11-14 (local definition of `ACCOUNT_COLORS`/`AccountColor`):
 
 ```ts
 import { SWATCH_COLORS, type SwatchColor } from "./shared-colors";
@@ -83,9 +83,9 @@ export const ACCOUNT_COLORS = SWATCH_COLORS;
 export type AccountColor = SwatchColor;
 ```
 
-Aggiungi l'import in cima al file insieme a `import { z } from "zod";` già presente.
+Add the import at the top of the file alongside the existing `import { z } from "zod";`.
 
-- [ ] **Step 5: Crea `lib/validation/categories.ts` (solo la parte colori per ora — icone e schemi arrivano nel Task 2)**
+- [ ] **Step 5: Create `lib/validation/categories.ts` (only the colors part for now — icons and schemas come in Task 2)**
 
 ```ts
 // lib/validation/categories.ts
@@ -95,19 +95,19 @@ export const CATEGORY_COLORS = SWATCH_COLORS;
 export type CategoryColor = SwatchColor;
 ```
 
-- [ ] **Step 6: Esegui il test, verifica che passi**
+- [ ] **Step 6: Run the test, verify it passes**
 
 Run: `pnpm test lib/validation/shared-colors.test.ts`
 Expected: PASS
 
-- [ ] **Step 7: Crea `components/domain/shared/color-swatches.ts`**
+- [ ] **Step 7: Create `components/domain/shared/color-swatches.ts`**
 
 ```ts
 // components/domain/shared/color-swatches.ts
 
 /**
- * Mappa colore -> classi Tailwind (avatar bg/fg, dot pieno) condivisa da conti e categorie.
- * Estratta da account-avatar.tsx/account-icon-color-picker.tsx per non duplicarla.
+ * Color -> Tailwind classes map (avatar bg/fg, solid dot) shared by accounts and categories.
+ * Extracted from account-avatar.tsx/account-icon-color-picker.tsx to avoid duplicating it.
  */
 
 import type { SwatchColor } from "@/lib/validation/shared-colors";
@@ -135,40 +135,40 @@ export const COLOR_DOT: Record<SwatchColor, string> = {
 };
 ```
 
-- [ ] **Step 8: Aggiorna `account-avatar.tsx` per usare `COLOR_SWATCH_MAP`**
+- [ ] **Step 8: Update `account-avatar.tsx` to use `COLOR_SWATCH_MAP`**
 
-Rimuovi la definizione locale `COLOR_MAP` (righe 73-106) e l'import ora inutilizzato di `AccountColor` se non serve più direttamente (resta comunque usato come tipo prop, quindi l'import resta). Sostituisci con:
+Remove the local `COLOR_MAP` definition (lines 73-106) and the now-unused `AccountColor` import if it is no longer needed directly (it is still used as a prop type, so the import stays). Replace with:
 
 ```ts
 import { COLOR_SWATCH_MAP } from "@/components/domain/shared/color-swatches";
 ```
 
-E nel corpo di `AccountAvatar`, sostituisci:
+And in the body of `AccountAvatar`, replace:
 
 ```ts
 const { bg, fg } = COLOR_MAP[color] ?? COLOR_MAP.slate;
 ```
 
-con:
+with:
 
 ```ts
 const { bg, fg } = COLOR_SWATCH_MAP[color] ?? COLOR_SWATCH_MAP.slate;
 ```
 
-- [ ] **Step 9: Aggiorna `account-icon-color-picker.tsx` per usare `COLOR_DOT`**
+- [ ] **Step 9: Update `account-icon-color-picker.tsx` to use `COLOR_DOT`**
 
-Rimuovi la costante locale `COLOR_DOT` (righe 12-21) e aggiungi:
+Remove the local `COLOR_DOT` constant (lines 12-21) and add:
 
 ```ts
 import { COLOR_DOT } from "@/components/domain/shared/color-swatches";
 ```
 
-Il resto del file (uso di `COLOR_DOT[color]` nel bottone swatch) resta identico.
+The rest of the file (use of `COLOR_DOT[color]` in the swatch button) stays identical.
 
-- [ ] **Step 10: Verifica che il progetto compili e i test esistenti passino**
+- [ ] **Step 10: Check that the project compiles and the existing tests pass**
 
 Run: `pnpm test`
-Expected: PASS (nessuna regressione su test esistenti di conti/budget/transazioni).
+Expected: PASS (no regression on the existing account/budget/transaction tests).
 
 - [ ] **Step 11: Commit**
 
@@ -179,17 +179,17 @@ git commit -m "refactor: estrae palette colori condivisa tra conti e categorie"
 
 ---
 
-### Task 2: Palette icone dedicata e schemi Zod per le categorie
+### Task 2: Dedicated icon palette and Zod schemas for categories
 
 **Files:**
 - Modify: `lib/validation/categories.ts`
 - Test: `lib/validation/categories.test.ts`
 
 **Interfaces:**
-- Consumes: `CATEGORY_COLORS`, `CategoryColor` da `lib/validation/categories.ts` (Task 1).
-- Produces: `CATEGORY_ICONS: readonly string[]` (28 valori), `type CategoryIcon`; `createCategorySchema`, `type CreateCategoryInput`; `updateCategorySchema`, `type UpdateCategoryInput`.
+- Consumes: `CATEGORY_COLORS`, `CategoryColor` from `lib/validation/categories.ts` (Task 1).
+- Produces: `CATEGORY_ICONS: readonly string[]` (28 values), `type CategoryIcon`; `createCategorySchema`, `type CreateCategoryInput`; `updateCategorySchema`, `type UpdateCategoryInput`.
 
-- [ ] **Step 1: Scrivi i test per gli schemi**
+- [ ] **Step 1: Write the tests for the schemas**
 
 ```ts
 // lib/validation/categories.test.ts
@@ -262,12 +262,12 @@ describe("CATEGORY_COLORS", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test, verifica che falliscano**
+- [ ] **Step 2: Run the tests, verify they fail**
 
 Run: `pnpm test lib/validation/categories.test.ts`
-Expected: FAIL — `CATEGORY_ICONS`, `createCategorySchema`, `updateCategorySchema` non esistono ancora.
+Expected: FAIL — `CATEGORY_ICONS`, `createCategorySchema`, `updateCategorySchema` do not exist yet.
 
-- [ ] **Step 3: Estendi `lib/validation/categories.ts`**
+- [ ] **Step 3: Extend `lib/validation/categories.ts`**
 
 ```ts
 // lib/validation/categories.ts
@@ -307,7 +307,7 @@ export const updateCategorySchema = z
 export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
 ```
 
-- [ ] **Step 4: Esegui i test, verifica che passino**
+- [ ] **Step 4: Run the tests, verify they pass**
 
 Run: `pnpm test lib/validation/categories.test.ts`
 Expected: PASS
@@ -321,7 +321,7 @@ git commit -m "feat: aggiunge palette icone e schemi di validazione per le categ
 
 ---
 
-### Task 3: Schema DB (color/icon/isFallback), seed e backfill
+### Task 3: DB schema (color/icon/isFallback), seed and backfill
 
 **Files:**
 - Modify: `lib/db/schema/categories.ts`
@@ -331,10 +331,10 @@ git commit -m "feat: aggiunge palette icone e schemi di validazione per le categ
 - Test: `lib/db/schema/categories.test.ts`
 
 **Interfaces:**
-- Consumes: `CategoryIcon`, `CategoryColor` da `lib/validation/categories.ts` (Task 2).
-- Produces: `categories.color: string`, `categories.icon: string`, `categories.isFallback: boolean` (nuove colonne); `DEFAULT_CATEGORIES: { name: string; type: "fissa" | "variabile"; icon: CategoryIcon; color: CategoryColor; isFallback?: boolean }[]` (tipo esteso, stesso export esistente).
+- Consumes: `CategoryIcon`, `CategoryColor` from `lib/validation/categories.ts` (Task 2).
+- Produces: `categories.color: string`, `categories.icon: string`, `categories.isFallback: boolean` (new columns); `DEFAULT_CATEGORIES: { name: string; type: "fissa" | "variabile"; icon: CategoryIcon; color: CategoryColor; isFallback?: boolean }[]` (extended type, same existing export).
 
-- [ ] **Step 1: Scrivi il test sulla completezza di `DEFAULT_CATEGORIES`**
+- [ ] **Step 1: Write the test on the completeness of `DEFAULT_CATEGORIES`**
 
 ```ts
 // lib/db/schema/categories.test.ts
@@ -362,14 +362,14 @@ describe("DEFAULT_CATEGORIES", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test, verifica che fallisca**
+- [ ] **Step 2: Run the test, verify it fails**
 
 Run: `pnpm test lib/db/schema/categories.test.ts`
-Expected: FAIL — `category.icon`/`category.color`/`category.isFallback` sono `undefined`, gli `expect(...).toContain(undefined)` falliscono.
+Expected: FAIL — `category.icon`/`category.color`/`category.isFallback` are `undefined`, the `expect(...).toContain(undefined)` calls fail.
 
-- [ ] **Step 3: Aggiorna `lib/db/schema/categories.ts`**
+- [ ] **Step 3: Update `lib/db/schema/categories.ts`**
 
-Sostituisci l'intero file:
+Replace the whole file:
 
 ```ts
 import { boolean, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
@@ -417,14 +417,14 @@ export const DEFAULT_CATEGORIES: {
 ];
 ```
 
-- [ ] **Step 4: Esegui il test, verifica che passi**
+- [ ] **Step 4: Run the test, verify it passes**
 
 Run: `pnpm test lib/db/schema/categories.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Aggiorna il seed hook in `lib/auth/index.ts`**
+- [ ] **Step 5: Update the seed hook in `lib/auth/index.ts`**
 
-Sostituisci il blocco `after` (righe 65-72):
+Replace the `after` block (lines 65-72):
 
 ```ts
 after: async (user) => {
@@ -441,9 +441,9 @@ after: async (user) => {
 },
 ```
 
-- [ ] **Step 6: Aggiorna `lib/db/seed.ts`**
+- [ ] **Step 6: Update `lib/db/seed.ts`**
 
-Sostituisci il blocco `.values(...)` (righe 27-31):
+Replace the `.values(...)` block (lines 27-31):
 
 ```ts
 .values(
@@ -458,22 +458,22 @@ Sostituisci il blocco `.values(...)` (righe 27-31):
 )
 ```
 
-- [ ] **Step 7: Applica lo schema al database**
+- [ ] **Step 7: Apply the schema to the database**
 
 Run: `pnpm db:push`
-Expected: drizzle-kit segnala le nuove colonne (`color`, `icon`, `is_fallback`) e il vincolo unique su `categories`; conferma l'applicazione (prompt interattivo — rispondi "Yes" per applicare le modifiche additive).
+Expected: drizzle-kit reports the new columns (`color`, `icon`, `is_fallback`) and the unique constraint on `categories`; confirm the application (interactive prompt — answer "Yes" to apply the additive changes).
 
-- [ ] **Step 8: Crea lo script di backfill una-tantum per righe già esistenti**
+- [ ] **Step 8: Create the one-off backfill script for already-existing rows**
 
 ```ts
 // lib/db/backfill-category-appearance.ts
 
 /**
- * Script una tantum: applica icona/colore/isFallback alle categorie create prima
- * di questa feature (che dopo `pnpm db:push` hanno preso i default generici
- * "package"/"slate"/false). Aggiorna per nome esatto contro DEFAULT_CATEGORIES;
- * lascia invariate le categorie che non corrispondono a nessun nome noto.
- * Esegui con: pnpm exec tsx --env-file=.env.local lib/db/backfill-category-appearance.ts
+ * One-off script: applies icon/color/isFallback to categories created before
+ * this feature (which after `pnpm db:push` got the generic defaults
+ * "package"/"slate"/false). Updates by exact name against DEFAULT_CATEGORIES;
+ * leaves unchanged the categories that do not match any known name.
+ * Run with: pnpm exec tsx --env-file=.env.local lib/db/backfill-category-appearance.ts
  */
 
 import { and, eq } from "drizzle-orm";
@@ -504,12 +504,12 @@ main().catch((error) => {
 });
 ```
 
-- [ ] **Step 9: Esegui il backfill contro il database di sviluppo**
+- [ ] **Step 9: Run the backfill against the development database**
 
 Run: `pnpm exec tsx --env-file=.env.local lib/db/backfill-category-appearance.ts`
-Expected: stampa `Categorie aggiornate: N` (N = numero di righe che matchano un nome di `DEFAULT_CATEGORIES`, 0 se il DB ha solo utenti creati dopo questo deploy).
+Expected: prints `Categorie aggiornate: N` (N = number of rows matching a `DEFAULT_CATEGORIES` name, 0 if the DB only has users created after this deploy).
 
-- [ ] **Step 10: Esegui l'intera suite di test**
+- [ ] **Step 10: Run the whole test suite**
 
 Run: `pnpm test`
 Expected: PASS
@@ -523,7 +523,7 @@ git commit -m "feat: aggiunge color/icon/isFallback allo schema categorie, seed 
 
 ---
 
-### Task 4: Componenti avatar e picker per le categorie
+### Task 4: Avatar and picker components for categories
 
 **Files:**
 - Create: `components/domain/categories/category-avatar.tsx`
@@ -532,12 +532,12 @@ git commit -m "feat: aggiunge color/icon/isFallback allo schema categorie, seed 
 
 **Interfaces:**
 - Consumes: `CATEGORY_ICONS`, `CategoryIcon`, `CategoryColor` (Task 2); `COLOR_SWATCH_MAP`, `COLOR_DOT` (Task 1).
-- Produces: `CategoryAvatar({ color, icon, size?, className? })`, `CategoryIconColorPicker({ value, onChange, children })` — stessa firma di `AccountAvatar`/`AccountIconColorPicker`, riusate nei Task 7-8.
+- Produces: `CategoryAvatar({ color, icon, size?, className? })`, `CategoryIconColorPicker({ value, onChange, children })` — same signature as `AccountAvatar`/`AccountIconColorPicker`, reused in Tasks 7-8.
 
-- [ ] **Step 1: Crea `category-avatar.tsx`**
+- [ ] **Step 1: Create `category-avatar.tsx`**
 
 ```tsx
-/** Avatar categoria: icona Lucide su cerchio colorato (stessa palette colori dei conti, icone dedicate alle spese). */
+/** Category avatar: Lucide icon on a colored circle (same color palette as accounts, icons dedicated to expenses). */
 
 import * as React from "react";
 import {
@@ -604,12 +604,12 @@ export function CategoryAvatar({ color, icon, size = 16, className }: CategoryAv
 }
 ```
 
-- [ ] **Step 2: Crea `category-icon-color-picker.tsx`**
+- [ ] **Step 2: Create `category-icon-color-picker.tsx`**
 
 ```tsx
 "use client";
 
-/** Popover per scegliere colore e icona di una categoria. Click sull'avatar apre il picker. */
+/** Popover to choose a category's color and icon. Clicking the avatar opens the picker. */
 
 import * as React from "react";
 import { Popover } from "@base-ui/react/popover";
@@ -683,13 +683,13 @@ export function CategoryIconColorPicker({ value, onChange, children }: CategoryI
 }
 ```
 
-- [ ] **Step 3: Crea il barrel `components/domain/categories/index.ts`**
+- [ ] **Step 3: Create the `components/domain/categories/index.ts` barrel**
 
 ```ts
 /**
  * components/domain/categories — barrel file
  *
- * Punto di ingresso unico per i componenti di gestione categorie.
+ * Single entry point for the category management components.
  */
 
 export { CategoryAvatar } from "./category-avatar";
@@ -698,10 +698,10 @@ export { CategoryIconColorPicker } from "./category-icon-color-picker";
 export type { CategoryIconColorPickerProps } from "./category-icon-color-picker";
 ```
 
-- [ ] **Step 4: Verifica che il progetto compili**
+- [ ] **Step 4: Check that the project compiles**
 
 Run: `pnpm lint`
-Expected: nessun errore (nessun import inutilizzato, nessuna icona mancante nel `ICON_MAP` rispetto a `CATEGORY_ICONS` — TypeScript fallirebbe la compilazione se `Record<CategoryIcon, LucideIcon>` fosse incompleto).
+Expected: no errors (no unused imports, no icon missing from `ICON_MAP` compared to `CATEGORY_ICONS` — TypeScript would fail compilation if `Record<CategoryIcon, LucideIcon>` were incomplete).
 
 - [ ] **Step 5: Commit**
 
@@ -712,7 +712,7 @@ git commit -m "feat: aggiunge avatar e picker icona/colore per le categorie"
 
 ---
 
-### Task 5: API — creare, aggiornare, eliminare categorie
+### Task 5: API — create, update, delete categories
 
 **Files:**
 - Modify: `app/api/categories/route.ts`
@@ -721,12 +721,12 @@ git commit -m "feat: aggiunge avatar e picker icona/colore per le categorie"
 - Create: `app/api/categories/[id]/route.test.ts`
 
 **Interfaces:**
-- Consumes: `createCategorySchema`, `updateCategorySchema` (Task 2); `categories`, `Category` da `lib/db/schema/categories.ts` (Task 3); `budgets` da `lib/db/schema/budgets.ts`; `transactions` da `lib/db/schema/transactions.ts`.
-- Produces: `POST /api/categories` (201, body `Category`); `PATCH /api/categories/[id]` (200, body `Category` aggiornata, 404 se non propria, 409 se nome duplicato); `DELETE /api/categories/[id]` (204, 404 se non propria, 409 se `isFallback`).
+- Consumes: `createCategorySchema`, `updateCategorySchema` (Task 2); `categories`, `Category` from `lib/db/schema/categories.ts` (Task 3); `budgets` from `lib/db/schema/budgets.ts`; `transactions` from `lib/db/schema/transactions.ts`.
+- Produces: `POST /api/categories` (201, body `Category`); `PATCH /api/categories/[id]` (200, body: updated `Category`, 404 if not owned, 409 if duplicate name); `DELETE /api/categories/[id]` (204, 404 if not owned, 409 if `isFallback`).
 
-- [ ] **Step 1: Scrivi i test per `POST /api/categories`**
+- [ ] **Step 1: Write the tests for `POST /api/categories`**
 
-Aggiungi in fondo a `app/api/categories/route.test.ts` (prima della chiusura del `describe` esistente, come nuovo blocco `describe`):
+Add at the bottom of `app/api/categories/route.test.ts` (before the closing of the existing `describe`, as a new `describe` block):
 
 ```ts
 import { POST } from "./route";
@@ -805,14 +805,14 @@ describe("POST /api/categories", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test, verifica che falliscano**
+- [ ] **Step 2: Run the tests, verify they fail**
 
 Run: `pnpm test app/api/categories/route.test.ts`
-Expected: FAIL — `POST` non è esportato da `./route`.
+Expected: FAIL — `POST` is not exported from `./route`.
 
-- [ ] **Step 3: Aggiungi `POST` a `app/api/categories/route.ts`**
+- [ ] **Step 3: Add `POST` to `app/api/categories/route.ts`**
 
-Aggiungi in fondo al file (dopo `GET`):
+Add at the bottom of the file (after `GET`):
 
 ```ts
 import { and, eq } from "drizzle-orm";
@@ -853,14 +853,14 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-Nota: l'import di `eq` già presente in cima al file va sostituito dall'import combinato `and, eq` (rimuovi la riga `import { asc, eq } from "drizzle-orm";` esistente e sostituiscila con `import { and, asc, eq } from "drizzle-orm";`, spostando il nuovo import di `createCategorySchema` in cima insieme agli altri invece che a metà file).
+Note: the `eq` import already at the top of the file must be replaced by the combined `and, eq` import (remove the existing `import { asc, eq } from "drizzle-orm";` line and replace it with `import { and, asc, eq } from "drizzle-orm";`, moving the new `createCategorySchema` import to the top together with the others rather than mid-file).
 
-- [ ] **Step 4: Esegui i test, verifica che passino**
+- [ ] **Step 4: Run the tests, verify they pass**
 
 Run: `pnpm test app/api/categories/route.test.ts`
 Expected: PASS
 
-- [ ] **Step 5: Scrivi i test per `PATCH`/`DELETE /api/categories/[id]`**
+- [ ] **Step 5: Write the tests for `PATCH`/`DELETE /api/categories/[id]`**
 
 ```ts
 // app/api/categories/[id]/route.test.ts
@@ -1086,12 +1086,12 @@ describe("PATCH/DELETE /api/categories/[id]", () => {
 });
 ```
 
-- [ ] **Step 6: Esegui i test, verifica che falliscano**
+- [ ] **Step 6: Run the tests, verify they fail**
 
 Run: `pnpm test app/api/categories/[id]/route.test.ts`
-Expected: FAIL — `app/api/categories/[id]/route.ts` non esiste ancora.
+Expected: FAIL — `app/api/categories/[id]/route.ts` does not exist yet.
 
-- [ ] **Step 7: Crea `app/api/categories/[id]/route.ts`**
+- [ ] **Step 7: Create `app/api/categories/[id]/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1103,7 +1103,7 @@ import { budgets } from "@/lib/db/schema/budgets";
 import { transactions } from "@/lib/db/schema/transactions";
 import { updateCategorySchema } from "@/lib/validation/categories";
 
-/** Recupera una categoria solo se appartiene all'utente indicato, altrimenti null. */
+/** Fetches a category only if it belongs to the given user, otherwise null. */
 async function getOwnedCategory(userId: string, categoryId: string) {
   const [category] = await db
     .select()
@@ -1112,7 +1112,7 @@ async function getOwnedCategory(userId: string, categoryId: string) {
   return category ?? null;
 }
 
-/** Recupera la categoria fallback ("Da categorizzare") del proprio utente. */
+/** Fetches the user's own fallback category ("Da categorizzare" — "To categorize"). */
 async function getFallbackCategory(userId: string) {
   const [fallback] = await db
     .select()
@@ -1121,7 +1121,7 @@ async function getFallbackCategory(userId: string) {
   return fallback ?? null;
 }
 
-/** Aggiorna nome/tipo/icona/colore di una categoria del proprio utente; 404 se non propria, 409 se nome duplicato. */
+/** Updates name/type/icon/color of one of the user's categories; 404 if not owned, 409 if duplicate name. */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -1163,10 +1163,10 @@ export async function PATCH(
 }
 
 /**
- * Elimina una categoria del proprio utente; 404 se non propria, 409 se è la
- * categoria fallback. Le transazioni collegate vengono riassegnate alla
- * categoria fallback ("Da categorizzare") e il budget collegato eliminato,
- * nella stessa transazione DB della cancellazione.
+ * Deletes one of the user's categories; 404 if not owned, 409 if it is the
+ * fallback category. Linked transactions are reassigned to the
+ * fallback category ("Da categorizzare") and the linked budget is deleted,
+ * in the same DB transaction as the deletion.
  */
 export async function DELETE(
   request: NextRequest,
@@ -1208,12 +1208,12 @@ export async function DELETE(
 }
 ```
 
-- [ ] **Step 8: Esegui i test, verifica che passino**
+- [ ] **Step 8: Run the tests, verify they pass**
 
 Run: `pnpm test app/api/categories/[id]/route.test.ts`
 Expected: PASS
 
-- [ ] **Step 9: Esegui l'intera suite di test**
+- [ ] **Step 9: Run the whole test suite**
 
 Run: `pnpm test`
 Expected: PASS
@@ -1227,28 +1227,28 @@ git commit -m "feat: aggiunge creazione/modifica/eliminazione categoria via API"
 
 ---
 
-### Task 6: Query client per le mutation categorie
+### Task 6: Client queries for the category mutations
 
 **Files:**
 - Modify: `lib/queries/categories.ts`
 
 **Interfaces:**
 - Consumes: `Category` (Task 3), `CreateCategoryInput`, `UpdateCategoryInput` (Task 2).
-- Produces: `useCreateCategoryMutation()`, `useUpdateCategoryMutation()`, `useDeleteCategoryMutation()` — usate nel Task 7.
+- Produces: `useCreateCategoryMutation()`, `useUpdateCategoryMutation()`, `useDeleteCategoryMutation()` — used in Task 7.
 
-- [ ] **Step 1: Estendi `lib/queries/categories.ts`**
+- [ ] **Step 1: Extend `lib/queries/categories.ts`**
 
-Aggiungi in fondo al file (dopo `useCategoriesQuery`):
+Add at the bottom of the file (after `useCategoriesQuery`):
 
 ```ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CreateCategoryInput, UpdateCategoryInput } from "@/lib/validation/categories";
 ```
 
-(unisci questo import con quello già esistente `import { useQuery } from "@tanstack/react-query";` in cima al file, sostituendolo con `import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";`)
+(merge this import with the existing `import { useQuery } from "@tanstack/react-query";` at the top of the file, replacing it with `import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";`)
 
 ```ts
-/** Crea una nuova categoria e invalida la lista al successo. */
+/** Creates a new category and invalidates the list on success. */
 export function useCreateCategoryMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1270,7 +1270,7 @@ export function useCreateCategoryMutation() {
   });
 }
 
-/** Aggiorna una categoria esistente e invalida la lista al successo. */
+/** Updates an existing category and invalidates the list on success. */
 export function useUpdateCategoryMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1292,7 +1292,7 @@ export function useUpdateCategoryMutation() {
   });
 }
 
-/** Elimina una categoria (riassegnando le transazioni collegate) e invalida la lista al successo. */
+/** Deletes a category (reassigning the linked transactions) and invalidates the list on success. */
 export function useDeleteCategoryMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1310,10 +1310,10 @@ export function useDeleteCategoryMutation() {
 }
 ```
 
-- [ ] **Step 2: Verifica che il progetto compili**
+- [ ] **Step 2: Check that the project compiles**
 
 Run: `pnpm lint`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 3: Commit**
 
@@ -1324,7 +1324,7 @@ git commit -m "feat: aggiunge mutation crea/aggiorna/elimina categoria"
 
 ---
 
-### Task 7: Pagina di gestione categorie `/categorie`
+### Task 7: Category management page `/categorie`
 
 **Files:**
 - Create: `components/domain/categories/category-row.tsx`
@@ -1333,18 +1333,18 @@ git commit -m "feat: aggiunge mutation crea/aggiorna/elimina categoria"
 - Create: `app/(app)/categorie/page.tsx`
 
 **Interfaces:**
-- Consumes: `CategoryAvatar`, `CategoryIconColorPicker` (Task 4); `useCategoriesQuery`, `useCreateCategoryMutation`, `useUpdateCategoryMutation`, `useDeleteCategoryMutation` (Task 6); `Category` (Task 3); `CATEGORY_COLORS`/`CATEGORY_ICONS` di default (Task 2, per `add-category-form.tsx`).
-- Produces: `CategoryRow({ category })`, `AddCategoryForm({ onSuccess? })` — usati solo dalla pagina `/categorie`.
+- Consumes: `CategoryAvatar`, `CategoryIconColorPicker` (Task 4); `useCategoriesQuery`, `useCreateCategoryMutation`, `useUpdateCategoryMutation`, `useDeleteCategoryMutation` (Task 6); `Category` (Task 3); default `CATEGORY_COLORS`/`CATEGORY_ICONS` (Task 2, for `add-category-form.tsx`).
+- Produces: `CategoryRow({ category })`, `AddCategoryForm({ onSuccess? })` — used only by the `/categorie` page.
 
-- [ ] **Step 1: Crea `category-row.tsx`**
+- [ ] **Step 1: Create `category-row.tsx`**
 
 ```tsx
 "use client";
 
 /**
- * Riga singola nella pagina Categorie. Nome, tipo, icona e colore sono editabili
- * inline (salvataggio on-blur/on-change). L'eliminazione è bloccata (bottone
- * disabilitato con tooltip) per la categoria fallback "Da categorizzare".
+ * Single row in the Categorie page. Name, type, icon and color are editable
+ * inline (save on blur/on change). Deletion is blocked (button
+ * disabled with a tooltip) for the "Da categorizzare" fallback category.
  */
 
 import * as React from "react";
@@ -1497,12 +1497,12 @@ export function CategoryRow({ category }: CategoryRowProps) {
 }
 ```
 
-- [ ] **Step 2: Crea `add-category-form.tsx`**
+- [ ] **Step 2: Create `add-category-form.tsx`**
 
 ```tsx
 "use client";
 
-/** Form "+ Nuova categoria": crea una categoria con nome, tipo e icona/colore di default (personalizzabili subito dopo dalla riga). */
+/** "+ Nuova categoria" form: creates a category with name, type and default icon/color (customizable right after from the row). */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -1516,7 +1516,7 @@ const TYPE_LABELS: Record<"fissa" | "variabile", string> = {
 };
 
 export interface AddCategoryFormProps {
-  /** Callback richiamata alla creazione con successo della categoria. */
+  /** Callback invoked when the category is created successfully. */
   onSuccess?: () => void;
 }
 
@@ -1586,9 +1586,9 @@ export function AddCategoryForm({ onSuccess }: AddCategoryFormProps) {
 }
 ```
 
-- [ ] **Step 3: Aggiorna il barrel `components/domain/categories/index.ts`**
+- [ ] **Step 3: Update the `components/domain/categories/index.ts` barrel**
 
-Aggiungi in fondo al file:
+Add at the bottom of the file:
 
 ```ts
 export { CategoryRow } from "./category-row";
@@ -1597,12 +1597,12 @@ export { AddCategoryForm } from "./add-category-form";
 export type { AddCategoryFormProps } from "./add-category-form";
 ```
 
-- [ ] **Step 4: Crea `app/(app)/categorie/page.tsx`**
+- [ ] **Step 4: Create `app/(app)/categorie/page.tsx`**
 
 ```tsx
 "use client";
 
-/** Pagina Categorie: elenco categorie dell'utente con gestione completa (crea/rinomina/elimina/icona/colore). */
+/** Categorie page: list of the user's categories with full management (create/rename/delete/icon/color). */
 
 import { AddCategoryForm, CategoryRow } from "@/components/domain/categories";
 import { Card } from "@/components/ui/card";
@@ -1643,10 +1643,10 @@ export default function CategoriePage() {
 }
 ```
 
-- [ ] **Step 5: Verifica manuale nel browser**
+- [ ] **Step 5: Manual browser verification**
 
-Run: `pnpm dev`, poi apri `http://localhost:3000/categorie` da loggato.
-Expected: elenco delle 9 categorie seminate, ognuna con avatar cliccabile (apre il picker), nome/tipo editabili, bottone elimina disabilitato solo su "Da categorizzare"; il form in fondo crea una nuova categoria e la mostra subito in lista.
+Run: `pnpm dev`, then open `http://localhost:3000/categorie` while logged in.
+Expected: list of the 9 seeded categories, each with a clickable avatar (opens the picker), editable name/type, delete button disabled only on "Da categorizzare"; the form at the bottom creates a new category and shows it in the list right away.
 
 - [ ] **Step 6: Commit**
 
@@ -1657,7 +1657,7 @@ git commit -m "feat: aggiunge la pagina di gestione categorie"
 
 ---
 
-### Task 8: Integrazione in Spese (link, avatar categoria nelle liste)
+### Task 8: Integration in Spese (link, category avatar in the lists)
 
 **Files:**
 - Modify: `app/(app)/spese/page.tsx`
@@ -1667,12 +1667,12 @@ git commit -m "feat: aggiunge la pagina di gestione categorie"
 - Modify: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Consumes: `CategoryAvatar` (Task 4); `Category` con `color`/`icon`/`isFallback` (Task 3).
-- Produces: `CategoryAmount` esteso con `color: string; icon: string` (Step 1), consumato da `category-breakdown.tsx`.
+- Consumes: `CategoryAvatar` (Task 4); `Category` with `color`/`icon`/`isFallback` (Task 3).
+- Produces: `CategoryAmount` extended with `color: string; icon: string` (Step 1), consumed by `category-breakdown.tsx`.
 
-- [ ] **Step 1: Aggiungi `color`/`icon` a `CategoryAmount` in `lib/calc/expenses.ts`**
+- [ ] **Step 1: Add `color`/`icon` to `CategoryAmount` in `lib/calc/expenses.ts`**
 
-`CategoryAmount` oggi (righe 175-180) è:
+`CategoryAmount` today (lines 175-180) is:
 
 ```ts
 export interface CategoryAmount {
@@ -1683,7 +1683,7 @@ export interface CategoryAmount {
 }
 ```
 
-Sostituiscilo con:
+Replace it with:
 
 ```ts
 export interface CategoryAmount {
@@ -1696,7 +1696,7 @@ export interface CategoryAmount {
 }
 ```
 
-E in `computeCategoryBreakdown` (righe 193-202), nell'oggetto ritornato dentro `categories.map(...)`, sostituisci:
+And in `computeCategoryBreakdown` (lines 193-202), in the object returned inside `categories.map(...)`, replace:
 
 ```ts
 return {
@@ -1707,7 +1707,7 @@ return {
 };
 ```
 
-con:
+with:
 
 ```ts
 return {
@@ -1720,9 +1720,9 @@ return {
 };
 ```
 
-- [ ] **Step 2: Aggiorna `makeCategory` e le aspettative in `lib/calc/expenses.test.ts`**
+- [ ] **Step 2: Update `makeCategory` and the expectations in `lib/calc/expenses.test.ts`**
 
-`Category` ha ora anche `color`/`icon`/`isFallback` obbligatori (Task 3): la factory `makeCategory` (righe 49-58) non compila più senza aggiornarla. Sostituiscila con:
+`Category` now also has required `color`/`icon`/`isFallback` (Task 3): the `makeCategory` factory (lines 49-58) no longer compiles without updating it. Replace it with:
 
 ```ts
 function makeCategory(overrides: Partial<Category>): Category {
@@ -1740,7 +1740,7 @@ function makeCategory(overrides: Partial<Category>): Category {
 }
 ```
 
-Il test `computeCategoryBreakdown` (righe 183-186) confronta l'intero oggetto con `toEqual`, quindi va aggiornato per includere i nuovi campi restituiti da `CategoryAmount` (Step 1 di questo task):
+The `computeCategoryBreakdown` test (lines 183-186) compares the whole object with `toEqual`, so it must be updated to include the new fields returned by `CategoryAmount` (Step 1 of this task):
 
 ```ts
 expect(breakdown).toEqual([
@@ -1752,16 +1752,16 @@ expect(breakdown).toEqual([
 Run: `pnpm test lib/calc/expenses.test.ts`
 Expected: PASS
 
-- [ ] **Step 3: Aggiorna `category-breakdown.tsx` per mostrare l'avatar**
+- [ ] **Step 3: Update `category-breakdown.tsx` to show the avatar**
 
-In `CategoryBreakdownRow` (interno al file), importa `CategoryAvatar` e `CategoryColor`/`CategoryIcon`:
+In `CategoryBreakdownRow` (internal to the file), import `CategoryAvatar` and `CategoryColor`/`CategoryIcon`:
 
 ```ts
 import { CategoryAvatar } from "@/components/domain/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 ```
 
-Nel JSX della riga, sostituisci il blocco:
+In the row's JSX, replace the block:
 
 ```tsx
 <div>
@@ -1770,7 +1770,7 @@ Nel JSX della riga, sostituisci il blocco:
 </div>
 ```
 
-con:
+with:
 
 ```tsx
 <div className="flex items-center gap-3">
@@ -1787,16 +1787,16 @@ con:
 </div>
 ```
 
-- [ ] **Step 4: Aggiorna `transaction-row.tsx` per mostrare l'avatar nel select categoria**
+- [ ] **Step 4: Update `transaction-row.tsx` to show the avatar in the category select**
 
-Importa `CategoryAvatar` e i tipi icona/colore:
+Import `CategoryAvatar` and the icon/color types:
 
 ```ts
 import { CategoryAvatar } from "@/components/domain/categories";
 import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 ```
 
-Sostituisci il blocco `<SelectValue>` esistente (righe 102-104):
+Replace the existing `<SelectValue>` block (lines 102-104):
 
 ```tsx
 <SelectValue>
@@ -1804,7 +1804,7 @@ Sostituisci il blocco `<SelectValue>` esistente (righe 102-104):
 </SelectValue>
 ```
 
-con:
+with:
 
 ```tsx
 <SelectValue>
@@ -1826,9 +1826,9 @@ con:
 </SelectValue>
 ```
 
-- [ ] **Step 5: Aggiungi il link "Gestisci categorie" in `app/(app)/spese/page.tsx`**
+- [ ] **Step 5: Add the "Gestisci categorie" ("Manage categories") link in `app/(app)/spese/page.tsx`**
 
-Nell'header della pagina, dopo il blocco `<p>` con l'intervallo di date (circa riga 68), aggiungi:
+In the page header, after the `<p>` block with the date range (around line 68), add:
 
 ```tsx
 <a
@@ -1839,14 +1839,14 @@ Nell'header della pagina, dopo il blocco `<p>` con l'intervallo di date (circa r
 </a>
 ```
 
-Posizionalo dentro il `<div>` che contiene già titolo e intervallo date, come elemento fratello di quel `<p>`, oppure come elemento a sé nel `<div className="flex flex-wrap items-center justify-between gap-3">` esterno accanto a `ExpensesPeriodSelector` — la seconda opzione è preferibile per non affollare il blocco titolo. Aggiungilo quindi subito prima di `<ExpensesPeriodSelector value={period} onChange={setPeriod} />`.
+Place it inside the `<div>` that already contains the title and date range, as a sibling of that `<p>`, or as a standalone element in the outer `<div className="flex flex-wrap items-center justify-between gap-3">` next to `ExpensesPeriodSelector` — the second option is preferable so as not to crowd the title block. So add it right before `<ExpensesPeriodSelector value={period} onChange={setPeriod} />`.
 
-- [ ] **Step 6: Verifica manuale nel browser**
+- [ ] **Step 6: Manual browser verification**
 
-Run: `pnpm dev`, apri `/spese`.
-Expected: link "Gestisci categorie" nell'header porta a `/categorie`; il blocco "Per categoria" mostra l'avatar di ciascuna categoria; il select categoria di ogni transazione mostra l'avatar accanto al nome (non più solo testo, e non l'id grezzo).
+Run: `pnpm dev`, open `/spese`.
+Expected: the "Gestisci categorie" link in the header leads to `/categorie`; the "Per categoria" ("By category") block shows each category's avatar; each transaction's category select shows the avatar next to the name (no longer just text, and not the raw id).
 
-- [ ] **Step 7: Esegui l'intera suite di test**
+- [ ] **Step 7: Run the whole test suite**
 
 Run: `pnpm test`
 Expected: PASS
@@ -1860,7 +1860,7 @@ git commit -m "feat: mostra icona/colore categoria in Spese e collega la pagina 
 
 ---
 
-## Note finali
+## Final notes
 
-- **Fuori scope** (rimandato, vedi spec): sezione Budget separata; colori categoria nei grafici di Spese (nessun grafico per-categoria oggi); i18n dei nomi categoria.
-- Dopo l'esecuzione completa, aggiornare `CLAUDE.md` (sezione "Stato del progetto" + "Log delle decisioni") con l'esito di questo piano, come da convenzione del progetto.
+- **Out of scope** (postponed, see spec): separate Budget section; category colors in the Spese charts (no per-category chart today); i18n of category names.
+- After full execution, update `CLAUDE.md` ("Stato del progetto" + "Log delle decisioni" sections) with the outcome of this plan, as per the project convention.

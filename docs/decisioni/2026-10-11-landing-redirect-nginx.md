@@ -1,5 +1,5 @@
-# 2026-10-11 — Redirect della landing senza porta interna
+# 2026-10-11 — Landing redirects without the internal port
 
-Dall'esportazione di Search Console: i redirect delle cartelle (`/guide` → `/guide/`) uscivano dal nginx della landing con `:3000` nell'URL, e `/funzioni/` dava 403.
-Scelta: `absolute_redirect off`, slash finale tolto con un 301 (`/funzioni/` → `/funzioni`), `try_files` senza listing di cartelle.
-Il `noindex` segnalato da Google riguarda le pagine legali in bozza (oggi indicizzabili) e il login dell'app (voluto); `www` → apice e `/login` → app restano redirect voluti.
+From the Search Console export: folder redirects (`/guide` → `/guide/`) left the landing's nginx with `:3000` in the URL, and `/funzioni/` gave 403.
+Choice: `absolute_redirect off`, trailing slash removed with a 301 (`/funzioni/` → `/funzioni`), `try_files` without directory listing.
+The `noindex` reported by Google concerns the draft legal pages (indexable today) and the app login (intended); `www` → apex and `/login` → app remain intended redirects.

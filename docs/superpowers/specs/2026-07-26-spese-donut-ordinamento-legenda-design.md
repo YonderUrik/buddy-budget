@@ -1,21 +1,21 @@
-# Design: ordinamento configurabile legenda "Per categoria"
+# Design: configurable ordering of the "Per categoria" legend
 
-Data: 2026-07-26
+Date: 2026-07-26
 
-## Contesto
+## Context
 
-`CategoryBreakdownDonut` (schermata Spese, blocco "Per categoria") mostra un donut multilivello e una legenda scrollabile sotto/accanto. Oggi la legenda usa `sortCategoryAmounts` (`components/domain/expenses/category-breakdown-donut.utils.ts`): ordina per tipo (fissa prima di variabile), poi per importo speso decrescente dentro ogni gruppo. Nessun controllo utente per cambiare l'ordinamento.
+`CategoryBreakdownDonut` (Spese screen, "Per categoria" — by category — block) shows a multi-level donut and a scrollable legend below/beside it. Today the legend uses `sortCategoryAmounts` (`components/domain/expenses/category-breakdown-donut.utils.ts`): it sorts by type (fixed before variable), then by amount spent descending within each group. There is no user control to change the ordering.
 
-Richiesta: aggiungere un ordinamento scelto dall'utente (percentuale sul totale come default, ma anche valore assoluto, budget, nome), con direzione asc/desc.
+Request: add a user-chosen ordering (percentage of the total as the default, but also absolute value, budget, name), with asc/desc direction.
 
 ## Scope
 
-- Riguarda **solo la legenda** sotto il donut. Le fette dell'anello esterno del donut restano ordinate come oggi (`sortCategoryAmounts`, tipo poi valore) — nessuna modifica al donut stesso.
-- Il raggruppamento per tipo (fissa/variabile) nella legenda **viene rimosso**: il nuovo ordinamento produce una lista piatta, indipendente dal tipo.
+- It concerns **only the legend** under the donut. The slices of the donut's outer ring stay ordered as today (`sortCategoryAmounts`, type then value) — no change to the donut itself.
+- The grouping by type (fixed/variable) in the legend **is removed**: the new ordering produces a flat list, independent of the type.
 
-## Stato component
+## Component state
 
-Due nuovi `useState` in `CategoryBreakdownDonut`:
+Two new `useState`s in `CategoryBreakdownDonut`:
 
 ```ts
 type LegendSortCriterion = "percentuale" | "valore" | "budget" | "nome";
@@ -25,16 +25,16 @@ const [sortCriterion, setSortCriterion] = React.useState<LegendSortCriterion>("p
 const [sortDirection, setSortDirection] = React.useState<LegendSortDirection>("desc");
 ```
 
-Default per criterio quando cambia selezione (reset automatico della direzione, non manuale):
+Default per criterion when the selection changes (automatic reset of the direction, not manual):
 
-| Criterio | Direzione default |
+| Criterion | Default direction |
 |---|---|
 | percentuale | desc |
 | valore | desc |
 | budget | desc |
 | nome | asc |
 
-Handler cambio criterio:
+Criterion change handler:
 
 ```ts
 function handleCriterionChange(next: LegendSortCriterion) {
@@ -43,11 +43,11 @@ function handleCriterionChange(next: LegendSortCriterion) {
 }
 ```
 
-Il toggle asc/desc è un bottone separato che inverte `sortDirection` senza toccare `sortCriterion`.
+The asc/desc toggle is a separate button that inverts `sortDirection` without touching `sortCriterion`.
 
 ## Util: `sortLegendEntries`
 
-Nuova funzione pura in `category-breakdown-donut.utils.ts`, testata in isolamento come le esistenti.
+New pure function in `category-breakdown-donut.utils.ts`, tested in isolation like the existing ones.
 
 ```ts
 export interface LegendEntry extends CategoryAmount {
@@ -63,19 +63,19 @@ export function sortLegendEntries(
 ): LegendEntry[]
 ```
 
-Semantica criteri:
-- `"percentuale"` → `quotaPct` (percentuale sul totale speso, badge esistente "% totale")
-- `"valore"` → `amount` (importo speso assoluto)
-- `"budget"` → `saturazionePct` (percentuale di saturazione budget, badge esistente "% budget" — non l'importo budget impostato)
-- `"nome"` → `name` (alfabetico, `localeCompare`)
+Criterion semantics:
+- `"percentuale"` → `quotaPct` (percentage of the total spent, the existing "% totale" badge)
+- `"valore"` → `amount` (absolute amount spent)
+- `"budget"` → `saturazionePct` (budget saturation percentage, the existing "% budget" badge — not the budget amount set)
+- `"nome"` → `name` (alphabetical, `localeCompare`)
 
-Regola valori `null` (`saturazionePct`/`quotaPct` null quando budget=0 o totale=0): vanno **sempre in fondo alla lista**, indipendentemente dalla direzione scelta. Confronto: se uno dei due valori è `null` e l'altro no, quello `null` perde sempre (va dopo); se entrambi `null`, ordine stabile tra loro (nessun criterio secondario).
+Rule for `null` values (`saturazionePct`/`quotaPct` are null when budget=0 or total=0): they **always go at the bottom of the list**, regardless of the chosen direction. Comparison: if one of the two values is `null` and the other is not, the `null` one always loses (goes after); if both are `null`, stable order between them (no secondary criterion).
 
-Per il criterio `"nome"` non esistono valori null, comparazione diretta con `localeCompare("it")`.
+For the `"nome"` criterion there are no null values, direct comparison with `localeCompare("it")`.
 
-## Component: enrichment pre-sort
+## Component: pre-sort enrichment
 
-Oggi `budgetFor`/`computeBudgetStats` sono chiamati dentro il loop di render per ogni riga. Per poter ordinare per budget/percentuale serve calcolarli **prima** di ordinare, su tutte le categorie:
+Today `budgetFor`/`computeBudgetStats` are called inside the render loop for each row. To be able to sort by budget/percentage they must be computed **before** sorting, over all the categories:
 
 ```ts
 const enrichedEntries: LegendEntry[] = categoryAmounts.map((entry) => {
@@ -86,25 +86,25 @@ const enrichedEntries: LegendEntry[] = categoryAmounts.map((entry) => {
 const sortedLegendEntries = sortLegendEntries(enrichedEntries, sortCriterion, sortDirection);
 ```
 
-Il rendering della legenda (`sortedLegendEntries.map(...)`) passa `budgetAmount`/`saturazionePct`/`quotaPct` già calcolati a `CategoryLegendRow` invece di ricalcolarli lì — nessuna doppia computazione.
+The legend rendering (`sortedLegendEntries.map(...)`) passes the already computed `budgetAmount`/`saturazionePct`/`quotaPct` to `CategoryLegendRow` instead of recomputing them there — no double computation.
 
-La variabile `sortedEntries` esistente (usata per `outerData` del donut) resta invariata, basata su `sortCategoryAmounts(categoryAmounts)` come oggi.
+The existing `sortedEntries` variable (used for the donut's `outerData`) stays unchanged, based on `sortCategoryAmounts(categoryAmounts)` as today.
 
 ## UI
 
-Nel `CardHeader`, accanto al titolo "Per categoria":
-- `Select` (componente shadcn già in uso nel progetto) con le 4 opzioni: "% sul totale", "Valore speso", "% budget", "Nome"
-- Bottone icona (freccia su/giù, `lucide-react`, coerente con le altre icone del progetto) che inverte `sortDirection`, con `aria-label` che descrive lo stato corrente (es. "Ordina decrescente" / "Ordina crescente")
+In the `CardHeader`, next to the "Per categoria" title:
+- `Select` (shadcn component already used in the project) with the 4 options: "% sul totale", "Valore speso", "% budget", "Nome" ("% of total", "Amount spent", "% budget", "Name")
+- Icon button (up/down arrow, `lucide-react`, consistent with the project's other icons) that inverts `sortDirection`, with an `aria-label` describing the current state (e.g. "Ordina decrescente" / "Ordina crescente" — "Sort descending" / "Sort ascending")
 
-Layout: `CardHeader` passa da solo titolo a `flex items-center justify-between` per ospitare titolo a sinistra, controlli a destra. Su mobile i controlli restano sulla stessa riga (sono compatti: select + un'icona).
+Layout: `CardHeader` goes from title-only to `flex items-center justify-between` to host the title on the left, controls on the right. On mobile the controls stay on the same row (they are compact: select + one icon).
 
 ## Testing
 
-`category-breakdown-donut.utils.test.ts`: nuovi casi per `sortLegendEntries` — 4 criteri × 2 direzioni, più il caso valori `null` sempre in fondo (sia con `sortCriterion: "percentuale"` che `"budget"`), più stabilità quando tutti null.
+`category-breakdown-donut.utils.test.ts`: new cases for `sortLegendEntries` — 4 criteria × 2 directions, plus the case of `null` values always at the bottom (with both `sortCriterion: "percentuale"` and `"budget"`), plus stability when all are null.
 
-Nessuna modifica a schema/API/route — feature interamente client-side su dati già disponibili nel component.
+No change to schema/API/routes — a fully client-side feature on data already available in the component.
 
-## Fuori scope
+## Out of scope
 
-- Ordinamento delle fette del donut (resta come oggi).
-- Persistenza della preferenza di ordinamento (localStorage o simile) tra sessioni — non richiesto, resetta a "percentuale desc" ad ogni mount.
+- Ordering of the donut's slices (stays as today).
+- Persistence of the ordering preference (localStorage or similar) across sessions — not requested, it resets to "percentuale desc" on every mount.

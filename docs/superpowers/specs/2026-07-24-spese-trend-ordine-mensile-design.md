@@ -1,36 +1,36 @@
-# Andamento ultimi 6 mesi: ricalcolo top/ordine mese per mese
+# Last 6 months trend: top/order recomputed month by month
 
-Data: 2026-07-24
+Date: 2026-07-24
 
-## Contesto
+## Context
 
-Segue `docs/superpowers/specs/2026-07-23-spese-trend-stacked-categorie-design.md` (stacked bar per categoria in Andamento 6 mesi), il cui codice è già stato implementato e revisionato (worktree `spese-trend-stacked-categorie`, commit `d71c89b`/`6627165`/fix successivi). Quella spec sceglieva esplicitamente un ranking calcolato **una sola volta sull'intero semestre**, così che ogni categoria occupasse sempre lo stesso segmento/colore/posizione tra un mese e l'altro.
+Follows `docs/superpowers/specs/2026-07-23-spese-trend-stacked-categorie-design.md` (stacked bar by category in the 6-month trend), whose code has already been implemented and reviewed (worktree `spese-trend-stacked-categorie`, commits `d71c89b`/`6627165`/later fixes). That spec explicitly chose a ranking computed **only once over the whole six months**, so that each category would always occupy the same segment/colour/position from one month to the next.
 
-Richiesta esplicita dell'utente in questa sessione: "ordina i valori sempre in maniera decrescente". Chiarito con domande mirate che si intende:
-- l'ordine di impilamento dentro ogni singola barra segue il valore di **quel mese specifico**, non il totale semestrale;
-- anche **quali categorie ottengono un segmento proprio** (non solo l'ordine) va ricalcolato mese per mese, non fissato una volta sul totale semestre;
-- il segmento con la spesa più alta del mese va in **fondo** alla barra (vicino all'asse);
-- **nessuna legenda fissa** sotto al grafico (l'identificazione avviene solo via tooltip, dato che composizione e ordine cambiano ogni mese).
+Explicit user request in this session: "ordina i valori sempre in maniera decrescente" ("always sort the values in descending order"). Clarified with targeted questions that this means:
+- the stacking order inside each single bar follows the value of **that specific month**, not the six-month total;
+- also **which categories get their own segment** (not only the order) must be recomputed month by month, not fixed once on the six-month total;
+- the segment with the month's highest spending goes at the **bottom** of the bar (next to the axis);
+- **no fixed legend** under the chart (identification happens only via the tooltip, since composition and order change every month).
 
-Questa spec **sostituisce** la sezione "Livello dati" e "Componente UI" della spec del 2026-07-23 (il resto — contesto generale, motivazione dello stacked bar, aggregazione "Altro" per leggibilità — resta valido).
+This spec **replaces** the "Data layer" and "UI component" sections of the 2026-07-23 spec (the rest — general context, motivation for the stacked bar, "Altro" (Other) aggregation for readability — stays valid).
 
-## Livello dati (`lib/calc/expenses.ts`)
+## Data layer (`lib/calc/expenses.ts`)
 
-Sostituisce `computeCategoryMonthlyTrend`/`MonthlyCategoryTotal`/`CategoryTrendSeries`/`CategoryMonthlyTrend` (introdotte il 2026-07-23) con una nuova funzione a semantica diversa. Nessun altro file oltre a `expense-trend-chart.tsx`/`page.tsx` consuma questi tipi: rimozione pulita, non serve deprecare.
+Replaces `computeCategoryMonthlyTrend`/`MonthlyCategoryTotal`/`CategoryTrendSeries`/`CategoryMonthlyTrend` (introduced on 2026-07-23) with a new function with different semantics. No file other than `expense-trend-chart.tsx`/`page.tsx` consumes these types: clean removal, no need to deprecate.
 
 ```ts
 export interface MonthlyStackSegment {
-  key: string;    // categoryId, o "altro"
-  name: string;   // nome categoria, o "Altro"
-  color: string;  // CategoryColor (palette condivisa), o sentinel "altro" gestito a parte nel componente
-  amount: number; // spesa effettiva positiva di quel mese
+  key: string;    // categoryId, or "altro"
+  name: string;   // category name, or "Altro"
+  color: string;  // CategoryColor (shared palette), or the "altro" sentinel handled separately in the component
+  amount: number; // positive actual spending for that month
 }
 
 export interface MonthlyCategoryStack {
   year: number;
   month: number;
   label: string;
-  segments: MonthlyStackSegment[]; // ordine decrescente per amount; index 0 = importo più alto = base della barra
+  segments: MonthlyStackSegment[]; // descending order by amount; index 0 = highest amount = base of the bar
 }
 
 export function computeCategoryMonthlyStacks(
@@ -41,51 +41,51 @@ export function computeCategoryMonthlyStacks(
 ): MonthlyCategoryStack[]
 ```
 
-Logica, per ciascuno dei 6 mesi calendariali **indipendentemente dagli altri** (stesso schema di iterazione di `compute6MonthTrend`/la funzione precedente: `i` da 5 a 0, `addMonths(referenceDate, -i)`, range pieno `startOfMonth`..`endOfMonth`):
+Logic, for each of the 6 calendar months **independently of the others** (same iteration scheme as `compute6MonthTrend`/the previous function: `i` from 5 to 0, `addMonths(referenceDate, -i)`, full range `startOfMonth`..`endOfMonth`):
 
-1. Calcola la spesa effettiva di quel mese per ciascuna categoria dell'utente (`computeSummary` filtrando per `categoryId`, stesso helper riusato).
-2. Scarta le categorie con spesa 0 quel mese.
-3. Ordina le rimanenti per importo discendente; le prime `topCount` diventano segmenti individuali.
-4. Se esistono categorie oltre le prime `topCount` (con spesa > 0 quel mese), somma la loro spesa in un segmento aggregato `{ key: "altro", name: "Altro", color: "altro", amount: somma }`. Se non ce ne sono, nessun segmento "Altro" quel mese.
-5. **Riordina insieme** i segmenti individuali + l'eventuale "Altro" per importo discendente (l'aggregato "Altro" non è fissato in coda: se quel mese la sua somma supera una o più categorie individuali, si posiziona di conseguenza più in alto in classifica). Questo è l'array finale `segments` del mese.
+1. Compute that month's actual spending for each of the user's categories (`computeSummary` filtering by `categoryId`, the same helper reused).
+2. Discard the categories with 0 spending that month.
+3. Sort the remaining ones by amount descending; the first `topCount` become individual segments.
+4. If there are categories beyond the first `topCount` (with spending > 0 that month), sum their spending into an aggregate segment `{ key: "altro", name: "Altro", color: "altro", amount: sum }`. If there are none, no "Altro" segment that month.
+5. **Re-sort together** the individual segments + the possible "Altro" by amount descending (the "Altro" aggregate is not pinned at the end: if that month its sum exceeds one or more individual categories, it is placed higher in the ranking accordingly). This is the month's final `segments` array.
 
-Non esiste più un ranking unico condiviso tra mesi: la stessa categoria può avere colore sempre coerente (`category.color` è una proprietà fissa della categoria) ma posizione nello stack diversa da un mese all'altro, e può comparire come segmento proprio in un mese e finire dentro "Altro" in un altro mese (o non comparire affatto se quel mese ha spesa 0).
+There is no longer a single ranking shared across months: the same category always has a consistent colour (`category.color` is a fixed property of the category) but may have a different position in the stack from one month to the next, and it may appear as its own segment in one month and end up inside "Altro" in another (or not appear at all if that month has 0 spending).
 
-`compute6MonthTrend` resta invariata (non toccata da questo cambiamento, come già garantito dalla spec precedente).
+`compute6MonthTrend` stays unchanged (not touched by this change, as already guaranteed by the previous spec).
 
-## Componente UI (`components/domain/expenses/expense-trend-chart.tsx`)
+## UI component (`components/domain/expenses/expense-trend-chart.tsx`)
 
-- Props: `monthlyStacks: MonthlyCategoryStack[]` (sostituisce `monthlyCategoryTrend: CategoryMonthlyTrend`), `currency: string` (invariato).
-- **Nessuna legenda** sotto al grafico (rimossa rispetto all'implementazione attuale): con composizione/ordine che cambiano ogni mese, una legenda fissa non avrebbe un mapping stabile posizione→categoria da mostrare.
-- Dati chart, per rendering "a slot posizionali" (necessario perché recharts determina l'ordine di stacking dall'ordine di dichiarazione dei componenti `<Bar>`, condiviso da **tutte** le barre del grafico — non esiste un modo nativo di avere un ordine diverso per ogni mese con un `<Bar>` per categoria):
-  - `maxSlots = Math.max(...months.map(m => m.segments.length))` (0 se nessun mese ha segmenti).
-  - Ogni riga dati mensile porta, oltre a `label`: `pos{i}Amount`, `pos{i}Name`, `pos{i}Color`, `pos{i}Key` per `i` da 0 a `maxSlots - 1` (assenti/`undefined` se quel mese ha meno segmenti di `maxSlots` — niente segmento renderizzato per quello slot quel mese), più il riferimento diretto `segments` (l'array originale di quel mese, per il tooltip custom sotto).
-  - Un `<Bar dataKey={`pos${i}Amount`} stackId="trend">` per ogni slot `i` da 0 a `maxSlots - 1` (slot 0 dichiarato per primo → base della barra, coerente con "il più alto in fondo"). Colore per singolo mese via `<Cell fill={...} />` per riga (stesso pattern già usato in `CategoryBreakdownDonut`): `SWATCH_CHART_COLOR[posColor as CategoryColor]` per categorie reali, `var(--muted-foreground)` per "altro", `"transparent"` se lo slot non esiste quel mese.
-- **Tooltip custom** (non il `formatter` di `ChartTooltipContent`, pensato per serie con nome fisso — qui il nome per slot cambia ogni mese): componente locale che riceve `active`/`payload`/`label` da recharts, legge `payload[0]?.payload.segments` (la riga dati completa del mese sotto hover) e renderizza una riga per ogni segmento reale — stesso stile visivo already in uso altrove nel file (nome mutato + importo in valuta, mono, nessun pallino colore), senza righe vuote per slot non usati quel mese.
-- `ChartContainer` riceve un `config: ChartConfig` minimale/vuoto (`{}`): colori e nomi sono interamente data-driven via `Cell`/tooltip custom, non serve più la mappa statica `chartConfig` costruita da `series`.
+- Props: `monthlyStacks: MonthlyCategoryStack[]` (replaces `monthlyCategoryTrend: CategoryMonthlyTrend`), `currency: string` (unchanged).
+- **No legend** under the chart (removed compared with the current implementation): with composition/order changing every month, a fixed legend would have no stable position→category mapping to show.
+- Chart data, for "positional slot" rendering (necessary because recharts determines the stacking order from the declaration order of the `<Bar>` components, shared by **all** the bars of the chart — there is no native way to have a different order for each month with one `<Bar>` per category):
+  - `maxSlots = Math.max(...months.map(m => m.segments.length))` (0 if no month has segments).
+  - Each monthly data row carries, besides `label`: `pos{i}Amount`, `pos{i}Name`, `pos{i}Color`, `pos{i}Key` for `i` from 0 to `maxSlots - 1` (absent/`undefined` if that month has fewer segments than `maxSlots` — no segment rendered for that slot that month), plus the direct reference `segments` (the original array for that month, for the custom tooltip below).
+  - One `<Bar dataKey={`pos${i}Amount`} stackId="trend">` for each slot `i` from 0 to `maxSlots - 1` (slot 0 declared first → base of the bar, consistent with "the highest at the bottom"). Per-month colour via `<Cell fill={...} />` per row (the same pattern already used in `CategoryBreakdownDonut`): `SWATCH_CHART_COLOR[posColor as CategoryColor]` for real categories, `var(--muted-foreground)` for "altro", `"transparent"` if the slot does not exist that month.
+- **Custom tooltip** (not the `formatter` of `ChartTooltipContent`, which is meant for series with a fixed name — here the name per slot changes every month): a local component that receives `active`/`payload`/`label` from recharts, reads `payload[0]?.payload.segments` (the full data row of the hovered month) and renders one row for each real segment — the same visual style already in use elsewhere in the file (muted name + amount in currency, mono, no colour dot), with no empty rows for slots not used that month.
+- `ChartContainer` receives a minimal/empty `config: ChartConfig` (`{}`): colours and names are entirely data-driven via `Cell`/custom tooltip, the static `chartConfig` map built from `series` is no longer needed.
 
-## Integrazione (`app/(app)/spese/page.tsx`)
+## Integration (`app/(app)/spese/page.tsx`)
 
-Sostituire `computeCategoryMonthlyTrend(filteredTransactions, safeCategories, referenceDate)` con `computeCategoryMonthlyStacks(filteredTransactions, safeCategories, referenceDate)`, passato come `monthlyStacks` a `ExpenseTrendChart`.
+Replace `computeCategoryMonthlyTrend(filteredTransactions, safeCategories, referenceDate)` with `computeCategoryMonthlyStacks(filteredTransactions, safeCategories, referenceDate)`, passed as `monthlyStacks` to `ExpenseTrendChart`.
 
-## Edge case
+## Edge cases
 
-- Nessuna spesa nel semestre (utente nuovo, o dopo un filtro categoria): tutti i mesi con `segments: []`, `maxSlots = 0`, nessun `<Bar>` renderizzato, barre vuote — stesso comportamento a vuoto già presente prima.
-- Filtro categoria attivo in pagina (`filterTransactions`, applicato a monte): le transazioni arrivano già ristrette a quella categoria, quindi ogni mese ha al massimo un segmento (quella categoria), mai "Altro" (non esistono altre categorie nelle transazioni filtrate).
-- Mese con meno categorie attive del massimo del semestre: barra visivamente più bassa quel mese (riflette la spesa reale minore), non segmenti vuoti/fantasma.
-- "Altro" che supera una categoria "top" quel mese: si posiziona più in basso nello stack di quella categoria (vedi punto 5 della logica dati) — comportamento intenzionale, non un bug.
+- No spending in the six months (new user, or after a category filter): all months with `segments: []`, `maxSlots = 0`, no `<Bar>` rendered, empty bars — the same empty behaviour already present before.
+- Category filter active on the page (`filterTransactions`, applied upstream): the transactions arrive already restricted to that category, so each month has at most one segment (that category), never "Altro" (no other categories exist in the filtered transactions).
+- Month with fewer active categories than the six-month maximum: a visually lower bar that month (it reflects the lower real spending), not empty/ghost segments.
+- "Altro" exceeding a "top" category that month: it is placed lower in the stack than that category (see point 5 of the data logic) — intentional behaviour, not a bug.
 
-## Test
+## Tests
 
-Sostituiscono i test di `computeCategoryMonthlyTrend` (2026-07-23) in `lib/calc/expenses.test.ts`, per `computeCategoryMonthlyStacks`:
-- ranking indipendente per mese: due mesi con categorie/importi diversi producono `segments` diversi (composizione e/o ordine), non un ranking fisso sul totale semestre;
-- "Altro" che supera una categoria top in un mese specifico si posiziona di conseguenza nell'array `segments` (non fissato in coda);
-- mese con meno categorie del `topCount`: `segments` più corto, nessuna chiave fantasma;
-- nessuna categoria/transazione: 6 mesi con `segments: []`;
-- nessuna regressione su `compute6MonthTrend` (invariata).
+They replace the `computeCategoryMonthlyTrend` tests (2026-07-23) in `lib/calc/expenses.test.ts`, for `computeCategoryMonthlyStacks`:
+- independent ranking per month: two months with different categories/amounts produce different `segments` (composition and/or order), not a fixed ranking on the six-month total;
+- "Altro" exceeding a top category in a specific month is placed accordingly in the `segments` array (not pinned at the end);
+- month with fewer categories than `topCount`: shorter `segments`, no ghost keys;
+- no categories/transactions: 6 months with `segments: []`;
+- no regression on `compute6MonthTrend` (unchanged).
 
-## Fuori scope (esplicitamente escluso)
+## Out of scope (explicitly excluded)
 
-- Animazione di transizione tra un ordine mensile e il successivo (recharts anima già i cambi di altezza/posizione di default tra render; nessuna richiesta di comportamento custom).
-- Indicazione visiva nel grafico di "questa categoria è cambiata posizione rispetto al mese scorso" — fuori scope, non richiesto.
-- Rimozione di `compute6MonthTrend` (resta per eventuali usi futuri del solo totale).
+- Transition animation between one month's order and the next (recharts already animates height/position changes between renders by default; no request for custom behaviour).
+- A visual indication in the chart that "this category changed position compared with last month" — out of scope, not requested.
+- Removal of `compute6MonthTrend` (it stays for possible future uses of the total alone).

@@ -1,4 +1,5 @@
 "use client";
+import { isPlanningAvailable } from "@/lib/localization/planning-availability";
 import type { InvestmentData } from "@/lib/investments/data";
 import { germanPortfolioReport, germanFundAdvance, type GermanPlan, type TaxIssue } from "@/lib/financial-planning";
 import { useLocalization } from "@/lib/localization/provider";
@@ -54,13 +55,13 @@ export function TaxEditor({ plan, onChange, data }: PlanEditorProps) {
       {funds.map(f => <Choice key={f.id} label={f.name} value={p.fundKinds[f.id] ?? "unknown"} options={FUND_OPTIONS} onChange={v => update({ fundKinds: { ...p.fundKinds, [f.id]: v as typeof plan.fund.kind } })} />)}
       {sales.map(s => <NumberField key={s.id} label={`${names.get(s.instrumentId)} · ${formatDate(s.date)} · ${t("Prior gross advances (€)")}`} value={p.priorAdvancesBySale[s.id] ?? 0} onChange={v => update({ priorAdvancesBySale: { ...p.priorAdvancesBySale, [s.id]: v } })} />)}
       <label className="flex gap-2 text-sm"><input type="checkbox" checked={p.fundHistoryConfirmed} onChange={e => update({ fundHistoryConfirmed: e.target.checked })} />{t("I checked prior advances and current-year advance income against broker records. The fund classification did not change during the holding period.")}</label>
-      <h3 className="font-medium">{t("2026 Vorabpauschale scenario")}</h3>
+      {isPlanningAvailable("DE", "simulations") && <><h3 className="font-medium">{t("2026 Vorabpauschale scenario")}</h3>
       <Choice label="Fund classification" value={plan.fund.kind} options={FUND_OPTIONS} onChange={v => onChange({ ...plan, fund: { ...plan.fund, kind: v as typeof plan.fund.kind } })} />
       <div className="grid gap-4 sm:grid-cols-2">{([['startValue', 'Value at start of year (€)'], ['endValue', 'Value at end of year (€)'], ['distributions', 'Annual distributions (€)'], ['acquisitionMonth', 'Acquisition month (1–12)']] as const).map(([key, label]) => <NumberField key={key} label={label} value={plan.fund[key]} min={key === 'acquisitionMonth' ? 1 : 0} max={key === 'acquisitionMonth' ? 12 : undefined} step={key === 'acquisitionMonth' ? 1 : 0.01} onChange={v => onChange({ ...plan, fund: { ...plan.fund, [key]: v } })} />)}</div>
       <Result label="Gross advance amount" value={advance.gross} /><Result label="After partial exemption" value={advance.taxable} />
-      <p className="text-sm text-muted-foreground">{t("Uses the official 2026 base rate of 3.20%. For one unchanged lot held through year-end; values use the same number of units. The advance is received in 2027. No 2027 tax estimate is shown until that year's rules are validated.")}</p>
+      <p className="text-sm text-muted-foreground">{t("Uses the official 2026 base rate of 3.20%. For one unchanged lot held through year-end; values use the same number of units. The advance is received in 2027. No 2027 tax estimate is shown until that year's rules are validated.")}</p></>}
     </Panel>
-    <SaleSimulator key={JSON.stringify(plan.tax)} plan={plan} onChange={onChange} data={data} />
-    <CryptoEditor plan={plan} onChange={onChange} />
+    {isPlanningAvailable("DE", "simulations") && <><SaleSimulator key={JSON.stringify(plan.tax)} plan={plan} onChange={onChange} data={data} />
+    <CryptoEditor plan={plan} onChange={onChange} /></>}
   </>;
 }

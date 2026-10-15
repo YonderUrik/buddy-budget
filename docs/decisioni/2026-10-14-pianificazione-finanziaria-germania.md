@@ -100,3 +100,12 @@ Verifica dell'estensione: 84 test mirati passati, build di produzione/TypeScript
 Assicurazione volontaria completata per pensioni periodiche e altri redditi dichiarati: basi 2026, aliquota generale per GRV/bAV e ridotta per rendite private, affitti e redditi di capitale; nessuna franchigia bAV; sussidio DRV facoltativo confermato. I capitali privati non periodici non vengono scambiati per reddito: il netto resta non disponibile e richiede la valutazione dell'assicuratore. Fonti: https://www.tk.de/techniker/versicherung/gut-versichert-in-jeder-lebenslage/freiwillige-krankenversicherung-tk/beitragshoehe-freiwillig-versicherte-rentner-2006966 e https://www.aok.de/pk/krankenkassenbeitraege/freiwillige-krankenversicherung-client-plus/ . Quattro ulteriori test sui minimi, massimi, basi miste, sussidio e blocco delle prestazioni non periodiche; totale mirato 88.
 
 Corretto anche il completamento della base minima volontaria: la differenza rispetto al reddito effettivo usa l’aliquota ridotta, anche quando il solo reddito è una piccola pensione GRV/bAV. Test di regressione incluso. I contributi sono stime annualizzate: gli arrotondamenti mensili dell’assicuratore possono produrre differenze di centesimi.
+
+## Cambio di direzione: disponibilità essenziale, 15 ottobre
+
+Su richiesta dell’utente, pensione/AVD, pensionamento e simulatori separati (vendita, crypto, Vorabpauschale e tariffa futura costante) sono sospesi fino alla sua revisione. Codice, test, schema, traduzioni e piani salvati restano conservati.
+La configurazione per paese `planning-availability.ts` controlla la visibilità; sidebar, menu mobile e proxy impediscono anche l’accesso diretto alle sezioni sospese.
+Restano liquidità, budget, debiti, investimenti, rendimenti, proventi e tasse parziali con limiti espliciti. La previsione dei proventi ignora le ipotesi future salvate mentre il relativo simulatore è spento, senza sovrascriverle.
+La riattivazione avverrà una funzione alla volta dopo review, non automaticamente con il merge. Il catalogo pubblico riflette questo perimetro.
+
+Verifica del perimetro ridotto: 88 test mirati, lint, TypeScript e build superati. Browser EN/DE desktop/mobile: navigazione e URL sospesi bloccati, tasse/proventi accessibili, dati nascosti conservati dopo il salvataggio tasse; nessun errore browser. Anteprima locale aggiornata, nessun merge.

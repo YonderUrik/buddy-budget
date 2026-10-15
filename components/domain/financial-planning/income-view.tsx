@@ -1,17 +1,21 @@
 "use client";
+import { isPlanningAvailable } from "@/lib/localization/planning-availability";
 import { germanIncomeForecast } from "@/lib/financial-planning";
 import { useLocalization } from "@/lib/localization/provider";
 import type { PlanEditorProps } from "./tax-editor";
 import { Panel, Result, Amount, Choice } from "./fields";
 /** Historical recorded income and gross/conditionally net German income forecasts. */
 export function GermanIncomeView({ plan, data, onChange }: PlanEditorProps) {
-  const { t, locale } = useLocalization(); const view = germanIncomeForecast(data, plan.tax, new Date().toISOString().slice(0, 10));
+  const { t, locale } = useLocalization();
+  const simulations = isPlanningAvailable("DE", "simulations");
+  const tax = simulations ? plan.tax : { ...plan.tax, futureForecast: "verified" as const };
+  const view = germanIncomeForecast(data, tax, new Date().toISOString().slice(0, 10));
   const names = new Map(data.instruments.map(i => [i.id, i.name]));
   return <>
     <Panel title="Recorded income">{view.history.length === 0 ? <p>{t("No recorded income yet.")}</p> : view.history.map(y => <div key={y.year}><h3>{y.year}</h3><Result label="Gross income" value={y.gross} /><Result label="Recorded withholding and fees" value={y.withheld} /><Result label="Recorded net income" value={y.net} /></div>)}</Panel>
     <Panel title="Income forecast · next 12 months">
-      <Choice label="Future-year net forecasts" value={plan.tax.futureForecast} options={[{ value: "verified", label: "Validated tax years only" }, { value: "constant-2026", label: "Compare using unchanged 2026 capital-tax rules" }]} onChange={v => onChange({ ...plan, tax: { ...plan.tax, futureForecast: v as typeof plan.tax.futureForecast } })} />
-      {plan.tax.futureForecast === "constant-2026" && <p className="text-sm text-muted-foreground">{t("Future net amounts are scenarios using unchanged 2026 rules, not validated future tax assessments. Each January the allowance resets and projected losses carry forward. No external income, foreign tax credits or new fund advances are assumed for the future year.")}</p>}
+      {simulations && <Choice label="Future-year net forecasts" value={plan.tax.futureForecast} options={[{ value: "verified", label: "Validated tax years only" }, { value: "constant-2026", label: "Compare using unchanged 2026 capital-tax rules" }]} onChange={v => onChange({ ...plan, tax: { ...plan.tax, futureForecast: v as typeof plan.tax.futureForecast } })} />}
+      {simulations && plan.tax.futureForecast === "constant-2026" && <p className="text-sm text-muted-foreground">{t("Future net amounts are scenarios using unchanged 2026 rules, not validated future tax assessments. Each January the allowance resets and projected losses carry forward. No external income, foreign tax credits or new fund advances are assumed for the future year.")}</p>}
       <p className="text-sm text-muted-foreground">{t("Gross forecasts repeat historical dividends for current holdings or use recorded bond terms. Payments and exchange rates can change. Missing history is not a forecast of zero income.")}</p>
       <Result label="Forecast gross income" value={view.totalGross} />
       <p className="text-sm text-muted-foreground">{t("Net forecasts use the Tax section's annual allowances and losses. They are unavailable for unvalidated tax years or incomplete tax history. Foreign withholding and treaty credits are not estimated.")}</p>

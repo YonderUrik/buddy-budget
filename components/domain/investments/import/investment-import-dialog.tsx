@@ -7,6 +7,8 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import * as React from "react";
+import Link from "next/link";
+import { enqueueBrokerFallback } from "./ai-fallback";
 import { useState } from "react";
 import { orderStatementFiles, type PreparedStatementFile } from "@/lib/investments/import/batch";
 import { detectImportProvider } from "@/lib/investments/import/providers";
@@ -39,9 +41,9 @@ export interface InvestmentImportDialogProps {
   currency: string;
 }
 
-function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi" }: { currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
+function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "Chiudi", aiFallbackEnabled, onAiFallbackChange }: { aiFallbackEnabled: boolean; onAiFallbackChange: (enabled: boolean) => void; currency: string; onClose: () => void; onFiles?: (files: File[]) => Promise<void>; initialFile?: PreparedStatementFile; finishLabel?: string }) {
   const { t: tr } = useLocalization();
-  const s = useInvestmentImport(initialFile);
+  const s = useInvestmentImport(initialFile, aiFallbackEnabled);
   const [direction, setDirection] = React.useState<StepDirection>(1);
   const forward = (action: () => void) => () => {
     setDirection(1);
@@ -69,6 +71,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
       <ImportDestinationField portfolios={s.portfolios} value={s.portfolioId} onChange={s.setPortfolioId} />
     ) : undefined;
 
+  if (s.fallbackJobId) return <div className="space-y-4"><p role="status">{tr("La lettura standard non è riuscita. L'analisi AI è stata avviata automaticamente; il supporto riceverà il report dell'errore.")}</p><Link href={`/importazioni?job=${s.fallbackJobId}`} onClick={onClose} className="text-primary underline">{tr("Segui l'analisi")}</Link><Button onClick={onClose}>{tr(finishLabel)}</Button></div>;
   return (
     <div className="flex min-h-0 flex-col gap-5">
       {!s.done ? <ImportStepper current={s.step} /> : null}
@@ -77,7 +80,7 @@ function ImportWizard({ currency, onClose, onFiles, initialFile, finishLabel = "
         <StepStage stepKey={s.step} direction={direction}>
         {error ? <ImportNotice ref={errorRef} tone="error" title={error.text} hint={tr(error.hint)} detail={error.text === s.error ? undefined : s.error ?? undefined} action={<ReportErrorLink area="import_investimenti" error={s.error ?? error.text} />} className="mb-5" /> : null}
         {s.step === "file" ? (
-          <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} />
+          <ImportFileStep provider={s.provider} onProviderChange={s.selectProvider} onLoad={s.loadText} onFiles={onFiles} reading={s.reading} aiFallbackEnabled={aiFallbackEnabled} onAiFallbackChange={onAiFallbackChange} />
         ) : null}
         {s.step === "mapping" && s.statement ? (
           <ImportStatementStep
@@ -168,15 +171,28 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
   const { t: tr } = useLocalization();
   const [files, setFiles] = useState<PreparedStatementFile[]>([]);
   const [index, setIndex] = useState(0);
+  const [aiFallbackEnabled, setAiFallbackEnabled] = useState(false);
+  const [fallbackJobs, setFallbackJobs] = useState<{ name: string; id: string }[]>([]);
   const parse = useParseStatementMutation();
   async function loadFiles(selected: File[]) {
     const prepared: PreparedStatementFile[] = [];
     for (const file of selected) {
       const text = await file.text();
       const provider = detectImportProvider(text);
-      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") throw new Error(tr("{0}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.", { 0: file.name }));
+      if (provider !== "interactive-brokers" && provider !== "degiro" && provider !== "trade-republic") {
+        if (aiFallbackEnabled && !provider) {
+          const id = await enqueueBrokerFallback(text);
+          setFallbackJobs(current => [...current.filter(job => job.id !== id), { name: file.name, id }]);
+          continue;
+        }
+        throw new Error(tr("{0}: l'import multiplo supporta rendiconti IBKR, DEGIRO e Trade Republic. Importa gli altri CSV singolarmente.", { 0: file.name }));
+      }
       try { prepared.push({ name: file.name, text, parsed: await parse.mutateAsync(text) }); }
-      catch (e) { throw new Error(`${file.name}: ${e instanceof Error ? e.message : tr("File non valido")}`); }
+      catch (e) {
+        if (!aiFallbackEnabled) throw new Error(`${file.name}: ${e instanceof Error ? e.message : tr("File non valido")}`);
+        const id = await enqueueBrokerFallback(text);
+        setFallbackJobs(current => [...current.filter(job => job.id !== id), { name: file.name, id }]);
+      }
     }
     const ordered = orderStatementFiles(prepared);
     for (const file of ordered) track("investments_import_file_read", { provider: file.parsed.preset, chosen: false });
@@ -184,8 +200,9 @@ function ImportSession({ currency, onClose }: { currency: string; onClose: () =>
   }
   if (files.length && index === files.length) return <div className="space-y-4"><p role="status">{tr("Tutti i")}{" "}{files.length}{" "}{tr("file sono stati elaborati. I file già importati sono stati saltati senza creare doppioni.")}</p><Button onClick={onClose}>{tr("Chiudi")}</Button></div>;
   return <>
+    {fallbackJobs.map(job => <p key={job.id} role="status" className="text-sm">{job.name}: {tr("Analisi AI avviata")} · <Link className="text-primary underline" href={`/importazioni?job=${job.id}`}>{tr("Segui l'analisi")}</Link></p>)}
     {files.length ? <ImportBatchProgress files={files} index={index} /> : null}
-    <ImportWizard key={files.length ? index : "single"} currency={currency} initialFile={files[index]} onFiles={loadFiles} onClose={files.length ? () => setIndex((i) => i + 1) : onClose} finishLabel={files.length ? "File successivo" : "Chiudi"} />
+    <ImportWizard key={files.length ? index : "single"} currency={currency} aiFallbackEnabled={aiFallbackEnabled} onAiFallbackChange={setAiFallbackEnabled} initialFile={files[index]} onFiles={loadFiles} onClose={files.length ? () => setIndex((i) => i + 1) : onClose} finishLabel={files.length ? "File successivo" : "Chiudi"} />
   </>;
 }
 

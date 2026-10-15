@@ -13,6 +13,7 @@ import { extractMerchantName } from "@/lib/categorization/merchant-name";
 import { digest, seal, unseal } from "./crypto";
 import { ImportError, validateOutcomes, type Outcome, type PersonalParser } from "./contract";
 import { RAW_PARSER_VERSION } from "./jobs";
+import { brokerStatements } from "@/lib/db/schema/broker-statements";
 export type PreviewRecord = { key: string; source: string[]; line?: number; outcome: Outcome; rate: number | null };
 /** `parser`: solo lato server, per le analisi con righe da controllare il cui parser non è ancora salvato (vedi `confirmImport`). */
 export type Preview = { headers: string[]; currency: string; records: PreviewRecord[]; parser?: PersonalParser };
@@ -42,6 +43,7 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     const [job] = await tx.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId))).for("update");
     if (!job) throw new ImportError("Importazione non disponibile");
     if (job.status === "imported") return { inserted: 0, alreadyImported: true };
+    if (job.brokerProvider && job.failureReport?.reason === "broker_validation_failed") throw new ImportError("L'AI ha analizzato il file, ma il controllo originale del broker richiede una riconciliazione. Il supporto riceverà il report; nessun movimento è stato aggiunto.");
     const allowed = options.skipErrors ? ["ready", "review_failed"] : ["ready"];
     if (!allowed.includes(job.status) || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
     const stored: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
@@ -58,6 +60,12 @@ export async function confirmImport(userId: string, id: string, options: Confirm
     // Le righe saltate non lasciano ricevuta: corrette e ricaricate, o lette da un formato rianalizzato, tornano nuove.
     const fresh = preview.records.filter(r => !prior.has(r.key) && !skippedKeys.has(r.key));
     const financial = fresh.filter(r => r.outcome.kind === "cash" || r.outcome.kind === "investment");
+    if (job.brokerProvider && financial.length) {
+      const [native] = await tx.select({ id: brokerStatements.id }).from(brokerStatements).where(and(eq(brokerStatements.userId, userId), job.brokerProvider === "generic" ? undefined : sql`coalesce(${brokerStatements.statement}->>'provider', 'interactive-brokers') = ${job.brokerProvider}`)).limit(1);
+      const dates = financial.flatMap(r => r.outcome.kind === "cash" || r.outcome.kind === "investment" ? [r.outcome.date] : []).sort();
+      const [untracked] = await tx.select({ id: investmentTransactions.id }).from(investmentTransactions).where(and(eq(investmentTransactions.userId, userId), sql`${investmentTransactions.date} between ${dates[0]} and ${dates.at(-1)}`, sql`${investmentTransactions.portfolioId} not in (select portfolio_id from personal_formats where user_id = ${userId} and portfolio_id is not null)`)).limit(1);
+      if (native || untracked) throw new ImportError("Analisi AI completata. Lo storico contiene importazioni precedenti da riconciliare: il supporto riceverà il report. Nessun movimento è stato aggiunto.");
+    }
     if (financial.some(r => !r.rate || !Number.isFinite(r.rate) || r.rate <= 0)) throw new ImportError("Cambio storico non disponibile: ricarica il CSV più tardi");
     let portfolioId = format.portfolioId, accountId = format.accountId;
     if (financial.length && !accountId) {

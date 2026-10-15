@@ -25,7 +25,7 @@ export const GET = withRoute("personal_import.preview", async (request: NextRequ
 // `reanalyze` rimanda il file all'AI (consenso richiesto di nuovo, come al caricamento).
 const actionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("import_skipping_errors") }),
-  z.object({ action: z.literal("reanalyze"), consent: z.literal(true), consentVersion: z.literal("openrouter-raw-zdr-v2") }),
+  z.object({ action: z.literal("reanalyze"), consent: z.literal(true), consentVersion: z.literal("openrouter-raw-zdr-v3") }),
 ]);
 export const POST = withRoute("personal_import.confirm", async (request: NextRequest) => {
   const session = await auth.api.getSession({ headers: request.headers });

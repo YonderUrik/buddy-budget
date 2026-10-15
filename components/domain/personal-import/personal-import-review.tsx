@@ -41,7 +41,7 @@ type Job = PersonalImportListing["jobs"][number];
 
 /** Righe mostrate per motivo prima di «Mostra tutte». */
 const ROWS_PER_REASON = 5;
-const CONSENT_VERSION = "openrouter-raw-zdr-v2";
+const CONSENT_VERSION = "openrouter-raw-zdr-v3";
 const BUTTON_CLASS = "h-11 sm:h-9";
 
 export interface PersonalImportReviewProps {

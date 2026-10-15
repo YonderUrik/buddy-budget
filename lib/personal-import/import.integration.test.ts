@@ -12,20 +12,26 @@ import { deletePersonalImport, previewPersonalImportDeletion } from "./delete";
 import { confirmImport } from "./confirm";
 import { processOne, maintainJobs } from "./worker";
 import { generateParser } from "./generate";
+import { seal } from "./crypto";
+import { importFormatProfiles } from "@/lib/db/schema/import-format-profiles";
+import { saveFormatMetadata } from "@/lib/imports/store";
+import { notifyImportSupport } from "./support-report";
+import type { FormatMetadata } from "@/lib/imports";
 import { exportPersonalImports } from "./export";
 const send = vi.hoisted(() => vi.fn().mockResolvedValue({ data: { id: "synthetic" }, error: null }));
 vi.mock("resend", () => ({ Resend: class { emails = { send }; } }));
 vi.mock("./generate", async importOriginal => ({ ...await importOriginal<typeof import("./generate")>(), generateParser: vi.fn() }));
 const code = `function(t){return t.rows.map((line,row)=>{const r=line[0].split(',');return r[0]==='Date'?{row,kind:'ignore',reason:'Header'}:r[1]==='ERROR'?{row,kind:'error',reason:'Unknown operation'}:r[1]==='NOTE'?{row,kind:'ignore',reason:'Metadata'}:r[1]==='CASH'?{row,kind:'cash',date:r[0],amount:Number(r[2]),description:r[3],currency:'EUR',transfer:false}:{row,kind:'investment',date:r[0],currency:'EUR',description:r[3],type:r[1]==='BUY'?'acquisto':'vendita',name:r[3],isin:null,instrumentType:'azione',quantity:Number(r[2]),price:100,grossAmount:null,fees:0,taxes:0}})}`;
 const csv = 'Date,Type,Value,Description\n2024-01-01,CASH,1000,Deposit\n2024-01-02,BUY,1,Example shares\n2024-01-03,CASH,-5,Shop';
+const metadata: FormatMetadata = { version: 1, institution: { name: "Synthetic Bank", evidence: "document" }, delimiter: ",", columns: [{ section: null, index: 0, name: "Date", mapsTo: ["date"] }, { section: null, index: 2, name: "Value", mapsTo: ["amount", "quantity"] }] };
 let userId: string; const users: string[] = [];
 beforeEach(async () => {
   vi.stubEnv("PERSONAL_CSV_ENCRYPTION_KEY", Buffer.alloc(32, 7).toString("base64"));
   vi.stubEnv("RESEND_API_KEY", "synthetic"); vi.stubEnv("RESEND_FROM", "test@example.test"); vi.stubEnv("APP_URL", "http://localhost:3000");
   userId = randomUUID(); users.push(userId);
   await db.insert(authUser).values({ id: userId, name: 'Synthetic personal CSV', email: `${userId}@example.test`, currency: "EUR" });
-  await db.update(jobs).set({ status: "expired", notifiedAt: new Date() }).where(inArray(jobs.userId, users.filter(u => u !== userId)));
-  vi.mocked(generateParser).mockReset().mockResolvedValue({ parser: { kind: "javascript", code }, model: "synthetic/model" }); send.mockClear();
+  await db.update(jobs).set({ status: "expired", notifiedAt: new Date(), supportNotifiedAt: new Date() }).where(inArray(jobs.userId, users.filter(u => u !== userId)));
+  vi.mocked(generateParser).mockReset().mockResolvedValue({ parser: { kind: "javascript", code, metadata }, model: "synthetic/model" }); send.mockClear();
 });
 afterAll(async () => {
   await db.delete(formats).where(inArray(formats.userId, users));
@@ -39,6 +45,75 @@ async function prepare(text = csv, formatId?: string) { const job = await enqueu
 const readJob = async (id: string) => (await db.select().from(jobs).where(eq(jobs.id, id)))[0];
 const cash = () => db.select().from(transactions).where(eq(transactions.userId, userId));
 describe("personal CSV durable flow", () => {
+  it("rejects AI decimal scaling errors before creating movements or saving the parser", async () => {
+    const directMetadata: FormatMetadata = { ...metadata, columns: [{ section: null, index: 2, name: "Amount", mapsTo: ["amount"] }] };
+    vi.mocked(generateParser).mockResolvedValue({ parser: { kind: "javascript", code: code.replace("amount:Number(r[2])", "amount:Number(r[2])*100"), metadata: directMetadata }, model: "synthetic/scaling-error" });
+    const id = await prepare(csv.replace("Date,Type,Value,Description", "Date,Type,Amount,Description"));
+    expect((await readJob(id)).status).toBe("queued");
+    expect(await cash()).toHaveLength(0);
+    expect(await db.select().from(parsers).where(eq(parsers.formatId, (await readJob(id)).formatId))).toHaveLength(0);
+  });
+  it("persists institution and fields independently of deleted raw payloads and groups layouts per owner", async () => {
+    const id = await prepare();
+    await confirmImport(userId, id);
+    const [profile] = await db.select().from(importFormatProfiles).where(eq(importFormatProfiles.userId, userId));
+    const data = JSON.parse(profile.metadata);
+    expect(data.institution).toEqual(metadata.institution);
+    expect(data.columns).toEqual(metadata.columns);
+    expect(data.parsedFields).toEqual(expect.arrayContaining(["date", "amount", "quantity"]));
+    expect(profile.metadata).not.toMatch(/Deposit|Example shares|Shop/);
+    await saveFormatMetadata(userId, "ai", metadata, [
+      {date:"2024-01-01",currency:"EUR",description:"private",amount:1000,transfer:false},
+      {date:"2024-01-01",currency:"EUR",description:"private",type:"acquisto",name:"private",isin:null,instrumentType:"azione",quantity:1,price:100,grossAmount:null,fees:0,taxes:0}
+    ]);
+    const profiles = await db.select().from(importFormatProfiles).where(eq(importFormatProfiles.userId, userId));
+    expect(profiles).toHaveLength(1); expect(profiles[0].observations).toBe(2);
+    expect((await readJob(id)).encryptedPreview).toBeNull();
+  });
+  it("automatically replaces a broken saved parser and reports success to support without duplicate writes", async () => {
+    const first = await prepare(); await confirmImport(userId, first);
+    const old = await readJob(first);
+    await db.update(parsers).set({ encryptedParser: seal(JSON.stringify({kind:"javascript",code:"function(){throw Error('private text')}"}), userId) }).where(eq(parsers.id, old.parserId!));
+    const second = await prepare(csv, old.formatId);
+    const job = await readJob(second);
+    expect(job.status).toBe("ready"); expect(job.parserId).not.toBe(old.parserId);
+    expect(job.failureReport).toMatchObject({ fallback:true, reason:"invalid_saved_parser" });
+    await maintainJobs(); await maintainJobs();
+    expect((await readJob(second)).status).toBe("imported"); expect(await cash()).toHaveLength(3);
+    expect(generateParser).toHaveBeenCalledTimes(2);
+    const reports = send.mock.calls.filter(call => call[0].subject.startsWith("Importazione: report"));
+    expect(reports).toHaveLength(1); expect(reports[0][0].to).toBe("support@buddybudget.io");
+    expect(reports[0][0].text).not.toContain("private text");
+    await maintainJobs(); expect(send.mock.calls.filter(call => call[0].subject.startsWith("Importazione: report"))).toHaveLength(1);
+  });
+  it("does not send a reused file to AI under the previous consent wording", async () => {
+    const first = await prepare(); const original = await readJob(first);
+    await db.update(parsers).set({encryptedParser:seal(JSON.stringify({kind:"javascript",code:"function(){throw Error('broken')}"}),userId)}).where(eq(parsers.id,original.parserId!));
+    const next = await enqueue(userId,{csv,name:"Legacy",formatId:original.formatId});
+    await db.update(jobs).set({consentVersion:"openrouter-raw-zdr-v2"}).where(eq(jobs.id,next.id));
+    await processOne();
+    expect(generateParser).toHaveBeenCalledTimes(1);
+    expect((await readJob(next.id)).status).toBe("failed");
+    expect((await readJob(next.id)).error).toContain("autorizzare");
+  });
+  it("retries support delivery independently without running AI again", async () => {
+    const id = await prepare(csv + "\n2024-01-04,ERROR,1,Unknown");
+    send.mockResolvedValueOnce({error:{message:"unavailable"}});
+    await notifyImportSupport(); expect((await readJob(id)).supportNotifiedAt).toBeNull();
+    await db.update(jobs).set({supportNotifyAfter:new Date(0)}).where(eq(jobs.id,id));
+    await notifyImportSupport(); expect((await readJob(id)).supportNotifiedAt).not.toBeNull();
+    expect(generateParser).toHaveBeenCalledTimes(1);
+  });
+  it("deduplicates broker fallback requests and preserves the original failure report", async () => {
+    const one = await enqueue(userId, {csv, name:"ignored", brokerFallback:true});
+    const two = await enqueue(userId, {csv, name:"ignored", brokerFallback:true});
+    expect(two.id).toBe(one.id);
+    await processOne(); await maintainJobs(); await maintainJobs();
+    expect((await readJob(one.id)).failureReport).toMatchObject({reason:"broker_parse_failed",fallback:true});
+    expect((await readJob(one.id)).status).toBe("imported");
+    expect(generateParser).toHaveBeenCalledTimes(1);
+  });
+
   it("creates an encrypted private job, previews without writes and atomically imports cash and investments once", async () => {
     const id = await prepare();
     expect((await readJob(id)).status).toBe("ready"); expect((await readJob(id)).encryptedCsv).toBeNull();
@@ -149,6 +224,8 @@ describe("personal CSV durable flow", () => {
     expect((await readJob(id)).status).toBe("failed"); expect((await readJob(id)).attempts).toBe(3); expect((await readJob(id)).encryptedCsv).toBeNull(); expect((await readJob(id)).error).not.toContain("private");
     // Isolate this notification from jobs created by earlier cases.
     await db.update(jobs).set({ notifiedAt: new Date() }).where(inArray(jobs.userId, users.filter(u => u !== userId)));
+    send.mockImplementationOnce(async (message) => message.to === `${userId}@example.test` ? { error: { message: "unavailable" } } : { error: null });
+    await notifyImportSupport();
     send.mockResolvedValueOnce({ error: { message: "unavailable" } }); await maintainJobs(); expect((await readJob(id)).notifiedAt).toBeNull();
     await db.update(jobs).set({ notifyAfter: new Date(0) }).where(eq(jobs.id, id)); await maintainJobs(); expect((await readJob(id)).notifiedAt).not.toBeNull(); expect(generateParser).toHaveBeenCalledTimes(3);
   });

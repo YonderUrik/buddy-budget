@@ -10,6 +10,8 @@ import { HomeIcon } from "../home-icon";
 const LOGO_CLASS: Record<string, string> = { "Interactive Brokers": "ib", "Trade Republic": "tr", Fineco: "fin", "Yahoo Finance": "yh" };
 /** Marchi mostrati accanto all'apertura: quelli con un lettore pronto nell'app, senza Yahoo (che è una fonte di prezzi, non un broker). */
 const HERO_BROKERS = ["Interactive Brokers", "DEGIRO", "Trade Republic", "Fineco"];
+/** Lato (px) con cui si dichiarano i loghi dei chip, scaricati a 128: lo stile li ridimensiona. */
+const LOGO_PX = 128;
 /** Id del primo passo, dove porta «Scorri le domande». */
 const FIRST_STEP_ANCHOR = "#storia-soldi";
 
@@ -41,11 +43,18 @@ export function CountryFlags({ size = 26 }: { size?: number }) {
   );
 }
 
-/** Chip di uno strumento (azione, ETF, BTP, cripto, fondo, mutuo) con la sua icona in un riquadro del suo colore. */
+/** Chip di uno strumento (azione, ETF, BTP, cripto, fondo, mutuo): il suo logo, o l'icona nel riquadro del suo colore. */
 export function Chip({ chip }: { chip: InstrumentChip }) {
   return (
     <span className={`ichip ichip-${chip.color}`}>
-      <i><HomeIcon name={chip.icon} size={14} /></i>
+      {chip.logo ? (
+        <i className="lg">
+          {/* eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini */}
+          <img src={chip.logo} alt="" width={LOGO_PX} height={LOGO_PX} loading="lazy" decoding="async" />
+        </i>
+      ) : (
+        <i><HomeIcon name={chip.icon} size={14} /></i>
+      )}
       {chip.name}
       {chip.kind ? <small>{chip.kind}</small> : null}
     </span>

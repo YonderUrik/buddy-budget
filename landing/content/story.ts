@@ -23,19 +23,23 @@ export const GROUPS: readonly { id: SpendGroup; label: string }[] = [
   { id: "saltuaria", label: "Saltuarie" },
 ];
 
-/** Strumento d'esempio nei chip «funziona con»: icona, nome, tipo e colore del riquadro (token dell'app, vedi `story.css`). */
+/**
+ * Strumento d'esempio nei chip «funziona con»: nome, tipo e riquadro. Se ha un `logo` (file in `public/`, scaricato
+ * con `scripts/fetch-market-logos.mjs`) il riquadro mostra quello; altrimenti l'`icona` nel colore dell'app (vedi `story.css`).
+ */
 export interface InstrumentChip {
   icon: HomeIcon;
   name: string;
   kind?: string;
   color: "sal" | "primary" | "ink" | "vol" | "fut" | "neg" | "mut";
+  logo?: string;
 }
 
 export const INSTRUMENTS: readonly InstrumentChip[] = [
-  { icon: "candles", name: "Enel", kind: "azione", color: "sal" },
-  { icon: "layers", name: "VWCE", kind: "ETF", color: "primary" },
-  { icon: "landmark-gov", name: "BTP 2030", kind: "12,5%", color: "ink" },
-  { icon: "bitcoin", name: "Bitcoin", color: "vol" },
+  { icon: "candles", name: "Enel", kind: "azione", color: "sal", logo: "/logos/market/enel.webp" },
+  { icon: "layers", name: "VWCE", kind: "ETF", color: "primary", logo: "/logos/market/vanguard.webp" },
+  { icon: "landmark-gov", name: "BTP 2030", kind: "12,5%", color: "ink", logo: "/logos/market/mef.webp" },
+  { icon: "bitcoin", name: "Bitcoin", color: "vol", logo: "/logos/market/bitcoin.webp" },
   { icon: "umbrella", name: "Fondo pensione", color: "fut" },
   { icon: "house", name: "Mutuo", color: "neg" },
 ];

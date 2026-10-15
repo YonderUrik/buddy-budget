@@ -6,3 +6,7 @@ Copia dei loghi in `public/import-providers/` dell'app, usati nella landing solo
 - **Trade Republic** — unmodified SVG by **Secbot at Trade Republic**, from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Trade_Republic_Bank_Logo.svg), licensed under [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/). This SVG remains available under that license.
 
 The Fineco (FinecoBank) logo was supplied by the project owner (PNG, resized); the trademark remains FinecoBank's, used only to indicate the file source. The existing Interactive Brokers symbol was supplied by the project owner. The existing Yahoo Finance wordmark is from SVG Logos (CC0 collection).
+
+## `market/`: loghi degli strumenti d'esempio
+
+Enel (`enel.com`), Vanguard (`vanguard.com`, per l'ETF VWCE), Ministero dell'Economia e delle Finanze (`mef.gov.it`, per il BTP) e Bitcoin (`crypto/btc`) scaricati da [Logo.dev](https://logo.dev) il 2026-10-15 con `scripts/fetch-market-logos.mjs` (WebP 128 px, non modificati), così il browser di chi visita non contatta Logo.dev. «Loghi forniti da Logo.dev» è citato nel piè di pagina. I marchi restano dei rispettivi titolari e sono usati solo per indicare gli strumenti d'esempio; nessuna approvazione è implicita.

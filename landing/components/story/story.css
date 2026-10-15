@@ -51,6 +51,9 @@
 .ichip { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 10px 0 4px; border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-sm); font-size: 13px; color: var(--ink); white-space: nowrap; }
 .ichip i { width: 22px; height: 22px; border-radius: calc(var(--r-sm) - 3px); display: inline-grid; place-items: center; color: var(--chip, var(--ink)); background: color-mix(in srgb, var(--chip, var(--ink)) 14%, transparent); }
 .ichip i svg { width: 13px; height: 13px; }
+/* con il logo vero il riquadro è una targhetta chiara (i marchi sono pensati per il chiaro, anche nel tema scuro) */
+.ichip i.lg { background: var(--logo-bg); box-shadow: 0 0 0 1px var(--line); overflow: hidden; }
+.ichip i.lg img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .ichip small { color: var(--ink3); font-size: 12px; }
 .ichip-sal { --chip: var(--a-sal); }
 .ichip-primary { --chip: var(--primary); }

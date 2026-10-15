@@ -64,3 +64,34 @@ Aggiunto come tipo distinto nella sezione Pensione, non come portafoglio liberam
 Indicazione nuovi contratti dal 2027 verificata nelle informazioni ufficiali BMAS/BMF; il prodotto è presentato come scenario prospettico, non conto già disponibile nel 2026. Fonte: https://www.bmas.bund.de/DE/Soziales/Rente-und-Altersvorsorge/Private-Altersvorsorge/Steuerlich-gefoerderte-private-Altersvorsorge/steuerlich-gefoerderte-private-altersvorsorge.html e https://www.bundesfinanzministerium.de/Content/DE/FAQ/reform-der-privaten-altersvorsorge.html . Catalogo landing sincronizzato; screenshot italiani invariati perché l'opzione compare soltanto nella schermata tedesca. 49 test mirati superati, TypeScript ed ESLint riusciti.
 
 Verifica AVD completata: build riuscita; browser su profilo DE/de a 390 px conferma salvataggio/lettura del tipo `avd`, avviso 2027, assenza dell'opzione di liquidazione integrale, nessun overflow o errore browser. Corretta anche l'etichetta accessibile dei selettori del modulo (label separata dalle opzioni). Piano demo originale ripristinato e lingua riportata a inglese.
+
+## Estensione del 15 ottobre: agevolazioni AVD e netto pensionistico
+
+Supera le limitazioni della prima versione AVD descritte sopra. Nessun merge autorizzato in questa fase.
+
+- AVD: regole approvate dal 2027, minimo e massimo di contribuzione, prima/seconda fascia della Grundzulage, Kinderzulage con durata residua per figlio, bonus iniziale una sola volta, diritto diretto/indiretto esplicito. Un unico scenario aggregato per persona evita di duplicare le agevolazioni tra contratti. Contributi mensili e zulagen a fine anno; il credito fiscale resta fuori dal capitale.
+- Confronto della deduzione AVD: calcola il beneficio incrementale al netto delle zulagen, con **tariffa 2026 costante esplicitamente dichiarata**. Non è una dichiarazione 2027 né una verifica completa delle deduzioni con coniuge indirettamente beneficiario.
+- AVD: scelta tra rendita dichiarata dal provider e ammortamento a durata definita almeno fino a 85 anni; capitale iniziale parziale fino al 30%; il reddito termina alla fine del piano. Importi del provider devono già tener conto del capitale parziale scelto.
+- Netto pensionistico: modalità separata dalle precedenti ipotesi manuali. Quota imponibile GRV/Rürup per coorte, Freibetrag fisso o derivato per pensione costante; Ertragsanteil delle rendite private; trattamento integralmente finanziato o imponibile da certificazione per altri contratti. Blocca il netto se manca la classificazione, incluso AVD con contributi misti dichiarato erroneamente interamente agevolato.
+- KVdR: metà KV/Zusatzbeitrag sulla GRV, piena Pflege, franchigia KV bAV aggregata e soglia Pflege distinta, tetto contributivo condiviso, capitale bAV ripartito per 120 mesi. PKV: premio netto effettivo e quota deducibile espliciti. L'assicurazione volontaria e i regimi bAV speciali restano da modellare; non vengono assimilati automaticamente alla KVdR.
+- Imposta pensionistica progressiva aggregata, splitting scelto in Tasse, Pauschbetrag pensioni una sola volta, Soli con soglia e fascia di attenuazione, Kirchensteuer stimata prima del proprio Sonderausgabenabzug. Base separata per Kinderfreibeträge sui supplementi. Il modello copre una persona assicurata; altri redditi del nucleo sono input separati.
+- Proventi futuri: scelta fra anni verificati e confronto a regole 2026 costanti. La seconda modalità rinnova il Freibetrag annuale, riporta le perdite e non assume redditi esterni o crediti esteri futuri. Non confonde queste proiezioni con le imposte effettive 2027.
+- Retrocompatibilità: nuovi campi JSON con default, modalità precedenti conservate; nessuna migration DB aggiuntiva. Motori specifici in `countries/de-avd.ts` e `countries/de-pension.ts`, indipendenti dalla lingua.
+
+### Fonti verificate il 15 ottobre 2026
+
+- Riforma approvata (non usare i valori della proposta dicembre 2025): https://www.bundesregierung.de/breg-de/aktuelles/reform-private-altersvorsorge-2400072
+- BMF, dettagli AVD: https://www.bundesfinanzministerium.de/Content/DE/FAQ/reform-der-privaten-altersvorsorge
+- EStG §22 (coorti, Ertragsanteil e prestazioni agevolate): https://www.gesetze-im-internet.de/estg/__22.html
+- EStG §32a: https://www.gesetze-im-internet.de/estg/__32a.html
+- SolZG §§3–4: https://www.gesetze-im-internet.de/solzg_1995/BJNR097500993.html
+- SGB V §§226 e 229 (franchigia, soglia, capitale): https://www.gesetze-im-internet.de/sgb_5/__226.html e https://www.gesetze-im-internet.de/sgb_5/__229.html
+- DRV, ripartizione KV: https://www.deutsche-rentenversicherung.de/DRV/DE/Rente/In-der-Rente/Kranken-und-Pflegeversicherung-der-Rentner/kranken-und-pflegeversicherung-der-rentner_node.html
+- Valori sociali 2026: https://www.bmas.bund.de/DE/Service/Gesetze-und-Gesetzesvorhaben/sozialversicherungs-rechengroessenverordnung-2026.html
+- Riforma redditi 2027 descritta come progetto: https://www.bundesfinanzministerium.de/Content/DE/Pressemitteilungen/Finanzpolitik/2026/09/2026-09-02-einkommensteuerreform.html . Non trattata come aliquote definitive.
+
+### Restano esplicitamente fuori dalla copertura automatica
+
+Assicurazione sanitaria volontaria; verifica completa dell'ammissibilità alle agevolazioni; contratti bAV ex §19 e particolarità storiche; tassazione completa dei contributi misti senza certificazione; agevolazioni personali diverse dagli input; rendimento futuro effettivo; aliquote future non definitive; casistiche sugli investimenti elencate sopra. Questi limiti sono di copertura finanziaria, non traduzioni mancanti. La PR resta in bozza fino alla revisione dei nuovi flussi.
+
+Verifica dell'estensione: 84 test mirati passati, build di produzione/TypeScript/lint passati. Suite completa: 2.302 passati, solo l'errore locale preesistente del logger sul percorso `/Users/mario`. Browser reale: modifica, salvataggio e rilettura AVD; impostazioni netto e proventi futuri persistenti; DE/en desktop e DE/de mobile su Pensione, Analitiche, Proventi senza errori o overflow. Piano demo originale ripristinato. Screenshot PR aggiornati, aggiunto netto pensionistico. Le date/età AVD devono concordare; inizio ordinario erogazione limitato a 65–70 anni, senza dedurre automaticamente deroghe di pensionamento anticipato.

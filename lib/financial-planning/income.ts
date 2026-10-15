@@ -12,6 +12,9 @@ export function germanIncomeForecast(data: InvestmentData, profile: TaxProfile, 
     dividends: data.dividends, fx: buildFxTable(data.fxRates), userCurrency: data.currency, todayKey: today });
   const report = germanPortfolioReport(data, profile, today);
   let general = report.generalIncome;
+  let shareGains = report.shareGains;
+  let activeProfile = profile, activeYear = profile.year as number;
+  let lastEstimate = report.estimate;
   let previousTax = report.estimate?.total ?? 0;
   let canEstimate = report.estimate !== null;
   const instruments = new Map(data.instruments.map(i => [i.id, i]));
@@ -20,15 +23,21 @@ export function germanIncomeForecast(data: InvestmentData, profile: TaxProfile, 
     const fund = instrument?.type === "etf" || instrument?.type === "fondo";
     const fraction = fund ? fundTaxableShare(profile.fundKinds[e.instrumentId] ?? "unknown") : 1;
     const eligible = instrument && ["azione", "obbligazione", "etf", "fondo"].includes(instrument.type);
-    if (fraction === null || !eligible || Number(e.date.slice(0, 4)) !== profile.year) canEstimate = false;
+    const year = Number(e.date.slice(0, 4));
+    if (year > activeYear && profile.futureForecast === "constant-2026" && lastEstimate) {
+      activeProfile = { ...profile, allowanceUsedElsewhere: 0, otherCapitalIncome: 0, verifiedForeignCredit: 0, shareLosses: lastEstimate.remainingShareLosses, generalLosses: lastEstimate.remainingGeneralLosses };
+      general = 0; shareGains = 0; previousTax = 0; activeYear = year;
+    }
+    if (fraction === null || !eligible || (year !== profile.year && profile.futureForecast !== "constant-2026")) canEstimate = false;
     let net: number | null = null;
     if (canEstimate && fraction !== null) {
       general += e.gross * fraction;
-      const tax = germanCapitalTax(profile, report.shareGains, general).total;
+      lastEstimate = germanCapitalTax(activeProfile, shareGains, general);
+      const tax = lastEstimate.total;
       net = e.gross - Math.max(0, tax - previousTax);
       previousTax = tax;
     }
-    return { ...e, net };
+    return { ...e, net, benchmark: year !== profile.year && profile.futureForecast === "constant-2026" };
   });
   return { events, totalGross: raw.totalGross, bondsWithoutTerms: raw.bondsWithoutTerms,
     history: incomeByMonth(data.transactions, today), issues: report.issues };

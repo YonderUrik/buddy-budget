@@ -149,5 +149,10 @@ describe("German income forecasting", () => {
     const view = germanIncomeForecast(d, plan().tax, "2026-10-14");
     expect(view.events.find(e => e.date === "2026-12-01")?.net).toBe(1736.25);
     expect(view.events.find(e => e.date === "2027-03-01")?.net).toBeNull();
+    const scenario = germanIncomeForecast(d, { ...plan().tax, futureForecast: "constant-2026" }, "2026-10-14");
+    const future = scenario.events.find(e => e.date === "2027-03-01");
+    expect(future?.benchmark).toBe(true);
+    expect(future?.net).toBe(1736.25); // New annual allowance, not the exhausted 2026 allowance.
+    expect(germanIncomeForecast(d, { ...plan().tax, historyConfirmed: false, futureForecast: "constant-2026" }, "2026-10-14").events.every(e => e.net === null)).toBe(true);
   });
 });

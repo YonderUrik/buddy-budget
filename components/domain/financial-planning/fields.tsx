@@ -7,7 +7,7 @@ export interface NumberFieldProps { label: string; value: number; onChange: (val
 /** Labelled numeric input for explicit financial assumptions. */
 export function NumberField({ label, value, onChange, min = 0, max, step = 0.01 }: NumberFieldProps) {
   const id = useId(); const { t } = useLocalization();
-  return <label htmlFor={id} className="flex flex-col gap-1 text-sm"><span>{t(label)}</span><Input id={id} type="number" min={min} max={max} step={step} value={value} onChange={e => onChange(Math.max(min, Math.min(max ?? 1e12, Number(e.target.value) || 0)))} /></label>;
+  return <label htmlFor={id} className="flex flex-col gap-1 text-sm"><span>{t(label)}</span><Input id={id} type="number" min={min} max={max} step={step} value={Number(value.toFixed(8))} onChange={e => onChange(Math.max(min, Math.min(max ?? 1e12, Number(e.target.value) || 0)))} /></label>;
 }
 export interface ChoiceProps { label: string; value: string; options: readonly { value: string; label: string }[]; onChange: (value: string) => void }
 /** Native select with translated labels and stable stored identifiers. */

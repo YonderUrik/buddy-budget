@@ -3956,5 +3956,17 @@
   "Annual child allowances for surcharge calculation (€)": "Jährliche Kinderfreibeträge für die Zuschlagsberechnung (€)",
   "Assessment and church-tax settings come from Taxes. Church tax is estimated before its special-expense deduction. Child allowances entered here affect surcharge calculations only. Pension income is taxed together, with one expense allowance and one occupational health exemption.": "Veranlagung und Kirchensteuer stammen aus Steuern. Die Kirchensteuer wird vor ihrem Sonderausgabenabzug geschätzt. Hier erfasste Kinderfreibeträge beeinflussen nur die Zuschlagsberechnung. Renteneinkünfte werden gemeinsam besteuert, mit einem Werbungskosten-Pauschbetrag und einem Krankenversicherungsfreibetrag für Betriebsrenten.",
   "Annual nominal pensions and other income assumptions remain constant. Future legislation and insurance changes are not predicted.": "Jährliche nominale Renten und sonstige Einkommensannahmen bleiben konstant. Künftige Gesetzes- und Versicherungsänderungen werden nicht vorhergesagt.",
-  "Enable the AVD calculation below to include grants, tax comparisons and fixed-term payouts from 2027.": "Aktiviere unten die AVD-Berechnung, um Zulagen, Steuervergleiche und befristete Auszahlungen ab 2027 einzubeziehen."
+  "Enable the AVD calculation below to include grants, tax comparisons and fixed-term payouts from 2027.": "Aktiviere unten die AVD-Berechnung, um Zulagen, Steuervergleiche und befristete Auszahlungen ab 2027 einzubeziehen.",
+  "Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.": "Ein Link per E-Mail, kein Passwort. Beim ersten Mal wird das Konto automatisch angelegt.",
+  "Il link vale {0} minuti e si usa una volta sola.": "Der Link gilt {0} Minuten und funktioniert nur einmal.",
+  "Mandami il link": "Schick mir den Link",
+  "Sicurezza": "Sicherheit",
+  "Codice aperto": "Offener Code",
+  "Aiuto": "Hilfe",
+  "Link al sito": "Links zur Website",
+  "3 conti": "3 Konten",
+  "3 posizioni": "3 Positionen",
+  "3 debiti": "3 Schulden",
+  "6 di 6 · con i dati di una persona inventata": "6 von 6 · mit den Daten einer erfundenen Person",
+  "E in tutto, quanto ho?": "Und insgesamt, wie viel habe ich?"
 }

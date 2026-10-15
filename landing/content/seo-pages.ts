@@ -6,8 +6,10 @@
 export const CONTENT_DRAFT = false;
 
 export const CONTENT_PATHS = {
+  strumenti: "/strumenti",
   zainetto: "/strumenti/zainetto-fiscale",
   ammortamento: "/strumenti/piano-ammortamento",
+  obiettivo: "/strumenti/obiettivo-di-risparmio",
   guidaZainetto: "/guide/zainetto-fiscale",
   funzioneInvestimenti: "/funzioni/investimenti",
   funzioni: "/funzioni",

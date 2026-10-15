@@ -3956,5 +3956,17 @@
   "Annual child allowances for surcharge calculation (€)": "Annual child allowances for surcharge calculation (€)",
   "Assessment and church-tax settings come from Taxes. Church tax is estimated before its special-expense deduction. Child allowances entered here affect surcharge calculations only. Pension income is taxed together, with one expense allowance and one occupational health exemption.": "Assessment and church-tax settings come from Taxes. Church tax is estimated before its special-expense deduction. Child allowances entered here affect surcharge calculations only. Pension income is taxed together, with one expense allowance and one occupational health exemption.",
   "Annual nominal pensions and other income assumptions remain constant. Future legislation and insurance changes are not predicted.": "Annual nominal pensions and other income assumptions remain constant. Future legislation and insurance changes are not predicted.",
-  "Enable the AVD calculation below to include grants, tax comparisons and fixed-term payouts from 2027.": "Enable the AVD calculation below to include grants, tax comparisons and fixed-term payouts from 2027."
+  "Enable the AVD calculation below to include grants, tax comparisons and fixed-term payouts from 2027.": "Enable the AVD calculation below to include grants, tax comparisons and fixed-term payouts from 2027.",
+  "Un link via email, nessuna password. Se è la prima volta, l'account si crea da solo.": "A link by email, no password. If it's your first time, the account is created for you.",
+  "Il link vale {0} minuti e si usa una volta sola.": "The link is valid for {0} minutes and works once.",
+  "Mandami il link": "Send me the link",
+  "Sicurezza": "Security",
+  "Codice aperto": "Open source",
+  "Aiuto": "Help",
+  "Link al sito": "Website links",
+  "3 conti": "3 accounts",
+  "3 posizioni": "3 holdings",
+  "3 debiti": "3 debts",
+  "6 di 6 · con i dati di una persona inventata": "6 of 6 · with the data of a made-up person",
+  "E in tutto, quanto ho?": "And all together, how much do I have?"
 }

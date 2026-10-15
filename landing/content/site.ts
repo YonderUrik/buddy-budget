@@ -26,19 +26,18 @@ export interface FaqItem {
   answer: string;
 }
 
-/** Domande frequenti: stesso testo nella sezione visibile e nei dati strutturati FAQPage (Google vuole che coincidano). */
+/** Domande frequenti: poche e corte, lo stesso testo nella sezione visibile e nei dati strutturati FAQPage (Google vuole che coincidano). */
 export const FAQ: readonly FaqItem[] = [
-  { question: "BuddyBudget è gratuito?", answer: "Sì, al momento l'uso è gratuito. Se in futuro cambierà, lo comunicheremo in anticipo e potrai esportare tutti i tuoi dati in ZIP." },
-  { question: "Come si collega la banca?", answer: "Con l'Open Banking (PSD2), tramite un fornitore regolato. Autorizzi l'accesso presso la tua banca in sola lettura: BuddyBudget vede saldi e movimenti, non può muovere denaro e non conosce le tue credenziali. Il consenso dura al massimo 90 giorni e ti avvisiamo prima che scada." },
-  { question: "Calcola le tasse italiane sugli investimenti?", answer: "Sì. Dalle tue operazioni ricava plusvalenze, zaino fiscale a quattro anni, imposta di bollo e l'imposta che pagheresti vendendo oggi. Sono stime pensate per decidere, non sostituiscono il rendiconto del tuo intermediario né un consulente." },
-  { question: "Quali investimenti posso tracciare?", answer: "ETF, azioni, BTP e titoli di Stato, fondi e crypto. Vedi il rendimento vero, il confronto con un indice a parità di versamenti, rischio e diversificazione, più i proventi (dividendi e cedole)." },
-  { question: "Come funziona la parte sul fondo pensione?", answer: "Il tuo fondo ti mostra spesso solo contributi netti e controvalore. Inserisci questi due numeri ogni tanto. Oppure importa lo storico da un file CSV o Excel. BuddyBudget calcola versamenti e rendimento. Stima quanto ti resterebbe se prelevi oggi, al netto delle tasse. Inoltre confronta il fondo con il TFR in azienda. Le regole fiscali sono stime." },
-  { question: "Posso simulare l'estinzione anticipata di un finanziamento o di un mutuo?", answer: "Sì. Inserisci i dettagli del debito e guarda il piano di ammortamento. Vedi anche il TAEG e gli interessi risparmiati. Puoi vedere la penale se riduci la rata o la durata, oppure se fai la surroga." },
-  { question: "Cos'è la sezione Analitiche?", answer: "Una sezione per chi ama i numeri, aperta a chiunque voglia entrarci. Mostra l'anno in cui puoi smettere di lavorare e ti lascia provare «e se…» con quattro cursori (risparmio, spesa, rendimento, prelievo) senza salvare nulla. Risparmio, spesa e rendimento partono dai tuoi movimenti e investimenti degli ultimi 12 o 24 mesi, o dei mesi che scegli; se mancano dati li scrivi tu. Sotto, quattro risposte in parole semplici: quanta strada hai fatto, quando puoi smettere di lavorare, se il patrimonio reggerà e quanto ti costa il portafoglio. Sotto ogni risposta, nella sezione «Per esperti», trovi il numero FIRE dopo le imposte. Trovi anche migliaia di scenari di mercato. Inoltre, vedi un confronto tra regole di prelievo, rischio e costi. Ogni risultato parte da ipotesi che scegli tu, con una guida alla prima visita. Sono stime, non previsioni né consulenza." },
-  { question: "Dove sono i miei dati e posso portarli via?", answer: (FIELD_ENCRYPTION_LIVE ? "App e database girano su un server in Germania, le connessioni sono cifrate e descrizioni e note dei movimenti sono cifrate anche nel database." : "App e database girano su un server in Germania e le connessioni sono cifrate.") + " Non vendiamo i dati e non facciamo pubblicità. Scarichi tutto in un file ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
-  { question: "In che lingua e in che valuta funziona?", answer: "Per ora in italiano e in euro. L'app è pensata per più lingue e valute, che arriveranno più avanti." },
-  { question: "Funziona su telefono?", answer: "Sì. BuddyBudget si usa dal browser su computer e telefono e si installa come app (PWA) sulla schermata Home, senza passare dagli store." },
+  { question: "È gratis?", answer: "Sì, durante la beta. Se cambierà lo diremo in anticipo e potrai esportare tutto in un file ZIP." },
+  { question: "Serve collegare la banca?", answer: "No: puoi aggiungere i conti a mano o importare un CSV. Il collegamento, in sola lettura con l'Open Banking (PSD2), serve solo a non scrivere i movimenti." },
+  { question: "Le tasse sono quelle vere?", answer: "Sono stime con le regole italiane (zainetto a quattro anni, 26% o 12,5% per i titoli di Stato, bollo), pensate per decidere. Il conteggio definitivo è del tuo intermediario o del commercialista." },
+  { question: "Cosa non fa?", answer: "Non dà consigli su cosa comprare o vendere, non sposta denaro e non fa ordini al broker. I prezzi sono chiusure di fine giornata, non in tempo reale. Per ora in italiano e in euro." },
+  { question: "Dove stanno i miei dati e posso portarli via?", answer: (FIELD_ENCRYPTION_LIVE ? "Su un server in Germania, con le connessioni cifrate e descrizioni e note dei movimenti cifrate anche nel database." : "Su un server in Germania, con le connessioni cifrate.") + " Non vendiamo i dati e non c'è pubblicità. Scarichi tutto in ZIP, azzeri i dati o elimini l'account dalle impostazioni, quando vuoi." },
+  { question: "Funziona sul telefono?", answer: "Sì, dal browser, e si installa sulla schermata Home come app (PWA). Non è negli store." },
 ];
+
+/** Indirizzo del supporto: risponde una persona. */
+export const SUPPORT_EMAIL = "support@buddybudget.io";
 
 /** Destinazioni dei pulsanti verso l'app. */
 /** Link verso l'app, con UTM per distinguere in Umami gli arrivi dalla landing. */

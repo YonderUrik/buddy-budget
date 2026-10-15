@@ -151,7 +151,7 @@ export interface ProductEvents {
   /** Clic su una richiesta privacy (apre la bozza di email al titolare); `type`: quale diritto. */
   privacy_request_started: { type: "rettifica" | "limitazione" | "opposizione" | "accesso" };
   /** Clic dal logo o dal link "Torna al sito" delle pagine di accesso verso la landing; `from`: quale dei due. */
-  landing_link_clicked: { from: "logo" | "back_link" };
+  landing_link_clicked: { from: "logo" | "back_link" | "security" | "source" | "help" };
   /** Pagina di Analitiche aperta (sostituisce le sei schede, dal 2026-10-04). */
   analytics_page_viewed: undefined;
   /** Scheda di risposta scelta (sostituisce l'indice delle domande); `view`: quale. */

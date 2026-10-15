@@ -1,13 +1,19 @@
 "use client";
 import { useLocalization } from "@/lib/localization/provider";
 
-/** Layout di Analitiche: intestazione, guida iniziale e caricamento dei dati; il corpo (cursori e risposte) è la pagina. */
+/**
+ * Layout di Analitiche: due viste, Risposte (cursori e risposte, con guida iniziale e i dati delle Analitiche) e
+ * Obiettivi (che chiedono i propri dati al server). Il dettaglio di un obiettivo ha solo il ritorno alla lista.
+ */
 
 import * as React from "react";
-import { HelpCircle } from "lucide-react";
-import { WalkthroughDialog } from "@/components/domain/analytics";
-import { LoadError } from "@/components/domain/shared";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { HelpCircle, Plus } from "lucide-react";
+import { ANALYTICS_TABS, GOALS_BASE_PATH, WalkthroughDialog } from "@/components/domain/analytics";
+import { LoadError, SectionHeading, SectionTabs } from "@/components/domain/shared";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { track } from "@/lib/analytics";
 import { AnalyticsProvider, useAnalytics } from "@/lib/analitiche/analytics-context";
 import { GOAL_PARAM } from "@/lib/start";
@@ -15,18 +21,50 @@ import { GOAL_PARAM } from "@/lib/start";
 const DISCLAIMER =
   "Stime a scopo informativo basate su ipotesi tue, non previsioni né consulenza finanziaria o fiscale. Le regole fiscali sono semplificate: verificale prima di decisioni importanti.";
 
-function Header({ onGuide }: { onGuide?: () => void }) {
+/** Indirizzo che apre il form «Nuovo obiettivo» nella vista Obiettivi. */
+const NEW_GOAL_HREF = `${GOALS_BASE_PATH}?nuovo=1`;
+
+function Header({ action }: { action?: React.ReactNode }) {
   const { t: tr } = useLocalization();
+  const pathname = usePathname();
+  const goals = pathname.startsWith(GOALS_BASE_PATH);
   return (
-    <div className="flex items-start justify-between gap-3">
-      <div>
-        <h1 className="font-heading text-2xl font-medium text-foreground">{tr("Analitiche")}</h1>
-        <p className="text-sm text-muted-foreground">{tr("Muovi le ipotesi e guarda cosa cambia. I numeri tecnici sono in «Per esperti».")}</p>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <SectionHeading
+          title={tr("Analitiche")}
+          subtitle={goals ? tr("Per cosa metti da parte, quando ci arrivi e cosa cambia per il traguardo.") : tr("Muovi le ipotesi e guarda cosa cambia. I numeri tecnici sono in «Per esperti».")}
+          subtitleClassName="text-sm text-muted-foreground"
+          tabs={ANALYTICS_TABS}
+          activeHref={pathname}
+          analyticsKey="analitiche"
+        />
+        {action}
       </div>
-      {onGuide ? (
-        <Button variant="outline" size="sm" onClick={onGuide}>
-          <HelpCircle className="size-4" aria-hidden="true" />{tr("Guida")}</Button>
-      ) : null}
+      <SectionTabs tabs={ANALYTICS_TABS} activeHref={pathname} ariaLabel={tr("Viste di Analitiche")} />
+    </div>
+  );
+}
+
+/** Vista Obiettivi: testata con «Nuovo obiettivo»; il dettaglio di un obiettivo ha la sua testata. */
+function GoalsShell({ children }: { children: React.ReactNode }) {
+  const { t: tr } = useLocalization();
+  const pathname = usePathname();
+  const detail = pathname.length > GOALS_BASE_PATH.length + 1;
+  return (
+    <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
+      {detail ? null : (
+        <Header
+          action={
+            <Link href={NEW_GOAL_HREF} scroll={false} className={cn(buttonVariants(), "h-11 shrink-0 sm:h-9")}>
+              <Plus className="size-4" aria-hidden="true" />
+              <span className="max-sm:sr-only">{tr("Nuovo obiettivo")}</span>
+            </Link>
+          }
+        />
+      )}
+      {children}
+      <p className="text-xs text-muted-foreground">{tr(DISCLAIMER)}</p>
     </div>
   );
 }
@@ -73,14 +111,22 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-5 p-4 sm:gap-6 sm:p-6">
-      <div className="flex flex-col gap-3">
-        <Header
-          onGuide={() => {
-            track("analytics_guide_reopened");
-            setGuideOpen(true);
-          }}
-        />
-      </div>
+      <Header
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              track("analytics_guide_reopened");
+              setGuideOpen(true);
+            }}
+          >
+            <HelpCircle className="size-4" aria-hidden="true" />
+            {tr("Guida")}
+          </Button>
+        }
+      />
       {ctx.isLoading ? (
         <div className="flex flex-col gap-4" aria-busy="true">
           <div className="h-40 animate-pulse rounded-xl bg-muted" />
@@ -100,6 +146,9 @@ function AnalyticsShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function AnalitricheLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  // Gli Obiettivi chiedono i propri dati (il piano è calcolato sul server): niente richieste delle Risposte.
+  if (pathname.startsWith(GOALS_BASE_PATH)) return <GoalsShell>{children}</GoalsShell>;
   return (
     <AnalyticsProvider>
       <AnalyticsShell>{children}</AnalyticsShell>

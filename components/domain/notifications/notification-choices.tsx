@@ -8,7 +8,7 @@ import { useLocalization } from "@/lib/localization/provider";
  */
 
 import { AnimatePresence, motion } from "motion/react";
-import { CalendarClock, CalendarRange, PieChart, type LucideIcon } from "lucide-react";
+import { CalendarClock, CalendarRange, PieChart, Target, type LucideIcon } from "lucide-react";
 import { SegmentedControl } from "@/components/domain/shared";
 import { Switch } from "@/components/ui/switch";
 import { NOTIFICATION_KIND_INFO, type NotificationKind, type NotificationPreferences } from "@/lib/notifications";
@@ -16,7 +16,7 @@ import { SPRING_BOUNCY, SPRING_SOFT } from "@/lib/motion/springs";
 import { cn } from "@/lib/utils";
 import { DIGEST_FREQUENCY_OPTIONS, NOTIFICATION_CHOICE_KINDS, PREFERENCE_FIELD_BY_KIND } from "./notification-choices.data";
 
-const ICON_BY_KIND: Record<NotificationKind, LucideIcon> = { digest: CalendarRange, budget: PieChart, deadlines: CalendarClock };
+const ICON_BY_KIND: Record<NotificationKind, LucideIcon> = { digest: CalendarRange, budget: PieChart, deadlines: CalendarClock, goals: Target };
 /** Ritardo tra l'ingresso di una riga e la successiva, in secondi. */
 const ROW_STAGGER_S = 0.06;
 

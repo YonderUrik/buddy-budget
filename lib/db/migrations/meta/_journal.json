@@ -260,6 +260,13 @@
       "when": 1791972887483,
       "tag": "0037_category_default_identity",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1792086977481,
+      "tag": "0038_goals",
+      "breakpoints": true
     }
   ]
 }

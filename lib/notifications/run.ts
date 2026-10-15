@@ -8,6 +8,10 @@ import { notificationPreferences } from "@/lib/db/schema/notifications";
 import { transactions, type Transaction } from "@/lib/db/schema/transactions";
 import { loadUserDebts } from "@/lib/debts/data";
 import { loadInvestmentData } from "@/lib/investments/data";
+import { goals as goalsTable } from "@/lib/db/schema/goals";
+import { loadGoalsView } from "@/lib/goals/data";
+import type { GoalsView } from "@/lib/goals/view";
+import { isCountryPathAvailable } from "@/lib/localization/config";
 import { buildDebtsView, type DebtDueItem } from "@/lib/debts/view";
 import { formatCurrency } from "@/lib/format";
 import { getAppUrl } from "@/lib/env";
@@ -17,7 +21,8 @@ import { RUN_TIME_BUDGET_MS, type NotificationKind, type NotificationPreferences
 import { romeDate } from "./dates";
 import { buildDigest, digestPeriod, digestRange, digestWindowStartIso, isDigestDay, isDigestEmpty } from "./digest";
 import { buildInvestmentDigest, type InvestmentDigest } from "./investments-digest";
-import { budgetAlertEmail, deadlineAlertEmail, digestEmail, NOTIFICATION_SETTINGS_PATH, type BuiltEmail, type EmailContext } from "./emails";
+import { budgetAlertEmail, deadlineAlertEmail, digestEmail, goalsEmail, NOTIFICATION_SETTINGS_PATH, type BuiltEmail, type EmailContext } from "./emails";
+import { buildGoalsDigest, findGoalNotice, type GoalsDigest } from "./goals";
 import { sendNotificationEmail } from "./send";
 import { claimKeys, isAlertCapped, loadSentKeys, purgeNotificationLog, releaseKeys } from "./store";
 import { createUnsubscribeToken, unsubscribePageUrl } from "./token";
@@ -36,6 +41,8 @@ export interface NotificationUser {
   email: string;
   currency: string;
   hideAmounts: boolean;
+  /** Paese del prodotto: gli obiettivi (in Analitiche) ci sono solo dove le Analitiche sono disponibili. */
+  productCountry?: string;
   preferences: NotificationPreferences;
 }
 
@@ -50,6 +57,8 @@ export interface NotificationDeps {
   loadInvestments(userId: string, range: { from: string; to: string }, now: Date): Promise<InvestmentDigest | null>;
   /** Movimenti ancora «Da categorizzare»; assente = non se ne parla nel riepilogo. */
   countToDecide?(userId: string): Promise<number>;
+  /** Vista degli obiettivi (stesso calcolo della pagina); null senza obiettivi. Assente = non se ne parla. */
+  loadGoals?(userId: string, now: Date): Promise<GoalsView | null>;
   loadSentKeys(userId: string, kind: NotificationKind, now: Date): Promise<Set<string>>;
   isAlertCapped(userId: string, now: Date): Promise<boolean>;
   claimKeys(userId: string, kind: NotificationKind, keys: string[], sentAt: Date): Promise<string[]>;
@@ -75,13 +84,18 @@ export interface NotificationsResult {
 export const databaseDeps: NotificationDeps = {
   async listUsers() {
     const rows = await db
-      .select({ id: authUser.id, email: authUser.email, currency: authUser.currency, hideAmounts: authUser.hideAmounts, prefs: notificationPreferences })
+      .select({ id: authUser.id, email: authUser.email, currency: authUser.currency, hideAmounts: authUser.hideAmounts, productCountry: authUser.productCountry, prefs: notificationPreferences })
       .from(notificationPreferences)
       .innerJoin(authUser, eq(authUser.id, notificationPreferences.userId))
       .where(
         and(
           isNull(authUser.deletionScheduledAt),
-          or(eq(notificationPreferences.digestEnabled, true), eq(notificationPreferences.budgetAlertsEnabled, true), eq(notificationPreferences.deadlineAlertsEnabled, true)),
+          or(
+            eq(notificationPreferences.digestEnabled, true),
+            eq(notificationPreferences.budgetAlertsEnabled, true),
+            eq(notificationPreferences.deadlineAlertsEnabled, true),
+            eq(notificationPreferences.goalAlertsEnabled, true),
+          ),
         ),
       )
       .orderBy(asc(authUser.id));
@@ -90,11 +104,13 @@ export const databaseDeps: NotificationDeps = {
       email: r.email,
       currency: r.currency,
       hideAmounts: r.hideAmounts,
+      productCountry: r.productCountry,
       preferences: {
         digestEnabled: r.prefs.digestEnabled,
         digestFrequency: r.prefs.digestFrequency === "settimanale" ? ("settimanale" as const) : ("mensile" as const),
         budgetAlertsEnabled: r.prefs.budgetAlertsEnabled,
         deadlineAlertsEnabled: r.prefs.deadlineAlertsEnabled,
+        goalAlertsEnabled: r.prefs.goalAlertsEnabled,
       },
     }));
   },
@@ -114,6 +130,11 @@ export const databaseDeps: NotificationDeps = {
       .from(transactions)
       .where(and(eq(transactions.userId, userId), inArray(transactions.categoryId, fallbackIds)));
     return row?.count ?? 0;
+  },
+  async loadGoals(userId, now) {
+    // Prima una lettura leggera: il calcolo completo (lo stesso delle Analitiche) solo per chi ha obiettivi.
+    const [any] = await db.select({ id: goalsTable.id }).from(goalsTable).where(eq(goalsTable.userId, userId)).limit(1);
+    return any ? loadGoalsView(userId, now) : null;
   },
   loadSentKeys,
   isAlertCapped,
@@ -209,8 +230,39 @@ export async function runNotifications(options: {
     }
   }
 
+  /** Gli obiettivi sono un di più come gli investimenti: se il calcolo fallisce le altre email partono lo stesso. */
+  let goalsCache: { userId: string; view: GoalsView | null; failed: boolean } | null = null;
+  async function loadUserGoals(user: NotificationUser): Promise<GoalsView | null> {
+    if (!deps.loadGoals || !isCountryPathAvailable(user.productCountry ?? "IT", "/analitiche/obiettivi")) return null;
+    if (goalsCache?.userId === user.id) return goalsCache.view;
+    let view: GoalsView | null = null;
+    let failed = false;
+    try {
+      view = await deps.loadGoals(user.id, now);
+    } catch (error) {
+      failed = true;
+      log.warn("notifications.goals.failed", { user: hashUserId(user.id), error });
+    }
+    goalsCache = { userId: user.id, view, failed };
+    return view;
+  }
+
+  async function digestGoals(user: NotificationUser): Promise<GoalsDigest | null> {
+    const view = await loadUserGoals(user);
+    const goals = view ? buildGoalsDigest(view) : null;
+    recordNotificationDigestSection("goals", goals ? "included" : goalsCache?.failed ? "failed" : "absent");
+    return goals;
+  }
+
   async function processUser(user: NotificationUser): Promise<void> {
     const { preferences } = user;
+    if (preferences.goalAlertsEnabled) {
+      const view = await loadUserGoals(user);
+      if (view) {
+        const notice = findGoalNotice({ view, alreadySent: await deps.loadSentKeys(user.id, "goals", now), now });
+        if (notice.keys.length > 0) await deliver(user, "goals", (ctx) => goalsEmail(notice, ctx), notice.keys);
+      }
+    }
     if (preferences.deadlineAlertsEnabled) {
       const alerts = findDeadlineAlerts({ due: await deps.loadDue(user.id, now), alreadySent: await deps.loadSentKeys(user.id, "deadlines", now), now });
       if (alerts.length > 0) {
@@ -254,6 +306,7 @@ export async function runNotifications(options: {
           now,
           investments: await loadDigestInvestments(user, digestRange(preferences.digestFrequency, now)),
           toDecide: (await deps.countToDecide?.(user.id)) ?? 0,
+          goals: await digestGoals(user),
         });
         if (isDigestEmpty(data)) {
           result.empty += 1;

@@ -6,6 +6,7 @@ import { Story } from "@/components/story/story";
 import { Closing } from "@/components/tail/closing";
 import { FaqHome } from "@/components/tail/faq-home";
 import { RulesHome } from "@/components/tail/rules-home";
+import { ScreensHome } from "@/components/tail/screens-home";
 import { SecurityHome } from "@/components/tail/security-home";
 import { ToolsHome } from "@/components/tail/tools-home";
 import { WorksWith } from "@/components/tail/works-with";
@@ -21,7 +22,7 @@ const FAQ_JSON_LD = {
 
 /**
  * Home «Sei domande» (2026-10-14): la finestra dell'app resta ferma e risponde a sei domande mentre si scorre; poi
- * con cosa funziona, la sicurezza in chiaro con il codice aperto, le regole italiane, i calcolatori, le domande e la chiusura.
+ * tutte le schermate, con cosa funziona, la sicurezza in chiaro con il codice aperto, le regole italiane, i calcolatori, le domande e la chiusura.
  */
 export default function HomePage() {
   return (
@@ -31,6 +32,7 @@ export default function HomePage() {
       <main>
         <Story />
         <div className="tail">
+          <ScreensHome />
           <WorksWith />
           <SecurityHome />
           <RulesHome />

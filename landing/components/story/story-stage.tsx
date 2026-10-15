@@ -4,16 +4,15 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { HERO, REAL_TOGGLE } from "@/content/story";
 import { SCREEN_SMALL_WIDTH, SCREEN_THEMES, SCREENS, screenPhoneSrc, screenSmallSrc, screenSrc, type ScreenId } from "@/content/screens";
 import { PHONE_SHOT_SIZE, screenSize } from "@/lib/screen-size";
+import { PhoneFrame } from "../phone-frame";
 import { MovementsPanel, MovementsPhonePanel } from "./live-movements";
 import { DebtPanel, FirePanel, PerformancePanel, TaxPanel } from "./live-panels";
 import { shotShown, STAGE_SHOTS, type ActiveId, type StageView } from "./story-views";
 
 /** Larghezza (px) a cui sono catturate le schermate: i riquadri `focus` sono in queste coordinate. */
 const SHOT_WIDTH = 1920;
-/** Quanto si avvicina la camera a un riquadro. */
-const ZOOM = 1.25;
-/** Centro verticale di ripiego (px dello screenshot) quando non c'è un riquadro. */
-const DEFAULT_CENTER_Y = 600;
+/** Spazio (px dello screenshot) lasciato sopra il riquadro del passo, quando ci sta: la finestra scorre fin lì, senza ingrandire. */
+const FOCUS_MARGIN = 80;
 /** Dopo quanto (ms) si caricano le schermate non ancora richieste, se chi legge resta sull'apertura. */
 const PRELOAD_AFTER_MS = 2000;
 /** Larghezza mostrata della finestra sul desktop (per `sizes`); sul telefono la finestra non esiste. */
@@ -29,8 +28,9 @@ export interface StoryStageProps {
 }
 
 /**
- * La finestra dell'app che resta ferma mentre si scorre: pannelli vivi e schermate vere, con la camera che si avvicina
- * al riquadro del passo. Sul telefono diventa un telefono fissato in alto, con le versioni a misura di telefono.
+ * La finestra dell'app che resta ferma mentre si scorre: pannelli vivi e schermate vere, intere in larghezza e
+ * scorse fino al riquadro del passo (niente zoom: la finestra è un browser, non un ritaglio). Sul telefono diventa un
+ * telefono fissato in alto, con le versioni a misura di telefono.
  */
 export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps) {
   const viewRef = useRef<HTMLDivElement>(null);
@@ -50,16 +50,17 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
     const H = el.clientHeight;
     if (!W || !H) return;
     const s = W / SHOT_WIDTH;
-    const f = view.focus;
-    const z = f ? ZOOM : 1;
+    const visible = H / s;
     const ih = screenSize(view.shot).height;
-    const cx = f ? f[0] + f[2] / 2 : SHOT_WIDTH / 2;
-    const cy = f ? f[1] + f[3] / 2 : DEFAULT_CENTER_Y;
-    const vw = SHOT_WIDTH / z;
-    const vh = H / s / z;
-    const x0 = Math.max(0, Math.min(SHOT_WIDTH - vw, f ? cx - vw / 2 : 0));
-    const y0 = Math.max(0, Math.min(ih - vh, f ? cy - vh / 2 : 0));
-    setCamera(`translate(${-x0 * s * z}px, ${-y0 * s * z}px) scale(${z})`);
+    const f = view.focus;
+    let y0 = 0;
+    if (f) {
+      const [, fy, , fh] = f;
+      // Il riquadro sta tutto dentro la finestra, con un po' d'aria sopra; se è più alto della finestra, si centra.
+      y0 = fh >= visible ? fy + fh / 2 - visible / 2 : fy - Math.min(FOCUS_MARGIN, (visible - fh) / 2);
+    }
+    y0 = Math.max(0, Math.min(ih - visible, y0));
+    setCamera(`translateY(${-y0 * s}px)`);
   }, [view, real]);
 
   useLayoutEffect(() => {
@@ -111,34 +112,32 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
             })}
           </div>
         </div>
-        <div className="phone">
-          <div>
-            <MovementsPhonePanel on={active === "soldi"} />
-            <PerformancePanel on={active === "investimenti"} />
-            <TaxPanel on={active === "tasse"} />
-            <DebtPanel on={active === "mutuo"} />
-            <FirePanel on={active === "futuro"} />
-            {STAGE_SHOTS.map((shot) => {
-              const shown = shotShown(view, shot.id, real);
-              const load = shot.id === HERO.shot || armed;
-              return SCREEN_THEMES.map((theme) => (
-                // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
-                <img
-                  key={`${shot.id}-${theme}-phone`}
-                  className={`shot shot-${theme}${shot.real ? " real" : ""}${shown ? " on" : ""}`}
-                  src={load ? screenPhoneSrc(shot.id, theme) : undefined}
-                  sizes={PHONE_SIZES}
-                  width={PHONE_SHOT_SIZE.width}
-                  height={PHONE_SHOT_SIZE.height}
-                  alt={alt(shot.id)}
-                  aria-hidden={!shown}
-                  loading={shot.id === HERO.shot ? "eager" : "lazy"}
-                  decoding="async"
-                />
-              ));
-            })}
-          </div>
-        </div>
+        <PhoneFrame className="phone">
+          <MovementsPhonePanel on={active === "soldi"} />
+          <PerformancePanel on={active === "investimenti"} />
+          <TaxPanel on={active === "tasse"} />
+          <DebtPanel on={active === "mutuo"} />
+          <FirePanel on={active === "futuro"} />
+          {STAGE_SHOTS.map((shot) => {
+            const shown = shotShown(view, shot.id, real);
+            const load = shot.id === HERO.shot || armed;
+            return SCREEN_THEMES.map((theme) => (
+              // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
+              <img
+                key={`${shot.id}-${theme}-phone`}
+                className={`shot shot-${theme}${shot.real ? " real" : ""}${shown ? " on" : ""}`}
+                src={load ? screenPhoneSrc(shot.id, theme) : undefined}
+                sizes={PHONE_SIZES}
+                width={PHONE_SHOT_SIZE.width}
+                height={PHONE_SHOT_SIZE.height}
+                alt={alt(shot.id)}
+                aria-hidden={!shown}
+                loading={shot.id === HERO.shot ? "eager" : "lazy"}
+                decoding="async"
+              />
+            ));
+          })}
+        </PhoneFrame>
         <div className="stage-cap">
           <p>{view.caption}</p>
           <button type="button" className="real-btn" aria-pressed={real} onClick={onToggleReal}>

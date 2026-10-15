@@ -16,6 +16,12 @@
 .tail .rows li .src a::after { content: " ↗"; font-weight: 400; }
 .tail .rows li .src a:hover { text-decoration: underline; }
 
+/* «com'è fatta»: la galleria delle schermate (`screen-gallery.css`) annidata nella sezione, senza il suo spazio e la
+   sua riga di sezione; la didascalia nello stile della sezione */
+.dentro .gal { padding: 0; border-top: 0; }
+.dentro .gal-nav { margin-top: 36px; }
+.dentro .gal-cap { margin: 0 0 18px; font-size: 16px; color: var(--ink2); }
+
 /* «funziona con»: quattro schede con margini e angoli, icona tinta in testa e, in fondo, i loghi o i chip */
 .con-grid { margin-top: 44px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
 .con-col { display: flex; flex-direction: column; gap: 20px; }

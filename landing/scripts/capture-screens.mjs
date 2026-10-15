@@ -15,7 +15,9 @@ const TOKEN = process.env.DEMO_SESSION_TOKEN ?? "demo-session-token-000000000000
 const VIEWPORT = { width: 1280, height: 800 };
 const SCALE = 1.5;
 /** Telefono: primo schermo a misura di iPhone, 2x (per la cornice da telefono della home). */
-const PHONE = { width: 390, height: 844 };
+// Schermo di un iPhone (390×844) senza barra di stato (59) e indicatore in basso (34): è ciò che l'app vede come viewport
+// installata sul telefono, e riempie esattamente lo schermo della cornice `PhoneFrame` della landing.
+const PHONE = { width: 390, height: 751 };
 const PHONE_SCALE = 2;
 const JPEG_QUALITY = 80;
 const SETTLE_MS = 1500;
@@ -38,6 +40,8 @@ const browser = await chromium.launch({
 const host = new URL(APP).hostname;
 // ONLY=id1,id2 rigenera solo quelle schermate (utile quando se ne aggiunge una) e conserva il resto del manifest.
 const ONLY = process.env.ONLY?.split(",").map((id) => id.trim()).filter(Boolean);
+// PHONE_ONLY=1 rigenera solo le versioni da telefono (`<id>-phone.jpg`) e conserva nel manifest le misure di quelle intere.
+const PHONE_ONLY = process.env.PHONE_ONLY === "1";
 const manifest = { capturedAt: new Date().toISOString(), app: APP, viewport: VIEWPORT, scale: SCALE, phone: PHONE, phoneScale: PHONE_SCALE, screens: [] };
 const selected = SCREENS.filter((candidate) => !ONLY || ONLY.includes(candidate.id));
 
@@ -85,7 +89,7 @@ for (const theme of SCREEN_THEMES) {
   const context = await demoContext(theme, { viewport: VIEWPORT, deviceScaleFactor: SCALE });
   const page = await context.newPage();
   mkdirSync(join(root, "public", "screens", theme), { recursive: true });
-  for (const screen of selected) {
+  for (const screen of PHONE_ONLY ? [] : selected) {
     await openScreen(page, screen);
     // L'app scorre dentro <main>: si allunga la finestra fino all'altezza del contenuto (con un tetto), poi si scatta.
     const contentHeight = await page.evaluate(() => document.querySelector("main")?.scrollHeight ?? 0);
@@ -123,7 +127,12 @@ for (const theme of SCREEN_THEMES) {
 }
 await browser.close();
 const manifestPath = join(root, "public", "screens", "manifest.json");
-if (ONLY) {
+if (PHONE_ONLY) {
+  // Le misure delle schermate intere restano quelle della cattura precedente; cambia solo chi ha la versione da telefono.
+  const previous = JSON.parse(readFileSync(manifestPath, "utf8"));
+  manifest.screens = previous.screens.map((entry) => (selected.some((screen) => screen.id === entry.id) ? { ...entry, phone: Boolean(SCREENS.find((screen) => screen.id === entry.id)?.phone) } : entry));
+  manifest.capturedAt = previous.capturedAt;
+} else if (ONLY) {
   const previous = JSON.parse(readFileSync(manifestPath, "utf8"));
   const kept = previous.screens.filter((entry) => !ONLY.includes(entry.id));
   manifest.screens = [...kept, ...manifest.screens];

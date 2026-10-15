@@ -18,3 +18,9 @@
   .gal-area-b { gap: 2px 4px; }
   .gal-tab { padding: 6px 10px; font-size: 14.5px; }
 }
+/* Con `phoneOnMobile`: sul telefono la schermata intera lascia il posto a quella a misura di telefono, nella cornice. */
+.gal-phone { display: none; }
+@media (max-width: 760px) {
+  .gal-pm .gal-desk { display: none; }
+  .gal-pm .gal-phone { display: block; margin: 0 auto; --pf-h: min(72vh, 560px); }
+}

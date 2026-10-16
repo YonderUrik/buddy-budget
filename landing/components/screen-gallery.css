@@ -18,3 +18,9 @@
   .gal-area-b { gap: 2px 4px; }
   .gal-tab { padding: 6px 10px; font-size: 14.5px; }
 }
+/* With `phoneOnMobile`: on the phone the full screenshot gives way to the phone-size one, inside the frame. */
+.gal-phone { display: none; }
+@media (max-width: 760px) {
+  .gal-pm .gal-desk { display: none; }
+  .gal-pm .gal-phone { display: block; margin: 0 auto; --pf-h: min(72vh, 560px); }
+}

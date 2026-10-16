@@ -8,7 +8,7 @@
   "scale": 1.5,
   "phone": {
     "width": 390,
-    "height": 844
+    "height": 751
   },
   "phoneScale": 2,
   "screens": [
@@ -26,7 +26,7 @@
       "route": "/liquidita/conti",
       "width": 1920,
       "height": 1200,
-      "phone": false
+      "phone": true
     },
     {
       "id": "movimenti",
@@ -34,7 +34,7 @@
       "route": "/liquidita",
       "width": 1920,
       "height": 1800,
-      "phone": false
+      "phone": true
     },
     {
       "id": "analisi",
@@ -50,7 +50,7 @@
       "route": "/liquidita/abbonamenti",
       "width": 1920,
       "height": 2250,
-      "phone": false
+      "phone": true
     },
     {
       "id": "categorie",
@@ -58,7 +58,7 @@
       "route": "/liquidita/categorie",
       "width": 1920,
       "height": 1716,
-      "phone": false
+      "phone": true
     },
     {
       "id": "categorizza",
@@ -66,7 +66,7 @@
       "route": "/categorizza",
       "width": 1920,
       "height": 1473,
-      "phone": false
+      "phone": true
     },
     {
       "id": "investimenti",
@@ -74,7 +74,7 @@
       "route": "/investimenti",
       "width": 1920,
       "height": 1949,
-      "phone": false
+      "phone": true
     },
     {
       "id": "performance",
@@ -90,7 +90,7 @@
       "route": "/investimenti/diversificazione",
       "width": 1920,
       "height": 1313,
-      "phone": false
+      "phone": true
     },
     {
       "id": "titolo",
@@ -114,7 +114,7 @@
       "route": "/pensione",
       "width": 1920,
       "height": 1475,
-      "phone": false
+      "phone": true
     },
     {
       "id": "pensione-scenari",
@@ -122,7 +122,7 @@
       "route": "/pensione/scenari",
       "width": 1920,
       "height": 1875,
-      "phone": false
+      "phone": true
     },
     {
       "id": "debiti",
@@ -138,7 +138,7 @@
       "route": "/debiti/finanziamenti",
       "width": 1920,
       "height": 1500,
-      "phone": false
+      "phone": true
     },
     {
       "id": "analitiche",
@@ -162,7 +162,7 @@
       "route": "/liquidita/conti",
       "width": 1920,
       "height": 1200,
-      "phone": false
+      "phone": true
     },
     {
       "id": "movimenti",
@@ -170,7 +170,7 @@
       "route": "/liquidita",
       "width": 1920,
       "height": 1800,
-      "phone": false
+      "phone": true
     },
     {
       "id": "analisi",
@@ -186,7 +186,7 @@
       "route": "/liquidita/abbonamenti",
       "width": 1920,
       "height": 2250,
-      "phone": false
+      "phone": true
     },
     {
       "id": "categorie",
@@ -194,7 +194,7 @@
       "route": "/liquidita/categorie",
       "width": 1920,
       "height": 1716,
-      "phone": false
+      "phone": true
     },
     {
       "id": "categorizza",
@@ -202,7 +202,7 @@
       "route": "/categorizza",
       "width": 1920,
       "height": 1473,
-      "phone": false
+      "phone": true
     },
     {
       "id": "investimenti",
@@ -210,7 +210,7 @@
       "route": "/investimenti",
       "width": 1920,
       "height": 1949,
-      "phone": false
+      "phone": true
     },
     {
       "id": "performance",
@@ -226,7 +226,7 @@
       "route": "/investimenti/diversificazione",
       "width": 1920,
       "height": 1313,
-      "phone": false
+      "phone": true
     },
     {
       "id": "titolo",
@@ -250,7 +250,7 @@
       "route": "/pensione",
       "width": 1920,
       "height": 1475,
-      "phone": false
+      "phone": true
     },
     {
       "id": "pensione-scenari",
@@ -258,7 +258,7 @@
       "route": "/pensione/scenari",
       "width": 1920,
       "height": 1875,
-      "phone": false
+      "phone": true
     },
     {
       "id": "debiti",
@@ -274,7 +274,7 @@
       "route": "/debiti/finanziamenti",
       "width": 1920,
       "height": 1500,
-      "phone": false
+      "phone": true
     },
     {
       "id": "analitiche",

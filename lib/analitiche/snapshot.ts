@@ -17,6 +17,8 @@ import { analyticsTransactionsRange, buildAnalyticsBase, type AnalyticsBase } fr
 import { loadAssumptions } from "./data";
 import { resolveExpectedReturn, withExpectedReturn } from "./historical-return";
 import { resolvePlan, type AnalyticsPlan } from "./plan";
+import { essentialSpendingFrom, type EssentialSpending } from "@/lib/goals/essential";
+import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 
 /** Conto come serve a chi legge la fotografia: nome, tipo e saldo di oggi. */
 export interface SnapshotAccount {
@@ -24,6 +26,8 @@ export interface SnapshotAccount {
   name: string;
   type: string;
   balance: number;
+  color: AccountColor;
+  icon: AccountIcon;
 }
 
 /** Fotografia delle Analitiche lato server: stessi dati e stesse ipotesi della pagina, letti una volta. */
@@ -36,6 +40,8 @@ export interface AnalyticsSnapshot {
   /** Ipotesi usate, con il rendimento atteso già risolto (dallo storico se automatico). */
   assumptions: AnalyticsAssumptions;
   plan: AnalyticsPlan;
+  /** Spese del mese da coprire con un fondo di emergenza (base della proposta negli Obiettivi). */
+  essential: EssentialSpending | null;
 }
 
 /**
@@ -50,7 +56,7 @@ export async function loadAnalyticsSnapshot(userId: string, now = new Date()): P
   const { from, to } = analyticsTransactionsRange(assumptions.dataPeriod, today);
   const [[user], accountRows, txs, cats, snapshots, investments, pension, debtData] = await Promise.all([
     db.select({ currency: authUser.currency }).from(authUser).where(eq(authUser.id, userId)),
-    db.select({ id: accounts.id, name: accounts.name, type: accounts.type, balance: accounts.balance }).from(accounts).where(eq(accounts.userId, userId)),
+    db.select({ id: accounts.id, name: accounts.name, type: accounts.type, balance: accounts.balance, color: accounts.color, icon: accounts.icon }).from(accounts).where(eq(accounts.userId, userId)),
     db.select().from(transactions).where(and(eq(transactions.userId, userId), gte(transactions.date, from), lte(transactions.date, to))),
     db.select().from(categories).where(eq(categories.userId, userId)),
     db.select().from(netWorthSnapshots).where(and(eq(netWorthSnapshots.userId, userId), lte(netWorthSnapshots.date, todayKey))).orderBy(asc(netWorthSnapshots.date)),
@@ -59,7 +65,7 @@ export async function loadAnalyticsSnapshot(userId: string, now = new Date()): P
     loadUserDebts(userId),
   ]);
   const currency = user?.currency ?? "EUR";
-  const accountList = accountRows.map((a) => ({ ...a, balance: Number(a.balance) }));
+  const accountList = accountRows.map((a) => ({ ...a, balance: Number(a.balance), color: a.color as AccountColor, icon: a.icon as AccountIcon }));
   const debtsTotal = buildDebtsView(debtData.debts, debtData.events, todayKey).overview.totalDebt;
   const base = buildAnalyticsBase({
     today,
@@ -75,5 +81,6 @@ export async function loadAnalyticsSnapshot(userId: string, now = new Date()): P
   });
   // Come in Analitiche: il rendimento in automatico viene dallo storico, non dal valore di riserva salvato.
   const used = withExpectedReturn(assumptions, resolveExpectedReturn(assumptions, base.historicalReturn));
-  return { today, todayKey, currency, accounts: accountList, base, assumptions: used, plan: resolvePlan(base, used) };
+  const essential = essentialSpendingFrom({ transactions: txs, categories: cats, today });
+  return { today, todayKey, currency, accounts: accountList, base, assumptions: used, plan: resolvePlan(base, used), essential };
 }

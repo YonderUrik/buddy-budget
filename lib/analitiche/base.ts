@@ -19,6 +19,7 @@ import {
   type TailRisk,
 } from "@/lib/calc/risk-extras";
 import type { Category } from "@/lib/db/schema/categories";
+import type { InstrumentType } from "@/lib/db/schema/investments";
 import type { NetWorthSnapshot } from "@/lib/db/schema/net-worth-snapshots";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import { categoryGroupKey } from "@/lib/categories/groups";
@@ -103,6 +104,8 @@ export interface AnalyticsBase {
   riskContribution: RiskContribution[] | null;
   /** Nomi per id, per etichettare i contributi al rischio. */
   names: Record<string, string>;
+  /** Tipo di ogni strumento per id, per disegnarne l'icona (Obiettivi). */
+  instrumentTypes: Record<string, InstrumentType>;
   /** Rendimento nel periodo scelto, da cui parte il rendimento atteso se l'utente non ne sceglie uno. */
   historicalReturn: HistoricalReturnResult;
 }
@@ -155,6 +158,7 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
   let riskContribution: RiskContribution[] | null = null;
   let risk: AnalyticsRisk | null = null;
   const names: Record<string, string> = {};
+  const instrumentTypes: Record<string, InstrumentType> = {};
   let investmentsValue = 0;
   let history: HistoricalReturnResult = { status: "manca", reason: "nessun-investimento" };
   if (investments && investments.transactions.length > 0) {
@@ -167,6 +171,7 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
         const id = r.instrument.id;
         const instrument = view.instrumentsById.get(id);
         names[id] = instrument?.name ?? id;
+        if (instrument) instrumentTypes[id] = instrument.type;
         return {
           id,
           name: instrument?.name ?? id,
@@ -270,6 +275,7 @@ export function buildAnalyticsBase(input: AnalyticsBaseInput): AnalyticsBase {
     risk,
     riskContribution,
     names,
+    instrumentTypes,
     historicalReturn: history,
   };
 }

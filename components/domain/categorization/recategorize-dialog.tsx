@@ -18,7 +18,7 @@ import type { Category } from "@/lib/db/schema/categories";
 import { formatShortDate } from "@/lib/format";
 import type { RecategorizePreviewGroup } from "@/lib/categorization/recategorize-plan";
 import { useRecategorizePreviewQuery } from "@/lib/queries/categorization";
-import { LogoCredit } from "./logo-credit";
+import { LogoCredit } from "@/components/domain/shared";
 import { RecategorizeRow } from "./recategorize-row";
 import { useRecategorizeActions } from "./use-recategorize";
 

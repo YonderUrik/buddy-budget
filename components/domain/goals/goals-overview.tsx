@@ -5,9 +5,12 @@
  * Analitiche in fondo) e «La strada». Gli obiettivi raggiunti stanno in fondo, a parte.
  */
 
+import * as React from "react";
 import { ListOrderedIcon, TrophyIcon } from "lucide-react";
-import type { GoalsView } from "@/lib/goals/view";
+import { LogoCredit } from "@/components/domain/shared";
+import type { GoalsView, GoalView } from "@/lib/goals/view";
 import { useLocalization } from "@/lib/localization/provider";
+import type { GoalAction } from "./goal-actions";
 import { FireGoalRow } from "./fire-goal-row";
 import type { GoalFormatters } from "./goal-format";
 import { GoalRow } from "./goal-row";
@@ -23,13 +26,17 @@ export interface GoalsOverviewProps {
   /** Nuovo ordine degli obiettivi aperti (id dal primo all'ultimo). */
   onReorder: (ids: string[]) => void;
   reordering?: boolean;
+  /** Azione scelta dal menu «⋯» di una riga (assente = niente menu). */
+  onAction?: (goal: GoalView, action: GoalAction) => void;
 }
 
-export function GoalsOverview({ view, fmt, hrefFor, onReorder, reordering = false }: GoalsOverviewProps) {
+export function GoalsOverview({ view, fmt, hrefFor, onReorder, reordering = false, onAction }: GoalsOverviewProps) {
   const { t: tr } = useLocalization();
   const open = view.goals.filter((g) => g.status !== "raggiunto" || !g.achievedAt);
   const done = view.goals.filter((g) => g.status === "raggiunto" && g.achievedAt);
   const allIds = view.goals.map((g) => g.id);
+  const [logosShown, setLogosShown] = React.useState(false);
+  const showLogoCredit = React.useCallback(() => setLogosShown(true), []);
 
   /** Scambia un obiettivo aperto con il vicino (tra gli aperti); i raggiunti restano dove sono nell'ordine completo. */
   const move = (index: number, delta: -1 | 1) => {
@@ -59,10 +66,13 @@ export function GoalsOverview({ view, fmt, hrefFor, onReorder, reordering = fals
               href={hrefFor(goal.id)}
               onMoveUp={i > 0 && !reordering ? () => move(i, -1) : undefined}
               onMoveDown={i < open.length - 1 && !reordering ? () => move(i, 1) : undefined}
+              onAction={onAction ? (a) => onAction(goal, a) : undefined}
+              onRemoteLogo={showLogoCredit}
             />
           ))}
           {view.fire ? <FireGoalRow fire={view.fire} fmt={fmt} /> : null}
         </ul>
+        <LogoCredit visible={logosShown} />
       </section>
       <GoalsRoad view={view} fmt={fmt} />
       {done.length > 0 ? (
@@ -70,7 +80,7 @@ export function GoalsOverview({ view, fmt, hrefFor, onReorder, reordering = fals
           <GoalSectionHeading id="goals-done" icon={TrophyIcon} title={tr("Raggiunti")} color="var(--pos)" />
           <ul>
             {done.map((goal) => (
-              <GoalRow key={goal.id} goal={goal} fmt={fmt} href={hrefFor(goal.id)} compact />
+              <GoalRow key={goal.id} goal={goal} fmt={fmt} href={hrefFor(goal.id)} compact onAction={onAction ? (a) => onAction(goal, a) : undefined} />
             ))}
           </ul>
         </section>

@@ -26,7 +26,7 @@ function view(goals: GoalRecord[], balance = 1400) {
     positions: [],
     capacity: 1000,
     fire: null,
-    essentialMonthly: 1450,
+    essential: { monthly: 1450, basis: "dovute", months: 12 },
     debtsTotal: 0,
   });
 }

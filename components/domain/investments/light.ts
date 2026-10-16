@@ -7,3 +7,5 @@ export { formatSignedPct } from "./gain-text";
 export { TitleSparkline } from "./titles/title-sparkline";
 export { DialogActions, DialogSection, DialogSections, DialogSteps, PanelDialogHeader } from "./dialog-parts";
 export { PanelSection } from "./panel-section";
+export { InstrumentIcon } from "./instrument-icon";
+export type { InstrumentIconProps } from "./instrument-icon";

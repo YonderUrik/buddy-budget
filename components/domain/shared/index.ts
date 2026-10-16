@@ -33,3 +33,5 @@ export { SectionHeading } from "./section-heading";
 export type { SectionHeadingProps } from "./section-heading";
 export { SectionViewsSheet } from "./section-views-sheet";
 export type { SectionViewsSheetProps } from "./section-views-sheet";
+export { LogoCredit } from "./logo-credit";
+export type { LogoCreditProps } from "./logo-credit";

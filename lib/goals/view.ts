@@ -1,5 +1,8 @@
 import { addMonthsKey, buildGoalsPlan, type FireInput, type GoalPlanRow, type GoalsPlan } from "./plan";
 import type { GoalKind } from "./constants";
+import type { EssentialSpending } from "./essential";
+import type { InstrumentType } from "@/lib/db/schema/investments";
+import type { AccountColor, AccountIcon } from "@/lib/validation/accounts";
 
 /**
  * Vista degli obiettivi: dalle righe salvate (obiettivi e parti di conti e titoli) e dalla fotografia delle Analitiche
@@ -34,6 +37,16 @@ export interface SourceAccount {
   name: string;
   type: string;
   balance: number;
+  /** Colore e icona scelti per il conto, per disegnarlo come in Liquidità. */
+  color?: AccountColor;
+  icon?: AccountIcon;
+}
+
+/** Come disegnare una fonte: l'avatar del conto o l'icona (con logo) del titolo. */
+export interface SourceLook {
+  accountColor: AccountColor | null;
+  accountIcon: AccountIcon | null;
+  instrumentType: InstrumentType | null;
 }
 
 /** Posizione d'investimento disponibile come fonte, con quanto se ne andrebbe in imposte vendendola. */
@@ -43,11 +56,12 @@ export interface SourcePosition {
   value: number;
   unrealizedGain: number;
   taxRate: number;
+  type?: InstrumentType;
 }
 
 export type GoalSourceKind = "account" | "instrument";
 
-export interface GoalSourceView {
+export interface GoalSourceView extends SourceLook {
   id: string;
   kind: GoalSourceKind;
   /** Id del conto o del titolo. */
@@ -79,7 +93,7 @@ export interface GoalView extends Omit<GoalPlanRow, "id"> {
 }
 
 /** Parte libera di un conto o di una posizione: quello che nessun obiettivo ha ancora preso. */
-export interface FreeSource {
+export interface FreeSource extends SourceLook {
   kind: GoalSourceKind;
   id: string;
   name: string;
@@ -108,8 +122,10 @@ export interface GoalsView {
     withGoalsYear: number | null;
   } | null;
   sources: FreeSource[];
-  /** Spese dovute del mese (base del fondo di emergenza proposto); null se non si sa. */
+  /** Spese del mese (base del fondo di emergenza proposto); null se non ci sono uscite. */
   essentialMonthly: number | null;
+  /** Da dove viene `essentialMonthly`: solo le spese dovute o tutte (troppe senza categoria). */
+  essentialBasis: EssentialSpending["basis"] | null;
   debtsTotal: number;
 }
 
@@ -117,6 +133,10 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 function taxPerEuro(p: SourcePosition): number {
   return p.value > 0 && p.unrealizedGain > 0 ? (p.unrealizedGain / p.value) * p.taxRate : 0;
+}
+
+function lookOf(account: SourceAccount | undefined, position: SourcePosition | undefined): SourceLook {
+  return { accountColor: account?.color ?? null, accountIcon: account?.icon ?? null, instrumentType: position?.type ?? null };
 }
 
 /** Anno in cui cade il mese `months` dopo oggi. */
@@ -134,7 +154,7 @@ export function buildGoalsView(input: {
   positions: SourcePosition[];
   capacity: number | null;
   fire: FireInput | null;
-  essentialMonthly: number | null;
+  essential: EssentialSpending | null;
   debtsTotal: number;
 }): GoalsView {
   const ordered = [...input.goals].sort((a, b) => a.priority - b.priority || a.createdAt.localeCompare(b.createdAt));
@@ -169,6 +189,7 @@ export function buildGoalsView(input: {
         tax,
         total: account ? account.balance : (position?.value ?? 0),
         short: gross + 0.005 < s.amount,
+        ...lookOf(account, position),
       };
     });
     return { goal, sources, current: sources.reduce((sum, s) => sum + s.counted, 0) };
@@ -194,8 +215,8 @@ export function buildGoalsView(input: {
   });
 
   const free: FreeSource[] = [
-    ...input.accounts.map((a) => ({ kind: "account" as const, id: a.id, name: a.name, total: a.balance, free: round2(left.get(`account:${a.id}`) ?? 0), taxPerEuro: 0 })),
-    ...input.positions.map((p) => ({ kind: "instrument" as const, id: p.id, name: p.name, total: p.value, free: round2(left.get(`instrument:${p.id}`) ?? 0), taxPerEuro: taxPerEuro(p) })),
+    ...input.accounts.map((a) => ({ kind: "account" as const, id: a.id, name: a.name, total: a.balance, free: round2(left.get(`account:${a.id}`) ?? 0), taxPerEuro: 0, ...lookOf(a, undefined) })),
+    ...input.positions.map((p) => ({ kind: "instrument" as const, id: p.id, name: p.name, total: p.value, free: round2(left.get(`instrument:${p.id}`) ?? 0), taxPerEuro: taxPerEuro(p), ...lookOf(undefined, p) })),
   ];
 
   const fire = input.fire && plan.fire
@@ -218,7 +239,8 @@ export function buildGoalsView(input: {
     goals,
     fire,
     sources: free,
-    essentialMonthly: input.essentialMonthly,
+    essentialMonthly: input.essential ? Math.round(input.essential.monthly) : null,
+    essentialBasis: input.essential?.basis ?? null,
     debtsTotal: input.debtsTotal,
   };
 }

@@ -70,6 +70,7 @@ export function describeImportJob(job: Job): { message: string; action: string |
   switch (job.status) {
     case "queued":
     case "processing": return { message: "Analisi in corso", action: null };
+    case "correction_ready": return { message: "Correzione da confermare", action: "Confronta" };
     case "ready": return { message: "Salvataggio in corso", action: null };
     case "imported": return { message: job.results ? `${job.results.cash} movimenti · ${job.results.investments} operazioni` : "Importato", action: "Dettaglio" };
     case "review_failed": return { message: job.error ?? "Qualche riga da correggere", action: "Controlla" };
@@ -83,6 +84,7 @@ export function describeImportJob(job: Job): { message: string; action: string |
 
 function StatusIcon({ state }: { state: ReturnType<typeof islandState> }) {
   if (state === "running") return <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"><LoaderCircleIcon className="size-4 motion-safe:animate-spin" aria-hidden="true" /></span>;
+  if (state === "review") return <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary"><ListChecksIcon className="size-4" aria-hidden="true" /></span>;
   if (state === "done") return <span className="grid size-8 shrink-0 place-items-center rounded-full bg-pos-soft text-pos"><CheckIcon className="size-4" aria-hidden="true" /></span>;
   return <span className="grid size-8 shrink-0 place-items-center rounded-full bg-neg-soft text-neg"><AlertCircleIcon className="size-4" aria-hidden="true" /></span>;
 }
@@ -118,7 +120,7 @@ export function PersonalImportList({ listing, selectedId, onSelect, onRetry }: P
             const state = islandState(job);
             const { message, action } = describeImportJob(job);
             const name = formats.find((f) => f.id === job.formatId)?.name ?? "File";
-            const retry = action === "Riprova";
+            const retry = action === "Riprova" && !job.correctionOf;
             const body = (
               <>
                 <StatusIcon state={state} />

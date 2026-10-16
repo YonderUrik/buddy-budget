@@ -37,14 +37,15 @@ export function outcomeHash(outcome: Outcome) {
   void _row;
   return digest(JSON.stringify(fields));
 }
-export async function confirmImport(userId: string, id: string, options: ConfirmOptions = {}) {
+export async function confirmImport(userId: string, id: string, options: ConfirmOptions = {}, transaction?: Parameters<Parameters<typeof db.transaction>[0]>[0]) {
   const currency = await getUserCurrency(userId);
-  return db.transaction(async tx => {
+  const run = async (tx: Parameters<Parameters<typeof db.transaction>[0]>[0]) => {
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 91473)`);
     const [job] = await tx.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId))).for("update");
     if (!job) throw new ImportError("Importazione non disponibile");
     if (job.status === "imported") return { inserted: 0, alreadyImported: true };
     if (job.brokerProvider && job.failureReport?.reason === "broker_validation_failed") throw new ImportError("L'AI ha analizzato il file, ma il controllo originale del broker richiede una riconciliazione. Il supporto riceverà il report; nessun movimento è stato aggiunto.");
+    if (job.correctionOf && !transaction) throw new ImportError("Confronta e conferma la correzione prima di sostituire i dati");
     const allowed = options.skipErrors ? ["ready", "review_failed"] : ["ready"];
     if (!allowed.includes(job.status) || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Anteprima non disponibile o scaduta");
     const stored: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
@@ -133,7 +134,8 @@ export async function confirmImport(userId: string, id: string, options: Confirm
       const [version] = await tx.insert(parsers).values({ formatId: format.id, signature: RAW_PARSER_VERSION, encryptedParser: seal(JSON.stringify(stored.parser), userId), model: "accepted-with-skips" }).returning();
       parserId = version.id;
     }
-    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size } }).where(eq(jobs.id, id));
+    await tx.update(jobs).set({ status: "imported", error: null, parserId, notifiedAt: null, notifyAfter: new Date(), encryptedCsv: null, encryptedPreview: null, encryptedCorrectionFeedback: null, correctionToken: null, importLedger: { cashIds: cashValues.map(r => r.id!), tradeIds: tradeValues.map(r => r.id!), receiptKeys: fresh.map(r => r.key), skipped: skippedKeys.size } }).where(eq(jobs.id, id));
     return { inserted: financial.length, duplicates: preview.records.length - fresh.length - skippedKeys.size, skipped: skippedKeys.size };
-  });
+  };
+  return transaction ? run(transaction) : db.transaction(run);
 }

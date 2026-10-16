@@ -18,6 +18,7 @@ export const personalImportJobs = pgTable("personal_import_jobs", {
   formatId: uuid("format_id").notNull().references(() => personalFormats.id, { onDelete: "cascade" }), parserId: uuid("parser_id").references(() => personalParsers.id, { onDelete: "set null" }),
   consentVersion: text("consent_version").notNull().default("openrouter-zdr-v1"),
   status: text("status").notNull().default("queued"), encryptedCsv: text("encrypted_csv"), encryptedPreview: text("encrypted_preview"),
+  correctionOf: uuid("correction_of"), correctionToken: text("correction_token"), encryptedCorrectionFeedback: text("encrypted_correction_feedback"),
   importLedger: jsonb("import_ledger").$type<{ cashIds: string[]; tradeIds: string[]; receiptKeys: string[]; skipped?: number }>(),
   error: text("error"), attempts: integer("attempts").notNull().default(0), lease: uuid("lease"), leaseUntil: timestamp("lease_until", { withTimezone: true }),
   failureReport: jsonb("failure_report").$type<AnalysisFailure>(),

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { bindRequestUser, requestLogger, withRoute } from "@/lib/observability";
 import { getPreview, reanalyze } from "@/lib/personal-import/jobs";
+import { compareCorrection, replaceImport, discardCorrection } from "@/lib/personal-import/correction";
 import { confirmImport } from "@/lib/personal-import/confirm";
 import { previewPersonalImportDeletion, deletePersonalImport } from "@/lib/personal-import/delete";
 export const maxDuration = 60;
@@ -14,6 +15,10 @@ export const GET = withRoute("personal_import.preview", async (request: NextRequ
   if (!session) return new Response(null, { status: 401 });
   bindRequestUser(session.user.id);
   const id = idOf(request); if (!id.success) return new Response(null, { status: 404 });
+  if (request.nextUrl.searchParams.get("correction") === "1") {
+    try { return Response.json(await compareCorrection(session.user.id, id.data), { headers: { "Cache-Control": "no-store" } }); }
+    catch (error) { return Response.json({ error: error instanceof ImportError ? error.message : "Confronto non disponibile" }, { status: 422 }); }
+  }
   if (request.nextUrl.searchParams.get("deletion") === "1") {
     try { return Response.json(await previewPersonalImportDeletion(session.user.id, id.data), { headers: { "Cache-Control": "no-store" } }); }
     catch (error) { return Response.json({ error: error instanceof ImportError ? error.message : "Impossibile verificare l’importazione" }, { status: 422 }); }
@@ -24,6 +29,8 @@ export const GET = withRoute("personal_import.preview", async (request: NextRequ
 // Senza corpo conferma l'anteprima; `import_skipping_errors` importa le righe riconosciute saltando le altre;
 // `reanalyze` rimanda il file all'AI (consenso richiesto di nuovo, come al caricamento).
 const actionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("replace_import") }),
+  z.object({ action: z.literal("discard_correction") }),
   z.object({ action: z.literal("import_skipping_errors") }),
   z.object({ action: z.literal("reanalyze"), consent: z.literal(true), consentVersion: z.literal("openrouter-raw-zdr-v3") }),
 ]);
@@ -46,8 +53,9 @@ export const POST = withRoute("personal_import.confirm", async (request: NextReq
       requestLogger().info("personal_import.reanalyzed", { jobId: job.id });
       return Response.json(job, { status: 202 });
     }
+    if (action?.action === "discard_correction") return Response.json(await discardCorrection(session.user.id, id.data));
     const skipErrors = action?.action === "import_skipping_errors";
-    const result = await confirmImport(session.user.id, id.data, { skipErrors });
+    const result = action?.action === "replace_import" ? await replaceImport(session.user.id, id.data) : await confirmImport(session.user.id, id.data, { skipErrors });
     const userId = session.user.id; after(() => categorizeNewMovementsSafely(userId));
     requestLogger().info("personal_import.confirmed", { inserted: result.inserted, skipped: result.skipped ?? 0 });
     return Response.json(result);

@@ -5,16 +5,25 @@ import { personalFormats as formats, personalParsers as parsers, personalImportJ
 import { seal, unseal, digest } from "./crypto";
 import { brokerFallbackSource } from "./broker-fallback";
 import { ImportError, readRawFile } from "./contract";
+import { deletionPlan } from "./delete";
 import type { Preview } from "./confirm";
 // Raw-file parsers are selected only within the source explicitly chosen by this user.
 export const RAW_PARSER_VERSION = "raw-csv-v1";
-export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean; brokerFallback?: boolean }) {
+export async function enqueue(userId: string, input: { csv: string; name: string; formatId?: string; regenerate?: boolean; brokerFallback?: boolean; correctionOf?: string; feedback?: string }) {
   readRawFile(input.csv);
   const broker = input.brokerFallback ? brokerFallbackSource(input.csv) : null;
   const sourceFingerprint = broker ? digest(input.csv) : null;
   const signature = RAW_PARSER_VERSION;
   return db.transaction(async tx => {
+    // Match confirmation/deletion lock order; the snapshot includes manual edits.
+    if (input.correctionOf) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 91473)`);
     await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}), 81234)`);
+    const original = input.correctionOf ? await deletionPlan(tx, userId, input.correctionOf) : null;
+    if (original) {
+      if (original.job.status !== "imported" || !input.feedback?.trim() || input.feedback.length > 2000) throw new ImportError("Descrivi il problema di un’importazione completata");
+      const [pending] = await tx.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.correctionOf, original.job.id), sql`${jobs.status} in ('queued', 'processing', 'correction_ready', 'review_failed')`)).limit(1);
+      if (pending) throw new ImportError("C’è già una correzione da controllare per questa importazione");
+    }
     if (sourceFingerprint && !input.regenerate) {
       const [existing] = await tx.select({ id: jobs.id }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.sourceFingerprint, sourceFingerprint), sql`${jobs.status} not in ('failed', 'expired')`)).limit(1);
       if (existing) return existing;
@@ -22,19 +31,19 @@ export async function enqueue(userId: string, input: { csv: string; name: string
     const recent = await tx.select({ status: jobs.status }).from(jobs).where(and(eq(jobs.userId, userId), gte(jobs.createdAt, new Date(Date.now() - 86400000))));
     if (recent.length >= 10 || recent.filter(j => ["queued", "processing"].includes(j.status)).length >= 2) throw new ImportError("Limite raggiunto: massimo 2 analisi in corso e 10 caricamenti al giorno");
     const [priorBroker] = broker && broker.provider !== "generic" ? await tx.select({ formatId: jobs.formatId }).from(jobs).where(and(eq(jobs.userId, userId), eq(jobs.brokerProvider, broker.provider))).orderBy(desc(jobs.createdAt)).limit(1) : [];
-    const formatId = broker ? priorBroker?.formatId : input.formatId;
+    const formatId = original?.format.id ?? (broker ? priorBroker?.formatId : input.formatId);
     let format = formatId ? (await tx.select().from(formats).where(and(eq(formats.id, formatId), eq(formats.userId, userId))))[0] : undefined;
     if (input.formatId && !format) throw new ImportError("Formato non disponibile");
     if (!format) [format] = await tx.insert(formats).values({ userId, name: broker && broker.provider !== "generic" ? broker.name : input.name }).returning();
-    const [parser] = input.regenerate ? [] : await tx.select().from(parsers).where(and(eq(parsers.formatId, format.id), eq(parsers.signature, signature))).orderBy(desc(parsers.createdAt)).limit(1);
-    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v3", formatId: format.id, parserId: parser?.id, brokerProvider: broker?.provider, sourceFingerprint, failureReport: broker ? { phase: "parse", reason: broker.requiresReconciliation ? "broker_validation_failed" : "broker_parse_failed", fallback: true } : null, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id });
+    const [parser] = (input.regenerate || original) ? [] : await tx.select().from(parsers).where(and(eq(parsers.formatId, format.id), eq(parsers.signature, signature))).orderBy(desc(parsers.createdAt)).limit(1);
+    const [job] = await tx.insert(jobs).values({ userId, consentVersion: "openrouter-raw-zdr-v3", formatId: format.id, parserId: parser?.id, brokerProvider: original?.job.brokerProvider ?? broker?.provider, sourceFingerprint, correctionOf: original?.job.id, correctionToken: original?.token, encryptedCorrectionFeedback: original ? seal(input.feedback!.trim(), userId) : null, failureReport: broker ? { phase: "parse", reason: broker.requiresReconciliation ? "broker_validation_failed" : "broker_parse_failed", fallback: true } : null, encryptedCsv: seal(input.csv, userId), estimatedAt: new Date(Date.now() + 3600000), expiresAt: new Date(Date.now() + 7 * 86400000) }).returning({ id: jobs.id });
     return job;
   });
 }
 export async function listImports(userId: string) {
   const [sources, requests] = await Promise.all([
     db.select({ id: formats.id, name: formats.name }).from(formats).where(eq(formats.userId, userId)).orderBy(desc(formats.createdAt)),
-    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
+    db.select({ id: jobs.id, formatId: jobs.formatId, status: jobs.status, correctionOf: jobs.correctionOf, estimatedAt: jobs.estimatedAt, expiresAt: jobs.expiresAt, createdAt: jobs.createdAt, error: jobs.error, notifiedAt: jobs.notifiedAt, ledger: jobs.importLedger }).from(jobs).where(eq(jobs.userId, userId)).orderBy(desc(jobs.createdAt)),
   ]);
   // Del registro dell'importazione esce solo il conteggio (movimenti e operazioni creati), mai gli id.
   return { formats: sources, jobs: requests.map(({ ledger, ...job }) => ({ ...job, results: ledger ? { cash: ledger.cashIds.length, investments: ledger.tradeIds.length, skipped: ledger.skipped ?? 0 } : null })) };
@@ -54,7 +63,7 @@ export async function getPreview(userId: string, id: string): Promise<Omit<Previ
  */
 export async function reanalyze(userId: string, id: string) {
   const [job] = await db.select().from(jobs).where(and(eq(jobs.id, id), eq(jobs.userId, userId)));
-  if (!job || job.status !== "review_failed" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
+  if (!job || job.correctionOf || job.status !== "review_failed" || !job.encryptedPreview || job.expiresAt < new Date()) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
   const preview: Preview = JSON.parse(unseal(job.encryptedPreview, userId));
   if (preview.records.some(r => r.source.length !== 1)) throw new ImportError("Rianalisi non disponibile: carica di nuovo il file");
   const [format] = await db.select({ name: formats.name }).from(formats).where(and(eq(formats.id, job.formatId), eq(formats.userId, userId)));

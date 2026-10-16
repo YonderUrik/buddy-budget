@@ -56,7 +56,7 @@
   --err: #b42318;
   --logo-bg: #ffffff;
 
-  /* telefono della home (`phone-frame.css`): scocca, bordo lucido, cornice nera attorno allo schermo, tasti, isola; uguali nei due temi */
+  /* home page phone (`phone-frame.css`): body, glossy edge, black bezel around the screen, keys, island; the same in both themes */
   --phone-body: #1d2833;
   --phone-edge: rgba(255, 255, 255, 0.22);
   --phone-bezel: #090c10;

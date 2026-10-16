@@ -1,7 +1,7 @@
 import { SCREENS_HOME } from "@/content/story";
 import { ScreenGallery } from "../screen-gallery";
 
-/** «Com'è fatta»: tutte le schermate dell'app, intere e per area; sul telefono quelle a misura di telefono nella cornice. */
+/** «Com'è fatta» ("How it looks"): every screen of the app, whole and grouped by area; on the phone the phone-size ones inside the frame. */
 export function ScreensHome() {
   return (
     <section id="dentro" className="dentro">

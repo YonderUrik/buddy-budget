@@ -1,7 +1,7 @@
 /*
- * Home «Sei domande»: a sinistra scorrono l'apertura e i sei passi, a destra la finestra dell'app resta ferma e
- * risponde (schermata vera intera in larghezza, scorsa fino al punto del passo, o pannello «vivo»). Su telefono la
- * finestra diventa un telefono fissato in alto (`phone-frame.css`) e i passi passano sotto. Solo token dell'app.
+ * «Sei domande» ("Six questions") home: the opening and the six steps scroll on the left, the app window stays still
+ * on the right and answers (real screenshot at full width, scrolled to the step's point, or a "live" panel). On the
+ * phone the window becomes a phone pinned at the top (`phone-frame.css`) and the steps pass underneath. App tokens only.
  */
 .story { padding: 0 0 40px; }
 .story-grid { display: grid; grid-template-columns: 380px 1fr; gap: 64px; align-items: start; }
@@ -70,7 +70,7 @@
 .frame .bar { height: 32px; display: flex; align-items: center; gap: 6px; padding: 0 14px; background: var(--head); border-bottom: 1px solid var(--line); }
 .frame .bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); display: block; }
 .frame .bar span { margin-left: 10px; font: 500 12px var(--f-m); color: var(--ink3); background: var(--surface); border-radius: 6px; padding: 3px 10px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* alta come un browser (4:3), ma mai oltre lo schermo: la schermata è intera in larghezza e scorre dentro */
+/* as tall as a browser (4:3) but never beyond the viewport: the screenshot is whole in width and scrolls inside */
 .view { position: relative; overflow: hidden; aspect-ratio: 4 / 3; max-height: calc(100vh - 150px); background: var(--a-bg); }
 .view .shot { position: absolute; left: 0; top: 0; width: 100%; height: auto; opacity: 0; transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease; will-change: transform; }
 .view .shot.on { opacity: 1; }
@@ -231,7 +231,7 @@
   .stage-col { position: sticky; top: 0; z-index: 3; background: var(--bg); padding: 10px 0 12px; border-bottom: 1px solid var(--line); }
   .stage { position: static; }
   .stage .frame { display: none; }
-  /* un telefono vero (cornice in `phone-frame.css`), alto meno di metà schermo così sotto resta spazio per leggere */
+  /* a real phone (frame in `phone-frame.css`), under half the viewport tall so there is room to read below */
   .stage .phone { display: block; margin: 0 auto; --pf-h: min(46vh, 430px); }
   .stage .phone img.shot { opacity: 0; transition: opacity 0.45s ease; }
   .stage .phone img.shot.on { opacity: 1; }

@@ -2,8 +2,8 @@
  * Testi e numeri della home «Sei domande» (decisione 2026-10-14, `docs/decisioni/2026-10-14-landing-sei-domande.md`):
  * una finestra dell'app che resta ferma e risponde a sei domande mentre si scorre. Dove la schermata non racconta
  * abbastanza, la finestra mostra l'app che lavora (pannelli «vivi» in HTML) e un pulsante apre la schermata vera.
- * Le cifre sono quelle dei dati d'esempio degli screenshot (`scripts/demo-seed.ts`), non di nessuno. I testi sono
- * in parole semplici (decisione 2026-10-15): frasi corte, niente sigle da decifrare, i termini tecnici solo se spiegati.
+ * Le cifre sono quelle dei dati d'esempio degli screenshot (`scripts/demo-seed.ts`), non di nessuno. Texts are in
+ * plain words (decision of 2026-10-15): short sentences, one idea each, no acronyms, technical terms only if explained.
  */
 import type { HomeIcon } from "./home";
 import type { ScreenId } from "./screens";
@@ -353,7 +353,7 @@ export const FIRE_PANEL = {
 /** Pulsante sotto la finestra, per i passi con un pannello vivo. */
 export const REAL_TOGGLE = { show: "Vedi la schermata vera", hide: "Torna all'animazione" } as const;
 
-/** «Com'è fatta»: la galleria di tutte le schermate, dopo le sei domande. */
+/** «Com'è fatta» ("How it looks"): the gallery of every screen, after the six questions. */
 export const SCREENS_HOME = {
   title: "Com'è fatta, schermata per schermata.",
   intro: "Schermate vere, intere, con i dati di una persona inventata. Scegli quale vedere.",

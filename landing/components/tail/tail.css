@@ -16,8 +16,8 @@
 .tail .rows li .src a::after { content: " ↗"; font-weight: 400; }
 .tail .rows li .src a:hover { text-decoration: underline; }
 
-/* «com'è fatta»: la galleria delle schermate (`screen-gallery.css`) annidata nella sezione, senza il suo spazio e la
-   sua riga di sezione; la didascalia nello stile della sezione */
+/* «com'è fatta» ("how it looks"): the screen gallery (`screen-gallery.css`) nested in the section, without its own
+   section padding and rule; the caption in the section's style */
 .dentro .gal { padding: 0; border-top: 0; }
 .dentro .gal-nav { margin-top: 36px; }
 .dentro .gal-cap { margin: 0 0 18px; font-size: 16px; color: var(--ink2); }

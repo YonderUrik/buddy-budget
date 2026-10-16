@@ -15,8 +15,8 @@ const TOKEN = process.env.DEMO_SESSION_TOKEN ?? "demo-session-token-000000000000
 const VIEWPORT = { width: 1280, height: 800 };
 const SCALE = 1.5;
 /** Telefono: primo schermo a misura di iPhone, 2x (per la cornice da telefono della home). */
-// Schermo di un iPhone (390×844) senza barra di stato (59) e indicatore in basso (34): è ciò che l'app vede come viewport
-// installata sul telefono, e riempie esattamente lo schermo della cornice `PhoneFrame` della landing.
+// An iPhone screen (390×844) minus status bar (59) and home indicator (34): the viewport the app gets when installed
+// on the phone, and exactly the app area of the landing's `PhoneFrame`.
 const PHONE = { width: 390, height: 751 };
 const PHONE_SCALE = 2;
 const JPEG_QUALITY = 80;
@@ -40,7 +40,7 @@ const browser = await chromium.launch({
 const host = new URL(APP).hostname;
 // ONLY=id1,id2 rigenera solo quelle schermate (utile quando se ne aggiunge una) e conserva il resto del manifest.
 const ONLY = process.env.ONLY?.split(",").map((id) => id.trim()).filter(Boolean);
-// PHONE_ONLY=1 rigenera solo le versioni da telefono (`<id>-phone.jpg`) e conserva nel manifest le misure di quelle intere.
+// PHONE_ONLY=1 regenerates only the phone versions (`<id>-phone.jpg`) and keeps the full-size dimensions in the manifest.
 const PHONE_ONLY = process.env.PHONE_ONLY === "1";
 const manifest = { capturedAt: new Date().toISOString(), app: APP, viewport: VIEWPORT, scale: SCALE, phone: PHONE, phoneScale: PHONE_SCALE, screens: [] };
 const selected = SCREENS.filter((candidate) => !ONLY || ONLY.includes(candidate.id));
@@ -128,7 +128,7 @@ for (const theme of SCREEN_THEMES) {
 await browser.close();
 const manifestPath = join(root, "public", "screens", "manifest.json");
 if (PHONE_ONLY) {
-  // Le misure delle schermate intere restano quelle della cattura precedente; cambia solo chi ha la versione da telefono.
+  // Full-size dimensions stay those of the previous capture; only the `phone` flag changes.
   const previous = JSON.parse(readFileSync(manifestPath, "utf8"));
   manifest.screens = previous.screens.map((entry) => (selected.some((screen) => screen.id === entry.id) ? { ...entry, phone: Boolean(SCREENS.find((screen) => screen.id === entry.id)?.phone) } : entry));
   manifest.capturedAt = previous.capturedAt;

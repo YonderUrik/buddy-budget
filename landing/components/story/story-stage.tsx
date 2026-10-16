@@ -11,7 +11,7 @@ import { shotShown, STAGE_SHOTS, type ActiveId, type StageView } from "./story-v
 
 /** Larghezza (px) a cui sono catturate le schermate: i riquadri `focus` sono in queste coordinate. */
 const SHOT_WIDTH = 1920;
-/** Spazio (px dello screenshot) lasciato sopra il riquadro del passo, quando ci sta: la finestra scorre fin lì, senza ingrandire. */
+/** Space (screenshot px) left above the step's focus box, when it fits: the window scrolls there, without zooming. */
 const FOCUS_MARGIN = 80;
 /** Dopo quanto (ms) si caricano le schermate non ancora richieste, se chi legge resta sull'apertura. */
 const PRELOAD_AFTER_MS = 2000;
@@ -56,7 +56,7 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
     let y0 = 0;
     if (f) {
       const [, fy, , fh] = f;
-      // Il riquadro sta tutto dentro la finestra, con un po' d'aria sopra; se è più alto della finestra, si centra.
+      // The focus box fits whole inside the window, with some air above; if taller than the window, it is centred.
       y0 = fh >= visible ? fy + fh / 2 - visible / 2 : fy - Math.min(FOCUS_MARGIN, (visible - fh) / 2);
     }
     y0 = Math.max(0, Math.min(ih - visible, y0));
@@ -93,7 +93,7 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
               const shown = shotShown(view, shot.id, real);
               const load = shot.id === HERO.shot || armed;
               return SCREEN_THEMES.map((theme) => (
-                // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
+                // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
                 <img
                   key={`${shot.id}-${theme}`}
                   className={`shot shot-${theme}${shot.real ? " real" : ""}${shown ? " on" : ""}`}
@@ -122,7 +122,7 @@ export function StoryStage({ active, view, real, onToggleReal }: StoryStageProps
             const shown = shotShown(view, shot.id, real);
             const load = shot.id === HERO.shot || armed;
             return SCREEN_THEMES.map((theme) => (
-              // eslint-disable-next-line @next/next/no-img-element -- sito esportato in statico: niente ottimizzatore immagini
+              // eslint-disable-next-line @next/next/no-img-element -- static export: no image optimizer
               <img
                 key={`${shot.id}-${theme}-phone`}
                 className={`shot shot-${theme}${shot.real ? " real" : ""}${shown ? " on" : ""}`}

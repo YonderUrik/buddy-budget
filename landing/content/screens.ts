@@ -30,7 +30,7 @@ export interface AppScreen {
   maxHeight?: number;
   /** Salva anche `<id>-top.jpg`, solo la parte alta a 1280×800, per i riquadri a proporzione fissa. */
   topCrop?: boolean;
-  /** Salva anche `<id>-phone.jpg`: il primo schermo a misura di telefono (390×751 a 2x, lo schermo di un iPhone tolte barra di stato e indicatore), per la cornice da telefono (home e galleria sul telefono). */
+  /** Also saves `<id>-phone.jpg`: the first screen at phone size (390×751 at 2x, an iPhone screen minus status bar and home indicator), for the phone frame (home and gallery on the phone). */
   phone?: boolean;
   /** Pagina con un segmento dinamico (`[id]`): si apre `route` e si clicca il link con questo testo, così l'id non va scritto a mano. */
   open?: { route: string; clickText: string };
@@ -64,7 +64,7 @@ export function screenSrc(id: ScreenId, theme: ScreenTheme, top = false): string
   return `/screens/${theme}/${id}${top ? "-top" : ""}.jpg`;
 }
 
-/** Percorso della versione a misura di telefono (primo schermo, 390×751 a 2x), solo per le schermate con `phone`. */
+/** Path of the phone-size version (first screen, 390×751 at 2x), only for screens with `phone`. */
 export function screenPhoneSrc(id: ScreenId, theme: ScreenTheme): string {
   return `/screens/${theme}/${id}-phone.jpg`;
 }

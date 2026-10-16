@@ -45,17 +45,16 @@ function fireInput(snapshot: AnalyticsSnapshot): FireInput | null {
 /** Costruisce la vista degli obiettivi da righe già lette e da una fotografia delle Analitiche. */
 export function goalsViewFrom(snapshot: AnalyticsSnapshot, rows: { goals: GoalRecord[]; sources: GoalSourceRecord[] }): GoalsView {
   const { base, plan } = snapshot;
-  const essentialAnnual = base.cashflow.leanSpending ?? plan.spending;
   return buildGoalsView({
     currency: snapshot.currency,
     todayKey: snapshot.todayKey,
     goals: rows.goals,
     sources: rows.sources,
     accounts: snapshot.accounts,
-    positions: base.positions.map((p) => ({ id: p.id, name: p.name, value: p.value, unrealizedGain: p.unrealizedGain, taxRate: p.taxRate })),
+    positions: base.positions.map((p) => ({ id: p.id, name: p.name, value: p.value, unrealizedGain: p.unrealizedGain, taxRate: p.taxRate, type: base.instrumentTypes[p.id] })),
     capacity: plan.savings === null ? null : plan.savings / 12,
     fire: fireInput(snapshot),
-    essentialMonthly: essentialAnnual === null ? null : essentialAnnual / 12,
+    essential: snapshot.essential,
     debtsTotal: base.wealth.debts,
   });
 }

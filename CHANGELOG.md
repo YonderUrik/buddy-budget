@@ -2,6 +2,19 @@
 
 Tutte le modifiche rilevanti di BuddyBudget, versione per versione. Il file è mantenuto da release-please (vedi `docs/rilasci.md`).
 
+## [0.71.0](https://github.com/YonderUrik/buddy-budget/compare/v0.70.0...v0.71.0) (2026-10-16)
+
+
+### Novità
+
+* **landing:** real phone frame, whole screenshots and plain texts on the home page ([#383](https://github.com/YonderUrik/buddy-budget/issues/383)) ([d449b96](https://github.com/YonderUrik/buddy-budget/commit/d449b9668aa7dd8f084dc148378d34b572d6309e))
+
+
+### Correzioni
+
+* **deps:** bump drizzle-orm from 0.45.3 to 0.45.4 in the patch group ([#389](https://github.com/YonderUrik/buddy-budget/issues/389)) ([fe34327](https://github.com/YonderUrik/buddy-budget/commit/fe34327e1b78ee53b257c5aa39c6c9353621a2ee))
+* obiettivi modificabili dalla lista, fondo di emergenza dalle spese vere e loghi delle fonti ([#382](https://github.com/YonderUrik/buddy-budget/issues/382)) ([f08692a](https://github.com/YonderUrik/buddy-budget/commit/f08692a50e9194e86508b8f78e9f5e6473709b56))
+
 ## [0.70.0](https://github.com/YonderUrik/buddy-budget/compare/v0.69.1...v0.70.0) (2026-10-15)
 
 

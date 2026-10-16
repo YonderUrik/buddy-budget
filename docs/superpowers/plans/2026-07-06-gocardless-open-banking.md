@@ -2,96 +2,96 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Collegare conti bancari reali via GoCardless Bank Account Data API (consenso PSD2, import saldo/transazioni, sync automatico ogni 12h), integrato nella schermata Conti esistente.
+**Goal:** Link real bank accounts via the GoCardless Bank Account Data API (PSD2 consent, balance/transaction import, automatic sync every 12h), integrated into the existing Conti (Accounts) screen.
 
-**Architecture:** Nuove tabelle `bank_connections`/`bank_account_links`/`gocardless_token` accanto al modello dati esistente (`accounts`/`transactions` invariati salvo una colonna `externalId` per l'idempotenza). Un client HTTP sottile verso l'API GoCardless, un motore di sync che aggiorna saldo/transazioni rispettando i rate limit (contati in Redis), uno scheduler `node-cron` in-process avviato da `instrumentation.ts`. Il flusso utente riusa il form "+ Aggiungi conto" esistente con una nuova opzione "Collega banca".
+**Architecture:** New `bank_connections`/`bank_account_links`/`gocardless_token` tables next to the existing data model (`accounts`/`transactions` unchanged except for an `externalId` column for idempotency). A thin HTTP client for the GoCardless API, a sync engine that updates balance/transactions while respecting rate limits (counted in Redis), an in-process `node-cron` scheduler started from `instrumentation.ts`. The user flow reuses the existing "+ Aggiungi conto" ("Add account") form with a new "Collega banca" ("Connect bank") option.
 
-**Tech Stack:** Next.js Route Handlers, Drizzle ORM/Postgres, `ioredis`, `node-cron`, TanStack Query, Zod, Vitest (test di integrazione su DB reale, mock su `fetch`/moduli GoCardless — nessun ambiente jsdom/component test nel progetto).
+**Tech Stack:** Next.js Route Handlers, Drizzle ORM/Postgres, `ioredis`, `node-cron`, TanStack Query, Zod, Vitest (integration tests on a real DB, mocks on `fetch`/GoCardless modules — no jsdom/component test environment in the project).
 
 ## Global Constraints
 
 - Package manager: **pnpm**.
-- **L'agente non esegue MAI comandi git in questo repo.** Ogni step di commit va presentato come comando esatto che l'utente esegue lui stesso, con richiesta di conferma prima di procedere al task successivo.
-- Spec di riferimento: `docs/superpowers/specs/2026-07-06-gocardless-open-banking-design.md` — ogni deviazione da questo spec va segnalata esplicitamente nel task in cui avviene (es. Task 2: `requisitionId` nullable, non `NOT NULL` come implicito nello spec, per gestire lo stato `pending` prima che la requisition esista).
-- Migration **versionate** (`pnpm db:generate` + `pnpm db:migrate`), mai `db:push`, coerente con il resto del progetto.
-- Barrel file (`index.ts`) solo per componenti usati da fuori la cartella — `ConnectBankFlow` resta interno a `components/domain/accounts/` (usato solo da `add-account-form.tsx` nella stessa cartella), nessuna voce di barrel per lui.
-- Nessun colore/raggio hardcoded nei componenti — solo classi Tailwind sui token già definiti in `app/globals.css`.
-- JSDoc minimo (una riga `/** ... */`) su ogni funzione/componente pubblico nuovo, in italiano, come da convenzione di progetto.
-- Stringhe visibili all'utente in italiano.
-- Test: pattern esistente in `lib/db/integration.test.ts` e `app/api/accounts/route.test.ts` — DB Postgres reale (mai mockato), `vi.mock("@/lib/auth", ...)` per la sessione, moduli GoCardless/Redis mockati con `vi.mock(..., async (importOriginal) => ...)` per preservare i tipi/classi reali (es. `GoCardlessError`). Nessun test di componente React (nessuna infrastruttura jsdom nel progetto) — le UI task si verificano con `pnpm exec tsc --noEmit` + verifica manuale finale (Task 16).
-- Rate limit GoCardless: intervallo di sync **12 ore**, storico iniziale **tutto il disponibile** (`transaction_total_days` dell'istituto), scope paesi **tutti quelli supportati da GoCardless**.
+- **The agent NEVER runs git commands in this repo.** Every commit step must be presented as the exact command the user runs themselves, asking for confirmation before moving on to the next task.
+- Reference spec: `docs/superpowers/specs/2026-07-06-gocardless-open-banking-design.md` — every deviation from this spec must be flagged explicitly in the task where it happens (e.g. Task 2: `requisitionId` nullable, not `NOT NULL` as implied in the spec, to handle the `pending` state before the requisition exists).
+- **Versioned** migrations (`pnpm db:generate` + `pnpm db:migrate`), never `db:push`, consistent with the rest of the project.
+- Barrel file (`index.ts`) only for components used from outside the folder — `ConnectBankFlow` stays internal to `components/domain/accounts/` (used only by `add-account-form.tsx` in the same folder), no barrel entry for it.
+- No hardcoded colors/radii in components — only Tailwind classes on the tokens already defined in `app/globals.css`.
+- Minimal JSDoc (one `/** ... */` line) on every new public function/component, in Italian, per project convention.
+- User-visible strings in Italian.
+- Tests: existing pattern in `lib/db/integration.test.ts` and `app/api/accounts/route.test.ts` — real Postgres DB (never mocked), `vi.mock("@/lib/auth", ...)` for the session, GoCardless/Redis modules mocked with `vi.mock(..., async (importOriginal) => ...)` to preserve the real types/classes (e.g. `GoCardlessError`). No React component tests (no jsdom infrastructure in the project) — UI tasks are verified with `pnpm exec tsc --noEmit` + a final manual check (Task 16).
+- GoCardless rate limit: sync interval **12 hours**, initial history **everything available** (the institution's `transaction_total_days`), country scope **all those supported by GoCardless**.
 
 ---
 
 ## File Structure
 
-- `lib/db/schema/bank-connections.ts` (nuovo) — tabelle `bank_connections`, `bank_account_links`, `gocardless_token`.
-- `lib/db/schema/transactions.ts` (modifica) — colonna `externalId` + vincolo unique `(accountId, externalId)`.
-- `lib/db/schema/categories.ts` (modifica) — aggiunge `"Da categorizzare"` a `DEFAULT_CATEGORIES`.
-- `lib/db/schema/index.ts` (modifica) — esporta il nuovo file schema.
-- `lib/redis/client.ts` (nuovo) — client `ioredis` condiviso.
-- `lib/gocardless/rate-limit.ts` (nuovo) — logica pura di rate limit, store iniettabile (testabile senza Redis reale).
-- `lib/gocardless/redis-rate-limit-store.ts` (nuovo) — adapter Redis dell'interfaccia `RateLimitStore`.
-- `lib/gocardless/client.ts` (nuovo) — client HTTP GoCardless (token cache, istituti, agreement/requisition, dettagli/saldi/transazioni conto).
-- `lib/gocardless/categorize.ts` (nuovo) — matching categoria + categoria di fallback.
-- `lib/gocardless/sync.ts` (nuovo) — `syncAccountLink`, il motore di sync per un singolo conto collegato.
-- `lib/gocardless/scheduler.ts` (nuovo) — `findDueLinks`/`runDueSyncs`/`startGoCardlessScheduler` (cron ogni 12h).
-- `instrumentation.ts` (nuovo, root) — hook di boot Next.js che avvia lo scheduler.
-- `lib/validation/gocardless.ts` (nuovo) — schemi Zod per creazione connessione e finalizzazione selezione.
-- `lib/queries/gocardless.ts` (nuovo) — hook TanStack Query lato client.
-- `app/api/gocardless/institutions/route.ts` (nuovo) — GET lista istituti per paese.
-- `app/api/gocardless/connections/route.ts` (nuovo) — POST crea connessione+requisition, GET stato connessioni per badge "Riconnetti".
-- `app/api/gocardless/callback/route.ts` (nuovo) — redirect di ritorno dal consenso bancario.
-- `app/api/gocardless/connections/[id]/accounts/route.ts` (nuovo) — GET conti esterni trovati dopo il consenso.
-- `app/api/gocardless/connections/[id]/finalize/route.ts` (nuovo) — POST crea/ricollega i conti selezionati e lancia il sync iniziale.
-- `components/domain/accounts/connect-bank-flow.tsx` (nuovo) — UI selezione paese/istituto + redirect consenso.
-- `components/domain/accounts/add-account-form.tsx` (modifica) — aggiunge lo switch "Manuale"/"Collega banca".
-- `components/domain/accounts/account-row.tsx` (modifica) — badge/bottone "Riconnetti".
-- `app/(app)/conti/collega/[connectionId]/page.tsx` (nuovo) — pagina di selezione conti esterni post-consenso.
-- `app/(app)/conti/page.tsx` (modifica) — recupera stato connessioni, passa `needsReconnect`/`onReconnect` alle righe.
-- `.env.local.example` (modifica) — nuove variabili GoCardless/Redis.
-- `package.json` (modifica) — dipendenze `ioredis`, `node-cron`, `@types/node-cron`.
+- `lib/db/schema/bank-connections.ts` (new) — `bank_connections`, `bank_account_links`, `gocardless_token` tables.
+- `lib/db/schema/transactions.ts` (modify) — `externalId` column + unique constraint `(accountId, externalId)`.
+- `lib/db/schema/categories.ts` (modify) — adds `"Da categorizzare"` ("To categorise") to `DEFAULT_CATEGORIES`.
+- `lib/db/schema/index.ts` (modify) — exports the new schema file.
+- `lib/redis/client.ts` (new) — shared `ioredis` client.
+- `lib/gocardless/rate-limit.ts` (new) — pure rate limit logic, injectable store (testable without a real Redis).
+- `lib/gocardless/redis-rate-limit-store.ts` (new) — Redis adapter of the `RateLimitStore` interface.
+- `lib/gocardless/client.ts` (new) — GoCardless HTTP client (token cache, institutions, agreement/requisition, account details/balances/transactions).
+- `lib/gocardless/categorize.ts` (new) — category matching + fallback category.
+- `lib/gocardless/sync.ts` (new) — `syncAccountLink`, the sync engine for a single linked account.
+- `lib/gocardless/scheduler.ts` (new) — `findDueLinks`/`runDueSyncs`/`startGoCardlessScheduler` (cron every 12h).
+- `instrumentation.ts` (new, root) — Next.js boot hook that starts the scheduler.
+- `lib/validation/gocardless.ts` (new) — Zod schemas for connection creation and selection finalization.
+- `lib/queries/gocardless.ts` (new) — client-side TanStack Query hooks.
+- `app/api/gocardless/institutions/route.ts` (new) — GET list of institutions per country.
+- `app/api/gocardless/connections/route.ts` (new) — POST creates connection+requisition, GET connection status for the "Riconnetti" ("Reconnect") badge.
+- `app/api/gocardless/callback/route.ts` (new) — return redirect from the bank consent.
+- `app/api/gocardless/connections/[id]/accounts/route.ts` (new) — GET external accounts found after consent.
+- `app/api/gocardless/connections/[id]/finalize/route.ts` (new) — POST creates/relinks the selected accounts and launches the initial sync.
+- `components/domain/accounts/connect-bank-flow.tsx` (new) — country/institution selection UI + consent redirect.
+- `components/domain/accounts/add-account-form.tsx` (modify) — adds the "Manuale"/"Collega banca" ("Manual"/"Connect bank") switch.
+- `components/domain/accounts/account-row.tsx` (modify) — "Riconnetti" badge/button.
+- `app/(app)/conti/collega/[connectionId]/page.tsx` (new) — post-consent external account selection page.
+- `app/(app)/conti/page.tsx` (modify) — fetches connection status, passes `needsReconnect`/`onReconnect` to the rows.
+- `.env.local.example` (modify) — new GoCardless/Redis variables.
+- `package.json` (modify) — `ioredis`, `node-cron`, `@types/node-cron` dependencies.
 
 ---
 
-### Task 1: Dipendenze e variabili d'ambiente
+### Task 1: Dependencies and environment variables
 
 **Files:**
 - Modify: `package.json`
 - Modify: `.env.local.example`
 
 **Interfaces:**
-- Produces: `ioredis`, `node-cron` disponibili per tutti i task successivi; `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY`, `REDIS_URL` come variabili attese da `lib/gocardless/client.ts` (Task 4) e `lib/redis/client.ts` (Task 3).
+- Produces: `ioredis`, `node-cron` available to all later tasks; `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY`, `REDIS_URL` as variables expected by `lib/gocardless/client.ts` (Task 4) and `lib/redis/client.ts` (Task 3).
 
-- [ ] **Step 1: Installare le dipendenze**
+- [ ] **Step 1: Install the dependencies**
 
 Run: `pnpm add ioredis node-cron`
 Run: `pnpm add -D @types/node-cron`
 
-Expected: entrambi i comandi terminano senza errori; `package.json` mostra `ioredis` e `node-cron` in `dependencies`, `@types/node-cron` in `devDependencies`.
+Expected: both commands finish without errors; `package.json` shows `ioredis` and `node-cron` in `dependencies`, `@types/node-cron` in `devDependencies`.
 
-- [ ] **Step 2: Aggiungere le variabili d'ambiente a `.env.local.example`**
+- [ ] **Step 2: Add the environment variables to `.env.local.example`**
 
-Aggiungi in fondo al file:
+Add at the end of the file:
 
 ```
 # GoCardless Bank Account Data (Open Banking) — https://bankaccountdata.gocardless.com
-# Credenziali sandbox da creare su https://bankaccountdata.gocardless.com/
+# Sandbox credentials to create at https://bankaccountdata.gocardless.com/
 GOCARDLESS_SECRET_ID=<secret-id-sandbox>
 GOCARDLESS_SECRET_KEY=<secret-key-sandbox>
 
-# Redis — rate limiting del sync GoCardless (es. `docker run -p 6379:6379 redis`)
+# Redis — rate limiting of the GoCardless sync (e.g. `docker run -p 6379:6379 redis`)
 REDIS_URL=redis://localhost:6379
 ```
 
-- [ ] **Step 3: Copiare in `.env.local` locale e verificare il type-check**
+- [ ] **Step 3: Copy into the local `.env.local` and verify the type-check**
 
-Copia le nuove righe anche nel tuo `.env.local` (non committato) con valori reali o placeholder per ora.
+Copy the new lines into your `.env.local` too (not committed) with real values or placeholders for now.
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore (nessun codice applicativo ancora, solo config).
+Expected: no errors (no application code yet, only config).
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add package.json pnpm-lock.yaml .env.local.example
@@ -100,7 +100,7 @@ git commit -m "chore: add ioredis and node-cron dependencies for GoCardless sync
 
 ---
 
-### Task 2: Schema DB — connessioni bancarie, link conti, cache token, categoria di fallback
+### Task 2: DB schema — bank connections, account links, token cache, fallback category
 
 **Files:**
 - Create: `lib/db/schema/bank-connections.ts`
@@ -111,9 +111,9 @@ git commit -m "chore: add ioredis and node-cron dependencies for GoCardless sync
 
 **Interfaces:**
 - Consumes: `authUser` (`lib/db/schema/auth.ts`), `accounts` (`lib/db/schema/accounts.ts`).
-- Produces: `bankConnections`, `bankAccountLinks`, `gocardlessToken` tabelle e relativi tipi (`BankConnection`, `BankAccountLink`, `GoCardlessToken`), usati da Task 4 (client), Task 6 (sync), Task 7 (scheduler), Task 9-11 (route API). `transactions.externalId` usato da Task 6. `FALLBACK_CATEGORY_NAME = "Da categorizzare"` definita in Task 5, seminata qui solo nei `DEFAULT_CATEGORIES` per i nuovi utenti (gli utenti esistenti la ricevono lazy via `getFallbackCategoryId`, Task 5).
+- Produces: `bankConnections`, `bankAccountLinks`, `gocardlessToken` tables and their types (`BankConnection`, `BankAccountLink`, `GoCardlessToken`), used by Task 4 (client), Task 6 (sync), Task 7 (scheduler), Tasks 9-11 (API routes). `transactions.externalId` used by Task 6. `FALLBACK_CATEGORY_NAME = "Da categorizzare"` defined in Task 5, seeded here only in `DEFAULT_CATEGORIES` for new users (existing users get it lazily via `getFallbackCategoryId`, Task 5).
 
-- [ ] **Step 1: Creare `lib/db/schema/bank-connections.ts`**
+- [ ] **Step 1: Create `lib/db/schema/bank-connections.ts`**
 
 ```ts
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -134,8 +134,8 @@ export const bankConnections = pgTable("bank_connections", {
     .references(() => authUser.id, { onDelete: "cascade" }),
   institutionId: text("institution_id").notNull(),
   institutionName: text("institution_name").notNull(),
-  // Nullable: nasce nulla quando la connessione è "pending" (creata prima ancora
-  // di aver chiamato GoCardless), valorizzata subito dopo dalla stessa richiesta.
+  // Nullable: starts null when the connection is "pending" (created before
+  // GoCardless has even been called), filled in right after by the same request.
   requisitionId: text("requisition_id"),
   status: bankConnectionStatusEnum("status").notNull().default("pending"),
   consentExpiresAt: timestamp("consent_expires_at", { withTimezone: true }),
@@ -164,7 +164,7 @@ export const bankAccountLinks = pgTable("bank_account_links", {
 export type BankAccountLink = typeof bankAccountLinks.$inferSelect;
 export type NewBankAccountLink = typeof bankAccountLinks.$inferInsert;
 
-/** Singola riga: cache dell'access token applicativo GoCardless (non è per-utente). */
+/** Single row: cache of the GoCardless application access token (not per user). */
 export const gocardlessToken = pgTable("gocardless_token", {
   id: text("id").primaryKey(),
   accessToken: text("access_token").notNull(),
@@ -174,23 +174,23 @@ export const gocardlessToken = pgTable("gocardless_token", {
 export type GoCardlessToken = typeof gocardlessToken.$inferSelect;
 ```
 
-- [ ] **Step 2: Aggiungere `externalId` a `lib/db/schema/transactions.ts`**
+- [ ] **Step 2: Add `externalId` to `lib/db/schema/transactions.ts`**
 
-Modifica l'import in cima al file:
+Change the import at the top of the file:
 
 ```ts
 import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 ```
 
-Nel corpo di `pgTable`, dopo `source`, aggiungi:
+In the body of `pgTable`, after `source`, add:
 
 ```ts
-    // Id della transazione lato GoCardless — nullable (le transazioni manuali non ce l'hanno),
-    // usato per l'idempotenza dei sync periodici (nessun duplicato a ogni run del cron).
+    // Transaction id on the GoCardless side — nullable (manual transactions do not have one),
+    // used for idempotency of periodic syncs (no duplicates on every cron run).
     externalId: text("external_id"),
 ```
 
-E aggiorna l'array del terzo argomento:
+And update the array in the third argument:
 
 ```ts
   (table) => [
@@ -199,33 +199,33 @@ E aggiorna l'array del terzo argomento:
   ]
 ```
 
-- [ ] **Step 3: Aggiungere la categoria di fallback a `lib/db/schema/categories.ts`**
+- [ ] **Step 3: Add the fallback category to `lib/db/schema/categories.ts`**
 
-Nell'array `DEFAULT_CATEGORIES`, aggiungi come ultimo elemento:
+In the `DEFAULT_CATEGORIES` array, add as the last element:
 
 ```ts
   { name: "Da categorizzare", type: "variabile" },
 ```
 
-- [ ] **Step 4: Esportare il nuovo schema dal barrel**
+- [ ] **Step 4: Export the new schema from the barrel**
 
-In `lib/db/schema/index.ts`, aggiungi:
+In `lib/db/schema/index.ts`, add:
 
 ```ts
 export * from "./bank-connections";
 ```
 
-- [ ] **Step 5: Generare e applicare la migration**
+- [ ] **Step 5: Generate and apply the migration**
 
 Run: `pnpm db:generate`
-Expected: nuovo file SQL sotto `lib/db/migrations/` con `CREATE TYPE bank_connection_status`, `CREATE TABLE bank_connections`, `CREATE TABLE bank_account_links`, `CREATE TABLE gocardless_token`, `ALTER TABLE transactions ADD COLUMN external_id` + il vincolo unique.
+Expected: new SQL file under `lib/db/migrations/` with `CREATE TYPE bank_connection_status`, `CREATE TABLE bank_connections`, `CREATE TABLE bank_account_links`, `CREATE TABLE gocardless_token`, `ALTER TABLE transactions ADD COLUMN external_id` + the unique constraint.
 
 Run: `pnpm db:migrate`
-Expected: conferma delle tabelle applicate, nessun errore.
+Expected: confirmation of the applied tables, no errors.
 
-- [ ] **Step 6: Scrivere il test di integrazione**
+- [ ] **Step 6: Write the integration test**
 
-Crea `lib/db/bank-connections.integration.test.ts`:
+Create `lib/db/bank-connections.integration.test.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -295,12 +295,12 @@ describe("bank_connections / bank_account_links — round trip", () => {
 });
 ```
 
-- [ ] **Step 7: Eseguire i test**
+- [ ] **Step 7: Run the tests**
 
 Run: `pnpm test lib/db/bank-connections.integration.test.ts`
-Expected: 2 test PASS.
+Expected: 2 tests PASS.
 
-- [ ] **Step 8: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 8: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/db/schema lib/db/migrations lib/db/bank-connections.integration.test.ts
@@ -309,7 +309,7 @@ git commit -m "feat: add bank_connections/bank_account_links schema and fallback
 
 ---
 
-### Task 3: Redis client e logica di rate limit
+### Task 3: Redis client and rate limit logic
 
 **Files:**
 - Create: `lib/redis/client.ts`
@@ -318,11 +318,11 @@ git commit -m "feat: add bank_connections/bank_account_links schema and fallback
 - Test: `lib/gocardless/rate-limit.test.ts`
 
 **Interfaces:**
-- Produces: `RateLimitStore` interface, `recordRateLimit()`, `isRateLimited()` (Task 6 li usa), `redisRateLimitStore` (Task 7 scheduler, Task 11 finalize route).
+- Produces: `RateLimitStore` interface, `recordRateLimit()`, `isRateLimited()` (used by Task 6), `redisRateLimitStore` (Task 7 scheduler, Task 11 finalize route).
 
-- [ ] **Step 1: Scrivere il test (con uno store finto in memoria, niente Redis reale)**
+- [ ] **Step 1: Write the test (with a fake in-memory store, no real Redis)**
 
-Crea `lib/gocardless/rate-limit.test.ts`:
+Create `lib/gocardless/rate-limit.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -366,15 +366,15 @@ describe("rate-limit", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test lib/gocardless/rate-limit.test.ts`
 Expected: FAIL, `Cannot find module './rate-limit'`.
 
-- [ ] **Step 3: Implementare `lib/gocardless/rate-limit.ts`**
+- [ ] **Step 3: Implement `lib/gocardless/rate-limit.ts`**
 
 ```ts
-/** Store minimale su cui gira la logica di rate limit — Redis in produzione, una Map nei test. */
+/** Minimal store the rate limit logic runs on — Redis in production, a Map in tests. */
 export interface RateLimitStore {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttlSeconds: number): Promise<void>;
@@ -384,7 +384,7 @@ function rateLimitKey(externalAccountId: string, endpoint: string): string {
   return `gocardless:ratelimit:${endpoint}:${externalAccountId}`;
 }
 
-/** Salva le chiamate rimaste per un conto/endpoint, lette dagli header di risposta GoCardless. */
+/** Saves the remaining calls for an account/endpoint, read from the GoCardless response headers. */
 export async function recordRateLimit(
   store: RateLimitStore,
   externalAccountId: string,
@@ -395,7 +395,7 @@ export async function recordRateLimit(
   await store.set(rateLimitKey(externalAccountId, endpoint), String(remaining), Math.max(1, resetSeconds));
 }
 
-/** True se non restano chiamate per quel conto/endpoint; nessuna voce registrata = via libera. */
+/** True if no calls remain for that account/endpoint; no recorded entry = go ahead. */
 export async function isRateLimited(
   store: RateLimitStore,
   externalAccountId: string,
@@ -407,14 +407,14 @@ export async function isRateLimited(
 }
 ```
 
-- [ ] **Step 4: Eseguire di nuovo il test**
+- [ ] **Step 4: Run the test again**
 
 Run: `pnpm test lib/gocardless/rate-limit.test.ts`
-Expected: 4 test PASS.
+Expected: 4 tests PASS.
 
-- [ ] **Step 5: Creare il client Redis e l'adapter**
+- [ ] **Step 5: Create the Redis client and the adapter**
 
-Crea `lib/redis/client.ts`:
+Create `lib/redis/client.ts`:
 
 ```ts
 import "server-only";
@@ -429,14 +429,14 @@ if (!redisUrl) {
 export const redis = new Redis(redisUrl);
 ```
 
-Crea `lib/gocardless/redis-rate-limit-store.ts`:
+Create `lib/gocardless/redis-rate-limit-store.ts`:
 
 ```ts
 import "server-only";
 import { redis } from "@/lib/redis/client";
 import type { RateLimitStore } from "./rate-limit";
 
-/** Adapter Redis di `RateLimitStore`, usato dallo scheduler e dal sync iniziale post-collegamento. */
+/** Redis adapter of `RateLimitStore`, used by the scheduler and by the initial post-linking sync. */
 export const redisRateLimitStore: RateLimitStore = {
   async get(key) {
     return redis.get(key);
@@ -447,12 +447,12 @@ export const redisRateLimitStore: RateLimitStore = {
 };
 ```
 
-- [ ] **Step 6: Verificare il type-check**
+- [ ] **Step 6: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 7: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 7: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/redis lib/gocardless/rate-limit.ts lib/gocardless/rate-limit.test.ts lib/gocardless/redis-rate-limit-store.ts
@@ -461,7 +461,7 @@ git commit -m "feat: add Redis-backed rate limit tracking for GoCardless sync"
 
 ---
 
-### Task 4: Client HTTP GoCardless
+### Task 4: GoCardless HTTP client
 
 **Files:**
 - Create: `lib/gocardless/client.ts`
@@ -469,11 +469,11 @@ git commit -m "feat: add Redis-backed rate limit tracking for GoCardless sync"
 
 **Interfaces:**
 - Consumes: `gocardlessToken` (Task 2), `GOCARDLESS_SECRET_ID`/`GOCARDLESS_SECRET_KEY` (Task 1).
-- Produces: `GoCardlessError`, `getAccessToken()`, `listInstitutions()`, `createRequisition()`, `getRequisition()`, `getAccountDetails()`, `getAccountBalances()`, `getAccountTransactions()`, tipi `Institution`/`Requisition`/`AccountDetails`/`Balance`/`BankTransaction`/`RateLimitInfo` — usati da Task 6 (sync), Task 9-11 (route API).
+- Produces: `GoCardlessError`, `getAccessToken()`, `listInstitutions()`, `createRequisition()`, `getRequisition()`, `getAccountDetails()`, `getAccountBalances()`, `getAccountTransactions()`, types `Institution`/`Requisition`/`AccountDetails`/`Balance`/`BankTransaction`/`RateLimitInfo` — used by Task 6 (sync), Tasks 9-11 (API routes).
 
-- [ ] **Step 1: Scrivere il test (fetch globale mockato, DB reale per la cache token)**
+- [ ] **Step 1: Write the test (global fetch mocked, real DB for the token cache)**
 
-Crea `lib/gocardless/client.test.ts`:
+Create `lib/gocardless/client.test.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -541,12 +541,12 @@ describe("gocardless client", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test lib/gocardless/client.test.ts`
 Expected: FAIL, `Cannot find module './client'`.
 
-- [ ] **Step 3: Implementare `lib/gocardless/client.ts`**
+- [ ] **Step 3: Implement `lib/gocardless/client.ts`**
 
 ```ts
 import "server-only";
@@ -583,7 +583,7 @@ async function fetchNewToken(): Promise<{ access: string; access_expires: number
   return response.json();
 }
 
-/** Restituisce un access token valido, riusando la cache DB o rigenerandolo se scaduto/assente. */
+/** Returns a valid access token, reusing the DB cache or regenerating it if expired/missing. */
 export async function getAccessToken(): Promise<string> {
   const [cached] = await db.select().from(gocardlessToken).where(eq(gocardlessToken.id, TOKEN_ROW_ID));
   if (cached && cached.expiresAt.getTime() > Date.now() + 60_000) {
@@ -640,7 +640,7 @@ export interface Institution {
   transaction_total_days: string;
 }
 
-/** Elenca gli istituti bancari GoCardless disponibili in un paese (codice ISO 3166-1 alpha-2). */
+/** Lists the GoCardless bank institutions available in a country (ISO 3166-1 alpha-2 code). */
 export async function listInstitutions(country: string): Promise<Institution[]> {
   const { data } = await request<Institution[]>(`/institutions/?country=${country}`);
   return data;
@@ -653,7 +653,7 @@ export interface Requisition {
   accounts: string[];
 }
 
-/** Crea un End User Agreement (storico = tutto il disponibile) + una Requisition; restituisce il link di consenso. */
+/** Creates an End User Agreement (history = everything available) + a Requisition; returns the consent link. */
 export async function createRequisition(params: {
   institutionId: string;
   maxHistoricalDays: number;
@@ -684,7 +684,7 @@ export async function createRequisition(params: {
   return requisition;
 }
 
-/** Stato aggiornato di una requisition (`accounts` è popolato solo dopo il consenso dell'utente). */
+/** Updated status of a requisition (`accounts` is populated only after the user's consent). */
 export async function getRequisition(requisitionId: string): Promise<Requisition> {
   const { data } = await request<Requisition>(`/requisitions/${requisitionId}/`);
   return data;
@@ -696,7 +696,7 @@ export interface AccountDetails {
   product?: string;
 }
 
-/** Dettagli identificativi di un conto esterno (nome/IBAN), usati nella UI di selezione. */
+/** Identifying details of an external account (name/IBAN), used in the selection UI. */
 export async function getAccountDetails(externalAccountId: string): Promise<AccountDetails> {
   const { data } = await request<{ account: AccountDetails }>(`/accounts/${externalAccountId}/details/`);
   return data.account;
@@ -707,7 +707,7 @@ export interface Balance {
   balanceType: string;
 }
 
-/** Saldo di un conto esterno: preferisce "interimAvailable", altrimenti il primo disponibile. */
+/** Balance of an external account: prefers "interimAvailable", otherwise the first available. */
 export async function getAccountBalances(
   externalAccountId: string
 ): Promise<{ balance: Balance; rateLimit: RateLimitInfo | null }> {
@@ -724,7 +724,7 @@ export interface BankTransaction {
   bookingDate: string;
 }
 
-/** Transazioni "booked" di un conto esterno (le "pending" non si importano, per evitare doppioni al booking). */
+/** "Booked" transactions of an external account ("pending" ones are not imported, to avoid duplicates at booking). */
 export async function getAccountTransactions(
   externalAccountId: string
 ): Promise<{ transactions: BankTransaction[]; rateLimit: RateLimitInfo | null }> {
@@ -735,12 +735,12 @@ export async function getAccountTransactions(
 }
 ```
 
-- [ ] **Step 4: Eseguire di nuovo il test**
+- [ ] **Step 4: Run the test again**
 
 Run: `pnpm test lib/gocardless/client.test.ts`
-Expected: 3 test PASS.
+Expected: 3 tests PASS.
 
-- [ ] **Step 5: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 5: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/gocardless/client.ts lib/gocardless/client.test.ts
@@ -749,7 +749,7 @@ git commit -m "feat: add GoCardless Bank Account Data HTTP client"
 
 ---
 
-### Task 5: Categorizzazione best-effort delle transazioni importate
+### Task 5: Best-effort categorization of imported transactions
 
 **Files:**
 - Create: `lib/gocardless/categorize.ts`
@@ -757,11 +757,11 @@ git commit -m "feat: add GoCardless Bank Account Data HTTP client"
 
 **Interfaces:**
 - Consumes: `categories`, `transactions` (Task 2).
-- Produces: `FALLBACK_CATEGORY_NAME`, `getFallbackCategoryId()`, `resolveCategoryId()` — usati da Task 6 (sync).
+- Produces: `FALLBACK_CATEGORY_NAME`, `getFallbackCategoryId()`, `resolveCategoryId()` — used by Task 6 (sync).
 
-- [ ] **Step 1: Scrivere il test**
+- [ ] **Step 1: Write the test**
 
-Crea `lib/gocardless/categorize.test.ts`:
+Create `lib/gocardless/categorize.test.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -830,12 +830,12 @@ describe("categorize", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test lib/gocardless/categorize.test.ts`
 Expected: FAIL, `Cannot find module './categorize'`.
 
-- [ ] **Step 3: Implementare `lib/gocardless/categorize.ts`**
+- [ ] **Step 3: Implement `lib/gocardless/categorize.ts`**
 
 ```ts
 import { and, desc, eq, ilike, ne } from "drizzle-orm";
@@ -845,7 +845,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 
 export const FALLBACK_CATEGORY_NAME = "Da categorizzare";
 
-/** Id della categoria di fallback dell'utente, creata al volo se non esiste ancora. */
+/** Id of the user's fallback category, created on the fly if it does not exist yet. */
 export async function getFallbackCategoryId(userId: string): Promise<string> {
   const [existing] = await db
     .select()
@@ -860,7 +860,7 @@ export async function getFallbackCategoryId(userId: string): Promise<string> {
   return created.id;
 }
 
-/** Categoria dell'ultima transazione con la stessa descrizione (case-insensitive), se già categorizzata. */
+/** Category of the latest transaction with the same description (case-insensitive), if already categorized. */
 async function matchCategoryId(userId: string, description: string, fallbackId: string): Promise<string | null> {
   const [match] = await db
     .select({ categoryId: transactions.categoryId })
@@ -877,7 +877,7 @@ async function matchCategoryId(userId: string, description: string, fallbackId: 
   return match?.categoryId ?? null;
 }
 
-/** Categoria da assegnare a una transazione importata: match su descrizione esistente, altrimenti fallback. */
+/** Category to assign to an imported transaction: match on an existing description, otherwise fallback. */
 export async function resolveCategoryId(userId: string, description: string): Promise<string> {
   const fallbackId = await getFallbackCategoryId(userId);
   const matched = await matchCategoryId(userId, description, fallbackId);
@@ -885,12 +885,12 @@ export async function resolveCategoryId(userId: string, description: string): Pr
 }
 ```
 
-- [ ] **Step 4: Eseguire di nuovo il test**
+- [ ] **Step 4: Run the test again**
 
 Run: `pnpm test lib/gocardless/categorize.test.ts`
-Expected: 2 test PASS.
+Expected: 2 tests PASS.
 
-- [ ] **Step 5: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 5: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/gocardless/categorize.ts lib/gocardless/categorize.test.ts
@@ -899,7 +899,7 @@ git commit -m "feat: add best-effort category matching for imported transactions
 
 ---
 
-### Task 6: Motore di sync di un conto collegato
+### Task 6: Sync engine for a linked account
 
 **Files:**
 - Create: `lib/gocardless/sync.ts`
@@ -907,11 +907,11 @@ git commit -m "feat: add best-effort category matching for imported transactions
 
 **Interfaces:**
 - Consumes: `getAccountBalances`/`getAccountTransactions`/`GoCardlessError` (Task 4), `isRateLimited`/`recordRateLimit`/`RateLimitStore` (Task 3), `resolveCategoryId` (Task 5), `bankAccountLinks`/`bankConnections` (Task 2).
-- Produces: `syncAccountLink(link, rateLimitStore)`, tipo `SyncableLink` — usati da Task 7 (scheduler), Task 11 (finalize).
+- Produces: `syncAccountLink(link, rateLimitStore)`, type `SyncableLink` — used by Task 7 (scheduler), Task 11 (finalize).
 
-- [ ] **Step 1: Scrivere il test (mock parziale del client GoCardless, store di rate limit in memoria, DB reale)**
+- [ ] **Step 1: Write the test (partial mock of the GoCardless client, in-memory rate limit store, real DB)**
 
-Crea `lib/gocardless/sync.test.ts`:
+Create `lib/gocardless/sync.test.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -1054,12 +1054,12 @@ describe("syncAccountLink", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test lib/gocardless/sync.test.ts`
 Expected: FAIL, `Cannot find module './sync'`.
 
-- [ ] **Step 3: Implementare `lib/gocardless/sync.ts`**
+- [ ] **Step 3: Implement `lib/gocardless/sync.ts`**
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -1081,7 +1081,7 @@ export interface SyncableLink {
   userId: string;
 }
 
-/** Sincronizza saldo e transazioni di un conto collegato; aggiorna i timestamp o marca la connessione scaduta. */
+/** Syncs balance and transactions of a linked account; updates the timestamps or marks the connection as expired. */
 export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<void> {
   if (await isRateLimited(rateLimitStore, link.externalAccountId, "balances")) return;
   if (await isRateLimited(rateLimitStore, link.externalAccountId, "transactions")) return;
@@ -1154,12 +1154,12 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
 }
 ```
 
-- [ ] **Step 4: Eseguire di nuovo il test**
+- [ ] **Step 4: Run the test again**
 
 Run: `pnpm test lib/gocardless/sync.test.ts`
-Expected: 3 test PASS.
+Expected: 3 tests PASS.
 
-- [ ] **Step 5: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 5: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/gocardless/sync.ts lib/gocardless/sync.test.ts
@@ -1168,7 +1168,7 @@ git commit -m "feat: add GoCardless sync engine with idempotent transaction impo
 
 ---
 
-### Task 7: Scheduler cron (ogni 12h) e boot Next.js
+### Task 7: Cron scheduler (every 12h) and Next.js boot
 
 **Files:**
 - Create: `lib/gocardless/scheduler.ts`
@@ -1179,9 +1179,9 @@ git commit -m "feat: add GoCardless sync engine with idempotent transaction impo
 - Consumes: `syncAccountLink`/`SyncableLink` (Task 6), `redisRateLimitStore` (Task 3).
 - Produces: `findDueLinks()`, `runDueSyncs()`, `startGoCardlessScheduler()`.
 
-- [ ] **Step 1: Scrivere il test (DB reale per `findDueLinks`, `syncAccountLink` mockato per `runDueSyncs`)**
+- [ ] **Step 1: Write the test (real DB for `findDueLinks`, `syncAccountLink` mocked for `runDueSyncs`)**
 
-Crea `lib/gocardless/scheduler.test.ts`:
+Create `lib/gocardless/scheduler.test.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -1260,12 +1260,12 @@ describe("scheduler", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test lib/gocardless/scheduler.test.ts`
 Expected: FAIL, `Cannot find module './scheduler'`.
 
-- [ ] **Step 3: Implementare `lib/gocardless/scheduler.ts`**
+- [ ] **Step 3: Implement `lib/gocardless/scheduler.ts`**
 
 ```ts
 import cron from "node-cron";
@@ -1275,7 +1275,7 @@ import { bankAccountLinks, bankConnections } from "@/lib/db/schema/bank-connecti
 import { redisRateLimitStore } from "./redis-rate-limit-store";
 import { syncAccountLink, type SyncableLink } from "./sync";
 
-/** Conti collegati con sync scaduto e connessione ancora valida (non expired/error). */
+/** Linked accounts whose sync is due and whose connection is still valid (not expired/error). */
 export async function findDueLinks(): Promise<SyncableLink[]> {
   return db
     .select({
@@ -1291,8 +1291,8 @@ export async function findDueLinks(): Promise<SyncableLink[]> {
 }
 
 /**
- * Sincronizza tutti i conti dovuti. Un errore su un conto (rete, 5xx GoCardless)
- * viene loggato e non deve bloccare il sync degli altri conti nello stesso tick.
+ * Syncs all due accounts. An error on one account (network, GoCardless 5xx)
+ * is logged and must not block the sync of the other accounts in the same tick.
  */
 export async function runDueSyncs(): Promise<void> {
   const due = await findDueLinks();
@@ -1307,7 +1307,7 @@ export async function runDueSyncs(): Promise<void> {
 
 let started = false;
 
-/** Avvia lo scheduler cron (ogni 12h); no-op se già avviato nel processo corrente. */
+/** Starts the cron scheduler (every 12h); no-op if already started in the current process. */
 export function startGoCardlessScheduler(): void {
   if (started) return;
   started = true;
@@ -1317,17 +1317,17 @@ export function startGoCardlessScheduler(): void {
 }
 ```
 
-- [ ] **Step 4: Eseguire di nuovo il test**
+- [ ] **Step 4: Run the test again**
 
 Run: `pnpm test lib/gocardless/scheduler.test.ts`
-Expected: 2 test PASS.
+Expected: 2 tests PASS.
 
-- [ ] **Step 5: Creare `instrumentation.ts` (boot Next.js)**
+- [ ] **Step 5: Create `instrumentation.ts` (Next.js boot)**
 
-Crea `instrumentation.ts` nella root del progetto (stesso livello di `package.json`):
+Create `instrumentation.ts` in the project root (same level as `package.json`):
 
 ```ts
-/** Hook di boot Next.js: avvia lo scheduler di sync GoCardless nel runtime Node.js. */
+/** Next.js boot hook: starts the GoCardless sync scheduler in the Node.js runtime. */
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { startGoCardlessScheduler } = await import("@/lib/gocardless/scheduler");
@@ -1336,12 +1336,12 @@ export async function register() {
 }
 ```
 
-- [ ] **Step 6: Verificare il type-check**
+- [ ] **Step 6: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 7: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 7: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/gocardless/scheduler.ts lib/gocardless/scheduler.test.ts instrumentation.ts
@@ -1350,15 +1350,15 @@ git commit -m "feat: schedule GoCardless sync every 12 hours via instrumentation
 
 ---
 
-### Task 8: Schemi di validazione Zod
+### Task 8: Zod validation schemas
 
 **Files:**
 - Create: `lib/validation/gocardless.ts`
 
 **Interfaces:**
-- Produces: `createConnectionSchema`/`CreateConnectionInput`, `finalizeSelectionSchema`/`FinalizeSelectionInput` — usati da Task 9 e 11 (route API) e Task 12 (query hooks).
+- Produces: `createConnectionSchema`/`CreateConnectionInput`, `finalizeSelectionSchema`/`FinalizeSelectionInput` — used by Tasks 9 and 11 (API routes) and Task 12 (query hooks).
 
-- [ ] **Step 1: Implementare `lib/validation/gocardless.ts`**
+- [ ] **Step 1: Implement `lib/validation/gocardless.ts`**
 
 ```ts
 import { z } from "zod";
@@ -1388,12 +1388,12 @@ export const finalizeSelectionSchema = z.object({
 export type FinalizeSelectionInput = z.infer<typeof finalizeSelectionSchema>;
 ```
 
-- [ ] **Step 2: Verificare il type-check**
+- [ ] **Step 2: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 3: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 3: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/validation/gocardless.ts
@@ -1402,7 +1402,7 @@ git commit -m "feat: add validation schemas for GoCardless connection flow"
 
 ---
 
-### Task 9: Route API — istituti e connessioni
+### Task 9: API routes — institutions and connections
 
 **Files:**
 - Create: `app/api/gocardless/institutions/route.ts`
@@ -1411,9 +1411,9 @@ git commit -m "feat: add validation schemas for GoCardless connection flow"
 
 **Interfaces:**
 - Consumes: `listInstitutions`/`createRequisition` (Task 4), `createConnectionSchema` (Task 8), `bankConnections`/`bankAccountLinks` (Task 2).
-- Produces: `GET /api/gocardless/institutions?country=`, `POST /api/gocardless/connections` (`{ link: string }`), `GET /api/gocardless/connections` (`{ accountId, status }[]`) — usati da Task 12 (query hooks).
+- Produces: `GET /api/gocardless/institutions?country=`, `POST /api/gocardless/connections` (`{ link: string }`), `GET /api/gocardless/connections` (`{ accountId, status }[]`) — used by Task 12 (query hooks).
 
-- [ ] **Step 1: Implementare `app/api/gocardless/institutions/route.ts`**
+- [ ] **Step 1: Implement `app/api/gocardless/institutions/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1434,9 +1434,9 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Scrivere il test per `connections/route.ts`**
+- [ ] **Step 2: Write the test for `connections/route.ts`**
 
-Crea `app/api/gocardless/connections/route.test.ts`:
+Create `app/api/gocardless/connections/route.test.ts`:
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1550,12 +1550,12 @@ describe("GET/POST /api/gocardless/connections", () => {
 });
 ```
 
-- [ ] **Step 3: Eseguire il test e verificare che fallisca**
+- [ ] **Step 3: Run the test and verify that it fails**
 
 Run: `pnpm test app/api/gocardless/connections/route.test.ts`
 Expected: FAIL, `Cannot find module './route'`.
 
-- [ ] **Step 4: Implementare `app/api/gocardless/connections/route.ts`**
+- [ ] **Step 4: Implement `app/api/gocardless/connections/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1624,17 +1624,17 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 5: Eseguire di nuovo il test**
+- [ ] **Step 5: Run the test again**
 
 Run: `pnpm test app/api/gocardless/connections/route.test.ts`
-Expected: 4 test PASS.
+Expected: 4 tests PASS.
 
-- [ ] **Step 6: Verificare il type-check completo**
+- [ ] **Step 6: Verify the full type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 7: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 7: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add app/api/gocardless/institutions app/api/gocardless/connections/route.ts app/api/gocardless/connections/route.test.ts
@@ -1643,7 +1643,7 @@ git commit -m "feat: add institutions listing and connection creation API routes
 
 ---
 
-### Task 10: Route API — callback di ritorno dal consenso
+### Task 10: API route — return callback from consent
 
 **Files:**
 - Create: `app/api/gocardless/callback/route.ts`
@@ -1651,11 +1651,11 @@ git commit -m "feat: add institutions listing and connection creation API routes
 
 **Interfaces:**
 - Consumes: `getRequisition` (Task 4), `bankConnections` (Task 2).
-- Produces: `GET /api/gocardless/callback?ref=` → redirect 302 verso `/conti/collega/{id}` (successo) o `/conti?bankError=...` (errore).
+- Produces: `GET /api/gocardless/callback?ref=` → 302 redirect to `/conti/collega/{id}` (success) or `/conti?bankError=...` (error).
 
-- [ ] **Step 1: Scrivere il test**
+- [ ] **Step 1: Write the test**
 
-Crea `app/api/gocardless/callback/route.test.ts`:
+Create `app/api/gocardless/callback/route.test.ts`:
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1734,12 +1734,12 @@ describe("GET /api/gocardless/callback", () => {
 });
 ```
 
-- [ ] **Step 2: Eseguire il test e verificare che fallisca**
+- [ ] **Step 2: Run the test and verify that it fails**
 
 Run: `pnpm test app/api/gocardless/callback/route.test.ts`
 Expected: FAIL, `Cannot find module './route'`.
 
-- [ ] **Step 3: Implementare `app/api/gocardless/callback/route.ts`**
+- [ ] **Step 3: Implement `app/api/gocardless/callback/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1771,12 +1771,12 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Eseguire di nuovo il test**
+- [ ] **Step 4: Run the test again**
 
 Run: `pnpm test app/api/gocardless/callback/route.test.ts`
-Expected: 3 test PASS.
+Expected: 3 tests PASS.
 
-- [ ] **Step 5: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 5: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add app/api/gocardless/callback
@@ -1785,7 +1785,7 @@ git commit -m "feat: add GoCardless consent callback route"
 
 ---
 
-### Task 11: Route API — conti esterni trovati e finalizzazione selezione
+### Task 11: API routes — external accounts found and selection finalization
 
 **Files:**
 - Create: `app/api/gocardless/connections/[id]/accounts/route.ts`
@@ -1794,9 +1794,9 @@ git commit -m "feat: add GoCardless consent callback route"
 
 **Interfaces:**
 - Consumes: `getRequisition`/`getAccountDetails` (Task 4), `finalizeSelectionSchema` (Task 8), `syncAccountLink` (Task 6), `redisRateLimitStore` (Task 3), `accounts`/`bankAccountLinks`/`bankConnections` (Task 2).
-- Produces: `GET .../accounts` → `{ externalAccounts, existingAutoAccounts }`, `POST .../finalize` → `201` — usati da Task 12 (query hooks), Task 14 (pagina di selezione).
+- Produces: `GET .../accounts` → `{ externalAccounts, existingAutoAccounts }`, `POST .../finalize` → `201` — used by Task 12 (query hooks), Task 14 (selection page).
 
-- [ ] **Step 1: Implementare `app/api/gocardless/connections/[id]/accounts/route.ts`**
+- [ ] **Step 1: Implement `app/api/gocardless/connections/[id]/accounts/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1837,9 +1837,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 ```
 
-- [ ] **Step 2: Scrivere il test per la finalizzazione**
+- [ ] **Step 2: Write the test for finalization**
 
-Crea `app/api/gocardless/connections/[id]/finalize/route.test.ts`:
+Create `app/api/gocardless/connections/[id]/finalize/route.test.ts`:
 
 ```ts
 import { NextRequest } from "next/server";
@@ -1983,12 +1983,12 @@ describe("POST /api/gocardless/connections/[id]/finalize", () => {
 });
 ```
 
-- [ ] **Step 3: Eseguire il test e verificare che fallisca**
+- [ ] **Step 3: Run the test and verify that it fails**
 
 Run: `pnpm test app/api/gocardless/connections/[id]/finalize/route.test.ts`
 Expected: FAIL, `Cannot find module './route'`.
 
-- [ ] **Step 4: Implementare `app/api/gocardless/connections/[id]/finalize/route.ts`**
+- [ ] **Step 4: Implement `app/api/gocardless/connections/[id]/finalize/route.ts`**
 
 ```ts
 import { NextRequest } from "next/server";
@@ -2064,17 +2064,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 }
 ```
 
-- [ ] **Step 5: Eseguire di nuovo il test**
+- [ ] **Step 5: Run the test again**
 
 Run: `pnpm test app/api/gocardless/connections/[id]/finalize/route.test.ts`
-Expected: 4 test PASS.
+Expected: 4 tests PASS.
 
-- [ ] **Step 6: Verificare il type-check completo**
+- [ ] **Step 6: Verify the full type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 7: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 7: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add "app/api/gocardless/connections/[id]"
@@ -2083,16 +2083,16 @@ git commit -m "feat: add external accounts listing and finalize connection route
 
 ---
 
-### Task 12: Hook TanStack Query lato client
+### Task 12: Client-side TanStack Query hooks
 
 **Files:**
 - Create: `lib/queries/gocardless.ts`
 
 **Interfaces:**
-- Consumes: `CreateConnectionInput`/`FinalizeSelectionInput` (Task 8), le route di Task 9-11.
-- Produces: `useInstitutionsQuery`, `useBankConnectionsStatusQuery`, `useCreateConnectionMutation`, `useConnectionAccountsQuery`, `useFinalizeConnectionMutation`, tipi `Institution`/`BankConnectionStatus`/`ExternalAccount`/`ConnectionAccountsResponse` — usati da Task 13 e 14.
+- Consumes: `CreateConnectionInput`/`FinalizeSelectionInput` (Task 8), the routes from Tasks 9-11.
+- Produces: `useInstitutionsQuery`, `useBankConnectionsStatusQuery`, `useCreateConnectionMutation`, `useConnectionAccountsQuery`, `useFinalizeConnectionMutation`, types `Institution`/`BankConnectionStatus`/`ExternalAccount`/`ConnectionAccountsResponse` — used by Tasks 13 and 14.
 
-- [ ] **Step 1: Implementare `lib/queries/gocardless.ts`**
+- [ ] **Step 1: Implement `lib/queries/gocardless.ts`**
 
 ```ts
 "use client";
@@ -2121,7 +2121,7 @@ export interface ConnectionAccountsResponse {
   existingAutoAccounts: { id: string; name: string }[];
 }
 
-/** Elenca gli istituti bancari GoCardless disponibili in un paese. */
+/** Lists the GoCardless bank institutions available in a country. */
 export function useInstitutionsQuery(country: string) {
   return useQuery({
     queryKey: ["gocardless", "institutions", country],
@@ -2134,7 +2134,7 @@ export function useInstitutionsQuery(country: string) {
   });
 }
 
-/** Stato delle connessioni bancarie dell'utente, per i badge "Riconnetti". */
+/** Status of the user's bank connections, for the "Riconnetti" badges. */
 export function useBankConnectionsStatusQuery() {
   return useQuery({
     queryKey: ["gocardless", "connections", "status"],
@@ -2146,7 +2146,7 @@ export function useBankConnectionsStatusQuery() {
   });
 }
 
-/** Crea una connessione GoCardless e restituisce il link di consenso a cui reindirizzare. */
+/** Creates a GoCardless connection and returns the consent link to redirect to. */
 export function useCreateConnectionMutation() {
   return useMutation({
     mutationFn: async (input: CreateConnectionInput): Promise<{ link: string }> => {
@@ -2164,7 +2164,7 @@ export function useCreateConnectionMutation() {
   });
 }
 
-/** Conti esterni trovati dopo il consenso, per la pagina di selezione. */
+/** External accounts found after consent, for the selection page. */
 export function useConnectionAccountsQuery(connectionId: string) {
   return useQuery({
     queryKey: ["gocardless", "connections", connectionId, "accounts"],
@@ -2176,7 +2176,7 @@ export function useConnectionAccountsQuery(connectionId: string) {
   });
 }
 
-/** Finalizza la selezione dei conti da importare/ricollegare. */
+/** Finalizes the selection of accounts to import/relink. */
 export function useFinalizeConnectionMutation(connectionId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -2200,12 +2200,12 @@ export function useFinalizeConnectionMutation(connectionId: string) {
 }
 ```
 
-- [ ] **Step 2: Verificare il type-check**
+- [ ] **Step 2: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 3: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 3: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add lib/queries/gocardless.ts
@@ -2214,7 +2214,7 @@ git commit -m "feat: add TanStack Query hooks for GoCardless connection flow"
 
 ---
 
-### Task 13: UI — "Collega banca" nel form Aggiungi conto
+### Task 13: UI — "Collega banca" in the Aggiungi conto form
 
 **Files:**
 - Create: `components/domain/accounts/connect-bank-flow.tsx`
@@ -2222,14 +2222,14 @@ git commit -m "feat: add TanStack Query hooks for GoCardless connection flow"
 
 **Interfaces:**
 - Consumes: `useInstitutionsQuery`, `useCreateConnectionMutation` (Task 12).
-- Produces: `<ConnectBankFlow />`; `AddAccountForm` guadagna la prop opzionale `mode` (usata da Task 15 per forzare l'apertura sul tab "Collega banca" dal bottone "Riconnetti").
+- Produces: `<ConnectBankFlow />`; `AddAccountForm` gains the optional `mode` prop (used by Task 15 to force opening on the "Collega banca" tab from the "Riconnetti" button).
 
-- [ ] **Step 1: Creare `components/domain/accounts/connect-bank-flow.tsx`**
+- [ ] **Step 1: Create `components/domain/accounts/connect-bank-flow.tsx`**
 
 ```tsx
 "use client";
 
-/** Flusso "Collega banca": selezione paese, ricerca istituto, redirect al consenso GoCardless. */
+/** "Collega banca" flow: country selection, institution search, redirect to the GoCardless consent. */
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
@@ -2327,21 +2327,21 @@ export function ConnectBankFlow() {
 }
 ```
 
-- [ ] **Step 2: Aggiungere lo switch "Manuale"/"Collega banca" in `add-account-form.tsx`**
+- [ ] **Step 2: Add the "Manuale"/"Collega banca" switch in `add-account-form.tsx`**
 
-Aggiungi l'import in cima al file, sotto gli altri import da `./`:
+Add the import at the top of the file, below the other imports from `./`:
 
 ```ts
 import { ConnectBankFlow } from "./connect-bank-flow";
 ```
 
-Aggiorna l'interfaccia e la firma del componente:
+Update the interface and the component signature:
 
 ```ts
 export interface AddAccountFormProps {
-  /** Valuta dell'utente (ISO 4217), usata per CurrencyInput. */
+  /** User's currency (ISO 4217), used for CurrencyInput. */
   currency: string;
-  /** Forza il tab iniziale (usato dal bottone "Riconnetti" in AccountRow); di default "manuale". */
+  /** Forces the initial tab (used by the "Riconnetti" button in AccountRow); defaults to "manuale". */
   mode?: "manuale" | "collega-banca";
 }
 
@@ -2354,14 +2354,14 @@ export function AddAccountForm({ currency, mode: modeProp }: AddAccountFormProps
   const createMutation = useCreateAccountMutation();
 ```
 
-Subito prima del `return (` finale del form manuale, avvolgi tutto in un frammento con lo switch dei tab. Sostituisci l'attuale:
+Right before the final `return (` of the manual form, wrap everything in a fragment with the tab switch. Replace the current:
 
 ```tsx
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
 ```
 
-con:
+with:
 
 ```tsx
   return (
@@ -2386,7 +2386,7 @@ con:
         <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 border-t border-border p-4">
 ```
 
-E alla fine del file, chiudi i tag aggiunti — sostituisci l'ultimo:
+And at the end of the file, close the added tags — replace the last:
 
 ```tsx
       {error && <p className="w-full text-sm text-destructive">{error}</p>}
@@ -2395,7 +2395,7 @@ E alla fine del file, chiudi i tag aggiunti — sostituisci l'ultimo:
 }
 ```
 
-con:
+with:
 
 ```tsx
           {error && <p className="w-full text-sm text-destructive">{error}</p>}
@@ -2406,18 +2406,18 @@ con:
 }
 ```
 
-(nota: il contenuto del form manuale resta identico, solo indentato di un livello in più dentro il nuovo `<form>`/`{mode === "manuale" && (...)}`).
+(note: the content of the manual form stays identical, only indented one more level inside the new `<form>`/`{mode === "manuale" && (...)}`).
 
-- [ ] **Step 3: Verificare il type-check**
+- [ ] **Step 3: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 4: Aggiornare il barrel**
+- [ ] **Step 4: Update the barrel**
 
-`components/domain/accounts/index.ts` non cambia — `ConnectBankFlow` resta interno, usato solo da `add-account-form.tsx` nella stessa cartella (vedi Global Constraints).
+`components/domain/accounts/index.ts` does not change — `ConnectBankFlow` stays internal, used only by `add-account-form.tsx` in the same folder (see Global Constraints).
 
-- [ ] **Step 5: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 5: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add components/domain/accounts/connect-bank-flow.tsx components/domain/accounts/add-account-form.tsx
@@ -2426,27 +2426,27 @@ git commit -m "feat: add bank connection flow to the add account form"
 
 ---
 
-### Task 14: UI — pagina di selezione conti esterni post-consenso
+### Task 14: UI — post-consent external account selection page
 
 **Files:**
-- Create: `app/(app)/conti/collega/[connectionId]/page.tsx`
+- Create: `components/ui/checkbox.tsx` (via shadcn)
 - Create: `components/ui/checkbox.tsx` (via shadcn)
 
 **Interfaces:**
 - Consumes: `useConnectionAccountsQuery`, `useFinalizeConnectionMutation` (Task 12), `FinalizeSelectionInput` (Task 8).
-- Produces: pagina `/conti/collega/[connectionId]`, raggiunta dal redirect di Task 10.
+- Produces: page `/conti/collega/[connectionId]`, reached from the Task 10 redirect.
 
-- [ ] **Step 1: Aggiungere il componente shadcn Checkbox**
+- [ ] **Step 1: Add the shadcn Checkbox component**
 
 Run: `pnpm dlx shadcn@latest add checkbox`
-Expected: crea `components/ui/checkbox.tsx`, nessun errore.
+Expected: creates `components/ui/checkbox.tsx`, no errors.
 
-- [ ] **Step 2: Creare `app/(app)/conti/collega/[connectionId]/page.tsx`**
+- [ ] **Step 2: Create `app/(app)/conti/collega/[connectionId]/page.tsx`**
 
 ```tsx
 "use client";
 
-/** Pagina di selezione dei conti trovati dopo il consenso GoCardless: crea nuovi conti o ricollega uno esistente. */
+/** Selection page for the accounts found after the GoCardless consent: creates new accounts or relinks an existing one. */
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -2575,12 +2575,12 @@ export default function CollegaBancaPage() {
 }
 ```
 
-- [ ] **Step 3: Verificare il type-check**
+- [ ] **Step 3: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 4: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 4: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add "components/ui/checkbox.tsx" "app/(app)/conti/collega"
@@ -2589,35 +2589,35 @@ git commit -m "feat: add bank account selection page after GoCardless consent"
 
 ---
 
-### Task 15: UI — badge "Riconnetti" e wiring nella pagina Conti
+### Task 15: UI — "Riconnetti" badge and wiring in the Conti page
 
 **Files:**
 - Modify: `components/domain/accounts/account-row.tsx`
 - Modify: `app/(app)/conti/page.tsx`
 
 **Interfaces:**
-- Consumes: `useBankConnectionsStatusQuery` (Task 12), `AddAccountForm` con prop `mode` (Task 13).
-- Produces: `AccountRowProps` guadagna `needsReconnect`/`onReconnect`.
+- Consumes: `useBankConnectionsStatusQuery` (Task 12), `AddAccountForm` with the `mode` prop (Task 13).
+- Produces: `AccountRowProps` gains `needsReconnect`/`onReconnect`.
 
-- [ ] **Step 1: Aggiungere le prop a `AccountRowProps` in `account-row.tsx`**
+- [ ] **Step 1: Add the props to `AccountRowProps` in `account-row.tsx`**
 
 ```ts
 export interface AccountRowProps {
   account: Account;
-  /** Valuta dell'utente (ISO 4217), usata per formattare il saldo. */
+  /** User's currency (ISO 4217), used to format the balance. */
   currency: string;
-  /** True se il consenso bancario collegato a questo conto è scaduto/in errore. */
+  /** True if the bank consent linked to this account has expired/errored. */
   needsReconnect?: boolean;
-  /** Chiamato quando l'utente clicca "Riconnetti". */
+  /** Called when the user clicks "Riconnetti". */
   onReconnect?: () => void;
 }
 
 export function AccountRow({ account, currency, needsReconnect, onReconnect }: AccountRowProps) {
 ```
 
-- [ ] **Step 2: Aggiungere il bottone "Riconnetti" accanto al Badge**
+- [ ] **Step 2: Add the "Riconnetti" button next to the Badge**
 
-Nel JSX, subito dopo la riga del `<Badge>`:
+In the JSX, right after the `<Badge>` line:
 
 ```tsx
       <Badge variant={isAuto ? "secondary" : "outline"}>{isAuto ? "Auto" : "Manuale"}</Badge>
@@ -2633,19 +2633,19 @@ Nel JSX, subito dopo la riga del `<Badge>`:
       )}
 ```
 
-- [ ] **Step 3: Verificare il type-check**
+- [ ] **Step 3: Verify the type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 4: Wiring in `app/(app)/conti/page.tsx`**
 
-Sostituisci il contenuto del file con:
+Replace the content of the file with:
 
 ```tsx
 "use client";
 
-/** Pagina Conti: orchestra fetch, KPI, lista conti e form di creazione. Nessuna logica di business qui. */
+/** Conti page: orchestrates fetching, KPIs, account list and creation form. No business logic here. */
 
 import * as React from "react";
 import { AccountsKpi, AccountRow, AddAccountForm } from "@/components/domain/accounts";
@@ -2717,12 +2717,12 @@ export default function ContiPage() {
 }
 ```
 
-- [ ] **Step 5: Verificare il type-check completo**
+- [ ] **Step 5: Verify the full type-check**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
-- [ ] **Step 6: Commit (manuale — l'agente non esegue git in questo repo)**
+- [ ] **Step 6: Commit (manual — the agent does not run git in this repo)**
 
 ```bash
 git add components/domain/accounts/account-row.tsx "app/(app)/conti/page.tsx"
@@ -2731,33 +2731,33 @@ git commit -m "feat: surface reconnect badge for expired bank connections"
 
 ---
 
-### Task 16: Verifica end-to-end manuale (sandbox GoCardless)
+### Task 16: Manual end-to-end verification (GoCardless sandbox)
 
-**Files:** nessuno (solo verifica).
+**Files:** none (verification only).
 
 **Interfaces:**
-- Consumes: l'intera feature (Task 1-15).
+- Consumes: the whole feature (Tasks 1-15).
 
-- [ ] **Step 1: Preparare l'ambiente**
+- [ ] **Step 1: Prepare the environment**
 
-Assicurati che in `.env.local` siano valorizzate `GOCARDLESS_SECRET_ID`/`GOCARDLESS_SECRET_KEY` (credenziali sandbox create su bankaccountdata.gocardless.com) e `REDIS_URL` (es. `docker run -p 6379:6379 redis` in locale).
+Make sure that `.env.local` has `GOCARDLESS_SECRET_ID`/`GOCARDLESS_SECRET_KEY` set (sandbox credentials created at bankaccountdata.gocardless.com) and `REDIS_URL` (e.g. `docker run -p 6379:6379 redis` locally).
 
 Run: `pnpm dev`
 
-- [ ] **Step 2: Collegare un conto sandbox**
+- [ ] **Step 2: Link a sandbox account**
 
-Nel browser: Conti → "+ Aggiungi conto" → "Collega banca" → paese "Regno Unito" (o quello dove è disponibile l'istituto sandbox) → cerca e seleziona l'istituto di test **"Sandbox Finance"** → completa il consenso finto → verifica di atterrare sulla pagina "Conti trovati" con almeno un conto elencato.
+In the browser: Conti → "+ Aggiungi conto" → "Collega banca" → country "Regno Unito" (United Kingdom) (or wherever the sandbox institution is available) → search and select the test institution **"Sandbox Finance"** → complete the fake consent → check that you land on the "Conti trovati" ("Accounts found") page with at least one account listed.
 
-- [ ] **Step 3: Finalizzare e verificare l'import**
+- [ ] **Step 3: Finalize and verify the import**
 
-Seleziona il conto, "Crea nuovo conto" → Conferma → verifica il redirect a `/conti`, il nuovo conto con badge "Auto", saldo popolato e transazioni di esempio nella lista.
+Select the account, "Crea nuovo conto" ("Create new account") → Conferma (Confirm) → check the redirect to `/conti`, the new account with the "Auto" badge, populated balance and sample transactions in the list.
 
-- [ ] **Step 4: Verificare il sync manuale**
+- [ ] **Step 4: Verify the manual sync**
 
-In una shell separata con le stesse env var caricate, esegui `pnpm exec tsx -e "import('./lib/gocardless/scheduler').then(m => m.runDueSyncs())"` — non dovrebbe fare nulla (il conto appena sincronizzato non è ancora "dovuto", `nextSyncEligibleAt` è tra 12h). Verifica manualmente in DB che la riga `bank_account_links` abbia `last_synced_at` valorizzato.
+In a separate shell with the same env vars loaded, run `pnpm exec tsx -e "import('./lib/gocardless/scheduler').then(m => m.runDueSyncs())"` — it should do nothing (the account that was just synced is not "due" yet, `nextSyncEligibleAt` is 12h away). Check manually in the DB that the `bank_account_links` row has `last_synced_at` set.
 
-- [ ] **Step 5: Verificare la scadenza del consenso**
+- [ ] **Step 5: Verify consent expiry**
 
-In DB, aggiorna manualmente `bank_connections.status` a `'expired'` per la connessione appena creata. Ricarica `/conti`: verifica che compaia il badge "Riconnetti" sul conto e che cliccandolo si apra il tab "Collega banca" del form.
+In the DB, manually update `bank_connections.status` to `'expired'` for the connection just created. Reload `/conti`: check that the "Riconnetti" badge appears on the account and that clicking it opens the "Collega banca" tab of the form.
 
-Nessun commit per questo task (solo verifica).
+No commit for this task (verification only).

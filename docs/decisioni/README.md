@@ -1,8 +1,8 @@
-# Decisioni di progetto
+# Project decisions
 
-Una decisione per file, uno file per PR: `AAAA-MM-GG-titolo-breve.md` (data della decisione, titolo in minuscolo con trattini).
-Così due PR aperte insieme non toccano lo stesso file e non confliggono più sul log (prima ogni PR aggiungeva una voce in cima a `docs/decision-log.md`).
+One decision per file, one file per PR: `AAAA-MM-GG-titolo-breve.md` (date of the decision, lowercase title with hyphens).
+This way two PRs open at the same time do not touch the same file and no longer conflict on the log (previously every PR added an entry at the top of `docs/decision-log.md`).
 
-Formato: titolo `# …`, riga `Data: AAAA-MM-GG`, poi 3-8 righe: cosa si è deciso, perché, cosa resta aperto. I dettagli di un lavoro vanno nella sua spec/piano in `docs/superpowers/`.
+Format: title `# …`, line `Data: AAAA-MM-GG` (Date), then 3-8 lines: what was decided, why, what remains open. The details of a piece of work go in its spec/plan in `docs/superpowers/`.
 
-Le decisioni fino al 2026-10-03 sono nell'archivio [`docs/decision-log.md`](../decision-log.md). Per leggerle in ordine: `ls docs/decisioni`.
+Decisions up to 2026-10-03 are in the archive [`docs/decision-log.md`](../decision-log.md). To read them in order: `ls docs/decisioni`.

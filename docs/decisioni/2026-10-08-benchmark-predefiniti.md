@@ -1,9 +1,9 @@
-# Benchmark predefiniti
+# Default benchmarks
 
-- La finestra di confronto propone S&P 500, MSCI World, FTSE All-World e Nasdaq-100, con descrizione ed ETF ad accumulazione esplicito.
-- La selezione crea o riusa lo strumento attraverso il flusso esistente e salva il benchmark; ricerca libera e rimozione restano disponibili.
-- Nessuna scelta automatica: i suggerimenti non modificano il portafoglio finché l'utente non li seleziona. Le valute continuano a essere gestite dalle fonti e dal calcolo esistente.
-- Catalogo landing sincronizzato; gli screenshot della pagina a finestra chiusa non cambiano. Nessuna modifica ai calcoli o allo schema dati.
-- Riferimenti strumenti: [S&P 500](https://www.ishares.com/uk/professionals/en/products/253743/ishares-sp-500-b-ucits-etf-acc-fund), [MSCI World](https://www.ishares.com/nl/particuliere-belegger/nl/producten/251882/ishares-msci-world-ucits-etf-acc-fund), [FTSE All-World](https://www.vanguard.co.uk/professional/product/etf/equity/9679/ftse-all-world-ucits-etf-usd-accumulating), [Nasdaq-100](https://www.ishares.com/de/professionelle-anleger/de/produkte/253741/ishares-nasdaq-100-ucits-etf).
-- La verifica browser ha rilevato e corretto due condizioni di concorrenza: download iniziale di 30 giorni sovrapposto allo storico completo e recuperi troppo rapidi per essere osservati in stato `running`. Il benchmark differisce il download alla PATCH del portafoglio; il client aggiorna i prezzi anche alla prima osservazione di uno stato concluso.
-- Verificati i quattro confronti con fonti reali su dati demo, persistenza, ricerca e rimozione; prove in `docs/testing/benchmark-suggestions/`.
+- The comparison window offers S&P 500, MSCI World, FTSE All-World and Nasdaq-100, with a description and an explicit accumulating ETF.
+- The selection creates or reuses the instrument through the existing flow and saves the benchmark; free search and removal remain available.
+- No automatic choice: suggestions do not change the portfolio until the user selects them. Currencies continue to be handled by the sources and the existing calculation.
+- Landing catalog synced; the screenshots of the page with the window closed do not change. No change to calculations or the data schema.
+- Instrument references: [S&P 500](https://www.ishares.com/uk/professionals/en/products/253743/ishares-sp-500-b-ucits-etf-acc-fund), [MSCI World](https://www.ishares.com/nl/particuliere-belegger/nl/producten/251882/ishares-msci-world-ucits-etf-acc-fund), [FTSE All-World](https://www.vanguard.co.uk/professional/product/etf/equity/9679/ftse-all-world-ucits-etf-usd-accumulating), [Nasdaq-100](https://www.ishares.com/de/professionelle-anleger/de/produkte/253741/ishares-nasdaq-100-ucits-etf).
+- The browser check found and fixed two race conditions: initial 30-day download overlapping the full history, and fetches too fast to be observed in the `running` state. The benchmark defers the download to the portfolio PATCH; the client refreshes prices even on the first observation of a completed state.
+- Verified the four comparisons with real sources on demo data, persistence, search and removal; evidence in `docs/testing/benchmark-suggestions/`.

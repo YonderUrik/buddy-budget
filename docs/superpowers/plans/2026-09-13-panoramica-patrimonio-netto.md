@@ -1,74 +1,74 @@
-# Panoramica — patrimonio netto nel tempo — Implementation Plan
+# Panoramica — net worth over time — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Sostituire la home segnaposto con la schermata Panoramica: grafico del patrimonio netto nel tempo (storico ibrido: snapshot giornalieri reali + ricostruzione iniziale dalle transazioni), riga di composizione per classe di asset e card "Questo mese".
+**Goal:** Replace the placeholder home with the Panoramica ("Overview") screen: chart of net worth over time (hybrid history: real daily snapshots + an initial reconstruction from transactions), a composition row by asset class and a "Questo mese" ("This month") card.
 
-**Architecture:** Nuova tabella `net_worth_snapshots` (righe per utente/giorno/classe di asset). Un modulo server (`lib/net-worth/`) scrive una ricostruzione una tantum (`derivato`) e uno snapshot giornaliero reale da un cron dedicato; una route `GET /api/net-worth/snapshots` restituisce righe grezze. Tutto il calcolo (ricostruzione, serie con granularità adattiva, variazione) è in funzioni pure in `lib/calc/net-worth.ts`, eseguite lato client come per Cash flow. La pagina `/panoramica` orchestra componenti di `components/domain/net-worth/`.
+**Architecture:** New table `net_worth_snapshots` (rows per user/day/asset class). A server module (`lib/net-worth/`) writes a one-off reconstruction (`derivato`, i.e. derived) and a real daily snapshot from a dedicated cron; a `GET /api/net-worth/snapshots` route returns raw rows. All the computation (reconstruction, series with adaptive granularity, change) lives in pure functions in `lib/calc/net-worth.ts`, run client-side as for Cash flow. The `/panoramica` page orchestrates components from `components/domain/net-worth/`.
 
-**Tech Stack:** Next.js App Router, TypeScript, Drizzle ORM (Postgres), TanStack Query, Recharts 3 via `components/ui/chart.tsx`, node-cron, Vitest (test di integrazione contro Postgres reale).
+**Tech Stack:** Next.js App Router, TypeScript, Drizzle ORM (Postgres), TanStack Query, Recharts 3 via `components/ui/chart.tsx`, node-cron, Vitest (integration tests against a real Postgres).
 
 **Spec:** `docs/superpowers/specs/2026-09-13-panoramica-patrimonio-netto-design.md`
 
 ## Global Constraints
 
-- Stringhe visibili all'utente in italiano.
-- Mai colori esadecimali o raggi hardcoded nei componenti: solo token tema (`text-pos`, `text-neg`, `text-muted-foreground`, `bg-muted`, `var(--primary)`, ecc.).
-- JSDoc di una riga su ogni componente e funzione pubblica; tipi delle props esportati.
-- Chi importa da `components/domain/net-worth/` usa sempre il barrel `index.ts`.
-- Nessuna logica di business in `app/(app)/panoramica/page.tsx`: la pagina orchestra.
-- `assetClass` e `source` sono colonne `text` validate da costanti TS, **non** enum Postgres. Unico valore di `assetClass` oggi: `"liquidita"`. Valori di `source`: `"snapshot"`, `"derivato"`.
-- Importi scritti nel DB come stringa `.toFixed(2)` (colonne `numeric`); letti come stringa.
-- Ricostruzione: solo conti con `source === "auto"` nella sottrazione, `amount` pieno (mai `effectiveAmount`), conti manuali costanti al saldo attuale, al massimo 24 mesi (dal primo giorno del mese di 24 mesi prima), fino a **ieri** incluso.
-- Default periodo grafico: `"3mesi"`.
-- I test girano contro il Postgres locale **condiviso con lo sviluppo** (`fileParallelism: false`): creare utenti di test con id `test-...-${crypto.randomUUID()}` e cancellarli in `afterEach`. **Mai chiamare `runDailySnapshots()` nei test**: scriverebbe snapshot per gli utenti reali del DB di sviluppo e ne bloccherebbe la ricostruzione.
-- `pnpm db:push` va eseguito **dalla directory del worktree** che contiene la modifica di schema, mai dalla repo principale (Drizzle legge lo schema dal checkout corrente).
-- Subagent implementer: nessun comando git oltre `git add` e `git commit`.
-- Comando test: `pnpm exec vitest run <path>`. Type check: `pnpm exec tsc --noEmit`. Lint: `pnpm lint` (sono noti e pre-esistenti 2 errori `react-hooks/set-state-in-effect` in `theme-toggle.tsx` e `CategoryLegendRow`; 3 test falliti pre-esistenti in `lib/gocardless/scheduler.test.ts`).
+- User-visible strings in Italian.
+- Never hex colors or hardcoded radii in components: only theme tokens (`text-pos`, `text-neg`, `text-muted-foreground`, `bg-muted`, `var(--primary)`, etc.).
+- One-line JSDoc on every public component and function; prop types exported.
+- Whoever imports from `components/domain/net-worth/` always uses the `index.ts` barrel.
+- No business logic in `app/(app)/panoramica/page.tsx`: the page orchestrates.
+- `assetClass` and `source` are `text` columns validated by TS constants, **not** Postgres enums. The only `assetClass` value today: `"liquidita"` (liquidity/cash). `source` values: `"snapshot"`, `"derivato"`.
+- Amounts written to the DB as a `.toFixed(2)` string (`numeric` columns); read as a string.
+- Reconstruction: only accounts with `source === "auto"` in the subtraction, full `amount` (never `effectiveAmount`), manual accounts constant at the current balance, at most 24 months (from the first day of the month 24 months earlier), up to and including **yesterday**.
+- Default chart period: `"3mesi"`.
+- Tests run against the local Postgres **shared with development** (`fileParallelism: false`): create test users with id `test-...-${crypto.randomUUID()}` and delete them in `afterEach`. **Never call `runDailySnapshots()` in tests**: it would write snapshots for the real users of the development DB and block their reconstruction.
+- `pnpm db:push` must be run **from the worktree directory** that contains the schema change, never from the main repo (Drizzle reads the schema from the current checkout).
+- Implementer subagent: no git commands other than `git add` and `git commit`.
+- Test command: `pnpm exec vitest run <path>`. Type check: `pnpm exec tsc --noEmit`. Lint: `pnpm lint` (2 known, pre-existing `react-hooks/set-state-in-effect` errors in `theme-toggle.tsx` and `CategoryLegendRow`; 3 pre-existing failing tests in `lib/gocardless/scheduler.test.ts`).
 
 ## File Structure
 
-| File | Responsabilità |
+| File | Responsibility |
 |---|---|
-| `lib/calc/net-worth.ts` (create) | Funzioni pure: `toDateKey`, `deriveLiquidityHistory`, `getNetWorthPeriodRange`, `buildNetWorthSeries`, `computeNetWorthChange`, tipi |
-| `lib/calc/net-worth.test.ts` (create) | Test delle funzioni pure |
-| `lib/db/schema/net-worth-snapshots.ts` (create) | Tabella `net_worth_snapshots`, costanti `ASSET_CLASSES`/`SNAPSHOT_SOURCES` |
-| `lib/db/schema/index.ts` (modify) | Export della nuova tabella |
-| `lib/net-worth/snapshots.ts` (create) | Scrittura DB: `hasAnySnapshot`, `backfillDerivedHistory`, `writeDailySnapshot` |
-| `lib/net-worth/snapshots.test.ts` (create) | Test di integrazione della scrittura |
+| `lib/calc/net-worth.ts` (create) | Pure functions: `toDateKey`, `deriveLiquidityHistory`, `getNetWorthPeriodRange`, `buildNetWorthSeries`, `computeNetWorthChange`, types |
+| `lib/calc/net-worth.test.ts` (create) | Tests of the pure functions |
+| `lib/db/schema/net-worth-snapshots.ts` (create) | `net_worth_snapshots` table, `ASSET_CLASSES`/`SNAPSHOT_SOURCES` constants |
+| `lib/db/schema/index.ts` (modify) | Export of the new table |
+| `lib/net-worth/snapshots.ts` (create) | DB writes: `hasAnySnapshot`, `backfillDerivedHistory`, `writeDailySnapshot` |
+| `lib/net-worth/snapshots.test.ts` (create) | Integration tests of the writes |
 | `lib/net-worth/scheduler.ts` (create) | `findUsersWithAccounts`, `snapshotUser`, `runDailySnapshots`, `startNetWorthScheduler` |
-| `lib/net-worth/scheduler.test.ts` (create) | Test di `findUsersWithAccounts` e `snapshotUser` |
-| `instrumentation.ts` (modify) | Avvio dello scheduler patrimonio |
-| `app/api/net-worth/snapshots/route.ts` (create) | `GET` autenticato, ricostruzione lazy, righe dell'utente |
-| `app/api/net-worth/snapshots/route.test.ts` (create) | Test della route |
-| `lib/queries/net-worth.ts` (create) | Hook `useNetWorthSnapshotsQuery` |
+| `lib/net-worth/scheduler.test.ts` (create) | Tests of `findUsersWithAccounts` and `snapshotUser` |
+| `instrumentation.ts` (modify) | Start of the net worth scheduler |
+| `app/api/net-worth/snapshots/route.ts` (create) | Authenticated `GET`, lazy reconstruction, the user's rows |
+| `app/api/net-worth/snapshots/route.test.ts` (create) | Route tests |
+| `lib/queries/net-worth.ts` (create) | `useNetWorthSnapshotsQuery` hook |
 | `components/domain/net-worth/net-worth-composition-row.utils.ts` (create) | `buildCompositionItems` |
-| `components/domain/net-worth/net-worth-composition-row.utils.test.ts` (create) | Test |
-| `components/domain/net-worth/net-worth-period-selector.tsx` (create) | Pillole 1M/3M/1A/Max |
-| `components/domain/net-worth/net-worth-chart-card.tsx` (create) | Totale, variazione, selettore, grafico ad area, tooltip |
-| `components/domain/net-worth/net-worth-composition-row.tsx` (create) | Mini-card per classe di asset |
-| `components/domain/net-worth/month-summary-card.tsx` (create) | Entrate / Uscite / Messo da parte |
+| `components/domain/net-worth/net-worth-composition-row.utils.test.ts` (create) | Tests |
+| `components/domain/net-worth/net-worth-period-selector.tsx` (create) | 1M/3M/1A/Max pills |
+| `components/domain/net-worth/net-worth-chart-card.tsx` (create) | Total, change, selector, area chart, tooltip |
+| `components/domain/net-worth/net-worth-composition-row.tsx` (create) | Mini-card per asset class |
+| `components/domain/net-worth/month-summary-card.tsx` (create) | Entrate / Uscite / Messo da parte (Income / Outflows / Set aside) |
 | `components/domain/net-worth/index.ts` (create) | Barrel |
-| `app/(app)/panoramica/page.tsx` (create) | Orchestrazione, stati caricamento/errore/nessun conto |
+| `app/(app)/panoramica/page.tsx` (create) | Orchestration, loading/error/no-account states |
 | `app/(app)/page.tsx` (modify) | `redirect("/panoramica")` |
-| `CLAUDE.md` (modify) | Stato del progetto e log |
+| `CLAUDE.md` (modify) | Project status and log |
 
 ---
 
-### Task 1: Ricostruzione dello storico di liquidità (funzione pura)
+### Task 1: Liquidity history reconstruction (pure function)
 
 **Files:**
 - Create: `lib/calc/net-worth.ts`
 - Test: `lib/calc/net-worth.test.ts`
 
 **Interfaces:**
-- Consumes: `parseDateOnly(dateStr: string): Date`, `startOfDay(date: Date): Date` da `lib/calc/expenses.ts`; tipi `Account` (`lib/db/schema/accounts.ts`) e `Transaction` (`lib/db/schema/transactions.ts`).
+- Consumes: `parseDateOnly(dateStr: string): Date`, `startOfDay(date: Date): Date` from `lib/calc/expenses.ts`; types `Account` (`lib/db/schema/accounts.ts`) and `Transaction` (`lib/db/schema/transactions.ts`).
 - Produces:
   - `MAX_DERIVED_HISTORY_MONTHS = 24`
-  - `toDateKey(date: Date): string` → `"YYYY-MM-DD"` (componenti locali)
+  - `toDateKey(date: Date): string` → `"YYYY-MM-DD"` (local components)
   - `addDays(date: Date, days: number): Date`
   - `interface DerivedLiquidityPoint { date: string; amount: number }`
-  - `deriveLiquidityHistory(accounts: Account[], transactions: Transaction[], today: Date): DerivedLiquidityPoint[]` — ordinato per data crescente, `amount` arrotondato a 2 decimali.
+  - `deriveLiquidityHistory(accounts: Account[], transactions: Transaction[], today: Date): DerivedLiquidityPoint[]` — sorted by ascending date, `amount` rounded to 2 decimals.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -116,7 +116,7 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
   };
 }
 
-const TODAY = new Date(2026, 8, 13); // 13 settembre 2026
+const TODAY = new Date(2026, 8, 13); // 13 September 2026
 
 describe("toDateKey", () => {
   it("formatta la data locale come YYYY-MM-DD con zero padding", () => {
@@ -205,17 +205,17 @@ import type { Account } from "@/lib/db/schema/accounts";
 import type { Transaction } from "@/lib/db/schema/transactions";
 import { parseDateOnly, startOfDay } from "./expenses";
 
-/** Profondità massima della ricostruzione dello storico, in mesi. */
+/** Maximum depth of the history reconstruction, in months. */
 export const MAX_DERIVED_HISTORY_MONTHS = 24;
 
-/** Chiave "YYYY-MM-DD" della data locale, confrontabile come stringa. */
+/** "YYYY-MM-DD" key of the local date, comparable as a string. */
 export function toDateKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-/** Somma `days` giorni di calendario (anche negativi) a mezzanotte locale. */
+/** Adds `days` calendar days (negative too) at local midnight. */
 export function addDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 }
@@ -224,16 +224,16 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-/** Punto giornaliero di liquidità ricostruita (saldo a fine giornata). */
+/** Daily point of reconstructed liquidity (end-of-day balance). */
 export interface DerivedLiquidityPoint {
   date: string;
   amount: number;
 }
 
 /**
- * Ricostruisce la liquidità a fine giornata dal primo movimento Auto fino a ieri (massimo 24 mesi):
- * saldo attuale di tutti i conti meno i movimenti dei soli conti Auto datati dopo quel giorno.
- * I conti manuali restano costanti perché i loro movimenti non aggiornano il saldo; si usa `amount` pieno.
+ * Reconstructs end-of-day liquidity from the first Auto movement up to yesterday (at most 24 months):
+ * current balance of all accounts minus the movements of Auto accounts only, dated after that day.
+ * Manual accounts stay constant because their movements do not update the balance; the full `amount` is used.
  */
 export function deriveLiquidityHistory(accounts: Account[], transactions: Transaction[], today: Date): DerivedLiquidityPoint[] {
   const autoAccountIds = new Set(accounts.filter((a) => a.source === "auto").map((a) => a.id));
@@ -271,7 +271,7 @@ export function deriveLiquidityHistory(accounts: Account[], transactions: Transa
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm exec vitest run lib/calc/net-worth.test.ts`
-Expected: PASS (7 test).
+Expected: PASS (7 tests).
 
 - [ ] **Step 5: Commit**
 
@@ -282,17 +282,17 @@ git commit -m "feat: ricostruzione pura dello storico di liquidità dalle transa
 
 ---
 
-### Task 2: Serie del patrimonio netto e variazione (funzioni pure)
+### Task 2: Net worth series and change (pure functions)
 
 **Files:**
 - Modify: `lib/calc/net-worth.ts`
 - Test: `lib/calc/net-worth.test.ts`
 
 **Interfaces:**
-- Consumes: `toDateKey`, `addDays` (Task 1); `parseDateOnly`, `startOfDay`, `endOfMonth`, `type DateRange` da `lib/calc/expenses.ts`.
+- Consumes: `toDateKey`, `addDays` (Task 1); `parseDateOnly`, `startOfDay`, `endOfMonth`, `type DateRange` from `lib/calc/expenses.ts`.
 - Produces:
   - `type NetWorthPeriod = "1mese" | "3mesi" | "1anno" | "max"`
-  - `interface NetWorthSnapshotInput { date: string; amount: string; source: string }` (una riga Drizzle di `net_worth_snapshots` è assegnabile strutturalmente)
+  - `interface NetWorthSnapshotInput { date: string; amount: string; source: string }` (a Drizzle row of `net_worth_snapshots` is structurally assignable)
   - `interface NetWorthSeriesPoint { date: string; label: string; value: number; isEstimated: boolean }`
   - `interface NetWorthChange { start: number; end: number; delta: number; deltaPct: number | null }`
   - `getNetWorthPeriodRange(period: NetWorthPeriod, today: Date, earliestDate: string | null): DateRange`
@@ -427,7 +427,7 @@ describe("computeNetWorthChange", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pnpm exec vitest run lib/calc/net-worth.test.ts`
-Expected: FAIL — `getNetWorthPeriodRange is not a function` (o errore di export mancante).
+Expected: FAIL — `getNetWorthPeriodRange is not a function` (or a missing-export error).
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -440,7 +440,7 @@ import { endOfMonth, parseDateOnly, startOfDay, type DateRange } from "./expense
 and append:
 
 ```ts
-/** Periodo selezionabile nel grafico del patrimonio netto. */
+/** Selectable period in the net worth chart. */
 export type NetWorthPeriod = "1mese" | "3mesi" | "1anno" | "max";
 
 const PERIOD_MONTHS: Record<Exclude<NetWorthPeriod, "max">, number> = {
@@ -449,14 +449,14 @@ const PERIOD_MONTHS: Record<Exclude<NetWorthPeriod, "max">, number> = {
   "1anno": 12,
 };
 
-/** Riga di snapshot come arriva dall'API (numeric serializzato come stringa). */
+/** Snapshot row as it comes from the API (numeric serialized as a string). */
 export interface NetWorthSnapshotInput {
   date: string;
   amount: string;
   source: string;
 }
 
-/** Punto del grafico: `isEstimated` indica un valore ricostruito dalle transazioni. */
+/** Chart point: `isEstimated` marks a value reconstructed from transactions. */
 export interface NetWorthSeriesPoint {
   date: string;
   label: string;
@@ -464,7 +464,7 @@ export interface NetWorthSeriesPoint {
   isEstimated: boolean;
 }
 
-/** Variazione tra primo e ultimo punto; `deltaPct` è un rapporto (0.5 = +50%). */
+/** Change between the first and last point; `deltaPct` is a ratio (0.5 = +50%). */
 export interface NetWorthChange {
   start: number;
   end: number;
@@ -481,7 +481,7 @@ function subtractMonthsClamped(date: Date, months: number): Date {
   return new Date(firstOfTarget.getFullYear(), firstOfTarget.getMonth(), Math.min(date.getDate(), lastDay));
 }
 
-/** Intervallo del periodo fino a oggi; `max` parte dalla prima data disponibile (o da oggi se non ce ne sono). */
+/** Range of the period up to today; `max` starts from the first available date (or from today if there are none). */
 export function getNetWorthPeriodRange(period: NetWorthPeriod, today: Date, earliestDate: string | null): DateRange {
   const to = startOfDay(today);
   if (period === "max") {
@@ -491,8 +491,8 @@ export function getNetWorthPeriodRange(period: NetWorthPeriod, today: Date, earl
 }
 
 /**
- * Serie del patrimonio netto nel periodo: somma le classi di asset per giorno, ripete l'ultimo valore nei giorni
- * mancanti e chiude col totale corrente di oggi. Giornaliera per 1mese/3mesi, un punto per fine mese per 1anno/max.
+ * Net worth series over the period: sums the asset classes per day, repeats the last value on missing
+ * days and closes with today's current total. Daily for 1mese/3mesi, one point per month-end for 1anno/max.
  */
 export function buildNetWorthSeries(
   snapshots: NetWorthSnapshotInput[],
@@ -546,7 +546,7 @@ export function buildNetWorthSeries(
   return monthly;
 }
 
-/** Variazione del patrimonio tra primo e ultimo punto della serie; percentuale nulla con meno di 2 punti o partenza a zero. */
+/** Net worth change between the first and last point of the series; null percentage with fewer than 2 points or a zero start. */
 export function computeNetWorthChange(series: NetWorthSeriesPoint[]): NetWorthChange {
   if (series.length === 0) return { start: 0, end: 0, delta: 0, deltaPct: null };
   const start = series[0].value;
@@ -560,7 +560,7 @@ export function computeNetWorthChange(series: NetWorthSeriesPoint[]): NetWorthCh
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm exec vitest run lib/calc/net-worth.test.ts`
-Expected: PASS (tutti i test di Task 1 e Task 2).
+Expected: PASS (all tests of Task 1 and Task 2).
 
 - [ ] **Step 5: Commit**
 
@@ -571,7 +571,7 @@ git commit -m "feat: serie del patrimonio netto con granularità adattiva e vari
 
 ---
 
-### Task 3: Tabella snapshot e scrittura su DB
+### Task 3: Snapshot table and DB writes
 
 **Files:**
 - Create: `lib/db/schema/net-worth-snapshots.ts`
@@ -580,13 +580,13 @@ git commit -m "feat: serie del patrimonio netto con granularità adattiva e vari
 - Test: `lib/net-worth/snapshots.test.ts`
 
 **Interfaces:**
-- Consumes: `deriveLiquidityHistory`, `toDateKey` (Task 1); `db` da `lib/db/client.ts`; tabelle `accounts`, `transactions`, `authUser`.
+- Consumes: `deriveLiquidityHistory`, `toDateKey` (Task 1); `db` from `lib/db/client.ts`; tables `accounts`, `transactions`, `authUser`.
 - Produces:
   - `ASSET_CLASSES = ["liquidita"] as const`, `type AssetClass`
   - `SNAPSHOT_SOURCES = ["snapshot", "derivato"] as const`, `type SnapshotSource`
-  - tabella `netWorthSnapshots`, tipo `NetWorthSnapshot`
+  - table `netWorthSnapshots`, type `NetWorthSnapshot`
   - `hasAnySnapshot(userId: string): Promise<boolean>`
-  - `backfillDerivedHistory(userId: string, today?: Date): Promise<number>` — righe scritte, 0 se già esistono snapshot
+  - `backfillDerivedHistory(userId: string, today?: Date): Promise<number>` — rows written, 0 if snapshots already exist
   - `writeDailySnapshot(userId: string, today?: Date): Promise<void>`
 
 - [ ] **Step 1: Create the schema**
@@ -597,11 +597,11 @@ Create `lib/db/schema/net-worth-snapshots.ts`:
 import { date, index, numeric, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { authUser } from "./auth";
 
-/** Classi di asset del patrimonio: text + costante invece di enum Postgres, per aggiungerne senza migrazioni. */
+/** Net worth asset classes: text + constant instead of a Postgres enum, so new ones can be added without migrations. */
 export const ASSET_CLASSES = ["liquidita"] as const;
 export type AssetClass = (typeof ASSET_CLASSES)[number];
 
-/** Origine di una riga: rilevata dal cron giornaliero o ricostruita dalle transazioni. */
+/** Origin of a row: recorded by the daily cron or reconstructed from transactions. */
 export const SNAPSHOT_SOURCES = ["snapshot", "derivato"] as const;
 export type SnapshotSource = (typeof SNAPSHOT_SOURCES)[number];
 
@@ -638,7 +638,7 @@ export * from "./net-worth-snapshots";
 - [ ] **Step 2: Apply the schema to the local DB**
 
 Run **from the worktree directory**: `pnpm db:push`
-Expected: drizzle-kit propone la creazione di `net_worth_snapshots`; confermare solo quella. Se il comando chiede di toccare altro (vincoli preesistenti non correlati) o si blocca, **annullare** e applicare invece questo SQL con uno script scratch non committato:
+Expected: drizzle-kit proposes creating `net_worth_snapshots`; confirm only that. If the command asks to touch anything else (unrelated pre-existing constraints) or hangs, **cancel** and apply this SQL instead with an uncommitted scratch script:
 
 ```sql
 CREATE TABLE IF NOT EXISTS net_worth_snapshots (
@@ -656,7 +656,7 @@ CREATE INDEX IF NOT EXISTS net_worth_snapshots_user_date_idx ON net_worth_snapsh
 ```
 
 Verify: `pnpm exec tsx --env-file=.env.local -e "import('./lib/db/client').then(async ({ client }) => { console.log(await client\`select count(*) from net_worth_snapshots\`); await client.end(); })"`
-Expected: stampa `[ { count: '0' } ]` (o un numero), nessun errore "relation does not exist".
+Expected: prints `[ { count: '0' } ]` (or a number), no "relation does not exist" error.
 
 - [ ] **Step 3: Write the failing test**
 
@@ -828,7 +828,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { deriveLiquidityHistory, toDateKey } from "@/lib/calc/net-worth";
 
-/** True se l'utente ha già almeno una riga di snapshot, reale o derivata. */
+/** True if the user already has at least one snapshot row, real or derived. */
 export async function hasAnySnapshot(userId: string): Promise<boolean> {
   const rows = await db
     .select({ id: netWorthSnapshots.id })
@@ -839,8 +839,8 @@ export async function hasAnySnapshot(userId: string): Promise<boolean> {
 }
 
 /**
- * Ricostruzione una tantum dello storico di liquidità dai movimenti dei conti Auto: no-op se l'utente ha già snapshot.
- * Scrive con onConflictDoNothing, quindi esecuzioni concorrenti non duplicano né sovrascrivono. Ritorna le righe scritte.
+ * One-off reconstruction of the liquidity history from the Auto accounts' movements: no-op if the user already has snapshots.
+ * Writes with onConflictDoNothing, so concurrent runs neither duplicate nor overwrite. Returns the rows written.
  */
 export async function backfillDerivedHistory(userId: string, today: Date = new Date()): Promise<number> {
   if (await hasAnySnapshot(userId)) return 0;
@@ -873,7 +873,7 @@ export async function backfillDerivedHistory(userId: string, today: Date = new D
   return inserted.length;
 }
 
-/** Scrive o aggiorna lo snapshot reale del giorno (liquidità = somma dei saldi correnti); sovrascrive sempre una riga derivata. */
+/** Writes or updates the day's real snapshot (liquidity = sum of current balances); always overwrites a derived row. */
 export async function writeDailySnapshot(userId: string, today: Date = new Date()): Promise<void> {
   const userAccounts = await db.select({ balance: accounts.balance }).from(accounts).where(eq(accounts.userId, userId));
   const amount = userAccounts.reduce((sum, a) => sum + Number(a.balance), 0).toFixed(2);
@@ -891,12 +891,12 @@ export async function writeDailySnapshot(userId: string, today: Date = new Date(
 - [ ] **Step 6: Run test to verify it passes**
 
 Run: `pnpm exec vitest run lib/net-worth/snapshots.test.ts`
-Expected: PASS (6 test).
+Expected: PASS (6 tests).
 
 - [ ] **Step 7: Type check and commit**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 ```bash
 git add lib/db/schema/net-worth-snapshots.ts lib/db/schema/index.ts lib/net-worth/snapshots.ts lib/net-worth/snapshots.test.ts
@@ -905,7 +905,7 @@ git commit -m "feat: tabella net_worth_snapshots con ricostruzione una tantum e 
 
 ---
 
-### Task 4: Scheduler giornaliero degli snapshot
+### Task 4: Daily snapshot scheduler
 
 **Files:**
 - Create: `lib/net-worth/scheduler.ts`
@@ -917,7 +917,7 @@ git commit -m "feat: tabella net_worth_snapshots con ricostruzione una tantum e 
 - Produces:
   - `NET_WORTH_SNAPSHOT_CRON = "50 23 * * *"`
   - `findUsersWithAccounts(): Promise<string[]>`
-  - `snapshotUser(userId: string, today?: Date): Promise<void>` — prima ricostruzione, poi snapshot
+  - `snapshotUser(userId: string, today?: Date): Promise<void>` — reconstruction first, then snapshot
   - `runDailySnapshots(today?: Date): Promise<void>`
   - `startNetWorthScheduler(): void`
 
@@ -936,7 +936,7 @@ import { transactions } from "@/lib/db/schema/transactions";
 import { netWorthSnapshots } from "@/lib/db/schema/net-worth-snapshots";
 import { findUsersWithAccounts, snapshotUser } from "./scheduler";
 
-// runDailySnapshots() non viene mai chiamata qui: girerebbe su tutti gli utenti del DB di sviluppo condiviso.
+// runDailySnapshots() is never called here: it would run over all users of the shared development DB.
 const TODAY = new Date(2026, 8, 13);
 
 describe("net-worth scheduler", () => {
@@ -1026,22 +1026,22 @@ import { db } from "@/lib/db/client";
 import { accounts } from "@/lib/db/schema/accounts";
 import { backfillDerivedHistory, writeDailySnapshot } from "./snapshots";
 
-/** Orario del cron degli snapshot: ogni giorno alle 23:50, orario del server. */
+/** Snapshot cron time: every day at 23:50, server time. */
 export const NET_WORTH_SNAPSHOT_CRON = "50 23 * * *";
 
-/** Id degli utenti con almeno un conto. */
+/** Ids of the users with at least one account. */
 export async function findUsersWithAccounts(): Promise<string[]> {
   const rows = await db.selectDistinct({ userId: accounts.userId }).from(accounts);
   return rows.map((r) => r.userId);
 }
 
-/** Snapshot di un utente: ricostruzione una tantum (se non ha ancora righe) e poi snapshot reale del giorno. */
+/** Snapshot of one user: one-off reconstruction (if it has no rows yet) and then the day's real snapshot. */
 export async function snapshotUser(userId: string, today: Date = new Date()): Promise<void> {
   await backfillDerivedHistory(userId, today);
   await writeDailySnapshot(userId, today);
 }
 
-/** Esegue lo snapshot per tutti gli utenti con conti; l'errore su un utente viene loggato e non blocca gli altri. */
+/** Runs the snapshot for all users with accounts; an error on one user is logged and does not block the others. */
 export async function runDailySnapshots(today: Date = new Date()): Promise<void> {
   const userIds = await findUsersWithAccounts();
   for (const userId of userIds) {
@@ -1055,7 +1055,7 @@ export async function runDailySnapshots(today: Date = new Date()): Promise<void>
 
 let started = false;
 
-/** Avvia il cron giornaliero degli snapshot patrimonio; no-op se già avviato nel processo corrente. */
+/** Starts the daily net worth snapshot cron; no-op if already started in the current process. */
 export function startNetWorthScheduler(): void {
   if (started) return;
   started = true;
@@ -1068,7 +1068,7 @@ export function startNetWorthScheduler(): void {
 Replace the content of `instrumentation.ts` with:
 
 ```ts
-/** Hook di boot Next.js: avvia gli scheduler (sync GoCardless, snapshot patrimonio) nel runtime Node.js. */
+/** Next.js boot hook: starts the schedulers (GoCardless sync, net worth snapshots) in the Node.js runtime. */
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { startGoCardlessScheduler } = await import("@/lib/gocardless/scheduler");
@@ -1082,12 +1082,12 @@ export async function register() {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm exec vitest run lib/net-worth/scheduler.test.ts`
-Expected: PASS (2 test).
+Expected: PASS (2 tests).
 
 - [ ] **Step 5: Type check and commit**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 ```bash
 git add lib/net-worth/scheduler.ts lib/net-worth/scheduler.test.ts instrumentation.ts
@@ -1096,7 +1096,7 @@ git commit -m "feat: cron giornaliero degli snapshot del patrimonio netto"
 
 ---
 
-### Task 5: API `GET /api/net-worth/snapshots` e hook client
+### Task 5: API `GET /api/net-worth/snapshots` and client hook
 
 **Files:**
 - Create: `app/api/net-worth/snapshots/route.ts`
@@ -1106,8 +1106,8 @@ git commit -m "feat: cron giornaliero degli snapshot del patrimonio netto"
 **Interfaces:**
 - Consumes: `backfillDerivedHistory` (Task 3), `netWorthSnapshots`, `NetWorthSnapshot` (Task 3), `toDateKey`, `addDays` (Task 1).
 - Produces:
-  - `GET(request: NextRequest): Promise<Response>` — 401 senza sessione, 400 su `from`/`to` mancanti o non `YYYY-MM-DD`, 200 con `NetWorthSnapshot[]` ordinati per data crescente.
-  - `useNetWorthSnapshotsQuery(from: string, to: string)` — `useQuery` con chiave `["net-worth-snapshots", from, to]`, dati `NetWorthSnapshot[]`.
+  - `GET(request: NextRequest): Promise<Response>` — 401 without a session, 400 on missing `from`/`to` or not `YYYY-MM-DD`, 200 with `NetWorthSnapshot[]` sorted by ascending date.
+  - `useNetWorthSnapshotsQuery(from: string, to: string)` — `useQuery` with key `["net-worth-snapshots", from, to]`, data `NetWorthSnapshot[]`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1244,7 +1244,7 @@ import { backfillDerivedHistory } from "@/lib/net-worth/snapshots";
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/;
 
-/** GET /api/net-worth/snapshots?from&to — righe snapshot dell'utente nel periodo; alla prima chiamata ricostruisce lo storico. */
+/** GET /api/net-worth/snapshots?from&to — the user's snapshot rows in the period; on the first call it reconstructs the history. */
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session) {
@@ -1288,7 +1288,7 @@ async function fetchNetWorthSnapshots(from: string, to: string): Promise<NetWort
   return response.json();
 }
 
-/** Recupera le righe snapshot del patrimonio netto dell'utente nell'intervallo [from, to] (YYYY-MM-DD). */
+/** Fetches the user's net worth snapshot rows in the range [from, to] (YYYY-MM-DD). */
 export function useNetWorthSnapshotsQuery(from: string, to: string) {
   return useQuery({
     queryKey: ["net-worth-snapshots", from, to] as const,
@@ -1300,12 +1300,12 @@ export function useNetWorthSnapshotsQuery(from: string, to: string) {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm exec vitest run app/api/net-worth/snapshots/route.test.ts`
-Expected: PASS (4 test).
+Expected: PASS (4 tests).
 
 - [ ] **Step 5: Type check and commit**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 ```bash
 git add app/api/net-worth/snapshots/route.ts app/api/net-worth/snapshots/route.test.ts lib/queries/net-worth.ts
@@ -1314,7 +1314,7 @@ git commit -m "feat: API snapshot patrimonio netto con ricostruzione alla prima 
 
 ---
 
-### Task 6: Componenti di dominio della Panoramica
+### Task 6: Panoramica domain components
 
 **Files:**
 - Create: `components/domain/net-worth/net-worth-composition-row.utils.ts`
@@ -1326,8 +1326,8 @@ git commit -m "feat: API snapshot patrimonio netto con ricostruzione alla prima 
 - Create: `components/domain/net-worth/index.ts`
 
 **Interfaces:**
-- Consumes: `NetWorthPeriod`, `NetWorthSeriesPoint`, `NetWorthChange` (Task 2); `parseDateOnly` da `lib/calc/expenses.ts`; `formatCurrency(value, currency, { maximumFractionDigits? })` da `lib/format.ts`; `Card`, `CardHeader`, `CardTitle`, `CardContent` da `components/ui/card`; `ChartContainer`, `ChartTooltip`, `type ChartConfig` da `components/ui/chart`; `cn` da `lib/utils`; tipo `Account`.
-- Produces (tutti esportati dal barrel):
+- Consumes: `NetWorthPeriod`, `NetWorthSeriesPoint`, `NetWorthChange` (Task 2); `parseDateOnly` from `lib/calc/expenses.ts`; `formatCurrency(value, currency, { maximumFractionDigits? })` from `lib/format.ts`; `Card`, `CardHeader`, `CardTitle`, `CardContent` from `components/ui/card`; `ChartContainer`, `ChartTooltip`, `type ChartConfig` from `components/ui/chart`; `cn` from `lib/utils`; type `Account`.
+- Produces (all exported from the barrel):
   - `interface NetWorthCompositionItem { key: string; label: string; detail: string; amount: number; href: string }`
   - `buildCompositionItems(accounts: Account[]): NetWorthCompositionItem[]`
   - `NetWorthPeriodSelector` — props `{ value: NetWorthPeriod; onChange: (period: NetWorthPeriod) => void }`
@@ -1388,7 +1388,7 @@ Create `components/domain/net-worth/net-worth-composition-row.utils.ts`:
 ```ts
 import type { Account } from "@/lib/db/schema/accounts";
 
-/** Voce della riga di composizione del patrimonio: una per classe di asset esistente. */
+/** Item of the net worth composition row: one per existing asset class. */
 export interface NetWorthCompositionItem {
   key: string;
   label: string;
@@ -1397,7 +1397,7 @@ export interface NetWorthCompositionItem {
   href: string;
 }
 
-/** Voci di composizione per le sole classi di asset presenti; oggi solo Liquidità, se l'utente ha almeno un conto. */
+/** Composition items for the asset classes present only; today only Liquidità, if the user has at least one account. */
 export function buildCompositionItems(accounts: Account[]): NetWorthCompositionItem[] {
   if (accounts.length === 0) return [];
   const amount = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
@@ -1409,7 +1409,7 @@ export function buildCompositionItems(accounts: Account[]): NetWorthCompositionI
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pnpm exec vitest run components/domain/net-worth/net-worth-composition-row.utils.test.ts`
-Expected: PASS (3 test).
+Expected: PASS (3 tests).
 
 - [ ] **Step 5: Write the period selector**
 
@@ -1418,7 +1418,7 @@ Create `components/domain/net-worth/net-worth-period-selector.tsx`:
 ```tsx
 "use client";
 
-/** Selettore periodo 1M/3M/1A/Max del grafico patrimonio netto (stesso pattern a pillole di CashflowPeriodSelector). */
+/** 1M/3M/1A/Max period selector for the net worth chart (same pill pattern as CashflowPeriodSelector). */
 
 import { cn } from "@/lib/utils";
 import type { NetWorthPeriod } from "@/lib/calc/net-worth";
@@ -1466,7 +1466,7 @@ Create `components/domain/net-worth/net-worth-chart-card.tsx`:
 ```tsx
 "use client";
 
-/** Card principale della Panoramica: patrimonio netto attuale, variazione nel periodo, selettore periodo e grafico ad area. */
+/** Main Panoramica card: current net worth, change over the period, period selector and area chart. */
 
 import { Area, AreaChart, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1584,7 +1584,7 @@ export function NetWorthChartCard({ series, change, period, onPeriodChange, curr
 Create `components/domain/net-worth/net-worth-composition-row.tsx`:
 
 ```tsx
-/** Riga di mini-card con la composizione del patrimonio: una card per classe di asset esistente, ciascuna col link alla sua sezione. */
+/** Row of mini-cards with the net worth composition: one card per existing asset class, each linking to its section. */
 
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -1621,7 +1621,7 @@ export function NetWorthCompositionRow({ items, currency }: NetWorthCompositionR
 Create `components/domain/net-worth/month-summary-card.tsx`:
 
 ```tsx
-/** Card "Questo mese": entrate, uscite e quanto messo da parte nel mese corrente, con link a Cash flow. */
+/** "Questo mese" card: income, outflows and how much was set aside in the current month, with a link to Cash flow. */
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1675,7 +1675,7 @@ Create `components/domain/net-worth/index.ts`:
 /**
  * components/domain/net-worth — barrel file
  *
- * Punto di ingresso unico per i componenti della schermata Panoramica.
+ * Single entry point for the components of the Panoramica screen.
  */
 
 export { NetWorthPeriodSelector } from "./net-worth-period-selector";
@@ -1693,10 +1693,10 @@ export type { MonthSummaryCardProps } from "./month-summary-card";
 - [ ] **Step 8: Type check and lint**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore. Se Recharts rifiuta il tipo di `content={<NetWorthTooltip ... />}`, confrontarsi col tooltip custom già in uso in `components/domain/expenses/expense-trend-chart.tsx` e adottarne la stessa firma.
+Expected: no errors. If Recharts rejects the type of `content={<NetWorthTooltip ... />}`, compare with the custom tooltip already used in `components/domain/expenses/expense-trend-chart.tsx` and adopt the same signature.
 
 Run: `pnpm lint`
-Expected: nessun errore nuovo nei file `components/domain/net-worth/` (restano solo i 2 pre-esistenti).
+Expected: no new errors in the `components/domain/net-worth/` files (only the 2 pre-existing ones remain).
 
 - [ ] **Step 9: Commit**
 
@@ -1707,16 +1707,16 @@ git commit -m "feat: componenti Panoramica (grafico patrimonio, composizione, qu
 
 ---
 
-### Task 7: Pagina Panoramica, redirect della home e documentazione
+### Task 7: Panoramica page, home redirect and documentation
 
 **Files:**
 - Create: `app/(app)/panoramica/page.tsx`
-- Modify: `app/(app)/page.tsx` (sostituzione completa)
+- Modify: `app/(app)/page.tsx` (full replacement)
 - Modify: `CLAUDE.md`
 
 **Interfaces:**
-- Consumes: `buildNetWorthSeries`, `computeNetWorthChange`, `toDateKey`, `type NetWorthPeriod` (Task 2); `useNetWorthSnapshotsQuery` (Task 5); componenti e `buildCompositionItems` dal barrel `@/components/domain/net-worth` (Task 6); `computeAccountsKpi` da `@/components/domain/accounts`; `useAccountsQuery` da `@/lib/queries/accounts`; `useTransactionsQuery` da `@/lib/queries/transactions`; `computeMonthlySeries` da `@/lib/calc/cashflow`; `startOfDay`, `startOfMonth`, `endOfMonth` da `@/lib/calc/expenses`; `authClient` da `@/lib/auth/client`.
-- Produces: route `/panoramica`; `/` reindirizza a `/panoramica`.
+- Consumes: `buildNetWorthSeries`, `computeNetWorthChange`, `toDateKey`, `type NetWorthPeriod` (Task 2); `useNetWorthSnapshotsQuery` (Task 5); components and `buildCompositionItems` from the `@/components/domain/net-worth` barrel (Task 6); `computeAccountsKpi` from `@/components/domain/accounts`; `useAccountsQuery` from `@/lib/queries/accounts`; `useTransactionsQuery` from `@/lib/queries/transactions`; `computeMonthlySeries` from `@/lib/calc/cashflow`; `startOfDay`, `startOfMonth`, `endOfMonth` from `@/lib/calc/expenses`; `authClient` from `@/lib/auth/client`.
+- Produces: route `/panoramica`; `/` redirects to `/panoramica`.
 
 - [ ] **Step 1: Write the page**
 
@@ -1725,7 +1725,7 @@ Create `app/(app)/panoramica/page.tsx`:
 ```tsx
 "use client";
 
-/** Pagina Panoramica: patrimonio netto nel tempo, composizione per classe di asset e riepilogo del mese corrente. */
+/** Panoramica page: net worth over time, composition by asset class and summary of the current month. */
 
 import * as React from "react";
 import Link from "next/link";
@@ -1744,7 +1744,7 @@ import { useAccountsQuery } from "@/lib/queries/accounts";
 import { useNetWorthSnapshotsQuery } from "@/lib/queries/net-worth";
 import { useTransactionsQuery } from "@/lib/queries/transactions";
 
-/** Inizio della finestra di fetch degli snapshot: tutto lo storico, così il cambio periodo non richiede nuove richieste. */
+/** Start of the snapshot fetch window: the whole history, so changing period needs no new requests. */
 const NET_WORTH_FETCH_FROM = "2000-01-01";
 const DEFAULT_PERIOD: NetWorthPeriod = "3mesi";
 const HEADER_DATE_FORMAT = new Intl.DateTimeFormat("it-IT", {
@@ -1842,7 +1842,7 @@ Replace the whole content of `app/(app)/page.tsx` with:
 ```tsx
 import { redirect } from "next/navigation";
 
-/** Home: la schermata principale dell'app è la Panoramica. */
+/** Home: the app's main screen is the Panoramica. */
 export default function Home() {
   redirect("/panoramica");
 }
@@ -1851,31 +1851,31 @@ export default function Home() {
 - [ ] **Step 3: Verify the whole project**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm lint`
-Expected: solo i 2 errori pre-esistenti noti.
+Expected: only the 2 known pre-existing errors.
 
 Run: `pnpm exec vitest run lib/calc/net-worth.test.ts lib/net-worth app/api/net-worth components/domain/net-worth`
 Expected: PASS.
 
 Run: `pnpm exec vitest run`
-Expected: nessun fallimento nuovo (restano i 3 pre-esistenti in `lib/gocardless/scheduler.test.ts`).
+Expected: no new failures (the 3 pre-existing ones in `lib/gocardless/scheduler.test.ts` remain).
 
 Run: `pnpm build`
-Expected: build riuscita, route `/panoramica` presente nell'elenco.
+Expected: build succeeds, route `/panoramica` present in the list.
 
 - [ ] **Step 4: Update CLAUDE.md**
 
-In `CLAUDE.md`, sezione "Stato del progetto": sostituire la frase che inizia con `**In corso ora**: schermata **Panoramica**` fino a `esecuzione da avviare.` con:
+In `CLAUDE.md`, section "Stato del progetto": replace the sentence starting with `**In corso ora**: schermata **Panoramica**` up to `esecuzione da avviare.` with:
 
 ```markdown
-**In corso ora**: nessun piano attivo. **Schermata Panoramica implementata** (piano `docs/superpowers/plans/2026-09-13-panoramica-patrimonio-netto.md`) — **verifica manuale utente ancora da fare**: storico stimato visibile su un utente con conti Auto, cambio periodo 1M/3M/1A/Max, tooltip "stimato", totale aggiornato dopo modifica di un saldo, stato "nessun conto", redirect da `/`, primo snapshot reale scritto dal cron alle 23:50.
+**In progress now**: no active plan. **Panoramica screen implemented** (plan `docs/superpowers/plans/2026-09-13-panoramica-patrimonio-netto.md`) — **manual user verification still to do**: estimated history visible for a user with Auto accounts, period switch 1M/3M/1A/Max, "stimato" tooltip, total updated after editing a balance, "nessun conto" state, redirect from `/`, first real snapshot written by the cron at 23:50.
 ```
 
-Nella stessa frase di elenco delle schermate non implementate (`Le altre schermate (Panoramica, Investimenti, ...`), rimuovere "Panoramica, ".
+In the same sentence listing the unimplemented screens (`Le altre schermate (Panoramica, Investimenti, ...`), remove "Panoramica, ".
 
-Nel "Log delle decisioni", sotto la voce del 2026-09-13, aggiungere una voce che riassume: task completati, eventuali deviazioni dal piano, esito review, debito residuo.
+In the "Log delle decisioni", under the 2026-09-13 entry, add an entry summarizing: tasks completed, any deviations from the plan, review outcome, remaining debt.
 
 - [ ] **Step 5: Commit**
 

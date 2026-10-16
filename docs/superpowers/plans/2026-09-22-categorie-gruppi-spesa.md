@@ -1,63 +1,63 @@
-# Gruppi di spesa per le categorie — Implementation Plan
+# Spending groups for categories — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Sostituire i tipi categoria `fissa`/`variabile` con quattro gruppi di spesa (Dovute, Volute, Te futuro, Saltuarie) in DB, categorie di default, statistiche (torta Transazioni, "Dove va ogni euro" in Cash flow) e pagina `/categorie`, più uno script di reset delle categorie esistenti.
+**Goal:** Replace the `fissa`/`variabile` (fixed/variable) category types with four spending groups (Dovute, Volute, Te futuro, Saltuarie — roughly "Must-haves", "Wants", "Future you", "Occasional") in the DB, the default categories, the statistics (Transazioni donut, "Dove va ogni euro" ("Where every euro goes") in Cash flow) and the `/categorie` page, plus a script that resets existing categories.
 
-**Architecture:** Un modulo puro `lib/categories/groups.ts` è l'unica fonte di verità per tipi, ordine, etichette e colori dei gruppi; tutto il resto lo importa invece di ripetere unioni letterali. L'enum Postgres `category_type` viene rinominato/esteso da uno script idempotente; un secondo script riporta le categorie di ogni utente alla nuova lista di default, con la logica di decisione in una funzione pura testata.
+**Architecture:** A pure module `lib/categories/groups.ts` is the single source of truth for the groups' types, order, labels and colors; everything else imports it instead of repeating literal unions. The Postgres enum `category_type` is renamed/extended by an idempotent script; a second script brings every user's categories back to the new default list, with the decision logic in a tested pure function.
 
-**Tech Stack:** Next.js App Router, TypeScript, Drizzle ORM + postgres-js, Zod, TanStack Query, Recharts (via shadcn `Chart`), Tailwind v4 token, vitest, pnpm, tsx.
+**Tech Stack:** Next.js App Router, TypeScript, Drizzle ORM + postgres-js, Zod, TanStack Query, Recharts (via shadcn `Chart`), Tailwind v4 tokens, vitest, pnpm, tsx.
 
 **Spec:** `docs/superpowers/specs/2026-09-22-categorie-gruppi-spesa-design.md`
 
 ## Global Constraints
 
-- Valori enum `category_type`, in quest'ordine: `dovuta`, `voluta`, `futuro`, `saltuaria`, `entrata`.
-- Etichette UI: `Dovute`, `Volute`, `Te futuro`, `Saltuarie`; entrate: `Entrata`; fallback: `Da categorizzare`.
-- "Te futuro" conta come spesa normale ovunque (nessun totale cambia).
-- La categoria fallback (`isFallback: true`) non viene mai classificata per `type`: nelle statistiche va nel bucket "Da categorizzare" / "Non classificato". Il suo `type` nel DB è `voluta`.
-- Nessun colore hex nei componenti: solo token (`--group-*`) definiti in `app/globals.css` per `:root` e `.dark`.
-- Nessuna unione letterale `"fissa" | "variabile" | ...` o `"dovuta" | ...` fuori da `lib/categories/groups.ts`: usare `CategoryType` / `ExpenseGroup` / `CategoryGroupKey`.
-- JSDoc di una riga su ogni funzione/componente pubblico nuovo o modificato.
-- Tutte le stringhe UI in italiano.
-- Comandi test: `pnpm exec vitest run <path>`; tipi: `pnpm exec tsc --noEmit`; lint: `pnpm lint`.
-- Fallimenti noti e non correlati da ignorare: 3 test in `lib/gocardless/scheduler.test.ts`; 2 errori lint `react-hooks/set-state-in-effect` in `components/theme-toggle.tsx` e `CategoryLegendRow`.
-- **DB condiviso**: molti test API (`app/api/**/route.test.ts`) usano il Postgres reale. Lo script di migrazione enum (Task 2) va eseguito **dall'utente** prima di far girare quei test; non eseguire `ALTER TYPE`/`db:push` di propria iniziativa.
-- Git: solo `add`/`commit` nel worktree assegnato; nessun `fetch`/`reset`/`merge`/`push`.
+- `category_type` enum values, in this order: `dovuta`, `voluta`, `futuro`, `saltuaria`, `entrata`.
+- UI labels: `Dovute`, `Volute`, `Te futuro`, `Saltuarie`; income: `Entrata`; fallback: `Da categorizzare`.
+- "Te futuro" counts as normal spending everywhere (no total changes).
+- The fallback category (`isFallback: true`) is never classified by `type`: in the statistics it goes into the "Da categorizzare" / "Non classificato" ("To categorize" / "Unclassified") bucket. Its `type` in the DB is `voluta`.
+- No hex colors in components: only tokens (`--group-*`) defined in `app/globals.css` for `:root` and `.dark`.
+- No literal union `"fissa" | "variabile" | ...` or `"dovuta" | ...` outside `lib/categories/groups.ts`: use `CategoryType` / `ExpenseGroup` / `CategoryGroupKey`.
+- One-line JSDoc on every new or modified public function/component.
+- All UI strings in Italian.
+- Test commands: `pnpm exec vitest run <path>`; types: `pnpm exec tsc --noEmit`; lint: `pnpm lint`.
+- Known, unrelated failures to ignore: 3 tests in `lib/gocardless/scheduler.test.ts`; 2 lint errors `react-hooks/set-state-in-effect` in `components/theme-toggle.tsx` and `CategoryLegendRow`.
+- **Shared DB**: many API tests (`app/api/**/route.test.ts`) use the real Postgres. The enum migration script (Task 2) must be run **by the user** before running those tests; do not run `ALTER TYPE`/`db:push` on your own initiative.
+- Git: only `add`/`commit` in the assigned worktree; no `fetch`/`reset`/`merge`/`push`.
 
 ## Review Focus
 
-1. **Categoria personalizzata con transazioni al reset** → le transazioni devono finire su "Da categorizzare", non essere perse né far fallire la FK (test in Task 7 su `planCategoryReset` + ordine delle operazioni in `resetUserCategories`).
-2. **Utente che ha sia il nome legacy sia il nome nuovo** (es. "Salute & Cura" e "Salute & Farmaci") → vince il nome esatto, la legacy va eliminata, nessuna violazione del vincolo unique `(user_id, name)` (test in Task 7).
-3. **Spese sulla fallback** → mai contate in un gruppo: fetta grigia "Da categorizzare" nella torta, "Non classificato" in Cash flow (test in Task 3 e Task 4).
-4. **Script eseguiti due volte** → migrazione enum e reset sono no-op alla seconda esecuzione (test del piano "già resettato" in Task 7; la migrazione legge `pg_enum` prima di agire, Task 2).
-5. **Torta con "Da categorizzare" > 0** → anello esterno ordinato con la fallback in coda, allineato all'anello interno (test di `sortCategoryAmounts` in Task 3).
+1. **Custom category with transactions at reset** → the transactions must end up on "Da categorizzare", not be lost nor make the FK fail (test in Task 7 on `planCategoryReset` + order of operations in `resetUserCategories`).
+2. **User who has both the legacy name and the new name** (e.g. "Salute & Cura" and "Salute & Farmaci") → the exact name wins, the legacy one must be deleted, no violation of the unique constraint `(user_id, name)` (test in Task 7).
+3. **Spending on the fallback** → never counted in a group: grey "Da categorizzare" slice in the donut, "Non classificato" in Cash flow (tests in Task 3 and Task 4).
+4. **Scripts run twice** → enum migration and reset are no-ops on the second run (test of the "already reset" plan in Task 7; the migration reads `pg_enum` before acting, Task 2).
+5. **Donut with "Da categorizzare" > 0** → outer ring sorted with the fallback last, aligned with the inner ring (test of `sortCategoryAmounts` in Task 3).
 
 ---
 
-### Task 1: Modulo gruppi + token colore
+### Task 1: Groups module + color tokens
 
 **Files:**
 - Create: `lib/categories/groups.ts`
 - Create: `lib/categories/groups.test.ts`
-- Modify: `app/globals.css` (blocco `@theme inline`, `:root`, `.dark`)
+- Modify: `app/globals.css` (`@theme inline` block, `:root`, `.dark`)
 
 **Interfaces:**
-- Consumes: nulla.
-- Produces (usati da tutti i task successivi):
+- Consumes: nothing.
+- Produces (used by all following tasks):
   - `CATEGORY_TYPES: readonly ["dovuta","voluta","futuro","saltuaria","entrata"]`, `type CategoryType`
   - `EXPENSE_GROUP_KEYS: readonly ["dovuta","voluta","futuro","saltuaria"]`, `type ExpenseGroup`
   - `UNCATEGORIZED_GROUP_KEY = "daCategorizzare"`, `type CategoryGroupKey = ExpenseGroup | "daCategorizzare"`
-  - `EXPENSE_GROUPS: Record<ExpenseGroup, ExpenseGroupInfo>` con `{ label, shortDescription, colorVar, dotClassName }`
-  - `GROUP_DISPLAY: Record<CategoryGroupKey, GroupDisplay>` con `{ label, colorVar, dotClassName }`
+  - `EXPENSE_GROUPS: Record<ExpenseGroup, ExpenseGroupInfo>` with `{ label, shortDescription, colorVar, dotClassName }`
+  - `GROUP_DISPLAY: Record<CategoryGroupKey, GroupDisplay>` with `{ label, colorVar, dotClassName }`
   - `CATEGORY_TYPE_LABELS: Record<CategoryType, string>`
   - `DEFAULT_NEW_CATEGORY_TYPE: CategoryType` (= `"voluta"`)
   - `isExpenseGroup(type: string): type is ExpenseGroup`
-  - `categoryGroupKey(category: { type: string; isFallback: boolean }): CategoryGroupKey | null` (null = entrata)
+  - `categoryGroupKey(category: { type: string; isFallback: boolean }): CategoryGroupKey | null` (null = income)
   - `groupCategoriesByType<T extends { type: string; isFallback: boolean }>(categories: T[]): CategorySections<T>`
-    con `CategorySections<T> = { groups: { key: ExpenseGroup; categories: T[] }[]; uncategorized: T[]; income: T[] }`
+    with `CategorySections<T> = { groups: { key: ExpenseGroup; categories: T[] }[]; uncategorized: T[]; income: T[] }`
 
-- [ ] **Step 1: Scrivi i test**
+- [ ] **Step 1: Write the tests**
 
 `lib/categories/groups.test.ts`:
 
@@ -151,17 +151,17 @@ describe("groupCategoriesByType", () => {
 });
 ```
 
-- [ ] **Step 2: Verifica che falliscano**
+- [ ] **Step 2: Verify that they fail**
 
 Run: `pnpm exec vitest run lib/categories/groups.test.ts`
 Expected: FAIL — `Failed to resolve import "./groups"`.
 
-- [ ] **Step 3: Implementa `lib/categories/groups.ts`**
+- [ ] **Step 3: Implement `lib/categories/groups.ts`**
 
 ```ts
 /**
- * Gruppi di spesa delle categorie (Dovute / Volute / Te futuro / Saltuarie) e tipo "entrata": unica fonte
- * di verità per valori, ordine, etichette e token colore. Modulo puro, senza dipendenze da React o DB.
+ * Spending groups of the categories (Dovute / Volute / Te futuro / Saltuarie) and the "entrata" (income) type: single source
+ * of truth for values, order, labels and color tokens. Pure module, with no dependency on React or the DB.
  */
 
 export const CATEGORY_TYPES = ["dovuta", "voluta", "futuro", "saltuaria", "entrata"] as const;
@@ -170,15 +170,15 @@ export type CategoryType = (typeof CATEGORY_TYPES)[number];
 export const EXPENSE_GROUP_KEYS = ["dovuta", "voluta", "futuro", "saltuaria"] as const;
 export type ExpenseGroup = (typeof EXPENSE_GROUP_KEYS)[number];
 
-/** Bucket statistico delle spese su categoria fallback (o non classificabile): non è un tipo categoria. */
+/** Statistical bucket for spending on the fallback category (or unclassifiable): it is not a category type. */
 export const UNCATEGORIZED_GROUP_KEY = "daCategorizzare";
 export type CategoryGroupKey = ExpenseGroup | typeof UNCATEGORIZED_GROUP_KEY;
 
 export interface GroupDisplay {
   label: string;
-  /** Token CSS del colore del gruppo, da usare come `fill` nei grafici. */
+  /** CSS token of the group color, to use as `fill` in charts. */
   colorVar: string;
-  /** Classe Tailwind letterale per il pallino colore (letterale per il JIT). */
+  /** Literal Tailwind class for the color dot (literal for the JIT). */
   dotClassName: string;
 }
 
@@ -230,17 +230,17 @@ export const CATEGORY_TYPE_LABELS: Record<CategoryType, string> = {
   entrata: "Entrata",
 };
 
-/** Tipo proposto di default quando l'utente crea una nuova categoria. */
+/** Type proposed by default when the user creates a new category. */
 export const DEFAULT_NEW_CATEGORY_TYPE: CategoryType = "voluta";
 
-/** True se `type` è uno dei quattro gruppi di spesa (esclude "entrata" e valori sconosciuti). */
+/** True if `type` is one of the four spending groups (excludes "entrata" and unknown values). */
 export function isExpenseGroup(type: string): type is ExpenseGroup {
   return (EXPENSE_GROUP_KEYS as readonly string[]).includes(type);
 }
 
 /**
- * Bucket statistico di una categoria: la fallback e i tipi sconosciuti vanno in "daCategorizzare",
- * i gruppi di spesa in se stessi, le entrate in `null` (non sono spese).
+ * Statistical bucket of a category: the fallback and unknown types go to "daCategorizzare",
+ * spending groups to themselves, income to `null` (it is not spending).
  */
 export function categoryGroupKey(category: { type: string; isFallback: boolean }): CategoryGroupKey | null {
   if (category.isFallback) return UNCATEGORIZED_GROUP_KEY;
@@ -249,13 +249,13 @@ export function categoryGroupKey(category: { type: string; isFallback: boolean }
 }
 
 export interface CategorySections<T> {
-  /** Sempre tutti e quattro i gruppi, nell'ordine di EXPENSE_GROUP_KEYS, anche se vuoti. */
+  /** Always all four groups, in EXPENSE_GROUP_KEYS order, even when empty. */
   groups: { key: ExpenseGroup; categories: T[] }[];
   uncategorized: T[];
   income: T[];
 }
 
-/** Divide le categorie in sezioni per la pagina Categorie, preservando l'ordine di input dentro ogni sezione. */
+/** Splits the categories into sections for the Categorie page, preserving the input order within each section. */
 export function groupCategoriesByType<T extends { type: string; isFallback: boolean }>(
   categories: T[]
 ): CategorySections<T> {
@@ -274,9 +274,9 @@ export function groupCategoriesByType<T extends { type: string; isFallback: bool
 }
 ```
 
-- [ ] **Step 4: Aggiungi i token colore in `app/globals.css`**
+- [ ] **Step 4: Add the color tokens in `app/globals.css`**
 
-Nel blocco `@theme inline`, subito dopo `--color-text-3: var(--text-3);`:
+In the `@theme inline` block, right after `--color-text-3: var(--text-3);`:
 
 ```css
   --color-group-dovuta: var(--group-dovuta);
@@ -286,7 +286,7 @@ Nel blocco `@theme inline`, subito dopo `--color-text-3: var(--text-3);`:
   --color-group-uncategorized: var(--group-uncategorized);
 ```
 
-In `:root`, subito dopo `--chart-5: #b6c4bc;`:
+In `:root`, right after `--chart-5: #b6c4bc;`:
 
 ```css
   --group-dovuta: #dc2626;
@@ -296,7 +296,7 @@ In `:root`, subito dopo `--chart-5: #b6c4bc;`:
   --group-uncategorized: #94a3b8;
 ```
 
-In `.dark`, subito dopo `--chart-5: #2f4940;`:
+In `.dark`, right after `--chart-5: #2f4940;`:
 
 ```css
   --group-dovuta: #f87171;
@@ -306,12 +306,12 @@ In `.dark`, subito dopo `--chart-5: #2f4940;`:
   --group-uncategorized: #64748b;
 ```
 
-(Giallo chiaro-tema scelto ambra scuro `#d97706` per contrasto come fill su sfondo chiaro.)
+(For yellow in the light theme, dark amber `#d97706` was chosen for contrast as a fill on a light background.)
 
-- [ ] **Step 5: Verifica**
+- [ ] **Step 5: Verify**
 
 Run: `pnpm exec vitest run lib/categories/groups.test.ts`
-Expected: PASS (8 test).
+Expected: PASS (8 tests).
 
 - [ ] **Step 6: Commit**
 
@@ -322,7 +322,7 @@ git commit -m "feat(categorie): modulo gruppi di spesa e token colore"
 
 ---
 
-### Task 2: Cambio enum — schema, default, validazione, categorizzazione, script di migrazione
+### Task 2: Enum change — schema, defaults, validation, categorization, migration script
 
 **Files:**
 - Modify: `lib/db/schema/categories.ts`
@@ -331,18 +331,18 @@ git commit -m "feat(categorie): modulo gruppi di spesa e token colore"
 - Modify: `lib/categorization/fallback.ts:23`
 - Modify: `lib/categorization/match-rule.ts:6,18`
 - Modify: `lib/categorization/suggest.ts:19`
-- Modify: `app/api/transactions/route.ts:55` (solo JSDoc)
+- Modify: `app/api/transactions/route.ts:55` (JSDoc only)
 - Create: `lib/db/migrate-category-groups.ts`
 - Modify: `package.json` (script)
-- Modify: tutti i `*.test.ts` sotto `app/` e `lib/` che contengono `"fissa"` o `"variabile"` (rinomina meccanica)
+- Modify: every `*.test.ts` under `app/` and `lib/` that contains `"fissa"` or `"variabile"` (mechanical rename)
 
 **Interfaces:**
 - Consumes: `CATEGORY_TYPES`, `CategoryType` (Task 1).
-- Produces: `Category["type"]` ora è `CategoryType`; `DEFAULT_CATEGORIES` con la nuova lista; `LEGACY_CATEGORY_NAMES: Record<string, string>` (vecchio nome → nuovo nome) esportato da `lib/db/schema/categories.ts`, usato dal Task 7.
+- Produces: `Category["type"]` is now `CategoryType`; `DEFAULT_CATEGORIES` with the new list; `LEGACY_CATEGORY_NAMES: Record<string, string>` (old name → new name) exported from `lib/db/schema/categories.ts`, used by Task 7.
 
-- [ ] **Step 1: Aggiorna il test delle categorie di default**
+- [ ] **Step 1: Update the default categories test**
 
-Sostituisci interamente `lib/db/schema/categories.test.ts`:
+Fully replace `lib/db/schema/categories.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -392,14 +392,14 @@ describe("DEFAULT_CATEGORIES", () => {
 });
 ```
 
-- [ ] **Step 2: Verifica che fallisca**
+- [ ] **Step 2: Verify that it fails**
 
 Run: `pnpm exec vitest run lib/db/schema/categories.test.ts`
-Expected: FAIL (lunghezza 18 ≠ 25, `LEGACY_CATEGORY_NAMES` undefined).
+Expected: FAIL (length 18 ≠ 25, `LEGACY_CATEGORY_NAMES` undefined).
 
-- [ ] **Step 3: Aggiorna `lib/db/schema/categories.ts`**
+- [ ] **Step 3: Update `lib/db/schema/categories.ts`**
 
-Sostituisci la riga dell'enum e tutto da `export const DEFAULT_CATEGORIES` in fondo:
+Replace the enum line and everything from `export const DEFAULT_CATEGORIES` to the end:
 
 ```ts
 import { boolean, pgEnum, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
@@ -410,7 +410,7 @@ import { CATEGORY_TYPES, type CategoryType } from "@/lib/categories/groups";
 export const categoryTypeEnum = pgEnum("category_type", CATEGORY_TYPES);
 ```
 
-(tabella `categories` e tipi `Category`/`NewCategory` invariati)
+(`categories` table and `Category`/`NewCategory` types unchanged)
 
 ```ts
 export const DEFAULT_CATEGORIES: {
@@ -449,7 +449,7 @@ export const DEFAULT_CATEGORIES: {
   { name: "Regali", type: "saltuaria", icon: "gift", color: "pink" },
   { name: "Imprevisti", type: "saltuaria", icon: "alert-triangle", color: "amber" },
 
-  // --- FALLBACK (nessun gruppo reale: il type è solo un valore non-null) ---
+  // --- FALLBACK (no real group: the type is just a non-null value) ---
   { name: "Da categorizzare", type: "voluta", icon: "help-circle", color: "red", isFallback: true },
 
   // --- ENTRATE ---
@@ -459,8 +459,8 @@ export const DEFAULT_CATEGORIES: {
 ];
 
 /**
- * Nomi di categorie di default delle versioni precedenti → nome attuale. Usato dal reset categorie
- * per aggiornare (preservandone l'id e quindi transazioni/regole/budget) le categorie solo rinominate.
+ * Default category names from previous versions → current name. Used by the category reset
+ * to update (keeping their id, and therefore transactions/rules/budgets) the categories that were only renamed.
  */
 export const LEGACY_CATEGORY_NAMES: Record<string, string> = {
   "Assicurazioni & Tasse": "Assicurazioni",
@@ -471,42 +471,42 @@ export const LEGACY_CATEGORY_NAMES: Record<string, string> = {
 };
 ```
 
-Se `tsc` segnala che un colore (`lime`, `amber`, `emerald`, `rose`, `indigo`, `cyan`, `purple`, `teal`, `orange`, `pink`, `red`) non è in `CategoryColor`, sostituiscilo con uno presente in `SWATCH_BASE_COLORS` di `lib/validation/shared-colors.ts` (verifica prima con una lettura del file).
+If `tsc` reports that a color (`lime`, `amber`, `emerald`, `rose`, `indigo`, `cyan`, `purple`, `teal`, `orange`, `pink`, `red`) is not in `CategoryColor`, replace it with one present in `SWATCH_BASE_COLORS` of `lib/validation/shared-colors.ts` (check by reading the file first).
 
-- [ ] **Step 4: Validazione, fallback, categorizzazione**
+- [ ] **Step 4: Validation, fallback, categorization**
 
-`lib/validation/categories.ts`: aggiungi `import { CATEGORY_TYPES } from "@/lib/categories/groups";` e sostituisci le due occorrenze di `z.enum(["fissa", "variabile", "entrata"])` con `z.enum(CATEGORY_TYPES)`.
+`lib/validation/categories.ts`: add `import { CATEGORY_TYPES } from "@/lib/categories/groups";` and replace the two occurrences of `z.enum(["fissa", "variabile", "entrata"])` with `z.enum(CATEGORY_TYPES)`.
 
-`lib/categorization/fallback.ts`: `type: "variabile",` → `type: "voluta",` (con commento a fine riga: `// valore arbitrario: la fallback non viene mai classificata per type`).
+`lib/categorization/fallback.ts`: `type: "variabile",` → `type: "voluta",` (with an end-of-line comment: `// arbitrary value: the fallback is never classified by type`).
 
-`lib/categorization/match-rule.ts`: aggiungi `import type { CategoryType } from "@/lib/categories/groups";` e sostituisci le due `"fissa" | "variabile" | "entrata"` con `CategoryType`.
+`lib/categorization/match-rule.ts`: add `import type { CategoryType } from "@/lib/categories/groups";` and replace the two `"fissa" | "variabile" | "entrata"` with `CategoryType`.
 
-`lib/categorization/suggest.ts`: stessa sostituzione alla riga 19 (aggiungi l'import type).
+`lib/categorization/suggest.ts`: same replacement at line 19 (add the type import).
 
-`app/api/transactions/route.ts:55`: nel JSDoc `fissa/variabile → negato` → `gruppi di spesa → negato`.
+`app/api/transactions/route.ts:55`: in the JSDoc, `fissa/variabile → negato` → `gruppi di spesa → negato` ("fixed/variable → negated" → "spending groups → negated").
 
-- [ ] **Step 5: Rinomina meccanica nei fixture di test**
+- [ ] **Step 5: Mechanical rename in the test fixtures**
 
 ```bash
 grep -rl --include=*.test.ts -e '"fissa"' -e '"variabile"' app lib | xargs sed -i 's/"fissa"/"dovuta"/g; s/"variabile"/"voluta"/g'
 grep -rn --include=*.test.ts -e '"fissa"' -e '"variabile"' app lib
 ```
-Expected seconda riga: nessun output. (La semantica è invariata: `dovuta`/`voluta` sono le rinomine 1:1 dei vecchi valori.)
+Expected on the second line: no output. (The semantics are unchanged: `dovuta`/`voluta` are the 1:1 renames of the old values.)
 
-- [ ] **Step 6: Script di migrazione enum**
+- [ ] **Step 6: Enum migration script**
 
-Crea `lib/db/migrate-category-groups.ts`:
+Create `lib/db/migrate-category-groups.ts`:
 
 ```ts
 /**
- * Migrazione one-shot e idempotente dell'enum Postgres `category_type` da fissa/variabile/entrata a
- * dovuta/voluta/futuro/saltuaria/entrata (vedi docs/superpowers/specs/2026-09-22-categorie-gruppi-spesa-design.md).
- * Legge i valori correnti da pg_enum ed esegue solo i passi mancanti; `ADD VALUE` gira fuori da transazioni.
- * Esecuzione: `pnpm db:migrate-category-groups`.
+ * One-shot, idempotent migration of the Postgres enum `category_type` from fissa/variabile/entrata to
+ * dovuta/voluta/futuro/saltuaria/entrata (see docs/superpowers/specs/2026-09-22-categorie-gruppi-spesa-design.md).
+ * Reads the current values from pg_enum and runs only the missing steps; `ADD VALUE` runs outside transactions.
+ * Run with: `pnpm db:migrate-category-groups`.
  */
 import { client } from "./client";
 
-/** Passi SQL necessari a partire dai valori enum attuali (vuoto se la migrazione è già stata applicata). */
+/** SQL steps needed starting from the current enum values (empty if the migration has already been applied). */
 export function categoryEnumMigrationSteps(labels: string[]): string[] {
   const has = new Set(labels);
   const steps: string[] = [];
@@ -556,7 +556,7 @@ if (process.argv[1]?.includes("migrate-category-groups")) {
 }
 ```
 
-Crea `lib/db/migrate-category-groups.test.ts`:
+Create `lib/db/migrate-category-groups.test.ts`:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -585,19 +585,19 @@ describe("categoryEnumMigrationSteps", () => {
 });
 ```
 
-Verifica che `lib/db/client.ts` esporti `client` (lo usa già `lib/db/migrate.ts`). Poi in `package.json`, dopo `"db:clear"`:
+Check that `lib/db/client.ts` exports `client` (`lib/db/migrate.ts` already uses it). Then in `package.json`, after `"db:clear"`:
 
 ```json
     "db:migrate-category-groups": "tsx --env-file=.env.local lib/db/migrate-category-groups.ts",
 ```
 
-- [ ] **Step 7: Verifica unitaria**
+- [ ] **Step 7: Unit verification**
 
 Run: `pnpm exec vitest run lib/db/schema/categories.test.ts lib/db/migrate-category-groups.test.ts lib/categories lib/categorization lib/validation`
 Expected: PASS.
 
 Run: `pnpm exec tsc --noEmit`
-Expected: errori **solo** nei file posseduti dai Task 3–6: `lib/calc/expenses.ts`, `lib/calc/expenses.test.ts`, `lib/calc/cashflow.ts`, `lib/calc/cashflow.test.ts`, `components/domain/expenses/category-breakdown-donut*.ts(x)`, `components/domain/cashflow/where-it-goes-breakdown.tsx`, `components/domain/categories/category-row.tsx`, `components/domain/categories/add-category-form.tsx`, `app/(app)/transazioni/page.tsx`. Qualunque errore in un altro file va risolto in questo task.
+Expected: errors **only** in the files owned by Tasks 3–6: `lib/calc/expenses.ts`, `lib/calc/expenses.test.ts`, `lib/calc/cashflow.ts`, `lib/calc/cashflow.test.ts`, `components/domain/expenses/category-breakdown-donut*.ts(x)`, `components/domain/cashflow/where-it-goes-breakdown.tsx`, `components/domain/categories/category-row.tsx`, `components/domain/categories/add-category-form.tsx`, `app/(app)/transazioni/page.tsx`. Any error in another file must be fixed in this task.
 
 - [ ] **Step 8: Commit**
 
@@ -607,26 +607,26 @@ git add $(git diff --name-only -- '*.test.ts')
 git commit -m "feat(categorie): enum category_type a gruppi di spesa, nuovi default, script migrazione enum"
 ```
 
-- [ ] **Step 9: Migrazione DB — STOP, la esegue l'utente**
+- [ ] **Step 9: DB migration — STOP, the user runs it**
 
-Chiedi all'utente di eseguire, dalla directory di questo worktree:
+Ask the user to run, from this worktree's directory:
 
 ```bash
 pnpm db:migrate-category-groups
 ```
 
-Output atteso: `Valori finali: [ 'dovuta', 'voluta', 'futuro', 'saltuaria', 'entrata' ]`. Avvisa che da questo momento il codice di `main` non mergiato è incompatibile col DB condiviso fino al merge. Non procedere ai test API finché l'utente non conferma.
+Expected output: `Valori finali: [ 'dovuta', 'voluta', 'futuro', 'saltuaria', 'entrata' ]`. Warn that from this moment the unmerged `main` code is incompatible with the shared DB until the merge. Do not proceed to the API tests until the user confirms.
 
-Dopo conferma, run: `pnpm exec vitest run app/api lib/db lib/gocardless lib/net-worth`
-Expected: PASS (salvo i 3 noti di `scheduler.test.ts`).
+After confirmation, run: `pnpm exec vitest run app/api lib/db lib/gocardless lib/net-worth`
+Expected: PASS (except the 3 known ones in `scheduler.test.ts`).
 
 ---
 
-### Task 3: Motore Transazioni — `computeGroupTotals` e ordinamento torta
+### Task 3: Transazioni engine — `computeGroupTotals` and donut sorting
 
 **Files:**
 - Modify: `lib/calc/expenses.ts` (`CategoryAmount`, `computeCategoryBreakdown`, `FixedVsVariable`/`computeFixedVsVariable` → `GroupTotals`/`computeGroupTotals`)
-- Modify: `lib/calc/expenses.test.ts:259-291` e `:547-560`
+- Modify: `lib/calc/expenses.test.ts:259-291` and `:547-560`
 - Modify: `components/domain/expenses/category-breakdown-donut.utils.ts:1-11`
 - Modify: `components/domain/expenses/category-breakdown-donut.utils.test.ts`
 
@@ -635,12 +635,12 @@ Expected: PASS (salvo i 3 noti di `scheduler.test.ts`).
 - Produces:
   - `CategoryAmount = { categoryId: string; name: string; group: CategoryGroupKey; amount: number; color: string; icon: string }`
   - `type GroupTotals = Record<CategoryGroupKey, number>`
-  - `computeGroupTotals(transactions, categories, period, referenceDate, today): GroupTotals` (stessa firma della vecchia `computeFixedVsVariable`)
-  - `sortCategoryAmounts` ordina per `EXPENSE_GROUP_KEYS` poi `daCategorizzare`, poi importo decrescente.
+  - `computeGroupTotals(transactions, categories, period, referenceDate, today): GroupTotals` (same signature as the old `computeFixedVsVariable`)
+  - `sortCategoryAmounts` sorts by `EXPENSE_GROUP_KEYS` then `daCategorizzare`, then by descending amount.
 
-- [ ] **Step 1: Aggiorna i test di `expenses.test.ts`**
+- [ ] **Step 1: Update the tests in `expenses.test.ts`**
 
-Nell'import, `computeFixedVsVariable` → `computeGroupTotals`. Sostituisci i blocchi `describe("computeCategoryBreakdown", ...)` e `describe("computeFixedVsVariable", ...)` (righe 259-291) con:
+In the import, `computeFixedVsVariable` → `computeGroupTotals`. Replace the `describe("computeCategoryBreakdown", ...)` and `describe("computeFixedVsVariable", ...)` blocks (lines 259-291) with:
 
 ```ts
 describe("computeCategoryBreakdown", () => {
@@ -699,31 +699,31 @@ describe("computeGroupTotals", () => {
 });
 ```
 
-Nel blocco `describe("computeCategoryBreakdown esclude le categorie di entrata", ...)` (circa riga 547) sostituisci eventuali asserzioni su `type` con `group` (il `sed` del Task 2 ha già trasformato `"variabile"` in `"voluta"` nei fixture).
+In the `describe("computeCategoryBreakdown esclude le categorie di entrata", ...)` block (around line 547) replace any assertions on `type` with `group` (the Task 2 `sed` already turned `"variabile"` into `"voluta"` in the fixtures).
 
-- [ ] **Step 2: Verifica che falliscano**
+- [ ] **Step 2: Verify that they fail**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
 Expected: FAIL (`computeGroupTotals is not a function`, `group` undefined).
 
-- [ ] **Step 3: Implementa in `lib/calc/expenses.ts`**
+- [ ] **Step 3: Implement in `lib/calc/expenses.ts`**
 
-Aggiungi in cima: `import { EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY, categoryGroupKey, type CategoryGroupKey } from "@/lib/categories/groups";`
+Add at the top: `import { EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY, categoryGroupKey, type CategoryGroupKey } from "@/lib/categories/groups";`
 
-Sostituisci `CategoryAmount`, `computeCategoryBreakdown`, `FixedVsVariable`, `computeFixedVsVariable` con:
+Replace `CategoryAmount`, `computeCategoryBreakdown`, `FixedVsVariable`, `computeFixedVsVariable` with:
 
 ```ts
 export interface CategoryAmount {
   categoryId: string;
   name: string;
-  /** Gruppo di spesa della categoria; la fallback (e tipi non riconosciuti) → "daCategorizzare". */
+  /** Spending group of the category; the fallback (and unrecognized types) → "daCategorizzare". */
   group: CategoryGroupKey;
   amount: number;
   color: string;
   icon: string;
 }
 
-/** Spesa effettiva per categoria nel periodo selezionato, una riga per ogni categoria di spesa dell'utente (entrate escluse). */
+/** Actual spending per category in the selected period, one row for each of the user's spending categories (income excluded). */
 export function computeCategoryBreakdown(
   transactions: Transaction[],
   categories: Category[],
@@ -759,7 +759,7 @@ export function computeCategoryBreakdown(
 
 export type GroupTotals = Record<CategoryGroupKey, number>;
 
-/** Somma la spesa effettiva del periodo per gruppo di spesa (Dovute/Volute/Te futuro/Saltuarie) più "daCategorizzare". */
+/** Sums the period's actual spending per spending group (Dovute/Volute/Te futuro/Saltuarie) plus "daCategorizzare". */
 export function computeGroupTotals(
   transactions: Transaction[],
   categories: Category[],
@@ -777,9 +777,9 @@ export function computeGroupTotals(
 }
 ```
 
-- [ ] **Step 4: Aggiorna `category-breakdown-donut.utils.ts` e il suo test**
+- [ ] **Step 4: Update `category-breakdown-donut.utils.ts` and its test**
 
-Righe 1-11 di `category-breakdown-donut.utils.ts`:
+Lines 1-11 of `category-breakdown-donut.utils.ts`:
 
 ```ts
 import type { CategoryAmount } from "@/lib/calc/expenses";
@@ -789,7 +789,7 @@ const GROUP_ORDER = Object.fromEntries(
   [...EXPENSE_GROUP_KEYS, UNCATEGORIZED_GROUP_KEY].map((key, index) => [key, index])
 ) as Record<CategoryGroupKey, number>;
 
-/** Ordina le categorie per gruppo (Dovute → Volute → Te futuro → Saltuarie → Da categorizzare) e, dentro ogni gruppo, per importo decrescente. */
+/** Sorts the categories by group (Dovute → Volute → Te futuro → Saltuarie → Da categorizzare) and, within each group, by descending amount. */
 export function sortCategoryAmounts(categoryAmounts: CategoryAmount[]): CategoryAmount[] {
   return [...categoryAmounts].sort((a, b) => {
     if (a.group !== b.group) return GROUP_ORDER[a.group] - GROUP_ORDER[b.group];
@@ -798,13 +798,13 @@ export function sortCategoryAmounts(categoryAmounts: CategoryAmount[]): Category
 }
 ```
 
-In `category-breakdown-donut.utils.test.ts`: in `makeEntry` sostituisci `type: "voluta",` (già rinominato dal sed) con `group: "voluta",`; in tutto il file sostituisci le chiavi `type: "dovuta"` / `type: "voluta"` degli override con `group: ...`:
+In `category-breakdown-donut.utils.test.ts`: in `makeEntry` replace `type: "voluta",` (already renamed by the sed) with `group: "voluta",`; throughout the file replace the override keys `type: "dovuta"` / `type: "voluta"` with `group: ...`:
 
 ```bash
 sed -i 's/type: "dovuta"/group: "dovuta"/g; s/type: "voluta"/group: "voluta"/g' components/domain/expenses/category-breakdown-donut.utils.test.ts
 ```
 
-Poi sostituisci i primi due `it` di `describe("sortCategoryAmounts", ...)` con:
+Then replace the first two `it` of `describe("sortCategoryAmounts", ...)` with:
 
 ```ts
   it("ordina per gruppo: dovute, volute, te futuro, saltuarie, da categorizzare in coda", () => {
@@ -827,7 +827,7 @@ Poi sostituisci i primi due `it` di `describe("sortCategoryAmounts", ...)` con:
   });
 ```
 
-- [ ] **Step 5: Verifica**
+- [ ] **Step 5: Verify**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts components/domain/expenses/category-breakdown-donut.utils.test.ts`
 Expected: PASS.
@@ -841,20 +841,20 @@ git commit -m "feat(transazioni): totali per gruppo di spesa e ordinamento torta
 
 ---
 
-### Task 4: Cash flow — "Dove va ogni euro" per gruppo
+### Task 4: Cash flow — "Dove va ogni euro" by group
 
 **Files:**
 - Modify: `lib/calc/cashflow.ts:240-291`
-- Modify: `lib/calc/cashflow.test.ts` (blocco `describe("computeWhereItGoes", ...)`)
+- Modify: `lib/calc/cashflow.test.ts` (`describe("computeWhereItGoes", ...)` block)
 - Modify: `components/domain/cashflow/where-it-goes-breakdown.tsx`
 
 **Interfaces:**
 - Consumes: `EXPENSE_GROUP_KEYS`, `EXPENSE_GROUPS`, `GROUP_DISPLAY`, `categoryGroupKey`, `isExpenseGroup`, `ExpenseGroup` (Task 1).
-- Produces: `WhereItGoesEntry = { key: ExpenseGroup | "nonClassificato" | "avanzo"; label: string; amount: number; quotaPct: number | null }`; `computeWhereItGoes` con firma invariata, 6 voci nell'ordine Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo.
+- Produces: `WhereItGoesEntry = { key: ExpenseGroup | "nonClassificato" | "avanzo"; label: string; amount: number; quotaPct: number | null }`; `computeWhereItGoes` with unchanged signature, 6 entries in the order Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo.
 
-- [ ] **Step 1: Riscrivi i test**
+- [ ] **Step 1: Rewrite the tests**
 
-Sostituisci l'intero `describe("computeWhereItGoes", ...)` di `lib/calc/cashflow.test.ts` con (mantieni l'ultimo `it` sul post-"Dividi" adattandone solo le chiavi `"fisse"`→`"dovuta"`, `"risparmio"`→`"avanzo"`; il sed del Task 2 ha già reso `type: "dovuta"`):
+Replace the whole `describe("computeWhereItGoes", ...)` of `lib/calc/cashflow.test.ts` with (keep the last `it` on post-"Dividi" ("Split"), adapting only its keys `"fisse"`→`"dovuta"`, `"risparmio"`→`"avanzo"`; the Task 2 sed already made it `type: "dovuta"`):
 
 ```ts
 describe("computeWhereItGoes", () => {
@@ -928,34 +928,34 @@ describe("computeWhereItGoes", () => {
   });
 ```
 
-(seguito dall'`it` post-"Dividi" esistente adattato, poi `});`)
+(followed by the existing post-"Dividi" `it`, adapted, then `});`)
 
-- [ ] **Step 2: Verifica che falliscano**
+- [ ] **Step 2: Verify that they fail**
 
 Run: `pnpm exec vitest run lib/calc/cashflow.test.ts`
-Expected: FAIL sulle nuove chiavi.
+Expected: FAIL on the new keys.
 
-- [ ] **Step 3: Implementa in `lib/calc/cashflow.ts`**
+- [ ] **Step 3: Implement in `lib/calc/cashflow.ts`**
 
-Aggiungi import: `import { EXPENSE_GROUP_KEYS, EXPENSE_GROUPS, categoryGroupKey, isExpenseGroup, type ExpenseGroup } from "@/lib/categories/groups";`
+Add the import: `import { EXPENSE_GROUP_KEYS, EXPENSE_GROUPS, categoryGroupKey, isExpenseGroup, type ExpenseGroup } from "@/lib/categories/groups";`
 
-Sostituisci `WhereItGoesEntry` e `computeWhereItGoes` (righe 240-291):
+Replace `WhereItGoesEntry` and `computeWhereItGoes` (lines 240-291):
 
 ```ts
-/** Riga di `computeWhereItGoes`: un gruppo di spesa, le spese non classificate o l'avanzo del mese. */
+/** Row of `computeWhereItGoes`: a spending group, unclassified spending or the month's surplus. */
 export interface WhereItGoesEntry {
   key: ExpenseGroup | "nonClassificato" | "avanzo";
   label: string;
   amount: number;
-  /** null se le entrate del mese sono zero (non calcolabile). L'avanzo può essere negativo (nessun floor a zero). */
+  /** null if the month's income is zero (not computable). The surplus can be negative (no floor at zero). */
   quotaPct: number | null;
 }
 
 /**
- * "Dove va ogni euro" del mese di riferimento: spesa per ciascun gruppo (Dovute, Volute, Te futuro,
- * Saltuarie — Te futuro conta come spesa), spese non classificabili (categoria fallback, assente
- * dall'array o erroneamente "entrata") e avanzo (entrate − tutte le uscite), con quota % sul totale
- * entrate. Entrate e uscite contano l'importo effettivo post-"Dividi" (`effectiveAmount`).
+ * "Dove va ogni euro" for the reference month: spending for each group (Dovute, Volute, Te futuro,
+ * Saltuarie — Te futuro counts as spending), unclassifiable spending (fallback category, missing
+ * from the array or wrongly "entrata") and surplus (income − all outflows), with a % share of total
+ * income. Income and outflows count the actual post-"Dividi" amount (`effectiveAmount`).
  */
 export function computeWhereItGoes(
   transactions: Transaction[],
@@ -993,12 +993,12 @@ export function computeWhereItGoes(
 }
 ```
 
-- [ ] **Step 4: Aggiorna `where-it-goes-breakdown.tsx`**
+- [ ] **Step 4: Update `where-it-goes-breakdown.tsx`**
 
-Sostituisci il file:
+Replace the file:
 
 ```tsx
-/** Blocco "Dove va ogni euro" (mese corrente): una riga per ciascuna voce di `computeWhereItGoes` (gruppi di spesa, non classificato, avanzo) con pallino colore del gruppo, importo e quota % sulle entrate del mese — nessuna assunzione sul numero di voci. */
+/** "Dove va ogni euro" block (current month): one row for each entry of `computeWhereItGoes` (spending groups, unclassified, surplus) with the group's color dot, amount and % share of the month's income — no assumption on the number of entries. */
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
@@ -1053,11 +1053,11 @@ export function WhereItGoesBreakdown({ entries, currency }: WhereItGoesBreakdown
 }
 ```
 
-- [ ] **Step 5: Verifica**
+- [ ] **Step 5: Verify**
 
 Run: `pnpm exec vitest run lib/calc/cashflow.test.ts`
 Expected: PASS.
-Run: `pnpm exec tsc --noEmit` — nessun errore in `lib/calc/cashflow*.ts` né in `where-it-goes-breakdown.tsx`.
+Run: `pnpm exec tsc --noEmit` — no errors in `lib/calc/cashflow*.ts` nor in `where-it-goes-breakdown.tsx`.
 
 - [ ] **Step 6: Commit**
 
@@ -1068,7 +1068,7 @@ git commit -m "feat(cash-flow): 'Dove va ogni euro' per gruppo di spesa, Risparm
 
 ---
 
-### Task 5: Torta "Per categoria" in Transazioni
+### Task 5: "Per categoria" ("By category") donut in Transazioni
 
 **Files:**
 - Modify: `components/domain/expenses/category-breakdown-donut.tsx`
@@ -1076,16 +1076,16 @@ git commit -m "feat(cash-flow): 'Dove va ogni euro' per gruppo di spesa, Risparm
 
 **Interfaces:**
 - Consumes: `GroupTotals`, `computeGroupTotals`, `CategoryAmount.group` (Task 3); `EXPENSE_GROUP_KEYS`, `GROUP_DISPLAY`, `UNCATEGORIZED_GROUP_KEY` (Task 1).
-- Produces: `CategoryBreakdownDonutProps` con `groupTotals: GroupTotals` al posto di `fixedVsVariable`.
+- Produces: `CategoryBreakdownDonutProps` with `groupTotals: GroupTotals` instead of `fixedVsVariable`.
 
-- [ ] **Step 1: Aggiorna il componente**
+- [ ] **Step 1: Update the component**
 
 In `category-breakdown-donut.tsx`:
 
-1. JSDoc in testa: `(layer interno tipo fissa/variabile, layer esterno categoria)` → `(layer interno gruppo di spesa — Dovute/Volute/Te futuro/Saltuarie più "Da categorizzare" se presente —, layer esterno categoria)`; rimuovi la frase `Unifica il vecchio donut "Fisse vs variabili" e la lista budget separata in un'unica card.` sostituendola con `Unifica torta per gruppo e lista budget in un'unica card.`
-2. Import: `import type { CategoryAmount, FixedVsVariable } from "@/lib/calc/expenses";` → `import type { CategoryAmount, GroupTotals } from "@/lib/calc/expenses";` e aggiungi
+1. Header JSDoc: `(layer interno tipo fissa/variabile, layer esterno categoria)` → `(layer interno gruppo di spesa — Dovute/Volute/Te futuro/Saltuarie più "Da categorizzare" se presente —, layer esterno categoria)` (i.e. the inner layer becomes the spending group, plus "Da categorizzare" when present; the outer layer stays the category); remove the sentence `Unifica il vecchio donut "Fisse vs variabili" e la lista budget separata in un'unica card.` replacing it with `Unifica torta per gruppo e lista budget in un'unica card.` ("Merges the group donut and the budget list into a single card.")
+2. Import: `import type { CategoryAmount, FixedVsVariable } from "@/lib/calc/expenses";` → `import type { CategoryAmount, GroupTotals } from "@/lib/calc/expenses";` and add
    `import { EXPENSE_GROUP_KEYS, GROUP_DISPLAY, UNCATEGORIZED_GROUP_KEY, type CategoryGroupKey } from "@/lib/categories/groups";`
-3. Sostituisci `TYPE_CONFIG` con:
+3. Replace `TYPE_CONFIG` with:
 
 ```ts
 const GROUP_CHART_CONFIG = Object.fromEntries(
@@ -1096,8 +1096,8 @@ const GROUP_CHART_CONFIG = Object.fromEntries(
 ) satisfies ChartConfig;
 ```
 
-4. Props: `fixedVsVariable: FixedVsVariable;` → `groupTotals: GroupTotals;` e nella destrutturazione `fixedVsVariable,` → `groupTotals,`.
-5. Sostituisci `innerData` con:
+4. Props: `fixedVsVariable: FixedVsVariable;` → `groupTotals: GroupTotals;` and in the destructuring `fixedVsVariable,` → `groupTotals,`.
+5. Replace `innerData` with:
 
 ```ts
   const innerKeys: CategoryGroupKey[] = [
@@ -1113,7 +1113,7 @@ const GROUP_CHART_CONFIG = Object.fromEntries(
 ```
 
 6. `<ChartContainer config={TYPE_CONFIG} ...>` → `config={GROUP_CHART_CONFIG}`.
-7. In `CategoryLegendRow`, nel `<div className="flex items-center gap-3">`, prima di `<CategoryAvatar`, aggiungi il pallino gruppo:
+7. In `CategoryLegendRow`, inside `<div className="flex items-center gap-3">`, before `<CategoryAvatar`, add the group dot:
 
 ```tsx
         <span
@@ -1123,21 +1123,21 @@ const GROUP_CHART_CONFIG = Object.fromEntries(
         />
 ```
 
-e sotto il nome, nella riga `{formatCurrency(entry.amount, currency)} speso`, rendi il gruppo leggibile anche agli screen reader:
+and under the name, in the line `{formatCurrency(entry.amount, currency)} speso`, make the group readable to screen readers too:
 `{formatCurrency(entry.amount, currency)} speso · {GROUP_DISPLAY[entry.group].label}`.
 
-- [ ] **Step 2: Aggiorna la pagina Transazioni**
+- [ ] **Step 2: Update the Transazioni page**
 
-In `app/(app)/transazioni/page.tsx`: nell'import da `@/lib/calc/expenses`, `computeFixedVsVariable,` → `computeGroupTotals,`; alla riga ~251:
+In `app/(app)/transazioni/page.tsx`: in the import from `@/lib/calc/expenses`, `computeFixedVsVariable,` → `computeGroupTotals,`; at line ~251:
 
 ```tsx
             groupTotals={computeGroupTotals(expenseTransactionsForAnalysis, safeCategories, period, referenceDate, today)}
 ```
 
-- [ ] **Step 3: Verifica**
+- [ ] **Step 3: Verify**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: errori residui solo in `components/domain/categories/category-row.tsx` e `add-category-form.tsx` (Task 6).
+Expected: remaining errors only in `components/domain/categories/category-row.tsx` and `add-category-form.tsx` (Task 6).
 Run: `pnpm exec vitest run components/domain/expenses lib/calc`
 Expected: PASS.
 
@@ -1150,7 +1150,7 @@ git commit -m "feat(transazioni): anello interno della torta per gruppo di spesa
 
 ---
 
-### Task 6: Pagina `/categorie` divisa per gruppi
+### Task 6: `/categorie` page split by group
 
 **Files:**
 - Create: `components/domain/categories/category-type-select.tsx`
@@ -1166,12 +1166,12 @@ git commit -m "feat(transazioni): anello interno della torta per gruppo di spesa
   - `CategoryTypeSelect({ value: CategoryType; onChange: (next: CategoryType) => void; size?: "sm" | "default"; className?: string })`
   - `CategorySection({ title: string; description?: string; dotClassName?: string; children: React.ReactNode })`
 
-- [ ] **Step 1: Crea `category-type-select.tsx`**
+- [ ] **Step 1: Create `category-type-select.tsx`**
 
 ```tsx
 "use client";
 
-/** Select del tipo categoria (quattro gruppi di spesa + Entrata), condiviso da riga categoria e form di creazione. */
+/** Category type select (four spending groups + Entrata), shared by the category row and the creation form. */
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CATEGORY_TYPES, CATEGORY_TYPE_LABELS, type CategoryType } from "@/lib/categories/groups";
@@ -1202,10 +1202,10 @@ export function CategoryTypeSelect({ value, onChange, size = "default", classNam
 }
 ```
 
-- [ ] **Step 2: Crea `category-section.tsx`**
+- [ ] **Step 2: Create `category-section.tsx`**
 
 ```tsx
-/** Sezione della pagina Categorie: intestazione (pallino colore gruppo, titolo, descrizione breve) e righe categoria. */
+/** Section of the Categorie page: header (group color dot, title, short description) and category rows. */
 
 import * as React from "react";
 import { Card } from "@/components/ui/card";
@@ -1214,7 +1214,7 @@ import { cn } from "@/lib/utils";
 export interface CategorySectionProps {
   title: string;
   description?: string;
-  /** Classe Tailwind del pallino colore; omessa per sezioni senza gruppo (es. Entrate). */
+  /** Tailwind class of the color dot; omitted for sections without a group (e.g. Entrate). */
   dotClassName?: string;
   children: React.ReactNode;
 }
@@ -1235,12 +1235,12 @@ export function CategorySection({ title, description, dotClassName, children }: 
 }
 ```
 
-- [ ] **Step 3: Usa `CategoryTypeSelect` in `category-row.tsx` e `add-category-form.tsx`**
+- [ ] **Step 3: Use `CategoryTypeSelect` in `category-row.tsx` and `add-category-form.tsx`**
 
 `category-row.tsx`:
-- rimuovi la costante `TYPE_LABELS` e l'import di `Select*` (non più usato);
-- aggiungi `import { CategoryTypeSelect } from "./category-type-select";` e `import type { CategoryType } from "@/lib/categories/groups";`
-- `commitType` diventa:
+- remove the `TYPE_LABELS` constant and the `Select*` import (no longer used);
+- add `import { CategoryTypeSelect } from "./category-type-select";` and `import type { CategoryType } from "@/lib/categories/groups";`
+- `commitType` becomes:
 
 ```ts
   function commitType(type: CategoryType) {
@@ -1249,21 +1249,21 @@ export function CategorySection({ title, description, dotClassName, children }: 
   }
 ```
 
-- sostituisci l'intero blocco `<Select value={category.type} ...>...</Select>` con:
+- replace the whole `<Select value={category.type} ...>...</Select>` block with:
 
 ```tsx
           <CategoryTypeSelect value={category.type} onChange={commitType} size="sm" className="h-6 w-fit text-xs" />
 ```
 
 `add-category-form.tsx`:
-- rimuovi `TYPE_LABELS` e l'import `Select*`;
+- remove `TYPE_LABELS` and the `Select*` import;
 - import: `import { CategoryTypeSelect } from "./category-type-select";` e `import { DEFAULT_NEW_CATEGORY_TYPE, type CategoryType } from "@/lib/categories/groups";`
 - `useState<"fissa" | "variabile" | "entrata">("variabile")` → `useState<CategoryType>(DEFAULT_NEW_CATEGORY_TYPE)`; `setType("variabile")` → `setType(DEFAULT_NEW_CATEGORY_TYPE)`;
-- sostituisci il blocco `<Select ...>...</Select>` con `<CategoryTypeSelect value={type} onChange={setType} className="w-36" />`.
+- replace the `<Select ...>...</Select>` block with `<CategoryTypeSelect value={type} onChange={setType} className="w-36" />`.
 
 - [ ] **Step 4: Barrel**
 
-In `components/domain/categories/index.ts` aggiungi:
+In `components/domain/categories/index.ts` add:
 
 ```ts
 export { CategoryTypeSelect } from "./category-type-select";
@@ -1272,9 +1272,9 @@ export { CategorySection } from "./category-section";
 export type { CategorySectionProps } from "./category-section";
 ```
 
-- [ ] **Step 5: Pagina `/categorie`**
+- [ ] **Step 5: `/categorie` page**
 
-In `app/(app)/categorie/page.tsx`: import `CategorySection` dal barrel e `import { EXPENSE_GROUPS, GROUP_DISPLAY, groupCategoriesByType } from "@/lib/categories/groups";`. Sottotitolo: `Categorie di spesa e di entrata: nome, tipo, icona e colore.` → `Le spese sono divise in quattro gruppi: Dovute, Volute, Te futuro e Saltuarie.` Sostituisci il ramo `: ( <Card className="p-0"> ... </Card> )` con:
+In `app/(app)/categorie/page.tsx`: import `CategorySection` from the barrel and `import { EXPENSE_GROUPS, GROUP_DISPLAY, groupCategoriesByType } from "@/lib/categories/groups";`. Subtitle: `Categorie di spesa e di entrata: nome, tipo, icona e colore.` → `Le spese sono divise in quattro gruppi: Dovute, Volute, Te futuro e Saltuarie.` Replace the `: ( <Card className="p-0"> ... </Card> )` branch with:
 
 ```tsx
       ) : (
@@ -1317,16 +1317,16 @@ In `app/(app)/categorie/page.tsx`: import `CategorySection` dal barrel e `import
       )}
 ```
 
-Rimuovi l'import di `Card` se non più usato. (Se ESLint segnala l'IIFE, estrai il blocco in un componente locale `CategorySections({ categories })` nello stesso file — la pagina resta pura orchestrazione.)
+Remove the `Card` import if no longer used. (If ESLint flags the IIFE, extract the block into a local component `CategorySections({ categories })` in the same file — the page stays pure orchestration.)
 
-- [ ] **Step 6: Verifica**
+- [ ] **Step 6: Verify**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: **nessun errore**.
+Expected: **no errors**.
 Run: `pnpm lint`
-Expected: soli i 2 errori noti.
+Expected: only the 2 known errors.
 Run: `pnpm exec vitest run`
-Expected: PASS salvo i 3 noti di `scheduler.test.ts`.
+Expected: PASS except the 3 known ones in `scheduler.test.ts`.
 
 - [ ] **Step 7: Commit**
 
@@ -1337,19 +1337,19 @@ git commit -m "feat(categorie): pagina divisa per gruppi di spesa, select tipo c
 
 ---
 
-### Task 7: Script di reset categorie
+### Task 7: Category reset script
 
 **Files:**
 - Create: `lib/db/reset-categories.ts`
 - Create: `lib/db/reset-categories.test.ts`
 - Modify: `package.json` (script)
-- Modify: `lib/db/backfill-category-appearance.ts` (solo JSDoc)
+- Modify: `lib/db/backfill-category-appearance.ts` (JSDoc only)
 
 **Interfaces:**
-- Consumes: `DEFAULT_CATEGORIES`, `LEGACY_CATEGORY_NAMES` (Task 2); `getFallbackCategoryId` (`lib/categorization/fallback.ts`); tabelle `categories`, `transactions`, `budgets`, `categorizationRules`.
+- Consumes: `DEFAULT_CATEGORIES`, `LEGACY_CATEGORY_NAMES` (Task 2); `getFallbackCategoryId` (`lib/categorization/fallback.ts`); tables `categories`, `transactions`, `budgets`, `categorizationRules`.
 - Produces: `planCategoryReset(existing, defaults, legacyNames): CategoryResetPlan`; `resetUserCategories(userId, { dryRun }): Promise<CategoryResetSummary>`.
 
-- [ ] **Step 1: Scrivi i test del planner**
+- [ ] **Step 1: Write the planner tests**
 
 `lib/db/reset-categories.test.ts`:
 
@@ -1422,20 +1422,20 @@ describe("planCategoryReset", () => {
 });
 ```
 
-- [ ] **Step 2: Verifica che falliscano**
+- [ ] **Step 2: Verify that they fail**
 
 Run: `pnpm exec vitest run lib/db/reset-categories.test.ts`
-Expected: FAIL (modulo inesistente).
+Expected: FAIL (module does not exist).
 
-- [ ] **Step 3: Implementa `lib/db/reset-categories.ts`**
+- [ ] **Step 3: Implement `lib/db/reset-categories.ts`**
 
 ```ts
 /**
- * Reset one-shot delle categorie di ogni utente alla lista DEFAULT_CATEGORIES a gruppi di spesa
- * (spec 2026-09-22-categorie-gruppi-spesa). Le categorie di default (anche con nome legacy) vengono
- * aggiornate preservandone l'id; le altre (personalizzate incluse) eliminate con transazioni spostate
- * sulla fallback e budget/regole rimossi. Idempotente. Richiede l'enum già migrato
- * (`pnpm db:migrate-category-groups`). Esecuzione: `pnpm db:reset-categories [--dry-run]`.
+ * One-shot reset of every user's categories to the spending-group DEFAULT_CATEGORIES list
+ * (spec 2026-09-22-categorie-gruppi-spesa). Default categories (including those with a legacy name) are
+ * updated keeping their id; the others (custom ones included) are deleted, with their transactions moved
+ * to the fallback and budgets/rules removed. Idempotent. Requires the already migrated enum
+ * (`pnpm db:migrate-category-groups`). Run with: `pnpm db:reset-categories [--dry-run]`.
  */
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "./client";
@@ -1475,11 +1475,11 @@ export interface CategoryUpdate {
 export interface CategoryResetPlan {
   updates: CategoryUpdate[];
   creates: ResetDefault[];
-  /** Id di categorie non-fallback da eliminare. */
+  /** Ids of non-fallback categories to delete. */
   deletions: string[];
 }
 
-/** Decide, senza toccare il DB, come portare le categorie di un utente alla lista di default. */
+/** Decides, without touching the DB, how to bring a user's categories to the default list. */
 export function planCategoryReset(
   existing: ExistingCategory[],
   defaults: ResetDefault[],
@@ -1517,9 +1517,9 @@ export interface CategoryResetSummary {
 }
 
 /**
- * Applica il piano di reset per un utente in un'unica transazione. Ordine: riassegna le transazioni delle
- * categorie da eliminare alla fallback, elimina budget e regole, elimina le categorie (liberando i nomi),
- * poi aggiorna e crea. Con `dryRun` calcola solo il riepilogo.
+ * Applies the reset plan for a user in a single transaction. Order: reassign the transactions of the
+ * categories to delete to the fallback, delete budgets and rules, delete the categories (freeing the names),
+ * then update and create. With `dryRun` it only computes the summary.
  */
 export async function resetUserCategories(userId: string, { dryRun }: { dryRun: boolean }): Promise<CategoryResetSummary> {
   const fallbackId = dryRun ? null : await getFallbackCategoryId(userId);
@@ -1572,7 +1572,7 @@ export async function resetUserCategories(userId: string, { dryRun }: { dryRun: 
   return summary;
 }
 
-/** Esecuzione da riga di comando su tutti gli utenti che hanno almeno una categoria. */
+/** Command-line run over all users that have at least one category. */
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const users = await db.selectDistinct({ userId: categories.userId }).from(categories);
@@ -1594,24 +1594,24 @@ if (process.argv[1]?.includes("reset-categories")) {
 }
 ```
 
-Nota: se un'update rinomina una categoria legacy in un nome oggi occupato da una categoria da eliminare, l'ordine "prima eliminazioni poi update" evita la violazione del vincolo unique `(user_id, name)` — il planner garantisce che il nome esatto, se esiste, sia sempre quello scelto (quindi il caso "nome occupato da una non eliminata" non può verificarsi).
+Note: if an update renames a legacy category to a name currently taken by a category to be deleted, the "deletions first, then updates" order avoids violating the unique constraint `(user_id, name)` — the planner guarantees that the exact name, if it exists, is always the one chosen (so the case "name taken by a category that is not deleted" cannot happen).
 
-- [ ] **Step 4: Script e JSDoc**
+- [ ] **Step 4: Script and JSDoc**
 
-`package.json`, dopo `db:migrate-category-groups`:
+`package.json`, after `db:migrate-category-groups`:
 
 ```json
     "db:reset-categories": "tsx --env-file=.env.local lib/db/reset-categories.ts",
 ```
 
-`lib/db/backfill-category-appearance.ts`: aggiungi in fondo al JSDoc di testa la riga
-` * Obsoleto dopo il reset categorie a gruppi di spesa (lib/db/reset-categories.ts, 2026-09-22): conservato solo come storico.`
+`lib/db/backfill-category-appearance.ts`: add at the end of the header JSDoc the line
+` * Obsolete after the category reset to spending groups (lib/db/reset-categories.ts, 2026-09-22): kept only for history.`
 
-- [ ] **Step 5: Verifica**
+- [ ] **Step 5: Verify**
 
 Run: `pnpm exec vitest run lib/db/reset-categories.test.ts`
-Expected: PASS (6 test).
-Run: `pnpm exec tsc --noEmit` → nessun errore.
+Expected: PASS (6 tests).
+Run: `pnpm exec tsc --noEmit` → no errors.
 
 - [ ] **Step 6: Commit**
 
@@ -1620,30 +1620,30 @@ git add lib/db/reset-categories.ts lib/db/reset-categories.test.ts package.json 
 git commit -m "feat(categorie): script di reset categorie ai nuovi default a gruppi"
 ```
 
-- [ ] **Step 7: Esecuzione — STOP, la esegue l'utente**
+- [ ] **Step 7: Run — STOP, the user runs it**
 
-Chiedi all'utente di eseguire dal worktree, prima `pnpm db:reset-categories --dry-run` (controllare il riepilogo per utente), poi `pnpm db:reset-categories`. Una seconda esecuzione deve stampare `0 aggiornate, 0 create, 0 eliminate` per ogni utente.
+Ask the user to run from the worktree, first `pnpm db:reset-categories --dry-run` (check the per-user summary), then `pnpm db:reset-categories`. A second run must print `0 aggiornate, 0 create, 0 eliminate` for every user.
 
 ---
 
-### Task 8: Documentazione e verifica finale
+### Task 8: Documentation and final verification
 
 **Files:**
-- Modify: `docs/functional-spec.md` (sezioni Spese/Transazioni e Cash flow)
-- Modify: `CLAUDE.md` ("Stato del progetto" + voce di log)
+- Modify: `docs/functional-spec.md` (Spese/Transazioni and Cash flow sections)
+- Modify: `CLAUDE.md` ("Stato del progetto" + log entry)
 
 **Interfaces:**
-- Consumes: tutto quanto sopra. Produces: nulla.
+- Consumes: everything above. Produces: nothing.
 
 - [ ] **Step 1: `docs/functional-spec.md`**
 
-Cerca le occorrenze di "fisse", "variabili", "Fisse vs variabili", "Risparmio" nelle sezioni Spese e Cash flow (`grep -n -i "fiss\|variabil\|risparmio" docs/functional-spec.md`) e aggiornale: le categorie di spesa appartengono a uno di quattro gruppi (Dovute, Volute, Te futuro, Saltuarie — con la definizione breve di ciascuno); la torta di Transazioni ha l'anello interno per gruppo (più "Da categorizzare"); "Dove va ogni euro" in Cash flow ha le voci Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo, e "Te futuro" conta come spesa.
+Look for the occurrences of "fisse", "variabili", "Fisse vs variabili", "Risparmio" in the Spese and Cash flow sections (`grep -n -i "fiss\|variabil\|risparmio" docs/functional-spec.md`) and update them: spending categories belong to one of four groups (Dovute, Volute, Te futuro, Saltuarie — with the short definition of each); the Transazioni donut has the inner ring by group (plus "Da categorizzare"); "Dove va ogni euro" in Cash flow has the entries Dovute, Volute, Te futuro, Saltuarie, Non classificato, Avanzo, and "Te futuro" counts as spending.
 
 - [ ] **Step 2: `CLAUDE.md`**
 
-In "Stato del progetto" aggiungi il completamento del piano `docs/superpowers/plans/2026-09-22-categorie-gruppi-spesa.md` con la verifica manuale utente da fare (dalla spec, sezione "Verifica manuale utente"). Nel "Log delle decisioni" aggiungi in cima una voce **2026-09-22** con: decisioni del brainstorming (Te futuro = spesa, Saltuarie solo raggruppamento, reset categorie, etichette brevi, enum sostituito), script `db:migrate-category-groups` + `db:reset-categories`, rinomina "Risparmio"→"Avanzo" in Cash flow, fallback fuori dai gruppi, fuori scope (budget per gruppo, filtro per gruppo, accantonamento Saltuarie).
+In "Stato del progetto" add the completion of the plan `docs/superpowers/plans/2026-09-22-categorie-gruppi-spesa.md` with the manual user verification to do (from the spec, section "Verifica manuale utente"). In the "Log delle decisioni" add at the top a **2026-09-22** entry with: the brainstorming decisions (Te futuro = spending, Saltuarie grouping only, category reset, short labels, enum replaced), the `db:migrate-category-groups` + `db:reset-categories` scripts, the "Risparmio"→"Avanzo" ("Savings"→"Surplus") rename in Cash flow, fallback outside the groups, out of scope (budget per group, filter by group, setting money aside for Saltuarie).
 
-- [ ] **Step 3: Verifica finale**
+- [ ] **Step 3: Final verification**
 
 ```bash
 pnpm exec tsc --noEmit
@@ -1652,7 +1652,7 @@ pnpm exec vitest run
 grep -rn --include=*.ts --include=*.tsx -e '"fissa"' -e '"variabile"' -e "'fissa'" -e "'variabile'" app components lib
 ```
 
-Expected: `tsc` pulito; lint con soli i 2 errori noti; vitest verde salvo i 3 noti di `scheduler.test.ts`; il `grep` restituisce solo le righe di `lib/db/migrate-category-groups.ts` e del suo test (i valori legacy che lo script migra).
+Expected: `tsc` clean; lint with only the 2 known errors; vitest green except the 3 known ones in `scheduler.test.ts`; the `grep` returns only the lines of `lib/db/migrate-category-groups.ts` and its test (the legacy values the script migrates).
 
 - [ ] **Step 4: Commit**
 

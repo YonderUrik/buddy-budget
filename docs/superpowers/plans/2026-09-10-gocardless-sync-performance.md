@@ -1,25 +1,25 @@
-# Ottimizzazione performance sync GoCardless — Implementation Plan
+# GoCardless sync performance optimization — Implementation Plan
 
-> **SUPERATO (2026-09-22)** — mai implementato e non più valido (`categorize.ts` rimosso dalla categorizzazione a regole). Sostituito da `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`.
+> **SUPERSEDED (2026-09-22)** — never implemented and no longer valid (`categorize.ts` removed by rule-based categorization). Replaced by `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Eliminare l'N+1 query e la sequenzialità che rendono lentissimo l'import GoCardless (conti trovati + sync manuale), sostituendo query-per-transazione con un matcher precaricato in memoria + insert batch, e parallelizzando il sync multi-conto; aggiungere feedback UI esplicito durante l'attesa.
+**Goal:** Remove the N+1 queries and the sequential processing that make the GoCardless import (found accounts + manual sync) extremely slow, replacing the per-transaction query with a matcher preloaded in memory + a batch insert, and parallelizing the multi-account sync; add explicit UI feedback while waiting.
 
-**Architecture:** `lib/gocardless/categorize.ts` guadagna `buildCategoryMatcher(userId)` che precarica una volta lo storico categorizzato dell'utente e ritorna una funzione di match sincrona in memoria. `syncAccountLink` (`lib/gocardless/sync.ts`) usa il matcher invece di `resolveCategoryId` per transazione, e sostituisce l'insert riga-per-riga con un insert batch unico. `finalize/route.ts` sincronizza i conti selezionati in parallelo invece che in sequenza. Due componenti UI mostrano un testo esplicito di attesa.
+**Architecture:** `lib/gocardless/categorize.ts` gains `buildCategoryMatcher(userId)`, which preloads the user's categorized history once and returns a synchronous in-memory match function. `syncAccountLink` (`lib/gocardless/sync.ts`) uses the matcher instead of `resolveCategoryId` per transaction, and replaces the row-by-row insert with a single batch insert. `finalize/route.ts` syncs the selected accounts in parallel instead of sequentially. Two UI components show an explicit waiting text.
 
-**Tech Stack:** TypeScript, Drizzle ORM (postgres-js), Vitest (test di integrazione contro DB reale), Next.js Route Handlers.
+**Tech Stack:** TypeScript, Drizzle ORM (postgres-js), Vitest (integration tests against a real DB), Next.js Route Handlers.
 
 **Spec:** `docs/superpowers/specs/2026-09-10-gocardless-sync-performance-design.md`
 
 ## Global Constraints
 
-- Nessuna modifica allo schema DB.
-- La logica di matching categoria resta "ultima transazione con descrizione uguale case-insensitive, altrimenti fallback" — cambia solo dove viene calcolata.
-- `resolveCategoryId`/`getFallbackCategoryId`/`matchCategoryId` restano esportate e invariate (usate anche dal wizard "Categorizza automaticamente", fuori scope).
-- L'idempotenza dell'import (vincolo unique `(accountId, externalId)`, `onConflictDoNothing`) deve restare identica.
-- Comando test: `pnpm test` (`vitest run`). Comando typecheck: `pnpm exec tsc --noEmit`. Comando lint: `pnpm lint`.
-- I test di integrazione in questo modulo (`categorize.test.ts`, `sync.test.ts`, `finalize/route.test.ts`) richiedono un Postgres reale raggiungibile da `DATABASE_URL` — se il DB non è raggiungibile nell'ambiente di esecuzione, documentarlo esplicitamente invece di dare per scontato che i test siano passati.
+- No changes to the DB schema.
+- The category matching logic stays "latest transaction with the same case-insensitive description, otherwise fallback" — only where it is computed changes.
+- `resolveCategoryId`/`getFallbackCategoryId`/`matchCategoryId` stay exported and unchanged (also used by the "Categorizza automaticamente" ("Categorize automatically") wizard, out of scope).
+- Import idempotency (unique constraint `(accountId, externalId)`, `onConflictDoNothing`) must stay identical.
+- Test command: `pnpm test` (`vitest run`). Typecheck command: `pnpm exec tsc --noEmit`. Lint command: `pnpm lint`.
+- The integration tests in this module (`categorize.test.ts`, `sync.test.ts`, `finalize/route.test.ts`) need a real Postgres reachable via `DATABASE_URL` — if the DB is not reachable in the execution environment, document it explicitly instead of assuming the tests passed.
 
 ---
 
@@ -30,11 +30,11 @@
 - Test: `lib/gocardless/categorize.test.ts`
 
 **Interfaces:**
-- Produces: `export interface CategoryMatcher { fallbackCategoryId: string; match(description: string): string; }` e `export async function buildCategoryMatcher(userId: string): Promise<CategoryMatcher>` — usati da Task 2 (`lib/gocardless/sync.ts`).
+- Produces: `export interface CategoryMatcher { fallbackCategoryId: string; match(description: string): string; }` and `export async function buildCategoryMatcher(userId: string): Promise<CategoryMatcher>` — used by Task 2 (`lib/gocardless/sync.ts`).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Aggiungi in fondo a `lib/gocardless/categorize.test.ts` (dentro il blocco `describe("categorize", ...)` esistente, dopo il test `"crea e riusa la categoria di fallback quando non trova match"`):
+Add at the bottom of `lib/gocardless/categorize.test.ts` (inside the existing `describe("categorize", ...)` block, after the test `"crea e riusa la categoria di fallback quando non trova match"`):
 
 ```ts
   it("buildCategoryMatcher: assegna la categoria dell'ultima transazione con descrizione uguale (case-insensitive), altrimenti il fallback", async () => {
@@ -60,32 +60,32 @@ Aggiungi in fondo a `lib/gocardless/categorize.test.ts` (dentro il blocco `descr
   });
 ```
 
-E aggiorna l'import in cima al file per includere `buildCategoryMatcher`:
+And update the import at the top of the file to include `buildCategoryMatcher`:
 
 ```ts
 import { FALLBACK_CATEGORY_NAME, buildCategoryMatcher, getFallbackCategoryId, resolveCategoryId } from "./categorize";
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm test lib/gocardless/categorize.test.ts`
-Expected: FAIL — `buildCategoryMatcher` non è esportata da `./categorize`.
+Expected: FAIL — `buildCategoryMatcher` is not exported from `./categorize`.
 
-- [ ] **Step 3: Implementa `buildCategoryMatcher`**
+- [ ] **Step 3: Implement `buildCategoryMatcher`**
 
-In `lib/gocardless/categorize.ts`, aggiungi in fondo al file (dopo `resolveCategoryId`):
+In `lib/gocardless/categorize.ts`, add at the bottom of the file (after `resolveCategoryId`):
 
 ```ts
 export interface CategoryMatcher {
   fallbackCategoryId: string;
-  /** Categoria dell'ultima transazione con descrizione uguale (case-insensitive), altrimenti il fallback. */
+  /** Category of the latest transaction with the same description (case-insensitive), otherwise the fallback. */
   match(description: string): string;
 }
 
 /**
- * Precarica una volta lo storico delle transazioni categorizzate dell'utente e ritorna un
- * matcher sincrono in memoria — usato da `syncAccountLink` per evitare una query per ogni
- * transazione importata in un batch di sync.
+ * Preloads the user's categorized transaction history once and returns a synchronous
+ * in-memory matcher — used by `syncAccountLink` to avoid one query per transaction
+ * imported in a sync batch.
  */
 export async function buildCategoryMatcher(userId: string): Promise<CategoryMatcher> {
   const fallbackCategoryId = await getFallbackCategoryId(userId);
@@ -114,12 +114,12 @@ export async function buildCategoryMatcher(userId: string): Promise<CategoryMatc
 }
 ```
 
-Nessuna modifica agli import esistenti in cima al file: `and`, `desc`, `eq`, `ne` sono già importati da `drizzle-orm`; `db`/`transactions` già importati.
+No changes to the existing imports at the top of the file: `and`, `desc`, `eq`, `ne` are already imported from `drizzle-orm`; `db`/`transactions` are already imported.
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm test lib/gocardless/categorize.test.ts`
-Expected: PASS (3 test totali nel file)
+Expected: PASS (3 tests in total in the file)
 
 - [ ] **Step 5: Commit**
 
@@ -132,19 +132,19 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 2: `syncAccountLink` usa il matcher + insert batch
+### Task 2: `syncAccountLink` uses the matcher + batch insert
 
 **Files:**
 - Modify: `lib/gocardless/sync.ts`
 - Test: `lib/gocardless/sync.test.ts`
 
 **Interfaces:**
-- Consumes: `buildCategoryMatcher(userId: string): Promise<CategoryMatcher>` da Task 1 (`CategoryMatcher` ha `fallbackCategoryId: string` e `match(description: string): string`).
-- Produces: `syncAccountLink` mantiene la firma e il tipo di ritorno `SyncResult` invariati — nessun consumer esterno da aggiornare.
+- Consumes: `buildCategoryMatcher(userId: string): Promise<CategoryMatcher>` from Task 1 (`CategoryMatcher` has `fallbackCategoryId: string` and `match(description: string): string`).
+- Produces: `syncAccountLink` keeps its signature and its `SyncResult` return type unchanged — no external consumer to update.
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Aggiungi in `lib/gocardless/sync.test.ts`, dentro `describe("syncAccountLink", ...)`, dopo il test `"è idempotente: un secondo sync con la stessa transazione non la riconta come nuova"`:
+Add in `lib/gocardless/sync.test.ts`, inside `describe("syncAccountLink", ...)`, after the test `"è idempotente: un secondo sync con la stessa transazione non la riconta come nuova"`:
 
 ```ts
   it("in un batch con una transazione già esistente (stesso externalId) e una nuova, inserisce e conta solo quella nuova", async () => {
@@ -196,28 +196,28 @@ Aggiungi in `lib/gocardless/sync.test.ts`, dentro `describe("syncAccountLink", .
   });
 ```
 
-Questo test verifica che l'insert batch (Step 3) rispetti ancora l'idempotenza per-riga tramite `onConflictDoNothing` — non deve scartare o duplicare l'intero batch quando solo una riga è in conflitto.
+This test checks that the batch insert (Step 3) still respects per-row idempotency through `onConflictDoNothing` — it must not drop or duplicate the whole batch when only one row conflicts.
 
-- [ ] **Step 2: Esegui i test e verifica che il nuovo passi già oggi (baseline) o fallisca dopo il refactor**
+- [ ] **Step 2: Run the tests and verify the new one already passes today (baseline) or fails after the refactor**
 
 Run: `pnpm test lib/gocardless/sync.test.ts`
-Expected: PASS con l'implementazione attuale (riga-per-riga) — è un test di comportamento, non di implementazione. Confermalo PASS ora, poi procedi al refactor e verificalo di nuovo PASS a fine Step 4 (garantisce che il refactor non cambi il comportamento osservabile).
+Expected: PASS with the current (row-by-row) implementation — it is a behavior test, not an implementation test. Confirm it PASSES now, then proceed with the refactor and check it PASSES again at the end of Step 4 (this guarantees the refactor does not change observable behavior).
 
-- [ ] **Step 3: Refactora `syncAccountLink`**
+- [ ] **Step 3: Refactor `syncAccountLink`**
 
-In `lib/gocardless/sync.ts`, sostituisci l'import:
+In `lib/gocardless/sync.ts`, replace the import:
 
 ```ts
 import { getFallbackCategoryId, resolveCategoryId } from "./categorize";
 ```
 
-con:
+with:
 
 ```ts
 import { buildCategoryMatcher } from "./categorize";
 ```
 
-Sostituisci il blocco che va dalla riga `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` fino alla fine del `for` loop (comprese le dichiarazioni di `newTransactionsCount`/`categorizedCount`/`uncategorizedCount` e l'insert) con:
+Replace the block going from the line `const fallbackCategoryId = await getFallbackCategoryId(link.userId);` to the end of the `for` loop (including the declarations of `newTransactionsCount`/`categorizedCount`/`uncategorizedCount` and the insert) with:
 
 ```ts
     const matcher = await buildCategoryMatcher(link.userId);
@@ -268,17 +268,17 @@ Sostituisci il blocco che va dalla riga `const fallbackCategoryId = await getFal
     }
 ```
 
-Il resto della funzione (aggiornamento `syncTimestamps`/`lastSyncedAt`/`nextSyncEligibleAt` e il `return`) resta invariato.
+The rest of the function (updating `syncTimestamps`/`lastSyncedAt`/`nextSyncEligibleAt` and the `return`) stays unchanged.
 
-- [ ] **Step 4: Esegui tutti i test del file e verifica che passino**
+- [ ] **Step 4: Run all the tests in the file and verify they pass**
 
 Run: `pnpm test lib/gocardless/sync.test.ts`
-Expected: PASS — tutti gli 11 test (10 esistenti + 1 nuovo), incluso quello di Step 1.
+Expected: PASS — all 11 tests (10 existing + 1 new), including the one from Step 1.
 
-- [ ] **Step 5: Verifica il typecheck**
+- [ ] **Step 5: Check the typecheck**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 - [ ] **Step 6: Commit**
 
@@ -291,23 +291,23 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 3: Sync multi-conto in parallelo nella finalizzazione
+### Task 3: Multi-account sync in parallel during finalization
 
 **Files:**
 - Modify: `app/api/gocardless/connections/[id]/finalize/route.ts`
-- Test: `app/api/gocardless/connections/[id]/finalize/route.test.ts` (nessuna modifica prevista — verifica solo che i test esistenti restino verdi)
+- Test: `app/api/gocardless/connections/[id]/finalize/route.test.ts` (no changes planned — only check that the existing tests stay green)
 
 **Interfaces:**
-- Consumes: `syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<SyncResult>` (invariata da Task 2).
+- Consumes: `syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<SyncResult>` (unchanged by Task 2).
 
-- [ ] **Step 1: Esegui i test esistenti come baseline**
+- [ ] **Step 1: Run the existing tests as a baseline**
 
 Run: `pnpm test app/api/gocardless/connections/\[id\]/finalize/route.test.ts`
-Expected: PASS (5 test, incluso `"risponde comunque 201 se il sync iniziale fallisce (l'account resta creato)"`).
+Expected: PASS (5 tests, including `"risponde comunque 201 se il sync iniziale fallisce (l'account resta creato)"`).
 
-- [ ] **Step 2: Parallelizza il loop di sync**
+- [ ] **Step 2: Parallelize the sync loop**
 
-In `app/api/gocardless/connections/[id]/finalize/route.ts`, sostituisci:
+In `app/api/gocardless/connections/[id]/finalize/route.ts`, replace:
 
 ```ts
   for (const link of linksToSync) {
@@ -319,7 +319,7 @@ In `app/api/gocardless/connections/[id]/finalize/route.ts`, sostituisci:
   }
 ```
 
-con:
+with:
 
 ```ts
   await Promise.all(
@@ -331,12 +331,12 @@ con:
   );
 ```
 
-Il commento sopra il blocco ("Best-effort: gli account/link sono già creati...") resta invariato, descrive ancora correttamente il comportamento.
+The comment above the block ("Best-effort: gli account/link sono già creati...", i.e. "the accounts/links are already created...") stays unchanged; it still describes the behavior correctly.
 
-- [ ] **Step 3: Esegui di nuovo i test e verifica che passino**
+- [ ] **Step 3: Run the tests again and verify they pass**
 
 Run: `pnpm test app/api/gocardless/connections/\[id\]/finalize/route.test.ts`
-Expected: PASS — stessi 5 test di prima, nessuna modifica di comportamento osservabile (il test sul fallimento del sync usa `mockRejectedValueOnce`, compatibile con `.catch` per-promise dentro `Promise.all`).
+Expected: PASS — the same 5 tests as before, no change in observable behavior (the sync-failure test uses `mockRejectedValueOnce`, compatible with the per-promise `.catch` inside `Promise.all`).
 
 - [ ] **Step 4: Commit**
 
@@ -349,18 +349,18 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-### Task 4: Feedback UI durante l'attesa
+### Task 4: UI feedback while waiting
 
 **Files:**
 - Modify: `app/(app)/conti/collega/[connectionId]/page.tsx`
 - Modify: `components/domain/accounts/account-row.tsx`
 
 **Interfaces:**
-- Nessuna nuova interfaccia esportata: solo testo JSX condizionale su stato di mutation già esistente (`finalize.isPending`, `syncMutation.isPending`).
+- No new exported interface: only conditional JSX text on already existing mutation state (`finalize.isPending`, `syncMutation.isPending`).
 
-- [ ] **Step 1: Testo esplicito sul bottone "Conferma" (conti trovati)**
+- [ ] **Step 1: Explicit text on the "Conferma" ("Confirm") button (found accounts)**
 
-In `app/(app)/conti/collega/[connectionId]/page.tsx`, sostituisci:
+In `app/(app)/conti/collega/[connectionId]/page.tsx`, replace:
 
 ```tsx
       <Button onClick={handleConfirm} disabled={finalize.isPending}>
@@ -368,7 +368,7 @@ In `app/(app)/conti/collega/[connectionId]/page.tsx`, sostituisci:
       </Button>
 ```
 
-con:
+with:
 
 ```tsx
       <Button onClick={handleConfirm} disabled={finalize.isPending}>
@@ -376,15 +376,15 @@ con:
       </Button>
 ```
 
-- [ ] **Step 2: Testo esplicito sul bottone di sync manuale**
+- [ ] **Step 2: Explicit text on the manual sync button**
 
-In `components/domain/accounts/account-row.tsx`, trova (dentro il blocco `{isAuto && (...)}` del bottone sync, attorno alla riga 238):
+In `components/domain/accounts/account-row.tsx`, find (inside the `{isAuto && (...)}` block of the sync button, around line 238):
 
 ```tsx
             title={buildSyncButtonTitle(syncInfo, needsReconnect)}
 ```
 
-e sostituiscilo con:
+and replace it with:
 
 ```tsx
             title={
@@ -394,13 +394,13 @@ e sostituiscilo con:
             }
 ```
 
-- [ ] **Step 3: Verifica typecheck e lint**
+- [ ] **Step 3: Check typecheck and lint**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore rispetto alla baseline pre-esistente (gli unici errori noti pre-esistenti sono `react-hooks/set-state-in-effect` in `theme-toggle.tsx`/`CategoryLegendRow`, non toccati da questo task).
+Expected: no new errors compared with the pre-existing baseline (the only known pre-existing errors are `react-hooks/set-state-in-effect` in `theme-toggle.tsx`/`CategoryLegendRow`, not touched by this task).
 
 - [ ] **Step 4: Commit**
 
@@ -413,9 +413,9 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 ---
 
-## Verifica finale (dopo Task 4)
+## Final verification (after Task 4)
 
-- [ ] Run: `pnpm test` — suite completa verde (a parte i 3 fallimenti pre-esistenti e non correlati in `lib/gocardless/scheduler.test.ts`, già noti da sessioni precedenti — verificarne il numero esatto prima di concludere, non assumerlo).
-- [ ] Run: `pnpm exec tsc --noEmit` — nessun errore.
-- [ ] Run: `pnpm lint` — nessun nuovo errore.
-- [ ] Aggiornare `CLAUDE.md` (sezione "Stato del progetto" + nuova voce in "Log delle decisioni") con il riepilogo del lavoro svolto, seguendo lo stile delle voci esistenti.
+- [ ] Run: `pnpm test` — full suite green (apart from the 3 pre-existing, unrelated failures in `lib/gocardless/scheduler.test.ts`, already known from previous sessions — check their exact number before concluding, do not assume it).
+- [ ] Run: `pnpm exec tsc --noEmit` — no errors.
+- [ ] Run: `pnpm lint` — no new errors.
+- [ ] Update `CLAUDE.md` (section "Stato del progetto" + new entry in "Log delle decisioni") with a summary of the work done, following the style of the existing entries.

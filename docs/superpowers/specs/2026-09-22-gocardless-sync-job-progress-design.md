@@ -1,42 +1,42 @@
-# Import/sync GoCardless veloce con avanzamento visibile (job in background)
+# Fast GoCardless import/sync with visible progress (background job)
 
-Data: 2026-09-22
-Sostituisce: `2026-09-10-gocardless-sync-performance-design.md` (mai implementata, superata dalla categorizzazione a regole).
-Primo caso d'uso dello standard "Operazioni lunghe" di `CLAUDE.md` (sezione Principi di architettura).
+Date: 2026-09-22
+Replaces: `2026-09-10-gocardless-sync-performance-design.md` (never implemented, superseded by rule-based categorization).
+First use case of the "Operazioni lunghe" ("Long operations") standard in `CLAUDE.md` (Architecture principles section).
 
-## Problema
+## Problem
 
-1. Confermando i "Conti trovati" (`app/(app)/conti/collega/[connectionId]/page.tsx`) l'import delle transazioni è lentissimo e l'utente resta davanti a un bottone disabilitato senza sapere cosa succede.
-2. Anche il sync manuale di un conto (bottone in `AccountRow`) è lentissimo, con il solo feedback di un'icona che gira.
+1. When confirming the "Conti trovati" ("Found accounts") (`app/(app)/conti/collega/[connectionId]/page.tsx`) the transaction import is extremely slow and the user is left in front of a disabled button without knowing what is happening.
+2. Manual sync of an account (button in `AccountRow`) is also extremely slow, with only a spinning icon as feedback.
 
-L'utente vuole un avanzamento **reale e granulare** ("Importati 120 di 500 movimenti") che **resti visibile cambiando pagina**.
+The user wants **real, granular** progress ("Importati 120 di 500 movimenti" — "Imported 120 of 500 transactions") that **stays visible when changing page**.
 
-## Causa (dal codice)
+## Cause (from the code)
 
-- `syncAccountLink` (`lib/gocardless/sync.ts`) esegue **un `INSERT` per transazione, in sequenza**: N movimenti = N round-trip verso Postgres (Neon, remoto rispetto alla funzione).
-- `POST /api/gocardless/connections/[id]/finalize` sincronizza i conti selezionati **uno dopo l'altro** dentro la richiesta HTTP.
-- Ogni chiamata GoCardless rilegge il token dal DB (`getAccessToken`).
-- `flushRuleHits` fa un `UPDATE` per regola in sequenza (impatto minore).
-- **Non ottimizzabile**: la latenza delle API GoCardless (saldo + transazioni), che su banche reali può durare secondi per conto.
+- `syncAccountLink` (`lib/gocardless/sync.ts`) runs **one `INSERT` per transaction, sequentially**: N transactions = N round-trips to Postgres (Neon, remote from the function).
+- `POST /api/gocardless/connections/[id]/finalize` syncs the selected accounts **one after the other** inside the HTTP request.
+- Every GoCardless call rereads the token from the DB (`getAccessToken`).
+- `flushRuleHits` runs one `UPDATE` per rule sequentially (minor impact).
+- **Not optimizable**: the latency of the GoCardless APIs (balance + transactions), which on real banks can take seconds per account.
 
-La categorizzazione è già in memoria (`buildRuleResolver`) e non va toccata.
+Categorization is already in memory (`buildRuleResolver`) and must not be touched.
 
-## Vincolo di deploy
+## Deployment constraint
 
-L'app gira oggi su **Vercel + Neon** (serverless) e ci resterà per un po'; in futuro forse su VPS con Node persistente. La soluzione deve funzionare in entrambi i casi: niente processi in memoria di lunga durata, niente infrastruttura solo-Vercel.
+The app currently runs on **Vercel + Neon** (serverless) and will stay there for a while; in the future maybe on a VPS with persistent Node. The solution must work in both cases: no long-lived in-memory processes, no Vercel-only infrastructure.
 
-## Approcci valutati
+## Approaches evaluated
 
-- **Scelto — `after()` + stato su Redis + polling.** La route crea un job, risponde con `{ jobId }` e lavora in `after()` (`next/server`) fino a `maxDuration`. Funziona su Vercel e su Node persistente.
-- Scartato — Vercel Workflow/Queues: più robusto, ma lock-in Vercel e sproporzionato per un lavoro di secondi.
-- Scartato — il client guida il lavoro a blocchi: sopravvive solo finché la tab resta aperta, sposta logica sul client.
-- Scartato — streaming della risposta: si perde cambiando pagina.
+- **Chosen — `after()` + state on Redis + polling.** The route creates a job, responds with `{ jobId }` and works in `after()` (`next/server`) up to `maxDuration`. Works on Vercel and on persistent Node.
+- Discarded — Vercel Workflow/Queues: more robust, but Vercel lock-in and disproportionate for a few seconds of work.
+- Discarded — the client drives the work in chunks: survives only as long as the tab stays open, moves logic to the client.
+- Discarded — response streaming: lost when changing page.
 
-Stato su **Redis** (già usato per il rate limit) e non Postgres: stato effimero con TTL, nessuna migrazione (evita anche il blocco noto di `db:push` su `transactions_account_external_id_unique`).
+State on **Redis** (already used for rate limiting) and not Postgres: ephemeral state with TTL, no migration (also avoids the known `db:push` blocker on `transactions_account_external_id_unique`).
 
 ## Design
 
-### 1. Modello del job (`lib/sync-jobs/`)
+### 1. Job model (`lib/sync-jobs/`)
 
 ```ts
 export type SyncJobKind = "initial-import" | "manual-sync";
@@ -49,12 +49,12 @@ export interface SyncJobAccount {
   accountId: string;
   name: string;
   phase: SyncAccountPhase;
-  total: number | null;      // noto solo dopo lo scarico da GoCardless
-  processed: number;         // righe elaborate (inserite + già presenti)
-  inserted: number;          // righe nuove
+  total: number | null;      // known only after the download from GoCardless
+  processed: number;         // rows processed (inserted + already present)
+  inserted: number;          // new rows
   categorized: number;
   uncategorized: number;
-  errorReason?: "already-running"; // conto già in sync altrove (solo finalize)
+  errorReason?: "already-running"; // account already syncing elsewhere (finalize only)
 }
 
 export interface SyncJob {
@@ -69,26 +69,26 @@ export interface SyncJob {
 }
 ```
 
-**Store** (`lib/sync-jobs/store.ts`) dietro un'interfaccia minima `SyncJobStore` (come `RateLimitStore`), con adapter Redis (`redis-sync-job-store.ts`) e fake in memoria per i test:
+**Store** (`lib/sync-jobs/store.ts`) behind a minimal `SyncJobStore` interface (like `RateLimitStore`), with a Redis adapter (`redis-sync-job-store.ts`) and an in-memory fake for tests:
 
-- metadati del job: `sync-job:{userId}:{jobId}` → `{ id, userId, kind, startedAt, updatedAt, dismissed, accountIds }` (JSON, TTL 24h);
-- **una chiave per conto**: `sync-job:{userId}:{jobId}:account:{accountId}` → `SyncJobAccount` + `updatedAt` (TTL 24h, rinnovato a ogni update). Motivo (emerso scrivendo il piano): i conti si sincronizzano in parallelo, e un unico JSON aggiornato con read-modify-write da più conti perderebbe aggiornamenti; con chiavi separate ogni conto scrive solo la propria;
-- indice: `sync-jobs:{userId}` (set dei jobId, stesso TTL);
-- lock per conto: `sync-lock:{accountId}` via `SET NX EX`, TTL = `maxDuration` + 60s.
+- job metadata: `sync-job:{userId}:{jobId}` → `{ id, userId, kind, startedAt, updatedAt, dismissed, accountIds }` (JSON, TTL 24h);
+- **one key per account**: `sync-job:{userId}:{jobId}:account:{accountId}` → `SyncJobAccount` + `updatedAt` (TTL 24h, renewed on every update). Reason (which emerged while writing the plan): accounts sync in parallel, and a single JSON updated with read-modify-write by several accounts would lose updates; with separate keys each account writes only its own;
+- index: `sync-jobs:{userId}` (set of jobIds, same TTL);
+- per-account lock: `sync-lock:{accountId}` via `SET NX EX`, TTL = `maxDuration` + 60s.
 
-`status` e `updatedAt` del job **non si salvano**: si calcolano in lettura (`updatedAt` = il più recente tra metadati e conti).
+The job's `status` and `updatedAt` **are not stored**: they are computed on read (`updatedAt` = the most recent between metadata and accounts).
 
-Operazioni: `createJob`, `setAccounts(userId, jobId, accounts)`, `updateAccount(userId, jobId, accountId, patch)` (aggiorna `updatedAt` del conto; i campi `undefined` della patch non sovrascrivono), `listJobs(userId)`, `dismissJob(userId, jobId)`, `acquireAccountLock(accountId)`, `releaseAccountLock(accountId)`.
+Operations: `createJob`, `setAccounts(userId, jobId, accounts)`, `updateAccount(userId, jobId, accountId, patch)` (updates the account's `updatedAt`; `undefined` fields in the patch don't overwrite), `listJobs(userId)`, `dismissJob(userId, jobId)`, `acquireAccountLock(accountId)`, `releaseAccountLock(accountId)`.
 
-`status` si deriva dagli account: `running` finché almeno un conto non è in fase finale (`done`/`limited`/`expired`/`error`) o finché il job non ha ancora conti; poi `failed` se **tutti** sono `error`, altrimenti `done`.
+`status` is derived from the accounts: `running` as long as at least one account is not in a final phase (`done`/`limited`/`expired`/`error`) or as long as the job has no accounts yet; then `failed` if **all** are `error`, otherwise `done`.
 
-**Funzioni pure** (`lib/sync-jobs/view.ts`):
-- `toJobView(job, now)`: se `status === "running"` e `now - updatedAt > SYNC_JOB_STALE_MS` (60s), restituisce il job come interrotto (`interrupted: true`, conti non finali in fase `error`, status ricalcolato; un job senza conti diventa `failed`);
-- `overallProgress(job)`: `{ kind: "complete" }` se il job non è `running`; `{ kind: "determinate", processed, total }` quando ogni conto non finale ha già `total` (i conti finali senza `total`, es. `limited`, non contano); altrimenti `{ kind: "indeterminate" }`.
+**Pure functions** (`lib/sync-jobs/view.ts`):
+- `toJobView(job, now)`: if `status === "running"` and `now - updatedAt > SYNC_JOB_STALE_MS` (60s), returns the job as interrupted (`interrupted: true`, non-final accounts in `error` phase, status recomputed; a job without accounts becomes `failed`);
+- `overallProgress(job)`: `{ kind: "complete" }` if the job is not `running`; `{ kind: "determinate", processed, total }` when every non-final account already has `total` (final accounts without `total`, e.g. `limited`, don't count); otherwise `{ kind: "indeterminate" }`.
 
 ### 2. `syncAccountLink` (`lib/gocardless/sync.ts`)
 
-Firma estesa, retrocompatibile:
+Extended, backward-compatible signature:
 
 ```ts
 export interface SyncProgress {
@@ -107,118 +107,118 @@ export async function syncAccountLink(
 ): Promise<SyncResult>
 ```
 
-- Emette `balance` prima della chiamata saldo e `fetching` prima della chiamata transazioni.
-- Risolve categoria/split in memoria per tutte le transazioni (invariato), poi inserisce a **blocchi da `SYNC_INSERT_CHUNK_SIZE = 50`**:
+- Emits `balance` before the balance call and `fetching` before the transactions call.
+- Resolves category/split in memory for all transactions (unchanged), then inserts in **chunks of `SYNC_INSERT_CHUNK_SIZE = 50`**:
   ```ts
   db.insert(transactions).values(chunk)
     .onConflictDoNothing({ target: [transactions.accountId, transactions.externalId] })
     .returning({ externalId: transactions.externalId, categoryId: transactions.categoryId })
   ```
-- I contatori si calcolano dalle righe restituite. `recordHit(ruleId)` solo per gli `externalId` restituiti (righe davvero inserite), tramite una mappa `externalId → ruleId` costruita in fase di risoluzione.
-- Dopo ogni blocco emette `saving` con `total`, `processed` (cumulativo), `inserted`, `categorized`, `uncategorized`.
-- Un errore di `onProgress` viene loggato e ignorato: non interrompe mai il sync.
-- `SyncResult` invariato. Lo scheduler (`lib/gocardless/scheduler.ts`) continua a chiamarla senza callback.
+- Counters are computed from the returned rows. `recordHit(ruleId)` only for the returned `externalId`s (rows actually inserted), via an `externalId → ruleId` map built during resolution.
+- After each chunk it emits `saving` with `total`, `processed` (cumulative), `inserted`, `categorized`, `uncategorized`.
+- An `onProgress` error is logged and ignored: it never interrupts the sync.
+- `SyncResult` unchanged. The scheduler (`lib/gocardless/scheduler.ts`) keeps calling it without a callback.
 
-**Token GoCardless**: cache in memoria di modulo in `client.ts` (valore + scadenza), consultata prima della query DB. È valida per la vita dell'istanza; la cache DB resta la fonte condivisa.
+**GoCardless token**: module-level in-memory cache in `client.ts` (value + expiry), checked before the DB query. It is valid for the lifetime of the instance; the DB cache remains the shared source.
 
-**`flushRuleHits`**: gli update per regola vengono eseguiti con `Promise.all` invece che in sequenza.
+**`flushRuleHits`**: per-rule updates run with `Promise.all` instead of sequentially.
 
-### 3. Orchestratore (`lib/sync-jobs/run.ts`)
+### 3. Orchestrator (`lib/sync-jobs/run.ts`)
 
 ```ts
 export async function runSyncJob(job: SyncJob, links: SyncableLink[], deps): Promise<void>
 ```
 
-Per ogni conto, **in parallelo** (`Promise.allSettled`):
+For each account, **in parallel** (`Promise.allSettled`):
 1. `syncAccountLink(link, rateLimitStore, (p) => store.updateAccount(job.id, link.accountId, mapProgress(p)))`;
-2. mappa l'esito: `synced` → `done` con i conteggi finali, `gocardless-limited` → `limited`, `expired` → `expired`, eccezione → `error` (loggata);
-3. rilascia il lock del conto in un `finally`.
+2. maps the outcome: `synced` → `done` with the final counts, `gocardless-limited` → `limited`, `expired` → `expired`, exception → `error` (logged);
+3. releases the account lock in a `finally`.
 
-### 4. Route
+### 4. Routes
 
-Entrambe esportano `export const maxDuration = 300`.
+Both export `export const maxDuration = 300`.
 
-**`POST /api/gocardless/connections/[id]/finalize`**, nell'ordine:
-1. sessione, ownership della connessione, validazione Zod, ownership degli account `existing` (invariati);
-2. `createJob` su Redis con `accounts: []` — **se Redis fallisce, 503 prima di creare qualunque conto**;
-3. creazione/aggiornamento di account e link (invariata), poi `setAccounts(jobId, …)` con gli `accountId` reali in fase `queued` (se questa scrittura fallisce: log e si prosegue, il sync parte comunque e il job verrà visto come interrotto — i dati restano corretti);
-4. acquisizione dei lock (un conto già in sync, possibile solo per un `existing`, va direttamente in `error` con messaggio "già in corso");
+**`POST /api/gocardless/connections/[id]/finalize`**, in order:
+1. session, connection ownership, Zod validation, ownership of `existing` accounts (unchanged);
+2. `createJob` on Redis with `accounts: []` — **if Redis fails, 503 before creating any account**;
+3. creation/update of accounts and links (unchanged), then `setAccounts(jobId, …)` with the real `accountId`s in `queued` phase (if this write fails: log and continue, the sync starts anyway and the job will be seen as interrupted — data remains correct);
+4. lock acquisition (an account already syncing, only possible for an `existing` one, goes straight to `error` with the message "già in corso" ("already in progress"));
 5. `after(() => runSyncJob(...))`;
-6. risposta `201 { jobId }`.
+6. response `201 { jobId }`.
 
 **`POST /api/gocardless/accounts/[accountId]/sync`**:
-1. sessione, ownership, eleggibilità (invariati; 404/429 come oggi);
-2. `acquireAccountLock` — se occupato, **409 `{ status: "already-running" }`**;
-3. `createJob` (503 se Redis fallisce, con rilascio del lock);
+1. session, ownership, eligibility (unchanged; 404/429 as today);
+2. `acquireAccountLock` — if taken, **409 `{ status: "already-running" }`**;
+3. `createJob` (503 if Redis fails, releasing the lock);
 4. `after(() => runSyncJob(...))`;
-5. risposta `202 { jobId }`.
+5. response `202 { jobId }`.
 
-**`GET /api/sync-jobs`**: job dell'utente in sessione non `dismissed`, già passati per `toJobView`.
+**`GET /api/sync-jobs`**: non-`dismissed` jobs of the user in session, already passed through `toJobView`.
 
-**`POST /api/sync-jobs/[id]/dismiss`**: segna `dismissed` solo se la chiave `sync-job:{userId}:{id}` esiste per l'utente in sessione (404 altrimenti). Nessun job di altri utenti è mai leggibile né modificabile.
+**`POST /api/sync-jobs/[id]/dismiss`**: marks `dismissed` only if the key `sync-job:{userId}:{id}` exists for the user in session (404 otherwise). No other user's job is ever readable or modifiable.
 
 ### 5. Client (`lib/queries/sync-jobs.ts`)
 
-- `useSyncJobsQuery()`: fetch al mount, `refetchInterval: 1000` solo mentre esiste almeno un job `running`, altrimenti `false`.
-- Quando un job passa da `running` a stato finale: invalida `accounts`, `transactions`, `bank-connections` (e le query derivate già invalidate oggi dal sync manuale).
+- `useSyncJobsQuery()`: fetch on mount, `refetchInterval: 1000` only while at least one `running` job exists, otherwise `false`.
+- When a job goes from `running` to a final state: invalidates `accounts`, `transactions`, `bank-connections` (and the derived queries already invalidated today by the manual sync).
 - `useDismissSyncJobMutation()`.
-- `useFinalizeConnectionMutation` e `useSyncAccountMutation` invalidano `sync-jobs` all'`onSuccess`. Il toast di successo del sync manuale viene **rimosso** (il feedback è nel pannello). Restano i toast per gli errori sincroni: `not-eligible`, `already-running` ("Sincronizzazione già in corso"), 503, `unknown`.
+- `useFinalizeConnectionMutation` and `useSyncAccountMutation` invalidate `sync-jobs` on `onSuccess`. The success toast of the manual sync is **removed** (the feedback is in the panel). Toasts remain for synchronous errors: `not-eligible`, `already-running` ("Sincronizzazione già in corso" — "Sync already in progress"), 503, `unknown`.
 
 ### 6. UI (`components/domain/sync/`)
 
-**`SyncProgressPanel`**, montato in `app/(app)/layout.tsx` accanto ad `AppShell` (il layout resta agnostico dal dominio). Visibile se esiste almeno un job non `dismissed`. Pannello flottante in basso a destra su desktop, a tutta larghezza in basso su mobile.
+**`SyncProgressPanel`**, mounted in `app/(app)/layout.tsx` next to `AppShell` (the layout stays domain-agnostic). Visible if at least one non-`dismissed` job exists. Floating panel at the bottom right on desktop, full width at the bottom on mobile.
 
-- **Compatto:** "Sincronizzazione · N conti" (o "Sincronizzazione completata") + barra complessiva (`overallProgress`).
-- **Espanso** (click/Enter): una `SyncAccountProgressRow` per conto.
+- **Compact:** "Sincronizzazione · N conti" ("Sync · N accounts") (or "Sincronizzazione completata" — "Sync completed") + overall bar (`overallProgress`).
+- **Expanded** (click/Enter): one `SyncAccountProgressRow` per account.
 
-Testi per fase (funzione pura `describeAccountProgress`, costanti nominate):
+Texts per phase (pure function `describeAccountProgress`, named constants):
 
-| Fase | Testo | Barra |
+| Phase | Text | Bar |
 |---|---|---|
-| queued | In attesa | nessuna |
-| balance | Aggiorno il saldo… | indeterminata |
-| fetching | Scarico i movimenti dalla banca… | indeterminata |
-| saving | Importati {processed} di {total} movimenti | determinata |
-| done | {inserted} nuovi · {categorized} categorizzati · {uncategorized} da categorizzare (oppure "Nessun movimento nuovo. Saldo aggiornato.") | piena |
-| limited / expired | messaggi esistenti di `sync-messages.ts` | nessuna |
-| error | "Sincronizzazione non riuscita. Riprova più tardi." (o il messaggio "interrotta" se `interrupted`) | nessuna |
+| queued | In attesa ("Waiting") | none |
+| balance | Aggiorno il saldo… ("Updating the balance…") | indeterminate |
+| fetching | Scarico i movimenti dalla banca… ("Downloading transactions from the bank…") | indeterminate |
+| saving | Importati {processed} di {total} movimenti ("Imported {processed} of {total} transactions") | determinate |
+| done | {inserted} nuovi · {categorized} categorizzati · {uncategorized} da categorizzare ("{inserted} new · {categorized} categorized · {uncategorized} to categorize") (or "Nessun movimento nuovo. Saldo aggiornato." — "No new transactions. Balance updated.") | full |
+| limited / expired | existing messages from `sync-messages.ts` | none |
+| error | "Sincronizzazione non riuscita. Riprova più tardi." ("Sync failed. Try again later.") (or the "interrotta" ("interrupted") message if `interrupted`) | none |
 
-- Se `uncategorized > 0` a fine job: link "Categorizza" verso `/categorizza`.
-- Bottone chiudi (X) visibile solo a job concluso → `dismiss`.
-- Singolare/plurale corretti (riuso di `pluralize`).
-- Accessibilità: `role="progressbar"` con `aria-valuenow/min/max` sulle barre determinate, `aria-busy` su quelle indeterminate, riepilogo finale in `aria-live="polite"`, animazioni della barra indeterminata dietro `motion-safe:`.
-- Colori solo da token tema.
+- If `uncategorized > 0` at the end of the job: "Categorizza" ("Categorize") link to `/categorizza`.
+- Close button (X) visible only when the job has finished → `dismiss`.
+- Correct singular/plural (reusing `pluralize`).
+- Accessibility: `role="progressbar"` with `aria-valuenow/min/max` on determinate bars, `aria-busy` on indeterminate ones, final summary in `aria-live="polite"`, indeterminate bar animations behind `motion-safe:`.
+- Colors only from theme tokens.
 
-**Pagina "Conti trovati"**: durante il pending "Conferma" diventa "Avvio…". All'`onSuccess` porta a `/conti` come oggi (ora immediato).
+**"Conti trovati" page**: while pending, "Conferma" ("Confirm") becomes "Avvio…" ("Starting…"). On `onSuccess` it goes to `/conti` as today (now immediately).
 
-**`AccountRow`**: l'icona sync gira ed è disabilitata se quel `accountId` compare in un job `running` (derivato da `useSyncJobsQuery`, non da `syncMutation.isPending`), con `title` "Sincronizzazione in corso".
+**`AccountRow`**: the sync icon spins and is disabled if that `accountId` appears in a `running` job (derived from `useSyncJobsQuery`, not from `syncMutation.isPending`), with `title` "Sincronizzazione in corso" ("Sync in progress").
 
-## Cosa NON cambia
+## What does NOT change
 
-- Logica di categorizzazione a regole, guard di direzione, split.
-- Schema Postgres.
-- Idempotenza dell'import (vincolo unique `(accountId, externalId)`).
-- Budget di sync condiviso 4/giorno + gap 4h (`computeSyncEligibility`) e aggiornamento di `syncTimestamps` a fine sync riuscito.
-- Scheduler cron (nessuna modifica funzionale).
+- Rule-based categorization logic, direction guard, split.
+- Postgres schema.
+- Import idempotency (unique constraint `(accountId, externalId)`).
+- Shared sync budget 4/day + 4h gap (`computeSyncEligibility`) and update of `syncTimestamps` at the end of a successful sync.
+- Cron scheduler (no functional change).
 
-## Fuori scope (debito annotato in CLAUDE.md)
+## Out of scope (debt noted in CLAUDE.md)
 
-- Su Vercel lo scheduler `node-cron` di `instrumentation.ts` non gira: sync automatici ogni 12h e snapshot patrimonio non partono. Migrazione a Vercel Cron in sessione dedicata.
-- Riprendere automaticamente un job interrotto (oggi: messaggio, poi il sync successivo riprende grazie all'idempotenza).
+- On Vercel the `node-cron` scheduler in `instrumentation.ts` doesn't run: automatic syncs every 12h and net worth snapshots don't start. Migration to Vercel Cron in a dedicated session.
+- Automatically resuming an interrupted job (today: a message, then the next sync picks up thanks to idempotency).
 
-## Test (vitest)
+## Tests (vitest)
 
-- `lib/gocardless/sync.test.ts`: 120 transazioni → 3 blocchi, conteggi corretti; seconda esecuzione → 0 nuove (idempotenza); sequenza `onProgress` (`balance`, `fetching`, `saving` con `processed` 50/100/120); `hitCount` incrementato solo per righe inserite; eccezione in `onProgress` non interrompe il sync; chiamata senza callback invariata.
-- `lib/sync-jobs/store.test.ts` (fake in memoria): create/update/list/dismiss, derivazione `status`, lock acquisito/negato/rilasciato, isolamento tra utenti.
-- `lib/sync-jobs/view.test.ts`: stallo oltre 60s → interrotto; `overallProgress` determinato solo con tutti i `total`.
-- `lib/sync-jobs/run.test.ts`: conti in parallelo, un conto in errore non blocca gli altri, lock sempre rilasciato, mapping degli esiti.
-- `components/domain/sync/describe-account-progress.test.ts`: testi per fase, plurali.
-- Route (`after()` mockato per eseguire subito): finalize → `201 { jobId }`, 503 con Redis giù e nessun conto creato; sync → `202 { jobId }`, 409 con lock occupato; `GET /api/sync-jobs` non restituisce job di altri utenti; dismiss di un job altrui → 404.
+- `lib/gocardless/sync.test.ts`: 120 transactions → 3 chunks, correct counts; second run → 0 new (idempotency); `onProgress` sequence (`balance`, `fetching`, `saving` with `processed` 50/100/120); `hitCount` incremented only for inserted rows; exception in `onProgress` doesn't interrupt the sync; call without callback unchanged.
+- `lib/sync-jobs/store.test.ts` (in-memory fake): create/update/list/dismiss, `status` derivation, lock acquired/denied/released, isolation between users.
+- `lib/sync-jobs/view.test.ts`: stall beyond 60s → interrupted; `overallProgress` determinate only with all `total`s.
+- `lib/sync-jobs/run.test.ts`: accounts in parallel, one account in error doesn't block the others, lock always released, outcome mapping.
+- `components/domain/sync/describe-account-progress.test.ts`: texts per phase, plurals.
+- Routes (`after()` mocked to run immediately): finalize → `201 { jobId }`, 503 with Redis down and no account created; sync → `202 { jobId }`, 409 with the lock taken; `GET /api/sync-jobs` doesn't return other users' jobs; dismiss of someone else's job → 404.
 
-## Verifica manuale utente (niente browser/Postgres reale nel sandbox)
+## Manual verification by the user (no real browser/Postgres in the sandbox)
 
-- Su Vercel: collegare una banca sandbox con più conti, confermare, cambiare pagina durante il sync: il pannello resta e il contatore avanza.
-- Riepilogo finale corretto, link "Categorizza", chiusura persistente dopo refresh.
-- Sync manuale: doppio click / seconda tab → "già in corso"; icona che gira anche se il sync è partito altrove.
-- Saldi e liste aggiornati da soli a fine job.
-- Tempo di import prima/dopo su un conto con molti movimenti.
+- On Vercel: link a sandbox bank with several accounts, confirm, change page during the sync: the panel stays and the counter advances.
+- Correct final summary, "Categorizza" link, close persists after refresh.
+- Manual sync: double click / second tab → "già in corso"; icon spinning even if the sync started elsewhere.
+- Balances and lists updated by themselves at the end of the job.
+- Import time before/after on an account with many transactions.

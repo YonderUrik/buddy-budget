@@ -1,3 +1,3 @@
-# Import: nessun collegamento automatico se l'ISIN esiste in un'altra valuta (2026-10-08)
+# Import: no automatic link if the ISIN exists in another currency (2026-10-08)
 
-Un ISIN ha un solo strumento comune (indice univoco), con la sua valuta. Se il rendiconto è in EUR e lo strumento comune (Tesla) è in USD, il collegamento automatico alla quotazione in EUR riusava lo strumento in USD e l'import si fermava con «Strumento o valuta non corrispondenti». Ora in quel caso il titolo resta manuale nella valuta del file, come prima del collegamento automatico. Impatto landing: nessuno.
+An ISIN has a single shared instrument (unique index), with its currency. If the statement is in EUR and the shared instrument (Tesla) is in USD, the automatic link to the EUR listing reused the USD instrument and the import stopped with «Strumento o valuta non corrispondenti» ("Instrument or currency do not match"). Now in that case the security stays manual in the file's currency, as before the automatic link. Landing impact: none.

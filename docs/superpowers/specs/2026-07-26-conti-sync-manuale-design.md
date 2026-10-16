@@ -1,30 +1,30 @@
-# Conti: ultimo sync visibile + sync manuale con throttle + feedback esito
+# Conti: visible last sync + manual sync with throttle + outcome feedback
 
-Data: 2026-07-26
+Date: 2026-07-26
 
-## Contesto
+## Context
 
-Richiesta utente: nella schermata Conti, per ogni conto collegato via GoCardless (`source: "auto"`), mostrare quando è avvenuta l'ultima sincronizzazione e poter forzare un sync manuale, rispettando un tetto di **massimo 4 sync al giorno per conto e almeno 4 ore tra un sync e l'altro**. Dopo il sync, mostrare un feedback con quante nuove transazioni sono state trovate, quante categorizzate automaticamente, quante rimaste "Da categorizzare".
+User request: in the Conti (Accounts) screen, for each account connected via GoCardless (`source: "auto"`), show when the last synchronisation happened and allow forcing a manual sync, respecting a cap of **at most 4 syncs per day per account and at least 4 hours between one sync and the next**. After the sync, show feedback with how many new transactions were found, how many were categorised automatically, how many remained "Da categorizzare" ("To categorise").
 
-Oggi esiste già:
-- `bankAccountLinks.lastSyncedAt`/`nextSyncEligibleAt` (colonne presenti ma `lastSyncedAt` mai esposto in UI).
-- Uno scheduler cron (`lib/gocardless/scheduler.ts`) che sincronizza ogni conto dovuto ogni 12h, gestendo un rate-limit **reale** GoCardless basato sugli header di risposta (`lib/gocardless/rate-limit.ts`, per endpoint `balances`/`transactions`), diverso concettualmente dal tetto applicativo richiesto qui.
-- Nessun bottone di sync manuale in UI (nota già presente in CLAUDE.md).
-- Nessuna libreria toast nel progetto.
+What already exists today:
+- `bankAccountLinks.lastSyncedAt`/`nextSyncEligibleAt` (columns present, but `lastSyncedAt` never exposed in the UI).
+- A cron scheduler (`lib/gocardless/scheduler.ts`) that syncs every due account every 12h, handling a **real** GoCardless rate limit based on the response headers (`lib/gocardless/rate-limit.ts`, per endpoint `balances`/`transactions`), conceptually different from the application cap requested here.
+- No manual sync button in the UI (note already present in CLAUDE.md).
+- No toast library in the project.
 
-Decisione chiarita con l'utente in brainstorming: il tetto di 4/giorno + gap minimo 4h è un **budget condiviso** tra lo scheduler automatico e i click manuali (non due contatori separati), per restare allineati al vero limite GoCardless lato sandbox (~4 chiamate/giorno/endpoint/conto, già annotato in CLAUDE.md) evitando di sommare i due canali oltre quota. Il feedback post-sync usa un **toast globale** (libreria `sonner` via shadcn, non ancora presente nel progetto).
+Decision clarified with the user in brainstorming: the cap of 4/day + minimum 4h gap is a **shared budget** between the automatic scheduler and manual clicks (not two separate counters), to stay aligned with the real GoCardless limit on the sandbox side (~4 calls/day/endpoint/account, already noted in CLAUDE.md), avoiding adding up the two channels beyond the quota. The post-sync feedback uses a **global toast** (the `sonner` library via shadcn, not yet in the project).
 
-## Throttle applicativo (budget condiviso)
+## Application throttle (shared budget)
 
-Nuova colonna su `bank_account_links`:
+New column on `bank_account_links`:
 
 ```ts
-syncTimestamps: jsonb("sync_timestamps").notNull().default('[]'), // array di stringhe ISO, max 4 elementi, più recente per primo
+syncTimestamps: jsonb("sync_timestamps").notNull().default('[]'), // array of ISO strings, max 4 elements, most recent first
 ```
 
-`lastSyncedAt`/`nextSyncEligibleAt` restano (quest'ultimo ridotto da 12h a 4h come gap minimo, usato come filtro cheap lato query dallo scheduler — vedi sotto).
+`lastSyncedAt`/`nextSyncEligibleAt` remain (the latter reduced from 12h to 4h as the minimum gap, used as a cheap query-side filter by the scheduler — see below).
 
-Nuovo modulo puro `lib/gocardless/sync-eligibility.ts`:
+New pure module `lib/gocardless/sync-eligibility.ts`:
 
 ```ts
 export const MAX_SYNCS_PER_DAY = 4;
@@ -35,61 +35,61 @@ export interface SyncEligibility {
   eligible: boolean;
   syncsUsedToday: number;
   syncsRemainingToday: number;
-  nextEligibleAt: Date | null; // null se eligible === true
+  nextEligibleAt: Date | null; // null if eligible === true
 }
 
 export function computeSyncEligibility(recentSyncTimestamps: Date[], now: Date): SyncEligibility
 ```
 
-Logica:
-1. `recentInWindow` = timestamp con `now - t < SYNC_WINDOW_MS`, ordinati crescenti.
+Logic:
+1. `recentInWindow` = timestamps with `now - t < SYNC_WINDOW_MS`, sorted ascending.
 2. `syncsUsedToday = recentInWindow.length`; `syncsRemainingToday = max(0, MAX_SYNCS_PER_DAY - syncsUsedToday)`.
-3. `lastSync` = il più recente di tutti i timestamp passati (anche fuori finestra, per il gap minimo — irrilevante in pratica perché fuori da 24h supera sempre il gap di 4h).
+3. `lastSync` = the most recent of all past timestamps (even outside the window, for the minimum gap — irrelevant in practice because beyond 24h it always exceeds the 4h gap).
 4. `minGapOk = !lastSync || now - lastSync >= MIN_SYNC_GAP_MS`.
 5. `capOk = syncsUsedToday < MAX_SYNCS_PER_DAY`.
 6. `eligible = minGapOk && capOk`.
-7. `nextEligibleAt`: se `!minGapOk` → `lastSync + MIN_SYNC_GAP_MS`; altrimenti se `!capOk` → `recentInWindow[0] + SYNC_WINDOW_MS` (il più vecchio dei 4 esce dalla finestra); altrimenti `null`.
+7. `nextEligibleAt`: if `!minGapOk` → `lastSync + MIN_SYNC_GAP_MS`; otherwise if `!capOk` → `recentInWindow[0] + SYNC_WINDOW_MS` (the oldest of the 4 leaves the window); otherwise `null`.
 
-Finestra scorrevole reale (non un contatore con reset a intervalli fissi): con al massimo 4 elementi conservati, filtrare per età ad ogni check è sufficiente e preciso.
+A real sliding window (not a counter reset at fixed intervals): with at most 4 elements kept, filtering by age at every check is sufficient and precise.
 
-Lo scheduler automatico (cron ogni 12h, invariato) e l'endpoint di sync manuale (sotto) chiamano entrambi questa funzione prima di tentare un sync reale, condividendo lo stesso array `syncTimestamps` per conto — nessuna distinzione tra "budget automatico" e "budget manuale".
+The automatic scheduler (cron every 12h, unchanged) and the manual sync endpoint (below) both call this function before attempting a real sync, sharing the same `syncTimestamps` array per account — no distinction between "automatic budget" and "manual budget".
 
-## `syncAccountLink` — risultato esteso
+## `syncAccountLink` — extended result
 
-`lib/gocardless/sync.ts`, `syncAccountLink` ritorna (invece di `void`) un risultato discriminato:
+`lib/gocardless/sync.ts`, `syncAccountLink` returns (instead of `void`) a discriminated result:
 
 ```ts
 export type SyncResult =
   | { status: "synced"; newTransactionsCount: number; categorizedCount: number; uncategorizedCount: number; balanceUpdated: true }
-  | { status: "gocardless-limited" } // rate-limit reale GoCardless (header-based), check esistente
-  | { status: "expired" };           // 401, comportamento esistente invariato
+  | { status: "gocardless-limited" } // real GoCardless rate limit (header-based), existing check
+  | { status: "expired" };           // 401, existing behaviour unchanged
 ```
 
-Cambiamenti interni:
-- I due check `isRateLimited` esistenti, se true, ritornano `{ status: "gocardless-limited" }` invece di `return;` silenzioso.
-- L'insert transazioni usa `.returning()` sull'`onConflictDoNothing`: solo le righe realmente inserite contano come "nuove". Per ciascuna riga inserita, confronta il suo `categoryId` con `fallbackId` (già risolto una volta per lo user tramite `getFallbackCategoryId`, riusato nel loop invece di richiamare `resolveCategoryId` due volte) per incrementare `categorizedCount` o `uncategorizedCount`.
-- Al successo, un solo update su `bankAccountLinks`: `lastSyncedAt = now`, `syncTimestamps` = `[now, ...precedenti].slice(0, 4)` (ISO strings), `nextSyncEligibleAt = now + MIN_SYNC_GAP_MS`.
-- Comportamento 401 (marca `bankConnections.status = "expired"`) invariato, solo il return value cambia da `void` a `{ status: "expired" }`.
+Internal changes:
+- The two existing `isRateLimited` checks, if true, return `{ status: "gocardless-limited" }` instead of a silent `return;`.
+- The transaction insert uses `.returning()` on the `onConflictDoNothing`: only the rows actually inserted count as "new". For each inserted row, compare its `categoryId` with `fallbackId` (already resolved once for the user via `getFallbackCategoryId`, reused in the loop instead of calling `resolveCategoryId` twice) to increment `categorizedCount` or `uncategorizedCount`.
+- On success, a single update on `bankAccountLinks`: `lastSyncedAt = now`, `syncTimestamps` = `[now, ...previous].slice(0, 4)` (ISO strings), `nextSyncEligibleAt = now + MIN_SYNC_GAP_MS`.
+- The 401 behaviour (marks `bankConnections.status = "expired"`) is unchanged, only the return value changes from `void` to `{ status: "expired" }`.
 
-`runDueSyncs` (scheduler) ignora il valore di ritorno (comportamento attuale già logga solo eccezioni non catturate); aggiunge però, prima di chiamare `syncAccountLink` per ciascun link dovuto, un check `computeSyncEligibility(link.syncTimestamps, now).eligible` e salta silenziosamente (stesso pattern di skip già esistente per il rate-limit reale) se il budget condiviso è già esaurito da sync manuali precedenti nello stesso giorno. `findDueLinks` estende la `select` per includere `syncTimestamps`.
+`runDueSyncs` (scheduler) ignores the return value (the current behaviour already logs only uncaught exceptions); however, before calling `syncAccountLink` for each due link, it adds a `computeSyncEligibility(link.syncTimestamps, now).eligible` check and silently skips (the same skip pattern already existing for the real rate limit) if the shared budget has already been used up by earlier manual syncs on the same day. `findDueLinks` extends the `select` to include `syncTimestamps`.
 
-## Endpoint manuale
+## Manual endpoint
 
-Nuovo `app/api/gocardless/accounts/[accountId]/sync/route.ts`:
+New `app/api/gocardless/accounts/[accountId]/sync/route.ts`:
 
 ```
 POST /api/gocardless/accounts/[accountId]/sync
 ```
 
-- Auth check (come gli altri endpoint gocardless).
-- Fetch del link joinando `bankAccountLinks` + `bankConnections` filtrando `accountId = params.accountId AND bankConnections.userId = session.user.id AND bankConnections.status = "linked"` (ownership + stato, pattern IDOR-safe già usato altrove in questo modulo). Non trovato → 404.
-- `computeSyncEligibility(link.syncTimestamps, now)`: se `!eligible` → 429 `{ error: "not-eligible", nextEligibleAt, syncsRemainingToday }`, **nessuna chiamata a `syncAccountLink`** (evita di sprecare quota GoCardless reale per un tentativo che sappiamo già bloccato).
-- Altrimenti chiama `syncAccountLink(link, redisRateLimitStore)` e mappa il risultato:
+- Auth check (like the other gocardless endpoints).
+- Fetch of the link joining `bankAccountLinks` + `bankConnections`, filtering `accountId = params.accountId AND bankConnections.userId = session.user.id AND bankConnections.status = "linked"` (ownership + status, the IDOR-safe pattern already used elsewhere in this module). Not found → 404.
+- `computeSyncEligibility(link.syncTimestamps, now)`: if `!eligible` → 429 `{ error: "not-eligible", nextEligibleAt, syncsRemainingToday }`, **no call to `syncAccountLink`** (avoids wasting real GoCardless quota on an attempt we already know is blocked).
+- Otherwise call `syncAccountLink(link, redisRateLimitStore)` and map the result:
   - `synced` → 200 `{ status: "synced", newTransactionsCount, categorizedCount, uncategorizedCount }`
   - `gocardless-limited` → 429 `{ status: "gocardless-limited" }`
   - `expired` → 409 `{ status: "expired" }`
 
-`GET /api/gocardless/connections` (status esistente, `app/api/gocardless/connections/route.ts`) esteso: la select include anche `lastSyncedAt`/`syncTimestamps` dal link, e la response calcola `computeSyncEligibility` per riga. Nuova forma:
+`GET /api/gocardless/connections` (existing status, `app/api/gocardless/connections/route.ts`) extended: the select also includes `lastSyncedAt`/`syncTimestamps` from the link, and the response computes `computeSyncEligibility` per row. New shape:
 
 ```ts
 export interface BankConnectionStatus {
@@ -102,20 +102,20 @@ export interface BankConnectionStatus {
 }
 ```
 
-Estensione additiva: i consumatori esistenti (`reconnectAccountIds` in `ContiPage`, filtrati per `status`) restano invariati.
+Additive extension: existing consumers (`reconnectAccountIds` in `ContiPage`, filtered by `status`) stay unchanged.
 
 ## UI
 
-**Toast**: aggiunta `sonner` via shadcn (`pnpm dlx shadcn@latest add sonner`, genera `components/ui/sonner.tsx` già theme-aware su `next-themes`); `<Toaster />` montato in `app/layout.tsx` dentro `<body>`, accanto a `ThemeProvider`.
+**Toast**: add `sonner` via shadcn (`pnpm dlx shadcn@latest add sonner`, generates `components/ui/sonner.tsx`, already theme-aware on `next-themes`); `<Toaster />` mounted in `app/layout.tsx` inside `<body>`, next to `ThemeProvider`.
 
-**`formatRelativeTime`** (nuovo, puro, in `lib/format.ts`): `(date: Date, now?: Date) => string` — "adesso" (<1 min), "X min fa" (<60 min), "X h fa" (<24h), "X giorni fa" (<7 giorni), altrimenti data assoluta breve (es. "12 lug").
+**`formatRelativeTime`** (new, pure, in `lib/format.ts`): `(date: Date, now?: Date) => string` — "adesso" ("now", <1 min), "X min fa" ("X min ago", <60 min), "X h fa" (<24h), "X giorni fa" ("X days ago", <7 days), otherwise a short absolute date (e.g. "12 lug").
 
-**`AccountRow`** (`components/domain/accounts/account-row.tsx`): nuova prop opzionale `syncInfo?: { lastSyncedAt: string | null; eligible: boolean; nextEligibleAt: string | null; syncsRemainingToday: number }`, popolata solo per righe `isAuto`. Aggiunge:
-- Testo muted "Ultimo sync: {formatRelativeTime(...)}" (o "Mai sincronizzato" se `lastSyncedAt` è null) vicino al badge Auto.
-- Bottone icona `RefreshCw` (icona già importata nel file) per avviare il sync manuale via `useSyncAccountMutation(account.id)`. Disabilitato quando `!eligible`, con attributo nativo `title` che spiega il motivo ("Prossimo sync disponibile alle HH:MM" se gap minimo, "Limite di 4 sync al giorno raggiunto, prossimo alle HH:MM" se tetto giornaliero) — nessuna nuova dipendenza Tooltip, il `title` del browser basta per questo caso d'uso.
-- Durante la mutation, icona in stato "spinning" (classe `animate-spin`, pattern comune con lucide-react), bottone disabilitato.
+**`AccountRow`** (`components/domain/accounts/account-row.tsx`): new optional prop `syncInfo?: { lastSyncedAt: string | null; eligible: boolean; nextEligibleAt: string | null; syncsRemainingToday: number }`, populated only for `isAuto` rows. It adds:
+- Muted text "Ultimo sync: {formatRelativeTime(...)}" ("Last sync") (or "Mai sincronizzato" — "Never synced" — if `lastSyncedAt` is null) near the Auto badge.
+- `RefreshCw` icon button (icon already imported in the file) to start the manual sync via `useSyncAccountMutation(account.id)`. Disabled when `!eligible`, with a native `title` attribute explaining the reason ("Prossimo sync disponibile alle HH:MM" — "Next sync available at HH:MM" — for the minimum gap, "Limite di 4 sync al giorno raggiunto, prossimo alle HH:MM" — "Limit of 4 syncs a day reached, next at HH:MM" — for the daily cap) — no new Tooltip dependency, the browser `title` is enough for this use case.
+- During the mutation, icon in a "spinning" state (`animate-spin` class, a common pattern with lucide-react), button disabled.
 
-**`ContiPage`**: estende la mappa già costruita da `connectionStatuses` per includere anche i campi di sync, passando `syncInfo` per `accountId` a ogni `AccountRow`.
+**`ContiPage`**: extends the map already built from `connectionStatuses` to include the sync fields too, passing `syncInfo` by `accountId` to each `AccountRow`.
 
 **Mutation** (`lib/queries/gocardless.ts`), `useSyncAccountMutation`:
 
@@ -126,7 +126,7 @@ export function useSyncAccountMutation() {
     mutationFn: async (accountId: string) => {
       const response = await fetch(`/api/gocardless/accounts/${accountId}/sync`, { method: "POST" });
       const body = await response.json();
-      if (!response.ok) throw new SyncNotAvailableError(body); // include status/nextEligibleAt
+      if (!response.ok) throw new SyncNotAvailableError(body); // includes status/nextEligibleAt
       return body as SyncSuccessResult;
     },
     onSuccess: (result) => {
@@ -142,36 +142,36 @@ export function useSyncAccountMutation() {
 }
 ```
 
-`buildSyncSummaryMessage`/`buildSyncErrorMessage`: funzioni pure (testabili), es.:
-- `{newTransactionsCount: 0}` → "Nessuna nuova transazione trovata. Saldo aggiornato."
-- `{newTransactionsCount: 5, categorizedCount: 3, uncategorizedCount: 2}` → "5 nuove transazioni (3 categorizzate, 2 da categorizzare). Saldo aggiornato."
-- `gocardless-limited` → "La banca ha temporaneamente esaurito le chiamate disponibili. Riprova più tardi."
-- `expired` → "Sessione con la banca scaduta. Riconnetti il conto per sincronizzare."
-- `not-eligible` (429 pre-check) → "Hai raggiunto il limite di sync per ora. Prossimo disponibile alle {ora}."
+`buildSyncSummaryMessage`/`buildSyncErrorMessage`: pure (testable) functions, e.g.:
+- `{newTransactionsCount: 0}` → "Nessuna nuova transazione trovata. Saldo aggiornato." ("No new transactions found. Balance updated.")
+- `{newTransactionsCount: 5, categorizedCount: 3, uncategorizedCount: 2}` → "5 nuove transazioni (3 categorizzate, 2 da categorizzare). Saldo aggiornato." ("5 new transactions (3 categorised, 2 to categorise). Balance updated.")
+- `gocardless-limited` → "La banca ha temporaneamente esaurito le chiamate disponibili. Riprova più tardi." ("The bank has temporarily run out of available calls. Try again later.")
+- `expired` → "Sessione con la banca scaduta. Riconnetti il conto per sincronizzare." ("Bank session expired. Reconnect the account to sync.")
+- `not-eligible` (429 pre-check) → "Hai raggiunto il limite di sync per ora. Prossimo disponibile alle {ora}." ("You have reached the sync limit for now. Next available at {time}.")
 
-## Migrazione
+## Migration
 
-Nuova colonna `sync_timestamps` va applicata con `pnpm db:push` **dall'utente** (non da un agente — DB locale condiviso con `main`, convenzione già stabilita in CLAUDE.md per le colonne precedenti su `categories`).
+The new `sync_timestamps` column must be applied with `pnpm db:push` **by the user** (not by an agent — local DB shared with `main`, a convention already established in CLAUDE.md for the earlier columns on `categories`).
 
-## Edge case
+## Edge cases
 
-- Conto appena collegato, mai sincronizzato: `lastSyncedAt` null → "Mai sincronizzato", `syncTimestamps` vuoto → sempre eleggibile (nessun gap/tetto da rispettare).
-- Sync manuale mentre lo scheduler ha appena consumato l'ultimo slot del giorno: bottone disabilitato lato UI (stato calcolato da `GET /api/gocardless/connections`), e comunque ri-verificato server-side nell'endpoint di sync (non ci si fida solo del client).
-- Connessione con più conti collegati (`bankConnections` 1-N `bankAccountLinks`): il budget è per **conto** (`bankAccountLinks.syncTimestamps`), non per connessione — sincronizzare un conto non consuma budget degli altri conti sulla stessa banca.
-- Sync che fallisce a metà (es. balance ok, poi errore rete sulle transazioni): nessuna transazione DB atomica introdotta, comportamento best-effort riga-per-riga invariato rispetto a oggi; in questo caso l'eccezione propaga (non è né `synced` né uno stato gestito), l'endpoint la lascia risalire come 500 generico e il toast d'errore userà un messaggio di fallback.
+- Account just connected, never synced: `lastSyncedAt` null → "Mai sincronizzato", empty `syncTimestamps` → always eligible (no gap/cap to respect).
+- Manual sync while the scheduler has just used the day's last slot: button disabled in the UI (state computed by `GET /api/gocardless/connections`), and in any case re-checked server-side in the sync endpoint (we do not trust the client alone).
+- Connection with several linked accounts (`bankConnections` 1-N `bankAccountLinks`): the budget is per **account** (`bankAccountLinks.syncTimestamps`), not per connection — syncing one account does not consume the budget of the other accounts at the same bank.
+- Sync that fails halfway (e.g. balance OK, then a network error on the transactions): no atomic DB transaction introduced, best-effort row-by-row behaviour unchanged from today; in this case the exception propagates (it is neither `synced` nor a handled state), the endpoint lets it bubble up as a generic 500 and the error toast uses a fallback message.
 
-## Test
+## Tests
 
-- `lib/gocardless/sync-eligibility.test.ts` (nuovo): boundary gap 4h (appena sotto/sopra), boundary tetto 4/24h (il quinto tentativo entro 24h dal più vecchio dei 4 blocca, esce dalla finestra dopo 24h dal più vecchio), array vuoto → sempre eligible, `nextEligibleAt` corretto in entrambi i casi di blocco.
-- `lib/gocardless/sync.test.ts` (esteso): asserzioni sul risultato discriminato (`newTransactionsCount`/`categorizedCount`/`uncategorizedCount` su un mix di transazioni nuove/duplicate/categorizzabili-per-storico/fallback) e sui campi aggiornati (`syncTimestamps` contiene il nuovo timestamp, `nextSyncEligibleAt` spostato di 4h).
-- Nuovo `app/api/gocardless/accounts/[accountId]/sync/route.test.ts`: ownership (conto di un altro utente → 404), 429 quando non eleggibile (nessuna chiamata a `syncAccountLink`/GoCardless), mapping corretto status→HTTP.
-- `lib/format.test.ts` (esteso o nuovo): `formatRelativeTime` per le soglie min/ore/giorni/fallback data assoluta.
-- `buildSyncSummaryMessage`/`buildSyncErrorMessage`: test puri per ogni combinazione di stato.
-- Componenti UI (`AccountRow`, `ContiPage`) non testati a unit, in linea con la convenzione già seguita nel progetto — verifica manuale utente (nessun Postgres/Redis nel sandbox agentico).
+- `lib/gocardless/sync-eligibility.test.ts` (new): 4h gap boundary (just below/above), 4/24h cap boundary (the fifth attempt within 24h of the oldest of the 4 blocks, it leaves the window 24h after the oldest), empty array → always eligible, correct `nextEligibleAt` in both blocking cases.
+- `lib/gocardless/sync.test.ts` (extended): assertions on the discriminated result (`newTransactionsCount`/`categorizedCount`/`uncategorizedCount` on a mix of new/duplicate/categorisable-from-history/fallback transactions) and on the updated fields (`syncTimestamps` contains the new timestamp, `nextSyncEligibleAt` moved by 4h).
+- New `app/api/gocardless/accounts/[accountId]/sync/route.test.ts`: ownership (another user's account → 404), 429 when not eligible (no call to `syncAccountLink`/GoCardless), correct status→HTTP mapping.
+- `lib/format.test.ts` (extended or new): `formatRelativeTime` for the min/hours/days/absolute-date-fallback thresholds.
+- `buildSyncSummaryMessage`/`buildSyncErrorMessage`: pure tests for each status combination.
+- UI components (`AccountRow`, `ContiPage`) not unit tested, in line with the convention already followed in the project — manual verification by the user (no Postgres/Redis in the agent sandbox).
 
-## Fuori scope (esplicitamente escluso)
+## Out of scope (explicitly excluded)
 
-- Sync manuale per connessioni con più conti in un solo click ("sincronizza tutti") — richiesta esplicitamente per singolo conto.
-- Storico/log delle sincronizzazioni passate oltre l'ultimo timestamp mostrato — solo "ultimo sync" e conteggio residuo di oggi, nessuna cronologia dettagliata.
-- Modifica della cadenza dello scheduler automatico (resta cron ogni 12h) — solo il gap minimo e il tetto condiviso cambiano.
-- Retry automatico o backoff intelligente sul rate-limit reale GoCardless — comportamento già esistente (skip silenzioso lato scheduler, messaggio d'errore lato manuale) non viene ampliato.
+- Manual sync for connections with several accounts in a single click ("sync all") — explicitly requested per single account.
+- History/log of past synchronisations beyond the last timestamp shown — only "last sync" and today's remaining count, no detailed history.
+- Changing the cadence of the automatic scheduler (stays a cron every 12h) — only the minimum gap and the shared cap change.
+- Automatic retry or smart backoff on the real GoCardless rate limit — the existing behaviour (silent skip on the scheduler side, error message on the manual side) is not extended.

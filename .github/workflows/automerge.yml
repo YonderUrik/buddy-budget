@@ -1,9 +1,9 @@
 name: Auto-merge PR automatiche
 
-# Abilita l'auto-merge (squash) sulle PR dei bot a basso rischio: aggiornamenti patch di Dependabot e screenshot della
-# landing. GitHub le unisce da solo solo quando tutti i check obbligatori della branch protection sono verdi; la PR di release
-# e gli aggiornamenti minor/major di Dependabot (compresi quelli di sicurezza) restano a mano. Richiede "Allow auto-merge" nelle impostazioni del repo: se è spento il passo
-# fallisce senza bloccare nulla. Non esegue mai codice della PR (pull_request_target, nessun checkout).
+# Enables auto-merge (squash) on low-risk bot PRs: Dependabot patch updates and landing
+# screenshots. GitHub merges them by itself only when all required branch protection checks are green; the release PR
+# and Dependabot minor/major updates (including security ones) stay manual. Requires "Allow auto-merge" in the repo settings: if it is off the step
+# fails without blocking anything. Never runs PR code (pull_request_target, no checkout).
 on:
   pull_request_target:
     types: [opened, reopened, synchronize]

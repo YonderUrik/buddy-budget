@@ -1,100 +1,100 @@
-# Prova locale del CSV personale — 8 ottobre 2026
+# Local test of the personal CSV — October 8, 2026
 
-Account locale di verifica, export Trade Republic reale di 885 righe, caricato **come CSV generico** dalla pagina `/importazioni`. Screenshot con dati visibili pubblicati su richiesta esplicita del proprietario. Il CSV, le risposte del provider e le credenziali non sono inclusi nel repository.
+Local test account, real Trade Republic export of 885 rows, uploaded **as a generic CSV** from the `/importazioni` page. Screenshots with visible data published at the owner's explicit request. The CSV, the provider's responses and the credentials are not included in the repository.
 
-## Esito
+## Outcome
 
-| Passaggio | Evidenza |
+| Step | Evidence |
 | --- | --- |
-| Upload dal browser | Consenso, fonte personale, coda asincrona, stima di un'ora e orario previsto |
-| Generazione reale | `deepseek/deepseek-v4.1-flash`, OpenRouter HTTP 200, `finish_reason=stop`, ZDR obbligatorio; tutte le 885 righe inviate |
-| Worker | Analisi riuscita in circa 11 secondi; due esecuzioni isolate deterministiche |
-| Confronto indipendente | 868 movimenti e 17 investimenti; zero esclusioni/errori; confronto riga per riga con l'importatore Trade Republic per importi, date, valute dei movimenti, quantità/prezzi/costi/imposte/tipo operazione e ISIN/tipo strumento |
-| Conferma dal browser | 885 registrazioni di cassa (868 movimenti + 17 regolamenti investimento), 17 operazioni investimento, 885 ricevute; conto dedicato con saldo 975,64 €, uguale alla somma dei movimenti |
-| Secondo upload e conferma | Stesso parser salvato, nessuna chiamata OpenRouter; conteggi e saldo invariati, entrambi i job importati |
-| Pulizia | CSV cifrato eliminato dopo analisi, anteprima cifrata eliminata dopo conferma |
-| Pagine finali | Pagamenti visibili nel conto dedicato; acquisti/vendite visibili in Investimenti → Operazioni |
-| Email | Invio e retry verificati nei test automatici con provider simulato. **Consegna reale non verificata**: configurazione Resend locale rifiutata (HTTP 400); serve una configurazione valida per chiudere questo ultimo controllo |
+| Upload from the browser | Consent, personal source, asynchronous queue, one-hour estimate and expected time |
+| Real generation | `deepseek/deepseek-v4.1-flash`, OpenRouter HTTP 200, `finish_reason=stop`, ZDR mandatory; all 885 rows sent |
+| Worker | Analysis succeeded in about 11 seconds; two isolated deterministic runs |
+| Independent comparison | 868 movements and 17 investments; zero exclusions/errors; row-by-row comparison with the Trade Republic importer for amounts, dates, movement currencies, quantities/prices/costs/taxes/operation type and ISIN/instrument type |
+| Confirmation from the browser | 885 cash entries (868 movements + 17 investment settlements), 17 investment transactions, 885 receipts; dedicated account with balance €975.64, equal to the sum of the movements |
+| Second upload and confirmation | Same saved parser, no OpenRouter call; counts and balance unchanged, both jobs imported |
+| Cleanup | Encrypted CSV deleted after analysis, encrypted preview deleted after confirmation |
+| Final pages | Payments visible in the dedicated account; buys/sells visible in Investimenti ("Investments") → Operazioni ("Transactions") |
+| Email | Sending and retry verified in the automated tests with a mocked provider. **Real delivery not verified**: local Resend configuration rejected (HTTP 400); a valid configuration is needed to close this last check |
 
-Il database conteneva già il test dell'importatore Trade Republic nativo. I nuovi dati appartengono al conto `Trade Republic · E2E AI · CSV`; la deduplicazione è per formato personale, non tra importatori diversi.
+The database already contained the test of the native Trade Republic importer. The new data belongs to the account `Trade Republic · E2E AI · CSV`; deduplication is per personal format, not across different importers.
 
-## Correzioni trovate durante il test
+## Fixes found during the test
 
-- Il provider consumava il budget solo nel ragionamento, senza codice. Disabilitato il ragionamento opzionale DeepSeek, aumentato il budget di output a 32.768 e il timeout a 240 secondi; risposte troncate mostrate come errore esplicito.
-- Rafforzate le istruzioni su cassa netta, imposte, premi e rimborsi: non scartare accrediti come presunti duplicati, non omettere rettifiche fiscali. Ammesse registrazioni a saldo zero.
-- Evitati cutoff di data presi dal campione e algoritmi ISIN inventati; date e checksum verificati dal server.
-- Distinte categorie generiche FUND dagli ETF identificabili tramite nome e identificativo.
-- Errori del worker identificano la fase senza registrare CSV, codice generato o segreti.
+- The provider consumed the budget only in reasoning, without code. DeepSeek's optional reasoning was disabled, the output budget raised to 32,768 and the timeout to 240 seconds; truncated responses are shown as an explicit error.
+- Strengthened the instructions on net cash, taxes, rewards and refunds: do not discard credits as presumed duplicates, do not omit tax adjustments. Zero-balance entries allowed.
+- Avoided date cutoffs taken from the sample and invented ISIN algorithms; dates and checksums verified by the server.
+- Distinguished generic FUND categories from ETFs identifiable by name and identifier.
+- Worker errors identify the phase without logging the CSV, the generated code or secrets.
 
-Il codice del parser utilizzato nel test è stato generato dal modello, non corretto manualmente. La corrispondenza su questo file non garantisce la correttezza di ogni parser futuro: resta necessaria l'anteprima con conferma umana.
+The parser code used in the test was generated by the model, not corrected by hand. The match on this file does not guarantee the correctness of every future parser: the preview with human confirmation remains necessary.
 
-## Verifiche automatiche
+## Automated checks
 
-21 test dedicati passati (18 contratto/sandbox/integrazione, 3 API); TypeScript ed ESLint dei file modificati passati. Build di produzione già verificata prima delle correzioni del worker; non ripetuta dopo queste correzioni. Le limitazioni della suite generale sono documentate nella PR.
+21 dedicated tests passed (18 contract/sandbox/integration, 3 API); TypeScript and ESLint of the modified files passed. Production build already verified before the worker fixes; not repeated after these fixes. The limitations of the general suite are documented in the PR.
 
-## Screenshot
+## Screenshots
 
-### Analisi e orario previsto
-![Analisi](01-analysis.jpg)
+### Analysis and expected time
+![Analysis](01-analysis.jpg)
 
-### Anteprima di tutte le 885 operazioni
-![Anteprima](02-preview.jpg)
+### Preview of all 885 transactions
+![Preview](02-preview.jpg)
 
-### Importazione completata
-![Importato](03-imported.jpg)
+### Import completed
+![Imported](03-imported.jpg)
 
-### Seconda importazione senza nuovi dati
-![Riimportazione](04-reimport.jpg)
+### Second import without new data
+![Reimport](04-reimport.jpg)
 
-### Pagamenti del conto personale
-![Pagamenti](05-payments.jpg)
+### Payments of the personal account
+![Payments](05-payments.jpg)
 
-### Conto e saldo riconciliato
-![Conto](06-account.jpg)
+### Account and reconciled balance
+![Account](06-account.jpg)
 
-### Operazioni d'investimento
-![Investimenti](07-investments.jpg)
+### Investment transactions
+![Investments](07-investments.jpg)
 
-### CSV personali in Gestisci importazioni
+### Personal CSVs in Gestisci importazioni
 
-Verificati elenco con fonte/stato/data e collegamento all'importazione corretta da Investimenti → Operazioni → Gestisci importazioni. TypeScript ed ESLint passati.
+Verified the list with source/status/date and the link to the correct import from Investimenti → Operazioni → Gestisci importazioni ("Manage imports"). TypeScript and ESLint passed.
 
-![Gestione CSV personali](08-management.jpg)
+![Personal CSV management](08-management.jpg)
 
-## Lista unificata e cancellazione per caricamento
+## Unified list and deletion per upload
 
-La sezione CSV personali separata mostrata nello screenshot 08 è stata sostituita da un unico elenco cronologico con i rendiconti broker. I vecchi dati personali di prova locali sono stati rimossi su richiesta dell’utente; nessun percorso speciale di cancellazione per vecchi import è stato aggiunto.
+The separate personal CSV section shown in screenshot 08 was replaced by a single chronological list with the broker statements. The old local personal test data was removed at the user's request; no special deletion path for old imports was added.
 
-26 test dedicati passati: inclusi cancellazione del singolo caricamento, conservazione degli upload successivi e dei parser, reimportazione, doppioni, autorizzazione API, conferma obsoleta e rifiuto di cancellare acquisti necessari a vendite successive. TypeScript ed ESLint passati.
+26 dedicated tests passed: including deletion of a single upload, preservation of later uploads and parsers, reimport, duplicates, API authorization, stale confirmation and refusal to delete purchases needed by later sales. TypeScript and ESLint passed.
 
-Prova reale successiva alla migration 0024: nuovo caricamento Trade Republic confermato dal browser, anteprima di cancellazione con **885 movimenti di cassa e 17 investimenti**, cancellazione confermata dal browser. Verifica DB: zero movimenti, investimenti, ricevute e job del formato; saldo del conto **0,00 €**, parser conservati. I sei rendiconti degli importatori supportati restano nell’elenco.
+Real test after migration 0024: new Trade Republic upload confirmed from the browser, deletion preview with **885 cash movements and 17 investments**, deletion confirmed from the browser. DB check: zero movements, investments, receipts and jobs for the format; account balance **€0.00**, parsers kept. The six statements of the supported importers remain in the list.
 
-![Lista unificata](09-unified-list.jpg)
-![Conferma cancellazione](10-delete-confirmation.jpg)
-![Importazione eliminata](11-deleted.jpg)
+![Unified list](09-unified-list.jpg)
+![Deletion confirmation](10-delete-confirmation.jpg)
+![Import deleted](11-deleted.jpg)
 
-Lo stesso CSV è stato quindi ricaricato e confermato nuovamente usando il parser conservato. Un nuovo import cancellabile resta disponibile nell’account locale per la prova manuale.
+The same CSV was then uploaded again and confirmed using the kept parser. A new deletable import remains available in the local account for manual testing.
 
-### Filtro broker dopo la cancellazione
+### Broker filter after deletion
 
-I conti vuoti conservati per reimportare non aggiungono più un broker al filtro: deve restare almeno un’operazione, un rendiconto o un saldo non nullo. Verificato dopo refresh completo: solo DEGIRO e Interactive Brokers, senza Trade Republic eliminato. Nove test filtro/liquidità passati, inclusi saldo negativo, rendiconto a saldo zero e operazioni ancora presenti; TypeScript ed ESLint passati.
+Empty accounts kept for reimporting no longer add a broker to the filter: at least one transaction, statement or non-zero balance must remain. Verified after a full refresh: only DEGIRO and Interactive Brokers, without the deleted Trade Republic. Nine filter/cash tests passed, including negative balance, zero-balance statement and transactions still present; TypeScript and ESLint passed.
 
-![Filtro broker aggiornato](12-broker-filter-after-delete.jpg)
+![Updated broker filter](12-broker-filter-after-delete.jpg)
 
-## File raw interpretato dall’AI
+## Raw file interpreted by the AI
 
-Rimosso il parsing CSV preliminare: l’input del modello contiene solo `rawCsv` (testo originale invariato) e `sourceName`. Nessuna ricerca di intestazioni, delimitatori o colonne, nessuna regola Bitpanda. Il parser generato interpreta il documento; i riferimenti alle righe servono all’anteprima e al controllo che ogni riga abbia un esito. Consenso aggiornato: anche dati personali nel file sono inclusi, con ZDR obbligatorio.
+Removed the preliminary CSV parsing: the model's input contains only `rawCsv` (unchanged original text) and `sourceName`. No search for headers, delimiters or columns, no Bitpanda rule. The generated parser interprets the document; the row references serve the preview and the check that every row has an outcome. Updated consent: any personal data in the file is included as well, with ZDR mandatory.
 
-Prova reale dal browser con il file Bitpanda fornito dall’utente: il modello DeepSeek ha generato il parser in circa 24 secondi; **51 righe, 45 operazioni, 6 esclusioni motivate, nessun errore di parsing** (5 righe introduttive e 1 intestazione). Anteprima disponibile per la revisione dell’utente, nessuna conferma finanziaria eseguita. Questo verifica l’analisi del formato, non certifica la correttezza finanziaria del parser generato. Il file privato e il codice generato non sono inclusi nel repository.
+Real test from the browser with the Bitpanda file provided by the user: the DeepSeek model generated the parser in about 24 seconds; **51 rows, 45 transactions, 6 justified exclusions, no parsing errors** (5 introductory rows and 1 header). Preview available for the user's review, no financial confirmation performed. This verifies the format analysis; it does not certify the financial correctness of the generated parser. The private file and the generated code are not included in the repository.
 
-27 test dedicati passati, inclusa verifica che il payload del modello sia esattamente il file raw e il nome della fonte; TypeScript ed ESLint passati.
+27 dedicated tests passed, including the check that the model's payload is exactly the raw file and the source name; TypeScript and ESLint passed.
 
-![Anteprima da file raw](13-raw-file-preview.jpg)
+![Preview from raw file](13-raw-file-preview.jpg)
 
-## Salvataggio automatico e nome fonte
+## Automatic saving and source name
 
-Rimossa la conferma umana: dopo l’analisi il worker salva automaticamente in una transazione idempotente. Lo stato persistente `ready` permette di riprendere il salvataggio dopo un riavvio. Email di successo solo dopo `imported`; errori di validazione bloccano tutto. 22 test mirati passati (14 integrazione CSV e 8 filtro broker), TypeScript ed ESLint passati.
+Removed the human confirmation: after the analysis the worker saves automatically in an idempotent transaction. The persistent `ready` state allows resuming the save after a restart. Success email only after `imported`; validation errors block everything. 22 targeted tests passed (14 CSV integration and 8 broker filter), TypeScript and ESLint passed.
 
-Il browser locale mostra **Bitpanda** nel filtro broker, usando il nome del formato personale. Il precedente job di test in anteprima è stato respinto dal controllo di interpretazione diversa di righe già importate; l’import Bitpanda più recente resta presente, senza sovrascritture automatiche. Il salvataggio automatico riuscito e il momento dell’email sono coperti dai test di integrazione con provider simulato.
+The local browser shows **Bitpanda** in the broker filter, using the name of the personal format. The previous test job in preview was rejected by the check for a different interpretation of already imported rows; the most recent Bitpanda import remains present, with no automatic overwrites. The successful automatic save and the timing of the email are covered by the integration tests with a mocked provider.
 
-![Nome fonte nel filtro](14-personal-source-name.jpg)
+![Source name in the filter](14-personal-source-name.jpg)

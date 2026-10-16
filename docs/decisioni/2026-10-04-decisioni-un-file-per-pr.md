@@ -1,5 +1,5 @@
-# Decisioni: un file per PR
+# Decisions: one file per PR
 
-Data: 2026-10-04
+Date: 2026-10-04
 
-Ogni PR aggiungeva una voce in cima a `docs/decision-log.md`, quindi due PR aperte insieme confliggevano sempre sulla stessa riga e richiedevano un "merge main nel ramo" (e una CI in più, ~3,4 minuti). Da oggi ogni decisione è un file in `docs/decisioni/` (`AAAA-MM-GG-titolo.md`); `docs/decision-log.md` resta l'archivio fino al 2026-10-03 e le quattro voci del 2026-10-04 sono state spostate qui. Non c'è un indice generato, per non reintrodurre un file condiviso: l'ordine è quello dei nomi. Decisione di Daniele ("si vai", 2026-10-04) sulla proposta del report CI.
+Every PR added an entry at the top of `docs/decision-log.md`, so two PRs open at the same time always conflicted on the same line and required a "merge main into the branch" (and an extra CI run, ~3.4 minutes). From today each decision is a file in `docs/decisioni/` (`AAAA-MM-GG-titolo.md`); `docs/decision-log.md` remains the archive up to 2026-10-03 and the four entries of 2026-10-04 have been moved here. There is no generated index, so as not to reintroduce a shared file: the order is that of the names. Decision by Daniele ("si vai", 2026-10-04) on the proposal in the CI report.

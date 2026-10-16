@@ -1,7 +1,7 @@
-# 2026-10-11 — Pagina di accesso «Il foglio»
+# 2026-10-11 — «Il foglio» ("The sheet") sign-in page
 
-Daniele trovava il login (patrimonio d'esempio con grafico, PR #232/#236) già visto. Tra tre direzioni ha scelto «Il foglio», che continua l'apertura della landing: le pagine di accesso sono un foglio di calcolo, con barra della formula (`=ACCEDI("email")` mentre si scrive), colonne e righe numerate, l'email come cella selezionata B6 e schede in basso («Cosa c'è dentro», «Novità», «In arrivo») che cambiano la tabella a destra. Novità e arrivi vengono dal catalogo `lib/features`, quindi non si aggiornano a mano.
+Daniele found the login (sample net worth with chart, PR #232/#236) already seen. Among three directions he chose «Il foglio», which continues the landing's opening: the sign-in pages are a spreadsheet, with a formula bar (`=ACCEDI("email")` while typing), numbered columns and rows, the email as selected cell B6 and tabs at the bottom («Cosa c'è dentro», «Novità», «In arrivo» — "What's inside", "What's new", "Coming soon") that change the table on the right. What's new and coming soon come from the `lib/features` catalog, so they are not updated by hand.
 
-Componenti in `components/domain/auth` (`AuthSheet`, `AuthSheetTable`, `useSheetFormula`); tolti `LoginHorizon`, mosaico, ticker «In arrivo» e nota della novità. Nuovo token `--highlight` (evidenziatore) ed evento Umami `login_sheet_tab_selected`.
+Components in `components/domain/auth` (`AuthSheet`, `AuthSheetTable`, `useSheetFormula`); removed `LoginHorizon`, mosaic, «In arrivo» ticker and the what's-new note. New `--highlight` token (highlighter) and Umami event `login_sheet_tab_selected`.
 
-Rimandati: formula propria per onboarding e accettazione dei Termini (oggi `=BENVENUTO()`), prova su Safari/iPhone.
+Postponed: own formula for onboarding and acceptance of the Terms (today `=BENVENUTO()`), test on Safari/iPhone.

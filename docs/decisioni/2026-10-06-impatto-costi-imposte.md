@@ -1,9 +1,9 @@
-# Costi e imposte nel Portafoglio
+# Costs and taxes in the Portfolio
 
-Data: 2026-10-06
+Date: 2026-10-06
 
-Interruttori indipendenti accanto al grafico e card distinta per costi registrati, imposte registrate, stima aggiuntiva e totale, con link alla scheda Tasse.
-`investmentTaxReport` è condivisa da Portafoglio e `buildTaxView`: stessi dati, aliquote, regime e compensazioni delle minusvalenze; nessun secondo motore fiscale. Il residuo annuale della stima dopo le ritenute registrate evita il doppio conteggio.
-La simulazione reinveste gli oneri registrati esclusi dal giorno di addebito ai rendimenti giornalieri osservati. Il valore effettivo è sempre la base invariata: attivando «Reinvesti costi» o «Reinvesti imposte» si aggiunge il relativo capitale rivalutato, incluse le stime fiscali condivise, senza sottrarre stime al valore reale. Nell’amministrato sono distribuite sulle vendite secondo il report; per dichiarativo/crypto si collocano a fine anno (oggi per l’anno aperto), senza rappresentare la data effettiva del versamento fiscale.
-Il Portafoglio carica tutti i prezzi per mantenere identico il valore simulato cambiando periodo. Senza portafoglio investito il risparmio resta liquido. Mancando valorizzazione la simulazione è disabilitata; nessuna modifica ai saldi salvati.
-Oneri autonomi del broker e TER non registrati esclusi; bollo separato nella tab Tasse ed esplicitamente escluso qui. Test di parità fra le viste, perdite, minusvalenze pregresse, aliquote personalizzate, reinvestimento e quattro combinazioni degli interruttori.
+Independent toggles next to the chart and a separate card for recorded costs, recorded taxes, additional estimate and total, with a link to the Tasse (Taxes) tab.
+`investmentTaxReport` is shared by Portfolio and `buildTaxView`: same data, tax rates, regime and offsetting of minusvalenze (capital losses); no second tax engine. The yearly residual of the estimate after recorded withholdings avoids double counting.
+The simulation reinvests the excluded recorded charges from the day they were debited at the observed daily returns. The actual value is always the unchanged base: enabling «Reinvesti costi» ("Reinvest costs") or «Reinvesti imposte» ("Reinvest taxes") adds the corresponding revalued capital, including the shared tax estimates, without subtracting estimates from the real value. Under the regime amministrato (administered regime, the broker withholds tax) they are distributed over the sales according to the report; for the regime dichiarativo (declarative regime, the investor declares and pays)/crypto they are placed at year end (today for the open year), without representing the actual date of the tax payment.
+The Portfolio loads all prices so as to keep the simulated value identical when changing period. Without an invested portfolio the savings stay as cash. Without a valuation the simulation is disabled; no change to saved balances.
+Stand-alone broker charges and unrecorded TER excluded; bollo (stamp duty) separate in the Tasse tab and explicitly excluded here. Parity tests across views, losses, prior capital losses, custom tax rates, reinvestment and the four combinations of toggles.

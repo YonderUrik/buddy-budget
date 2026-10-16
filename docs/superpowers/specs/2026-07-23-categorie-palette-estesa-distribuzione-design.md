@@ -1,99 +1,99 @@
-# Design: palette colori/icone estesa per categorie + distribuzione automatica colori
+# Design: extended colour/icon palette for categories + automatic colour distribution
 
-Data: 2026-07-23
+Date: 2026-07-23
 
-## Contesto
+## Context
 
-Oggi le categorie hanno una palette di 8 colori (condivisa con i Conti, `lib/validation/shared-colors.ts`) e 28 icone (`lib/validation/categories.ts`). Con molte categorie personalizzate, colori duplicati tra categorie diverse diventano probabili e la palette/icone disponibili sono percepite come limitate. Richiesta utente: più colori, più icone, e un pulsante che distribuisca automaticamente i colori tra le categorie evitando duplicati.
+Today categories have a palette of 8 colours (shared with Conti — Accounts — `lib/validation/shared-colors.ts`) and 28 icons (`lib/validation/categories.ts`). With many custom categories, duplicate colours across different categories become likely and the available palette/icons are perceived as limited. User request: more colours, more icons, and a button that automatically distributes the colours among the categories, avoiding duplicates.
 
-Nessuna migrazione DB necessaria: `categories.color` e `categories.icon` (e gli equivalenti su `accounts`) sono colonne `text`, non enum Postgres — l'espansione è solo a livello di enum Zod/TypeScript applicativo.
+No DB migration needed: `categories.color` and `categories.icon` (and the equivalents on `accounts`) are `text` columns, not Postgres enums — the expansion is only at the application Zod/TypeScript enum level.
 
-## 1. Palette colori estesa (8 → 48)
+## 1. Extended colour palette (8 → 48)
 
-Decisione: ampliare la palette **condivisa** `shared-colors.ts` (impatta anche Conti, non solo Categorie) — coerenza visiva tra le due entità mantenuta.
+Decision: extend the **shared** palette `shared-colors.ts` (it also affects Conti, not only categories) — visual consistency between the two entities is maintained.
 
-### 16 colori base
+### 16 base colours
 
-8 esistenti: `slate`, `blue`, `green`, `yellow`, `purple`, `orange`, `red`, `teal`.
-8 nuovi: `pink`, `indigo`, `cyan`, `lime`, `amber`, `rose`, `violet`, `emerald`.
+8 existing: `slate`, `blue`, `green`, `yellow`, `purple`, `orange`, `red`, `teal`.
+8 new: `pink`, `indigo`, `cyan`, `lime`, `amber`, `rose`, `violet`, `emerald`.
 
-Tutti e 16 sono famiglie di colore standard Tailwind — stesso schema di classi già in uso oggi:
+All 16 are standard Tailwind colour families — the same class scheme already in use today:
 - Avatar (`COLOR_SWATCH_MAP`): `bg-{c}-100 dark:bg-{c}-900/40` / `text-{c}-600 dark:text-{c}-400`
-- Dot picker (`COLOR_DOT`): `bg-{c}-500`
-- Torta multilivello (`SWATCH_CHART_COLOR`): CSS var `--swatch-{c}` (hex letterale, shade 500), aggiunta in `app/globals.css` sia in `:root` che in `.dark` (oggi i due blocchi hanno valori identici per i colori esistenti — stesso pattern per i nuovi).
+- Picker dot (`COLOR_DOT`): `bg-{c}-500`
+- Multi-level pie (`SWATCH_CHART_COLOR`): CSS var `--swatch-{c}` (literal hex, shade 500), added in `app/globals.css` in both `:root` and `.dark` (today the two blocks have identical values for the existing colours — same pattern for the new ones).
 
-### 32 varianti (per la distribuzione automatica)
+### 32 variants (for automatic distribution)
 
-Ogni colore base ha 2 varianti derivate dalla stessa famiglia Tailwind, usando shade-step diversi invece di hex arbitrari:
+Each base colour has 2 variants derived from the same Tailwind family, using different shade steps instead of arbitrary hex values:
 - `{base}-light`: shade 300 (dot), 50/800 (avatar bg light/dark), 500/300 (avatar fg light/dark)
 - `{base}-dark`: shade 700 (dot), 200/950 (avatar bg light/dark), 700/300 (avatar fg light/dark)
 
-Esempio per `blue`: base usa blue-500 (dot) / blue-100·blue-900 (bg) / blue-600·blue-400 (fg); `blue-light` usa blue-300 (dot) / blue-50·blue-800 (bg) / blue-500·blue-300 (fg); `blue-dark` usa blue-700 (dot) / blue-200·blue-950 (bg) / blue-700·blue-300 (fg). Gli hex esatti per `--swatch-{base}-light` / `--swatch-{base}-dark` vanno presi dalla palette default Tailwind (shade 300/700 della famiglia corrispondente) in fase di implementazione.
+Example for `blue`: the base uses blue-500 (dot) / blue-100·blue-900 (bg) / blue-600·blue-400 (fg); `blue-light` uses blue-300 (dot) / blue-50·blue-800 (bg) / blue-500·blue-300 (fg); `blue-dark` uses blue-700 (dot) / blue-200·blue-950 (bg) / blue-700·blue-300 (fg). The exact hex values for `--swatch-{base}-light` / `--swatch-{base}-dark` are to be taken from Tailwind's default palette (shade 300/700 of the corresponding family) during implementation.
 
-Totale pool: 16 + 32 = 48 valori enum in `SwatchColor`.
+Total pool: 16 + 32 = 48 enum values in `SwatchColor`.
 
-### Picker manuale
+### Manual picker
 
-`CategoryIconColorPicker` (e l'equivalente per Conti) mostra **solo i 16 colori base** — griglia compatta invariata nella forma. Le 32 varianti non sono selezionabili manualmente: esistono solo come output dell'algoritmo di distribuzione automatica (sezione 3).
+`CategoryIconColorPicker` (and the equivalent for Conti) shows **only the 16 base colours** — compact grid, unchanged in shape. The 32 variants cannot be selected manually: they exist only as output of the automatic distribution algorithm (section 3).
 
-## 2. Icone estese (28 → 60)
+## 2. Extended icons (28 → 60)
 
-+32 icone nuove (lucide-react), a copertura di ambiti non ancora rappresentati (finanza, casa, tecnologia, viaggi, cibo, salute, tempo libero):
++32 new icons (lucide-react), covering areas not yet represented (finance, home, technology, travel, food, health, leisure):
 
 `wallet`, `credit-card`, `piggy-bank`, `banknote`, `landmark`, `receipt`, `trending-up`, `coins`, `flame`, `sofa`, `hammer`, `paintbrush`, `laptop`, `headphones`, `camera`, `printer`, `train-front`, `ship`, `map-pin`, `luggage`, `coffee`, `pizza`, `wine`, `cake`, `pill`, `activity`, `glasses`, `book-open`, `palette`, `bike`, `calculator`, `watch`.
 
-Aggiunte a `CATEGORY_ICONS` (`lib/validation/categories.ts`) e a `ICON_MAP` (`components/domain/categories/category-avatar.tsx`), stesso pattern kebab-case → componente Lucide PascalCase già in uso. Il picker icone (`CategoryIconColorPicker`) resta una griglia scrollabile: nessun cambio di layout richiesto, solo più righe.
+Added to `CATEGORY_ICONS` (`lib/validation/categories.ts`) and to `ICON_MAP` (`components/domain/categories/category-avatar.tsx`), the same kebab-case → PascalCase Lucide component pattern already in use. The icon picker (`CategoryIconColorPicker`) stays a scrollable grid: no layout change required, just more rows.
 
-## 3. Pulsante "Distribuisci colori"
+## 3. "Distribuisci colori" button
 
 ### UI
 
-Pulsante nell'header della pagina `/categorie` (`app/(app)/categorie/page.tsx`), accanto al titolo. Al click apre un `AlertDialog` (`components/ui/alert-dialog.tsx`, già presente) di conferma: testo esplicito che l'azione sovrascrive i colori attualmente assegnati a tutte le categorie non-fallback. Conferma → chiamata mutation → invalidation della query categorie (aggiornamento ottimistico non necessario, la lista è corta).
+Button in the header of the `/categorie` page (`app/(app)/categorie/page.tsx`), next to the title, labelled "Distribuisci colori" ("Distribute colours"). On click it opens a confirmation `AlertDialog` (`components/ui/alert-dialog.tsx`, already present): explicit text saying that the action overwrites the colours currently assigned to all non-fallback categories. Confirm → mutation call → invalidation of the categories query (optimistic update not needed, the list is short).
 
 ### Endpoint
 
-Nuova route `POST /api/categories/distribute-colors`, dedicata e atomica (non riusa il PATCH singolo):
-1. Legge tutte le categorie dell'utente di sessione con `isFallback = false`, ordinate per `createdAt asc` (stesso ordine della lista in UI).
-2. Calcola la nuova assegnazione colore (algoritmo sotto).
-3. Applica tutti gli update in una singola transazione Drizzle (`db.transaction`) — se qualcosa fallisce, nessuna categoria viene toccata.
-4. Ownership implicita: la query è filtrata per `userId` di sessione, stesso pattern degli altri endpoint categorie (nessun id fornito dal client, quindi nessuna superficie IDOR).
+New route `POST /api/categories/distribute-colors`, dedicated and atomic (does not reuse the single PATCH):
+1. Reads all categories of the session user with `isFallback = false`, sorted by `createdAt asc` (the same order as the list in the UI).
+2. Computes the new colour assignment (algorithm below).
+3. Applies all updates in a single Drizzle transaction (`db.transaction`) — if something fails, no category is touched.
+4. Implicit ownership: the query is filtered by the session `userId`, the same pattern as the other category endpoints (no id provided by the client, hence no IDOR surface).
 
-La categoria fallback ("Da categorizzare") non è mai inclusa: resta sempre rossa, segnale visivo fisso indipendente dall'algoritmo.
+The fallback category ("Da categorizzare" — "To categorise") is never included: it always stays red, a fixed visual signal independent of the algorithm.
 
-### Algoritmo di assegnazione
+### Assignment algorithm
 
-Dato l'elenco ordinato di N categorie non-fallback:
-1. Se N ≤ 16: assegna i 16 colori base in ordine, uno per categoria, nessuna ripetizione possibile.
-2. Se 16 < N ≤ 48: usa il pool completo di 48 (16 base + 32 varianti) in un ordine che massimizza la distanza tra ripetizioni della stessa famiglia di colore (interleaving: prima un giro su tutti i 16 base, poi un giro sulle varianti "light", poi sulle "dark" — non raggruppare le 3 shade della stessa famiglia una dopo l'altra).
-3. Se N > 48: il pool si ripete ciclicamente, ma non due categorie adiacenti nella lista ricevono mai lo stesso colore (garantito dal semplice fatto che il ciclo ha lunghezza 48 ≫ 1; nessuna logica ulteriore necessaria a meno che N superi 48 di poco e l'ultimo elemento del ciclo confini col primo del giro successivo — in tal caso l'algoritmo scarta l'ultimo colore del pool se coincide col primo e usa il successivo).
+Given the ordered list of N non-fallback categories:
+1. If N ≤ 16: assign the 16 base colours in order, one per category, no repetition possible.
+2. If 16 < N ≤ 48: use the full pool of 48 (16 base + 32 variants) in an order that maximises the distance between repetitions of the same colour family (interleaving: first a round over all 16 base colours, then a round over the "light" variants, then over the "dark" ones — do not group the 3 shades of the same family one after the other).
+3. If N > 48: the pool repeats cyclically, but no two adjacent categories in the list ever get the same colour (guaranteed by the simple fact that the cycle has length 48 ≫ 1; no further logic needed unless N exceeds 48 by a little and the last element of the cycle borders the first of the next round — in that case the algorithm discards the pool's last colour if it coincides with the first and uses the next one).
 
-Implementazione come funzione pura testabile (`lib/calc/distribute-colors.ts` o simile), separata dalla route handler, per permettere test unitari senza DB.
+Implemented as a testable pure function (`lib/calc/distribute-colors.ts` or similar), separate from the route handler, to allow unit tests without a DB.
 
 ## Data flow
 
 ```
 click "Distribuisci colori"
-  → AlertDialog conferma
+  → AlertDialog confirmation
   → mutation POST /api/categories/distribute-colors
-  → route: legge categorie utente (no fallback) → calcola assegnazione (funzione pura) → transazione update
-  → risposta 200 con categorie aggiornate
-  → invalidation query categorie → CategoryRow/CategoryAvatar ri-renderizzano coi nuovi colori
+  → route: reads user categories (no fallback) → computes assignment (pure function) → update transaction
+  → 200 response with updated categories
+  → categories query invalidation → CategoryRow/CategoryAvatar re-render with the new colours
 ```
 
 ## Error handling
 
-- Nessuna categoria non-fallback presente: endpoint risponde 200 no-op (nessun errore, nulla da distribuire).
-- Fallimento query/transazione: 500, nessuna categoria modificata (atomicità transazionale), toast di errore in UI, dialog si chiude senza modifiche visibili.
-- Utente senza sessione: 401, stesso pattern middleware esistente.
+- No non-fallback category present: the endpoint responds 200 no-op (no error, nothing to distribute).
+- Query/transaction failure: 500, no category modified (transactional atomicity), error toast in the UI, the dialog closes with no visible changes.
+- User without a session: 401, the same existing middleware pattern.
 
 ## Testing
 
-- Unit test della funzione pura di assegnazione colori: N=0, N=1, N=16 (nessuna ripetizione), N=17 (prima ripetizione, verifica non-adiacenza), N=48, N=49 (verifica wrap-around senza colore identico tra ultimo e primo).
-- Unit test che la categoria fallback non compare mai nell'input della funzione di assegnazione.
-- Test manuale in browser (utente, come per le feature precedenti — nessun Postgres/Redis nel sandbox agentico): creare >16 categorie, cliccare "Distribuisci colori", verificare assenza di colori identici adiacenti; verificare che "Da categorizzare" resti rossa; verificare picker manuale mostri solo i 16 colori base.
+- Unit tests of the pure colour assignment function: N=0, N=1, N=16 (no repetition), N=17 (first repetition, check non-adjacency), N=48, N=49 (check wrap-around without identical colour between last and first).
+- Unit test that the fallback category never appears in the input of the assignment function.
+- Manual test in the browser (by the user, as for the previous features — no Postgres/Redis in the agent sandbox): create >16 categories, click "Distribuisci colori", check there are no identical adjacent colours; check that "Da categorizzare" stays red; check that the manual picker shows only the 16 base colours.
 
-## Fuori scope
+## Out of scope
 
-- Colori hex arbitrari/generazione dinamica illimitata (scartata in brainstorming a favore della palette fissa a 48 valori — cambio architetturale più ampio, non necessario per i volumi di categorie realistici di questa app).
-- Redistribuzione automatica delle icone (richiesta esplicitamente solo per i colori).
-- Selezione manuale delle 32 varianti chiare/scure nel picker (riservate all'algoritmo).
+- Arbitrary hex colours/unlimited dynamic generation (rejected in brainstorming in favour of the fixed 48-value palette — a wider architectural change, not needed for the realistic category volumes of this app).
+- Automatic redistribution of icons (explicitly requested only for colours).
+- Manual selection of the 32 light/dark variants in the picker (reserved to the algorithm).

@@ -1,53 +1,53 @@
-# Osservabilità dell'app, Fase A: l'app si racconta (piano di implementazione)
+# App observability, Phase A: the app tells its own story (implementation plan)
 
-> **Per chi esegue:** skill consigliata `superpowers:subagent-driven-development` (oppure `superpowers:executing-plans` inline). Gli step usano checkbox (`- [x]`). Gli step **👤 UTENTE** richiedono un'azione dell'utente (pannelli, password manager, cluster): chi esegue spiega cosa fa e perché, aspetta l'output e lo verifica prima di proseguire.
+> **For the executor:** recommended skill `superpowers:subagent-driven-development` (or `superpowers:executing-plans` inline). Steps use checkboxes (`- [x]`). Steps marked **👤 USER** require an action from the user (panels, password manager, cluster): the executor explains what it does and why, waits for the output and verifies it before moving on.
 
-**Obiettivo:** ogni evento rilevante dell'app (richiesta API, errore, sync GoCardless, cron, job in background, azione di prodotto) produce un segnale strutturato, con nome stabile e senza dati personali. Lo si interroga da Loki (log), VictoriaMetrics (metriche) e Umami (eventi di prodotto).
+**Goal:** every relevant app event (API request, error, GoCardless sync, cron, background job, product action) produces a structured signal, with a stable name and no personal data. It can be queried from Loki (logs), VictoriaMetrics (metrics) and Umami (product events).
 
-**Architettura:** un modulo `lib/observability/` senza dipendenze da UI:
-- `logger` a campi tipizzati, una riga JSON su stdout/stderr;
-- `metrics` con registry `prom-client` singleton;
-- `withRoute` che avvolge ogni Route Handler (requestId, durata, status, eccezioni);
-- `heartbeat` dei cron su Redis.
+**Architecture:** a `lib/observability/` module with no UI dependencies:
+- `logger` with typed fields, one JSON line on stdout/stderr;
+- `metrics` with a singleton `prom-client` registry;
+- `withRoute` wrapping every Route Handler (requestId, duration, status, exceptions);
+- cron `heartbeat` on Redis.
 
-Lato client, `lib/analytics/track.ts` manda a Umami eventi tipizzati. `GET /api/metrics` espone le metriche con un bearer token opzionale (senza token risponde 404: su Vercel resta spento). Lato infra (repo `buddy-budget-infra`), Alloy fa lo scrape dei pod app e promuove `level` a label Loki.
+Client-side, `lib/analytics/track.ts` sends typed events to Umami. `GET /api/metrics` exposes the metrics with an optional bearer token (without a token it responds 404: on Vercel it stays off). On the infra side (`buddy-budget-infra` repo), Alloy scrapes the app pods and promotes `level` to a Loki label.
 
-**Stack tecnico:** Next.js 16 (Route Handlers, `after()`, `instrumentation.ts` `onRequestError`), `prom-client`, ioredis, Zod 4, Vitest 4, ESLint flat config, Umami tracker (`window.umami.track`), Grafana Alloy.
+**Tech stack:** Next.js 16 (Route Handlers, `after()`, `instrumentation.ts` `onRequestError`), `prom-client`, ioredis, Zod 4, Vitest 4, ESLint flat config, Umami tracker (`window.umami.track`), Grafana Alloy.
 
 **Spec:** `docs/superpowers/specs/2026-09-27-osservabilita-app-fase-a-design.md`.
 
-**Branch:** `claude/amazing-hamilton-zbn0d1`, portato su `main` con una PR (la CI la verifica).
+**Branch:** `claude/amazing-hamilton-zbn0d1`, brought to `main` with a PR (CI verifies it).
 
-**Stato (2026-09-27):** Task 1-9 completati (deviazioni nel log di `CLAUDE.md` e nell'intestazione della spec). Task 10 fatto nella PR infra YonderUrik/buddy-budget-infra#3 (token in due secret separati `app-metrics-token`/`alloy-metrics-token` invece di aggiungerlo a `app-secrets.enc.yaml`: quel file è cifrato per intero e si modifica solo con la chiave privata age). Da fare: Task 11, cioè merge (prima YonderUrik/buddy-budget#13, poi l'infra) e checklist sul cluster.
+**Status (2026-09-27):** Tasks 1-9 completed (deviations in the `CLAUDE.md` log and in the spec header). Task 10 done in the infra PR YonderUrik/buddy-budget-infra#3 (token in two separate secrets `app-metrics-token`/`alloy-metrics-token` instead of adding it to `app-secrets.enc.yaml`: that file is encrypted as a whole and can only be edited with the private age key). To do: Task 11, i.e. merge (first YonderUrik/buddy-budget#13, then the infra) and the checklist on the cluster.
 
-## Vincoli globali
+## Global constraints
 
-- **Mai nei log e mai nelle etichette delle metriche:** email, nomi, IBAN, importi, descrizioni/note delle transazioni, nomi dei merchant, token/segreti, cookie, body delle richieste, `userId` in chiaro. L'utente compare nei log solo come `user` = primi 16 hex di `sha256(userId)` e mai in una label.
-- **Nomi di route statici** passati a mano a `withRoute` (es. `"transactions.update"`), mai il path reale: controlla la cardinalità delle metriche.
-- `LogFields` è un **tipo chiuso**: niente `Record<string, unknown>` nel logger pubblico.
-- Le variabili nuove (`METRICS_TOKEN`, `LOG_LEVEL`) sono **opzionali**: l'app su Vercel deve continuare ad avviarsi identica.
-- Nessun cambio di schema DB (nessuna migration in questo piano).
-- Standard "Operazioni lunghe" invariato: il job di sync resta in `after()`. Riceve solo un logger figlio.
-- Commenti, JSDoc e testi in italiano; JSDoc minimo su ogni export pubblico; barrel `lib/observability/index.ts`.
-- I `console.*` restano ammessi **solo** negli script CLI `lib/db/*.ts` (non importati dall'app).
+- **Never in logs and never in metric labels:** emails, names, IBANs, amounts, transaction descriptions/notes, merchant names, tokens/secrets, cookies, request bodies, plaintext `userId`. The user appears in logs only as `user` = first 16 hex chars of `sha256(userId)` and never in a label.
+- **Static route names** passed by hand to `withRoute` (e.g. `"transactions.update"`), never the real path: this keeps metric cardinality under control.
+- `LogFields` is a **closed type**: no `Record<string, unknown>` in the public logger.
+- The new variables (`METRICS_TOKEN`, `LOG_LEVEL`) are **optional**: the app on Vercel must keep starting exactly as before.
+- No DB schema change (no migration in this plan).
+- "Long-running operations" standard unchanged: the sync job stays in `after()`. It only receives a child logger.
+- Comments, JSDoc and texts in Italian; minimal JSDoc on every public export; `lib/observability/index.ts` barrel.
+- `console.*` remains allowed **only** in the CLI scripts `lib/db/*.ts` (not imported by the app).
 
-## Focus della review
+## Review focus
 
-1. **Fughe di dati personali nei log.** Il rischio principale sono i messaggi d'errore di librerie esterne: GoCardless riporta path con id di conto, Resend l'indirizzo email, postgres.js a volte i parametri. Copertura: tipo chiuso, test di redazione (email, IBAN, Bearer, `token=`/`secret=`), troncamento a 500 caratteri e revisione manuale dei punti che loggano `error` di librerie esterne (Task 7).
-2. **Esplosione di cardinalità.** Copertura: test che fallisce se un nome di route registrato contiene un UUID, un numero o `/`. Le etichette sono solo enum chiusi.
-3. **Il wrapper cambia il comportamento delle route.** Status, header e body devono restare identici, compresi i redirect del callback GoCardless e le risposte di better-auth. Copertura: test del wrapper su risposta passante e su eccezione, poi `pnpm test` completo dopo l'applicazione alle 30 route.
-4. **Gauge "lette da Redis" che inventano valori.** Se Redis non risponde, la gauge non viene emessa (niente 0 fittizio). Copertura: test con Redis finto che lancia.
-5. **`/api/metrics` esposto senza protezione.** Copertura: test 404 senza `METRICS_TOKEN`, 401 con token sbagliato, 200 con token giusto; confronto a tempo costante (riuso di `isAuthorizedCronRequest`).
+1. **Personal data leaking into logs.** The main risk is error messages from external libraries: GoCardless reports paths with account ids, Resend the email address, postgres.js sometimes the parameters. Coverage: closed type, redaction tests (email, IBAN, Bearer, `token=`/`secret=`), truncation at 500 characters and manual review of the places that log `error` from external libraries (Task 7).
+2. **Cardinality explosion.** Coverage: a test that fails if a registered route name contains a UUID, a number or `/`. Labels are only closed enums.
+3. **The wrapper changes route behaviour.** Status, headers and body must stay identical, including the GoCardless callback redirects and better-auth responses. Coverage: wrapper tests on a pass-through response and on an exception, then a full `pnpm test` after applying it to the 30 routes.
+4. **Gauges "read from Redis" that invent values.** If Redis does not respond, the gauge is not emitted (no fake 0). Coverage: test with a fake Redis that throws.
+5. **`/api/metrics` exposed without protection.** Coverage: tests for 404 without `METRICS_TOKEN`, 401 with a wrong token, 200 with the right token; constant-time comparison (reuse of `isAuthorizedCronRequest`).
 
 ---
 
-### Task 1: logger strutturato
+### Task 1: structured logger
 
-**File:** creare `lib/observability/logger.ts`, `lib/observability/redact.ts`, `lib/observability/user-hash.ts`, `lib/observability/index.ts` e i relativi `*.test.ts`. Modificare `lib/env.ts` (+ test).
+**File:** create `lib/observability/logger.ts`, `lib/observability/redact.ts`, `lib/observability/user-hash.ts`, `lib/observability/index.ts` and the related `*.test.ts`. Modify `lib/env.ts` (+ test).
 
-- [x] **Env:** aggiungere a `serverEnvSchema` `LOG_LEVEL: z.enum(["debug","info","warn","error"]).optional()` e `METRICS_TOKEN: z.string().min(CRON_SECRET_MIN_LENGTH).optional()`. Test: env senza le due variabili valido; `METRICS_TOKEN` corto invalido e segnalato per nome.
-- [x] **`redact.ts`:** `redactText(s: string): string`. Sostituisce email → `[email]`, IBAN (`/\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b/`) → `[iban]`, `Bearer <x>` → `Bearer [redacted]`, `(token|secret|code|access|refresh)=<x>` → `$1=[redacted]`, UUID → `[id]`, e tronca a `MAX_ERROR_MESSAGE_LENGTH = 500`. Test per ogni pattern più un caso "testo innocuo invariato".
-- [x] **`user-hash.ts`:** `hashUserId(id: string): string` = primi 16 hex di `sha256` (`node:crypto`). Test: deterministico, lunghezza 16, diverso per id diversi.
+- [x] **Env:** add to `serverEnvSchema` `LOG_LEVEL: z.enum(["debug","info","warn","error"]).optional()` and `METRICS_TOKEN: z.string().min(CRON_SECRET_MIN_LENGTH).optional()`. Tests: env without the two variables is valid; a short `METRICS_TOKEN` is invalid and reported by name.
+- [x] **`redact.ts`:** `redactText(s: string): string`. Replaces emails → `[email]`, IBANs (`/\b[A-Z]{2}\d{2}[A-Z0-9]{11,30}\b/`) → `[iban]`, `Bearer <x>` → `Bearer [redacted]`, `(token|secret|code|access|refresh)=<x>` → `$1=[redacted]`, UUIDs → `[id]`, and truncates at `MAX_ERROR_MESSAGE_LENGTH = 500`. One test per pattern plus a "harmless text unchanged" case.
+- [x] **`user-hash.ts`:** `hashUserId(id: string): string` = first 16 hex chars of `sha256` (`node:crypto`). Tests: deterministic, length 16, different for different ids.
 - [x] **`logger.ts`:**
   ```ts
   export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -63,46 +63,46 @@ Lato client, `lib/analytics/track.ts` manda a Umami eventi tipizzati. `GET /api/
     child(fields: LogFields): Logger;
   }
   export function createLogger(opts?: { level?: LogLevel; write?: (line: string, level: LogLevel) => void; base?: LogFields }): Logger;
-  export const logger: Logger; // livello da process.env.LOG_LEVEL, default "info" ("debug" se NODE_ENV=development)
+  export const logger: Logger; // level from process.env.LOG_LEVEL, default "info" ("debug" if NODE_ENV=development)
   ```
-  Ogni riga contiene `ts`, `level`, `event`, `service: "buddy-budget"`, `version`/`commit` da `APP_BUILD_INFO`, più i campi. `error` viene serializzato in `{ name, message: redactText(message), stack? }`; lo stack solo a livello `error`, passato anch'esso da `redactText`. Un valore non-Error diventa `{ message: redactText(String(x)) }`. `warn`/`error` vanno su stderr, gli altri su stdout. `JSON.stringify` è protetto: un campo non serializzabile non fa lanciare il logger.
-- [x] **Test del logger** (writer finto): livello minimo rispettato; `child` eredita e sovrascrive; `error` redatto e troncato; stack assente a `warn`; nessuna eccezione con un riferimento circolare dentro `error.cause`.
-- [x] **Barrel** `lib/observability/index.ts`, poi `pnpm test lib/observability lib/env.test.ts` e `pnpm tsc --noEmit`.
+  Every line contains `ts`, `level`, `event`, `service: "buddy-budget"`, `version`/`commit` from `APP_BUILD_INFO`, plus the fields. `error` is serialized into `{ name, message: redactText(message), stack? }`; the stack only at `error` level, also passed through `redactText`. A non-Error value becomes `{ message: redactText(String(x)) }`. `warn`/`error` go to stderr, the others to stdout. `JSON.stringify` is guarded: a non-serializable field does not make the logger throw.
+- [x] **Logger tests** (fake writer): minimum level respected; `child` inherits and overrides; `error` redacted and truncated; stack absent at `warn`; no exception with a circular reference inside `error.cause`.
+- [x] **Barrel** `lib/observability/index.ts`, then `pnpm test lib/observability lib/env.test.ts` and `pnpm tsc --noEmit`.
 - [x] Commit `feat(observability): logger JSON a campi tipizzati con redazione`.
 
-### Task 2: registry delle metriche ed endpoint `/api/metrics`
+### Task 2: metrics registry and `/api/metrics` endpoint
 
-**File:** creare `lib/observability/metrics.ts` (+ test) e `app/api/metrics/route.ts` (+ test). Modificare `proxy.ts` (+ test) e `package.json`.
+**File:** create `lib/observability/metrics.ts` (+ test) and `app/api/metrics/route.ts` (+ test). Modify `proxy.ts` (+ test) and `package.json`.
 
 - [x] `pnpm add prom-client`.
-- [x] **`metrics.ts`:** registry singleton su `globalThis.__bbMetrics` (sopravvive all'HMR). Il primo accesso chiama `collectDefaultMetrics({ register, prefix: "buddybudget_process_" })` e crea le metriche della tabella della spec: counter e histogram con le etichette indicate e bucket di durata `[0.05,0.1,0.25,0.5,1,2.5,5,10,30,60,120,300]`. `buddybudget_build_info{version,commit} 1`. Funzioni di dominio esportate invece degli oggetti prom-client grezzi (così le etichette restano un enum tipizzato):
+- [x] **`metrics.ts`:** singleton registry on `globalThis.__bbMetrics` (survives HMR). The first access calls `collectDefaultMetrics({ register, prefix: "buddybudget_process_" })` and creates the metrics in the spec's table: counters and histograms with the indicated labels and duration buckets `[0.05,0.1,0.25,0.5,1,2.5,5,10,30,60,120,300]`. `buddybudget_build_info{version,commit} 1`. Domain functions are exported instead of the raw prom-client objects (so labels stay a typed enum):
   - `recordHttpRequest(route, method, status, durationMs)` (`status_class` = `"2xx"`…`"5xx"`);
   - `recordGoCardlessSync(trigger: "manual"|"cron"|"finalize", outcome: "synced"|"limited"|"expired"|"error", durationMs)`;
-  - `recordGoCardlessApiRequest(endpoint: GoCardlessEndpoint, status)`, con `GoCardlessEndpoint` enum dei template (`"token.new"`, `"institutions.list"`, `"requisitions.create"`, `"requisitions.get"`, `"accounts.details"`, `"accounts.balances"`, `"accounts.transactions"`);
+  - `recordGoCardlessApiRequest(endpoint: GoCardlessEndpoint, status)`, with `GoCardlessEndpoint` an enum of the templates (`"token.new"`, `"institutions.list"`, `"requisitions.create"`, `"requisitions.get"`, `"accounts.details"`, `"accounts.balances"`, `"accounts.transactions"`);
   - `recordTransactionsImported(categorized: number, uncategorized: number)`;
   - `recordCronRun(cron: CronName, outcome: "success"|"error")`;
   - `recordAuthEvent(event: "magic_link_sent"|"magic_link_failed"|"sign_in"|"rate_limited")`.
-- [x] **Gauge asincrone** (`collect()`) registrate con `registerAsyncGauges(deps)`:
-  - `buddybudget_dependency_up{dependency}`: riusa `checkReadiness`;
-  - `buddybudget_cron_last_success_timestamp_seconds{cron}`, `buddybudget_sync_jobs_active`, `buddybudget_sync_jobs_stale`: leggono da Redis tramite funzioni iniettate.
+- [x] **Async gauges** (`collect()`) registered with `registerAsyncGauges(deps)`:
+  - `buddybudget_dependency_up{dependency}`: reuses `checkReadiness`;
+  - `buddybudget_cron_last_success_timestamp_seconds{cron}`, `buddybudget_sync_jobs_active`, `buddybudget_sync_jobs_stale`: read from Redis through injected functions.
 
-  Se una lettura lancia, la gauge non emette nulla per quello scrape (`gauge.reset()` senza `set`).
-- [x] **Test** (`register.metrics()` sul testo): ogni funzione incrementa la serie attesa; gauge asincrona con dipendenza che lancia → metrica senza campioni; **test di cardinalità**: `recordHttpRequest` rifiuta, con `throw` in dev/test e log `warn` in produzione, un nome route che matcha `/[0-9a-f]{8}-|\/|\d{3,}/`.
+  If a read throws, the gauge emits nothing for that scrape (`gauge.reset()` without `set`).
+- [x] **Tests** (`register.metrics()` on the text): every function increments the expected series; async gauge with a throwing dependency → metric without samples; **cardinality test**: `recordHttpRequest` rejects, with a `throw` in dev/test and a `warn` log in production, a route name matching `/[0-9a-f]{8}-|\/|\d{3,}/`.
 - [x] **`app/api/metrics/route.ts`:** `dynamic = "force-dynamic"`.
-  - `process.env.METRICS_TOKEN` assente → 404;
-  - `isAuthorizedCronRequest(header, METRICS_TOKEN)` falso → 401;
-  - altrimenti 200 con `register.metrics()`, `Content-Type: register.contentType` e `Cache-Control: no-store`.
+  - `process.env.METRICS_TOKEN` missing → 404;
+  - `isAuthorizedCronRequest(header, METRICS_TOKEN)` false → 401;
+  - otherwise 200 with `register.metrics()`, `Content-Type: register.contentType` and `Cache-Control: no-store`.
 
-  Test sui tre casi.
-- [x] **`proxy.ts`:** aggiungere `"/api/metrics"` a `PUBLIC_PATH_PREFIXES`, con un test in `proxy.test.ts` (o in quello esistente) che `/api/metricsx` non sia pubblico.
-- [x] Verifica: `pnpm test`, `pnpm tsc --noEmit`. Poi `pnpm dev` con `METRICS_TOKEN` in `.env.local` e `curl -H "Authorization: Bearer $METRICS_TOKEN" localhost:3000/api/metrics | grep buddybudget_`.
+  Tests on the three cases.
+- [x] **`proxy.ts`:** add `"/api/metrics"` to `PUBLIC_PATH_PREFIXES`, with a test in `proxy.test.ts` (or in the existing one) that `/api/metricsx` is not public.
+- [x] Verification: `pnpm test`, `pnpm tsc --noEmit`. Then `pnpm dev` with `METRICS_TOKEN` in `.env.local` and `curl -H "Authorization: Bearer $METRICS_TOKEN" localhost:3000/api/metrics | grep buddybudget_`.
 - [x] Commit `feat(observability): metriche Prometheus e /api/metrics protetto da token`.
 
-### Task 3: wrapper `withRoute`
+### Task 3: `withRoute` wrapper
 
-**File:** creare `lib/observability/with-route.ts` (+ test).
+**File:** create `lib/observability/with-route.ts` (+ test).
 
-- [x] Firma:
+- [x] Signature:
   ```ts
   export interface RouteContext { requestId: string; log: Logger }
   export function withRoute<A extends unknown[]>(
@@ -111,93 +111,93 @@ Lato client, `lib/analytics/track.ts` manda a Umami eventi tipizzati. `GET /api/
     opts?: { quietOnSuccess?: boolean }
   ): (request: Request, ...rest: A) => Promise<Response>;
   ```
-  Il `RouteContext` va **in coda** agli argomenti originali, così le route dinamiche (`{ params }`) restano invariate nella firma che Next.js vede.
-- [x] Comportamento:
-  - `requestId` = header `x-request-id` se matcha `/^[A-Za-z0-9-]{8,64}$/`, altrimenti `crypto.randomUUID()`;
+  The `RouteContext` goes **at the end** of the original arguments, so dynamic routes (`{ params }`) keep the signature Next.js sees unchanged.
+- [x] Behaviour:
+  - `requestId` = the `x-request-id` header if it matches `/^[A-Za-z0-9-]{8,64}$/`, otherwise `crypto.randomUUID()`;
   - `log = logger.child({ requestId, route: name, method })`;
-  - l'handler viene eseguito e ne esce una risposta; alla risposta si aggiunge l'header `x-request-id` clonando gli header solo se sono mutabili, altrimenti `new Response(body, …)`, **senza cambiare status né body**;
-  - log `http.request.completed` con `status` e `durationMs`: livello `info` per <400, `info` per 4xx tranne 429 (`warn`), `error` per 5xx; con `quietOnSuccess` non logga sotto 400;
-  - eccezione → log `http.request.failed` (`error`) e risposta `Response.json({ error: "Errore interno" }, { status: 500 })`;
-  - sempre `recordHttpRequest`.
-- [x] L'utente: helper `withUser(log, userId)` = `log.child({ user: hashUserId(userId) })`, chiamato dalle route dopo aver letto la sessione. Il wrapper non legge la sessione: non tutte le route sono autenticate e non si vuole una query in più.
-- [x] Test: risposta 200 passante con body/status/header originali più `x-request-id`; `x-request-id` valido riusato, non valido rigenerato; handler che lancia → 500 generico e riga di log con `error` redatto; `quietOnSuccess` non logga il 200 ma logga il 503; `recordHttpRequest` chiamato con `status_class` corretto; redirect 307 (`Response.redirect`, header immutabili) resta 307 con `Location` intatta.
+  - the handler is run and yields a response; the `x-request-id` header is added to the response by cloning the headers only if they are mutable, otherwise `new Response(body, …)`, **without changing status or body**;
+  - `http.request.completed` log with `status` and `durationMs`: `info` level for <400, `info` for 4xx except 429 (`warn`), `error` for 5xx; with `quietOnSuccess` it does not log below 400;
+  - exception → `http.request.failed` log (`error`) and response `Response.json({ error: "Errore interno" }, { status: 500 })`;
+  - always `recordHttpRequest`.
+- [x] The user: helper `withUser(log, userId)` = `log.child({ user: hashUserId(userId) })`, called by the routes after reading the session. The wrapper does not read the session: not all routes are authenticated and we do not want an extra query.
+- [x] Tests: pass-through 200 response with original body/status/headers plus `x-request-id`; valid `x-request-id` reused, invalid one regenerated; throwing handler → generic 500 and a log line with redacted `error`; `quietOnSuccess` does not log the 200 but logs the 503; `recordHttpRequest` called with the correct `status_class`; 307 redirect (`Response.redirect`, immutable headers) stays 307 with `Location` intact.
 - [x] Commit `feat(observability): wrapper withRoute per i Route Handler`.
 
-### Task 4: applicare `withRoute` alle 30 route
+### Task 4: apply `withRoute` to the 30 routes
 
-**File:** tutti gli `app/api/**/route.ts`.
+**File:** all `app/api/**/route.ts`.
 
-- [x] Convenzione dei nomi: `<risorsa>.<azione>` dal path e dal metodo, per esempio:
+- [x] Naming convention: `<resource>.<action>` from the path and the method, for example:
 
-  | Route | Nome |
+  | Route | Name |
   |---|---|
   | `GET /api/transactions` | `transactions.list` |
   | `PATCH /api/transactions/[id]` | `transactions.update` |
   | `POST /api/gocardless/connections/[id]/finalize` | `gocardless.connections.finalize` |
   | `GET /api/cron/gocardless-sync` | `cron.gocardless_sync` |
-  | `GET\|POST /api/auth/[...all]` | `auth` (un solo nome: le sotto-route di better-auth non vanno in label) |
+  | `GET\|POST /api/auth/[...all]` | `auth` (a single name: better-auth's sub-routes do not go into labels) |
 
-  Health, ready e metrics usano `quietOnSuccess: true`.
-- [x] Nelle route autenticate usare `withUser(ctx.log, session.user.id)` per i log di dominio interni alla richiesta.
-- [x] Esempio (`app/api/transactions/[id]/route.ts`):
+  Health, ready and metrics use `quietOnSuccess: true`.
+- [x] In authenticated routes use `withUser(ctx.log, session.user.id)` for the domain logs inside the request.
+- [x] Example (`app/api/transactions/[id]/route.ts`):
   ```ts
   export const PATCH = withRoute("transactions.update", async (request, { params }: { params: Promise<{ id: string }> }, ctx) => { … });
   ```
-- [x] Verificare la compatibilità di tipi con Next.js 16 (i validator dei tipi di route generati in `.next/types`) con `pnpm build`. Se un export avvolto non passa il type-check di Next, dichiarare esplicitamente il tipo del secondo argomento come nell'esempio.
-- [x] `pnpm test` completo: i test di route esistenti devono passare senza modifiche alle asserzioni. Se un test chiama l'handler con un solo argomento, il wrapper deve funzionare con `rest` vuoto.
+- [x] Check type compatibility with Next.js 16 (the route type validators generated in `.next/types`) with `pnpm build`. If a wrapped export does not pass Next's type check, declare the type of the second argument explicitly as in the example.
+- [x] Full `pnpm test`: the existing route tests must pass without changes to the assertions. If a test calls the handler with a single argument, the wrapper must work with an empty `rest`.
 - [x] Commit `refactor(api): tutte le route passano da withRoute`.
 
-### Task 5: errori non intercettati (`onRequestError`)
+### Task 5: uncaught errors (`onRequestError`)
 
-**File:** modificare `instrumentation.ts`.
+**File:** modify `instrumentation.ts`.
 
-- [x] Aggiungere
+- [x] Add
   ```ts
   export async function onRequestError(error: unknown, request: { path: string; method: string }, context: { routerKind: string; routePath: string; routeType: string }) {
     const { logger } = await import("@/lib/observability");
     logger.error("next.request_error", { route: context.routePath, method: request.method, reason: context.routeType, error });
   }
   ```
-  Si usa `routePath` (template, es. `/transazioni`), non `request.path` (può contenere query).
-- [x] Verifica manuale su `pnpm dev`: una pagina server che lancia (temporaneamente) produce una riga JSON `next.request_error`. Poi si rimuove il lancio.
+  `routePath` (the template, e.g. `/transazioni`) is used, not `request.path` (it may contain a query).
+- [x] Manual check on `pnpm dev`: a server page that (temporarily) throws produces a `next.request_error` JSON line. Then the throw is removed.
 - [x] Commit `feat(observability): log degli errori non intercettati via onRequestError`.
 
-### Task 6: heartbeat dei cron e gauge da Redis
+### Task 6: cron heartbeat and gauges from Redis
 
-**File:** creare `lib/observability/heartbeat.ts` e `lib/observability/ops-store.ts` (+ test). Modificare le due route cron, `lib/sync-jobs/run.ts` e la registrazione delle gauge in `metrics.ts`.
+**File:** create `lib/observability/heartbeat.ts` and `lib/observability/ops-store.ts` (+ test). Modify the two cron routes, `lib/sync-jobs/run.ts` and the gauge registration in `metrics.ts`.
 
-- [x] **`ops-store.ts`** (su un'interfaccia KV iniettabile, come `SyncJobKv`, con implementazione Redis e implementazione in memoria per i test):
-  - `setCronSuccess(cron, epochSeconds)` → `SET ops:heartbeat:cron:<cron>` senza TTL;
+- [x] **`ops-store.ts`** (on an injectable KV interface, like `SyncJobKv`, with a Redis implementation and an in-memory implementation for tests):
+  - `setCronSuccess(cron, epochSeconds)` → `SET ops:heartbeat:cron:<cron>` without TTL;
   - `getCronSuccesses(): Promise<Record<CronName, number | null>>`;
-  - `markJobRunning(jobId, now)` → `ZADD ops:sync-jobs:running now jobId`, `touchJob` idem;
+  - `markJobRunning(jobId, now)` → `ZADD ops:sync-jobs:running now jobId`, `touchJob` likewise;
   - `markJobDone(jobId)` → `ZREM`;
-  - `countJobs(now) → { active, stale }`: `stale` = score < now − `SYNC_JOB_STALE_MS`, `active` = il resto. Prima pulisce con `ZREMRANGEBYSCORE` le voci più vecchie di `SYNC_JOB_TTL_SECONDS`.
-- [x] **`heartbeat.ts`:** `recordCronRun(cron, outcome, durationMs, deps)`. Chiama `recordCronRun` delle metriche e logga `cron.<cron>.completed|failed`. Su successo esegue `setCronSuccess`; se la scrittura su Redis fallisce logga `warn` `cron.heartbeat.write_failed` senza rilanciare.
-- [x] **Route cron:** `runDueSyncs()` e `runDailySnapshots()` in try/catch con `recordCronRun`. Sostituiscono il `console.error`.
-- [x] **`run.ts`:** `markJobRunning` all'avvio di `runSyncJob`, `touchJob` a ogni heartbeat già esistente, `markJobDone` in `finally`. Gli errori di questi tre passi sono loggati e non interrompono il job.
-- [x] Gauge asincrone collegate a `getCronSuccesses`/`countJobs` (nel Task 2 erano state predisposte con deps iniettate).
-- [x] Test: heartbeat scritto solo su successo; scrittura fallita → nessuna eccezione e un log `warn`; `countJobs` separa active/stale e pulisce le voci vecchie; il job segna done anche se il sync di un conto lancia.
+  - `countJobs(now) → { active, stale }`: `stale` = score < now − `SYNC_JOB_STALE_MS`, `active` = the rest. It first cleans up with `ZREMRANGEBYSCORE` the entries older than `SYNC_JOB_TTL_SECONDS`.
+- [x] **`heartbeat.ts`:** `recordCronRun(cron, outcome, durationMs, deps)`. Calls the metrics' `recordCronRun` and logs `cron.<cron>.completed|failed`. On success it runs `setCronSuccess`; if the Redis write fails it logs a `warn` `cron.heartbeat.write_failed` without rethrowing.
+- [x] **Cron routes:** `runDueSyncs()` and `runDailySnapshots()` in try/catch with `recordCronRun`. They replace the `console.error`.
+- [x] **`run.ts`:** `markJobRunning` when `runSyncJob` starts, `touchJob` at every already existing heartbeat, `markJobDone` in `finally`. Errors in these three steps are logged and do not interrupt the job.
+- [x] Async gauges wired to `getCronSuccesses`/`countJobs` (in Task 2 they had been prepared with injected deps).
+- [x] Tests: heartbeat written only on success; failed write → no exception and a `warn` log; `countJobs` separates active/stale and cleans up old entries; the job marks done even if the sync of an account throws.
 - [x] Commit `feat(observability): heartbeat dei cron e job attivi/bloccati su Redis`.
 
-### Task 7: strumentazione di GoCardless e dell'autenticazione, migrazione dei `console.*`
+### Task 7: instrumenting GoCardless and authentication, migrating `console.*`
 
-**File:** `lib/gocardless/client.ts`, `lib/gocardless/sync.ts`, `lib/gocardless/scheduler.ts`, `lib/sync-jobs/run.ts`, `lib/net-worth/scheduler.ts`, `lib/auth/index.ts`, le route GoCardless/sync-jobs con `console.*` ed `eslint.config.mjs`.
+**File:** `lib/gocardless/client.ts`, `lib/gocardless/sync.ts`, `lib/gocardless/scheduler.ts`, `lib/sync-jobs/run.ts`, `lib/net-worth/scheduler.ts`, `lib/auth/index.ts`, the GoCardless/sync-jobs routes with `console.*` and `eslint.config.mjs`.
 
-- [x] **`client.ts`:** ogni `fetch` chiama `recordGoCardlessApiRequest(<template>, response.status)`, con il template passato dai chiamanti e **mai** il path con gli id. Bug pre-esistente da correggere: il messaggio di `GoCardlessError` interpola `response.text`, cioè la funzione, non il testo. Il messaggio diventa `GoCardless <template> ha risposto <status>`, senza il path reale con gli id di conto e senza il body.
-- [x] **`sync.ts` / `run.ts` / `scheduler.ts`:** `recordGoCardlessSync(trigger, outcome, durationMs)` (trigger: `finalize` e `manual` dal job, secondo `SyncJobKind` `initial-import` → `finalize`, `manual-sync` → `manual`; `cron` dallo scheduler). Poi `recordTransactionsImported(categorized, uncategorized)` dal `SyncResult` e il log `gocardless.sync.completed|limited|expired|failed` con `accountId`, `jobId`, `trigger`, `inserted`, `categorized`, `uncategorized`, `durationMs`. `runSyncJob` riceve un `log` opzionale nelle deps: le route passano `ctx.log.child({ jobId })`, così richiesta e job sono collegati da `requestId`.
-- [x] **`lib/auth/index.ts`:** `recordAuthEvent("magic_link_sent"|"magic_link_failed")` in `sendMagicLink` e log `auth.magic_link.failed` con `reason: error.name` (**mai** `error.message` di Resend, che può contenere l'indirizzo). `sign_in` da `databaseHooks.session.create.after` (verificare che l'hook esista nella versione installata di better-auth, altrimenti rimandarlo e annotarlo). `rate_limited`: se la configurazione rate limit di better-auth espone un hook, usarlo; altrimenti contare i 429 della route `auth` dalla metrica HTTP (già coperti da `status_class="4xx"` + log `warn`) e annotare la scelta.
-- [x] **Migrazione dei `console.*` rimanenti** fuori da `lib/db/*` (elenco di partenza: `grep -rn "console\." app lib components | grep -v "lib/db/"`): ciascuno diventa `logger.<level>("<dominio>.<oggetto>.<esito>", {...})`.
+- [x] **`client.ts`:** every `fetch` calls `recordGoCardlessApiRequest(<template>, response.status)`, with the template passed by the callers and **never** the path with the ids. Pre-existing bug to fix: the `GoCardlessError` message interpolates `response.text`, i.e. the function, not the text. The message becomes `GoCardless <template> ha risposto <status>` ("GoCardless <template> responded <status>"), without the real path with account ids and without the body.
+- [x] **`sync.ts` / `run.ts` / `scheduler.ts`:** `recordGoCardlessSync(trigger, outcome, durationMs)` (trigger: `finalize` and `manual` from the job, according to `SyncJobKind` `initial-import` → `finalize`, `manual-sync` → `manual`; `cron` from the scheduler). Then `recordTransactionsImported(categorized, uncategorized)` from the `SyncResult` and the log `gocardless.sync.completed|limited|expired|failed` with `accountId`, `jobId`, `trigger`, `inserted`, `categorized`, `uncategorized`, `durationMs`. `runSyncJob` receives an optional `log` in its deps: routes pass `ctx.log.child({ jobId })`, so request and job are linked by `requestId`.
+- [x] **`lib/auth/index.ts`:** `recordAuthEvent("magic_link_sent"|"magic_link_failed")` in `sendMagicLink` and an `auth.magic_link.failed` log with `reason: error.name` (**never** Resend's `error.message`, which may contain the address). `sign_in` from `databaseHooks.session.create.after` (check that the hook exists in the installed version of better-auth, otherwise defer it and note it). `rate_limited`: if better-auth's rate limit configuration exposes a hook, use it; otherwise count the 429s of the `auth` route from the HTTP metric (already covered by `status_class="4xx"` + `warn` log) and note the choice.
+- [x] **Migration of the remaining `console.*`** outside `lib/db/*` (starting list: `grep -rn "console\." app lib components | grep -v "lib/db/"`): each one becomes `logger.<level>("<domain>.<object>.<outcome>", {...})`.
 - [x] **ESLint:**
   ```js
   { files: ["app/**", "lib/**", "components/**"], ignores: ["lib/db/**"], rules: { "no-console": "error" } }
   ```
-  `pnpm lint` deve restare senza nuovi errori (i 2 pre-esistenti noti vanno verificati: se nel frattempo sono stati risolti, meglio).
-- [x] **Revisione manuale dei dati personali:** per ogni chiamata `logger.*` con `error` proveniente da GoCardless, Resend, postgres.js o better-auth, verificare quali stringhe può contenere quel messaggio. Annotare nel report del task i punti controllati.
+  `pnpm lint` must stay free of new errors (the 2 known pre-existing ones must be checked: if they have been fixed in the meantime, all the better).
+- [x] **Manual review of personal data:** for every `logger.*` call with an `error` coming from GoCardless, Resend, postgres.js or better-auth, check which strings that message can contain. Note the checked places in the task report.
 - [x] Commit `feat(observability): metriche GoCardless/auth e fine dei console.* nel codice server`.
 
-### Task 8: eventi di prodotto Umami
+### Task 8: Umami product events
 
-**File:** creare `lib/analytics/track.ts`, `lib/analytics/index.ts` (+ test). Modificare i componenti/mutation che corrispondono agli eventi della spec.
+**File:** create `lib/analytics/track.ts`, `lib/analytics/index.ts` (+ test). Modify the components/mutations corresponding to the spec's events.
 
 - [x] **`track.ts`:**
   ```ts
@@ -215,40 +215,40 @@ Lato client, `lib/analytics/track.ts` manda a Umami eventi tipizzati. `GET /api/
     | { name: "pwa_installed"; props?: undefined };
   export function track<E extends ProductEvent>(name: E["name"], props?: E["props"]): void;
   ```
-  È no-op se `typeof window === "undefined"` o se `window.umami?.track` non esiste; qualunque eccezione del tracker viene ingoiata (l'analytics non deve mai rompere la UI).
-- [x] Chiamate negli `onSuccess` delle mutation TanStack Query corrispondenti (`lib/queries/*`) o nei componenti, dove l'informazione (direction, source) è disponibile. `pwa_installed`: listener `appinstalled` in un piccolo client component montato nel root layout.
-- [x] Test: no-op senza `window.umami`; inoltro di nome e props con un `umami` finto; eccezione del tracker ingoiata.
+  It is a no-op if `typeof window === "undefined"` or if `window.umami?.track` does not exist; any tracker exception is swallowed (analytics must never break the UI).
+- [x] Calls in the `onSuccess` of the corresponding TanStack Query mutations (`lib/queries/*`) or in the components, where the information (direction, source) is available. `pwa_installed`: `appinstalled` listener in a small client component mounted in the root layout.
+- [x] Tests: no-op without `window.umami`; forwarding of name and props with a fake `umami`; tracker exception swallowed.
 - [x] Commit `feat(analytics): eventi di prodotto Umami tipizzati`.
 
-### Task 9: documentazione
+### Task 9: documentation
 
-- [x] `CLAUDE.md`, sezione "Principi di architettura": nuova sottosezione **"Osservabilità (standard)"** che riassume: logger al posto di `console.*` (bloccato da ESLint); cosa non va mai nei log e nelle label; `withRoute(name)` su ogni nuova route con nome statico; eventi `dominio.oggetto.esito`; metriche `buddybudget_*` con unità nel nome; `track()` per le azioni di prodotto, senza dati.
-- [x] `CLAUDE.md`: voce di log e aggiornamento di "Stato del progetto".
-- [x] `.env.local.example`: `METRICS_TOKEN=` e `LOG_LEVEL=` commentati con spiegazione.
+- [x] `CLAUDE.md`, "Principi di architettura" (Architecture principles) section: a new **"Osservabilità (standard)"** ("Observability (standard)") subsection summarising: logger instead of `console.*` (blocked by ESLint); what never goes into logs and labels; `withRoute(name)` on every new route with a static name; `domain.object.outcome` events; `buddybudget_*` metrics with the unit in the name; `track()` for product actions, without data.
+- [x] `CLAUDE.md`: log entry and update of "Stato del progetto" (Project status).
+- [x] `.env.local.example`: `METRICS_TOKEN=` and `LOG_LEVEL=` commented out with an explanation.
 - [x] Commit `docs: standard di osservabilità e log Fase A`.
 
-### Task 10: infra (repo `buddy-budget-infra`, 👤 UTENTE + chi esegue)
+### Task 10: infra (`buddy-budget-infra` repo, 👤 USER + executor)
 
-Da eseguire dopo il merge dell'app su `main` e il rollout (la CI aggiorna il tag immagine). Richiede l'accesso al repo infra e a `kubectl`: da una sessione che li abbia, o guidando l'utente.
+To be run after the app is merged to `main` and rolled out (CI updates the image tag). Requires access to the infra repo and to `kubectl`: from a session that has them, or by guiding the user.
 
-- [ ] **👤 Segreto:** generare `METRICS_TOKEN` (`openssl rand -hex 32`), aggiungerlo cifrato SOPS a `app-secrets.enc.yaml` (namespace `app`) e a un nuovo secret `alloy-metrics-token` in `observability` (con `kustomization.yaml` + `generator.yaml` KSOPS **nello stesso commit**: lezione della dashboard Traefik e di Grafana).
-- [ ] **Scrape Alloy:** `discovery.kubernetes "app_pods"` (role pod, namespace `app`, selettore `app=buddy-budget`) → `discovery.relabel` (porta 3000, path `/api/metrics`) → `prometheus.scrape "app"` con `bearer_token_file` dal secret montato e `scrape_interval = "30s"` → `prometheus.remote_write` già esistente.
-- [ ] **Log Alloy:** nel pipeline `loki.process` aggiungere `stage.json { expressions = { level = "level" } }` + `stage.labels { values = { level = "" } }`, **solo** per lo stream dei pod `app=buddy-budget`. Nessun'altra label.
-- [ ] **NetworkPolicy:** nel namespace `app`, `allow-observability-to-app`: da namespace `observability` (pod Alloy) verso i pod `app: buddy-budget` porta 3000. **Stesso commit** dello scrape.
-- [ ] **RBAC Alloy:** verificare che il ClusterRole del chart permetta `list/watch pods` in `app` (per lo scrape di kube-state-metrics dovrebbe già esserci).
-- [ ] **Verifica:**
-  - in Grafana → Explore → VictoriaMetrics, `buddybudget_build_info` mostra due serie (due pod) col commit giusto;
-  - `buddybudget_cron_last_success_timestamp_seconds` compare dopo il primo CronJob (o dopo un `kubectl create job --from=cronjob/...`);
-  - in Loki, `{namespace="app", level="error"} | json` restituisce righe JSON;
-  - un errore provocato (per esempio `curl` con un id malformato su una route che lancia, o un test temporaneo) compare filtrabile per `requestId`.
-- [ ] **Umami:** fare un'azione (es. aggiungere una transazione) e verificare l'evento in Umami → Events.
+- [ ] **👤 Secret:** generate `METRICS_TOKEN` (`openssl rand -hex 32`), add it SOPS-encrypted to `app-secrets.enc.yaml` (namespace `app`) and to a new secret `alloy-metrics-token` in `observability` (with KSOPS `kustomization.yaml` + `generator.yaml` **in the same commit**: lesson from the Traefik dashboard and from Grafana).
+- [ ] **Alloy scrape:** `discovery.kubernetes "app_pods"` (role pod, namespace `app`, selector `app=buddy-budget`) → `discovery.relabel` (port 3000, path `/api/metrics`) → `prometheus.scrape "app"` with `bearer_token_file` from the mounted secret and `scrape_interval = "30s"` → the already existing `prometheus.remote_write`.
+- [ ] **Alloy logs:** in the `loki.process` pipeline add `stage.json { expressions = { level = "level" } }` + `stage.labels { values = { level = "" } }`, **only** for the stream of the `app=buddy-budget` pods. No other label.
+- [ ] **NetworkPolicy:** in the `app` namespace, `allow-observability-to-app`: from the `observability` namespace (Alloy pod) to the `app: buddy-budget` pods on port 3000. **Same commit** as the scrape.
+- [ ] **Alloy RBAC:** check that the chart's ClusterRole allows `list/watch pods` in `app` (for the kube-state-metrics scrape it should already be there).
+- [ ] **Verification:**
+  - in Grafana → Explore → VictoriaMetrics, `buddybudget_build_info` shows two series (two pods) with the right commit;
+  - `buddybudget_cron_last_success_timestamp_seconds` appears after the first CronJob (or after a `kubectl create job --from=cronjob/...`);
+  - in Loki, `{namespace="app", level="error"} | json` returns JSON lines;
+  - a provoked error (for example `curl` with a malformed id on a route that throws, or a temporary test) shows up, filterable by `requestId`.
+- [ ] **Umami:** perform an action (e.g. add a transaction) and check the event in Umami → Events.
 
-### Task 11: chiusura
+### Task 11: wrap-up
 
-- [ ] `pnpm lint`, `pnpm tsc --noEmit`, `pnpm test` e `pnpm build` puliti. `grep -rn "console\." app lib components | grep -v lib/db/` vuoto.
-- [ ] PR verso `main`, CI verde, merge.
-- [ ] Aggiornare la spec: stato "implementata" e deviazioni (es. `sign_in`/`rate_limited` se rimandati).
+- [ ] `pnpm lint`, `pnpm tsc --noEmit`, `pnpm test` and `pnpm build` clean. `grep -rn "console\." app lib components | grep -v lib/db/` empty.
+- [ ] PR to `main`, green CI, merge.
+- [ ] Update the spec: status "implemented" and deviations (e.g. `sign_in`/`rate_limited` if deferred).
 
-## Slack (preparazione per la Fase B, stato al 2026-09-27)
+## Slack (preparation for Phase B, status as of 2026-09-27)
 
-I canali `#bb-allarmi`, `#bb-avvisi`, `#bb-deploy` e `#bb-riepiloghi` sono stati creati (privati) nel workspace `buddybudget` via connettore Slack. Gli incoming webhook, uno per canale, sono stati creati dall'utente e salvati da lui: **non** vanno incollati in chat né committati in chiaro. In Fase B finiranno cifrati SOPS nel repo infra come contact point Grafana (`#bb-allarmi`/`#bb-avvisi`, instradati per `severity`) e come notifiche ArgoCD (`#bb-deploy`). Questa fase non li usa.
+The channels `#bb-allarmi`, `#bb-avvisi`, `#bb-deploy` and `#bb-riepiloghi` (alarms, warnings, deploy, summaries) were created (private) in the `buddybudget` workspace via the Slack connector. The incoming webhooks, one per channel, were created by the user and saved by them: they must **not** be pasted into the chat nor committed in plain text. In Phase B they will end up SOPS-encrypted in the infra repo as Grafana contact points (`#bb-allarmi`/`#bb-avvisi`, routed by `severity`) and as ArgoCD notifications (`#bb-deploy`). This phase does not use them.

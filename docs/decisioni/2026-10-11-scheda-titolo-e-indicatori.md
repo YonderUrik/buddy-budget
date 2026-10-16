@@ -1,8 +1,8 @@
-# 2026-10-11 — Scheda titolo ripensata e indicatori fondamentali calcolati
+# 2026-10-11 — Security page rethought and computed fundamental indicators
 
-- Daniele ha scelto la **pagina unica** (contro le sotto-schede) e, per ora, **solo Yahoo** come fonte (gratis, non ufficiale; proposta e mockup in `scheda-titolo/` nei file del progetto).
-- I bilanci arrivano dall'endpoint `fundamentals-timeseries` di Yahoo (esercizi annuali + ultimi 12 mesi), in cache Redis 24 h come i numeri chiave (`lib/market-data/statements.ts`, `loadStatements`). Nessuna migration.
-- I multipli (P/E, P/S, P/B, P/FCF, EV/EBITDA) li **calcola l'app** con l'ultima chiusura salvata e i bilanci (`lib/investments/title-fundamentals.ts`), con la forbice degli esercizi passati del titolo stesso; ogni numero ha un «?» con il calcolo. Mai giudizi «caro/conveniente», mai prezzi obiettivo o raccomandazioni degli analisti.
-- Se la valuta di bilancio è diversa da quella di quotazione i multipli col prezzo non si calcolano (niente cambi a metà calcolo).
-- ETF: primi titoli, settori, multipli medi del paniere (Yahoo li dà invertiti, si correggono), rendimenti anno per anno, costo del TER; per le azioni i fondi posseduti che le contengono.
-- Rimandati: SEC EDGAR per le azioni USA (fonte ufficiale), fonti a pagamento (FMP, EODHD: licenza di visualizzazione da chiarire), trimestrali, aree geografiche degli ETF (file emittenti), peso del titolo nel portafoglio (serve il cambio), alert sulla metrica `buddybudget_fundamentals_requests_total` (oggi solo pannello).
+- Daniele chose the **single page** (versus sub-tabs) and, for now, **Yahoo only** as the source (free, unofficial; proposal and mockups in `scheda-titolo/` in the project files).
+- Financial statements come from Yahoo's `fundamentals-timeseries` endpoint (annual fiscal years + trailing 12 months), cached on Redis for 24 h like the key figures (`lib/market-data/statements.ts`, `loadStatements`). No migration.
+- Multiples (P/E, P/S, P/B, P/FCF, EV/EBITDA) are **computed by the app** with the last saved close and the statements (`lib/investments/title-fundamentals.ts`), with the range of the security's own past fiscal years; each number has a «?» with the calculation. Never «expensive/cheap» judgements, never target prices or analyst recommendations.
+- If the reporting currency differs from the listing currency, price-based multiples are not computed (no FX conversion halfway through the calculation).
+- ETFs: top holdings, sectors, average multiples of the basket (Yahoo gives them inverted, they are corrected), year-by-year returns, cost of the TER; for stocks, the funds held that contain them.
+- Postponed: SEC EDGAR for US stocks (official source), paid sources (FMP, EODHD: display licence to be clarified), quarterlies, geographic areas of ETFs (issuer files), weight of the security in the portfolio (needs the FX rate), alert on the `buddybudget_fundamentals_requests_total` metric (today only a panel).

@@ -1,12 +1,12 @@
-# Dividendi: riepilogo e dettaglio degli incassi
+# Dividends: summary and detail of payments received
 
-- La tab Proventi diventa Dividendi; l'indirizzo esistente resta valido per non rompere i collegamenti.
-- Il portafoglio mostra incassi netti degli ultimi 12 mesi e totali, con collegamento alla tab. Le cedole restano incluse e identificate.
-- Pagamenti registrati con data, lordo convertito al cambio dell'operazione, imposte, costi e netto condivisi da riepilogo e dettagli.
-- Anni e strumenti espandibili; anche gli strumenti già venduti mantengono lo storico, senza limite agli ultimi cinque anni.
-- Barre mensili con dettagli al passaggio del mouse e al focus/touch. Le previsioni rimangono separate dagli incassi registrati.
-- Evento Umami `investment_dividends_details_opened` con sola origine categorica; nessuna nuova API o dipendenza esterna.
-- Catalogo e schermate landing aggiornati; verifiche su valute, rettifiche, pagamenti futuri e strumenti venduti.
+- The Proventi (Income) tab becomes Dividendi (Dividends); the existing address remains valid so as not to break links.
+- The portfolio shows net income for the last 12 months and totals, with a link to the tab. Coupons remain included and identified.
+- Payments recorded with date, gross converted at the operation's FX rate, taxes, costs and net shared by summary and details.
+- Expandable years and instruments; instruments already sold also keep their history, with no limit to the last five years.
+- Monthly bars with details on mouse hover and on focus/touch. Forecasts remain separate from recorded payments.
+- Umami event `investment_dividends_details_opened` with only a categorical origin; no new API or external dependency.
+- Catalog and landing screens updated; checks on currencies, adjustments, future payments and sold instruments.
 
-- Semplificazione richiesta: rimossa dalla tab la card riepilogativa «Dividendi e cedole» con confronto annuale e classifica. Grafico mensile in apertura, pagamenti annuali sotto il grafico, righe strumenti compatte ed espandibili. Proposte da registrare e previsioni raccolte in sezioni chiuse inizialmente.
-- Questa semplificazione riguarda solo la tab Dividendi, non presente tra gli screenshot della landing; riepilogo nel portafoglio e catalogo funzionale invariati.
+- Requested simplification: removed from the tab the summary card «Dividendi e cedole» ("Dividends and coupons") with yearly comparison and ranking. Monthly chart at the top, yearly payments below the chart, compact and expandable instrument rows. Proposals to record and forecasts gathered in sections collapsed by default.
+- This simplification only concerns the Dividendi tab, which is not among the landing screenshots; portfolio summary and feature catalog unchanged.

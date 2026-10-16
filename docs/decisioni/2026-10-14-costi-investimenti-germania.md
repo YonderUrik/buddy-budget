@@ -1,28 +1,28 @@
-# Germania: costi degli investimenti
+# Germany: investment costs
 
-Seconda fase del rollout dopo l'inflazione. La vista Investimenti tedesca mostrava già commissioni e imposte registrate senza stime fiscali italiane; nessuna nuova pagina o abilitazione di Analitiche/FIRE è necessaria in questa fase.
+Second phase of the rollout after inflation. The German Investimenti view already showed recorded fees and taxes without Italian tax estimates; no new page or enabling of Analitiche/FIRE is needed in this phase.
 
-## Modifiche
+## Changes
 
-Il calcolatore condiviso dei costi annui ora richiede esplicitamente il paese. Il registro finanziario mantiene il bollo italiano già esistente per IT (0,2%) e non applica questo prelievo per DE. Un paese sconosciuto o omesso non ricade implicitamente sull'Italia. Il TER resta separato dai prelievi nazionali; importi, nomi e movimenti salvati restano invariati. Le tre viste Analitiche passano il paese esplicitamente, ma restano inaccessibili per DE fino alla fase FIRE.
+The shared annual-cost calculator now explicitly requires the country. The financial registry keeps the existing Italian bollo (stamp duty) for IT (0.2%) and does not apply this levy for DE. An unknown or omitted country does not implicitly fall back to Italy. The TER stays separate from national levies; saved amounts, names and transactions remain unchanged. The three Analitiche views pass the country explicitly, but remain inaccessible for DE until the FIRE phase.
 
-Nel portafoglio il pannello spiega che i costi del fondo sono già riflessi nel prezzo, non vengono sottratti nuovamente e non sono commissioni registrate. Eventuali costi del broker non registrati non sono inclusi. Per DE si mostrano soltanto costi e imposte registrati, senza bollo italiano e senza stime fiscali tedesche. Questo non afferma che il conto sia esente da imposte o commissioni del broker.
+In the portfolio the panel explains that the fund's costs are already reflected in the price, are not subtracted again and are not recorded fees. Any unrecorded broker costs are not included. For DE only recorded costs and taxes are shown, without Italian stamp duty and without German tax estimates. This does not assert that the account is exempt from taxes or broker fees.
 
-Corretto un difetto della simulazione «Rimetti i costi»: il testo mostrava `{0}` anziché l'importo pagato. Ora i due importi sono formattati con i centesimi nella lingua corrente; lo stato accessibile della simulazione è tradotto. Gli effetti ipotetici rimangono distinti dagli importi pagati e non modificano le operazioni.
+Fixed a defect in the «Rimetti i costi» ("Put the costs back") simulation: the text showed `{0}` instead of the amount paid. Now the two amounts are formatted with cents in the current language; the simulation's accessible state is translated. The hypothetical effects remain distinct from the amounts paid and do not change the operations.
 
-## Fonti verificate il 14 ottobre 2026
+## Sources verified on 14 October 2026
 
-- BaFin, costi coperti dal patrimonio del fondo e possibili commissioni di deposito: https://bafin.de/DE/verbraucherinnen-verbraucher/themen-finanzprodukte/geldanlage/wertpapiere/offene-immobilienfonds/offene-immobilienfonds.html
-- iShares, TER e prelievo giornaliero delle commissioni dal fondo: https://www.ishares.com/de/professionelle-anleger/de/wissen-service/etf-faq
+- BaFin, costs covered by the fund's assets and possible custody fees: https://bafin.de/DE/verbraucherinnen-verbraucher/themen-finanzprodukte/geldanlage/wertpapiere/offene-immobilienfonds/offene-immobilienfonds.html
+- iShares, TER and daily deduction of fees from the fund: https://www.ishares.com/de/professionelle-anleger/de/wissen-service/etf-faq
 
-Non sono state introdotte aliquote fiscali tedesche. La fiscalità di base resta la fase successiva, con verifica delle norme per anno.
+No German tax rates were introduced. Basic taxation remains the next phase, with verification of the rules per year.
 
-## Verifica in produzione dopo approvazione
+## Verification in production after approval
 
-Con paese Germania e lingua inglese/tedesca, aprire Investimenti e «Costi e imposte»: importi uguali ai costi registrati, nessun segnaposto, nessuna stima fiscale aggiuntiva. Attivare i due interruttori separatamente e insieme; tornare allo stato originale e verificare che le operazioni non cambino. Con Italia, verificare la continuità della vista fiscale e dei costi annui. I blocchi di pensione e Analitiche per DE devono restare attivi.
+With country Germany and English/German language, open Investimenti and «Costi e imposte» ("Costs and taxes"): amounts equal to the recorded costs, no placeholder, no additional tax estimate. Turn on the two toggles separately and together; return to the original state and check that the operations do not change. With Italy, check the continuity of the tax view and the annual costs. The pension and Analitiche blocks for DE must remain active.
 
-Osservabilità: nessun nuovo servizio, job o dato persistito; restano i controlli CI, gli errori delle API esistenti e la verifica browser del calcolo locale. Nessuna migration o deploy richiesto per la prova localhost.
+Observability: no new service, job or persisted data; the CI checks, the errors of the existing APIs and the browser check of the local calculation remain. No migration or deploy required for the localhost test.
 
-## Esito locale
+## Local outcome
 
-Build di produzione, TypeScript, lint dei file modificati e catalogo funzioni riusciti. 54 test mirati superati. Suite completa: 2.223 superati, unico errore noto nel logger per il nome della directory locale `/Users/mario`. Browser verificato su DE/en, DE/de, IT/it e IT/en: importi pagati confrontati con le API, nessun `{0}`, entrambi gli interruttori e ritorno allo stato iniziale, movimenti invariati, blocchi tedeschi confermati. Nessun errore browser. Screenshot Portafoglio aggiornati nei due temi; 3 test screenshot superati; preview lasciata in DE/en. Nessun merge/deploy.
+Production build, TypeScript, lint of the modified files and feature catalog successful. 54 targeted tests passed. Full suite: 2,223 passed, only known error in the logger due to the local directory name `/Users/mario`. Browser verified on DE/en, DE/de, IT/it and IT/en: amounts paid compared with the APIs, no `{0}`, both toggles and return to the initial state, transactions unchanged, German blocks confirmed. No browser errors. Portfolio screenshots updated in both themes; 3 screenshot tests passed; preview left in DE/en. No merge/deploy.

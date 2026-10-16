@@ -1,23 +1,23 @@
 # Pensione: design (2026-10-02)
 
-Stato: implementata sul branch `claude/project-thread-43tais`, in attesa di decisione sulla produzione.
+Status: implemented on branch `claude/project-thread-43tais`, awaiting a decision on production.
 
-## Problema
-Molti provider (es. Moneyfarm PIP) mostrano solo due serie: contributi netti e controvalore. Non c'è elenco dei versamenti.
+## Problem
+Many providers (e.g. Moneyfarm PIP, an individual pension plan) show only two series: net contributions and market value. There is no list of contributions.
 
-## Modello
-- `pension_funds` (nome, data di adesione) e `pension_snapshots` (data, contributi netti, controvalore; unica per fondo+data).
-- I versamenti sono le differenze tra fotografie consecutive; prima della prima fotografia lo storico è distribuito a trimestri dall'adesione e segnato `estimated`.
-- Calcoli puri in `lib/calc/pension.ts` (XIRR, tasse in uscita, forbice di prelievo, TFR in azienda, proiezione, ripartizione annuale).
+## Model
+- `pension_funds` (name, joining date) and `pension_snapshots` (date, net contributions, market value; unique per fund+date).
+- Contributions are the differences between consecutive snapshots; before the first snapshot the history is spread over quarters from the joining date and marked `estimated`.
+- Pure computations in `lib/calc/pension.ts` (XIRR, exit taxes, withdrawal range, TFR (Italian severance pay) kept with the employer, projection, annual breakdown).
 
-## Schede
-Panoramica, Andamento, Scenari (prelievo oggi, fondo vs TFR, tasse), Proiezione (3 scenari reali), I tuoi dati.
+## Tabs
+Panoramica (Overview), Andamento (Trend), Scenari (Scenarios: withdrawal today, fund vs TFR, taxes), Proiezione (Projection: 3 real-terms scenarios), I tuoi dati (Your data).
 
-## Integrazioni
-Patrimonio netto (classe `previdenza`, storico derivato, non salvato), barra laterale, export ZIP/JSON, reset account, metriche d'uso, catalogo/landing/login.
+## Integrations
+Net worth (`previdenza` class, derived history, not stored), sidebar, ZIP/JSON export, account reset, usage metrics, catalog/landing/login.
 
-## Ipotesi aperte (da validare)
-Base imponibile dell'imposta in uscita (per questo una forbice), regole del TFR in azienda, "contributi netti" al netto dei costi, inflazione fissa al 2%.
+## Open assumptions (to validate)
+Taxable base of the exit tax (hence a range), rules for TFR kept with the employer, "net contributions" net of costs, inflation fixed at 2%.
 
-## Osservabilità
-Eventi `pension.*` (Loki), eventi Umami `pension_*`, metriche d'uso nella dashboard "Utenti e utilizzo". Nessun cron/job/dipendenza esterna: nessun alert.
+## Observability
+`pension.*` events (Loki), Umami `pension_*` events, usage metrics in the "Utenti e utilizzo" ("Users and usage") dashboard. No cron/job/external dependency: no alert.

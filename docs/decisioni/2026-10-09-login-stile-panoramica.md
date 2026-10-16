@@ -1,7 +1,7 @@
-# 2026-10-09 — Login nello stile della Panoramica («Orizzonte»)
+# 2026-10-09 — Login in the Panoramica style («Orizzonte», "Horizon")
 
-- **Decisione**: la pagina di accesso (e le pagine che condividono il layout `(auth)`: accetta-termini, onboarding, account disattivato) abbandona il pannello diviso con il mosaico di tessere. Scelta tra tre mockup la direzione A «Orizzonte»: il patrimonio netto di esempio è un numero grande con decimali attenuati e un grafico a tutta larghezza sul fondo della pagina; il form sta a sinistra; le sei aree dell'app sono una fila di icone tinte sotto il grafico.
-- **Una sola linea**: il grafico mostra solo il patrimonio netto, con etichetta diretta sul punto finale (nessuna legenda). Le due linee dei mockup, non spiegate, sono state tolte. Il numero e l'ultimo punto seguono i movimenti di esempio (`useMosaicLive`); con `prefers-reduced-motion` resta fermo.
-- **Rimosso**: le tessere `mosaic-*` (le rimpiazzano `LoginHorizon`, `LoginAreas`). Il modello dei dati di esempio (`login-mosaic.model.ts`) resta.
-- **Invariato**: testi del form, accesso con link via email e Google, logo → landing, «Nuovo» e «In arrivo».
-- **Rimandato**: nessuna schermata di login nella landing, quindi nessun impatto su catalogo e screenshot.
+- **Decision**: the sign-in page (and the pages sharing the `(auth)` layout: accept terms, onboarding, deactivated account) drops the split panel with the tile mosaic. Among three mockups direction A «Orizzonte» was chosen: the sample net worth is a large number with dimmed decimals and a full-width chart at the bottom of the page; the form sits on the left; the app's six areas are a row of tinted icons below the chart.
+- **A single line**: the chart shows only net worth, with a direct label on the last point (no legend). The two lines of the mockups, unexplained, were removed. The number and the last point follow the sample transactions (`useMosaicLive`); with `prefers-reduced-motion` it stays still.
+- **Removed**: the `mosaic-*` tiles (replaced by `LoginHorizon`, `LoginAreas`). The sample data model (`login-mosaic.model.ts`) remains.
+- **Unchanged**: form copy, sign-in with email link and Google, logo → landing, «Nuovo» ("New") and «In arrivo» ("Coming soon").
+- **Postponed**: no login screen in the landing, hence no impact on catalog and screenshots.

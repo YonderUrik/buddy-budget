@@ -1,36 +1,36 @@
-name: Segnala un bug
-description: Qualcosa non funziona come dovrebbe
+name: Report a bug
+description: Something does not work as it should
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Grazie della segnalazione. **Non incollare dati personali o finanziari reali** (IBAN, importi, nomi, email, token): se servono esempi, inventali.
-        Per una vulnerabilità non usare questo modulo, vedi [SECURITY.md](https://github.com/YonderUrik/buddy-budget/blob/main/SECURITY.md).
+        Thanks for the report. **Do not paste real personal or financial data** (IBANs, amounts, names, emails, tokens): if you need examples, make them up.
+        For a vulnerability do not use this form, see [SECURITY.md](https://github.com/YonderUrik/buddy-budget/blob/main/SECURITY.md).
   - type: textarea
     id: cosa
     attributes:
-      label: Cosa succede
-      description: Descrivi il problema e cosa ti aspettavi invece.
+      label: What happens
+      description: Describe the problem and what you expected instead.
     validations:
       required: true
   - type: textarea
     id: passi
     attributes:
-      label: Come riprodurlo
+      label: How to reproduce it
       placeholder: |
-        1. Vai su ...
-        2. Clicca ...
-        3. Vedi l'errore ...
+        1. Go to ...
+        2. Click ...
+        3. See the error ...
     validations:
       required: true
   - type: input
     id: ambiente
     attributes:
-      label: Dove l'hai visto
-      description: Browser e sistema, oppure se è un'installazione tua in locale (versione di Node, Postgres).
+      label: Where you saw it
+      description: Browser and operating system, or whether it is your own local installation (Node and Postgres versions).
   - type: textarea
     id: extra
     attributes:
-      label: Altro
-      description: Screenshot (senza dati reali), messaggi d'errore, log.
+      label: Other
+      description: Screenshots (without real data), error messages, logs.

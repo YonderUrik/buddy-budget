@@ -1,5 +1,5 @@
-# Aggiornamento YTD e gestione importazioni IBKR
+# YTD updates and IBKR import management
 
-Data: 2026-10-04
+Date: 2026-10-04
 
-Su richiesta dell'utente, nuovi CSV sostituiscono i periodi interamente coperti in una transazione; anteprima esplicita e riconciliazione dei periodi successivi. Gli overlap parziali richiedono un export completo per non inventare snapshot intermedi. Da Rendiconti si gestiscono ed eliminano gli import: rimuovere un periodo richiede conferma dell'elenco dei successivi dipendenti, verificato sotto lock. Saldo ripristinato all'ultima chiusura conservata; catalogo/prezzi mantenuti. Nessun push o PR.
+At the user's request, new CSVs replace fully covered periods within a single transaction; explicit preview and reconciliation of the following periods. Partial overlaps require a complete export so as not to invent intermediate snapshots. From Rendiconti (Statements) imports can be managed and deleted: removing a period requires confirming the list of dependent later periods, checked under lock. Balance restored to the last retained close; catalog/prices kept. No push or PR.

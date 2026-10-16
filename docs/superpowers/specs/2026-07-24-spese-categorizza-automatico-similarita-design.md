@@ -1,47 +1,47 @@
-# Categorizza automaticamente — match per similarità (addendum)
+# Categorizza automaticamente — similarity match (addendum)
 
-> Estende `docs/superpowers/specs/2026-07-23-spese-categorizza-automatico-design.md` e il piano `docs/superpowers/plans/2026-07-23-spese-categorizza-automatico.md` (Task 1-4 già implementati e mergiati con match esatto). Questo documento sostituisce il criterio di match del motore di calcolo con similarità a token, mantenendo invariati endpoint, hook e struttura del wizard.
+> Extends `docs/superpowers/specs/2026-07-23-spese-categorizza-automatico-design.md` and the plan `docs/superpowers/plans/2026-07-23-spese-categorizza-automatico.md` (Tasks 1-4 already implemented and merged with exact matching). This document replaces the calculation engine's matching criterion with token similarity, keeping endpoint, hook and wizard structure unchanged.
 
-## Contesto
+## Context
 
-Il wizard "Categorizza automaticamente" in Spese (Task 1-4, già in `main`) suggerisce categoria e split per le transazioni "Da categorizzare" basandosi su un match **esatto** (case-insensitive, trim) sulla descrizione. Nell'uso reale questo esclude coppie di transazioni chiaramente dello stesso merchant ma con descrizione leggermente diversa:
+The "Categorizza automaticamente" ("Categorise automatically") wizard in Spese (Tasks 1-4, already in `main`) suggests category and split for "Da categorizzare" ("To categorise") transactions based on an **exact** match (case-insensitive, trim) on the description. In real use this excludes pairs of transactions clearly from the same merchant but with slightly different descriptions:
 
-- **Suffissi/codici variabili**: `"PAYPAL *NETFLIX 4471"` vs `"PAYPAL *NETFLIX 8832"`.
-- **Filiali/sedi diverse della stessa catena**: `"ESSELUNGA VIA ROMA 12"` vs `"ESSELUNGA VIA MILANO 45"`.
+- **Variable suffixes/codes**: `"PAYPAL *NETFLIX 4471"` vs `"PAYPAL *NETFLIX 8832"`.
+- **Different branches/locations of the same chain**: `"ESSELUNGA VIA ROMA 12"` vs `"ESSELUNGA VIA MILANO 45"`.
 
-**Fuori scope esplicito** (deciso in brainstorming): l'auto-categorizzazione al momento dell'import GoCardless (`lib/gocardless/categorize.ts`) resta invariata, match esatto — questo cambio riguarda solo il motore del wizard manuale (`lib/calc/categorize-suggestions.ts`). Refusi/errori di battitura non sono un caso d'uso richiesto (non guidano la scelta dell'algoritmo).
+**Explicitly out of scope** (decided in brainstorming): automatic categorisation at GoCardless import time (`lib/gocardless/categorize.ts`) stays unchanged, exact match — this change concerns only the engine of the manual wizard (`lib/calc/categorize-suggestions.ts`). Typos/misspellings are not a requested use case (they do not drive the choice of algorithm).
 
-## Algoritmo di similarità
+## Similarity algorithm
 
-**Tokenizzazione** (`tokenize(description)`):
-1. Minuscolo, trim (stesso `normalizeDescription` già esistente come base).
-2. Split su spazi e punteggiatura (whitespace + caratteri non alfanumerici come separatori).
-3. Scarta i token puramente numerici (regex `^\d+$`) — coprono codici transazione, numeri civici, riferimenti.
-4. Risultato: un `Set<string>` di parole "significative".
+**Tokenisation** (`tokenize(description)`):
+1. Lowercase, trim (the same existing `normalizeDescription` as a base).
+2. Split on spaces and punctuation (whitespace + non-alphanumeric characters as separators).
+3. Discard purely numeric tokens (regex `^\d+$`) — they cover transaction codes, street numbers, references.
+4. Result: a `Set<string>` of "meaningful" words.
 
-**Caso degenere**: se il set risultante è vuoto (descrizione composta solo da numeri, es. un riferimento bonifico tipo `"RIF 00123456"` → dopo aver scartato i numeri resta `{"rif"}`, non vuoto; ma un caso come `"123456789"` puro produce set vuoto), il confronto per quella transazione ricade sull'uguaglianza esatta della stringa normalizzata originale (comportamento identico a oggi) — niente Jaccard su insiemi vuoti.
+**Degenerate case**: if the resulting set is empty (a description made only of numbers, e.g. a transfer reference like `"RIF 00123456"` → after discarding the numbers `{"rif"}` remains, not empty; but a case like a pure `"123456789"` produces an empty set), the comparison for that transaction falls back to exact equality of the original normalised string (behaviour identical to today) — no Jaccard on empty sets.
 
-**Similarità** (`similarity(a, b)`): indice di Jaccard tra i due set di token — `|intersezione| / |unione|`. Range `[0, 1]`. Due descrizioni identiche dopo tokenizzazione → `1`.
+**Similarity** (`similarity(a, b)`): Jaccard index between the two token sets — `|intersection| / |union|`. Range `[0, 1]`. Two descriptions identical after tokenisation → `1`.
 
-**Soglia**: `SIMILARITY_THRESHOLD = 0.5` (costante nominata nel modulo). Una coppia (transazione da categorizzare, transazione storica) è un match se `similarity ≥ 0.5`.
+**Threshold**: `SIMILARITY_THRESHOLD = 0.5` (named constant in the module). A pair (transaction to categorise, historical transaction) is a match if `similarity ≥ 0.5`.
 
-Esempio verificato: `"ESSELUNGA VIA ROMA 12"` → `{esselunga, via, roma}`, `"ESSELUNGA VIA MILANO 45"` → `{esselunga, via, milano}` → intersezione 2, unione 4 → `0.5` → incluso (soglia inclusiva, `≥`).
+Verified example: `"ESSELUNGA VIA ROMA 12"` → `{esselunga, via, roma}`, `"ESSELUNGA VIA MILANO 45"` → `{esselunga, via, milano}` → intersection 2, union 4 → `0.5` → included (inclusive threshold, `≥`).
 
-## Modifiche al motore di calcolo
+## Changes to the calculation engine
 
-File: `lib/calc/categorize-suggestions.ts` (esistente, da modificare).
+File: `lib/calc/categorize-suggestions.ts` (existing, to be modified).
 
-**Prima** (oggi): raggruppamento delle transazioni storiche in una `Map<normalizedDescription, Transaction[]>`, poi lookup esatto per ogni transazione da categorizzare.
+**Before** (today): grouping of historical transactions into a `Map<normalizedDescription, Transaction[]>`, then an exact lookup for each transaction to categorise.
 
-**Dopo**: per ogni transazione da categorizzare, confronto contro **ogni** transazione storica (niente pre-raggruppamento per chiave esatta, la similarità non è una relazione di equivalenza transitiva). Le transazioni storiche con `similarity ≥ 0.5` rispetto alla transazione corrente formano il gruppo di match.
+**After**: for each transaction to categorise, comparison against **every** historical transaction (no pre-grouping by exact key, similarity is not a transitive equivalence relation). The historical transactions with `similarity ≥ 0.5` relative to the current transaction form the match group.
 
-Il resto della pipeline resta **invariato**:
-- Categoria vincente = più frequente tra i match; pareggio → categoria della transazione match più recente (`date` desc).
-- `matchCount` = numero di match della categoria vincente (non più "match esatti", ora "match simili sopra soglia").
-- `suggestedSplitPercentage` = calcolata solo sui match della categoria vincente, stessa logica di coerenza (tutte uguali arrotondate a 4 decimali → quel valore, altrimenti `null`).
-- **Nessun peso per punteggio di similarità** nella scelta della categoria vincente o nel calcolo dello split: un match sopra soglia conta come un match, indipendentemente dal suo punteggio esatto (0.5 e 1.0 pesano uguale). Scelta deliberata per restare semplice — non richiesto, evitare di introdurre un criterio di voto ponderato non specificato.
+The rest of the pipeline stays **unchanged**:
+- Winning category = the most frequent among the matches; tie → the category of the most recent matching transaction (`date` desc).
+- `matchCount` = number of matches of the winning category (no longer "exact matches", now "similar matches above the threshold").
+- `suggestedSplitPercentage` = computed only on the matches of the winning category, same consistency logic (all equal rounded to 4 decimals → that value, otherwise `null`).
+- **No weighting by similarity score** in choosing the winning category or computing the split: a match above the threshold counts as one match, regardless of its exact score (0.5 and 1.0 weigh the same). A deliberate choice to stay simple — not requested; avoid introducing an unspecified weighted voting criterion.
 
-**Nuovo campo output**:
+**New output field**:
 
 ```ts
 export interface CategorizeSuggestion {
@@ -49,45 +49,46 @@ export interface CategorizeSuggestion {
   suggestedCategoryId: string;
   matchCount: number;
   suggestedSplitPercentage: number | null;
-  averageSimilarity: number; // NUOVO: media dei punteggi di similarità dei soli match della categoria vincente, arrotondata a 2 decimali
+  averageSimilarity: number; // NEW: average of the similarity scores of only the winning category's matches, rounded to 2 decimals
 }
 ```
 
-`averageSimilarity` per un match esatto tradizionale (stessa descrizione) è sempre `1`.
+`averageSimilarity` for a traditional exact match (same description) is always `1`.
 
-## Endpoint e hook
+## Endpoint and hook
 
-`app/api/transactions/categorize-suggestions/route.ts` e `lib/queries/transactions.ts`: **nessuna modifica**. Passano già `uncategorized`/`historical` così come sono; il nuovo campo `averageSimilarity` attraversa la serializzazione JSON esistente senza bisogno di cambiare lo schema di risposta (nessuna validazione Zod sull'output).
+`app/api/transactions/categorize-suggestions/route.ts` and `lib/queries/transactions.ts`: **no changes**. They already pass `uncategorized`/`historical` as they are; the new `averageSimilarity` field goes through the existing JSON serialisation without needing to change the response schema (no Zod validation on the output).
 
 ## UI — wizard
 
-File: `components/domain/expenses/auto-categorize-wizard.tsx` (esistente, da modificare).
+File: `components/domain/expenses/auto-categorize-wizard.tsx` (existing, to be modified).
 
-La riga sotto il titolo del singolo step cambia da:
+The line under the title of each step changes from:
 ```
 Basato su {suggestion.matchCount} transazioni passate categorizzate così.
 ```
-a:
+to:
 ```
 Basato su {suggestion.matchCount} transazioni simili ({Math.round(suggestion.averageSimilarity * 100)}% di somiglianza media).
 ```
+("Based on {n} similar transactions ({x}% average similarity)".)
 
-Mostrata sempre, anche quando la somiglianza media è 100% (match esatto tradizionale) — nessuna condizione speciale, un solo formato di stringa per entrambi i casi. Nessun altro elemento UI cambia (categoria/split restano editabili come oggi, "Salta"/"Conferma"/chiusura anticipata invariati).
+Always shown, even when the average similarity is 100% (traditional exact match) — no special condition, a single string format for both cases. No other UI element changes (category/split stay editable as today, "Salta"/"Conferma" (Skip/Confirm)/early closing unchanged).
 
-## Test
+## Tests
 
-`lib/calc/categorize-suggestions.test.ts` (esistente, da estendere): i 6 test attuali restano validi (i loro match sono descrizioni identiche → similarità 1.0, sopra soglia, comportamento invariato). Nuovi casi:
+`lib/calc/categorize-suggestions.test.ts` (existing, to be extended): the 6 current tests stay valid (their matches are identical descriptions → similarity 1.0, above the threshold, unchanged behaviour). New cases:
 
-- Suffisso numerico variabile: `"PAYPAL *NETFLIX 4471"` da categorizzare, storico `"PAYPAL *NETFLIX 8832"` → match trovato, `averageSimilarity` = 1 (i numeri sono scartati da entrambe le parti, i set di token restano identici).
-- Filiale diversa esattamente al 50%: l'esempio Esselunga sopra → match trovato (soglia inclusiva), `averageSimilarity` = 0.5.
-- Sotto soglia: due descrizioni con solo 1 parola in comune su 4 totali (0.25) → nessun match, transazione esclusa dal risultato (comportamento identico al caso "nessun match storico" di oggi).
-- Descrizione interamente numerica: transazione da categorizzare con descrizione `"123456789"`, storico con la stessa stringa esatta → match per fallback su uguaglianza; storico con stringa numerica diversa → nessun match.
-- `averageSimilarity` calcolata correttamente quando la categoria vincente ha più match con punteggi diversi (es. due match, uno a 1.0 e uno a 0.5 → media 0.75).
+- Variable numeric suffix: `"PAYPAL *NETFLIX 4471"` to categorise, history `"PAYPAL *NETFLIX 8832"` → match found, `averageSimilarity` = 1 (numbers are discarded on both sides, the token sets stay identical).
+- Different branch at exactly 50%: the Esselunga example above → match found (inclusive threshold), `averageSimilarity` = 0.5.
+- Below threshold: two descriptions with only 1 word in common out of 4 in total (0.25) → no match, transaction excluded from the result (behaviour identical to today's "no historical match" case).
+- Fully numeric description: transaction to categorise with description `"123456789"`, history with the same exact string → match via the equality fallback; history with a different numeric string → no match.
+- `averageSimilarity` computed correctly when the winning category has several matches with different scores (e.g. two matches, one at 1.0 and one at 0.5 → average 0.75).
 
-## Fuori scope (invariato dal design originale)
+## Out of scope (unchanged from the original design)
 
-- Nessun filtro periodo nello scan: tutto lo storico dell'utente.
-- Nessun nuovo endpoint di scrittura: l'applicazione riusa `PATCH /api/transactions/[id]`.
-- Wizard sequenziale, categoria e split sempre editabili, "Salta" non applica nulla, chiusura anticipata lascia applicate le conferme già fatte.
-- Stringhe utente in italiano, nessuna i18n.
-- Auto-categorizzazione GoCardless all'import (`lib/gocardless/categorize.ts`) resta a match esatto — non toccata da questo documento.
+- No period filter in the scan: the user's whole history.
+- No new write endpoint: applying reuses `PATCH /api/transactions/[id]`.
+- Sequential wizard, category and split always editable, "Salta" applies nothing, early closing leaves already made confirmations applied.
+- User strings in Italian, no i18n.
+- GoCardless automatic categorisation at import (`lib/gocardless/categorize.ts`) stays exact-match — not touched by this document.

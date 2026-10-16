@@ -1,11 +1,11 @@
-# Sicurezza
+# Security
 
-## Segnalare una vulnerabilità
+## Reporting a vulnerability
 
-Se trovi una vulnerabilità, **non aprire una issue pubblica**. Usa la funzione "Report a vulnerability" della scheda *Security* del repository (segnalazione privata di GitHub). Includi i passi per riprodurla e, se puoi, l'impatto che immagini.
+If you find a vulnerability, **do not open a public issue**. Use the "Report a vulnerability" feature in the repository's *Security* tab (GitHub private reporting). Include the steps to reproduce it and, if you can, the impact you foresee.
 
-Il progetto è mantenuto da una persona sola: la risposta può richiedere qualche giorno. Non esiste un programma di ricompense.
+The project is maintained by a single person: a response may take a few days. There is no bounty program.
 
-## Cosa non va mai nel repository
+## What must never go in the repository
 
-Chiavi, token, credenziali, dati bancari o personali reali. Se ne trovi per errore in un file o nella history, segnalalo nello stesso modo. Le variabili d'ambiente vanno in `.env.local` (ignorato da git); [`.env.local.example`](.env.local.example) contiene solo segnaposto.
+Keys, tokens, credentials, real banking or personal data. If you find any by mistake in a file or in the history, report it the same way. Environment variables go in `.env.local` (ignored by git); [`.env.local.example`](.env.local.example) contains only placeholders.

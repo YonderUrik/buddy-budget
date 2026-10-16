@@ -1,40 +1,40 @@
-# Note transazioni + categorizzazione migliorata via campi GoCardless aggiuntivi
+# Transaction notes + improved categorisation via additional GoCardless fields
 
-Data: 2026-07-26
+Date: 2026-07-26
 
-## Problema
+## Problem
 
-Le transazioni importate da GoCardless salvano oggi `description` = `remittanceInformationUnstructured`, spesso piena di codici transazione/riferimenti che non corrispondono al nome reale del negozio (es. `"PAYPAL *NETFLIX 4471"`, filiali diverse della stessa catena con testo diverso). Questo:
+Transactions imported from GoCardless today store `description` = `remittanceInformationUnstructured`, often full of transaction codes/references that do not match the real name of the shop (e.g. `"PAYPAL *NETFLIX 4471"`, different branches of the same chain with different text). This:
 
-1. Rende difficile per l'utente ricordare a posteriori dove ha speso i soldi.
-2. Peggiora l'affidabilità sia dell'auto-categorizzazione al sync (`lib/gocardless/categorize.ts`, match esatto per descrizione) sia del wizard "Categorizza automaticamente" (`lib/calc/categorize-suggestions.ts`, similarità Jaccard sui token di descrizione).
+1. Makes it hard for the user to remember afterwards where they spent the money.
+2. Worsens the reliability of both automatic categorisation at sync time (`lib/gocardless/categorize.ts`, exact match on description) and the "Categorizza automaticamente" ("Categorise automatically") wizard (`lib/calc/categorize-suggestions.ts`, Jaccard similarity on description tokens).
 
-GoCardless espone, quando la banca lo fornisce, anche `creditorName`/`debtorName`: il nome pulito della controparte, non affetto dai codici che compaiono in `remittanceInformationUnstructured`. Nessuno di questi campi è oggi letto da `lib/gocardless/client.ts` (`BankTransaction`, righe 189-195).
+When the bank provides it, GoCardless also exposes `creditorName`/`debtorName`: the clean name of the counterparty, not affected by the codes that appear in `remittanceInformationUnstructured`. None of these fields is read today by `lib/gocardless/client.ts` (`BankTransaction`, lines 189-195).
 
-## Obiettivo
+## Goal
 
-- Usare `creditorName`/`debtorName` (quando disponibili) come `description` mostrata e usata per il matching, con fallback identico al comportamento attuale quando la banca non li fornisce.
-- Aggiungere un campo nota libera per transazione, editabile dall'utente indipendentemente dal source (auto/manuale), per annotare a cosa si riferisce una spesa.
-- Nessuna modifica agli algoritmi di matching esistenti (match esatto in `categorize.ts`, Jaccard in `categorize-suggestions.ts`): beneficiano automaticamente di un input più pulito.
+- Use `creditorName`/`debtorName` (when available) as the `description` shown and used for matching, with a fallback identical to the current behaviour when the bank does not provide them.
+- Add a free note field per transaction, editable by the user regardless of the source (auto/manual), to annotate what an expense refers to.
+- No change to the existing matching algorithms (exact match in `categorize.ts`, Jaccard in `categorize-suggestions.ts`): they automatically benefit from a cleaner input.
 
-## Fuori scope
+## Out of scope
 
-- Backfill delle transazioni auto già sincronizzate (restano con la `description` grezza già salvata). Motivazione: rate limit GoCardless sandbox molto stretto (~4 chiamate/giorno per endpoint/conto, vedi nota in `CLAUDE.md`); solo le nuove sync beneficiano dei campi aggiuntivi.
-- `remittanceInformationStructured`, `additionalInformation`, `proprietaryBankTransactionCode`: non richiesti, non aggiunti in questo piano.
-- Modifiche all'algoritmo di similarità stesso (soglia Jaccard, tokenizzazione): resta invariato, cambia solo l'input che riceve.
+- Backfill of auto transactions already synced (they keep the raw `description` already saved). Reason: very tight GoCardless sandbox rate limit (~4 calls/day per endpoint/account, see the note in `CLAUDE.md`); only new syncs benefit from the additional fields.
+- `remittanceInformationStructured`, `additionalInformation`, `proprietaryBankTransactionCode`: not requested, not added in this plan.
+- Changes to the similarity algorithm itself (Jaccard threshold, tokenisation): it stays unchanged, only the input it receives changes.
 
 ## Data model
 
-`lib/db/schema/transactions.ts` — due nuove colonne nullable:
+`lib/db/schema/transactions.ts` — two new nullable columns:
 
-- `rawDescription: text` — testo grezzo `remittanceInformationUnstructured` originale così come arrivato da GoCardless, quando disponibile. `null` per transazioni manuali e per transazioni auto dove GoCardless non fornisce nemmeno questo campo. Serve **solo** da mostrare in un tooltip/dettaglio quando `description` è stata sostituita dal nome pulito — mai usato nel matching.
-- `note: text` — nota libera dell'utente. `null` di default. Editabile sia su transazioni auto sia manuali (nessun vincolo di ownership diverso da quello già esistente su `PATCH /api/transactions/[id]`).
+- `rawDescription: text` — the original raw `remittanceInformationUnstructured` text as received from GoCardless, when available. `null` for manual transactions and for auto transactions where GoCardless does not even provide this field. It serves **only** to be shown in a tooltip/detail when `description` has been replaced by the clean name — never used in matching.
+- `note: text` — the user's free note. `null` by default. Editable on both auto and manual transactions (no ownership constraint different from the one already existing on `PATCH /api/transactions/[id]`).
 
-Nessuna migrazione di backfill sulle righe esistenti: le colonne sono nullable, le righe già presenti restano con entrambe a `null`.
+No backfill migration on existing rows: the columns are nullable, existing rows keep both at `null`.
 
 ## GoCardless client (`lib/gocardless/client.ts`)
 
-`BankTransaction` aggiunge due campi opzionali:
+`BankTransaction` adds two optional fields:
 
 ```ts
 export interface BankTransaction {
@@ -48,11 +48,11 @@ export interface BankTransaction {
 }
 ```
 
-Nessun'altra modifica al client: sono già presenti nella risposta `/accounts/{id}/transactions/` di GoCardless quando la banca li espone, non serve nessun nuovo parametro di richiesta.
+No other change to the client: they are already present in GoCardless's `/accounts/{id}/transactions/` response when the bank exposes them, no new request parameter is needed.
 
 ## Sync (`lib/gocardless/sync.ts`)
 
-Sostituire il calcolo attuale di `description` (riga 79) con:
+Replace the current calculation of `description` (line 79) with:
 
 ```ts
 const rawDescription = bankTransaction.remittanceInformationUnstructured ?? null;
@@ -61,45 +61,45 @@ const merchantName = (isExpense ? bankTransaction.creditorName : bankTransaction
 const description = merchantName || rawDescription || "Movimento bancario";
 ```
 
-`description` resta l'unico campo passato a `resolveCategoryId` (match esatto) — nessuna terza colonna "nome pulito" separata da `description` stessa. Il nuovo insert aggiunge `rawDescription` (il valore calcolato sopra, non il fallback letterale "Movimento bancario" — se non c'è testo grezzo, `rawDescription` resta `null`).
+`description` remains the only field passed to `resolveCategoryId` (exact match) — no third "clean name" column separate from `description` itself. The new insert adds `rawDescription` (the value computed above, not the literal fallback "Movimento bancario" — "Bank transaction"; if there is no raw text, `rawDescription` stays `null`).
 
-Segno importo: `transactionAmount.amount` negativo = uscita → controparte è il creditore (`creditorName`, chi riceve i soldi); positivo = entrata → controparte è il debitore (`debtorName`, chi ha inviato i soldi). Coerente con la semantica GoCardless standard.
+Amount sign: negative `transactionAmount.amount` = outflow → the counterparty is the creditor (`creditorName`, who receives the money); positive = income → the counterparty is the debtor (`debtorName`, who sent the money). Consistent with the standard GoCardless semantics.
 
-## Categorizzazione (nessuna modifica di codice)
+## Categorisation (no code changes)
 
-- `lib/gocardless/categorize.ts` (`matchCategoryId`, match esatto case-insensitive su `description`): riceve descrizioni più pulite quando il nome merchant è disponibile, quindi più transazioni dello stesso negozio matchano esattamente invece di differire per codici/suffissi.
-- `lib/calc/categorize-suggestions.ts` (Jaccard su token di `description`): stesso beneficio, punteggi di similarità più alti e più affidabili tra transazioni dello stesso merchant.
+- `lib/gocardless/categorize.ts` (`matchCategoryId`, case-insensitive exact match on `description`): it receives cleaner descriptions when the merchant name is available, so more transactions from the same shop match exactly instead of differing by codes/suffixes.
+- `lib/calc/categorize-suggestions.ts` (Jaccard on `description` tokens): the same benefit, higher and more reliable similarity scores between transactions of the same merchant.
 
-Entrambi i moduli restano byte-per-byte invariati.
+Both modules stay byte-for-byte unchanged.
 
-## Validazione (`lib/validation/transactions.ts`)
+## Validation (`lib/validation/transactions.ts`)
 
-`updateTransactionSchema` aggiunge:
+`updateTransactionSchema` adds:
 
 ```ts
 note: z.string().trim().max(500).nullable().optional(),
 ```
 
-Stringa vuota (dopo trim) va normalizzata a `null` prima dello UPDATE (nel route handler o con `.transform()` nello schema) — "cancella nota" e "nota mai impostata" sono lo stesso stato. `createTransactionSchema` non include `note` (si aggiunge dopo la creazione via PATCH, se serve — coerente con transazioni manuali che nascono senza nota).
+An empty string (after trim) must be normalised to `null` before the UPDATE (in the route handler or with `.transform()` in the schema) — "delete note" and "note never set" are the same state. `createTransactionSchema` does not include `note` (it is added after creation via PATCH, if needed — consistent with manual transactions being created without a note).
 
 ## UI (`components/domain/expenses/transaction-row.tsx`)
 
-- Quando `rawDescription` è presente e diverso da `description`, il testo descrizione principale mostra un tooltip (`title` o componente tooltip esistente nel progetto) col testo grezzo originale — stesso pattern già usato per il troncamento (`title={transaction.description}` esistente, riga 94).
-- Nuova icona nota (lucide `notebook-pen` o simile, coerente con le icone già in uso) accanto ai badge Auto/Manuale/Diviso, visibile solo se `note` non è vuota. Click apre un popover con una `Textarea` per leggere/editare, salvataggio su blur (stesso pattern di `commitDescription`/`commitAmount` già presente nel componente). Editabile per **entrambi** i source (auto e manuale) — unico campo che rompe la regola "auto è sola lettura", già chiarito come scelta esplicita.
-- Se `note` è vuota, nessuna icona mostrata; un modo per aggiungerne una la prima volta (es. bottone icona ghost sempre presente ma solo sui hover/focus, o icona sempre visibile in stato "vuoto") — dettaglio implementativo lasciato al piano, non bloccante per la spec.
+- When `rawDescription` is present and different from `description`, the main description text shows a tooltip (`title` or an existing tooltip component in the project) with the original raw text — the same pattern already used for truncation (existing `title={transaction.description}`, line 94).
+- New note icon (lucide `notebook-pen` or similar, consistent with the icons already in use) next to the Auto/Manuale/Diviso badges, visible only if `note` is not empty. Clicking opens a popover with a `Textarea` to read/edit, saving on blur (the same pattern as the `commitDescription`/`commitAmount` already present in the component). Editable for **both** sources (auto and manual) — the only field that breaks the "auto is read-only" rule, already clarified as an explicit choice.
+- If `note` is empty, no icon is shown; a way to add one the first time (e.g. a ghost icon button always present but only on hover/focus, or an icon always visible in an "empty" state) — an implementation detail left to the plan, not blocking for the spec.
 
-## Ricerca (`lib/calc/expenses.ts`, `filterTransactions`)
+## Search (`lib/calc/expenses.ts`, `filterTransactions`)
 
-Il filtro testo esistente aggiunge il match anche su `note` (oltre a `description`), stessa logica case-insensitive già usata.
+The existing text filter also matches on `note` (besides `description`), with the same case-insensitive logic already used.
 
-## Test
+## Tests
 
-- `lib/gocardless/sync.test.ts`: nuovi casi per il calcolo di `description`/`rawDescription` — creditorName presente su uscita, debtorName presente su entrata, nessuno dei due presente (fallback a remittanceInformationUnstructured), nessun campo testuale disponibile (fallback a "Movimento bancario"), verifica che `rawDescription` sia `null` quando non c'è testo grezzo.
-- `lib/validation/transactions.test.ts`: `note` valida fino a 500 caratteri, oltre soglia rifiutata, stringa vuota/whitespace normalizzata a `null`.
-- `lib/calc/expenses.test.ts`: `filterTransactions` matcha per testo anche dentro `note`.
-- Nessun nuovo test per `categorize.ts`/`categorize-suggestions.ts` (algoritmo invariato).
+- `lib/gocardless/sync.test.ts`: new cases for the calculation of `description`/`rawDescription` — creditorName present on an outflow, debtorName present on income, neither present (fallback to remittanceInformationUnstructured), no text field available (fallback to "Movimento bancario"), check that `rawDescription` is `null` when there is no raw text.
+- `lib/validation/transactions.test.ts`: `note` valid up to 500 characters, rejected above the threshold, empty/whitespace string normalised to `null`.
+- `lib/calc/expenses.test.ts`: `filterTransactions` matches text inside `note` too.
+- No new tests for `categorize.ts`/`categorize-suggestions.ts` (algorithm unchanged).
 
-## Rischi/limiti noti
+## Known risks/limits
 
-- `creditorName`/`debtorName` non sono garantiti da tutte le banche (dipende da cosa espone il PSD2 AISP della banca specifica) — fallback già gestito, nessun crash atteso, solo minor beneficio su banche che non li forniscono.
-- Le transazioni già sincronizzate restano con la `description` grezza fino alla prossima modifica manuale o a un eventuale backfill futuro (esplicitamente fuori scope qui).
+- `creditorName`/`debtorName` are not guaranteed by all banks (it depends on what the specific bank's PSD2 AISP exposes) — fallback already handled, no crash expected, just less benefit on banks that do not provide them.
+- Already synced transactions keep the raw `description` until the next manual edit or a possible future backfill (explicitly out of scope here).

@@ -1,4 +1,4 @@
-# 2026-10-11 — Landing senza «creato da Daniele»
+# 2026-10-11 — Landing without «creato da Daniele» ("made by Daniele")
 
-- Su richiesta di Daniele il piè di pagina della landing (footer e chiusura della home) mostra solo «© BuddyBudget», senza il nome dell'autore.
-- Il titolare resta indicato nei testi legali (Privacy, Termini, Cookie), dove è obbligatorio; i dati strutturati citano già l'organizzazione, non la persona.
+- At Daniele's request the landing's footer (footer and closing of the home) shows only «© BuddyBudget», without the author's name.
+- The controller remains stated in the legal texts (Privacy, Terms, Cookies), where it is mandatory; the structured data already cite the organization, not the person.

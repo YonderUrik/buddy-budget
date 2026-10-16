@@ -27,7 +27,7 @@ export interface ItalyRule {
 export const ITALY = {
   kicker: "Fatto per l'Italia",
   title: "Le regole italiane, già nei conti.",
-  lede: "Perdite da scalare, aliquote, bollo, TFR: regole che un'app pensata per un altro paese non conosce. Qui entrano nei calcoli, come stime per decidere; il conto definitivo lo fa la banca, il broker o un professionista.",
+  lede: "Perdite da scalare, aliquote, bollo, TFR: cose che un'app fatta per un altro paese non conosce. Qui sono già nei conti, come stime per decidere.",
   rules: [
     {
       icon: "backpack",
@@ -39,7 +39,7 @@ export const ITALY = {
     {
       icon: "scale",
       rule: "I guadagni degli ETF non si possono compensare con le perdite.",
-      app: "Tiene separati i due tipi di reddito, così non ti promette compensazioni che non esistono.",
+      app: "Tiene separati i due tipi di guadagno, così non ti promette sconti che non esistono.",
       link: { href: CONTENT_PATHS.guidaZainetto, label: "La guida, con esempi" },
       source: SOURCES.quadroRt,
     },
@@ -52,12 +52,12 @@ export const ITALY = {
     {
       icon: "stamp",
       rule: "Ogni anno si paga l'imposta di bollo sul deposito titoli.",
-      app: "La stima sul valore del portafoglio, insieme alle tasse che pagheresti vendendo oggi.",
+      app: "La stima sul valore del portafoglio, insieme alle tasse se vendessi oggi.",
     },
     {
       icon: "umbrella",
       rule: "Fondo pensione e TFR in azienda hanno tasse diverse.",
-      app: "Confronta gli stessi versamenti nei due casi e stima cosa ti resterebbe prelevando oggi.",
+      app: "Confronta gli stessi versamenti nei due casi e stima quanto ti resterebbe prelevando oggi.",
     },
     {
       icon: "house",

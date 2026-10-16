@@ -47,7 +47,7 @@ export const INSTRUMENTS: readonly InstrumentChip[] = [
 
 export const HERO = {
   title: "Sei domande sui tuoi soldi.",
-  lede: "Dove vanno ogni mese, quanto rendono, quante tasse paghi se vendi, quando chiudi il mutuo, quando puoi smettere di lavorare. BuddyBudget mette insieme banca, broker, mutuo e fondo pensione e ti risponde ogni giorno, con le tasse italiane già calcolate.",
+  lede: "Dove vanno? Quanto rendono? Quante tasse pago se vendo? Conviene chiudere il mutuo prima? Quando posso smettere di lavorare? E in tutto, quanto ho? BuddyBudget mette insieme banca, broker, mutuo e fondo pensione e risponde ogni giorno, con le tasse italiane già fatte.",
   cta: "Crea un account gratis",
   scroll: "Scorri le domande",
   /** Fatti veri oggi e controllabili (codice, informativa, impostazioni). */
@@ -98,22 +98,22 @@ export const STEPS: readonly StoryStep[] = [
     id: "soldi",
     n: "1 di 6",
     title: "Dove vanno i soldi ogni mese?",
-    text: "Le spese arrivano dalla banca da sole. L'app le divide in quattro gruppi, da quelle che devi pagare a quelle che ti concedi, e tu controlli solo i casi dubbi. Trova anche gli abbonamenti.",
+    text: "Le spese arrivano dalla banca da sole. L'app le mette in quattro gruppi: quelle che devi pagare, quelle che ti concedi, quelle per il futuro, quelle rare. Tu guardi solo i dubbi.",
     amount: { value: "2.053", small: ",00 €" },
     caption: "spesi a ottobre, finora · Dovute 1.102 € · Volute 486 € · Te futuro 300 € · Saltuarie 165 €",
     more: { href: CONTENT_PATHS.funzioni, label: "Tutto su conti e spese" },
     live: "movimenti",
     shot: "analisi",
     url: `${APP_HOST}/liquidita`,
-    stageCaption: "Le spese di ottobre, divise nei quattro gruppi. Lo fa l'app; tu controlli i dubbi.",
+    stageCaption: "Le spese di ottobre nei quattro gruppi. Lo fa l'app.",
   },
   {
     id: "investimenti",
     n: "2 di 6",
     title: "Come vanno i miei investimenti?",
-    text: "Quanto hai guadagnato davvero, senza contare i soldi che hai versato tu. Mese per mese e a confronto con il mercato. Qui: tre mesi in guadagno e uno in perdita.",
+    text: "Quanto hai guadagnato davvero, tolti i soldi che hai versato tu. Mese per mese, a confronto con il mercato.",
     amount: { value: "+1,6", small: "%", tone: "pos" },
-    caption: "negli ultimi tre mesi, senza contare i versamenti · luglio +0,8 · agosto +0,9 · settembre +0,5 · ottobre −0,7",
+    caption: "negli ultimi tre mesi, tolti i versamenti · luglio +0,8 · agosto +0,9 · settembre +0,5 · ottobre −0,7",
     live: "performance",
     shot: "performance",
     focus: [370, 440, 1000, 310],
@@ -123,7 +123,7 @@ export const STEPS: readonly StoryStep[] = [
   {
     id: "titolo",
     title: "E un titolo alla volta.",
-    text: "Ogni azione, ETF o BTP ha la sua pagina: prezzo, andamento, quanto sale e scende, quanto ci stai guadagnando. Per le azioni anche i conti dell'azienda, per gli ETF cosa c'è dentro e quanto costa.",
+    text: "Ogni azione, ETF o BTP ha la sua pagina: prezzo, andamento, rischio, quanto ci stai guadagnando. Per le azioni anche i conti dell'azienda. Per gli ETF, cosa c'è dentro.",
     amount: { value: "+32,8", small: "%", tone: "pos" },
     caption: "Energia Italia in un anno · tu ci stai guadagnando il 27,5%",
     more: { href: CONTENT_PATHS.funzioneInvestimenti, label: "Tutto sugli investimenti" },
@@ -136,21 +136,21 @@ export const STEPS: readonly StoryStep[] = [
     id: "tasse",
     n: "3 di 6",
     title: "Quante tasse pago se vendo?",
-    text: "Scegli cosa vendere e vedi subito quanto va in tasse e quanto ti resta, con le regole italiane: il 26% sui guadagni, il 12,5% sui titoli di Stato, le perdite degli anni scorsi che puoi scalare. È una stima per decidere: il conto vero lo fa la tua banca.",
+    text: "Scegli cosa vendere. Vedi subito le tasse e quanto ti resta, con le regole italiane: 26% sui guadagni, 12,5% sui titoli di Stato, perdite degli anni scorsi scalate. È una stima: il conto vero lo fa la banca.",
     amount: { value: "148", small: ",64 €" },
-    caption: "di tasse vendendo le 200 quote dell'ETF d'esempio · ti restano 19.630,11 €",
+    caption: "di tasse se vendi tutto l'ETF d'esempio · ti restano 19.630,11 €",
     more: { href: CONTENT_PATHS.zainetto, label: "Prova il calcolatore delle tasse, senza account" },
     live: "tasse",
     shot: "tasse",
     focus: [370, 960, 1020, 500],
     url: `${APP_HOST}/investimenti/tasse`,
-    stageCaption: "Il conto se vendessi oggi tutte le quote dell'ETF, riga per riga.",
+    stageCaption: "Il conto se vendi oggi, riga per riga.",
   },
   {
     id: "mutuo",
     n: "4 di 6",
     title: "Conviene chiudere il mutuo prima?",
-    text: "Scrivi quanto potresti pagare in più ogni mese e vedi quando finisci e quanti interessi risparmi. I soldi in più vanno prima sul debito che ti costa di più.",
+    text: "Scrivi quanto puoi pagare in più al mese. Vedi quando finisci e quanti interessi risparmi. I soldi in più vanno prima sul debito che costa di più.",
     amount: { value: "3 anni e 2 mesi" },
     caption: "prima, con 200 € in più al mese · 1.708 € di interessi risparmiati · senza debiti da luglio 2030",
     more: { href: CONTENT_PATHS.ammortamento, label: "Prova il calcolatore del mutuo, senza account" },
@@ -164,9 +164,9 @@ export const STEPS: readonly StoryStep[] = [
     id: "futuro",
     n: "5 di 6",
     title: "Quando posso smettere di lavorare?",
-    text: "Parte da quanto risparmi e spendi davvero. Muovi un cursore e vedi come cambia l'anno: quanta strada hai fatto, quando arrivi, se i soldi bastano. Vale anche per i traguardi più vicini, come un viaggio o l'anticipo per una casa.",
+    text: "Parte da quanto risparmi e spendi davvero. Muovi un cursore e l'anno cambia. Vale anche per un viaggio o l'anticipo di una casa.",
     amount: { value: "2045" },
-    caption: "tra 18,8 anni, se continui così · le ipotesi sono sempre scritte sotto i cursori",
+    caption: "tra 18,8 anni, se continui così · i numeri di partenza sono sempre sotto i cursori",
     more: { href: CONTENT_PATHS.funzioni, label: "Tutto sul futuro" },
     live: "analitiche",
     shot: "analitiche",
@@ -178,13 +178,13 @@ export const STEPS: readonly StoryStep[] = [
     id: "totale",
     n: "6 di 6",
     title: "E in tutto, quanto ho?",
-    text: "La somma di tutto quello che hai visto, con i debiti già tolti. Si aggiorna ogni giorno da sola.",
+    text: "Tutto quello che hai, meno i debiti. Si aggiorna ogni giorno da solo.",
     amount: { value: "29.282", small: ",74 €" },
     caption: "quello che hai, meno quello che devi",
     shot: "panoramica",
     focus: [390, 1160, 860, 440],
     url: `${APP_HOST}/panoramica`,
-    stageCaption: "La Panoramica: le stesse quattro voci, sommate.",
+    stageCaption: "La Panoramica: le quattro voci, sommate.",
   },
 ];
 
@@ -278,7 +278,7 @@ export const PERFORMANCE_PANEL = {
     { short: "set", rest: "tembre", value: "+0,5 %", tone: "pos" as const },
     { short: "ott", rest: "obre", value: "−0,7 %", tone: "neg" as const },
   ],
-  status: "La distanza tra le due linee è il guadagno vero: i soldi che hai versato tu non contano.",
+  status: "La distanza tra le due linee è il guadagno vero.",
 } as const;
 
 export const TAX_PANEL = {
@@ -293,7 +293,7 @@ export const TAX_PANEL = {
     { label: "Tasse · 26 %", detail: "sul guadagno", value: "−148,64 €", tone: "neg" as const },
     { label: "Ti resta", value: "19.630,11 €", kind: "total" as const },
   ],
-  status: "Stima con le regole italiane: 26 % sui guadagni, 12,5 % sui titoli di Stato, le perdite degli ultimi quattro anni che puoi scalare. Il conto vero lo fa la tua banca.",
+  status: "Stima con le regole italiane. Il conto vero lo fa la tua banca.",
 } as const;
 
 export const DEBT_PANEL = {
@@ -320,7 +320,7 @@ export const DEBT_PANEL = {
     { name: "Prestito auto · 7,1 %", detail: "10.938 €" },
     { name: "Mutuo casa · 2,9 %", detail: "27.434 € · per ultimo" },
   ],
-  status: "I soldi in più vanno prima sul debito con il tasso più alto (le rate della cucina), poi sul prestito, infine sul mutuo.",
+  status: "I soldi in più vanno prima sul debito che costa di più: le rate della cucina, poi il prestito, infine il mutuo.",
 } as const;
 
 export const FIRE_PANEL = {
@@ -356,34 +356,34 @@ export const REAL_TOGGLE = { show: "Vedi la schermata vera", hide: "Torna all'an
 /** «Com'è fatta»: la galleria di tutte le schermate, dopo le sei domande. */
 export const SCREENS_HOME = {
   title: "Com'è fatta, schermata per schermata.",
-  intro: "Sono schermate vere dell'app, con i dati di una persona inventata, mai ritagliate. Scegli un'area e una schermata.",
+  intro: "Schermate vere, intere, con i dati di una persona inventata. Scegli quale vedere.",
 } as const;
 
 /** «Funziona con quello che hai già»: le quattro famiglie di fonti. */
 export const WORKS_WITH = {
   title: "Funziona con quello che hai già.",
-  intro: "La banca si collega in sola lettura, dal broker carichi un file, del fondo pensione bastano due numeri. Niente da riscrivere a mano.",
+  intro: "La banca si collega e può solo leggere. Dal broker carichi un file. Del fondo pensione bastano due numeri. Niente da riscrivere a mano.",
   banks: {
     icon: "landmark" satisfies HomeIcon,
     title: "Le banche di cinque paesi",
-    text: "Italia, Germania, Francia, Spagna e Regno Unito. Il collegamento lo fa GoCardless, un servizio autorizzato in Europa, e può solo leggere: le credenziali le scrivi sul sito della tua banca e il consenso dura 90 giorni.",
+    text: "Italia, Germania, Francia, Spagna e Regno Unito. Il collegamento passa da GoCardless, un servizio autorizzato in Europa che può solo leggere. La password la scrivi solo sul sito della tua banca. Il consenso dura 90 giorni.",
   },
   brokers: {
     icon: "spreadsheet" satisfies HomeIcon,
     title: "I file del broker",
-    text: "Interactive Brokers, DEGIRO, Trade Republic e Fineco si leggono subito; per gli altri l'app impara il formato dal tuo file. Nessun accesso al conto titoli.",
+    text: "Interactive Brokers, DEGIRO, Trade Republic e Fineco si leggono subito. Per gli altri, l'app impara il formato dal tuo file. Nessun accesso al conto titoli.",
     csv: "CSV di chiunque",
   },
   instruments: {
     icon: "trending" satisfies HomeIcon,
     title: "Azioni, ETF, titoli di Stato, cripto",
-    text: "Ogni strumento ha la sua pagina e la sua tassa. I prezzi arrivano tre volte al giorno da fonti gratuite, come chiusure di fine giornata.",
+    text: "Ogni strumento ha la sua pagina e la sua tassa. I prezzi arrivano tre volte al giorno, a fine giornata.",
     source: "Tra le fonti dei prezzi",
   },
   rest: {
     icon: "umbrella" satisfies HomeIcon,
     title: "Fondo pensione, mutuo e prestiti",
-    text: "Del fondo pensione bastano quanto hai versato e quanto vale, ogni tanto. Del mutuo importo, tasso e durata, una volta sola. Da lì l'app calcola rendimento, prelievo netto e piano rata per rata.",
+    text: "Del fondo pensione bastano quanto hai versato e quanto vale. Del mutuo importo, tasso e durata, una volta sola. Il resto lo calcola l'app.",
     chips: [
       { icon: "umbrella", name: "Fondo pensione", kind: "TFR a confronto", color: "fut" },
       { icon: "house", name: "Mutuo casa", color: "neg" },
@@ -404,12 +404,12 @@ export interface SecurityRow {
 /** «La sicurezza, in chiaro»: ogni frase è verificata nel codice, nel repo infra o in una fonte citata (vedi `security.ts`). */
 export const SECURITY_HOME = {
   title: "La sicurezza, in chiaro.",
-  intro: "È la prima domanda di tutti prima di collegare la banca. Ecco come funziona, in parole semplici: ogni frase si può controllare nel codice o nelle fonti linkate.",
+  intro: "È la prima domanda di tutti, prima di collegare la banca. Ecco le risposte. Ogni frase si può controllare nel codice o nelle fonti.",
   rows: [
     {
       icon: "landmark",
       title: "PSD2, in due parole",
-      text: "È una legge europea sui pagamenti. Dice che la tua banca deve far leggere i conti a un servizio autorizzato, se glielo chiedi tu, e che le credenziali le dai solo alla banca. BuddyBudget usa GoCardless, autorizzato in Francia (ACPR, n. 17118): può solo leggere, non può fare pagamenti, e il consenso scade dopo 90 giorni o quando lo togli tu.",
+      text: "Una legge europea. Se lo chiedi tu, la banca fa leggere i tuoi conti a un servizio autorizzato. La password resta tua: la scrivi solo alla banca. Qui il servizio è GoCardless, autorizzato in Francia (ACPR, n. 17118): legge e basta, non può pagare. Il consenso scade dopo 90 giorni, o quando lo togli tu.",
       sources: [
         { label: "Direttiva (UE) 2015/2366, art. 67", href: SECURITY_SOURCES.psd2.href },
         { label: "Condizioni GoCardless, art. 4", href: SECURITY_SOURCES.gocardlessTerms.href },
@@ -419,35 +419,35 @@ export const SECURITY_HOME = {
       icon: "key",
       title: "Cosa è cifrato",
       text: FIELD_ENCRYPTION_LIVE
-        ? "La connessione è sempre cifrata (HTTPS). Nel database, le descrizioni e le note dei movimenti, le note di debiti e investimenti e le chiavi della banca sono cifrate (AES-256) prima di essere salvate, con una chiave che non sta nei backup. Importi e date no: servono per fare i conti."
+        ? "La connessione è sempre cifrata (HTTPS). Nel database, descrizioni e note dei movimenti, note di debiti e investimenti e chiavi della banca sono cifrate (AES-256) prima di essere salvate, con una chiave che non sta nei backup. Importi e date restano leggibili: servono per fare i conti."
         : "La connessione è sempre cifrata (HTTPS). Importi, date e descrizioni dei movimenti stanno nel database in chiaro, perché servono per fare i conti.",
     },
     {
       icon: "server",
       title: "Dove stanno i dati",
-      text: "Su un server in Germania. Le copie di sicurezza restano nell'Unione europea per 14 giorni, cifrate. I registri tecnici durano 30 giorni e non contengono email, nomi, importi né descrizioni.",
+      text: "Su un server in Germania. Le copie di sicurezza restano in Europa per 14 giorni, cifrate. I registri tecnici durano 30 giorni, senza email, nomi, importi o descrizioni.",
       sources: [{ label: "Cloudflare R2, dati nell'Unione europea", href: SECURITY_SOURCES.r2Location.href }],
     },
     {
       icon: "ban",
       title: "Cosa non salviamo mai",
-      text: "Le credenziali della banca: restano alla banca. Le password: non esistono, entri con un link via email o con Google. L'IBAN: serve solo mentre scegli quale conto collegare.",
+      text: "La password della banca: la dai solo alla banca. Una password per BuddyBudget: non esiste, entri con un link via email o con Google. L'IBAN: serve solo mentre scegli quale conto collegare.",
     },
     {
       icon: "download",
       title: "Cosa controlli tu",
-      text: "Scollega la banca e il consenso sparisce subito. Scarica tutto in un file ZIP. Elimina l'account, subito o con 30 giorni per ripensarci: con lui si chiudono anche i collegamenti alle banche.",
+      text: "Scollega la banca: il consenso sparisce subito. Scarica tutto in un file ZIP. Elimina l'account, subito o con 30 giorni per ripensarci.",
     },
   ] satisfies readonly SecurityRow[],
   moreLabel: "Tutta la pagina sulla sicurezza, con le fonti",
   limits: [
     {
       title: "Il server può leggere i dati",
-      text: "Deve leggerli per calcolare saldi, budget e tasse, quindi chi gestisce il servizio potrebbe tecnicamente vederli. Preferiamo dirlo.",
+      text: "Deve leggerli per fare i conti, quindi chi gestisce il servizio potrebbe vederli. Preferiamo dirlo.",
     },
     {
       title: "Nessuna certificazione",
-      text: "BuddyBudget è un progetto piccolo: non ha certificazioni come ISO 27001 né controlli esterni. Il codice aperto, qui sotto, è il modo in cui chiunque può controllare.",
+      text: "È un progetto piccolo: niente certificazioni (ISO 27001) né controlli esterni. Il codice aperto, qui sotto, è il modo per controllare.",
     },
   ],
 } as const;
@@ -455,7 +455,7 @@ export const SECURITY_HOME = {
 /** Il codice aperto, con i fatti del repository. Compare solo con `NEXT_PUBLIC_SOURCE_URL`. */
 export const OPEN_SOURCE = {
   title: "Il codice è aperto. Leggilo, o installalo sul tuo server.",
-  text: "Tutta l'app è pubblica su GitHub (licenza AGPL-3.0): puoi leggere come tratta i tuoi dati, segnalare un problema, proporre una modifica o installarla su un server tuo con Docker e non dipendere da nessuno.",
+  text: "Tutta l'app è pubblica su GitHub (licenza AGPL-3.0). Puoi leggere come tratta i tuoi dati, segnalare un problema o installarla su un server tuo con Docker.",
   cta: "Vedi il codice su GitHub",
   selfHost: "Guida al self-hosting",
   /** Percorsi nel repository, relativi a `SOURCE_URL`. */
@@ -474,12 +474,12 @@ export const OPEN_SOURCE = {
 
 export const RULES_HOME = {
   title: "Le regole italiane sono già nei conti.",
-  intro: "Entrano nei calcoli come stime per decidere: il conto definitivo lo fa la banca, il broker o un professionista.",
+  intro: "Sono stime per decidere. Il conto definitivo lo fa la banca, il broker o un professionista.",
 } as const;
 
 export const TOOLS_HOME = {
   title: "Prova senza account.",
-  intro: "Gli stessi calcoli dell'app, aperti a tutti. Sono stime, con le fonti ufficiali in fondo a ogni pagina.",
+  intro: "Gli stessi calcoli dell'app, aperti a tutti. Sono stime, con le fonti in fondo a ogni pagina.",
   open: "Apri il calcolatore",
 } as const;
 

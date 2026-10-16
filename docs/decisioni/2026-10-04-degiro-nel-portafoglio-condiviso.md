@@ -1,5 +1,5 @@
-# DEGIRO nel portafoglio condiviso
+# DEGIRO in the shared portfolio
 
-Data: 2026-10-04
+Date: 2026-10-04
 
-Import Account.csv italiano con riconciliazione multivaluta, commissioni EUR allocate per ordine e cambio broker quando presente. Origine delle operazioni e associazione conto/broker persistite (migration 0021): aggiornamenti e cancellazioni non coinvolgono l’altro broker anche con date sovrapposte. Conservate tutte le righe originali; nessun NAV o snapshot posizioni inventato. Verificato localmente il file reale insieme ai quattro IBKR; fixture pubblica sintetica. Limiti e controlli in [degiro-import.md](degiro-import.md). Solo branch locale, PR rimandata.
+Import of the Italian Account.csv with multi-currency reconciliation, EUR fees allocated per order and broker FX rate when present. Operation origin and account/broker association persisted (migration 0021): updates and deletions do not affect the other broker even with overlapping dates. All original rows kept; no NAV or position snapshot invented. The real file was verified locally together with the four IBKR ones; synthetic public fixture. Limits and checks in [degiro-import.md](degiro-import.md). Local branch only, PR postponed.

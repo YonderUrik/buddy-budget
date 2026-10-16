@@ -1,9 +1,9 @@
-# Transizioni della navigazione (2026-10-11)
+# Navigation transitions (2026-10-11)
 
-Richiesta di Daniele: cambio di sezione più fluido nella sidebar desktop e nella barra in basso su mobile.
+Daniele's request: smoother section change in the desktop sidebar and in the bottom bar on mobile.
 
-- **Indicatore che scivola**: lo sfondo della voce attiva è un solo `motion.span` con `layoutId` (molla `SPRING_SNAPPY`) che si sposta da una voce all'altra, come nelle schede (`SegmentedControl`). Ogni sidebar ha il suo `LayoutGroup`, così quella desktop e quella del menu mobile non si contendono la pillola.
-- **Si muove al tocco**: `usePendingNavHref` sposta l'indicatore appena si tocca la voce, senza aspettare la pagina nuova; torna al percorso reale appena questo cambia.
-- **Contenuto**: `SectionTransition` in `AppShell` fa entrare la nuova sezione con una dissolvenza di 200 ms e 4 px di scorrimento. Solo in entrata (la pagina vecchia sparisce subito), mai alla prima apertura né tra le schede di una stessa sezione; spenta con il movimento ridotto.
-- Scartato `<ViewTransition>` di React: animerebbe anche l'uscita e ritarderebbe la comparsa della pagina nuova.
-- Prestazioni: `motion` era già nel bundle comune (`MotionProvider` nel layout radice), nessun JS in più.
+- **Sliding indicator**: the background of the active item is a single `motion.span` with `layoutId` (`SPRING_SNAPPY` spring) that moves from one item to another, as in the tabs (`SegmentedControl`). Each sidebar has its own `LayoutGroup`, so the desktop one and the mobile menu one do not compete for the pill.
+- **Moves on tap**: `usePendingNavHref` moves the indicator as soon as the item is tapped, without waiting for the new page; it returns to the real path as soon as that changes.
+- **Content**: `SectionTransition` in `AppShell` brings in the new section with a 200 ms fade and 4 px of slide. Only on entry (the old page disappears immediately), never on first opening nor between tabs of the same section; off with reduced motion.
+- Rejected React's `<ViewTransition>`: it would animate the exit too and delay the appearance of the new page.
+- Performance: `motion` was already in the common bundle (`MotionProvider` in the root layout), no extra JS.

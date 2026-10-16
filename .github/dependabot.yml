@@ -1,8 +1,8 @@
 version: 2
 
-# Politica: solo aggiornamenti patch. Minor e major si ignorano per non rompere l'app senza motivo; si fanno a mano e di proposito.
-# `ignore` vale per i version update: gli aggiornamenti di sicurezza di Dependabot arrivano comunque, anche se minor o major.
-# Il prefisso `fix` fa partire una release (release-please) quando cambia una dipendenza di runtime; `chore` per quelle di sviluppo.
+# Policy: patch updates only. Minor and major are ignored so as not to break the app for no reason; they are done by hand, on purpose.
+# `ignore` applies to version updates: Dependabot security updates arrive anyway, even if minor or major.
+# The `fix` prefix triggers a release (release-please) when a runtime dependency changes; `chore` for development ones.
 updates:
   - package-ecosystem: npm
     directory: /
@@ -32,8 +32,8 @@ updates:
     groups:
       patch:
         update-types: [patch]
-  # Le GitHub Actions usano tag di sola major (@v4): ogni aggiornamento è una major, quindi si ignorano e si aggiornano a mano.
-  # Restano gli aggiornamenti di sicurezza.
+  # GitHub Actions use major-only tags (@v4): every update is a major, so they are ignored and updated by hand.
+  # Security updates still apply.
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }

@@ -1,31 +1,31 @@
-# Spese — filtro categoria/testo Implementation Plan
+# Spese — category/text filter Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aggiungere alla schermata Spese un filtro per categoria (singola selezione) e per testo (descrizione), che ricalcola globalmente KPI, torta "Per categoria", grafico "Andamento 6 mesi" e lista transazioni.
+**Goal:** Add to the Spese ("Expenses") screen a filter by category (single selection) and by text (description), which globally recomputes KPIs, the "Per categoria" ("By category") pie, the "Andamento 6 mesi" ("6-month trend") chart and the transaction list.
 
-**Architecture:** Nuova funzione pura `filterTransactions` in `lib/calc/expenses.ts` applicata a monte di tutte le funzioni di calcolo esistenti in `app/(app)/spese/page.tsx`. Nuovo componente controllato `ExpensesFilterBar` (select categoria + input testo) in `components/domain/expenses/`. Nessuna modifica a schema DB, API, o funzioni di calcolo esistenti.
+**Architecture:** New pure function `filterTransactions` in `lib/calc/expenses.ts` applied upstream of all existing calculation functions in `app/(app)/spese/page.tsx`. New controlled component `ExpensesFilterBar` (category select + text input) in `components/domain/expenses/`. No changes to DB schema, API, or existing calculation functions.
 
-**Tech Stack:** Next.js App Router, TypeScript, React (client component), vitest per i test, componenti shadcn `Select`/`Input`.
+**Tech Stack:** Next.js App Router, TypeScript, React (client component), vitest for tests, shadcn `Select`/`Input` components.
 
 ## Global Constraints
 
-- Tutte le stringhe visibili in italiano (nessuna i18n ancora).
-- Nessun colore/raggio hardcoded: usare classi Tailwind/token tema esistenti.
-- JSDoc minimo (una riga `/**`) su ogni componente/funzione pubblica.
-- Componenti dominio compongono primitive `components/ui/`, nessuna logica di business nei file `app/*/page.tsx` oltre all'orchestrazione già presente.
-- Barrel `components/domain/expenses/index.ts` è l'unico punto di import esterno per questi componenti.
+- All visible strings in Italian (no i18n yet).
+- No hardcoded colors/radii: use existing Tailwind classes/theme tokens.
+- Minimal JSDoc (one `/**` line) on every public component/function.
+- Domain components compose `components/ui/` primitives, no business logic in `app/*/page.tsx` files beyond the orchestration already there.
+- The `components/domain/expenses/index.ts` barrel is the only external import point for these components.
 
 ---
 
-### Task 1: `filterTransactions` — funzione pura + test
+### Task 1: `filterTransactions` — pure function + tests
 
 **Files:**
 - Modify: `lib/calc/expenses.ts`
 - Test: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Consumes: tipo `Transaction` da `@/lib/db/schema/transactions` (campi usati: `categoryId: string`, `description: string`), già importato in `lib/calc/expenses.ts`.
+- Consumes: `Transaction` type from `@/lib/db/schema/transactions` (fields used: `categoryId: string`, `description: string`), already imported in `lib/calc/expenses.ts`.
 - Produces:
   ```ts
   export interface TransactionFilter {
@@ -37,11 +37,11 @@
     filter: TransactionFilter
   ): Transaction[]
   ```
-  Usato da Task 3 in `app/(app)/spese/page.tsx`.
+  Used by Task 3 in `app/(app)/spese/page.tsx`.
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi in fondo a `lib/calc/expenses.test.ts` (dopo l'ultimo `describe` esistente), riusando l'helper `makeTransaction` già presente nel file:
+Add at the bottom of `lib/calc/expenses.test.ts` (after the last existing `describe`), reusing the `makeTransaction` helper already in the file:
 
 ```ts
 describe("filterTransactions", () => {
@@ -95,16 +95,16 @@ describe("filterTransactions", () => {
 });
 ```
 
-Aggiungi `filterTransactions` all'import esistente da `"./expenses"` in cima al file di test.
+Add `filterTransactions` to the existing import from `"./expenses"` at the top of the test file.
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: FAIL — `filterTransactions is not a function` (o errore di tipo import).
+Expected: FAIL — `filterTransactions is not a function` (or an import type error).
 
-- [ ] **Step 3: Implementa `filterTransactions`**
+- [ ] **Step 3: Implement `filterTransactions`**
 
-Aggiungi in fondo a `lib/calc/expenses.ts`:
+Add at the bottom of `lib/calc/expenses.ts`:
 
 ```ts
 export interface TransactionFilter {
@@ -112,7 +112,7 @@ export interface TransactionFilter {
   searchText: string;
 }
 
-/** Filtra le transazioni per categoria esatta e/o substring case-insensitive sulla descrizione, in AND. */
+/** Filters transactions by exact category and/or case-insensitive substring on the description, in AND. */
 export function filterTransactions(
   transactions: Transaction[],
   filter: TransactionFilter
@@ -126,10 +126,10 @@ export function filterTransactions(
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm exec vitest run lib/calc/expenses.test.ts`
-Expected: PASS, tutti i test incluso il nuovo blocco `filterTransactions`.
+Expected: PASS, all tests including the new `filterTransactions` block.
 
 - [ ] **Step 5: Commit**
 
@@ -140,14 +140,14 @@ git commit -m "feat: aggiunge filterTransactions per filtro categoria/testo in S
 
 ---
 
-### Task 2: `ExpensesFilterBar` — componente UI
+### Task 2: `ExpensesFilterBar` — UI component
 
 **Files:**
 - Create: `components/domain/expenses/expenses-filter-bar.tsx`
 - Modify: `components/domain/expenses/index.ts`
 
 **Interfaces:**
-- Consumes: tipo `Category` da `@/lib/db/schema/categories` (campi `id`, `name`, `color`, `icon`); `CategoryAvatar` da `@/components/domain/categories`; `CategoryColor`/`CategoryIcon` da `@/lib/validation/categories`; `Select`/`SelectContent`/`SelectItem`/`SelectTrigger`/`SelectValue` da `@/components/ui/select`; `Input` da `@/components/ui/input`.
+- Consumes: `Category` type from `@/lib/db/schema/categories` (fields `id`, `name`, `color`, `icon`); `CategoryAvatar` from `@/components/domain/categories`; `CategoryColor`/`CategoryIcon` from `@/lib/validation/categories`; `Select`/`SelectContent`/`SelectItem`/`SelectTrigger`/`SelectValue` from `@/components/ui/select`; `Input` from `@/components/ui/input`.
 - Produces:
   ```ts
   export interface ExpensesFilterBarProps {
@@ -159,18 +159,18 @@ git commit -m "feat: aggiunge filterTransactions per filtro categoria/testo in S
   }
   export function ExpensesFilterBar(props: ExpensesFilterBarProps): JSX.Element
   ```
-  Usato da Task 3 in `app/(app)/spese/page.tsx`.
+  Used by Task 3 in `app/(app)/spese/page.tsx`.
 
-Nessun test automatico per questo componente (nessun test esistente per gli altri componenti UI puri di questa cartella, es. `expenses-period-selector.tsx`, `transaction-row.tsx` — pattern coerente con la codebase). Verifica manuale prevista a fine piano.
+No automated test for this component (no existing tests for the other pure UI components in this folder, e.g. `expenses-period-selector.tsx`, `transaction-row.tsx` — a pattern consistent with the codebase). Manual verification planned at the end of the plan.
 
-- [ ] **Step 1: Crea il componente**
+- [ ] **Step 1: Create the component**
 
 `components/domain/expenses/expenses-filter-bar.tsx`:
 
 ```tsx
 "use client";
 
-/** Barra filtri della schermata Spese: select categoria singola + ricerca testo su descrizione, entrambi controllati. */
+/** Filter bar of the Spese screen: single category select + text search on the description, both controlled. */
 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -182,7 +182,7 @@ const ALL_CATEGORIES_VALUE = "__all__";
 
 export interface ExpensesFilterBarProps {
   categories: Category[];
-  /** null = nessun filtro categoria attivo ("Tutte le categorie"). */
+  /** null = no active category filter ("Tutte le categorie"). */
   categoryId: string | null;
   onCategoryChange: (categoryId: string | null) => void;
   searchText: string;
@@ -252,19 +252,19 @@ export function ExpensesFilterBar({
 }
 ```
 
-- [ ] **Step 2: Esporta dal barrel**
+- [ ] **Step 2: Export from the barrel**
 
-Aggiungi in `components/domain/expenses/index.ts` (dopo l'export di `ExpensesPeriodSelector`, mantenendo l'ordine alfabetico approssimativo esistente):
+Add to `components/domain/expenses/index.ts` (after the `ExpensesPeriodSelector` export, keeping the existing approximate alphabetical order):
 
 ```ts
 export { ExpensesFilterBar } from "./expenses-filter-bar";
 export type { ExpensesFilterBarProps } from "./expenses-filter-bar";
 ```
 
-- [ ] **Step 3: Verifica il build/lint**
+- [ ] **Step 3: Check build/lint**
 
 Run: `pnpm build`
-Expected: build completa senza errori TypeScript (il componente non è ancora usato in nessuna pagina, ma deve compilare in isolamento).
+Expected: build completes without TypeScript errors (the component is not yet used in any page, but it must compile in isolation).
 
 - [ ] **Step 4: Commit**
 
@@ -275,18 +275,18 @@ git commit -m "feat: aggiunge ExpensesFilterBar (select categoria + ricerca test
 
 ---
 
-### Task 3: integrazione in `app/(app)/spese/page.tsx`
+### Task 3: integration in `app/(app)/spese/page.tsx`
 
 **Files:**
 - Modify: `app/(app)/spese/page.tsx`
 
 **Interfaces:**
-- Consumes: `filterTransactions`/`TransactionFilter` da `@/lib/calc/expenses` (Task 1); `ExpensesFilterBar`/`ExpensesFilterBarProps` da `@/components/domain/expenses` (Task 2).
-- Produces: nessuna nuova interfaccia pubblica (file di route, orchestrazione terminale).
+- Consumes: `filterTransactions`/`TransactionFilter` from `@/lib/calc/expenses` (Task 1); `ExpensesFilterBar`/`ExpensesFilterBarProps` from `@/components/domain/expenses` (Task 2).
+- Produces: no new public interface (route file, terminal orchestration).
 
-- [ ] **Step 1: Aggiungi stato filtro e importa i nuovi simboli**
+- [ ] **Step 1: Add filter state and import the new symbols**
 
-In `app/(app)/spese/page.tsx`, aggiorna l'import da `@/components/domain/expenses` (riga 6-13) aggiungendo `ExpensesFilterBar`:
+In `app/(app)/spese/page.tsx`, update the import from `@/components/domain/expenses` (lines 6-13) adding `ExpensesFilterBar`:
 
 ```ts
 import {
@@ -300,7 +300,7 @@ import {
 } from "@/components/domain/expenses";
 ```
 
-Aggiorna l'import da `@/lib/calc/expenses` (riga 16-23) aggiungendo `filterTransactions`:
+Update the import from `@/lib/calc/expenses` (lines 16-23) adding `filterTransactions`:
 
 ```ts
 import {
@@ -314,16 +314,16 @@ import {
 } from "@/lib/calc/expenses";
 ```
 
-Aggiungi il nuovo stato subito dopo `showUncategorizedOnly` (riga 45):
+Add the new state right after `showUncategorizedOnly` (line 45):
 
 ```ts
 const [categoryFilter, setCategoryFilter] = React.useState<string | null>(null);
 const [searchText, setSearchText] = React.useState("");
 ```
 
-- [ ] **Step 2: Calcola `filteredTransactions` e `filteredBudgets`, sostituisci gli usi di `safeTransactions`/`safeBudgets` a valle**
+- [ ] **Step 2: Compute `filteredTransactions` and `filteredBudgets`, replace the downstream uses of `safeTransactions`/`safeBudgets`**
 
-Subito dopo la riga `const safeBudgets = budgets ?? [];` (riga 54), aggiungi:
+Right after the line `const safeBudgets = budgets ?? [];` (line 54), add:
 
 ```ts
 const filteredTransactions = filterTransactions(safeTransactions, {
@@ -335,7 +335,7 @@ const filteredBudgets = categoryFilter
   : safeBudgets;
 ```
 
-Sostituisci nel corpo del componente (righe 56-69, blocco `fallbackCategoryIds`/`transactionsInPeriodAll`/`uncategorizedCount`/`transactionsInPeriod`) ogni riferimento a `safeTransactions` con `filteredTransactions`:
+In the component body (lines 56-69, the `fallbackCategoryIds`/`transactionsInPeriodAll`/`uncategorizedCount`/`transactionsInPeriod` block), replace every reference to `safeTransactions` with `filteredTransactions`:
 
 ```ts
 const fallbackCategoryIds = new Set(
@@ -356,9 +356,9 @@ const transactionsInPeriod = showUncategorizedOnly
 const hasActiveFilter = categoryFilter !== null || searchText.trim() !== "";
 ```
 
-- [ ] **Step 3: Inserisci `ExpensesFilterBar` in JSX e passa `filteredTransactions`/`filteredBudgets` ai componenti a valle**
+- [ ] **Step 3: Insert `ExpensesFilterBar` in the JSX and pass `filteredTransactions`/`filteredBudgets` to the downstream components**
 
-Subito dopo il blocco header (dopo il `</div>` di chiusura della riga 106, prima di `{isLoading ? (` a riga 108), aggiungi:
+Right after the header block (after the closing `</div>` on line 106, before `{isLoading ? (` on line 108), add:
 
 ```tsx
 <ExpensesFilterBar
@@ -370,16 +370,16 @@ Subito dopo il blocco header (dopo il `</div>` di chiusura della riga 106, prima
 />
 ```
 
-Aggiorna le chiamate esistenti nel blocco `else` (righe 122-176):
+Update the existing calls in the `else` block (lines 122-176):
 
-- `ExpensesKpiCards`: sostituisci `transactions={safeTransactions}` con `transactions={filteredTransactions}` e `budgets={safeBudgets}` con `budgets={filteredBudgets}`.
-- `CategoryBreakdownDonut`: sostituisci `computeCategoryBreakdown(safeTransactions, ...)` con `computeCategoryBreakdown(filteredTransactions, ...)` e `computeFixedVsVariable(safeTransactions, ...)` con `computeFixedVsVariable(filteredTransactions, ...)`.
-- Il riepilogo uscite/escluse/spese effettive sopra la lista: sostituisci `computeSummary(safeTransactions, range)` con `computeSummary(filteredTransactions, range)`.
-- `ExpenseTrendChart`: sostituisci `compute6MonthTrend(safeTransactions, referenceDate)` con `compute6MonthTrend(filteredTransactions, referenceDate)`.
+- `ExpensesKpiCards`: replace `transactions={safeTransactions}` with `transactions={filteredTransactions}` and `budgets={safeBudgets}` with `budgets={filteredBudgets}`.
+- `CategoryBreakdownDonut`: replace `computeCategoryBreakdown(safeTransactions, ...)` with `computeCategoryBreakdown(filteredTransactions, ...)` and `computeFixedVsVariable(safeTransactions, ...)` with `computeFixedVsVariable(filteredTransactions, ...)`.
+- The outgoing/excluded/actual expenses summary above the list: replace `computeSummary(safeTransactions, range)` with `computeSummary(filteredTransactions, range)`.
+- `ExpenseTrendChart`: replace `compute6MonthTrend(safeTransactions, referenceDate)` with `compute6MonthTrend(filteredTransactions, referenceDate)`.
 
-- [ ] **Step 4: Aggiorna il messaggio di lista vuota**
+- [ ] **Step 4: Update the empty-list message**
 
-Sostituisci il blocco messaggio vuoto esistente (righe 153-158):
+Replace the existing empty-message block (lines 153-158):
 
 ```tsx
 {transactionsInPeriod.length === 0 ? (
@@ -391,7 +391,7 @@ Sostituisci il blocco messaggio vuoto esistente (righe 153-158):
 ) : (
 ```
 
-con:
+with:
 
 ```tsx
 {transactionsInPeriod.length === 0 ? (
@@ -405,18 +405,18 @@ con:
 ) : (
 ```
 
-- [ ] **Step 5: Verifica build e lint**
+- [ ] **Step 5: Check build and lint**
 
 Run: `pnpm build`
-Expected: build completa senza errori TypeScript.
+Expected: build completes without TypeScript errors.
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore introdotto (i 2 errori pre-esistenti `react-hooks/set-state-in-effect` documentati in `CLAUDE.md` restano invariati).
+Expected: no new errors introduced (the 2 pre-existing `react-hooks/set-state-in-effect` errors documented in `CLAUDE.md` stay unchanged).
 
-- [ ] **Step 6: Esegui l'intera suite di test**
+- [ ] **Step 6: Run the whole test suite**
 
 Run: `pnpm exec vitest run`
-Expected: PASS, tutti i test incluso il nuovo blocco `filterTransactions` di Task 1.
+Expected: PASS, all tests including the new `filterTransactions` block from Task 1.
 
 - [ ] **Step 7: Commit**
 
@@ -427,12 +427,12 @@ git commit -m "feat: integra filtro categoria/testo nella pagina Spese"
 
 ---
 
-## Verifica manuale finale (fuori dai task automatizzabili)
+## Final manual verification (outside the automatable tasks)
 
-Nessun Postgres/Redis disponibile nel sandbox agentico (stessa limitazione già documentata in `CLAUDE.md` per le feature precedenti di Spese). Da verificare manualmente in browser dall'utente a fine piano:
+No Postgres/Redis available in the agentic sandbox (the same limitation already documented in `CLAUDE.md` for the earlier Spese features). To be verified manually in the browser by the user at the end of the plan:
 
-- Selezionare una categoria dal filtro → lista, KPI, torta e trend si aggiornano solo su quella categoria; "Budget rimanente" mostra il budget della categoria selezionata.
-- Digitare testo di ricerca → lista/KPI/torta/trend filtrano per substring case-insensitive sulla descrizione.
-- Combinare categoria + testo → filtro AND.
-- Tornare a "Tutte le categorie" e svuotare il testo → viene ripristinata la vista completa.
-- Nessun risultato con filtri attivi → messaggio "Nessuna transazione corrisponde ai filtri applicati in questo periodo".
+- Select a category from the filter → list, KPIs, pie and trend update to that category only; "Budget rimanente" ("Remaining budget") shows the selected category's budget.
+- Type search text → list/KPIs/pie/trend filter by case-insensitive substring on the description.
+- Combine category + text → AND filter.
+- Go back to "Tutte le categorie" ("All categories") and clear the text → the full view is restored.
+- No results with active filters → message "Nessuna transazione corrisponde ai filtri applicati in questo periodo" ("No transaction matches the filters applied in this period").

@@ -1,13 +1,13 @@
-# Verifica Performance — 8 ottobre 2026
+# Performance check — October 8, 2026
 
-App locale reale su database isolato buddy_benchmark_demo, utente fittizio Giulia Demo.
+Real local app on the isolated database buddy_benchmark_demo, fictitious user Giulia Demo.
 
-Verificato in Chrome:
-- spiegazione TWR su hover e MWR con Invio da tastiera;
-- anteprima al 15 agosto, con aggiornamento dei rendimenti e del confronto senza cambiare il grafico;
-- trascinamento 21 luglio–8 settembre: intervallo persistente, rendimento ribasato, rischio e heatmap coerenti;
-- ripristino al periodo 3M e passaggio a Max con rendimento annualizzato;
-- date personalizzate 2–30 agosto: numeri, grafico, rischio e heatmap aggiornati;
-- schermate light e dark, acquisite a 1440×782 (override per la sola Performance nel manifest landing).
+Verified in Chrome:
+- TWR explanation on hover and MWR with Enter from the keyboard;
+- preview at August 15, with returns and comparison updated without changing the chart;
+- drag July 21–September 8: persistent range, rebased return, consistent risk and heatmap;
+- reset to the 3M period and switch to Max with annualized return;
+- custom dates August 2–30: numbers, chart, risk and heatmap updated;
+- light and dark screens, captured at 1440×782 (override for Performance only in the landing manifest).
 
-Le immagini contengono esclusivamente dati demo. Il controllo delle date usa input nativi; il fill del browser automatizzato non attivava l’evento React, quindi è stato verificato anche mediante tasti freccia.
+The images contain only demo data. The date control uses native inputs; the automated browser's fill did not trigger the React event, so it was also verified using the arrow keys.

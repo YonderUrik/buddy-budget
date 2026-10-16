@@ -1,30 +1,30 @@
-# Contribuire
+# Contributing
 
-Grazie dell'interesse. Il progetto è sviluppato da una persona sola: prima di scrivere codice per una modifica grande, apri una issue per parlarne.
+Thanks for your interest. The project is developed by a single person: before writing code for a large change, open an issue to discuss it.
 
-## Prima di iniziare
+## Before you start
 
-- Partecipando accetti il [Codice di condotta](CODE_OF_CONDUCT.md).
-- Le regole di architettura (layer dei componenti, osservabilità, design token, job in background) sono in [`CLAUDE.md`](CLAUDE.md). Valgono anche per chi non usa un assistente AI.
-- Interfaccia e documentazione sono in italiano; i messaggi di commit e le issue possono essere anche in inglese.
+- By taking part you accept the [Code of Conduct](CODE_OF_CONDUCT.md).
+- The architecture rules (component layers, observability, design tokens, background jobs) are in [`CLAUDE.md`](CLAUDE.md). They also apply to those who do not use an AI assistant.
+- Code, comments, documentation, commit messages, pull requests and issues are in English. Only user-facing text (app UI, landing page, legal pages, emails to users) stays in Italian.
 
-## Flusso
+## Workflow
 
-1. Forka il repository e crea un branch dedicato.
-2. Avvia l'ambiente seguendo il [README](README.md#sviluppo-in-locale).
-3. Prima di aprire la PR: `pnpm lint`, `pnpm test`, `pnpm exec tsc --noEmit`.
-4. Una modifica allo schema richiede `pnpm db:generate` e la migration committata. Non si modifica il database a mano.
-5. Compila il modello della PR: dì cosa cambia per chi usa l'app e come l'hai verificato.
-6. Il titolo della PR segue i Conventional Commits (`feat: …` nuova funzione, `fix: …` correzione, `chore:`/`docs:` senza effetto sulla versione): da lì release-please calcola la versione. Vedi [docs/rilasci.md](docs/rilasci.md).
+1. Fork the repository and create a dedicated branch.
+2. Start the environment following the [README](README.md#local-development).
+3. Before opening the PR: `pnpm lint`, `pnpm test`, `pnpm exec tsc --noEmit`.
+4. A schema change requires `pnpm db:generate` and the committed migration. The database is never changed by hand.
+5. Fill in the PR template: say what changes for people using the app and how you verified it.
+6. The PR title follows Conventional Commits (`feat: …` new feature, `fix: …` fix, `chore:`/`docs:` with no effect on the version): release-please computes the version from it. See [docs/rilasci.md](docs/rilasci.md).
 
-## Convenzioni in breve
+## Conventions in brief
 
-- Colori, font e raggi vengono solo dai token in `app/globals.css`, mai valori hardcoded.
-- Il codice server non usa `console.*`: si logga con `lib/observability`, senza dati personali (email, IBAN, importi, descrizioni).
-- La logica di calcolo vive in `lib/calc/` come funzioni pure, con test.
-- L'interfaccia deve restare accessibile (tastiera, etichette, contrasto, movimento ridotto): la checklist è in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
-- Una nuova funzione si aggiunge a `lib/features/catalog.ts`.
+- Colors, fonts and radii come only from the tokens in `app/globals.css`, never hardcoded values.
+- Server code does not use `console.*`: log with `lib/observability`, without personal data (emails, IBANs, amounts, descriptions).
+- Calculation logic lives in `lib/calc/` as pure functions, with tests.
+- The interface must stay accessible (keyboard, labels, contrast, reduced motion): the checklist is in [`ACCESSIBILITY.md`](ACCESSIBILITY.md).
+- A new feature is added to `lib/features/catalog.ts`.
 
-## Licenza dei contributi
+## Contribution license
 
-Contribuendo accetti che il tuo contributo sia rilasciato con la stessa licenza del progetto (AGPL-3.0, vedi [`LICENSE`](LICENSE)).
+By contributing you agree that your contribution is released under the same license as the project (AGPL-3.0, see [`LICENSE`](LICENSE)).

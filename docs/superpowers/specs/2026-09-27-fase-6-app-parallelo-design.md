@@ -1,84 +1,84 @@
-# Fase 6 migrazione VPS — app in parallelo — design
+# VPS migration Phase 6 — app in parallel — design
 
-Data: 2026-09-27
-Stato: design approvato in conversazione, in attesa di revisione della spec scritta.
-Riferimento: `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (sezione Fasi, riga 6).
+Date: 2026-09-27
+Status: design approved in conversation, awaiting review of the written spec.
+Reference: `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (Phases section, row 6).
 
-## Obiettivo
+## Goal
 
-Prima del cutover vero (Fase 7, switch DNS + fermo annunciato), far girare BuddyBudget dentro il cluster k3s appena costruito (Fasi 1-5), con dati reali, verificando end-to-end tutte le schermate — cosa che nessuna fase precedente ha potuto fare (finora solo demo whoami e componenti generici). Vercel + Neon restano la produzione reale per tutta questa fase: l'app di verifica gira in parallelo, non sostituisce nulla finché l'utente non approva il passaggio alla Fase 7.
+Before the real cutover (Phase 7, DNS switch + announced downtime), run BuddyBudget inside the newly built k3s cluster (Phases 1-5), with real data, verifying every screen end to end — something no previous phase could do (so far only the whoami demo and generic components). Vercel + Neon remain the real production throughout this phase: the verification app runs in parallel, it replaces nothing until the user approves moving to Phase 7.
 
-Criterio di "fatto" (dallo spec principale): verifica manuale completa di tutte le schermate con DB reale; i cron Vercel disattivati prima di attivare i CronJob k8s.
+"Done" criterion (from the main spec): full manual verification of all screens with the real DB; the Vercel crons disabled before enabling the k8s CronJobs.
 
-## Decisioni prese in brainstorming
+## Decisions made in brainstorming
 
-- **Dati**: dump completo da Neon (non un subset anonimizzato) — l'ambiente resta dietro lo stesso auth applicativo e l'unico utente reale oggi è chi guida questa migrazione stessa.
-- **Dominio**: `app.buddybudget.io` usato direttamente (non un sottodominio temporaneo) — è già il nome finale deciso per l'app (il dominio nudo `buddybudget.io` è riservato a una futura landing page, fuori scope qui), e oggi nessun altro lo occupa.
-- **Repliche**: 2 (uguale al target di produzione), non 1 — si verifica da subito anche il comportamento multi-pod (lock condivisi su sync/snapshot, rolling update).
-- **Aggiornamento tag immagine**: step nella CI del repo app (non ArgoCD Image Updater) — nessun componente nuovo nel cluster, coerente col principio "il GitOps è il confine" già scritto nello spec principale.
-- **Cron**: i cron Vercel (`gocardless-sync`, `net-worth-snapshot`) vanno disattivati esplicitamente prima di attivare i CronJob k8s equivalenti, per non superare il rate limit GoCardless (~4 chiamate/giorno/conto) con due stack che sincronizzano lo stesso conto in parallelo.
+- **Data**: full dump from Neon (not an anonymized subset) — the environment stays behind the same application auth and the only real user today is the person driving this very migration.
+- **Domain**: `app.buddybudget.io` used directly (not a temporary subdomain) — it is already the final name decided for the app (the bare domain `buddybudget.io` is reserved for a future landing page, out of scope here), and nothing else occupies it today.
+- **Replicas**: 2 (same as the production target), not 1 — multi-pod behavior is verified from the start too (shared locks on sync/snapshot, rolling update).
+- **Image tag update**: a step in the app repo's CI (not ArgoCD Image Updater) — no new component in the cluster, consistent with the "GitOps is the boundary" principle already written in the main spec.
+- **Cron**: the Vercel crons (`gocardless-sync`, `net-worth-snapshot`) must be explicitly disabled before enabling the equivalent k8s CronJobs, so as not to exceed the GoCardless rate limit (~4 calls/day/account) with two stacks syncing the same account in parallel.
 
-## Componenti
+## Components
 
-### 1. Namespace e manifest app (repo `buddy-budget-infra`)
+### 1. Namespace and app manifests (`buddy-budget-infra` repo)
 
-Nuovo namespace `app`:
-- `Deployment` — 2 repliche, immagine `ghcr.io/<org>/buddy-budget:<tag>` (target `runner` del Dockerfile multi-stage di Fase 0), `env` da un `ConfigMap` (valori non sensibili: `APP_URL=https://app.buddybudget.io`, ecc.) + un `Secret` cifrato SOPS (DB URL, `BETTER_AUTH_SECRET`, `CRON_SECRET`, `RESEND_API_KEY`, credenziali GoCardless, `REDIS_URL`) — stesso schema `kustomization.yaml`+`generator.yaml` già usato per gli altri secret (`grafana-secrets`, R2, tunnel Cloudflare).
-- `readinessProbe`/`livenessProbe` su `/api/health` e `/api/health/ready` (già esistenti da Fase 0).
-- `Service` ClusterIP.
-- `IngressRoute` Traefik per `app.buddybudget.io`, stesso pattern di `test.buddybudget.io` (Fase 3) — richiede aggiungere l'hostname alla configurazione del tunnel cloudflared (già catch-all da Fase 5, quindi nessuna modifica lì) e un record DNS Cloudflare (azione utente).
-- `NetworkPolicy`: ingress solo da `ingress` (Traefik) sulla porta dell'app; egress verso `data` (Postgres/Redis) e verso Internet per GoCardless/Resend/Google OAuth (DNS+HTTPS), nessun altro traffico.
-- `ResourceQuota`/`LimitRange` sul namespace, soglie con margine sopra l'uso osservato (~300-600 MB per le 2 repliche, per il budget RAM già scritto nello spec principale).
+New namespace `app`:
+- `Deployment` — 2 replicas, image `ghcr.io/<org>/buddy-budget:<tag>` (`runner` target of the Phase 0 multi-stage Dockerfile), `env` from a `ConfigMap` (non-sensitive values: `APP_URL=https://app.buddybudget.io`, etc.) + a SOPS-encrypted `Secret` (DB URL, `BETTER_AUTH_SECRET`, `CRON_SECRET`, `RESEND_API_KEY`, GoCardless credentials, `REDIS_URL`) — same `kustomization.yaml`+`generator.yaml` scheme already used for the other secrets (`grafana-secrets`, R2, Cloudflare tunnel).
+- `readinessProbe`/`livenessProbe` on `/api/health` and `/api/health/ready` (already existing since Phase 0).
+- ClusterIP `Service`.
+- Traefik `IngressRoute` for `app.buddybudget.io`, same pattern as `test.buddybudget.io` (Phase 3) — requires adding the hostname to the cloudflared tunnel configuration (already catch-all since Phase 5, so no change there) and a Cloudflare DNS record (user action).
+- `NetworkPolicy`: ingress only from `ingress` (Traefik) on the app port; egress to `data` (Postgres/Redis) and to the Internet for GoCardless/Resend/Google OAuth (DNS+HTTPS), no other traffic.
+- `ResourceQuota`/`LimitRange` on the namespace, thresholds with margin above the observed usage (~300-600 MB for the 2 replicas, per the RAM budget already written in the main spec).
 
-### 2. Migrazione dati Neon → CNPG
+### 2. Data migration Neon → CNPG
 
-- `pg_dump --format=custom` da Neon (comando preparato da Claude, eseguito dall'utente da un terminale con la connection string Neon — mai in chat, stesso vincolo di sempre per credenziali).
-- Trasferimento del file dump alla VPS (`scp` via Tailscale) e `pg_restore` dentro un pod temporaneo con `psql`/client Postgres che punta al `Service` CNPG del namespace `data`.
-- Verifica: conteggio righe per tabella (`SELECT count(*) FROM ...` su ogni tabella non vuota) confrontato Neon vs CNPG, non solo "il restore non ha dato errori".
-- Il restore va rieseguito (drop+ricrea) ogni volta che serve un dato più fresco durante la fase di verifica manuale, finché non si passa alla Fase 7 (che farà l'ultimo restore, quello vero, a cutover).
+- `pg_dump --format=custom` from Neon (command prepared by Claude, run by the user from a terminal with the Neon connection string — never in chat, the usual constraint for credentials).
+- Transfer of the dump file to the VPS (`scp` via Tailscale) and `pg_restore` inside a temporary pod with `psql`/Postgres client pointing at the CNPG `Service` in the `data` namespace.
+- Verification: row count per table (`SELECT count(*) FROM ...` on each non-empty table) compared Neon vs CNPG, not just "the restore gave no errors".
+- The restore is re-run (drop+recreate) whenever fresher data is needed during the manual verification phase, until moving to Phase 7 (which will do the last, real restore, at cutover).
 
-### 3. CronJob k8s
+### 3. k8s CronJobs
 
-Due `CronJob` nel namespace `app`:
-- `gocardless-sync` — schedule ogni 12h (stesso orario di Vercel Cron), container `curl` (o `alpine/curl`) minimale che chiama `GET http://buddy-budget.app.svc.cluster.local/api/cron/gocardless-sync` con header `Authorization: Bearer $CRON_SECRET` (da env/secret), `restartPolicy: OnFailure`.
-- `net-worth-snapshot` — schedule alle 23:50, stesso pattern.
-- Nessuna modifica alle route `/api/cron/*` esistenti (già idempotenti da Fase 0).
-- Precondizione esplicita, da eseguire **prima** di applicare questi manifest: disattivare/rimuovere le voci `crons` in `vercel.json` (o l'env che le disabilita) e verificare su Vercel che non girino più.
+Two `CronJob`s in the `app` namespace:
+- `gocardless-sync` — scheduled every 12h (same time as Vercel Cron), minimal `curl` (or `alpine/curl`) container that calls `GET http://buddy-budget.app.svc.cluster.local/api/cron/gocardless-sync` with the header `Authorization: Bearer $CRON_SECRET` (from env/secret), `restartPolicy: OnFailure`.
+- `net-worth-snapshot` — scheduled at 23:50, same pattern.
+- No change to the existing `/api/cron/*` routes (already idempotent since Phase 0).
+- Explicit precondition, to be done **before** applying these manifests: disable/remove the `crons` entries in `vercel.json` (or the env that disables them) and check on Vercel that they no longer run.
 
 ### 4. Umami
 
-- Secondo `Deployment` (immagine ufficiale `ghcr.io/umami-software/umami:postgresql-latest` o versione pinnata, da verificare al momento di scrivere il piano) nel namespace `app`, con un database dedicato (`umami`, utente separato, **non** condiviso con quello dell'app) nello stesso cluster CNPG — coerente con quanto già scritto nello spec principale ("DB separato sullo stesso cluster CNPG").
-- `Service` ClusterIP + `IngressRoute` per un sottodominio dedicato (es. `analytics.buddybudget.io`, da confermare nel piano) solo per l'accesso admin alla dashboard Umami — non deve essere raggiungibile pubblicamente allo stesso modo dell'app; valutare nel piano se instradarlo dietro Tailscale come ArgoCD/Grafana invece che via cloudflared pubblico.
-- Script di tracking Umami aggiunto al layout Next.js (`app/layout.tsx`), URL/site-id da variabile d'ambiente pubblica (`NEXT_PUBLIC_UMAMI_*`), nessuna raccolta dati finché lo script non è configurato (comportamento di default della libreria — noop se le env mancano).
+- A second `Deployment` (official image `ghcr.io/umami-software/umami:postgresql-latest` or a pinned version, to be checked when writing the plan) in the `app` namespace, with a dedicated database (`umami`, separate user, **not** shared with the app's) on the same CNPG cluster — consistent with what is already written in the main spec ("separate DB on the same CNPG cluster").
+- ClusterIP `Service` + `IngressRoute` for a dedicated subdomain (e.g. `analytics.buddybudget.io`, to be confirmed in the plan) only for admin access to the Umami dashboard — it must not be publicly reachable the same way as the app; evaluate in the plan whether to route it behind Tailscale like ArgoCD/Grafana instead of via public cloudflared.
+- Umami tracking script added to the Next.js layout (`app/layout.tsx`), URL/site-id from a public environment variable (`NEXT_PUBLIC_UMAMI_*`), no data collection until the script is configured (the library's default behavior — no-op if the envs are missing).
 
-### 5. Step CI: aggiornamento automatico del tag immagine
+### 5. CI step: automatic image tag update
 
-Nel workflow GitHub Actions del repo app (quello già esistente da Fase 0 che builda e pusha su GHCR), nuovo job successivo al push immagine:
-1. Checkout di `buddy-budget-infra` con una **nuova deploy key in scrittura** (quella esistente per ArgoCD è sola lettura, va aggiunta una seconda chiave dedicata a questo scopo, con permessi limitati a questo repo — azione utente via `gh repo deploy-key add`).
-2. Aggiornamento del tag immagine nel manifest `Deployment` del namespace `app` (`yq`/`kustomize edit set image` o `sed` mirato, da scegliere nel piano in base a cosa già usa il repo infra).
-3. Commit + push su `main` del repo infra, messaggio con lo sha dell'immagine.
-4. ArgoCD (già in polling/webhook da Fase 3) sincronizza da solo, nessuna azione manuale.
+In the app repo's GitHub Actions workflow (the one already existing since Phase 0 that builds and pushes to GHCR), a new job after the image push:
+1. Checkout of `buddy-budget-infra` with a **new write deploy key** (the existing one for ArgoCD is read-only, a second key dedicated to this purpose must be added, with permissions limited to this repo — user action via `gh repo deploy-key add`).
+2. Update of the image tag in the `Deployment` manifest of the `app` namespace (`yq`/`kustomize edit set image` or a targeted `sed`, to be chosen in the plan based on what the infra repo already uses).
+3. Commit + push to `main` of the infra repo, message with the image sha.
+4. ArgoCD (already polling/webhook since Phase 3) syncs by itself, no manual action.
 
-## Sequenza operativa attesa (dettaglio nel piano runbook)
+## Expected operational sequence (details in the runbook plan)
 
-1. Disattivare i cron Vercel.
-2. Creare manifest namespace `app` (Deployment/Service/IngressRoute/NetworkPolicy/ResourceQuota) — senza ancora i CronJob.
-3. Dump/restore dati Neon → CNPG, verifica conteggio righe.
-4. Deploy dell'app via ArgoCD, verifica readiness/liveness, DNS `app.buddybudget.io` funzionante da fuori.
-5. Applicare i CronJob k8s, verificare una prima esecuzione manuale (`kubectl create job --from=cronjob/...`) prima di aspettare lo schedule.
-6. Deploy Umami, verificare tracking su una pagina reale.
-7. Aggiungere lo step CI di aggiornamento tag, verificare con un commit di prova che il ciclo build→tag→sync funzioni end-to-end.
-8. Verifica manuale utente di tutte le schermate (Conti, Transazioni, Cash flow, Categorie, Panoramica) contro l'app in k8s.
+1. Disable the Vercel crons.
+2. Create the `app` namespace manifests (Deployment/Service/IngressRoute/NetworkPolicy/ResourceQuota) — without the CronJobs yet.
+3. Dump/restore Neon → CNPG data, row count check.
+4. Deploy the app via ArgoCD, check readiness/liveness, DNS `app.buddybudget.io` working from outside.
+5. Apply the k8s CronJobs, check a first manual run (`kubectl create job --from=cronjob/...`) before waiting for the schedule.
+6. Deploy Umami, check tracking on a real page.
+7. Add the CI tag-update step, verify with a test commit that the build→tag→sync cycle works end to end.
+8. Manual verification by the user of all screens (Conti, Transazioni, Cash flow, Categorie, Panoramica — Accounts, Transactions, Cash flow, Categories, Overview) against the app in k8s.
 
-## Rischi e vincoli
+## Risks and constraints
 
-- **Doppio sync GoCardless**: mitigato dal punto 1 della sequenza (cron Vercel disattivati per primi), da non invertire mai l'ordine.
-- **Restore ripetuti durante la verifica**: ogni restore sovrascrive lo stato del DB di test — se l'utente modifica dati nell'app di test e poi rifà un restore da Neon, quelle modifiche si perdono. Comportamento accettato (l'app di test non è la fonte di verità finché non è la Fase 7 a farne il restore definitivo).
-- **Deploy key di scrittura**: nuovo segreto con permessi di scrittura su un repo che ArgoCD legge — va tenuto scoped al solo repo infra (non un token account-wide), stesso principio di least-privilege già applicato agli altri segreti.
-- **Umami esposto**: se instradato via cloudflared pubblico invece che Tailscale, la dashboard admin (non solo lo script di tracking, che è pubblico per natura) sarebbe raggiungibile da Internet senza login proprio a differenza di ArgoCD/Grafana — da decidere esplicitamente nel piano, non lasciare a un default implicito.
+- **Double GoCardless sync**: mitigated by step 1 of the sequence (Vercel crons disabled first), never invert the order.
+- **Repeated restores during verification**: each restore overwrites the state of the test DB — if the user changes data in the test app and then redoes a restore from Neon, those changes are lost. Accepted behavior (the test app is not the source of truth until Phase 7 does the definitive restore).
+- **Write deploy key**: a new secret with write permissions on a repo that ArgoCD reads — it must stay scoped to the infra repo only (not an account-wide token), the same least-privilege principle already applied to the other secrets.
+- **Exposed Umami**: if routed via public cloudflared instead of Tailscale, the admin dashboard (not only the tracking script, which is public by nature) would be reachable from the Internet with only its own login, unlike ArgoCD/Grafana — to be decided explicitly in the plan, not left to an implicit default.
 
-## Fuori scope (rimandato)
+## Out of scope (deferred)
 
-- Cutover vero (Fase 7): resta una fase separata con il proprio runbook.
-- Rimozione della demo whoami su `test.buddybudget.io`: non necessaria per questa fase (nomi diversi, nessun conflitto), da valutare a cutover completato.
-- Alta disponibilità/multi-nodo: invariato rispetto allo spec principale.
+- Real cutover (Phase 7): remains a separate phase with its own runbook.
+- Removal of the whoami demo on `test.buddybudget.io`: not needed for this phase (different names, no conflict), to be evaluated once the cutover is complete.
+- High availability/multi-node: unchanged from the main spec.

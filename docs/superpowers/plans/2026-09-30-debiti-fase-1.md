@@ -1,131 +1,131 @@
-# Debiti, Fase 1 (motore e finanziamenti): piano di implementazione
+# Debiti (Debts), Phase 1 (engine and loans): implementation plan
 
-Spec: `docs/superpowers/specs/2026-09-30-debiti-design.md`. Branch: `claude/debiti-feature-brainstorm-9fmwa8`. Stato: **eseguito il 2026-10-01** (10/10 task, branch non ancora mergiato). Differenze rispetto a quanto scritto sotto: aggiunta la route `POST /api/debts/[id]/payments/bulk` per segnare in blocco il pregresso; il grafico del residuo parte da oggi; una rata che scade oggi è ancora da pagare.
+Spec: `docs/superpowers/specs/2026-09-30-debiti-design.md`. Branch: `claude/debiti-feature-brainstorm-9fmwa8`. Status: **executed on 2026-10-01** (10/10 tasks, branch not yet merged). Differences from what is written below: added the route `POST /api/debts/[id]/payments/bulk` to mark past instalments in bulk; the residual balance chart starts from today; an instalment due today is still to be paid.
 
-**Obiettivo della fase**: finanziamenti (`loan`) nuovi o in corso, piano di ammortamento calcolato da condizioni iniziali + registro eventi, calcolatore della variabile mancante, rate segnate pagate a mano, schede Panoramica e Finanziamenti. **Fuori da questa fase**: estinzioni anticipate (Fase 2), linee di credito/Lombard (Fase 3), patrimonio netto, simulatore, extra investimenti (Fase 4).
+**Goal of the phase**: new or ongoing loans (`loan`), amortisation schedule calculated from initial conditions + event log, calculator of the missing variable, instalments marked as paid by hand, Panoramica (Overview) and Finanziamenti (Loans) tabs. **Outside this phase**: early repayments (Phase 2), credit lines/Lombard (Phase 3), net worth, simulator, extra investments (Phase 4).
 
-Convenzioni del progetto da rispettare in ogni task: italiano nei testi, JSDoc su funzioni e componenti pubblici, barrel `index.ts` per cartella feature, nessun colore/valore hardcoded nei componenti (token tema), logica di business fuori dai file di route, `withRoute("<risorsa>.<azione>", …)` + `bindRequestUser` su ogni route, nessun `console.*`, schema solo via `pnpm db:generate` + migration committata, nessun dato personale (importi, nomi) in log o metriche.
+Project conventions to respect in every task: Italian in the texts, JSDoc on public functions and components, `index.ts` barrel per feature folder, no hardcoded colors/values in components (theme tokens), business logic outside route files, `withRoute("<resource>.<action>", …)` + `bindRequestUser` on every route, no `console.*`, schema only via `pnpm db:generate` + committed migration, no personal data (amounts, names) in logs or metrics.
 
-## Decisioni di design prese scrivendo il piano (rivedono la spec, sezione 3)
+## Design decisions taken while writing the plan (they revise the spec, section 3)
 
-1. **Niente tabella `debt_rate_periods`.** Un cambio di tasso è un evento `rate_change` nel registro, come tutto il resto: una tabella in meno.
-2. **Modello a "ancore".** Il piano è una sequenza di segmenti. Ogni segmento parte da un'**ancora** `(data, capitale residuo, tasso annuo, rate rimanenti)`. Ancora iniziale = condizioni del debito (modalità *nuovo* e *ricostruisci dall'origine*) oppure la fotografia di oggi (modalità *fotografia*). Gli eventi `rate_change` e `balance_correction` aprono un nuovo segmento; nella Fase 2 lo farà anche l'estinzione anticipata. Le rate già concluse restano quelle del segmento precedente (congelate). Questa scelta rende la Fase 2 un'aggiunta e non una riscrittura.
-3. **Convenzione degli interessi**: rata periodica, interesse del periodo = residuo × tasso annuo / 12 (TAN nominale annuo, rata mensile posticipata). Il TAEG è il tasso interno di rendimento annualizzato dei flussi (capitale erogato − spese iniziali, poi rate + spese per rata). Importi arrotondati al centesimo a ogni rata e l'ultima rata assorbe la differenza di arrotondamento.
-4. **Il calcolatore della variabile mancante gira sul client** (funzioni pure in `lib/calc/amortization.ts`), nessuna route: non tocca dati e deve rispondere mentre l'utente digita.
-5. **Ammortamento all'italiana** e periodicità diverse da quella mensile restano fuori (spec, sezione 10).
+1. **No `debt_rate_periods` table.** A rate change is a `rate_change` event in the log, like everything else: one table fewer.
+2. **"Anchor" model.** The schedule is a sequence of segments. Each segment starts from an **anchor** `(date, residual principal, annual rate, remaining instalments)`. Initial anchor = the debt's conditions (*new* and *rebuild from origination* modes) or today's snapshot (*snapshot* mode). `rate_change` and `balance_correction` events open a new segment; in Phase 2 early repayment will do so too. Already concluded instalments stay those of the previous segment (frozen). This choice makes Phase 2 an addition rather than a rewrite.
+3. **Interest convention**: periodic instalment, interest for the period = residual × annual rate / 12 (nominal annual TAN, monthly instalment paid in arrears). The TAEG (APR) is the annualised internal rate of return of the cash flows (principal disbursed − upfront costs, then instalments + per-instalment costs). Amounts are rounded to the cent at each instalment and the last instalment absorbs the rounding difference.
+4. **The missing-variable calculator runs on the client** (pure functions in `lib/calc/amortization.ts`), no route: it does not touch data and must respond while the user types.
+5. **Italian-style amortisation** (constant principal share) and periodicities other than monthly stay out (spec, section 10).
 
-## Mappa dei file
+## File map
 
-| Nuovo | Scopo |
+| New | Purpose |
 |---|---|
-| `lib/calc/amortization.ts` (+ `.test.ts`, `.properties.test.ts`) | rata, piano di un segmento, solver delle 4 grandezze, TAEG |
-| `lib/calc/debt-plan.ts` (+ `.test.ts`) | applica ancora iniziale + eventi, produce righe di piano con stato e totali |
-| `lib/db/schema/debts.ts` (+ integration test) | tabelle `debts`, `debt_events`; export da `schema/index.ts` |
-| `lib/db/migrations/0008_debiti_fase_1.sql` | generata da `pnpm db:generate` |
-| `lib/validation/debts.ts` (+ test) | schemi Zod di creazione debito, evento, modifica |
-| `lib/debts/data.ts`, `lib/debts/view.ts` (+ test) | caricamento dati dell'utente, costruzione della vista per le schede |
-| `app/api/debts/**` (+ `routes.test.ts`) | route CRUD debiti ed eventi |
-| `lib/queries/debts.ts` | hook TanStack Query e mutation |
-| `components/domain/debts/**` | tabs, layout actions, panoramica, finanziamenti, dialog, calcolatore |
-| `app/(app)/debiti/{layout,page}.tsx`, `app/(app)/debiti/finanziamenti/page.tsx` | route |
-| Modificati: `components/layout/sidebar.tsx`, `components/domain/auth/upcoming-features.data.ts`, `lib/analytics/track.ts`, `lib/account/{lifecycle,export}.ts` (+ test), `CLAUDE.md`, spec |
+| `lib/calc/amortization.ts` (+ `.test.ts`, `.properties.test.ts`) | instalment, schedule of a segment, solver for the 4 quantities, TAEG |
+| `lib/calc/debt-plan.ts` (+ `.test.ts`) | applies initial anchor + events, produces schedule rows with status and totals |
+| `lib/db/schema/debts.ts` (+ integration test) | `debts`, `debt_events` tables; export from `schema/index.ts` |
+| `lib/db/migrations/0008_debiti_fase_1.sql` | generated by `pnpm db:generate` |
+| `lib/validation/debts.ts` (+ test) | Zod schemas for debt creation, event, edit |
+| `lib/debts/data.ts`, `lib/debts/view.ts` (+ test) | loading the user's data, building the view for the tabs |
+| `app/api/debts/**` (+ `routes.test.ts`) | CRUD routes for debts and events |
+| `lib/queries/debts.ts` | TanStack Query hooks and mutations |
+| `components/domain/debts/**` | tabs, layout actions, overview, loans, dialogs, calculator |
+| `app/(app)/debiti/{layout,page}.tsx`, `app/(app)/debiti/finanziamenti/page.tsx` | routes |
+| Modified: `components/layout/sidebar.tsx`, `components/domain/auth/upcoming-features.data.ts`, `lib/analytics/track.ts`, `lib/account/{lifecycle,export}.ts` (+ test), `CLAUDE.md`, spec |
 
-## Task
+## Tasks
 
-### Task 1: motore di ammortamento (puro)
+### Task 1: amortisation engine (pure)
 
-File: `lib/calc/amortization.ts`, test accanto.
+File: `lib/calc/amortization.ts`, test next to it.
 
-Funzioni pubbliche (tutte pure, JSDoc in italiano):
-- `installmentAmount(principal, annualRate, installments)`: rata costante (con tasso 0 → capitale / n).
-- `buildSegmentSchedule({ startDate, principal, annualRate, installments, installment? })`: righe `{ number, dueDate, installment, interest, capital, residual }`. Senza `installment` lo calcola. L'ultima rata chiude il residuo a 0 assorbendo gli arrotondamenti. Le scadenze cadono lo stesso giorno del mese della prima rata, limitato all'ultimo giorno dei mesi corti (senza overflow, lezione di `addMonths` del 2026-07-28).
-- `solveAnnualRate({ principal, installment, installments })`: bisezione sul tasso (0 ≤ tasso ≤ 100%); errore esplicito se la rata non copre nemmeno il capitale (nessun tasso ≥ 0 è compatibile).
-- `solveInstallments({ principal, annualRate, installment })`: numero rate per eccesso; errore se la rata non supera gli interessi del primo mese.
+Public functions (all pure, JSDoc in Italian):
+- `installmentAmount(principal, annualRate, installments)`: constant instalment (with rate 0 → principal / n).
+- `buildSegmentSchedule({ startDate, principal, annualRate, installments, installment? })`: rows `{ number, dueDate, installment, interest, capital, residual }`. Without `installment` it calculates it. The last instalment brings the residual to 0, absorbing the rounding. Due dates fall on the same day of the month as the first instalment, capped at the last day of short months (no overflow, lesson from `addMonths` of 2026-07-28).
+- `solveAnnualRate({ principal, installment, installments })`: bisection on the rate (0 ≤ rate ≤ 100%); explicit error if the instalment does not even cover the principal (no rate ≥ 0 is compatible).
+- `solveInstallments({ principal, annualRate, installment })`: number of instalments rounded up; error if the instalment does not exceed the first month's interest.
 - `solvePrincipal({ annualRate, installment, installments })`.
-- `computeApr({ principal, upfrontCosts, installment, recurringCosts, installments })` → TAEG annuo con la stessa bisezione sul tasso mensile interno.
-- `resolveMissingLoanInput(partial)`: riceve un oggetto con esattamente una grandezza mancante tra capitale/rata/rate/tasso e restituisce le quattro complete (o un errore leggibile se le incognite sono due o più o i dati sono incompatibili).
+- `computeApr({ principal, upfrontCosts, installment, recurringCosts, installments })` → annual TAEG with the same bisection on the internal monthly rate.
+- `resolveMissingLoanInput(partial)`: receives an object with exactly one missing quantity among principal/instalment/number of instalments/rate and returns all four (or a readable error if there are two or more unknowns or the data is incompatible).
 
-Test: valore noto (10.000 € al 6% su 12 rate → 860,66 €), tasso 0, ultima rata che chiude il residuo a 0,00, scadenze a fine mese (31 gennaio → 28/29 febbraio → 31 marzo con lo stesso "giorno 31" richiesto), ogni solver inverso coerente con il diretto (andata e ritorno, tolleranza di un centesimo sulla rata e 1e-6 sul tasso), errori sui dati impossibili. Proprietà su scenari deterministici (seed fisso): somma delle quote capitale = capitale, somma degli interessi = somma delle rate − capitale, residuo mai negativo e monotono decrescente.
+Tests: known value (€10,000 at 6% over 12 instalments → €860.66), rate 0, last instalment that brings the residual to 0.00, end-of-month due dates (31 January → 28/29 February → 31 March with the same "day 31" requested), every inverse solver consistent with the direct one (round trip, tolerance of one cent on the instalment and 1e-6 on the rate), errors on impossible data. Properties on deterministic scenarios (fixed seed): sum of the principal shares = principal, sum of interest = sum of instalments − principal, residual never negative and monotonically decreasing.
 
-Verifica: `pnpm test lib/calc/amortization` verde, `pnpm tsc --noEmit` pulito.
+Verification: `pnpm test lib/calc/amortization` green, `pnpm tsc --noEmit` clean.
 
-### Task 2: piano da ancore ed eventi (puro)
+### Task 2: schedule from anchors and events (pure)
 
-File: `lib/calc/debt-plan.ts`, test accanto.
+File: `lib/calc/debt-plan.ts`, test next to it.
 
-Tipi: `DebtTerms` (capitale, tasso, n. rate, data prima rata, modalità di avvio, ancora iniziale), `DebtEvent` (`payment` con `installmentNumber`, data, importo reale, `transactionId`; `balance_correction` con data e residuo reale; `rate_change` con data e nuovo tasso), `LoanPlanRow` con `status: "pagata" | "da_pagare" | "scaduta" | "da_confermare"` (il pregresso ricostruito senza conferma è `da_confermare`).
+Types: `DebtTerms` (principal, rate, number of instalments, first instalment date, start mode, initial anchor), `DebtEvent` (`payment` with `installmentNumber`, date, actual amount, `transactionId`; `balance_correction` with date and actual residual; `rate_change` with date and new rate), `LoanPlanRow` with `status: "pagata" | "da_pagare" | "scaduta" | "da_confermare"` (paid / to pay / overdue / to confirm; past instalments rebuilt without confirmation are `da_confermare`).
 
 `buildLoanPlan(terms, events, today)` → `{ rows, totals }`:
-- totali: capitale residuo a oggi, rata corrente, interessi pagati (righe pagate con l'importo reale ripartito in quota interessi calcolata dal piano), interessi ancora da pagare, data dell'ultima rata, rate rimaste;
-- un evento `rate_change` o `balance_correction` apre un nuovo segmento dalla rata successiva alla sua data, con residuo ricalcolato (la correzione impone il residuo indicato) e rate rimanenti invariate; le righe precedenti restano quelle del segmento vecchio;
-- modalità *fotografia di oggi*: nessuna riga prima della data dell'ancora;
-- un `payment` su una rata inesistente o già pagata è ignorato e segnalato in `warnings` (l'API lo rifiuta prima, questo è solo difesa).
+- totals: residual principal as of today, current instalment, interest paid (paid rows with the actual amount split using the interest share calculated by the schedule), interest still to pay, date of the last instalment, remaining instalments;
+- a `rate_change` or `balance_correction` event opens a new segment from the instalment following its date, with a recalculated residual (the correction imposes the given residual) and unchanged remaining instalments; the earlier rows stay those of the old segment;
+- *today's snapshot* mode: no rows before the anchor date;
+- a `payment` on a non-existent or already paid instalment is ignored and reported in `warnings` (the API rejects it earlier, this is only a defence).
 
-Test: debito nuovo interamente `da_pagare`; in corso con ricostruzione e metà rate `da_confermare`; pagamenti reali con importo diverso; cambio tasso a metà (rata ricalcolata, righe precedenti invariate); correzione del residuo; fotografia di oggi; rata scaduta non pagata; totali coerenti con la somma delle righe.
+Tests: new debt entirely `da_pagare`; ongoing with reconstruction and half the instalments `da_confermare`; actual payments with a different amount; rate change halfway (instalment recalculated, earlier rows unchanged); residual correction; today's snapshot; overdue unpaid instalment; totals consistent with the sum of the rows.
 
-### Task 3: schema e migration
+### Task 3: schema and migration
 
-File: `lib/db/schema/debts.ts` + export in `schema/index.ts`; migration generata.
+File: `lib/db/schema/debts.ts` + export in `schema/index.ts`; generated migration.
 
-- `debts`: `id`, `userId` (FK `auth_user`, cascade), `kind` (text + costante `DEBT_KINDS = ["loan", "credit_line"]`, in Fase 1 si creano solo `loan`), `name`, `startMode` (`"nuovo" | "origine" | "fotografia"`), `principal`, `annualRate` (numeric 7,4), `installments`, `firstInstallmentDate`, `installment` (rata dichiarata dall'utente, può differire da quella calcolata), `anchorDate`, `anchorResidual` (solo per *fotografia*), `costs` (jsonb: lista `{ label, amount, kind: "una_tantum" | "per_rata" }`), `createdAt`/`updatedAt`. Indice per `userId`.
-- `debt_events`: `id`, `debtId` (FK cascade), `userId` (FK cascade, per le query e la pulizia dell'account), `type` (text + costante `DEBT_EVENT_TYPES`), `date`, `amount` (nullable), `installmentNumber` (nullable), `rate` (nullable, numeric 7,4), `transactionId` (nullable, FK `transactions` con `set null`), `note`, `createdAt`. Vincolo unico parziale: una sola `payment` per `(debtId, installmentNumber)`.
-- Colonne `text` + costanti TS (non enum Postgres), come `ASSET_CLASSES`.
+- `debts`: `id`, `userId` (FK `auth_user`, cascade), `kind` (text + constant `DEBT_KINDS = ["loan", "credit_line"]`, in Phase 1 only `loan` is created), `name`, `startMode` (`"nuovo" | "origine" | "fotografia"` — new / from origination / snapshot), `principal`, `annualRate` (numeric 7,4), `installments`, `firstInstallmentDate`, `installment` (instalment declared by the user, may differ from the calculated one), `anchorDate`, `anchorResidual` (only for *fotografia*), `costs` (jsonb: list of `{ label, amount, kind: "una_tantum" | "per_rata" }` — one-off / per instalment), `createdAt`/`updatedAt`. Index on `userId`.
+- `debt_events`: `id`, `debtId` (FK cascade), `userId` (FK cascade, for queries and account cleanup), `type` (text + constant `DEBT_EVENT_TYPES`), `date`, `amount` (nullable), `installmentNumber` (nullable), `rate` (nullable, numeric 7,4), `transactionId` (nullable, FK `transactions` with `set null`), `note`, `createdAt`. Partial unique constraint: a single `payment` per `(debtId, installmentNumber)`.
+- `text` columns + TS constants (not Postgres enums), like `ASSET_CLASSES`.
 
-Eseguire `pnpm db:generate`, committare la migration, applicarla con `pnpm db:migrate` sul DB di sviluppo. Test d'integrazione (stile `investments.integration.test.ts`): inserimento, cascata alla cancellazione dell'utente, unicità del pagamento per rata.
+Run `pnpm db:generate`, commit the migration, apply it with `pnpm db:migrate` on the development DB. Integration test (in the style of `investments.integration.test.ts`): insertion, cascade on user deletion, uniqueness of the payment per instalment.
 
-### Task 4: validazione, dati e vista
+### Task 4: validation, data and view
 
 File: `lib/validation/debts.ts`, `lib/debts/data.ts`, `lib/debts/view.ts`.
 
-- Schemi Zod: `createDebtSchema` (con le regole per modalità: *nuovo*/*origine* richiedono i dati contrattuali, *fotografia* richiede `anchorResidual`, `anchorDate` e rate rimanenti; tasso 0–100, importi > 0, date valide), `updateDebtSchema`, `createDebtEventSchema` (un'unione discriminata per tipo).
-- `loadUserDebts(userId)` e `buildDebtsView(debts, events, today)` che usa `buildLoanPlan` e produce: per debito `{ debt, plan, totals }`, e la panoramica `{ totalResidual, monthlyPayment, interestPaidToDate, interestRemaining, debtFreeDate, nextDue[], residualSeries[] }` (serie del residuo mese per mese fino alla fine). Nessuna query dentro i loop.
-- La scheda Panoramica mostra "Rata mensile" come somma delle rate correnti dei debiti ancora aperti.
+- Zod schemas: `createDebtSchema` (with per-mode rules: *nuovo*/*origine* require the contract data, *fotografia* requires `anchorResidual`, `anchorDate` and remaining instalments; rate 0–100, amounts > 0, valid dates), `updateDebtSchema`, `createDebtEventSchema` (a discriminated union by type).
+- `loadUserDebts(userId)` and `buildDebtsView(debts, events, today)`, which uses `buildLoanPlan` and produces: per debt `{ debt, plan, totals }`, and the overview `{ totalResidual, monthlyPayment, interestPaidToDate, interestRemaining, debtFreeDate, nextDue[], residualSeries[] }` (series of the residual month by month until the end). No queries inside loops.
+- The Panoramica tab shows "Rata mensile" ("Monthly instalment") as the sum of the current instalments of the debts still open.
 
-Test unitari della vista (più debiti, nessun debito, debito estinto).
+Unit tests of the view (several debts, no debts, debt paid off).
 
-### Task 5: route API
+### Task 5: API routes
 
-Sotto `app/api/debts/`, tutte con `withRoute("debts.<azione>", …)` e `bindRequestUser`:
-- `GET /api/debts` → vista completa (un solo caricamento per entrambe le schede).
-- `POST /api/debts` (201), `PATCH`/`DELETE /api/debts/[id]` (ownership sempre verificata: un id di un altro utente dà 404).
-- `POST /api/debts/[id]/events` (rifiuta con 400 un `payment` su rata inesistente o già pagata, con 404 una `transactionId` non dell'utente), `DELETE /api/debts/[id]/events/[eventId]`.
-- Evento Umami `debt_added` ({ startMode }) e `debt_event_added` ({ type }) dal client dopo l'esito positivo (vedi Task 6), aggiunti a `ProductEvents`.
+Under `app/api/debts/`, all with `withRoute("debts.<action>", …)` and `bindRequestUser`:
+- `GET /api/debts` → full view (a single load for both tabs).
+- `POST /api/debts` (201), `PATCH`/`DELETE /api/debts/[id]` (ownership always checked: another user's id gives 404).
+- `POST /api/debts/[id]/events` (rejects with 400 a `payment` on a non-existent or already paid instalment, with 404 a `transactionId` not belonging to the user), `DELETE /api/debts/[id]/events/[eventId]`.
+- Umami events `debt_added` ({ startMode }) and `debt_event_added` ({ type }) from the client after a successful outcome (see Task 6), added to `ProductEvents`.
 
-Test d'integrazione (stile `fase-4-routes.test.ts`): 401, IDOR su debito ed evento, doppio pagamento della stessa rata, transazione di un altro utente, creazione per le tre modalità, eliminazione con cascata degli eventi.
+Integration tests (in the style of `fase-4-routes.test.ts`): 401, IDOR on debt and event, double payment of the same instalment, another user's transaction, creation for the three modes, deletion with cascade of the events.
 
-### Task 6: query e mutation
+### Task 6: queries and mutations
 
-`lib/queries/debts.ts`: `useDebtsQuery` (staleTime moderato), mutation di creazione/modifica/eliminazione debito e di aggiunta/eliminazione evento, che invalidano la query e chiamano `track(...)` dopo l'esito positivo. Stessa struttura di `lib/queries/investments.ts`.
+`lib/queries/debts.ts`: `useDebtsQuery` (moderate staleTime), mutations to create/edit/delete a debt and to add/delete an event, which invalidate the query and call `track(...)` after a successful outcome. Same structure as `lib/queries/investments.ts`.
 
-### Task 7: struttura UI e scheda Panoramica
+### Task 7: UI structure and Panoramica tab
 
-- `app/(app)/debiti/layout.tsx`: titolo, bottone "Aggiungi debito", `SectionTabs` con `DEBTS_TABS` (Panoramica `/debiti`, Finanziamenti `/debiti/finanziamenti`; le schede Lombard e Simulatore arrivano con le loro fasi). Modello: `app/(app)/movimenti/layout.tsx` e `components/domain/investments/investments-tabs.tsx`.
-- `DebtsViewGate` (caricamento, errore, nessun debito con invito ad aggiungerne uno), copiato nello stile di `InvestmentsViewGate`.
-- Scheda Panoramica: quattro cifre (debito totale, rata mensile, interessi pagati, interessi ancora da pagare), frase sulla data di libertà dai debiti, grafico del residuo (area, con `dataviz` e token tema), prossime scadenze. Componenti separati, sotto le ~150 righe di JSX ciascuno.
+- `app/(app)/debiti/layout.tsx`: title, "Aggiungi debito" ("Add debt") button, `SectionTabs` with `DEBTS_TABS` (Panoramica `/debiti`, Finanziamenti `/debiti/finanziamenti`; the Lombard and Simulatore (Simulator) tabs arrive with their phases). Model: `app/(app)/movimenti/layout.tsx` and `components/domain/investments/investments-tabs.tsx`.
+- `DebtsViewGate` (loading, error, no debts with an invitation to add one), copied in the style of `InvestmentsViewGate`.
+- Panoramica tab: four figures (total debt, monthly instalment, interest paid, interest still to pay), a sentence on the debt-free date, residual chart (area, with `dataviz` and theme tokens), upcoming due dates. Separate components, each under ~150 lines of JSX.
 
-### Task 8: scheda Finanziamenti e dialog
+### Task 8: Finanziamenti tab and dialogs
 
-- Elenco di card (nome, residuo, rata, prossima scadenza, barra di avanzamento) con selettore per aprire il piano di ciascun debito (correzione dello stub del mockup).
-- Dettaglio: tabella del piano rata per rata (numero, scadenza, capitale, interessi, residuo, stato), segnare pagata una rata (dialog con data e importo reale precompilati dal piano, collegamento **facoltativo** a una transazione tramite picker), "segna pagate in blocco fino alla rata N" per il pregresso, cambio tasso, correzione del residuo, eliminazione del debito con conferma.
-- **Dialog "Aggiungi debito"**: prima domanda "nuovo o in corso?", e se in corso scelta tra *ricostruisci dall'origine* e *fotografia di oggi*, con una spiegazione di due righe per ciascuna (testi in costanti named). Campi di capitale, rata, numero rate e tasso con il calcolatore di `resolveMissingLoanInput`: se l'utente ne lascia vuota una, il campo si compila da solo e resta modificabile, segnato "calcolato", con TAEG se ci sono spese. Spese accessorie come lista libera (etichetta, importo, una tantum o per rata).
-- Stato del form in un file separato testato (come `register-operation-form.state.ts`).
+- List of cards (name, residual, instalment, next due date, progress bar) with a selector to open each debt's schedule (fixing the mockup's stub).
+- Detail: table of the schedule instalment by instalment (number, due date, principal, interest, residual, status), marking an instalment as paid (dialog with date and actual amount prefilled from the schedule, **optional** link to a transaction through a picker), "mark as paid in bulk up to instalment N" for past instalments, rate change, residual correction, deletion of the debt with confirmation.
+- **"Aggiungi debito" dialog**: first question "nuovo o in corso?" ("new or ongoing?"), and if ongoing a choice between *ricostruisci dall'origine* (rebuild from origination) and *fotografia di oggi* (today's snapshot), with a two-line explanation for each (texts in named constants). Principal, instalment, number of instalments and rate fields with the `resolveMissingLoanInput` calculator: if the user leaves one empty, the field fills itself and stays editable, marked "calcolato" ("calculated"), with TAEG if there are costs. Ancillary costs as a free list (label, amount, one-off or per instalment).
+- Form state in a separate tested file (like `register-operation-form.state.ts`).
 
-### Task 9: integrazioni minori
+### Task 9: minor integrations
 
-- `lib/account/lifecycle.ts` (riepilogo dati, reset, eliminazione) e `lib/account/export.ts` (JSON + CSV `debiti.csv`, `debiti-eventi.csv`) con i relativi test.
-- Sidebar: togliere `comingSoon` da Debiti; `upcoming-features.data.ts`: rimuovere la voce Debiti (vedi CLAUDE.md, schermate "in arrivo").
-- Verificare che `proxy.ts` e il layout `(app)` non richiedano altro (la route è dietro sessione come le altre).
+- `lib/account/lifecycle.ts` (data summary, reset, deletion) and `lib/account/export.ts` (JSON + CSV `debiti.csv`, `debiti-eventi.csv`) with their tests.
+- Sidebar: remove `comingSoon` from Debiti; `upcoming-features.data.ts`: remove the Debiti entry (see CLAUDE.md, "coming soon" screens).
+- Check that `proxy.ts` and the `(app)` layout require nothing else (the route is behind the session like the others).
 
-### Task 10: verifica e documentazione
+### Task 10: verification and documentation
 
-- `pnpm tsc --noEmit`, `pnpm lint`, suite completa `pnpm test` (DB di sviluppo migrato).
-- Prova dal vivo con Playwright su Postgres/Redis locali (stesso metodo delle sessioni Investimenti, utente di prova con login via magic link letto dal DB): creare i tre tipi di debito, segnare rate pagate (singole e in blocco), cambio tasso, correzione del residuo, calcolatore (tasso dalla rata), schermate desktop chiaro e 390 px scuro, guardando gli screenshot alla ricerca di difetti di layout.
-- Aggiornare `CLAUDE.md` (Stato del progetto e log), la spec (decisioni 1–5 di questo piano) e `docs/functional-spec.md` sezione 7 dove cambia il comportamento; pubblicare l'aggiornamento di stato in `#bb-backlog`.
-- **A carico dell'utente dopo il merge**: nessuna azione manuale oltre al Job PreSync che applica la migration; verificare a mano sui propri dati il pregresso del finanziamento (modalità *origine* contro *fotografia*) e il tasso calcolato dalla rata contro quello del contratto.
+- `pnpm tsc --noEmit`, `pnpm lint`, full `pnpm test` suite (migrated development DB).
+- Live test with Playwright on local Postgres/Redis (same method as the Investimenti sessions, test user with magic link login read from the DB): create the three kinds of debt, mark instalments as paid (single and in bulk), rate change, residual correction, calculator (rate from the instalment), desktop light and 390 px dark screens, looking at the screenshots for layout defects.
+- Update `CLAUDE.md` (Project status and log), the spec (decisions 1–5 of this plan) and `docs/functional-spec.md` section 7 where behaviour changes; post the status update in `#bb-backlog`.
+- **User's responsibility after the merge**: no manual action besides the PreSync Job that applies the migration; check by hand on their own data the loan's past instalments (*origine* mode against *fotografia*) and the rate calculated from the instalment against the one in the contract.
 
-## Rischi e punti da tenere d'occhio
+## Risks and points to watch
 
-- **Arrotondamenti**: una banca può arrotondare la rata diversamente (quindi la rata dichiarata dall'utente vince su quella calcolata, e l'ultima rata assorbe la differenza). Per questo `installment` è salvato sul debito.
-- **Piano teorico contro realtà**: sospensioni, rinegoziazioni e rate saltate non coincidono col piano; la correzione del residuo è il rimedio previsto e va spiegata nell'interfaccia.
-- **Scadenze a fine mese**: il giorno 29–31 è la classica fonte di overflow (vedi log 2026-07-28); coperto da test nel Task 1.
-- **Dimensioni**: i componenti di dettaglio e dialog sono il punto dove è più facile superare le ~150 righe di JSX; dividerli subito.
+- **Rounding**: a bank may round the instalment differently (so the instalment declared by the user wins over the calculated one, and the last instalment absorbs the difference). This is why `installment` is stored on the debt.
+- **Theoretical schedule versus reality**: suspensions, renegotiations and skipped instalments do not match the schedule; the residual correction is the intended remedy and must be explained in the interface.
+- **End-of-month due dates**: days 29–31 are the classic source of overflow (see log 2026-07-28); covered by tests in Task 1.
+- **Size**: the detail components and dialogs are where it is easiest to exceed ~150 lines of JSX; split them right away.

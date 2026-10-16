@@ -1,45 +1,45 @@
-# Ottimizzazione performance sync GoCardless (import conti trovati + sync manuale)
+# GoCardless sync performance optimization (import of found accounts + manual sync)
 
-> **SUPERATO (2026-09-22)** — mai implementato e non più valido (`categorize.ts` rimosso dalla categorizzazione a regole). Sostituito da `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`.
+> **SUPERSEDED (2026-09-22)** — never implemented and no longer valid (`categorize.ts` removed by rule-based categorization). Replaced by `docs/superpowers/specs/2026-09-22-gocardless-sync-job-progress-design.md`.
 
-Data: 2026-09-10
+Date: 2026-09-10
 
-## Problema
+## Problem
 
-L'utente segnala che:
-1. Selezionando i "Conti Trovati" (finalizzazione collegamento banca), l'import delle transazioni è lentissimo.
-2. Anche la sincronizzazione manuale di un singolo conto (bottone "Sincronizza ora" in Conti) è lentissima.
-3. Su Vercel, il sync spesso non funziona affatto ("non riesco a sincronizzare nulla").
+The user reports that:
+1. When selecting the "Conti Trovati" ("Found accounts", the bank-link finalization step), the transaction import is extremely slow.
+2. Manual sync of a single account (the "Sincronizza ora" ("Sync now") button in Conti (Accounts)) is also extremely slow.
+3. On Vercel, sync often doesn't work at all ("non riesco a sincronizzare nulla" — "I can't sync anything").
 
-## Causa radice (investigazione `superpowers:systematic-debugging`)
+## Root cause (`superpowers:systematic-debugging` investigation)
 
-In `lib/gocardless/sync.ts`, `syncAccountLink` importa le transazioni scaricate da GoCardless con un `for...await` **sequenziale**, ed esegue **3 query DB per ogni singola transazione**:
+In `lib/gocardless/sync.ts`, `syncAccountLink` imports the transactions downloaded from GoCardless with a **sequential** `for...await`, and runs **3 DB queries for every single transaction**:
 
-1. `resolveCategoryId` (`lib/gocardless/categorize.ts:41`) richiama `getFallbackCategoryId` — **query ripetuta** anche se `syncAccountLink` ha già recuperato lo stesso valore una volta prima del loop (riga 70).
-2. `matchCategoryId` — un `SELECT` con `ILIKE` sulla tabella `transactions` per trovare l'ultima transazione con descrizione simile.
-3. Un `INSERT` singolo per riga (con `onConflictDoNothing` per l'idempotenza).
+1. `resolveCategoryId` (`lib/gocardless/categorize.ts:41`) calls `getFallbackCategoryId` — a **repeated query** even though `syncAccountLink` has already fetched the same value once before the loop (line 70).
+2. `matchCategoryId` — a `SELECT` with `ILIKE` on the `transactions` table to find the latest transaction with a similar description.
+3. A single `INSERT` per row (with `onConflictDoNothing` for idempotency).
 
-Per un import iniziale con centinaia di transazioni storiche, questo significa centinaia × 3 round-trip DB eseguiti **uno alla volta**, mai in batch né in parallelo.
+For an initial import with hundreds of historical transactions, this means hundreds × 3 DB round-trips executed **one at a time**, never in batch or in parallel.
 
-Aggravante in `app/api/gocardless/connections/[id]/finalize/route.ts` (righe 90-96): se l'utente seleziona più conti nella schermata "Conti trovati" (`app/(app)/conti/collega/[connectionId]/page.tsx`), anche i conti stessi vengono sincronizzati **sequenzialmente** tra loro (altro `for...await`), moltiplicando linearmente il tempo totale.
+Aggravating factor in `app/api/gocardless/connections/[id]/finalize/route.ts` (lines 90-96): if the user selects several accounts on the "Conti trovati" screen (`app/(app)/conti/collega/[connectionId]/page.tsx`), the accounts themselves are also synced **sequentially** (another `for...await`), multiplying the total time linearly.
 
-Su Vercel l'effetto è amplificato: il Postgres è self-hosted su cluster k3s (non un DB Marketplace Vercel poolato/co-locato), quindi ogni round-trip serverless↔DB paga latenza di rete piena. Centinaia di round-trip sequenziali possono superare il timeout della funzione, causando il sintomo "non sincronizza nulla" invece di un semplice ritardo.
+On Vercel the effect is amplified: Postgres is self-hosted on a k3s cluster (not a pooled/co-located Vercel Marketplace DB), so every serverless↔DB round-trip pays full network latency. Hundreds of sequential round-trips can exceed the function timeout, causing the "doesn't sync anything" symptom instead of a simple delay.
 
-**Fuori scope di questo piano**: se dopo il fix i sync su Vercel restano completamente non funzionanti (non solo più lenti), è probabile un problema di connettività/firewall Vercel↔Postgres self-hosted separato dalla performance delle query — da investigare a parte controllando i log Vercel (non ancora fatto dall'utente al momento di questo spec).
+**Out of scope for this plan**: if after the fix syncs on Vercel remain completely broken (not just slower), it is likely a Vercel↔self-hosted Postgres connectivity/firewall issue separate from query performance — to be investigated separately by checking the Vercel logs (not yet done by the user at the time of this spec).
 
-## Cosa NON cambia
+## What does NOT change
 
-- La logica di matching categoria: resta "ultima transazione con descrizione simile (case-insensitive), altrimenti categoria fallback" — cambia solo *dove* viene calcolata (in memoria invece che a query per transazione).
-- Lo schema del database.
-- Il comportamento visibile all'utente sulla categorizzazione delle transazioni importate.
-- La semantica di idempotenza dell'import (nessun duplicato a ogni sync, basata sul vincolo unique `(accountId, externalId)`).
-- `resolveCategoryId`/`getFallbackCategoryId`/`matchCategoryId` in `lib/gocardless/categorize.ts` restano invariate come funzioni pubbliche: sono usate anche da `app/api/transactions/categorize-suggestions/route.ts` (wizard "Categorizza automaticamente" in Transazioni), fuori scope qui.
+- The category matching logic: it stays "latest transaction with a similar description (case-insensitive), otherwise fallback category" — only *where* it is computed changes (in memory instead of one query per transaction).
+- The database schema.
+- The user-visible behavior of categorizing imported transactions.
+- The import's idempotency semantics (no duplicates on every sync, based on the unique constraint `(accountId, externalId)`).
+- `resolveCategoryId`/`getFallbackCategoryId`/`matchCategoryId` in `lib/gocardless/categorize.ts` stay unchanged as public functions: they are also used by `app/api/transactions/categorize-suggestions/route.ts` (the "Categorizza automaticamente" ("Categorize automatically") wizard in Transazioni (Transactions)), out of scope here.
 
 ## Design
 
-### 1. Matcher precaricato in memoria (`lib/gocardless/categorize.ts`)
+### 1. Matcher preloaded in memory (`lib/gocardless/categorize.ts`)
 
-Nuova funzione:
+New function:
 
 ```ts
 export interface CategoryMatcher {
@@ -50,19 +50,19 @@ export interface CategoryMatcher {
 export async function buildCategoryMatcher(userId: string): Promise<CategoryMatcher>
 ```
 
-Implementazione:
-- Recupera una volta `fallbackCategoryId` (`getFallbackCategoryId`, invariata).
-- Recupera in una singola query **tutte** le transazioni dell'utente con categoria diversa dal fallback, selezionando solo `description`, `categoryId`, `date`, ordinate per `date DESC`.
-- Costruisce una `Map<string, string>` (chiave: descrizione normalizzata lowercase+trim, valore: `categoryId` della transazione più recente con quella descrizione — la prima incontrata nell'ordine DESC vince, stessa semantica di `ORDER BY date DESC LIMIT 1` esistente).
-- `match(description)` normalizza la descrizione in ingresso allo stesso modo e fa un lookup nella Map; ritorna `fallbackCategoryId` se non trovata.
+Implementation:
+- Fetches `fallbackCategoryId` once (`getFallbackCategoryId`, unchanged).
+- Fetches in a single query **all** the user's transactions with a category other than the fallback, selecting only `description`, `categoryId`, `date`, ordered by `date DESC`.
+- Builds a `Map<string, string>` (key: description normalized lowercase+trim, value: `categoryId` of the most recent transaction with that description — the first one met in DESC order wins, same semantics as the existing `ORDER BY date DESC LIMIT 1`).
+- `match(description)` normalizes the incoming description the same way and does a Map lookup; returns `fallbackCategoryId` if not found.
 
-Nota: il matching esistente usa `ilike` (case-insensitive, senza wildcard espliciti quindi equivalente a uguaglianza case-insensitive) — la normalizzazione lowercase+trim in memoria riproduce lo stesso comportamento senza introdurre un fuzzy-match nuovo.
+Note: the existing matching uses `ilike` (case-insensitive, with no explicit wildcards, so equivalent to case-insensitive equality) — the in-memory lowercase+trim normalization reproduces the same behavior without introducing a new fuzzy match.
 
 ### 2. `syncAccountLink` (`lib/gocardless/sync.ts`)
 
-- Costruisce il matcher una volta (`buildCategoryMatcher(link.userId)`) invece di richiamare `resolveCategoryId` per ogni transazione.
-- Nel loop sulle transazioni scaricate, calcola `categoryId = matcher.match(description)` — **zero query per transazione**.
-- Sostituisce l'insert singolo con un **insert batch**: costruisce l'array di tutte le righe da inserire (filtrando quelle senza `externalId`, come già oggi), poi un'unica chiamata:
+- Builds the matcher once (`buildCategoryMatcher(link.userId)`) instead of calling `resolveCategoryId` for each transaction.
+- In the loop over the downloaded transactions, computes `categoryId = matcher.match(description)` — **zero queries per transaction**.
+- Replaces the single insert with a **batch insert**: builds the array of all rows to insert (filtering out those without `externalId`, as today), then a single call:
 
   ```ts
   db.insert(transactions)
@@ -71,21 +71,21 @@ Nota: il matching esistente usa `ilike` (case-insensitive, senza wildcard esplic
     .returning({ categoryId: transactions.categoryId })
   ```
 
-- I contatori (`newTransactionsCount`, `categorizedCount`, `uncategorizedCount`) si calcolano dal risultato ritornato (righe effettivamente inserite, escluse quelle scartate da `onConflictDoNothing`), stessa logica di oggi applicata al risultato batch invece che riga per riga.
-- Se `rows` è vuoto (nessuna transazione nuova da GoCardless, o tutte senza `externalId`), si salta l'insert (nessuna chiamata DB inutile).
+- The counters (`newTransactionsCount`, `categorizedCount`, `uncategorizedCount`) are computed from the returned result (rows actually inserted, excluding those dropped by `onConflictDoNothing`), same logic as today applied to the batch result instead of row by row.
+- If `rows` is empty (no new transactions from GoCardless, or all without `externalId`), the insert is skipped (no pointless DB call).
 
-Risultato: da N×3 query sequenziali a **2 query totali** per il matching+insert (una `SELECT` per il matcher, una `INSERT` batch), indipendentemente dal numero di transazioni.
+Result: from N×3 sequential queries to **2 queries in total** for matching+insert (one `SELECT` for the matcher, one batch `INSERT`), regardless of the number of transactions.
 
-### 3. Sync multi-conto parallelo (`app/api/gocardless/connections/[id]/finalize/route.ts`)
+### 3. Parallel multi-account sync (`app/api/gocardless/connections/[id]/finalize/route.ts`)
 
-Il loop finale:
+The final loop:
 ```ts
 for (const link of linksToSync) {
   try { await syncAccountLink(link, redisRateLimitStore); }
   catch (error) { console.error(...); }
 }
 ```
-diventa:
+becomes:
 ```ts
 await Promise.all(
   linksToSync.map((link) =>
@@ -95,25 +95,25 @@ await Promise.all(
   )
 );
 ```
-Comportamento invariato (best-effort, un fallimento su un conto non blocca gli altri né la risposta) — cambia solo l'esecuzione da sequenziale a parallela. Sicuro perché il rate-limit GoCardless (`isRateLimited`/`recordRateLimit`) è tracciato per `externalAccountId`, quindi indipendente tra conti diversi.
+Behavior unchanged (best-effort, a failure on one account blocks neither the others nor the response) — only execution changes from sequential to parallel. Safe because the GoCardless rate limit (`isRateLimited`/`recordRateLimit`) is tracked per `externalAccountId`, hence independent across accounts.
 
-Lo scheduler cron (`lib/gocardless/scheduler.ts`, `runDueSyncs`) **non viene toccato**: gira ogni 12h in background, non blocca nessuna richiesta utente — la sequenzialità lì non è il problema segnalato. Beneficia comunque indirettamente della velocizzazione di `syncAccountLink` per singolo conto.
+The cron scheduler (`lib/gocardless/scheduler.ts`, `runDueSyncs`) **is not touched**: it runs every 12h in the background and blocks no user request — sequential execution there is not the reported problem. It still benefits indirectly from the speed-up of `syncAccountLink` per account.
 
-### 4. Feedback UI (spinner + testo esplicito)
+### 4. UI feedback (spinner + explicit text)
 
-- **`app/(app)/conti/collega/[connectionId]/page.tsx`**: il bottone "Conferma" (riga 129-131), quando `finalize.isPending`, mostra testo "Sincronizzazione in corso, può richiedere qualche minuto..." invece di "Conferma" invariato con solo `disabled`.
-- **`components/domain/accounts/account-row.tsx`**: il bottone di sync manuale (righe 233-244) già mostra uno spinner (`RefreshCw` con `animate-spin` quando `syncMutation.isPending`) ma nessun testo — aggiungere un piccolo testo accanto all'icona (es. tooltip/`title` aggiornato dinamicamente, o una label testuale inline quando pending) con lo stesso messaggio esplicito.
+- **`app/(app)/conti/collega/[connectionId]/page.tsx`**: the "Conferma" ("Confirm") button (lines 129-131), when `finalize.isPending`, shows the text "Sincronizzazione in corso, può richiedere qualche minuto..." ("Sync in progress, it may take a few minutes...") instead of an unchanged "Conferma" that is merely `disabled`.
+- **`components/domain/accounts/account-row.tsx`**: the manual sync button (lines 233-244) already shows a spinner (`RefreshCw` with `animate-spin` when `syncMutation.isPending`) but no text — add a small text next to the icon (e.g. a dynamically updated tooltip/`title`, or an inline text label while pending) with the same explicit message.
 
-Nessun'altra modifica allo stato/query (niente streaming di progresso conto-per-conto: scartato in fase di brainstorming come complessità non necessaria rispetto al fix di performance, che dovrebbe già ridurre l'attesa da minuti a secondi).
+No other change to state/queries (no account-by-account progress streaming: discarded during brainstorming as unnecessary complexity compared with the performance fix, which should already reduce the wait from minutes to seconds).
 
 ## Testing
 
-- `lib/gocardless/categorize.test.ts`: nuovi test per `buildCategoryMatcher` — matcher ritorna categoria dell'ultima transazione con descrizione uguale (case-insensitive), fallback se nessun match, comportamento invariato rispetto ai test esistenti di `resolveCategoryId`/`matchCategoryId` (che restano, non vengono rimossi).
-- `lib/gocardless/sync.test.ts`: aggiornare i test esistenti di `syncAccountLink` per riflettere l'insert batch (stesso comportamento osservabile: conteggi corretti, idempotenza su `externalId` duplicato, categoria assegnata correttamente) + un nuovo test con più transazioni per verificare che il matching in memoria assegni categorie diverse coerentemente all'interno dello stesso batch.
-- `app/api/gocardless/connections/[id]/finalize/route.test.ts`: verificare che più conti vengano sincronizzati anche se uno dei due fallisce (comportamento best-effort invariato, ora con `Promise.all`).
+- `lib/gocardless/categorize.test.ts`: new tests for `buildCategoryMatcher` — the matcher returns the category of the latest transaction with the same description (case-insensitive), fallback if no match, behavior unchanged compared with the existing tests of `resolveCategoryId`/`matchCategoryId` (which stay, are not removed).
+- `lib/gocardless/sync.test.ts`: update the existing `syncAccountLink` tests to reflect the batch insert (same observable behavior: correct counts, idempotency on duplicate `externalId`, category correctly assigned) + a new test with several transactions to verify that in-memory matching consistently assigns different categories within the same batch.
+- `app/api/gocardless/connections/[id]/finalize/route.test.ts`: verify that several accounts are synced even if one of the two fails (best-effort behavior unchanged, now with `Promise.all`).
 
-## Verifica manuale utente (fuori scope agente, nessun Postgres/browser reale nel sandbox)
+## Manual verification by the user (out of the agent's scope, no real Postgres/browser in the sandbox)
 
-- Collegare una banca sandbox con più conti e molte transazioni storiche, misurare il tempo di "Conferma" prima/dopo.
-- Sync manuale su un conto con molte transazioni non ancora importate.
-- **Su Vercel**: ripetere lo stesso test dopo il deploy. Se il sync torna a funzionare (anche se lento) il fix risolve il problema. Se resta completamente non funzionante, controllare i log Vercel per l'errore esatto (timeout vs connection refused vs altro) — indica un problema di connettività separato da investigare in una sessione dedicata.
+- Link a sandbox bank with several accounts and many historical transactions, measure the "Conferma" time before/after.
+- Manual sync on an account with many not-yet-imported transactions.
+- **On Vercel**: repeat the same test after deploy. If sync works again (even if slowly) the fix solves the problem. If it remains completely broken, check the Vercel logs for the exact error (timeout vs connection refused vs other) — it indicates a separate connectivity issue to investigate in a dedicated session.

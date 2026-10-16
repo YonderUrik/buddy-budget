@@ -1,8 +1,8 @@
-# 2026-10-08 — Import Trade Republic: ricezioni gratuite di crypto e imposte in ritardo
+# 2026-10-08 — Trade Republic import: free crypto receipts and late taxes
 
-L'import falliva con «Riga 225: amount non valido»: l'export contiene righe `DELIVERY`/`FREE_RECEIPT` (staking e trasferimenti in ingresso) con `amount` vuoto, e imposte `TAX` con `date` contabile di mesi prima di `datetime`.
+The import failed with «Riga 225: amount non valido» ("Row 225: invalid amount"): the export contains `DELIVERY`/`FREE_RECEIPT` rows (staking and incoming transfers) with an empty `amount`, and `TAX` rows with a booking `date` months before `datetime`.
 
-- Le `FREE_RECEIPT` di crypto sono acquisti al prezzo di mercato del file, senza cassa, con avviso nell'anteprima (alternativa scartata: prezzo zero, che azzererebbe il costo anche dei trasferimenti in ingresso di importo rilevante).
-- `datetime` può seguire `date` di qualunque intervallo; non può precederlo di oltre un giorno.
-- Altri tipi in `DELIVERY`/classi non crypto continuano a bloccare il file (nessuno scarto silenzioso).
-- Osservabilità: nessun nuovo segnale; l'esito resta `investments.import.completed`.
+- Crypto `FREE_RECEIPT` rows are purchases at the file's market price, without cash, with a warning in the preview (rejected alternative: zero price, which would zero the cost basis even for incoming transfers of significant amount).
+- `datetime` may follow `date` by any interval; it cannot precede it by more than one day.
+- Other types in `DELIVERY`/non-crypto classes continue to block the file (no silent discard).
+- Observability: no new signal; the outcome remains `investments.import.completed`.

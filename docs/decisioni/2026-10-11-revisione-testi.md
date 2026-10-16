@@ -1,7 +1,7 @@
-# Revisione dei testi dell'app (2026-10-11)
+# Review of the app's copy (2026-10-11)
 
-Primo passaggio per togliere ai testi il tono da AI: una frase dove ce n'erano due, via «davvero», «serve a capire», «secondo queste ipotesi» ripetuto. Numeri, formule e fonti non cambiano.
+First pass to remove the AI tone from the copy: one sentence where there were two, away with «davvero» ("really"), «serve a capire» ("helps you understand"), repeated «secondo queste ipotesi» ("according to these assumptions"). Numbers, formulas and sources do not change.
 
-- Coperti: catalogo funzioni (5 descrizioni accorciate, copia della landing sincronizzata), Analitiche (spiegazioni, glossario, guida), Debiti, Abbonamenti, Dividi, Investimenti (rendimenti, diversificazione).
-- Fuori: landing (testi nel thread della riprogettazione), testi legali (serve revisione professionale), scheda «Quanto rischia» (altro thread).
-- Rimandato: email e notifiche, messaggi di errore delle API, onboarding e Impostazioni. Criterio per i prossimi passaggi: una frase, niente retorica, il dettaglio dei calcoli resta completo.
+- Covered: feature catalog (5 descriptions shortened, landing copy synced), Analitiche (explanations, glossary, guide), Debiti, Abbonamenti, Dividi, Investimenti (returns, diversification).
+- Out: landing (copy in the redesign thread), legal texts (professional review needed), «Quanto rischia» card (other thread).
+- Postponed: emails and notifications, API error messages, onboarding and Impostazioni. Criterion for the next passes: one sentence, no rhetoric, the detail of the calculations stays complete.

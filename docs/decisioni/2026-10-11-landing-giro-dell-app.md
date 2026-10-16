@@ -1,14 +1,14 @@
-# 2026-10-11 — Landing: giro dell'app con schermate intere
+# 2026-10-11 — Landing: app tour with full screens
 
-Dopo la PR #311 Daniele ha trovato gli screenshot illeggibili (si vedeva solo una porzione), il catalogo «Tutte le 49 funzioni» inutile in home e le pagine interne ancora nello stile vecchio.
+After PR #311 Daniele found the screenshots unreadable (only a portion was visible), the «Tutte le 49 funzioni» ("All 49 features") catalog useless on the home and the inner pages still in the old style.
 
-- Le cinque sezioni «prima / ora» e la scheda tecnica «Nel dettaglio» diventano **una sola sezione a schede** (`components/tour.tsx`, testi in `TOUR` di `content/sheet.ts`): per area il foglio di prima, cosa fa l'app, **la schermata intera** a tutta larghezza e i dettagli. `ShotCrop` e `ToolShot` (ritagli senza sidebar) sono eliminati: si usa sempre `AppShot`.
-- Il catalogo in tabella esce dalla home; resta `/funzioni`, linkata in fondo al giro.
-- Fonti supportate con **bandiere** (flag-icons, MIT, `public/flags/ATTRIBUTION.md`) e icone; le regole italiane mostrano la loro icona.
-- Le etichette tipo «Spese!A1» diventano titoletti normali: sembravano codice.
-- Pagine interne: intestazione sulla griglia del foglio, invito finale in card chiara e piè di pagina chiaro al posto della fascia navy, selettori a pillola come nell'app, raggi dai token.
-- Evento Umami `tour_tab_selected` al posto di `detail_tab_selected`. Tolti gli screenshot del credito Lombard (funzione rimossa).
+- The five «prima / ora» ("before / now") sections and the «Nel dettaglio» ("In detail") technical sheet become **a single tabbed section** (`components/tour.tsx`, copy in `TOUR` of `content/sheet.ts`): per area the old sheet, what the app does, **the full screen** at full width and the details. `ShotCrop` and `ToolShot` (crops without sidebar) are deleted: `AppShot` is always used.
+- The table catalog leaves the home; `/funzioni` remains, linked at the end of the tour.
+- Supported sources with **flags** (flag-icons, MIT, `public/flags/ATTRIBUTION.md`) and icons; the Italian rules show their icon.
+- Labels like «Spese!A1» become normal headings: they looked like code.
+- Inner pages: header on the sheet grid, final call to action in a light card and light footer instead of the navy band, pill selectors as in the app, radii from the tokens.
+- Umami event `tour_tab_selected` instead of `detail_tab_selected`. Removed the Lombard credit screenshots (feature removed).
 
-Catalogo sfoltito da 49 a 34 voci (richiesta di Daniele): tolte le voci che erano dettagli d'interfaccia (nomi leggibili, ricerca e note, proposte per somiglianza, conti per banca, aggiornamento, avviso di rinnovo, categoria con un tocco, da sistemare, liquidità unica, rate e correzioni, riepilogo in barra, nascondi importi, accesso, aiuto, installabile). Le funzioni restano nell'app; il catalogo elenca solo quelle che contano da sole.
+Catalog trimmed from 49 to 34 entries (Daniele's request): removed the entries that were interface details (readable names, search and notes, similarity proposals, accounts per bank, refresh, renewal notice, one-tap category, to fix, single cash, instalments and corrections, summary in the bar, hide amounts, sign-in, help, installable). The features remain in the app; the catalog lists only those that matter on their own.
 
-Indice delle sezioni sotto l'apertura tolto (Daniele: «non allineato, non c'entra»): la barra in alto ha già i collegamenti e il giro dell'app ha le sue schede. Tra i broker la card «E tutti gli altri» dice che qualsiasi CSV si importa, perché i soli loghi facevano pensare a un elenco chiuso.
+Section index below the opening removed (Daniele: «non allineato, non c'entra», "not aligned, doesn't belong"): the top bar already has the links and the app tour has its tabs. Among the brokers the «E tutti gli altri» ("And all the others") card says that any CSV can be imported, because the logos alone suggested a closed list.

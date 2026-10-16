@@ -1,34 +1,34 @@
-# Categorizza automaticamente — match per similarità Implementation Plan
+# Categorizza automaticamente ("Categorize automatically") — similarity matching Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Sostituire il match esatto sulla descrizione nel motore di suggerimenti "Categorizza automaticamente" con un match per similarità a token (Jaccard, numeri scartati), così suffissi/codici variabili e filiali diverse dello stesso merchant vengono riconosciuti come simili; mostrare la percentuale di somiglianza nel wizard.
+**Goal:** Replace the exact description match in the "Categorizza automaticamente" suggestion engine with a token-based similarity match (Jaccard, numbers discarded), so that variable suffixes/codes and different branches of the same merchant are recognized as similar; show the similarity percentage in the wizard.
 
-**Architecture:** `computeCategorizeSuggestions` confronta ogni transazione da categorizzare contro ogni transazione storica con un indice di Jaccard sui token normalizzati (numeri scartati), invece del lookup esatto su mappa attuale. Aggregazione per categoria vincente invariata (più frequente, pareggio → più recente); nuovo campo `averageSimilarity` nell'output, mostrato nel wizard.
+**Architecture:** `computeCategorizeSuggestions` compares each transaction to categorize against each historical transaction with a Jaccard index on the normalized tokens (numbers discarded), instead of the current exact map lookup. Aggregation by winning category unchanged (most frequent, tie → most recent); new field `averageSimilarity` in the output, shown in the wizard.
 
-**Tech Stack:** TypeScript puro (nessuna nuova dipendenza), vitest.
+**Tech Stack:** Pure TypeScript (no new dependency), vitest.
 
 ## Global Constraints
 
-- Soglia di similarità: `SIMILARITY_THRESHOLD = 0.5`, inclusiva (`≥`).
-- Similarità = indice di Jaccard tra insiemi di token (parole), scartati i token puramente numerici (`^\d+$`).
-- Se uno dei due insiemi di token è vuoto (descrizione interamente numerica), il confronto ricade sull'uguaglianza esatta della stringa normalizzata (niente Jaccard su insiemi vuoti).
-- Nessun peso per punteggio di similarità nella scelta della categoria vincente o nel calcolo dello split: un match sopra soglia conta come un match, indipendentemente dal suo punteggio.
-- `averageSimilarity` = media dei punteggi di similarità dei soli match della categoria vincente, arrotondata a 2 decimali.
-- Scope limitato al motore del wizard manuale (`lib/calc/categorize-suggestions.ts`). L'auto-categorizzazione all'import GoCardless (`lib/gocardless/categorize.ts`) resta a match esatto, non toccata da questo piano.
-- Nessuna modifica a endpoint (`route.ts`) o hook (`lib/queries/transactions.ts`): il nuovo campo attraversa la serializzazione JSON esistente senza cambi di schema.
-- Stringhe utente in italiano (nessuna i18n).
+- Similarity threshold: `SIMILARITY_THRESHOLD = 0.5`, inclusive (`≥`).
+- Similarity = Jaccard index between sets of tokens (words), discarding purely numeric tokens (`^\d+$`).
+- If one of the two token sets is empty (entirely numeric description), the comparison falls back to exact equality of the normalized string (no Jaccard on empty sets).
+- No weighting by similarity score in choosing the winning category or in computing the split: a match above the threshold counts as one match, regardless of its score.
+- `averageSimilarity` = average of the similarity scores of the winning category's matches only, rounded to 2 decimals.
+- Scope limited to the manual wizard engine (`lib/calc/categorize-suggestions.ts`). Auto-categorization on GoCardless import (`lib/gocardless/categorize.ts`) stays exact-match, not touched by this plan.
+- No change to the endpoint (`route.ts`) or hook (`lib/queries/transactions.ts`): the new field passes through the existing JSON serialization without schema changes.
+- User strings in Italian (no i18n).
 
 ---
 
-### Task 1: Motore di similarità in `computeCategorizeSuggestions`
+### Task 1: Similarity engine in `computeCategorizeSuggestions`
 
 **Files:**
 - Modify: `lib/calc/categorize-suggestions.ts`
 - Modify: `lib/calc/categorize-suggestions.test.ts`
 
 **Interfaces:**
-- Consumes: tipo `Transaction` da `@/lib/db/schema/transactions` (invariato).
+- Consumes: type `Transaction` from `@/lib/db/schema/transactions` (unchanged).
 - Produces:
   ```ts
   export interface CategorizeSuggestion {
@@ -36,18 +36,18 @@
     suggestedCategoryId: string;
     matchCount: number;
     suggestedSplitPercentage: number | null;
-    averageSimilarity: number; // NUOVO
+    averageSimilarity: number; // NEW
   }
   export function computeCategorizeSuggestions(
     uncategorized: Transaction[],
     historical: Transaction[]
   ): CategorizeSuggestion[]
   ```
-  Stessa firma di prima (nessun cambio per i chiamanti in Task 2 dell'endpoint, già esistente e non toccato). Usato da Task 2 di questo piano (wizard UI, campo `averageSimilarity`).
+  Same signature as before (no change for the callers in Task 2 of the endpoint, already existing and not touched). Used by Task 2 of this plan (wizard UI, field `averageSimilarity`).
 
-- [ ] **Step 1: Scrivi i test che fallisce (nuovi casi + i 6 esistenti restano)**
+- [ ] **Step 1: Write the failing tests (new cases + the 6 existing ones remain)**
 
-Sostituisci interamente il contenuto di `lib/calc/categorize-suggestions.test.ts` con:
+Replace the whole content of `lib/calc/categorize-suggestions.test.ts` with:
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -230,14 +230,14 @@ describe("computeCategorizeSuggestions", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm test lib/calc/categorize-suggestions.test.ts`
-Expected: FAIL — i nuovi test (suffisso, filiale, sotto soglia, numerica, media) falliscono perché il matching esatto attuale non riconosce descrizioni diverse come simili, e `averageSimilarity` non esiste ancora nell'output.
+Expected: FAIL — the new tests (suffix, branch, below threshold, numeric, average) fail because the current exact matching does not recognize different descriptions as similar, and `averageSimilarity` does not exist yet in the output.
 
-- [ ] **Step 3: Scrivi l'implementazione**
+- [ ] **Step 3: Write the implementation**
 
-Sostituisci interamente il contenuto di `lib/calc/categorize-suggestions.ts` con:
+Replace the whole content of `lib/calc/categorize-suggestions.ts` with:
 
 ```ts
 import type { Transaction } from "@/lib/db/schema/transactions";
@@ -256,7 +256,7 @@ function normalizeDescription(description: string): string {
   return description.trim().toLowerCase();
 }
 
-/** Insieme di parole significative di una descrizione: normalizzata, spezzata su spazi/punteggiatura, scartati i token puramente numerici (codici transazione, numeri civici, riferimenti). */
+/** Set of meaningful words of a description: normalized, split on spaces/punctuation, discarding purely numeric tokens (transaction codes, street numbers, references). */
 function tokenize(description: string): Set<string> {
   const tokens = normalizeDescription(description)
     .split(/[^a-z0-9à-ÿ]+/)
@@ -264,7 +264,7 @@ function tokenize(description: string): Set<string> {
   return new Set(tokens);
 }
 
-/** Indice di Jaccard tra due insiemi di token: |intersezione| / |unione|. */
+/** Jaccard index between two token sets: |intersection| / |union|. */
 function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
   let intersectionSize = 0;
   for (const token of a) {
@@ -275,9 +275,9 @@ function jaccardSimilarity(a: Set<string>, b: Set<string>): number {
 }
 
 /**
- * Somiglianza tra due descrizioni: Jaccard sui token normalizzati (numeri scartati). Se una delle due
- * non ha token significativi (descrizione interamente numerica), ricade sull'uguaglianza esatta della
- * stringa normalizzata invece di confrontare insiemi vuoti.
+ * Similarity between two descriptions: Jaccard on the normalized tokens (numbers discarded). If one of the two
+ * has no meaningful tokens (entirely numeric description), it falls back to exact equality of the
+ * normalized string instead of comparing empty sets.
  */
 function descriptionSimilarity(a: string, b: string): number {
   const tokensA = tokenize(a);
@@ -288,7 +288,7 @@ function descriptionSimilarity(a: string, b: string): number {
   return jaccardSimilarity(tokensA, tokensB);
 }
 
-/** Percentuale di importo esclusa dal conteggio ("Dividi"), arrotondata per confronti di coerenza tra transazioni diverse. */
+/** Percentage of the amount excluded from the count ("Dividi"), rounded for consistency comparisons between different transactions. */
 function splitPercentage(transaction: Transaction): number {
   const amount = Math.abs(Number(transaction.amount));
   const excluded = Math.abs(Number(transaction.excludedAmount));
@@ -297,10 +297,10 @@ function splitPercentage(transaction: Transaction): number {
 }
 
 /**
- * Per ogni transazione "Da categorizzare" con almeno un match storico simile (Jaccard sui token di
- * descrizione, numeri scartati, soglia 0.5), suggerisce la categoria più frequente tra i match
- * (pareggio → la più recente) e, se lo split storico della categoria vincente è coerente, la
- * percentuale da riproporre, insieme alla somiglianza media dei match vincenti.
+ * For each "Da categorizzare" transaction with at least one similar historical match (Jaccard on the
+ * description tokens, numbers discarded, threshold 0.5), suggests the most frequent category among the matches
+ * (tie → the most recent) and, if the historical split of the winning category is consistent, the
+ * percentage to propose again, together with the average similarity of the winning matches.
  */
 export function computeCategorizeSuggestions(
   uncategorized: Transaction[],
@@ -364,10 +364,10 @@ export function computeCategorizeSuggestions(
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm test lib/calc/categorize-suggestions.test.ts`
-Expected: PASS (11 test)
+Expected: PASS (11 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -378,18 +378,18 @@ git commit -m "feat: match per similarità (Jaccard su token) nel motore di cate
 
 ---
 
-### Task 2: Mostra la somiglianza media nel wizard
+### Task 2: Show the average similarity in the wizard
 
 **Files:**
 - Modify: `components/domain/expenses/auto-categorize-wizard.tsx`
 
 **Interfaces:**
-- Consumes: `CategorizeSuggestion.averageSimilarity` (Task 1, già presente su ogni oggetto passato come prop `suggestion` al componente `AutoCategorizeStep`).
-- Produces: nessuna nuova interfaccia — solo cambio di testo visualizzato.
+- Consumes: `CategorizeSuggestion.averageSimilarity` (Task 1, already present on every object passed as the `suggestion` prop to the `AutoCategorizeStep` component).
+- Produces: no new interface — only a change in the displayed text.
 
-- [ ] **Step 1: Aggiorna la riga di sottotitolo dello step**
+- [ ] **Step 1: Update the step's subtitle line**
 
-In `components/domain/expenses/auto-categorize-wizard.tsx`, trova:
+In `components/domain/expenses/auto-categorize-wizard.tsx`, find:
 
 ```tsx
         <DialogDescription>
@@ -397,7 +397,7 @@ In `components/domain/expenses/auto-categorize-wizard.tsx`, trova:
         </DialogDescription>
 ```
 
-Sostituiscila con:
+Replace it with:
 
 ```tsx
         <DialogDescription>
@@ -406,16 +406,16 @@ Sostituiscila con:
         </DialogDescription>
 ```
 
-- [ ] **Step 2: Verifica type-check, lint e build**
+- [ ] **Step 2: Verify type-check, lint and build**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore (il progetto ha già 2 warning noti pre-esistenti su `react-hooks/set-state-in-effect`, non toccati da questo task).
+Expected: no new errors (the project already has 2 known pre-existing warnings on `react-hooks/set-state-in-effect`, not touched by this task).
 
 Run: `pnpm build`
-Expected: build completata senza errori.
+Expected: build completed without errors.
 
 - [ ] **Step 3: Commit**
 
@@ -426,9 +426,9 @@ git commit -m "feat: mostra la somiglianza media nel wizard Categorizza automati
 
 ---
 
-## Verifica manuale utente (fuori scope agente)
+## Manual user verification (outside agent scope)
 
-Nessun Postgres/Redis disponibile nel sandbox agentico per un browser reale (stesso vincolo delle feature precedenti su Spese/Categorie). Da verificare manualmente a fine implementazione:
-- Con transazioni storiche dalla stessa descrizione esatta, il wizard mostra ancora "100% di somiglianza media" e si comporta come prima.
-- Con una transazione da categorizzare simile (non identica) a una storica — es. stesso merchant con codice/filiale diversi — il bottone la trova e il wizard mostra una percentuale inferiore a 100%.
-- Con transazioni completamente diverse, il bottone continua a mostrare "Nessuna transazione simile trovata da suggerire."
+No Postgres/Redis available in the agentic sandbox for a real browser (same constraint as the previous Spese/Categorie features). To verify manually at the end of the implementation:
+- With historical transactions with the same exact description, the wizard still shows "100% di somiglianza media" and behaves as before.
+- With a transaction to categorize that is similar (not identical) to a historical one — e.g. same merchant with a different code/branch — the button finds it and the wizard shows a percentage below 100%.
+- With completely different transactions, the button keeps showing "Nessuna transazione simile trovata da suggerire."

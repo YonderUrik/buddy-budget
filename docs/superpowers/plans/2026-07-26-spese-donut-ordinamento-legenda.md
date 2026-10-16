@@ -1,18 +1,18 @@
-# Ordinamento configurabile legenda "Per categoria" Implementation Plan
+# Configurable sorting of the "Per categoria" ("By category") legend Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aggiungere un controllo di ordinamento (percentuale sul totale / valore speso / % budget / nome, asc o desc) alla legenda del blocco "Per categoria" in Spese, senza toccare l'ordine delle fette del donut.
+**Goal:** Add a sorting control (percentage of total / amount spent / % of budget / name, asc or desc) to the legend of the "Per categoria" block in Spese (Expenses), without touching the order of the donut slices.
 
-**Architecture:** Nuova funzione pura `sortLegendEntries` in `category-breakdown-donut.utils.ts` (testata in isolamento), più stato locale (`sortCriterion`/`sortDirection`) e un enrichment pre-sort in `CategoryBreakdownDonut` che calcola `budgetAmount`/`saturazionePct`/`quotaPct` per tutte le categorie prima di ordinare (oggi calcolati dentro il loop di render). UI: `Select` + bottone toggle direzione nel `CardHeader`.
+**Architecture:** New pure function `sortLegendEntries` in `category-breakdown-donut.utils.ts` (tested in isolation), plus local state (`sortCriterion`/`sortDirection`) and a pre-sort enrichment in `CategoryBreakdownDonut` that computes `budgetAmount`/`saturazionePct`/`quotaPct` for all categories before sorting (today computed inside the render loop). UI: `Select` + direction toggle button in the `CardHeader`.
 
-**Tech Stack:** React 19 + TypeScript, vitest, componenti shadcn (`Select`), `lucide-react`.
+**Tech Stack:** React 19 + TypeScript, vitest, shadcn components (`Select`), `lucide-react`.
 
 ## Global Constraints
 
-- Stringhe visibili in italiano (nessuna i18n ancora, vedi CLAUDE.md).
-- Nessun colore/valore hardcoded fuori dai token tema esistenti — questa feature non introduce nuovi colori.
-- Il file `category-breakdown-donut.tsx` esiste già e supera ~150 righe: non è nello scope di questo piano risistemarlo, solo estenderlo secondo il pattern esistente (JSDoc minimo, tipi esportati, niente logica di business fuori da questi due file).
+- Visible strings in Italian (no i18n yet, see CLAUDE.md).
+- No hardcoded colors/values outside the existing theme tokens — this feature introduces no new colors.
+- The file `category-breakdown-donut.tsx` already exists and exceeds ~150 lines: reorganizing it is not in the scope of this plan, only extending it following the existing pattern (minimal JSDoc, exported types, no business logic outside these two files).
 
 ---
 
@@ -23,17 +23,17 @@
 - Test: `components/domain/expenses/category-breakdown-donut.utils.test.ts`
 
 **Interfaces:**
-- Consumes: `CategoryAmount` da `@/lib/calc/expenses` (già importato nel file).
+- Consumes: `CategoryAmount` from `@/lib/calc/expenses` (already imported in the file).
 - Produces:
   - `export type LegendSortCriterion = "percentuale" | "valore" | "budget" | "nome";`
   - `export type LegendSortDirection = "asc" | "desc";`
   - `export interface LegendEntry extends CategoryAmount { budgetAmount: number; saturazionePct: number | null; quotaPct: number | null; }`
   - `export function sortLegendEntries(entries: LegendEntry[], criterion: LegendSortCriterion, direction: LegendSortDirection): LegendEntry[]`
-  - `export const LEGEND_SORT_DEFAULT_DIRECTION: Record<LegendSortCriterion, LegendSortDirection>` (mappa usata dal Task 2 per resettare la direzione al cambio criterio: `{ percentuale: "desc", valore: "desc", budget: "desc", nome: "asc" }`)
+  - `export const LEGEND_SORT_DEFAULT_DIRECTION: Record<LegendSortCriterion, LegendSortDirection>` (map used by Task 2 to reset the direction when the criterion changes: `{ percentuale: "desc", valore: "desc", budget: "desc", nome: "asc" }`)
 
-- [ ] **Step 1: Scrivi i test falliti**
+- [ ] **Step 1: Write the failing tests**
 
-Aggiungi in fondo a `components/domain/expenses/category-breakdown-donut.utils.test.ts` (import aggiornato in cima: `import { computeBudgetStats, sortCategoryAmounts, sortLegendEntries, type LegendEntry } from "./category-breakdown-donut.utils";`):
+Add at the bottom of `components/domain/expenses/category-breakdown-donut.utils.test.ts` (import updated at the top: `import { computeBudgetStats, sortCategoryAmounts, sortLegendEntries, type LegendEntry } from "./category-breakdown-donut.utils";`):
 
 ```ts
 function makeLegendEntry(overrides: Partial<LegendEntry>): LegendEntry {
@@ -167,14 +167,14 @@ describe("sortLegendEntries", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui i test e verifica che falliscano**
+- [ ] **Step 2: Run the tests and verify they fail**
 
 Run: `pnpm vitest run components/domain/expenses/category-breakdown-donut.utils.test.ts`
-Expected: FAIL — `sortLegendEntries`/`LegendEntry` non esistono ancora nel modulo.
+Expected: FAIL — `sortLegendEntries`/`LegendEntry` do not exist in the module yet.
 
-- [ ] **Step 3: Implementa `sortLegendEntries` in `category-breakdown-donut.utils.ts`**
+- [ ] **Step 3: Implement `sortLegendEntries` in `category-breakdown-donut.utils.ts`**
 
-Aggiungi in fondo al file (dopo `computeBudgetStats`):
+Add at the bottom of the file (after `computeBudgetStats`):
 
 ```ts
 export type LegendSortCriterion = "percentuale" | "valore" | "budget" | "nome";
@@ -193,7 +193,7 @@ export interface LegendEntry extends CategoryAmount {
   quotaPct: number | null;
 }
 
-/** Confronta due valori nullable: null perde sempre (va in fondo), indipendentemente dalla direzione richiesta. */
+/** Compares two nullable values: null always loses (goes to the bottom), regardless of the requested direction. */
 function compareNullable(a: number | null, b: number | null, direction: LegendSortDirection): number {
   if (a === null && b === null) return 0;
   if (a === null) return 1;
@@ -202,9 +202,9 @@ function compareNullable(a: number | null, b: number | null, direction: LegendSo
 }
 
 /**
- * Ordina le voci della legenda "Per categoria" secondo il criterio scelto dall'utente (percentuale sul totale,
- * valore speso, saturazione budget o nome). Non tocca l'ordinamento delle fette del donut (sortCategoryAmounts).
- * Valori null (budget/totale a 0) restano sempre in fondo alla lista qualunque sia la direzione.
+ * Sorts the entries of the "Per categoria" legend according to the criterion chosen by the user (percentage of total,
+ * amount spent, budget saturation or name). Does not touch the order of the donut slices (sortCategoryAmounts).
+ * Null values (budget/total at 0) always stay at the bottom of the list whatever the direction.
  */
 export function sortLegendEntries(
   entries: LegendEntry[],
@@ -226,10 +226,10 @@ export function sortLegendEntries(
 }
 ```
 
-- [ ] **Step 4: Esegui i test e verifica che passino**
+- [ ] **Step 4: Run the tests and verify they pass**
 
 Run: `pnpm vitest run components/domain/expenses/category-breakdown-donut.utils.test.ts`
-Expected: PASS (tutti i test, inclusi quelli preesistenti di `sortCategoryAmounts`/`computeBudgetStats`).
+Expected: PASS (all tests, including the pre-existing ones for `sortCategoryAmounts`/`computeBudgetStats`).
 
 - [ ] **Step 5: Commit**
 
@@ -240,24 +240,24 @@ git commit -m "feat: aggiungi sortLegendEntries per ordinamento configurabile le
 
 ---
 
-### Task 2: UI ordinamento in `CategoryBreakdownDonut`
+### Task 2: Sorting UI in `CategoryBreakdownDonut`
 
 **Files:**
 - Modify: `components/domain/expenses/category-breakdown-donut.tsx`
 
 **Interfaces:**
-- Consumes da Task 1: `sortLegendEntries`, `LegendSortCriterion`, `LegendSortDirection`, `LegendEntry`, `LEGEND_SORT_DEFAULT_DIRECTION` da `./category-breakdown-donut.utils`.
-- Produces: nessuna nuova esportazione pubblica — solo comportamento del componente `CategoryBreakdownDonut` già esportato.
+- Consumes from Task 1: `sortLegendEntries`, `LegendSortCriterion`, `LegendSortDirection`, `LegendEntry`, `LEGEND_SORT_DEFAULT_DIRECTION` from `./category-breakdown-donut.utils`.
+- Produces: no new public export — only behavior of the already exported `CategoryBreakdownDonut` component.
 
-- [ ] **Step 1: Aggiorna l'import da `./category-breakdown-donut.utils`**
+- [ ] **Step 1: Update the import from `./category-breakdown-donut.utils`**
 
-In `components/domain/expenses/category-breakdown-donut.tsx:27`, sostituisci:
+In `components/domain/expenses/category-breakdown-donut.tsx:27`, replace:
 
 ```ts
 import { computeBudgetStats, sortCategoryAmounts } from "./category-breakdown-donut.utils";
 ```
 
-con:
+with:
 
 ```ts
 import {
@@ -271,7 +271,7 @@ import {
 } from "./category-breakdown-donut.utils";
 ```
 
-Aggiungi anche l'import dell'icona toggle e del `Select`, subito sotto gli import esistenti (riga 11 e riga 17):
+Also add the import of the toggle icon and of `Select`, right below the existing imports (line 11 and line 17):
 
 ```ts
 import { ArrowDownIcon, ArrowUpIcon, Package } from "lucide-react";
@@ -281,15 +281,15 @@ import { ArrowDownIcon, ArrowUpIcon, Package } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 ```
 
-E aggiorna l'import di `Card`/`CardHeader`/... (riga 18) per includere `CardAction`, il contenitore già pensato da shadcn per un'azione a destra del titolo (grid `col-start-2`, evita di dover convertire `CardHeader` da grid a flex):
+And update the import of `Card`/`CardHeader`/... (line 18) to include `CardAction`, the container shadcn already provides for an action to the right of the title (grid `col-start-2`, avoids having to convert `CardHeader` from grid to flex):
 
 ```ts
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 ```
 
-- [ ] **Step 2: Aggiungi le opzioni di ordinamento e lo stato nel componente**
+- [ ] **Step 2: Add the sorting options and the state in the component**
 
-Subito dopo `const BUDGET_OVER_THRESHOLD_PCT = 100;` (riga 35), aggiungi:
+Right after `const BUDGET_OVER_THRESHOLD_PCT = 100;` (line 35), add:
 
 ```ts
 const LEGEND_SORT_OPTIONS: { value: LegendSortCriterion; label: string }[] = [
@@ -300,7 +300,7 @@ const LEGEND_SORT_OPTIONS: { value: LegendSortCriterion; label: string }[] = [
 ];
 ```
 
-Dentro `CategoryBreakdownDonut`, subito dopo gli state esistenti `pendingCategoryId`/`errorCategoryId` (dopo riga 91), aggiungi:
+Inside `CategoryBreakdownDonut`, right after the existing `pendingCategoryId`/`errorCategoryId` states (after line 91), add:
 
 ```ts
 const [sortCriterion, setSortCriterion] = React.useState<LegendSortCriterion>("percentuale");
@@ -312,9 +312,9 @@ function handleCriterionChange(next: LegendSortCriterion) {
 }
 ```
 
-- [ ] **Step 3: Calcola le voci arricchite e ordinale prima del render**
+- [ ] **Step 3: Compute the enriched entries and sort them before rendering**
 
-Sostituisci la riga `const sortedEntries = sortCategoryAmounts(categoryAmounts);` (riga 118) mantenendola invariata (serve ancora per `outerData` del donut) e aggiungi subito dopo (dopo il calcolo di `totalSpeso`, riga 119):
+Keep the line `const sortedEntries = sortCategoryAmounts(categoryAmounts);` (line 118) unchanged (it is still needed for the donut's `outerData`) and add right after it (after the computation of `totalSpeso`, line 119):
 
 ```ts
 const enrichedEntries: LegendEntry[] = categoryAmounts.map((entry) => {
@@ -325,13 +325,13 @@ const enrichedEntries: LegendEntry[] = categoryAmounts.map((entry) => {
 const sortedLegendEntries = sortLegendEntries(enrichedEntries, sortCriterion, sortDirection);
 ```
 
-- [ ] **Step 4: Aggiorna l'effect di scroll per usare la nuova lista**
+- [ ] **Step 4: Update the scroll effect to use the new list**
 
-Nel `React.useEffect` che dipende da `sortedEntries.length` (riga 133-144), cambia la dependency array da `[checkScroll, sortedEntries.length]` a `[checkScroll, sortedLegendEntries.length]` (la lista che effettivamente determina l'altezza scrollabile è quella della legenda).
+In the `React.useEffect` that depends on `sortedEntries.length` (lines 133-144), change the dependency array from `[checkScroll, sortedEntries.length]` to `[checkScroll, sortedLegendEntries.length]` (the list that actually determines the scrollable height is the legend's one).
 
-- [ ] **Step 5: Sostituisci il rendering della legenda**
+- [ ] **Step 5: Replace the legend rendering**
 
-Nel blocco `{sortedEntries.map((entry) => { ... })}` dentro il `div` con `ref={scrollRef}` (righe 219-235), sostituisci `sortedEntries.map` con `sortedLegendEntries.map` e usa i valori già calcolati invece di richiamare `budgetFor`/`computeBudgetStats`:
+In the `{sortedEntries.map((entry) => { ... })}` block inside the `div` with `ref={scrollRef}` (lines 219-235), replace `sortedEntries.map` with `sortedLegendEntries.map` and use the already computed values instead of calling `budgetFor`/`computeBudgetStats` again:
 
 ```tsx
 {sortedLegendEntries.map((entry) => (
@@ -349,9 +349,9 @@ Nel blocco `{sortedEntries.map((entry) => { ... })}` dentro il `div` con `ref={s
 ))}
 ```
 
-- [ ] **Step 6: Aggiungi i controlli di ordinamento nel `CardHeader`**
+- [ ] **Step 6: Add the sorting controls in the `CardHeader`**
 
-Sostituisci il blocco `CardHeader` esistente (righe 168-172):
+Replace the existing `CardHeader` block (lines 168-172):
 
 ```tsx
 <CardHeader className="pt-4">
@@ -361,7 +361,7 @@ Sostituisci il blocco `CardHeader` esistente (righe 168-172):
 </CardHeader>
 ```
 
-con (usa `CardAction`, lo slot che shadcn prevede già per un'azione a destra del titolo dentro un `CardHeader` che resta grid — niente conversione a flex):
+with (uses `CardAction`, the slot shadcn already provides for an action to the right of the title inside a `CardHeader` that stays a grid — no conversion to flex):
 
 ```tsx
 <CardHeader className="pt-4">
@@ -393,16 +393,16 @@ con (usa `CardAction`, lo slot che shadcn prevede già per un'azione a destra de
 </CardHeader>
 ```
 
-- [ ] **Step 7: Verifica build e test**
+- [ ] **Step 7: Verify build and tests**
 
 Run: `pnpm tsc --noEmit`
-Expected: nessun errore di tipo.
+Expected: no type errors.
 
 Run: `pnpm vitest run components/domain/expenses`
-Expected: PASS su tutti i test della cartella (inclusi quelli di Task 1).
+Expected: PASS on all the tests of the folder (including those of Task 1).
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore introdotto da questo file (il debito preesistente `react-hooks/set-state-in-effect` su `CategoryLegendRow`/`theme-toggle.tsx`, già noto e fuori scope, può restare).
+Expected: no new errors introduced by this file (the pre-existing `react-hooks/set-state-in-effect` debt on `CategoryLegendRow`/`theme-toggle.tsx`, already known and out of scope, may remain).
 
 - [ ] **Step 8: Commit**
 
@@ -413,11 +413,11 @@ git commit -m "feat: select ordinamento + toggle direzione nella legenda Per cat
 
 ---
 
-## Verifica manuale (fuori dai task, da fare dall'utente)
+## Manual verification (outside the tasks, to be done by the user)
 
-Nessun Postgres/Redis disponibile nel sandbox agentico (vincolo noto, vedi CLAUDE.md). Da controllare in browser reale dopo il merge:
-- Il default all'apertura è "% sul totale" decrescente.
-- Cambiare criterio resetta la direzione al default previsto (nome → A-Z, altri → decrescente).
-- Il toggle inverte correttamente la direzione per il criterio corrente.
-- Categorie con budget 0 (percentuale "—") finiscono sempre in fondo quando il criterio è "% budget", qualunque sia la direzione.
-- Le fette del donut non cambiano ordine/colore quando si cambia l'ordinamento della legenda.
+No Postgres/Redis available in the agentic sandbox (known constraint, see CLAUDE.md). To check in a real browser after the merge:
+- The default on opening is "% sul totale" descending.
+- Changing criterion resets the direction to the expected default (name → A-Z, others → descending).
+- The toggle correctly inverts the direction for the current criterion.
+- Categories with budget 0 (percentage "—") always end up at the bottom when the criterion is "% budget", whatever the direction.
+- The donut slices do not change order/color when the legend sorting is changed.

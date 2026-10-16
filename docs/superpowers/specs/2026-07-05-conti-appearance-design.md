@@ -1,36 +1,36 @@
 # Conti — Appearance: formatted currency input, color & icon per account
 
-**Data:** 2026-07-05
-**Stato:** approvato, in attesa di piano implementativo
+**Date:** 2026-07-05
+**Status:** approved, awaiting implementation plan
 
-## Obiettivo
+## Goal
 
-Migliorare tre aspetti visuali/UX della schermata Conti:
-1. Input saldo sempre formattato con valuta locale (invece di stringa numerica grezza)
-2. Colore scelto dall'utente per ogni conto (palette fissa 8 colori)
-3. Icona Lucide scelta dall'utente per ogni conto (~30 icone finanziarie)
+Improve three visual/UX aspects of the Conti (Accounts) screen:
+1. Balance input always formatted with the local currency (instead of a raw numeric string)
+2. A user-chosen colour for each account (fixed palette of 8 colours)
+3. A user-chosen Lucide icon for each account (~30 finance icons)
 
-## Sezione 1 — Schema & persistenza
+## Section 1 — Schema & persistence
 
-### Nuove colonne in `accounts`
+### New columns in `accounts`
 
 ```sql
 color text NOT NULL DEFAULT 'slate'
 icon  text NOT NULL DEFAULT 'wallet'
 ```
 
-Aggiunte in `lib/db/schema/accounts.ts`:
+Added in `lib/db/schema/accounts.ts`:
 
 ```ts
 color: text("color").notNull().default("slate"),
 icon:  text("icon").notNull().default("wallet"),
 ```
 
-Migration generata con `pnpm drizzle-kit generate` → file `lib/db/migrations/0001_add_color_icon_accounts.sql`.
+Migration generated with `pnpm drizzle-kit generate` → file `lib/db/migrations/0001_add_color_icon_accounts.sql`.
 
-### Costanti palette e icone
+### Palette and icon constants
 
-Definite in `lib/validation/accounts.ts` (già usato come punto di raccolta per validazione + costanti domain):
+Defined in `lib/validation/accounts.ts` (already used as the collection point for validation + domain constants):
 
 ```ts
 export const ACCOUNT_COLORS = [
@@ -48,24 +48,24 @@ export const ACCOUNT_ICONS = [
 export type AccountIcon = (typeof ACCOUNT_ICONS)[number];
 ```
 
-### Aggiornamento schema Zod
+### Zod schema update
 
-`createAccountSchema` e `updateAccountSchema` in `lib/validation/accounts.ts` estesi con:
+`createAccountSchema` and `updateAccountSchema` in `lib/validation/accounts.ts` extended with:
 
 ```ts
 color: z.enum(ACCOUNT_COLORS).optional(),
 icon:  z.enum(ACCOUNT_ICONS).optional(),
 ```
 
-Entrambi opzionali: se assenti il DB usa il default (`'slate'`/`'wallet'`).
+Both optional: if absent, the DB uses the default (`'slate'`/`'wallet'`).
 
-## Sezione 2 — Nuovi componenti
+## Section 2 — New components
 
 ### `CurrencyInput` (`components/domain/accounts/currency-input.tsx`)
 
-Wrappa `NumericFormat` da `react-number-format`. Il simbolo valuta è uno `<span>` statico adiacente all'input, non un prefix/suffix dentro NumericFormat (evita ambiguità di parsing con simboli multibyte).
+Wraps `NumericFormat` from `react-number-format`. The currency symbol is a static `<span>` next to the input, not a prefix/suffix inside NumericFormat (avoids parsing ambiguity with multibyte symbols).
 
-Separatori: `.` migliaia, `,` decimali (locale `it-IT`). Il locale non è hardcoded nel componente ma deriva dal prop `currency` — per ora i separatori sono fissi perché l'i18n non è ancora implementato; quando sarà introdotta la localizzazione, questo componente sarà il punto da aggiornare.
+Separators: `.` for thousands, `,` for decimals (locale `it-IT`). The locale is not hardcoded in the component but derives from the `currency` prop — for now the separators are fixed because i18n is not implemented yet; when localisation is introduced, this component will be the place to update.
 
 **Props:**
 ```ts
@@ -73,15 +73,15 @@ interface CurrencyInputProps {
   value: number | null;
   onChange: (value: number | null) => void;
   onBlur?: () => void;
-  currency: string;        // ISO 4217, es. "EUR"
+  currency: string;        // ISO 4217, e.g. "EUR"
   className?: string;
   "aria-label"?: string;
 }
 ```
 
-`NumericFormat` emette `onValueChange({ floatValue })` — nessun parsing manuale richiesto.
+`NumericFormat` emits `onValueChange({ floatValue })` — no manual parsing required.
 
-Il simbolo valuta viene derivato da `Intl.NumberFormat` formattando `0` e strippando cifre + separatori dalla stringa risultante. Funzione helper `getCurrencySymbol(currency: string, locale?: string): string` in `lib/format.ts`. Esempio: `getCurrencySymbol("EUR", "it-IT")` → `"€"`.
+The currency symbol is derived from `Intl.NumberFormat` by formatting `0` and stripping digits + separators from the resulting string. Helper function `getCurrencySymbol(currency: string, locale?: string): string` in `lib/format.ts`. Example: `getCurrencySymbol("EUR", "it-IT")` → `"€"`.
 
 Layout:
 ```
@@ -93,11 +93,11 @@ Layout:
 
 ### `AccountAvatar` (`components/domain/accounts/account-avatar.tsx`)
 
-Cerchio 36×36px con icona Lucide centrata (16px). Props: `color: AccountColor`, `icon: AccountIcon`, `size?: number`, `className?`.
+A 36×36px circle with a centred Lucide icon (16px). Props: `color: AccountColor`, `icon: AccountIcon`, `size?: number`, `className?`.
 
-**Mappa colori** (slug → classi Tailwind):
+**Colour map** (slug → Tailwind classes):
 
-| slug | background | icona |
+| slug | background | icon |
 |---|---|---|
 | `slate` | `bg-slate-100 dark:bg-slate-800` | `text-slate-500` |
 | `blue` | `bg-blue-100 dark:bg-blue-900/40` | `text-blue-600` |
@@ -108,23 +108,23 @@ Cerchio 36×36px con icona Lucide centrata (16px). Props: `color: AccountColor`,
 | `red` | `bg-red-100 dark:bg-red-900/40` | `text-red-600` |
 | `teal` | `bg-teal-100 dark:bg-teal-900/40` | `text-teal-600` |
 
-**Mappa icone**: oggetto `Record<AccountIcon, LucideIcon>` con import named da `lucide-react`. Fallback su `Wallet` se slug non riconosciuto.
+**Icon map**: a `Record<AccountIcon, LucideIcon>` object with named imports from `lucide-react`. Falls back to `Wallet` if the slug is not recognised.
 
 ### `AccountIconColorPicker` (`components/domain/accounts/account-icon-color-picker.tsx`)
 
-Popover (componente `Popover` shadcn) triggerato dal children passato come render prop. Contenuto del popover:
+Popover (shadcn `Popover` component) triggered by the children passed as a render prop. Popover content:
 
 ```
 ┌────────────────────────────────┐
 │  Colore                        │
-│  ● ● ● ● ● ● ● ●  (8 dot)    │
+│  ● ● ● ● ● ● ● ●  (8 dots)   │
 │                                │
 │  Icona                         │
-│  [grid 7 colonne × N righe]   │
+│  [grid 7 columns × N rows]    │
 └────────────────────────────────┘
 ```
 
-Selezione immediata (no "Conferma"). Il dot colore selezionato e l'icona selezionata mostrano un ring di evidenza.
+Immediate selection (no "Conferma" — confirm). The selected colour dot and the selected icon show a highlight ring.
 
 **Props:**
 ```ts
@@ -135,67 +135,67 @@ interface AccountIconColorPickerProps {
 }
 ```
 
-## Sezione 3 — Integrazione
+## Section 3 — Integration
 
 ### `AccountRow`
 
-- **Avatar**: sostituisce `<div>` con iniziali con `<AccountIconColorPicker>` che wrappa `<AccountAvatar>`. On change → due chiamate `commitField`: una per `color`, una per `icon`.
-- **Saldo display**: conti auto — rimane `<p>` con `formatCurrency`. Nessun `CurrencyInput` qui: il campo è read-only, la formattazione è già corretta.
-- **Saldo edit**: conti manuali — `<Input>` → `<CurrencyInput>`. Stato da `balanceText: string` a `balanceValue: number | null`. On blur → commit se valore cambiato.
-- **Picker su conti auto**: il picker icona/colore è attivo anche per conti auto (i dati visuali non sono dati finanziari).
+- **Avatar**: replaces the `<div>` with initials by `<AccountIconColorPicker>` wrapping `<AccountAvatar>`. On change → two `commitField` calls: one for `color`, one for `icon`.
+- **Balance display**: auto accounts — stays a `<p>` with `formatCurrency`. No `CurrencyInput` here: the field is read-only, the formatting is already correct.
+- **Balance edit**: manual accounts — `<Input>` → `<CurrencyInput>`. State goes from `balanceText: string` to `balanceValue: number | null`. On blur → commit if the value changed.
+- **Picker on auto accounts**: the icon/colour picker is active on auto accounts too (visual data is not financial data).
 
-Aggiunta a `commitField` per gestire i nuovi campi:
+Addition to `commitField` to handle the new fields:
 ```ts
 function commitField(field: "name" | "institution" | "type" | "balance" | "color" | "icon", rawValue: string | number) { ... }
 ```
 
 ### `AddAccountForm`
 
-- Stato locale aggiunto: `color: AccountColor = "slate"`, `icon: AccountIcon = "wallet"`.
-- Avatar preview cliccabile in testa al form (prima dei campi testo) — mostra anteprima del conto in creazione.
-- Saldo: `balanceText: string = "0"` → `balanceValue: number | null = 0`. `CurrencyInput` al posto di `Input`.
-- Submit payload include `color` e `icon`.
-- Reset al submit: `color` → `"slate"`, `icon` → `"wallet"`, `balanceValue` → `0`.
+- Added local state: `color: AccountColor = "slate"`, `icon: AccountIcon = "wallet"`.
+- Clickable avatar preview at the top of the form (before the text fields) — shows a preview of the account being created.
+- Balance: `balanceText: string = "0"` → `balanceValue: number | null = 0`. `CurrencyInput` instead of `Input`.
+- The submit payload includes `color` and `icon`.
+- Reset on submit: `color` → `"slate"`, `icon` → `"wallet"`, `balanceValue` → `0`.
 
 ### API routes
 
 **`POST /api/accounts`** (`app/api/accounts/route.ts`):
-- `createAccountSchema` ora include `color?` e `icon?` opzionali.
-- INSERT include i due campi (se presenti nel body, altrimenti DB default).
+- `createAccountSchema` now includes optional `color?` and `icon?`.
+- The INSERT includes the two fields (if present in the body, otherwise the DB default).
 
 **`PATCH /api/accounts/[id]`** (`app/api/accounts/[id]/route.ts`):
-- La logica 403 per conti auto viene resa selettiva: blocca solo se il body contiene campi finanziari (`name`, `institution`, `type`, `balance`). `color` e `icon` passano anche per conti auto.
-- Implementazione: dopo il parse Zod, controllare `const hasFinancialFields = ["name","institution","type","balance"].some(k => k in parsed.data)`. Se `isAuto && hasFinancialFields` → 403.
+- The 403 logic for auto accounts becomes selective: it blocks only if the body contains financial fields (`name`, `institution`, `type`, `balance`). `color` and `icon` go through for auto accounts too.
+- Implementation: after the Zod parse, check `const hasFinancialFields = ["name","institution","type","balance"].some(k => k in parsed.data)`. If `isAuto && hasFinancialFields` → 403.
 
-## File toccati
+## Files touched
 
-| File | Operazione |
+| File | Operation |
 |---|---|
-| `lib/db/schema/accounts.ts` | modifica — +2 colonne |
-| `lib/db/migrations/0001_add_color_icon_accounts.sql` | nuovo (generato da drizzle-kit) |
-| `lib/db/migrations/meta/` | aggiornato da drizzle-kit |
-| `lib/validation/accounts.ts` | modifica — +costanti +enum Zod |
-| `lib/format.ts` | modifica — +`getCurrencySymbol` |
-| `components/domain/accounts/currency-input.tsx` | nuovo |
-| `components/domain/accounts/account-avatar.tsx` | nuovo |
-| `components/domain/accounts/account-icon-color-picker.tsx` | nuovo |
-| `components/domain/accounts/account-row.tsx` | modifica |
-| `components/domain/accounts/add-account-form.tsx` | modifica |
-| `components/domain/accounts/index.ts` | modifica — barrel update |
-| `app/api/accounts/route.ts` | modifica |
-| `app/api/accounts/[id]/route.ts` | modifica |
+| `lib/db/schema/accounts.ts` | change — +2 columns |
+| `lib/db/migrations/0001_add_color_icon_accounts.sql` | new (generated by drizzle-kit) |
+| `lib/db/migrations/meta/` | updated by drizzle-kit |
+| `lib/validation/accounts.ts` | change — +constants +Zod enum |
+| `lib/format.ts` | change — +`getCurrencySymbol` |
+| `components/domain/accounts/currency-input.tsx` | new |
+| `components/domain/accounts/account-avatar.tsx` | new |
+| `components/domain/accounts/account-icon-color-picker.tsx` | new |
+| `components/domain/accounts/account-row.tsx` | change |
+| `components/domain/accounts/add-account-form.tsx` | change |
+| `components/domain/accounts/index.ts` | change — barrel update |
+| `app/api/accounts/route.ts` | change |
+| `app/api/accounts/[id]/route.ts` | change |
 
-## Dipendenze da aggiungere
+## Dependencies to add
 
 ```
 pnpm add react-number-format
 ```
 
-`react-number-format` è typed natively (non serve `@types/`).
+`react-number-format` is typed natively (no `@types/` needed).
 
-## Fuori scope
+## Out of scope
 
-- Ricerca icone nel picker (30 icone sono navigabili senza search)
-- Colore scelto per tipo conto (decisione: per singolo conto)
-- Emoji come icone
-- Animazioni/transizioni nel picker
+- Icon search in the picker (30 icons can be browsed without search)
+- Colour chosen per account type (decision: per individual account)
+- Emoji as icons
+- Animations/transitions in the picker

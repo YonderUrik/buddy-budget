@@ -1,8 +1,8 @@
-# Landing «Il foglio» (2026-10-11)
+# Landing «Il foglio» ("The sheet") (2026-10-11)
 
-Daniele ha scelto la direzione C fra tre prototipi (A «Il quadro», B «Le domande», C «Il foglio»): la home parte da un foglio Excel con `#VALORE!` che si trasforma nella Panoramica vera, e ogni area è «prima» (la formula che scrivevi) contro «ora» (la schermata dell'app).
+Daniele chose direction C among three prototypes (A «Il quadro», B «Le domande», C «Il foglio» — "The picture", "The questions", "The sheet"): the home starts from an Excel sheet with `#VALORE!` that turns into the real Panoramica, and each area is «prima» ("before": the formula you used to write) versus «ora» ("now": the app screen).
 
-- Stile allineato all'app su richiesta di Daniele: stessi neutri, raggi, caratteri (Space Grotesk, Hanken Grotesk, Geist Mono) e pulsanti (primario pieno, secondario con bordo), schede a pillola come quelle dell'app. Del foglio restano la carta a quadretti dell'apertura, le celle in monospace e il giallo della cella selezionata.
-- Nuove sezioni: «Funziona con quello che usi già» (loghi di IBKR, DEGIRO, Trade Republic, Fineco, Yahoo; paesi dell'Open Banking), «Scheda tecnica» a schede (banca, categorie, broker, rischio, tasse, debiti, cosa non fa) con fatti verificati nel codice, catalogo completo in tabella filtrabile.
-- Tolti: domande in apertura, tre passi, quattro gruppi, mappa dei server. Eventi Umami `question_*` sostituiti da `sheet_view_toggled` e `detail_tab_selected`.
-- Rimandato: pagine interne (/funzioni, /strumenti, /guide) prendono font e pulsanti dell'app ma tengono il loro layout; immagine Open Graph da rifare.
+- Style aligned with the app at Daniele's request: same neutrals, radii, fonts (Space Grotesk, Hanken Grotesk, Geist Mono) and buttons (solid primary, outlined secondary), pill tabs like the app's. From the sheet remain the grid paper of the opening, the monospace cells and the yellow of the selected cell.
+- New sections: «Funziona con quello che usi già» ("Works with what you already use": logos of IBKR, DEGIRO, Trade Republic, Fineco, Yahoo; Open Banking countries), tabbed «Scheda tecnica» ("Technical sheet": bank, categories, brokers, risk, taxes, debts, what it doesn't do) with facts verified in the code, full catalog in a filterable table.
+- Removed: questions at the opening, three steps, four groups, server map. Umami events `question_*` replaced by `sheet_view_toggled` and `detail_tab_selected`.
+- Postponed: inner pages (/funzioni, /strumenti, /guide) take the app's fonts and buttons but keep their layout; Open Graph image to redo.

@@ -1,9 +1,9 @@
-# Suggerimenti dei campi localizzati
+# Localized field hints
 
-Corretti i segnaposto statici passati senza traduzione nelle categorie (ricerca, selezione e descrizione), assistenza ed email di accesso. Le traduzioni già disponibili vengono ora applicate anche ai testi di fallback e alle etichette accessibili del selettore.
-I segnaposto numerici di abbonamenti e prestiti usano il formato della lingua scelta. Nomi e descrizioni inseriti dall’utente restano invariati.
-Nessuna nuova funzione o variazione del catalogo: correzione della localizzazione già dichiarata. Nessuna riattivazione delle funzioni tedesche sospese.
+Fixed the static placeholders that were passed without translation in categories (search, selection and description), support and the sign-in email. Translations that already existed are now also applied to fallback texts and to the accessible labels of the picker.
+Numeric placeholders for subscriptions and loans use the format of the chosen language. Names and descriptions entered by the user stay unchanged.
+No new feature and no catalog change: a fix to localization that was already declared. No re-enabling of the suspended German features.
 
-Verifica: build di produzione/TypeScript, lint e 5 test di localizzazione passati. Browser EN/DE/IT: tre tipi di assistenza, descrizione e ricerca categorie nel selettore, importo abbonamento ed email di esempio del login corretti. Nessun nuovo dato salvato.
+Verification: production build/TypeScript, lint and 5 localization tests passed. Browser EN/DE/IT: three support types, category description and search in the picker, subscription amount and the sample email on the login checked. No new data stored.
 
-Audit landing: il sito è ancora monolingua italiano (contenuti, calcolatori, screenshot e metadati), separato dalla localizzazione dell’app. Rimossa la FAQ obsoleta «solo italiano/euro» e aggiunta una spiegazione delle lingue, dei paesi e del perimetro ridotto Germania. La traduzione completa della landing resta da implementare.
+Landing audit: the site is still Italian-only (content, calculators, screenshots and metadata), separate from the app's localization. Removed the outdated FAQ «solo italiano/euro» ("Italian/euro only") and added an explanation of languages, countries and the reduced scope for Germany. Full translation of the landing is still to be implemented.

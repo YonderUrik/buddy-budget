@@ -1,133 +1,133 @@
-# Fase 3 — Piattaforma: ArgoCD, KSOPS, cloudflared + Traefik — Runbook
+# Phase 3 — Platform: ArgoCD, KSOPS, cloudflared + Traefik — Runbook
 
-**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (riga "Fase 3" della tabella Fasi)
+**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` ("Fase 3" row of the Phases table)
 
-**Obiettivo:** portare il cluster (k3s, dalla Fase 2) al punto in cui un'app arbitraria può essere dichiarata in Git e ArgoCD la porta online, raggiungibile da internet solo tramite Cloudflare Tunnel, senza mai una porta pubblica aperta e senza mai un segreto in chiaro nel repo.
+**Goal:** bring the cluster (k3s, from Phase 2) to the point where an arbitrary app can be declared in Git and ArgoCD brings it online, reachable from the internet only through Cloudflare Tunnel, never with an open public port and never with a plaintext secret in the repo.
 
-**Criterio di completamento (dalla spec):** *"una app di prova risponde su un sottodominio via tunnel, gestita da ArgoCD"*.
+**Completion criterion (from the spec):** *"a test app responds on a subdomain via the tunnel, managed by ArgoCD"*.
 
-**Stato di partenza** (dalla Fase 2): k3s `Ready`, senza Traefik/servicelb, raggiungibile solo via Tailscale; repo `buddy-budget-infra` con `ansible/`. Nessuno strumento tra `helm`/`sops`/`cloudflared` è ancora installato in WSL.
+**Starting state** (from Phase 2): k3s `Ready`, without Traefik/servicelb, reachable only via Tailscale; `buddy-budget-infra` repo with `ansible/`. None of `helm`/`sops`/`cloudflared` is installed in WSL yet.
 
-## Decisioni prese per questa fase (non ancora nella spec a questo livello di dettaglio)
+## Decisions taken for this phase (not yet in the spec at this level of detail)
 
-- **ArgoCD**: installato una tantum con i manifest ufficiali (`kubectl apply`), non gestito da se stesso. Da qui in poi tutto il resto (Traefik, cloudflared, KSOPS, l'app di prova, e in Fase 4+ CNPG/Redis/observability) passa da un'unica **App-of-Apps**: un'`Application` ArgoCD che punta a `buddy-budget-infra/argocd/apps/`, dove ogni file YAML in quella cartella è a sua volta un'altra `Application`. Aggiungere un componente futuro = aggiungere un file, mai un comando manuale.
-- **KSOPS**: la chiave privata age (generata in Fase 1, mai in git) va **dentro il cluster una tantum, fuori da GitOps** (`kubectl create secret`) — è l'unico segreto "radice" dell'intero sistema, coerente con la spec ("l'unica chiave age da custodire"). Tutto il resto (incluse le credenziali di `cloudflared`, create in questa stessa fase) viene cifrato con la sola **chiave pubblica** e committato, decifrato automaticamente da ArgoCD via il plugin KSOPS montato nel `repo-server`.
-- **cloudflared**: creo il tunnel con la CLI `cloudflared` (non dal pannello Cloudflare), stesso schema già usato per Tailscale — un login one-time che apri tu nel browser, autorizza la CLI ad agire sul tuo account Cloudflare per creare il tunnel. Il file di credenziali che ne esce è un segreto vero: lo cifro subito con SOPS prima che tocchi il repo, mai in chiaro.
-- **cloudflared → Traefik → app**: `cloudflared` (pod nel cluster) inoltra il traffico del tunnel alla `Service` ClusterIP di Traefik (mai una porta pubblica sull'host); Traefik instrada per hostname alle app tramite `IngressRoute` — aggiungere un sottodominio futuro è una risorsa Kubernetes, non una riconfigurazione del tunnel.
-- **Namespace di questa fase**: `argocd`, `ingress` (Traefik + cloudflared), `demo` (per la sola verifica finale, la elimineremo prima della Fase 4). NetworkPolicy default-deny + eccezioni esplicite su ciascuno.
+- **ArgoCD**: installed once with the official manifests (`kubectl apply`), not managed by itself. From here on everything else (Traefik, cloudflared, KSOPS, the test app, and in Phase 4+ CNPG/Redis/observability) goes through a single **App-of-Apps**: an ArgoCD `Application` pointing at `buddy-budget-infra/argocd/apps/`, where each YAML file in that folder is in turn another `Application`. Adding a future component = adding a file, never a manual command.
+- **KSOPS**: the age private key (generated in Phase 1, never in git) goes **into the cluster once, outside GitOps** (`kubectl create secret`) — it is the only "root" secret of the whole system, consistent with the spec ("the only age key to safeguard"). Everything else (including the `cloudflared` credentials, created in this same phase) is encrypted with the **public key** alone and committed, decrypted automatically by ArgoCD via the KSOPS plugin mounted in the `repo-server`.
+- **cloudflared**: I create the tunnel with the `cloudflared` CLI (not from the Cloudflare dashboard), same pattern already used for Tailscale — a one-time login that you open in the browser, authorizing the CLI to act on your Cloudflare account to create the tunnel. The credentials file that comes out of it is a real secret: I encrypt it with SOPS right away before it touches the repo, never in plaintext.
+- **cloudflared → Traefik → app**: `cloudflared` (pod in the cluster) forwards the tunnel traffic to Traefik's ClusterIP `Service` (never a public port on the host); Traefik routes by hostname to the apps via `IngressRoute` — adding a future subdomain is a Kubernetes resource, not a tunnel reconfiguration.
+- **Namespaces for this phase**: `argocd`, `ingress` (Traefik + cloudflared), `demo` (only for the final check, we'll delete it before Phase 4). Default-deny NetworkPolicy + explicit exceptions on each one.
 
-## Chi esegue cosa
+## Who runs what
 
-Come nelle fasi precedenti: la maggior parte dei comandi li eseguo io (accesso già disponibile via Tailscale/kubectl). Ti chiedo conferma esplicita prima di:
-- creare il segreto della chiave age nel cluster (root di fiducia di tutto il resto);
-- il login `cloudflared` (apri tu un URL nel browser, come per Tailscale).
+As in the previous phases: I run most of the commands (access already available via Tailscale/kubectl). I ask for explicit confirmation before:
+- creating the age key secret in the cluster (root of trust for everything else);
+- the `cloudflared` login (you open a URL in the browser, as for Tailscale).
 
-## Ordine dei passi
+## Order of the steps
 
-1. Strumenti in WSL: `helm`, `sops`, `cloudflared`.
-2. ArgoCD installato (manifest ufficiali), accesso UI verificato via Tailscale.
-3. **[conferma]** Bootstrap KSOPS: segreto age nel cluster + plugin nel `repo-server`, verificato con un file di prova cifrato/decifrato.
-4. App-of-Apps: un'`Application` ArgoCD che punta a `argocd/apps/` nel repo infra.
-5. Traefik via Helm chart, esposto solo come `ClusterIP` (nessuna porta host).
-6. **[conferma]** Tunnel Cloudflare: login CLI, creazione tunnel, DNS, credenziali cifrate con SOPS e committate; `cloudflared` deploy nel cluster.
-7. NetworkPolicy default-deny per `argocd`/`ingress`/`demo` + `ResourceQuota`/`LimitRange`.
-8. App di prova (`whoami` o `nginx` minimale) dichiarata in Git, sincronizzata da ArgoCD, raggiungibile su `test.buddybudget.io` dall'esterno — verifica reale con `curl` da qui, non da dentro la tailnet.
-9. Pulizia: namespace `demo` rimosso (era solo per la verifica).
-
----
-
-### Passo 1 — Strumenti in WSL
-
-Installo `helm` (script ufficiale), `sops` (release GitHub), `cloudflared` (repo APT ufficiale Cloudflare). `kubectl` è già disponibile su Windows (Fase 2); in WSL ne aggiungo una copia puntata allo stesso `~/.kube/buddybudget-config`.
-
-**Verifica:** `helm version`, `sops --version`, `cloudflared --version` rispondono.
+1. Tools in WSL: `helm`, `sops`, `cloudflared`.
+2. ArgoCD installed (official manifests), UI access verified via Tailscale.
+3. **[confirmation]** KSOPS bootstrap: age secret in the cluster + plugin in the `repo-server`, verified with an encrypted/decrypted test file.
+4. App-of-Apps: an ArgoCD `Application` pointing at `argocd/apps/` in the infra repo.
+5. Traefik via Helm chart, exposed only as `ClusterIP` (no host port).
+6. **[confirmation]** Cloudflare Tunnel: CLI login, tunnel creation, DNS, credentials encrypted with SOPS and committed; `cloudflared` deployed in the cluster.
+7. Default-deny NetworkPolicy for `argocd`/`ingress`/`demo` + `ResourceQuota`/`LimitRange`.
+8. Test app (`whoami` or minimal `nginx`) declared in Git, synced by ArgoCD, reachable at `test.buddybudget.io` from outside — real check with `curl` from here, not from inside the tailnet.
+9. Cleanup: `demo` namespace removed (it was only for the check).
 
 ---
 
-### Passo 2 — ArgoCD
+### Step 1 — Tools in WSL
 
-Namespace `argocd`, manifest ufficiali (`install.yaml` canale stable) applicati con `kubectl apply -n argocd -f ...`. Recupero la password iniziale dell'utente `admin` (generata da ArgoCD stesso, non da me) e la giro a te via un comando che stampi, non tramite chat, per cambiarla subito.
+I install `helm` (official script), `sops` (GitHub release), `cloudflared` (official Cloudflare APT repo). `kubectl` is already available on Windows (Phase 2); in WSL I add a copy pointed at the same `~/.kube/buddybudget-config`.
 
-**Verifica:** `kubectl get pods -n argocd` tutti `Running`; accesso alla UI via `kubectl port-forward` attraverso Tailscale (non esposta pubblicamente qui — l'esporremo dietro Traefik/tunnel più avanti, se vorrai, con autenticazione propria).
-
----
-
-### Passo 3 — Bootstrap KSOPS ⚠️ conferma richiesta
-
-Prima di eseguire: **confermi che la chiave privata age è ancora quella di Fase 1**, salvata nel tuo password manager? Non mi serve rivederla, solo la conferma che esiste e la sai recuperare se il segreto k8s andasse perso (in quel caso lo si ricrea dalla stessa chiave, zero perdita).
-
-Eseguo:
-- `kubectl create secret generic sops-age -n argocd --from-file=key.txt=<percorso locale>` (il contenuto non transita mai per la chat, lo leggo da file);
-- ricostruisco l'immagine del `repo-server` di ArgoCD con `ksops`/`sops` installati (o monto un init-container ufficiale `viaduct-ai/ksops`, a seconda di cosa si integra meglio con la versione ArgoCD installata — decido in corsa, lo annoto);
-- configuro `argocd-cm` per abilitare Kustomize con plugin ksops, e monto il segreto `sops-age` nel `repo-server` come `SOPS_AGE_KEY_FILE`.
-
-**Verifica:** cifro un file di prova con `sops -e --age <chiave-pubblica>`, lo metto in una `Application` ArgoCD di test, e verifico che ArgoCD lo decifri e crei il `Secret` k8s corrispondente — poi cancello sia il file di prova che il segreto risultante.
+**Check:** `helm version`, `sops --version`, `cloudflared --version` respond.
 
 ---
 
-### Passo 4 — App-of-Apps
+### Step 2 — ArgoCD
 
-Struttura nel repo infra:
+`argocd` namespace, official manifests (`install.yaml`, stable channel) applied with `kubectl apply -n argocd -f ...`. I retrieve the initial password of the `admin` user (generated by ArgoCD itself, not by me) and hand it to you via a command that you print, not through the chat, so you can change it right away.
+
+**Check:** `kubectl get pods -n argocd` all `Running`; UI access via `kubectl port-forward` through Tailscale (not exposed publicly here — we'll expose it behind Traefik/tunnel later, if you want, with its own authentication).
+
+---
+
+### Step 3 — KSOPS bootstrap ⚠️ confirmation required
+
+Before running: **do you confirm that the age private key is still the one from Phase 1**, saved in your password manager? I don't need to see it again, just the confirmation that it exists and that you can retrieve it if the k8s secret were lost (in that case it is recreated from the same key, zero loss).
+
+I run:
+- `kubectl create secret generic sops-age -n argocd --from-file=key.txt=<percorso locale>` (the content never passes through the chat, I read it from a file);
+- rebuild the ArgoCD `repo-server` image with `ksops`/`sops` installed (or mount an official `viaduct-ai/ksops` init-container, depending on what integrates better with the installed ArgoCD version — I decide along the way and note it down);
+- configure `argocd-cm` to enable Kustomize with the ksops plugin, and mount the `sops-age` secret in the `repo-server` as `SOPS_AGE_KEY_FILE`.
+
+**Check:** I encrypt a test file with `sops -e --age <chiave-pubblica>`, put it in a test ArgoCD `Application`, and verify that ArgoCD decrypts it and creates the corresponding k8s `Secret` — then I delete both the test file and the resulting secret.
+
+---
+
+### Step 4 — App-of-Apps
+
+Structure in the infra repo:
 ```
 argocd/
-  root-app.yaml        # Application che punta a argocd/apps/
+  root-app.yaml        # Application pointing at argocd/apps/
   apps/
     traefik.yaml        # Application → argocd/manifests/traefik/
     cloudflared.yaml     # Application → argocd/manifests/cloudflared/
-    demo.yaml            # Application → argocd/manifests/demo/ (rimossa al Passo 9)
+    demo.yaml            # Application → argocd/manifests/demo/ (removed in Step 9)
   manifests/
     traefik/
     cloudflared/
     demo/
 ```
-`kubectl apply -f argocd/root-app.yaml` una tantum; da lì ArgoCD legge tutto il resto da solo.
+`kubectl apply -f argocd/root-app.yaml` once; from there ArgoCD reads everything else by itself.
 
-**Verifica:** la UI di ArgoCD (via port-forward) mostra l'app `root` e le sue app figlie, anche se ancora vuote/non sincronizzate (i manifest arrivano nei passi successivi).
-
----
-
-### Passo 5 — Traefik
-
-`argocd/manifests/traefik/` con un `Application` che referenzia il chart Helm ufficiale `traefik/traefik`, `values.yaml` con `service.type: ClusterIP` (esplicito, per non lasciare che il default apra qualcosa sull'host) e dashboard disattivata pubblicamente per ora.
-
-**Verifica:** ArgoCD sincronizza, `kubectl get pods -n ingress` mostra Traefik `Running`; nessuna nuova porta in ascolto sull'host (ricontrollo con lo stesso scan usato in Fase 2).
+**Check:** the ArgoCD UI (via port-forward) shows the `root` app and its child apps, even if still empty/not synced (the manifests arrive in the following steps).
 
 ---
 
-### Passo 6 — Tunnel Cloudflare ⚠️ conferma richiesta
+### Step 5 — Traefik
 
-Da WSL: `cloudflared tunnel login` stampa un URL — te lo giro, lo apri loggato su Cloudflare, autorizzi. Poi:
-- `cloudflared tunnel create buddybudget-vps` → genera `<tunnel-id>` e un file di credenziali (**segreto vero**, contiene un token);
-- `cloudflared tunnel route dns buddybudget-vps test.buddybudget.io` → crea il CNAME su Cloudflare, niente da fare a mano nel pannello;
-- cifro **subito** il file di credenziali con `sops -e --age <chiave-pubblica-age>` e lo salvo in `argocd/manifests/cloudflared/credentials.enc.yaml` — il file in chiaro non tocca mai il repo, lo elimino dal disco locale appena cifrato;
-- manifest `cloudflared` (Deployment + ConfigMap con `ingress: - hostname: test.buddybudget.io service: http://traefik.ingress.svc.cluster.local:80`), gestito dall'App-of-Apps.
+`argocd/manifests/traefik/` with an `Application` referencing the official Helm chart `traefik/traefik`, `values.yaml` with `service.type: ClusterIP` (explicit, so the default doesn't open anything on the host) and dashboard publicly disabled for now.
 
-**Prima di lanciare `cloudflared tunnel login` ti chiedo conferma**, visto che è un'azione che tocca il tuo account Cloudflare (crea un tunnel, un CNAME). Reversibile in ogni momento (si cancella il tunnel da CLI o pannello).
-
-**Verifica:** `cloudflared tunnel list` mostra `buddybudget-vps`; il DNS `test.buddybudget.io` risolve a `<tunnel-id>.cfargotunnel.com` (verificabile con `dig`/`nslookup`, nessun segreto coinvolto).
+**Check:** ArgoCD syncs, `kubectl get pods -n ingress` shows Traefik `Running`; no new listening port on the host (I re-check with the same scan used in Phase 2).
 
 ---
 
-### Passo 7 — NetworkPolicy + quote risorse
+### Step 6 — Cloudflare Tunnel ⚠️ confirmation required
 
-Per `argocd`, `ingress`, `demo`: `NetworkPolicy` default-deny in ingresso con eccezioni esplicite (es. `ingress` → `argocd` per il futuro accesso alla UI, `ingress` → `demo` per il traffico di Traefik verso l'app di prova). `ResourceQuota`/`LimitRange` per namespace, valori conservativi vista la RAM totale (8GB).
+From WSL: `cloudflared tunnel login` prints a URL — I pass it to you, you open it logged into Cloudflare, you authorize. Then:
+- `cloudflared tunnel create buddybudget-vps` → generates `<tunnel-id>` and a credentials file (**a real secret**, it contains a token);
+- `cloudflared tunnel route dns buddybudget-vps test.buddybudget.io` → creates the CNAME on Cloudflare, nothing to do by hand in the dashboard;
+- I encrypt the credentials file **right away** with `sops -e --age <chiave-pubblica-age>` and save it in `argocd/manifests/cloudflared/credentials.enc.yaml` — the plaintext file never touches the repo, I delete it from the local disk as soon as it is encrypted;
+- `cloudflared` manifest (Deployment + ConfigMap with `ingress: - hostname: test.buddybudget.io service: http://traefik.ingress.svc.cluster.local:80`), managed by the App-of-Apps.
 
-**Verifica:** un pod di test in un namespace senza regole esplicite non riesce a raggiungere un altro namespace (`kubectl exec ... -- curl` fallisce come previsto).
+**Before running `cloudflared tunnel login` I ask for your confirmation**, since it is an action that touches your Cloudflare account (it creates a tunnel, a CNAME). Reversible at any time (the tunnel can be deleted from the CLI or the dashboard).
 
----
-
-### Passo 8 — App di prova end-to-end
-
-`argocd/manifests/demo/`: Deployment `traefik/whoami` (immagine minimale, risponde con informazioni sulla richiesta — utile per debug) + `Service` + `IngressRoute` per `test.buddybudget.io`.
-
-**Verifica, la più importante di questa fase:** `curl https://test.buddybudget.io` **da qui** (rete esterna, non tailnet) restituisce la risposta di `whoami` — prova che l'intera catena Cloudflare → tunnel → Traefik → pod funziona, gestita end-to-end da ArgoCD (nessun `kubectl apply` manuale sull'app stessa, solo `git push`).
+**Check:** `cloudflared tunnel list` shows `buddybudget-vps`; the DNS `test.buddybudget.io` resolves to `<tunnel-id>.cfargotunnel.com` (verifiable with `dig`/`nslookup`, no secrets involved).
 
 ---
 
-### Passo 9 — Pulizia
+### Step 7 — NetworkPolicy + resource quotas
 
-Rimuovo `argocd/apps/demo.yaml` e `argocd/manifests/demo/`, ArgoCD elimina da solo le risorse corrispondenti (pruning). Il CNAME `test.buddybudget.io` lo lascio (serve da riferimento per Fase 6 quando testeremo l'app reale su un sottodominio); si può sempre rimuovere dopo.
+For `argocd`, `ingress`, `demo`: default-deny inbound `NetworkPolicy` with explicit exceptions (e.g. `ingress` → `argocd` for the future UI access, `ingress` → `demo` for Traefik's traffic to the test app). `ResourceQuota`/`LimitRange` per namespace, conservative values given the total RAM (8GB).
 
-## Fine fase
+**Check:** a test pod in a namespace without explicit rules cannot reach another namespace (`kubectl exec ... -- curl` fails as expected).
 
-Aggiorno CLAUDE.md, poi piano della **Fase 4** (dati: CloudNativePG + Redis + backup R2 + prova di restore).
+---
+
+### Step 8 — End-to-end test app
+
+`argocd/manifests/demo/`: `traefik/whoami` Deployment (minimal image, responds with information about the request — useful for debugging) + `Service` + `IngressRoute` for `test.buddybudget.io`.
+
+**Check, the most important of this phase:** `curl https://test.buddybudget.io` **from here** (external network, not the tailnet) returns the `whoami` response — proof that the whole Cloudflare → tunnel → Traefik → pod chain works, managed end-to-end by ArgoCD (no manual `kubectl apply` on the app itself, only `git push`).
+
+---
+
+### Step 9 — Cleanup
+
+I remove `argocd/apps/demo.yaml` and `argocd/manifests/demo/`, ArgoCD deletes the corresponding resources by itself (pruning). I keep the `test.buddybudget.io` CNAME (it serves as a reference for Phase 6 when we test the real app on a subdomain); it can always be removed later.
+
+## End of phase
+
+I update CLAUDE.md, then the plan for **Phase 4** (data: CloudNativePG + Redis + R2 backups + restore test).

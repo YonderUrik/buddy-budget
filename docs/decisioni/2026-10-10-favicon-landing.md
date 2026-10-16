@@ -1,5 +1,5 @@
-# 2026-10-10 — Favicon della landing per Google
+# 2026-10-10 — Landing favicon for Google
 
-Diagnosi: la landing è online e indicizzabile (nessun noindex, robots e sitemap corretti), ma `/favicon.ico` rispondeva 404 e l'unica icona era un SVG non quadrato (viewBox 378×464).
-Scelta: `favicon.ico` (48/32/16), PNG 48/96/192, SVG reso quadrato e `<link rel="icon">` espliciti, come chiede Google (quadrata, lato multiplo di 48 px).
-Limite: Google aggiorna la favicon solo alla scansione successiva, da giorni a qualche settimana; non si può forzare.
+Diagnosis: the landing is online and indexable (no noindex, correct robots and sitemap), but `/favicon.ico` returned 404 and the only icon was a non-square SVG (viewBox 378×464).
+Choice: `favicon.ico` (48/32/16), PNG 48/96/192, SVG made square and explicit `<link rel="icon">`, as Google asks (square, side a multiple of 48 px).
+Limit: Google updates the favicon only at the next crawl, from days to a few weeks; it cannot be forced.

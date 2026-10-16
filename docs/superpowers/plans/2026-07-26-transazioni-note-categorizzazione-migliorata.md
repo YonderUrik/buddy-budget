@@ -1,62 +1,62 @@
-# Note transazioni + categorizzazione migliorata via campi GoCardless — Implementation Plan
+# Transaction notes + improved categorization via GoCardless fields — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Aggiungere `creditorName`/`debtorName` GoCardless come sorgente di un nome pulito per `description` (con fallback identico a oggi) e un campo `note` libero editabile su ogni transazione, senza toccare gli algoritmi di categorizzazione esistenti.
+**Goal:** Add GoCardless `creditorName`/`debtorName` as the source of a clean name for `description` (with the same fallback as today) and a free, editable `note` field on every transaction, without touching the existing categorization algorithms.
 
-**Architecture:** Due nuove colonne nullable su `transactions` (`rawDescription`, `note`). `lib/gocardless/sync.ts` calcola `description` da `creditorName`/`debtorName` quando disponibili (fallback a `remittanceInformationUnstructured`, poi al letterale "Movimento bancario"), salvando il testo grezzo originale in `rawDescription`. `note` è editabile via l'endpoint PATCH esistente (già generico, nessuna modifica di route necessaria) e nel filtro testo di Spese. Nessuna modifica a `lib/gocardless/categorize.ts` o `lib/calc/categorize-suggestions.ts`: beneficiano automaticamente di un `description` più pulito.
+**Architecture:** Two new nullable columns on `transactions` (`rawDescription`, `note`). `lib/gocardless/sync.ts` computes `description` from `creditorName`/`debtorName` when available (fallback to `remittanceInformationUnstructured`, then to the literal "Movimento bancario"), saving the original raw text in `rawDescription`. `note` is editable via the existing PATCH endpoint (already generic, no route change needed) and included in the Spese (Expenses) text filter. No change to `lib/gocardless/categorize.ts` or `lib/calc/categorize-suggestions.ts`: they automatically benefit from a cleaner `description`.
 
-**Tech Stack:** Next.js/TypeScript, Drizzle ORM (Postgres), Zod, TanStack Query, Vitest, shadcn/ui (`@base-ui/react` Popover, nuovo componente Textarea).
+**Tech Stack:** Next.js/TypeScript, Drizzle ORM (Postgres), Zod, TanStack Query, Vitest, shadcn/ui (`@base-ui/react` Popover, new Textarea component).
 
 ## Global Constraints
 
-- Spec di riferimento: `docs/superpowers/specs/2026-07-26-transazioni-note-categorizzazione-migliorata-design.md`.
-- Nessun backfill delle transazioni auto già sincronizzate (restano con `description` grezza esistente, `rawDescription`/`note` a `null`).
-- Nessuna modifica a `lib/gocardless/categorize.ts` o `lib/calc/categorize-suggestions.ts` — l'algoritmo di matching resta identico, cambia solo l'input.
-- `note` massimo 500 caratteri, stringa vuota (dopo trim) normalizzata a `null`.
-- `note` editabile sia su transazioni `auto` sia `manuale` (unico campo che rompe la regola generale "auto è sola lettura" — scelta esplicita della spec).
-- Tutte le stringhe visibili in UI in italiano, nessun colore/valore hardcoded fuori dai token tema (vedi `CLAUDE.md`).
+- Reference spec: `docs/superpowers/specs/2026-07-26-transazioni-note-categorizzazione-migliorata-design.md`.
+- No backfill of the already synced auto transactions (they keep the existing raw `description`, `rawDescription`/`note` at `null`).
+- No change to `lib/gocardless/categorize.ts` or `lib/calc/categorize-suggestions.ts` — the matching algorithm stays identical, only the input changes.
+- `note` at most 500 characters, empty string (after trim) normalized to `null`.
+- `note` editable on both `auto` and `manuale` transactions (the only field that breaks the general rule "auto is read-only" — an explicit choice of the spec).
+- All visible UI strings in Italian, no hardcoded colors/values outside the theme tokens (see `CLAUDE.md`).
 
 ---
 
-### Task 1: Schema DB — colonne `rawDescription`/`note`
+### Task 1: DB schema — `rawDescription`/`note` columns
 
 **Files:**
 - Modify: `lib/db/schema/transactions.ts`
-- Modify: `lib/calc/expenses.test.ts` (helper `makeTransaction`)
-- Modify: `lib/calc/categorize-suggestions.test.ts` (helper `makeTransaction`)
+- Modify: `lib/calc/expenses.test.ts` (`makeTransaction` helper)
+- Modify: `lib/calc/categorize-suggestions.test.ts` (`makeTransaction` helper)
 
 **Interfaces:**
-- Produces: `Transaction` (drizzle `$inferSelect`) con due nuove chiavi `rawDescription: string | null` e `note: string | null`, usate da tutti i task successivi.
+- Produces: `Transaction` (drizzle `$inferSelect`) with two new keys `rawDescription: string | null` and `note: string | null`, used by all the following tasks.
 
-- [ ] **Step 1: Aggiungi le colonne allo schema**
+- [ ] **Step 1: Add the columns to the schema**
 
-In `lib/db/schema/transactions.ts`, aggiungi due colonne nullable subito dopo `description`:
+In `lib/db/schema/transactions.ts`, add two nullable columns right after `description`:
 
 ```ts
     description: text("description").notNull(),
-    // Testo grezzo remittanceInformationUnstructured originale (solo transazioni auto, quando
-    // GoCardless lo fornisce): usato per il tooltip quando `description` è stata sostituita dal
-    // nome pulito creditorName/debtorName, mai per il matching di categorizzazione.
+    // Original raw remittanceInformationUnstructured text (auto transactions only, when
+    // GoCardless provides it): used for the tooltip when `description` has been replaced by the
+    // clean creditorName/debtorName name, never for categorization matching.
     rawDescription: text("raw_description"),
-    // Nota libera dell'utente, editabile su transazioni auto e manuali.
+    // Free user note, editable on auto and manual transactions.
     note: text("note"),
     amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
 ```
 
-- [ ] **Step 2: Applica lo schema al DB**
+- [ ] **Step 2: Apply the schema to the DB**
 
-Esegui, dalla directory in cui stai lavorando su questo piano (worktree o repo principale a seconda di dove è stato aperto questo checkout — **mai** da una directory diversa da quella con questo schema, altrimenti Drizzle legge lo schema sbagliato):
+Run, from the directory in which you are working on this plan (worktree or main repo depending on where this checkout was opened — **never** from a directory other than the one with this schema, otherwise Drizzle reads the wrong schema):
 
 ```bash
 pnpm db:push
 ```
 
-Aggiungere due colonne nullable è un'operazione non distruttiva (nessuna perdita dati attesa). Se `drizzle-kit push` mostra un prompt di conferma che sembra distruttivo (rinomina/drop di qualcosa), **fermati e chiedi conferma all'utente** invece di confermare alla cieca.
+Adding two nullable columns is a non-destructive operation (no data loss expected). If `drizzle-kit push` shows a confirmation prompt that looks destructive (rename/drop of something), **stop and ask the user for confirmation** instead of confirming blindly.
 
-- [ ] **Step 3: Aggiorna gli helper di test esistenti per compilare con le nuove colonne**
+- [ ] **Step 3: Update the existing test helpers to compile with the new columns**
 
-In `lib/calc/expenses.test.ts`, nella funzione `makeTransaction`, aggiungi le due chiavi (il tipo `Transaction` ora le richiede, anche se nullable):
+In `lib/calc/expenses.test.ts`, in the `makeTransaction` function, add the two keys (the `Transaction` type now requires them, even if nullable):
 
 ```ts
 function makeTransaction(overrides: Partial<Transaction>): Transaction {
@@ -74,10 +74,10 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
     source: "manuale",
     externalId: null,
     createdAt: new Date(),
-    // ...resto invariato
+    // ...rest unchanged
 ```
 
-Stessa modifica in `lib/calc/categorize-suggestions.test.ts`:
+Same change in `lib/calc/categorize-suggestions.test.ts`:
 
 ```ts
 function makeTransaction(overrides: Partial<Transaction>): Transaction {
@@ -102,13 +102,13 @@ function makeTransaction(overrides: Partial<Transaction>): Transaction {
 }
 ```
 
-- [ ] **Step 4: Verifica che tutto compili e i test esistenti passino**
+- [ ] **Step 4: Verify that everything compiles and the existing tests pass**
 
 Run: `pnpm tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts lib/calc/categorize-suggestions.test.ts`
-Expected: PASS (nessuna nuova asserzione ancora, solo verifica che l'helper aggiornato non rompa nulla).
+Expected: PASS (no new assertions yet, only a check that the updated helper does not break anything).
 
 - [ ] **Step 5: Commit**
 
@@ -119,7 +119,7 @@ git commit -m "feat: aggiungi colonne rawDescription/note a transactions"
 
 ---
 
-### Task 2: GoCardless client + sync — mapping creditorName/debtorName
+### Task 2: GoCardless client + sync — creditorName/debtorName mapping
 
 **Files:**
 - Modify: `lib/gocardless/client.ts`
@@ -128,9 +128,9 @@ git commit -m "feat: aggiungi colonne rawDescription/note a transactions"
 
 **Interfaces:**
 - Consumes: `Transaction.rawDescription`/`Transaction.note` (Task 1).
-- Produces: nessuna nuova funzione esportata — cambia solo il valore calcolato internamente in `syncAccountLink` per `description`/`rawDescription` prima dell'insert.
+- Produces: no new exported function — only the value computed internally in `syncAccountLink` for `description`/`rawDescription` before the insert changes.
 
-- [ ] **Step 1: Aggiungi i due campi opzionali a `BankTransaction`**
+- [ ] **Step 1: Add the two optional fields to `BankTransaction`**
 
 In `lib/gocardless/client.ts`:
 
@@ -146,9 +146,9 @@ export interface BankTransaction {
 }
 ```
 
-- [ ] **Step 2: Scrivi i nuovi test (falliranno finché non tocchi `sync.ts`)**
+- [ ] **Step 2: Write the new tests (they will fail until you touch `sync.ts`)**
 
-Aggiungi in `lib/gocardless/sync.test.ts`, dentro `describe("syncAccountLink", ...)`, tre nuovi casi (dopo il primo test esistente, prima di `"distingue le transazioni categorizzate..."`):
+Add in `lib/gocardless/sync.test.ts`, inside `describe("syncAccountLink", ...)`, three new cases (after the first existing test, before `"distingue le transazioni categorizzate..."`):
 
 ```ts
   it("usa creditorName come description su una spesa (importo negativo), salvando il testo grezzo in rawDescription", async () => {
@@ -249,14 +249,14 @@ Aggiungi in `lib/gocardless/sync.test.ts`, dentro `describe("syncAccountLink", .
   });
 ```
 
-- [ ] **Step 3: Esegui i nuovi test per verificare che falliscano**
+- [ ] **Step 3: Run the new tests to verify they fail**
 
 Run: `pnpm vitest run lib/gocardless/sync.test.ts`
-Expected: FAIL sui 4 nuovi test (i campi `creditorName`/`debtorName` non esistono ancora nel tipo/logica, `rawDescription` non viene ancora scritto).
+Expected: FAIL on the 4 new tests (the `creditorName`/`debtorName` fields do not exist yet in the type/logic, `rawDescription` is not written yet).
 
-- [ ] **Step 4: Implementa il calcolo in `sync.ts`**
+- [ ] **Step 4: Implement the computation in `sync.ts`**
 
-In `lib/gocardless/sync.ts`, sostituisci la riga 79 (`const description = ...`) con:
+In `lib/gocardless/sync.ts`, replace line 79 (`const description = ...`) with:
 
 ```ts
       const rawDescription = bankTransaction.remittanceInformationUnstructured ?? null;
@@ -265,7 +265,7 @@ In `lib/gocardless/sync.ts`, sostituisci la riga 79 (`const description = ...`) 
       const description = merchantName || rawDescription || "Movimento bancario";
 ```
 
-e aggiungi `rawDescription` ai valori dell'insert (accanto a `description:`):
+and add `rawDescription` to the insert values (next to `description:`):
 
 ```ts
         .values({
@@ -281,10 +281,10 @@ e aggiungi `rawDescription` ai valori dell'insert (accanto a `description:`):
         })
 ```
 
-- [ ] **Step 5: Esegui i test per verificare che passino**
+- [ ] **Step 5: Run the tests to verify they pass**
 
 Run: `pnpm vitest run lib/gocardless/sync.test.ts`
-Expected: PASS su tutti i test (i 4 nuovi + tutti quelli preesistenti, invariati nel comportamento).
+Expected: PASS on all tests (the 4 new ones + all the pre-existing ones, unchanged in behavior).
 
 - [ ] **Step 6: Commit**
 
@@ -295,7 +295,7 @@ git commit -m "feat: usa creditorName/debtorName GoCardless per description puli
 
 ---
 
-### Task 3: Validazione + PATCH `note`
+### Task 3: Validation + PATCH `note`
 
 **Files:**
 - Modify: `lib/validation/transactions.ts`
@@ -304,11 +304,11 @@ git commit -m "feat: usa creditorName/debtorName GoCardless per description puli
 
 **Interfaces:**
 - Consumes: `Transaction.note` (Task 1).
-- Produces: `UpdateTransactionInput` ora include `note?: string | null`, consumato da `useUpdateTransactionMutation` (Task 5) e da `PATCH /api/transactions/[id]` (nessuna modifica al codice della route: `note` non è in `MANUAL_ONLY_FIELDS` e passa già attraverso `...rest` nello `.set({...})`).
+- Produces: `UpdateTransactionInput` now includes `note?: string | null`, consumed by `useUpdateTransactionMutation` (Task 5) and by `PATCH /api/transactions/[id]` (no change to the route code: `note` is not in `MANUAL_ONLY_FIELDS` and already passes through `...rest` in the `.set({...})`).
 
-- [ ] **Step 1: Scrivi i test di validazione (falliranno finché non tocchi lo schema)**
+- [ ] **Step 1: Write the validation tests (they will fail until you touch the schema)**
 
-Aggiungi in `lib/validation/transactions.test.ts`, dentro `describe("updateTransactionSchema", ...)`:
+Add in `lib/validation/transactions.test.ts`, inside `describe("updateTransactionSchema", ...)`:
 
 ```ts
   it("accetta una nota valida", () => {
@@ -341,12 +341,12 @@ Aggiungi in `lib/validation/transactions.test.ts`, dentro `describe("updateTrans
   });
 ```
 
-- [ ] **Step 2: Esegui i test per verificare che falliscano**
+- [ ] **Step 2: Run the tests to verify they fail**
 
 Run: `pnpm vitest run lib/validation/transactions.test.ts`
-Expected: FAIL (`note` non è ancora un campo dello schema).
+Expected: FAIL (`note` is not yet a field of the schema).
 
-- [ ] **Step 3: Aggiungi `note` a `updateTransactionSchema`**
+- [ ] **Step 3: Add `note` to `updateTransactionSchema`**
 
 In `lib/validation/transactions.ts`:
 
@@ -371,14 +371,14 @@ export const updateTransactionSchema = z
   });
 ```
 
-- [ ] **Step 4: Esegui i test per verificare che passino**
+- [ ] **Step 4: Run the tests to verify they pass**
 
 Run: `pnpm vitest run lib/validation/transactions.test.ts`
 Expected: PASS.
 
-- [ ] **Step 5: Scrivi i test API per `note` su transazioni auto e manuali**
+- [ ] **Step 5: Write the API tests for `note` on auto and manual transactions**
 
-Aggiungi in `app/api/transactions/[id]/route.test.ts`, dentro `describe("PATCH/DELETE /api/transactions/[id]", ...)` (dopo il test `"permette di cambiare categoria e 'dividi' su una transazione auto"`):
+Add in `app/api/transactions/[id]/route.test.ts`, inside `describe("PATCH/DELETE /api/transactions/[id]", ...)` (after the test `"permette di cambiare categoria e 'dividi' su una transazione auto"`):
 
 ```ts
   it("permette di impostare una nota su una transazione manuale", async () => {
@@ -465,10 +465,10 @@ Aggiungi in `app/api/transactions/[id]/route.test.ts`, dentro `describe("PATCH/D
   });
 ```
 
-- [ ] **Step 6: Esegui i test per verificare che passino**
+- [ ] **Step 6: Run the tests to verify they pass**
 
 Run: `pnpm vitest run app/api/transactions/[id]/route.test.ts`
-Expected: PASS su tutti i test (nessuna modifica a `route.ts` necessaria: `note` non è in `MANUAL_ONLY_FIELDS` e passa già attraverso lo spread `...rest`).
+Expected: PASS on all tests (no change to `route.ts` needed: `note` is not in `MANUAL_ONLY_FIELDS` and already passes through the `...rest` spread).
 
 - [ ] **Step 7: Commit**
 
@@ -479,19 +479,19 @@ git commit -m "feat: aggiungi campo note a updateTransactionSchema, editabile su
 
 ---
 
-### Task 4: Ricerca testo — includi `note`
+### Task 4: Text search — include `note`
 
 **Files:**
 - Modify: `lib/calc/expenses.ts`
 - Modify: `lib/calc/expenses.test.ts`
 
 **Interfaces:**
-- Consumes: `Transaction.note` (Task 1), `TransactionFilter` (esistente, invariata nella forma).
-- Produces: nessuna nuova funzione esportata — `filterTransactions` matcha anche su `note`.
+- Consumes: `Transaction.note` (Task 1), `TransactionFilter` (existing, unchanged in shape).
+- Produces: no new exported function — `filterTransactions` also matches on `note`.
 
-- [ ] **Step 1: Scrivi il test (fallirà finché non tocchi `filterTransactions`)**
+- [ ] **Step 1: Write the test (it will fail until you touch `filterTransactions`)**
 
-Aggiungi in `lib/calc/expenses.test.ts`, dentro `describe("filterTransactions", ...)`:
+Add in `lib/calc/expenses.test.ts`, inside `describe("filterTransactions", ...)`:
 
 ```ts
   it("filtra per testo anche dentro la nota, oltre alla descrizione", () => {
@@ -504,17 +504,17 @@ Aggiungi in `lib/calc/expenses.test.ts`, dentro `describe("filterTransactions", 
   });
 ```
 
-- [ ] **Step 2: Esegui il test per verificare che fallisca**
+- [ ] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts`
-Expected: FAIL sul nuovo test (`note` non ancora incluso nel match).
+Expected: FAIL on the new test (`note` not yet included in the match).
 
-- [ ] **Step 3: Aggiorna `filterTransactions`**
+- [ ] **Step 3: Update `filterTransactions`**
 
 In `lib/calc/expenses.ts`:
 
 ```ts
-/** Filtra le transazioni per categoria esatta e/o substring case-insensitive su descrizione o nota, in AND. */
+/** Filters transactions by exact category and/or case-insensitive substring on description or note, in AND. */
 export function filterTransactions(
   transactions: Transaction[],
   filter: TransactionFilter
@@ -530,10 +530,10 @@ export function filterTransactions(
 }
 ```
 
-- [ ] **Step 4: Esegui il test per verificare che passi**
+- [ ] **Step 4: Run the test to verify it passes**
 
 Run: `pnpm vitest run lib/calc/expenses.test.ts`
-Expected: PASS su tutti i test del file.
+Expected: PASS on all the tests of the file.
 
 - [ ] **Step 5: Commit**
 
@@ -544,7 +544,7 @@ git commit -m "feat: includi la nota nel filtro testo di Spese"
 
 ---
 
-### Task 5: UI — icona/popover nota + tooltip descrizione grezza
+### Task 5: UI — note icon/popover + raw description tooltip
 
 **Files:**
 - Create: `components/domain/expenses/transaction-note-popover.tsx`
@@ -552,25 +552,25 @@ git commit -m "feat: includi la nota nel filtro testo di Spese"
 - Create (via CLI): `components/ui/textarea.tsx`
 
 **Interfaces:**
-- Consumes: `Transaction` (Task 1, campi `note`/`rawDescription`), `useUpdateTransactionMutation` (`lib/queries/transactions.ts`, esistente), `UpdateTransactionInput` (Task 3, campo `note`).
-- Produces: `TransactionNotePopover` (componente interno a `transaction-row.tsx`, non esportato dal barrel — usato solo lì, coerente con `SplitSlider` che invece è esportato perché riusato altrove; qui non c'è un secondo consumatore).
+- Consumes: `Transaction` (Task 1, fields `note`/`rawDescription`), `useUpdateTransactionMutation` (`lib/queries/transactions.ts`, existing), `UpdateTransactionInput` (Task 3, field `note`).
+- Produces: `TransactionNotePopover` (component internal to `transaction-row.tsx`, not exported from the barrel — used only there, consistent with `SplitSlider` which instead is exported because it is reused elsewhere; here there is no second consumer).
 
-- [ ] **Step 1: Installa il componente Textarea di shadcn**
+- [ ] **Step 1: Install shadcn's Textarea component**
 
 ```bash
 pnpm dlx shadcn@latest add textarea
 ```
 
-Verifica che `components/ui/textarea.tsx` sia stato creato.
+Verify that `components/ui/textarea.tsx` has been created.
 
-- [ ] **Step 2: Crea `TransactionNotePopover`**
+- [ ] **Step 2: Create `TransactionNotePopover`**
 
-Crea `components/domain/expenses/transaction-note-popover.tsx`:
+Create `components/domain/expenses/transaction-note-popover.tsx`:
 
 ```tsx
 "use client";
 
-/** Icona + popover per leggere/editare la nota libera di una transazione (auto o manuale). */
+/** Icon + popover to read/edit the free note of a transaction (auto or manual). */
 
 import * as React from "react";
 import { NotebookPen } from "lucide-react";
@@ -632,11 +632,11 @@ export function TransactionNotePopover({ transaction }: TransactionNotePopoverPr
 }
 ```
 
-- [ ] **Step 3: Integra in `TransactionRow`**
+- [ ] **Step 3: Integrate into `TransactionRow`**
 
 In `components/domain/expenses/transaction-row.tsx`:
 
-1. Importa il nuovo componente accanto agli altri import locali:
+1. Import the new component next to the other local imports:
 
 ```ts
 import { CategoryAvatar } from "@/components/domain/categories";
@@ -644,13 +644,13 @@ import type { CategoryColor, CategoryIcon } from "@/lib/validation/categories";
 import { TransactionNotePopover } from "./transaction-note-popover";
 ```
 
-2. Aggiungi la classe `group` al contenitore della riga (necessaria perché l'icona nota vuota usi `group-hover:opacity-100`), sulla riga con `className="flex flex-wrap items-center gap-3 px-4 py-3"`:
+2. Add the `group` class to the row container (needed so that the empty note icon can use `group-hover:opacity-100`), on the row with `className="flex flex-wrap items-center gap-3 px-4 py-3"`:
 
 ```tsx
       <div className="group flex flex-wrap items-center gap-3 px-4 py-3">
 ```
 
-3. Aggiorna il `title` della descrizione auto per mostrare il testo grezzo quando presente e diverso, sostituendo:
+3. Update the `title` of the auto description to show the raw text when present and different, replacing:
 
 ```tsx
             <p className="truncate text-sm font-medium text-foreground" title={transaction.description}>
@@ -658,7 +658,7 @@ import { TransactionNotePopover } from "./transaction-note-popover";
             </p>
 ```
 
-con:
+with:
 
 ```tsx
             <p
@@ -673,7 +673,7 @@ con:
             </p>
 ```
 
-4. Aggiungi `<TransactionNotePopover transaction={transaction} />` nel gruppo di badge/azioni a destra, subito prima del bottone "Dividi":
+4. Add `<TransactionNotePopover transaction={transaction} />` in the badge/actions group on the right, right before the "Dividi" ("Split") button:
 
 ```tsx
           <TransactionNotePopover transaction={transaction} />
@@ -683,13 +683,13 @@ con:
             onClick={() => setSplitOpen((open) => !open)}
 ```
 
-- [ ] **Step 4: Verifica build e lint**
+- [ ] **Step 4: Verify build and lint**
 
 Run: `pnpm tsc --noEmit`
-Expected: nessun errore.
+Expected: no errors.
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore introdotto da questi file.
+Expected: no new errors introduced by these files.
 
 - [ ] **Step 5: Commit**
 
@@ -700,12 +700,12 @@ git commit -m "feat: icona/popover nota libera su TransactionRow, tooltip descri
 
 ---
 
-## Nota per la verifica manuale (non automatizzabile in questo sandbox)
+## Note for manual verification (cannot be automated in this sandbox)
 
-Nessun Postgres/Redis disponibile per un browser reale in questo ambiente agentico (stesso vincolo di sempre, vedi `CLAUDE.md`). Da verificare manualmente dall'utente dopo il merge:
+No Postgres/Redis available for a real browser in this agentic environment (the usual constraint, see `CLAUDE.md`). To be verified manually by the user after the merge:
 
-- Una spesa auto con `creditorName` mostra il nome pulito come testo principale; hover mostra il testo grezzo originale in tooltip.
-- L'icona nota compare (piena) solo quando c'è una nota; su una riga senza nota, l'icona appare comunque al hover/focus della riga per poterne aggiungere una.
-- La nota si salva su entrambe le transazioni auto e manuali, resta dopo refresh.
-- Cercare un termine presente solo nella nota (non nella descrizione) filtra correttamente la lista in Spese.
-- Una vera sync GoCardless (sandbox) con una banca che espone `creditorName`/`debtorName` produce `description` pulita — dipende dalla banca sandbox usata, potrebbe non essere verificabile se la banca test non fornisce questi campi.
+- An auto expense with `creditorName` shows the clean name as the main text; hover shows the original raw text in a tooltip.
+- The note icon appears (filled) only when there is a note; on a row without a note, the icon still appears on hover/focus of the row so one can be added.
+- The note is saved on both auto and manual transactions, and persists after refresh.
+- Searching for a term present only in the note (not in the description) correctly filters the list in Spese.
+- A real GoCardless sync (sandbox) with a bank that exposes `creditorName`/`debtorName` produces a clean `description` — it depends on the sandbox bank used, it may not be verifiable if the test bank does not provide these fields.

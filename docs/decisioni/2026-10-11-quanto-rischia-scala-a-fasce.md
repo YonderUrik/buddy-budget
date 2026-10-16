@@ -1,6 +1,6 @@
-# 2026-10-11 — «Quanto rischia»: scala a fasce colorate
+# 2026-10-11 — «Quanto rischia» ("How much it risks"): coloured band scale
 
-Il livello di rischio (Basso / Medio / Alto / Molto alto, soglie 8/15/25% di oscillazione annua) era quattro tacche grigie: la parola era chiara, il resto no. Ora è una scala a quattro fasce dal verde al rosso (token `--risk-1..4`, chiaro e scuro) con un segnaposto che cade dentro la fascia in proporzione all'oscillazione (`riskScalePosition`), la parola nel colore del livello e il nome di ogni fascia sotto la scala (il colore non è mai l'unico segnale).
-L'indicatore «Quanto oscilla» non è più una riga a parte (ripeteva il numero in testa): la sua frase e il popover «i» stanno sotto la scala. Restano Perdita peggiore e Sharpe (e il beta con un indice) in due colonne, una sola nota in fondo e un solo «Dettagli» a scomparsa (grafico cadute + come è calcolato).
-Scartate (screenshot nel thread): esempio in euro («10.000 € → tra 9.628 € e 10.372 €») e gauge a semicerchio. Possibile seguito: l'esempio in euro come riga sotto la scala.
-Nessuna migration, nessun nuovo evento: la scheda non introduce azioni dell'utente.
+The risk level (Basso / Medio / Alto / Molto alto — Low / Medium / High / Very high, thresholds 8/15/25% annual volatility) was four grey notches: the word was clear, the rest was not. Now it is a four-band scale from green to red (tokens `--risk-1..4`, light and dark) with a marker that falls inside the band in proportion to volatility (`riskScalePosition`), the word in the level's colour and the name of each band below the scale (colour is never the only signal).
+The «Quanto oscilla» ("How much it swings") indicator is no longer a separate row (it repeated the number at the top): its sentence and the «i» popover sit below the scale. Worst loss and Sharpe (and beta with an index) remain in two columns, a single note at the bottom and a single collapsible «Dettagli» ("Details": drawdown chart + how it is calculated).
+Rejected (screenshots in the thread): example in euro («10.000 € → tra 9.628 € e 10.372 €») and semicircle gauge. Possible follow-up: the euro example as a row below the scale.
+No migration, no new event: the card introduces no user actions.

@@ -1,17 +1,17 @@
-# Import Trade Republic
+# Trade Republic import
 
-In Investimenti → Importa, scegli Trade Republic e carica `Transaction export.csv`. Il formato viene riconosciuto dalle intestazioni anche senza selezionare il provider. Funziona anche nella selezione multipla e con file contenenti solo movimenti del conto.
+In Investimenti ("Investments") → Importa ("Import"), choose Trade Republic and upload `Transaction export.csv`. The format is recognized from the headers even without selecting the provider. It also works with multiple selection and with files containing only account movements.
 
-Carica lo storico completo del conto principale (`account_type=DEFAULT`). Il formato non fornisce un numero di conto: una sola fonte Trade Republic per utente. I successivi export devono coprire tutti i periodi già caricati. Un file identico non genera duplicati.
+Upload the full history of the main account (`account_type=DEFAULT`). The format does not provide an account number: one Trade Republic source per user. Subsequent exports must cover all periods already uploaded. An identical file does not create duplicates.
 
-- BUY/SELL di STOCK, FUND e CRYPTO diventano operazioni di investimento, con quantità frazionarie, prezzo di esecuzione, commissioni e tasse. Gli strumenti sono abbinati per ISIN o simbolo crypto e valuta.
-- Tutte le righe CASH diventano movimenti del conto dedicato, compresi carta nazionale/internazionale, rimborsi, bonifici, interessi, bonus, regali e rettifiche fiscali. Sono inizialmente da categorizzare. Importo netto = `amount + fee + tax`, con i segni dell'export. La valuta originale di un pagamento estero non viene conteggiata una seconda volta.
-- Le righe `DELIVERY` / `FREE_RECEIPT` (crypto ricevute gratis: staking settimanale o trasferimenti in ingresso) diventano acquisti al prezzo di mercato del giorno indicato nel file, senza movimenti di cassa; l'anteprima mostra un avviso con il conteggio. Solo per `CRYPTO`, con quantità e prezzo positivi.
-- `date` è la data contabile: può precedere `datetime` anche di mesi (imposte sullo staking addebitate in ritardo), mai seguirlo di oltre un giorno.
-- Il saldo deriva da tutte le componenti di cassa, inclusi acquisti e vendite; queste ultime non vengono duplicate tra le spese. Il CSV non contiene un saldo ufficiale né una valorizzazione delle posizioni: saldo iniziale assunto zero, nessuna riconciliazione certificata.
-- Si conserva la data contabile `date` anche quando `datetime` UTC cade nel giorno adiacente. Le righe originali, inclusi riferimenti, cambio e controparte, restano nel rendiconto salvato.
-- L'aggiornamento avviene in una transazione unica. I movimenti sono identificati da `transaction_id`; note e categorizzazioni sopravvivono all'aggiornamento. Eliminazione dell'import e ripristino dello storico eliminano anche i movimenti di cassa importati.
+- BUY/SELL of STOCK, FUND and CRYPTO become investment transactions, with fractional quantities, execution price, commissions and taxes. Instruments are matched by ISIN or crypto symbol and currency.
+- All CASH rows become movements of the dedicated account, including domestic/international card payments, refunds, bank transfers, interest, bonuses, gifts and tax adjustments. They start out as uncategorized. Net amount = `amount + fee + tax`, with the signs from the export. The original currency of a foreign payment is not counted a second time.
+- `DELIVERY` / `FREE_RECEIPT` rows (crypto received for free: weekly staking or incoming transfers) become purchases at the market price of the day stated in the file, without cash movements; the preview shows a warning with the count. Only for `CRYPTO`, with positive quantity and price.
+- `date` is the booking date: it can precede `datetime` even by months (taxes on staking charged late), but never follow it by more than one day.
+- The balance derives from all cash components, including buys and sells; the latter are not duplicated among expenses. The CSV contains neither an official balance nor a valuation of the positions: the opening balance is assumed to be zero, no certified reconciliation.
+- The booking date `date` is kept even when the UTC `datetime` falls on the adjacent day. The original rows, including references, exchange rate and counterparty, remain in the saved statement.
+- The update happens in a single transaction. Movements are identified by `transaction_id`; notes and categorizations survive the update. Deleting the import and restoring the history also delete the imported cash movements.
 
-Errori strutturali, ID duplicati, date future, classi o operazioni TRADING sconosciute bloccano il file intero. Nessuno scarto silenzioso. Limiti: 5 MB, 5000 righe, 50 strumenti. Per formati diversi o eventi su titoli ulteriori servirà un nuovo esempio di export.
+Structural errors, duplicate IDs, future dates, unknown classes or TRADING operations block the entire file. No silent discarding. Limits: 5 MB, 5000 rows, 50 instruments. Different formats or further corporate events will need a new sample export.
 
-Verifica effettuata sul file locale fornito: 885 righe = 17 operazioni di investimento + 868 movimenti di cassa, 6 strumenti, nessun errore nel controllo delle quantità. Il CSV personale non è copiato nel repository. I test versionati usano esclusivamente dati sintetici e coprono anche reimportazione, aggiornamento e cancellazione su Postgres locale.
+Verification performed on the local file provided: 885 rows = 17 investment transactions + 868 cash movements, 6 instruments, no errors in the quantity check. The personal CSV is not copied into the repository. The versioned tests use only synthetic data and also cover reimport, update and deletion on local Postgres.

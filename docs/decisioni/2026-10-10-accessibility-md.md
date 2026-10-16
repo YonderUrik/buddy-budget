@@ -1,6 +1,6 @@
 # ACCESSIBILITY.md (2026-10-10)
 
-- Aggiunto `ACCESSIBILITY.md` in radice: GitHub lo riconosce in radice, `.github/` o `docs/` (changelog del 2026-10-01) e lo propone nei Community Standards. Non è un file richiesto dal profilo della community.
-- Obiettivo dichiarato: WCAG 2.2 AA, **non** conformità certificata; nessun audit fatto. Limiti noti elencati nel file.
-- Checklist accessibilità nel modello della PR, link da README e CONTRIBUTING.
-- Da fare (non fatto): skip link, misura sistematica dei contrasti, prova con screen reader, test axe in CI.
+- Added `ACCESSIBILITY.md` at the root: GitHub recognizes it at the root, in `.github/` or `docs/` (changelog of 2026-10-01) and suggests it in the Community Standards. It is not a file required by the community profile.
+- Declared goal: WCAG 2.2 AA, **not** certified conformance; no audit done. Known limits listed in the file.
+- Accessibility checklist in the PR template, links from README and CONTRIBUTING.
+- To do (not done): skip link, systematic contrast measurement, screen reader test, axe tests in CI.

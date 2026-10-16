@@ -1,36 +1,36 @@
-# Conti: sync manuale con throttle + feedback esito — Implementation Plan
+# Conti (Accounts): manual sync with throttle + outcome feedback — Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Nella schermata Conti, mostrare l'ultimo sync di ogni conto bancario collegato, permettere un sync manuale con feedback (nuove transazioni/categorizzate/da categorizzare), rispettando un budget condiviso con lo scheduler automatico di massimo 4 sync al giorno per conto e almeno 4 ore tra un sync e l'altro.
+**Goal:** In the Conti screen, show the last sync of each linked bank account, allow a manual sync with feedback (new/categorized/to-categorize transactions), respecting a budget shared with the automatic scheduler of at most 4 syncs per day per account and at least 4 hours between one sync and the next.
 
-**Architecture:** Nuova colonna `sync_timestamps` (jsonb) su `bank_account_links` + funzione pura `computeSyncEligibility` (finestra scorrevole 24h + gap minimo 4h) condivisa tra lo scheduler cron esistente e un nuovo endpoint di sync manuale. `syncAccountLink` ritorna un riepilogo strutturato (nuove/categorizzate/non categorizzate) invece di `void`. UI: bottone + testo "ultimo sync" in `AccountRow`, toast (libreria `sonner`, nuova nel progetto) per l'esito.
+**Architecture:** New `sync_timestamps` column (jsonb) on `bank_account_links` + pure function `computeSyncEligibility` (24h sliding window + 4h minimum gap) shared between the existing cron scheduler and a new manual sync endpoint. `syncAccountLink` returns a structured summary (new/categorized/uncategorized) instead of `void`. UI: button + "last sync" text in `AccountRow`, toast (`sonner` library, new to the project) for the outcome.
 
-**Tech Stack:** Next.js Route Handlers, Drizzle ORM/Postgres, TanStack Query, `sonner` (nuova dipendenza via shadcn), Vitest per i test.
+**Tech Stack:** Next.js Route Handlers, Drizzle ORM/Postgres, TanStack Query, `sonner` (new dependency via shadcn), Vitest for tests.
 
 ## Global Constraints
 
-- Budget di sync: `MAX_SYNCS_PER_DAY = 4`, `MIN_SYNC_GAP_MS = 4h`, `SYNC_WINDOW_MS = 24h` — **condiviso** tra scheduler automatico e sync manuale, **per conto** (non per connessione/banca).
-- Nessuna migrazione DB va eseguita autonomamente dall'agente: dopo aver modificato lo schema Drizzle, il piano si ferma e chiede esplicitamente all'utente di eseguire `pnpm db:push` prima di proseguire con i task che toccano quella colonna a DB.
-- Feedback post-sync via toast: libreria `sonner`, installata tramite `pnpm dlx shadcn@latest add sonner` (non installare `sonner` a mano via pnpm add — il componente shadcn genera anche il wrapper theme-aware).
-- Nessun nuovo componente Tooltip: lo stato disabilitato del bottone sync usa l'attributo nativo `title`.
-- Tutte le stringhe utente in italiano.
-- I componenti React di questo progetto non hanno test automatici (convenzione esistente, vedi `components/domain/accounts/`): la verifica per i task che toccano solo UI è `pnpm build` + `pnpm lint`, non nuovi test. La verifica manuale in browser resta a carico dell'utente (nessun Postgres/Redis nel sandbox agentico).
-- Ovunque si tocchi codice TypeScript con tipi nuovi/cambiati, oltre ai test lanciare anche `pnpm exec tsc --noEmit` — Vitest in questo progetto non fa type-check, solo transpile.
+- Sync budget: `MAX_SYNCS_PER_DAY = 4`, `MIN_SYNC_GAP_MS = 4h`, `SYNC_WINDOW_MS = 24h` — **shared** between the automatic scheduler and manual sync, **per account** (not per connection/bank).
+- No DB migration is to be run autonomously by the agent: after modifying the Drizzle schema, the plan stops and explicitly asks the user to run `pnpm db:push` before continuing with the tasks that touch that column in the DB.
+- Post-sync feedback via toast: `sonner` library, installed via `pnpm dlx shadcn@latest add sonner` (do not install `sonner` by hand via pnpm add — the shadcn component also generates the theme-aware wrapper).
+- No new Tooltip component: the disabled state of the sync button uses the native `title` attribute.
+- All user strings in Italian.
+- The React components of this project have no automated tests (existing convention, see `components/domain/accounts/`): the check for the tasks that touch only UI is `pnpm build` + `pnpm lint`, not new tests. Manual verification in the browser remains the user's responsibility (no Postgres/Redis in the agentic sandbox).
+- Wherever TypeScript code with new/changed types is touched, besides the tests also run `pnpm exec tsc --noEmit` — Vitest in this project does not type-check, it only transpiles.
 
 ---
 
-### Task 1: `computeSyncEligibility` — funzione pura del budget di sync
+### Task 1: `computeSyncEligibility` — pure sync budget function
 
 **Files:**
 - Create: `lib/gocardless/sync-eligibility.ts`
 - Test: `lib/gocardless/sync-eligibility.test.ts`
 
 **Interfaces:**
-- Consumes: nulla (nessuna dipendenza da altri task).
-- Produces: `MAX_SYNCS_PER_DAY: number`, `MIN_SYNC_GAP_MS: number`, `SYNC_WINDOW_MS: number`, `interface SyncEligibility { eligible: boolean; syncsUsedToday: number; syncsRemainingToday: number; nextEligibleAt: Date | null }`, `function computeSyncEligibility(recentSyncTimestamps: Date[], now: Date): SyncEligibility` — usati da Task 2 (per `nextSyncEligibleAt`), Task 3 (scheduler), Task 4 (endpoint manuale), Task 5 (status endpoint).
+- Consumes: nothing (no dependency on other tasks).
+- Produces: `MAX_SYNCS_PER_DAY: number`, `MIN_SYNC_GAP_MS: number`, `SYNC_WINDOW_MS: number`, `interface SyncEligibility { eligible: boolean; syncsUsedToday: number; syncsRemainingToday: number; nextEligibleAt: Date | null }`, `function computeSyncEligibility(recentSyncTimestamps: Date[], now: Date): SyncEligibility` — used by Task 2 (for `nextSyncEligibleAt`), Task 3 (scheduler), Task 4 (manual endpoint), Task 5 (status endpoint).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
 ```ts
 // lib/gocardless/sync-eligibility.test.ts
@@ -95,12 +95,12 @@ describe("computeSyncEligibility", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run lib/gocardless/sync-eligibility.test.ts`
-Expected: FAIL — `Cannot find module './sync-eligibility'` (il file non esiste ancora).
+Expected: FAIL — `Cannot find module './sync-eligibility'` (the file does not exist yet).
 
-- [ ] **Step 3: Scrivi l'implementazione**
+- [ ] **Step 3: Write the implementation**
 
 ```ts
 // lib/gocardless/sync-eligibility.ts
@@ -116,10 +116,10 @@ export interface SyncEligibility {
 }
 
 /**
- * Eleggibilità di un sync (automatico o manuale) dato lo storico dei timestamp
- * recenti: tetto di MAX_SYNCS_PER_DAY in una finestra scorrevole di 24h, più un
- * gap minimo di 4h dall'ultimo sync. `nextEligibleAt` è il momento in cui
- * ENTRAMBE le condizioni tornano vere (il massimo tra le due scadenze).
+ * Eligibility of a sync (automatic or manual) given the history of recent
+ * timestamps: cap of MAX_SYNCS_PER_DAY in a 24h sliding window, plus a
+ * minimum gap of 4h from the last sync. `nextEligibleAt` is the moment when
+ * BOTH conditions become true again (the later of the two deadlines).
  */
 export function computeSyncEligibility(recentSyncTimestamps: Date[], now: Date): SyncEligibility {
   const windowStart = now.getTime() - SYNC_WINDOW_MS;
@@ -147,10 +147,10 @@ export function computeSyncEligibility(recentSyncTimestamps: Date[], now: Date):
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run lib/gocardless/sync-eligibility.test.ts`
-Expected: PASS (7 test)
+Expected: PASS (7 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -161,20 +161,20 @@ git commit -m "feat: aggiunge computeSyncEligibility per il budget condiviso di 
 
 ---
 
-### Task 2: Schema `sync_timestamps` + `syncAccountLink` con risultato esteso
+### Task 2: `sync_timestamps` schema + `syncAccountLink` with extended result
 
 **Files:**
-- Modify: `lib/db/schema/bank-connections.ts` (colonna `syncTimestamps` su `bankAccountLinks`)
+- Modify: `lib/db/schema/bank-connections.ts` (`syncTimestamps` column on `bankAccountLinks`)
 - Modify: `lib/gocardless/sync.ts`
 - Modify: `lib/gocardless/sync.test.ts`
 
 **Interfaces:**
-- Consumes: `MIN_SYNC_GAP_MS` da `./sync-eligibility` (Task 1).
-- Produces: `bankAccountLinks.syncTimestamps: string[]` (colonna DB), `export type SyncResult = { status: "synced"; newTransactionsCount: number; categorizedCount: number; uncategorizedCount: number; balanceUpdated: true } | { status: "gocardless-limited" } | { status: "expired" }`, `syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<SyncResult>` (era `Promise<void>`) — usati da Task 3, 4, 7, 8.
+- Consumes: `MIN_SYNC_GAP_MS` from `./sync-eligibility` (Task 1).
+- Produces: `bankAccountLinks.syncTimestamps: string[]` (DB column), `export type SyncResult = { status: "synced"; newTransactionsCount: number; categorizedCount: number; uncategorizedCount: number; balanceUpdated: true } | { status: "gocardless-limited" } | { status: "expired" }`, `syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<SyncResult>` (it was `Promise<void>`) — used by Tasks 3, 4, 7, 8.
 
-- [ ] **Step 1: Aggiungi la colonna allo schema**
+- [ ] **Step 1: Add the column to the schema**
 
-Modifica `lib/db/schema/bank-connections.ts`, riga 1 (import) e blocco `bankAccountLinks` (righe 31-44):
+Modify `lib/db/schema/bank-connections.ts`, line 1 (import) and the `bankAccountLinks` block (lines 31-44):
 
 ```ts
 import { jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
@@ -194,25 +194,25 @@ export const bankAccountLinks = pgTable("bank_account_links", {
   nextSyncEligibleAt: timestamp("next_sync_eligible_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
-  // Ultimi (al massimo 4) timestamp ISO di sync riuscito, automatico o manuale,
-  // usati da computeSyncEligibility per il budget condiviso 4/giorno + gap 4h.
+  // Last (at most 4) ISO timestamps of successful syncs, automatic or manual,
+  // used by computeSyncEligibility for the shared 4/day budget + 4h gap.
   syncTimestamps: jsonb("sync_timestamps").$type<string[]>().notNull().default([]),
 });
 ```
 
-- [ ] **Step 2: AZIONE UTENTE RICHIESTA — applica la migrazione**
+- [ ] **Step 2: USER ACTION REQUIRED — apply the migration**
 
-Questo repo non fa mai eseguire `pnpm db:push` a un agente (DB locale condiviso con `main`, convenzione stabilita in CLAUDE.md). **Fermati qui e chiedi esplicitamente all'utente di eseguire:**
+This repo never has an agent run `pnpm db:push` (local DB shared with `main`, convention established in CLAUDE.md). **Stop here and explicitly ask the user to run:**
 
 ```bash
 pnpm db:push
 ```
 
-Non proseguire con lo Step 3 finché l'utente non conferma di averlo fatto — i test di questo task e dei successivi Task 3-5 falliscono contro un DB senza la colonna `sync_timestamps`.
+Do not continue with Step 3 until the user confirms having done it — the tests of this task and of the following Tasks 3-5 fail against a DB without the `sync_timestamps` column.
 
-- [ ] **Step 3: Scrivi i test che fallisce (risultato esteso + conteggi + storage)**
+- [ ] **Step 3: Write the failing tests (extended result + counts + storage)**
 
-Sostituisci il contenuto di `lib/gocardless/sync.test.ts` con:
+Replace the contents of `lib/gocardless/sync.test.ts` with:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -453,14 +453,14 @@ describe("syncAccountLink", () => {
 });
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che fallisca**
+- [ ] **Step 4: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run lib/gocardless/sync.test.ts`
-Expected: FAIL — `syncAccountLink` ritorna ancora `undefined`, gli `expect(result).toEqual(...)` falliscono.
+Expected: FAIL — `syncAccountLink` still returns `undefined`, the `expect(result).toEqual(...)` fail.
 
-- [ ] **Step 5: Riscrivi `syncAccountLink`**
+- [ ] **Step 5: Rewrite `syncAccountLink`**
 
-Sostituisci il contenuto di `lib/gocardless/sync.ts`:
+Replace the contents of `lib/gocardless/sync.ts`:
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -494,7 +494,7 @@ export type SyncResult =
   | { status: "gocardless-limited" }
   | { status: "expired" };
 
-/** Sincronizza saldo e transazioni di un conto collegato; aggiorna i timestamp o marca la connessione scaduta. */
+/** Syncs balance and transactions of a linked account; updates the timestamps or marks the connection as expired. */
 export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLimitStore): Promise<SyncResult> {
   if (await isRateLimited(rateLimitStore, link.externalAccountId, "balances")) {
     return { status: "gocardless-limited" };
@@ -602,15 +602,15 @@ export async function syncAccountLink(link: SyncableLink, rateLimitStore: RateLi
 }
 ```
 
-- [ ] **Step 6: Esegui il test e verifica che passi**
+- [ ] **Step 6: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run lib/gocardless/sync.test.ts`
-Expected: PASS (6 test)
+Expected: PASS (6 tests)
 
-- [ ] **Step 7: Verifica i tipi**
+- [ ] **Step 7: Verify the types**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 8: Commit**
 
@@ -621,19 +621,19 @@ git commit -m "feat: syncAccountLink ritorna un riepilogo strutturato e traccia 
 
 ---
 
-### Task 3: Scheduler — rispetta il budget condiviso
+### Task 3: Scheduler — respects the shared budget
 
 **Files:**
 - Modify: `lib/gocardless/scheduler.ts`
 - Modify: `lib/gocardless/scheduler.test.ts`
 
 **Interfaces:**
-- Consumes: `computeSyncEligibility` (Task 1), `syncAccountLink`/`SyncableLink` (Task 2, invariata la firma di `SyncableLink`).
-- Produces: `interface DueLink extends SyncableLink { syncTimestamps: string[] }`, `findDueLinks(): Promise<DueLink[]>` (era `Promise<SyncableLink[]>`) — nessun altro task consuma `findDueLinks` direttamente.
+- Consumes: `computeSyncEligibility` (Task 1), `syncAccountLink`/`SyncableLink` (Task 2, the `SyncableLink` signature is unchanged).
+- Produces: `interface DueLink extends SyncableLink { syncTimestamps: string[] }`, `findDueLinks(): Promise<DueLink[]>` (it was `Promise<SyncableLink[]>`) — no other task consumes `findDueLinks` directly.
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Aggiungi in fondo a `lib/gocardless/scheduler.test.ts` (dentro il blocco `describe("scheduler", ...)`, dopo il test esistente "runDueSyncs chiama syncAccountLink..."):
+Add at the bottom of `lib/gocardless/scheduler.test.ts` (inside the `describe("scheduler", ...)` block, after the existing test "runDueSyncs chiama syncAccountLink..."):
 
 ```ts
   it("salta i link che hanno esaurito il budget condiviso di sync anche se nextSyncEligibleAt è passato", async () => {
@@ -661,14 +661,14 @@ Aggiungi in fondo a `lib/gocardless/scheduler.test.ts` (dentro il blocco `descri
   });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run lib/gocardless/scheduler.test.ts`
-Expected: FAIL — `syncAccountLink` viene chiamato (lo scheduler non controlla ancora il budget condiviso).
+Expected: FAIL — `syncAccountLink` is called (the scheduler does not check the shared budget yet).
 
-- [ ] **Step 3: Aggiorna lo scheduler**
+- [ ] **Step 3: Update the scheduler**
 
-Sostituisci il contenuto di `lib/gocardless/scheduler.ts`:
+Replace the contents of `lib/gocardless/scheduler.ts`:
 
 ```ts
 import cron from "node-cron";
@@ -683,7 +683,7 @@ export interface DueLink extends SyncableLink {
   syncTimestamps: string[];
 }
 
-/** Conti collegati con sync scaduto e connessione ancora valida (non expired/error). */
+/** Linked accounts with an overdue sync and a still valid connection (not expired/error). */
 export async function findDueLinks(): Promise<DueLink[]> {
   return db
     .select({
@@ -700,10 +700,10 @@ export async function findDueLinks(): Promise<DueLink[]> {
 }
 
 /**
- * Sincronizza tutti i conti dovuti. Un errore su un conto (rete, 5xx GoCardless)
- * viene loggato e non deve bloccare il sync degli altri conti nello stesso tick.
- * Salta silenziosamente i conti che hanno già esaurito il budget condiviso di
- * sync (4/giorno, gap minimo 4h) per via di sync manuali avvenuti nel frattempo.
+ * Syncs all the due accounts. An error on one account (network, GoCardless 5xx)
+ * is logged and must not block the sync of the other accounts in the same tick.
+ * Silently skips the accounts that have already used up the shared sync budget
+ * (4/day, 4h minimum gap) because of manual syncs that happened in the meantime.
  */
 export async function runDueSyncs(): Promise<void> {
   const due = await findDueLinks();
@@ -721,7 +721,7 @@ export async function runDueSyncs(): Promise<void> {
 
 let started = false;
 
-/** Avvia lo scheduler cron (ogni 12h); no-op se già avviato nel processo corrente. */
+/** Starts the cron scheduler (every 12h); no-op if already started in the current process. */
 export function startGoCardlessScheduler(): void {
   if (started) return;
   started = true;
@@ -731,15 +731,15 @@ export function startGoCardlessScheduler(): void {
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run lib/gocardless/scheduler.test.ts`
-Expected: PASS (3 test)
+Expected: PASS (3 tests)
 
-- [ ] **Step 5: Verifica i tipi**
+- [ ] **Step 5: Verify the types**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 6: Commit**
 
@@ -750,17 +750,17 @@ git commit -m "feat: lo scheduler rispetta il budget condiviso di sync anche se 
 
 ---
 
-### Task 4: Endpoint di sync manuale
+### Task 4: Manual sync endpoint
 
 **Files:**
 - Create: `app/api/gocardless/accounts/[accountId]/sync/route.ts`
 - Test: `app/api/gocardless/accounts/[accountId]/sync/route.test.ts`
 
 **Interfaces:**
-- Consumes: `computeSyncEligibility` (Task 1), `syncAccountLink`/`SyncResult` (Task 2), `redisRateLimitStore` (esistente, `lib/gocardless/redis-rate-limit-store.ts`).
-- Produces: `POST /api/gocardless/accounts/[accountId]/sync` — 200 `SyncResult` (variante `synced`), 404 se il conto non è dell'utente o non è `linked`, 429 `{ status: "not-eligible" | "gocardless-limited"; nextEligibleAt?: Date | null; syncsRemainingToday?: number }`, 409 `{ status: "expired" }`. Consumato da Task 8 (`useSyncAccountMutation`).
+- Consumes: `computeSyncEligibility` (Task 1), `syncAccountLink`/`SyncResult` (Task 2), `redisRateLimitStore` (existing, `lib/gocardless/redis-rate-limit-store.ts`).
+- Produces: `POST /api/gocardless/accounts/[accountId]/sync` — 200 `SyncResult` (`synced` variant), 404 if the account does not belong to the user or is not `linked`, 429 `{ status: "not-eligible" | "gocardless-limited"; nextEligibleAt?: Date | null; syncsRemainingToday?: number }`, 409 `{ status: "expired" }`. Consumed by Task 8 (`useSyncAccountMutation`).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
 ```ts
 // app/api/gocardless/accounts/[accountId]/sync/route.test.ts
@@ -898,12 +898,12 @@ describe("POST /api/gocardless/accounts/[accountId]/sync", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run app/api/gocardless/accounts/[accountId]/sync/route.test.ts`
-Expected: FAIL — `Cannot find module './route'` (il file non esiste ancora).
+Expected: FAIL — `Cannot find module './route'` (the file does not exist yet).
 
-- [ ] **Step 3: Scrivi l'endpoint**
+- [ ] **Step 3: Write the endpoint**
 
 ```ts
 // app/api/gocardless/accounts/[accountId]/sync/route.ts
@@ -970,15 +970,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run app/api/gocardless/accounts/[accountId]/sync/route.test.ts`
-Expected: PASS (4 test)
+Expected: PASS (4 tests)
 
-- [ ] **Step 5: Verifica i tipi**
+- [ ] **Step 5: Verify the types**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 6: Commit**
 
@@ -989,19 +989,19 @@ git commit -m "feat: aggiunge l'endpoint di sync manuale per singolo conto"
 
 ---
 
-### Task 5: Estendi lo status endpoint con l'eleggibilità di sync
+### Task 5: Extend the status endpoint with sync eligibility
 
 **Files:**
-- Modify: `app/api/gocardless/connections/route.ts` (solo `GET`, righe 9-20)
-- Modify: `app/api/gocardless/connections/route.test.ts` (il test "GET restituisce lo stato delle connessioni per conto")
+- Modify: `app/api/gocardless/connections/route.ts` (`GET` only, lines 9-20)
+- Modify: `app/api/gocardless/connections/route.test.ts` (the test "GET restituisce lo stato delle connessioni per conto")
 
 **Interfaces:**
 - Consumes: `computeSyncEligibility` (Task 1).
-- Produces: `GET /api/gocardless/connections` ritorna ora `{ accountId, status, lastSyncedAt, eligible, nextEligibleAt, syncsRemainingToday }[]` (era `{ accountId, status }[]`) — consumato da Task 8/9 lato frontend.
+- Produces: `GET /api/gocardless/connections` now returns `{ accountId, status, lastSyncedAt, eligible, nextEligibleAt, syncsRemainingToday }[]` (it was `{ accountId, status }[]`) — consumed by Task 8/9 on the frontend.
 
-- [ ] **Step 1: Aggiorna il test esistente (fallisce contro l'implementazione attuale)**
+- [ ] **Step 1: Update the existing test (it fails against the current implementation)**
 
-In `app/api/gocardless/connections/route.test.ts`, sostituisci il test `"GET restituisce lo stato delle connessioni per conto"` con:
+In `app/api/gocardless/connections/route.test.ts`, replace the test `"GET restituisce lo stato delle connessioni per conto"` with:
 
 ```ts
   it("GET restituisce lo stato delle connessioni per conto, incluso l'ultimo sync e l'eleggibilità", async () => {
@@ -1032,20 +1032,20 @@ In `app/api/gocardless/connections/route.test.ts`, sostituisci il test `"GET res
   });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run app/api/gocardless/connections/route.test.ts`
-Expected: FAIL — il body ritornato non ha ancora `lastSyncedAt`/`eligible`/`nextEligibleAt`/`syncsRemainingToday`.
+Expected: FAIL — the returned body does not have `lastSyncedAt`/`eligible`/`nextEligibleAt`/`syncsRemainingToday` yet.
 
-- [ ] **Step 3: Aggiorna il GET handler**
+- [ ] **Step 3: Update the GET handler**
 
-In `app/api/gocardless/connections/route.ts`, aggiungi l'import in cima al file:
+In `app/api/gocardless/connections/route.ts`, add the import at the top of the file:
 
 ```ts
 import { computeSyncEligibility } from "@/lib/gocardless/sync-eligibility";
 ```
 
-Sostituisci l'intera funzione `GET` (righe 9-20):
+Replace the whole `GET` function (lines 9-20):
 
 ```ts
 export async function GET(request: NextRequest) {
@@ -1083,15 +1083,15 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run app/api/gocardless/connections/route.test.ts`
-Expected: PASS (tutti i test del file)
+Expected: PASS (all the tests of the file)
 
-- [ ] **Step 5: Verifica i tipi**
+- [ ] **Step 5: Verify the types**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 - [ ] **Step 6: Commit**
 
@@ -1109,12 +1109,12 @@ git commit -m "feat: lo status endpoint espone ultimo sync ed eleggibilità per 
 - Modify: `lib/format.test.ts`
 
 **Interfaces:**
-- Consumes: nulla.
-- Produces: `formatRelativeTime(date: Date, now?: Date): string` — usata da Task 9 (`AccountRow`).
+- Consumes: nothing.
+- Produces: `formatRelativeTime(date: Date, now?: Date): string` — used by Task 9 (`AccountRow`).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Aggiungi in fondo a `lib/format.test.ts`:
+Add at the bottom of `lib/format.test.ts`:
 
 ```ts
 import { formatCurrency, formatRelativeTime, getCurrencySymbol } from "./format";
@@ -1146,16 +1146,16 @@ describe("formatRelativeTime", () => {
 });
 ```
 
-(Nota: la riga `import { formatCurrency, formatRelativeTime, getCurrencySymbol } from "./format";` sostituisce l'import esistente in cima al file, riga 2.)
+(Note: the line `import { formatCurrency, formatRelativeTime, getCurrencySymbol } from "./format";` replaces the existing import at the top of the file, line 2.)
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run lib/format.test.ts`
-Expected: FAIL — `formatRelativeTime` non è esportata da `./format`.
+Expected: FAIL — `formatRelativeTime` is not exported from `./format`.
 
-- [ ] **Step 3: Implementa `formatRelativeTime`**
+- [ ] **Step 3: Implement `formatRelativeTime`**
 
-Aggiungi in fondo a `lib/format.ts`:
+Add at the bottom of `lib/format.ts`:
 
 ```ts
 const MINUTE_MS = 60 * 1000;
@@ -1164,9 +1164,9 @@ const DAY_MS = 24 * HOUR_MS;
 const RELATIVE_TIME_MAX_DAYS = 7;
 
 /**
- * Formatta la distanza temporale tra `date` e `now` in italiano, con granularità
- * decrescente (minuti/ore/giorni); oltre RELATIVE_TIME_MAX_DAYS giorni torna a
- * una data assoluta breve (es. "12 lug").
+ * Formats the time distance between `date` and `now` in Italian, with decreasing
+ * granularity (minutes/hours/days); beyond RELATIVE_TIME_MAX_DAYS days it falls back to
+ * a short absolute date (e.g. "12 lug").
  */
 export function formatRelativeTime(date: Date, now: Date = new Date()): string {
   const diffMs = now.getTime() - date.getTime();
@@ -1178,10 +1178,10 @@ export function formatRelativeTime(date: Date, now: Date = new Date()): string {
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run lib/format.test.ts`
-Expected: PASS (tutti i test del file)
+Expected: PASS (all the tests of the file)
 
 - [ ] **Step 5: Commit**
 
@@ -1192,17 +1192,17 @@ git commit -m "feat: aggiunge formatRelativeTime per l'ultimo sync in Conti"
 
 ---
 
-### Task 7: Messaggi toast (`sync-messages.ts`)
+### Task 7: Toast messages (`sync-messages.ts`)
 
 **Files:**
 - Create: `lib/gocardless/sync-messages.ts`
 - Test: `lib/gocardless/sync-messages.test.ts`
 
 **Interfaces:**
-- Consumes: `SyncResult` (type-only, da `./sync`, Task 2).
-- Produces: `export type SyncSuccessResult = Extract<SyncResult, { status: "synced" }>`, `export type SyncErrorInfo = { status: "not-eligible"; nextEligibleAt: string | null; syncsRemainingToday: number } | { status: "gocardless-limited" } | { status: "expired" } | { status: "unknown" }`, `buildSyncSummaryMessage(result: SyncSuccessResult): string`, `buildSyncErrorMessage(error: SyncErrorInfo): string` — usati da Task 8 (`useSyncAccountMutation`).
+- Consumes: `SyncResult` (type-only, from `./sync`, Task 2).
+- Produces: `export type SyncSuccessResult = Extract<SyncResult, { status: "synced" }>`, `export type SyncErrorInfo = { status: "not-eligible"; nextEligibleAt: string | null; syncsRemainingToday: number } | { status: "gocardless-limited" } | { status: "expired" } | { status: "unknown" }`, `buildSyncSummaryMessage(result: SyncSuccessResult): string`, `buildSyncErrorMessage(error: SyncErrorInfo): string` — used by Task 8 (`useSyncAccountMutation`).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
 ```ts
 // lib/gocardless/sync-messages.test.ts
@@ -1274,12 +1274,12 @@ describe("buildSyncErrorMessage", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and verify it fails**
 
 Run: `pnpm exec vitest run lib/gocardless/sync-messages.test.ts`
 Expected: FAIL — `Cannot find module './sync-messages'`.
 
-- [ ] **Step 3: Implementa `sync-messages.ts`**
+- [ ] **Step 3: Implement `sync-messages.ts`**
 
 ```ts
 // lib/gocardless/sync-messages.ts
@@ -1297,7 +1297,7 @@ function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural;
 }
 
-/** Messaggio di successo mostrato nel toast dopo un sync manuale riuscito. */
+/** Success message shown in the toast after a successful manual sync. */
 export function buildSyncSummaryMessage(result: SyncSuccessResult): string {
   if (result.newTransactionsCount === 0) {
     return "Nessuna nuova transazione trovata. Saldo aggiornato.";
@@ -1314,7 +1314,7 @@ export function buildSyncSummaryMessage(result: SyncSuccessResult): string {
   return `${result.newTransactionsCount} ${label}${detail}. Saldo aggiornato.`;
 }
 
-/** Messaggio d'errore mostrato nel toast quando il sync manuale non va a buon fine. */
+/** Error message shown in the toast when the manual sync does not succeed. */
 export function buildSyncErrorMessage(error: SyncErrorInfo): string {
   switch (error.status) {
     case "not-eligible": {
@@ -1334,10 +1334,10 @@ export function buildSyncErrorMessage(error: SyncErrorInfo): string {
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and verify it passes**
 
 Run: `pnpm exec vitest run lib/gocardless/sync-messages.test.ts`
-Expected: PASS (7 test)
+Expected: PASS (7 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -1348,7 +1348,7 @@ git commit -m "feat: aggiunge i messaggi toast per l'esito del sync manuale"
 
 ---
 
-### Task 8: Plumbing frontend — sonner + `useSyncAccountMutation`
+### Task 8: Frontend plumbing — sonner + `useSyncAccountMutation`
 
 **Files:**
 - Modify: `app/layout.tsx`
@@ -1356,26 +1356,26 @@ git commit -m "feat: aggiunge i messaggi toast per l'esito del sync manuale"
 - Modify: `lib/queries/gocardless.ts`
 
 **Interfaces:**
-- Consumes: `buildSyncSummaryMessage`/`buildSyncErrorMessage`/`SyncSuccessResult`/`SyncErrorInfo` (Task 7), endpoint `POST /api/gocardless/accounts/[accountId]/sync` (Task 4), campi estesi di `BankConnectionStatus` (Task 5).
-- Produces: `interface BankConnectionStatus { accountId: string; status: ...; lastSyncedAt: string | null; eligible: boolean; nextEligibleAt: string | null; syncsRemainingToday: number }` (estesa), `useSyncAccountMutation(): UseMutationResult<SyncSuccessResult, SyncNotAvailableError, string>` — usato da Task 9 (`AccountRow`).
+- Consumes: `buildSyncSummaryMessage`/`buildSyncErrorMessage`/`SyncSuccessResult`/`SyncErrorInfo` (Task 7), endpoint `POST /api/gocardless/accounts/[accountId]/sync` (Task 4), extended fields of `BankConnectionStatus` (Task 5).
+- Produces: `interface BankConnectionStatus { accountId: string; status: ...; lastSyncedAt: string | null; eligible: boolean; nextEligibleAt: string | null; syncsRemainingToday: number }` (extended), `useSyncAccountMutation(): UseMutationResult<SyncSuccessResult, SyncNotAvailableError, string>` — used by Task 9 (`AccountRow`).
 
-Nessun test automatico per questo task (hook TanStack Query e wiring UI non sono testati a unit in questo progetto, vedi Global Constraints) — la verifica è build/typecheck.
+No automated test for this task (TanStack Query hooks and UI wiring are not unit-tested in this project, see Global Constraints) — the check is build/typecheck.
 
-- [ ] **Step 1: Installa `sonner` via shadcn**
+- [ ] **Step 1: Install `sonner` via shadcn**
 
 Run: `pnpm dlx shadcn@latest add sonner`
 
-Verifica che sia stato creato `components/ui/sonner.tsx` (esporta `Toaster`) e che `sonner` compaia in `dependencies` di `package.json`.
+Verify that `components/ui/sonner.tsx` has been created (it exports `Toaster`) and that `sonner` appears in the `dependencies` of `package.json`.
 
-- [ ] **Step 2: Monta `<Toaster />` nel root layout**
+- [ ] **Step 2: Mount `<Toaster />` in the root layout**
 
-In `app/layout.tsx`, aggiungi l'import in cima al file (dopo l'import di `QueryProvider`):
+In `app/layout.tsx`, add the import at the top of the file (after the `QueryProvider` import):
 
 ```ts
 import { Toaster } from "@/components/ui/sonner";
 ```
 
-Sostituisci il blocco `<ThemeProvider>` (righe 40-42):
+Replace the `<ThemeProvider>` block (lines 40-42):
 
 ```tsx
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -1384,9 +1384,9 @@ Sostituisci il blocco `<ThemeProvider>` (righe 40-42):
           </ThemeProvider>
 ```
 
-- [ ] **Step 3: Estendi `lib/queries/gocardless.ts`**
+- [ ] **Step 3: Extend `lib/queries/gocardless.ts`**
 
-Sostituisci l'interfaccia `BankConnectionStatus` (righe 13-16):
+Replace the `BankConnectionStatus` interface (lines 13-16):
 
 ```ts
 export interface BankConnectionStatus {
@@ -1399,7 +1399,7 @@ export interface BankConnectionStatus {
 }
 ```
 
-Aggiungi in cima al file (dopo gli import esistenti) e in fondo al file (dopo `useFinalizeConnectionMutation`):
+Add at the top of the file (after the existing imports) and at the bottom of the file (after `useFinalizeConnectionMutation`):
 
 ```ts
 import { toast } from "sonner";
@@ -1414,7 +1414,7 @@ export class SyncNotAvailableError extends Error {
   }
 }
 
-/** Avvia un sync manuale per un conto: mostra un toast con l'esito e invalida conti/transazioni/stato connessioni. */
+/** Starts a manual sync for an account: shows a toast with the outcome and invalidates accounts/transactions/connection status. */
 export function useSyncAccountMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1438,13 +1438,13 @@ export function useSyncAccountMutation() {
 }
 ```
 
-- [ ] **Step 4: Verifica build e tipi**
+- [ ] **Step 4: Verify build and types**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 Run: `pnpm build`
-Expected: build completata senza errori
+Expected: build completed without errors
 
 - [ ] **Step 5: Commit**
 
@@ -1455,41 +1455,41 @@ git commit -m "feat: aggiunge sonner e useSyncAccountMutation per il sync manual
 
 ---
 
-### Task 9: UI — bottone sync + ultimo sync in `AccountRow`
+### Task 9: UI — sync button + last sync in `AccountRow`
 
 **Files:**
 - Modify: `components/domain/accounts/account-row.tsx`
 - Modify: `app/(app)/conti/page.tsx`
 
 **Interfaces:**
-- Consumes: `useSyncAccountMutation` (Task 8), `formatRelativeTime` (Task 6), `BankConnectionStatus` esteso (Task 5/8).
-- Produces: `AccountRowProps.syncInfo?: { lastSyncedAt: string | null; eligible: boolean; nextEligibleAt: string | null; syncsRemainingToday: number }` — nessun consumatore oltre `ContiPage`, è l'ultimo task del piano.
+- Consumes: `useSyncAccountMutation` (Task 8), `formatRelativeTime` (Task 6), extended `BankConnectionStatus` (Task 5/8).
+- Produces: `AccountRowProps.syncInfo?: { lastSyncedAt: string | null; eligible: boolean; nextEligibleAt: string | null; syncsRemainingToday: number }` — no consumer besides `ContiPage`, it is the last task of the plan.
 
-Nessun test automatico (componenti React non testati a unit in questo progetto) — verifica con build/lint + verifica manuale utente.
+No automated test (React components are not unit-tested in this project) — check with build/lint + manual user verification.
 
-- [ ] **Step 1: Estendi `AccountRowProps` e importa le dipendenze**
+- [ ] **Step 1: Extend `AccountRowProps` and import the dependencies**
 
-In `components/domain/accounts/account-row.tsx`, aggiungi agli import esistenti (dopo la riga `import { formatCurrency } from "@/lib/format";`):
+In `components/domain/accounts/account-row.tsx`, add to the existing imports (after the line `import { formatCurrency } from "@/lib/format";`):
 
 ```ts
 import { formatRelativeTime } from "@/lib/format";
 import { useSyncAccountMutation } from "@/lib/queries/gocardless";
 ```
 
-(Nota: `formatCurrency` è già importato da `"@/lib/format"` alla riga 41 — estendi quell'import invece di duplicarlo: `import { formatCurrency, formatRelativeTime } from "@/lib/format";`)
+(Note: `formatCurrency` is already imported from `"@/lib/format"` at line 41 — extend that import instead of duplicating it: `import { formatCurrency, formatRelativeTime } from "@/lib/format";`)
 
-Estendi l'interfaccia `AccountRowProps` (righe 53-61):
+Extend the `AccountRowProps` interface (lines 53-61):
 
 ```ts
 export interface AccountRowProps {
   account: Account;
-  /** Valuta dell'utente (ISO 4217), usata per formattare il saldo. */
+  /** User currency (ISO 4217), used to format the balance. */
   currency: string;
-  /** True se il consenso bancario collegato a questo conto è scaduto/in errore. */
+  /** True if the bank consent linked to this account is expired/in error. */
   needsReconnect?: boolean;
-  /** Chiamato quando l'utente clicca "Riconnetti". */
+  /** Called when the user clicks "Riconnetti". */
   onReconnect?: () => void;
-  /** Info di sync (solo per conti auto): ultimo sync ed eleggibilità al prossimo sync manuale. */
+  /** Sync info (auto accounts only): last sync and eligibility for the next manual sync. */
   syncInfo?: {
     lastSyncedAt: string | null;
     eligible: boolean;
@@ -1499,10 +1499,10 @@ export interface AccountRowProps {
 }
 ```
 
-Aggiungi un helper module-level (prima della definizione del componente, accanto a `CUSTOM_TYPE_VALUE`):
+Add a module-level helper (before the component definition, next to `CUSTOM_TYPE_VALUE`):
 
 ```ts
-/** Testo del `title` nativo del bottone sync, spiega perché è disabilitato quando non eleggibile. */
+/** Text of the sync button's native `title`, explains why it is disabled when not eligible. */
 function buildSyncButtonTitle(syncInfo: AccountRowProps["syncInfo"]): string {
   if (!syncInfo || syncInfo.eligible) return "Sincronizza ora";
   if (!syncInfo.nextEligibleAt) return "Sync non disponibile";
@@ -1515,23 +1515,23 @@ function buildSyncButtonTitle(syncInfo: AccountRowProps["syncInfo"]): string {
 }
 ```
 
-- [ ] **Step 2: Aggiorna la firma del componente e aggiungi la mutation**
+- [ ] **Step 2: Update the component signature and add the mutation**
 
-Sostituisci la riga 63:
+Replace line 63:
 
 ```ts
 export function AccountRow({ account, currency, needsReconnect, onReconnect, syncInfo }: AccountRowProps) {
 ```
 
-Subito dopo `const deleteMutation = useDeleteAccountMutation();` (riga 66), aggiungi:
+Right after `const deleteMutation = useDeleteAccountMutation();` (line 66), add:
 
 ```ts
   const syncMutation = useSyncAccountMutation();
 ```
 
-- [ ] **Step 3: Mostra "Ultimo sync" e il bottone**
+- [ ] **Step 3: Show "Ultimo sync" and the button**
 
-Nel blocco `<div className="flex items-center gap-2">` che contiene già `needsReconnect` e il `Badge` Auto/Manuale (righe 188-197), aggiungi **prima** del `Badge` esistente:
+In the `<div className="flex items-center gap-2">` block that already contains `needsReconnect` and the Auto/Manuale `Badge` (lines 188-197), add **before** the existing `Badge`:
 
 ```tsx
             {isAuto && syncInfo && (
@@ -1543,7 +1543,7 @@ Nel blocco `<div className="flex items-center gap-2">` che contiene già `needsR
             )}
 ```
 
-Subito **prima** del blocco `<DropdownMenu>` (riga 200), aggiungi:
+Right **before** the `<DropdownMenu>` block (line 200), add:
 
 ```tsx
         {isAuto && (
@@ -1560,9 +1560,9 @@ Subito **prima** del blocco `<DropdownMenu>` (riga 200), aggiungi:
         )}
 ```
 
-- [ ] **Step 4: Passa `syncInfo` da `ContiPage`**
+- [ ] **Step 4: Pass `syncInfo` from `ContiPage`**
 
-In `app/(app)/conti/page.tsx`, subito dopo il blocco `reconnectAccountIds` (righe 29-33), aggiungi:
+In `app/(app)/conti/page.tsx`, right after the `reconnectAccountIds` block (lines 29-33), add:
 
 ```tsx
   const syncInfoByAccountId = new Map(
@@ -1578,7 +1578,7 @@ In `app/(app)/conti/page.tsx`, subito dopo il blocco `reconnectAccountIds` (righ
   );
 ```
 
-Passa la nuova prop a `<AccountRow />` (righe 84-93):
+Pass the new prop to `<AccountRow />` (lines 84-93):
 
 ```tsx
             <AccountRow
@@ -1594,16 +1594,16 @@ Passa la nuova prop a `<AccountRow />` (righe 84-93):
             />
 ```
 
-- [ ] **Step 5: Verifica build, tipi e lint**
+- [ ] **Step 5: Verify build, types and lint**
 
 Run: `pnpm exec tsc --noEmit`
-Expected: nessun errore
+Expected: no errors
 
 Run: `pnpm build`
-Expected: build completata senza errori
+Expected: build completed without errors
 
 Run: `pnpm lint`
-Expected: nessun nuovo errore rispetto al debito tecnico pre-esistente già noto in CLAUDE.md (2 errori `react-hooks/set-state-in-effect` non correlati a questo lavoro)
+Expected: no new errors compared to the pre-existing technical debt already known in CLAUDE.md (2 `react-hooks/set-state-in-effect` errors unrelated to this work)
 
 - [ ] **Step 6: Commit**
 
@@ -1612,33 +1612,33 @@ git add components/domain/accounts/account-row.tsx "app/(app)/conti/page.tsx"
 git commit -m "feat: bottone sync manuale e ultimo sync in AccountRow"
 ```
 
-- [ ] **Step 7: Nota per la verifica manuale**
+- [ ] **Step 7: Note for manual verification**
 
-Questo task chiude il piano ma non è verificabile end-to-end dall'agente (nessun Postgres/Redis nel sandbox agentico, stesso vincolo già documentato in CLAUDE.md per le feature precedenti su Conti/Categorie). Segnala esplicitamente all'utente, a fine implementazione, che resta da fare manualmente in browser:
-- Bottone sync visibile solo sui conti "Auto", disabilitato con tooltip corretto quando non eleggibile.
-- Click su un conto eleggibile → toast di successo con il riepilogo corretto (nuove/categorizzate/da categorizzare) o toast di errore (gocardless-limited/expired).
-- Dopo 4 sync ravvicinati sullo stesso conto, il quinto è bloccato lato UI (bottone disabilitato) e lato server (429 anche forzando la chiamata all'endpoint).
-- "Ultimo sync" si aggiorna e mostra il formato relativo corretto (min/h/giorni).
+This task closes the plan but cannot be verified end-to-end by the agent (no Postgres/Redis in the agentic sandbox, same constraint already documented in CLAUDE.md for the previous Conti/Categorie features). Explicitly tell the user, at the end of the implementation, what remains to be done manually in the browser:
+- Sync button visible only on "Auto" accounts, disabled with the correct tooltip when not eligible.
+- Click on an eligible account → success toast with the correct summary (new/categorized/to categorize) or error toast (gocardless-limited/expired).
+- After 4 close-together syncs on the same account, the fifth is blocked on the UI side (button disabled) and on the server side (429 even when forcing the call to the endpoint).
+- "Ultimo sync" updates and shows the correct relative format (min/h/days).
 
 ---
 
 ## Self-Review
 
-**Copertura spec:**
-- Ultimo sync visibile per conto → Task 5 (dati) + Task 6 (formattazione) + Task 9 (UI). ✓
-- Sync manuale per singolo conto → Task 4 (endpoint) + Task 9 (bottone). ✓
-- Tetto 4/giorno + gap 4h, budget condiviso automatico/manuale → Task 1 (funzione pura) + Task 2 (storage) + Task 3 (scheduler) + Task 4 (endpoint, pre-check prima di chiamare GoCardless). ✓
-- Feedback post-sync (nuove/categorizzate/da categorizzare) → Task 2 (conteggi in `syncAccountLink`) + Task 7 (messaggi) + Task 8 (toast). ✓
-- Nessuna regressione sullo scheduler esistente → Task 3, test esistenti mantenuti + nuovo test di skip. ✓
+**Spec coverage:**
+- Last sync visible per account → Task 5 (data) + Task 6 (formatting) + Task 9 (UI). ✓
+- Manual sync per single account → Task 4 (endpoint) + Task 9 (button). ✓
+- 4/day cap + 4h gap, budget shared between automatic/manual → Task 1 (pure function) + Task 2 (storage) + Task 3 (scheduler) + Task 4 (endpoint, pre-check before calling GoCardless). ✓
+- Post-sync feedback (new/categorized/to categorize) → Task 2 (counts in `syncAccountLink`) + Task 7 (messages) + Task 8 (toast). ✓
+- No regression on the existing scheduler → Task 3, existing tests kept + new skip test. ✓
 
-**Scansione placeholder:** nessun "TBD"/"TODO"/generico "aggiungi validazione" nel piano — ogni step ha codice completo.
+**Placeholder scan:** no "TBD"/"TODO"/generic "add validation" in the plan — every step has complete code.
 
-**Coerenza tipi:** `SyncResult` (Task 2) → `SyncSuccessResult = Extract<SyncResult, {status:"synced"}>` (Task 7) → riusato in Task 8 senza ridefinizioni parallele. `BankConnectionStatus` esteso una sola volta (Task 5 lato server, Task 8 lato tipo client) con campi identici (`lastSyncedAt`, `eligible`, `nextEligibleAt`, `syncsRemainingToday`). `SyncableLink` invariata in tutto il piano (Task 2/3/4 la consumano senza modificarla), `DueLink` (Task 3) la estende solo per uso interno allo scheduler.
+**Type consistency:** `SyncResult` (Task 2) → `SyncSuccessResult = Extract<SyncResult, {status:"synced"}>` (Task 7) → reused in Task 8 without parallel redefinitions. `BankConnectionStatus` extended only once (Task 5 on the server side, Task 8 on the client type side) with identical fields (`lastSyncedAt`, `eligible`, `nextEligibleAt`, `syncsRemainingToday`). `SyncableLink` unchanged throughout the plan (Tasks 2/3/4 consume it without modifying it), `DueLink` (Task 3) extends it only for internal use by the scheduler.
 
-Plan complete and saved to `docs/superpowers/plans/2026-07-26-conti-sync-manuale.md`. Due opzioni di esecuzione:
+Plan complete and saved to `docs/superpowers/plans/2026-07-26-conti-sync-manuale.md`. Two execution options:
 
-**1. Subagent-Driven (consigliato)** — dispatch di un subagent fresco per task, review tra un task e l'altro, iterazione rapida
+**1. Subagent-Driven (recommended)** — dispatch a fresh subagent per task, review between tasks, fast iteration
 
-**2. Inline Execution** — esecuzione dei task in questa sessione con executing-plans, batch execution con checkpoint di revisione
+**2. Inline Execution** — execute the tasks in this session with executing-plans, batch execution with review checkpoints
 
-Quale preferisci?
+Which do you prefer?

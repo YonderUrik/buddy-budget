@@ -1,8 +1,8 @@
-# 2026-10-10 — Aiuto e segnalazioni
+# 2026-10-10 — Help and reports
 
-Pagina `/aiuto` raggiungibile dal menu dell'avatar (non dalla sidebar, per non occupare navigazione con una funzione usata di rado): risposte rapide, form «Scrivici» (problema / domanda / idea) e collegamenti a GitHub (issue precompilata, segnalazioni aperte, release, policy di sicurezza).
+`/aiuto` page reachable from the avatar menu (not from the sidebar, so as not to take up navigation with a rarely used feature): quick answers, «Scrivici» ("Write to us") form (problem / question / idea) and links to GitHub (prefilled issue, open reports, releases, security policy).
 
-- Il form invia un'email a `supporto@buddybudget.io` (`SUPPORT_EMAIL_TO` per cambiarla) con reply-to sull'utente, via Resend; limite di 5 segnalazioni l'ora per utente su Redis; codice di riferimento `SUP-XXXXXX`.
-- Contesto allegato (si può togliere ed è mostrato prima dell'invio): pagina senza query, versione app, schermo, tema, user agent. Nessun dato finanziario; testo ed email non finiscono nei log.
-- Scartato: chatbot con AI (costi, rischio di risposte sbagliate su temi fiscali, testo inviato a un fornitore esterno). Da rivalutare con segnalazioni reali. Scartata anche la creazione automatica di issue dal form: le segnalazioni private diventerebbero pubbliche.
-- Rimandato: pannello Grafana e alert sull'invio fallito (la metrica `buddybudget_support_reports_total` c'è, l'utente vede l'errore); FAQ lette da un'unica fonte con la landing.
+- The form sends an email to `supporto@buddybudget.io` (`SUPPORT_EMAIL_TO` to change it) with reply-to set to the user, via Resend; limit of 5 reports per hour per user on Redis; reference code `SUP-XXXXXX`.
+- Attached context (can be removed and is shown before sending): page without query, app version, screen, theme, user agent. No financial data; text and email do not end up in the logs.
+- Rejected: AI chatbot (costs, risk of wrong answers on tax topics, text sent to an external provider). To be reconsidered with real reports. Also rejected automatic creation of issues from the form: private reports would become public.
+- Postponed: Grafana panel and alert on failed sending (the `buddybudget_support_reports_total` metric exists, the user sees the error); FAQ read from a single source shared with the landing.

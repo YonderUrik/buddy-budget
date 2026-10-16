@@ -1,38 +1,38 @@
-# Fase 2 — Host: hardening + k3s — Runbook
+# Phase 2 — Host: hardening + k3s — Runbook
 
-**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` (riga "Fase 2" della tabella Fasi)
+**Spec:** `docs/superpowers/specs/2026-09-26-migrazione-vps-k3s-design.md` ("Fase 2" row of the Phases table)
 
-**Obiettivo:** portare la VPS vergine (`<IP-VPS>`, Ubuntu 24.04 LTS) a un nodo k3s pronto e in sicurezza, ricostruibile da zero con Ansible.
+**Goal:** turn the blank VPS (`<IP-VPS>`, Ubuntu 24.04 LTS) into a ready and secure k3s node, rebuildable from scratch with Ansible.
 
-**Stato di partenza verificato** (letto dalla VPS prima di scrivere questo piano):
-- SSH: `PermitRootLogin yes`, `PasswordAuthentication yes` (attivo per un conflitto tra due file di drop-in: `/etc/ssh/sshd_config.d/50-cloud-init.conf` dice `yes`, il `60-cloudimg-settings.conf` dice `no`, ma OpenSSH usa il **primo valore incontrato** e il 50 viene processato prima del 60 — quindi vince "yes"). Porta 22 raggiungibile da internet.
-- Firewall: `ufw` installato ma inattivo, nessuna regola `nftables`.
-- `unattended-upgrades` installato.
-- Nessun Tailscale, nessun k3s sulla VPS.
-- 2 vCPU, 7,8GB RAM liberi.
+**Verified starting state** (read from the VPS before writing this plan):
+- SSH: `PermitRootLogin yes`, `PasswordAuthentication yes` (active because of a conflict between two drop-in files: `/etc/ssh/sshd_config.d/50-cloud-init.conf` says `yes`, `60-cloudimg-settings.conf` says `no`, but OpenSSH uses the **first value encountered** and 50 is processed before 60 — so "yes" wins). Port 22 reachable from the internet.
+- Firewall: `ufw` installed but inactive, no `nftables` rules.
+- `unattended-upgrades` installed.
+- No Tailscale, no k3s on the VPS.
+- 2 vCPU, 7.8GB of free RAM.
 
-**Chi esegue cosa:** la maggior parte dei comandi li lancio io da qui (ho già accesso SSH funzionante, e uso WSL Ubuntu sul tuo PC per Ansible). Ti chiedo conferma esplicita **solo** prima dei due passi che potrebbero tagliarti fuori dalla VPS se qualcosa va storto (approvazione blocking, non aggirabile): l'hardening SSH e l'attivazione del firewall. In entrambi i casi verifico l'accesso alternativo **prima** di procedere, non dopo.
+**Who runs what:** I run most of the commands from here (I already have working SSH access, and I use WSL Ubuntu on your PC for Ansible). I ask for your explicit confirmation **only** before the two steps that could lock you out of the VPS if something goes wrong (blocking approval, cannot be bypassed): SSH hardening and firewall activation. In both cases I verify the alternative access **before** proceeding, not after.
 
-**Rete di sicurezza**: se qualcosa dovesse bloccarci fuori, Hostinger offre una console browser (hPanel → VPS → scheda "Console" o simile) che funziona indipendentemente da SSH/firewall. Verifica ora, prima di iniziare, che sai dov'è nel pannello — non serve aprirla, solo sapere che esiste.
+**Safety net**: if something were to lock us out, Hostinger offers a browser console (hPanel → VPS → "Console" tab or similar) that works independently of SSH/firewall. Check now, before starting, that you know where it is in the panel — no need to open it, just know that it exists.
 
-## Ordine dei passi (ciascuno verificato prima del successivo)
+## Order of the steps (each one verified before the next)
 
-1. Ansible in WSL + struttura del repo `buddy-budget-infra`.
-2. Playbook "base": utente `deploy` con sudo, stessa chiave SSH, nessuna modifica distruttiva.
-3. Tailscale sulla VPS, verificato **funzionante** da `deploy`.
-4. **[conferma richiesta]** Hardening SSH (disabilita password e root), verificato ancora accessibile via IP pubblico prima del firewall.
-5. **[conferma richiesta]** Firewall: nega tutto in ingresso salvo SSH dalla sola rete Tailscale — verifica immediata via IP Tailscale.
-6. `unattended-upgrades` configurato esplicitamente (non solo installato).
-7. k3s installato senza Traefik/servicelb (arrivano in Fase 3), verificato con `kubectl get nodes`.
-8. `kubeconfig` recuperato sul tuo PC, puntato all'IP Tailscale della VPS, verificato da locale.
+1. Ansible in WSL + structure of the `buddy-budget-infra` repo.
+2. "base" playbook: `deploy` user with sudo, same SSH key, no destructive changes.
+3. Tailscale on the VPS, verified **working** from `deploy`.
+4. **[confirmation required]** SSH hardening (disable password and root), verified still reachable via the public IP before the firewall.
+5. **[confirmation required]** Firewall: deny all inbound except SSH from the Tailscale network only — immediate check via the Tailscale IP.
+6. `unattended-upgrades` configured explicitly (not just installed).
+7. k3s installed without Traefik/servicelb (they arrive in Phase 3), verified with `kubectl get nodes`.
+8. `kubeconfig` retrieved on your PC, pointed at the VPS Tailscale IP, verified locally.
 
 ---
 
-### Passo 1 — Ansible + repo infra
+### Step 1 — Ansible + infra repo
 
-Eseguo io:
-- Installo Ansible in WSL Ubuntu (`pipx` o `apt`, versione recente).
-- Clono `buddy-budget-infra` in una cartella locale, creo:
+I run:
+- Install Ansible in WSL Ubuntu (`pipx` or `apt`, recent version).
+- Clone `buddy-budget-infra` into a local folder, and create:
   ```
   ansible/
     ansible.cfg
@@ -48,83 +48,83 @@ Eseguo io:
     site.yml
   README.md
   ```
-- `site.yml` include i playbook in ordine (`import_playbook`), ciascuno idempotente e rilanciabile singolarmente.
-- L'inventario ha un solo host oggi (`vps1 ansible_host=<IP-VPS>`); aggiungere un secondo nodo in futuro è una riga.
-- La chiave privata usata da Ansible è la tua `~/.ssh/id_ed25519` esistente (nessuna nuova chiave).
+- `site.yml` includes the playbooks in order (`import_playbook`), each one idempotent and re-runnable on its own.
+- The inventory has a single host today (`vps1 ansible_host=<IP-VPS>`); adding a second node in the future is one line.
+- The private key used by Ansible is your existing `~/.ssh/id_ed25519` (no new key).
 
-**Verifica:** `ansible all -m ping` dal WSL contro l'inventario risponde `pong`.
-
----
-
-### Passo 2 — Playbook "base" (utente deploy)
-
-Crea l'utente `deploy` (sudo **con** password richiesta per comandi interattivi, ma con una regola NOPASSWD ristretta ai soli comandi che Ansible userà per l'automazione — non "sudo ALL NOPASSWD" generico), aggiunge la tua chiave pubblica ai suoi `authorized_keys`. **Non tocca ancora root/password**: resta un secondo modo di accesso, non un sostituto.
-
-**Verifica:** connessione SSH come `deploy@<IP-VPS>` con la tua chiave, e `sudo -n true` funziona.
+**Check:** `ansible all -m ping` from WSL against the inventory answers `pong`.
 
 ---
 
-### Passo 3 — Tailscale sulla VPS
+### Step 2 — "base" playbook (deploy user)
 
-Installa il client Tailscale ufficiale e lancia `tailscale up` **senza chiave di autenticazione** (niente segreti in gioco): il comando stampa un URL di approvazione one-time. Te lo incollo qui, tu lo apri loggato nel tuo account Tailscale e approvi il dispositivo — stesso meccanismo di un login OAuth, l'URL da solo non dà accesso a nulla se non lo apri tu.
+Creates the `deploy` user (sudo **with** a password required for interactive commands, but with a NOPASSWD rule restricted to just the commands Ansible will use for automation — not a generic "sudo ALL NOPASSWD"), adds your public key to its `authorized_keys`. **It doesn't touch root/password yet**: it stays a second way of access, not a replacement.
 
-**Verifica:** la VPS compare in [login.tailscale.com/admin/machines](https://login.tailscale.com/admin/machines); ottengo il suo IP Tailscale (`100.x.x.x`) e verifico **da qui** una connessione SSH a quell'indirizzo come `deploy`. Solo dopo questa verifica passo al passo 4.
+**Check:** SSH connection as `deploy@<IP-VPS>` with your key, and `sudo -n true` works.
 
 ---
 
-### Passo 4 — Hardening SSH ⚠️ conferma richiesta
+### Step 3 — Tailscale on the VPS
 
-**Deciso con l'utente**: `PasswordAuthentication` resta **invariata** (`yes`) — niente desktop-only lockout risk, fallback via password disponibile per `deploy` se la chiave si perde. Segnato come **debito da rivedere** quando sarà disponibile un secondo dispositivo (portatile/telefono con client SSH). Il login diretto di **root** invece si disattiva comunque: è il bersaglio più ovvio per un brute-force, e non serve più visto che `deploy` con sudo lo sostituisce in tutto.
+Installs the official Tailscale client and runs `tailscale up` **without an auth key** (no secrets involved): the command prints a one-time approval URL. I paste it here, you open it logged into your Tailscale account and approve the device — same mechanism as an OAuth login, the URL alone gives access to nothing unless you open it.
 
-Scrive `/etc/ssh/sshd_config.d/10-hardening.conf` (il prefisso `10-` lo fa vincere sul `50-`/`60-` esistenti, per come funziona l'`Include` di OpenSSH — primo valore incontrato vince):
+**Check:** the VPS shows up in [login.tailscale.com/admin/machines](https://login.tailscale.com/admin/machines); I get its Tailscale IP (`100.x.x.x`) and verify **from here** an SSH connection to that address as `deploy`. Only after this check do I move on to step 4.
+
+---
+
+### Step 4 — SSH hardening ⚠️ confirmation required
+
+**Decided with the user**: `PasswordAuthentication` stays **unchanged** (`yes`) — no desktop-only lockout risk, password fallback available for `deploy` if the key is lost. Marked as **debt to revisit** when a second device is available (laptop/phone with an SSH client). Direct **root** login, instead, is disabled regardless: it is the most obvious target for brute-force, and is no longer needed since `deploy` with sudo replaces it entirely.
+
+Writes `/etc/ssh/sshd_config.d/10-hardening.conf` (the `10-` prefix makes it win over the existing `50-`/`60-`, because of how OpenSSH's `Include` works — first value encountered wins):
 ```
 PermitRootLogin no
 PubkeyAuthentication yes
 ```
-Ricarica `sshd`, poi verifico con `sshd -T` sulla VPS che i valori effettivi siano quelli voluti (incluso che `passwordauthentication` resti `yes`).
+Reloads `sshd`, then I verify with `sshd -T` on the VPS that the effective values are the intended ones (including that `passwordauthentication` stays `yes`).
 
-**Prima di eseguire questo passo ti chiedo conferma esplicita in chat.** Dopo averlo eseguito, verifico *subito*: login come `deploy` via IP pubblico (ancora aperto, il firewall non è ancora toccato) funziona (chiave e password), e che `ssh root@...` non funzioni più in nessun modo. Se qualcosa non torna, mi fermo qui — l'accesso via `deploy` resta comunque attivo, nessun rischio di lockout a questo stadio.
-
----
-
-### Passo 5 — Firewall ⚠️ conferma richiesta
-
-Regole `ufw`:
-- default: nega tutto in ingresso, permetti tutto in uscita;
-- permetti **porta 22 solo dalla rete Tailscale** (`100.64.0.0/10`);
-- permetti **porta 6443** (API k8s) solo dalla stessa rete, per `kubectl` da remoto in Fase 3+;
-- attiva `ufw`.
-
-Nessuna porta pubblica resta aperta dopo questo passo — coerente con la scelta "Cloudflare Tunnel, niente porte pubbliche" della spec.
-
-**Prima di eseguire questo passo ti chiedo conferma esplicita**, e riverifico subito prima l'accesso SSH via Tailscale (passo 3) — se quella verifica non fosse fresca, la rifaccio. Subito dopo aver attivato `ufw`, provo *io stesso* una connessione SSH all'**IP Tailscale** della VPS: se funziona, il passo è chiuso; se fallisce, uso la console Hostinger per disattivare `ufw` (`ufw disable`) e ci fermiamo a capire cosa non ha funzionato, senza altri tentativi.
+**Before running this step I ask for explicit confirmation in chat.** After running it, I check *immediately*: login as `deploy` via the public IP (still open, the firewall is not touched yet) works (key and password), and `ssh root@...` no longer works in any way. If something doesn't add up, I stop here — access via `deploy` stays active anyway, no lockout risk at this stage.
 
 ---
 
-### Passo 6 — `unattended-upgrades` esplicito
+### Step 5 — Firewall ⚠️ confirmation required
 
-Il pacchetto è già installato ma verifico/imposto esplicitamente `/etc/apt/apt.conf.d/20auto-upgrades` e `50unattended-upgrades` per: aggiornamenti di sicurezza automatici, riavvio automatico alle 04:00 solo se richiesto da un aggiornamento kernel/libc. Reversibile in ogni momento (nessun servizio applicativo gira ancora sulla VPS, quindi un riavvio programmato oggi non ha impatto).
+`ufw` rules:
+- default: deny all inbound, allow all outbound;
+- allow **port 22 only from the Tailscale network** (`100.64.0.0/10`);
+- allow **port 6443** (k8s API) only from the same network, for remote `kubectl` in Phase 3+;
+- enable `ufw`.
 
-**Verifica:** `unattended-upgrade --dry-run --debug` non lancia errori.
+No public port remains open after this step — consistent with the spec's "Cloudflare Tunnel, no public ports" choice.
 
----
-
-### Passo 7 — k3s
-
-Installo k3s (script ufficiale) **senza Traefik e senza servicelb** (`--disable traefik --disable servicelb`): l'ingress e il suo binding sulle porte 80/443 li configuriamo apposta in Fase 3 insieme a `cloudflared`, invece di lasciare che k3s apra qualcosa in automatico ora.
-
-**Verifica:** `k3s kubectl get nodes` mostra il nodo `Ready`.
+**Before running this step I ask for explicit confirmation**, and I re-check SSH access via Tailscale (step 3) just before — if that check is not fresh, I redo it. Right after enabling `ufw`, I *myself* try an SSH connection to the VPS's **Tailscale IP**: if it works, the step is closed; if it fails, I use the Hostinger console to disable `ufw` (`ufw disable`) and we stop to understand what didn't work, with no further attempts.
 
 ---
 
-### Passo 8 — kubeconfig in locale
+### Step 6 — Explicit `unattended-upgrades`
 
-Copio `/etc/rancher/k3s/k3s.yaml` sul tuo PC (`~/.kube/buddybudget-config`), sostituendo `server: https://127.0.0.1:6443` con `server: https://<ip-tailscale-vps>:6443`. Questo file contiene un certificato client: **non va mai committato** nel repo infra (lo gitignoriamo esplicitamente).
+The package is already installed, but I explicitly check/set `/etc/apt/apt.conf.d/20auto-upgrades` and `50unattended-upgrades` for: automatic security updates, automatic reboot at 04:00 only if required by a kernel/libc update. Reversible at any time (no application service runs on the VPS yet, so a scheduled reboot today has no impact).
 
-**Verifica:** `kubectl --kubeconfig ~/.kube/buddybudget-config get nodes` dal tuo PC (via Tailscale, non serve essere sulla stessa rete fisica) mostra il nodo `Ready`.
+**Check:** `unattended-upgrade --dry-run --debug` raises no errors.
 
-## Fine fase
+---
 
-Criterio di completamento (dalla spec): *"uno scan esterno non trova porte aperte; `kubectl` funziona via Tailscale"*. Verifico entrambi esplicitamente prima di chiudere: uno scan delle porte pubbliche dall'esterno (non da dentro la tailnet) e un `kubectl get nodes` riuscito da locale.
+### Step 7 — k3s
 
-Poi commit del contenuto di `ansible/` nel repo `buddy-budget-infra`, aggiornamento di CLAUDE.md, e piano della **Fase 3** (ArgoCD, KSOPS, cloudflared + Traefik, NetworkPolicy).
+I install k3s (official script) **without Traefik and without servicelb** (`--disable traefik --disable servicelb`): we configure the ingress and its binding on ports 80/443 on purpose in Phase 3 together with `cloudflared`, instead of letting k3s open something automatically now.
+
+**Check:** `k3s kubectl get nodes` shows the node `Ready`.
+
+---
+
+### Step 8 — kubeconfig locally
+
+I copy `/etc/rancher/k3s/k3s.yaml` to your PC (`~/.kube/buddybudget-config`), replacing `server: https://127.0.0.1:6443` with `server: https://<ip-tailscale-vps>:6443`. This file contains a client certificate: **it must never be committed** to the infra repo (we gitignore it explicitly).
+
+**Check:** `kubectl --kubeconfig ~/.kube/buddybudget-config get nodes` from your PC (via Tailscale, no need to be on the same physical network) shows the node `Ready`.
+
+## End of phase
+
+Completion criterion (from the spec): *"an external scan finds no open ports; `kubectl` works via Tailscale"*. I verify both explicitly before closing: a scan of the public ports from outside (not from inside the tailnet) and a successful `kubectl get nodes` from local.
+
+Then commit the content of `ansible/` to the `buddy-budget-infra` repo, update CLAUDE.md, and plan **Phase 3** (ArgoCD, KSOPS, cloudflared + Traefik, NetworkPolicy).

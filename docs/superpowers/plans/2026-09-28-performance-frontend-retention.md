@@ -1,36 +1,36 @@
-# Performance frontend (RUM) + retention/funnel Umami Implementation Plan
+# Frontend performance (RUM) + Umami retention/funnel Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Sostituire `@vercel/analytics` (dead code post-migrazione VPS) con Web Vitals reali (LCP/CLS/INP) raccolti lato client e riportati come istogrammi Prometheus, visibili in una nuova dashboard Grafana con alert; documentare la configurazione (UI, nessun codice) di funnel onboarding e retention in Umami.
+**Goal:** Replace `@vercel/analytics` (dead code after the VPS migration) with real Web Vitals (LCP/CLS/INP) collected client-side and reported as Prometheus histograms, visible in a new Grafana dashboard with alerts; document the configuration (UI, no code) of the onboarding funnel and retention in Umami.
 
-**Architecture:** Componente client `WebVitalsReporter` (libreria `web-vitals`) invia un beacon per metrica a una nuova route pubblica `POST /api/rum`, che valida il payload e scrive su 3 nuovi istogrammi `lib/observability/metrics.ts` (stesso registry Prometheus già esposto da `/api/metrics`). Repo infra: nuova dashboard Grafana as-code + 3 regole di alert nel gruppo esistente + runbook. La whitelist delle pagine tracciabili (`RUM_PAGES`) è condivisa client/server per evitare cardinalità/injection nelle label.
+**Architecture:** A `WebVitalsReporter` client component (`web-vitals` library) sends one beacon per metric to a new public route `POST /api/rum`, which validates the payload and writes to 3 new histograms in `lib/observability/metrics.ts` (the same Prometheus registry already exposed by `/api/metrics`). Infra repo: new Grafana dashboard as code + 3 alert rules in the existing group + runbook. The whitelist of trackable pages (`RUM_PAGES`) is shared between client and server to avoid cardinality/injection in the labels.
 
-**Tech Stack:** Next.js App Router, `web-vitals` (nuovo), prom-client (esistente), Zod, Vitest, Grafana as-code (repo `buddy-budget-infra`).
+**Tech Stack:** Next.js App Router, `web-vitals` (new), prom-client (existing), Zod, Vitest, Grafana as code (`buddy-budget-infra` repo).
 
 **Spec:** `docs/superpowers/specs/2026-09-28-performance-frontend-retention-design.md`
 
 ## Global Constraints
 
-- Prefisso metriche: `buddybudget_` (`METRIC_PREFIX` in `lib/observability/metrics.ts`).
-- Mai un valore arbitrario del chiamante in una label di metrica: `page` è sempre uno dei valori di `RUM_PAGES`, verificato sia lato client (mapping) sia lato server (schema Zod), mai il pathname grezzo.
-- Nomi di route statici per `withRoute` (mai un path con id): questa route si chiama `"rum.report"`.
-- Solo Core Web Vitals (LCP, CLS, INP) — niente FCP/TTFB in questo giro.
-- Nessuna scrittura DB, nessun dato personale nel payload RUM.
-- Soglie di alert: valori standard Google (LCP p75 > 2.5s, INP p75 > 200ms, CLS p75 > 0.1), severità `warning` → `#bb-avvisi`, stesso pattern del gruppo `buddybudget` in `argocd/apps/grafana.yaml`.
-- Repo infra: `<percorso-repo-infra>` (repo git separato da questo).
+- Metric prefix: `buddybudget_` (`METRIC_PREFIX` in `lib/observability/metrics.ts`).
+- Never an arbitrary caller value in a metric label: `page` is always one of the values of `RUM_PAGES`, checked both client-side (mapping) and server-side (Zod schema), never the raw pathname.
+- Static route names for `withRoute` (never a path with ids): this route is called `"rum.report"`.
+- Only Core Web Vitals (LCP, CLS, INP) — no FCP/TTFB in this round.
+- No DB writes, no personal data in the RUM payload.
+- Alert thresholds: Google standard values (LCP p75 > 2.5s, INP p75 > 200ms, CLS p75 > 0.1), severity `warning` → `#bb-avvisi`, same pattern as the `buddybudget` group in `argocd/apps/grafana.yaml`.
+- Infra repo: `<percorso-repo-infra>` (path to the infra repo, a git repo separate from this one).
 
 ## Review Focus
 
-- **`value` negativo o non numerico nel body `/api/rum`** — un client compromesso o un bug futuro nella libreria non deve poter scrivere un istogramma con un valore assurdo; lo schema Zod deve rifiutarlo con 400, non silenziosamente accettarlo o crashare la route.
-- **`page` fuori whitelist** (route non ancora mappata, o valore manomesso) — deve tornare 400, mai finire come label libera nell'istogramma (cardinalità/injection, stesso principio di `assertStaticRouteName`).
-- **`metric` fuori dall'enum `LCP`/`CLS`/`INP`** — deve tornare 400, non silenziosamente ignorato né mappato a caso su uno dei tre istogrammi.
-- **Body non JSON o mancante** (`sendBeacon` bloccato da estensioni, rete instabile) — la route non deve lanciare un'eccezione non gestita; stesso pattern `.json().catch(() => null)` già usato altrove.
-- **`sendBeacon` non disponibile o rifiutato** (browser vecchio, blocklist) — il componente client deve avere un fallback (`fetch` con `keepalive: true`) invece di perdere silenziosamente ogni dato.
+- **Negative or non-numeric `value` in the `/api/rum` body** — a compromised client or a future bug in the library must not be able to write a histogram with an absurd value; the Zod schema must reject it with 400, not silently accept it or crash the route.
+- **`page` outside the whitelist** (route not mapped yet, or tampered value) — must return 400, never end up as a free label in the histogram (cardinality/injection, same principle as `assertStaticRouteName`).
+- **`metric` outside the `LCP`/`CLS`/`INP` enum** — must return 400, not be silently ignored nor mapped at random onto one of the three histograms.
+- **Non-JSON or missing body** (`sendBeacon` blocked by extensions, unstable network) — the route must not throw an unhandled exception; same `.json().catch(() => null)` pattern already used elsewhere.
+- **`sendBeacon` unavailable or refused** (old browser, blocklist) — the client component must have a fallback (`fetch` with `keepalive: true`) instead of silently losing all data.
 
 ---
 
-## Task 1: Whitelist pagine RUM condivisa
+## Task 1: Shared RUM page whitelist
 
 **Files:**
 - Create: `lib/analytics/rum-pages.ts`
@@ -38,10 +38,10 @@
 - Modify: `lib/analytics/index.ts`
 
 **Interfaces:**
-- Consumes: nulla (funzione pura, nessuna dipendenza da altri task).
-- Produces: `RUM_PAGES: readonly string[]`, `type RumPage = (typeof RUM_PAGES)[number]`, `resolveRumPage(pathname: string): RumPage` — usati da Task 2 (schema Zod), Task 3 (metriche), Task 5 (componente client).
+- Consumes: nothing (pure function, no dependency on other tasks).
+- Produces: `RUM_PAGES: readonly string[]`, `type RumPage = (typeof RUM_PAGES)[number]`, `resolveRumPage(pathname: string): RumPage` — used by Task 2 (Zod schema), Task 3 (metrics), Task 5 (client component).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
 ```typescript
 // lib/analytics/rum-pages.test.ts
@@ -71,20 +71,20 @@ describe("resolveRumPage", () => {
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and check that it fails**
 
 Run: `pnpm vitest run lib/analytics/rum-pages.test.ts`
 Expected: FAIL — `Cannot find module './rum-pages'`
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
 ```typescript
 // lib/analytics/rum-pages.ts
 
 /**
- * Route client tracciabili dal RUM (Web Vitals), più "altro" come fallback. Whitelist statica:
- * mai il pathname grezzo in una label di metrica Prometheus (cardinalità/injection, stesso
- * principio di assertStaticRouteName per le route API).
+ * Client routes trackable by RUM (Web Vitals), plus "altro" ("other") as a fallback. Static whitelist:
+ * never the raw pathname in a Prometheus metric label (cardinality/injection, same
+ * principle as assertStaticRouteName for API routes).
  */
 export const RUM_PAGES = [
   "panoramica",
@@ -104,21 +104,21 @@ export type RumPage = (typeof RUM_PAGES)[number];
 
 const KNOWN_SEGMENTS = new Set<string>(RUM_PAGES.filter((p) => p !== "altro"));
 
-/** Mappa un pathname del browser a una pagina nota, o "altro" se non riconosciuta. */
+/** Maps a browser pathname to a known page, or "altro" if not recognised. */
 export function resolveRumPage(pathname: string): RumPage {
   const segment = pathname.replace(/^\/+|\/+$/g, "").split("/")[0] ?? "";
   return KNOWN_SEGMENTS.has(segment) ? (segment as RumPage) : "altro";
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and check that it passes**
 
 Run: `pnpm vitest run lib/analytics/rum-pages.test.ts`
 Expected: PASS (4 test)
 
-- [ ] **Step 5: Esporta dal barrel**
+- [ ] **Step 5: Export from the barrel**
 
-Aggiungi in `lib/analytics/index.ts`:
+Add to `lib/analytics/index.ts`:
 
 ```typescript
 export { resolveRumPage, RUM_PAGES } from "./rum-pages";
@@ -134,7 +134,7 @@ git commit -m "feat: whitelist pagine RUM condivisa client/server"
 
 ---
 
-## Task 2: Istogrammi Web Vitals in metrics.ts
+## Task 2: Web Vitals histograms in metrics.ts
 
 **Files:**
 - Modify: `lib/observability/metrics.ts:1-270`
@@ -142,15 +142,15 @@ git commit -m "feat: whitelist pagine RUM condivisa client/server"
 - Modify: `lib/observability/index.ts`
 
 **Interfaces:**
-- Consumes: `RumPage` da Task 1 (solo come tipo, per l'etichetta `page`).
-- Produces: `recordWebVital(metric: "LCP" | "CLS" | "INP", page: string, value: number): void` — usata da Task 4 (route `/api/rum`).
+- Consumes: `RumPage` from Task 1 (only as a type, for the `page` label).
+- Produces: `recordWebVital(metric: "LCP" | "CLS" | "INP", page: string, value: number): void` — used by Task 4 (`/api/rum` route).
 
-- [ ] **Step 1: Scrivi il test che fallisce**
+- [ ] **Step 1: Write the failing test**
 
-Aggiungi in fondo a `lib/observability/metrics.test.ts` (stesso file, stesso pattern degli `it` esistenti — importa anche `recordWebVital` nell'import esistente in cima al file):
+Add at the bottom of `lib/observability/metrics.test.ts` (same file, same pattern as the existing `it`s — also import `recordWebVital` in the existing import at the top of the file):
 
 ```typescript
-// nell'import esistente in cima al file, aggiungi recordWebVital all'elenco importato da "./metrics"
+// in the existing import at the top of the file, add recordWebVital to the list imported from "./metrics"
 
 it("registra i Web Vitals con conversione ms->s per LCP/INP e passthrough per CLS", async () => {
   recordWebVital("LCP", "panoramica", 1800);
@@ -164,31 +164,31 @@ it("registra i Web Vitals con conversione ms->s per LCP/INP e passthrough per CL
 });
 ```
 
-- [ ] **Step 2: Esegui il test e verifica che fallisca**
+- [ ] **Step 2: Run the test and check that it fails**
 
 Run: `pnpm vitest run lib/observability/metrics.test.ts`
-Expected: FAIL — `recordWebVital is not a function` (o import error)
+Expected: FAIL — `recordWebVital is not a function` (or import error)
 
-- [ ] **Step 3: Implementa**
+- [ ] **Step 3: Implement**
 
-In `lib/observability/metrics.ts`, aggiungi ai tipi (vicino a `AuthEvent`):
+In `lib/observability/metrics.ts`, add to the types (near `AuthEvent`):
 
 ```typescript
 export type WebVitalMetric = "LCP" | "CLS" | "INP";
 ```
 
-Aggiungi ai bucket dedicati (vicino a `DURATION_BUCKETS_SECONDS`):
+Add the dedicated buckets (near `DURATION_BUCKETS_SECONDS`):
 
 ```typescript
-/** Bucket (secondi) per LCP: buono <=2.5s, scarso >4s (soglie Core Web Vitals). */
+/** Buckets (seconds) for LCP: good <=2.5s, poor >4s (Core Web Vitals thresholds). */
 export const LCP_BUCKETS_SECONDS = [0.5, 1, 1.8, 2.5, 3, 4, 5, 8];
-/** Bucket (secondi) per INP: buono <=200ms, scarso >500ms. */
+/** Buckets (seconds) for INP: good <=200ms, poor >500ms. */
 export const INP_BUCKETS_SECONDS = [0.05, 0.1, 0.2, 0.3, 0.5, 1];
-/** Bucket (adimensionali) per CLS: buono <=0.1, scarso >0.25. */
+/** Buckets (dimensionless) for CLS: good <=0.1, poor >0.25. */
 export const CLS_BUCKETS = [0.05, 0.1, 0.15, 0.25, 0.4, 0.6, 1];
 ```
 
-Aggiungi ai campi di `MetricsState` (vicino a `priceProvider`):
+Add to the fields of `MetricsState` (near `priceProvider`):
 
 ```typescript
   webVitalsLcp: Histogram<"page">;
@@ -196,7 +196,7 @@ Aggiungi ai campi di `MetricsState` (vicino a `priceProvider`):
   webVitalsCls: Histogram<"page">;
 ```
 
-Aggiungi in `createState()`, dopo la definizione di `state.priceProvider`:
+Add in `createState()`, after the definition of `state.priceProvider`:
 
 ```typescript
   state.webVitalsLcp = new Histogram({
@@ -222,10 +222,10 @@ Aggiungi in `createState()`, dopo la definizione di `state.priceProvider`:
   });
 ```
 
-Aggiungi in fondo al file, dopo `recordPriceProviderRequest`:
+Add at the bottom of the file, after `recordPriceProviderRequest`:
 
 ```typescript
-/** Registra un Web Vital riportato dal browser. LCP/INP arrivano in millisecondi, CLS è già adimensionale. */
+/** Records a Web Vital reported by the browser. LCP/INP arrive in milliseconds, CLS is already dimensionless. */
 export function recordWebVital(metric: WebVitalMetric, page: string, value: number): void {
   const m = metrics();
   if (metric === "LCP") m.webVitalsLcp.observe({ page }, value / 1000);
@@ -234,20 +234,20 @@ export function recordWebVital(metric: WebVitalMetric, page: string, value: numb
 }
 ```
 
-- [ ] **Step 4: Esegui il test e verifica che passi**
+- [ ] **Step 4: Run the test and check that it passes**
 
 Run: `pnpm vitest run lib/observability/metrics.test.ts`
-Expected: PASS (tutti i test del file, incluso quello nuovo)
+Expected: PASS (all the tests in the file, including the new one)
 
-- [ ] **Step 5: Esporta dal barrel**
+- [ ] **Step 5: Export from the barrel**
 
-Aggiungi in `lib/observability/index.ts`, nel blocco che già esporta da `"./metrics"`:
+Add to `lib/observability/index.ts`, in the block that already exports from `"./metrics"`:
 
 ```typescript
   recordWebVital,
 ```
 
-e nel blocco `export type { ... } from "./metrics"`:
+and in the `export type { ... } from "./metrics"` block:
 
 ```typescript
   WebVitalMetric,
@@ -262,7 +262,7 @@ git commit -m "feat: istogrammi Prometheus per Web Vitals (LCP/INP/CLS)"
 
 ---
 
-## Task 3: Route pubblica POST /api/rum
+## Task 3: Public route POST /api/rum
 
 **Files:**
 - Create: `lib/validation/rum.ts`
@@ -270,17 +270,17 @@ git commit -m "feat: istogrammi Prometheus per Web Vitals (LCP/INP/CLS)"
 - Create: `app/api/rum/route.test.ts`
 
 **Interfaces:**
-- Consumes: `RUM_PAGES`, `RumPage` (Task 1); `recordWebVital`, `WebVitalMetric` (Task 2); `withRoute` (esistente, `lib/observability`).
-- Produces: `rumEventSchema` (Zod) — usato solo da questa route, ma esportato per eventuale riuso nei test. Endpoint `POST /api/rum` — consumato da Task 5 (componente client).
+- Consumes: `RUM_PAGES`, `RumPage` (Task 1); `recordWebVital`, `WebVitalMetric` (Task 2); `withRoute` (existing, `lib/observability`).
+- Produces: `rumEventSchema` (Zod) — used only by this route, but exported for possible reuse in tests. Endpoint `POST /api/rum` — consumed by Task 5 (client component).
 
-- [ ] **Step 1: Scrivi lo schema Zod**
+- [ ] **Step 1: Write the Zod schema**
 
 ```typescript
 // lib/validation/rum.ts
 import { z } from "zod";
 import { RUM_PAGES } from "@/lib/analytics";
 
-/** Payload di un beacon RUM (Web Vitals) dal browser. Nessun dato personale. */
+/** Payload of a RUM (Web Vitals) beacon from the browser. No personal data. */
 export const rumEventSchema = z.object({
   metric: z.enum(["LCP", "CLS", "INP"]),
   value: z.number().finite().nonnegative(),
@@ -290,7 +290,7 @@ export const rumEventSchema = z.object({
 export type RumEventInput = z.infer<typeof rumEventSchema>;
 ```
 
-- [ ] **Step 2: Scrivi il test della route che fallisce**
+- [ ] **Step 2: Write the failing route test**
 
 ```typescript
 // app/api/rum/route.test.ts
@@ -336,12 +336,12 @@ describe("POST /api/rum", () => {
 });
 ```
 
-- [ ] **Step 3: Esegui il test e verifica che fallisca**
+- [ ] **Step 3: Run the test and check that it fails**
 
 Run: `pnpm vitest run app/api/rum/route.test.ts`
 Expected: FAIL — `Cannot find module './route'`
 
-- [ ] **Step 4: Implementa la route**
+- [ ] **Step 4: Implement the route**
 
 ```typescript
 // app/api/rum/route.ts
@@ -350,8 +350,8 @@ import { recordWebVital, withRoute } from "@/lib/observability";
 import { rumEventSchema } from "@/lib/validation/rum";
 
 /**
- * Riceve un beacon Web Vitals dal browser (LCP/CLS/INP) e lo scrive su Prometheus.
- * Pubblica (vale anche per /login, pre-autenticazione), nessuna scrittura DB, nessun dato personale.
+ * Receives a Web Vitals beacon from the browser (LCP/CLS/INP) and writes it to Prometheus.
+ * Public (it also applies to /login, before authentication), no DB writes, no personal data.
  */
 async function handlePost(request: NextRequest) {
   const parsed = rumEventSchema.safeParse(await request.json().catch(() => null));
@@ -364,7 +364,7 @@ async function handlePost(request: NextRequest) {
 export const POST = withRoute("rum.report", handlePost, { quietOnSuccess: true });
 ```
 
-- [ ] **Step 5: Esegui il test e verifica che passi**
+- [ ] **Step 5: Run the test and check that it passes**
 
 Run: `pnpm vitest run app/api/rum/route.test.ts`
 Expected: PASS (5 test)
@@ -378,7 +378,7 @@ git commit -m "feat: route pubblica POST /api/rum per i Web Vitals"
 
 ---
 
-## Task 4: Rimozione @vercel/analytics + componente client WebVitalsReporter
+## Task 4: Removal of @vercel/analytics + WebVitalsReporter client component
 
 **Files:**
 - Create: `components/analytics/web-vitals-reporter.tsx`
@@ -387,19 +387,19 @@ git commit -m "feat: route pubblica POST /api/rum per i Web Vitals"
 - Modify: `package.json`
 
 **Interfaces:**
-- Consumes: `resolveRumPage` (Task 1). Nessuna dipendenza dalle route API lato tipo (il beacon è fire-and-forget, nessuna risposta letta).
-- Produces: componente `WebVitalsReporter` (default export nominato), montato in `app/layout.tsx` — nessun altro task lo consuma.
+- Consumes: `resolveRumPage` (Task 1). No type dependency on the API routes (the beacon is fire-and-forget, no response is read).
+- Produces: `WebVitalsReporter` component (named export), mounted in `app/layout.tsx` — no other task consumes it.
 
-- [ ] **Step 1: Rimuovi la dipendenza e aggiungi web-vitals**
+- [ ] **Step 1: Remove the dependency and add web-vitals**
 
 Run: `pnpm remove @vercel/analytics && pnpm add web-vitals`
-Expected: `package.json` non ha più `@vercel/analytics`, ha una nuova voce `web-vitals` in `dependencies`.
+Expected: `package.json` no longer has `@vercel/analytics`, and has a new `web-vitals` entry in `dependencies`.
 
-- [ ] **Step 2: Rimuovi l'uso in app/layout.tsx**
+- [ ] **Step 2: Remove the usage in app/layout.tsx**
 
-In `app/layout.tsx`, rimuovi la riga `import { Analytics } from "@vercel/analytics/next";` e la riga `<Analytics />` (subito dopo `</QueryProvider>`, prima di `<PwaInstallTracker />`).
+In `app/layout.tsx`, remove the line `import { Analytics } from "@vercel/analytics/next";` and the line `<Analytics />` (right after `</QueryProvider>`, before `<PwaInstallTracker />`).
 
-- [ ] **Step 3: Scrivi il componente client**
+- [ ] **Step 3: Write the client component**
 
 ```tsx
 // components/analytics/web-vitals-reporter.tsx
@@ -415,14 +415,14 @@ function sendBeacon(page: string, metric: Metric) {
   const sent = typeof navigator.sendBeacon === "function" && navigator.sendBeacon("/api/rum", payload);
   if (!sent) {
     fetch("/api/rum", { method: "POST", body: payload, keepalive: true }).catch(() => {
-      // Best-effort: un beacon perso non deve rompere la UI.
+      // Best-effort: a lost beacon must not break the UI.
     });
   }
 }
 
 /**
- * Raccoglie i Core Web Vitals (LCP/CLS/INP) della pagina corrente e li invia a /api/rum.
- * Non renderizza nulla, nessun dato personale nel payload.
+ * Collects the Core Web Vitals (LCP/CLS/INP) of the current page and sends them to /api/rum.
+ * Renders nothing, no personal data in the payload.
  */
 export function WebVitalsReporter() {
   const pathname = usePathname();
@@ -439,22 +439,22 @@ export function WebVitalsReporter() {
 }
 ```
 
-- [ ] **Step 4: Monta il componente e verifica manualmente**
+- [ ] **Step 4: Mount the component and verify manually**
 
-In `app/layout.tsx`, aggiungi l'import `import { PwaInstallTracker, WebVitalsReporter } from "@/components/analytics";` (sostituendo l'import esistente di solo `PwaInstallTracker`) e aggiungi `<WebVitalsReporter />` subito dopo `<PwaInstallTracker />`.
+In `app/layout.tsx`, add the import `import { PwaInstallTracker, WebVitalsReporter } from "@/components/analytics";` (replacing the existing import of `PwaInstallTracker` alone) and add `<WebVitalsReporter />` right after `<PwaInstallTracker />`.
 
-Aggiungi in `components/analytics/index.ts`:
+Add to `components/analytics/index.ts`:
 
 ```typescript
 export { WebVitalsReporter } from "./web-vitals-reporter";
 ```
 
-Run: `pnpm dev`, apri `http://localhost:3000/login` nel browser, apri i DevTools → Network, filtra `rum` — dopo qualche secondo deve comparire una richiesta `POST /api/rum` con status 204 (LCP arriva quasi subito; CLS/INP possono arrivare solo cambiando pagina o interagendo, è normale se non compaiono nella prima verifica).
+Run: `pnpm dev`, open `http://localhost:3000/login` in the browser, open DevTools → Network, filter `rum` — after a few seconds a `POST /api/rum` request with status 204 must appear (LCP arrives almost immediately; CLS/INP may only arrive when changing page or interacting, it is normal if they do not show up in the first check).
 
-- [ ] **Step 5: Esegui la suite e verifica che non ci siano regressioni**
+- [ ] **Step 5: Run the suite and check that there are no regressions**
 
 Run: `pnpm vitest run`
-Expected: PASS (nessun test esistente referenzia `@vercel/analytics`)
+Expected: PASS (no existing test references `@vercel/analytics`)
 
 - [ ] **Step 6: Commit**
 
@@ -465,18 +465,18 @@ git commit -m "feat: sostituisce @vercel/analytics con RUM custom (Web Vitals ->
 
 ---
 
-## Task 5: Dashboard Grafana + alert (repo buddy-budget-infra)
+## Task 5: Grafana dashboard + alerts (buddy-budget-infra repo)
 
-**Files (repo `<percorso-repo-infra>`):**
+**Files (`<percorso-repo-infra>` repo):**
 - Create: `argocd\manifests\grafana-dashboards\dashboards\performance.json`
 - Create: `docs\runbooks\performance-lenta.md`
 - Modify: `argocd\apps\grafana.yaml`
 
 **Interfaces:**
-- Consumes: le metriche `buddybudget_web_vitals_lcp_seconds`, `buddybudget_web_vitals_inp_seconds`, `buddybudget_web_vitals_cls_score` prodotte dal Task 2 (nomi esatti, label `page`) — questo task non tocca codice app, solo manifest infra.
-- Produces: dashboard Grafana `bb-performance`, 3 regole di alert nel gruppo `buddybudget` esistente.
+- Consumes: the metrics `buddybudget_web_vitals_lcp_seconds`, `buddybudget_web_vitals_inp_seconds`, `buddybudget_web_vitals_cls_score` produced by Task 2 (exact names, `page` label) — this task does not touch app code, only infra manifests.
+- Produces: Grafana dashboard `bb-performance`, 3 alert rules in the existing `buddybudget` group.
 
-- [ ] **Step 1: Crea la dashboard**
+- [ ] **Step 1: Create the dashboard**
 
 ```json
 // argocd/manifests/grafana-dashboards/dashboards/performance.json
@@ -539,13 +539,13 @@ git commit -m "feat: sostituisce @vercel/analytics con RUM custom (Web Vitals ->
 }
 ```
 
-- [ ] **Step 2: Registra la dashboard nella kustomization**
+- [ ] **Step 2: Register the dashboard in the kustomization**
 
-Apri `argocd/manifests/grafana-dashboards/kustomization.yaml`, aggiungi `performance.json` all'elenco dei file già presenti (stesso formato di `app.json`/`sync.json`/`cluster.json`/`logs.json` già elencati).
+Open `argocd/manifests/grafana-dashboards/kustomization.yaml`, add `performance.json` to the list of files already present (same format as the already listed `app.json`/`sync.json`/`cluster.json`/`logs.json`).
 
-- [ ] **Step 3: Aggiungi le 3 regole di alert**
+- [ ] **Step 3: Add the 3 alert rules**
 
-In `argocd/apps/grafana.yaml`, dentro `alerting.rules.yaml.groups[0].rules` (gruppo `buddybudget`), aggiungi in fondo all'elenco esistente (dopo la regola `bb-pod-crashloop`, stessa indentazione YAML delle regole esistenti):
+In `argocd/apps/grafana.yaml`, inside `alerting.rules.yaml.groups[0].rules` (the `buddybudget` group), add at the end of the existing list (after the `bb-pod-crashloop` rule, same YAML indentation as the existing rules):
 
 ```yaml
               - uid: bb-lcp-lento
@@ -658,7 +658,7 @@ In `argocd/apps/grafana.yaml`, dentro `alerting.rules.yaml.groups[0].rules` (gru
                   dashboard: https://grafana.<tailnet>.ts.net/d/bb-performance
 ```
 
-- [ ] **Step 4: Scrivi il runbook**
+- [ ] **Step 4: Write the runbook**
 
 ```markdown
 <!-- docs/runbooks/performance-lenta.md -->
@@ -695,13 +695,13 @@ un'esperienza uguale o migliore di quella riportata.
   dashboard prima di allarmarsi per una singola pagina isolata.
 ```
 
-- [ ] **Step 5: Verifica il rendering YAML**
+- [ ] **Step 5: Check the YAML rendering**
 
-Run (da `<percorso-repo-infra>`): `helm template grafana grafana/grafana -f <(echo "") --dry-run 2>/dev/null; python -c "import yaml,sys; yaml.safe_load(open('argocd/apps/grafana.yaml'))" || (Get-Content argocd/apps/grafana.yaml | ConvertFrom-Yaml)`
+Run (from `<percorso-repo-infra>`): `helm template grafana grafana/grafana -f <(echo "") --dry-run 2>/dev/null; python -c "import yaml,sys; yaml.safe_load(open('argocd/apps/grafana.yaml'))" || (Get-Content argocd/apps/grafana.yaml | ConvertFrom-Yaml)`
 
-In pratica: verifica solo che il file sia YAML valido con un parser disponibile in locale (es. `python -c "import yaml; yaml.safe_load(open('argocd/apps/grafana.yaml', encoding='utf-8'))"` se Python+PyYAML sono disponibili, altrimenti apri il file e controlla a occhio l'indentazione contro le regole esistenti — deve essere identica, 14 spazi per `- uid:`).
+In practice: just check that the file is valid YAML with a parser available locally (e.g. `python -c "import yaml; yaml.safe_load(open('argocd/apps/grafana.yaml', encoding='utf-8'))"` if Python+PyYAML are available, otherwise open the file and check the indentation by eye against the existing rules — it must be identical, 14 spaces for `- uid:`).
 
-- [ ] **Step 6: Commit (nel repo infra)**
+- [ ] **Step 6: Commit (in the infra repo)**
 
 ```bash
 cd <percorso-repo-infra>
@@ -709,26 +709,26 @@ git add argocd/manifests/grafana-dashboards/dashboards/performance.json argocd/m
 git commit -m "feat: dashboard e alert Grafana per i Web Vitals (LCP/INP/CLS)"
 ```
 
-Nota: questo commit va poi pushato e mergiato su `main` del repo infra perché ArgoCD lo applichi — non lo fa questo piano (stesso schema delle altre PR infra: apertura PR o merge diretto secondo la prassi già in uso in questo repo).
+Note: this commit must then be pushed and merged into `main` of the infra repo for ArgoCD to apply it — this plan does not do that (same scheme as the other infra PRs: opening a PR or merging directly according to the practice already in use in this repo).
 
 ---
 
-## Task 6: Documentazione funnel/retention Umami (repo buddy-budget-infra)
+## Task 6: Umami funnel/retention documentation (buddy-budget-infra repo)
 
-**Files (repo `<percorso-repo-infra>`):**
+**Files (`<percorso-repo-infra>` repo):**
 - Modify: `docs\osservabilita.md`
 
 **Interfaces:**
-- Consumes: nulla (solo documentazione, nessun codice).
-- Produces: nulla per altri task — passo terminale del piano.
+- Consumes: nothing (documentation only, no code).
+- Produces: nothing for other tasks — final step of the plan.
 
-- [ ] **Step 1: Leggi la struttura esistente del documento**
+- [ ] **Step 1: Read the existing structure of the document**
 
-Apri `docs/osservabilita.md` e individua l'ultima sezione (per capire lo stile: titoli, tono, eventuali link a dashboard/Grafana) prima di aggiungere la nuova sezione in fondo.
+Open `docs/osservabilita.md` and find the last section (to understand the style: headings, tone, any links to dashboards/Grafana) before adding the new section at the bottom.
 
-- [ ] **Step 2: Aggiungi la sezione**
+- [ ] **Step 2: Add the section**
 
-Aggiungi in fondo a `docs/osservabilita.md`:
+Add at the bottom of `docs/osservabilita.md`:
 
 ```markdown
 ## Funnel e retention utenti (Umami)
@@ -756,7 +756,7 @@ configurazione richiesta. Mostra quanti utenti tornano a distanza di N giorni
 dalla prima visita.
 ```
 
-- [ ] **Step 3: Commit (nel repo infra)**
+- [ ] **Step 3: Commit (in the infra repo)**
 
 ```bash
 cd <percorso-repo-infra>
@@ -764,4 +764,4 @@ git add docs/osservabilita.md
 git commit -m "docs: come configurare funnel onboarding e retention in Umami"
 ```
 
-Nota: come il Task 5, va pushato su `main` per essere effettivo (qui non c'è ArgoCD di mezzo, è solo doc — nessun sync richiesto, ma va comunque su `main` per essere trovabile).
+Note: like Task 5, it must be pushed to `main` to take effect (no ArgoCD involved here, it is only docs — no sync required, but it still goes on `main` to be findable).

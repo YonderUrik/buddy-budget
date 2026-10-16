@@ -6,12 +6,14 @@ import * as React from "react";
 import type { PreparedStatementFile } from "@/lib/investments/import/batch";
 import type { Instrument } from "@/lib/db/schema/investments";
 import { parseCsv, type CsvTable } from "@/lib/investments/import/csv";
+import { mappedFormatMetadata } from "@/lib/investments/import/format-metadata";
+import { enqueueBrokerFallback } from "./ai-fallback";
 import { missingFields, type ImportMapping } from "@/lib/investments/import/mapping";
 import { collectIdentities, normalizeRows } from "@/lib/investments/import/normalize";
 import { finecoMapping, parseFinecoTable } from "@/lib/investments/import/fineco";
 import { initialMapping, type ImportPreset } from "@/lib/investments/import/presets";
 import type { ActivityStatement } from "@/lib/investments/import/interactive-brokers";
-import { detectImportProvider, providerMismatchMessage, type ImportProviderId } from "@/lib/investments/import/providers";
+import { detectImportProvider, getImportProvider, providerMismatchMessage, type ImportProviderId } from "@/lib/investments/import/providers";
 import { statementToRows, statementWarnings } from "@/lib/investments/import/statement-rows";
 import { toDateKey } from "@/lib/calc/net-worth";
 import { INVESTMENTS_DEFAULT_PERIOD } from "@/lib/investments/labels";
@@ -32,7 +34,7 @@ import {
  * Stato del wizard di import: file letto, mappatura, abbinamento degli strumenti, anteprima e import. Le righe si
  * ricalcolano a ogni modifica della mappatura, così l'anteprima dei valori letti è sempre quella vera.
  */
-export function useInvestmentImport(initialFile?: PreparedStatementFile) {
+export function useInvestmentImport(initialFile?: PreparedStatementFile, aiFallbackEnabled = false) {
   const { t: tr } = useLocalization();
   const portfolioQuery = useInvestmentsOverviewQuery(INVESTMENTS_DEFAULT_PERIOD);
   const [portfolioId, setPortfolioId] = React.useState("");
@@ -51,6 +53,8 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   // Keep parser-recognized errors in their source form; ImportNotice translates the explanation.
   const [error, setError] = React.useState<string | null>(null);
   const [done, setDone] = React.useState(false);
+  const [fallbackJobId, setFallbackJobId] = React.useState<string | null>(null);
+  const [startingFallback, setStartingFallback] = React.useState(false);
   // Esito tenuto a parte: `data` della mutation si svuota mentre l'import è in corso e il riepilogo sparirebbe.
   const [result, setResult] = React.useState<ImportResult | null>(null);
   const resolve = useResolveImportMutation();
@@ -72,9 +76,18 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
   }
 
   async function loadText(text: string, name: string | null) {
+    setFallbackJobId(null);
+    async function failed(message: string) {
+      if (!aiFallbackEnabled) { setError(message); return; }
+      setStartingFallback(true);
+      try { setFallbackJobId(await enqueueBrokerFallback(text, provider && provider !== "generic" ? getImportProvider(provider).name : undefined)); setError(null); }
+      catch (e) { setError(`${message} ${e instanceof Error ? e.message : tr("Impossibile avviare l'analisi AI")}`); }
+      finally { setStartingFallback(false); }
+    }
     const detected = detectImportProvider(text);
     const mismatch = provider ? providerMismatchMessage(provider, detected) : null;
     if (mismatch) {
+      if (!detected) { await failed(mismatch); return; }
       setError(mismatch);
       return;
     }
@@ -96,13 +109,17 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
         setError(null);
         setStep("mapping");
       } catch (e) {
-        setError(e instanceof Error ? e.message : tr("Impossibile leggere il file"));
+        await failed(e instanceof Error ? e.message : tr("Impossibile leggere il file"));
       }
       return;
     }
     if (detected === "fineco") {
       try {
         const finecoTable = parseFinecoTable(text);
+        if (aiFallbackEnabled && normalizeRows(finecoTable, finecoMapping(finecoTable), todayKey).some(row => row.status === "error")) {
+          await failed("Alcune righe Fineco non sono state riconosciute");
+          return;
+        }
         if (finecoTable.rows.length === 0) {
           setError("Nel file Fineco non ci sono movimenti da importare");
           return;
@@ -118,16 +135,20 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
         setError(null);
         setStep("mapping");
       } catch (e) {
-        setError(e instanceof Error ? e.message : tr("Impossibile leggere il file"));
+        await failed(e instanceof Error ? e.message : tr("Impossibile leggere il file"));
       }
       return;
     }
     const parsed = parseCsv(text);
     if (parsed.headers.length < 2 || parsed.rows.length === 0) {
-      setError("Il file non sembra un CSV con intestazioni e almeno una riga");
+      await failed("Il file non sembra un CSV con intestazioni e almeno una riga");
       return;
     }
     const initial = initialMapping(parsed);
+    if (aiFallbackEnabled && !detected && missingFields(initial.mapping).length) {
+      await failed("Non è stato possibile riconoscere le colonne del CSV");
+      return;
+    }
     track("investments_import_file_read", { provider: detected ?? "generic", chosen: provider !== null });
     setStatement(null);
     setStatementCsv(null);
@@ -197,6 +218,7 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
       return;
     }
     if (statementCsv) request.statementCsv = statementCsv;
+    if (table && mapping) request.formatMetadata = mappedFormatMetadata(table, mapping, provider);
     if (statement && portfolioId) request.portfolioId = portfolioId;
     setError(null);
     try {
@@ -233,7 +255,8 @@ export function useInvestmentImport(initialFile?: PreparedStatementFile) {
     excluded,
     error,
     done,
-    reading: parseStatement.isPending,
+    fallbackJobId,
+    reading: parseStatement.isPending || startingFallback,
     resolving: resolve.isPending,
     running: run.isPending,
     result,

@@ -50,3 +50,15 @@ The broker filter uses the name of the personal format chosen by the user, with 
 ## Coordinated activation in production
 
 [Infra PR #29](https://github.com/YonderUrik/buddy-budget-infra/pull/29) prepares the SOPS Secrets, the Deployment at zero replicas, the resource quota and the upload limit. Merge it before the application release. The release CI updates the app, migrator and csv-worker tags together and scales the worker to one replica when the manifest is present. ArgoCD runs the migrations with the existing PreSync. The infra runbook describes cluster checks, email and shutdown. Opening the PRs alone does not deploy anything.
+
+## Metadata and automatic recovery (October 2026)
+
+New requests use the `openrouter-raw-zdr-v3` consent, which includes automatic regeneration when a saved parser fails. The promise not to send reused files to the AI still holds for jobs with the previous consent: those need a new authorised analysis. The sandbox and the financial checks remain mandatory.
+
+`import_format_profiles` keeps format profiles per user and engine (AI, native, mapping): institution and how it was recognised, separator if known, sections, column indexes and names, mapping to normalised fields, and fields observed in the validated output. Native mappings that are not declared stay empty; the name of a generic CSV does not become an institution. Signature, count and dates make it possible to study recurring formats. No examples or financial values are stored. The payload uses application-level encryption (`encryptedText`) and is exported and removed together with the account data. Older parser versions stay readable without metadata; they are not sent to the AI just to enrich them.
+
+Recovery of the personal parser is persistent: before regeneration the job drops its reference to the faulty parser and keeps the diagnosis. The new version is saved after the checks; rows that are still not recognised lead to the existing review. Network errors, changes or write errors are not resolved by altering how the data is interpreted.
+
+In the broker wizard the optional consent enables the automatic start of a personal job when reading fails, verified again by the server. Repeated requests for the same file are deduplicated. The model reads the whole file and also produces the metadata. Original financial errors and a native history to be reconciled block saving, even after a successful AI analysis; no silent conversion of the broker history is attempted. The fallback does not change the destination of existing imports.
+
+The support report uses `SUPPORT_EMAIL_TO` (default `support@buddybudget.io`), a separate idempotency key and a retry every 15 minutes. It contains reference, phase, classified cause, number of rows and their indexes, attempts and recovery outcome; it does not contain the CSV or raw errors from the parser. The events `personal_import.fallback.started`, `personal_import.support.sent/failed` and `import.metadata.failed` make the outcomes verifiable. `personal_csv_emailPending` includes the support notifications. No real email is sent by the tests.
